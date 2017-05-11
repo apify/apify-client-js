@@ -1,12 +1,12 @@
+import sinon from 'sinon';
 import _ from 'underscore';
 import { expect } from 'chai';
+import * as utils from '../src/utils';
 import ApifierClient, { getDefaultOptions } from '../src';
 
 const APIFIER_INSTANCE_KEYS = ['acts', 'crawlers', 'keyValueStores', 'setOptions'];
 
 describe('ApifierClient', () => {
-    // TODO: add test for preconfigured utils.requestPromise().
-
     it('should be possible to initiate it both with and without "new"', () => {
         const apifierClientWith = new ApifierClient();
         const apifierClientWithout = ApifierClient();
@@ -30,13 +30,13 @@ describe('ApifierClient', () => {
                          + expected.basePath;
         expected.promise = Promise;
 
-        const methods = {
+        instanceOpts._overrideMethodGroups = {
             group1: {
-                method1: params => Promise.resolve(params),
+                method1: (requestPromise, params) => Promise.resolve(params),
             },
         };
 
-        const apifierClient = new ApifierClient(instanceOpts, methods);
+        const apifierClient = new ApifierClient(instanceOpts);
 
 
         return apifierClient
@@ -48,7 +48,7 @@ describe('ApifierClient', () => {
     it('should be possible to change options using apifierClient.setOptions(opts)', () => {
         const methods = {
             group1: {
-                method1: params => Promise.resolve(params.baseUrl),
+                method1: (requestPromise, params) => Promise.resolve(params.baseUrl),
             },
         };
 
@@ -57,6 +57,7 @@ describe('ApifierClient', () => {
             host: 'myhost-1',
             basePath: '/mypath-1',
             port: 80,
+            _overrideMethodGroups: methods,
         }, methods);
 
         const apifierClient2 = new ApifierClient({
@@ -64,6 +65,7 @@ describe('ApifierClient', () => {
             host: 'myhost-2',
             basePath: '/mypath-2',
             port: 80,
+            _overrideMethodGroups: methods,
         }, methods);
 
         return Promise
@@ -90,13 +92,15 @@ describe('ApifierClient', () => {
     });
 
     it('should be possible to use with promises', () => {
-        const methods = {
-            group1: {
-                method1: () => Promise.resolve('someResponse'),
+        const apifierClient = new ApifierClient({
+            protocol: 'http',
+            host: 'myhost',
+            _overrideMethodGroups: {
+                group1: {
+                    method1: () => Promise.resolve('someResponse'),
+                },
             },
-        };
-
-        const apifierClient = new ApifierClient({ protocol: 'http', host: 'myhost' }, methods);
+        });
 
         return apifierClient
             .group1
@@ -105,13 +109,15 @@ describe('ApifierClient', () => {
     });
 
     it('should be possible handle errors when used with promises', () => {
-        const methods = {
-            group1: {
-                method1: () => Promise.reject(new Error('my-error')),
+        const apifierClient = new ApifierClient({
+            protocol: 'http',
+            host: 'myhost',
+            _overrideMethodGroups: {
+                group1: {
+                    method1: () => Promise.reject(new Error('my-error')),
+                },
             },
-        };
-
-        const apifierClient = new ApifierClient({ protocol: 'http', host: 'myhost' }, methods);
+        });
 
         return apifierClient
             .group1
@@ -122,37 +128,69 @@ describe('ApifierClient', () => {
             );
     });
 
-    it('should be possible to use with callbacks', () => {
-        const methods = {
-            group1: {
-                method1: () => Promise.resolve('someResponse'),
+    it('should be possible to use with callbacks', (done) => {
+        const apifierClient = new ApifierClient({
+            protocol: 'http',
+            host: 'myhost',
+            _overrideMethodGroups: {
+                group1: {
+                    method1: () => Promise.resolve('someResponse'),
+                },
             },
-        };
+        });
 
-        const apifierClient = new ApifierClient({ protocol: 'http', host: 'myhost' }, methods);
-
-        return apifierClient
+        apifierClient
             .group1
             .method1({}, (error, response) => {
                 expect(error).to.be.eql(null);
                 expect(response).to.be.eql('someResponse');
+                done();
             });
     });
 
-    it('should be possible handle errors when used with callbacks', () => {
-        const methods = {
-            group1: {
-                method1: () => Promise.reject(new Error('my-error')),
+    it('should be possible handle errors when used with callbacks', (done) => {
+        const apifierClient = new ApifierClient({
+            protocol: 'http',
+            host: 'myhost',
+            _overrideMethodGroups: {
+                group1: {
+                    method1: () => Promise.reject(new Error('my-error')),
+                },
             },
-        };
+        });
 
-        const apifierClient = new ApifierClient({ protocol: 'http', host: 'myhost' }, methods);
-
-        return apifierClient
+        apifierClient
             .group1
             .method1({}, (error, response) => {
                 expect(error.message).to.be.eql('my-error');
                 expect(response).to.be.eql(undefined);
+                done();
             });
+    });
+
+    it('should passed preconfigured utils.requestPromise to each method', () => {
+        const requestPromiseMock = sinon.mock(utils, 'requestPromise');
+        const expected = { foo: 'bar' };
+
+        requestPromiseMock
+            .expects('requestPromise')
+            .once()
+            .withArgs(Promise, expected)
+            .returns(Promise.resolve());
+
+        const apifierClient = new ApifierClient({
+            protocol: 'http',
+            host: 'myhost',
+            _overrideMethodGroups: {
+                group1: {
+                    method1: requestPromise => requestPromise(expected),
+                },
+            },
+        });
+
+        return apifierClient
+            .group1
+            .method1()
+            .then(() => requestPromiseMock.restore());
     });
 });

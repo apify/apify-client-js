@@ -15,14 +15,15 @@ const options = {
 describe('Key value store', () => {
     const requestPromiseMock = sinon.mock(utils, 'requestPromise');
 
-    const requestExpectOne = (args, result) => {
-        if (!_.isArray(args)) throw new Error('"args" parameter must be an array!');
+    const requestExpectCall = (requestOpts, response) => {
+        if (!_.isObject(requestOpts)) throw new Error('"requestOpts" parameter must be an object!');
+        if (!requestOpts.method) throw new Error('"requestOpts.method" parameter is not set!');
 
         requestPromiseMock
             .expects('requestPromise')
             .once()
-            .withArgs(...args)
-            .returns(Promise.resolve(result));
+            .withArgs(Promise, requestOpts)
+            .returns(Promise.resolve(response));
     };
 
     after(() => {
@@ -34,19 +35,13 @@ describe('Key value store', () => {
         it('should work with ENV variable', () => {
             const storeId = 'some-id';
 
-            requestExpectOne(
-                [
-                    Promise,
-                    {
-                        json: true,
-                        method: 'GET',
-                        url: `http://myhost:80/mypath${BASE_PATH}/${storeId}`,
-                    },
-                ],
-                {
-                    id: storeId,
-                },
-            );
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `http://myhost:80/mypath${BASE_PATH}/${storeId}`,
+            }, {
+                id: storeId,
+            });
 
             process.env.APIFY_ACT_RUN_ID = storeId;
 
@@ -65,19 +60,13 @@ describe('Key value store', () => {
             const storeId = 'some-id-2';
             const apifierClient = new ApifierClient(Object.assign({}, options, { storeId }));
 
-            requestExpectOne(
-                [
-                    Promise,
-                    {
-                        json: true,
-                        method: 'GET',
-                        url: `http://myhost:80/mypath${BASE_PATH}/${storeId}`,
-                    },
-                ],
-                {
-                    id: storeId,
-                },
-            );
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `http://myhost:80/mypath${BASE_PATH}/${storeId}`,
+            }, {
+                id: storeId,
+            });
 
             return apifierClient
                 .keyValueStores
@@ -92,19 +81,13 @@ describe('Key value store', () => {
             const storeId = 'some-id-3';
             const apifierClient = new ApifierClient(options);
 
-            requestExpectOne(
-                [
-                    Promise,
-                    {
-                        json: true,
-                        method: 'GET',
-                        url: `http://myhost:80/mypath${BASE_PATH}/${storeId}`,
-                    },
-                ],
-                {
-                    id: storeId,
-                },
-            );
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `http://myhost:80/mypath${BASE_PATH}/${storeId}`,
+            }, {
+                id: storeId,
+            });
 
             return apifierClient
                 .keyValueStores
@@ -125,20 +108,14 @@ describe('Key value store', () => {
                 storeName: 'somename',
             };
 
-            requestExpectOne(
-                [
-                    Promise,
-                    {
-                        body: storeOptions,
-                        json: true,
-                        method: 'POST',
-                        url: `http://myhost:80/mypath${BASE_PATH}`,
-                    },
-                ],
-                {
-                    id: storeId,
-                },
-            );
+            requestExpectCall({
+                body: storeOptions,
+                json: true,
+                method: 'POST',
+                url: `http://myhost:80/mypath${BASE_PATH}`,
+            }, {
+                id: storeId,
+            });
 
             return apifierClient
                 .keyValueStores
@@ -156,20 +133,14 @@ describe('Key value store', () => {
                 storeName: 'somename',
             };
 
-            requestExpectOne(
-                [
-                    Promise,
-                    {
-                        body: storeOptions,
-                        json: true,
-                        method: 'POST',
-                        url: `http://myhost:80/mypath${BASE_PATH}`,
-                    },
-                ],
-                {
-                    id: storeId,
-                },
-            );
+            requestExpectCall({
+                body: storeOptions,
+                json: true,
+                method: 'POST',
+                url: `http://myhost:80/mypath${BASE_PATH}`,
+            }, {
+                id: storeId,
+            });
 
             return apifierClient
                 .keyValueStores
@@ -184,14 +155,11 @@ describe('Key value store', () => {
             const apifierClient = new ApifierClient(options);
             const expected = { _id: 'some-id', aaa: 'bbb' };
 
-            requestExpectOne([
-                Promise,
-                {
-                    json: true,
-                    method: 'GET',
-                    url: `http://myhost:80/mypath${BASE_PATH}/${storeId}`,
-                },
-            ], expected);
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `http://myhost:80/mypath${BASE_PATH}/${storeId}`,
+            }, expected);
 
             return apifierClient
                 .keyValueStores
@@ -204,14 +172,11 @@ describe('Key value store', () => {
             const storeId = 'some-id';
             const apifierClient = new ApifierClient(options);
 
-            requestExpectOne([
-                Promise,
-                {
-                    json: true,
-                    method: 'DELETE',
-                    url: `http://myhost:80/mypath${BASE_PATH}/${storeId}`,
-                },
-            ]);
+            requestExpectCall({
+                json: true,
+                method: 'DELETE',
+                url: `http://myhost:80/mypath${BASE_PATH}/${storeId}`,
+            });
 
             return apifierClient
                 .keyValueStores
@@ -224,14 +189,11 @@ describe('Key value store', () => {
             const apifierClient = new ApifierClient(options);
             const expected = 'sometext';
 
-            requestExpectOne([
-                Promise,
-                {
-                    json: true,
-                    method: 'GET',
-                    url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
-                },
-            ], expected);
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
+            }, expected);
 
             return apifierClient
                 .keyValueStores
@@ -245,16 +207,14 @@ describe('Key value store', () => {
             const contentType = 'application/json';
             const body = 'someValue';
             const apifierClient = new ApifierClient(options);
-            requestExpectOne([
-                Promise,
-                {
-                    body: 'someValue',
-                    headers: { 'Content-Type': 'application/json' },
-                    json: true,
-                    method: 'PUT',
-                    url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
-                },
-            ]);
+
+            requestExpectCall({
+                body: 'someValue',
+                headers: { 'Content-Type': 'application/json' },
+                json: true,
+                method: 'PUT',
+                url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
+            });
 
             return apifierClient
                 .keyValueStores
@@ -265,14 +225,12 @@ describe('Key value store', () => {
             const recordKey = 'some-key';
             const storeId = 'some-id';
             const apifierClient = new ApifierClient(options);
-            requestExpectOne([
-                Promise,
-                {
-                    json: true,
-                    method: 'DELETE',
-                    url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
-                },
-            ]);
+
+            requestExpectCall({
+                json: true,
+                method: 'DELETE',
+                url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
+            });
 
             return apifierClient
                 .keyValueStores
@@ -286,19 +244,16 @@ describe('Key value store', () => {
             const apifierClient = new ApifierClient(options);
             const expected = ['key1', 'key2', 'key3'];
 
-            requestExpectOne([
-                Promise,
-                {
-                    json: true,
-                    method: 'GET',
-                    url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records?exclusiveStartKey=${exclusiveStartKey}&count=${count}`,
-                },
-            ], expected);
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records?exclusiveStartKey=${exclusiveStartKey}&count=${count}`,
+            }, expected);
 
             return apifierClient
                 .keyValueStores
                 .getRecordsKeys({ storeId, exclusiveStartKey, count })
-                .then(keys => expect(keys).to.be.eql(expected));
+                .then(keys => expect(keys).to.be.eql({ items: expected }));
         });
     });
 });

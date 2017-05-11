@@ -3,33 +3,33 @@ import { objectToQueryString } from './utils';
 
 export const BASE_PATH = '/v2/key-value-stores';
 
-const methods = {
-    getOrCreateStore: (options, rp) => rp({
+export default {
+    getOrCreateStore: (requestPromise, options) => requestPromise({
         url: `${options.baseUrl}${BASE_PATH}`,
         json: true,
         method: 'POST',
         body: _.pick(options, 'userId', 'username', 'token', 'storeName'),
     }),
 
-    getStore: ({ baseUrl, storeId }, rp) => rp({
+    getStore: (requestPromise, { baseUrl, storeId }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}`,
         json: true,
         method: 'GET',
     }),
 
-    deleteStore: ({ baseUrl, storeId }, rp) => rp({
+    deleteStore: (requestPromise, { baseUrl, storeId }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}`,
         json: true,
         method: 'DELETE',
     }),
 
-    getRecord: ({ baseUrl, storeId, recordKey }, rp) => rp({
+    getRecord: (requestPromise, { baseUrl, storeId, recordKey }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
         json: true,
         method: 'GET',
     }),
 
-    putRecord: ({ baseUrl, storeId, recordKey, body, contentType }, rp) => rp({
+    putRecord: (requestPromise, { baseUrl, storeId, recordKey, body, contentType }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
         json: true,
         method: 'PUT',
@@ -39,18 +39,22 @@ const methods = {
         },
     }),
 
-    deleteRecord: ({ baseUrl, storeId, recordKey }, rp) => rp({
+    deleteRecord: (requestPromise, { baseUrl, storeId, recordKey }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
         json: true,
         method: 'DELETE',
     }),
 
     // TODO: add pagination
-    getRecordsKeys: ({ baseUrl, storeId, exclusiveStartKey, count }, rp) => rp({
-        url: `${baseUrl}${BASE_PATH}/${storeId}/records${objectToQueryString({ exclusiveStartKey, count })}`,
-        json: true,
-        method: 'GET',
-    }),
-};
+    getRecordsKeys: (requestPromise, options) => {
+        const { baseUrl, storeId, exclusiveStartKey, count } = options;
+        const queryString = objectToQueryString({ exclusiveStartKey, count });
+        const requestOpts = {
+            url: `${baseUrl}${BASE_PATH}/${storeId}/records${queryString}`,
+            json: true,
+            method: 'GET',
+        };
 
-export default methods;
+        return requestPromise(requestOpts).then(items => ({ items }));
+    },
+};

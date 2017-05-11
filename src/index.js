@@ -15,21 +15,25 @@ export const getDefaultOptions = () => ({
  * Each property is a plain object of methods.
  *
  * Method must have 2 parameters "options" and "requestPromise" where:
- * - options
- * - requestPromise is utils.requestPromise with Promise parameter configured based on
+ * - requestPromise is utils.requestPromise with Promise parameter set based on
  *   user's choice of Promises dependency.
+ * - options
  *
  * Method must return promise.
  */
-const methods = {
+const methodGroups = {
     acts,
     crawlers,
     keyValueStores,
 };
 
-const ApifierClient = function (options = {}, undecoratedMethods = methods) {
+const ApifierClient = function (options = {}) {
     // This allows to initiate ApifierClient both ways - with and without "new".
     if (!this || this.constructor !== ApifierClient) return new ApifierClient(options);
+
+    // This is used only internally for unit testing of ApifierClient.
+    const undecoratedMethodGroups = options._overrideMethodGroups || methodGroups;
+    delete options._overrideMethodGroups;
 
     const instanceOpts = Object.assign({}, getDefaultOptions(), options);
 
@@ -46,7 +50,7 @@ const ApifierClient = function (options = {}, undecoratedMethods = methods) {
 
     /**
      * This decorator does:
-     * - extends "options" parameter with values from default options and from new ApifierClient(options)
+     * - extends "options" parameter with values from default options and from ApifierClient instance options
      * - adds options.baseUrl
      * - passes preconfigured utils.requestPromise with Promises dependency set
      * - allows to use method with both callbacks and promises
@@ -67,7 +71,7 @@ const ApifierClient = function (options = {}, undecoratedMethods = methods) {
                                + (mergedOpts.port ? `:${mergedOpts.port}` : '')
                                + mergedOpts.basePath;
 
-            const promise = method(mergedOpts, preconfiguredRequest);
+            const promise = method(preconfiguredRequest, mergedOpts);
 
             if (!callback) return promise;
 
@@ -79,7 +83,7 @@ const ApifierClient = function (options = {}, undecoratedMethods = methods) {
     };
 
     // Decorate methods and bind them to this object.
-    _.forEach(undecoratedMethods, (methodGroup, name) => {
+    _.forEach(undecoratedMethodGroups, (methodGroup, name) => {
         this[name] = _.mapObject(methodGroup, methodDecorator);
     });
 
