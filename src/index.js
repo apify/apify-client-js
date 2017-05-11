@@ -27,11 +27,11 @@ const methodGroups = {
     keyValueStores,
 };
 
-const ApifierClient = function (options = {}) {
-    // This allows to initiate ApifierClient both ways - with and without "new".
-    if (!this || this.constructor !== ApifierClient) return new ApifierClient(options);
+const ApifyClient = function (options = {}) {
+    // This allows to initiate ApifyClient both ways - with and without "new".
+    if (!this || this.constructor !== ApifyClient) return new ApifyClient(options);
 
-    // This is used only internally for unit testing of ApifierClient.
+    // This is used only internally for unit testing of ApifyClient.
     const undecoratedMethodGroups = options._overrideMethodGroups || methodGroups;
     delete options._overrideMethodGroups;
 
@@ -50,7 +50,7 @@ const ApifierClient = function (options = {}) {
 
     /**
      * This decorator does:
-     * - extends "options" parameter with values from default options and from ApifierClient instance options
+     * - extends "options" parameter with values from default options and from ApifyClient instance options
      * - adds options.baseUrl
      * - passes preconfigured utils.requestPromise with Promises dependency set
      * - allows to use method with both callbacks and promises
@@ -95,4 +95,4 @@ const ApifierClient = function (options = {}) {
     };
 };
 
-export default ApifierClient;
+export default ApifyClient;

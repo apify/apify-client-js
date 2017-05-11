@@ -2,7 +2,7 @@ import sinon from 'sinon';
 import _ from 'underscore';
 import { expect } from 'chai';
 import * as utils from '../build/utils';
-import ApifierClient from '../build';
+import ApifyClient from '../build';
 import { BASE_PATH } from '../build/key-value-stores';
 
 const options = {
@@ -45,9 +45,9 @@ describe('Key value store', () => {
 
             process.env.APIFY_ACT_RUN_ID = storeId;
 
-            const apifierClient = new ApifierClient(options);
+            const apifyClient = new ApifyClient(options);
 
-            return apifierClient
+            return apifyClient
                 .keyValueStores
                 .getStore()
                 .then((store) => {
@@ -58,7 +58,7 @@ describe('Key value store', () => {
 
         it('should work with storeId in default params', () => {
             const storeId = 'some-id-2';
-            const apifierClient = new ApifierClient(Object.assign({}, options, { storeId }));
+            const apifyClient = new ApifyClient(Object.assign({}, options, { storeId }));
 
             requestExpectCall({
                 json: true,
@@ -68,7 +68,7 @@ describe('Key value store', () => {
                 id: storeId,
             });
 
-            return apifierClient
+            return apifyClient
                 .keyValueStores
                 .getStore()
                 .then((store) => {
@@ -79,7 +79,7 @@ describe('Key value store', () => {
 
         it('should work with storeId in method call params', () => {
             const storeId = 'some-id-3';
-            const apifierClient = new ApifierClient(options);
+            const apifyClient = new ApifyClient(options);
 
             requestExpectCall({
                 json: true,
@@ -89,7 +89,7 @@ describe('Key value store', () => {
                 id: storeId,
             });
 
-            return apifierClient
+            return apifyClient
                 .keyValueStores
                 .getStore({ storeId })
                 .then((store) => {
@@ -100,7 +100,7 @@ describe('Key value store', () => {
 
         it('should work with user ID and credentials', () => {
             const storeId = 'some-id-4';
-            const apifierClient = new ApifierClient(Object.assign({}, options, { storeId }));
+            const apifyClient = new ApifyClient(Object.assign({}, options, { storeId }));
 
             const storeOptions = {
                 userId: 'someid',
@@ -117,7 +117,7 @@ describe('Key value store', () => {
                 id: storeId,
             });
 
-            return apifierClient
+            return apifyClient
                 .keyValueStores
                 .getOrCreateStore(storeOptions)
                 .then(store => expect(store.id).to.be.eql(storeId));
@@ -125,7 +125,7 @@ describe('Key value store', () => {
 
         it('should work with username and credentials', () => {
             const storeId = 'some-id-5';
-            const apifierClient = new ApifierClient(Object.assign({}, options, { storeId }));
+            const apifyClient = new ApifyClient(Object.assign({}, options, { storeId }));
 
             const storeOptions = {
                 username: 'someusername',
@@ -142,7 +142,7 @@ describe('Key value store', () => {
                 id: storeId,
             });
 
-            return apifierClient
+            return apifyClient
                 .keyValueStores
                 .getOrCreateStore(storeOptions)
                 .then(store => expect(store.id).to.be.eql(storeId));
@@ -152,7 +152,7 @@ describe('Key value store', () => {
     describe('Key value store REST methods work', () => {
         it('getStore() works', () => {
             const storeId = 'some-id';
-            const apifierClient = new ApifierClient(options);
+            const apifyClient = new ApifyClient(options);
             const expected = { _id: 'some-id', aaa: 'bbb' };
 
             requestExpectCall({
@@ -161,7 +161,7 @@ describe('Key value store', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}`,
             }, expected);
 
-            return apifierClient
+            return apifyClient
                 .keyValueStores
                 .getStore({ storeId })
                 .then(given => expect(given).to.be.eql(expected));
@@ -170,7 +170,7 @@ describe('Key value store', () => {
 
         it('deleteStore() works', () => {
             const storeId = 'some-id';
-            const apifierClient = new ApifierClient(options);
+            const apifyClient = new ApifyClient(options);
 
             requestExpectCall({
                 json: true,
@@ -178,7 +178,7 @@ describe('Key value store', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}`,
             });
 
-            return apifierClient
+            return apifyClient
                 .keyValueStores
                 .deleteStore({ storeId });
         });
@@ -186,7 +186,7 @@ describe('Key value store', () => {
         it('getRecord() works', () => {
             const recordKey = 'some-key';
             const storeId = 'some-id';
-            const apifierClient = new ApifierClient(options);
+            const apifyClient = new ApifyClient(options);
             const expected = 'sometext';
 
             requestExpectCall({
@@ -195,7 +195,7 @@ describe('Key value store', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
             }, expected);
 
-            return apifierClient
+            return apifyClient
                 .keyValueStores
                 .getRecord({ storeId, recordKey })
                 .then(given => expect(given).to.be.eql(expected));
@@ -206,7 +206,7 @@ describe('Key value store', () => {
             const storeId = 'some-id';
             const contentType = 'application/json';
             const body = 'someValue';
-            const apifierClient = new ApifierClient(options);
+            const apifyClient = new ApifyClient(options);
 
             requestExpectCall({
                 body: 'someValue',
@@ -216,7 +216,7 @@ describe('Key value store', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
             });
 
-            return apifierClient
+            return apifyClient
                 .keyValueStores
                 .putRecord({ storeId, recordKey, contentType, body });
         });
@@ -224,7 +224,7 @@ describe('Key value store', () => {
         it('delete() works', () => {
             const recordKey = 'some-key';
             const storeId = 'some-id';
-            const apifierClient = new ApifierClient(options);
+            const apifyClient = new ApifyClient(options);
 
             requestExpectCall({
                 json: true,
@@ -232,7 +232,7 @@ describe('Key value store', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
             });
 
-            return apifierClient
+            return apifyClient
                 .keyValueStores
                 .deleteRecord({ storeId, recordKey });
         });
@@ -241,7 +241,7 @@ describe('Key value store', () => {
             const storeId = 'some-id';
             const exclusiveStartKey = 'fromKey';
             const count = 10;
-            const apifierClient = new ApifierClient(options);
+            const apifyClient = new ApifyClient(options);
             const expected = ['key1', 'key2', 'key3'];
 
             requestExpectCall({
@@ -250,7 +250,7 @@ describe('Key value store', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records?exclusiveStartKey=${exclusiveStartKey}&count=${count}`,
             }, expected);
 
-            return apifierClient
+            return apifyClient
                 .keyValueStores
                 .getRecordsKeys({ storeId, exclusiveStartKey, count })
                 .then(keys => expect(keys).to.be.eql({ items: expected }));

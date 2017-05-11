@@ -1,9 +1,10 @@
 {
-  "name": "apifier-client",
+  "name": "apify-client",
   "version": "0.0.1",
-  "description": "Apifier client for JavaScript",
+  "description": "Apify client for JavaScript",
   "main": "build/index.js",
   "keywords": [
+    "apify",
     "apifier",
     "crawler",
     "scraper"
@@ -19,12 +20,12 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/apifier/apifier-client-js"
+    "url": "git+https://github.com/apifier/apify-client-js"
   },
   "bugs": {
-    "url": "https://github.com/apifier/apifier-client-js/issues"
+    "url": "https://github.com/apifier/apify-client-js/issues"
   },
-  "homepage": "https://github.com/apifier/apifier-client-js",
+  "homepage": "https://github.com/apifier/apify-client-js",
   "files": [
     "build"
   ],

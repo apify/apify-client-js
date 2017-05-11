@@ -2,17 +2,17 @@ import sinon from 'sinon';
 import _ from 'underscore';
 import { expect } from 'chai';
 import * as utils from '../build/utils';
-import ApifierClient, { getDefaultOptions } from '../build';
+import ApifyClient, { getDefaultOptions } from '../build';
 
-const APIFIER_INSTANCE_KEYS = ['acts', 'crawlers', 'keyValueStores', 'setOptions'];
+const APIFY_INSTANCE_KEYS = ['acts', 'crawlers', 'keyValueStores', 'setOptions'];
 
-describe('ApifierClient', () => {
+describe('ApifyClient', () => {
     it('should be possible to initiate it both with and without "new"', () => {
-        const apifierClientWith = new ApifierClient();
-        const apifierClientWithout = ApifierClient();
+        const apifyClientWith = new ApifyClient();
+        const apifyClientWithout = ApifyClient();
 
-        expect(_.keys(apifierClientWith)).to.be.eql(APIFIER_INSTANCE_KEYS);
-        expect(_.keys(apifierClientWithout)).to.be.eql(APIFIER_INSTANCE_KEYS);
+        expect(_.keys(apifyClientWith)).to.be.eql(APIFY_INSTANCE_KEYS);
+        expect(_.keys(apifyClientWithout)).to.be.eql(APIFY_INSTANCE_KEYS);
     });
 
     it('should correctly set all options', () => {
@@ -36,23 +36,23 @@ describe('ApifierClient', () => {
             },
         };
 
-        const apifierClient = new ApifierClient(instanceOpts);
+        const apifyClient = new ApifyClient(instanceOpts);
 
 
-        return apifierClient
+        return apifyClient
             .group1
             .method1(callOpts)
             .then(options => expect(options).to.be.eql(expected));
     });
 
-    it('should be possible to change options using apifierClient.setOptions(opts)', () => {
+    it('should be possible to change options using apifyClient.setOptions(opts)', () => {
         const methods = {
             group1: {
                 method1: (requestPromise, params) => Promise.resolve(params.baseUrl),
             },
         };
 
-        const apifierClient1 = new ApifierClient({
+        const apifyClient1 = new ApifyClient({
             protocol: 'http',
             host: 'myhost-1',
             basePath: '/mypath-1',
@@ -60,7 +60,7 @@ describe('ApifierClient', () => {
             _overrideMethodGroups: methods,
         }, methods);
 
-        const apifierClient2 = new ApifierClient({
+        const apifyClient2 = new ApifyClient({
             protocol: 'http',
             host: 'myhost-2',
             basePath: '/mypath-2',
@@ -70,19 +70,19 @@ describe('ApifierClient', () => {
 
         return Promise
             .all([
-                apifierClient1.group1.method1(),
-                apifierClient2.group1.method1(),
+                apifyClient1.group1.method1(),
+                apifyClient2.group1.method1(),
             ])
             .then(([baseUrl1, baseUrl2]) => {
                 expect(baseUrl1).to.be.eql('http://myhost-1:80/mypath-1');
                 expect(baseUrl2).to.be.eql('http://myhost-2:80/mypath-2');
 
-                apifierClient1.setOptions({ host: 'my-very-new-host' });
+                apifyClient1.setOptions({ host: 'my-very-new-host' });
 
                 return Promise
                     .all([
-                        apifierClient1.group1.method1(),
-                        apifierClient2.group1.method1(),
+                        apifyClient1.group1.method1(),
+                        apifyClient2.group1.method1(),
                     ])
                     .then(([anotherBaseUrl1, anotherBaseUrl2]) => {
                         expect(anotherBaseUrl1).to.be.eql('http://my-very-new-host:80/mypath-1');
@@ -92,7 +92,7 @@ describe('ApifierClient', () => {
     });
 
     it('should be possible to use with promises', () => {
-        const apifierClient = new ApifierClient({
+        const apifyClient = new ApifyClient({
             protocol: 'http',
             host: 'myhost',
             _overrideMethodGroups: {
@@ -102,14 +102,14 @@ describe('ApifierClient', () => {
             },
         });
 
-        return apifierClient
+        return apifyClient
             .group1
             .method1()
             .then(response => expect(response).to.be.eql('someResponse'));
     });
 
     it('should be possible handle errors when used with promises', () => {
-        const apifierClient = new ApifierClient({
+        const apifyClient = new ApifyClient({
             protocol: 'http',
             host: 'myhost',
             _overrideMethodGroups: {
@@ -119,7 +119,7 @@ describe('ApifierClient', () => {
             },
         });
 
-        return apifierClient
+        return apifyClient
             .group1
             .method1()
             .then(
@@ -129,7 +129,7 @@ describe('ApifierClient', () => {
     });
 
     it('should be possible to use with callbacks', (done) => {
-        const apifierClient = new ApifierClient({
+        const apifyClient = new ApifyClient({
             protocol: 'http',
             host: 'myhost',
             _overrideMethodGroups: {
@@ -139,7 +139,7 @@ describe('ApifierClient', () => {
             },
         });
 
-        apifierClient
+        apifyClient
             .group1
             .method1({}, (error, response) => {
                 expect(error).to.be.eql(null);
@@ -149,7 +149,7 @@ describe('ApifierClient', () => {
     });
 
     it('should be possible handle errors when used with callbacks', (done) => {
-        const apifierClient = new ApifierClient({
+        const apifyClient = new ApifyClient({
             protocol: 'http',
             host: 'myhost',
             _overrideMethodGroups: {
@@ -159,7 +159,7 @@ describe('ApifierClient', () => {
             },
         });
 
-        apifierClient
+        apifyClient
             .group1
             .method1({}, (error, response) => {
                 expect(error.message).to.be.eql('my-error');
@@ -178,7 +178,7 @@ describe('ApifierClient', () => {
             .withArgs(Promise, expected)
             .returns(Promise.resolve());
 
-        const apifierClient = new ApifierClient({
+        const apifyClient = new ApifyClient({
             protocol: 'http',
             host: 'myhost',
             _overrideMethodGroups: {
@@ -188,7 +188,7 @@ describe('ApifierClient', () => {
             },
         });
 
-        return apifierClient
+        return apifyClient
             .group1
             .method1()
             .then(() => requestPromiseMock.restore());

@@ -1,13 +1,13 @@
-# apifier-client-js [![Build Status](https://travis-ci.org/Apifier/apifier-client-js.svg)](https://travis-ci.org/Apifier/apifier-client-js) [![npm version](https://badge.fury.io/js/apifier.svg)](http://badge.fury.io/js/apifier)
+# apifier-client-js [![Build Status](https://travis-ci.org/Apifier/apifier-client-js.svg)](https://travis-ci.org/Apifier/apify-client-js) [![npm version](https://badge.fury.io/js/apifier.svg)](http://badge.fury.io/js/apifier)
 
-Apifier Client for JavaScript
+Apify Client for JavaScript
 
 This package is still a work in progress, stay tuned.
 
 ## Installation
 
 ```bash
-npm install apifier-clieng --save
+npm install apify-client --save
 ```
 
 ## Usage
