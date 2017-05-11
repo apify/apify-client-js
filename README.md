@@ -1,4 +1,4 @@
-# apifier-client-js [![Build Status](https://travis-ci.org/Apifier/apifier-client-js.svg)](https://travis-ci.org/Apifier/apify-client-js) [![npm version](https://badge.fury.io/js/apify-client.svg)](http://badge.fury.io/js/apify-client)
+# apify-client-js [![Build Status](https://travis-ci.org/Apifier/apify-client-js.svg)](https://travis-ci.org/Apifier/apify-client-js) [![npm version](https://badge.fury.io/js/apify-client.svg)](http://badge.fury.io/js/apify-client)
 
 Apify Client for JavaScript
 
