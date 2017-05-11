@@ -15,7 +15,8 @@
     "url": "https://www.apifier.com"
   },
   "contributors": [
-    "Jan Curn <jan@apifier.com>"
+    "Jan Curn <jan@apifier.com>",
+    "Marek Trunkát <marek@apifier.com>"
   ],
   "license": "Apache-2.0",
   "repository": {
