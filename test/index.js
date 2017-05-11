@@ -1,8 +1,8 @@
 import sinon from 'sinon';
 import _ from 'underscore';
 import { expect } from 'chai';
-import * as utils from '../src/utils';
-import ApifierClient, { getDefaultOptions } from '../src';
+import * as utils from '../build/utils';
+import ApifierClient, { getDefaultOptions } from '../build';
 
 const APIFIER_INSTANCE_KEYS = ['acts', 'crawlers', 'keyValueStores', 'setOptions'];
 

@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import request from 'request';
 import { expect } from 'chai';
-import * as utils from '../src/utils';
+import * as utils from '../build/utils';
 
 describe('utils.objectToQueryString()', () => {
     it('should create correct query string out of a plain object', () => {

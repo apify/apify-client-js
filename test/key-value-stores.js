@@ -1,9 +1,9 @@
 import sinon from 'sinon';
 import _ from 'underscore';
 import { expect } from 'chai';
-import * as utils from '../src/utils';
-import ApifierClient from '../src';
-import { BASE_PATH } from '../src/key-value-stores';
+import * as utils from '../build/utils';
+import ApifierClient from '../build';
+import { BASE_PATH } from '../build/key-value-stores';
 
 const options = {
     protocol: 'http',
