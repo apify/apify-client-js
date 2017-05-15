@@ -23,7 +23,7 @@ export default {
         method: 'DELETE',
     }),
 
-    // TODO: return proper content types
+    // TODO: return proper content types, the return value should be null if record not available
     getRecord: (requestPromise, { baseUrl, storeId, recordKey }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
         json: true,
