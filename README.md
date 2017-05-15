@@ -25,9 +25,9 @@ const apifyClient = new ApifyClient({
 const store = await apifyClient.keyValueStores.getOrCreateStore({ storeName: 'my-store' });
 apifyClient.setOptions({ storeId: store._id });
 await apifyClient.keyValueStores.putRecord({
-	recordKey: 'foo',
-	body: 'bar',
-	contentType: 'text/plain',
+    recordKey: 'foo',
+    body: 'bar',
+    contentType: 'text/plain',
 });
 const body = await apifyClient.keyValueStores.getRecord({ recordKey: 'foo' });
 const keys = await apifyClient.keyValueStores.getRecordsKeys();
@@ -57,25 +57,25 @@ const options = { crawlerId: 'DNjkhrkjnri' };
 
 // Awaited promise
 try {
-	const crawler = await apifyClient.crawlers.getCrawler(options);
+    const crawler = await apifyClient.crawlers.getCrawler(options);
 
-	// Do something crawler ...
+    // Do something crawler ...
 } catch (err) {
-	// Do something with error ...
+    // Do something with error ...
 }
 
 // Promise
 apifyClient.crawlers.getCrawler(options)
-	.then((crawler) => {
-		// Do something crawler ...
-	})
-	.catch((err) => {
-		// Do something with error ...
-	});
-	
+    .then((crawler) => {
+        // Do something crawler ...
+    })
+    .catch((err) => {
+        // Do something with error ...
+    });
+
 // Callback
 apifyClient.crawlers.getCrawler(options, (err, crawler) => {
-	// Do something with error and crawler ...
+    // Do something with error and crawler ...
 });
 ```
 
