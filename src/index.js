@@ -42,7 +42,7 @@ const ApifyClient = function (options = {}) {
         if (typeof Promise === 'function') {
             instanceOpts.promise = Promise;
         } else {
-            throw new Error('"options.promise" parameter is required when native Promise is not available');
+            throw new Error('The "options.promise" parameter is required when native Promise is not available.');
         }
     }
 

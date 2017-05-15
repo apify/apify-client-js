@@ -23,11 +23,13 @@ export default {
         method: 'DELETE',
     }),
 
+    // TODO: return proper content types
     getRecord: (requestPromise, { baseUrl, storeId, recordKey }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
         json: true,
         method: 'GET',
-    }),
+    })
+    .then(body => ({ body, contentType: 'text/plain' })),
 
     putRecord: (requestPromise, { baseUrl, storeId, recordKey, body, contentType }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
