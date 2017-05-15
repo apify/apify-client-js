@@ -29,7 +29,7 @@ await apifyClient.keyValueStores.putRecord({
     body: 'bar',
     contentType: 'text/plain',
 });
-const body = await apifyClient.keyValueStores.getRecord({ recordKey: 'foo' });
+const record = await apifyClient.keyValueStores.getRecord({ recordKey: 'foo' });
 const keys = await apifyClient.keyValueStores.getRecordsKeys();
 await apifyClient.keyValueStores.deleteRecord({ recordKey: 'foo' });
 
@@ -40,7 +40,6 @@ apifyClient.setOptions({ crawlerId: 'DNjkhrkjnri' });
 const execution = await apifyClient.crawlers.startCrawler();
 
 // Acts
-
 const act = await apifyClient.acts.getAct({ actId: 'kjnjknDDNkl' });
 apifyClient.setOptions({ actId: 'kjnjknDDNkl' });
 const build = await apifyClient.acts.buildAct();
