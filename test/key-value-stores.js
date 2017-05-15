@@ -187,13 +187,17 @@ describe('Key value store', () => {
             const recordKey = 'some-key';
             const storeId = 'some-id';
             const apifyClient = new ApifyClient(options);
-            const expected = 'sometext';
+            const body = 'sometext';
+            const expected = {
+                body,
+                contentType: 'text/plain', // TODO: finish this !!!!
+            };
 
             requestExpectCall({
                 json: true,
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
-            }, expected);
+            }, body);
 
             return apifyClient
                 .keyValueStores
