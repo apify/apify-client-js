@@ -24,6 +24,8 @@ export default {
     }),
 
     // TODO: return proper content types, the return value should be null if record not available
+    // TODO: On error, this function (and all others) must throw,
+    //       now it only returns e.g. { type: 'RECORD_NOT_FOUND', message: 'Store was not found.' }
     getRecord: (requestPromise, { baseUrl, storeId, recordKey }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
         json: true,
