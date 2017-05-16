@@ -64,6 +64,10 @@ const ApifyClient = function (options = {}) {
                 if (!instanceOpts[key]) throw new Error(`"options.${key}" parameter is required`);
             });
 
+            // TODO: what's the point of having separate protocol/host/port/basePath?
+            //       IMHO it's too complicated. The only relevant use case is it to enable testing on dev/staging,
+            //       but this complicates config files or I need to parse the base URL before passing it to ApifyClient.
+            //       please use simple 'baseUrl' in options, that's it
             // eslint-disable-next-line prefer-template
             mergedOpts.baseUrl = mergedOpts.protocol
                                + '://'
