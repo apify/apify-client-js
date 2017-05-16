@@ -68,6 +68,7 @@ const ApifyClient = function (options = {}) {
             //       IMHO it's too complicated. The only relevant use case is it to enable testing on dev/staging,
             //       but this complicates config files or I need to parse the base URL before passing it to ApifyClient.
             //       please use simple 'baseUrl' in options, that's it
+            //       (see https://github.com/Apifier/apifier-sdk-js/commit/b5d7db11954207c0f0adbfa668488312a44398a2)
             // eslint-disable-next-line prefer-template
             mergedOpts.baseUrl = mergedOpts.protocol
                                + '://'
