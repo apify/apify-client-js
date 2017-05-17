@@ -26,6 +26,9 @@ export default {
     // TODO: return proper content types, the return value should be null if record not available
     // TODO: On error, this function (and all others) must throw,
     //       now it only returns e.g. { type: 'RECORD_NOT_FOUND', message: 'Store was not found.' }
+    // TODO: also, we should throw an error if a required parameter is missing,
+    //       e.g. when I had "key" instead of "recordKey", then I received RECORD_NOT_FOUND,
+    //       it would be more user friendly to receive Exception "Required parameter is missing"
     getRecord: (requestPromise, { baseUrl, storeId, recordKey }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
         json: true,
