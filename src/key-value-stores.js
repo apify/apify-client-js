@@ -29,6 +29,8 @@ export default {
     // TODO: also, we should throw an error if a required parameter is missing,
     //       e.g. when I had "key" instead of "recordKey", then I received RECORD_NOT_FOUND,
     //       it would be more user friendly to receive Exception "Required parameter is missing"
+    //       (btw "key" would be better than "recordKey", considering putRecord is using
+    //       simple names such as "body", "contentType", ...
     getRecord: (requestPromise, { baseUrl, storeId, recordKey }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
         json: true,
