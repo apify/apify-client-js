@@ -29,6 +29,17 @@ export const requestPromise = (PromisesDependency, options) => {
         request[method](options, (error, response, body) => {
             if (error) return reject(error);
 
+            if (response.statusCode >= 300) {
+                let message;
+
+                if (body.type && body.message) message = `[${body.type}] ${body.message}`;
+                else if (body.type) message = body.type;
+                else if (body.message) message = body.message;
+                else message = 'Request failed';
+
+                reject(new Error(message));
+            }
+
             resolve(body);
         });
     });

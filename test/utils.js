@@ -50,7 +50,7 @@ describe('utils.requestPromise()', () => {
             });
     });
 
-    it('works as expected when request fails', () => {
+    it('works as expected when request returns an error', () => {
         const method = 'POST';
         const opts = { method, foo: 'bar' };
 
@@ -67,6 +67,27 @@ describe('utils.requestPromise()', () => {
                 throw new Error('Error not catched!!!');
             }, (err) => {
                 expect(err.message).to.be.eql('some-error');
+                stub.restore();
+            });
+    });
+
+    it('works as expected when response contains error code', () => {
+        const method = 'POST';
+        const opts = { method, foo: 'bar' };
+
+        const stub = sinon
+            .stub(request, method.toLowerCase())
+            .callsFake((passedOpts, callback) => {
+                expect(passedOpts).to.be.eql(opts);
+                callback(null, { statusCode: 404 }, { type: 'SOME-TYPE', message: 'Some message' });
+            });
+
+        return utils
+            .requestPromise(Promise, opts)
+            .then(() => {
+                throw new Error('Error not catched!!!');
+            }, (err) => {
+                expect(err.message).to.be.eql('[SOME-TYPE] Some message');
                 stub.restore();
             });
     });
