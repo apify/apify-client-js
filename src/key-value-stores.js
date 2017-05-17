@@ -31,6 +31,7 @@ export default {
     //       it would be more user friendly to receive Exception "Required parameter is missing"
     //       (btw "key" would be better than "recordKey", considering putRecord is using
     //       simple names such as "body", "contentType", ...
+    // TODO: if there is no such record, the function should return null (now it returns undefined)
     getRecord: (requestPromise, { baseUrl, storeId, recordKey }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
         json: true,
