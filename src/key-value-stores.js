@@ -23,15 +23,16 @@ export default {
         method: 'DELETE',
     }),
 
-    // TODO: return proper content types, the return value should be null if record not available
-    // TODO: On error, this function (and all others) must throw,
-    //       now it only returns e.g. { type: 'RECORD_NOT_FOUND', message: 'Store was not found.' }
     getRecord: (requestPromise, { baseUrl, storeId, recordKey }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
         json: true,
         method: 'GET',
-    })
-    .then(body => ({ body, contentType: 'text/plain' })),
+    }, true)
+    .then(({ response, body }) => {
+        const contentType = response.headers['content-type'];
+
+        return { body, contentType };
+    }),
 
     putRecord: (requestPromise, { baseUrl, storeId, recordKey, body, contentType }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
