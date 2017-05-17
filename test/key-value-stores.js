@@ -32,33 +32,8 @@ describe('Key value store', () => {
     });
 
     describe('indentification', () => {
-        it('should work with ENV variable', () => {
-            const storeId = 'some-id';
-
-            requestExpectCall({
-                json: true,
-                method: 'GET',
-                url: `http://myhost:80/mypath${BASE_PATH}/${storeId}`,
-            }, {
-                id: storeId,
-            });
-
-            process.env.APIFY_ACT_RUN_ID = storeId;
-
-            const apifyClient = new ApifyClient(options);
-
-            return apifyClient
-                .keyValueStores
-                .getStore()
-                .then((store) => {
-                    expect(store.id).to.be.eql(storeId);
-                    delete process.env.APIFY_ACT_RUN_ID;
-                });
-        });
-
         it('should work with storeId in default params', () => {
             const storeId = 'some-id-2';
-            const apifyClient = new ApifyClient(Object.assign({}, options, { storeId }));
 
             requestExpectCall({
                 json: true,
@@ -68,18 +43,18 @@ describe('Key value store', () => {
                 id: storeId,
             });
 
+            const apifyClient = new ApifyClient(Object.assign({}, options, { storeId }));
+
             return apifyClient
                 .keyValueStores
                 .getStore()
                 .then((store) => {
                     expect(store.id).to.be.eql(storeId);
-                    delete process.env.APIFY_ACT_RUN_ID;
                 });
         });
 
         it('should work with storeId in method call params', () => {
             const storeId = 'some-id-3';
-            const apifyClient = new ApifyClient(options);
 
             requestExpectCall({
                 json: true,
@@ -88,20 +63,19 @@ describe('Key value store', () => {
             }, {
                 id: storeId,
             });
+
+            const apifyClient = new ApifyClient(options);
 
             return apifyClient
                 .keyValueStores
                 .getStore({ storeId })
                 .then((store) => {
                     expect(store.id).to.be.eql(storeId);
-                    delete process.env.APIFY_ACT_RUN_ID;
                 });
         });
 
         it('should work with user ID and credentials', () => {
             const storeId = 'some-id-4';
-            const apifyClient = new ApifyClient(Object.assign({}, options, { storeId }));
-
             const storeOptions = {
                 userId: 'someid',
                 token: 'sometoken',
@@ -117,6 +91,8 @@ describe('Key value store', () => {
                 id: storeId,
             });
 
+            const apifyClient = new ApifyClient(Object.assign({}, options, { storeId }));
+
             return apifyClient
                 .keyValueStores
                 .getOrCreateStore(storeOptions)
@@ -125,8 +101,6 @@ describe('Key value store', () => {
 
         it('should work with username and credentials', () => {
             const storeId = 'some-id-5';
-            const apifyClient = new ApifyClient(Object.assign({}, options, { storeId }));
-
             const storeOptions = {
                 username: 'someusername',
                 token: 'sometoken',
@@ -142,6 +116,8 @@ describe('Key value store', () => {
                 id: storeId,
             });
 
+            const apifyClient = new ApifyClient(Object.assign({}, options, { storeId }));
+
             return apifyClient
                 .keyValueStores
                 .getOrCreateStore(storeOptions)
@@ -152,7 +128,6 @@ describe('Key value store', () => {
     describe('Key value store REST methods work', () => {
         it('getStore() works', () => {
             const storeId = 'some-id';
-            const apifyClient = new ApifyClient(options);
             const expected = { _id: 'some-id', aaa: 'bbb' };
 
             requestExpectCall({
@@ -160,6 +135,8 @@ describe('Key value store', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}`,
             }, expected);
+
+            const apifyClient = new ApifyClient(options);
 
             return apifyClient
                 .keyValueStores
@@ -170,13 +147,14 @@ describe('Key value store', () => {
 
         it('deleteStore() works', () => {
             const storeId = 'some-id';
-            const apifyClient = new ApifyClient(options);
 
             requestExpectCall({
                 json: true,
                 method: 'DELETE',
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}`,
             });
+
+            const apifyClient = new ApifyClient(options);
 
             return apifyClient
                 .keyValueStores
@@ -186,7 +164,6 @@ describe('Key value store', () => {
         it('getRecord() works', () => {
             const recordKey = 'some-key';
             const storeId = 'some-id';
-            const apifyClient = new ApifyClient(options);
             const body = 'sometext';
             const expected = {
                 body,
@@ -199,6 +176,8 @@ describe('Key value store', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
             }, body);
 
+            const apifyClient = new ApifyClient(options);
+
             return apifyClient
                 .keyValueStores
                 .getRecord({ storeId, recordKey })
@@ -210,7 +189,6 @@ describe('Key value store', () => {
             const storeId = 'some-id';
             const contentType = 'application/json';
             const body = 'someValue';
-            const apifyClient = new ApifyClient(options);
 
             requestExpectCall({
                 body: 'someValue',
@@ -220,6 +198,8 @@ describe('Key value store', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
             });
 
+            const apifyClient = new ApifyClient(options);
+
             return apifyClient
                 .keyValueStores
                 .putRecord({ storeId, recordKey, contentType, body });
@@ -228,13 +208,14 @@ describe('Key value store', () => {
         it('delete() works', () => {
             const recordKey = 'some-key';
             const storeId = 'some-id';
-            const apifyClient = new ApifyClient(options);
 
             requestExpectCall({
                 json: true,
                 method: 'DELETE',
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
             });
+
+            const apifyClient = new ApifyClient(options);
 
             return apifyClient
                 .keyValueStores
@@ -245,7 +226,6 @@ describe('Key value store', () => {
             const storeId = 'some-id';
             const exclusiveStartKey = 'fromKey';
             const count = 10;
-            const apifyClient = new ApifyClient(options);
             const expected = ['key1', 'key2', 'key3'];
 
             requestExpectCall({
@@ -253,6 +233,8 @@ describe('Key value store', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records?exclusiveStartKey=${exclusiveStartKey}&count=${count}`,
             }, expected);
+
+            const apifyClient = new ApifyClient(options);
 
             return apifyClient
                 .keyValueStores

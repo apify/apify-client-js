@@ -8,7 +8,6 @@ export const getDefaultOptions = () => ({
     protocol: 'https',
     host: 'api.apifier.com',
     basePath: '',
-    storeId: process.env.APIFY_ACT_RUN_ID, // When used inside of Act we set default storeId to act's run ID.
 });
 
 /**
