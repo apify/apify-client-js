@@ -3,6 +3,15 @@ import { objectToQueryString } from './utils';
 
 export const BASE_PATH = '/v2/key-value-stores';
 
+// TODO: we should throw an error if a required parameter is missing,
+//       e.g. when I had "key" instead of "recordKey", then I received RECORD_NOT_FOUND,
+//       it would be more user friendly to receive Exception "Required parameter is missing"
+//       (btw "key" would be better than "recordKey", considering putRecord is using
+//       simple names such as "body", "contentType", ...
+// TODO: if there is no record in getRecord, the function should return null (now it returns undefined)
+// TODO: getRecord returns an object if body is valid JSON and content type is 'application/json',
+//       it should only return string (if possible) or buffer
+
 export default {
     getOrCreateStore: (requestPromise, options) => requestPromise({
         url: `${options.baseUrl}${BASE_PATH}`,
@@ -23,21 +32,16 @@ export default {
         method: 'DELETE',
     }),
 
-    // TODO: return proper content types, the return value should be null if record not available
-    // TODO: On error, this function (and all others) must throw,
-    //       now it only returns e.g. { type: 'RECORD_NOT_FOUND', message: 'Store was not found.' }
-    // TODO: also, we should throw an error if a required parameter is missing,
-    //       e.g. when I had "key" instead of "recordKey", then I received RECORD_NOT_FOUND,
-    //       it would be more user friendly to receive Exception "Required parameter is missing"
-    //       (btw "key" would be better than "recordKey", considering putRecord is using
-    //       simple names such as "body", "contentType", ...
-    // TODO: if there is no such record, the function should return null (now it returns undefined)
     getRecord: (requestPromise, { baseUrl, storeId, recordKey }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
         json: true,
         method: 'GET',
-    })
-    .then(body => ({ body, contentType: 'text/plain' })),
+    }, true)
+    .then(({ response, body }) => {
+        const contentType = response.headers['content-type'];
+
+        return { body, contentType };
+    }),
 
     putRecord: (requestPromise, { baseUrl, storeId, recordKey, body, contentType }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,

@@ -17,7 +17,7 @@ export const objectToQueryString = (object) => {
 /**
  * Promised version of request(options) function.
  */
-export const requestPromise = (PromisesDependency, options) => {
+export const requestPromise = (PromisesDependency, options, resolveWithResponse) => {
     const method = _.isString(options.method) ? options.method.toLowerCase() : options.method;
 
     if (!method) throw new Error('"options.method" parameter must be provided');
@@ -29,7 +29,19 @@ export const requestPromise = (PromisesDependency, options) => {
         request[method](options, (error, response, body) => {
             if (error) return reject(error);
 
-            resolve(body);
+            if (response.statusCode >= 300) {
+                let message;
+
+                if (body.type && body.message) message = `[${body.type}] ${body.message}`;
+                else if (body.type) message = body.type;
+                else if (body.message) message = body.message;
+                else message = 'Request failed';
+
+                reject(new Error(message));
+            }
+
+            if (resolveWithResponse) resolve({ body, response });
+            else resolve(body);
         });
     });
 };

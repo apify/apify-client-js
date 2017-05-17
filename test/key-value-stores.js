@@ -15,15 +15,23 @@ const options = {
 describe('Key value store', () => {
     const requestPromiseMock = sinon.mock(utils, 'requestPromise');
 
-    const requestExpectCall = (requestOpts, response) => {
+    const requestExpectCall = (requestOpts, body, response) => {
         if (!_.isObject(requestOpts)) throw new Error('"requestOpts" parameter must be an object!');
         if (!requestOpts.method) throw new Error('"requestOpts.method" parameter is not set!');
 
-        requestPromiseMock
-            .expects('requestPromise')
-            .once()
-            .withArgs(Promise, requestOpts)
-            .returns(Promise.resolve(response));
+        if (response) {
+            requestPromiseMock
+                .expects('requestPromise')
+                .once()
+                .withArgs(Promise, requestOpts, true)
+                .returns(Promise.resolve({ body, response }));
+        } else {
+            requestPromiseMock
+                .expects('requestPromise')
+                .once()
+                .withArgs(Promise, requestOpts)
+                .returns(Promise.resolve(body));
+        }
     };
 
     after(() => {
@@ -165,16 +173,17 @@ describe('Key value store', () => {
             const recordKey = 'some-key';
             const storeId = 'some-id';
             const body = 'sometext';
+            const response = { headers: { 'content-type': 'text/plain' } };
             const expected = {
                 body,
-                contentType: 'text/plain', // TODO: finish this !!!!
+                contentType: 'text/plain',
             };
 
             requestExpectCall({
                 json: true,
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
-            }, body);
+            }, body, response);
 
             const apifyClient = new ApifyClient(options);
 
