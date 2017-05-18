@@ -7,6 +7,9 @@ export const BASE_PATH = '/v2/key-value-stores';
 //       it would be more user friendly to receive Exception "Required parameter is missing"
 //       (btw "key" would be better than "recordKey", considering putRecord is using
 //       simple names such as "body", "contentType", ...
+// TODO: if there is no record in getRecord, the function should return null (now it returns undefined)
+// TODO: getRecord returns an object if body is valid JSON and content type is 'application/json',
+//       it should only return string (if possible) or buffer
 
 export default {
     getOrCreateStore: (requestPromise, options) => requestPromise({
