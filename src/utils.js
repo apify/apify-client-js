@@ -2,19 +2,6 @@ import request from 'request';
 import _ from 'underscore';
 
 /**
- * Parses simple map { a: 'aa', b: 'bb' } to query string ?a=aa&b=bb.
- */
-export const objectToQueryString = (object) => {
-    const query = _.chain(object)
-                   .mapObject((val, key) => `${encodeURIComponent(key)}=${encodeURIComponent(val)}`)
-                   .toArray()
-                   .value()
-                   .join('&');
-
-    return query ? `?${query}` : '';
-};
-
-/**
  * Promised version of request(options) function.
  */
 export const requestPromise = (PromisesDependency, options, resolveWithResponse) => {

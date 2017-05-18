@@ -1,5 +1,4 @@
 import _ from 'underscore';
-import { objectToQueryString } from './utils';
 
 export const BASE_PATH = '/v2/key-value-stores';
 
@@ -8,6 +7,9 @@ export const BASE_PATH = '/v2/key-value-stores';
 //       it would be more user friendly to receive Exception "Required parameter is missing"
 //       (btw "key" would be better than "recordKey", considering putRecord is using
 //       simple names such as "body", "contentType", ...
+// TODO: if there is no record in getRecord, the function should return null (now it returns undefined)
+// TODO: getRecord returns an object if body is valid JSON and content type is 'application/json',
+//       it should only return string (if possible) or buffer
 
 export default {
     getOrCreateStore: (requestPromise, options) => requestPromise({
@@ -29,10 +31,11 @@ export default {
         method: 'DELETE',
     }),
 
+    // TODO: Ensure that body is null or body or buffer
     getRecord: (requestPromise, { baseUrl, storeId, recordKey }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
-        json: true,
         method: 'GET',
+        json: false,
     }, true)
     .then(({ response, body }) => {
         const contentType = response.headers['content-type'];
@@ -40,11 +43,12 @@ export default {
         return { body, contentType };
     }),
 
-    putRecord: (requestPromise, { baseUrl, storeId, recordKey, body, contentType }) => requestPromise({
+    // TODO: check that body is buffer or string, ...
+    putRecord: (requestPromise, { baseUrl, storeId, recordKey, body, contentType = 'text/plain' }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
-        json: true,
         method: 'PUT',
         body,
+        json: false,
         headers: {
             'Content-Type': contentType,
         },
@@ -59,11 +63,16 @@ export default {
     // TODO: add pagination
     getRecordsKeys: (requestPromise, options) => {
         const { baseUrl, storeId, exclusiveStartKey, count } = options;
-        const queryString = objectToQueryString({ exclusiveStartKey, count });
+        const query = {};
+
+        if (exclusiveStartKey) query.exclusiveStartKey = exclusiveStartKey;
+        if (count) query.count = count;
+
         const requestOpts = {
-            url: `${baseUrl}${BASE_PATH}/${storeId}/records${queryString}`,
+            url: `${baseUrl}${BASE_PATH}/${storeId}/records`,
             json: true,
             method: 'GET',
+            qs: query,
         };
 
         return requestPromise(requestOpts).then(items => ({ items }));

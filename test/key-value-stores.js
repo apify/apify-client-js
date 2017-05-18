@@ -180,7 +180,7 @@ describe('Key value store', () => {
             };
 
             requestExpectCall({
-                json: true,
+                json: false,
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
             }, body, response);
@@ -202,7 +202,7 @@ describe('Key value store', () => {
             requestExpectCall({
                 body: 'someValue',
                 headers: { 'Content-Type': 'application/json' },
-                json: true,
+                json: false,
                 method: 'PUT',
                 url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records/${recordKey}`,
             });
@@ -240,7 +240,8 @@ describe('Key value store', () => {
             requestExpectCall({
                 json: true,
                 method: 'GET',
-                url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records?exclusiveStartKey=${exclusiveStartKey}&count=${count}`,
+                qs: { count, exclusiveStartKey },
+                url: `http://myhost:80/mypath${BASE_PATH}/${storeId}/records`,
             }, expected);
 
             const apifyClient = new ApifyClient(options);
