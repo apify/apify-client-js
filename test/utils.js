@@ -3,32 +3,6 @@ import request from 'request';
 import { expect } from 'chai';
 import * as utils from '../build/utils';
 
-describe('utils.objectToQueryString()', () => {
-    it('should create correct query string out of a plain object', () => {
-        const obj = {
-            val1: 'something',
-            val2: 'else',
-        };
-
-        expect(utils.objectToQueryString(obj)).to.be.eql('?val1=something&val2=else');
-    });
-
-    it('should encode URI components', () => {
-        const obj = {
-            val1: 'something+else',
-            'val&?/': 'ěščřžýá',
-        };
-
-        expect(utils.objectToQueryString(obj)).to.be.eql('?val1=something%2Belse&val%26%3F%2F=%C4%9B%C5%A1%C4%8D%C5%99%C5%BE%C3%BD%C3%A1');
-    });
-
-    it('handles empty args', () => {
-        expect(utils.objectToQueryString({})).to.be.eql('');
-        expect(utils.objectToQueryString(null)).to.be.eql('');
-        expect(utils.objectToQueryString(undefined)).to.be.eql('');
-    });
-});
-
 describe('utils.requestPromise()', () => {
     it('works as expected when request succeeds', () => {
         const method = 'DELETE';
