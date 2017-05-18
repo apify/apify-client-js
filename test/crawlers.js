@@ -45,22 +45,25 @@ describe('Crawlers', () => {
         requestPromiseMock.restore();
     });
 
-    describe('Getting list of crawlers', () => {
+    describe('List crawlers', () => {
         it('should throw if token is not provided', () => {
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
-            return expect(crawlerClient.listCrawlers.bind(crawlerClient, { userId: credentials.userId })).to.throw();
+            return expect(crawlerClient.listCrawlers.bind(crawlerClient, { userId: credentials.userId }))
+                .to.throw('Missing required parameter: token');
         });
 
         it('should throw if userId is not Provided', () => {
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
-            return expect(crawlerClient.listCrawlers.bind(crawlerClient, { token: credentials.token })).to.throw();
+            return expect(crawlerClient.listCrawlers.bind(crawlerClient, { token: credentials.token }))
+                .to.throw('Missing required parameter: userId');
         });
 
         it('should be able to use default userId/token', () => {
             requestExpectCall({
                 json: true,
                 method: 'GET',
-                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers?token=${credentials.token}`,
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers`,
+                qs: { token: credentials.token },
             });
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -72,7 +75,8 @@ describe('Crawlers', () => {
             requestExpectCall({
                 json: true,
                 method: 'GET',
-                url: `http://myhost:80/mypath${BASE_PATH}/userIdParameter/crawlers?token=tokenParameter`,
+                url: `http://myhost:80/mypath${BASE_PATH}/userIdParameter/crawlers`,
+                qs: { token: 'tokenParameter' },
             });
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -124,7 +128,8 @@ describe('Crawlers', () => {
             requestExpectCall({
                 json: true,
                 method: 'GET',
-                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers?token=${credentials.token}`,
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers`,
+                qs: { token: credentials.token },
             }, [].concat(crawlersInResponse));
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -132,6 +137,97 @@ describe('Crawlers', () => {
             return crawlerClient.listCrawlers().then((crawlers) => {
                 expect(crawlers).to.deep.equal(crawlersInResponse);
             });
+        });
+    });
+
+    describe('Start Execution', () => {
+        it('should throw if crawler parameter is missing', () => {
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+            return expect(crawlerClient.startCrawler.bind(crawlerClient)).to.throw('Missing required parameter: crawler');
+        });
+
+        it('should throw if token parameter is missing', () => {
+            const crawlerClient = new ApifyClient(basicOptions).crawlers;
+            return expect(crawlerClient.startCrawler.bind(crawlerClient, { crawler: 'dummyCrawler' })).to.throw('Missing required parameter: token');
+        });
+
+        it('should call the right url', () => {
+            requestExpectCall({
+                json: true,
+                method: 'POST',
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/execute`,
+                qs: { token: credentials.token },
+            });
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient.startCrawler({ crawler: 'dummyCrawler' });
+        });
+
+        it('should forward tag and wait parameters', () => {
+            requestExpectCall({
+                json: true,
+                method: 'POST',
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/execute`,
+                qs: { token: credentials.token, tag: 'dummyTag', wait: 30 },
+            });
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient.startCrawler({ crawler: 'dummyCrawler', tag: 'dummyTag', wait: 30 });
+        });
+
+        it('should return what API returns', () => {
+            const apiResponse = {
+                _id: 'bmqzTAPKHcYKGg9B6',
+                actId: 'CwNxxSNdBYw7NWLjb',
+                startedAt: '2017-05-18T12:36:35.833Z',
+                finishedAt: null,
+                status: 'RUNNING',
+            };
+
+            requestExpectCall({
+                json: true,
+                method: 'POST',
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/execute`,
+                qs: { token: credentials.token },
+            }, Object.assign({}, apiResponse));
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient.startCrawler({ crawler: 'dummyCrawler' }).then((execution) => {
+                expect(execution).to.deep.equal(apiResponse);
+            });
+        });
+
+        it('should pass body parameters', () => {
+            requestExpectCall({
+                json: true,
+                method: 'POST',
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/execute`,
+                qs: { token: credentials.token },
+                body: {
+                    timeout: 300,
+                    customData: { a: 'b' },
+                },
+            });
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient.startCrawler({ crawler: 'dummyCrawler', timeout: 300, customData: { a: 'b' } });
+        });
+
+        it('should not pass invalid body parameters', () => {
+            requestExpectCall({
+                json: true,
+                method: 'POST',
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/execute`,
+                qs: { token: credentials.token },
+            });
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient.startCrawler({ crawler: 'dummyCrawler', invalidParam: 300 });
         });
     });
 });
