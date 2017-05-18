@@ -1,6 +1,6 @@
 {
   "name": "apify-client",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Apifier API client for JavaScript",
   "main": "build/index.js",
   "keywords": [
@@ -34,7 +34,9 @@
     "build": "babel src --out-dir build",
     "test": "npm run build && mocha --compilers js:babel-core/register --recursive",
     "test-cov": "npm run build && babel-node node_modules/isparta/bin/isparta cover --report html --report text node_modules/.bin/_mocha",
-    "prepare": "npm run build && TEST_BABEL_BUILD=1 npm test && npm run lint",
+    "prepare": "npm run build",
+    "prepublishOnly": "TEST_BABEL_BUILD=1 npm test && npm run lint",
+    "postpublish": "PACKAGE_VERSION=$(node -pe \"require('./package.json').version\"); git tag v${PACKAGE_VERSION}; git push origin v${PACKAGE_VERSION}",
     "clean": "rm -rf build",
     "lint": "npm run build && eslint src test"
   },
