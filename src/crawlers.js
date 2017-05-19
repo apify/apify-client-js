@@ -80,4 +80,16 @@ export default {
 
         return requestPromise(requestParams);
     },
+
+    getExecutionDetails: (requestPromise, options) => {
+        if (!options.executionId) {
+            throw new Error('Missing required parameter: executionId');
+        }
+
+        return requestPromise({
+            url: `${options.baseUrl}${BASE_PATH}/execs/${options.executionId}`,
+            json: true,
+            method: 'GET',
+        });
+    },
 };

@@ -230,4 +230,33 @@ describe('Crawlers', () => {
             return crawlerClient.startCrawler({ crawler: 'dummyCrawler', invalidParam: 300 });
         });
     });
+
+    describe('Get Execution Details', () => {
+        it('should throw if executionId is not provided', () => {
+            const crawlerClient = new ApifyClient().crawlers;
+            return expect(crawlerClient.getExecutionDetails.bind(crawlerClient)).to.throw('Missing required parameter: executionId');
+        });
+
+        it('should return what API returns', () => {
+            const apiResponse = {
+                _id: 'br9CKmk457',
+                actId: 'i6tjys5XNh',
+                startedAt: '2015-10-29T07:34:24.202Z',
+                finishedAt: 'null',
+                status: 'RUNNING',
+            };
+
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `http://myhost:80/mypath${BASE_PATH}/execs/dummyExecution`,
+            }, Object.assign({}, apiResponse));
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient.getExecutionDetails({ executionId: 'dummyExecution' }).then((execution) => {
+                expect(execution).to.deep.equal(apiResponse);
+            });
+        });
+    });
 });
