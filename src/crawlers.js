@@ -92,4 +92,22 @@ export default {
             method: 'GET',
         });
     },
+
+    getExecutionResults: (requestPromise, options) => {
+        if (!options.executionId) {
+            throw new Error('Missing required parameter: executionId');
+        }
+
+        const requestParams = {
+            url: `${options.baseUrl}${BASE_PATH}/execs/${options.executionId}/results`,
+            json: true,
+            method: 'GET',
+        };
+        const queryString = _.pick(options, 'format', 'simplified', 'offset', 'limit', 'desc', 'attachment', 'delimiter', 'bom');
+        if (!_.isEmpty(queryString)) {
+            requestParams.qs = queryString;
+        }
+
+        return requestPromise(requestParams);
+    },
 };

@@ -252,11 +252,103 @@ describe('Crawlers', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/execs/dummyExecution`,
             }, Object.assign({}, apiResponse));
 
-            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+            const crawlerClient = new ApifyClient(basicOptions).crawlers;
 
             return crawlerClient.getExecutionDetails({ executionId: 'dummyExecution' }).then((execution) => {
                 expect(execution).to.deep.equal(apiResponse);
             });
+        });
+    });
+
+    describe('Get Execution Results', () => {
+        it('should throw if executionId is not provided', () => {
+            const crawlerClient = new ApifyClient().crawlers;
+            return expect(crawlerClient.getExecutionResults.bind(crawlerClient)).to.throw('Missing required parameter: executionId');
+        });
+
+        it('should return what API returns', () => {
+            const apiResponse =
+                [
+                    {
+                        id: 'ZCdD6lk9ZaIhC9eP',
+                        url: 'https://example.com/example-page',
+                        requestedAt: '2016-11-01T13:57:31.220Z',
+                        uniqueKey: 'https://example.com/example-page',
+                        type: 'StartUrl',
+                        label: null,
+                        referrerId: null,
+                        depth: 0,
+                        loadedUrl: 'https://example.com/example-page',
+                        loadingStartedAt: '2016-11-01T13:57:31.570Z',
+                        loadingFinishedAt: '2016-11-01T13:57:32.818Z',
+                        responseStatus: 200,
+                        responseHeaders: {
+                            'Content-Type': 'text/html; charset=utf-8',
+                            'Content-Length': '145',
+                            Connection: 'keep-alive',
+                            Date: 'Tue, 01 Nov 2016 13:57:32 GMT',
+                            etag: 'W/"91-FFPJvYlWM/wKH5W+kRD+xg"',
+                        },
+                        pageFunctionStartedAt: '2016-11-01T13:57:33.018Z',
+                        pageFunctionFinishedAt: '2016-11-01T13:57:33.019Z',
+                        pageFunctionResult: {
+                            myValue: 'some string extracted from site',
+                        },
+                        downloadedBytes: 145,
+                        storageBytes: 692,
+                        loadErrorCode: null,
+                        isMainFrame: true,
+                        postData: null,
+                        contentType: null,
+                        method: 'GET',
+                        willLoad: true,
+                        errorInfo: '',
+                        interceptRequestData: null,
+                        queuePosition: 'LAST',
+                    },
+                ];
+
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `http://myhost:80/mypath${BASE_PATH}/execs/dummyExecution/results`,
+            }, [].concat(apiResponse));
+
+            const crawlerClient = new ApifyClient(basicOptions).crawlers;
+
+            return crawlerClient.getExecutionResults({ executionId: 'dummyExecution' }).then((executionResults) => {
+                expect(executionResults).to.deep.equal(apiResponse);
+            });
+        });
+
+        it('should put parameters into query string', () => {
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `http://myhost:80/mypath${BASE_PATH}/execs/dummyExecution/results`,
+                qs: {
+                    format: 'csv',
+                    simplified: 1,
+                    offset: 1,
+                    limit: 1,
+                    desc: 1,
+                    attachment: 1,
+                    delimiter: ',',
+                    bom: 0,
+                },
+            });
+
+            const crawlerClient = new ApifyClient(basicOptions).crawlers;
+
+            return crawlerClient.getExecutionResults({ executionId: 'dummyExecution',
+                format: 'csv',
+                simplified: 1,
+                offset: 1,
+                limit: 1,
+                desc: 1,
+                attachment: 1,
+                delimiter: ',',
+                bom: 0 });
         });
     });
 });
