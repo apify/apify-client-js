@@ -16,8 +16,8 @@ npm install apify-client --save
 const ApifyClient = require('apify-client');
 
 // Configuration
-const apifyClient = new ApifyClient({ 
-    userId: 'jklnDMNKLekk', 
+const apifyClient = new ApifyClient({
+    userId: 'jklnDMNKLekk',
     token: 'SNjkeiuoeD443lpod68dk',
 });
 
@@ -34,9 +34,9 @@ const keys = await apifyClient.keyValueStores.getRecordsKeys();
 await apifyClient.keyValueStores.deleteRecord({ recordKey: 'foo' });
 
 // Crawler
-const crawler = await apifyClient.crawlers.getCrawler({ crawlerId: 'DNjkhrkjnri' });
-const execution = await apifyClient.crawlers.startCrawler({ crawlerId: 'DNjkhrkjnri' });
-apifyClient.setOptions({ crawlerId: 'DNjkhrkjnri' });
+const crawler = await apifyClient.crawlers.getCrawler({ crawler: 'DNjkhrkjnri' });
+const execution = await apifyClient.crawlers.startCrawler({ crawler: 'DNjkhrkjnri' });
+apifyClient.setOptions({ crawler: 'DNjkhrkjnri' });
 const execution = await apifyClient.crawlers.startCrawler();
 
 // Acts
@@ -52,7 +52,7 @@ const run = await apifyClient.acts.runAct();
 Every method can be used as either **promise** or with **callback**. If your Node version supports await/async then you can await promise result.
 
 ```javascript
-const options = { crawlerId: 'DNjkhrkjnri' };
+const options = { crawler: 'DNjkhrkjnri' };
 
 // Awaited promise
 try {
@@ -90,4 +90,3 @@ apifyClient.crawlers.getCrawler(options, (err, crawler) => {
 ## License
 
 Apache 2.0
-
