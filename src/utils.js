@@ -19,6 +19,12 @@ export const requestPromise = (PromisesDependency, options, resolveWithResponse)
             if (response.statusCode >= 300) {
                 let message;
 
+                // TODO: this doesn't work because body might be a string, not an object parsed from JSON
+                // BTW the exception should be of type ApifyError and contain all error details such as:
+                // { message: "Record was not found",
+                //   type: "RECORD_NOT_FOUND",
+                //   status: 404 }
+                // so that the users can work with the errors.
                 if (body.type && body.message) message = `[${body.type}] ${body.message}`;
                 else if (body.type) message = body.type;
                 else if (body.message) message = body.message;

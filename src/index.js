@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import { requestPromise } from './utils';
 import * as acts from './acts';
-import * as crawlers from './crawlers';
+import crawlers from './crawlers';
 import keyValueStores from './key-value-stores';
 
 export const getDefaultOptions = () => ({
