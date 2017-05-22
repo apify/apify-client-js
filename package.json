@@ -36,7 +36,7 @@
     "test-cov": "npm run build && babel-node node_modules/isparta/bin/isparta cover --report html --report text node_modules/.bin/_mocha",
     "prepare": "npm run build",
     "prepublishOnly": "TEST_BABEL_BUILD=1 npm test && npm run lint",
-    "postpublish": "PACKAGE_VERSION=$(node -pe \"require('./package.json').version\"); git tag v${PACKAGE_VERSION}; git push origin v${PACKAGE_VERSION}",
+    "postpublish": "PACKAGE_VERSION=$(node -pe \"require('./package.json').version\"); git push; git tag v${PACKAGE_VERSION}; git push origin v${PACKAGE_VERSION}",
     "clean": "rm -rf build",
     "lint": "npm run build && eslint src test"
   },
