@@ -21,13 +21,13 @@ else
 fi
 
 echo "Pushing to git ..."
-echo "git push"
+git push
 
 echo "Publishing version ${PACKAGE_VERSION} with tag \"${NPM_TAG}\" ..."
-echo "npm publish --tag $NPM_TAG"
+npm publish --tag $NPM_TAG
 
 echo "Tagging git with ${GIT_TAG} ..."
-echo "git tag ${GIT_TAG}"
-echo "git push origin ${GIT_TAG}"
+git tag ${GIT_TAG}
+git push origin ${GIT_TAG}
 
 echo "Done."
