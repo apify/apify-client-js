@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import ApifyError, { APIFY_ERROR_NAME } from '../build/apify_error';
 
 describe('ApifyError', () => {
-    it('should correctly handle all the informations', () => {
+    it('should correctly handle all the information', () => {
         try {
             throw new ApifyError('SOME_CODE', 'Some message.', { foo: 'bar' });
         } catch (err) {
