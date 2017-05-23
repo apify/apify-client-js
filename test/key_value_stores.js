@@ -3,7 +3,7 @@ import _ from 'underscore';
 import { expect } from 'chai';
 import * as utils from '../build/utils';
 import ApifyClient from '../build';
-import { BASE_PATH } from '../build/key-value-stores';
+import { BASE_PATH } from '../build/key_value_stores';
 
 const options = {
     protocol: 'http',

@@ -6,7 +6,7 @@ import {
     REQUEST_FAILED_ERROR_TYPE,
     REQUEST_FAILED_ERROR_MESSAGE,
     INVALID_PARAMETER_ERROR_TYPE,
-} from '../build/apify-error';
+} from '../build/apify_error';
 import * as utils from '../build/utils';
 
 describe('utils.safeJsonParse()', () => {

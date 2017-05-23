@@ -4,7 +4,7 @@ import ApifyError, {
     INVALID_PARAMETER_ERROR_TYPE,
     REQUEST_FAILED_ERROR_TYPE,
     REQUEST_FAILED_ERROR_MESSAGE,
-} from './apify-error';
+} from './apify_error';
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 const EXP_BACKOFF_MILLIS = 500;

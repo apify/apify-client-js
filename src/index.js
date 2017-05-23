@@ -2,7 +2,7 @@ import _ from 'underscore';
 import { requestPromise } from './utils';
 import * as acts from './acts';
 import crawlers from './crawlers';
-import keyValueStores from './key-value-stores';
+import keyValueStores from './key_value_stores';
 
 export const getDefaultOptions = () => ({
     protocol: 'https',
