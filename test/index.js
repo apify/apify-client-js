@@ -2,9 +2,9 @@ import sinon from 'sinon';
 import _ from 'underscore';
 import { expect } from 'chai';
 import * as utils from '../build/utils';
-import ApifyClient, { getDefaultOptions } from '../build';
+import ApifyClient from '../build';
 
-const APIFY_INSTANCE_KEYS = ['acts', 'crawlers', 'keyValueStores', 'setOptions'];
+const APIFY_INSTANCE_KEYS = ['acts', 'crawlers', 'keyValueStores', 'setOptions', 'getDefaultOptions'];
 
 describe('ApifyClient', () => {
     it('should be possible to initiate it both with and without "new"', () => {
@@ -16,19 +16,7 @@ describe('ApifyClient', () => {
     });
 
     it('should correctly set all options', () => {
-        const defaultOpts = getDefaultOptions();
         const instanceOpts = { storeId: 'abc123', host: 'host-overriden', basePath: 'base-path-123' };
-        const callOpts = { port: 999, basePath: 'base-path-overriden', recordKey: 'some-key' };
-
-        const expected = Object.assign({}, defaultOpts, instanceOpts, callOpts);
-
-        // eslint-disable-next-line prefer-template
-        expected.baseUrl = expected.protocol
-                         + '://'
-                         + expected.host
-                         + (expected.port ? `:${expected.port}` : '')
-                         + expected.basePath;
-        expected.promise = Promise;
 
         instanceOpts._overrideMethodGroups = {
             group1: {
@@ -38,6 +26,17 @@ describe('ApifyClient', () => {
 
         const apifyClient = new ApifyClient(instanceOpts);
 
+        const defaultOpts = apifyClient.getDefaultOptions();
+        const callOpts = { port: 999, basePath: 'base-path-overriden', recordKey: 'some-key' };
+        const expected = Object.assign({}, defaultOpts, instanceOpts, callOpts);
+
+        // eslint-disable-next-line prefer-template
+        expected.baseUrl = expected.protocol
+                         + '://'
+                         + expected.host
+                         + (expected.port ? `:${expected.port}` : '')
+                         + expected.basePath;
+        expected.promise = Promise;
 
         return apifyClient
             .group1

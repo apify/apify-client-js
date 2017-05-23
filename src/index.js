@@ -4,11 +4,21 @@ import * as acts from './acts';
 import crawlers from './crawlers';
 import keyValueStores from './key-value-stores';
 
-export const getDefaultOptions = () => ({
+const getDefaultOptions = () => ({
     protocol: 'https',
     host: 'api.apifier.com',
     basePath: '',
 });
+
+/**
+ * IMPORTANT:
+ *
+ * This file MUST contain only one export which is default export of Apify Client.
+ * Otherwise it would not get exported under require('apify-client') but ugly
+ * require('apify-client').default instead.
+ *
+ * See: https://github.com/59naga/babel-plugin-add-module-exports
+ */
 
 /**
  * Each property is a plain object of methods.
@@ -97,6 +107,9 @@ const ApifyClient = function (options = {}) {
             instanceOpts[key] = val;
         });
     };
+
+    // This helper function is used in unit tests.
+    this.getDefaultOptions = getDefaultOptions;
 };
 
 export default ApifyClient;
