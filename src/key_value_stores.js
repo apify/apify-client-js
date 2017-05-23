@@ -36,7 +36,8 @@ export default {
         url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
         method: 'GET',
         json: false,
-    }, true)
+        resolveWithResponse: true,
+    })
     .then(({ response, body }) => {
         const contentType = response.headers['content-type'];
 
