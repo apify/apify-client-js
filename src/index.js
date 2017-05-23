@@ -108,6 +108,11 @@ const ApifyClient = function (options = {}) {
         });
     };
 
+    // Add getOptions() method to enable users to fetch current settings.
+    this.getOptions = () => {
+        return _.clone(instanceOpts);
+    };
+
     // This helper function is used in unit tests.
     this.getDefaultOptions = getDefaultOptions;
 };
