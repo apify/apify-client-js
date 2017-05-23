@@ -32,11 +32,10 @@
   ],
   "scripts": {
     "build": "babel src --out-dir build",
-    "test": "npm run build && mocha --compilers js:babel-core/register --recursive",
+    "test": "npm run build && mocha --timeout 5000 --compilers js:babel-core/register --recursive",
     "test-cov": "npm run build && babel-node node_modules/isparta/bin/isparta cover --report html --report text node_modules/.bin/_mocha",
     "prepare": "npm run build",
     "prepublishOnly": "TEST_BABEL_BUILD=1 npm test && npm run lint",
-    "postpublish": "PACKAGE_VERSION=$(node -pe \"require('./package.json').version\"); git push; git tag v${PACKAGE_VERSION}; git push origin v${PACKAGE_VERSION}",
     "clean": "rm -rf build",
     "lint": "npm run build && eslint src test"
   },
@@ -48,6 +47,7 @@
     "babel-cli": "^6.6.5",
     "babel-core": "^6.1.21",
     "babel-eslint": "^7.2.2",
+    "babel-plugin-add-module-exports": "^0.2.1",
     "babel-preset-es2015": "^6.1.18",
     "babel-preset-stage-0": "^6.1.18",
     "chai": "^3.4.1",

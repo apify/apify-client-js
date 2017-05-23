@@ -3,7 +3,7 @@ import _ from 'underscore';
 import { expect } from 'chai';
 import * as utils from '../build/utils';
 import ApifyClient from '../build';
-import { BASE_PATH } from '../build/key-value-stores';
+import { BASE_PATH } from '../build/key_value_stores';
 
 const options = {
     protocol: 'http',
@@ -19,19 +19,14 @@ describe('Key value store', () => {
         if (!_.isObject(requestOpts)) throw new Error('"requestOpts" parameter must be an object!');
         if (!requestOpts.method) throw new Error('"requestOpts.method" parameter is not set!');
 
-        if (response) {
-            requestPromiseMock
-                .expects('requestPromise')
-                .once()
-                .withArgs(Promise, requestOpts, true)
-                .returns(Promise.resolve({ body, response }));
-        } else {
-            requestPromiseMock
-                .expects('requestPromise')
-                .once()
-                .withArgs(Promise, requestOpts)
-                .returns(Promise.resolve(body));
-        }
+        const expectedRequestOpts = response ? Object.assign({}, requestOpts, { resolveWithResponse: true }) : requestOpts;
+        const output = response ? { body, response } : body;
+
+        requestPromiseMock
+            .expects('requestPromise')
+            .once()
+            .withArgs(Promise, expectedRequestOpts)
+            .returns(Promise.resolve(output));
     };
 
     after(() => {
