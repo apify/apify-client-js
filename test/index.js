@@ -209,4 +209,20 @@ describe('ApifyClient', () => {
             .method1()
             .then(() => requestPromiseMock.restore());
     });
+
+    it('should remove trailing forward slash from baseUrl', () => {
+        const apifyClient = new ApifyClient({
+            baseUrl: 'something/',
+            _overrideMethodGroups: {
+                group1: {
+                    method1: (requestPromise, options) => Promise.resolve(options.baseUrl),
+                },
+            },
+        });
+
+        return apifyClient
+            .group1
+            .method1()
+            .then(baseUrl => expect(baseUrl).to.be.eql('something'));
+    });
 });
