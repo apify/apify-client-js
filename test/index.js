@@ -179,7 +179,13 @@ describe('ApifyClient', () => {
 
     it('should passed preconfigured utils.requestPromise to each method', () => {
         const requestPromiseMock = sinon.mock(utils, 'requestPromise');
-        const expected = { foo: 'bar', promise: Promise };
+        const expected = {
+            promise: Promise,
+            method: 'get',
+            url: 'http://example.com',
+            expBackOffMillis: 999,
+            expBackOffMaxRepeats: 99,
+        };
 
         requestPromiseMock
             .expects('requestPromise')
@@ -188,11 +194,13 @@ describe('ApifyClient', () => {
             .returns(Promise.resolve());
 
         const apifyClient = new ApifyClient({
-            protocol: 'http',
-            host: 'myhost',
+            baseUrl: 'https://api.apifier.com',
+            foo: 'this-wont-got-passed-to-requestPromise',
+            expBackOffMillis: 999,
+            expBackOffMaxRepeats: 99,
             _overrideMethodGroups: {
                 group1: {
-                    method1: requestPromise => requestPromise(expected),
+                    method1: requestPromise => requestPromise({ method: 'get', url: 'http://example.com' }),
                 },
             },
         });
