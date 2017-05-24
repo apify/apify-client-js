@@ -6,10 +6,7 @@ import ApifyClient from '../build';
 import { BASE_PATH } from '../build/crawlers';
 
 const basicOptions = {
-    protocol: 'http',
-    host: 'myhost',
-    basePath: '/mypath',
-    port: 80,
+    baseUrl: 'http://myhost:80/mypath',
 };
 
 const credentials = {

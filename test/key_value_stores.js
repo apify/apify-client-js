@@ -6,10 +6,7 @@ import ApifyClient from '../build';
 import { BASE_PATH } from '../build/key_value_stores';
 
 const options = {
-    protocol: 'http',
-    host: 'myhost',
-    basePath: '/mypath',
-    port: 80,
+    baseUrl: 'http://myhost:80/mypath',
 };
 
 describe('Key value store', () => {
