@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import * as utils from '../build/utils';
 import ApifyClient from '../build';
 
-const APIFY_INSTANCE_KEYS = ['acts', 'crawlers', 'keyValueStores', 'setOptions', 'getDefaultOptions'];
+const APIFY_INSTANCE_KEYS = ['acts', 'crawlers', 'keyValueStores', 'setOptions', 'getOptions', 'getDefaultOptions'];
 
 describe('ApifyClient', () => {
     it('should be possible to initiate it both with and without "new"', () => {
@@ -76,6 +76,35 @@ describe('ApifyClient', () => {
                         expect(anotherBaseUrl2).to.be.eql('http://something-2.com/api-2');
                     });
             });
+    });
+
+    it('apifyClient.getOptions() works', () => {
+        const origOpts = {
+            protocol: 'http',
+            host: 'myhost-1',
+            basePath: '/mypath-1',
+            port: 80,
+        };
+        const apifyClient = new ApifyClient(origOpts);
+
+        // Simplest usage
+        const gotOpts = apifyClient.getOptions();
+        expect(origOpts).to.be.eql(_.pick(gotOpts, _.keys(origOpts)));
+
+        // Updating the returned object must have no effect
+        gotOpts.protocol = 'ftp';
+        gotOpts.host = 'bad host';
+        gotOpts.basePath = 'bad path';
+        gotOpts.port = 1234;
+        const gotOpts2 = apifyClient.getOptions();
+        expect(origOpts).to.be.eql(_.pick(gotOpts2, _.keys(origOpts)));
+
+        // It should work event when setOptions() are called
+        apifyClient.setOptions({ protocol: 'https' });
+        const gotOpts3 = apifyClient.getOptions();
+        const origOpts2 = _.clone(origOpts);
+        origOpts2.protocol = 'https';
+        expect(origOpts2).to.be.eql(_.pick(gotOpts3, _.keys(origOpts2)));
     });
 
     it('should be possible to use with promises', () => {
