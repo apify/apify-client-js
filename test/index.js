@@ -80,10 +80,8 @@ describe('ApifyClient', () => {
 
     it('apifyClient.getOptions() works', () => {
         const origOpts = {
-            protocol: 'http',
-            host: 'myhost-1',
-            basePath: '/mypath-1',
-            port: 80,
+            foo: 'bar',
+            foo2: 'bar2',
         };
         const apifyClient = new ApifyClient(origOpts);
 
@@ -92,19 +90,14 @@ describe('ApifyClient', () => {
         expect(origOpts).to.be.eql(_.pick(gotOpts, _.keys(origOpts)));
 
         // Updating the returned object must have no effect
-        gotOpts.protocol = 'ftp';
-        gotOpts.host = 'bad host';
-        gotOpts.basePath = 'bad path';
-        gotOpts.port = 1234;
+        gotOpts.foo = 'newValue';
         const gotOpts2 = apifyClient.getOptions();
         expect(origOpts).to.be.eql(_.pick(gotOpts2, _.keys(origOpts)));
 
         // It should work event when setOptions() are called
-        apifyClient.setOptions({ protocol: 'https' });
+        apifyClient.setOptions({ foo2: 'newValue2' });
         const gotOpts3 = apifyClient.getOptions();
-        const origOpts2 = _.clone(origOpts);
-        origOpts2.protocol = 'https';
-        expect(origOpts2).to.be.eql(_.pick(gotOpts3, _.keys(origOpts2)));
+        expect(gotOpts3.foo2).to.be.eql('newValue2');
     });
 
     it('should be possible to use with promises', () => {
@@ -186,20 +179,28 @@ describe('ApifyClient', () => {
 
     it('should passed preconfigured utils.requestPromise to each method', () => {
         const requestPromiseMock = sinon.mock(utils, 'requestPromise');
-        const expected = { foo: 'bar' };
+        const expected = {
+            promise: Promise,
+            method: 'get',
+            url: 'http://example.com',
+            expBackOffMillis: 999,
+            expBackOffMaxRepeats: 99,
+        };
 
         requestPromiseMock
             .expects('requestPromise')
             .once()
-            .withArgs(Promise, expected)
+            .withArgs(expected)
             .returns(Promise.resolve());
 
         const apifyClient = new ApifyClient({
-            protocol: 'http',
-            host: 'myhost',
+            baseUrl: 'https://api.apifier.com',
+            foo: 'this-wont-got-passed-to-requestPromise',
+            expBackOffMillis: 999,
+            expBackOffMaxRepeats: 99,
             _overrideMethodGroups: {
                 group1: {
-                    method1: requestPromise => requestPromise(expected),
+                    method1: requestPromise => requestPromise({ method: 'get', url: 'http://example.com' }),
                 },
             },
         });
