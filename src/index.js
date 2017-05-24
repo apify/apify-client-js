@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import { requestPromise } from './utils';
+import { requestPromise, REQUEST_PROMISE_OPTIONS } from './utils';
 import * as acts from './acts';
 import crawlers from './crawlers';
 import keyValueStores from './key_value_stores';
@@ -55,8 +55,6 @@ const ApifyClient = function (options = {}) {
         }
     }
 
-    const preconfiguredRequest = _.partial(requestPromise, instanceOpts.promise);
-
     /**
      * This decorator does:
      * - extends "options" parameter with values from default options and from ApifyClient instance options
@@ -85,7 +83,11 @@ const ApifyClient = function (options = {}) {
                                + (mergedOpts.port ? `:${mergedOpts.port}` : '')
                                + mergedOpts.basePath;
 
-            const promise = method(preconfiguredRequest, mergedOpts);
+            const preconfiguredRequestPromise = (requestPromiseOptions) => {
+                return requestPromise(Object.assign({}, _.pick(mergedOpts, REQUEST_PROMISE_OPTIONS), requestPromiseOptions));
+            };
+
+            const promise = method(preconfiguredRequestPromise, mergedOpts);
 
             if (!callback) return promise;
 

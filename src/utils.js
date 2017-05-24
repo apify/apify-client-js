@@ -10,6 +10,8 @@ const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 const EXP_BACKOFF_MILLIS = 500;
 const EXP_BACKOFF_MAX_REPEATS = 8; // 64s
 
+export const REQUEST_PROMISE_OPTIONS = ['promise', 'expBackOffMillis', 'expBackOffMaxRepeats'];
+
 /**
  * Parses a JSON string. If string is not JSON then catches an error and returns empty object.
  */
@@ -57,10 +59,15 @@ export const newApifyErrorFromResponse = (statusCode, body) => {
  * - expBackOffMillis - initial wait time before next repeat in a case of error
  * - expBackOffMaxRepeats - maximal number of repeats
  */
-export const requestPromise = (PromisesDependency, options, iteration = 0) => {
+export const requestPromise = (options, iteration = 0) => {
+    const PromisesDependency = options.promise;
     const expBackOffMillis = options.expBackOffMillis || EXP_BACKOFF_MILLIS;
     const expBackOffMaxRepeats = options.expBackOffMaxRepeats || EXP_BACKOFF_MAX_REPEATS;
     const method = _.isString(options.method) ? options.method.toLowerCase() : options.method;
+
+    if (typeof PromisesDependency !== 'function') {
+        throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, '"options.promise" parameter must be provided');
+    }
 
     if (!method) {
         throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, '"options.method" parameter must be provided');
@@ -88,9 +95,9 @@ export const requestPromise = (PromisesDependency, options, iteration = 0) => {
 
                 const waitMillis = _.random(expBackOffMillis, expBackOffMillis * 2);
                 const repeatCall = () => {
-                    const newOptions = Object.assign({}, options, { expBackOffMillis: expBackOffMillis * 2 });
+                    const nextCallOptions = Object.assign({}, options, { expBackOffMillis: expBackOffMillis * 2 });
 
-                    requestPromise(PromisesDependency, newOptions, iteration + 1).then(resolve, reject);
+                    requestPromise(nextCallOptions, iteration + 1).then(resolve, reject);
                 };
 
                 return setTimeout(repeatCall, waitMillis);

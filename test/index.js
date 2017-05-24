@@ -198,12 +198,12 @@ describe('ApifyClient', () => {
 
     it('should passed preconfigured utils.requestPromise to each method', () => {
         const requestPromiseMock = sinon.mock(utils, 'requestPromise');
-        const expected = { foo: 'bar' };
+        const expected = { foo: 'bar', promise: Promise };
 
         requestPromiseMock
             .expects('requestPromise')
             .once()
-            .withArgs(Promise, expected)
+            .withArgs(expected)
             .returns(Promise.resolve());
 
         const apifyClient = new ApifyClient({
