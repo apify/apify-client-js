@@ -110,4 +110,17 @@ export default {
 
         return requestPromise(requestParams);
     },
+
+    _resurrectExecution: (requestPromise, { baseUrl, executionId }) => requestPromise({
+        url: `${baseUrl}${BASE_PATH}/execs/${executionId}/resurrect`,
+        json: true,
+        method: 'POST',
+    }),
+
+    _enqueuePage: (requestPromise, { baseUrl, executionId, urls }) => requestPromise({
+        url: `${baseUrl}${BASE_PATH}/execs/${executionId}/enqueue`,
+        json: true,
+        method: 'POST',
+        body: urls,
+    }),
 };
