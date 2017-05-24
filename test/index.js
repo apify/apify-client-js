@@ -80,10 +80,8 @@ describe('ApifyClient', () => {
 
     it('apifyClient.getOptions() works', () => {
         const origOpts = {
-            protocol: 'http',
-            host: 'myhost-1',
-            basePath: '/mypath-1',
-            port: 80,
+            foo: 'bar',
+            foo2: 'bar2',
         };
         const apifyClient = new ApifyClient(origOpts);
 
@@ -92,19 +90,14 @@ describe('ApifyClient', () => {
         expect(origOpts).to.be.eql(_.pick(gotOpts, _.keys(origOpts)));
 
         // Updating the returned object must have no effect
-        gotOpts.protocol = 'ftp';
-        gotOpts.host = 'bad host';
-        gotOpts.basePath = 'bad path';
-        gotOpts.port = 1234;
+        gotOpts.foo = 'newValue';
         const gotOpts2 = apifyClient.getOptions();
         expect(origOpts).to.be.eql(_.pick(gotOpts2, _.keys(origOpts)));
 
         // It should work event when setOptions() are called
-        apifyClient.setOptions({ protocol: 'https' });
+        apifyClient.setOptions({ foo2: 'newValue2' });
         const gotOpts3 = apifyClient.getOptions();
-        const origOpts2 = _.clone(origOpts);
-        origOpts2.protocol = 'https';
-        expect(origOpts2).to.be.eql(_.pick(gotOpts3, _.keys(origOpts2)));
+        expect(gotOpts3.foo2).to.be.eql('newValue2');
     });
 
     it('should be possible to use with promises', () => {
