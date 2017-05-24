@@ -67,11 +67,11 @@ const ApifyClient = function (options = {}) {
         return (callOpts, callback) => {
             const mergedOpts = Object.assign({}, instanceOpts, callOpts);
 
-            // Remove traling forward slash from baseUrl.
-            if (mergedOpts.baseUrl.substr(-1) === '/') mergedOpts.baseUrl = mergedOpts.baseUrl.slice(0, -1);
-
             // Check that all required parameters are set.
             if (!instanceOpts.baseUrl) throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, 'The "options.baseUrl" parameter is required');
+
+            // Remove traling forward slash from baseUrl.
+            if (mergedOpts.baseUrl.substr(-1) === '/') mergedOpts.baseUrl = mergedOpts.baseUrl.slice(0, -1);
 
             const promise = method(preconfiguredRequest, mergedOpts);
 
