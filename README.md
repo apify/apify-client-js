@@ -47,6 +47,20 @@ const run = await apifyClient.acts.runAct();
 
 ```
 
+## Global configuration
+
+You can set global parameters when you are creating instance of ApifyClient:
+
+```javascript
+const apifyClient = new ApifyClient({
+    userId: 'jklnDMNKLekk', // Your user ID at apifier.com
+    token: 'SNjkeiuoeD443lpod68dk', // Your API token
+    promise: Promise, // Promises dependency to use (default is native Promise)
+    expBackOffMillis: 500, // Wait time in milliseconds before making a new request in a case of error
+    expBackOffMaxRepeats: 8, // Maximum number of repeats in a case of error
+});
+```
+
 ## Promises, await, callbacks
 
 Every method can be used as either **promise** or with **callback**. If your Node version supports await/async then you can await promise result.

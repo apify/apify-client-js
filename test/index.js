@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import * as utils from '../build/utils';
 import ApifyClient from '../build';
 
-const APIFY_INSTANCE_KEYS = ['acts', 'crawlers', 'keyValueStores', 'setOptions', 'getDefaultOptions'];
+const APIFY_INSTANCE_KEYS = ['acts', 'crawlers', 'keyValueStores', 'setOptions', 'getOptions', 'getDefaultOptions'];
 
 describe('ApifyClient', () => {
     it('should be possible to initiate it both with and without "new"', () => {
@@ -16,7 +16,7 @@ describe('ApifyClient', () => {
     });
 
     it('should correctly set all options', () => {
-        const instanceOpts = { storeId: 'abc123', host: 'host-overriden', basePath: 'base-path-123' };
+        const instanceOpts = { storeId: 'someStore', crawlerId: 'someCrawler', actId: 'someAct' };
 
         instanceOpts._overrideMethodGroups = {
             group1: {
@@ -27,15 +27,9 @@ describe('ApifyClient', () => {
         const apifyClient = new ApifyClient(instanceOpts);
 
         const defaultOpts = apifyClient.getDefaultOptions();
-        const callOpts = { port: 999, basePath: 'base-path-overriden', recordKey: 'some-key' };
+        const callOpts = { storeId: 'newStore', recordKey: 'someKey' };
         const expected = Object.assign({}, defaultOpts, instanceOpts, callOpts);
 
-        // eslint-disable-next-line prefer-template
-        expected.baseUrl = expected.protocol
-                         + '://'
-                         + expected.host
-                         + (expected.port ? `:${expected.port}` : '')
-                         + expected.basePath;
         expected.promise = Promise;
 
         return apifyClient
@@ -52,18 +46,12 @@ describe('ApifyClient', () => {
         };
 
         const apifyClient1 = new ApifyClient({
-            protocol: 'http',
-            host: 'myhost-1',
-            basePath: '/mypath-1',
-            port: 80,
+            baseUrl: 'http://something-1.com/api-1',
             _overrideMethodGroups: methods,
         }, methods);
 
         const apifyClient2 = new ApifyClient({
-            protocol: 'http',
-            host: 'myhost-2',
-            basePath: '/mypath-2',
-            port: 80,
+            baseUrl: 'http://something-2.com/api-2',
             _overrideMethodGroups: methods,
         }, methods);
 
@@ -73,10 +61,10 @@ describe('ApifyClient', () => {
                 apifyClient2.group1.method1(),
             ])
             .then(([baseUrl1, baseUrl2]) => {
-                expect(baseUrl1).to.be.eql('http://myhost-1:80/mypath-1');
-                expect(baseUrl2).to.be.eql('http://myhost-2:80/mypath-2');
+                expect(baseUrl1).to.be.eql('http://something-1.com/api-1');
+                expect(baseUrl2).to.be.eql('http://something-2.com/api-2');
 
-                apifyClient1.setOptions({ host: 'my-very-new-host' });
+                apifyClient1.setOptions({ baseUrl: 'http://something-3.com/api-3' });
 
                 return Promise
                     .all([
@@ -84,10 +72,32 @@ describe('ApifyClient', () => {
                         apifyClient2.group1.method1(),
                     ])
                     .then(([anotherBaseUrl1, anotherBaseUrl2]) => {
-                        expect(anotherBaseUrl1).to.be.eql('http://my-very-new-host:80/mypath-1');
-                        expect(anotherBaseUrl2).to.be.eql('http://myhost-2:80/mypath-2');
+                        expect(anotherBaseUrl1).to.be.eql('http://something-3.com/api-3');
+                        expect(anotherBaseUrl2).to.be.eql('http://something-2.com/api-2');
                     });
             });
+    });
+
+    it('apifyClient.getOptions() works', () => {
+        const origOpts = {
+            foo: 'bar',
+            foo2: 'bar2',
+        };
+        const apifyClient = new ApifyClient(origOpts);
+
+        // Simplest usage
+        const gotOpts = apifyClient.getOptions();
+        expect(origOpts).to.be.eql(_.pick(gotOpts, _.keys(origOpts)));
+
+        // Updating the returned object must have no effect
+        gotOpts.foo = 'newValue';
+        const gotOpts2 = apifyClient.getOptions();
+        expect(origOpts).to.be.eql(_.pick(gotOpts2, _.keys(origOpts)));
+
+        // It should work event when setOptions() are called
+        apifyClient.setOptions({ foo2: 'newValue2' });
+        const gotOpts3 = apifyClient.getOptions();
+        expect(gotOpts3.foo2).to.be.eql('newValue2');
     });
 
     it('should be possible to use with promises', () => {
@@ -169,20 +179,28 @@ describe('ApifyClient', () => {
 
     it('should passed preconfigured utils.requestPromise to each method', () => {
         const requestPromiseMock = sinon.mock(utils, 'requestPromise');
-        const expected = { foo: 'bar' };
+        const expected = {
+            promise: Promise,
+            method: 'get',
+            url: 'http://example.com',
+            expBackOffMillis: 999,
+            expBackOffMaxRepeats: 99,
+        };
 
         requestPromiseMock
             .expects('requestPromise')
             .once()
-            .withArgs(Promise, expected)
+            .withArgs(expected)
             .returns(Promise.resolve());
 
         const apifyClient = new ApifyClient({
-            protocol: 'http',
-            host: 'myhost',
+            baseUrl: 'https://api.apifier.com',
+            foo: 'this-wont-got-passed-to-requestPromise',
+            expBackOffMillis: 999,
+            expBackOffMaxRepeats: 99,
             _overrideMethodGroups: {
                 group1: {
-                    method1: requestPromise => requestPromise(expected),
+                    method1: requestPromise => requestPromise({ method: 'get', url: 'http://example.com' }),
                 },
             },
         });
@@ -191,5 +209,21 @@ describe('ApifyClient', () => {
             .group1
             .method1()
             .then(() => requestPromiseMock.restore());
+    });
+
+    it('should remove trailing forward slash from baseUrl', () => {
+        const apifyClient = new ApifyClient({
+            baseUrl: 'something/',
+            _overrideMethodGroups: {
+                group1: {
+                    method1: (requestPromise, options) => Promise.resolve(options.baseUrl),
+                },
+            },
+        });
+
+        return apifyClient
+            .group1
+            .method1()
+            .then(baseUrl => expect(baseUrl).to.be.eql('something'));
     });
 });

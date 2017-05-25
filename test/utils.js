@@ -57,7 +57,7 @@ describe('utils.newApifyErrorFromResponse()', () => {
 describe('utils.requestPromise()', () => {
     it('works as expected when request succeeds', () => {
         const method = 'DELETE';
-        const opts = { method, foo: 'bar' };
+        const opts = { method, foo: 'bar', promise: Promise };
         const expectedBody = { foo: 'something', bar: 123 };
 
         const stub = sinon
@@ -68,7 +68,7 @@ describe('utils.requestPromise()', () => {
             });
 
         return utils
-            .requestPromise(Promise, opts)
+            .requestPromise(opts)
             .then((body) => {
                 expect(body).to.be.eql(expectedBody);
                 stub.restore();
@@ -77,7 +77,7 @@ describe('utils.requestPromise()', () => {
 
     it('works as expected with full response when request succeeds', () => {
         const method = 'DELETE';
-        const opts = { method, foo: 'bar', resolveWithResponse: true };
+        const opts = { method, foo: 'bar', resolveWithResponse: true, promise: Promise };
         const expectedResponse = { statusCode: 123, foo: 'bar' };
         const expectedBody = { foo: 'something', bar: 123 };
 
@@ -89,7 +89,7 @@ describe('utils.requestPromise()', () => {
             });
 
         return utils
-            .requestPromise(Promise, opts)
+            .requestPromise(opts)
             .then(({ body, response }) => {
                 expect(body).to.be.eql(expectedBody);
                 expect(response).to.be.eql(expectedResponse);
@@ -99,7 +99,7 @@ describe('utils.requestPromise()', () => {
 
     it('works as expected when request throws an error', () => {
         const method = 'POST';
-        const opts = { method, foo: 'bar' };
+        const opts = { method, foo: 'bar', promise: Promise };
         const errorMsg = 'some-error';
 
         const stub = sinon
@@ -110,7 +110,7 @@ describe('utils.requestPromise()', () => {
             });
 
         return utils
-            .requestPromise(Promise, opts)
+            .requestPromise(opts)
             .then(() => {
                 throw new Error('Error not catched!!!');
             }, (err) => {
@@ -123,7 +123,7 @@ describe('utils.requestPromise()', () => {
 
     it('works as expected when response contains error code and error details', () => {
         const method = 'POST';
-        const opts = { method, foo: 'bar' };
+        const opts = { method, foo: 'bar', promise: Promise };
         const type = 'SOME-TYPE';
         const message = 'Some message';
         const statusCode = 404;
@@ -136,7 +136,7 @@ describe('utils.requestPromise()', () => {
             });
 
         return utils
-            .requestPromise(Promise, opts)
+            .requestPromise(opts)
             .then(() => {
                 throw new Error('Error not catched!!!');
             }, (err) => {
@@ -150,7 +150,7 @@ describe('utils.requestPromise()', () => {
 
     it('works as expected when response contains only error code', () => {
         const method = 'POST';
-        const opts = { method, foo: 'bar' };
+        const opts = { method, foo: 'bar', promise: Promise };
         const statusCode = 404;
 
         const stub = sinon
@@ -161,7 +161,7 @@ describe('utils.requestPromise()', () => {
             });
 
         return utils
-            .requestPromise(Promise, opts)
+            .requestPromise(opts)
             .then(() => {
                 throw new Error('Error not catched!!!');
             }, (err) => {
@@ -177,7 +177,7 @@ describe('utils.requestPromise()', () => {
         let hasFailed = false;
 
         try {
-            utils.requestPromise(Promise, { method: null });
+            utils.requestPromise({ method: null, promise: Promise });
         } catch (err) {
             expect(err.name).to.be.eql(APIFY_ERROR_NAME);
             expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE);
@@ -192,7 +192,7 @@ describe('utils.requestPromise()', () => {
         let hasFailed = false;
 
         try {
-            utils.requestPromise(Promise, { method: 'something' });
+            utils.requestPromise({ method: 'something', promise: Promise });
         } catch (err) {
             expect(err.name).to.be.eql(APIFY_ERROR_NAME);
             expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE);
@@ -203,9 +203,24 @@ describe('utils.requestPromise()', () => {
         expect(hasFailed).to.be.eql(true);
     });
 
+    it('fails when promise parameter is not provided', () => {
+        let hasFailed = false;
+
+        try {
+            utils.requestPromise({ method: 'get' });
+        } catch (err) {
+            expect(err.name).to.be.eql(APIFY_ERROR_NAME);
+            expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE);
+            expect(err.message).to.be.eql('"options.promise" parameter must be provided');
+            hasFailed = true;
+        }
+
+        expect(hasFailed).to.be.eql(true);
+    });
+
     it('supports exponential backoff', () => {
         const method = 'DELETE';
-        const opts = { method, foo: 'bar', expBackOffMillis: 5, expBackOffMaxRepeats: 8 };
+        const opts = { method, foo: 'bar', expBackOffMillis: 5, expBackOffMaxRepeats: 8, promise: Promise };
         const expectedBody = { foo: 'something', bar: 123 };
 
         let iteration = 0;
@@ -225,7 +240,7 @@ describe('utils.requestPromise()', () => {
             });
 
         return utils
-            .requestPromise(Promise, opts)
+            .requestPromise(opts)
             .then((body) => {
                 expect(body).to.be.eql(expectedBody);
                 expect(iteration).to.be.eql(8);
@@ -235,7 +250,7 @@ describe('utils.requestPromise()', () => {
 
     it('supports limit of exponential backoff iterations', () => {
         const method = 'DELETE';
-        const opts = { method, foo: 'bar', expBackOffMillis: 5, expBackOffMaxRepeats: 3 };
+        const opts = { method, foo: 'bar', expBackOffMillis: 5, expBackOffMaxRepeats: 3, promise: Promise };
         const expectedBody = { foo: 'something', bar: 123 };
 
         let iteration = 0;
@@ -255,7 +270,7 @@ describe('utils.requestPromise()', () => {
             });
 
         return utils
-            .requestPromise(Promise, opts)
+            .requestPromise(opts)
             .then(
                 () => { throw new Error('This should fail.'); },
                 (err) => {
