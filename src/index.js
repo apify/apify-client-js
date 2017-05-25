@@ -1,14 +1,23 @@
 import _ from 'underscore';
-import { requestPromise } from './utils';
+import { requestPromise, REQUEST_PROMISE_OPTIONS } from './utils';
 import * as acts from './acts';
 import crawlers from './crawlers';
-import keyValueStores from './key-value-stores';
+import keyValueStores from './key_value_stores';
+import ApifyError, { INVALID_PARAMETER_ERROR_TYPE } from './apify_error';
 
-export const getDefaultOptions = () => ({
-    protocol: 'https',
-    host: 'api.apifier.com',
-    basePath: '',
+const getDefaultOptions = () => ({
+    baseUrl: 'https://api.apifier.com',
 });
+
+/**
+ * IMPORTANT:
+ *
+ * This file MUST contain only one export which is default export of Apify Client.
+ * Otherwise it would not get exported under require('apify-client') but ugly
+ * require('apify-client').default instead.
+ *
+ * See: https://github.com/59naga/babel-plugin-add-module-exports
+ */
 
 /**
  * Each property is a plain object of methods.
@@ -41,11 +50,9 @@ const ApifyClient = function (options = {}) {
         if (typeof Promise === 'function') {
             instanceOpts.promise = Promise;
         } else {
-            throw new Error('The "options.promise" parameter is required when native Promise is not available.');
+            throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, 'The "options.promise" parameter is required when native Promise is not available');
         }
     }
-
-    const preconfiguredRequest = _.partial(requestPromise, instanceOpts.promise);
 
     /**
      * This decorator does:
@@ -59,23 +66,16 @@ const ApifyClient = function (options = {}) {
             const mergedOpts = Object.assign({}, instanceOpts, callOpts);
 
             // Check that all required parameters are set.
-            ['protocol', 'host', 'promise'].forEach((key) => {
-                if (!instanceOpts[key]) throw new Error(`"options.${key}" parameter is required`);
-            });
+            if (!instanceOpts.baseUrl) throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, 'The "options.baseUrl" parameter is required');
 
-            // TODO: what's the point of having separate protocol/host/port/basePath?
-            //       IMHO it's too complicated. The only relevant use case is it to enable testing on dev/staging,
-            //       but this complicates config files or I need to parse the base URL before passing it to ApifyClient.
-            //       please use simple 'baseUrl' in options, that's it
-            //       (see https://github.com/Apifier/apifier-sdk-js/commit/b5d7db11954207c0f0adbfa668488312a44398a2)
-            // eslint-disable-next-line prefer-template
-            mergedOpts.baseUrl = mergedOpts.protocol
-                               + '://'
-                               + mergedOpts.host
-                               + (mergedOpts.port ? `:${mergedOpts.port}` : '')
-                               + mergedOpts.basePath;
+            // Remove traling forward slash from baseUrl.
+            if (mergedOpts.baseUrl.substr(-1) === '/') mergedOpts.baseUrl = mergedOpts.baseUrl.slice(0, -1);
 
-            const promise = method(preconfiguredRequest, mergedOpts);
+            const preconfiguredRequestPromise = (requestPromiseOptions) => {
+                return requestPromise(Object.assign({}, _.pick(mergedOpts, REQUEST_PROMISE_OPTIONS), requestPromiseOptions));
+            };
+
+            const promise = method(preconfiguredRequestPromise, mergedOpts);
 
             if (!callback) return promise;
 
@@ -97,6 +97,14 @@ const ApifyClient = function (options = {}) {
             instanceOpts[key] = val;
         });
     };
+
+    // Add getOptions() method to enable users to fetch current settings.
+    this.getOptions = () => {
+        return _.clone(instanceOpts);
+    };
+
+    // This helper function is used in unit tests.
+    this.getDefaultOptions = getDefaultOptions;
 };
 
 export default ApifyClient;
