@@ -115,8 +115,15 @@ export const requestPromise = (options, iteration = 0) => {
     });
 };
 
-export const checkParameter = (type, input, errorMessage, typeCheckOptions) => {
-    if (!typeCheck(type, input, typeCheckOptions)) {
+/**
+ * Checks that given parameter is of given type and throws ApifyError.
+ *
+ * See: https://github.com/gkz/type-check
+ */
+export const checkParamOrThrow = (type, value, name, errorMessage) => {
+    if (!errorMessage) errorMessage = `Parameter "${name}" of type ${type} must be provided`;
+
+    if (!typeCheck(type, value)) {
         throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, errorMessage);
     }
 };

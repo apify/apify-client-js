@@ -284,13 +284,35 @@ describe('utils.requestPromise()', () => {
     });
 });
 
-describe('utils.checkParameter()', () => {
-    it('works', () => {
-        utils.checkParameter(2, 'Number');
-        utils.checkParameter(2, 'Maybe Number');
-        utils.checkParameter(null, 'Maybe Number');
+describe('utils.checkParamOrThrow()', () => {
+    it('works when type is correct', () => {
+        utils.checkParamOrThrow('Number', 2);
+        utils.checkParamOrThrow('Maybe Number', 2);
+        utils.checkParamOrThrow('Maybe Number', null);
+    });
+
+    it('throws correct error', () => {
+        let error;
+
+        try {
+            utils.checkParamOrThrow('String', 2, 'paramName');
+        } catch (err) {
+            error = err;
+        }
+
+        expect(error.name).to.be.eql(APIFY_ERROR_NAME);
+        expect(error.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE);
+        expect(error.message).to.be.eql('Parameter "paramName" of type String must be provided');
 
 
+        try {
+            utils.checkParamOrThrow('String', 2, 'paramName', 'Error message');
+        } catch (err) {
+            error = err;
+        }
 
+        expect(error.name).to.be.eql(APIFY_ERROR_NAME);
+        expect(error.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE);
+        expect(error.message).to.be.eql('Error message');
     });
 });
