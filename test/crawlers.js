@@ -42,13 +42,13 @@ describe('Crawlers', () => {
         it('should throw if token is not provided', () => {
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
             return expect(crawlerClient.listCrawlers.bind(crawlerClient, { userId: credentials.userId }))
-                .to.throw('Missing required parameter: token');
+                .to.throw('Parameter "token" of type String must be provided');
         });
 
         it('should throw if userId is not Provided', () => {
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
             return expect(crawlerClient.listCrawlers.bind(crawlerClient, { token: credentials.token }))
-                .to.throw('Missing required parameter: userId');
+                .to.throw('Parameter "userId" of type String must be provided');
         });
 
         it('should be able to use default userId/token', () => {
@@ -136,12 +136,13 @@ describe('Crawlers', () => {
     describe('Start Execution', () => {
         it('should throw if crawler parameter is missing', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
-            return expect(crawlerClient.startCrawler.bind(crawlerClient)).to.throw('Missing required parameter: crawler');
+            return expect(crawlerClient.startCrawler.bind(crawlerClient)).to.throw('Parameter "crawler" of type String must be provided');
         });
 
         it('should throw if token parameter is missing', () => {
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
-            return expect(crawlerClient.startCrawler.bind(crawlerClient, { crawler: 'dummyCrawler' })).to.throw('Missing required parameter: token');
+            return expect(crawlerClient.startCrawler.bind(crawlerClient, { crawler: 'dummyCrawler', userId: 'dummyUserId' }))
+                .to.throw('Parameter "token" of type String must be provided');
         });
 
         it('should call the right url', () => {
@@ -227,7 +228,7 @@ describe('Crawlers', () => {
     describe('Get Execution Details', () => {
         it('should throw if executionId is not provided', () => {
             const crawlerClient = new ApifyClient().crawlers;
-            return expect(crawlerClient.getExecutionDetails.bind(crawlerClient)).to.throw('Missing required parameter: executionId');
+            return expect(crawlerClient.getExecutionDetails.bind(crawlerClient)).to.throw('Parameter "executionId" of type String must be provided');
         });
 
         it('should return what API returns', () => {
@@ -256,7 +257,7 @@ describe('Crawlers', () => {
     describe('Get Execution Results', () => {
         it('should throw if executionId is not provided', () => {
             const crawlerClient = new ApifyClient().crawlers;
-            return expect(crawlerClient.getExecutionResults.bind(crawlerClient)).to.throw('Missing required parameter: executionId');
+            return expect(crawlerClient.getExecutionResults.bind(crawlerClient)).to.throw('Parameter "executionId" of type String must be provided');
         });
 
         it('should return what API returns', () => {
