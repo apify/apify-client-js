@@ -21,6 +21,22 @@ export default {
         });
     },
 
+    getCrawlerSettings: (requestPromise, options) => {
+        const { userId, token, crawler } = options;
+
+        checkParamOrThrow('String', userId, 'userId');
+        checkParamOrThrow('String', token, 'token');
+        checkParamOrThrow('String', crawler, 'crawler');
+
+        const queryString = _.pick(options, 'token', 'nosecrets');
+        return requestPromise({
+            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}`,
+            json: true,
+            method: 'GET',
+            qs: queryString,
+        });
+    },
+
     startCrawler: (requestPromise, options) => {
         const { crawler, token, userId } = options;
 
