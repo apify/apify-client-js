@@ -225,6 +225,66 @@ describe('Crawlers', () => {
         });
     });
 
+    describe('Get List of Executions', () => {
+        it('should throw if userId is not provided', () => {
+            const crawlerClient = new ApifyClient(basicOptions).crawlers;
+            return expect(crawlerClient.getListOfExecutions.bind(crawlerClient)).to.throw('Parameter "userId" of type String must be provided');
+        });
+
+        it('should throw if crawler is not provided', () => {
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+            return expect(crawlerClient.getListOfExecutions.bind(crawlerClient)).to.throw('Parameter "crawler" of type String must be provided');
+        });
+
+        it('should return what API returns', () => {
+            const apiResponse = [
+                {
+                    _id: 'br9CKmk457',
+                    actId: 'i6tjys5XNh',
+                    startedAt: '2015-10-29T07:34:24.202Z',
+                    finishedAt: 'null',
+                    status: 'RUNNING',
+                    statusMessage: 'null',
+                    tag: 'my_test_run',
+                    stats: {
+                        downloadedBytes: 74232,
+                        pagesInQueue: 1,
+                        pagesCrawled: 3,
+                        pagesOutputted: 3,
+                        pagesFailed: 0,
+                        pagesCrashed: 0,
+                        totalPageRetries: 0,
+                        storageBytes: 24795,
+                    },
+                    meta: {
+                        source: 'API',
+                        method: 'POST',
+                        clientIp: '1.2.3.4',
+                        userAgent: 'curl/7.43.0',
+                        scheduleId: '3ioW6u35s8g7kHDoE',
+                        scheduledActId: 'vJmysCj4xx98ftgKo',
+                        scheduledAt: '2016-12-22T11:30:00.000Z',
+                    },
+                    detailsUrl: 'https://api.apifier.com/v1/execs/br9CKmk457',
+                    resultsUrl: 'https://api.apifier.com/v1/execs/br9CKmk457/results',
+                },
+            ];
+
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/execs`,
+                qs: { token: credentials.token },
+            }, [].concat(apiResponse));
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient.getListOfExecutions({ crawler: 'dummyCrawler' }).then((execution) => {
+                expect(execution).to.deep.equal(apiResponse);
+            });
+        });
+    });
+
     describe('Get Execution Details', () => {
         it('should throw if executionId is not provided', () => {
             const crawlerClient = new ApifyClient().crawlers;
