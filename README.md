@@ -25,13 +25,13 @@ const apifyClient = new ApifyClient({
 const store = await apifyClient.keyValueStores.getOrCreateStore({ storeName: 'my-store' });
 apifyClient.setOptions({ storeId: store._id });
 await apifyClient.keyValueStores.putRecord({
-    recordKey: 'foo',
+    key: 'foo',
     body: 'bar',
     contentType: 'text/plain',
 });
-const record = await apifyClient.keyValueStores.getRecord({ recordKey: 'foo' });
+const record = await apifyClient.keyValueStores.getRecord({ key: 'foo' });
 const keys = await apifyClient.keyValueStores.getRecordsKeys();
-await apifyClient.keyValueStores.deleteRecord({ recordKey: 'foo' });
+await apifyClient.keyValueStores.deleteRecord({ key: 'foo' });
 
 // Crawler
 const crawler = await apifyClient.crawlers.getCrawler({ crawler: 'DNjkhrkjnri' });

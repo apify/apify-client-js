@@ -1,10 +1,12 @@
 import request from 'request';
 import _ from 'underscore';
+import { typeCheck } from 'type-check';
 import ApifyError, {
     INVALID_PARAMETER_ERROR_TYPE,
     REQUEST_FAILED_ERROR_TYPE,
     REQUEST_FAILED_ERROR_MESSAGE,
 } from './apify_error';
+
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 const EXP_BACKOFF_MILLIS = 500;
@@ -111,4 +113,21 @@ export const requestPromise = (options, iteration = 0) => {
             else resolve(body);
         });
     });
+};
+
+/**
+ * Checks that given parameter is of given type and throws ApifyError.
+ * If errorMessage is not provided then error message is created from name and type of param.
+ *
+ * @param value        string - user entered value of that parameter
+ * @param name         string - parameter name (crawlerId for options.crawlerId)
+ * @param type         string - "String", "Number", ... (see ee: https://github.com/gkz/type-check)
+ * @param errorMessage string - optional error message
+ */
+export const checkParamOrThrow = (value, name, type, errorMessage) => {
+    if (!errorMessage) errorMessage = `Parameter "${name}" of type ${type} must be provided`;
+
+    if (!typeCheck(type, value)) {
+        throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, errorMessage);
+    }
 };

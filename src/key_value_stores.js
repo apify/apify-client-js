@@ -1,69 +1,113 @@
-import _ from 'underscore';
+import { checkParamOrThrow } from './utils';
+import { NOT_FOUND_STATUS_CODE } from './apify_error';
 
 export const BASE_PATH = '/v2/key-value-stores';
 
-// TODO: we should throw an error if a required parameter is missing,
-//       e.g. when I had "key" instead of "recordKey", then I received RECORD_NOT_FOUND,
-//       it would be more user friendly to receive Exception "Required parameter is missing"
-//       (btw "key" would be better than "recordKey", considering putRecord is using
-//       simple names such as "body", "contentType", ...
-// TODO: if there is no record in getRecord, the function should return null (now it returns undefined)
-// TODO: getRecord returns an object if body is valid JSON and content type is 'application/json',
-//       it should only return string (if possible) or buffer
-
 export default {
-    getOrCreateStore: (requestPromise, options) => requestPromise({
-        url: `${options.baseUrl}${BASE_PATH}`,
-        json: true,
-        method: 'POST',
-        body: _.pick(options, 'userId', 'username', 'token', 'storeName'),
-    }),
+    getOrCreateStore: (requestPromise, options) => {
+        const { baseUrl, userId, username, token, storeName } = options;
 
-    getStore: (requestPromise, { baseUrl, storeId }) => requestPromise({
-        url: `${baseUrl}${BASE_PATH}/${storeId}`,
-        json: true,
-        method: 'GET',
-    }),
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(storeName, 'storeName', 'String');
+        checkParamOrThrow(userId || username, null, 'String', 'One of parameters "userId" and "username" of type String must be provided.');
 
-    deleteStore: (requestPromise, { baseUrl, storeId }) => requestPromise({
-        url: `${baseUrl}${BASE_PATH}/${storeId}`,
-        json: true,
-        method: 'DELETE',
-    }),
+        const body = { token, storeName };
+
+        if (userId) body.userId = userId;
+        if (username) body.username = username;
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}`,
+            json: true,
+            method: 'POST',
+            body,
+        });
+    },
+
+    getStore: (requestPromise, { baseUrl, storeId }) => {
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${storeId}`,
+            json: true,
+            method: 'GET',
+        });
+    },
+
+    deleteStore: (requestPromise, { baseUrl, storeId }) => {
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${storeId}`,
+            json: true,
+            method: 'DELETE',
+        });
+    },
 
     // TODO: Ensure that body is null or body or buffer
-    getRecord: (requestPromise, { baseUrl, storeId, recordKey }) => requestPromise({
-        url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
-        method: 'GET',
-        json: false,
-        resolveWithResponse: true,
-    })
-    .then(({ response, body }) => {
-        const contentType = response.headers['content-type'];
+    getRecord: (requestPromise, { baseUrl, storeId, key }) => {
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(key, 'key', 'String');
 
-        return { body, contentType };
-    }),
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
+            method: 'GET',
+            json: false,
+            resolveWithResponse: true,
+        })
+        .then(({ response, body }) => {
+            const contentType = response.headers['content-type'];
+
+            return { body, contentType };
+        })
+        .catch((err) => {
+            if (err.details.statusCode === NOT_FOUND_STATUS_CODE) return null;
+
+            throw err;
+        });
+    },
 
     // TODO: check that body is buffer or string, ...
-    putRecord: (requestPromise, { baseUrl, storeId, recordKey, body, contentType = 'text/plain' }) => requestPromise({
-        url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
-        method: 'PUT',
-        body,
-        json: false,
-        headers: {
-            'Content-Type': contentType,
-        },
-    }),
+    putRecord: (requestPromise, { baseUrl, storeId, key, body, contentType = 'text/plain' }) => {
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(key, 'key', 'String');
+        checkParamOrThrow(contentType, 'contentType', 'String');
 
-    deleteRecord: (requestPromise, { baseUrl, storeId, recordKey }) => requestPromise({
-        url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
-        json: true,
-        method: 'DELETE',
-    }),
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
+            method: 'PUT',
+            body,
+            json: false,
+            headers: {
+                'Content-Type': contentType,
+            },
+        });
+    },
+
+    deleteRecord: (requestPromise, { baseUrl, storeId, key }) => {
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(key, 'key', 'String');
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
+            json: true,
+            method: 'DELETE',
+        });
+    },
 
     // TODO: add pagination
-    getRecordsKeys: (requestPromise, options) => {
-        const { baseUrl, storeId, exclusiveStartKey, count } = options;
+    getRecordsKeys: (requestPromise, { baseUrl, storeId, exclusiveStartKey, count }) => {
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(exclusiveStartKey, 'exclusiveStartKey', 'Maybe String');
+        checkParamOrThrow(count, 'count', 'Maybe Number');
+
         const query = {};
 
         if (exclusiveStartKey) query.exclusiveStartKey = exclusiveStartKey;
