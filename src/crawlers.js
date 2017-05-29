@@ -21,6 +21,21 @@ export default {
         });
     },
 
+    deleteCrawler: (requestPromise, options) => {
+        const { userId, token, crawler } = options;
+
+        checkParamOrThrow('String', userId, 'userId');
+        checkParamOrThrow('String', token, 'token');
+        checkParamOrThrow('String', crawler, 'crawler');
+
+        return requestPromise({
+            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}`,
+            json: true,
+            method: 'DELETE',
+            qs: { token },
+        });
+    },
+
     getCrawlerSettings: (requestPromise, options) => {
         const { userId, token, crawler } = options;
 
@@ -102,13 +117,11 @@ export default {
         checkParamOrThrow('String', executionId, 'executionId');
         checkParamOrThrow('String', token, 'token');
 
-        const queryString = _.pick(options, 'token');
-
         const requestParams = {
             json: true,
             method: 'POST',
             url: `${options.baseUrl}${BASE_PATH}/execs/${executionId}/stop`,
-            qs: queryString,
+            qs: { token },
         };
 
         return requestPromise(requestParams);

@@ -176,8 +176,8 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.getCrawlerSettings({ crawler: 'dummyCrawler' }).then((execution) => {
-                expect(execution).to.deep.equal(apiResponse);
+            return crawlerClient.getCrawlerSettings({ crawler: 'dummyCrawler' }).then((settings) => {
+                expect(settings).to.deep.equal(apiResponse);
             });
         });
 
@@ -192,6 +192,31 @@ describe('Crawlers', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
             return crawlerClient.getCrawlerSettings({ crawler: 'dummyCrawler', nosecrets: 1 });
+        });
+    });
+
+    describe('Delete Crawler', () => {
+        it('should throw if userId is not provided', () => {
+            const crawlerClient = new ApifyClient(basicOptions).crawlers;
+            return expect(crawlerClient.deleteCrawler.bind(crawlerClient)).to.throw('Parameter "userId" of type String must be provided');
+        });
+
+        it('should throw if crawler is not provided', () => {
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+            return expect(crawlerClient.deleteCrawler.bind(crawlerClient)).to.throw('Parameter "crawler" of type String must be provided');
+        });
+
+        it('should return what API returns', () => {
+            requestExpectCall({
+                json: true,
+                method: 'DELETE',
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler`,
+                qs: { token: credentials.token },
+            });
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient.deleteCrawler({ crawler: 'dummyCrawler' });
         });
     });
 
@@ -381,8 +406,8 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.getListOfExecutions({ crawler: 'dummyCrawler' }).then((execution) => {
-                expect(execution).to.deep.equal(apiResponse);
+            return crawlerClient.getListOfExecutions({ crawler: 'dummyCrawler' }).then((executions) => {
+                expect(executions).to.deep.equal(apiResponse);
             });
         });
     });
