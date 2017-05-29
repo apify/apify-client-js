@@ -3,42 +3,6 @@ import _ from 'underscore';
 import { checkParamOrThrow } from './utils';
 
 export const BASE_PATH = '/v1';
-export const CRAWLER_ATTRIBUTES = [
-    'customId',
-    '_id',
-    'comments',
-    'startUrls',
-    'crawlPurls',
-    'pageFunction',
-    'clickableElementsSelector',
-    'interceptRequest',
-    'considerUrlFragment',
-    'loadImages',
-    'loadCss',
-    'injectJQuery',
-    'injectUnderscoreJs',
-    'ignoreRobotsTxt',
-    'skipLoadingFrames',
-    'verboseLog',
-    'disableWebSecurity',
-    'maxCrawledPages',
-    'maxOutputPages',
-    'maxCrawlDepth',
-    'timeout',
-    'resourceTimeout',
-    'pageLoadTimeout',
-    'pageFunctionTimeout',
-    'maxInfiniteScrollHeight',
-    'randomWaitBetweenRequests',
-    'maxCrawledPagesPerSlave',
-    'maxParallelRequests',
-    'customHttpHeaders',
-    'customProxies',
-    'cookies',
-    'cookiesPersistence',
-    'customData',
-    'finishWebhookUrl',
-];
 
 export default {
     listCrawlers: (requestPromise, options) => {
@@ -58,57 +22,54 @@ export default {
     },
 
     createCrawler: (requestPromise, options) => {
-        const { userId, token, crawler } = options;
+        const { userId, token, settings } = options;
 
         checkParamOrThrow(userId, 'userId', 'String');
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(crawler, 'crawler', 'Object');
-        checkParamOrThrow(crawler.customId, 'crawler.customId', 'String');
-
-        const body = _.pick(crawler, CRAWLER_ATTRIBUTES);
+        checkParamOrThrow(settings, 'settings', 'Object');
+        checkParamOrThrow(settings.customId, 'settings.customId', 'String');
 
         const requestParams = {
             json: true,
             method: 'POST',
             url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers`,
             qs: { token },
-            body,
+            body: settings,
         };
 
         return requestPromise(requestParams);
     },
 
     updateCrawler: (requestPromise, options) => {
-        const { userId, token, crawler, crawlerId } = options;
+        const { userId, token, settings, crawlerId } = options;
 
         checkParamOrThrow(userId, 'userId', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(crawlerId, 'crawlerId', 'String');
-        checkParamOrThrow(crawler, 'crawler', 'Object');
-
-        const body = _.pick(crawler, CRAWLER_ATTRIBUTES);
+        checkParamOrThrow(settings, 'settings', 'Object');
 
         const requestParams = {
             json: true,
             method: 'PUT',
             url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawlerId}`,
             qs: { token },
-            body,
+            body: settings,
         };
 
         return requestPromise(requestParams);
     },
 
     getCrawlerSettings: (requestPromise, options) => {
-        const { userId, token, crawler } = options;
+        const { userId, token, crawlerId } = options;
 
         checkParamOrThrow(userId, 'userId', 'String');
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(crawler, 'crawler', 'String');
+        checkParamOrThrow(crawlerId, 'crawlerId', 'String');
 
         const queryString = _.pick(options, 'token', 'nosecrets');
+
         return requestPromise({
-            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}`,
+            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawlerId}`,
             json: true,
             method: 'GET',
             qs: queryString,
@@ -116,14 +77,14 @@ export default {
     },
 
     deleteCrawler: (requestPromise, options) => {
-        const { userId, token, crawler } = options;
+        const { userId, token, crawlerId } = options;
 
         checkParamOrThrow(userId, 'userId', 'String');
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(crawler, 'crawler', 'String');
+        checkParamOrThrow(crawlerId, 'crawlerId', 'String');
 
         return requestPromise({
-            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}`,
+            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawlerId}`,
             json: true,
             method: 'DELETE',
             qs: { token },
@@ -131,23 +92,22 @@ export default {
     },
 
     startExecution: (requestPromise, options) => {
-        const { crawler, token, userId } = options;
+        const { crawlerId, userId, token, settings } = options;
 
         checkParamOrThrow(userId, 'userId', 'String');
-        checkParamOrThrow(crawler, 'crawler', 'String');
         checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(crawlerId, 'crawlerId', 'String');
 
-        const body = _.pick(options, CRAWLER_ATTRIBUTES);
         const queryString = _.pick(options, 'token', 'tag', 'wait');
 
         const requestParams = {
             json: true,
             method: 'POST',
-            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}/execute`,
+            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawlerId}/execute`,
             qs: queryString,
         };
-        if (!_.isEmpty(body)) {
-            requestParams.body = body;
+        if (!_.isEmpty(settings)) {
+            requestParams.body = settings;
         }
 
         return requestPromise(requestParams);
@@ -170,16 +130,16 @@ export default {
     },
 
     getListOfExecutions: (requestPromise, options) => {
-        const { userId, crawler, token } = options;
+        const { userId, crawlerId, token } = options;
 
         checkParamOrThrow(userId, 'userId', 'String');
-        checkParamOrThrow(crawler, 'crawler', 'String');
+        checkParamOrThrow(crawlerId, 'crawlerId', 'String');
         checkParamOrThrow(token, 'token', 'String');
 
         const queryString = _.pick(options, 'token', 'status', 'offset', 'limit', 'desc');
 
         return requestPromise({
-            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}/execs`,
+            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawlerId}/execs`,
             json: true,
             method: 'GET',
             qs: queryString,
@@ -199,16 +159,16 @@ export default {
     },
 
     getLastExecution: (requestPromise, options) => {
-        const { userId, crawler, token } = options;
+        const { userId, crawlerId, token } = options;
 
         checkParamOrThrow(userId, 'userId', 'String');
-        checkParamOrThrow(crawler, 'crawler', 'String');
+        checkParamOrThrow(crawlerId, 'crawlerId', 'String');
         checkParamOrThrow(token, 'token', 'String');
 
         const queryString = _.pick(options, 'token', 'status');
 
         return requestPromise({
-            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}/lastExec`,
+            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawlerId}/lastExec`,
             json: true,
             method: 'GET',
             qs: queryString,
@@ -234,14 +194,14 @@ export default {
     },
 
     getLastExecutionResults: (requestPromise, options) => {
-        const { userId, token, crawler } = options;
+        const { userId, token, crawlerId } = options;
 
         checkParamOrThrow(userId, 'userId', 'String');
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(crawler, 'crawler', 'String');
+        checkParamOrThrow(crawlerId, 'crawlerId', 'String');
 
         const requestParams = {
-            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}/lastExec/results`,
+            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawlerId}/lastExec/results`,
             json: true,
             method: 'GET',
         };

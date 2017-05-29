@@ -141,16 +141,16 @@ describe('Crawlers', () => {
                     .to.throw('Parameter "token" of type String must be provided');
         });
 
-        it('should throw if crawler parameter is missing', () => {
+        it('should throw if settings parameter is missing', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
             return expect(crawlerClient.createCrawler.bind(crawlerClient, {}))
-                    .to.throw('Parameter "crawler" of type Object must be provided');
+                    .to.throw('Parameter "settings" of type Object must be provided');
         });
 
-        it('should throw if crawler.customId parameter is missing', () => {
+        it('should throw if settings.customId parameter is missing', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
-            return expect(crawlerClient.createCrawler.bind(crawlerClient, { crawler: {} }))
-                    .to.throw('Parameter "crawler.customId" of type String must be provided');
+            return expect(crawlerClient.createCrawler.bind(crawlerClient, { settings: {} }))
+                    .to.throw('Parameter "settings.customId" of type String must be provided');
         });
 
         it('should return what API returns', () => {
@@ -180,8 +180,8 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.createCrawler({ crawler: { customId: 'dummyCrawler' } }).then((crawler) => {
-                expect(crawler).to.deep.equal(apiResponse);
+            return crawlerClient.createCrawler({ settings: { customId: 'dummyCrawler' } }).then((settings) => {
+                expect(settings).to.deep.equal(apiResponse);
             });
         });
     });
@@ -193,10 +193,10 @@ describe('Crawlers', () => {
                     .to.throw('Parameter "token" of type String must be provided');
         });
 
-        it('should throw if crawler parameter is missing', () => {
+        it('should throw if settings parameter is missing', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
             return expect(crawlerClient.updateCrawler.bind(crawlerClient, { crawlerId: 'dummyCrawler' }))
-                    .to.throw('Parameter "crawler" of type Object must be provided');
+                    .to.throw('Parameter "settings" of type Object must be provided');
         });
 
         it('should return what API returns', () => {
@@ -226,8 +226,8 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.updateCrawler({ crawlerId: 'dummyCrawler', crawler: { comments: 'dummyComments' } }).then((crawler) => {
-                expect(crawler).to.deep.equal(apiResponse);
+            return crawlerClient.updateCrawler({ crawlerId: 'dummyCrawler', settings: { comments: 'dummyComments' } }).then((settings) => {
+                expect(settings).to.deep.equal(apiResponse);
             });
         });
     });
@@ -238,9 +238,9 @@ describe('Crawlers', () => {
             return expect(crawlerClient.getCrawlerSettings.bind(crawlerClient)).to.throw('Parameter "userId" of type String must be provided');
         });
 
-        it('should throw if crawler is not provided', () => {
+        it('should throw if crawlerId is not provided', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
-            return expect(crawlerClient.getCrawlerSettings.bind(crawlerClient)).to.throw('Parameter "crawler" of type String must be provided');
+            return expect(crawlerClient.getCrawlerSettings.bind(crawlerClient)).to.throw('Parameter "crawlerId" of type String must be provided');
         });
 
         it('should return what API returns', () => {
@@ -275,7 +275,7 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.getCrawlerSettings({ crawler: 'dummyCrawler' }).then((settings) => {
+            return crawlerClient.getCrawlerSettings({ crawlerId: 'dummyCrawler' }).then((settings) => {
                 expect(settings).to.deep.equal(apiResponse);
             });
         });
@@ -290,7 +290,7 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.getCrawlerSettings({ crawler: 'dummyCrawler', nosecrets: 1 });
+            return crawlerClient.getCrawlerSettings({ crawlerId: 'dummyCrawler', nosecrets: 1 });
         });
     });
 
@@ -300,9 +300,9 @@ describe('Crawlers', () => {
             return expect(crawlerClient.deleteCrawler.bind(crawlerClient)).to.throw('Parameter "userId" of type String must be provided');
         });
 
-        it('should throw if crawler is not provided', () => {
+        it('should throw if crawlerId is not provided', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
-            return expect(crawlerClient.deleteCrawler.bind(crawlerClient)).to.throw('Parameter "crawler" of type String must be provided');
+            return expect(crawlerClient.deleteCrawler.bind(crawlerClient)).to.throw('Parameter "crawlerId" of type String must be provided');
         });
 
         it('should return what API returns', () => {
@@ -315,14 +315,14 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.deleteCrawler({ crawler: 'dummyCrawler' });
+            return crawlerClient.deleteCrawler({ crawlerId: 'dummyCrawler' });
         });
     });
 
     describe('Start Execution', () => {
-        it('should throw if crawler parameter is missing', () => {
+        it('should throw if crawlerId parameter is missing', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
-            return expect(crawlerClient.startExecution.bind(crawlerClient)).to.throw('Parameter "crawler" of type String must be provided');
+            return expect(crawlerClient.startExecution.bind(crawlerClient)).to.throw('Parameter "crawlerId" of type String must be provided');
         });
 
         it('should throw if token parameter is missing', () => {
@@ -341,7 +341,7 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.startExecution({ crawler: 'dummyCrawler' });
+            return crawlerClient.startExecution({ crawlerId: 'dummyCrawler' });
         });
 
         it('should forward tag and wait parameters', () => {
@@ -354,7 +354,7 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.startExecution({ crawler: 'dummyCrawler', tag: 'dummyTag', wait: 30 });
+            return crawlerClient.startExecution({ crawlerId: 'dummyCrawler', tag: 'dummyTag', wait: 30 });
         });
 
         it('should return what API returns', () => {
@@ -375,12 +375,12 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.startExecution({ crawler: 'dummyCrawler' }).then((execution) => {
+            return crawlerClient.startExecution({ crawlerId: 'dummyCrawler' }).then((execution) => {
                 expect(execution).to.deep.equal(apiResponse);
             });
         });
 
-        it('should pass body parameters', () => {
+        it('should pass settings parameters', () => {
             requestExpectCall({
                 json: true,
                 method: 'POST',
@@ -394,20 +394,7 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.startExecution({ crawler: 'dummyCrawler', timeout: 300, customData: { a: 'b' } });
-        });
-
-        it('should not pass invalid body parameters', () => {
-            requestExpectCall({
-                json: true,
-                method: 'POST',
-                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/execute`,
-                qs: { token: credentials.token },
-            });
-
-            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
-
-            return crawlerClient.startExecution({ crawler: 'dummyCrawler', invalidParam: 300 });
+            return crawlerClient.startExecution({ crawlerId: 'dummyCrawler', settings: { timeout: 300, customData: { a: 'b' } } });
         });
     });
 
@@ -457,9 +444,9 @@ describe('Crawlers', () => {
             return expect(crawlerClient.getListOfExecutions.bind(crawlerClient)).to.throw('Parameter "userId" of type String must be provided');
         });
 
-        it('should throw if crawler is not provided', () => {
+        it('should throw if crawlerId is not provided', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
-            return expect(crawlerClient.getListOfExecutions.bind(crawlerClient)).to.throw('Parameter "crawler" of type String must be provided');
+            return expect(crawlerClient.getListOfExecutions.bind(crawlerClient)).to.throw('Parameter "crawlerId" of type String must be provided');
         });
 
         it('should return what API returns', () => {
@@ -505,7 +492,7 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.getListOfExecutions({ crawler: 'dummyCrawler' }).then((executions) => {
+            return crawlerClient.getListOfExecutions({ crawlerId: 'dummyCrawler' }).then((executions) => {
                 expect(executions).to.deep.equal(apiResponse);
             });
         });
@@ -546,9 +533,9 @@ describe('Crawlers', () => {
             return expect(crawlerClient.getLastExecution.bind(crawlerClient)).to.throw('Parameter "userId" of type String must be provided');
         });
 
-        it('should throw if crawler is not provided', () => {
+        it('should throw if crawlerId is not provided', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
-            return expect(crawlerClient.getLastExecution.bind(crawlerClient)).to.throw('Parameter "crawler" of type String must be provided');
+            return expect(crawlerClient.getLastExecution.bind(crawlerClient)).to.throw('Parameter "crawlerId" of type String must be provided');
         });
 
         it('should return what API returns', () => {
@@ -571,7 +558,7 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.getLastExecution({ crawler: 'dummyCrawler' }).then((execution) => {
+            return crawlerClient.getLastExecution({ crawlerId: 'dummyCrawler' }).then((execution) => {
                 expect(execution).to.deep.equal(apiResponse);
             });
         });
@@ -675,9 +662,10 @@ describe('Crawlers', () => {
             return expect(crawlerClient.getLastExecutionResults.bind(crawlerClient)).to.throw('Parameter "userId" of type String must be provided');
         });
 
-        it('should throw if crawler is not provided', () => {
+        it('should throw if crawlerId is not provided', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
-            return expect(crawlerClient.getLastExecutionResults.bind(crawlerClient)).to.throw('Parameter "crawler" of type String must be provided');
+            return expect(crawlerClient.getLastExecutionResults.bind(crawlerClient))
+                .to.throw('Parameter "crawlerId" of type String must be provided');
         });
 
         it('should return what API returns', () => {
@@ -731,7 +719,7 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.getLastExecutionResults({ crawler: 'dummyCrawler' }).then((executionResults) => {
+            return crawlerClient.getLastExecutionResults({ crawlerId: 'dummyCrawler' }).then((executionResults) => {
                 expect(executionResults).to.deep.equal(apiResponse);
             });
         });
@@ -746,7 +734,7 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.getLastExecutionResults({ crawler: 'dummyCrawler', status: 'RUNNING' });
+            return crawlerClient.getLastExecutionResults({ crawlerId: 'dummyCrawler', status: 'RUNNING' });
         });
     });
 });
