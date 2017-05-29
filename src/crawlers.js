@@ -92,6 +92,23 @@ export default {
         });
     },
 
+    getLastExecution: (requestPromise, options) => {
+        const { userId, crawler, token } = options;
+
+        checkParamOrThrow('String', userId, 'userId');
+        checkParamOrThrow('String', crawler, 'crawler');
+        checkParamOrThrow('String', token, 'token');
+
+        const queryString = _.pick(options, 'token', 'status');
+
+        return requestPromise({
+            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}/lastExecution`,
+            json: true,
+            method: 'GET',
+            qs: queryString,
+        });
+    },
+
     getExecutionResults: (requestPromise, options) => {
         const { executionId } = options;
 
