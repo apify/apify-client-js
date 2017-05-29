@@ -3,6 +3,42 @@ import _ from 'underscore';
 import { checkParamOrThrow } from './utils';
 
 export const BASE_PATH = '/v1';
+export const CRAWLER_ATTRIBUTES = [
+    'customId',
+    '_id',
+    'comments',
+    'startUrls',
+    'crawlPurls',
+    'pageFunction',
+    'clickableElementsSelector',
+    'interceptRequest',
+    'considerUrlFragment',
+    'loadImages',
+    'loadCss',
+    'injectJQuery',
+    'injectUnderscoreJs',
+    'ignoreRobotsTxt',
+    'skipLoadingFrames',
+    'verboseLog',
+    'disableWebSecurity',
+    'maxCrawledPages',
+    'maxOutputPages',
+    'maxCrawlDepth',
+    'timeout',
+    'resourceTimeout',
+    'pageLoadTimeout',
+    'pageFunctionTimeout',
+    'maxInfiniteScrollHeight',
+    'randomWaitBetweenRequests',
+    'maxCrawledPagesPerSlave',
+    'maxParallelRequests',
+    'customHttpHeaders',
+    'customProxies',
+    'cookies',
+    'cookiesPersistence',
+    'customData',
+    'finishWebhookUrl',
+];
 
 export default {
     listCrawlers: (requestPromise, options) => {
@@ -15,6 +51,22 @@ export default {
 
         return requestPromise({
             url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers`,
+            json: true,
+            method: 'GET',
+            qs: queryString,
+        });
+    },
+
+    getCrawlerSettings: (requestPromise, options) => {
+        const { userId, token, crawler } = options;
+
+        checkParamOrThrow('String', userId, 'userId');
+        checkParamOrThrow('String', token, 'token');
+        checkParamOrThrow('String', crawler, 'crawler');
+
+        const queryString = _.pick(options, 'token', 'nosecrets');
+        return requestPromise({
+            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}`,
             json: true,
             method: 'GET',
             qs: queryString,
@@ -36,22 +88,6 @@ export default {
         });
     },
 
-    getCrawlerSettings: (requestPromise, options) => {
-        const { userId, token, crawler } = options;
-
-        checkParamOrThrow('String', userId, 'userId');
-        checkParamOrThrow('String', token, 'token');
-        checkParamOrThrow('String', crawler, 'crawler');
-
-        const queryString = _.pick(options, 'token', 'nosecrets');
-        return requestPromise({
-            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}`,
-            json: true,
-            method: 'GET',
-            qs: queryString,
-        });
-    },
-
     startCrawler: (requestPromise, options) => {
         const { crawler, token, userId } = options;
 
@@ -59,43 +95,7 @@ export default {
         checkParamOrThrow('String', crawler, 'crawler');
         checkParamOrThrow('String', token, 'token');
 
-        const bodyAttributes = ['customId',
-            '_id',
-            'comments',
-            'startUrls',
-            'crawlPurls',
-            'pageFunction',
-            'clickableElementsSelector',
-            'interceptRequest',
-            'considerUrlFragment',
-            'loadImages',
-            'loadCss',
-            'injectJQuery',
-            'injectUnderscoreJs',
-            'ignoreRobotsTxt',
-            'skipLoadingFrames',
-            'verboseLog',
-            'disableWebSecurity',
-            'maxCrawledPages',
-            'maxOutputPages',
-            'maxCrawlDepth',
-            'timeout',
-            'resourceTimeout',
-            'pageLoadTimeout',
-            'pageFunctionTimeout',
-            'maxInfiniteScrollHeight',
-            'randomWaitBetweenRequests',
-            'maxCrawledPagesPerSlave',
-            'maxParallelRequests',
-            'customHttpHeaders',
-            'customProxies',
-            'cookies',
-            'cookiesPersistence',
-            'customData',
-            'finishWebhookUrl',
-        ];
-
-        const body = _.pick(options, bodyAttributes);
+        const body = _.pick(options, CRAWLER_ATTRIBUTES);
         const queryString = _.pick(options, 'token', 'tag', 'wait');
 
         const requestParams = {
@@ -127,18 +127,6 @@ export default {
         return requestPromise(requestParams);
     },
 
-    getExecutionDetails: (requestPromise, options) => {
-        const { executionId } = options;
-
-        checkParamOrThrow('String', executionId, 'executionId');
-
-        return requestPromise({
-            url: `${options.baseUrl}${BASE_PATH}/execs/${executionId}`,
-            json: true,
-            method: 'GET',
-        });
-    },
-
     getListOfExecutions: (requestPromise, options) => {
         const { userId, crawler, token } = options;
 
@@ -153,6 +141,18 @@ export default {
             json: true,
             method: 'GET',
             qs: queryString,
+        });
+    },
+
+    getExecutionDetails: (requestPromise, options) => {
+        const { executionId } = options;
+
+        checkParamOrThrow('String', executionId, 'executionId');
+
+        return requestPromise({
+            url: `${options.baseUrl}${BASE_PATH}/execs/${executionId}`,
+            json: true,
+            method: 'GET',
         });
     },
 
