@@ -48,13 +48,13 @@ export default {
     },
 
     // TODO: Ensure that body is null or body or buffer
-    getRecord: (requestPromise, { baseUrl, storeId, recordKey }) => {
+    getRecord: (requestPromise, { baseUrl, storeId, key }) => {
         checkParamOrThrow('String', baseUrl, 'baseUrl');
         checkParamOrThrow('String', storeId, 'storeId');
-        checkParamOrThrow('String', recordKey, 'recordKey');
+        checkParamOrThrow('String', key, 'key');
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
+            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             method: 'GET',
             json: false,
             resolveWithResponse: true,
@@ -71,17 +71,15 @@ export default {
         });
     },
 
-    // TODO: (btw "key" would be better than "recordKey", considering putRecord is using
-    //       simple names such as "body", "contentType", ...
     // TODO: check that body is buffer or string, ...
-    putRecord: (requestPromise, { baseUrl, storeId, recordKey, body, contentType = 'text/plain' }) => {
+    putRecord: (requestPromise, { baseUrl, storeId, key, body, contentType = 'text/plain' }) => {
         checkParamOrThrow('String', baseUrl, 'baseUrl');
         checkParamOrThrow('String', storeId, 'storeId');
-        checkParamOrThrow('String', recordKey, 'recordKey');
+        checkParamOrThrow('String', key, 'key');
         checkParamOrThrow('String', contentType, 'contentType');
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
+            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             method: 'PUT',
             body,
             json: false,
@@ -91,13 +89,13 @@ export default {
         });
     },
 
-    deleteRecord: (requestPromise, { baseUrl, storeId, recordKey }) => {
+    deleteRecord: (requestPromise, { baseUrl, storeId, key }) => {
         checkParamOrThrow('String', baseUrl, 'baseUrl');
         checkParamOrThrow('String', storeId, 'storeId');
-        checkParamOrThrow('String', recordKey, 'recordKey');
+        checkParamOrThrow('String', key, 'key');
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
+            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             json: true,
             method: 'DELETE',
         });
