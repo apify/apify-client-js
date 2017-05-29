@@ -130,7 +130,7 @@ export default {
         });
     },
 
-    startCrawler: (requestPromise, options) => {
+    startExecution: (requestPromise, options) => {
         const { crawler, token, userId } = options;
 
         checkParamOrThrow(userId, 'userId', 'String');

@@ -322,12 +322,12 @@ describe('Crawlers', () => {
     describe('Start Execution', () => {
         it('should throw if crawler parameter is missing', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
-            return expect(crawlerClient.startCrawler.bind(crawlerClient)).to.throw('Parameter "crawler" of type String must be provided');
+            return expect(crawlerClient.startExecution.bind(crawlerClient)).to.throw('Parameter "crawler" of type String must be provided');
         });
 
         it('should throw if token parameter is missing', () => {
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
-            return expect(crawlerClient.startCrawler.bind(crawlerClient, { crawler: 'dummyCrawler', userId: 'dummyUserId' }))
+            return expect(crawlerClient.startExecution.bind(crawlerClient, { crawler: 'dummyCrawler', userId: 'dummyUserId' }))
                 .to.throw('Parameter "token" of type String must be provided');
         });
 
@@ -341,7 +341,7 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.startCrawler({ crawler: 'dummyCrawler' });
+            return crawlerClient.startExecution({ crawler: 'dummyCrawler' });
         });
 
         it('should forward tag and wait parameters', () => {
@@ -354,7 +354,7 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.startCrawler({ crawler: 'dummyCrawler', tag: 'dummyTag', wait: 30 });
+            return crawlerClient.startExecution({ crawler: 'dummyCrawler', tag: 'dummyTag', wait: 30 });
         });
 
         it('should return what API returns', () => {
@@ -375,7 +375,7 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.startCrawler({ crawler: 'dummyCrawler' }).then((execution) => {
+            return crawlerClient.startExecution({ crawler: 'dummyCrawler' }).then((execution) => {
                 expect(execution).to.deep.equal(apiResponse);
             });
         });
@@ -394,7 +394,7 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.startCrawler({ crawler: 'dummyCrawler', timeout: 300, customData: { a: 'b' } });
+            return crawlerClient.startExecution({ crawler: 'dummyCrawler', timeout: 300, customData: { a: 'b' } });
         });
 
         it('should not pass invalid body parameters', () => {
@@ -407,7 +407,7 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.startCrawler({ crawler: 'dummyCrawler', invalidParam: 300 });
+            return crawlerClient.startExecution({ crawler: 'dummyCrawler', invalidParam: 300 });
         });
     });
 
