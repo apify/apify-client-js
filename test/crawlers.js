@@ -186,6 +186,52 @@ describe('Crawlers', () => {
         });
     });
 
+    describe('Update Crawler Settings', () => {
+        it('should throw if token parameter is missing', () => {
+            const crawlerClient = new ApifyClient(basicOptions).crawlers;
+            return expect(crawlerClient.updateCrawler.bind(crawlerClient, { userId: 'dummyUserId' }))
+                    .to.throw('Parameter "token" of type String must be provided');
+        });
+
+        it('should throw if crawler parameter is missing', () => {
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+            return expect(crawlerClient.updateCrawler.bind(crawlerClient, { crawlerId: 'dummyCrawler' }))
+                    .to.throw('Parameter "crawler" of type Object must be provided');
+        });
+
+        it('should return what API returns', () => {
+            const apiResponse = {
+                customId: 'My_crawler',
+                comments: 'dummyComments',
+                startUrls: [
+                    {
+                        key: 'START',
+                        value: 'http://example.com',
+                    },
+                ],
+                crawlPurls: [
+                    {
+                        key: 'PAGE',
+                        value: 'http://example.com/test-2/[.*]',
+                    },
+                ] };
+
+            requestExpectCall({
+                json: true,
+                method: 'PUT',
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler`,
+                qs: { token: credentials.token },
+                body: { comments: 'dummyComments' },
+            }, Object.assign({}, apiResponse));
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient.updateCrawler({ crawlerId: 'dummyCrawler', crawler: { comments: 'dummyComments' } }).then((crawler) => {
+                expect(crawler).to.deep.equal(apiResponse);
+            });
+        });
+    });
+
     describe('Get Crawler Settings', () => {
         it('should throw if userId is not provided', () => {
             const crawlerClient = new ApifyClient(basicOptions).crawlers;

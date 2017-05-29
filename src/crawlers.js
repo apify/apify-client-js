@@ -78,6 +78,27 @@ export default {
         return requestPromise(requestParams);
     },
 
+    updateCrawler: (requestPromise, options) => {
+        const { userId, token, crawler, crawlerId } = options;
+
+        checkParamOrThrow('String', userId, 'userId');
+        checkParamOrThrow('String', token, 'token');
+        checkParamOrThrow('String', crawlerId, 'crawlerId');
+        checkParamOrThrow('Object', crawler, 'crawler');
+
+        const body = _.pick(crawler, CRAWLER_ATTRIBUTES);
+
+        const requestParams = {
+            json: true,
+            method: 'PUT',
+            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawlerId}`,
+            qs: { token },
+            body,
+        };
+
+        return requestPromise(requestParams);
+    },
+
     getCrawlerSettings: (requestPromise, options) => {
         const { userId, token, crawler } = options;
 
