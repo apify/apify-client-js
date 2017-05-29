@@ -286,16 +286,16 @@ describe('utils.requestPromise()', () => {
 
 describe('utils.checkParamOrThrow()', () => {
     it('works when type is correct', () => {
-        utils.checkParamOrThrow('Number', 2);
-        utils.checkParamOrThrow('Maybe Number', 2);
-        utils.checkParamOrThrow('Maybe Number', null);
+        utils.checkParamOrThrow(2, 'paramName', 'Number');
+        utils.checkParamOrThrow(2, 'paramName', 'Maybe Number');
+        utils.checkParamOrThrow(null, 'paramName', 'Maybe Number');
     });
 
     it('throws correct error', () => {
         let error;
 
         try {
-            utils.checkParamOrThrow('String', 2, 'paramName');
+            utils.checkParamOrThrow(2, 'paramName', 'String');
         } catch (err) {
             error = err;
         }
@@ -306,7 +306,7 @@ describe('utils.checkParamOrThrow()', () => {
 
 
         try {
-            utils.checkParamOrThrow('String', 2, 'paramName', 'Error message');
+            utils.checkParamOrThrow(2, 'paramName', 'String', 'Error message');
         } catch (err) {
             error = err;
         }
