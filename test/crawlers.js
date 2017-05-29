@@ -382,4 +382,85 @@ describe('Crawlers', () => {
                 bom: 0 });
         });
     });
+
+    describe('Get Last Execution Results', () => {
+        it('should throw if userId is not provided', () => {
+            const crawlerClient = new ApifyClient(basicOptions).crawlers;
+            return expect(crawlerClient.getLastExecutionResults.bind(crawlerClient)).to.throw('Parameter "userId" of type String must be provided');
+        });
+
+        it('should throw if crawler is not provided', () => {
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+            return expect(crawlerClient.getLastExecutionResults.bind(crawlerClient)).to.throw('Parameter "crawler" of type String must be provided');
+        });
+
+        it('should return what API returns', () => {
+            const apiResponse =
+                [
+                    {
+                        id: 'ZCdD6lk9ZaIhC9eP',
+                        url: 'https://example.com/example-page',
+                        requestedAt: '2016-11-01T13:57:31.220Z',
+                        uniqueKey: 'https://example.com/example-page',
+                        type: 'StartUrl',
+                        label: null,
+                        referrerId: null,
+                        depth: 0,
+                        loadedUrl: 'https://example.com/example-page',
+                        loadingStartedAt: '2016-11-01T13:57:31.570Z',
+                        loadingFinishedAt: '2016-11-01T13:57:32.818Z',
+                        responseStatus: 200,
+                        responseHeaders: {
+                            'Content-Type': 'text/html; charset=utf-8',
+                            'Content-Length': '145',
+                            Connection: 'keep-alive',
+                            Date: 'Tue, 01 Nov 2016 13:57:32 GMT',
+                            etag: 'W/"91-FFPJvYlWM/wKH5W+kRD+xg"',
+                        },
+                        pageFunctionStartedAt: '2016-11-01T13:57:33.018Z',
+                        pageFunctionFinishedAt: '2016-11-01T13:57:33.019Z',
+                        pageFunctionResult: {
+                            myValue: 'some string extracted from site',
+                        },
+                        downloadedBytes: 145,
+                        storageBytes: 692,
+                        loadErrorCode: null,
+                        isMainFrame: true,
+                        postData: null,
+                        contentType: null,
+                        method: 'GET',
+                        willLoad: true,
+                        errorInfo: '',
+                        interceptRequestData: null,
+                        queuePosition: 'LAST',
+                    },
+                ];
+
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExecution/results`,
+                qs: { token: credentials.token },
+            }, [].concat(apiResponse));
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient.getLastExecutionResults({ crawler: 'dummyCrawler' }).then((executionResults) => {
+                expect(executionResults).to.deep.equal(apiResponse);
+            });
+        });
+
+        it('should put status parameter into query string', () => {
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExecution/results`,
+                qs: { token: credentials.token, status: 'RUNNING' },
+            });
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient.getLastExecutionResults({ crawler: 'dummyCrawler', status: 'RUNNING' });
+        });
+    });
 });

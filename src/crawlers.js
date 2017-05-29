@@ -127,6 +127,26 @@ export default {
         return requestPromise(requestParams);
     },
 
+    getLastExecutionResults: (requestPromise, options) => {
+        const { userId, token, crawler } = options;
+
+        checkParamOrThrow('String', userId, 'userId');
+        checkParamOrThrow('String', token, 'token');
+        checkParamOrThrow('String', crawler, 'crawler');
+
+        const requestParams = {
+            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}/lastExecution/results`,
+            json: true,
+            method: 'GET',
+        };
+        const queryString = _.pick(options, 'status', 'token', 'format', 'simplified', 'offset', 'limit', 'desc', 'attachment', 'delimiter', 'bom');
+        if (!_.isEmpty(queryString)) {
+            requestParams.qs = queryString;
+        }
+
+        return requestPromise(requestParams);
+    },
+
     _resurrectExecution: (requestPromise, { baseUrl, executionId }) => requestPromise({
         url: `${baseUrl}${BASE_PATH}/execs/${executionId}/resurrect`,
         json: true,
