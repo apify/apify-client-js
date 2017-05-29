@@ -565,7 +565,7 @@ describe('Crawlers', () => {
             requestExpectCall({
                 json: true,
                 method: 'GET',
-                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExecution`,
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExec`,
                 qs: { token: credentials.token },
             }, Object.assign({}, apiResponse));
 
@@ -725,7 +725,7 @@ describe('Crawlers', () => {
             requestExpectCall({
                 json: true,
                 method: 'GET',
-                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExecution/results`,
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExec/results`,
                 qs: { token: credentials.token },
             }, [].concat(apiResponse));
 
@@ -740,7 +740,7 @@ describe('Crawlers', () => {
             requestExpectCall({
                 json: true,
                 method: 'GET',
-                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExecution/results`,
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExec/results`,
                 qs: { token: credentials.token, status: 'RUNNING' },
             });
 

@@ -208,7 +208,7 @@ export default {
         const queryString = _.pick(options, 'token', 'status');
 
         return requestPromise({
-            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}/lastExecution`,
+            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}/lastExec`,
             json: true,
             method: 'GET',
             qs: queryString,
@@ -241,7 +241,7 @@ export default {
         checkParamOrThrow('String', crawler, 'crawler');
 
         const requestParams = {
-            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}/lastExecution/results`,
+            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawler}/lastExec/results`,
             json: true,
             method: 'GET',
         };
