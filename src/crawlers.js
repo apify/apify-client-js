@@ -57,6 +57,27 @@ export default {
         });
     },
 
+    createCrawler: (requestPromise, options) => {
+        const { userId, token, crawler } = options;
+
+        checkParamOrThrow('String', userId, 'userId');
+        checkParamOrThrow('String', token, 'token');
+        checkParamOrThrow('Object', crawler, 'crawler');
+        checkParamOrThrow('String', crawler.customId, 'crawler.customId');
+
+        const body = _.pick(crawler, CRAWLER_ATTRIBUTES);
+
+        const requestParams = {
+            json: true,
+            method: 'POST',
+            url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers`,
+            qs: { token },
+            body,
+        };
+
+        return requestPromise(requestParams);
+    },
+
     getCrawlerSettings: (requestPromise, options) => {
         const { userId, token, crawler } = options;
 

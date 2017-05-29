@@ -133,6 +133,59 @@ describe('Crawlers', () => {
         });
     });
 
+
+    describe('Create Crawler', () => {
+        it('should throw if token parameter is missing', () => {
+            const crawlerClient = new ApifyClient(basicOptions).crawlers;
+            return expect(crawlerClient.createCrawler.bind(crawlerClient, { userId: 'dummyUserId' }))
+                    .to.throw('Parameter "token" of type String must be provided');
+        });
+
+        it('should throw if crawler parameter is missing', () => {
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+            return expect(crawlerClient.createCrawler.bind(crawlerClient, {}))
+                    .to.throw('Parameter "crawler" of type Object must be provided');
+        });
+
+        it('should throw if crawler.customId parameter is missing', () => {
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+            return expect(crawlerClient.createCrawler.bind(crawlerClient, { crawler: {} }))
+                    .to.throw('Parameter "crawler.customId" of type String must be provided');
+        });
+
+        it('should return what API returns', () => {
+            const apiResponse = {
+                customId: 'My_crawler',
+                comments: 'My testing crawler',
+                startUrls: [
+                    {
+                        key: 'START',
+                        value: 'http://example.com',
+                    },
+                ],
+                crawlPurls: [
+                    {
+                        key: 'PAGE',
+                        value: 'http://example.com/test-2/[.*]',
+                    },
+                ] };
+
+            requestExpectCall({
+                json: true,
+                method: 'POST',
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers`,
+                qs: { token: credentials.token },
+                body: { customId: 'dummyCrawler' },
+            }, Object.assign({}, apiResponse));
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient.createCrawler({ crawler: { customId: 'dummyCrawler' } }).then((crawler) => {
+                expect(crawler).to.deep.equal(apiResponse);
+            });
+        });
+    });
+
     describe('Get Crawler Settings', () => {
         it('should throw if userId is not provided', () => {
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
