@@ -119,12 +119,12 @@ export const requestPromise = (options, iteration = 0) => {
  * Checks that given parameter is of given type and throws ApifyError.
  * If errorMessage is not provided then error message is created from name and type of param.
  *
- * @param type         string - "String", "Number", ... (see ee: https://github.com/gkz/type-check)
  * @param value        string - user entered value of that parameter
  * @param name         string - parameter name (crawlerId for options.crawlerId)
+ * @param type         string - "String", "Number", ... (see ee: https://github.com/gkz/type-check)
  * @param errorMessage string - optional error message
  */
-export const checkParamOrThrow = (type, value, name, errorMessage) => {
+export const checkParamOrThrow = (value, name, type, errorMessage) => {
     if (!errorMessage) errorMessage = `Parameter "${name}" of type ${type} must be provided`;
 
     if (!typeCheck(type, value)) {

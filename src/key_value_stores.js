@@ -7,10 +7,10 @@ export default {
     getOrCreateStore: (requestPromise, options) => {
         const { baseUrl, userId, username, token, storeName } = options;
 
-        checkParamOrThrow('String', baseUrl, 'baseUrl');
-        checkParamOrThrow('String', token, 'token');
-        checkParamOrThrow('String', storeName, 'storeName');
-        checkParamOrThrow('String', userId || username, null, 'One of parameters "userId" and "username" of type String must be provided.');
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(storeName, 'storeName', 'String');
+        checkParamOrThrow(userId || username, null, 'String', 'One of parameters "userId" and "username" of type String must be provided.');
 
         const body = { token, storeName };
 
@@ -26,8 +26,8 @@ export default {
     },
 
     getStore: (requestPromise, { baseUrl, storeId }) => {
-        checkParamOrThrow('String', baseUrl, 'baseUrl');
-        checkParamOrThrow('String', storeId, 'storeId');
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${storeId}`,
@@ -37,8 +37,8 @@ export default {
     },
 
     deleteStore: (requestPromise, { baseUrl, storeId }) => {
-        checkParamOrThrow('String', baseUrl, 'baseUrl');
-        checkParamOrThrow('String', storeId, 'storeId');
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${storeId}`,
@@ -48,13 +48,13 @@ export default {
     },
 
     // TODO: Ensure that body is null or body or buffer
-    getRecord: (requestPromise, { baseUrl, storeId, recordKey }) => {
-        checkParamOrThrow('String', baseUrl, 'baseUrl');
-        checkParamOrThrow('String', storeId, 'storeId');
-        checkParamOrThrow('String', recordKey, 'recordKey');
+    getRecord: (requestPromise, { baseUrl, storeId, key }) => {
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(key, 'key', 'String');
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
+            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             method: 'GET',
             json: false,
             resolveWithResponse: true,
@@ -71,17 +71,15 @@ export default {
         });
     },
 
-    // TODO: (btw "key" would be better than "recordKey", considering putRecord is using
-    //       simple names such as "body", "contentType", ...
     // TODO: check that body is buffer or string, ...
-    putRecord: (requestPromise, { baseUrl, storeId, recordKey, body, contentType = 'text/plain' }) => {
-        checkParamOrThrow('String', baseUrl, 'baseUrl');
-        checkParamOrThrow('String', storeId, 'storeId');
-        checkParamOrThrow('String', recordKey, 'recordKey');
-        checkParamOrThrow('String', contentType, 'contentType');
+    putRecord: (requestPromise, { baseUrl, storeId, key, body, contentType = 'text/plain' }) => {
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(key, 'key', 'String');
+        checkParamOrThrow(contentType, 'contentType', 'String');
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
+            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             method: 'PUT',
             body,
             json: false,
@@ -91,13 +89,13 @@ export default {
         });
     },
 
-    deleteRecord: (requestPromise, { baseUrl, storeId, recordKey }) => {
-        checkParamOrThrow('String', baseUrl, 'baseUrl');
-        checkParamOrThrow('String', storeId, 'storeId');
-        checkParamOrThrow('String', recordKey, 'recordKey');
+    deleteRecord: (requestPromise, { baseUrl, storeId, key }) => {
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(key, 'key', 'String');
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${recordKey}`,
+            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             json: true,
             method: 'DELETE',
         });
@@ -105,10 +103,10 @@ export default {
 
     // TODO: add pagination
     getRecordsKeys: (requestPromise, { baseUrl, storeId, exclusiveStartKey, count }) => {
-        checkParamOrThrow('String', baseUrl, 'baseUrl');
-        checkParamOrThrow('String', storeId, 'storeId');
-        checkParamOrThrow('Maybe String', exclusiveStartKey, 'exclusiveStartKey');
-        checkParamOrThrow('Maybe Number', count, 'count');
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(exclusiveStartKey, 'exclusiveStartKey', 'Maybe String');
+        checkParamOrThrow(count, 'count', 'Maybe Number');
 
         const query = {};
 
