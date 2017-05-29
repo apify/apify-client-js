@@ -80,6 +80,24 @@ export default {
         return requestPromise(requestParams);
     },
 
+    stopExecution: (requestPromise, options) => {
+        const { executionId, token } = options;
+
+        checkParamOrThrow('String', executionId, 'executionId');
+        checkParamOrThrow('String', token, 'token');
+
+        const queryString = _.pick(options, 'token');
+
+        const requestParams = {
+            json: true,
+            method: 'POST',
+            url: `${options.baseUrl}${BASE_PATH}/execs/${executionId}/stop`,
+            qs: queryString,
+        };
+
+        return requestPromise(requestParams);
+    },
+
     getExecutionDetails: (requestPromise, options) => {
         const { executionId } = options;
 

@@ -225,6 +225,46 @@ describe('Crawlers', () => {
         });
     });
 
+    describe('Stop Execution', () => {
+        it('should throw if executionId parameter is missing', () => {
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+            return expect(crawlerClient.stopExecution.bind(crawlerClient)).to.throw('Parameter "executionId" of type String must be provided');
+        });
+
+        it('should throw if token parameter is missing', () => {
+            const crawlerClient = new ApifyClient(basicOptions).crawlers;
+            return expect(crawlerClient.stopExecution.bind(crawlerClient, { executionId: 'dummyExecution' }))
+                .to.throw('Parameter "token" of type String must be provided');
+        });
+
+        it('should return what API returns', () => {
+            const apiResponse = {
+                _id: 'br9CKmk457',
+                actId: 'i6tjys5XNh',
+                startedAt: '2015-10-29T07:34:24.202Z',
+                finishedAt: 'null',
+                status: 'RUNNING',
+                statusMessage: 'null',
+                tag: 'my_test_run',
+                detailsUrl: 'https://api.apifier.com/v1/execs/br9CKmk457',
+                resultsUrl: 'https://api.apifier.com/v1/execs/br9CKmk457/results',
+            };
+
+            requestExpectCall({
+                json: true,
+                method: 'POST',
+                url: `http://myhost:80/mypath${BASE_PATH}/execs/dummyExecution/stop`,
+                qs: { token: credentials.token },
+            }, Object.assign({}, apiResponse));
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient.stopExecution({ executionId: 'dummyExecution' }).then((execution) => {
+                expect(execution).to.deep.equal(apiResponse);
+            });
+        });
+    });
+
     describe('Get List of Executions', () => {
         it('should throw if userId is not provided', () => {
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
