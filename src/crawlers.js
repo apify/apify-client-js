@@ -197,13 +197,14 @@ export default {
             url: `${options.baseUrl}${BASE_PATH}/execs/${executionId}/results`,
             json: true,
             method: 'GET',
+            resolveWithResponse: true,
         };
         const queryString = _.pick(options, 'format', 'simplified', 'offset', 'limit', 'desc', 'attachment', 'delimiter', 'bom');
         if (!_.isEmpty(queryString)) {
             requestParams.qs = queryString;
         }
 
-        return requestPromise(requestParams);
+        return requestPromise(requestParams).then(wrapArray);
     },
 
     getLastExecutionResults: (requestPromise, options) => {
