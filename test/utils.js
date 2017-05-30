@@ -78,8 +78,8 @@ describe('utils.requestPromise()', () => {
     it('works as expected with full response when request succeeds', () => {
         const method = 'DELETE';
         const opts = { method, foo: 'bar', resolveWithResponse: true, promise: Promise };
-        const expectedResponse = { statusCode: 123, foo: 'bar' };
         const expectedBody = { foo: 'something', bar: 123 };
+        const expectedResponse = { statusCode: 123, foo: 'bar', body: expectedBody };
 
         const stub = sinon
             .stub(request, method.toLowerCase())
@@ -90,8 +90,8 @@ describe('utils.requestPromise()', () => {
 
         return utils
             .requestPromise(opts)
-            .then(({ body, response }) => {
-                expect(body).to.be.eql(expectedBody);
+            .then((response) => {
+                expect(response.body).to.be.eql(expectedBody);
                 expect(response).to.be.eql(expectedResponse);
                 stub.restore();
             });

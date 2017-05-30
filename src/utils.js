@@ -57,7 +57,7 @@ export const newApifyErrorFromResponse = (statusCode, body) => {
  *
  * Possible options parameters are:
  * - everything supported by 'request' npm package (mainly 'method', 'url' and 'qs')
- * - resolveWithResponse - to resolve promise with { body, response } instead of just body
+ * - resolveWithResponse - to resolve promise with whole response instead of just body
  * - expBackOffMillis - initial wait time before next repeat in a case of error
  * - expBackOffMaxRepeats - maximal number of repeats
  */
@@ -66,6 +66,7 @@ export const requestPromise = (options, iteration = 0) => {
     const expBackOffMillis = options.expBackOffMillis || EXP_BACKOFF_MILLIS;
     const expBackOffMaxRepeats = options.expBackOffMaxRepeats || EXP_BACKOFF_MAX_REPEATS;
     const method = _.isString(options.method) ? options.method.toLowerCase() : options.method;
+    const resolveWithResponse = options.resolveWithResponse;
 
     if (typeof PromisesDependency !== 'function') {
         throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, '"options.promise" parameter must be provided');
@@ -109,7 +110,7 @@ export const requestPromise = (options, iteration = 0) => {
             // since it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
             if (statusCode >= 300) return reject(newApifyErrorFromResponse(statusCode, body));
 
-            if (options.resolveWithResponse) resolve({ body, response });
+            if (resolveWithResponse) resolve(response);
             else resolve(body);
         });
     });

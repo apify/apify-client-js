@@ -25,7 +25,7 @@ describe('Crawlers', () => {
 
         const expectedRequestOpts = response ? Object.assign({}, requestOpts, { resolveWithResponse: true, promise: Promise })
                                              : Object.assign({}, requestOpts, { promise: Promise });
-        const output = response ? { body, response } : body;
+        const output = response || body;
 
         requestPromiseMock
             .expects('requestPromise')
@@ -39,6 +39,42 @@ describe('Crawlers', () => {
     });
 
     describe('List crawlers', () => {
+        const sampleBody = [
+            {
+                _id: 'wKw8QeHiHiyd8YGN8',
+                customId: 'Example_RSS',
+                createdAt: '2017-04-03T15:02:05.789Z',
+                modifiedAt: '2017-04-03T15:02:05.789Z',
+            },
+            {
+                _id: 'EfEjTWAgnDGavzccq',
+                customId: 'Example_Hacker_News',
+                createdAt: '2017-04-03T15:02:05.789Z',
+                modifiedAt: '2017-04-03T15:02:05.789Z',
+            },
+        ];
+        const sampleResponse = { body: sampleBody,
+            headers: { date: 'Tue, 30 May 2017 09:34:08 GMT',
+                'content-type': 'application/json; charset=utf-8',
+                'transfer-encoding': 'chunked',
+                connection: 'close',
+                server: 'nginx',
+                'cache-control': 'no-cache, no-store, must-revalidate',
+                pragma: 'no-cache',
+                expires: '0',
+                'access-control-allow-origin': '*',
+                'access-control-allow-headers': 'Content-Type',
+                'access-control-allow-methods': 'GET, POST',
+                'access-control-expose-headers':
+                    'X-Apifier-Pagination-Total, X-Apifier-Pagination-Offset, X-Apifier-Pagination-Count, X-Apifier-Pagination-Limit',
+                allow: 'GET, POST',
+                'x-apifier-pagination-total': '35',
+                'x-apifier-pagination-offset': '0',
+                'x-apifier-pagination-count': '35',
+                'x-apifier-pagination-limit': '1000',
+                vary: 'Accept-Encoding' },
+        };
+
         it('should throw if token is not provided', () => {
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
             return expect(crawlerClient.listCrawlers.bind(crawlerClient, { userId: credentials.userId }))
@@ -57,7 +93,8 @@ describe('Crawlers', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers`,
                 qs: { token: credentials.token },
-            });
+                resolveWithResponse: true,
+            }, {}, sampleResponse);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
@@ -70,65 +107,34 @@ describe('Crawlers', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/userIdParameter/crawlers`,
                 qs: { token: 'tokenParameter' },
-            });
+                resolveWithResponse: true,
+            }, {}, sampleResponse);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
             return crawlerClient.listCrawlers({ userId: 'userIdParameter', token: 'tokenParameter' });
         });
 
-        it('should return what API returns', () => {
-            const crawlersInResponse = [
-                {
-                    _id: 'wKw8QeHiHiyd8YGN8',
-                    customId: 'Example_RSS',
-                    createdAt: '2017-04-03T15:02:05.789Z',
-                    modifiedAt: '2017-04-03T15:02:05.789Z',
-                    executeUrl: 'https://api.apifier.com/v1/QKTX6JkmM9RLHGvZk/crawlers/Example_RSS/execute?token=ptMAQuc52f6Q78keyuwmAEbWo',
-                    lastExecution: null,
-                    settingsUrl: 'https://api.apifier.com/v1/QKTX6JkmM9RLHGvZk/crawlers/Example_RSS?token=itsrEEASPj4S2HjPdrxy7ntkY',
-                    executionsListUrl: 'https://api.apifier.com/v1/QKTX6JkmM9RLHGvZk/crawlers/Example_RSS/execs?token=Fmk3NMZtZbevqMHpSLafXaM2u',
-                    lastExecutionFixedDetailsUrl:
-                        'https://api.apifier.com/v1/QKTX6JkmM9RLHGvZk/crawlers/Example_RSS/lastExec?token=Fmk3NMZtZbevqMHpSLafXaM2u',
-                    lastExecutionFixedResultsUrl:
-                        'https://api.apifier.com/v1/QKTX6JkmM9RLHGvZk/crawlers/Example_RSS/lastExec/results?token=Fmk3NMZtZbevqMHpSLafXaM2u',
-                },
-                {
-                    _id: 'EfEjTWAgnDGavzccq',
-                    customId: 'Example_Hacker_News',
-                    createdAt: '2017-04-03T15:02:05.789Z',
-                    modifiedAt: '2017-04-03T15:02:05.789Z',
-                    executeUrl: 'https://api.apifier.com/v1/QKTX6JkmM9RLHGvZk/crawlers/Example_Hacker_News/execute?token=YLo2YBERtAMkyB9zEiufFxsWW',
-                    lastExecution: {
-                        _id: 'q8uunYKjdwkCTqRBq',
-                        startedAt: '2017-05-11T14:55:46.352Z',
-                        finishedAt: '2017-05-11T14:56:04.698Z',
-                        status: 'SUCCEEDED',
-                        pagesCrawled: 5,
-                        detailsUrl: 'https://api.apifier.com/v1/execs/q8uunYKjdwkCTqRBq',
-                        resultsUrl: 'https://api.apifier.com/v1/execs/q8uunYKjdwkCTqRBq/results',
-                    },
-                    settingsUrl: 'https://api.apifier.com/v1/QKTX6JkmM9RLHGvZk/crawlers/Example_Hacker_News?token=itsrEEASPj4S2HjPdrxy7ntkY',
-                    executionsListUrl:
-                        'https://api.apifier.com/v1/QKTX6JkmM9RLHGvZk/crawlers/Example_Hacker_News/execs?token=qmMrJooqaFTdiRktrnxexeoLN',
-                    lastExecutionFixedDetailsUrl:
-                        'https://api.apifier.com/v1/QKTX6JkmM9RLHGvZk/crawlers/Example_Hacker_News/lastExec?token=qmMrJooqaFTdiRktrnxexeoLN',
-                    lastExecutionFixedResultsUrl:
-                        'https://api.apifier.com/v1/QKTX6JkmM9RLHGvZk/crawlers/Example_Hacker_News/lastExec/results?token=qmMrJooqaFTdiRktrnxexeoLN',
-                },
-            ];
-
+        it('should wrap what API returns', () => {
             requestExpectCall({
                 json: true,
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers`,
                 qs: { token: credentials.token },
-            }, [].concat(crawlersInResponse));
+                resolveWithResponse: true,
+            }, {}, sampleResponse);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.listCrawlers().then((crawlers) => {
-                expect(crawlers).to.deep.equal(crawlersInResponse);
+            const expected = { items: sampleBody,
+                total: '35',
+                count: '35',
+                offset: '0',
+                limit: '1000',
+            };
+
+            return crawlerClient.listCrawlers().then((response) => {
+                expect(response).to.deep.equal(expected);
             });
         });
     });

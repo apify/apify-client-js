@@ -4,6 +4,16 @@ import { checkParamOrThrow } from './utils';
 
 export const BASE_PATH = '/v1';
 
+function wrapArray(response) {
+    return {
+        items: response.body,
+        total: response.headers['x-apifier-pagination-total'],
+        offset: response.headers['x-apifier-pagination-offset'],
+        count: response.headers['x-apifier-pagination-count'],
+        limit: response.headers['x-apifier-pagination-limit'],
+    };
+}
+
 export default {
     listCrawlers: (requestPromise, options) => {
         const { userId, token } = options;
@@ -11,14 +21,15 @@ export default {
         checkParamOrThrow(userId, 'userId', 'String');
         checkParamOrThrow(token, 'token', 'String');
 
-        const queryString = _.pick(options, 'token', 'offset', 'query', 'desc');
+        const queryString = _.pick(options, 'token', 'offset', 'limit', 'desc');
 
         return requestPromise({
             url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers`,
             json: true,
             method: 'GET',
             qs: queryString,
-        });
+            resolveWithResponse: true,
+        }).then(wrapArray);
     },
 
     createCrawler: (requestPromise, options) => {
@@ -97,6 +108,7 @@ export default {
         checkParamOrThrow(userId, 'userId', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(crawlerId, 'crawlerId', 'String');
+        checkParamOrThrow(settings, 'settings', 'Maybe Object');
 
         const queryString = _.pick(options, 'token', 'tag', 'wait');
 
