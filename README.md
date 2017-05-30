@@ -34,10 +34,10 @@ const keys = await apifyClient.keyValueStores.getRecordsKeys();
 await apifyClient.keyValueStores.deleteRecord({ key: 'foo' });
 
 // Crawler
-const crawler = await apifyClient.crawlers.getCrawler({ crawler: 'DNjkhrkjnri' });
-const execution = await apifyClient.crawlers.startCrawler({ crawler: 'DNjkhrkjnri' });
-apifyClient.setOptions({ crawler: 'DNjkhrkjnri' });
-const execution = await apifyClient.crawlers.startCrawler();
+const crawler = await apifyClient.crawlers.getCrawlerSettings({ crawlerId: 'DNjkhrkjnri' });
+const execution = await apifyClient.crawlers.startExecution({ crawlerId: 'DNjkhrkjnri' });
+apifyClient.setOptions({ crawlerId: 'DNjkhrkjnri' });
+const execution = await apifyClient.crawlers.startExecution();
 
 // Acts
 const act = await apifyClient.acts.getAct({ actId: 'kjnjknDDNkl' });
@@ -66,11 +66,11 @@ const apifyClient = new ApifyClient({
 Every method can be used as either **promise** or with **callback**. If your Node version supports await/async then you can await promise result.
 
 ```javascript
-const options = { crawler: 'DNjkhrkjnri' };
+const options = { crawlerId: 'DNjkhrkjnri' };
 
 // Awaited promise
 try {
-    const crawler = await apifyClient.crawlers.getCrawler(options);
+    const crawler = await apifyClient.crawlers.getCrawlerSettings(options);
 
     // Do something crawler ...
 } catch (err) {
@@ -78,7 +78,7 @@ try {
 }
 
 // Promise
-apifyClient.crawlers.getCrawler(options)
+apifyClient.crawlers.getCrawlerSettings(options)
     .then((crawler) => {
         // Do something crawler ...
     })
@@ -87,7 +87,7 @@ apifyClient.crawlers.getCrawler(options)
     });
 
 // Callback
-apifyClient.crawlers.getCrawler(options, (err, crawler) => {
+apifyClient.crawlers.getCrawlerSettings(options, (err, crawler) => {
     // Do something with error and crawler ...
 });
 ```
