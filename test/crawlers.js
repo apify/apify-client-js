@@ -456,7 +456,7 @@ describe('Crawlers', () => {
         });
 
         it('should return what API returns', () => {
-            const apiResponse = [
+            const sampleBody = [
                 {
                     _id: 'br9CKmk457',
                     actId: 'i6tjys5XNh',
@@ -488,18 +488,47 @@ describe('Crawlers', () => {
                     resultsUrl: 'https://api.apifier.com/v1/execs/br9CKmk457/results',
                 },
             ];
+            const sampleResponse = { body: sampleBody,
+                headers: { date: 'Tue, 30 May 2017 09:34:08 GMT',
+                    'content-type': 'application/json; charset=utf-8',
+                    'transfer-encoding': 'chunked',
+                    connection: 'close',
+                    server: 'nginx',
+                    'cache-control': 'no-cache, no-store, must-revalidate',
+                    pragma: 'no-cache',
+                    expires: '0',
+                    'access-control-allow-origin': '*',
+                    'access-control-allow-headers': 'Content-Type',
+                    'access-control-allow-methods': 'GET, POST',
+                    'access-control-expose-headers':
+                        'X-Apifier-Pagination-Total, X-Apifier-Pagination-Offset, X-Apifier-Pagination-Count, X-Apifier-Pagination-Limit',
+                    allow: 'GET, POST',
+                    'x-apifier-pagination-total': '35',
+                    'x-apifier-pagination-offset': '0',
+                    'x-apifier-pagination-count': '35',
+                    'x-apifier-pagination-limit': '1000',
+                    vary: 'Accept-Encoding' },
+            };
 
             requestExpectCall({
                 json: true,
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/execs`,
                 qs: { token: credentials.token },
-            }, [].concat(apiResponse));
+                resolveWithResponse: true,
+            }, sampleBody, sampleResponse);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.getListOfExecutions({ crawlerId: 'dummyCrawler' }).then((executions) => {
-                expect(executions).to.deep.equal(apiResponse);
+            const expected = { items: sampleBody,
+                total: '35',
+                count: '35',
+                offset: '0',
+                limit: '1000',
+            };
+
+            return crawlerClient.getListOfExecutions({ crawlerId: 'dummyCrawler' }).then((response) => {
+                expect(response).to.deep.equal(expected);
             });
         });
     });

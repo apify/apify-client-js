@@ -155,7 +155,8 @@ export default {
             json: true,
             method: 'GET',
             qs: queryString,
-        });
+            resolveWithResponse: true,
+        }).then(wrapArray);
     },
 
     getExecutionDetails: (requestPromise, options) => {
