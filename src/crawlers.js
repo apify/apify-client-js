@@ -218,13 +218,14 @@ export default {
             url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawlerId}/lastExec/results`,
             json: true,
             method: 'GET',
+            resolveWithResponse: true,
         };
         const queryString = _.pick(options, 'status', 'token', 'format', 'simplified', 'offset', 'limit', 'desc', 'attachment', 'delimiter', 'bom');
         if (!_.isEmpty(queryString)) {
             requestParams.qs = queryString;
         }
 
-        return requestPromise(requestParams);
+        return requestPromise(requestParams).then(wrapArray);
     },
 
     _resurrectExecution: (requestPromise, { baseUrl, executionId }) => requestPromise({

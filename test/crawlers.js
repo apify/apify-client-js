@@ -722,6 +722,76 @@ describe('Crawlers', () => {
     });
 
     describe('Get Last Execution Results', () => {
+        const sampleBody =
+            [
+                {
+                    id: 'ZCdD6lk9ZaIhC9eP',
+                    url: 'https://example.com/example-page',
+                    requestedAt: '2016-11-01T13:57:31.220Z',
+                    uniqueKey: 'https://example.com/example-page',
+                    type: 'StartUrl',
+                    label: null,
+                    referrerId: null,
+                    depth: 0,
+                    loadedUrl: 'https://example.com/example-page',
+                    loadingStartedAt: '2016-11-01T13:57:31.570Z',
+                    loadingFinishedAt: '2016-11-01T13:57:32.818Z',
+                    responseStatus: 200,
+                    responseHeaders: {
+                        'Content-Type': 'text/html; charset=utf-8',
+                        'Content-Length': '145',
+                        Connection: 'keep-alive',
+                        Date: 'Tue, 01 Nov 2016 13:57:32 GMT',
+                        etag: 'W/"91-FFPJvYlWM/wKH5W+kRD+xg"',
+                    },
+                    pageFunctionStartedAt: '2016-11-01T13:57:33.018Z',
+                    pageFunctionFinishedAt: '2016-11-01T13:57:33.019Z',
+                    pageFunctionResult: {
+                        myValue: 'some string extracted from site',
+                    },
+                    downloadedBytes: 145,
+                    storageBytes: 692,
+                    loadErrorCode: null,
+                    isMainFrame: true,
+                    postData: null,
+                    contentType: null,
+                    method: 'GET',
+                    willLoad: true,
+                    errorInfo: '',
+                    interceptRequestData: null,
+                    queuePosition: 'LAST',
+                },
+            ];
+
+        const sampleResponse = { body: sampleBody,
+            headers: { date: 'Tue, 30 May 2017 09:34:08 GMT',
+                'content-type': 'application/json; charset=utf-8',
+                'transfer-encoding': 'chunked',
+                connection: 'close',
+                server: 'nginx',
+                'cache-control': 'no-cache, no-store, must-revalidate',
+                pragma: 'no-cache',
+                expires: '0',
+                'access-control-allow-origin': '*',
+                'access-control-allow-headers': 'Content-Type',
+                'access-control-allow-methods': 'GET, POST',
+                'access-control-expose-headers':
+                        'X-Apifier-Pagination-Total, X-Apifier-Pagination-Offset, X-Apifier-Pagination-Count, X-Apifier-Pagination-Limit',
+                allow: 'GET, POST',
+                'x-apifier-pagination-total': '35',
+                'x-apifier-pagination-offset': '0',
+                'x-apifier-pagination-count': '35',
+                'x-apifier-pagination-limit': '1000',
+                vary: 'Accept-Encoding' },
+        };
+
+        const expected = { items: sampleBody,
+            total: '35',
+            count: '35',
+            offset: '0',
+            limit: '1000',
+        };
+
         it('should throw if userId is not provided', () => {
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
             return expect(crawlerClient.getLastExecutionResults.bind(crawlerClient)).to.throw('Parameter "userId" of type String must be provided');
@@ -733,59 +803,19 @@ describe('Crawlers', () => {
                 .to.throw('Parameter "crawlerId" of type String must be provided');
         });
 
-        it('should return what API returns', () => {
-            const apiResponse =
-                [
-                    {
-                        id: 'ZCdD6lk9ZaIhC9eP',
-                        url: 'https://example.com/example-page',
-                        requestedAt: '2016-11-01T13:57:31.220Z',
-                        uniqueKey: 'https://example.com/example-page',
-                        type: 'StartUrl',
-                        label: null,
-                        referrerId: null,
-                        depth: 0,
-                        loadedUrl: 'https://example.com/example-page',
-                        loadingStartedAt: '2016-11-01T13:57:31.570Z',
-                        loadingFinishedAt: '2016-11-01T13:57:32.818Z',
-                        responseStatus: 200,
-                        responseHeaders: {
-                            'Content-Type': 'text/html; charset=utf-8',
-                            'Content-Length': '145',
-                            Connection: 'keep-alive',
-                            Date: 'Tue, 01 Nov 2016 13:57:32 GMT',
-                            etag: 'W/"91-FFPJvYlWM/wKH5W+kRD+xg"',
-                        },
-                        pageFunctionStartedAt: '2016-11-01T13:57:33.018Z',
-                        pageFunctionFinishedAt: '2016-11-01T13:57:33.019Z',
-                        pageFunctionResult: {
-                            myValue: 'some string extracted from site',
-                        },
-                        downloadedBytes: 145,
-                        storageBytes: 692,
-                        loadErrorCode: null,
-                        isMainFrame: true,
-                        postData: null,
-                        contentType: null,
-                        method: 'GET',
-                        willLoad: true,
-                        errorInfo: '',
-                        interceptRequestData: null,
-                        queuePosition: 'LAST',
-                    },
-                ];
-
+        it('should wrap what API returns', () => {
             requestExpectCall({
                 json: true,
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExec/results`,
                 qs: { token: credentials.token },
-            }, [].concat(apiResponse));
+                resolveWithResponse: true,
+            }, sampleBody, sampleResponse);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            return crawlerClient.getLastExecutionResults({ crawlerId: 'dummyCrawler' }).then((executionResults) => {
-                expect(executionResults).to.deep.equal(apiResponse);
+            return crawlerClient.getLastExecutionResults({ crawlerId: 'dummyCrawler' }).then((results) => {
+                expect(results).to.deep.equal(expected);
             });
         });
 
@@ -795,7 +825,8 @@ describe('Crawlers', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExec/results`,
                 qs: { token: credentials.token, status: 'RUNNING' },
-            });
+                resolveWithResponse: true,
+            }, sampleBody, sampleResponse);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
