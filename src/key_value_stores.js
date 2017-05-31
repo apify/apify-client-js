@@ -59,8 +59,8 @@ export default {
             json: false,
             resolveWithResponse: true,
         })
-        .then(({ response, body }) => {
-            const contentType = response.headers['content-type'];
+        .then(({ body, headers }) => {
+            const contentType = headers['content-type'];
 
             return { body, contentType };
         })

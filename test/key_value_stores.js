@@ -17,9 +17,9 @@ describe('Key value store', () => {
         if (!_.isObject(requestOpts)) throw new Error('"requestOpts" parameter must be an object!');
         if (!requestOpts.method) throw new Error('"requestOpts.method" parameter is not set!');
 
-        const expectedRequestOpts = response ? Object.assign({}, requestOpts, { resolveWithResponse: true, promise: Promise })
-                                             : Object.assign({}, requestOpts, { promise: Promise });
-        const output = response ? { body, response } : body;
+        const expectedRequestOpts = Object.assign({}, requestOpts, { promise: Promise });
+        if (response) expectedRequestOpts.resolveWithResponse = true;
+        const output = response ? Object.assign({}, response, { body }) : body;
 
         requestPromiseMock
             .expects('requestPromise')
@@ -32,8 +32,8 @@ describe('Key value store', () => {
         if (!_.isObject(requestOpts)) throw new Error('"requestOpts" parameter must be an object!');
         if (!requestOpts.method) throw new Error('"requestOpts.method" parameter is not set!');
 
-        const expectedRequestOpts = resolveWithResponse ? Object.assign({}, requestOpts, { resolveWithResponse: true, promise: Promise })
-                                                        : Object.assign({}, requestOpts, { promise: Promise });
+        const expectedRequestOpts = Object.assign({}, requestOpts, { promise: Promise });
+        if (resolveWithResponse) expectedRequestOpts.resolveWithResponse = true;
 
         const error = new ApifyError(REQUEST_FAILED_ERROR_TYPE, REQUEST_FAILED_ERROR_MESSAGE, { statusCode });
 
