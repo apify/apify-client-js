@@ -1,28 +1,22 @@
-import { checkParamOrThrow } from './utils';
-import { NOT_FOUND_STATUS_CODE } from './apify_error';
+import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
 
 export const BASE_PATH = '/v2/key-value-stores';
 
 export default {
     getOrCreateStore: (requestPromise, options) => {
-        const { baseUrl, userId, username, token, storeName } = options;
+        const { baseUrl, token, storeName } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(storeName, 'storeName', 'String');
-        checkParamOrThrow(userId || username, null, 'String', 'One of parameters "userId" and "username" of type String must be provided.');
-
-        const body = { token, storeName };
-
-        if (userId) body.userId = userId;
-        if (username) body.username = username;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}`,
             json: true,
             method: 'POST',
-            body,
-        });
+            qs: { name: storeName, token },
+        })
+        .then(pluckData);
     },
 
     getStore: (requestPromise, { baseUrl, storeId }) => {
@@ -33,7 +27,9 @@ export default {
             url: `${baseUrl}${BASE_PATH}/${storeId}`,
             json: true,
             method: 'GET',
-        });
+        })
+        .then(pluckData)
+        .catch(catchNotFoundOrThrow);
     },
 
     deleteStore: (requestPromise, { baseUrl, storeId }) => {
@@ -48,27 +44,23 @@ export default {
     },
 
     // TODO: Ensure that body is null or body or buffer
-    getRecord: (requestPromise, { baseUrl, storeId, key }) => {
+    getRecord: (requestPromise, { baseUrl, storeId, key, raw }) => {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
+        checkParamOrThrow(raw, 'raw', 'Maybe Boolean');
 
-        return requestPromise({
+        const options = {
             url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             method: 'GET',
-            json: false,
-            resolveWithResponse: true,
-        })
-        .then(({ body, headers }) => {
-            const contentType = headers['content-type'];
+            json: !raw,
+        };
 
-            return { body, contentType };
-        })
-        .catch((err) => {
-            if (err.details.statusCode === NOT_FOUND_STATUS_CODE) return null;
+        if (raw) options.qs = { raw: 1 };
 
-            throw err;
-        });
+        return requestPromise(options)
+        .then(body => (raw ? body : pluckData(body)))
+        .catch(catchNotFoundOrThrow);
     },
 
     // TODO: check that body is buffer or string, ...
@@ -101,17 +93,39 @@ export default {
         });
     },
 
-    // TODO: add pagination
-    getRecordsKeys: (requestPromise, { baseUrl, storeId, exclusiveStartKey, count }) => {
+    // TODO: test
+    getKeys: (requestPromise, { baseUrl, storeId, exclusiveStartKey, limit }) => {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(exclusiveStartKey, 'exclusiveStartKey', 'Maybe String');
-        checkParamOrThrow(count, 'count', 'Maybe Number');
+        checkParamOrThrow(limit, 'limit', 'Maybe Number');
 
         const query = {};
 
         if (exclusiveStartKey) query.exclusiveStartKey = exclusiveStartKey;
-        if (count) query.count = count;
+        if (limit) query.limit = limit;
+
+        const requestOpts = {
+            url: `${baseUrl}${BASE_PATH}/${storeId}/keys`,
+            json: true,
+            method: 'GET',
+            qs: query,
+        };
+
+        return requestPromise(requestOpts).then(pluckData);
+    },
+
+    // TODO: test
+    getRecords: (requestPromise, { baseUrl, storeId, exclusiveStartKey, limit }) => {
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(exclusiveStartKey, 'exclusiveStartKey', 'Maybe String');
+        checkParamOrThrow(limit, 'limit', 'Maybe Number');
+
+        const query = {};
+
+        if (exclusiveStartKey) query.exclusiveStartKey = exclusiveStartKey;
+        if (limit) query.limit = limit;
 
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${storeId}/records`,
@@ -120,6 +134,6 @@ export default {
             qs: query,
         };
 
-        return requestPromise(requestOpts).then(items => ({ items }));
+        return requestPromise(requestOpts).then(pluckData);
     },
 };
