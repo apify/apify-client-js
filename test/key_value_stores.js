@@ -272,7 +272,7 @@ describe('Key value store', () => {
                 .deleteRecord({ storeId, key });
         });
 
-        it('getKeys() works', () => {
+        it('listKeys() works', () => {
             const storeId = 'some-id';
             const exclusiveStartKey = 'fromKey';
             const limit = 10;
@@ -289,11 +289,11 @@ describe('Key value store', () => {
 
             return apifyClient
                 .keyValueStores
-                .getKeys({ storeId, exclusiveStartKey, limit })
+                .listKeys({ storeId, exclusiveStartKey, limit })
                 .then(response => expect(response).to.be.eql(expected));
         });
 
-        it('getRecords() works', () => {
+        it('listRecords() works', () => {
             const storeId = 'some-id';
             const exclusiveStartKey = 'fromKey';
             const limit = 10;
@@ -310,7 +310,7 @@ describe('Key value store', () => {
 
             return apifyClient
                 .keyValueStores
-                .getRecords({ storeId, exclusiveStartKey, limit })
+                .listRecords({ storeId, exclusiveStartKey, limit })
                 .then(response => expect(response).to.be.eql(expected));
         });
     });

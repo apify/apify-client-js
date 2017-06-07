@@ -111,7 +111,7 @@ export default {
         });
     },
 
-    getKeys: (requestPromise, { baseUrl, storeId, exclusiveStartKey, limit }) => {
+    listKeys: (requestPromise, { baseUrl, storeId, exclusiveStartKey, limit }) => {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(exclusiveStartKey, 'exclusiveStartKey', 'Maybe String');
@@ -132,7 +132,7 @@ export default {
         return requestPromise(requestOpts).then(pluckData);
     },
 
-    getRecords: (requestPromise, { baseUrl, storeId, exclusiveStartKey, limit }) => {
+    listRecords: (requestPromise, { baseUrl, storeId, exclusiveStartKey, limit }) => {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(exclusiveStartKey, 'exclusiveStartKey', 'Maybe String');
