@@ -1,6 +1,6 @@
 import _ from 'underscore';
 import { requestPromise, REQUEST_PROMISE_OPTIONS } from './utils';
-import * as acts from './acts';
+import acts from './acts';
 import crawlers from './crawlers';
 import keyValueStores from './key_value_stores';
 import ApifyError, { INVALID_PARAMETER_ERROR_TYPE } from './apify_error';

@@ -18,6 +18,7 @@ export default {
     },
 
     listStores: (requestPromise, { baseUrl, token, offset, limit }) => {
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
@@ -60,7 +61,7 @@ export default {
         });
     },
 
-    // TODO: Ensure that body is null or body or buffer
+    // TODO: Ensure that body is null or string or buffer
     getRecord: (requestPromise, { baseUrl, storeId, key, raw }) => {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
@@ -110,7 +111,6 @@ export default {
         });
     },
 
-    // TODO: test
     getKeys: (requestPromise, { baseUrl, storeId, exclusiveStartKey, limit }) => {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
@@ -132,7 +132,6 @@ export default {
         return requestPromise(requestOpts).then(pluckData);
     },
 
-    // TODO: test
     getRecords: (requestPromise, { baseUrl, storeId, exclusiveStartKey, limit }) => {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');

@@ -1,52 +1,14 @@
-import sinon from 'sinon';
-import _ from 'underscore';
 import { expect } from 'chai';
-import * as utils from '../build/utils';
 import ApifyClient from '../build';
 import { BASE_PATH } from '../build/key_value_stores';
-import ApifyError, { REQUEST_FAILED_ERROR_TYPE, REQUEST_FAILED_ERROR_MESSAGE } from '../build/apify_error';
+import { mockRequest, requestExpectCall, requestExpectErrorCall, verifyAndRestoreRequest } from './_helper';
 
 const BASE_URL = 'http://exaple.com/something';
 const OPTIONS = { baseUrl: BASE_URL };
 
 describe('Key value store', () => {
-    const requestPromiseMock = sinon.mock(utils, 'requestPromise');
-
-    const requestExpectCall = (requestOpts, body, response) => {
-        if (!_.isObject(requestOpts)) throw new Error('"requestOpts" parameter must be an object!');
-        if (!requestOpts.method) throw new Error('"requestOpts.method" parameter is not set!');
-
-        const expectedRequestOpts = Object.assign({}, requestOpts, { promise: Promise });
-        if (response) expectedRequestOpts.resolveWithResponse = true;
-        const output = response ? Object.assign({}, response, { body }) : body;
-
-        requestPromiseMock
-            .expects('requestPromise')
-            .once()
-            .withArgs(expectedRequestOpts)
-            .returns(Promise.resolve(output));
-    };
-
-    const requestExpectErrorCall = (requestOpts, resolveWithResponse, statusCode) => {
-        if (!_.isObject(requestOpts)) throw new Error('"requestOpts" parameter must be an object!');
-        if (!requestOpts.method) throw new Error('"requestOpts.method" parameter is not set!');
-
-        const expectedRequestOpts = Object.assign({}, requestOpts, { promise: Promise });
-        if (resolveWithResponse) expectedRequestOpts.resolveWithResponse = true;
-
-        const error = new ApifyError(REQUEST_FAILED_ERROR_TYPE, REQUEST_FAILED_ERROR_MESSAGE, { statusCode });
-
-        requestPromiseMock
-            .expects('requestPromise')
-            .once()
-            .withArgs(expectedRequestOpts)
-            .returns(Promise.reject(error));
-    };
-
-    after(() => {
-        requestPromiseMock.verify();
-        requestPromiseMock.restore();
-    });
+    before(mockRequest);
+    after(verifyAndRestoreRequest);
 
     describe('indentification', () => {
         it('should work with storeId in default params', () => {
@@ -174,6 +136,22 @@ describe('Key value store', () => {
                 .then(given => expect(given).to.be.eql(expected));
         });
 
+        it('getStore() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
+            const storeId = 'some-id';
+
+            requestExpectErrorCall({
+                json: true,
+                method: 'GET',
+                url: `${BASE_URL}${BASE_PATH}/${storeId}`,
+            }, false, 404);
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .keyValueStores
+                .getStore({ storeId })
+                .then(given => expect(given).to.be.eql(null));
+        });
 
         it('deleteStore() works', () => {
             const storeId = 'some-id';
