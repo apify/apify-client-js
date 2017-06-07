@@ -3,9 +3,7 @@ import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
 export const BASE_PATH = '/v2/key-value-stores';
 
 export default {
-    getOrCreateStore: (requestPromise, options) => {
-        const { baseUrl, token, storeName } = options;
-
+    getOrCreateStore: (requestPromise, { baseUrl, token, storeName }) => {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(storeName, 'storeName', 'String');
@@ -15,6 +13,25 @@ export default {
             json: true,
             method: 'POST',
             qs: { name: storeName, token },
+        })
+        .then(pluckData);
+    },
+
+    listStores: (requestPromise, { baseUrl, token, offset, limit }) => {
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(limit, 'limit', 'Maybe Number');
+        checkParamOrThrow(offset, 'offset', 'Maybe Number');
+
+        const query = { token };
+
+        if (limit) query.limit = limit;
+        if (offset) query.offset = offset;
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}`,
+            json: true,
+            method: 'GET',
+            qs: query,
         })
         .then(pluckData);
     },

@@ -122,7 +122,40 @@ describe('Key value store', () => {
         });
     });
 
-    describe('Key value store REST methods work', () => {
+    describe('REST method', () => {
+        it('listStores() works', () => {
+            const storeId = 'some-id';
+            const callOptions = {
+                token: 'sometoken',
+                limit: 5,
+                offset: 3,
+            };
+
+            const expected = {
+                limit: 5,
+                offset: 3,
+                count: 5,
+                total: 10,
+                items: ['store1', 'store2'],
+            };
+
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `${BASE_URL}${BASE_PATH}`,
+                qs: callOptions,
+            }, {
+                data: expected,
+            });
+
+            const apifyClient = new ApifyClient(Object.assign({}, OPTIONS, { storeId }));
+
+            return apifyClient
+                .keyValueStores
+                .listStores(callOptions)
+                .then(response => expect(response).to.be.eql(expected));
+        });
+
         it('getStore() works', () => {
             const storeId = 'some-id';
             const expected = { _id: 'some-id', aaa: 'bbb' };
