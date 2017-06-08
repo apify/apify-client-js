@@ -192,6 +192,37 @@ describe('Key value store', () => {
                 .then(given => expect(given).to.be.eql(expected));
         });
 
+        it('getRecord() parses application/json content type', () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });
+            const contentType = 'application/json';
+            const fromServer = {
+                body,
+                contentType,
+            };
+            const expected = {
+                body: JSON.parse(body),
+                contentType,
+                rawBody: body,
+            };
+
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+            }, { data: fromServer });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .keyValueStores
+                .getRecord({ storeId, key })
+                .then((given) => {
+                    expect(given).to.be.eql(expected);
+                });
+        });
+
         it('getRecord() works with raw = true', () => {
             const key = 'some-key';
             const storeId = 'some-id';

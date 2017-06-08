@@ -77,7 +77,18 @@ export default {
         if (raw) options.qs = { raw: 1 };
 
         return requestPromise(options)
-        .then(body => (raw ? body : pluckData(body)))
+        .then((body) => {
+            if (raw) return body;
+
+            const data = pluckData(body);
+
+            if (data.contentType === 'application/json') {
+                data.rawBody = data.body;
+                data.body = JSON.parse(data.body);
+            }
+
+            return data;
+        })
         .catch(catchNotFoundOrThrow);
     },
 
