@@ -222,7 +222,7 @@ describe('Key value store', () => {
                 });
         });
 
-        it('getRecord() doesn\'t parse application/json when disableBodyParser=true', () => {
+        it('getRecord() doesn\'t parse application/json when useRawBody=true', () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const serverResponse = {
@@ -241,7 +241,7 @@ describe('Key value store', () => {
 
             return apifyClient
                 .keyValueStores
-                .getRecord({ storeId, key, disableBodyParser: true })
+                .getRecord({ storeId, key, useRawBody: true })
                 .then((given) => {
                     expect(given).to.be.eql(expected);
                 });
@@ -331,7 +331,7 @@ describe('Key value store', () => {
                 .putRecord({ storeId, key, contentType, body });
         });
 
-        it('put() works doesn\'t parse JSON when disableBodyParser=true', () => {
+        it('put() works doesn\'t parse JSON when useRawBody=true', () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const contentType = 'application/json';
@@ -349,7 +349,7 @@ describe('Key value store', () => {
 
             return apifyClient
                 .keyValueStores
-                .putRecord({ storeId, key, contentType, body, disableBodyParser: true });
+                .putRecord({ storeId, key, contentType, body, useRawBody: true });
         });
 
         it('delete() works', () => {
@@ -418,7 +418,7 @@ describe('Key value store', () => {
                 .then(response => expect(response).to.be.eql(expected));
         });
 
-        it('listRecords() doesn\'t parse JSON when disableBodyParser=true', () => {
+        it('listRecords() doesn\'t parse JSON when useRawBody=true', () => {
             const storeId = 'some-id';
             const exclusiveStartKey = 'fromKey';
             const limit = 10;
@@ -441,7 +441,7 @@ describe('Key value store', () => {
 
             return apifyClient
                 .keyValueStores
-                .listRecords({ storeId, exclusiveStartKey, limit, disableBodyParser: true })
+                .listRecords({ storeId, exclusiveStartKey, limit, useRawBody: true })
                 .then(response => expect(response).to.be.eql(expected));
         });
     });

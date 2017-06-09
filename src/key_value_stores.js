@@ -86,13 +86,13 @@ export default {
 
     // TODO: Ensure that body is null or string or buffer
     getRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, raw, disableBodyParser } = options;
+        const { baseUrl, storeId, key, raw, useRawBody } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(raw, 'raw', 'Maybe Boolean');
-        checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
+        checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
 
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
@@ -108,7 +108,7 @@ export default {
 
                 const data = pluckData(body);
 
-                if (!disableBodyParser) data.body = parseBody(data.body, data.contentType);
+                if (!useRawBody) data.body = parseBody(data.body, data.contentType);
 
                 return data;
             }, catchNotFoundOrThrow);
@@ -116,18 +116,18 @@ export default {
 
     // TODO: check that body is buffer or string, ...
     putRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, body, contentType = 'text/plain', disableBodyParser } = options;
+        const { baseUrl, storeId, key, body, contentType = 'text/plain', useRawBody } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(contentType, 'contentType', 'String');
-        checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
+        checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             method: 'PUT',
-            body: disableBodyParser ? body : encodeBody(body, contentType),
+            body: useRawBody ? body : encodeBody(body, contentType),
             json: false,
             headers: {
                 'Content-Type': contentType,
@@ -173,13 +173,13 @@ export default {
     },
 
     listRecords: (requestPromise, options) => {
-        const { baseUrl, storeId, exclusiveStartKey, limit, disableBodyParser } = options;
+        const { baseUrl, storeId, exclusiveStartKey, limit, useRawBody } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(exclusiveStartKey, 'exclusiveStartKey', 'Maybe String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
-        checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
+        checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
 
         const query = {};
 
@@ -194,7 +194,7 @@ export default {
         };
 
         const transformItem = (item) => {
-            if (!disableBodyParser) item.body = parseBody(item.body, item.contentType);
+            if (!useRawBody) item.body = parseBody(item.body, item.contentType);
 
             return item;
         };
