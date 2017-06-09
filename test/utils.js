@@ -1,11 +1,12 @@
 import sinon from 'sinon';
 import request from 'request';
 import { expect } from 'chai';
-import {
+import ApifyError, {
     APIFY_ERROR_NAME,
     REQUEST_FAILED_ERROR_TYPE,
     REQUEST_FAILED_ERROR_MESSAGE,
     INVALID_PARAMETER_ERROR_TYPE,
+    NOT_FOUND_STATUS_CODE,
 } from '../build/apify_error';
 import * as utils from '../build/utils';
 
@@ -314,5 +315,26 @@ describe('utils.checkParamOrThrow()', () => {
         expect(error.name).to.be.eql(APIFY_ERROR_NAME);
         expect(error.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE);
         expect(error.message).to.be.eql('Error message');
+    });
+});
+
+describe('utils.pluckData()', () => {
+    it('works', () => {
+        expect(utils.pluckData({ foo: 'bar', data: 'something' })).to.be.eql('something');
+        expect(utils.pluckData({ foo: 'bar' })).to.be.eql(null);
+        expect(utils.pluckData(1)).to.be.eql(null);
+        expect(utils.pluckData('string')).to.be.eql(null);
+        expect(utils.pluckData(null)).to.be.eql(null);
+        expect(utils.pluckData(undefined)).to.be.eql(null);
+    });
+});
+
+describe('utils.catchNotFoundOrThrow()', () => {
+    it('works', () => {
+        const notFoundError = new ApifyError('not-found', 'Some message', { statusCode: NOT_FOUND_STATUS_CODE });
+        const otherError = new ApifyError('any-error', 'Some message', { statusCode: 555 });
+
+        expect(utils.catchNotFoundOrThrow(notFoundError)).to.be.eql(null);
+        expect(() => utils.catchNotFoundOrThrow(otherError)).to.throw(otherError);
     });
 });

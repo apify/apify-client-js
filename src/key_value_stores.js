@@ -1,31 +1,64 @@
-import { checkParamOrThrow } from './utils';
-import { NOT_FOUND_STATUS_CODE } from './apify_error';
+import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
 
 export const BASE_PATH = '/v2/key-value-stores';
+export const CONTENT_TYPE_JSON = 'application/json';
+
+const parseBody = (body, contentType) => {
+    switch (contentType) {
+        case CONTENT_TYPE_JSON: return JSON.parse(body);
+        default: return body;
+    }
+};
+
+const encodeBody = (body, contentType) => {
+    switch (contentType) {
+        case CONTENT_TYPE_JSON: return JSON.stringify(body);
+        default: return body;
+    }
+};
 
 export default {
     getOrCreateStore: (requestPromise, options) => {
-        const { baseUrl, userId, username, token, storeName } = options;
+        const { baseUrl, token, storeName } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(storeName, 'storeName', 'String');
-        checkParamOrThrow(userId || username, null, 'String', 'One of parameters "userId" and "username" of type String must be provided.');
-
-        const body = { token, storeName };
-
-        if (userId) body.userId = userId;
-        if (username) body.username = username;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}`,
             json: true,
             method: 'POST',
-            body,
-        });
+            qs: { name: storeName, token },
+        })
+        .then(pluckData);
     },
 
-    getStore: (requestPromise, { baseUrl, storeId }) => {
+    listStores: (requestPromise, options) => {
+        const { baseUrl, token, offset, limit } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(limit, 'limit', 'Maybe Number');
+        checkParamOrThrow(offset, 'offset', 'Maybe Number');
+
+        const query = { token };
+
+        if (limit) query.limit = limit;
+        if (offset) query.offset = offset;
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}`,
+            json: true,
+            method: 'GET',
+            qs: query,
+        })
+        .then(pluckData);
+    },
+
+    getStore: (requestPromise, options) => {
+        const { baseUrl, storeId } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
 
@@ -33,10 +66,14 @@ export default {
             url: `${baseUrl}${BASE_PATH}/${storeId}`,
             json: true,
             method: 'GET',
-        });
+        })
+        .then(pluckData)
+        .catch(catchNotFoundOrThrow);
     },
 
-    deleteStore: (requestPromise, { baseUrl, storeId }) => {
+    deleteStore: (requestPromise, options) => {
+        const { baseUrl, storeId } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
 
@@ -47,41 +84,50 @@ export default {
         });
     },
 
-    // TODO: Ensure that body is null or body or buffer
-    getRecord: (requestPromise, { baseUrl, storeId, key }) => {
+    // TODO: Ensure that body is null or string or buffer
+    getRecord: (requestPromise, options) => {
+        const { baseUrl, storeId, key, raw, useRawBody } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
+        checkParamOrThrow(raw, 'raw', 'Maybe Boolean');
+        checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
 
-        return requestPromise({
+        const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             method: 'GET',
-            json: false,
-            resolveWithResponse: true,
-        })
-        .then(({ body, headers }) => {
-            const contentType = headers['content-type'];
+            json: !raw,
+        };
 
-            return { body, contentType };
-        })
-        .catch((err) => {
-            if (err.details.statusCode === NOT_FOUND_STATUS_CODE) return null;
+        if (raw) requestOpts.qs = { raw: 1 };
 
-            throw err;
-        });
+        return requestPromise(requestOpts)
+            .then((body) => {
+                if (raw) return body;
+
+                const data = pluckData(body);
+
+                if (!useRawBody) data.body = parseBody(data.body, data.contentType);
+
+                return data;
+            }, catchNotFoundOrThrow);
     },
 
     // TODO: check that body is buffer or string, ...
-    putRecord: (requestPromise, { baseUrl, storeId, key, body, contentType = 'text/plain' }) => {
+    putRecord: (requestPromise, options) => {
+        const { baseUrl, storeId, key, body, contentType = 'text/plain', useRawBody } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(contentType, 'contentType', 'String');
+        checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             method: 'PUT',
-            body,
+            body: useRawBody ? body : encodeBody(body, contentType),
             json: false,
             headers: {
                 'Content-Type': contentType,
@@ -89,7 +135,9 @@ export default {
         });
     },
 
-    deleteRecord: (requestPromise, { baseUrl, storeId, key }) => {
+    deleteRecord: (requestPromise, options) => {
+        const { baseUrl, storeId, key } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
@@ -101,17 +149,42 @@ export default {
         });
     },
 
-    // TODO: add pagination
-    getRecordsKeys: (requestPromise, { baseUrl, storeId, exclusiveStartKey, count }) => {
+    listKeys: (requestPromise, options) => {
+        const { baseUrl, storeId, exclusiveStartKey, limit } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(exclusiveStartKey, 'exclusiveStartKey', 'Maybe String');
-        checkParamOrThrow(count, 'count', 'Maybe Number');
+        checkParamOrThrow(limit, 'limit', 'Maybe Number');
 
         const query = {};
 
         if (exclusiveStartKey) query.exclusiveStartKey = exclusiveStartKey;
-        if (count) query.count = count;
+        if (limit) query.limit = limit;
+
+        const requestOpts = {
+            url: `${baseUrl}${BASE_PATH}/${storeId}/keys`,
+            json: true,
+            method: 'GET',
+            qs: query,
+        };
+
+        return requestPromise(requestOpts).then(pluckData);
+    },
+
+    listRecords: (requestPromise, options) => {
+        const { baseUrl, storeId, exclusiveStartKey, limit, useRawBody } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(exclusiveStartKey, 'exclusiveStartKey', 'Maybe String');
+        checkParamOrThrow(limit, 'limit', 'Maybe Number');
+        checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
+
+        const query = {};
+
+        if (exclusiveStartKey) query.exclusiveStartKey = exclusiveStartKey;
+        if (limit) query.limit = limit;
 
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${storeId}/records`,
@@ -120,6 +193,18 @@ export default {
             qs: query,
         };
 
-        return requestPromise(requestOpts).then(items => ({ items }));
+        const transformItem = (item) => {
+            if (!useRawBody) item.body = parseBody(item.body, item.contentType);
+
+            return item;
+        };
+
+        return requestPromise(requestOpts)
+            .then(pluckData)
+            .then((data) => {
+                data.items = data.items.map(transformItem);
+
+                return data;
+            });
     },
 };

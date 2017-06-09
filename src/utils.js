@@ -5,8 +5,8 @@ import ApifyError, {
     INVALID_PARAMETER_ERROR_TYPE,
     REQUEST_FAILED_ERROR_TYPE,
     REQUEST_FAILED_ERROR_MESSAGE,
+    NOT_FOUND_STATUS_CODE,
 } from './apify_error';
-
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 const EXP_BACKOFF_MILLIS = 500;
@@ -131,4 +131,19 @@ export const checkParamOrThrow = (value, name, type, errorMessage) => {
     if (!typeCheck(type, value)) {
         throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, errorMessage);
     }
+};
+
+/**
+ * Returns object's data property or null if parameter is not an object.
+ */
+export const pluckData = obj => (_.isObject(obj) && !_.isUndefined(obj.data) ? obj.data : null);
+
+/**
+ * If given HTTP error has NOT_FOUND_STATUS_CODE status code then returns null.
+ * Otherwise rethrows error.
+ */
+export const catchNotFoundOrThrow = (err) => {
+    if (err.details.statusCode === NOT_FOUND_STATUS_CODE) return null;
+
+    throw err;
 };
