@@ -1,9 +1,26 @@
 import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
 
 export const BASE_PATH = '/v2/key-value-stores';
+export const CONTENT_TYPE_JSON = 'application/json';
+
+const parseBody = (body, contentType) => {
+    switch (contentType) {
+        case CONTENT_TYPE_JSON: return JSON.parse(body);
+        default: return body;
+    }
+};
+
+const encodeBody = (body, contentType) => {
+    switch (contentType) {
+        case CONTENT_TYPE_JSON: return JSON.stringify(body);
+        default: return body;
+    }
+};
 
 export default {
-    getOrCreateStore: (requestPromise, { baseUrl, token, storeName }) => {
+    getOrCreateStore: (requestPromise, options) => {
+        const { baseUrl, token, storeName } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(storeName, 'storeName', 'String');
@@ -17,7 +34,9 @@ export default {
         .then(pluckData);
     },
 
-    listStores: (requestPromise, { baseUrl, token, offset, limit }) => {
+    listStores: (requestPromise, options) => {
+        const { baseUrl, token, offset, limit } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
@@ -37,7 +56,9 @@ export default {
         .then(pluckData);
     },
 
-    getStore: (requestPromise, { baseUrl, storeId }) => {
+    getStore: (requestPromise, options) => {
+        const { baseUrl, storeId } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
 
@@ -50,7 +71,9 @@ export default {
         .catch(catchNotFoundOrThrow);
     },
 
-    deleteStore: (requestPromise, { baseUrl, storeId }) => {
+    deleteStore: (requestPromise, options) => {
+        const { baseUrl, storeId } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
 
@@ -62,47 +85,49 @@ export default {
     },
 
     // TODO: Ensure that body is null or string or buffer
-    getRecord: (requestPromise, { baseUrl, storeId, key, raw }) => {
+    getRecord: (requestPromise, options) => {
+        const { baseUrl, storeId, key, raw, disableBodyParser } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(raw, 'raw', 'Maybe Boolean');
+        checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
 
-        const options = {
+        const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             method: 'GET',
             json: !raw,
         };
 
-        if (raw) options.qs = { raw: 1 };
+        if (raw) requestOpts.qs = { raw: 1 };
 
-        return requestPromise(options)
-        .then((body) => {
-            if (raw) return body;
+        return requestPromise(requestOpts)
+            .then((body) => {
+                if (raw) return body;
 
-            const data = pluckData(body);
+                const data = pluckData(body);
 
-            if (data.contentType === 'application/json') {
-                data.rawBody = data.body;
-                data.body = JSON.parse(data.body);
-            }
+                if (!disableBodyParser) data.body = parseBody(data.body, data.contentType);
 
-            return data;
-        })
-        .catch(catchNotFoundOrThrow);
+                return data;
+            }, catchNotFoundOrThrow);
     },
 
     // TODO: check that body is buffer or string, ...
-    putRecord: (requestPromise, { baseUrl, storeId, key, body, contentType = 'text/plain' }) => {
+    putRecord: (requestPromise, options) => {
+        const { baseUrl, storeId, key, body, contentType = 'text/plain', disableBodyParser } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(contentType, 'contentType', 'String');
+        checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             method: 'PUT',
-            body,
+            body: disableBodyParser ? body : encodeBody(body, contentType),
             json: false,
             headers: {
                 'Content-Type': contentType,
@@ -110,7 +135,9 @@ export default {
         });
     },
 
-    deleteRecord: (requestPromise, { baseUrl, storeId, key }) => {
+    deleteRecord: (requestPromise, options) => {
+        const { baseUrl, storeId, key } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
@@ -122,7 +149,9 @@ export default {
         });
     },
 
-    listKeys: (requestPromise, { baseUrl, storeId, exclusiveStartKey, limit }) => {
+    listKeys: (requestPromise, options) => {
+        const { baseUrl, storeId, exclusiveStartKey, limit } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(exclusiveStartKey, 'exclusiveStartKey', 'Maybe String');
@@ -143,11 +172,14 @@ export default {
         return requestPromise(requestOpts).then(pluckData);
     },
 
-    listRecords: (requestPromise, { baseUrl, storeId, exclusiveStartKey, limit }) => {
+    listRecords: (requestPromise, options) => {
+        const { baseUrl, storeId, exclusiveStartKey, limit, disableBodyParser } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(exclusiveStartKey, 'exclusiveStartKey', 'Maybe String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
+        checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
 
         const query = {};
 
@@ -161,6 +193,18 @@ export default {
             qs: query,
         };
 
-        return requestPromise(requestOpts).then(pluckData);
+        const transformItem = (item) => {
+            if (!disableBodyParser) item.body = parseBody(item.body, item.contentType);
+
+            return item;
+        };
+
+        return requestPromise(requestOpts)
+            .then(pluckData)
+            .then((data) => {
+                data.items = data.items.map(transformItem);
+
+                return data;
+            });
     },
 };

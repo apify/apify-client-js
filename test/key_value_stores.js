@@ -3,6 +3,7 @@ import ApifyClient from '../build';
 import { BASE_PATH } from '../build/key_value_stores';
 import { mockRequest, requestExpectCall, requestExpectErrorCall, verifyAndRestoreRequest } from './_helper';
 
+const deepClone = obj => JSON.parse(JSON.stringify(obj));
 const BASE_URL = 'http://exaple.com/something';
 const OPTIONS = { baseUrl: BASE_URL };
 
@@ -172,9 +173,8 @@ describe('Key value store', () => {
         it('getRecord() works', () => {
             const key = 'some-key';
             const storeId = 'some-id';
-            const body = 'sometext';
             const expected = {
-                body,
+                body: 'sometext',
                 contentType: 'text/plain',
             };
 
@@ -192,7 +192,7 @@ describe('Key value store', () => {
                 .then(given => expect(given).to.be.eql(expected));
         });
 
-        it('getRecord() parses application/json content type', () => {
+        it('getRecord() parses JSON', () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });
@@ -204,7 +204,6 @@ describe('Key value store', () => {
             const expected = {
                 body: JSON.parse(body),
                 contentType,
-                rawBody: body,
             };
 
             requestExpectCall({
@@ -218,6 +217,31 @@ describe('Key value store', () => {
             return apifyClient
                 .keyValueStores
                 .getRecord({ storeId, key })
+                .then((given) => {
+                    expect(given).to.be.eql(expected);
+                });
+        });
+
+        it('getRecord() doesn\'t parse application/json when disableBodyParser=true', () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const serverResponse = {
+                body: JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] }),
+                contentType: 'application/json',
+            };
+            const expected = deepClone(serverResponse);
+
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+            }, { data: serverResponse });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .keyValueStores
+                .getRecord({ storeId, key, disableBodyParser: true })
                 .then((given) => {
                     expect(given).to.be.eql(expected);
                 });
@@ -268,11 +292,32 @@ describe('Key value store', () => {
         it('put() works', () => {
             const key = 'some-key';
             const storeId = 'some-id';
-            const contentType = 'application/json';
+            const contentType = 'text/plain';
             const body = 'someValue';
 
             requestExpectCall({
                 body: 'someValue',
+                headers: { 'Content-Type': 'text/plain' },
+                json: false,
+                method: 'PUT',
+                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+            });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .keyValueStores
+                .putRecord({ storeId, key, contentType, body });
+        });
+
+        it('put() works parses JSON', () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const contentType = 'application/json';
+            const body = { foo: 'bar' };
+
+            requestExpectCall({
+                body: JSON.stringify(body),
                 headers: { 'Content-Type': 'application/json' },
                 json: false,
                 method: 'PUT',
@@ -284,6 +329,27 @@ describe('Key value store', () => {
             return apifyClient
                 .keyValueStores
                 .putRecord({ storeId, key, contentType, body });
+        });
+
+        it('put() works doesn\'t parse JSON when disableBodyParser=true', () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const contentType = 'application/json';
+            const body = { foo: 'bar' };
+
+            requestExpectCall({
+                body,
+                headers: { 'Content-Type': 'application/json' },
+                json: false,
+                method: 'PUT',
+                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+            });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .keyValueStores
+                .putRecord({ storeId, key, contentType, body, disableBodyParser: true });
         });
 
         it('delete() works', () => {
@@ -324,11 +390,45 @@ describe('Key value store', () => {
                 .then(response => expect(response).to.be.eql(expected));
         });
 
-        it('listRecords() works', () => {
+        it('listRecords() parses JSON', () => {
             const storeId = 'some-id';
             const exclusiveStartKey = 'fromKey';
             const limit = 10;
-            const expected = 'something';
+            const serverResponse = {
+                items: [
+                    { contentType: 'application/json', body: '{ "foo": "bar" }' },
+                    { contentType: 'text/plain', body: 'blaah' },
+                ],
+            };
+            const expected = deepClone(serverResponse);
+            expected.items[0].body = JSON.parse(expected.items[0].body);
+
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                qs: { limit, exclusiveStartKey },
+                url: `${BASE_URL}${BASE_PATH}/${storeId}/records`,
+            }, { data: serverResponse });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .keyValueStores
+                .listRecords({ storeId, exclusiveStartKey, limit })
+                .then(response => expect(response).to.be.eql(expected));
+        });
+
+        it('listRecords() doesn\'t parse JSON when disableBodyParser=true', () => {
+            const storeId = 'some-id';
+            const exclusiveStartKey = 'fromKey';
+            const limit = 10;
+            const serverResponse = {
+                items: [
+                    { contentType: 'application/json', body: '{ "foo": "bar" }' },
+                    { contentType: 'text/plain', body: 'blaah' },
+                ],
+            };
+            const expected = deepClone(serverResponse);
 
             requestExpectCall({
                 json: true,
@@ -341,7 +441,7 @@ describe('Key value store', () => {
 
             return apifyClient
                 .keyValueStores
-                .listRecords({ storeId, exclusiveStartKey, limit })
+                .listRecords({ storeId, exclusiveStartKey, limit, disableBodyParser: true })
                 .then(response => expect(response).to.be.eql(expected));
         });
     });

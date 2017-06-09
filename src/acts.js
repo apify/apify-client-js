@@ -4,7 +4,9 @@ import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
 export const BASE_PATH = '/v2/acts';
 
 export default {
-    listActs: (requestPromise, { baseUrl, token, offset, limit }) => {
+    listActs: (requestPromise, options) => {
+        const { baseUrl, token, offset, limit } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
@@ -24,7 +26,9 @@ export default {
         .then(pluckData);
     },
 
-    createAct: (requestPromise, { baseUrl, token, act }) => {
+    createAct: (requestPromise, options) => {
+        const { baseUrl, token, act } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(act, 'act', 'Object');
@@ -39,16 +43,17 @@ export default {
         .then(pluckData);
     },
 
-    updateAct: (requestPromise, { baseUrl, token, actId, act }) => {
-        if (!actId && act.id) actId = act.id;
+    updateAct: (requestPromise, options) => {
+        const { baseUrl, token, actId, act } = options;
+        const safeActId = !actId && act.id ? act.id : actId;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(safeActId, 'actId', 'String');
         checkParamOrThrow(act, 'act', 'Object');
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}`,
             json: true,
             method: 'PUT',
             qs: { token },
@@ -57,7 +62,9 @@ export default {
         .then(pluckData);
     },
 
-    deleteAct: (requestPromise, { baseUrl, token, actId }) => {
+    deleteAct: (requestPromise, options) => {
+        const { baseUrl, token, actId } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
 
@@ -69,7 +76,9 @@ export default {
         });
     },
 
-    getAct: (requestPromise, { baseUrl, token, actId }) => {
+    getAct: (requestPromise, options) => {
+        const { baseUrl, token, actId } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
 
@@ -83,7 +92,9 @@ export default {
         .catch(catchNotFoundOrThrow);
     },
 
-    listRuns: (requestPromise, { baseUrl, token, actId, offset, limit }) => {
+    listRuns: (requestPromise, options) => {
+        const { baseUrl, token, actId, offset, limit } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
         checkParamOrThrow(token, 'token', 'String');
@@ -104,7 +115,9 @@ export default {
         .then(pluckData);
     },
 
-    runAct: (requestPromise, { baseUrl, token, actId, contentType, body }) => {
+    runAct: (requestPromise, options) => {
+        const { baseUrl, token, actId, contentType, body } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
@@ -123,7 +136,9 @@ export default {
         .then(pluckData);
     },
 
-    getRun: (requestPromise, { baseUrl, token, actId, runId }) => {
+    getRun: (requestPromise, options) => {
+        const { baseUrl, token, actId, runId } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
         checkParamOrThrow(runId, 'runId', 'String');
@@ -138,7 +153,9 @@ export default {
         .catch(catchNotFoundOrThrow);
     },
 
-    listBuilds: (requestPromise, { baseUrl, token, actId, offset, limit }) => {
+    listBuilds: (requestPromise, options) => {
+        const { baseUrl, token, actId, offset, limit } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
         checkParamOrThrow(token, 'token', 'String');
@@ -159,7 +176,9 @@ export default {
         .then(pluckData);
     },
 
-    buildAct: (requestPromise, { baseUrl, token, actId }) => {
+    buildAct: (requestPromise, options) => {
+        const { baseUrl, token, actId } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
@@ -173,7 +192,9 @@ export default {
         .then(pluckData);
     },
 
-    getBuild: (requestPromise, { baseUrl, token, actId, buildId }) => {
+    getBuild: (requestPromise, options) => {
+        const { baseUrl, token, actId, buildId } = options;
+
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
         checkParamOrThrow(buildId, 'buildId', 'String');

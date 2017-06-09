@@ -5,7 +5,7 @@
     "promise"
   ],
   "rules": {
-    "indent": ["error", 4],
+    "indent": ["error", 4, { "SwitchCase": 1 }],
     "no-underscore-dangle": [2, {
       "allow": ["_id", "_overrideMethodGroups"]
     }],
