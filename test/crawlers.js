@@ -1,9 +1,7 @@
-import sinon from 'sinon';
-import _ from 'underscore';
 import { expect } from 'chai';
-import * as utils from '../build/utils';
 import ApifyClient from '../build';
 import { BASE_PATH } from '../build/crawlers';
+import { mockRequest, requestExpectCall, requestExpectErrorCall, verifyAndRestoreRequest } from './_helper';
 
 const basicOptions = {
     baseUrl: 'http://myhost:80/mypath',
@@ -17,26 +15,8 @@ const credentials = {
 const optionsWithCredentials = Object.assign({}, basicOptions, credentials);
 
 describe('Crawlers', () => {
-    const requestPromiseMock = sinon.mock(utils, 'requestPromise');
-
-    const requestExpectCall = (requestOpts, body, response) => {
-        if (!_.isObject(requestOpts)) throw new Error('"requestOpts" parameter must be an object!');
-        if (!requestOpts.method) throw new Error('"requestOpts.method" parameter is not set!');
-
-        const expectedRequestOpts = response ? Object.assign({}, requestOpts, { resolveWithResponse: true, promise: Promise })
-                                             : Object.assign({}, requestOpts, { promise: Promise });
-        const output = response || body;
-
-        requestPromiseMock
-            .expects('requestPromise')
-            .once()
-            .withArgs(expectedRequestOpts)
-            .returns(Promise.resolve(output));
-    };
-
-    after(() => {
-        requestPromiseMock.restore();
-    });
+    before(mockRequest);
+    after(verifyAndRestoreRequest);
 
     describe('List crawlers', () => {
         const sampleBody = [
@@ -122,7 +102,7 @@ describe('Crawlers', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers`,
                 qs: { token: credentials.token },
                 resolveWithResponse: true,
-            }, {}, sampleResponse);
+            }, sampleResponse);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
@@ -297,6 +277,21 @@ describe('Crawlers', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
             return crawlerClient.getCrawlerSettings({ crawlerId: 'dummyCrawler', nosecrets: 1 });
+        });
+
+        it('should return null on 404 status code (RECORD_NOT_FOUND)', () => {
+            requestExpectErrorCall({
+                json: true,
+                method: 'GET',
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler`,
+                qs: { token: credentials.token },
+            }, false, 404);
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient
+            .getCrawlerSettings({ crawlerId: 'dummyCrawler', token: credentials.token })
+            .then(settings => expect(settings).to.be.eql(null));
         });
     });
 
@@ -559,6 +554,20 @@ describe('Crawlers', () => {
             return crawlerClient.getExecutionDetails({ executionId: 'dummyExecution' }).then((execution) => {
                 expect(execution).to.deep.equal(apiResponse);
             });
+        });
+
+        it('should return null on 404 status code (RECORD_NOT_FOUND)', () => {
+            requestExpectErrorCall({
+                json: true,
+                method: 'GET',
+                url: `http://myhost:80/mypath${BASE_PATH}/execs/dummyExecution`,
+            }, false, 404);
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient
+            .getExecutionDetails({ executionId: 'dummyExecution' })
+            .then(executionDetail => expect(executionDetail).to.be.eql(null));
         });
     });
 

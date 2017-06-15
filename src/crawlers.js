@@ -1,6 +1,6 @@
 import _ from 'underscore';
 
-import { checkParamOrThrow } from './utils';
+import { checkParamOrThrow, catchNotFoundOrThrow } from './utils';
 
 export const BASE_PATH = '/v1';
 
@@ -84,7 +84,7 @@ export default {
             json: true,
             method: 'GET',
             qs: queryString,
-        });
+        }).catch(catchNotFoundOrThrow);
     },
 
     deleteCrawler: (requestPromise, options) => {
@@ -168,7 +168,7 @@ export default {
             url: `${options.baseUrl}${BASE_PATH}/execs/${executionId}`,
             json: true,
             method: 'GET',
-        });
+        }).catch(catchNotFoundOrThrow);
     },
 
     getLastExecution: (requestPromise, options) => {
