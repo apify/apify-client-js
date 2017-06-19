@@ -100,7 +100,10 @@ export default {
             json: !raw,
         };
 
-        if (raw) requestOpts.qs = { raw: 1 };
+        if (raw) {
+            requestOpts.encoding = null;
+            requestOpts.qs = { raw: 1 };
+        }
 
         return requestPromise(requestOpts)
             .then((body) => {

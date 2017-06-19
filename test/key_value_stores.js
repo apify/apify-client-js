@@ -250,25 +250,24 @@ describe('Key value store', () => {
         it('getRecord() works with raw = true', () => {
             const key = 'some-key';
             const storeId = 'some-id';
-            const body = 'sometext';
-            const expected = {
-                body,
-                contentType: 'text/plain',
-            };
+            const bodyBufer = new Buffer([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]);
 
             requestExpectCall({
                 json: false,
                 method: 'GET',
                 qs: { raw: 1 },
+                encoding: null,
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
-            }, expected.body);
+            }, bodyBufer);
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .keyValueStores
                 .getRecord({ storeId, key, raw: true })
-                .then(given => expect(given).to.be.eql(expected.body));
+                .then((given) => {
+                    expect(given).to.be.eql(bodyBufer);
+                });
         });
 
         it('getRecord() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
