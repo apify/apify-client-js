@@ -7,6 +7,9 @@ const deepClone = obj => JSON.parse(JSON.stringify(obj));
 const BASE_URL = 'http://exaple.com/something';
 const OPTIONS = { baseUrl: BASE_URL };
 
+// TODO: tests for signed url get/put
+// TODO: tests for compression
+
 describe('Key value store', () => {
     before(mockRequest);
     after(verifyAndRestoreRequest);
@@ -182,6 +185,8 @@ describe('Key value store', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                gzip: true,
+                qs: {},
             }, { data: expected });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -210,6 +215,8 @@ describe('Key value store', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                gzip: true,
+                qs: {},
             }, { data: fromServer });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -235,6 +242,8 @@ describe('Key value store', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                gzip: true,
+                qs: {},
             }, { data: serverResponse });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -258,6 +267,7 @@ describe('Key value store', () => {
                 qs: { raw: 1 },
                 encoding: null,
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                gzip: true,
             }, bodyBufer);
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -278,6 +288,8 @@ describe('Key value store', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                gzip: true,
+                qs: {},
             }, false, 404);
 
             const apifyClient = new ApifyClient(OPTIONS);
