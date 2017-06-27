@@ -1,13 +1,13 @@
 import { expect } from 'chai';
+import { gzipSync } from 'zlib';
 import ApifyClient from '../build';
 import { BASE_PATH } from '../build/key_value_stores';
 import { mockRequest, requestExpectCall, requestExpectErrorCall, verifyAndRestoreRequest } from './_helper';
 
 const deepClone = obj => JSON.parse(JSON.stringify(obj));
-const BASE_URL = 'http://exaple.com/something';
+const BASE_URL = 'http://example.com/something';
 const OPTIONS = { baseUrl: BASE_URL };
 
-// TODO: tests for signed url get/put
 // TODO: tests for compression
 
 describe('Key value store', () => {
@@ -280,6 +280,69 @@ describe('Key value store', () => {
                 });
         });
 
+        it('getRecord() works with url = true and raw = false', () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const body = new Buffer([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]);
+            const signedUrl = 'http://something.aws.com/foo';
+
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                qs: { url: 1 },
+                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                gzip: true,
+            }, { data: { signedUrl, foo: 'bar' } });
+
+            requestExpectCall({
+                json: false,
+                method: 'GET',
+                url: signedUrl,
+                gzip: true,
+            }, body);
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .keyValueStores
+                .getRecord({ storeId, key, url: true })
+                .then((given) => {
+                    expect(given).to.be.eql({ body, foo: 'bar' });
+                });
+        });
+
+        it('getRecord() works with url = true and raw = true', () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const body = new Buffer([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]);
+            const signedUrl = 'http://something.aws.com/foo';
+
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                encoding: null,
+                qs: { url: 1, raw: 1 },
+                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                gzip: true,
+            }, { data: { signedUrl, foo: 'bar' } });
+
+            requestExpectCall({
+                json: false,
+                method: 'GET',
+                url: signedUrl,
+                gzip: true,
+            }, body);
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .keyValueStores
+                .getRecord({ storeId, key, url: true, raw: true })
+                .then((given) => {
+                    expect(given).to.be.eql(body);
+                });
+        });
+
         it('getRecord() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
             const key = 'some-key';
             const storeId = 'some-id';
@@ -361,6 +424,37 @@ describe('Key value store', () => {
             return apifyClient
                 .keyValueStores
                 .putRecord({ storeId, key, contentType, body, useRawBody: true });
+        });
+
+        it('put() works when url = true', () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const contentType = 'application/json';
+            const body = { foo: 'bar' };
+            const signedUrl = 'http://something.aws.com/foo';
+
+            requestExpectCall({
+                body: null,
+                headers: { 'Content-Type': 'application/json' },
+                json: true,
+                method: 'PUT',
+                qs: { url: 1 },
+                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+            }, { data: { signedUrl } });
+
+            requestExpectCall({
+                json: false,
+                method: 'PUT',
+                url: signedUrl,
+                headers: { 'Content-Encoding': 'gzip', 'Content-Type': contentType },
+                body: gzipSync(JSON.stringify(body)),
+            });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .keyValueStores
+                .putRecord({ storeId, key, contentType, body, url: true });
         });
 
         it('delete() works', () => {
