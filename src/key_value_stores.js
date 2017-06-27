@@ -178,6 +178,7 @@ export default {
                     body: null,
                     json: true,
                     qs: { url: 1 },
+                    headers: [],
                 });
 
                 return requestPromise(newRequestOpts)

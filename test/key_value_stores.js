@@ -227,7 +227,7 @@ describe('Key value store', () => {
                 });
         });
 
-        it('getRecord() doesn\'t parse application/json when useRawBody=true', () => {
+        it('getRecord() doesn\'t parse application/json when useRawBody = true', () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const serverResponse = {
@@ -361,7 +361,7 @@ describe('Key value store', () => {
                 .then(given => expect(given).to.be.eql(null));
         });
 
-        it('put() works', () => {
+        it('putRecord() works', () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const contentType = 'text/plain';
@@ -385,7 +385,7 @@ describe('Key value store', () => {
                 .putRecord({ storeId, key, contentType, body });
         });
 
-        it('put() works parses JSON', () => {
+        it('putRecord() works parses JSON', () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const contentType = 'application/json';
@@ -409,7 +409,7 @@ describe('Key value store', () => {
                 .putRecord({ storeId, key, contentType, body });
         });
 
-        it('put() works doesn\'t parse JSON when useRawBody=true', () => {
+        it('putRecord() works doesn\'t parse JSON when useRawBody = true', () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const contentType = 'application/json';
@@ -433,7 +433,7 @@ describe('Key value store', () => {
                 .putRecord({ storeId, key, contentType, body, useRawBody: true });
         });
 
-        it('put() works when url = true', () => {
+        it('putRecord() works when url = true', () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const contentType = 'application/json';
@@ -442,10 +442,7 @@ describe('Key value store', () => {
 
             requestExpectCall({
                 body: null,
-                headers: {
-                    'Content-Type': contentType,
-                    'Content-Encoding': 'gzip',
-                },
+                headers: [],
                 json: true,
                 method: 'PUT',
                 qs: { url: 1 },
@@ -470,7 +467,7 @@ describe('Key value store', () => {
                 .putRecord({ storeId, key, contentType, body, url: true });
         });
 
-        it('delete() works', () => {
+        it('deleteRecord() works', () => {
             const key = 'some-key';
             const storeId = 'some-id';
 
@@ -536,7 +533,7 @@ describe('Key value store', () => {
                 .then(response => expect(response).to.be.eql(expected));
         });
 
-        it('listRecords() doesn\'t parse JSON when useRawBody=true', () => {
+        it('listRecords() doesn\'t parse JSON when useRawBody = true', () => {
             const storeId = 'some-id';
             const exclusiveStartKey = 'fromKey';
             const limit = 10;
