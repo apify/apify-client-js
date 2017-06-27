@@ -8,8 +8,6 @@ const deepClone = obj => JSON.parse(JSON.stringify(obj));
 const BASE_URL = 'http://example.com/something';
 const OPTIONS = { baseUrl: BASE_URL };
 
-// TODO: tests for compression
-
 describe('Key value store', () => {
     before(mockRequest);
     after(verifyAndRestoreRequest);
@@ -370,8 +368,11 @@ describe('Key value store', () => {
             const body = 'someValue';
 
             requestExpectCall({
-                body: 'someValue',
-                headers: { 'Content-Type': 'text/plain' },
+                body: gzipSync('someValue'),
+                headers: {
+                    'Content-Type': contentType,
+                    'Content-Encoding': 'gzip',
+                },
                 json: false,
                 method: 'PUT',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
@@ -391,8 +392,11 @@ describe('Key value store', () => {
             const body = { foo: 'bar' };
 
             requestExpectCall({
-                body: JSON.stringify(body),
-                headers: { 'Content-Type': 'application/json' },
+                body: gzipSync(JSON.stringify(body)),
+                headers: {
+                    'Content-Type': contentType,
+                    'Content-Encoding': 'gzip',
+                },
                 json: false,
                 method: 'PUT',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
@@ -409,11 +413,14 @@ describe('Key value store', () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const contentType = 'application/json';
-            const body = { foo: 'bar' };
+            const body = "{ foo: 'bar' }";
 
             requestExpectCall({
-                body,
-                headers: { 'Content-Type': 'application/json' },
+                body: gzipSync(body),
+                headers: {
+                    'Content-Type': contentType,
+                    'Content-Encoding': 'gzip',
+                },
                 json: false,
                 method: 'PUT',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
@@ -435,7 +442,10 @@ describe('Key value store', () => {
 
             requestExpectCall({
                 body: null,
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': contentType,
+                    'Content-Encoding': 'gzip',
+                },
                 json: true,
                 method: 'PUT',
                 qs: { url: 1 },
@@ -446,7 +456,10 @@ describe('Key value store', () => {
                 json: false,
                 method: 'PUT',
                 url: signedUrl,
-                headers: { 'Content-Encoding': 'gzip', 'Content-Type': contentType },
+                headers: {
+                    'Content-Type': contentType,
+                    'Content-Encoding': 'gzip',
+                },
                 body: gzipSync(JSON.stringify(body)),
             });
 
