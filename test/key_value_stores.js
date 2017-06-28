@@ -287,8 +287,8 @@ describe('Key value store', () => {
             requestExpectCall({
                 json: true,
                 method: 'GET',
-                qs: { url: 1 },
-                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                qs: {},
+                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}/direct-download-url`,
                 gzip: true,
             }, { data: { signedUrl, foo: 'bar' } });
 
@@ -318,9 +318,8 @@ describe('Key value store', () => {
             requestExpectCall({
                 json: true,
                 method: 'GET',
-                encoding: null,
-                qs: { url: 1, raw: 1 },
-                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                qs: { raw: 1 },
+                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}/direct-download-url`,
                 gzip: true,
             }, { data: { signedUrl, foo: 'bar' } });
 
@@ -441,12 +440,12 @@ describe('Key value store', () => {
             const signedUrl = 'http://something.aws.com/foo';
 
             requestExpectCall({
-                body: null,
-                headers: [],
+                headers: {
+                    'Content-Type': contentType,
+                },
                 json: true,
-                method: 'PUT',
-                qs: { url: 1 },
-                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                method: 'GET',
+                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}/direct-upload-url`,
             }, { data: { signedUrl } });
 
             requestExpectCall({

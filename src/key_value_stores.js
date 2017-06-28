@@ -123,26 +123,27 @@ export default {
         if (!url) return requestPromise(requestOpts).then(parseResponse, catchNotFoundOrThrow);
 
         // ... or via signed url directly to S3:
-        requestOpts.json = true;
-        requestOpts.qs.url = 1;
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}/direct-download-url`,
+            method: 'GET',
+            json: true,
+            gzip: true,
+            qs: requestOpts.qs,
+        })
+        .then((response) => {
+            const meta = _.omit(response.data, 'signedUrl');
 
-        return requestPromise(requestOpts)
-            .then((response) => {
-                const s3RequestOpts = {
-                    method: 'GET',
-                    url: response.data.signedUrl,
-                    json: false,
-                    gzip: true,
-                };
-
-                const meta = _.omit(response.data, 'signedUrl');
-
-                return requestPromise(s3RequestOpts)
-                    .then((body) => {
-                        return raw ? body : { data: Object.assign({}, _.omit(meta, 'contentEncoding'), { body }) };
-                    })
-                    .then(parseResponse, catchNotFoundOrThrow);
-            });
+            return requestPromise({
+                method: 'GET',
+                url: response.data.signedUrl,
+                json: false,
+                gzip: true,
+            })
+            .then((body) => {
+                return raw ? body : { data: Object.assign({}, _.omit(meta, 'contentEncoding'), { body }) };
+            })
+            .then(parseResponse, catchNotFoundOrThrow);
+        });
     },
 
     // TODO: check that body is buffer or string
@@ -174,20 +175,20 @@ export default {
                 if (!url) return requestPromise(requestOpts);
 
                 // ... or via signed url directly to S3:
-                const newRequestOpts = Object.assign({}, requestOpts, {
-                    body: null,
+                return requestPromise({
+                    url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}/direct-upload-url`,
+                    method: 'GET',
                     json: true,
-                    qs: { url: 1 },
-                    headers: [],
+                    headers: {
+                        'Content-Type': contentType,
+                    },
+                })
+                .then((response) => {
+                    const signedUrl = response.data.signedUrl;
+                    const s3RequestOpts = Object.assign({}, requestOpts, { url: signedUrl });
+
+                    return requestPromise(s3RequestOpts);
                 });
-
-                return requestPromise(newRequestOpts)
-                    .then((response) => {
-                        const signedUrl = response.data.signedUrl;
-                        const s3RequestOpts = Object.assign({}, requestOpts, { url: signedUrl });
-
-                        return requestPromise(s3RequestOpts);
-                    });
             });
     },
 
