@@ -1,9 +1,23 @@
 import _ from 'underscore';
 import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
 
+/**
+ * Acts
+ * @module apifier-client
+ * @namespace acts
+ */
+
 export const BASE_PATH = '/v2/acts';
 
 export default {
+    /**
+     * List of Acts
+     *
+     * @memberof acts
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>|*}
+     */
     listActs: (requestPromise, options) => {
         const { baseUrl, token, offset, limit } = options;
 
@@ -26,6 +40,12 @@ export default {
         .then(pluckData);
     },
 
+    /**
+     * @memberof acts
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>|*}
+     */
     createAct: (requestPromise, options) => {
         const { baseUrl, token, act } = options;
 
@@ -43,6 +63,12 @@ export default {
         .then(pluckData);
     },
 
+    /**
+     * @memberof acts
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>|*}
+     */
     updateAct: (requestPromise, options) => {
         const { baseUrl, token, actId, act } = options;
         const safeActId = !actId && act.id ? act.id : actId;
@@ -62,6 +88,12 @@ export default {
         .then(pluckData);
     },
 
+    /**
+     * @memberof acts
+     * @param requestPromise
+     * @param options
+     * @returns {*}
+     */
     deleteAct: (requestPromise, options) => {
         const { baseUrl, token, actId } = options;
 
@@ -76,6 +108,12 @@ export default {
         });
     },
 
+    /**
+     * @memberof acts
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<T>}
+     */
     getAct: (requestPromise, options) => {
         const { baseUrl, token, actId } = options;
 
@@ -92,6 +130,12 @@ export default {
         .catch(catchNotFoundOrThrow);
     },
 
+    /**
+     * @memberof acts
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>|*}
+     */
     listRuns: (requestPromise, options) => {
         const { baseUrl, token, actId, offset, limit } = options;
 
@@ -115,6 +159,12 @@ export default {
         .then(pluckData);
     },
 
+    /**
+     * @memberof acts
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>|*}
+     */
     runAct: (requestPromise, options) => {
         const { baseUrl, token, actId, contentType, body } = options;
 
@@ -136,6 +186,12 @@ export default {
         .then(pluckData);
     },
 
+    /**
+     * @memberof acts
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<T>}
+     */
     getRun: (requestPromise, options) => {
         const { baseUrl, token, actId, runId } = options;
 
@@ -153,6 +209,12 @@ export default {
         .catch(catchNotFoundOrThrow);
     },
 
+    /**
+     * @memberof acts
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>|*}
+     */
     listBuilds: (requestPromise, options) => {
         const { baseUrl, token, actId, offset, limit } = options;
 
@@ -176,6 +238,12 @@ export default {
         .then(pluckData);
     },
 
+    /**
+     * @memberof acts
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>|*}
+     */
     buildAct: (requestPromise, options) => {
         const { baseUrl, token, actId } = options;
 
@@ -192,6 +260,12 @@ export default {
         .then(pluckData);
     },
 
+    /**
+     * @memberof acts
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<T>}
+     */
     getBuild: (requestPromise, options) => {
         const { baseUrl, token, actId, buildId } = options;
 

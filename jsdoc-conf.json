@@ -1,0 +1,27 @@
+{
+    "tags": {
+        "allowUnknownTags": true
+    },
+    "source": {
+        "include": [ "src" ],
+        "exclude": [ "src/utils.js" ],
+        "includePattern": ".+\\.js(doc|x)?$",
+        "excludePattern": "(^|\\/|\\\\)_"
+    },
+    "plugins": [
+        "plugins/markdown",
+        "./node_modules/jsdoc-export-default-interop/dist/index"
+    ],
+    "templates": {
+        "cleverLinks": false,
+        "monospaceLinks": false,
+        "default": {
+           "outputSourceFiles": false
+        }
+    },
+    "opts": {
+        "template": "templates/default",
+        "encoding": "utf8",
+        "destination": ".docs"
+    }
+}

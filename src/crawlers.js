@@ -2,6 +2,12 @@ import _ from 'underscore';
 
 import { checkParamOrThrow, catchNotFoundOrThrow } from './utils';
 
+/**
+ * Crawlers
+ * @memberOf ApifyClient
+ * @namespace ApifyClient.crawlers
+ */
+
 export const BASE_PATH = '/v1';
 
 function wrapArray(response) {
@@ -15,6 +21,14 @@ function wrapArray(response) {
 }
 
 export default {
+    /**
+     * Get all crawlers
+     *
+     * @memberof ApifyClient.crawlers
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>|*}
+     */
     listCrawlers: (requestPromise, options) => {
         const { userId, token } = options;
 
@@ -32,6 +46,13 @@ export default {
         }).then(wrapArray);
     },
 
+    /**
+     * Create crawler
+     * @memberof crawlers
+     * @param requestPromise
+     * @param options
+     * @returns {*}
+     */
     createCrawler: (requestPromise, options) => {
         const { userId, token, settings } = options;
 
@@ -51,6 +72,12 @@ export default {
         return requestPromise(requestParams);
     },
 
+    /**
+     * @memberof crawlers
+     * @param requestPromise
+     * @param options
+     * @returns {*}
+     */
     updateCrawler: (requestPromise, options) => {
         const { userId, token, settings, crawlerId } = options;
 
@@ -70,6 +97,12 @@ export default {
         return requestPromise(requestParams);
     },
 
+    /**
+     * @memberof crawlers
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<T>}
+     */
     getCrawlerSettings: (requestPromise, options) => {
         const { userId, token, crawlerId } = options;
 
@@ -87,6 +120,12 @@ export default {
         }).catch(catchNotFoundOrThrow);
     },
 
+    /**
+     * @memberof crawlers
+     * @param requestPromise
+     * @param options
+     * @returns {*}
+     */
     deleteCrawler: (requestPromise, options) => {
         const { userId, token, crawlerId } = options;
 
@@ -102,6 +141,12 @@ export default {
         });
     },
 
+    /**
+     * @memberof crawlers
+     * @param requestPromise
+     * @param options
+     * @returns {*}
+     */
     startExecution: (requestPromise, options) => {
         const { crawlerId, userId, token, settings } = options;
 
@@ -125,6 +170,12 @@ export default {
         return requestPromise(requestParams);
     },
 
+    /**
+     * @memberof crawlers
+     * @param requestPromise
+     * @param options
+     * @returns {*}
+     */
     stopExecution: (requestPromise, options) => {
         const { executionId, token } = options;
 
@@ -141,6 +192,12 @@ export default {
         return requestPromise(requestParams);
     },
 
+    /**
+     * @memberof crawlers
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>|*}
+     */
     getListOfExecutions: (requestPromise, options) => {
         const { userId, crawlerId, token } = options;
 
@@ -159,6 +216,12 @@ export default {
         }).then(wrapArray);
     },
 
+    /**
+     * @memberof crawlers
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<T>}
+     */
     getExecutionDetails: (requestPromise, options) => {
         const { executionId } = options;
 
@@ -171,6 +234,12 @@ export default {
         }).catch(catchNotFoundOrThrow);
     },
 
+    /**
+     * @memberof crawlers
+     * @param requestPromise
+     * @param options
+     * @returns {*}
+     */
     getLastExecution: (requestPromise, options) => {
         const { userId, crawlerId, token } = options;
 
@@ -188,6 +257,12 @@ export default {
         });
     },
 
+    /**
+     * @memberof crawlers
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>|*}
+     */
     getExecutionResults: (requestPromise, options) => {
         const { executionId } = options;
 
@@ -207,6 +282,12 @@ export default {
         return requestPromise(requestParams).then(wrapArray);
     },
 
+    /**
+     * @memberof crawlers
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>|*}
+     */
     getLastExecutionResults: (requestPromise, options) => {
         const { userId, token, crawlerId } = options;
 
