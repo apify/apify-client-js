@@ -1,10 +1,11 @@
 import { expect } from 'chai';
+import { gzipSync } from 'zlib';
 import ApifyClient from '../build';
 import { BASE_PATH } from '../build/key_value_stores';
 import { mockRequest, requestExpectCall, requestExpectErrorCall, verifyAndRestoreRequest } from './_helper';
 
 const deepClone = obj => JSON.parse(JSON.stringify(obj));
-const BASE_URL = 'http://exaple.com/something';
+const BASE_URL = 'http://example.com/something';
 const OPTIONS = { baseUrl: BASE_URL };
 
 describe('Key value store', () => {
@@ -182,6 +183,8 @@ describe('Key value store', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                gzip: true,
+                qs: {},
             }, { data: expected });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -210,6 +213,8 @@ describe('Key value store', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                gzip: true,
+                qs: {},
             }, { data: fromServer });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -222,7 +227,7 @@ describe('Key value store', () => {
                 });
         });
 
-        it('getRecord() doesn\'t parse application/json when useRawBody=true', () => {
+        it('getRecord() doesn\'t parse application/json when useRawBody = true', () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const serverResponse = {
@@ -235,6 +240,8 @@ describe('Key value store', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                gzip: true,
+                qs: {},
             }, { data: serverResponse });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -250,25 +257,87 @@ describe('Key value store', () => {
         it('getRecord() works with raw = true', () => {
             const key = 'some-key';
             const storeId = 'some-id';
-            const body = 'sometext';
-            const expected = {
-                body,
-                contentType: 'text/plain',
-            };
+            const bodyBufer = new Buffer([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]);
 
             requestExpectCall({
                 json: false,
                 method: 'GET',
                 qs: { raw: 1 },
+                encoding: null,
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
-            }, expected.body);
+                gzip: true,
+            }, bodyBufer);
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .keyValueStores
                 .getRecord({ storeId, key, raw: true })
-                .then(given => expect(given).to.be.eql(expected.body));
+                .then((given) => {
+                    expect(given).to.be.eql(bodyBufer);
+                });
+        });
+
+        it('getRecord() works with url = true and raw = false', () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const body = new Buffer([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]);
+            const signedUrl = 'http://something.aws.com/foo';
+
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                qs: {},
+                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}/direct-download-url`,
+                gzip: true,
+            }, { data: { signedUrl, foo: 'bar' } });
+
+            requestExpectCall({
+                json: false,
+                method: 'GET',
+                url: signedUrl,
+                gzip: true,
+            }, body);
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .keyValueStores
+                .getRecord({ storeId, key, url: true })
+                .then((given) => {
+                    expect(given).to.be.eql({ body, foo: 'bar' });
+                });
+        });
+
+        it('getRecord() works with url = true and raw = true', () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const body = new Buffer([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]);
+            const signedUrl = 'http://something.aws.com/foo';
+
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                qs: { raw: 1 },
+                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}/direct-download-url`,
+                gzip: true,
+            }, { data: { signedUrl, foo: 'bar' } });
+
+            requestExpectCall({
+                json: false,
+                method: 'GET',
+                url: signedUrl,
+                gzip: true,
+            }, body);
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .keyValueStores
+                .getRecord({ storeId, key, url: true, raw: true })
+                .then((given) => {
+                    expect(given).to.be.eql(body);
+                });
         });
 
         it('getRecord() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
@@ -279,6 +348,8 @@ describe('Key value store', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                gzip: true,
+                qs: {},
             }, false, 404);
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -289,15 +360,18 @@ describe('Key value store', () => {
                 .then(given => expect(given).to.be.eql(null));
         });
 
-        it('put() works', () => {
+        it('putRecord() works', () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const contentType = 'text/plain';
             const body = 'someValue';
 
             requestExpectCall({
-                body: 'someValue',
-                headers: { 'Content-Type': 'text/plain' },
+                body: gzipSync('someValue'),
+                headers: {
+                    'Content-Type': contentType,
+                    'Content-Encoding': 'gzip',
+                },
                 json: false,
                 method: 'PUT',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
@@ -310,15 +384,18 @@ describe('Key value store', () => {
                 .putRecord({ storeId, key, contentType, body });
         });
 
-        it('put() works parses JSON', () => {
+        it('putRecord() works parses JSON', () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const contentType = 'application/json';
             const body = { foo: 'bar' };
 
             requestExpectCall({
-                body: JSON.stringify(body),
-                headers: { 'Content-Type': 'application/json' },
+                body: gzipSync(JSON.stringify(body)),
+                headers: {
+                    'Content-Type': contentType,
+                    'Content-Encoding': 'gzip',
+                },
                 json: false,
                 method: 'PUT',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
@@ -331,15 +408,18 @@ describe('Key value store', () => {
                 .putRecord({ storeId, key, contentType, body });
         });
 
-        it('put() works doesn\'t parse JSON when useRawBody=true', () => {
+        it('putRecord() works doesn\'t parse JSON when useRawBody = true', () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const contentType = 'application/json';
-            const body = { foo: 'bar' };
+            const body = "{ foo: 'bar' }";
 
             requestExpectCall({
-                body,
-                headers: { 'Content-Type': 'application/json' },
+                body: gzipSync(body),
+                headers: {
+                    'Content-Type': contentType,
+                    'Content-Encoding': 'gzip',
+                },
                 json: false,
                 method: 'PUT',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
@@ -352,7 +432,41 @@ describe('Key value store', () => {
                 .putRecord({ storeId, key, contentType, body, useRawBody: true });
         });
 
-        it('delete() works', () => {
+        it('putRecord() works when url = true', () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const contentType = 'application/json';
+            const body = { foo: 'bar' };
+            const signedUrl = 'http://something.aws.com/foo';
+
+            requestExpectCall({
+                headers: {
+                    'Content-Type': contentType,
+                },
+                json: true,
+                method: 'GET',
+                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}/direct-upload-url`,
+            }, { data: { signedUrl } });
+
+            requestExpectCall({
+                json: false,
+                method: 'PUT',
+                url: signedUrl,
+                headers: {
+                    'Content-Type': contentType,
+                    'Content-Encoding': 'gzip',
+                },
+                body: gzipSync(JSON.stringify(body)),
+            });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .keyValueStores
+                .putRecord({ storeId, key, contentType, body, url: true });
+        });
+
+        it('deleteRecord() works', () => {
             const key = 'some-key';
             const storeId = 'some-id';
 
@@ -418,7 +532,7 @@ describe('Key value store', () => {
                 .then(response => expect(response).to.be.eql(expected));
         });
 
-        it('listRecords() doesn\'t parse JSON when useRawBody=true', () => {
+        it('listRecords() doesn\'t parse JSON when useRawBody = true', () => {
             const storeId = 'some-id';
             const exclusiveStartKey = 'fromKey';
             const limit = 10;

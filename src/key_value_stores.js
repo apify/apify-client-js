@@ -1,4 +1,5 @@
-import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
+import _ from 'underscore';
+import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow } from './utils';
 
 /**
  * Key Value Store
@@ -122,59 +123,115 @@ export default {
      */
     // TODO: Ensure that body is null or string or buffer
     getRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, raw, useRawBody } = options;
+        const { baseUrl, storeId, key, raw, useRawBody, url } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(raw, 'raw', 'Maybe Boolean');
         checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
+        checkParamOrThrow(url, 'url', 'Maybe Boolean');
 
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             method: 'GET',
             json: !raw,
+            qs: {},
+            gzip: true,
         };
 
-        if (raw) requestOpts.qs = { raw: 1 };
+        if (raw) {
+            requestOpts.encoding = null;
+            requestOpts.qs.raw = 1;
+        }
 
-        return requestPromise(requestOpts)
+        const parseResponse = (response) => {
+            if (raw) return response;
+
+            const data = pluckData(response);
+
+            if (!useRawBody) data.body = parseBody(data.body, data.contentType);
+
+            return data;
+        };
+
+        // Downloading via our servers:
+        if (!url) return requestPromise(requestOpts).then(parseResponse, catchNotFoundOrThrow);
+
+        // ... or via signed url directly to S3:
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}/direct-download-url`,
+            method: 'GET',
+            json: true,
+            gzip: true,
+            qs: requestOpts.qs,
+        })
+        .then((response) => {
+            const meta = _.omit(response.data, 'signedUrl');
+
+            return requestPromise({
+                method: 'GET',
+                url: response.data.signedUrl,
+                json: false,
+                gzip: true,
+            })
             .then((body) => {
-                if (raw) return body;
-
-                const data = pluckData(body);
-
-                if (!useRawBody) data.body = parseBody(data.body, data.contentType);
-
-                return data;
-            }, catchNotFoundOrThrow);
+                return raw ? body : { data: Object.assign({}, _.omit(meta, 'contentEncoding'), { body }) };
+            })
+            .then(parseResponse, catchNotFoundOrThrow);
+        });
     },
-
+    
     /**
      * @memberof keyValueStore
      * @param requestPromise
      * @param options
      * @returns {*}
      */
-    // TODO: check that body is buffer or string, ...
+    // TODO: check that body is buffer or string
     putRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, body, contentType = 'text/plain', useRawBody } = options;
-
+        const { baseUrl, storeId, key, body, contentType = 'text/plain', useRawBody, url } = options;
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(contentType, 'contentType', 'String');
         checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
+        checkParamOrThrow(url, 'url', 'Maybe Boolean');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
-            method: 'PUT',
-            body: useRawBody ? body : encodeBody(body, contentType),
-            json: false,
-            headers: {
-                'Content-Type': contentType,
-            },
-        });
+        const encodedBody = useRawBody ? body : encodeBody(body, contentType);
+
+        return gzipPromise(options.promise, encodedBody)
+            .then((gzipedBody) => {
+                const requestOpts = {
+                    url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
+                    method: 'PUT',
+                    body: gzipedBody,
+                    json: false,
+                    headers: {
+                        'Content-Type': contentType,
+                        'Content-Encoding': 'gzip',
+                    },
+                };
+
+                // Uploading via our servers:
+                if (!url) return requestPromise(requestOpts);
+
+                // ... or via signed url directly to S3:
+                return requestPromise({
+                    url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}/direct-upload-url`,
+                    method: 'GET',
+                    json: true,
+                    headers: {
+                        'Content-Type': contentType,
+                    },
+                })
+                .then((response) => {
+                    const signedUrl = response.data.signedUrl;
+                    const s3RequestOpts = Object.assign({}, requestOpts, { url: signedUrl });
+
+                    return requestPromise(s3RequestOpts);
+                });
+            });
     },
 
     /**

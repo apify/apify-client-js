@@ -1,6 +1,7 @@
 import request from 'request';
 import _ from 'underscore';
 import { typeCheck } from 'type-check';
+import { gzip } from 'zlib';
 import ApifyError, {
     INVALID_PARAMETER_ERROR_TYPE,
     REQUEST_FAILED_ERROR_TYPE,
@@ -146,4 +147,17 @@ export const catchNotFoundOrThrow = (err) => {
     if (err.details.statusCode === NOT_FOUND_STATUS_CODE) return null;
 
     throw err;
+};
+
+/**
+ * Promisified zlib.gzip().
+ */
+export const gzipPromise = (Promise, buffer) => {
+    return new Promise((resolve, reject) => {
+        gzip(buffer, (err, gzippedBuffer) => {
+            if (err) return reject(err);
+
+            resolve(gzippedBuffer);
+        });
+    });
 };

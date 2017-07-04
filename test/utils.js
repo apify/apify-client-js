@@ -1,5 +1,6 @@
 import sinon from 'sinon';
 import request from 'request';
+import { gunzipSync } from 'zlib';
 import { expect } from 'chai';
 import ApifyError, {
     APIFY_ERROR_NAME,
@@ -336,5 +337,24 @@ describe('utils.catchNotFoundOrThrow()', () => {
 
         expect(utils.catchNotFoundOrThrow(notFoundError)).to.be.eql(null);
         expect(() => utils.catchNotFoundOrThrow(otherError)).to.throw(otherError);
+    });
+});
+
+describe('utils.pluckData()', () => {
+    it('works', () => {
+        const buffer = new Buffer([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]);
+        const str = 'foobar';
+
+        const testBuffer = utils
+            .gzipPromise(Promise, buffer)
+            .then(gzipped => gunzipSync(gzipped))
+            .then(ungzipped => expect(ungzipped).to.be.eql(buffer));
+
+        const testString = utils
+            .gzipPromise(Promise, str)
+            .then(gzipped => gunzipSync(gzipped))
+            .then(ungzipped => expect(ungzipped.toString()).to.be.eql(str));
+
+        return Promise.all([testBuffer, testString]);
     });
 });
