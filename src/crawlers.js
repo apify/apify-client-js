@@ -4,8 +4,8 @@ import { checkParamOrThrow, catchNotFoundOrThrow } from './utils';
 
 /**
  * Crawlers
- * @memberOf ApifyClient
- * @namespace ApifyClient.crawlers
+ * @memberof ApifyClient
+ * @namespace crawlers
  */
 
 export const BASE_PATH = '/v1';
@@ -48,7 +48,7 @@ export default {
 
     /**
      * Create crawler
-     * @memberof crawlers
+     * @memberof ApifyClient.crawlers
      * @param requestPromise
      * @param options
      * @returns {*}
@@ -73,7 +73,7 @@ export default {
     },
 
     /**
-     * @memberof crawlers
+     * @memberof ApifyClient.crawlers
      * @param requestPromise
      * @param options
      * @returns {*}
@@ -98,7 +98,7 @@ export default {
     },
 
     /**
-     * @memberof crawlers
+     * @memberof ApifyClient.crawlers
      * @param requestPromise
      * @param options
      * @returns {Promise.<T>}
@@ -121,7 +121,7 @@ export default {
     },
 
     /**
-     * @memberof crawlers
+     * @memberof ApifyClient.crawlers
      * @param requestPromise
      * @param options
      * @returns {*}
@@ -142,7 +142,7 @@ export default {
     },
 
     /**
-     * @memberof crawlers
+     * @memberof ApifyClient.crawlers
      * @param requestPromise
      * @param options
      * @returns {*}
@@ -171,7 +171,7 @@ export default {
     },
 
     /**
-     * @memberof crawlers
+     * @memberof ApifyClient.crawlers
      * @param requestPromise
      * @param options
      * @returns {*}
@@ -193,7 +193,7 @@ export default {
     },
 
     /**
-     * @memberof crawlers
+     * @memberof ApifyClient.crawlers
      * @param requestPromise
      * @param options
      * @returns {Promise.<TResult>|*}
@@ -217,7 +217,7 @@ export default {
     },
 
     /**
-     * @memberof crawlers
+     * @memberof ApifyClient.crawlers
      * @param requestPromise
      * @param options
      * @returns {Promise.<T>}
@@ -235,7 +235,7 @@ export default {
     },
 
     /**
-     * @memberof crawlers
+     * @memberof ApifyClient.crawlers
      * @param requestPromise
      * @param options
      * @returns {*}
@@ -258,7 +258,7 @@ export default {
     },
 
     /**
-     * @memberof crawlers
+     * @memberof ApifyClient.crawlers
      * @param requestPromise
      * @param options
      * @returns {Promise.<TResult>|*}
@@ -283,7 +283,7 @@ export default {
     },
 
     /**
-     * @memberof crawlers
+     * @memberof ApifyClient.crawlers
      * @param requestPromise
      * @param options
      * @returns {Promise.<TResult>|*}

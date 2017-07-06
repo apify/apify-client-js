@@ -4,6 +4,7 @@ import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
 /**
  * Acts
  * @module apifier-client
+ * @memberOf ApifyClient
  * @namespace acts
  */
 
@@ -13,7 +14,7 @@ export default {
     /**
      * List of Acts
      *
-     * @memberof acts
+     * @memberof ApifyClient.acts
      * @param requestPromise
      * @param options
      * @returns {Promise.<TResult>|*}
@@ -64,7 +65,7 @@ export default {
     },
 
     /**
-     * @memberof acts
+     * @memberof ApifyClient.acts
      * @param requestPromise
      * @param options
      * @returns {Promise.<TResult>|*}
@@ -89,7 +90,7 @@ export default {
     },
 
     /**
-     * @memberof acts
+     * @memberof ApifyClient.acts
      * @param requestPromise
      * @param options
      * @returns {*}
@@ -109,7 +110,7 @@ export default {
     },
 
     /**
-     * @memberof acts
+     * @memberof ApifyClient.acts
      * @param requestPromise
      * @param options
      * @returns {Promise.<T>}
@@ -131,7 +132,7 @@ export default {
     },
 
     /**
-     * @memberof acts
+     * @memberof ApifyClient.acts
      * @param requestPromise
      * @param options
      * @returns {Promise.<TResult>|*}
@@ -160,7 +161,7 @@ export default {
     },
 
     /**
-     * @memberof acts
+     * @memberof ApifyClient.acts
      * @param requestPromise
      * @param options
      * @returns {Promise.<TResult>|*}
@@ -187,7 +188,7 @@ export default {
     },
 
     /**
-     * @memberof acts
+     * @memberof ApifyClient.acts
      * @param requestPromise
      * @param options
      * @returns {Promise.<T>}
@@ -210,7 +211,7 @@ export default {
     },
 
     /**
-     * @memberof acts
+     * @memberof ApifyClient.acts
      * @param requestPromise
      * @param options
      * @returns {Promise.<TResult>|*}
@@ -239,7 +240,7 @@ export default {
     },
 
     /**
-     * @memberof acts
+     * @memberof ApifyClient.acts
      * @param requestPromise
      * @param options
      * @returns {Promise.<TResult>|*}
@@ -261,7 +262,7 @@ export default {
     },
 
     /**
-     * @memberof acts
+     * @memberof ApifyClient.acts
      * @param requestPromise
      * @param options
      * @returns {Promise.<T>}

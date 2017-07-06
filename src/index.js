@@ -43,10 +43,7 @@ const methodGroups = {
 };
 
 /**
- * Apify Client
- * @param options
- * @returns {ApifyClient}
- * @constructor
+ * @class ApifyClient
  */
 const ApifyClient = function (options = {}) {
     // This allows to initiate ApifyClient both ways - with and without "new".
@@ -94,7 +91,7 @@ const ApifyClient = function (options = {}) {
 
             promise.then(
                 result => callback(null, result),
-                error => callback(error),
+                error => callback(error)
             );
         };
     };

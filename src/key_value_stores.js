@@ -3,7 +3,7 @@ import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow } from 
 
 /**
  * Key Value Store
- * @module apifier-client
+ * @memberOf ApifyClient
  * @namespace keyValueStore
  */
 
@@ -26,7 +26,7 @@ const encodeBody = (body, contentType) => {
 
 export default {
     /**
-     * @memberof keyValueStore
+     * @memberof ApifyClient.keyValueStore
      * @param requestPromise
      * @param options
      * @returns {Promise.<TResult>|*}
@@ -48,7 +48,7 @@ export default {
     },
 
     /**
-     * @memberof keyValueStore
+     * @memberof ApifyClient.keyValueStore
      * @param requestPromise
      * @param options
      * @returns {Promise.<TResult>|*}
@@ -76,7 +76,7 @@ export default {
     },
 
     /**
-     * @memberof keyValueStore
+     * @memberof ApifyClient.keyValueStore
      * @param requestPromise
      * @param options
      * @returns {Promise.<T>}
@@ -97,7 +97,7 @@ export default {
     },
 
     /**
-     * @memberof keyValueStore
+     * @memberof ApifyClient.keyValueStore
      * @param requestPromise
      * @param options
      * @returns {*}
@@ -116,7 +116,7 @@ export default {
     },
 
     /**
-     * @memberof keyValueStore
+     * @memberof ApifyClient.keyValueStore
      * @param requestPromise
      * @param options
      * @returns {Promise.<TResult>|*}
@@ -181,7 +181,7 @@ export default {
             .then(parseResponse, catchNotFoundOrThrow);
         });
     },
-    
+
     /**
      * @memberof keyValueStore
      * @param requestPromise
@@ -235,7 +235,7 @@ export default {
     },
 
     /**
-     * @memberof keyValueStore
+     * @memberof ApifyClient.keyValueStore
      * @param requestPromise
      * @param options
      * @returns {*}
@@ -255,7 +255,7 @@ export default {
     },
 
     /**
-     * @memberof keyValueStore
+     * @memberof ApifyClient.keyValueStore
      * @param requestPromise
      * @param options
      * @returns {Promise.<TResult>|*}
@@ -284,7 +284,7 @@ export default {
     },
 
     /**
-     * @memberof keyValueStore
+     * @memberof ApifyClient.keyValueStore
      * @param requestPromise
      * @param options
      * @returns {Promise.<TResult>}
