@@ -91,7 +91,7 @@ const ApifyClient = function (options = {}) {
 
             promise.then(
                 result => callback(null, result),
-                error => callback(error)
+                error => callback(error),
             );
         };
     };
