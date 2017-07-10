@@ -29,7 +29,8 @@ else
 fi
 
 echo "Generating documentation ..."
-npm run-script build # we need generate doc from build because https://github.com/jsdoc3/jsdoc/issues/555
+npm run clean
+npm run build # we need generate doc from build because https://github.com/jsdoc3/jsdoc/issues/555
 node_modules/jsdoc/jsdoc.js -c jsdoc-conf.json -d ${TEMP_DOC_DIR}
 
 echo "Pushing to git ..."
