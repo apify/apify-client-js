@@ -1,7 +1,4 @@
 #!/bin/bash
-# TODO
-# export AWS_ACCESS_KEY=<access key>
-# export AWS_SECRET_KEY=<secret key>
 
 set -e
 
@@ -11,7 +8,12 @@ NC='\033[0m' # No Color
 PACKAGE_VERSION=`node -pe "require('./package.json').version"`
 BRANCH=`git status | grep 'On branch' | cut -d ' ' -f 3`
 BRANCH_UP_TO_DATE=`git status | grep 'nothing to commit' | tr -s \n ' '`;
-DOC_DIR=${PWD}"/.docs"
+
+# Upload doc to S3 configuration
+TEMP_DOC_DIR=${PWD}"/.docs"
+AWS_ACCESS_KEY=$(grep aws_access_key_id ~/.aws/credentials | awk '{split($0,a," "); print a[3]}')
+AWS_SECRET_KEY=$(grep aws_secret_access_key ~/.aws/credentials | awk '{split($0,a," "); print a[3]}')
+AWS_BUCKET="apify-client-js-doc"
 
 if [ -z "$BRANCH_UP_TO_DATE" ]; then
     printf "${RED}You have uncommited changes!${NC}\n"
@@ -27,7 +29,7 @@ else
 fi
 
 echo "Generating documentation ..."
-node_modules/jsdoc/jsdoc.js -c jsdoc-conf.json -d ${DOC_DIR}
+node_modules/jsdoc/jsdoc.js -c jsdoc-conf.json -d ${TEMP_DOC_DIR}
 
 echo "Pushing to git ..."
 git push
@@ -39,11 +41,10 @@ echo "Tagging git with ${GIT_TAG} ..."
 git tag ${GIT_TAG}
 git push origin ${GIT_TAG}
 
-echo "Uploading doumentation to s3 ..."
-export AWS_BUCKET="apify-client-js-doc"
-export AWS_BUCKET_FOLDER=GIT_TAG
-node_modules/deploy-web-to-s3/bin/deploy-web-to-s3.js ${DOC_DIR}
-rm -rf ${DOC_DIR}
+echo "Git tag: ${GIT_TAG} created."
 
+echo "Uploading doumentation to s3 ..."
+AWS_ACCESS_KEY=${AWS_ACCESS_KEY} AWS_SECRET_KEY=${AWS_SECRET_KEY} AWS_BUCKET=${AWS_BUCKET} AWS_BUCKET_FOLDER=${GIT_TAG} node_modules/deploy-web-to-s3/bin/deploy-web-to-s3.js ${TEMP_DOC_DIR}
+rm -rf ${TEMP_DOC_DIR}
 
 echo "Done."
