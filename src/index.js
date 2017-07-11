@@ -3,7 +3,14 @@ import { requestPromise, REQUEST_PROMISE_OPTIONS } from './utils';
 import acts from './acts';
 import crawlers from './crawlers';
 import keyValueStores from './key_value_stores';
+import logs from './logs';
 import ApifyError, { INVALID_PARAMETER_ERROR_TYPE } from './apify_error';
+
+/**
+ * Apify Client for JavaScript
+ *
+ * @module apifier-client
+ */
 
 const getDefaultOptions = () => ({
     baseUrl: 'https://api.apifier.com',
@@ -28,13 +35,18 @@ const getDefaultOptions = () => ({
  * - options
  *
  * Method must return promise.
+ * @ignore
  */
 const methodGroups = {
     acts,
     crawlers,
     keyValueStores,
+    logs,
 };
 
+/**
+ * @class ApifyClient
+ */
 const ApifyClient = function (options = {}) {
     // This allows to initiate ApifyClient both ways - with and without "new".
     if (!this || this.constructor !== ApifyClient) return new ApifyClient(options);
@@ -90,15 +102,18 @@ const ApifyClient = function (options = {}) {
     _.forEach(undecoratedMethodGroups, (methodGroup, name) => {
         this[name] = _.mapObject(methodGroup, methodDecorator);
     });
-
-    // Add setOptions(options) method to allow setOptions overriding.
+    /**
+     * Add setOptions(options) method to allow setOptions overriding.
+     * @param newOptions
+     */
     this.setOptions = (newOptions) => {
         _.forEach(newOptions, (val, key) => {
             instanceOpts[key] = val;
         });
     };
-
-    // Add getOptions() method to enable users to fetch current settings.
+    /**
+     * Add getOptions() method to enable users to fetch current settings.
+     */
     this.getOptions = () => {
         return _.clone(instanceOpts);
     };
