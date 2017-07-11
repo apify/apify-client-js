@@ -1,26 +1,8 @@
 import _ from 'underscore';
-import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, decodeBody, encodeBody  } from './utils';
+import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, decodeBody, encodeBody } from './utils';
 
 export const BASE_PATH = '/v2/key-value-stores';
-<<<<<<< HEAD
-=======
-export const CONTENT_TYPE_JSON = 'application/json';
 export const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
-
-const parseBody = (body, contentType) => {
-    switch (contentType) {
-        case CONTENT_TYPE_JSON: return JSON.parse(body);
-        default: return body;
-    }
-};
-
-const encodeBody = (body, contentType) => {
-    switch (contentType) {
-        case CONTENT_TYPE_JSON: return JSON.stringify(body);
-        default: return body;
-    }
-};
->>>>>>> 1e222ca243a5400230f059c36c9201967126f38d
 
 export default {
     getOrCreateStore: (requestPromise, options) => {
