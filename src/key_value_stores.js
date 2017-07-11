@@ -1,10 +1,22 @@
 import _ from 'underscore';
 import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, decodeBody, encodeBody } from './utils';
 
+/**
+ * Key Value Store
+ * @memberOf ApifyClient
+ * @namespace keyValueStore
+ */
+
 export const BASE_PATH = '/v2/key-value-stores';
 export const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
 
 export default {
+    /**
+     * @memberof ApifyClient.keyValueStore
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>|*}
+     */
     getOrCreateStore: (requestPromise, options) => {
         const { baseUrl, token, storeName } = options;
 
@@ -21,6 +33,12 @@ export default {
         .then(pluckData);
     },
 
+    /**
+     * @memberof ApifyClient.keyValueStore
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>|*}
+     */
     listStores: (requestPromise, options) => {
         const { baseUrl, token, offset, limit } = options;
 
@@ -43,6 +61,12 @@ export default {
         .then(pluckData);
     },
 
+    /**
+     * @memberof ApifyClient.keyValueStore
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<T>}
+     */
     getStore: (requestPromise, options) => {
         const { baseUrl, storeId } = options;
 
@@ -58,6 +82,12 @@ export default {
         .catch(catchNotFoundOrThrow);
     },
 
+    /**
+     * @memberof ApifyClient.keyValueStore
+     * @param requestPromise
+     * @param options
+     * @returns {*}
+     */
     deleteStore: (requestPromise, options) => {
         const { baseUrl, storeId } = options;
 
@@ -71,6 +101,12 @@ export default {
         });
     },
 
+    /**
+     * @memberof ApifyClient.keyValueStore
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>|*}
+     */
     // TODO: Ensure that body is null or string or buffer
     getRecord: (requestPromise, options) => {
         const { baseUrl, storeId, key, raw, useRawBody, url } = options;
@@ -132,6 +168,12 @@ export default {
         });
     },
 
+    /**
+     * @memberof keyValueStore
+     * @param requestPromise
+     * @param options
+     * @returns {*}
+     */
     // TODO: check that body is buffer or string
     putRecord: (requestPromise, options) => {
         const { baseUrl, storeId, key, body, contentType = 'text/plain', useRawBody } = options;
@@ -177,6 +219,12 @@ export default {
             });
     },
 
+    /**
+     * @memberof ApifyClient.keyValueStore
+     * @param requestPromise
+     * @param options
+     * @returns {*}
+     */
     deleteRecord: (requestPromise, options) => {
         const { baseUrl, storeId, key } = options;
 
@@ -191,6 +239,12 @@ export default {
         });
     },
 
+    /**
+     * @memberof ApifyClient.keyValueStore
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>|*}
+     */
     listKeys: (requestPromise, options) => {
         const { baseUrl, storeId, exclusiveStartKey, limit } = options;
 
@@ -214,6 +268,12 @@ export default {
         return requestPromise(requestOpts).then(pluckData);
     },
 
+    /**
+     * @memberof ApifyClient.keyValueStore
+     * @param requestPromise
+     * @param options
+     * @returns {Promise.<TResult>}
+     */
     listRecords: (requestPromise, options) => {
         const { baseUrl, storeId, exclusiveStartKey, limit, useRawBody } = options;
 
