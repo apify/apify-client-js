@@ -12,6 +12,7 @@ import ApifyError, {
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 const EXP_BACKOFF_MILLIS = 500;
 const EXP_BACKOFF_MAX_REPEATS = 8; // 64s
+const CONTENT_TYPE_JSON = 'application/json';
 
 export const REQUEST_PROMISE_OPTIONS = ['promise', 'expBackOffMillis', 'expBackOffMaxRepeats'];
 
@@ -160,4 +161,20 @@ export const gzipPromise = (Promise, buffer) => {
             resolve(gzippedBuffer);
         });
     });
+};
+
+/**
+ * Function for encoding/parsing body.
+ */
+export const decodeBody = (body, contentType) => {
+    switch (contentType) {
+        case CONTENT_TYPE_JSON: return JSON.parse(body);
+        default: return body;
+    }
+};
+export const encodeBody = (body, contentType) => {
+    switch (contentType) {
+        case CONTENT_TYPE_JSON: return JSON.stringify(body);
+        default: return body;
+    }
 };

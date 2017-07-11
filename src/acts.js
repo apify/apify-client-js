@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
+import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, encodeBody } from './utils';
 
 export const BASE_PATH = '/v2/acts';
 
@@ -115,24 +115,28 @@ export default {
         .then(pluckData);
     },
 
+    // TODO: Ensure that body is null or string or buffer
     runAct: (requestPromise, options) => {
-        const { baseUrl, token, actId, contentType, body } = options;
+        const { baseUrl, token, actId, contentType, body, useRawBody } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
         checkParamOrThrow(contentType, 'contentType', 'Maybe String');
+        checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
+
+        const encodedBody = useRawBody ? body : encodeBody(body, contentType);
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${actId}/runs`,
-            json: true,
             method: 'POST',
             qs: { token },
             headers: {
                 'Content-Type': contentType,
             },
-            body,
+            body: encodedBody,
         })
+        .then(response => JSON.parse(response))
         .then(pluckData);
     },
 

@@ -358,3 +358,18 @@ describe('utils.pluckData()', () => {
         return Promise.all([testBuffer, testString]);
     });
 });
+
+describe('utils.decodeBody/encodeBody()', () => {
+    it('works', () => {
+        const { encodeBody, decodeBody } = utils;
+
+        const inputObj = { foo: 'bar' };
+        const inputStr = JSON.stringify(inputObj);
+
+        expect(encodeBody(inputObj, 'application/json')).to.be.eql(inputStr);
+        expect(encodeBody(inputObj, 'application/something')).to.be.eql(inputObj);
+
+        expect(decodeBody(inputStr, 'application/json')).to.be.eql(inputObj);
+        expect(decodeBody(inputStr, 'application/something')).to.be.eql(inputStr);
+    });
+});

@@ -233,9 +233,9 @@ describe('Act method', () => {
         const contentType = 'some-type';
         const body = 'some-body';
         const run = { foo: 'bar' };
+        const apiResponse = JSON.stringify({ data: run });
 
         requestExpectCall({
-            json: true,
             method: 'POST',
             url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
             qs: { token },
@@ -243,15 +243,65 @@ describe('Act method', () => {
                 'Content-Type': contentType,
             },
             body,
-        }, {
-            data: run,
-        });
+        }, apiResponse);
 
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
             .acts
             .runAct({ actId, token, contentType, body })
+            .then(response => expect(response).to.be.eql(run));
+    });
+
+    it('runAct() stringifies JSON', () => {
+        const actId = 'some-id';
+        const token = 'some-token';
+        const contentType = 'application/json';
+        const body = { something: 'else' };
+        const run = { foo: 'bar' };
+        const apiResponse = JSON.stringify({ data: run });
+
+        requestExpectCall({
+            method: 'POST',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
+            qs: { token },
+            headers: {
+                'Content-Type': contentType,
+            },
+            body: JSON.stringify(body),
+        }, apiResponse);
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .runAct({ actId, token, contentType, body })
+            .then(response => expect(response).to.be.eql(run));
+    });
+
+    it('runAct() don\'t stringify JSON when useRawBody = true', () => {
+        const actId = 'some-id';
+        const token = 'some-token';
+        const contentType = 'application/json';
+        const body = '{"something":"else"}';
+        const run = { foo: 'bar' };
+        const apiResponse = JSON.stringify({ data: run });
+
+        requestExpectCall({
+            method: 'POST',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
+            qs: { token },
+            headers: {
+                'Content-Type': contentType,
+            },
+            body,
+        }, apiResponse);
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .runAct({ actId, token, contentType, body, useRawBody: true })
             .then(response => expect(response).to.be.eql(run));
     });
 
