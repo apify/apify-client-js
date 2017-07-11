@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow } from './utils';
+import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, decodeBody, encodeBody } from './utils';
 
 /**
  * Key Value Store
@@ -8,21 +8,7 @@ import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow } from 
  */
 
 export const BASE_PATH = '/v2/key-value-stores';
-export const CONTENT_TYPE_JSON = 'application/json';
-
-const parseBody = (body, contentType) => {
-    switch (contentType) {
-        case CONTENT_TYPE_JSON: return JSON.parse(body);
-        default: return body;
-    }
-};
-
-const encodeBody = (body, contentType) => {
-    switch (contentType) {
-        case CONTENT_TYPE_JSON: return JSON.stringify(body);
-        default: return body;
-    }
-};
+export const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
 
 export default {
     /**
@@ -150,7 +136,7 @@ export default {
 
             const data = pluckData(response);
 
-            if (!useRawBody) data.body = parseBody(data.body, data.contentType);
+            if (!useRawBody) data.body = decodeBody(data.body, data.contentType);
 
             return data;
         };
@@ -190,13 +176,12 @@ export default {
      */
     // TODO: check that body is buffer or string
     putRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, body, contentType = 'text/plain', useRawBody, url } = options;
+        const { baseUrl, storeId, key, body, contentType = 'text/plain', useRawBody } = options;
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(contentType, 'contentType', 'String');
         checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
-        checkParamOrThrow(url, 'url', 'Maybe Boolean');
 
         const encodedBody = useRawBody ? body : encodeBody(body, contentType);
 
@@ -214,7 +199,7 @@ export default {
                 };
 
                 // Uploading via our servers:
-                if (!url) return requestPromise(requestOpts);
+                if (gzipedBody.length < SIGNED_URL_UPLOAD_MIN_BYTESIZE) return requestPromise(requestOpts);
 
                 // ... or via signed url directly to S3:
                 return requestPromise({
@@ -311,7 +296,7 @@ export default {
         };
 
         const transformItem = (item) => {
-            if (!useRawBody) item.body = parseBody(item.body, item.contentType);
+            if (!useRawBody) item.body = decodeBody(item.body, item.contentType);
 
             return item;
         };

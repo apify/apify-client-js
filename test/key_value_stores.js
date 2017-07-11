@@ -1,7 +1,8 @@
 import { expect } from 'chai';
 import { gzipSync } from 'zlib';
+import { randomBytes } from 'crypto';
 import ApifyClient from '../build';
-import { BASE_PATH } from '../build/key_value_stores';
+import { BASE_PATH, SIGNED_URL_UPLOAD_MIN_BYTESIZE } from '../build/key_value_stores';
 import { mockRequest, requestExpectCall, requestExpectErrorCall, verifyAndRestoreRequest } from './_helper';
 
 const deepClone = obj => JSON.parse(JSON.stringify(obj));
@@ -432,11 +433,11 @@ describe('Key value store', () => {
                 .putRecord({ storeId, key, contentType, body, useRawBody: true });
         });
 
-        it('putRecord() works when url = true', () => {
+        it('putRecord() uploads via signed url when gzipped buffer.length > SIGNED_URL_UPLOAD_MIN_BYTESIZE', () => {
             const key = 'some-key';
             const storeId = 'some-id';
-            const contentType = 'application/json';
-            const body = { foo: 'bar' };
+            const contentType = 'application/octet-stream';
+            const body = randomBytes(SIGNED_URL_UPLOAD_MIN_BYTESIZE);
             const signedUrl = 'http://something.aws.com/foo';
 
             requestExpectCall({
@@ -456,14 +457,14 @@ describe('Key value store', () => {
                     'Content-Type': contentType,
                     'Content-Encoding': 'gzip',
                 },
-                body: gzipSync(JSON.stringify(body)),
+                body: gzipSync(body),
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .keyValueStores
-                .putRecord({ storeId, key, contentType, body, url: true });
+                .putRecord({ storeId, key, contentType, body });
         });
 
         it('deleteRecord() works', () => {
