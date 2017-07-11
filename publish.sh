@@ -32,7 +32,7 @@ echo "Generating documentation ..."
 npm run clean
 # we need generate doc from build because JSDoc doesn't support ES6 (https://github.com/jsdoc3/jsdoc/issues/555)
 npm run build
-node_modules/jsdoc/jsdoc.js -c jsdoc-conf.json -d ${TEMP_DOC_DIR}
+node ./node_modules/jsdoc/jsdoc.js -c jsdoc-conf.json -d ${TEMP_DOC_DIR}
 
 echo "Pushing to git ..."
 git push
