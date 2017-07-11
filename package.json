@@ -1,6 +1,6 @@
 {
   "name": "apify-client",
-  "version": "0.1.24",
+  "version": "0.1.25",
   "description": "Apifier API client for JavaScript",
   "main": "build/index.js",
   "keywords": [
@@ -53,6 +53,7 @@
     "babel-preset-es2015": "^6.1.18",
     "babel-preset-stage-0": "^6.1.18",
     "chai": "^3.4.1",
+    "deploy-web-to-s3": "^1.2.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb": "^14.1.0",
     "eslint-config-airbnb-base": "^11.1.0",
@@ -60,7 +61,10 @@
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "eslint-plugin-promise": "^3.4.2",
     "eslint-plugin-react": "^6.10.3",
+    "ink-docstrap": "^1.3.0",
     "isparta": "^4.0.0",
+    "jsdoc": "^3.4.3",
+    "jsdoc-export-default-interop": "^0.3.1",
     "mocha": "^3.2.0",
     "sinon": "^2.2.0"
   }
