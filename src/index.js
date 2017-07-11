@@ -3,6 +3,7 @@ import { requestPromise, REQUEST_PROMISE_OPTIONS } from './utils';
 import acts from './acts';
 import crawlers from './crawlers';
 import keyValueStores from './key_value_stores';
+import logs from './logs';
 import ApifyError, { INVALID_PARAMETER_ERROR_TYPE } from './apify_error';
 
 const getDefaultOptions = () => ({
@@ -33,6 +34,7 @@ const methodGroups = {
     acts,
     crawlers,
     keyValueStores,
+    logs,
 };
 
 const ApifyClient = function (options = {}) {
