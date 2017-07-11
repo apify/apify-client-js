@@ -1,22 +1,7 @@
 import _ from 'underscore';
-import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow } from './utils';
+import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, decodeBody, encodeBody  } from './utils';
 
 export const BASE_PATH = '/v2/key-value-stores';
-export const CONTENT_TYPE_JSON = 'application/json';
-
-const parseBody = (body, contentType) => {
-    switch (contentType) {
-        case CONTENT_TYPE_JSON: return JSON.parse(body);
-        default: return body;
-    }
-};
-
-const encodeBody = (body, contentType) => {
-    switch (contentType) {
-        case CONTENT_TYPE_JSON: return JSON.stringify(body);
-        default: return body;
-    }
-};
 
 export default {
     getOrCreateStore: (requestPromise, options) => {
@@ -114,7 +99,7 @@ export default {
 
             const data = pluckData(response);
 
-            if (!useRawBody) data.body = parseBody(data.body, data.contentType);
+            if (!useRawBody) data.body = decodeBody(data.body, data.contentType);
 
             return data;
         };
@@ -251,7 +236,7 @@ export default {
         };
 
         const transformItem = (item) => {
-            if (!useRawBody) item.body = parseBody(item.body, item.contentType);
+            if (!useRawBody) item.body = decodeBody(item.body, item.contentType);
 
             return item;
         };
