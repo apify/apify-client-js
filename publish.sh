@@ -9,7 +9,7 @@ PACKAGE_VERSION=`node -pe "require('./package.json').version"`
 BRANCH=`git status | grep 'On branch' | cut -d ' ' -f 3`
 BRANCH_UP_TO_DATE=`git status | grep 'nothing to commit' | tr -s \n ' '`;
 
-# Upload doc to S3 configuration
+# Credentials to upload doc to S3 configuration
 TEMP_DOC_DIR=${PWD}"/.docs"
 AWS_ACCESS_KEY=$(grep aws_access_key_id ~/.aws/credentials | awk '{split($0,a," "); print a[3]}')
 AWS_SECRET_KEY=$(grep aws_secret_access_key ~/.aws/credentials | awk '{split($0,a," "); print a[3]}')
@@ -23,9 +23,12 @@ fi
 if [ $BRANCH = "master" ]; then
     NPM_TAG='latest'
     GIT_TAG="v${PACKAGE_VERSION}"
-else
+elif [ $BRANCH = "master" ]; then
     NPM_TAG='beta'
     GIT_TAG="v${PACKAGE_VERSION}-beta"
+else
+    printf "You can publish from develop and master branches only!"
+    exit 1
 fi
 
 echo "Generating documentation ..."
