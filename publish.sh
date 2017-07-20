@@ -12,6 +12,7 @@ NC='\033[0m' # No Color
 PACKAGE_VERSION=`node -pe "require('./package.json').version"`
 BRANCH=`git status | grep 'On branch' | cut -d ' ' -f 3`
 BRANCH_UP_TO_DATE=`git status | grep 'nothing to commit' | tr -s \n ' '`;
+GIT_TAG="v${PACKAGE_VERSION}"
 
 # Credentials to upload doc to S3 configuration
 DOC_DIR=${PWD}"/docs"
@@ -26,10 +27,8 @@ fi
 
 if [ $BRANCH = "master" ]; then
     NPM_TAG='latest'
-    GIT_TAG="v${PACKAGE_VERSION}"
 elif [ $BRANCH = "develop" ]; then
     NPM_TAG='beta'
-    GIT_TAG="v${PACKAGE_VERSION}-beta"
 else
     printf "${RED}You can publish from develop and master branches only!${NC}\n"
     exit 1
