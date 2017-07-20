@@ -39,7 +39,7 @@ if [ $BRANCH = "master" ]; then
         RUNNING_FROM_SCRIPT=1 npm publish --tag latest
     else
         echo "Tagging version ${PACKAGE_VERSION} with tag \"latest\" ..."
-        RUNNING_FROM_SCRIPT=1 dist-tag add ${PACKAGE_VERSION} latest
+        RUNNING_FROM_SCRIPT=1 npm dist-tag add ${PACKAGE_VERSION} latest
     fi
 
 # Develop branch gets published as BETA and we don't allow to override tag of existing version.
