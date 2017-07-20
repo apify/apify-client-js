@@ -23,11 +23,11 @@ fi
 if [ $BRANCH = "master" ]; then
     NPM_TAG='latest'
     GIT_TAG="v${PACKAGE_VERSION}"
-elif [ $BRANCH = "master" ]; then
+elif [ $BRANCH = "develop" ]; then
     NPM_TAG='beta'
     GIT_TAG="v${PACKAGE_VERSION}-beta"
 else
-    printf "You can publish from develop and master branches only!"
+    printf "${RED}You can publish from develop and master branches only!${NC}\n"
     exit 1
 fi
 
