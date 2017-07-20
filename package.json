@@ -1,6 +1,6 @@
 {
   "name": "apify-client",
-  "version": "0.1.28",
+  "version": "0.1.29",
   "description": "Apifier API client for JavaScript",
   "main": "build/index.js",
   "keywords": [
@@ -39,7 +39,7 @@
     "prepare": "npm run build",
     "prepublishOnly": "(test $RUNNING_FROM_SCRIPT || (echo \"You must use publish.sh instead of 'npm publish' directly!\"; exit 1)) && npm test && npm run lint",
     "clean": "rm -rf build && rm -rf docs",
-    "lint": "npm run build && eslint src test"
+    "lint": "eslint src test"
   },
   "dependencies": {
     "request": "^2.81.0",
