@@ -1,6 +1,6 @@
 {
   "name": "apify-client",
-  "version": "0.1.29",
+  "version": "0.1.32",
   "description": "Apifier API client for JavaScript",
   "main": "build/index.js",
   "keywords": [
@@ -33,12 +33,13 @@
   ],
   "scripts": {
     "build": "babel src --out-dir build",
+    "build-doc": "npm run clean && npm run build && node ./node_modules/jsdoc/jsdoc.js -c jsdoc-conf.json -d docs",
     "test": "npm run build && mocha --timeout 5000 --compilers js:babel-core/register --recursive",
     "test-cov": "npm run build && babel-node node_modules/isparta/bin/isparta cover --report html --report text node_modules/.bin/_mocha",
     "prepare": "npm run build",
     "prepublishOnly": "(test $RUNNING_FROM_SCRIPT || (echo \"You must use publish.sh instead of 'npm publish' directly!\"; exit 1)) && npm test && npm run lint",
-    "clean": "rm -rf build",
-    "lint": "npm run build && eslint src test"
+    "clean": "rm -rf build && rm -rf docs",
+    "lint": "eslint src test"
   },
   "dependencies": {
     "request": "^2.81.0",
