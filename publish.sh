@@ -34,12 +34,12 @@ git push
 
 # Master gets published as LATEST if that version doesn't exists yet and retagged as LATEST otherwise.
 if [ $BRANCH = "master" ]; then
-    if [ -z `npm view apify-client versions | grep $PACKAGE_VERSION` ]; then
+    if [ -z `npm view ${PACKAGE_NAME} versions | grep $PACKAGE_VERSION` ]; then
         echo "Publishing version ${PACKAGE_VERSION} with tag \"latest\" ..."
         RUNNING_FROM_SCRIPT=1 npm publish --tag latest
     else
         echo "Tagging version ${PACKAGE_VERSION} with tag \"latest\" ..."
-        RUNNING_FROM_SCRIPT=1 npm dist-tag add apify-client@${PACKAGE_VERSION} latest
+        RUNNING_FROM_SCRIPT=1 npm dist-tag add ${PACKAGE_NAME}@${PACKAGE_VERSION} latest
     fi
 
 # Develop branch gets published as BETA and we don't allow to override tag of existing version.
