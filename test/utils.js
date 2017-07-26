@@ -334,9 +334,11 @@ describe('utils.catchNotFoundOrThrow()', () => {
     it('works', () => {
         const notFoundError = new ApifyError('not-found', 'Some message', { statusCode: NOT_FOUND_STATUS_CODE });
         const otherError = new ApifyError('any-error', 'Some message', { statusCode: 555 });
+        const otherGenericError = new Error('blabla');
 
         expect(utils.catchNotFoundOrThrow(notFoundError)).to.be.eql(null);
         expect(() => utils.catchNotFoundOrThrow(otherError)).to.throw(otherError);
+        expect(() => utils.catchNotFoundOrThrow(otherGenericError)).to.throw(otherGenericError);
     });
 });
 
