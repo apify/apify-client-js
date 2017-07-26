@@ -21,8 +21,8 @@ AWS_ACCESS_KEY=$(grep aws_access_key_id ~/.aws/credentials | awk '{split($0,a," 
 AWS_SECRET_KEY=$(grep aws_secret_access_key ~/.aws/credentials | awk '{split($0,a," "); print a[3]}')
 AWS_BUCKET="apify-client-js-doc"
 
-if [ -z "$BRANCH_UP_TO_DATE" ]; then
-    printf "${RED}You have uncommited changes!${NC}\n"
+if [ -z "${BRANCH_UP_TO_DATE}" ]; then
+    printf "${RED}You have uncommitted changes!${NC}\n"
     exit 1
 fi
 
@@ -33,19 +33,28 @@ echo "Pushing to git ..."
 git push
 
 # Master gets published as LATEST if that version doesn't exists yet and retagged as LATEST otherwise.
-if [ $BRANCH = "master" ]; then
-    if [ -z `npm view ${PACKAGE_NAME} versions | grep $PACKAGE_VERSION` ]; then
-        echo "Publishing version ${PACKAGE_VERSION} with tag \"latest\" ..."
-        RUNNING_FROM_SCRIPT=1 npm publish --tag latest
+if [ "${BRANCH}" = "master" ]; then
+    EXISTING_NPM_VERSION=$(npm view ${PACKAGE_NAME} versions | grep ${PACKAGE_VERSION} | tee) # Using tee to swallow non-zero exit code
+    if [ -z "${EXISTING_NPM_VERSION}" ]; then
+        printf "${RED}Version ${PACKAGE_VERSION} was not yet published on NPM. Note that you can only publish to NPM from \"develop\" branch!${NC}\n"
+        exit 1
     else
-        echo "Tagging version ${PACKAGE_VERSION} with tag \"latest\" ..."
+        echo "Tagging version ${PACKAGE_VERSION} on NPM with tag \"latest\" ..."
         RUNNING_FROM_SCRIPT=1 npm dist-tag add ${PACKAGE_NAME}@${PACKAGE_VERSION} latest
     fi
 
 # Develop branch gets published as BETA and we don't allow to override tag of existing version.
-elif [ $BRANCH = "develop" ]; then
+elif [ "${BRANCH}" = "develop" ]; then
     echo "Publishing version ${PACKAGE_VERSION} with tag \"beta\" ..."
     RUNNING_FROM_SCRIPT=1 npm publish --tag beta
+
+    echo "Tagging git commit with ${GIT_TAG} ..."
+    git tag ${GIT_TAG}
+    git push origin ${GIT_TAG}
+    echo "Git tag: ${GIT_TAG} created."
+
+    echo "Uploading docs to S3 ..."
+    AWS_ACCESS_KEY=${AWS_ACCESS_KEY} AWS_SECRET_KEY=${AWS_SECRET_KEY} AWS_BUCKET=${AWS_BUCKET} AWS_BUCKET_FOLDER=${GIT_TAG} node ./node_modules/deploy-web-to-s3/bin/deploy-web-to-s3.js ${DOC_DIR}
 
 # For other branch throw an error.
 else
@@ -53,12 +62,5 @@ else
     exit 1
 fi
 
-echo "Tagging git with ${GIT_TAG} ..."
-git tag ${GIT_TAG}
-git push origin ${GIT_TAG}
-echo "Git tag: ${GIT_TAG} created."
-
-echo "Uploading doc to s3 ..."
-AWS_ACCESS_KEY=${AWS_ACCESS_KEY} AWS_SECRET_KEY=${AWS_SECRET_KEY} AWS_BUCKET=${AWS_BUCKET} AWS_BUCKET_FOLDER=${GIT_TAG} node ./node_modules/deploy-web-to-s3/bin/deploy-web-to-s3.js ${DOC_DIR}
 
 echo "Done."
