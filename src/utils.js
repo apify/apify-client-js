@@ -145,7 +145,7 @@ export const pluckData = obj => (_.isObject(obj) && !_.isUndefined(obj.data) ? o
  * Otherwise rethrows error.
  */
 export const catchNotFoundOrThrow = (err) => {
-    if (err.details.statusCode === NOT_FOUND_STATUS_CODE) return null;
+    if (err.details && err.details.statusCode === NOT_FOUND_STATUS_CODE) return null;
 
     throw err;
 };
