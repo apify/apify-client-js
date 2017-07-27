@@ -9,6 +9,7 @@ import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, encodeBody } from '
  */
 
 export const BASE_PATH = '/v2/acts';
+export const WAIT_FOR_FINISH_SECS = 120;
 
 export default {
     /**
@@ -168,24 +169,28 @@ export default {
      */
     // TODO: Ensure that body is null or string or buffer
     runAct: (requestPromise, options) => {
-        const { baseUrl, token, actId, contentType, body, useRawBody } = options;
+        const { baseUrl, token, actId, contentType, body, useRawBody, waitForFinish } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
         checkParamOrThrow(contentType, 'contentType', 'Maybe String');
         checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
+        checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
 
         const encodedBody = useRawBody ? body : encodeBody(body, contentType);
+        const query = { token };
+
+        if (waitForFinish) query.waitForFinish = waitForFinish;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${actId}/runs`,
             method: 'POST',
-            qs: { token },
             headers: {
                 'Content-Type': contentType,
             },
             body: encodedBody,
+            qs: query,
         })
         .then(response => JSON.parse(response))
         .then(pluckData);
@@ -198,17 +203,22 @@ export default {
      * @returns {Promise.<T>}
      */
     getRun: (requestPromise, options) => {
-        const { baseUrl, token, actId, runId } = options;
+        const { baseUrl, token, actId, runId, waitForFinish } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
         checkParamOrThrow(runId, 'runId', 'String');
+        checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
+
+        const query = { token };
+
+        if (waitForFinish) query.waitForFinish = waitForFinish;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${actId}/runs/${runId}`,
             json: true,
             method: 'GET',
-            qs: { token },
+            qs: query,
         })
         .then(pluckData)
         .catch(catchNotFoundOrThrow);
@@ -250,17 +260,22 @@ export default {
      * @returns {Promise.<TResult>|*}
      */
     buildAct: (requestPromise, options) => {
-        const { baseUrl, token, actId } = options;
+        const { baseUrl, token, actId, waitForFinish } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
+
+        const query = { token };
+
+        if (waitForFinish) query.waitForFinish = waitForFinish;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${actId}/builds`,
             json: true,
             method: 'POST',
-            qs: { token },
+            qs: query,
         })
         .then(pluckData);
     },
@@ -272,17 +287,22 @@ export default {
      * @returns {Promise.<T>}
      */
     getBuild: (requestPromise, options) => {
-        const { baseUrl, token, actId, buildId } = options;
+        const { baseUrl, token, actId, buildId, waitForFinish } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
         checkParamOrThrow(buildId, 'buildId', 'String');
+        checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
+
+        const query = { token };
+
+        if (waitForFinish) query.waitForFinish = waitForFinish;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${actId}/builds/${buildId}`,
             json: true,
             method: 'GET',
-            qs: { token },
+            qs: query,
         })
         .then(pluckData)
         .catch(catchNotFoundOrThrow);
