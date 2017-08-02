@@ -13,7 +13,7 @@ export const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
 export default {
     /**
      * @memberof ApifyClient.keyValueStore
-     * @param requestPromise
+     * @instance
      * @param options
      * @returns {Promise.<TResult>|*}
      */
@@ -35,7 +35,7 @@ export default {
 
     /**
      * @memberof ApifyClient.keyValueStore
-     * @param requestPromise
+     * @instance
      * @param options
      * @returns {Promise.<TResult>|*}
      */
@@ -63,7 +63,7 @@ export default {
 
     /**
      * @memberof ApifyClient.keyValueStore
-     * @param requestPromise
+     * @instance
      * @param options
      * @returns {Promise.<T>}
      */
@@ -84,7 +84,7 @@ export default {
 
     /**
      * @memberof ApifyClient.keyValueStore
-     * @param requestPromise
+     * @instance
      * @param options
      * @returns {*}
      */
@@ -103,7 +103,7 @@ export default {
 
     /**
      * @memberof ApifyClient.keyValueStore
-     * @param requestPromise
+     * @instance
      * @param options
      * @returns {Promise.<TResult>|*}
      */
@@ -170,7 +170,7 @@ export default {
 
     /**
      * @memberof keyValueStore
-     * @param requestPromise
+     * @instance
      * @param options
      * @returns {*}
      */
@@ -221,7 +221,7 @@ export default {
 
     /**
      * @memberof ApifyClient.keyValueStore
-     * @param requestPromise
+     * @instance
      * @param options
      * @returns {*}
      */
@@ -241,6 +241,7 @@ export default {
 
     /**
      * @memberof ApifyClient.keyValueStore
+     * @instance
      * @param requestPromise
      * @param options
      * @returns {Promise.<TResult>|*}
@@ -270,7 +271,7 @@ export default {
 
     /**
      * @memberof ApifyClient.keyValueStore
-     * @param requestPromise
+     * @instance
      * @param options
      * @returns {Promise.<TResult>}
      */

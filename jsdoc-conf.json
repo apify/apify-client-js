@@ -9,7 +9,8 @@
         "excludePattern": "(^|\\/|\\\\)_"
     },
     "plugins": [
-        "./node_modules/jsdoc-export-default-interop/dist/index.js"
+        "./node_modules/jsdoc-export-default-interop/dist/index.js",
+        "plugins/markdown"
     ],
     "templates": {
         "cleverLinks": false,
@@ -20,7 +21,6 @@
     },
     "opts": {
         "template": "templates/default",
-        "encoding": "utf8",
-        "destination": ".docs"
+        "encoding": "utf8"
     }
 }

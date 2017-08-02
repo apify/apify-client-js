@@ -8,10 +8,9 @@ import ApifyError, { INVALID_PARAMETER_ERROR_TYPE } from './apify_error';
 
 /**
  * Apify Client for JavaScript
- *
- * @module apifier-client
  */
 
+/** @ignore */
 const getDefaultOptions = () => ({
     baseUrl: 'https://api.apifier.com',
 });
@@ -45,7 +44,25 @@ const methodGroups = {
 };
 
 /**
+ * Creates ApifyClient
  * @class ApifyClient
+ * @param {Object} options - Global options for ApifyClient
+ * @param {string} options.userId - Your user ID at apify.com
+ * @param {string} options.token - Your API token at apify.com
+ * @param {Object} options.promise - Promises dependency to use (default is native Promise)
+ * @param {number} options.expBackOffMillis - Wait time in milliseconds before making a new request in a case of error
+ * @param {number} options.expBackOffMaxRepeats - Maximum number of repeats in a case of error
+ * @description Basic usage of ApifyClient with Bluebird promise:
+ * ```javascript
+ * const ApifyClient = require('apify-client');
+ * const Promise = require("bluebird");;
+ *
+ * const apifyClient = new ApifyClient({
+ *   userId: 'jklnDMNKLekk',
+ *   token: 'SNjkeiuoeD443lpod68dk',
+ *   promise: Promise,
+ * });
+ * ```
  */
 const ApifyClient = function (options = {}) {
     // This allows to initiate ApifyClient both ways - with and without "new".
@@ -72,6 +89,7 @@ const ApifyClient = function (options = {}) {
      * - adds options.baseUrl
      * - passes preconfigured utils.requestPromise with Promises dependency set
      * - allows to use method with both callbacks and promises
+     * @ignore
      */
     const methodDecorator = (method) => {
         return (callOpts, callback) => {
@@ -103,8 +121,11 @@ const ApifyClient = function (options = {}) {
         this[name] = _.mapObject(methodGroup, methodDecorator);
     });
     /**
-     * Add setOptions(options) method to allow setOptions overriding.
-     * @param newOptions
+     * Method sets new options to ApifyClient instance.
+     * @memberof ApifyClient
+     * @function setOptions
+     * @instance
+     * @param {Object} options - see {@link ApifyClient} options object for ApifyClient
      */
     this.setOptions = (newOptions) => {
         _.forEach(newOptions, (val, key) => {
@@ -112,13 +133,20 @@ const ApifyClient = function (options = {}) {
         });
     };
     /**
-     * Add getOptions() method to enable users to fetch current settings.
+     * Method returns options for ApifyClient instance.
+     * @memberof ApifyClient
+     * @function getOptions
+     * @instance
+     * @return {Object} options - see {@link ApifyClient} options object for ApifyClient
      */
     this.getOptions = () => {
         return _.clone(instanceOpts);
     };
 
-    // This helper function is used in unit tests.
+    /**
+     * This helper function is used in unit tests.
+     * @ignore
+     */
     this.getDefaultOptions = getDefaultOptions;
 };
 

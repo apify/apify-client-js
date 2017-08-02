@@ -11,7 +11,7 @@ export const BASE_PATH = '/v2/logs';
 export default {
     /**
      * @memberof ApifyClient.logs
-     * @param requestPromise
+     * @instance
      * @param options
      * @returns {Promise.<TResult>|*}
      */

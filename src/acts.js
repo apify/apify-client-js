@@ -3,7 +3,6 @@ import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, encodeBody } from '
 
 /**
  * Acts
- * @module apifier-client
  * @memberOf ApifyClient
  * @namespace acts
  */
@@ -12,12 +11,16 @@ export const BASE_PATH = '/v2/acts';
 
 export default {
     /**
-     * List of Acts
+     * Gets list of your acts.
      *
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<TResult>|*}
+     * @instance
+     * @param {Object} options
+     * @param {string} options.token - Overwrites API token
+     * @param {number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {number} [options.desc] - If 1 then the crawlers are sorted by the createdAt field in descending order.
+     * @returns {PaginationList}
      */
     listActs: (requestPromise, options) => {
         const { baseUrl, token, offset, limit } = options;
@@ -42,9 +45,13 @@ export default {
     },
 
     /**
-     * @memberof acts
-     * @param requestPromise
-     * @param options
+     * Creates a new act.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param {string} options.token - Overwrites API token
+     * @param {Object} options.act
      * @returns {Promise.<TResult>|*}
      */
     createAct: (requestPromise, options) => {
@@ -65,9 +72,14 @@ export default {
     },
 
     /**
+     * Updates act.
+     *
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
+     * @instance
+     * @param {Object} options
+     * @param {string} options.token - Overwrites API token
+     * @param {string} options.actId - Act ID
+     * @param {Object} options.act
      * @returns {Promise.<TResult>|*}
      */
     updateAct: (requestPromise, options) => {
@@ -90,9 +102,13 @@ export default {
     },
 
     /**
+     * Deletes act.
+     *
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
+     * @instance
+     * @param {Object} options
+     * @param {string} options.token - Overwrites API token
+     * @param {string} options.actId - Act ID
      * @returns {*}
      */
     deleteAct: (requestPromise, options) => {
@@ -110,9 +126,13 @@ export default {
     },
 
     /**
+     * Gets act object.
+     *
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
+     * @instance
+     * @param {Object} options
+     * @param {string} options.token - Overwrites API token
+     * @param {string} options.actId - Act ID
      * @returns {Promise.<T>}
      */
     getAct: (requestPromise, options) => {
@@ -132,9 +152,16 @@ export default {
     },
 
     /**
+     * Gets list of act runs.
+     *
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
+     * @instance
+     * @param {Object} options
+     * @param {string} options.token - Overwrites API token
+     * @param {string} options.actId - Act ID
+     * @param {number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {number} [options.desc] - If 1 then the crawlers are sorted by the createdAt field in descending order.
      * @returns {Promise.<TResult>|*}
      */
     listRuns: (requestPromise, options) => {
@@ -161,9 +188,14 @@ export default {
     },
 
     /**
+     * Runs the latest build of given act.
+     *
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
+     * @instance
+     * @param {string} options.token - Overwrites API token
+     * @param {string} options.actId - Act ID
+     * @param {Object} options
+     *
      * @returns {Promise.<TResult>|*}
      */
     // TODO: Ensure that body is null or string or buffer
@@ -193,7 +225,7 @@ export default {
 
     /**
      * @memberof ApifyClient.acts
-     * @param requestPromise
+     * @instance
      * @param options
      * @returns {Promise.<T>}
      */
@@ -216,7 +248,7 @@ export default {
 
     /**
      * @memberof ApifyClient.acts
-     * @param requestPromise
+     * @instance
      * @param options
      * @returns {Promise.<TResult>|*}
      */
@@ -245,7 +277,7 @@ export default {
 
     /**
      * @memberof ApifyClient.acts
-     * @param requestPromise
+     * @instance
      * @param options
      * @returns {Promise.<TResult>|*}
      */
@@ -267,7 +299,7 @@ export default {
 
     /**
      * @memberof ApifyClient.acts
-     * @param requestPromise
+     * @instance
      * @param options
      * @returns {Promise.<T>}
      */
