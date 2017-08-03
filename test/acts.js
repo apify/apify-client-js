@@ -4,7 +4,7 @@ import ApifyClient from '../build';
 import { BASE_PATH } from '../build/acts';
 import { mockRequest, requestExpectCall, requestExpectErrorCall, verifyAndRestoreRequest } from './_helper';
 
-const BASE_URL = 'http://exaple.com/something';
+const BASE_URL = 'http://example.com/something';
 const OPTIONS = { baseUrl: BASE_URL };
 
 describe('Act method', () => {
