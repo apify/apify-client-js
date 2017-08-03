@@ -74,12 +74,12 @@ export default {
      * @memberof ApifyClient.crawlers
      * @instance
      * @param {Object} options
-     * @param {string} options.userId - Overwrites user ID
-     * @param {string} options.token - Overwrites API token
+     * @param options.userId
+     * @param options.token
      * @param {number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {number} [options.desc] - If 1 then the crawlers are sorted by the createdAt field in descending order.
-     * @param {function} [callback] - Callback function
+     * @param callback
      * @returns {PaginationList}
      */
     listCrawlers: (requestPromise, options) => {
@@ -105,10 +105,10 @@ export default {
      * @memberof ApifyClient.crawlers
      * @instance
      * @param {Object} options
-     * @param {string} options.userId - Overwrites user ID
-     * @param {string} options.token - Overwrites API token
+     * @param options.userId
+     * @param options.token
      * @param {Object} options.settings - Crawler settings, customId is required.
-     * @param {function} [callback] - Callback function
+     * @param callback
      * @returns {Crawler}
      */
     createCrawler: (requestPromise, options) => {
@@ -136,11 +136,11 @@ export default {
      * @memberof ApifyClient.crawlers
      * @instance
      * @param {Object} options
-     * @param {string} options.userId - Overwrites user ID
-     * @param {string} options.token - Overwrites API token
+     * @param options.userId
+     * @param options.token
      * @param {string} options.crawlerId - Crawler ID or crawler custom ID
      * @param {Object} options.settings - Crawler settings
-     * @param {function} [callback] - Callback function
+     * @param callback
      * @returns {Crawler}
      */
     updateCrawler: (requestPromise, options) => {
@@ -168,10 +168,10 @@ export default {
      * @memberof ApifyClient.crawlers
      * @instance
      * @param {Object} options
-     * @param {string} options.userId - Overwrites user ID
-     * @param {string} options.token - Overwrites API token
+     * @param options.userId
+     * @param options.token
      * @param {string} options.crawlerId - Crawler ID or crawler custom ID
-     * @param {function} [callback] - Callback function
+     * @param callback
      * @returns {Crawler}
      */
     getCrawlerSettings: (requestPromise, options) => {
@@ -197,10 +197,10 @@ export default {
      * @memberof ApifyClient.crawlers
      * @instance
      * @param {Object} options
-     * @param {string} options.userId - Overwrites user ID
-     * @param {string} options.token - Overwrites API token
+     * @param options.userId
+     * @param options.token
+     * @param callback
      * @param {string} options.crawlerId - Crawler ID or crawler custom ID
-     * @param {function} [callback] - Callback function
      */
     deleteCrawler: (requestPromise, options) => {
         const { userId, token, crawlerId } = options;
@@ -223,13 +223,13 @@ export default {
      * @memberof ApifyClient.crawlers
      * @instance
      * @param {Object} options
-     * @param {string} options.userId - Overwrites user ID
-     * @param {string} options.token - Overwrites API token
+     * @param options.userId
+     * @param options.token
      * @param {string} options.crawlerId - Crawler ID or crawler custom ID
      * @param {string} [options.tag] - Custom tag for the execution. It cannot be longer than 64 characters.
      * @param {number} [options.wait=0] - The maximum number of seconds the server waits for the execution to finish.
      * @param {Object} [options.settings] - Overwrites crawler settings for execution
-     * @param {function} [callback] - Callback function
+     * @param callback
      * @returns {Execution}
      */
     startExecution: (requestPromise, options) => {
@@ -261,10 +261,10 @@ export default {
      * @memberof ApifyClient.crawlers
      * @instance
      * @param {Object} options
-     * @param {string} options.userId - Overwrites user ID
-     * @param {string} options.token - Overwrites API token
+     * @param options.userId
+     * @param options.token
      * @param {string} options.executionId - Execution ID
-     * @param {function} [callback] - Callback function
+     * @param callback
      * @returns {Execution}
      */
     stopExecution: (requestPromise, options) => {
@@ -289,14 +289,14 @@ export default {
      * @memberof ApifyClient.crawlers
      * @instance
      * @param {Object} options
-     * @param {string} options.userId - Overwrites user ID
-     * @param {string} options.token - Overwrites API token
+     * @param options.userId
+     * @param options.token
      * @param {string} options.crawlerId - Crawler ID or crawler custom ID
      * @param {string} [options.status] - Filter for the execution status.
      * @param {number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {number} [options.desc] - If 1 then the executions are sorted by the startedAt field in descending order.
-     * @param {function} [callback] - Callback function
+     * @param callback
      * @returns {PaginationList}
      */
     getListOfExecutions: (requestPromise, options) => {
@@ -324,7 +324,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param {string} options.executionId - Execution ID
-     * @param {function} [callback] - Callback function
+     * @param callback
      * @returns {Execution}
      */
     getExecutionDetails: (requestPromise, options) => {
@@ -344,12 +344,12 @@ export default {
      *
      * @memberof ApifyClient.crawlers
      * @instance
-     * @param options
-     * @param {string} options.userId - Overwrites user ID
-     * @param {string} options.token - Overwrites API token
+     * @param {Object} options
+     * @param options.userId
+     * @param options.token
      * @param {string} options.crawlerId - Crawler ID or crawler custom ID
      * @param {string} [options.status] - Filter for the execution status.
-     * @param {function} [callback] - Callback function
+     * @param callback
      * @returns {Execution}
      */
     getLastExecution: (requestPromise, options) => {
@@ -384,7 +384,7 @@ export default {
      * @param {number} [options.attachment] - If 1 then the response will define the Content-Disposition: attachment header, forcing a web browser to download the file rather than to display it. By default this header is not present.
      * @param {string} [options.delimiter=','] - A delimiter character for CSV files, only used if format=csv. You might need to URL-encode the character (e.g. use %09 for tab or %3B for semicolon).
      * @param {number} [options.bom] - All responses are encoded in UTF-8 encoding. By default, the csv files are prefixed with the UTF-8 Byte Order Mark (BOM), while json, jsonl, xml, html and rss files are not. If you want to override this default behavior, specify bom=1 query parameter to include the BOM or bom=0 to skip it.
-     * @param {function} [callback] - Callback function
+     * @param callback
      * @returns {PaginationList}
      */
     getExecutionResults: (requestPromise, options) => {
@@ -412,8 +412,8 @@ export default {
      * @memberof ApifyClient.crawlers
      * @instance
      * @param {Object} options
-     * @param {string} options.userId - Overwrites user ID
-     * @param {string} options.token - Overwrites API token
+     * @param options.userId
+     * @param options.token
      * @param {string} options.crawlerId - Crawler ID or crawler custom ID
      * @param {string} options.status - Filter for the execution status.
      * @param {string} [options.format='json'] - Format of the results, possible values are: json, jsonl, csv, html, xml and rss.
@@ -424,7 +424,7 @@ export default {
      * @param {number} [options.attachment] - If 1 then the response will define the Content-Disposition: attachment header, forcing a web browser to download the file rather than to display it. By default this header is not present.
      * @param {string} [options.delimiter=','] - A delimiter character for CSV files, only used if format=csv. You might need to URL-encode the character (e.g. use %09 for tab or %3B for semicolon).
      * @param {number} [options.bom] - All responses are encoded in UTF-8 encoding. By default, the csv files are prefixed with the UTF-8 Byte Order Mark (BOM), while json, jsonl, xml, html and rss files are not. If you want to override this default behavior, specify bom=1 query parameter to include the BOM or bom=0 to skip it.
-     * @param {function} [callback] - Callback function
+     * @param callback
      * @returns {PaginationList}
      */
     getLastExecutionResults: (requestPromise, options) => {

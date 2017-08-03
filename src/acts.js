@@ -16,10 +16,11 @@ export default {
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
-     * @param {string} options.token - Overwrites API token
+     * @param options.token
      * @param {number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {number} [options.limit=1000] - Maximum number of array elements to return.
-     * @param {number} [options.desc] - If 1 then the crawlers are sorted by the createdAt field in descending order.
+     * @param {number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
+     * @param callback
      * @returns {PaginationList}
      */
     listActs: (requestPromise, options) => {
@@ -50,9 +51,10 @@ export default {
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
-     * @param {string} options.token - Overwrites API token
+     * @param options.token
      * @param {Object} options.act
-     * @returns {Promise.<TResult>|*}
+     * @param callback
+     * @returns {Act}
      */
     createAct: (requestPromise, options) => {
         const { baseUrl, token, act } = options;
@@ -77,10 +79,11 @@ export default {
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
-     * @param {string} options.token - Overwrites API token
+     * @param options.token
      * @param {string} options.actId - Act ID
      * @param {Object} options.act
-     * @returns {Promise.<TResult>|*}
+     * @param callback
+     * @returns {Act}
      */
     updateAct: (requestPromise, options) => {
         const { baseUrl, token, actId, act } = options;
@@ -107,9 +110,9 @@ export default {
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
-     * @param {string} options.token - Overwrites API token
+     * @param options.token
      * @param {string} options.actId - Act ID
-     * @returns {*}
+     * @param callback
      */
     deleteAct: (requestPromise, options) => {
         const { baseUrl, token, actId } = options;
@@ -131,9 +134,10 @@ export default {
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
-     * @param {string} options.token - Overwrites API token
+     * @param options.token
      * @param {string} options.actId - Act ID
-     * @returns {Promise.<T>}
+     * @param callback
+     * @returns {Act}
      */
     getAct: (requestPromise, options) => {
         const { baseUrl, token, actId } = options;
@@ -157,12 +161,13 @@ export default {
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
-     * @param {string} options.token - Overwrites API token
+     * @param options.token
      * @param {string} options.actId - Act ID
      * @param {number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {number} [options.limit=1000] - Maximum number of array elements to return.
-     * @param {number} [options.desc] - If 1 then the crawlers are sorted by the createdAt field in descending order.
-     * @returns {Promise.<TResult>|*}
+     * @param {number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
+     * @param callback
+     * @returns {PaginationList}
      */
     listRuns: (requestPromise, options) => {
         const { baseUrl, token, actId, offset, limit } = options;
@@ -192,11 +197,14 @@ export default {
      *
      * @memberof ApifyClient.acts
      * @instance
-     * @param {string} options.token - Overwrites API token
-     * @param {string} options.actId - Act ID
      * @param {Object} options
-     *
-     * @returns {Promise.<TResult>|*}
+     * @param options.token
+     * @param {string} options.actId - Act ID
+     * @param {string|Object|Buffer} body - Act input
+     * @param {boolean} [useRawBody] - If true, method encodes options.body depends on options.contentType.
+     * @param {string} [options.contentType] - Content type of act input e.g 'application/json'
+     * @param callback
+     * @returns {ActRun}
      */
     // TODO: Ensure that body is null or string or buffer
     runAct: (requestPromise, options) => {
@@ -224,10 +232,16 @@ export default {
     },
 
     /**
+     * Gets act run.
+     *
      * @memberof ApifyClient.acts
      * @instance
      * @param options
-     * @returns {Promise.<T>}
+     * @param options.token
+     * @param {string} options.actId - Act ID
+     * @param {string} options.runId - Act run ID
+     * @param callback
+     * @returns {ActRun}
      */
     getRun: (requestPromise, options) => {
         const { baseUrl, token, actId, runId } = options;
@@ -247,10 +261,18 @@ export default {
     },
 
     /**
+     * Gets list of act builds.
+     *
      * @memberof ApifyClient.acts
      * @instance
      * @param options
-     * @returns {Promise.<TResult>|*}
+     * @param options.token
+     * @param {string} options.actId - Act ID
+     * @param {number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
+     * @param callback
+     * @returns {PaginationList}
      */
     listBuilds: (requestPromise, options) => {
         const { baseUrl, token, actId, offset, limit } = options;
@@ -276,10 +298,15 @@ export default {
     },
 
     /**
+     * Builds act.
+     *
      * @memberof ApifyClient.acts
      * @instance
      * @param options
-     * @returns {Promise.<TResult>|*}
+     * @param options.token
+     * @param {string} options.actId - Act ID
+     * @param callback
+     * @returns {ActBuild}
      */
     buildAct: (requestPromise, options) => {
         const { baseUrl, token, actId } = options;
@@ -298,10 +325,16 @@ export default {
     },
 
     /**
+     * Gets act build.
+     *
      * @memberof ApifyClient.acts
      * @instance
      * @param options
-     * @returns {Promise.<T>}
+     * @param options.token
+     * @param {string} options.actId - Act ID
+     * @param {string} options.buildId - Act build ID
+     * @param callback
+     * @returns {ActBuild}
      */
     getBuild: (requestPromise, options) => {
         const { baseUrl, token, actId, buildId } = options;

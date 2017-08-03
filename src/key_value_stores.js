@@ -2,7 +2,7 @@ import _ from 'underscore';
 import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, decodeBody, encodeBody } from './utils';
 
 /**
- * Key Value Store
+ * Key-value Store
  * @memberOf ApifyClient
  * @namespace keyValueStore
  */
@@ -12,10 +12,15 @@ export const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
 
 export default {
     /**
+     * Creates store of given name and returns it's object. If store with given name already exists then returns it's object.
+     *
      * @memberof ApifyClient.keyValueStore
      * @instance
      * @param options
-     * @returns {Promise.<TResult>|*}
+     * @param options.token
+     * @param {string} options.storeName - Custom unique name to easily identify the store in the future.
+     * @param callback
+     * @returns {KeyValueStore}
      */
     getOrCreateStore: (requestPromise, options) => {
         const { baseUrl, token, storeName } = options;
@@ -34,10 +39,17 @@ export default {
     },
 
     /**
+     * Gets list of key-value stores.
+     *
      * @memberof ApifyClient.keyValueStore
      * @instance
      * @param options
-     * @returns {Promise.<TResult>|*}
+     * @param options.token
+     * @param {number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {number} [options.desc] - If 1 then the objects are sorted by the startedAt field in descending order.
+     * @param callback
+     * @returns {PaginationList}
      */
     listStores: (requestPromise, options) => {
         const { baseUrl, token, offset, limit } = options;
@@ -62,10 +74,14 @@ export default {
     },
 
     /**
+     * Gets key-value store.
+     *
      * @memberof ApifyClient.keyValueStore
      * @instance
      * @param options
-     * @returns {Promise.<T>}
+     * @param {string} options.storeId - Unique store Id
+     * @param callback
+     * @returns {KeyValueStore}
      */
     getStore: (requestPromise, options) => {
         const { baseUrl, storeId } = options;
@@ -83,9 +99,13 @@ export default {
     },
 
     /**
+     * Deletes key-value store.
+     *
      * @memberof ApifyClient.keyValueStore
      * @instance
      * @param options
+     * @param {string} options.storeId - Store Id
+     * @param callback
      * @returns {*}
      */
     deleteStore: (requestPromise, options) => {
@@ -102,10 +122,18 @@ export default {
     },
 
     /**
+     * Gets value stored in the key-value store under the given key.
+     *
      * @memberof ApifyClient.keyValueStore
      * @instance
      * @param options
-     * @returns {Promise.<TResult>|*}
+     * @param {string} options.storeId - Unique store Id
+     * @param {string} options.key - Key of the record
+     * @param {boolean} [options.raw] - If true parameter is set then response to this request will be raw value stored under the given key. Otherwise the value is wrapped in JSON object with additional info.
+     * @param {boolean} [options.useRawBody] - It true, it doesn't decode response body TODO
+     * @param {boolean} [options.url] - If true, it downloads data through aws sign url
+     * @param callback
+     * @returns {KeyValueStoreRecord|*}
      */
     // TODO: Ensure that body is null or string or buffer
     getRecord: (requestPromise, options) => {
@@ -169,9 +197,17 @@ export default {
     },
 
     /**
-     * @memberof keyValueStore
+     * Saves the record into key-value store.
+     *
+     * @memberof ApifyClient.keyValueStore
      * @instance
      * @param options
+     * @param {string} options.storeId - Unique store Id
+     * @param {string} options.key - Key of the record
+     * @param {string} options.contentType - Content type of body
+     * @paramm {string|Buffer} options.body - Body in string or Buffer
+     * @param {boolean} [options.useRawBody] - It true, it doesn't decode response body TODO
+     * @param callback
      * @returns {*}
      */
     // TODO: check that body is buffer or string
@@ -220,10 +256,14 @@ export default {
     },
 
     /**
+     * Deletes given record.
+     *
      * @memberof ApifyClient.keyValueStore
      * @instance
      * @param options
-     * @returns {*}
+     * @param {string} options.storeId - Unique store Id
+     * @param {string} options.key - Key of the record
+     * @param callback
      */
     deleteRecord: (requestPromise, options) => {
         const { baseUrl, storeId, key } = options;
@@ -240,11 +280,17 @@ export default {
     },
 
     /**
+     * Returns an array containing objects representing keys in given store.
+     *
      * @memberof ApifyClient.keyValueStore
      * @instance
      * @param requestPromise
      * @param options
-     * @returns {Promise.<TResult>|*}
+     * @param {string} options.storeId - Unique store Id
+     * @param {string} [options.exclusiveStartKey] - All keys up to this one (including) are skipped from the result.
+     * @param {number} [options.limit] - Number of keys to be returned. Maximum value is 1000
+     * @param callback
+     * @returns {PaginationList}
      */
     listKeys: (requestPromise, options) => {
         const { baseUrl, storeId, exclusiveStartKey, limit } = options;
@@ -270,10 +316,17 @@ export default {
     },
 
     /**
+     * Returns an array containing objects representing key value pairs in given store.
+     *
      * @memberof ApifyClient.keyValueStore
      * @instance
      * @param options
-     * @returns {Promise.<TResult>}
+     * @param {string} options.storeId - Unique store Id
+     * @param {string} [options.exclusiveStartKey] - All keys up to this one (including) are skipped from the result.
+     * @param {number} [options.limit] - Number of keys to be returned. Maximum value is 1000
+     * @param {boolean} [options.useRawBody] - It true, it doesn't decode response body TODO
+     * @param callback
+     * @returns {PaginationList}
      */
     listRecords: (requestPromise, options) => {
         const { baseUrl, storeId, exclusiveStartKey, limit, useRawBody } = options;
