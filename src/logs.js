@@ -12,7 +12,8 @@ export default {
     /**
      * @memberof ApifyClient.logs
      * @instance
-     * @param options
+     * @param {Object} options
+     * @param {string} options.logId - ID of the log which is either ID of the act build or ID of the act run.
      * @param callback
      * @returns {Promise.<TResult>|*}
      */

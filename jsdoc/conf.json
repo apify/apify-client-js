@@ -10,7 +10,8 @@
     },
     "plugins": [
         "./node_modules/jsdoc-export-default-interop/dist/index.js",
-        "plugins/markdown"
+        "plugins/markdown",
+        "./jsdoc/apify_jsdoc_plugin"
     ],
     "templates": {
         "cleverLinks": false,
@@ -21,6 +22,7 @@
     },
     "opts": {
         "template": "templates/default",
-        "encoding": "utf8"
+        "encoding": "utf8",
+        "destination": ".docs"
     }
 }

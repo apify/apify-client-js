@@ -4,6 +4,39 @@ import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, encodeBody } from '
 /**
  * Acts
  * @memberOf ApifyClient
+ * @description
+ * ### Basic usage
+ * Every method can be used as either promise or with callback. If your Node version supports await/async then you can await promise result.
+ * ```javascript
+ * const ApifyClient = require('apify-client');
+ *
+ * const apifyClient = new ApifyClient({
+ *  userId: 'jklnDMNKLekk',
+ *  token: 'SNjkeiuoeD443lpod68dk',
+ * });
+ *
+ * // Awaited promise
+ * try {
+ *      const crawler = await apifyClient.acts.listActs({});
+ *      // Do something acts list ...
+ * } catch (err) {
+ *      // Do something with error ...
+ * }
+ *
+ * // Promise
+ * apifyClient.acts.listActs({})
+ * .then((actsList) => {
+ *      // Do something actsList ...
+ * })
+ * .catch((err) => {
+ *      // Do something with error ...
+ * });
+ *
+ * // Callback
+ * apifyClient.acts.listActs({}, (err, actsList) => {
+ *      // Do something with error or actsList ...
+ * });
+ * ```
  * @namespace acts
  */
 
@@ -12,7 +45,10 @@ export const BASE_PATH = '/v2/acts';
 export default {
     /**
      * Gets list of your acts.
-     *
+     * @description By default, the objects are sorted by the createdAt field in ascending order,
+     * therefore you can use pagination to incrementally fetch all acts while new ones are still being created.
+     * To sort them in descending order, use desc: 1 parameter.
+     * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
@@ -157,7 +193,10 @@ export default {
 
     /**
      * Gets list of act runs.
-     *
+     * @descriptions By default, the objects are sorted by the startedAt field in ascending order,
+     * therefore you can use pagination to incrementally fetch all builds while new ones are still being created.
+     * To sort them in descending order, use desc: 1 parameter.
+     * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
@@ -236,7 +275,7 @@ export default {
      *
      * @memberof ApifyClient.acts
      * @instance
-     * @param options
+     * @param {Object} options
      * @param options.token
      * @param {string} options.actId - Act ID
      * @param {string} options.runId - Act run ID
@@ -262,10 +301,13 @@ export default {
 
     /**
      * Gets list of act builds.
-     *
+     * @descriptions By default, the objects are sorted by the startedAt field in ascending order,
+     * therefore you can use pagination to incrementally fetch all builds while new ones are still being created.
+     * To sort them in descending order, use desc: 1 parameter.
+     * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      * @memberof ApifyClient.acts
      * @instance
-     * @param options
+     * @param {Object} options
      * @param options.token
      * @param {string} options.actId - Act ID
      * @param {number} [options.offset=0] - Number of array elements that should be skipped at the start.
@@ -298,11 +340,11 @@ export default {
     },
 
     /**
-     * Builds act.
+     * Builds given act and returns object of that build.
      *
      * @memberof ApifyClient.acts
      * @instance
-     * @param options
+     * @param {Object} options
      * @param options.token
      * @param {string} options.actId - Act ID
      * @param callback
@@ -329,7 +371,7 @@ export default {
      *
      * @memberof ApifyClient.acts
      * @instance
-     * @param options
+     * @param {Object} options
      * @param options.token
      * @param {string} options.actId - Act ID
      * @param {string} options.buildId - Act build ID

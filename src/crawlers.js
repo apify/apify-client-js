@@ -12,16 +12,23 @@ import { checkParamOrThrow, catchNotFoundOrThrow } from './utils';
  * const ApifyClient = require('apify-client');
  *
  * const apifyClient = new ApifyClient({
- *  userId: 'jklnDMNKLekk',
- *  token: 'SNjkeiuoeD443lpod68dk',
+ *        userId: 'RWnGtczasdwP63Mak',
+ *        token: 'f5J7XsdaKDyRywwuGGo9',
  * });
  *
- * const crawler = await apifyClient.crawlers.getCrawlerSettings({ crawlerId: 'DNjkhrkjnri' });
- * const execution = await apifyClient.crawlers.startExecution({ crawlerId: 'DNjkhrkjnri' });
- * apifyClient.setOptions({ crawlerId: 'DNjkhrkjnri' });
- * const execution = await apifyClient.crawlers.startExecution();
+ * const crawlerSettings = {
+ *      customId: 'Test',
+ *      startUrls: [ {key: 'test', value: 'http://example.com/' } ],
+ *      pageFunction: 'function pageFunction(context) {\n    // called on every page the crawler visits, use it to extract data from it\n    var $ = context.jQuery;\n    var result = {\n        title: $(\'title\').text()\n    };\n    return result;\n}',
+ *      injectJQuery: true,
+ * };
+ *
+ * const crawler = await apifyClient.crawlers.createCrawler({ settings: crawlerSettings });
+ * const execution = await apifyClient.crawlers.startExecution({ crawlerId: crawler._id, wait: 5 });
+ * const results = await apifyClient.crawlers.getExecutionResults({ executionId: execution._id });
+ * console.log(results.items[0].pageFunctionResult) // { title: 'Example Domain' }
  * ```
- * Promises, await, callbacks
+ *
  * Every method can be used as either promise or with callback. If your Node version supports await/async then you can await promise result.
  * ```javascript
  * const options = { crawlerId: 'DNjkhrkjnri' };
@@ -70,7 +77,8 @@ function wrapArray(response) {
 export default {
     /**
      * Gets a list of crawlers belonging to a specific user.
-     *
+     * @description By default, the objects are sorted by the createdAt field in ascending order,
+     * therefore you can use pagination to incrementally fetch all crawlers while new ones are still being created. To sort them in descending order, use desc: 1 parameter.
      * @memberof ApifyClient.crawlers
      * @instance
      * @param {Object} options
@@ -107,9 +115,9 @@ export default {
      * @param {Object} options
      * @param options.userId
      * @param options.token
-     * @param {Object} options.settings - Crawler settings, customId is required.
+     * @param {Object} options.settings - Crawler settings, customId is required. See [main documentation]{@link https://www.apifier.com/docs#basic-settings} for detailed description of crawler settings. Unknown properties in the object are silently ignored.
      * @param callback
-     * @returns {Crawler}
+     * @returns {CrawlerSettings}
      */
     createCrawler: (requestPromise, options) => {
         const { userId, token, settings } = options;
@@ -139,9 +147,9 @@ export default {
      * @param options.userId
      * @param options.token
      * @param {string} options.crawlerId - Crawler ID or crawler custom ID
-     * @param {Object} options.settings - Crawler settings
+     * @param {Object} options.settings - Crawler settings, customId is required. See [main documentation]{@link https://www.apifier.com/docs#basic-settings} for detailed description of crawler settings. Unknown properties in the object are silently ignored.
      * @param callback
-     * @returns {Crawler}
+     * @returns {CrawlerSettings}
      */
     updateCrawler: (requestPromise, options) => {
         const { userId, token, settings, crawlerId } = options;
@@ -172,7 +180,7 @@ export default {
      * @param options.token
      * @param {string} options.crawlerId - Crawler ID or crawler custom ID
      * @param callback
-     * @returns {Crawler}
+     * @returns {CrawlerSettings}
      */
     getCrawlerSettings: (requestPromise, options) => {
         const { userId, token, crawlerId } = options;
@@ -228,7 +236,7 @@ export default {
      * @param {string} options.crawlerId - Crawler ID or crawler custom ID
      * @param {string} [options.tag] - Custom tag for the execution. It cannot be longer than 64 characters.
      * @param {number} [options.wait=0] - The maximum number of seconds the server waits for the execution to finish.
-     * @param {Object} [options.settings] - Overwrites crawler settings for execution
+     * @param {Object} [options.settings] - Overwrites crawler settings for execution.
      * @param callback
      * @returns {Execution}
      */
@@ -287,6 +295,9 @@ export default {
      * Gets a list of executions of a specific crawler.
      *
      * @memberof ApifyClient.crawlers
+     * @descriptions Gets a list of executions of a specific crawler. Optionally,
+     * you can use status parameter to filter the list to only contain executions with a specific status
+     * (for example, status 'RUNNING' will only return executions that are still running).
      * @instance
      * @param {Object} options
      * @param options.userId
@@ -341,7 +352,8 @@ export default {
 
     /**
      * Gets information about the last execution of a specific crawler.
-     *
+     * @description Gets information about the last execution of a specific crawler.
+     * Optionally, you can use status parameter to only get the last execution with a specific status.
      * @memberof ApifyClient.crawlers
      * @instance
      * @param {Object} options
