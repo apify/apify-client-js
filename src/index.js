@@ -52,7 +52,8 @@ const methodGroups = {
  * @param {String} [options.userId] - Your user ID at apify.com
  * @param {String} [options.token] - Your API token at apify.com
  * @param {Object} [options.promise=Promise] - Promises dependency to use (default is native Promise)
- * @param {Number} [options.expBackOffMillis=500] - Wait time in milliseconds before repeating request to Apify API in a case of server or rate limit error
+ * @param {Number} [options.expBackOffMillis=500] - Wait time in milliseconds before repeating request to Apify API in a case of server
+                                                    or rate limit error
  * @param {Number} [options.expBackOffMaxRepeats=8] - Maximum number of repeats in a case of error
  * @description Basic usage of ApifyClient with Bluebird promise:
  * ```javascript
