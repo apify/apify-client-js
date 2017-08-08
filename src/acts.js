@@ -54,9 +54,9 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {number} [options.offset=0] - Number of array elements that should be skipped at the start.
-     * @param {number} [options.limit=1000] - Maximum number of array elements to return.
-     * @param {number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
+     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
      * @param callback
      * @returns {PaginationList}
      */
@@ -117,7 +117,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {string} options.actId - Act ID
+     * @param {String} options.actId - Act ID
      * @param {Object} options.act
      * @param callback
      * @returns {Act}
@@ -148,7 +148,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {string} options.actId - Act ID
+     * @param {String} options.actId - Act ID
      * @param callback
      */
     deleteAct: (requestPromise, options) => {
@@ -172,7 +172,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {string} options.actId - Act ID
+     * @param {String} options.actId - Act ID
      * @param callback
      * @returns {Act}
      */
@@ -202,10 +202,10 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {string} options.actId - Act ID
-     * @param {number} [options.offset=0] - Number of array elements that should be skipped at the start.
-     * @param {number} [options.limit=1000] - Maximum number of array elements to return.
-     * @param {number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
+     * @param {String} options.actId - Act ID
+     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
      * @param callback
      * @returns {PaginationList}
      */
@@ -239,10 +239,10 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {string} options.actId - Act ID
+     * @param {String} options.actId - Act ID
      * @param {string|Object|Buffer} body - Act input
-     * @param {boolean} [useRawBody] - If true, method encodes options.body depends on options.contentType.
-     * @param {string} [options.contentType] - Content type of act input e.g 'application/json'
+     * @param {Boolean} [useRawBody] - If true, method encodes options.body depends on options.contentType.
+     * @param {String} [options.contentType] - Content type of act input e.g 'application/json'
      * @param callback
      * @returns {ActRun}
      */
@@ -282,8 +282,8 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {string} options.actId - Act ID
-     * @param {string} options.runId - Act run ID
+     * @param {String} options.actId - Act ID
+     * @param {String} options.runId - Act run ID
      * @param callback
      * @returns {ActRun}
      */
@@ -319,10 +319,10 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {string} options.actId - Act ID
-     * @param {number} [options.offset=0] - Number of array elements that should be skipped at the start.
-     * @param {number} [options.limit=1000] - Maximum number of array elements to return.
-     * @param {number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
+     * @param {String} options.actId - Act ID
+     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
      * @param callback
      * @returns {PaginationList}
      */
@@ -356,7 +356,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {string} options.actId - Act ID
+     * @param {String} options.actId - Act ID
      * @param callback
      * @returns {ActBuild}
      */
@@ -388,8 +388,8 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {string} options.actId - Act ID
-     * @param {string} options.buildId - Act build ID
+     * @param {String} options.actId - Act ID
+     * @param {String} options.buildId - Act build ID
      * @param callback
      * @returns {ActBuild}
      */

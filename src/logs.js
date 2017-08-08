@@ -13,9 +13,9 @@ export default {
      * @memberof ApifyClient.logs
      * @instance
      * @param {Object} options
-     * @param {string} options.logId - ID of the log which is either ID of the act build or ID of the act run.
+     * @param {String} options.logId - ID of the log which is either ID of the act build or ID of the act run.
      * @param callback
-     * @returns {Promise.<TResult>|*}
+     * @returns {Promise.<string>|null}
      */
     getLog: (requestPromise, options) => {
         const { baseUrl, logId } = options;

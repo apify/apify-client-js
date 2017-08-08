@@ -46,12 +46,14 @@ const methodGroups = {
 /**
  * Creates ApifyClient
  * @class ApifyClient
- * @param {Object} options - Global options for ApifyClient
- * @param {string} options.userId - Your user ID at apify.com
- * @param {string} options.token - Your API token at apify.com
- * @param {Object} options.promise - Promises dependency to use (default is native Promise)
- * @param {number} options.expBackOffMillis - Wait time in milliseconds before making a new request in a case of error
- * @param {number} options.expBackOffMaxRepeats - Maximum number of repeats in a case of error
+ * @param {Object} [options] - Global options for ApifyClient. You can globally configure here any method option from any namespace. For example
+ *                             if you are working with just one crawler then you can preset it's crawlerId here instead of passing it to each
+ *                             crawler's method.
+ * @param {String} [options.userId] - Your user ID at apify.com
+ * @param {String} [options.token] - Your API token at apify.com
+ * @param {Object} [options.promise=Promise] - Promises dependency to use (default is native Promise)
+ * @param {Number} [options.expBackOffMillis=500] - Wait time in milliseconds before repeating request to Apify API in a case of server or rate limit error
+ * @param {Number} [options.expBackOffMaxRepeats=8] - Maximum number of repeats in a case of error
  * @description Basic usage of ApifyClient with Bluebird promise:
  * ```javascript
  * const ApifyClient = require('apify-client');
@@ -121,11 +123,11 @@ const ApifyClient = function (options = {}) {
         this[name] = _.mapObject(methodGroup, methodDecorator);
     });
     /**
-     * Method sets new options to ApifyClient instance.
+     * Overrides options of ApifyClient instance.
      * @memberof ApifyClient
      * @function setOptions
      * @instance
-     * @param {Object} options - see {@link ApifyClient} options object for ApifyClient
+     * @param {Object} options - See {@link ApifyClient} options object for ApifyClient
      */
     this.setOptions = (newOptions) => {
         _.forEach(newOptions, (val, key) => {
@@ -133,11 +135,11 @@ const ApifyClient = function (options = {}) {
         });
     };
     /**
-     * Method returns options for ApifyClient instance.
+     * Returns options of ApifyClient instance.
      * @memberof ApifyClient
      * @function getOptions
      * @instance
-     * @return {Object} options - see {@link ApifyClient} options object for ApifyClient
+     * @return {Object} See {@link ApifyClient} constructor options
      */
     this.getOptions = () => {
         return _.clone(instanceOpts);
