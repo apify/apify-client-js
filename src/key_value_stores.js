@@ -178,7 +178,8 @@ export default {
      * @param {Object} options
      * @param {string} options.storeId - Unique store Id
      * @param {string} options.key - Key of the record
-     * @param {boolean} [options.raw] - If true parameter is set then response to this request will be raw value stored under the given key. Otherwise the value is wrapped in JSON object with additional info.
+     * @param {boolean} [options.raw] - If true parameter is set then response to this request will be raw value stored under
+     *                                  the given key. Otherwise the value is wrapped in JSON object with additional info.
      * @param {boolean} [options.useRawBody] - It true, it doesn't decode response body TODO
      * @param {boolean} [options.url] - If true, it downloads data through aws sign url
      * @param callback
