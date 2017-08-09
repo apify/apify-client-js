@@ -9,7 +9,7 @@ import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, encodeBody } from '
  */
 
 export const BASE_PATH = '/v2/acts';
-export const WAIT_FOR_FINISH_SECS = 120;
+export const MAX_WAIT_FOR_FINISH_SECS = 120; // This is used in Apify.call()
 
 export default {
     /**
