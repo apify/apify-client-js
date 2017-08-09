@@ -185,10 +185,6 @@ export default {
         checkParamOrThrow(memory, 'memory', 'Maybe Number');
         checkParamOrThrow(build, 'build', 'Maybe String');
 
-        const encodedBody = useRawBody ? body : encodeBody(body, contentType);
-
-        checkParamOrThrow(encodedBody, 'body', 'Buffer | String');
-
         const query = { token };
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
@@ -196,15 +192,23 @@ export default {
         if (memory) query.memory = memory;
         if (build) query.build = build;
 
-        return requestPromise({
+        const opts = {
             url: `${baseUrl}${BASE_PATH}/${actId}/runs`,
             method: 'POST',
-            headers: {
-                'Content-Type': contentType,
-            },
-            body: encodedBody,
             qs: query,
-        })
+        };
+
+        if (contentType) opts.headers = { 'Content-Type': contentType };
+
+        if (body) {
+            const encodedBody = useRawBody ? body : encodeBody(body, contentType);
+
+            checkParamOrThrow(encodedBody, 'body', 'Buffer | String');
+
+            opts.body = encodedBody;
+        }
+
+        return requestPromise(opts)
         .then(response => JSON.parse(response))
         .then(pluckData);
     },
