@@ -94,11 +94,13 @@ describe('Key value store', () => {
                 token: 'sometoken',
                 limit: 5,
                 offset: 3,
+                desc: true,
             };
 
             const expected = {
                 limit: 5,
                 offset: 3,
+                desc: true,
                 count: 5,
                 total: 10,
                 items: ['store1', 'store2'],

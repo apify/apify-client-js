@@ -173,7 +173,7 @@ export default {
      */
     // TODO: Ensure that body is null or string or buffer
     runAct: (requestPromise, options) => {
-        const { baseUrl, token, actId, contentType, body, useRawBody, waitForFinish } = options;
+        const { baseUrl, token, actId, contentType, body, useRawBody, waitForFinish, timeout, memory, build } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
@@ -181,11 +181,17 @@ export default {
         checkParamOrThrow(contentType, 'contentType', 'Maybe String');
         checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
+        checkParamOrThrow(timeout, 'timeout', 'Maybe Number');
+        checkParamOrThrow(memory, 'memory', 'Maybe Number');
+        checkParamOrThrow(build, 'build', 'Maybe String');
 
         const encodedBody = useRawBody ? body : encodeBody(body, contentType);
         const query = { token };
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
+        if (timeout) query.timeout = timeout;
+        if (memory) query.memory = memory;
+        if (build) query.build = build;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${actId}/runs`,
@@ -266,14 +272,15 @@ export default {
      * @returns {Promise.<TResult>|*}
      */
     buildAct: (requestPromise, options) => {
-        const { baseUrl, token, actId, waitForFinish } = options;
+        const { baseUrl, token, actId, waitForFinish, version } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(version, 'version', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
 
-        const query = { token };
+        const query = { token, version };
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
 
