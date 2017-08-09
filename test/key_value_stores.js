@@ -95,7 +95,7 @@ describe('Key value store', () => {
                 limit: 5,
                 offset: 3,
                 desc: true,
-                isNamed: true,
+                unnamed: true,
             };
 
             const expected = {
@@ -104,7 +104,7 @@ describe('Key value store', () => {
                 desc: true,
                 count: 5,
                 total: 10,
-                isNamed: true,
+                unnamed: true,
                 items: ['store1', 'store2'],
             };
 
