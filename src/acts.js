@@ -11,6 +11,8 @@ import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, encodeBody } from '
 export const BASE_PATH = '/v2/acts';
 export const MAX_WAIT_FOR_FINISH_SECS = 120; // This is used in Apify.call()
 
+const replaceSlashWithTilde = str => str.replace('/', '~');
+
 export default {
     /**
      * List of Acts
@@ -75,7 +77,7 @@ export default {
      */
     updateAct: (requestPromise, options) => {
         const { baseUrl, token, actId, act } = options;
-        const safeActId = !actId && act.id ? act.id : actId;
+        const safeActId = replaceSlashWithTilde(!actId && act.id ? act.id : actId);
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
@@ -104,8 +106,10 @@ export default {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
 
+        const safeActId = replaceSlashWithTilde(actId);
+
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}`,
             json: true,
             method: 'DELETE',
             qs: { token },
@@ -124,8 +128,10 @@ export default {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
 
+        const safeActId = replaceSlashWithTilde(actId);
+
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}`,
             json: true,
             method: 'GET',
             qs: { token },
@@ -150,6 +156,7 @@ export default {
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
+        const safeActId = replaceSlashWithTilde(actId);
         const query = { token };
 
         if (limit) query.limit = limit;
@@ -157,7 +164,7 @@ export default {
         if (desc) query.desc = desc;
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}/runs`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/runs`,
             json: true,
             method: 'GET',
             qs: query,
@@ -185,6 +192,7 @@ export default {
         checkParamOrThrow(memory, 'memory', 'Maybe Number');
         checkParamOrThrow(build, 'build', 'Maybe String');
 
+        const safeActId = replaceSlashWithTilde(actId);
         const query = { token };
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
@@ -193,7 +201,7 @@ export default {
         if (build) query.build = build;
 
         const opts = {
-            url: `${baseUrl}${BASE_PATH}/${actId}/runs`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/runs`,
             method: 'POST',
             qs: query,
         };
@@ -227,12 +235,13 @@ export default {
         checkParamOrThrow(runId, 'runId', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
 
+        const safeActId = replaceSlashWithTilde(actId);
         const query = { token };
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}/runs/${runId}`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/runs/${runId}`,
             json: true,
             method: 'GET',
             qs: query,
@@ -257,6 +266,7 @@ export default {
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
+        const safeActId = replaceSlashWithTilde(actId);
         const query = { token };
 
         if (limit) query.limit = limit;
@@ -264,7 +274,7 @@ export default {
         if (desc) query.desc = desc;
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}/builds`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/builds`,
             json: true,
             method: 'GET',
             qs: query,
@@ -287,12 +297,13 @@ export default {
         checkParamOrThrow(version, 'version', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
 
+        const safeActId = replaceSlashWithTilde(actId);
         const query = { token, version };
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}/builds`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/builds`,
             json: true,
             method: 'POST',
             qs: query,
@@ -314,12 +325,13 @@ export default {
         checkParamOrThrow(buildId, 'buildId', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
 
+        const safeActId = replaceSlashWithTilde(actId);
         const query = { token };
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}/builds/${buildId}`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/builds/${buildId}`,
             json: true,
             method: 'GET',
             qs: query,

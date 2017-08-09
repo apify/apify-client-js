@@ -68,14 +68,14 @@ describe('Act method', () => {
     });
 
     it('updateAct() works with both actId parameter and actId in act object', () => {
-        const actId = 'some-id';
+        const actId = 'some-user/some-id';
         const act = { id: actId, foo: 'bar' };
         const token = 'some-token';
 
         requestExpectCall({
             json: true,
             method: 'PUT',
-            url: `${BASE_URL}${BASE_PATH}/${actId}`,
+            url: `${BASE_URL}${BASE_PATH}/some-user~some-id`,
             qs: { token },
             body: _.omit(act, 'id'),
         }, {
