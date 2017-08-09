@@ -40,19 +40,21 @@ export default {
      * @returns {Promise.<TResult>|*}
      */
     listStores: (requestPromise, options) => {
-        const { baseUrl, token, offset, limit, desc } = options;
+        const { baseUrl, token, offset, limit, desc, isNamed } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
+        checkParamOrThrow(isNamed, 'isNamed', 'Maybe Boolean');
 
         const query = { token };
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
         if (desc) query.desc = desc;
+        if (isNamed) query.isNamed = isNamed;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}`,
