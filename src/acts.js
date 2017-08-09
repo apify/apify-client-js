@@ -186,6 +186,9 @@ export default {
         checkParamOrThrow(build, 'build', 'Maybe String');
 
         const encodedBody = useRawBody ? body : encodeBody(body, contentType);
+
+        checkParamOrThrow(encodedBody, 'body', 'Buffer | String');
+
         const query = { token };
 
         if (waitForFinish) query.waitForFinish = waitForFinish;

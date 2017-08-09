@@ -111,7 +111,6 @@ export default {
      * @param options
      * @returns {Promise.<TResult>|*}
      */
-    // TODO: Ensure that body is null or string or buffer
     getRecord: (requestPromise, options) => {
         const { baseUrl, storeId, key, raw, useRawBody, url } = options;
 
@@ -178,7 +177,6 @@ export default {
      * @param options
      * @returns {*}
      */
-    // TODO: check that body is buffer or string
     putRecord: (requestPromise, options) => {
         const { baseUrl, storeId, key, body, contentType = 'text/plain', useRawBody } = options;
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
@@ -188,6 +186,8 @@ export default {
         checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
 
         const encodedBody = useRawBody ? body : encodeBody(body, contentType);
+
+        checkParamOrThrow(encodedBody, 'body', 'Buffer | String');
 
         return gzipPromise(options.promise, encodedBody)
             .then((gzipedBody) => {
