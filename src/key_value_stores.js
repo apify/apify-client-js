@@ -115,8 +115,8 @@ export default {
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
-        if (desc) query.desc = desc;
-        if (unnamed) query.unnamed = unnamed;
+        if (desc) query.desc = 1;
+        if (unnamed) query.unnamed = 1;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}`,

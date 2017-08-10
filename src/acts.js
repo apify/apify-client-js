@@ -41,7 +41,6 @@ import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, encodeBody } from '
  */
 
 export const BASE_PATH = '/v2/acts';
-export const MAX_WAIT_FOR_FINISH_SECS = 120; // This is used in Apify.call()
 
 const replaceSlashWithTilde = str => str.replace('/', '~');
 
@@ -75,7 +74,7 @@ export default {
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
-        if (desc) query.desc = desc;
+        if (desc) query.desc = 1;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}`,
@@ -232,7 +231,7 @@ export default {
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
-        if (desc) query.desc = desc;
+        if (desc) query.desc = 1;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${safeActId}/runs`,
@@ -254,6 +253,11 @@ export default {
      * @param {string|Object|Buffer} body - Act input
      * @param {Boolean} [useRawBody] - If true, method encodes options.body depends on options.contentType.
      * @param {String} [options.contentType] - Content type of act input e.g 'application/json'
+     * @param {Number} [options.waitForFinish] - Number of seconds to wait for act to finish. Maximum value is 120s.
+                                                 If act doesn't finish in time then act run in RUNNING state is returned.
+     * @param {Number} [options.timeout] - Timeout for the act run in seconds. Zero value means there is no timeout.
+     * @param {Number} [options.memory] - Amount of memory allocated for the act run, in megabytes.
+     * @param {String} [options.build] - Tag or number of the build to run (e.g. <code>latest</code> or <code>1.2.34</code>).
      * @param callback
      * @returns {ActRun}
      */
@@ -309,6 +313,8 @@ export default {
      * @param options.token
      * @param {String} options.actId - Act ID
      * @param {String} options.runId - Act run ID
+     * @param {Number} [options.waitForFinish] - Number of seconds to wait for act to finish. Maximum value is 120s.
+                                                 If act doesn't finish in time then act run in RUNNING state is returned.
      * @param callback
      * @returns {ActRun}
      */
@@ -367,7 +373,7 @@ export default {
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
-        if (desc) query.desc = desc;
+        if (desc) query.desc = 1;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${safeActId}/builds`,
@@ -386,22 +392,40 @@ export default {
      * @param {Object} options
      * @param options.token
      * @param {String} options.actId - Act ID
+     * @param {String} options.version - Version of the act to build.
+     * @param {Boolean} [options.betaPackages] - If true, the Docker container will be rebuild using layer cache.
+                                                 This is to enable quick rebuild during development.
+     * @param {Boolean} [options.useCache] - If true, Docker build uses beta versions of 'apify-client' and
+                                             'apifier' NPM packages, to test new features.
+     * @param {String} [options.tag] - Tag that is applied to the build on success. It enables callers of acts to specify which version of act to run.
+
+     betaPackages
+     useCache
+     tag
+     * @param {Number} [options.waitForFinish] - Number of seconds to wait for act to finish. Maximum value is 120s.
+                                                 If act doesn't finish in time then act run in RUNNING state is returned.
      * @param callback
      * @returns {ActBuild}
      */
     buildAct: (requestPromise, options) => {
-        const { baseUrl, token, actId, waitForFinish, version } = options;
+        const { baseUrl, token, actId, waitForFinish, version, tag, betaPackages, useCache } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
         checkParamOrThrow(version, 'version', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
+        checkParamOrThrow(tag, 'tag', 'Maybe String');
+        checkParamOrThrow(betaPackages, 'betaPackages', 'Maybe Boolean');
+        checkParamOrThrow(useCache, 'useCache', 'Maybe Boolean');
 
         const safeActId = replaceSlashWithTilde(actId);
         const query = { token, version };
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
+        if (betaPackages) query.betaPackages = 1;
+        if (useCache) query.useCache = 1;
+        if (tag) query.tag = tag;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${safeActId}/builds`,
@@ -421,6 +445,8 @@ export default {
      * @param options.token
      * @param {String} options.actId - Act ID
      * @param {String} options.buildId - Act build ID
+     * @param {Number} [options.waitForFinish] - Number of seconds to wait for act to finish. Maximum value is 120s.
+                                                 If act doesn't finish in time then act run in RUNNING state is returned.
      * @param callback
      * @returns {ActBuild}
      */

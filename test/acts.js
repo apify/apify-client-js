@@ -19,6 +19,13 @@ describe('Act method', () => {
             desc: true,
         };
 
+        const queryString = {
+            token: 'sometoken',
+            limit: 5,
+            offset: 3,
+            desc: 1,
+        };
+
         const expected = {
             limit: 5,
             offset: 3,
@@ -32,7 +39,7 @@ describe('Act method', () => {
             json: true,
             method: 'GET',
             url: `${BASE_URL}${BASE_PATH}`,
-            qs: callOptions,
+            qs: queryString,
         }, {
             data: expected,
         });
@@ -205,6 +212,13 @@ describe('Act method', () => {
             desc: true,
         };
 
+        const queryString = {
+            token: 'sometoken',
+            limit: 5,
+            offset: 3,
+            desc: 1,
+        };
+
         const expected = {
             limit: 5,
             offset: 3,
@@ -218,7 +232,7 @@ describe('Act method', () => {
             json: true,
             method: 'GET',
             url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
-            qs: callOptions,
+            qs: queryString,
         }, {
             data: expected,
         });
@@ -368,6 +382,13 @@ describe('Act method', () => {
             desc: true,
         };
 
+        const queryString = {
+            token: 'sometoken',
+            limit: 5,
+            offset: 3,
+            desc: 1,
+        };
+
         const expected = {
             limit: 5,
             offset: 3,
@@ -381,7 +402,7 @@ describe('Act method', () => {
             json: true,
             method: 'GET',
             url: `${BASE_URL}${BASE_PATH}/${actId}/builds`,
-            qs: callOptions,
+            qs: queryString,
         }, {
             data: expected,
         });
@@ -400,12 +421,15 @@ describe('Act method', () => {
         const build = { foo: 'bar' };
         const waitForFinish = 120;
         const version = '0.0';
+        const tag = 'latest';
+        const betaPackages = true;
+        const useCache = true;
 
         requestExpectCall({
             json: true,
             method: 'POST',
             url: `${BASE_URL}${BASE_PATH}/${actId}/builds`,
-            qs: { token, version, waitForFinish },
+            qs: { token, version, waitForFinish, tag, betaPackages: 1, useCache: 1 },
         }, {
             data: build,
         });
@@ -414,7 +438,7 @@ describe('Act method', () => {
 
         return apifyClient
             .acts
-            .buildAct({ actId, token, version, waitForFinish })
+            .buildAct({ actId, token, version, waitForFinish, tag, betaPackages, useCache })
             .then(response => expect(response).to.be.eql(build));
     });
 

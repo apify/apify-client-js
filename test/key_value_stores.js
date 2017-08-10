@@ -98,6 +98,14 @@ describe('Key value store', () => {
                 unnamed: true,
             };
 
+            const queryString = {
+                token: 'sometoken',
+                limit: 5,
+                offset: 3,
+                desc: 1,
+                unnamed: 1,
+            };
+
             const expected = {
                 limit: 5,
                 offset: 3,
@@ -112,7 +120,7 @@ describe('Key value store', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}`,
-                qs: callOptions,
+                qs: queryString,
             }, {
                 data: expected,
             });
