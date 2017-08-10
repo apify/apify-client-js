@@ -11,9 +11,11 @@ export const BASE_PATH = '/v2/logs';
 export default {
     /**
      * @memberof ApifyClient.logs
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<TResult>|*}
+     * @instance
+     * @param {Object} options
+     * @param {String} options.logId - ID of the log which is either ID of the act build or ID of the act run.
+     * @param callback
+     * @returns {Promise.<string>|null}
      */
     getLog: (requestPromise, options) => {
         const { baseUrl, logId } = options;
