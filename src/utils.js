@@ -1,6 +1,6 @@
 import request from 'request';
 import _ from 'underscore';
-import { typeCheck } from 'type-check';
+import { parseType, parsedTypeCheck } from 'type-check';
 import { gzip } from 'zlib';
 import ApifyError, {
     INVALID_PARAMETER_ERROR_TYPE,
@@ -130,7 +130,15 @@ export const requestPromise = (options, iteration = 0) => {
 export const checkParamOrThrow = (value, name, type, errorMessage) => {
     if (!errorMessage) errorMessage = `Parameter "${name}" of type ${type} must be provided`;
 
-    if (!typeCheck(type, value)) {
+    const allowedTypes = parseType(type);
+
+    // This is workaround since Buffer doesn't seem to be possible to define using options.customTypes.
+    const allowsBuffer = allowedTypes.filter(item => item.type === 'Buffer').length;
+
+    if (allowsBuffer && Buffer.isBuffer(value)) return;
+
+    // This will ignore Buffer type.
+    if (!parsedTypeCheck(allowedTypes, value)) {
         throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, errorMessage);
     }
 };

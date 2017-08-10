@@ -288,34 +288,35 @@ describe('utils.requestPromise()', () => {
 
 describe('utils.checkParamOrThrow()', () => {
     it('works when type is correct', () => {
-        utils.checkParamOrThrow(2, 'paramName', 'Number');
-        utils.checkParamOrThrow(2, 'paramName', 'Maybe Number');
-        utils.checkParamOrThrow(null, 'paramName', 'Maybe Number');
+        utils.checkParamOrThrow(2, 'paramName1', 'Number');
+        utils.checkParamOrThrow(2, 'paramName2', 'Maybe Number');
+        utils.checkParamOrThrow(null, 'paramName3', 'Maybe Number');
+
+        utils.checkParamOrThrow(new Buffer(120), 'paramName4', 'Buffer');
+        utils.checkParamOrThrow(null, 'paramName5', 'Maybe Buffer');
+        utils.checkParamOrThrow(new Buffer(120), 'paramName6', 'Buffer|String');
+        utils.checkParamOrThrow('aaa', 'paramName7', 'Buffer|String');
+        utils.checkParamOrThrow(null, 'paramName8', 'Maybe Buffer|String');
+        utils.checkParamOrThrow(new Buffer(120), 'paramName8', 'Maybe Buffer|String');
+        utils.checkParamOrThrow('aaa', 'paramName9', 'Maybe Buffer|String');
     });
 
     it('throws correct error', () => {
-        let error;
-
-        try {
-            utils.checkParamOrThrow(2, 'paramName', 'String');
-        } catch (err) {
-            error = err;
-        }
-
-        expect(error.name).to.be.eql(APIFY_ERROR_NAME);
-        expect(error.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE);
-        expect(error.message).to.be.eql('Parameter "paramName" of type String must be provided');
-
-
-        try {
-            utils.checkParamOrThrow(2, 'paramName', 'String', 'Error message');
-        } catch (err) {
-            error = err;
-        }
-
-        expect(error.name).to.be.eql(APIFY_ERROR_NAME);
-        expect(error.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE);
-        expect(error.message).to.be.eql('Error message');
+        expect(
+            () => utils.checkParamOrThrow(2, 'paramName10', 'String'),
+        ).to.throw('Parameter "paramName10" of type String must be provided');
+        expect(
+            () => utils.checkParamOrThrow(2, 'paramName11', 'String', 'Error message'),
+        ).to.throw('Error message');
+        expect(
+            () => utils.checkParamOrThrow(2, 'paramName12', 'Maybe Buffer'),
+        ).to.throw('Parameter "paramName12" of type Maybe Buffer must be provided');
+        expect(
+            () => utils.checkParamOrThrow(null, 'paramName13', 'Buffer'),
+        ).to.throw('Parameter "paramName13" of type Buffer must be provided');
+        expect(
+            () => utils.checkParamOrThrow(new Buffer(120), 'paramName14', 'String'),
+        ).to.throw('Parameter "paramName14" of type String must be provided');
     });
 });
 

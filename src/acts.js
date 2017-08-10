@@ -41,7 +41,8 @@ import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, encodeBody } from '
  */
 
 export const BASE_PATH = '/v2/acts';
-export const WAIT_FOR_FINISH_SECS = 120;
+
+const replaceSlashWithTilde = str => str.replace('/', '~');
 
 export default {
     /**
@@ -61,17 +62,19 @@ export default {
      * @returns {PaginationList}
      */
     listActs: (requestPromise, options) => {
-        const { baseUrl, token, offset, limit } = options;
+        const { baseUrl, token, offset, limit, desc } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
+        checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
         const query = { token };
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
+        if (desc) query.desc = 1;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}`,
@@ -124,7 +127,7 @@ export default {
      */
     updateAct: (requestPromise, options) => {
         const { baseUrl, token, actId, act } = options;
-        const safeActId = !actId && act.id ? act.id : actId;
+        const safeActId = replaceSlashWithTilde(!actId && act.id ? act.id : actId);
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
@@ -157,8 +160,10 @@ export default {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
 
+        const safeActId = replaceSlashWithTilde(actId);
+
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}`,
             json: true,
             method: 'DELETE',
             qs: { token },
@@ -182,8 +187,10 @@ export default {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
 
+        const safeActId = replaceSlashWithTilde(actId);
+
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}`,
             json: true,
             method: 'GET',
             qs: { token },
@@ -210,21 +217,24 @@ export default {
      * @returns {PaginationList}
      */
     listRuns: (requestPromise, options) => {
-        const { baseUrl, token, actId, offset, limit } = options;
+        const { baseUrl, token, actId, offset, limit, desc } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
+        checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
+        const safeActId = replaceSlashWithTilde(actId);
         const query = { token };
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
+        if (desc) query.desc = 1;
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}/runs`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/runs`,
             json: true,
             method: 'GET',
             qs: query,
@@ -243,12 +253,17 @@ export default {
      * @param {string|Object|Buffer} body - Act input
      * @param {Boolean} [useRawBody] - If true, method encodes options.body depends on options.contentType.
      * @param {String} [options.contentType] - Content type of act input e.g 'application/json'
+     * @param {Number} [options.waitForFinish] - Number of seconds to wait for act to finish. Maximum value is 120s.
+                                                 If act doesn't finish in time then act run in RUNNING state is returned.
+     * @param {Number} [options.timeout] - Timeout for the act run in seconds. Zero value means there is no timeout.
+     * @param {Number} [options.memory] - Amount of memory allocated for the act run, in megabytes.
+     * @param {String} [options.build] - Tag or number of the build to run (e.g. <code>latest</code> or <code>1.2.34</code>).
      * @param callback
      * @returns {ActRun}
      */
     // TODO: Ensure that body is null or string or buffer
     runAct: (requestPromise, options) => {
-        const { baseUrl, token, actId, contentType, body, useRawBody, waitForFinish } = options;
+        const { baseUrl, token, actId, contentType, body, useRawBody, waitForFinish, timeout, memory, build } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
@@ -256,21 +271,35 @@ export default {
         checkParamOrThrow(contentType, 'contentType', 'Maybe String');
         checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
+        checkParamOrThrow(timeout, 'timeout', 'Maybe Number');
+        checkParamOrThrow(memory, 'memory', 'Maybe Number');
+        checkParamOrThrow(build, 'build', 'Maybe String');
 
-        const encodedBody = useRawBody ? body : encodeBody(body, contentType);
+        const safeActId = replaceSlashWithTilde(actId);
         const query = { token };
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
+        if (timeout) query.timeout = timeout;
+        if (memory) query.memory = memory;
+        if (build) query.build = build;
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}/runs`,
+        const opts = {
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/runs`,
             method: 'POST',
-            headers: {
-                'Content-Type': contentType,
-            },
-            body: encodedBody,
             qs: query,
-        })
+        };
+
+        if (contentType) opts.headers = { 'Content-Type': contentType };
+
+        if (body) {
+            const encodedBody = useRawBody ? body : encodeBody(body, contentType);
+
+            checkParamOrThrow(encodedBody, 'body', 'Buffer | String');
+
+            opts.body = encodedBody;
+        }
+
+        return requestPromise(opts)
         .then(response => JSON.parse(response))
         .then(pluckData);
     },
@@ -284,6 +313,8 @@ export default {
      * @param options.token
      * @param {String} options.actId - Act ID
      * @param {String} options.runId - Act run ID
+     * @param {Number} [options.waitForFinish] - Number of seconds to wait for act to finish. Maximum value is 120s.
+                                                 If act doesn't finish in time then act run in RUNNING state is returned.
      * @param callback
      * @returns {ActRun}
      */
@@ -295,12 +326,13 @@ export default {
         checkParamOrThrow(runId, 'runId', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
 
+        const safeActId = replaceSlashWithTilde(actId);
         const query = { token };
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}/runs/${runId}`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/runs/${runId}`,
             json: true,
             method: 'GET',
             qs: query,
@@ -327,21 +359,24 @@ export default {
      * @returns {PaginationList}
      */
     listBuilds: (requestPromise, options) => {
-        const { baseUrl, token, actId, offset, limit } = options;
+        const { baseUrl, token, actId, offset, limit, desc } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
+        checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
+        const safeActId = replaceSlashWithTilde(actId);
         const query = { token };
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
+        if (desc) query.desc = 1;
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}/builds`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/builds`,
             json: true,
             method: 'GET',
             qs: query,
@@ -357,23 +392,43 @@ export default {
      * @param {Object} options
      * @param options.token
      * @param {String} options.actId - Act ID
+     * @param {String} options.version - Version of the act to build.
+     * @param {Boolean} [options.betaPackages] - If true, the Docker container will be rebuild using layer cache.
+                                                 This is to enable quick rebuild during development.
+     * @param {Boolean} [options.useCache] - If true, Docker build uses beta versions of 'apify-client' and
+                                             'apifier' NPM packages, to test new features.
+     * @param {String} [options.tag] - Tag that is applied to the build on success. It enables callers of acts to specify which version of act to run.
+
+     betaPackages
+     useCache
+     tag
+     * @param {Number} [options.waitForFinish] - Number of seconds to wait for act to finish. Maximum value is 120s.
+                                                 If act doesn't finish in time then act run in RUNNING state is returned.
      * @param callback
      * @returns {ActBuild}
      */
     buildAct: (requestPromise, options) => {
-        const { baseUrl, token, actId, waitForFinish } = options;
+        const { baseUrl, token, actId, waitForFinish, version, tag, betaPackages, useCache } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(version, 'version', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
+        checkParamOrThrow(tag, 'tag', 'Maybe String');
+        checkParamOrThrow(betaPackages, 'betaPackages', 'Maybe Boolean');
+        checkParamOrThrow(useCache, 'useCache', 'Maybe Boolean');
 
-        const query = { token };
+        const safeActId = replaceSlashWithTilde(actId);
+        const query = { token, version };
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
+        if (betaPackages) query.betaPackages = 1;
+        if (useCache) query.useCache = 1;
+        if (tag) query.tag = tag;
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}/builds`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/builds`,
             json: true,
             method: 'POST',
             qs: query,
@@ -390,6 +445,8 @@ export default {
      * @param options.token
      * @param {String} options.actId - Act ID
      * @param {String} options.buildId - Act build ID
+     * @param {Number} [options.waitForFinish] - Number of seconds to wait for act to finish. Maximum value is 120s.
+                                                 If act doesn't finish in time then act run in RUNNING state is returned.
      * @param callback
      * @returns {ActBuild}
      */
@@ -401,12 +458,13 @@ export default {
         checkParamOrThrow(buildId, 'buildId', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
 
+        const safeActId = replaceSlashWithTilde(actId);
         const query = { token };
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${actId}/builds/${buildId}`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/builds/${buildId}`,
             json: true,
             method: 'GET',
             qs: query,
