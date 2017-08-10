@@ -2,9 +2,56 @@ import _ from 'underscore';
 import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, decodeBody, encodeBody } from './utils';
 
 /**
- * Key Value Store
+ * Key-value Stores
  * @memberOf ApifyClient
- * @namespace keyValueStore
+ * @description
+ * ### Basic usage
+ * ```javascript
+ * const ApifyClient = require('apify-client');
+ *
+ * const apifyClient = new ApifyClient({
+ *        userId: 'RWnGtczasdwP63Mak',
+ *        token: 'f5J7XsdaKDyRywwuGGo9',
+ * });
+ * const keyValueStores = apifyClient.keyValueStores;
+ *
+ * const store = await keyValueStores.getOrCreateStore({ storeName: 'my-store' });
+ * apifyClient.setOptions({ storeId: store._id });
+ * await keyValueStores.putRecord({
+ *      key: 'foo',
+ *      body: 'bar',
+ *      contentType: 'text/plain',
+ * });
+ * const record = await keyValueStores.getRecord({ key: 'foo' });
+ * const keys = await keyValueStores.getRecordsKeys();
+ * await keyValueStores.deleteRecord({ key: 'foo' });
+ * ```
+ *
+ * Every method can be used as either promise or with callback. If your Node version supports await/async then you can await promise result.
+ * ```javascript
+ * // Awaited promise
+ * try {
+ *      const record = await keyValueStores.getRecord({ key: 'foo' });
+ *      // Do something record ...
+ * } catch (err) {
+ *      // Do something with error ...
+ * }
+ *
+ * // Promise
+ * keyValueStores.getRecord({ key: 'foo' })
+ * .then((RECORD) => {
+ *      // Do something record ...
+ * })
+ * .catch((err) => {
+ *      // Do something with error ...
+ * });
+ *
+ * // Callback
+ * keyValueStores.getRecord({ key: 'foo' }, (err, record) => {
+ *      // Do something with error or record ...
+ * });
+ * ```
+ * @namespace keyValueStores
  */
 
 export const BASE_PATH = '/v2/key-value-stores';
@@ -12,10 +59,15 @@ export const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
 
 export default {
     /**
-     * @memberof ApifyClient.keyValueStore
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<TResult>|*}
+     * Creates store of given name and returns it's object. If store with given name already exists then returns it's object.
+     *
+     * @memberof ApifyClient.keyValueStores
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.storeName - Custom unique name to easily identify the store in the future.
+     * @param callback
+     * @returns {KeyValueStore}
      */
     getOrCreateStore: (requestPromise, options) => {
         const { baseUrl, token, storeName } = options;
@@ -34,10 +86,20 @@ export default {
     },
 
     /**
-     * @memberof ApifyClient.keyValueStore
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<TResult>|*}
+     * Gets list of key-value stores.
+     * @descriptions By default, the objects are sorted by the createdAt field in ascending order,
+     * therefore you can use pagination to incrementally fetch all stores while new ones are still being created.
+     * To sort them in descending order, use desc: 1 parameter.
+     * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
+     * @memberof ApifyClient.keyValueStores
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Number} [options.desc] - If 1 then the objects are sorted by the startedAt field in descending order.
+     * @param callback
+     * @returns {PaginationList}
      */
     listStores: (requestPromise, options) => {
         const { baseUrl, token, offset, limit } = options;
@@ -62,10 +124,14 @@ export default {
     },
 
     /**
-     * @memberof ApifyClient.keyValueStore
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<T>}
+     * Gets key-value store.
+     *
+     * @memberof ApifyClient.keyValueStores
+     * @instance
+     * @param {Object} options
+     * @param {String} options.storeId - Unique store Id
+     * @param callback
+     * @returns {KeyValueStore}
      */
     getStore: (requestPromise, options) => {
         const { baseUrl, storeId } = options;
@@ -83,9 +149,13 @@ export default {
     },
 
     /**
-     * @memberof ApifyClient.keyValueStore
-     * @param requestPromise
-     * @param options
+     * Deletes key-value store.
+     *
+     * @memberof ApifyClient.keyValueStores
+     * @instance
+     * @param {Object} options
+     * @param {String} options.storeId - Store Id
+     * @param callback
      * @returns {*}
      */
     deleteStore: (requestPromise, options) => {
@@ -102,10 +172,19 @@ export default {
     },
 
     /**
-     * @memberof ApifyClient.keyValueStore
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<TResult>|*}
+     * Gets value stored in the key-value store under the given key.
+     *
+     * @memberof ApifyClient.keyValueStores
+     * @instance
+     * @param {Object} options
+     * @param {String} options.storeId - Unique store Id
+     * @param {String} options.key - Key of the record
+     * @param {Boolean} [options.raw] - If true parameter is set then response to this request will be raw value stored under
+     *                                  the given key. Otherwise the value is wrapped in JSON object with additional info.
+     * @param {Boolean} [options.useRawBody] - It true, it doesn't decode response body TODO
+     * @param {Boolean} [options.url] - If true, it downloads data through aws sign url
+     * @param callback
+     * @returns {KeyValueStoreRecord|*}
      */
     // TODO: Ensure that body is null or string or buffer
     getRecord: (requestPromise, options) => {
@@ -169,9 +248,17 @@ export default {
     },
 
     /**
-     * @memberof keyValueStore
-     * @param requestPromise
-     * @param options
+     * Saves the record into key-value store.
+     *
+     * @memberof ApifyClient.keyValueStores
+     * @instance
+     * @param {Object} options
+     * @param {String} options.storeId - Unique store Id
+     * @param {String} options.key - Key of the record
+     * @param {String} options.contentType - Content type of body
+     * @param {string|Buffer} options.body - Body in string or Buffer
+     * @param {Boolean} [options.useRawBody] - It true, it doesn't decode response body TODO
+     * @param callback
      * @returns {*}
      */
     // TODO: check that body is buffer or string
@@ -220,10 +307,14 @@ export default {
     },
 
     /**
-     * @memberof ApifyClient.keyValueStore
-     * @param requestPromise
-     * @param options
-     * @returns {*}
+     * Deletes given record.
+     *
+     * @memberof ApifyClient.keyValueStores
+     * @instance
+     * @param {Object} options
+     * @param {String} options.storeId - Unique store Id
+     * @param {String} options.key - Key of the record
+     * @param callback
      */
     deleteRecord: (requestPromise, options) => {
         const { baseUrl, storeId, key } = options;
@@ -240,10 +331,17 @@ export default {
     },
 
     /**
-     * @memberof ApifyClient.keyValueStore
+     * Returns an array containing objects representing keys in given store.
+     * @description You can paginated using exclusiveStartKey and limit parameters.
+     * @memberof ApifyClient.keyValueStores
+     * @instance
      * @param requestPromise
-     * @param options
-     * @returns {Promise.<TResult>|*}
+     * @param {Object} options
+     * @param {String} options.storeId - Unique store Id
+     * @param {String} [options.exclusiveStartKey] - All keys up to this one (including) are skipped from the result.
+     * @param {Number} [options.limit] - Number of keys to be returned. Maximum value is 1000
+     * @param callback
+     * @returns {PaginationList}
      */
     listKeys: (requestPromise, options) => {
         const { baseUrl, storeId, exclusiveStartKey, limit } = options;
@@ -269,10 +367,17 @@ export default {
     },
 
     /**
-     * @memberof ApifyClient.keyValueStore
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<TResult>}
+     * Returns an array containing objects representing key value pairs in given store.
+     * @description You can paginated using exclusiveStartKey and limit parameters.
+     * @memberof ApifyClient.keyValueStores
+     * @instance
+     * @param {Object} options
+     * @param {String} options.storeId - Unique store Id
+     * @param {String} [options.exclusiveStartKey] - All keys up to this one (including) are skipped from the result.
+     * @param {Number} [options.limit] - Number of keys to be returned. Maximum value is 1000
+     * @param {Boolean} [options.useRawBody] - It true, it doesn't decode response body TODO
+     * @param callback
+     * @returns {PaginationList}
      */
     listRecords: (requestPromise, options) => {
         const { baseUrl, storeId, exclusiveStartKey, limit, useRawBody } = options;

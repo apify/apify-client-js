@@ -3,8 +3,40 @@ import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, encodeBody } from '
 
 /**
  * Acts
- * @module apifier-client
  * @memberOf ApifyClient
+ * @description
+ * ### Basic usage
+ * Every method can be used as either promise or with callback. If your Node version supports await/async then you can await promise result.
+ * ```javascript
+ * const ApifyClient = require('apify-client');
+ *
+ * const apifyClient = new ApifyClient({
+ *  userId: 'jklnDMNKLekk',
+ *  token: 'SNjkeiuoeD443lpod68dk',
+ * });
+ *
+ * // Awaited promise
+ * try {
+ *      const crawler = await apifyClient.acts.listActs({});
+ *      // Do something acts list ...
+ * } catch (err) {
+ *      // Do something with error ...
+ * }
+ *
+ * // Promise
+ * apifyClient.acts.listActs({})
+ * .then((actsList) => {
+ *      // Do something actsList ...
+ * })
+ * .catch((err) => {
+ *      // Do something with error ...
+ * });
+ *
+ * // Callback
+ * apifyClient.acts.listActs({}, (err, actsList) => {
+ *      // Do something with error or actsList ...
+ * });
+ * ```
  * @namespace acts
  */
 
@@ -13,12 +45,20 @@ export const WAIT_FOR_FINISH_SECS = 120;
 
 export default {
     /**
-     * List of Acts
-     *
+     * Gets list of your acts.
+     * @description By default, the objects are sorted by the createdAt field in ascending order,
+     * therefore you can use pagination to incrementally fetch all acts while new ones are still being created.
+     * To sort them in descending order, use desc: 1 parameter.
+     * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<TResult>|*}
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
+     * @param callback
+     * @returns {PaginationList}
      */
     listActs: (requestPromise, options) => {
         const { baseUrl, token, offset, limit } = options;
@@ -43,10 +83,15 @@ export default {
     },
 
     /**
-     * @memberof acts
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<TResult>|*}
+     * Creates a new act.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {Object} options.act
+     * @param callback
+     * @returns {Act}
      */
     createAct: (requestPromise, options) => {
         const { baseUrl, token, act } = options;
@@ -66,10 +111,16 @@ export default {
     },
 
     /**
+     * Updates act.
+     *
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<TResult>|*}
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Act ID
+     * @param {Object} options.act
+     * @param callback
+     * @returns {Act}
      */
     updateAct: (requestPromise, options) => {
         const { baseUrl, token, actId, act } = options;
@@ -91,10 +142,14 @@ export default {
     },
 
     /**
+     * Deletes act.
+     *
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
-     * @returns {*}
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Act ID
+     * @param callback
      */
     deleteAct: (requestPromise, options) => {
         const { baseUrl, token, actId } = options;
@@ -111,10 +166,15 @@ export default {
     },
 
     /**
+     * Gets act object.
+     *
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<T>}
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Act ID
+     * @param callback
+     * @returns {Act}
      */
     getAct: (requestPromise, options) => {
         const { baseUrl, token, actId } = options;
@@ -133,10 +193,21 @@ export default {
     },
 
     /**
+     * Gets list of act runs.
+     * @descriptions By default, the objects are sorted by the startedAt field in ascending order,
+     * therefore you can use pagination to incrementally fetch all builds while new ones are still being created.
+     * To sort them in descending order, use desc: 1 parameter.
+     * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<TResult>|*}
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Act ID
+     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
+     * @param callback
+     * @returns {PaginationList}
      */
     listRuns: (requestPromise, options) => {
         const { baseUrl, token, actId, offset, limit } = options;
@@ -162,10 +233,18 @@ export default {
     },
 
     /**
+     * Runs the latest build of given act.
+     *
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<TResult>|*}
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Act ID
+     * @param {string|Object|Buffer} body - Act input
+     * @param {Boolean} [useRawBody] - If true, method encodes options.body depends on options.contentType.
+     * @param {String} [options.contentType] - Content type of act input e.g 'application/json'
+     * @param callback
+     * @returns {ActRun}
      */
     // TODO: Ensure that body is null or string or buffer
     runAct: (requestPromise, options) => {
@@ -197,10 +276,16 @@ export default {
     },
 
     /**
+     * Gets act run.
+     *
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<T>}
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Act ID
+     * @param {String} options.runId - Act run ID
+     * @param callback
+     * @returns {ActRun}
      */
     getRun: (requestPromise, options) => {
         const { baseUrl, token, actId, runId, waitForFinish } = options;
@@ -225,10 +310,21 @@ export default {
     },
 
     /**
+     * Gets list of act builds.
+     * @descriptions By default, the objects are sorted by the startedAt field in ascending order,
+     * therefore you can use pagination to incrementally fetch all builds while new ones are still being created.
+     * To sort them in descending order, use desc: 1 parameter.
+     * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<TResult>|*}
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Act ID
+     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
+     * @param callback
+     * @returns {PaginationList}
      */
     listBuilds: (requestPromise, options) => {
         const { baseUrl, token, actId, offset, limit } = options;
@@ -254,10 +350,15 @@ export default {
     },
 
     /**
+     * Builds given act and returns object of that build.
+     *
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<TResult>|*}
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Act ID
+     * @param callback
+     * @returns {ActBuild}
      */
     buildAct: (requestPromise, options) => {
         const { baseUrl, token, actId, waitForFinish } = options;
@@ -281,10 +382,16 @@ export default {
     },
 
     /**
+     * Gets act build.
+     *
      * @memberof ApifyClient.acts
-     * @param requestPromise
-     * @param options
-     * @returns {Promise.<T>}
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Act ID
+     * @param {String} options.buildId - Act build ID
+     * @param callback
+     * @returns {ActBuild}
      */
     getBuild: (requestPromise, options) => {
         const { baseUrl, token, actId, buildId, waitForFinish } = options;
