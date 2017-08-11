@@ -45,8 +45,9 @@ export const newApifyErrorFromResponse = (statusCode, body) => {
     if (_.isObject(body)) parsedBody = body;
     else if (_.isString(body)) parsedBody = safeJsonParse(body);
 
-    const type = parsedBody.type || REQUEST_FAILED_ERROR_TYPE;
-    const message = parsedBody.message || REQUEST_FAILED_ERROR_MESSAGE;
+    const error = parsedBody.error || parsedBody;
+    const type = error.type || REQUEST_FAILED_ERROR_TYPE;
+    const message = error.message || REQUEST_FAILED_ERROR_MESSAGE;
 
     return new ApifyError(type, message, { statusCode });
 };

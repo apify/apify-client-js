@@ -54,6 +54,13 @@ describe('utils.newApifyErrorFromResponse()', () => {
         expect(error.type).to.be.eql('SOME_TYPE');
         expect(error.message).to.be.eql(REQUEST_FAILED_ERROR_MESSAGE);
     });
+
+    it('works with error as subobject', () => {
+        const error = utils.newApifyErrorFromResponse(404, { error: { type: 'SOME_TYPE', message: 'Some message.' } });
+        expect(error.details.statusCode).to.be.eql(404);
+        expect(error.type).to.be.eql('SOME_TYPE');
+        expect(error.message).to.be.eql('Some message.');
+    });
 });
 
 describe('utils.requestPromise()', () => {
