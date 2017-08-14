@@ -369,17 +369,19 @@ describe('utils.pluckData()', () => {
     });
 });
 
-describe('utils.decodeBody/encodeBody()', () => {
+describe('utils.parseBody()', () => {
     it('works', () => {
-        const { encodeBody, decodeBody } = utils;
+        const { parseBody } = utils;
 
         const inputObj = { foo: 'bar' };
-        const inputStr = JSON.stringify(inputObj);
+        const inputJson = JSON.stringify(inputObj);
+        const inputStr = 'some string';
+        const inputBuffer = Buffer.from(inputStr);
 
-        expect(encodeBody(inputObj, 'application/json')).to.be.eql(inputStr);
-        expect(encodeBody(inputObj, 'application/something')).to.be.eql(inputObj);
+        expect(parseBody(inputJson, 'application/json')).to.be.eql(inputObj);
+        expect(parseBody(inputJson, 'application/something')).to.be.eql(inputJson);
 
-        expect(decodeBody(inputStr, 'application/json')).to.be.eql(inputObj);
-        expect(decodeBody(inputStr, 'application/something')).to.be.eql(inputStr);
+        expect(parseBody(inputBuffer, 'text/plain')).to.be.eql(inputStr);
+        expect(parseBody(inputBuffer, 'text/something')).to.be.eql(inputBuffer);
     });
 });

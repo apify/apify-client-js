@@ -1,5 +1,4 @@
-import _ from 'underscore';
-import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, decodeBody, encodeBody } from './utils';
+import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody } from './utils';
 
 /**
  * Key-value Stores
@@ -183,71 +182,50 @@ export default {
      * @param {Object} options
      * @param {String} options.storeId - Unique store Id
      * @param {String} options.key - Key of the record
-     * @param {Boolean} [options.raw] - If true parameter is set then response to this request will be raw value stored under
+     * @param {Boolean} [options.rawBody] - If true parameter is set then response to this request will be raw value stored under
      *                                  the given key. Otherwise the value is wrapped in JSON object with additional info.
-     * @param {Boolean} [options.useRawBody] - It true, it doesn't decode response body TODO
-     * @param {Boolean} [options.url] - If true, it downloads data through aws sign url
+     * @param {Boolean} [options.disableBodyParser] - It true, it doesn't parse record's body based on content type.
+     * @param {Boolean} [options.disableRedirect] - If rawBody=1 then API by default redirects user to record url for faster download.
+                                                    If disableRedirect=1 is set then API returns the record value directly.
      * @param callback
      * @returns {KeyValueStoreRecord|*}
      */
     getRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, raw, useRawBody, url } = options;
+        const { baseUrl, storeId, key, rawBody, disableBodyParser, disableRedirect } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
-        checkParamOrThrow(raw, 'raw', 'Maybe Boolean');
-        checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
-        checkParamOrThrow(url, 'url', 'Maybe Boolean');
+        checkParamOrThrow(rawBody, 'rawBody', 'Maybe Boolean');
+        checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
+        checkParamOrThrow(disableRedirect, 'disableRedirect', 'Maybe Boolean');
 
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             method: 'GET',
-            json: !raw,
+            json: !rawBody,
             qs: {},
             gzip: true,
         };
 
-        if (raw) {
+        if (rawBody) {
             requestOpts.encoding = null;
-            requestOpts.qs.raw = 1;
+            requestOpts.qs.rawBody = 1;
         }
 
+        if (disableRedirect) requestOpts.qs.disableRedirect = 1;
+
         const parseResponse = (response) => {
-            if (raw) return response;
+            if (rawBody) return response;
 
             const data = pluckData(response);
 
-            if (!useRawBody) data.body = decodeBody(data.body, data.contentType);
+            if (!disableBodyParser) data.body = parseBody(data.body, data.contentType);
 
             return data;
         };
 
-        // Downloading via our servers:
-        if (!url) return requestPromise(requestOpts).then(parseResponse, catchNotFoundOrThrow);
-
-        // ... or via signed url directly to S3:
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}/direct-download-url`,
-            method: 'GET',
-            json: true,
-            gzip: true,
-            qs: requestOpts.qs,
-        })
-        .then((response) => {
-            const meta = _.omit(response.data, 'signedUrl');
-
-            return requestPromise({
-                method: 'GET',
-                url: response.data.signedUrl,
-                json: false,
-                gzip: true,
-            })
-            .then((body) => {
-                return raw ? body : { data: Object.assign({}, _.omit(meta, 'contentEncoding'), { body }) };
-            })
-            .then(parseResponse, catchNotFoundOrThrow);
-        });
+        return requestPromise(requestOpts).then(parseResponse, catchNotFoundOrThrow);
     },
 
     /**
@@ -260,23 +238,19 @@ export default {
      * @param {String} options.key - Key of the record
      * @param {String} options.contentType - Content type of body
      * @param {string|Buffer} options.body - Body in string or Buffer
-     * @param {Boolean} [options.useRawBody] - It true, it doesn't decode response body TODO
      * @param callback
      * @returns {*}
      */
     putRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, body, contentType = 'text/plain', useRawBody } = options;
+        const { baseUrl, storeId, key, body, contentType = 'text/plain' } = options;
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(contentType, 'contentType', 'String');
-        checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
 
-        const encodedBody = useRawBody ? body : encodeBody(body, contentType);
+        checkParamOrThrow(body, 'body', 'Buffer | String');
 
-        checkParamOrThrow(encodedBody, 'body', 'Buffer | String');
-
-        return gzipPromise(options.promise, encodedBody)
+        return gzipPromise(options.promise, body)
             .then((gzipedBody) => {
                 const requestOpts = {
                     url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
@@ -368,54 +342,5 @@ export default {
         };
 
         return requestPromise(requestOpts).then(pluckData);
-    },
-
-    /**
-     * Returns an array containing objects representing key value pairs in given store.
-     * @description You can paginated using exclusiveStartKey and limit parameters.
-     * @memberof ApifyClient.keyValueStores
-     * @instance
-     * @param {Object} options
-     * @param {String} options.storeId - Unique store Id
-     * @param {String} [options.exclusiveStartKey] - All keys up to this one (including) are skipped from the result.
-     * @param {Number} [options.limit] - Number of keys to be returned. Maximum value is 1000
-     * @param {Boolean} [options.useRawBody] - It true, it doesn't decode response body TODO
-     * @param callback
-     * @returns {PaginationList}
-     */
-    listRecords: (requestPromise, options) => {
-        const { baseUrl, storeId, exclusiveStartKey, limit, useRawBody } = options;
-
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(storeId, 'storeId', 'String');
-        checkParamOrThrow(exclusiveStartKey, 'exclusiveStartKey', 'Maybe String');
-        checkParamOrThrow(limit, 'limit', 'Maybe Number');
-        checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
-
-        const query = {};
-
-        if (exclusiveStartKey) query.exclusiveStartKey = exclusiveStartKey;
-        if (limit) query.limit = limit;
-
-        const requestOpts = {
-            url: `${baseUrl}${BASE_PATH}/${storeId}/records`,
-            json: true,
-            method: 'GET',
-            qs: query,
-        };
-
-        const transformItem = (item) => {
-            if (!useRawBody) item.body = decodeBody(item.body, item.contentType);
-
-            return item;
-        };
-
-        return requestPromise(requestOpts)
-            .then(pluckData)
-            .then((data) => {
-                data.items = data.items.map(transformItem);
-
-                return data;
-            });
     },
 };
