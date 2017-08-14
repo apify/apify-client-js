@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, decodeBody, encodeBody } from './utils';
+import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody } from './utils';
 
 /**
  * Key-value Stores
@@ -185,19 +185,19 @@ export default {
      * @param {String} options.key - Key of the record
      * @param {Boolean} [options.raw] - If true parameter is set then response to this request will be raw value stored under
      *                                  the given key. Otherwise the value is wrapped in JSON object with additional info.
-     * @param {Boolean} [options.useRawBody] - It true, it doesn't decode response body TODO
+     * @param {Boolean} [options.disableBodyParser] - It true, it doesn't parse record's body based on content type.
      * @param {Boolean} [options.url] - If true, it downloads data through aws sign url
      * @param callback
      * @returns {KeyValueStoreRecord|*}
      */
     getRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, raw, useRawBody, url } = options;
+        const { baseUrl, storeId, key, raw, disableBodyParser, url } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(raw, 'raw', 'Maybe Boolean');
-        checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
+        checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
         checkParamOrThrow(url, 'url', 'Maybe Boolean');
 
         const requestOpts = {
@@ -218,7 +218,7 @@ export default {
 
             const data = pluckData(response);
 
-            if (!useRawBody) data.body = decodeBody(data.body, data.contentType);
+            if (!disableBodyParser) data.body = parseBody(data.body, data.contentType);
 
             return data;
         };
@@ -260,23 +260,19 @@ export default {
      * @param {String} options.key - Key of the record
      * @param {String} options.contentType - Content type of body
      * @param {string|Buffer} options.body - Body in string or Buffer
-     * @param {Boolean} [options.useRawBody] - It true, it doesn't decode response body TODO
      * @param callback
      * @returns {*}
      */
     putRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, body, contentType = 'text/plain', useRawBody } = options;
+        const { baseUrl, storeId, key, body, contentType = 'text/plain' } = options;
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(contentType, 'contentType', 'String');
-        checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
 
-        const encodedBody = useRawBody ? body : encodeBody(body, contentType);
+        checkParamOrThrow(body, 'body', 'Buffer | String');
 
-        checkParamOrThrow(encodedBody, 'body', 'Buffer | String');
-
-        return gzipPromise(options.promise, encodedBody)
+        return gzipPromise(options.promise, body)
             .then((gzipedBody) => {
                 const requestOpts = {
                     url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,

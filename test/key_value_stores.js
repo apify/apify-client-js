@@ -240,7 +240,7 @@ describe('Key value store', () => {
                 });
         });
 
-        it('getRecord() doesn\'t parse application/json when useRawBody = true', () => {
+        it('getRecord() doesn\'t parse application/json when disableBodyParser = true', () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const serverResponse = {
@@ -261,7 +261,7 @@ describe('Key value store', () => {
 
             return apifyClient
                 .keyValueStores
-                .getRecord({ storeId, key, useRawBody: true })
+                .getRecord({ storeId, key, disableBodyParser: true })
                 .then((given) => {
                     expect(given).to.be.eql(expected);
                 });
@@ -395,54 +395,6 @@ describe('Key value store', () => {
             return apifyClient
                 .keyValueStores
                 .putRecord({ storeId, key, contentType, body });
-        });
-
-        it('putRecord() works parses JSON', () => {
-            const key = 'some-key';
-            const storeId = 'some-id';
-            const contentType = 'application/json';
-            const body = { foo: 'bar' };
-
-            requestExpectCall({
-                body: gzipSync(JSON.stringify(body)),
-                headers: {
-                    'Content-Type': contentType,
-                    'Content-Encoding': 'gzip',
-                },
-                json: false,
-                method: 'PUT',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
-            });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .keyValueStores
-                .putRecord({ storeId, key, contentType, body });
-        });
-
-        it('putRecord() works doesn\'t parse JSON when useRawBody = true', () => {
-            const key = 'some-key';
-            const storeId = 'some-id';
-            const contentType = 'application/json';
-            const body = "{ foo: 'bar' }";
-
-            requestExpectCall({
-                body: gzipSync(body),
-                headers: {
-                    'Content-Type': contentType,
-                    'Content-Encoding': 'gzip',
-                },
-                json: false,
-                method: 'PUT',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
-            });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .keyValueStores
-                .putRecord({ storeId, key, contentType, body, useRawBody: true });
         });
 
         it('putRecord() uploads via signed url when gzipped buffer.length > SIGNED_URL_UPLOAD_MIN_BYTESIZE', () => {

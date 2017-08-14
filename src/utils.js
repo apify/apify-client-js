@@ -174,18 +174,12 @@ export const gzipPromise = (Promise, buffer) => {
 };
 
 /**
- * Function for encoding/parsing body.
+ * Function for parsing body.
  */
-export const decodeBody = (body, contentType) => {
+export const parseBody = (body, contentType) => {
     switch (contentType) {
         case CONTENT_TYPE_JSON: return JSON.parse(body);
         case CONTENT_TYPE_TEXT_PLAIN: return body.toString();
-        default: return body;
-    }
-};
-export const encodeBody = (body, contentType) => {
-    switch (contentType) {
-        case CONTENT_TYPE_JSON: return JSON.stringify(body);
         default: return body;
     }
 };

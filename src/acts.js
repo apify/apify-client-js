@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, encodeBody } from './utils';
+import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
 
 /**
  * Acts
@@ -251,7 +251,6 @@ export default {
      * @param options.token
      * @param {String} options.actId - Act ID
      * @param {string|Object|Buffer} body - Act input
-     * @param {Boolean} [useRawBody] - If true, method encodes options.body depends on options.contentType.
      * @param {String} [options.contentType] - Content type of act input e.g 'application/json'
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for act to finish. Maximum value is 120s.
                                                  If act doesn't finish in time then act run in RUNNING state is returned.
@@ -263,13 +262,12 @@ export default {
      */
     // TODO: Ensure that body is null or string or buffer
     runAct: (requestPromise, options) => {
-        const { baseUrl, token, actId, contentType, body, useRawBody, waitForFinish, timeout, memory, build } = options;
+        const { baseUrl, token, actId, contentType, body, waitForFinish, timeout, memory, build } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
         checkParamOrThrow(contentType, 'contentType', 'Maybe String');
-        checkParamOrThrow(useRawBody, 'useRawBody', 'Maybe Boolean');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
         checkParamOrThrow(timeout, 'timeout', 'Maybe Number');
         checkParamOrThrow(memory, 'memory', 'Maybe Number');
@@ -292,11 +290,9 @@ export default {
         if (contentType) opts.headers = { 'Content-Type': contentType };
 
         if (body) {
-            const encodedBody = useRawBody ? body : encodeBody(body, contentType);
+            checkParamOrThrow(body, 'body', 'Buffer | String');
 
-            checkParamOrThrow(encodedBody, 'body', 'Buffer | String');
-
-            opts.body = encodedBody;
+            opts.body = body;
         }
 
         return requestPromise(opts)
