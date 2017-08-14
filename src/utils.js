@@ -13,6 +13,7 @@ const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 const EXP_BACKOFF_MILLIS = 500;
 const EXP_BACKOFF_MAX_REPEATS = 8; // 64s
 const CONTENT_TYPE_JSON = 'application/json';
+const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
 
 export const REQUEST_PROMISE_OPTIONS = ['promise', 'expBackOffMillis', 'expBackOffMaxRepeats'];
 
@@ -178,6 +179,7 @@ export const gzipPromise = (Promise, buffer) => {
 export const decodeBody = (body, contentType) => {
     switch (contentType) {
         case CONTENT_TYPE_JSON: return JSON.parse(body);
+        case CONTENT_TYPE_TEXT_PLAIN: return body.toString();
         default: return body;
     }
 };

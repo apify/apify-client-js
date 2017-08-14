@@ -374,12 +374,17 @@ describe('utils.decodeBody/encodeBody()', () => {
         const { encodeBody, decodeBody } = utils;
 
         const inputObj = { foo: 'bar' };
-        const inputStr = JSON.stringify(inputObj);
+        const inputJson = JSON.stringify(inputObj);
+        const inputStr = 'some string';
+        const inputBuffer = Buffer.from(inputStr);
 
-        expect(encodeBody(inputObj, 'application/json')).to.be.eql(inputStr);
+        expect(encodeBody(inputObj, 'application/json')).to.be.eql(inputJson);
         expect(encodeBody(inputObj, 'application/something')).to.be.eql(inputObj);
 
-        expect(decodeBody(inputStr, 'application/json')).to.be.eql(inputObj);
-        expect(decodeBody(inputStr, 'application/something')).to.be.eql(inputStr);
+        expect(decodeBody(inputJson, 'application/json')).to.be.eql(inputObj);
+        expect(decodeBody(inputJson, 'application/something')).to.be.eql(inputJson);
+
+        expect(decodeBody(inputBuffer, 'text/plain')).to.be.eql(inputStr);
+        expect(decodeBody(inputBuffer, 'text/something')).to.be.eql(inputBuffer);
     });
 });
