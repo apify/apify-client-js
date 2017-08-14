@@ -183,38 +183,41 @@ export default {
      * @param {Object} options
      * @param {String} options.storeId - Unique store Id
      * @param {String} options.key - Key of the record
-     * @param {Boolean} [options.raw] - If true parameter is set then response to this request will be raw value stored under
+     * @param {Boolean} [options.rawBody] - If true parameter is set then response to this request will be raw value stored under
      *                                  the given key. Otherwise the value is wrapped in JSON object with additional info.
      * @param {Boolean} [options.disableBodyParser] - It true, it doesn't parse record's body based on content type.
-     * @param {Boolean} [options.url] - If true, it downloads data through aws sign url
+     * @param {Boolean} [options.disableRedirect] - If rawBody=1 then API by default redirects user to record url for faster download.
+                                                    If disableRedirect=1 is set then API returns the record value directly.
      * @param callback
      * @returns {KeyValueStoreRecord|*}
      */
     getRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, raw, disableBodyParser, url } = options;
+        const { baseUrl, storeId, key, rawBody, disableBodyParser, disableRedirect } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
-        checkParamOrThrow(raw, 'raw', 'Maybe Boolean');
+        checkParamOrThrow(rawBody, 'rawBody', 'Maybe Boolean');
         checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
-        checkParamOrThrow(url, 'url', 'Maybe Boolean');
+        checkParamOrThrow(disableRedirect, 'disableRedirect', 'Maybe Boolean');
 
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             method: 'GET',
-            json: !raw,
+            json: !rawBody,
             qs: {},
             gzip: true,
         };
 
-        if (raw) {
+        if (rawBody) {
             requestOpts.encoding = null;
-            requestOpts.qs.raw = 1;
+            requestOpts.qs.rawBody = 1;
         }
 
+        if (disableRedirect) requestOpts.qs.disableRedirect = 1;
+
         const parseResponse = (response) => {
-            if (raw) return response;
+            if (rawBody) return response;
 
             const data = pluckData(response);
 
@@ -223,31 +226,7 @@ export default {
             return data;
         };
 
-        // Downloading via our servers:
-        if (!url) return requestPromise(requestOpts).then(parseResponse, catchNotFoundOrThrow);
-
-        // ... or via signed url directly to S3:
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}/direct-download-url`,
-            method: 'GET',
-            json: true,
-            gzip: true,
-            qs: requestOpts.qs,
-        })
-        .then((response) => {
-            const meta = _.omit(response.data, 'signedUrl');
-
-            return requestPromise({
-                method: 'GET',
-                url: response.data.signedUrl,
-                json: false,
-                gzip: true,
-            })
-            .then((body) => {
-                return raw ? body : { data: Object.assign({}, _.omit(meta, 'contentEncoding'), { body }) };
-            })
-            .then(parseResponse, catchNotFoundOrThrow);
-        });
+        return requestPromise(requestOpts).then(parseResponse, catchNotFoundOrThrow);
     },
 
     /**
