@@ -40,7 +40,6 @@ export const requestExpectErrorCall = (requestOpts, resolveWithResponse, statusC
         .returns(Promise.reject(error));
 };
 
-export const verifyAndRestoreRequest = () => {
-    requestMock.verify();
+export const restoreRequest = () => {
     requestMock.restore();
 };

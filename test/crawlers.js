@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import ApifyClient from '../build';
 import { BASE_PATH } from '../build/crawlers';
-import { mockRequest, requestExpectCall, requestExpectErrorCall, verifyAndRestoreRequest } from './_helper';
+import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
 
 const basicOptions = {
     baseUrl: 'http://myhost:80/mypath',
@@ -16,7 +16,7 @@ const optionsWithCredentials = Object.assign({}, basicOptions, credentials);
 
 describe('Crawlers', () => {
     before(mockRequest);
-    after(verifyAndRestoreRequest);
+    after(restoreRequest);
 
     describe('List crawlers', () => {
         const sampleBody = [

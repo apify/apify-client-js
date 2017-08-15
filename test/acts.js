@@ -2,14 +2,14 @@ import _ from 'underscore';
 import { expect } from 'chai';
 import ApifyClient from '../build';
 import { BASE_PATH } from '../build/acts';
-import { mockRequest, requestExpectCall, requestExpectErrorCall, verifyAndRestoreRequest } from './_helper';
+import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
 
 const BASE_URL = 'http://example.com/something';
 const OPTIONS = { baseUrl: BASE_URL };
 
 describe('Act method', () => {
     before(mockRequest);
-    after(verifyAndRestoreRequest);
+    after(restoreRequest);
 
     it('listActs() works', () => {
         const callOptions = {

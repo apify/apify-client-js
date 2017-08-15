@@ -209,23 +209,32 @@ export default {
         };
 
         if (rawBody) {
+            requestOpts.resolveWithResponse = true;
             requestOpts.encoding = null;
             requestOpts.qs.rawBody = 1;
         }
 
         if (disableRedirect) requestOpts.qs.disableRedirect = 1;
 
-        const parseResponse = (response) => {
-            if (rawBody) return response;
-
-            const data = pluckData(response);
+        const parseResponse = (responseBody) => {
+            const data = pluckData(responseBody);
 
             if (!disableBodyParser) data.body = parseBody(data.body, data.contentType);
 
             return data;
         };
 
-        return requestPromise(requestOpts).then(parseResponse, catchNotFoundOrThrow);
+        const parseRawBodyResponse = (response) => {
+            const responseBody = response.body;
+            const contentType = response.headers['content-type'];
+
+            return disableBodyParser ? responseBody : parseBody(responseBody, contentType);
+
+        };
+
+        const responseParser = rawBody ? parseRawBodyResponse : parseResponse;
+
+        return requestPromise(requestOpts).then(responseParser, catchNotFoundOrThrow);
     },
 
     /**
