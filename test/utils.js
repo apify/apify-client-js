@@ -375,10 +375,12 @@ describe('utils.parseBody()', () => {
 
         const inputObj = { foo: 'bar' };
         const inputJson = JSON.stringify(inputObj);
+        const inputJsonBuffer = Buffer.from(inputJson);
         const inputStr = 'some string';
         const inputBuffer = Buffer.from(inputStr);
 
         expect(parseBody(inputJson, 'application/json')).to.be.eql(inputObj);
+        expect(parseBody(inputJsonBuffer, 'application/json')).to.be.eql(inputObj);
         expect(parseBody(inputJson, 'application/something')).to.be.eql(inputJson);
 
         expect(parseBody(inputBuffer, 'text/plain')).to.be.eql(inputStr);
