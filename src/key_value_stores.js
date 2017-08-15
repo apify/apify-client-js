@@ -229,7 +229,6 @@ export default {
             const contentType = response.headers['content-type'];
 
             return disableBodyParser ? responseBody : parseBody(responseBody, contentType);
-
         };
 
         const responseParser = rawBody ? parseRawBodyResponse : parseResponse;
