@@ -19,7 +19,7 @@ import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseB
  * await keyValueStores.putRecord({
  *      key: 'foo',
  *      body: 'bar',
- *      contentType: 'text/plain',
+ *      contentType: 'text/plain; charset=utf-8',
  * });
  * const record = await keyValueStores.getRecord({ key: 'foo' });
  * const keys = await keyValueStores.getRecordsKeys();
@@ -250,7 +250,7 @@ export default {
      * @returns {*}
      */
     putRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, body, contentType = 'text/plain' } = options;
+        const { baseUrl, storeId, key, body, contentType = 'text/plain; charset=utf-8' } = options;
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');

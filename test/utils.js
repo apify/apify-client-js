@@ -381,9 +381,13 @@ describe('utils.parseBody()', () => {
 
         expect(parseBody(inputJson, 'application/json')).to.be.eql(inputObj);
         expect(parseBody(inputJsonBuffer, 'application/json')).to.be.eql(inputObj);
+        expect(parseBody(inputJsonBuffer, 'application/json; charset=something')).to.be.eql(inputObj);
+        expect(parseBody(inputJsonBuffer, 'application/json; charset=utf-8')).to.be.eql(inputObj);
         expect(parseBody(inputJson, 'application/something')).to.be.eql(inputJson);
 
         expect(parseBody(inputBuffer, 'text/plain')).to.be.eql(inputStr);
+        expect(parseBody(inputBuffer, 'text/plain; charset=something')).to.be.eql(inputStr);
+        expect(parseBody(inputBuffer, 'text/plain; charset=utf-8')).to.be.eql(inputStr);
         expect(parseBody(inputBuffer, 'text/something')).to.be.eql(inputBuffer);
     });
 });
