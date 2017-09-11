@@ -42,6 +42,7 @@
     "lint": "npm run build && eslint src test"
   },
   "dependencies": {
+    "content-type": "^1.0.3",
     "request": "^2.81.0",
     "type-check": "^0.3.2",
     "underscore": "^1.8.3"
