@@ -1,6 +1,6 @@
 import request from 'request';
 import _ from 'underscore';
-import contentType from 'content-type';
+import contentTypeParser from 'content-type';
 import { parseType, parsedTypeCheck } from 'type-check';
 import { gzip } from 'zlib';
 import ApifyError, {
@@ -175,14 +175,14 @@ export const gzipPromise = (Promise, buffer) => {
 };
 
 /**
- * Function for parsing record's body.
+ * Function for parsing key-value store record's body.
  */
-export const parseBody = (recordBody, recordContentType) => {
-    const type = contentType.parse(recordContentType).type;
+export const parseBody = (body, contentType) => {
+    const type = contentTypeParser.parse(contentType).type;
 
     switch (type) {
-        case CONTENT_TYPE_JSON: return JSON.parse(recordBody);
-        case CONTENT_TYPE_TEXT_PLAIN: return recordBody.toString();
-        default: return recordBody;
+        case CONTENT_TYPE_JSON: return JSON.parse(body);
+        case CONTENT_TYPE_TEXT_PLAIN: return body.toString();
+        default: return body;
     }
 };
