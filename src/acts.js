@@ -250,7 +250,7 @@ export default {
      * @param {Object} options
      * @param options.token
      * @param {String} options.actId - Act ID
-     * @param {string|Object|Buffer} body - Act input
+     * @param {String|Buffer} options.body - Act input, passed as HTTP POST payload
      * @param {String} [options.contentType] - Content type of act input e.g 'application/json'
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for act to finish. Maximum value is 120s.
                                                  If act doesn't finish in time then act run in RUNNING state is returned.
@@ -260,7 +260,6 @@ export default {
      * @param callback
      * @returns {ActRun}
      */
-    // TODO: Ensure that body is null or string or buffer
     runAct: (requestPromise, options) => {
         const { baseUrl, token, actId, contentType, body, waitForFinish, timeout, memory, build } = options;
 
