@@ -21,7 +21,7 @@
         }
     },
     "opts": {
-        "template": "templates/default",
+        "template": "./node_modules/apify-jsdoc-template",
         "encoding": "utf8",
         "destination": ".docs"
     }
