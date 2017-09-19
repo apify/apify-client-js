@@ -2,15 +2,15 @@
 const APIFY_GENERIC_PARAMS = {
     // Generic params
     'options.userId': {
-        description: '<p>Overwrites user ID</p>',
+        description: '<p>Your user ID at apify.com</p>',
         type: {
-            names: ['string'],
+            names: ['String'],
         },
     },
     'options.token': {
         description: '<p>Your API token at apify.com</p>',
         type: {
-            names: ['string'],
+            names: ['String'],
         },
     },
     'callback': {

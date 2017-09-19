@@ -1,6 +1,7 @@
 import request from 'request';
 import _ from 'underscore';
-import { typeCheck } from 'type-check';
+import contentTypeParser from 'content-type';
+import { parseType, parsedTypeCheck } from 'type-check';
 import { gzip } from 'zlib';
 import ApifyError, {
     INVALID_PARAMETER_ERROR_TYPE,
@@ -13,6 +14,7 @@ const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 const EXP_BACKOFF_MILLIS = 500;
 const EXP_BACKOFF_MAX_REPEATS = 8; // 64s
 const CONTENT_TYPE_JSON = 'application/json';
+const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
 
 export const REQUEST_PROMISE_OPTIONS = ['promise', 'expBackOffMillis', 'expBackOffMaxRepeats'];
 
@@ -45,8 +47,9 @@ export const newApifyErrorFromResponse = (statusCode, body) => {
     if (_.isObject(body)) parsedBody = body;
     else if (_.isString(body)) parsedBody = safeJsonParse(body);
 
-    const type = parsedBody.type || REQUEST_FAILED_ERROR_TYPE;
-    const message = parsedBody.message || REQUEST_FAILED_ERROR_MESSAGE;
+    const error = parsedBody.error || parsedBody;
+    const type = error.type || REQUEST_FAILED_ERROR_TYPE;
+    const message = error.message || REQUEST_FAILED_ERROR_MESSAGE;
 
     return new ApifyError(type, message, { statusCode });
 };
@@ -122,15 +125,23 @@ export const requestPromise = (options, iteration = 0) => {
  * Checks that given parameter is of given type and throws ApifyError.
  * If errorMessage is not provided then error message is created from name and type of param.
  *
- * @param value        string - user entered value of that parameter
- * @param name         string - parameter name (crawlerId for options.crawlerId)
- * @param type         string - "String", "Number", ... (see ee: https://github.com/gkz/type-check)
- * @param errorMessage string - optional error message
+ * @param {String} value - user entered value of that parameter
+ * @param {String} name - parameter name (crawlerId for options.crawlerId)
+ * @param {String} type - "String", "Number", ... (see ee: https://github.com/gkz/type-check)
+ * @param {String} errorMessage - optional error message
  */
 export const checkParamOrThrow = (value, name, type, errorMessage) => {
     if (!errorMessage) errorMessage = `Parameter "${name}" of type ${type} must be provided`;
 
-    if (!typeCheck(type, value)) {
+    const allowedTypes = parseType(type);
+
+    // This is workaround since Buffer doesn't seem to be possible to define using options.customTypes.
+    const allowsBuffer = allowedTypes.filter(item => item.type === 'Buffer').length;
+
+    if (allowsBuffer && Buffer.isBuffer(value)) return;
+
+    // This will ignore Buffer type.
+    if (!parsedTypeCheck(allowedTypes, value)) {
         throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, errorMessage);
     }
 };
@@ -164,17 +175,14 @@ export const gzipPromise = (Promise, buffer) => {
 };
 
 /**
- * Function for encoding/parsing body.
+ * Function for parsing key-value store record's body.
  */
-export const decodeBody = (body, contentType) => {
-    switch (contentType) {
+export const parseBody = (body, contentType) => {
+    const type = contentTypeParser.parse(contentType).type;
+
+    switch (type) {
         case CONTENT_TYPE_JSON: return JSON.parse(body);
-        default: return body;
-    }
-};
-export const encodeBody = (body, contentType) => {
-    switch (contentType) {
-        case CONTENT_TYPE_JSON: return JSON.stringify(body);
+        case CONTENT_TYPE_TEXT_PLAIN: return body.toString();
         default: return body;
     }
 };

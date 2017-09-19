@@ -19,7 +19,16 @@ import { checkParamOrThrow, catchNotFoundOrThrow } from './utils';
  * const crawlerSettings = {
  *      customId: 'Test',
  *      startUrls: [ {key: 'test', value: 'http://example.com/' } ],
- *      pageFunction: 'function pageFunction(context) {\n    // called on every page the crawler visits, use it to extract data from it\n    var $ = context.jQuery;\n    var result = {\n        title: $(\'title\').text()\n    };\n    return result;\n}',
+ *      pageFunction: `
+ *          function pageFunction(context) {
+ *              // called on every page the crawler visits, use it to extract data from it
+ *              var $ = context.jQuery;
+ *              var result = {
+ *                  title: $('title').text();
+ *              };
+ *              return result;
+ *          }
+ *      `,
  *      injectJQuery: true,
  * };
  *
@@ -29,7 +38,8 @@ import { checkParamOrThrow, catchNotFoundOrThrow } from './utils';
  * console.log(results.items[0].pageFunctionResult) // { title: 'Example Domain' }
  * ```
  *
- * Every method can be used as either promise or with callback. If your Node version supports await/async then you can await promise result.
+ * Every method can be used as either promise or with callback. If your Node version supports await/async
+ * then you can await promise result.
  * ```javascript
  * const options = { crawlerId: 'DNjkhrkjnri' };
  * // Awaited promise
@@ -60,10 +70,10 @@ function wrapArray(response) {
     /**
      * @typedef {Object} PaginationList
      * @property {Array} items - List of returned objects
-     * @property {number} total - Total number of object
-     * @property {number} offset - Number of Request objects that was skipped at the start.
-     * @property {number} count - Number of returned objects
-     * @property {number} limit - Requested limit
+     * @property {Number} total - Total number of object
+     * @property {Number} offset - Number of Request objects that was skipped at the start.
+     * @property {Number} count - Number of returned objects
+     * @property {Number} limit - Requested limit
      */
     return {
         items: response.body,
@@ -78,15 +88,16 @@ export default {
     /**
      * Gets a list of crawlers belonging to a specific user.
      * @description By default, the objects are sorted by the createdAt field in ascending order,
-     * therefore you can use pagination to incrementally fetch all crawlers while new ones are still being created. To sort them in descending order, use desc: 1 parameter.
+     * therefore you can use pagination to incrementally fetch all crawlers while new ones are still being created.
+     * To sort them in descending order, use desc: 1 parameter.
      * @memberof ApifyClient.crawlers
      * @instance
      * @param {Object} options
      * @param options.userId
      * @param options.token
-     * @param {number} [options.offset=0] - Number of array elements that should be skipped at the start.
-     * @param {number} [options.limit=1000] - Maximum number of array elements to return.
-     * @param {number} [options.desc] - If 1 then the crawlers are sorted by the createdAt field in descending order.
+     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Number} [options.desc] - If 1 then the crawlers are sorted by the createdAt field in descending order.
      * @param callback
      * @returns {PaginationList}
      */
@@ -115,7 +126,9 @@ export default {
      * @param {Object} options
      * @param options.userId
      * @param options.token
-     * @param {Object} options.settings - Crawler settings, customId is required. See [main documentation]{@link https://www.apifier.com/docs#basic-settings} for detailed description of crawler settings. Unknown properties in the object are silently ignored.
+     * @param {Object} options.settings - Crawler settings, customId is required. See
+     *                 [main documentation]{@link https://www.apifier.com/docs#basic-settings} for detailed
+     *                 description of crawler settings. Unknown properties in the object are silently ignored.
      * @param callback
      * @returns {CrawlerSettings}
      */
@@ -146,8 +159,10 @@ export default {
      * @param {Object} options
      * @param options.userId
      * @param options.token
-     * @param {string} options.crawlerId - Crawler ID or crawler custom ID
-     * @param {Object} options.settings - Crawler settings, customId is required. See [main documentation]{@link https://www.apifier.com/docs#basic-settings} for detailed description of crawler settings. Unknown properties in the object are silently ignored.
+     * @param {String} options.crawlerId - Crawler ID or crawler custom ID
+     * @param {Object} options.settings - Crawler settings, customId is required. See
+     *                 [main documentation]{@link https://www.apifier.com/docs#basic-settings} for detailed
+     *                 description of crawler settings. Unknown properties in the object are silently ignored.
      * @param callback
      * @returns {CrawlerSettings}
      */
@@ -178,7 +193,7 @@ export default {
      * @param {Object} options
      * @param options.userId
      * @param options.token
-     * @param {string} options.crawlerId - Crawler ID or crawler custom ID
+     * @param {String} options.crawlerId - Crawler ID or crawler custom ID
      * @param callback
      * @returns {CrawlerSettings}
      */
@@ -208,7 +223,7 @@ export default {
      * @param options.userId
      * @param options.token
      * @param callback
-     * @param {string} options.crawlerId - Crawler ID or crawler custom ID
+     * @param {String} options.crawlerId - Crawler ID or crawler custom ID
      */
     deleteCrawler: (requestPromise, options) => {
         const { userId, token, crawlerId } = options;
@@ -233,9 +248,9 @@ export default {
      * @param {Object} options
      * @param options.userId
      * @param options.token
-     * @param {string} options.crawlerId - Crawler ID or crawler custom ID
-     * @param {string} [options.tag] - Custom tag for the execution. It cannot be longer than 64 characters.
-     * @param {number} [options.wait=0] - The maximum number of seconds the server waits for the execution to finish.
+     * @param {String} options.crawlerId - Crawler ID or crawler custom ID
+     * @param {String} [options.tag] - Custom tag for the execution. It cannot be longer than 64 characters.
+     * @param {Number} [options.wait=0] - The maximum number of seconds the server waits for the execution to finish.
      * @param {Object} [options.settings] - Overwrites crawler settings for execution.
      * @param callback
      * @returns {Execution}
@@ -271,7 +286,7 @@ export default {
      * @param {Object} options
      * @param options.userId
      * @param options.token
-     * @param {string} options.executionId - Execution ID
+     * @param {String} options.executionId - Execution ID
      * @param callback
      * @returns {Execution}
      */
@@ -302,11 +317,11 @@ export default {
      * @param {Object} options
      * @param options.userId
      * @param options.token
-     * @param {string} options.crawlerId - Crawler ID or crawler custom ID
-     * @param {string} [options.status] - Filter for the execution status.
-     * @param {number} [options.offset=0] - Number of array elements that should be skipped at the start.
-     * @param {number} [options.limit=1000] - Maximum number of array elements to return.
-     * @param {number} [options.desc] - If 1 then the executions are sorted by the startedAt field in descending order.
+     * @param {String} options.crawlerId - Crawler ID or crawler custom ID
+     * @param {String} [options.status] - Filter for the execution status.
+     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Number} [options.desc] - If 1 then the executions are sorted by the startedAt field in descending order.
      * @param callback
      * @returns {PaginationList}
      */
@@ -334,7 +349,7 @@ export default {
      * @memberof ApifyClient.crawlers
      * @instance
      * @param {Object} options
-     * @param {string} options.executionId - Execution ID
+     * @param {String} options.executionId - Execution ID
      * @param callback
      * @returns {Execution}
      */
@@ -359,8 +374,8 @@ export default {
      * @param {Object} options
      * @param options.userId
      * @param options.token
-     * @param {string} options.crawlerId - Crawler ID or crawler custom ID
-     * @param {string} [options.status] - Filter for the execution status.
+     * @param {String} options.crawlerId - Crawler ID or crawler custom ID
+     * @param {String} [options.status] - Filter for the execution status.
      * @param callback
      * @returns {Execution}
      */
@@ -387,15 +402,20 @@ export default {
      * @memberof ApifyClient.crawlers
      * @instance
      * @param {Object} options
-     * @param {string} options.executionId - Execution ID
-     * @param {string} [options.format='json'] - Format of the results, possible values are: json, jsonl, csv, html, xml and rss.
-     * @param {number} [options.simplified] - If 1 then the results will be returned in a simplified form without crawling metadata.
-     * @param {number} [options.offset=0] - Number of Request objects that should be skipped at the start.
-     * @param {number} [options.limit=100000] - Maximum number of Request objects to return.
-     * @param {number} [options.desc] - By default, results are returned in the same order as they were stored in database. To reverse the order, set this parameter to 1.
-     * @param {number} [options.attachment] - If 1 then the response will define the Content-Disposition: attachment header, forcing a web browser to download the file rather than to display it. By default this header is not present.
-     * @param {string} [options.delimiter=','] - A delimiter character for CSV files, only used if format=csv. You might need to URL-encode the character (e.g. use %09 for tab or %3B for semicolon).
-     * @param {number} [options.bom] - All responses are encoded in UTF-8 encoding. By default, the csv files are prefixed with the UTF-8 Byte Order Mark (BOM), while json, jsonl, xml, html and rss files are not. If you want to override this default behavior, specify bom=1 query parameter to include the BOM or bom=0 to skip it.
+     * @param {String} options.executionId - Execution ID
+     * @param {String} [options.format='json'] - Format of the results, possible values are: json, jsonl, csv, html, xml and rss.
+     * @param {Number} [options.simplified] - If 1 then the results will be returned in a simplified form without crawling metadata.
+     * @param {Number} [options.offset=0] - Number of Request objects that should be skipped at the start.
+     * @param {Number} [options.limit=100000] - Maximum number of Request objects to return.
+     * @param {Number} [options.desc] - By default, results are returned in the same order as they were stored in database.
+     *                                  To reverse the order, set this parameter to 1.
+     * @param {Number} [options.attachment] - If 1 then the response will define the Content-Disposition: attachment header, forcing a web
+     *                                        browser to download the file rather than to display it. By default this header is not present.
+     * @param {String} [options.delimiter=','] - A delimiter character for CSV files, only used if format=csv. You might need to URL-encode
+     *                                           the character (e.g. use %09 for tab or %3B for semicolon).
+     * @param {Number} [options.bom] - All responses are encoded in UTF-8 encoding. By default, the csv files are prefixed with the UTF-8 Byte
+     *                                 Order Mark (BOM), while json, jsonl, xml, html and rss files are not. If you want to override this default
+     *                                 behavior, specify bom=1 query parameter to include the BOM or bom=0 to skip it.
      * @param callback
      * @returns {PaginationList}
      */
@@ -426,16 +446,21 @@ export default {
      * @param {Object} options
      * @param options.userId
      * @param options.token
-     * @param {string} options.crawlerId - Crawler ID or crawler custom ID
-     * @param {string} options.status - Filter for the execution status.
-     * @param {string} [options.format='json'] - Format of the results, possible values are: json, jsonl, csv, html, xml and rss.
-     * @param {number} [options.simplified] - If 1 then the results will be returned in a simplified form without crawling metadata.
-     * @param {number} [options.offset=0] - Number of Request objects that should be skipped at the start.
-     * @param {number} [options.limit=100000] - Maximum number of Request objects to return.
-     * @param {number} [options.desc] - By default, results are returned in the same order as they were stored in database. To reverse the order, set this parameter to 1.
-     * @param {number} [options.attachment] - If 1 then the response will define the Content-Disposition: attachment header, forcing a web browser to download the file rather than to display it. By default this header is not present.
-     * @param {string} [options.delimiter=','] - A delimiter character for CSV files, only used if format=csv. You might need to URL-encode the character (e.g. use %09 for tab or %3B for semicolon).
-     * @param {number} [options.bom] - All responses are encoded in UTF-8 encoding. By default, the csv files are prefixed with the UTF-8 Byte Order Mark (BOM), while json, jsonl, xml, html and rss files are not. If you want to override this default behavior, specify bom=1 query parameter to include the BOM or bom=0 to skip it.
+     * @param {String} options.crawlerId - Crawler ID or crawler custom ID
+     * @param {String} options.status - Filter for the execution status.
+     * @param {String} [options.format='json'] - Format of the results, possible values are: json, jsonl, csv, html, xml and rss.
+     * @param {Number} [options.simplified] - If 1 then the results will be returned in a simplified form without crawling metadata.
+     * @param {Number} [options.offset=0] - Number of Request objects that should be skipped at the start.
+     * @param {Number} [options.limit=100000] - Maximum number of Request objects to return.
+     * @param {Number} [options.desc] - By default, results are returned in the same order as they were stored in database. To reverse
+     *                                  the order, set this parameter to 1.
+     * @param {Number} [options.attachment] - If 1 then the response will define the Content-Disposition: attachment header, forcing a web
+     *                                        browser to download the file rather than to display it. By default this header is not present.
+     * @param {String} [options.delimiter=','] - A delimiter character for CSV files, only used if format=csv. You might need to URL-encode
+     *                                           the character (e.g. use %09 for tab or %3B for semicolon).
+     * @param {Number} [options.bom] - All responses are encoded in UTF-8 encoding. By default, the csv files are prefixed with the UTF-8 Byte
+     *                                 Order Mark (BOM), while json, jsonl, xml, html and rss files are not. If you want to override this default
+     *                                 behavior, specify bom=1 query parameter to include the BOM or bom=0 to skip it.
      * @param callback
      * @returns {PaginationList}
      */

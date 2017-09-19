@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 import ApifyClient from '../build';
 import { BASE_PATH } from '../build/logs';
-import { mockRequest, requestExpectCall, verifyAndRestoreRequest } from './_helper';
+import { mockRequest, requestExpectCall, restoreRequest } from './_helper';
 
 const BASE_URL = 'http://example.com/something';
 const OPTIONS = { baseUrl: BASE_URL };
 
 describe('Logs', () => {
     before(mockRequest);
-    after(verifyAndRestoreRequest);
+    after(restoreRequest);
 
     it('getLog() works', () => {
         const logId = 'some-id';

@@ -2,20 +2,28 @@ import _ from 'underscore';
 import { expect } from 'chai';
 import ApifyClient from '../build';
 import { BASE_PATH } from '../build/acts';
-import { mockRequest, requestExpectCall, requestExpectErrorCall, verifyAndRestoreRequest } from './_helper';
+import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
 
 const BASE_URL = 'http://example.com/something';
 const OPTIONS = { baseUrl: BASE_URL };
 
 describe('Act method', () => {
     before(mockRequest);
-    after(verifyAndRestoreRequest);
+    after(restoreRequest);
 
     it('listActs() works', () => {
         const callOptions = {
             token: 'sometoken',
             limit: 5,
             offset: 3,
+            desc: true,
+        };
+
+        const queryString = {
+            token: 'sometoken',
+            limit: 5,
+            offset: 3,
+            desc: 1,
         };
 
         const expected = {
@@ -23,6 +31,7 @@ describe('Act method', () => {
             offset: 3,
             count: 5,
             total: 10,
+            desc: true,
             items: ['act1', 'act2'],
         };
 
@@ -30,7 +39,7 @@ describe('Act method', () => {
             json: true,
             method: 'GET',
             url: `${BASE_URL}${BASE_PATH}`,
-            qs: callOptions,
+            qs: queryString,
         }, {
             data: expected,
         });
@@ -66,14 +75,14 @@ describe('Act method', () => {
     });
 
     it('updateAct() works with both actId parameter and actId in act object', () => {
-        const actId = 'some-id';
+        const actId = 'some-user/some-id';
         const act = { id: actId, foo: 'bar' };
         const token = 'some-token';
 
         requestExpectCall({
             json: true,
             method: 'PUT',
-            url: `${BASE_URL}${BASE_PATH}/${actId}`,
+            url: `${BASE_URL}${BASE_PATH}/some-user~some-id`,
             qs: { token },
             body: _.omit(act, 'id'),
         }, {
@@ -200,11 +209,20 @@ describe('Act method', () => {
             token: 'sometoken',
             limit: 5,
             offset: 3,
+            desc: true,
+        };
+
+        const queryString = {
+            token: 'sometoken',
+            limit: 5,
+            offset: 3,
+            desc: 1,
         };
 
         const expected = {
             limit: 5,
             offset: 3,
+            desc: true,
             count: 5,
             total: 10,
             items: ['run1', 'run2'],
@@ -214,7 +232,7 @@ describe('Act method', () => {
             json: true,
             method: 'GET',
             url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
-            qs: callOptions,
+            qs: queryString,
         }, {
             data: expected,
         });
@@ -235,10 +253,15 @@ describe('Act method', () => {
         const run = { foo: 'bar' };
         const apiResponse = JSON.stringify({ data: run });
 
+        const waitForFinish = 120;
+        const timeout = 120;
+        const memory = 256;
+        const build = '1.2.0';
+
         requestExpectCall({
             method: 'POST',
             url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
-            qs: { token },
+            qs: { token, waitForFinish, timeout, memory, build },
             headers: {
                 'Content-Type': contentType,
             },
@@ -249,59 +272,7 @@ describe('Act method', () => {
 
         return apifyClient
             .acts
-            .runAct({ actId, token, contentType, body })
-            .then(response => expect(response).to.be.eql(run));
-    });
-
-    it('runAct() stringifies JSON', () => {
-        const actId = 'some-id';
-        const token = 'some-token';
-        const contentType = 'application/json';
-        const body = { something: 'else' };
-        const run = { foo: 'bar' };
-        const apiResponse = JSON.stringify({ data: run });
-
-        requestExpectCall({
-            method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
-            qs: { token },
-            headers: {
-                'Content-Type': contentType,
-            },
-            body: JSON.stringify(body),
-        }, apiResponse);
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .acts
-            .runAct({ actId, token, contentType, body })
-            .then(response => expect(response).to.be.eql(run));
-    });
-
-    it('runAct() don\'t stringify JSON when useRawBody = true', () => {
-        const actId = 'some-id';
-        const token = 'some-token';
-        const contentType = 'application/json';
-        const body = '{"something":"else"}';
-        const run = { foo: 'bar' };
-        const apiResponse = JSON.stringify({ data: run });
-
-        requestExpectCall({
-            method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
-            qs: { token },
-            headers: {
-                'Content-Type': contentType,
-            },
-            body,
-        }, apiResponse);
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .acts
-            .runAct({ actId, token, contentType, body, useRawBody: true })
+            .runAct({ actId, token, contentType, body, waitForFinish, timeout, memory, build })
             .then(response => expect(response).to.be.eql(run));
     });
 
@@ -310,12 +281,13 @@ describe('Act method', () => {
         const runId = 'some-run-id';
         const token = 'some-token';
         const run = { foo: 'bar' };
+        const waitForFinish = 120;
 
         requestExpectCall({
             json: true,
             method: 'GET',
             url: `${BASE_URL}${BASE_PATH}/${actId}/runs/${runId}`,
-            qs: { token },
+            qs: { token, waitForFinish },
         }, {
             data: run,
         });
@@ -324,7 +296,7 @@ describe('Act method', () => {
 
         return apifyClient
             .acts
-            .getRun({ actId, token, runId })
+            .getRun({ actId, token, runId, waitForFinish })
             .then(response => expect(response).to.be.eql(run));
     });
 
@@ -355,11 +327,20 @@ describe('Act method', () => {
             token: 'sometoken',
             limit: 5,
             offset: 3,
+            desc: true,
+        };
+
+        const queryString = {
+            token: 'sometoken',
+            limit: 5,
+            offset: 3,
+            desc: 1,
         };
 
         const expected = {
             limit: 5,
             offset: 3,
+            desc: true,
             count: 5,
             total: 10,
             items: ['build1', 'build2'],
@@ -369,7 +350,7 @@ describe('Act method', () => {
             json: true,
             method: 'GET',
             url: `${BASE_URL}${BASE_PATH}/${actId}/builds`,
-            qs: callOptions,
+            qs: queryString,
         }, {
             data: expected,
         });
@@ -386,12 +367,17 @@ describe('Act method', () => {
         const actId = 'some-id';
         const token = 'some-token';
         const build = { foo: 'bar' };
+        const waitForFinish = 120;
+        const version = '0.0';
+        const tag = 'latest';
+        const betaPackages = true;
+        const useCache = true;
 
         requestExpectCall({
             json: true,
             method: 'POST',
             url: `${BASE_URL}${BASE_PATH}/${actId}/builds`,
-            qs: { token },
+            qs: { token, version, waitForFinish, tag, betaPackages: 1, useCache: 1 },
         }, {
             data: build,
         });
@@ -400,7 +386,7 @@ describe('Act method', () => {
 
         return apifyClient
             .acts
-            .buildAct({ actId, token })
+            .buildAct({ actId, token, version, waitForFinish, tag, betaPackages, useCache })
             .then(response => expect(response).to.be.eql(build));
     });
 
@@ -409,12 +395,13 @@ describe('Act method', () => {
         const buildId = 'some-build-id';
         const token = 'some-token';
         const build = { foo: 'bar' };
+        const waitForFinish = 120;
 
         requestExpectCall({
             json: true,
             method: 'GET',
             url: `${BASE_URL}${BASE_PATH}/${actId}/builds/${buildId}`,
-            qs: { token },
+            qs: { token, waitForFinish },
         }, {
             data: build,
         });
@@ -423,7 +410,7 @@ describe('Act method', () => {
 
         return apifyClient
             .acts
-            .getBuild({ actId, token, buildId })
+            .getBuild({ actId, token, buildId, waitForFinish })
             .then(response => expect(response).to.be.eql(build));
     });
 
