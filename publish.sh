@@ -17,8 +17,6 @@ GIT_TAG="v${PACKAGE_VERSION}"
 
 # Credentials to upload doc to S3 configuration
 DOC_DIR=${PWD}"/docs"
-AWS_ACCESS_KEY=$(grep aws_access_key_id ~/.aws/credentials | awk '{split($0,a," "); print a[3]}')
-AWS_SECRET_KEY=$(grep aws_secret_access_key ~/.aws/credentials | awk '{split($0,a," "); print a[3]}')
 AWS_BUCKET="apify-client-js-doc"
 
 if [ -z "${BRANCH_UP_TO_DATE}" ]; then
@@ -28,6 +26,9 @@ fi
 
 echo "Generating documentation ..."
 npm run build-doc
+
+echo "Uploading docs to S3 ..."
+aws s3 cp "${DOC_DIR}/" "s3://${AWS_BUCKET}/${GIT_TAG}/" --recursive --region us-east-1 --acl public-read --cache-control "public, max-age=86400"
 
 echo "Pushing to git ..."
 git push
@@ -41,6 +42,8 @@ if [ "${BRANCH}" = "master" ]; then
     else
         echo "Tagging version ${PACKAGE_VERSION} on NPM with tag \"latest\" ..."
         RUNNING_FROM_SCRIPT=1 npm dist-tag add ${PACKAGE_NAME}@${PACKAGE_VERSION} latest
+        echo "Copy doc to latest folder..."
+        aws s3 cp "s3://${AWS_BUCKET}/${GIT_TAG}/" "s3://${AWS_BUCKET}/latest/" --recursive
     fi
 
 # Develop branch gets published as BETA and we don't allow to override tag of existing version.
@@ -53,8 +56,8 @@ elif [ "${BRANCH}" = "develop" ]; then
     git push origin ${GIT_TAG}
     echo "Git tag: ${GIT_TAG} created."
 
-    echo "Uploading docs to S3 ..."
-    AWS_ACCESS_KEY=${AWS_ACCESS_KEY} AWS_SECRET_KEY=${AWS_SECRET_KEY} AWS_BUCKET=${AWS_BUCKET} AWS_BUCKET_FOLDER=${GIT_TAG} node ./node_modules/deploy-web-to-s3/bin/deploy-web-to-s3.js ${DOC_DIR}
+    echo "Copy docs to S3 to beta folder..."
+    aws s3 cp "s3://${AWS_BUCKET}/${GIT_TAG}/" "s3://${AWS_BUCKET}/beta/" --recursive
 
 # For other branch throw an error.
 else
