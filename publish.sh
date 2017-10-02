@@ -14,6 +14,7 @@ PACKAGE_VERSION=`node -pe "require('./package.json').version"`
 BRANCH=`git status | grep 'On branch' | cut -d ' ' -f 3`
 BRANCH_UP_TO_DATE=`git status | grep 'nothing to commit' | tr -s \n ' '`;
 GIT_TAG="v${PACKAGE_VERSION}"
+S3_FILES_PARAMS="--recursive --region us-east-1 --acl public-read --cache-control 'public, max-age=86400'"
 
 # Credentials to upload doc to S3 configuration
 DOC_DIR=${PWD}"/docs"
@@ -28,7 +29,7 @@ echo "Generating documentation ..."
 npm run build-doc
 
 echo "Uploading docs to S3 ..."
-aws s3 cp "${DOC_DIR}/" "s3://${AWS_BUCKET}/${GIT_TAG}/" --recursive --region us-east-1 --acl public-read --cache-control "public, max-age=86400"
+aws s3 cp "${DOC_DIR}/" "s3://${AWS_BUCKET}/${GIT_TAG}/" ${S3_FILES_PARAMS}
 
 echo "Pushing to git ..."
 git push
@@ -43,7 +44,7 @@ if [ "${BRANCH}" = "master" ]; then
         echo "Tagging version ${PACKAGE_VERSION} on NPM with tag \"latest\" ..."
         RUNNING_FROM_SCRIPT=1 npm dist-tag add ${PACKAGE_NAME}@${PACKAGE_VERSION} latest
         echo "Copy doc to latest folder..."
-        aws s3 cp "s3://${AWS_BUCKET}/${GIT_TAG}/" "s3://${AWS_BUCKET}/latest/" --recursive
+        aws s3 cp "s3://${AWS_BUCKET}/${GIT_TAG}/" "s3://${AWS_BUCKET}/latest/" ${S3_FILES_PARAMS}
     fi
 
 # Develop branch gets published as BETA and we don't allow to override tag of existing version.
@@ -57,7 +58,7 @@ elif [ "${BRANCH}" = "develop" ]; then
     echo "Git tag: ${GIT_TAG} created."
 
     echo "Copy docs to S3 to beta folder..."
-    aws s3 cp "s3://${AWS_BUCKET}/${GIT_TAG}/" "s3://${AWS_BUCKET}/beta/" --recursive
+    aws s3 cp "s3://${AWS_BUCKET}/${GIT_TAG}/" "s3://${AWS_BUCKET}/beta/" ${S3_FILES_PARAMS}
 
 # For other branch throw an error.
 else
