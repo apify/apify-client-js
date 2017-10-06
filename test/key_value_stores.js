@@ -5,7 +5,6 @@ import ApifyClient from '../build';
 import { BASE_PATH, SIGNED_URL_UPLOAD_MIN_BYTESIZE } from '../build/key_value_stores';
 import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
 
-const deepClone = obj => JSON.parse(JSON.stringify(obj));
 const BASE_URL = 'http://example.com/something';
 const OPTIONS = { baseUrl: BASE_URL };
 
