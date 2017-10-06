@@ -182,58 +182,47 @@ export default {
      * @param {Object} options
      * @param {String} options.storeId - Unique store Id
      * @param {String} options.key - Key of the record
-     * @param {Boolean} [options.rawBody] - If true parameter is set then response to this request will be raw value stored under
-     *                                  the given key. Otherwise the value is wrapped in JSON object with additional info.
      * @param {Boolean} [options.disableBodyParser] - It true, it doesn't parse record's body based on content type.
-     * @param {Boolean} [options.disableRedirect] - If rawBody=1 then API by default redirects user to record url for faster download.
+     * @param {Boolean} [options.disableRedirect] - API by default redirects user to signed record url for faster download.
                                                     If disableRedirect=1 is set then API returns the record value directly.
      * @param callback
-     * @returns {KeyValueStoreRecord|*}
+     * @returns {KeyValueStoreRecord}
      */
     getRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, rawBody, disableBodyParser, disableRedirect } = options;
+        const { baseUrl, storeId, key, disableBodyParser, disableRedirect } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
-        checkParamOrThrow(rawBody, 'rawBody', 'Maybe Boolean');
         checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
         checkParamOrThrow(disableRedirect, 'disableRedirect', 'Maybe Boolean');
 
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             method: 'GET',
-            json: !rawBody,
+            json: false,
             qs: {},
             gzip: true,
+            resolveWithResponse: true,
+            encoding: null,
         };
-
-        if (rawBody) {
-            requestOpts.resolveWithResponse = true;
-            requestOpts.encoding = null;
-            requestOpts.qs.rawBody = 1;
-        }
 
         if (disableRedirect) requestOpts.qs.disableRedirect = 1;
 
-        const parseResponse = (responseBody) => {
-            const data = pluckData(responseBody);
-
-            if (!disableBodyParser) data.body = parseBody(data.body, data.contentType);
-
-            return data;
-        };
-
-        const parseRawBodyResponse = (response) => {
+        const parseResponse = (response) => {
             const responseBody = response.body;
             const contentType = response.headers['content-type'];
+            const body = disableBodyParser ? responseBody : parseBody(responseBody, contentType);
 
-            return disableBodyParser ? responseBody : parseBody(responseBody, contentType);
+            return {
+                contentType,
+                body,
+            };
         };
 
-        const responseParser = rawBody ? parseRawBodyResponse : parseResponse;
-
-        return requestPromise(requestOpts).then(responseParser, catchNotFoundOrThrow);
+        return requestPromise(requestOpts)
+            .then(parseResponse)
+            .catch(catchNotFoundOrThrow);
     },
 
     /**
