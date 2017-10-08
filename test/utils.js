@@ -4,9 +4,11 @@ import { gunzipSync } from 'zlib';
 import { expect } from 'chai';
 import ApifyError, {
     APIFY_ERROR_NAME,
-    REQUEST_FAILED_ERROR_TYPE,
+    REQUEST_FAILED_ERROR_TYPE_V1,
+    REQUEST_FAILED_ERROR_TYPE_V2,
     REQUEST_FAILED_ERROR_MESSAGE,
-    INVALID_PARAMETER_ERROR_TYPE,
+    INVALID_PARAMETER_ERROR_TYPE_V1,
+    INVALID_PARAMETER_ERROR_TYPE_V2,
     NOT_FOUND_STATUS_CODE,
 } from '../build/apify_error';
 import * as utils from '../build/utils';
@@ -37,14 +39,28 @@ describe('utils.newApifyErrorFromResponse()', () => {
     it('works withhout type and message in body', () => {
         const error = utils.newApifyErrorFromResponse(404, { foo: 'bar' });
         expect(error.details.statusCode).to.be.eql(404);
-        expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE);
+        expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
         expect(error.message).to.be.eql(REQUEST_FAILED_ERROR_MESSAGE);
     });
 
     it('works withhout type in body', () => {
         const error = utils.newApifyErrorFromResponse(404, { foo: 'bar', message: 'Some message.' });
         expect(error.details.statusCode).to.be.eql(404);
-        expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE);
+        expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
+        expect(error.message).to.be.eql('Some message.');
+    });
+
+    it('works withhout type and message in body for API V1', () => {
+        const error = utils.newApifyErrorFromResponse(404, { foo: 'bar' }, true);
+        expect(error.details.statusCode).to.be.eql(404);
+        expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V1);
+        expect(error.message).to.be.eql(REQUEST_FAILED_ERROR_MESSAGE);
+    });
+
+    it('works withhout type in body for API V1', () => {
+        const error = utils.newApifyErrorFromResponse(404, { foo: 'bar', message: 'Some message.' }, true);
+        expect(error.details.statusCode).to.be.eql(404);
+        expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V1);
         expect(error.message).to.be.eql('Some message.');
     });
 
@@ -124,7 +140,32 @@ describe('utils.requestPromise()', () => {
                 throw new Error('Error not catched!!!');
             }, (err) => {
                 expect(err.name).to.be.eql(APIFY_ERROR_NAME);
-                expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE);
+                expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
+                expect(err.message).to.be.eql(errorMsg);
+                stub.restore();
+            });
+    });
+
+
+    it('works as expected when request throws an error for API V1', () => {
+        const method = 'POST';
+        const opts = { method, foo: 'bar', promise: Promise, isApiV1: true };
+        const errorMsg = 'some-error';
+
+        const stub = sinon
+            .stub(request, method.toLowerCase())
+            .callsFake((passedOpts, callback) => {
+                expect(passedOpts).to.be.eql(opts);
+                callback(new Error(errorMsg));
+            });
+
+        return utils
+            .requestPromise(opts)
+            .then(() => {
+                throw new Error('Error not catched!!!');
+            }, (err) => {
+                expect(err.name).to.be.eql(APIFY_ERROR_NAME);
+                expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V1);
                 expect(err.message).to.be.eql(errorMsg);
                 stub.restore();
             });
@@ -176,7 +217,7 @@ describe('utils.requestPromise()', () => {
             }, (err) => {
                 expect(err.details.statusCode).to.be.eql(statusCode);
                 expect(err.message).to.be.eql(REQUEST_FAILED_ERROR_MESSAGE);
-                expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE);
+                expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
                 expect(err.name).to.be.eql(APIFY_ERROR_NAME);
                 stub.restore();
             });
@@ -189,7 +230,22 @@ describe('utils.requestPromise()', () => {
             utils.requestPromise({ method: null, promise: Promise });
         } catch (err) {
             expect(err.name).to.be.eql(APIFY_ERROR_NAME);
-            expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE);
+            expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE_V2);
+            expect(err.message).to.be.eql('"options.method" parameter must be provided');
+            hasFailed = true;
+        }
+
+        expect(hasFailed).to.be.eql(true);
+    });
+
+    it('fails when method parameter is not provided for API V1', () => {
+        let hasFailed = false;
+
+        try {
+            utils.requestPromise({ method: null, promise: Promise, isApiV1: true });
+        } catch (err) {
+            expect(err.name).to.be.eql(APIFY_ERROR_NAME);
+            expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE_V1);
             expect(err.message).to.be.eql('"options.method" parameter must be provided');
             hasFailed = true;
         }
@@ -204,7 +260,22 @@ describe('utils.requestPromise()', () => {
             utils.requestPromise({ method: 'something', promise: Promise });
         } catch (err) {
             expect(err.name).to.be.eql(APIFY_ERROR_NAME);
-            expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE);
+            expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE_V2);
+            expect(err.message).to.be.eql('"options.method" is not a valid http request method');
+            hasFailed = true;
+        }
+
+        expect(hasFailed).to.be.eql(true);
+    });
+
+    it('fails when request[method] doesn\'t exist for API V1', () => {
+        let hasFailed = false;
+
+        try {
+            utils.requestPromise({ method: 'something', promise: Promise, isApiV1: true });
+        } catch (err) {
+            expect(err.name).to.be.eql(APIFY_ERROR_NAME);
+            expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE_V1);
             expect(err.message).to.be.eql('"options.method" is not a valid http request method');
             hasFailed = true;
         }
@@ -219,7 +290,22 @@ describe('utils.requestPromise()', () => {
             utils.requestPromise({ method: 'get' });
         } catch (err) {
             expect(err.name).to.be.eql(APIFY_ERROR_NAME);
-            expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE);
+            expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE_V2);
+            expect(err.message).to.be.eql('"options.promise" parameter must be provided');
+            hasFailed = true;
+        }
+
+        expect(hasFailed).to.be.eql(true);
+    });
+
+    it('fails when promise parameter is not provided for API V1', () => {
+        let hasFailed = false;
+
+        try {
+            utils.requestPromise({ method: 'get', isApiV1: true });
+        } catch (err) {
+            expect(err.name).to.be.eql(APIFY_ERROR_NAME);
+            expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE_V1);
             expect(err.message).to.be.eql('"options.promise" parameter must be provided');
             hasFailed = true;
         }
@@ -284,7 +370,7 @@ describe('utils.requestPromise()', () => {
                 () => { throw new Error('This should fail.'); },
                 (err) => {
                     expect(iteration).to.be.eql(4);
-                    expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE);
+                    expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
                     expect(err.message).to.be.eql(`Server request failed with ${iteration} tries.`);
                     expect(err.details.statusCode).to.be.eql(500);
                     stub.restore();
