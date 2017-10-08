@@ -4,8 +4,10 @@ import contentTypeParser from 'content-type';
 import { parseType, parsedTypeCheck } from 'type-check';
 import { gzip } from 'zlib';
 import ApifyError, {
-    INVALID_PARAMETER_ERROR_TYPE,
-    REQUEST_FAILED_ERROR_TYPE,
+    INVALID_PARAMETER_ERROR_TYPE_V1,
+    INVALID_PARAMETER_ERROR_TYPE_V2,
+    REQUEST_FAILED_ERROR_TYPE_V1,
+    REQUEST_FAILED_ERROR_TYPE_V2,
     REQUEST_FAILED_ERROR_MESSAGE,
     NOT_FOUND_STATUS_CODE,
 } from './apify_error';
@@ -41,7 +43,8 @@ export const safeJsonParse = (str) => {
  *
  * then uses it's error type or message or both.
  */
-export const newApifyErrorFromResponse = (statusCode, body) => {
+export const newApifyErrorFromResponse = (statusCode, body, isApiV1) => {
+    const REQUEST_FAILED_ERROR_TYPE = isApiV1 ? REQUEST_FAILED_ERROR_TYPE_V1 : REQUEST_FAILED_ERROR_TYPE_V2;
     let parsedBody = {};
 
     if (_.isObject(body)) parsedBody = body;
@@ -67,6 +70,11 @@ export const newApifyErrorFromResponse = (statusCode, body) => {
  * - expBackOffMaxRepeats - maximal number of repeats
  */
 export const requestPromise = (options, iteration = 0) => {
+    const isApiV1 = options.isApiV1;
+
+    const INVALID_PARAMETER_ERROR_TYPE = isApiV1 ? INVALID_PARAMETER_ERROR_TYPE_V1 : INVALID_PARAMETER_ERROR_TYPE_V2;
+    const REQUEST_FAILED_ERROR_TYPE = isApiV1 ? REQUEST_FAILED_ERROR_TYPE_V1 : REQUEST_FAILED_ERROR_TYPE_V2;
+
     const PromisesDependency = options.promise;
     const expBackOffMillis = options.expBackOffMillis || EXP_BACKOFF_MILLIS;
     const expBackOffMaxRepeats = options.expBackOffMaxRepeats || EXP_BACKOFF_MAX_REPEATS;
@@ -113,7 +121,7 @@ export const requestPromise = (options, iteration = 0) => {
 
             // For status codes 300-499 except RATE_LIMIT_EXCEEDED_STATUS_CODE we immediately rejects the promise
             // since it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
-            if (statusCode >= 300) return reject(newApifyErrorFromResponse(statusCode, body));
+            if (statusCode >= 300) return reject(newApifyErrorFromResponse(statusCode, body, isApiV1));
 
             if (resolveWithResponse) resolve(response);
             else resolve(body);
@@ -130,7 +138,9 @@ export const requestPromise = (options, iteration = 0) => {
  * @param {String} type - "String", "Number", ... (see ee: https://github.com/gkz/type-check)
  * @param {String} errorMessage - optional error message
  */
-export const checkParamOrThrow = (value, name, type, errorMessage) => {
+export const checkParamOrThrow = (value, name, type, errorMessage, isApiV1) => {
+    const INVALID_PARAMETER_ERROR_TYPE = isApiV1 ? INVALID_PARAMETER_ERROR_TYPE_V1 : INVALID_PARAMETER_ERROR_TYPE_V2;
+
     if (!errorMessage) errorMessage = `Parameter "${name}" of type ${type} must be provided`;
 
     const allowedTypes = parseType(type);

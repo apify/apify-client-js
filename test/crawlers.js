@@ -74,6 +74,7 @@ describe('Crawlers', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers`,
                 qs: { token: credentials.token },
                 resolveWithResponse: true,
+                isApiV1: true,
             }, {}, sampleResponse);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -88,6 +89,7 @@ describe('Crawlers', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/userIdParameter/crawlers`,
                 qs: { token: 'tokenParameter' },
                 resolveWithResponse: true,
+                isApiV1: true,
             }, {}, sampleResponse);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -102,6 +104,7 @@ describe('Crawlers', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers`,
                 qs: { token: credentials.token },
                 resolveWithResponse: true,
+                isApiV1: true,
             }, sampleResponse);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -162,6 +165,7 @@ describe('Crawlers', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers`,
                 qs: { token: credentials.token },
                 body: { customId: 'dummyCrawler' },
+                isApiV1: true,
             }, Object.assign({}, apiResponse));
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -208,6 +212,7 @@ describe('Crawlers', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler`,
                 qs: { token: credentials.token },
                 body: { comments: 'dummyComments' },
+                isApiV1: true,
             }, Object.assign({}, apiResponse));
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -257,6 +262,7 @@ describe('Crawlers', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler`,
                 qs: { token: credentials.token },
+                isApiV1: true,
             }, Object.assign({}, apiResponse));
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -272,6 +278,7 @@ describe('Crawlers', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler`,
                 qs: { nosecrets: 1, token: credentials.token },
+                isApiV1: true,
             });
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -285,6 +292,7 @@ describe('Crawlers', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler`,
                 qs: { token: credentials.token },
+                isApiV1: true,
             }, false, 404);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -312,6 +320,7 @@ describe('Crawlers', () => {
                 method: 'DELETE',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler`,
                 qs: { token: credentials.token },
+                isApiV1: true,
             });
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -338,6 +347,7 @@ describe('Crawlers', () => {
                 method: 'POST',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/execute`,
                 qs: { token: credentials.token },
+                isApiV1: true,
             });
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -351,6 +361,7 @@ describe('Crawlers', () => {
                 method: 'POST',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/execute`,
                 qs: { token: credentials.token, tag: 'dummyTag', wait: 30 },
+                isApiV1: true,
             });
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -372,6 +383,7 @@ describe('Crawlers', () => {
                 method: 'POST',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/execute`,
                 qs: { token: credentials.token },
+                isApiV1: true,
             }, Object.assign({}, apiResponse));
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -391,6 +403,7 @@ describe('Crawlers', () => {
                     timeout: 300,
                     customData: { a: 'b' },
                 },
+                isApiV1: true,
             });
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -429,6 +442,7 @@ describe('Crawlers', () => {
                 method: 'POST',
                 url: `http://myhost:80/mypath${BASE_PATH}/execs/dummyExecution/stop`,
                 qs: { token: credentials.token },
+                isApiV1: true,
             }, Object.assign({}, apiResponse));
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -511,6 +525,7 @@ describe('Crawlers', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/execs`,
                 qs: { token: credentials.token },
                 resolveWithResponse: true,
+                isApiV1: true,
             }, sampleBody, sampleResponse);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -547,6 +562,7 @@ describe('Crawlers', () => {
                 json: true,
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/execs/dummyExecution`,
+                isApiV1: true,
             }, Object.assign({}, apiResponse));
 
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
@@ -561,6 +577,7 @@ describe('Crawlers', () => {
                 json: true,
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/execs/dummyExecution`,
+                isApiV1: true,
             }, false, 404);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -598,6 +615,7 @@ describe('Crawlers', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExec`,
                 qs: { token: credentials.token },
+                isApiV1: true,
             }, Object.assign({}, apiResponse));
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -689,6 +707,7 @@ describe('Crawlers', () => {
                 json: true,
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/execs/dummyExecution/results`,
+                isApiV1: true,
             }, sampleBody, sampleResponse);
 
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
@@ -714,6 +733,7 @@ describe('Crawlers', () => {
                     bom: 0,
                 },
                 resolveWithResponse: true,
+                isApiV1: true,
             }, sampleBody, sampleResponse);
 
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
@@ -819,6 +839,7 @@ describe('Crawlers', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExec/results`,
                 qs: { token: credentials.token },
                 resolveWithResponse: true,
+                isApiV1: true,
             }, sampleBody, sampleResponse);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
@@ -835,6 +856,7 @@ describe('Crawlers', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExec/results`,
                 qs: { token: credentials.token, status: 'RUNNING' },
                 resolveWithResponse: true,
+                isApiV1: true,
             }, sampleBody, sampleResponse);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;

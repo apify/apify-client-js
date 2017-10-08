@@ -115,6 +115,7 @@ export default {
             method: 'GET',
             qs: queryString,
             resolveWithResponse: true,
+            isApiV1: true,
         }).then(wrapArray);
     },
 
@@ -146,6 +147,7 @@ export default {
             url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers`,
             qs: { token },
             body: settings,
+            isApiV1: true,
         };
 
         return requestPromise(requestParams);
@@ -180,6 +182,7 @@ export default {
             url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawlerId}`,
             qs: { token },
             body: settings,
+            isApiV1: true,
         };
 
         return requestPromise(requestParams);
@@ -211,6 +214,7 @@ export default {
             json: true,
             method: 'GET',
             qs: queryString,
+            isApiV1: true,
         }).catch(catchNotFoundOrThrow);
     },
 
@@ -237,6 +241,7 @@ export default {
             json: true,
             method: 'DELETE',
             qs: { token },
+            isApiV1: true,
         });
     },
 
@@ -270,6 +275,7 @@ export default {
             method: 'POST',
             url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawlerId}/execute`,
             qs: queryString,
+            isApiV1: true,
         };
         if (!_.isEmpty(settings)) {
             requestParams.body = settings;
@@ -301,6 +307,7 @@ export default {
             method: 'POST',
             url: `${options.baseUrl}${BASE_PATH}/execs/${executionId}/stop`,
             qs: { token },
+            isApiV1: true,
         };
 
         return requestPromise(requestParams);
@@ -340,6 +347,7 @@ export default {
             method: 'GET',
             qs: queryString,
             resolveWithResponse: true,
+            isApiV1: true,
         }).then(wrapArray);
     },
 
@@ -362,6 +370,7 @@ export default {
             url: `${options.baseUrl}${BASE_PATH}/execs/${executionId}`,
             json: true,
             method: 'GET',
+            isApiV1: true,
         }).catch(catchNotFoundOrThrow);
     },
 
@@ -393,6 +402,7 @@ export default {
             json: true,
             method: 'GET',
             qs: queryString,
+            isApiV1: true,
         });
     },
 
@@ -429,6 +439,7 @@ export default {
             json: true,
             method: 'GET',
             resolveWithResponse: true,
+            isApiV1: true,
         };
         const queryString = _.pick(options, 'format', 'simplified', 'offset', 'limit', 'desc', 'attachment', 'delimiter', 'bom');
         if (!_.isEmpty(queryString)) {
@@ -476,6 +487,7 @@ export default {
             json: true,
             method: 'GET',
             resolveWithResponse: true,
+            isApiV1: true,
         };
         const queryString = _.pick(options, 'status', 'token', 'format', 'simplified', 'offset', 'limit', 'desc', 'attachment', 'delimiter', 'bom');
         if (!_.isEmpty(queryString)) {
@@ -489,6 +501,7 @@ export default {
         url: `${baseUrl}${BASE_PATH}/execs/${executionId}/resurrect`,
         json: true,
         method: 'POST',
+        isApiV1: true,
     }),
 
     _enqueuePage: (requestPromise, { baseUrl, executionId, urls }) => requestPromise({
@@ -496,5 +509,6 @@ export default {
         json: true,
         method: 'POST',
         body: urls,
+        isApiV1: true,
     }),
 };
