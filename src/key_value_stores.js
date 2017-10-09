@@ -15,7 +15,7 @@ import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseB
  * const keyValueStores = apifyClient.keyValueStores;
  *
  * const store = await keyValueStores.getOrCreateStore({ storeName: 'my-store' });
- * apifyClient.setOptions({ storeId: store._id });
+ * apifyClient.setOptions({ storeId: store.id });
  * await keyValueStores.putRecord({
  *      key: 'foo',
  *      body: 'bar',
