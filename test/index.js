@@ -194,7 +194,7 @@ describe('ApifyClient', () => {
             .returns(Promise.resolve());
 
         const apifyClient = new ApifyClient({
-            baseUrl: 'https://api.apifier.com',
+            baseUrl: 'https://api.apify.com',
             foo: 'this-wont-got-passed-to-requestPromise',
             expBackOffMillis: 999,
             expBackOffMaxRepeats: 99,

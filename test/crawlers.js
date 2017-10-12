@@ -433,8 +433,8 @@ describe('Crawlers', () => {
                 status: 'RUNNING',
                 statusMessage: 'null',
                 tag: 'my_test_run',
-                detailsUrl: 'https://api.apifier.com/v1/execs/br9CKmk457',
-                resultsUrl: 'https://api.apifier.com/v1/execs/br9CKmk457/results',
+                detailsUrl: 'https://api.apify.com/v1/execs/br9CKmk457',
+                resultsUrl: 'https://api.apify.com/v1/execs/br9CKmk457/results',
             };
 
             requestExpectCall({
@@ -493,8 +493,8 @@ describe('Crawlers', () => {
                         scheduledActId: 'vJmysCj4xx98ftgKo',
                         scheduledAt: '2016-12-22T11:30:00.000Z',
                     },
-                    detailsUrl: 'https://api.apifier.com/v1/execs/br9CKmk457',
-                    resultsUrl: 'https://api.apifier.com/v1/execs/br9CKmk457/results',
+                    detailsUrl: 'https://api.apify.com/v1/execs/br9CKmk457',
+                    resultsUrl: 'https://api.apify.com/v1/execs/br9CKmk457/results',
                 },
             ];
             const sampleResponse = { body: sampleBody,
@@ -606,8 +606,8 @@ describe('Crawlers', () => {
                 startedAt: '2015-10-29T07:34:24.202Z',
                 finishedAt: 'null',
                 status: 'RUNNING',
-                detailsUrl: 'https://api.apifier.com/v1/execs/br9CKmk457',
-                resultsUrl: 'https://api.apifier.com/v1/execs/br9CKmk457/results',
+                detailsUrl: 'https://api.apify.com/v1/execs/br9CKmk457',
+                resultsUrl: 'https://api.apify.com/v1/execs/br9CKmk457/results',
             };
 
             requestExpectCall({

@@ -53,13 +53,15 @@ You can set global parameters when you are creating instance of ApifyClient:
 
 ```javascript
 const apifyClient = new ApifyClient({
-    userId: 'jklnDMNKLekk', // Your user ID at apifier.com
+    userId: 'jklnDMNKLekk', // Your Apify user ID
     token: 'SNjkeiuoeD443lpod68dk', // Your API token
     promise: Promise, // Promises dependency to use (default is native Promise)
     expBackOffMillis: 500, // Wait time in milliseconds before making a new request in a case of error
     expBackOffMaxRepeats: 8, // Maximum number of repeats in a case of error
 });
 ```
+
+Tp obtain your user ID and API token please visit your [Apify Account page](https://my.apify.com/account#/integrations).
 
 ## Promises, await, callbacks
 

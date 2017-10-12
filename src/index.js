@@ -12,7 +12,7 @@ import ApifyError, { INVALID_PARAMETER_ERROR_TYPE_V2 } from './apify_error';
 
 /** @ignore */
 const getDefaultOptions = () => ({
-    baseUrl: 'https://api.apifier.com',
+    baseUrl: 'https://api.apify.com',
 });
 
 /**

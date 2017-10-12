@@ -391,7 +391,7 @@ export default {
      * @param {Boolean} [options.betaPackages] - If true, the Docker container will be rebuild using layer cache.
                                                  This is to enable quick rebuild during development.
      * @param {Boolean} [options.useCache] - If true, Docker build uses beta versions of 'apify-client' and
-                                             'apifier' NPM packages, to test new features.
+                                             'apify' NPM packages, to test new features.
      * @param {String} [options.tag] - Tag that is applied to the build on success. It enables callers of acts to specify which version of act to run.
 
      betaPackages
