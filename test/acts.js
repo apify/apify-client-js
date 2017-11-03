@@ -276,6 +276,25 @@ describe('Act method', () => {
             .then(response => expect(response).to.be.eql(run));
     });
 
+    it('runAct() works without token', () => {
+        const actId = 'some-id';
+        const run = { foo: 'bar' };
+        const apiResponse = JSON.stringify({ data: run });
+
+        requestExpectCall({
+            method: 'POST',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
+            qs: {},
+        }, apiResponse);
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .runAct({ actId })
+            .then(response => expect(response).to.be.eql(run));
+    });
+
     it('getRun() works', () => {
         const actId = 'some-act-id';
         const runId = 'some-run-id';
@@ -297,6 +316,28 @@ describe('Act method', () => {
         return apifyClient
             .acts
             .getRun({ actId, token, runId, waitForFinish })
+            .then(response => expect(response).to.be.eql(run));
+    });
+
+    it('getRun() works without token', () => {
+        const actId = 'some-act-id';
+        const runId = 'some-run-id';
+        const run = { foo: 'bar' };
+
+        requestExpectCall({
+            json: true,
+            method: 'GET',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/runs/${runId}`,
+            qs: {},
+        }, {
+            data: run,
+        });
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .getRun({ actId, runId })
             .then(response => expect(response).to.be.eql(run));
     });
 
