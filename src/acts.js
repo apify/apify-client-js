@@ -159,6 +159,7 @@ export default {
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(token, 'token', 'String');
 
         const safeActId = replaceSlashWithTilde(actId);
 
@@ -186,6 +187,7 @@ export default {
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(token, 'token', 'String');
 
         const safeActId = replaceSlashWithTilde(actId);
 
@@ -248,9 +250,9 @@ export default {
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {String} options.actId - Act ID
-     * @param {String|Buffer} options.body - Act input, passed as HTTP POST payload
+     * @param [options.token]
+     * @param {String|Buffer} [options.body] - Act input, passed as HTTP POST payload
      * @param {String} [options.contentType] - Content type of act input e.g 'application/json'
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for act to finish. Maximum value is 120s.
                                                  If act doesn't finish in time then act run in RUNNING state is returned.
@@ -264,8 +266,8 @@ export default {
         const { baseUrl, token, actId, contentType, body, waitForFinish, timeout, memory, build } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
         checkParamOrThrow(contentType, 'contentType', 'Maybe String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
         checkParamOrThrow(timeout, 'timeout', 'Maybe Number');
@@ -273,12 +275,13 @@ export default {
         checkParamOrThrow(build, 'build', 'Maybe String');
 
         const safeActId = replaceSlashWithTilde(actId);
-        const query = { token };
+        const query = {};
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
         if (timeout) query.timeout = timeout;
         if (memory) query.memory = memory;
         if (build) query.build = build;
+        if (token) query.token = token;
 
         const opts = {
             url: `${baseUrl}${BASE_PATH}/${safeActId}/runs`,
@@ -305,9 +308,9 @@ export default {
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {String} options.actId - Act ID
      * @param {String} options.runId - Act run ID
+     * @param [options.token]
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for act to finish. Maximum value is 120s.
                                                  If act doesn't finish in time then act run in RUNNING state is returned.
      * @param callback
@@ -319,11 +322,13 @@ export default {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
         checkParamOrThrow(runId, 'runId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
 
         const safeActId = replaceSlashWithTilde(actId);
-        const query = { token };
+        const query = {};
 
+        if (token) query.token = token;
         if (waitForFinish) query.waitForFinish = waitForFinish;
 
         return requestPromise({
@@ -450,6 +455,7 @@ export default {
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(buildId, 'buildId', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
 
