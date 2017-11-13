@@ -449,7 +449,11 @@ export default {
             resolveWithResponse: true,
             isApiV1: true,
         };
-        const queryString = _.pick(options, 'format', 'simplified', 'offset', 'limit', 'desc', 'attachment', 'delimiter', 'bom', 'xmlRoot', 'xmlRow', 'hideUrl', 'skipFailedPages');
+        const queryString = _.pick(options,
+            'format', 'simplified', 'offset',
+            'limit', 'desc', 'attachment',
+            'delimiter', 'bom', 'xmlRoot', 'xmlRow',
+            'hideUrl', 'skipFailedPages');
         if (!_.isEmpty(queryString)) {
             requestParams.qs = queryString;
         }
@@ -505,7 +509,12 @@ export default {
             resolveWithResponse: true,
             isApiV1: true,
         };
-        const queryString = _.pick(options, 'status', 'token', 'format', 'simplified', 'offset', 'limit', 'desc', 'attachment', 'delimiter', 'bom', 'xmlRoot', 'xmlRow', 'hideUrl', 'skipFailedPages');
+        const queryString = _.pick(options,
+            'status', 'token', 'format',
+            'simplified', 'offset', 'limit',
+            'desc', 'attachment', 'delimiter',
+            'bom', 'xmlRoot', 'xmlRow',
+            'hideUrl', 'skipFailedPages');
         if (!_.isEmpty(queryString)) {
             requestParams.qs = queryString;
         }
