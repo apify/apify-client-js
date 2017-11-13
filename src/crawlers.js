@@ -426,6 +426,14 @@ export default {
      * @param {Number} [options.bom] - All responses are encoded in UTF-8 encoding. By default, the csv files are prefixed with the UTF-8 Byte
      *                                 Order Mark (BOM), while json, jsonl, xml, html and rss files are not. If you want to override this default
      *                                 behavior, specify bom=1 query parameter to include the BOM or bom=0 to skip it.
+     * @param {String} [options.xmlRoot] - Overrides default root element name of xml output. By default the root element is results.
+     * @param {String} [options.xmlRow] - Overrides default element name that wraps each page or page function result object in xml output.
+     *                                    By default the element name is page or result based on value of simplified parameter.
+     * @param {Number} [options.hideUrl] - If set to 1 then url field will not be added to each page function result object.
+     *                                     By default each page function result object contains url field.
+     * @param {Number} [options.skipFailedPages] - If set to 1 then pages with non-empty errorInfo property are skipped from
+     *                                             the output and the errorInfo property is hidden.
+     *                                             Note that the skipped pages are still counted in the pagination.
      * @param callback
      * @returns {PaginationList}
      */
@@ -441,7 +449,11 @@ export default {
             resolveWithResponse: true,
             isApiV1: true,
         };
-        const queryString = _.pick(options, 'format', 'simplified', 'offset', 'limit', 'desc', 'attachment', 'delimiter', 'bom');
+        const queryString = _.pick(options,
+            'format', 'simplified', 'offset',
+            'limit', 'desc', 'attachment',
+            'delimiter', 'bom', 'xmlRoot', 'xmlRow',
+            'hideUrl', 'skipFailedPages');
         if (!_.isEmpty(queryString)) {
             requestParams.qs = queryString;
         }
@@ -472,6 +484,14 @@ export default {
      * @param {Number} [options.bom] - All responses are encoded in UTF-8 encoding. By default, the csv files are prefixed with the UTF-8 Byte
      *                                 Order Mark (BOM), while json, jsonl, xml, html and rss files are not. If you want to override this default
      *                                 behavior, specify bom=1 query parameter to include the BOM or bom=0 to skip it.
+     * @param {String} [options.xmlRoot] - Overrides default root element name of xml output. By default the root element is results.
+     * @param {String} [options.xmlRow] - Overrides default element name that wraps each page or page function result object in xml output.
+     *                                    By default the element name is page or result based on value of simplified parameter.
+     * @param {Number} [options.hideUrl] - If set to 1 then url field will not be added to each page function result object.
+     *                                     By default each page function result object contains url field.
+     * @param {Number} [options.skipFailedPages] - If set to 1 then pages with non-empty errorInfo property are skipped from
+     *                                             the output and the errorInfo property is hidden.
+     *                                             Note that the skipped pages are still counted in the pagination.
      * @param callback
      * @returns {PaginationList}
      */
@@ -489,7 +509,12 @@ export default {
             resolveWithResponse: true,
             isApiV1: true,
         };
-        const queryString = _.pick(options, 'status', 'token', 'format', 'simplified', 'offset', 'limit', 'desc', 'attachment', 'delimiter', 'bom');
+        const queryString = _.pick(options,
+            'status', 'token', 'format',
+            'simplified', 'offset', 'limit',
+            'desc', 'attachment', 'delimiter',
+            'bom', 'xmlRoot', 'xmlRow',
+            'hideUrl', 'skipFailedPages');
         if (!_.isEmpty(queryString)) {
             requestParams.qs = queryString;
         }
