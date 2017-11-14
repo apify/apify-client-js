@@ -246,9 +246,24 @@ export default {
     },
 
     /**
-     * Starts execution of a specific crawler.
      *
      * @memberof ApifyClient.crawlers
+     * @description
+     * Starts execution of a specific crawler.
+     * ```javascript
+     * // Start execution and overwrite crawler settings
+     * const execution = await apifyClient.crawlers.startExecution({
+     *   crawlerId: 'v6hb9olk86gfd8',
+     *   settings: {
+     *       startUrls: [
+     *           {
+     *               key: "START",
+     *               value: 'http://example.com'
+     *           }
+     *       ]
+     *   }
+     * });
+     * ```
      * @instance
      * @param {Object} options
      * @param options.userId
