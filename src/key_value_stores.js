@@ -81,7 +81,7 @@ export default {
             method: 'POST',
             qs: { name: storeName, token },
         })
-        .then(pluckData);
+            .then(pluckData);
     },
 
     /**
@@ -123,7 +123,7 @@ export default {
             method: 'GET',
             qs: query,
         })
-        .then(pluckData);
+            .then(pluckData);
     },
 
     /**
@@ -147,8 +147,8 @@ export default {
             json: true,
             method: 'GET',
         })
-        .then(pluckData)
-        .catch(catchNotFoundOrThrow);
+            .then(pluckData)
+            .catch(catchNotFoundOrThrow);
     },
 
     /**
@@ -272,12 +272,12 @@ export default {
                         'Content-Type': contentType,
                     },
                 })
-                .then((response) => {
-                    const signedUrl = response.data.signedUrl;
-                    const s3RequestOpts = Object.assign({}, requestOpts, { url: signedUrl });
+                    .then((response) => {
+                        const signedUrl = response.data.signedUrl;
+                        const s3RequestOpts = Object.assign({}, requestOpts, { url: signedUrl });
 
-                    return requestPromise(s3RequestOpts);
-                });
+                        return requestPromise(s3RequestOpts);
+                    });
             });
     },
 

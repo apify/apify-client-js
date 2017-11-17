@@ -127,19 +127,19 @@ describe('Crawlers', () => {
         it('should throw if token parameter is missing', () => {
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
             return expect(crawlerClient.createCrawler.bind(crawlerClient, { userId: 'dummyUserId' }))
-                    .to.throw('Parameter "token" of type String must be provided');
+                .to.throw('Parameter "token" of type String must be provided');
         });
 
         it('should throw if settings parameter is missing', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
             return expect(crawlerClient.createCrawler.bind(crawlerClient, {}))
-                    .to.throw('Parameter "settings" of type Object must be provided');
+                .to.throw('Parameter "settings" of type Object must be provided');
         });
 
         it('should throw if settings.customId parameter is missing', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
             return expect(crawlerClient.createCrawler.bind(crawlerClient, { settings: {} }))
-                    .to.throw('Parameter "settings.customId" of type String must be provided');
+                .to.throw('Parameter "settings.customId" of type String must be provided');
         });
 
         it('should return what API returns', () => {
@@ -180,13 +180,13 @@ describe('Crawlers', () => {
         it('should throw if token parameter is missing', () => {
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
             return expect(crawlerClient.updateCrawler.bind(crawlerClient, { userId: 'dummyUserId' }))
-                    .to.throw('Parameter "token" of type String must be provided');
+                .to.throw('Parameter "token" of type String must be provided');
         });
 
         it('should throw if settings parameter is missing', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
             return expect(crawlerClient.updateCrawler.bind(crawlerClient, { crawlerId: 'dummyCrawler' }))
-                    .to.throw('Parameter "settings" of type Object must be provided');
+                .to.throw('Parameter "settings" of type Object must be provided');
         });
 
         it('should return what API returns', () => {
@@ -298,8 +298,8 @@ describe('Crawlers', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
             return crawlerClient
-            .getCrawlerSettings({ crawlerId: 'dummyCrawler', token: credentials.token })
-            .then(settings => expect(settings).to.be.eql(null));
+                .getCrawlerSettings({ crawlerId: 'dummyCrawler', token: credentials.token })
+                .then(settings => expect(settings).to.be.eql(null));
         });
     });
 
@@ -583,8 +583,8 @@ describe('Crawlers', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
             return crawlerClient
-            .getExecutionDetails({ executionId: 'dummyExecution' })
-            .then(executionDetail => expect(executionDetail).to.be.eql(null));
+                .getExecutionDetails({ executionId: 'dummyExecution' })
+                .then(executionDetail => expect(executionDetail).to.be.eql(null));
         });
     });
 

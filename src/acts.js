@@ -82,7 +82,7 @@ export default {
             method: 'GET',
             qs: query,
         })
-        .then(pluckData);
+            .then(pluckData);
     },
 
     /**
@@ -110,7 +110,7 @@ export default {
             qs: { token },
             body: act,
         })
-        .then(pluckData);
+            .then(pluckData);
     },
 
     /**
@@ -141,7 +141,7 @@ export default {
             qs: { token },
             body: _.omit(act, 'id'),
         })
-        .then(pluckData);
+            .then(pluckData);
     },
 
     /**
@@ -197,8 +197,8 @@ export default {
             method: 'GET',
             qs: { token },
         })
-        .then(pluckData)
-        .catch(catchNotFoundOrThrow);
+            .then(pluckData)
+            .catch(catchNotFoundOrThrow);
     },
 
     /**
@@ -241,7 +241,7 @@ export default {
             method: 'GET',
             qs: query,
         })
-        .then(pluckData);
+            .then(pluckData);
     },
 
     /**
@@ -298,8 +298,8 @@ export default {
         }
 
         return requestPromise(opts)
-        .then(response => JSON.parse(response))
-        .then(pluckData);
+            .then(response => JSON.parse(response))
+            .then(pluckData);
     },
 
     /**
@@ -337,8 +337,8 @@ export default {
             method: 'GET',
             qs: query,
         })
-        .then(pluckData)
-        .catch(catchNotFoundOrThrow);
+            .then(pluckData)
+            .catch(catchNotFoundOrThrow);
     },
 
     /**
@@ -381,7 +381,7 @@ export default {
             method: 'GET',
             qs: query,
         })
-        .then(pluckData);
+            .then(pluckData);
     },
 
     /**
@@ -433,7 +433,7 @@ export default {
             method: 'POST',
             qs: query,
         })
-        .then(pluckData);
+            .then(pluckData);
     },
 
     /**
@@ -470,8 +470,8 @@ export default {
             method: 'GET',
             qs: query,
         })
-        .then(pluckData)
-        .catch(catchNotFoundOrThrow);
+            .then(pluckData)
+            .catch(catchNotFoundOrThrow);
     },
 
 };
