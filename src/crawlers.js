@@ -77,10 +77,10 @@ function wrapArray(response) {
      */
     return {
         items: response.body,
-        total: response.headers['x-apifier-pagination-total'],
-        offset: response.headers['x-apifier-pagination-offset'],
-        count: response.headers['x-apifier-pagination-count'],
-        limit: response.headers['x-apifier-pagination-limit'],
+        total: parseInt(response.headers['x-apifier-pagination-total'], 10),
+        offset: parseInt(response.headers['x-apifier-pagination-offset'], 10),
+        count: parseInt(response.headers['x-apifier-pagination-count'], 10),
+        limit: parseInt(response.headers['x-apifier-pagination-limit'], 10),
     };
 }
 
