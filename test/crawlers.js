@@ -110,10 +110,10 @@ describe('Crawlers', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
             const expected = { items: sampleBody,
-                total: '35',
-                count: '35',
-                offset: '0',
-                limit: '1000',
+                total: 35,
+                count: 35,
+                offset: 0,
+                limit: 1000,
             };
 
             return crawlerClient.listCrawlers().then((response) => {
@@ -531,10 +531,10 @@ describe('Crawlers', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
             const expected = { items: sampleBody,
-                total: '35',
-                count: '35',
-                offset: '0',
-                limit: '1000',
+                total: 35,
+                count: 35,
+                offset: 0,
+                limit: 1000,
             };
 
             return crawlerClient.getListOfExecutions({ crawlerId: 'dummyCrawler' }).then((response) => {
@@ -691,10 +691,10 @@ describe('Crawlers', () => {
         };
 
         const expected = { items: sampleBody,
-            total: '35',
-            count: '35',
-            offset: '0',
-            limit: '1000',
+            total: 35,
+            count: 35,
+            offset: 0,
+            limit: 1000,
         };
 
         it('should throw if executionId is not provided', () => {
@@ -815,10 +815,10 @@ describe('Crawlers', () => {
         };
 
         const expected = { items: sampleBody,
-            total: '35',
-            count: '35',
-            offset: '0',
-            limit: '1000',
+            total: 35,
+            count: 35,
+            offset: 0,
+            limit: 1000,
         };
 
         it('should throw if userId is not provided', () => {
