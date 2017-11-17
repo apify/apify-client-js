@@ -449,6 +449,7 @@ export default {
      * @param {Number} [options.skipFailedPages] - If set to 1 then pages with non-empty errorInfo property are skipped from
      *                                             the output and the errorInfo property is hidden.
      *                                             Note that the skipped pages are still counted in the pagination.
+     * @param {Number} [options.skipHeaderRow] - If set to `1` then header row in csv format is skipped.
      * @param callback
      * @returns {PaginationList}
      */
@@ -468,7 +469,7 @@ export default {
             'format', 'simplified', 'offset',
             'limit', 'desc', 'attachment',
             'delimiter', 'bom', 'xmlRoot', 'xmlRow',
-            'hideUrl', 'skipFailedPages');
+            'hideUrl', 'skipFailedPages', 'skipHeaderRow');
         if (!_.isEmpty(queryString)) {
             requestParams.qs = queryString;
         }
@@ -507,6 +508,7 @@ export default {
      * @param {Number} [options.skipFailedPages] - If set to 1 then pages with non-empty errorInfo property are skipped from
      *                                             the output and the errorInfo property is hidden.
      *                                             Note that the skipped pages are still counted in the pagination.
+     * @param {Number} [options.skipHeaderRow] - If set to `1` then header row in csv format is skipped.
      * @param callback
      * @returns {PaginationList}
      */
@@ -529,7 +531,8 @@ export default {
             'simplified', 'offset', 'limit',
             'desc', 'attachment', 'delimiter',
             'bom', 'xmlRoot', 'xmlRow',
-            'hideUrl', 'skipFailedPages');
+            'hideUrl', 'skipFailedPages',
+            'skipHeaderRow');
         if (!_.isEmpty(queryString)) {
             requestParams.qs = queryString;
         }
