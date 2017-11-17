@@ -47,8 +47,8 @@ if [ "${BRANCH}" = "master" ]; then
         aws cloudfront create-invalidation --distribution-id E29XCV9LE9131X --paths "/docs/sdk/apify-client-js/*"
     fi
 
-# Develop branch gets published as BETA and we don't allow to override tag of existing version.
-elif [ "${BRANCH}" = "develop" ]; then
+# Any other branch gets published as BETA and we don't allow to override tag of existing version.
+else
     echo "Publishing version ${PACKAGE_VERSION} with tag \"beta\" ..."
     RUNNING_FROM_SCRIPT=1 npm publish --tag beta
 
@@ -60,12 +60,6 @@ elif [ "${BRANCH}" = "develop" ]; then
     echo "Copy docs to S3 to beta folder..."
     aws s3 cp "s3://${AWS_BUCKET}/${GIT_TAG}/" "s3://${AWS_BUCKET}/beta/" --recursive --region us-east-1 --acl public-read --cache-control "public, max-age=86400"
     aws cloudfront create-invalidation --distribution-id E29XCV9LE9131X --paths "/docs/sdk/apify-client-js/*"
-
-
-# For other branch throw an error.
-else
-    printf "${RED}You can publish from develop and master branches only!${NC}\n"
-    exit 1
 fi
 
 
