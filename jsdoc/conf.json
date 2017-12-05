@@ -4,7 +4,7 @@
     },
     "source": {
         "include": [ "build" ],
-        "exclude": [ "build/utils.js" ],
+        "exclude": [ "build/utils.js", "build/sequential_stores.js" ],
         "includePattern": ".+\\.js(doc|x)?$",
         "excludePattern": "(^|\\/|\\\\)_"
     },

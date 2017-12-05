@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import * as utils from '../build/utils';
 import ApifyClient from '../build';
 
-const APIFY_INSTANCE_KEYS = ['acts', 'crawlers', 'keyValueStores', 'logs', 'setOptions', 'getOptions', 'getDefaultOptions'];
+const APIFY_INSTANCE_KEYS = ['acts', 'crawlers', 'keyValueStores', 'sequentialStores', 'logs', 'setOptions', 'getOptions', 'getDefaultOptions'];
 
 describe('ApifyClient', () => {
     it('should be possible to initiate it both with and without "new"', () => {
