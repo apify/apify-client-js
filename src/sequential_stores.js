@@ -226,8 +226,8 @@ export default {
         checkParamOrThrow(bom, 'bom', 'Maybe Boolean');
         checkParamOrThrow(attachment, 'attachment', 'Maybe Boolean');
         checkParamOrThrow(delimiter, 'delimiter', 'Maybe String');
-        checkParamOrThrow(xmlRoot, 'delimiter', 'Maybe String');
-        checkParamOrThrow(xmlRow, 'delimiter', 'Maybe String');
+        checkParamOrThrow(xmlRoot, 'xmlRoot', 'Maybe String');
+        checkParamOrThrow(xmlRow, 'xmlRow', 'Maybe String');
 
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${storeId}/records`,
@@ -250,7 +250,6 @@ export default {
 
         const parseResponse = (response) => {
             const responseBody = response.body;
-            console.log('body', responseBody);
             const contentType = response.headers['content-type'];
             const body = disableBodyParser ? responseBody : parseBody(responseBody, contentType);
             return body;
