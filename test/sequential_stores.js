@@ -268,7 +268,7 @@ describe('Sequential store', () => {
                     'Content-Encoding': 'gzip',
                 },
                 json: false,
-                method: 'PUT',
+                method: 'POST',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records`,
             });
 
