@@ -281,7 +281,7 @@ export default {
             .then((gzipedBody) => {
                 const requestOpts = {
                     url: `${baseUrl}${BASE_PATH}/${storeId}/records`,
-                    method: 'PUT',
+                    method: 'POST',
                     body: gzipedBody,
                     json: false,
                     headers: {
