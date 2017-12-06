@@ -122,26 +122,58 @@ describe('utils.requestPromise()', () => {
             });
     });
 
-    it('works as expected when request throws an error', () => {
+    it('works as expected when request throws an error 8 times and then succeeds', () => {
         const method = 'POST';
-        const opts = { method, foo: 'bar', promise: Promise };
+        const opts = { method, foo: 'bar', promise: Promise, expBackOffMaxRepeats: 8, expBackOffMillis: 5 };
         const errorMsg = 'some-error';
+        const expectedBody = 'foo-bar';
+
+        let iteration = 0;
 
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts, callback) => {
-                expect(passedOpts).to.be.eql(opts);
-                callback(new Error(errorMsg));
+                const expectedOpts = Object.assign({}, opts, { expBackOffMillis: opts.expBackOffMillis * (2 ** iteration) });
+                expect(passedOpts).to.be.eql(expectedOpts);
+                iteration++;
+                if (iteration < 8) return callback(new Error(errorMsg), null, {});
+                callback(null, {}, expectedBody);
+            });
+
+        return utils
+            .requestPromise(opts)
+            .then((body) => {
+                expect(body).to.be.eql(expectedBody);
+                expect(iteration).to.be.eql(8);
+                stub.restore();
+            });
+    });
+
+    it('works as expected when request throws an error 9 times so it fails', () => {
+        const method = 'POST';
+        const opts = { method, foo: 'bar', promise: Promise, expBackOffMaxRepeats: 8, expBackOffMillis: 5 };
+        const errorMsg = 'some-error';
+
+        let iteration = 0;
+        const stub = sinon
+            .stub(request, method.toLowerCase())
+            .callsFake((passedOpts, callback) => {
+                const expectedOpts = Object.assign({}, opts, { expBackOffMillis: opts.expBackOffMillis * (2 ** iteration) });
+                expect(passedOpts).to.be.eql(expectedOpts);
+                iteration++;
+                callback(new Error(errorMsg), null, {});
             });
 
         return utils
             .requestPromise(opts)
             .then(() => {
-                throw new Error('Error not catched!!!');
+                throw new Error('Should fail!!!');
             }, (err) => {
                 expect(err.name).to.be.eql(APIFY_ERROR_NAME);
                 expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
-                expect(err.message).to.be.eql(errorMsg);
+                expect(err.details.iteration).to.be.eql(opts.expBackOffMaxRepeats);
+                expect(err.details.statusCode).to.be.eql(null);
+                expect(err.details.error).to.be.eql(new Error(errorMsg));
                 stub.restore();
             });
     });
@@ -149,24 +181,29 @@ describe('utils.requestPromise()', () => {
 
     it('works as expected when request throws an error for API V1', () => {
         const method = 'POST';
-        const opts = { method, foo: 'bar', promise: Promise, isApiV1: true };
+        const opts = { method, foo: 'bar', promise: Promise, isApiV1: true, expBackOffMaxRepeats: 8, expBackOffMillis: 5 };
         const errorMsg = 'some-error';
 
+        let iteration = 0;
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts, callback) => {
-                expect(passedOpts).to.be.eql(opts);
-                callback(new Error(errorMsg));
+                const expectedOpts = Object.assign({}, opts, { expBackOffMillis: opts.expBackOffMillis * (2 ** iteration) });
+                expect(passedOpts).to.be.eql(expectedOpts);
+                iteration++;
+                callback(new Error(errorMsg), null, {});
             });
 
         return utils
             .requestPromise(opts)
             .then(() => {
-                throw new Error('Error not catched!!!');
+                throw new Error('Should fail!!!');
             }, (err) => {
                 expect(err.name).to.be.eql(APIFY_ERROR_NAME);
                 expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V1);
-                expect(err.message).to.be.eql(errorMsg);
+                expect(err.details.iteration).to.be.eql(opts.expBackOffMaxRepeats);
+                expect(err.details.statusCode).to.be.eql(null);
+                expect(err.details.error).to.be.eql(new Error(errorMsg));
                 stub.restore();
             });
     });

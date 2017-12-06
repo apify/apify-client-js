@@ -97,16 +97,14 @@ export const requestPromise = (options, iteration = 0) => {
         // We have to use request[method]({ ... }) instead of request({ method, ... })
         // to be able to mock request when unit testing requestPromise().
         request[method](options, (error, response, body) => {
-            if (error) return reject(new ApifyError(REQUEST_FAILED_ERROR_TYPE, error.message));
-
-            const statusCode = response.statusCode;
+            const statusCode = response ? response.statusCode : null;
 
             // If status code is >= 500 or RATE_LIMIT_EXCEEDED_STATUS_CODE then we repeat the request.
             // We use exponential backoff alghorithm with up to `expBackOffMillis` repeats.
-            if (statusCode >= 500 || statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE) {
+            if (error || statusCode >= 500 || statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE) {
                 if (iteration >= expBackOffMaxRepeats) {
                     const errMessage = `Server request failed with ${iteration + 1} tries.`;
-                    reject(new ApifyError(REQUEST_FAILED_ERROR_TYPE, errMessage, { statusCode, iteration }));
+                    reject(new ApifyError(REQUEST_FAILED_ERROR_TYPE, errMessage, { statusCode, iteration, error }));
                 }
 
                 const waitMillis = _.random(expBackOffMillis, expBackOffMillis * 2);
