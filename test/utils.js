@@ -152,7 +152,7 @@ describe('utils.requestPromise()', () => {
     it('works as expected when request throws an error 9 times so it fails', () => {
         const method = 'POST';
         const opts = { method, foo: 'bar', promise: Promise, expBackOffMaxRepeats: 8, expBackOffMillis: 5 };
-        const errorMsg = 'some-error';
+        const error = new Error('some-error');
 
         let iteration = 0;
         const stub = sinon
@@ -161,7 +161,7 @@ describe('utils.requestPromise()', () => {
                 const expectedOpts = Object.assign({}, opts, { expBackOffMillis: opts.expBackOffMillis * (2 ** iteration) });
                 expect(passedOpts).to.be.eql(expectedOpts);
                 iteration++;
-                callback(new Error(errorMsg), null, {});
+                callback(error, null, {});
             });
 
         return utils
@@ -173,7 +173,7 @@ describe('utils.requestPromise()', () => {
                 expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
                 expect(err.details.iteration).to.be.eql(opts.expBackOffMaxRepeats);
                 expect(err.details.statusCode).to.be.eql(null);
-                expect(err.details.error).to.be.eql(new Error(errorMsg));
+                expect(err.details.error).to.be.eql(error);
                 stub.restore();
             });
     });
@@ -182,7 +182,7 @@ describe('utils.requestPromise()', () => {
     it('works as expected when request throws an error for API V1', () => {
         const method = 'POST';
         const opts = { method, foo: 'bar', promise: Promise, isApiV1: true, expBackOffMaxRepeats: 8, expBackOffMillis: 5 };
-        const errorMsg = 'some-error';
+        const error = new Error('some-error');
 
         let iteration = 0;
         const stub = sinon
@@ -191,7 +191,7 @@ describe('utils.requestPromise()', () => {
                 const expectedOpts = Object.assign({}, opts, { expBackOffMillis: opts.expBackOffMillis * (2 ** iteration) });
                 expect(passedOpts).to.be.eql(expectedOpts);
                 iteration++;
-                callback(new Error(errorMsg), null, {});
+                callback(error, null, {});
             });
 
         return utils
@@ -203,7 +203,7 @@ describe('utils.requestPromise()', () => {
                 expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V1);
                 expect(err.details.iteration).to.be.eql(opts.expBackOffMaxRepeats);
                 expect(err.details.statusCode).to.be.eql(null);
-                expect(err.details.error).to.be.eql(new Error(errorMsg));
+                expect(err.details.error).to.be.eql(error);
                 stub.restore();
             });
     });
