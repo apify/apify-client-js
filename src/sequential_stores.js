@@ -245,6 +245,7 @@ export default {
             'delimiter', 'bom', 'xmlRoot', 'xmlRow');
 
         if (!_.isEmpty(queryString)) {
+            if (queryString && queryString.fields) queryString.fields = queryString.fields.join(',');
             requestOpts.qs = queryString;
         }
 
