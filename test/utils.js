@@ -178,7 +178,6 @@ describe('utils.requestPromise()', () => {
             });
     });
 
-
     it('works as expected when request throws an error for API V1', () => {
         const method = 'POST';
         const opts = { method, foo: 'bar', promise: Promise, isApiV1: true, expBackOffMaxRepeats: 8, expBackOffMillis: 5 };
