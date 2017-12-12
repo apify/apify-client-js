@@ -83,6 +83,33 @@ export default {
     },
 
     /**
+     * Creates store with id and returns it's object. If store with given id already exists then returns it's object.
+     *
+     * @memberof ApifyClient.sequentialStores
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.storeId - Custom unique id.
+     * @param callback
+     * @returns {SequentialStore}
+     */
+    getOrCreateStoreWithId: (requestPromise, options) => {
+        const { baseUrl, token, storeId } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}`,
+            json: true,
+            method: 'POST',
+            qs: { id: storeId, token },
+        })
+            .then(pluckData);
+    },
+
+    /**
      * Gets list of sequential stores.
      * @descriptions By default, the objects are sorted by the createdAt field in ascending order,
      * therefore you can use pagination to incrementally fetch all stores while new ones are still being created.
