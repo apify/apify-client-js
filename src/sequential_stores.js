@@ -83,7 +83,7 @@ export default {
     },
 
     /**
-     * Creates store of id and returns it's object. If store with given id already exists then returns it's object.
+     * Creates store with id and returns it's object. If store with given id already exists then returns it's object.
      *
      * @memberof ApifyClient.sequentialStores
      * @instance
@@ -98,7 +98,7 @@ export default {
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(storeName, 'storeId', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}`,

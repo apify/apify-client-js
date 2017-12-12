@@ -83,6 +83,32 @@ describe('Sequential store', () => {
                 .getOrCreateStore(storeOptions)
                 .then(store => expect(store.id).to.be.eql(storeId));
         });
+
+        it('should work with token and storeId', () => {
+            const storeId = 'some-id-4-1';
+            const storeOptions = {
+                token: 'sometoken',
+                id: storeId,
+            };
+
+            requestExpectCall({
+                json: true,
+                method: 'POST',
+                url: `${BASE_URL}${BASE_PATH}`,
+                qs: storeOptions,
+            }, {
+                data: {
+                    id: storeId,
+                },
+            });
+
+            const apifyClient = new ApifyClient(Object.assign({}, OPTIONS, { storeId }));
+
+            return apifyClient
+                .sequentialStores
+                .getOrCreateStoreWithId(storeOptions)
+                .then(store => expect(store.id).to.be.eql(storeId));
+        });
     });
 
     describe('REST method', () => {
