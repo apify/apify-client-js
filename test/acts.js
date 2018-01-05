@@ -308,7 +308,7 @@ describe('Act method', () => {
 
         requestExpectCall({
             method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
+            url: `${BASE_URL}${BASE_PATH}/${actId}/run-with-output`,
             qs: { token, timeout, memory, build, outputRecordKey },
             headers: {
                 'Content-Type': contentType,
@@ -332,7 +332,7 @@ describe('Act method', () => {
 
         requestExpectCall({
             method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
+            url: `${BASE_URL}${BASE_PATH}/${actId}/run-with-output`,
             qs: {},
             resolveWithResponse: true,
         }, outputBodyStr, { headers: { 'content-type': output.contentType } });
@@ -351,7 +351,7 @@ describe('Act method', () => {
 
         requestExpectCall({
             method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
+            url: `${BASE_URL}${BASE_PATH}/${actId}/run-with-output`,
             qs: {},
             resolveWithResponse: true,
         }, output.body, { headers: { 'content-type': output.contentType } });

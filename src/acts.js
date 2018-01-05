@@ -345,7 +345,7 @@ export default {
         if (outputRecordKey) query.outputRecordKey = outputRecordKey;
 
         const opts = {
-            url: `${baseUrl}${BASE_PATH}/${safeActId}/runs`,
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/run-with-output`,
             method: 'POST',
             qs: query,
             resolveWithResponse: true,
