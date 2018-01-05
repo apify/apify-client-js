@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
+import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseBody } from './utils';
 
 /**
  * Acts
@@ -317,26 +317,27 @@ export default {
      * @param {Number} [options.memory] - Amount of memory allocated for the act run, in megabytes.
      * @param {String} [options.build] - Tag or number of the build to run (e.g. <code>latest</code> or <code>1.2.34</code>).
      * @param {String} [options.outputRecordKey] - Key value store record key to be returned in response. Defaults to 'OUTPUT';
+     * @param {Boolean} [options.disableBodyParser] - If true then returned record doesn't get parsed based on content-type header
+     *                                                (as JSON for example).
      * @param callback
      * @returns {ActRun}
      */
     runActWithOutput: (requestPromise, options) => {
-        const { baseUrl, token, actId, contentType, body, waitForFinish, timeout, memory, build, outputRecordKey } = options;
+        const { baseUrl, token, actId, contentType, body, timeout, memory, build, outputRecordKey, disableBodyParser } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
         checkParamOrThrow(token, 'token', 'Maybe String');
         checkParamOrThrow(contentType, 'contentType', 'Maybe String');
-        checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
         checkParamOrThrow(timeout, 'timeout', 'Maybe Number');
         checkParamOrThrow(memory, 'memory', 'Maybe Number');
         checkParamOrThrow(build, 'build', 'Maybe String');
         checkParamOrThrow(outputRecordKey, 'outputRecordKey', 'Maybe String');
+        checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
 
         const safeActId = replaceSlashWithTilde(actId);
         const query = {};
 
-        if (waitForFinish) query.waitForFinish = waitForFinish;
         if (timeout) query.timeout = timeout;
         if (memory) query.memory = memory;
         if (build) query.build = build;
@@ -347,6 +348,7 @@ export default {
             url: `${baseUrl}${BASE_PATH}/${safeActId}/runs`,
             method: 'POST',
             qs: query,
+            resolveWithResponse: true,
         };
 
         if (contentType) opts.headers = { 'Content-Type': contentType };
@@ -357,7 +359,18 @@ export default {
             opts.body = body;
         }
 
-        return requestPromise(opts);
+        const parseResponse = (response) => {
+            const responseBody = response.body;
+            const responseContentType = response.headers['content-type'];
+
+            return {
+                contentType: responseContentType,
+                body: disableBodyParser ? responseBody : parseBody(responseBody, responseContentType),
+            };
+        };
+
+        return requestPromise(opts)
+            .then(parseResponse);
     },
 
     /**

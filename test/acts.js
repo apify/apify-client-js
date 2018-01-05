@@ -300,9 +300,7 @@ describe('Act method', () => {
         const token = 'some-token';
         const contentType = 'some-type';
         const body = 'some-body';
-        const apiResponse = 'some-output';
-
-        const waitForFinish = 120;
+        const output = { contentType: 'text/plain', body: 'some-output' };
         const timeout = 120;
         const memory = 256;
         const build = '1.2.0';
@@ -311,19 +309,59 @@ describe('Act method', () => {
         requestExpectCall({
             method: 'POST',
             url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
-            qs: { token, waitForFinish, timeout, memory, build, outputRecordKey },
+            qs: { token, timeout, memory, build, outputRecordKey },
             headers: {
                 'Content-Type': contentType,
             },
             body,
-        }, apiResponse);
+            resolveWithResponse: true,
+        }, output.body, { headers: { 'content-type': output.contentType } });
 
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
             .acts
-            .runActWithOutput({ actId, token, contentType, body, waitForFinish, timeout, memory, build, outputRecordKey })
-            .then(response => expect(response).to.be.eql(apiResponse));
+            .runActWithOutput({ actId, token, contentType, body, timeout, memory, build, outputRecordKey })
+            .then(response => expect(response).to.be.eql(output));
+    });
+
+    it('runActWithOuput() parses returned record', () => {
+        const actId = 'some-id';
+        const output = { contentType: 'application/json', body: { foo: 'bar' } };
+        const outputBodyStr = JSON.stringify(output.body);
+
+        requestExpectCall({
+            method: 'POST',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
+            qs: {},
+            resolveWithResponse: true,
+        }, outputBodyStr, { headers: { 'content-type': output.contentType } });
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .runActWithOutput({ actId })
+            .then(response => expect(response).to.be.eql(output));
+    });
+
+    it('runActWithOuput() doesn\'t parse returned record body when disableBodyParser = true', () => {
+        const actId = 'some-id';
+        const output = { contentType: 'application/json', body: JSON.stringify({ foo: 'bar' }) };
+
+        requestExpectCall({
+            method: 'POST',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
+            qs: {},
+            resolveWithResponse: true,
+        }, output.body, { headers: { 'content-type': output.contentType } });
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .runActWithOutput({ actId, disableBodyParser: true })
+            .then(response => expect(response).to.be.eql(output));
     });
 
     it('getRun() works', () => {
