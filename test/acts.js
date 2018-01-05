@@ -295,6 +295,37 @@ describe('Act method', () => {
             .then(response => expect(response).to.be.eql(run));
     });
 
+    it('runActWithOuput() works', () => {
+        const actId = 'some-id';
+        const token = 'some-token';
+        const contentType = 'some-type';
+        const body = 'some-body';
+        const apiResponse = 'some-output';
+
+        const waitForFinish = 120;
+        const timeout = 120;
+        const memory = 256;
+        const build = '1.2.0';
+        const outputRecordKey = 'my-output';
+
+        requestExpectCall({
+            method: 'POST',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
+            qs: { token, waitForFinish, timeout, memory, build, outputRecordKey },
+            headers: {
+                'Content-Type': contentType,
+            },
+            body,
+        }, apiResponse);
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .runActWithOutput({ actId, token, contentType, body, waitForFinish, timeout, memory, build, outputRecordKey })
+            .then(response => expect(response).to.be.eql(apiResponse));
+    });
+
     it('getRun() works', () => {
         const actId = 'some-act-id';
         const runId = 'some-run-id';
