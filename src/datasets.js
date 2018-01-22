@@ -2,7 +2,7 @@ import _ from 'underscore';
 import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody } from './utils';
 
 /**
- * Sequential Stores
+ * Datasets
  * @memberOf ApifyClient
  * @description
  * ### Basic usage
@@ -13,29 +13,29 @@ import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseB
  *        userId: 'RWnGtczasdwP63Mak',
  *        token: 'f5J7XsdaKDyRywwuGGo9',
  * });
- * const sequentialStores = apifyClient.sequentialStores;
+ * const datasets = apifyClient.datasets;
  *
- * const store = await sequentialStores.getOrCreateStore({ storeName: 'my-store' });
- * apifyClient.setOptions({ storeId: store.id });
- * await sequentialStores.putRecord({
+ * const dataset = await datasets.getOrCreateDataset({ datasetName: 'my-dataset' });
+ * apifyClient.setOptions({ datasetId: dataset.id });
+ * await datasets.putRecord({
  *      data: { foo: 'bar' }
  * });
- * const records = await sequentialStores.getRecords();
- * await sequentialStores.deleteStore();
+ * const records = await datasets.getRecords();
+ * await datasets.deleteStore();
  * ```
  *
  * Every method can be used as either promise or with callback. If your Node version supports await/async then you can await promise result.
  * ```javascript
  * // Awaited promise
  * try {
- *      const records = await sequentialStores.getRecords();
+ *      const records = await datasets.getRecords();
  *      // Do something with the records ...
  * } catch (err) {
  *      // Do something with error ...
  * }
  *
  * // Promise
- * sequentialStores.getRecords()
+ * datasets.getRecords()
  * .then((records) => {
  *      // Do something with records ...
  * })
@@ -44,51 +44,51 @@ import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseB
  * });
  *
  * // Callback
- * sequentialStores.getRecords((err, records) => {
+ * datasets.getRecords((err, records) => {
  *      // Do something with error or records ...
  * });
  * ```
- * @namespace sequentialStores
+ * @namespace datasets
  */
 
-export const BASE_PATH = '/v2/sequential-stores';
+export const BASE_PATH = '/v2/datasets';
 export const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
 
 export default {
     /**
-     * Creates store of given name and returns it's object. If store with given name already exists then returns it's object.
+     * Creates dataset of given name and returns it's object. If data with given name already exists then returns it's object.
      *
-     * @memberof ApifyClient.sequentialStores
+     * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {String} options.storeName - Custom unique name to easily identify the store in the future.
+     * @param {String} options.datasetName - Custom unique name to easily identify the dataset in the future.
      * @param callback
-     * @returns {SequentialStore}
+     * @returns {Dataset}
      */
-    getOrCreateStore: (requestPromise, options) => {
-        const { baseUrl, token, storeName } = options;
+    getOrCreateDataset: (requestPromise, options) => {
+        const { baseUrl, token, datasetName } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(storeName, 'storeName', 'String');
+        checkParamOrThrow(datasetName, 'datasetName', 'String');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}`,
             json: true,
             method: 'POST',
-            qs: { name: storeName, token },
+            qs: { name: datasetName, token },
         })
             .then(pluckData);
     },
 
     /**
-     * Gets list of sequential stores.
+     * Gets list of datasets.
      * @descriptions By default, the objects are sorted by the createdAt field in ascending order,
-     * therefore you can use pagination to incrementally fetch all stores while new ones are still being created.
+     * therefore you can use pagination to incrementally fetch all datasets while new ones are still being created.
      * To sort them in descending order, use desc: 1 parameter.
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
-     * @memberof ApifyClient.sequentialStores
+     * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
      * @param options.token
@@ -98,7 +98,7 @@ export default {
      * @param callback
      * @returns {PaginationList}
      */
-    listStores: (requestPromise, options) => {
+    listDatasets: (requestPromise, options) => {
         const { baseUrl, token, offset, limit, desc, unnamed } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
@@ -125,23 +125,23 @@ export default {
     },
 
     /**
-     * Gets sequential store.
+     * Gets dataset.
      *
-     * @memberof ApifyClient.sequentialStores
+     * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Unique store Id
+     * @param {String} options.datasetId - Unique dataset Id
      * @param callback
-     * @returns {SequentialStore}
+     * @returns {Dataset}
      */
-    getStore: (requestPromise, options) => {
-        const { baseUrl, storeId } = options;
+    getDataset: (requestPromise, options) => {
+        const { baseUrl, datasetId } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(datasetId, 'datasetId', 'String');
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${storeId}`,
+            url: `${baseUrl}${BASE_PATH}/${datasetId}`,
             json: true,
             method: 'GET',
         })
@@ -150,35 +150,35 @@ export default {
     },
 
     /**
-     * Deletes sequential store.
+     * Deletes dataset.
      *
-     * @memberof ApifyClient.sequentialStores
+     * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Store Id
+     * @param {String} options.datasetId - Store Id
      * @param callback
      * @returns {*}
      */
-    deleteStore: (requestPromise, options) => {
-        const { baseUrl, storeId } = options;
+    deleteDataset: (requestPromise, options) => {
+        const { baseUrl, datasetId } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(datasetId, 'datasetId', 'String');
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${storeId}`,
+            url: `${baseUrl}${BASE_PATH}/${datasetId}`,
             json: true,
             method: 'DELETE',
         });
     },
 
     /**
-     * Gets records stored in the sequential store based based on the provided parameters
+     * Gets items in the dataset based based on the provided parameters
      *
-     * @memberof ApifyClient.sequentialStores
+     * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Unique store Id
+     * @param {String} options.datasetId - Unique dataset Id
      * @param {String} [options.format='json'] - Format of the records, possible values are: json, csv, xlsx, html, xml and rss.
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=100000] - Maximum number of array elements to return.
@@ -197,15 +197,16 @@ export default {
      * @param {String} [options.xmlRow] - Overrides default element name that wraps each page or page function result object in xml output.
      *                                    By default the element name is page or result based on value of simplified parameter.
      * @param callback
-     * @returns {SequentialStoreRecords}
+     * @returns {DatasetRecords}
      */
-    getRecords: (requestPromise, options) => {
+    getItems: (requestPromise, options) => {
         const {
             baseUrl,
-            storeId,
+            datasetId,
             offset,
             limit,
             fields,
+            omit,
             unwind,
             desc,
             bom,
@@ -217,10 +218,11 @@ export default {
         } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(datasetId, 'datasetId', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(fields, 'fields', 'Maybe Array');
+        checkParamOrThrow(omit, 'omit', 'Maybe Array');
         checkParamOrThrow(unwind, 'unwind', 'Maybe String');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
         checkParamOrThrow(bom, 'bom', 'Maybe Boolean');
@@ -230,7 +232,7 @@ export default {
         checkParamOrThrow(xmlRow, 'xmlRow', 'Maybe String');
 
         const requestOpts = {
-            url: `${baseUrl}${BASE_PATH}/${storeId}/records`,
+            url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,
             method: 'GET',
             qs: {},
             json: false,
@@ -240,7 +242,7 @@ export default {
         };
 
         const queryString = _.pick(options,
-            'format', 'fields', 'unwind', 'offset',
+            'format', 'fields', 'omit', 'unwind', 'offset',
             'limit', 'desc', 'attachment',
             'delimiter', 'bom', 'xmlRoot', 'xmlRow');
 
@@ -262,26 +264,26 @@ export default {
     },
 
     /**
-     * Saves the record into sequential store.
+     * Saves the record into dataset.
      *
-     * @memberof ApifyClient.sequentialStores
+     * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Unique store Id
-     * @param {Object} options.data - Object to store only objects that can be JSON.stringified are allowed
+     * @param {String} options.datasetId - Unique dataset Id
+     * @param {Object} options.data - Object to dataset only objects that can be JSON.stringified are allowed
      * @param callback
      * @returns {*}
      */
-    putRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, data } = options;
+    putItem: (requestPromise, options) => {
+        const { baseUrl, datasetId, data } = options;
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(datasetId, 'datasetId', 'String');
         checkParamOrThrow(data, 'data', 'Object');
 
         return gzipPromise(options.promise, JSON.stringify(data))
             .then((gzipedBody) => {
                 const requestOpts = {
-                    url: `${baseUrl}${BASE_PATH}/${storeId}/records`,
+                    url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,
                     method: 'POST',
                     body: gzipedBody,
                     json: false,

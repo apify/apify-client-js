@@ -3,7 +3,7 @@ import { requestPromise, REQUEST_PROMISE_OPTIONS } from './utils';
 import acts from './acts';
 import crawlers from './crawlers';
 import keyValueStores from './key_value_stores';
-import sequentialStores from './sequential_stores';
+import datasets from './datasets';
 import logs from './logs';
 import ApifyError, { INVALID_PARAMETER_ERROR_TYPE_V2 } from './apify_error';
 
@@ -41,7 +41,7 @@ const methodGroups = {
     acts,
     crawlers,
     keyValueStores,
-    sequentialStores,
+    datasets,
     logs,
 };
 
