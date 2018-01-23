@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
+import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseBody } from './utils';
 
 /**
  * Acts
@@ -300,6 +300,77 @@ export default {
         return requestPromise(opts)
             .then(response => JSON.parse(response))
             .then(pluckData);
+    },
+
+    /**
+     * Runs the latest build of given act and returns it's output.
+     * Act run must finish in 60 seconds otherwise an error is thrown.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param {String} options.actId - Act ID
+     * @param [options.token]
+     * @param {String|Buffer} [options.body] - Act input, passed as HTTP POST payload
+     * @param {String} [options.contentType] - Content type of act input e.g 'application/json'
+     * @param {Number} [options.timeout] - Timeout for the act run in seconds. Zero value means there is no timeout.
+     * @param {Number} [options.memory] - Amount of memory allocated for the act run, in megabytes.
+     * @param {String} [options.build] - Tag or number of the build to run (e.g. <code>latest</code> or <code>1.2.34</code>).
+     * @param {String} [options.outputRecordKey] - Key value store record key to be returned in response. Defaults to 'OUTPUT';
+     * @param {Boolean} [options.disableBodyParser] - If true then returned record doesn't get parsed based on content-type header
+     *                                                (as JSON for example).
+     * @param callback
+     * @returns {ActRun}
+     */
+    runActWithOutput: (requestPromise, options) => {
+        const { baseUrl, token, actId, contentType, body, timeout, memory, build, outputRecordKey, disableBodyParser } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+        checkParamOrThrow(contentType, 'contentType', 'Maybe String');
+        checkParamOrThrow(timeout, 'timeout', 'Maybe Number');
+        checkParamOrThrow(memory, 'memory', 'Maybe Number');
+        checkParamOrThrow(build, 'build', 'Maybe String');
+        checkParamOrThrow(outputRecordKey, 'outputRecordKey', 'Maybe String');
+        checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
+
+        const safeActId = replaceSlashWithTilde(actId);
+        const query = {};
+
+        if (timeout) query.timeout = timeout;
+        if (memory) query.memory = memory;
+        if (build) query.build = build;
+        if (token) query.token = token;
+        if (outputRecordKey) query.outputRecordKey = outputRecordKey;
+
+        const opts = {
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/run-with-output`,
+            method: 'POST',
+            qs: query,
+            resolveWithResponse: true,
+        };
+
+        if (contentType) opts.headers = { 'Content-Type': contentType };
+
+        if (body) {
+            checkParamOrThrow(body, 'body', 'Buffer | String');
+
+            opts.body = body;
+        }
+
+        const parseResponse = (response) => {
+            const responseBody = response.body;
+            const responseContentType = response.headers['content-type'];
+
+            return {
+                contentType: responseContentType,
+                body: disableBodyParser ? responseBody : parseBody(responseBody, responseContentType),
+            };
+        };
+
+        return requestPromise(opts)
+            .then(parseResponse);
     },
 
     /**

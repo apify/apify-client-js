@@ -118,9 +118,10 @@ export const requestPromise = (options, iteration = 0) => {
                 return setTimeout(repeatCall, waitMillis);
             }
 
-            // For status codes 300-499 except RATE_LIMIT_EXCEEDED_STATUS_CODE we immediately rejects the promise
+            // For status codes 400-499 except RATE_LIMIT_EXCEEDED_STATUS_CODE we immediately rejects the promise
             // since it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
-            if (statusCode >= 300) return reject(newApifyErrorFromResponse(statusCode, body, isApiV1));
+            // NOTE: 3xx redirects are used by kv-store to redirect client to S3
+            if (statusCode >= 400) return reject(newApifyErrorFromResponse(statusCode, body, isApiV1));
 
             if (resolveWithResponse) resolve(response);
             else resolve(body);
