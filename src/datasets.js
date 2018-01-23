@@ -17,10 +17,10 @@ import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseB
  *
  * const dataset = await datasets.getOrCreateDataset({ datasetName: 'my-dataset' });
  * apifyClient.setOptions({ datasetId: dataset.id });
- * await datasets.putRecord({
+ * await datasets.putItem({
  *      data: { foo: 'bar' }
  * });
- * const records = await datasets.getRecords();
+ * const items = await datasets.getItems();
  * await datasets.deleteStore();
  * ```
  *
@@ -28,24 +28,24 @@ import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseB
  * ```javascript
  * // Awaited promise
  * try {
- *      const records = await datasets.getRecords();
- *      // Do something with the records ...
+ *      const items = await datasets.getItems();
+ *      // Do something with the items ...
  * } catch (err) {
  *      // Do something with error ...
  * }
  *
  * // Promise
- * datasets.getRecords()
- * .then((records) => {
- *      // Do something with records ...
+ * datasets.getItems()
+ * .then((items) => {
+ *      // Do something with items ...
  * })
  * .catch((err) => {
  *      // Do something with error ...
  * });
  *
  * // Callback
- * datasets.getRecords((err, records) => {
- *      // Do something with error or records ...
+ * datasets.getItems((err, items) => {
+ *      // Do something with error or items ...
  * });
  * ```
  * @namespace datasets
@@ -179,7 +179,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param {String} options.datasetId - Unique dataset Id
-     * @param {String} [options.format='json'] - Format of the records, possible values are: json, csv, xlsx, html, xml and rss.
+     * @param {String} [options.format='json'] - Format of the items, possible values are: json, csv, xlsx, html, xml and rss.
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=100000] - Maximum number of array elements to return.
      * @param {Number} [options.desc] - If 1 then the objects are sorted by createdAt in descending order.
@@ -197,7 +197,7 @@ export default {
      * @param {String} [options.xmlRow] - Overrides default element name that wraps each page or page function result object in xml output.
      *                                    By default the element name is page or result based on value of simplified parameter.
      * @param callback
-     * @returns {DatasetRecords}
+     * @returns {DatasetItems}
      */
     getItems: (requestPromise, options) => {
         const {
@@ -264,7 +264,7 @@ export default {
     },
 
     /**
-     * Saves the record into dataset.
+     * Saves the item into dataset.
      *
      * @memberof ApifyClient.datasets
      * @instance
