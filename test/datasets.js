@@ -1,93 +1,93 @@
 import { expect } from 'chai';
 import { gzipSync } from 'zlib';
 import ApifyClient from '../build';
-import { BASE_PATH } from '../build/sequential_stores';
+import { BASE_PATH } from '../build/datasets';
 import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
 
 const BASE_URL = 'http://example.com/something';
 const OPTIONS = { baseUrl: BASE_URL };
 
-describe('Sequential store', () => {
+describe('Dataset', () => {
     before(mockRequest);
     after(restoreRequest);
 
     describe('indentification', () => {
-        it('should work with storeId in default params', () => {
-            const storeId = 'some-id-2';
+        it('should work with datasetId in default params', () => {
+            const datasetId = 'some-id-2';
 
             requestExpectCall({
                 json: true,
                 method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}`,
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
             }, {
                 data: {
-                    id: storeId,
+                    id: datasetId,
                 },
             });
 
-            const apifyClient = new ApifyClient(Object.assign({}, OPTIONS, { storeId }));
+            const apifyClient = new ApifyClient(Object.assign({}, OPTIONS, { datasetId }));
 
             return apifyClient
-                .sequentialStores
-                .getStore()
-                .then((store) => {
-                    expect(store.id).to.be.eql(storeId);
+                .datasets
+                .getDataset()
+                .then((dataset) => {
+                    expect(dataset.id).to.be.eql(datasetId);
                 });
         });
 
-        it('should work with storeId in method call params', () => {
-            const storeId = 'some-id-3';
+        it('should work with datasetId in method call params', () => {
+            const datasetId = 'some-id-3';
 
             requestExpectCall({
                 json: true,
                 method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}`,
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
             }, {
                 data: {
-                    id: storeId,
+                    id: datasetId,
                 },
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
-                .sequentialStores
-                .getStore({ storeId })
-                .then((store) => {
-                    expect(store.id).to.be.eql(storeId);
+                .datasets
+                .getDataset({ datasetId })
+                .then((dataset) => {
+                    expect(dataset.id).to.be.eql(datasetId);
                 });
         });
 
-        it('should work with token and storeName', () => {
-            const storeId = 'some-id-4';
-            const storeOptions = {
+        it('should work with token and datasetName', () => {
+            const datasetId = 'some-id-4';
+            const datasetOptions = {
                 token: 'sometoken',
-                storeName: 'somename',
+                datasetName: 'somename',
             };
 
             requestExpectCall({
                 json: true,
                 method: 'POST',
                 url: `${BASE_URL}${BASE_PATH}`,
-                qs: { name: storeOptions.storeName, token: storeOptions.token },
+                qs: { name: datasetOptions.datasetName, token: datasetOptions.token },
             }, {
                 data: {
-                    id: storeId,
+                    id: datasetId,
                 },
             });
 
-            const apifyClient = new ApifyClient(Object.assign({}, OPTIONS, { storeId }));
+            const apifyClient = new ApifyClient(Object.assign({}, OPTIONS, { datasetId }));
 
             return apifyClient
-                .sequentialStores
-                .getOrCreateStore(storeOptions)
-                .then(store => expect(store.id).to.be.eql(storeId));
+                .datasets
+                .getOrCreateDataset(datasetOptions)
+                .then(dataset => expect(dataset.id).to.be.eql(datasetId));
         });
     });
 
     describe('REST method', () => {
-        it('listStores() works', () => {
-            const storeId = 'some-id';
+        it('listDatasets() works', () => {
+            const datasetId = 'some-id';
             const callOptions = {
                 token: 'sometoken',
                 limit: 5,
@@ -123,73 +123,73 @@ describe('Sequential store', () => {
                 data: expected,
             });
 
-            const apifyClient = new ApifyClient(Object.assign({}, OPTIONS, { storeId }));
+            const apifyClient = new ApifyClient(Object.assign({}, OPTIONS, { datasetId }));
 
             return apifyClient
-                .sequentialStores
-                .listStores(callOptions)
+                .datasets
+                .listDatasets(callOptions)
                 .then(response => expect(response).to.be.eql(expected));
         });
 
-        it('getStore() works', () => {
-            const storeId = 'some-id';
+        it('getDataset() works', () => {
+            const datasetId = 'some-id';
             const expected = { _id: 'some-id', aaa: 'bbb' };
 
             requestExpectCall({
                 json: true,
                 method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}`,
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
             }, { data: expected });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
-                .sequentialStores
-                .getStore({ storeId })
+                .datasets
+                .getDataset({ datasetId })
                 .then(given => expect(given).to.be.eql(expected));
         });
 
-        it('getStore() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
-            const storeId = 'some-id';
+        it('getDataset() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
+            const datasetId = 'some-id';
 
             requestExpectErrorCall({
                 json: true,
                 method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}`,
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
             }, false, 404);
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
-                .sequentialStores
-                .getStore({ storeId })
+                .datasets
+                .getDataset({ datasetId })
                 .then(given => expect(given).to.be.eql(null));
         });
 
-        it('deleteStore() works', () => {
-            const storeId = 'some-id';
+        it('deleteDataset() works', () => {
+            const datasetId = 'some-id';
 
             requestExpectCall({
                 json: true,
                 method: 'DELETE',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}`,
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
-                .sequentialStores
-                .deleteStore({ storeId });
+                .datasets
+                .deleteDataset({ datasetId });
         });
 
-        it('getRecords() works', () => {
-            const storeId = 'some-id';
+        it('getItems() works', () => {
+            const datasetId = 'some-id';
             const expected = [];
 
             requestExpectCall({
                 json: false,
                 method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}/records`,
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
                 gzip: true,
                 qs: {},
                 resolveWithResponse: true,
@@ -199,13 +199,13 @@ describe('Sequential store', () => {
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
-                .sequentialStores
-                .getRecords({ storeId })
+                .datasets
+                .getItems({ datasetId })
                 .then(given => expect(given).to.be.eql(expected));
         });
 
-        it('getRecords() parses JSON', () => {
-            const storeId = 'some-id';
+        it('getItems() parses JSON', () => {
+            const datasetId = 'some-id';
             const body = JSON.stringify([{ a: 'foo', b: ['bar1', 'bar2'] }]);
             const contentType = 'application/json';
             const expected = JSON.parse(body);
@@ -213,7 +213,7 @@ describe('Sequential store', () => {
             requestExpectCall({
                 json: false,
                 method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}/records`,
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
                 gzip: true,
                 qs: {},
                 resolveWithResponse: true,
@@ -223,15 +223,15 @@ describe('Sequential store', () => {
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
-                .sequentialStores
-                .getRecords({ storeId })
+                .datasets
+                .getItems({ datasetId })
                 .then((given) => {
                     expect(given).to.be.eql(expected);
                 });
         });
 
-        it('getRecords() doesn\'t parse application/json when disableBodyParser = true', () => {
-            const storeId = 'some-id';
+        it('getItems() doesn\'t parse application/json when disableBodyParser = true', () => {
+            const datasetId = 'some-id';
             const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });
             const contentType = 'application/json';
             const expected = body;
@@ -239,7 +239,7 @@ describe('Sequential store', () => {
             requestExpectCall({
                 json: false,
                 method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}/records`,
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
                 gzip: true,
                 qs: {},
                 resolveWithResponse: true,
@@ -249,15 +249,15 @@ describe('Sequential store', () => {
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
-                .sequentialStores
-                .getRecords({ storeId, disableBodyParser: true })
+                .datasets
+                .getItems({ datasetId, disableBodyParser: true })
                 .then((given) => {
                     expect(given).to.be.eql(expected);
                 });
         });
 
-        it('putRecord() works', () => {
-            const storeId = 'some-id';
+        it('putItem() works', () => {
+            const datasetId = 'some-id';
             const contentType = 'application/json; charset=utf-8';
             const data = { someData: 'someValue' };
 
@@ -269,14 +269,14 @@ describe('Sequential store', () => {
                 },
                 json: false,
                 method: 'POST',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}/records`,
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
-                .sequentialStores
-                .putRecord({ storeId, data });
+                .datasets
+                .putItem({ datasetId, data });
         });
     });
 });
