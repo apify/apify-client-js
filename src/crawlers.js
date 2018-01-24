@@ -486,7 +486,8 @@ export default {
      * @param options.userId
      * @param options.token
      * @param {String} options.crawlerId - Crawler ID or crawler custom ID
-     * @param {String} options.status - Filter for the execution status.
+     * @param {String} options.status - Filter for the execution status. This field is mandatory, it must have on of the following values:
+     * `RUNNING`, `SUCCEEDED`, `STOPPED`, `TIMEOUT` or `FAILED`.
      * @param {String} [options.format='json'] - Format of the results, possible values are: json, jsonl, csv, html, xml and rss.
      * @param {Number} [options.simplified] - If 1 then the results will be returned in a simplified form without crawling metadata.
      * @param {Number} [options.offset=0] - Number of Request objects that should be skipped at the start.
