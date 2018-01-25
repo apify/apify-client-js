@@ -264,7 +264,7 @@ export default {
     },
 
     /**
-     * Saves the item into dataset.
+     * Saves the items into dataset.
      *
      * @memberof ApifyClient.datasets
      * @instance
@@ -274,7 +274,7 @@ export default {
      * @param callback
      * @returns {*}
      */
-    putItem: (requestPromise, options) => {
+    putItems: (requestPromise, options) => {
         const { baseUrl, datasetId, data } = options;
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(datasetId, 'datasetId', 'String');
