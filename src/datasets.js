@@ -270,7 +270,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param {String} options.datasetId - Unique dataset Id
-     * @param {Object} options.data - Object to dataset only objects that can be JSON.stringified are allowed
+     * @param {Object | Array} options.data - Object or Array of objects, only objects that can be JSON.stringified are allowed
      * @param callback
      * @returns {*}
      */
@@ -278,7 +278,7 @@ export default {
         const { baseUrl, datasetId, data } = options;
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(datasetId, 'datasetId', 'String');
-        checkParamOrThrow(data, 'data', 'Object');
+        checkParamOrThrow(data, 'data', 'Object | Array');
 
         return gzipPromise(options.promise, JSON.stringify(data))
             .then((gzipedBody) => {
