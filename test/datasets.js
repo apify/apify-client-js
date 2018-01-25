@@ -256,7 +256,7 @@ describe('Dataset', () => {
                 });
         });
 
-        it('putItem() works', () => {
+        it('putItems() works with object', () => {
             const datasetId = 'some-id';
             const contentType = 'application/json; charset=utf-8';
             const data = { someData: 'someValue' };
@@ -276,7 +276,29 @@ describe('Dataset', () => {
 
             return apifyClient
                 .datasets
-                .putItem({ datasetId, data });
+                .putItems({ datasetId, data });
+        });
+        it('putItems() works with array', () => {
+            const datasetId = 'some-id';
+            const contentType = 'application/json; charset=utf-8';
+            const data = [{ someData: 'someValue' }, { someData: 'someValue' }];
+
+            requestExpectCall({
+                body: gzipSync(JSON.stringify(data)),
+                headers: {
+                    'Content-Type': contentType,
+                    'Content-Encoding': 'gzip',
+                },
+                json: false,
+                method: 'POST',
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
+            });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .datasets
+                .putItems({ datasetId, data });
         });
     });
 });
