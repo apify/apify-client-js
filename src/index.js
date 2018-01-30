@@ -44,7 +44,6 @@ const methodGroups = {
 /**
  * @type package
  * @class ApifyClient
- * @prefix <h1>JavaScript API client</h1>
  * @param {Object} [options] - Global options for ApifyClient. You can globally configure here any method option from any namespace. For example
  *                             if you are working with just one crawler then you can preset it's crawlerId here instead of passing it to each
  *                             crawler's method.
