@@ -7,10 +7,6 @@ import datasets from './datasets';
 import logs from './logs';
 import ApifyError, { INVALID_PARAMETER_ERROR_TYPE_V2 } from './apify_error';
 
-/**
- * Apify Client for JavaScript
- */
-
 /** @ignore */
 const getDefaultOptions = () => ({
     baseUrl: 'https://api.apify.com',
@@ -46,8 +42,9 @@ const methodGroups = {
 };
 
 /**
- * Creates ApifyClient
+ * @type package
  * @class ApifyClient
+ * @prefix <h1>JavaScript API client</h1>
  * @param {Object} [options] - Global options for ApifyClient. You can globally configure here any method option from any namespace. For example
  *                             if you are working with just one crawler then you can preset it's crawlerId here instead of passing it to each
  *                             crawler's method.
@@ -60,12 +57,10 @@ const methodGroups = {
  * @description Basic usage of ApifyClient with Bluebird promise:
  * ```javascript
  * const ApifyClient = require('apify-client');
- * const Promise = require("bluebird");;
  *
  * const apifyClient = new ApifyClient({
  *   userId: 'jklnDMNKLekk',
  *   token: 'SNjkeiuoeD443lpod68dk',
- *   promise: Promise,
  * });
  * ```
  */
