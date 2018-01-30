@@ -86,10 +86,12 @@ export default {
 
     /**
      * Gets list of key-value stores.
-     * @descriptions By default, the objects are sorted by the createdAt field in ascending order,
+     *
+     * By default, the objects are sorted by the createdAt field in ascending order,
      * therefore you can use pagination to incrementally fetch all stores while new ones are still being created.
      * To sort them in descending order, use desc: 1 parameter.
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
+     *
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param {Object} options
@@ -307,7 +309,9 @@ export default {
 
     /**
      * Returns an array containing objects representing keys in given store.
-     * @description You can paginated using exclusiveStartKey and limit parameters.
+     *
+     * You can paginated using exclusiveStartKey and limit parameters.
+     *
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param requestPromise

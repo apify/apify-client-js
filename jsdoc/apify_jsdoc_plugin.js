@@ -1,4 +1,3 @@
-
 const APIFY_GENERIC_PARAMS = {
     // Generic params
     'options.userId': {
@@ -13,7 +12,7 @@ const APIFY_GENERIC_PARAMS = {
             names: ['String'],
         },
     },
-    'callback': {
+    callback: {
         optional: true,
         description: '<p>Callback function</p>',
         type: {
@@ -22,9 +21,8 @@ const APIFY_GENERIC_PARAMS = {
     },
 };
 
-
 exports.handlers = {
-    processingComplete:(evn) => {
+    processingComplete: (evn) => {
         evn.doclets.forEach((doclet) => {
             // adds params to generic functions parameters
             if (!doclet.undocumented && doclet.params) {

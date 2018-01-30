@@ -203,10 +203,13 @@ export default {
 
     /**
      * Gets list of act runs.
-     * @descriptions By default, the objects are sorted by the startedAt field in ascending order,
+     *
+     * By default, the objects are sorted by the startedAt field in ascending order,
      * therefore you can use pagination to incrementally fetch all builds while new ones are still being created.
      * To sort them in descending order, use desc: 1 parameter.
+     *
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
+     *
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
@@ -343,10 +346,13 @@ export default {
 
     /**
      * Gets list of act builds.
-     * @descriptions By default, the objects are sorted by the startedAt field in ascending order,
+     *
+     * By default, the objects are sorted by the startedAt field in ascending order,
      * therefore you can use pagination to incrementally fetch all builds while new ones are still being created.
      * To sort them in descending order, use desc: 1 parameter.
+     *
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
+     *
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options

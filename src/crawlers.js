@@ -331,10 +331,10 @@ export default {
     /**
      * Gets a list of executions of a specific crawler.
      *
+     * Optionally, you can use status parameter to filter the list to only contain executions with a specific
+     * status (for example, status 'RUNNING' will only return executions that are still running).
+     *
      * @memberof ApifyClient.crawlers
-     * @descriptions Gets a list of executions of a specific crawler. Optionally,
-     * you can use status parameter to filter the list to only contain executions with a specific status
-     * (for example, status 'RUNNING' will only return executions that are still running).
      * @instance
      * @param {Object} options
      * @param options.userId
@@ -391,8 +391,9 @@ export default {
 
     /**
      * Gets information about the last execution of a specific crawler.
-     * @description Gets information about the last execution of a specific crawler.
+     *
      * Optionally, you can use status parameter to only get the last execution with a specific status.
+     *
      * @memberof ApifyClient.crawlers
      * @instance
      * @param {Object} options

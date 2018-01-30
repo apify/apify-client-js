@@ -15,11 +15,22 @@ import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseB
  * });
  * const datasets = apifyClient.datasets;
  *
- * const dataset = await datasets.getOrCreateDataset({ datasetName: 'my-dataset' });
+ * // Get dataset with name 'my-dataset' and set it as default
+ * // to be used in following commands.
+ * const dataset = await datasets.getOrCreateDataset({
+ *     datasetName: 'my-dataset',
+ * });
  * apifyClient.setOptions({ datasetId: dataset.id });
+ *
+ * // Save some object and array of objects to dataset.
  * await datasets.putItem({
  *      data: { foo: 'bar' }
  * });
+ * await datasets.putItem({
+ *      data: [{ foo: 'hotel' }, { foo: 'restaurant' }],
+ * });
+ *
+ * // Get items from dataset and delete it.
  * const items = await datasets.getItems();
  * await datasets.deleteStore();
  * ```
@@ -83,11 +94,13 @@ export default {
     },
 
     /**
-     * Gets list of datasets.
-     * @descriptions By default, the objects are sorted by the createdAt field in ascending order,
+     * Returns a list of datasets owned by a user.
+     *
+     * By default, the objects are sorted by the createdAt field in ascending order,
      * therefore you can use pagination to incrementally fetch all datasets while new ones are still being created.
      * To sort them in descending order, use desc: 1 parameter.
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
+     *
      * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
@@ -125,7 +138,7 @@ export default {
     },
 
     /**
-     * Gets dataset.
+     * Returns given dataset.
      *
      * @memberof ApifyClient.datasets
      * @instance
@@ -150,7 +163,7 @@ export default {
     },
 
     /**
-     * Deletes dataset.
+     * Deletes given dataset.
      *
      * @memberof ApifyClient.datasets
      * @instance
@@ -173,7 +186,7 @@ export default {
     },
 
     /**
-     * Gets items in the dataset based based on the provided parameters
+     * Returns items in the dataset based on the provided parameters
      *
      * @memberof ApifyClient.datasets
      * @instance
@@ -264,7 +277,7 @@ export default {
     },
 
     /**
-     * Saves the items into dataset.
+     * Saves the object or an array of objects into dataset.
      *
      * @memberof ApifyClient.datasets
      * @instance
