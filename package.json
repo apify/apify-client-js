@@ -1,6 +1,6 @@
 {
   "name": "apify-client",
-  "version": "0.1.67",
+  "version": "0.1.68",
   "description": "Apify API client for JavaScript",
   "main": "build/index.js",
   "keywords": [
@@ -66,7 +66,7 @@
     "isparta": "^4.0.0",
     "jsdoc": "^3.4.3",
     "jsdoc-export-default-interop": "^0.3.1",
-    "apify-jsdoc-template": "github:Apifier/apify-jsdoc-template",
+    "apify-jsdoc-template": "github:apifytech/apify-jsdoc-template",
     "mocha": "^4.0.1",
     "sinon": "^4.1.2"
   }
