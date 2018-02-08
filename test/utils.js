@@ -2,6 +2,7 @@ import sinon from 'sinon';
 import request from 'request';
 import { gunzipSync } from 'zlib';
 import { expect } from 'chai';
+import _ from 'underscore';
 import ApifyError, {
     APIFY_ERROR_NAME,
     REQUEST_FAILED_ERROR_TYPE_V1,
@@ -417,6 +418,8 @@ describe('utils.requestPromise()', () => {
 
 describe('utils.checkParamOrThrow()', () => {
     it('works when type is correct', () => {
+        function aaa() {}
+
         utils.checkParamOrThrow(2, 'paramName1', 'Number');
         utils.checkParamOrThrow(2, 'paramName2', 'Maybe Number');
         utils.checkParamOrThrow(null, 'paramName3', 'Maybe Number');
@@ -428,6 +431,12 @@ describe('utils.checkParamOrThrow()', () => {
         utils.checkParamOrThrow(null, 'paramName8', 'Maybe Buffer|String');
         utils.checkParamOrThrow(new Buffer(120), 'paramName8', 'Maybe Buffer|String');
         utils.checkParamOrThrow('aaa', 'paramName9', 'Maybe Buffer|String');
+        utils.checkParamOrThrow(() => {}, 'paramName10', 'Function');
+        utils.checkParamOrThrow(aaa, 'paramName11', 'Function');
+        utils.checkParamOrThrow(null, 'paramName12', 'Maybe Function|String');
+        utils.checkParamOrThrow(null, 'paramName13', 'Maybe Function');
+        utils.checkParamOrThrow(_.isFunction, 'paramName14', 'Function');
+        utils.checkParamOrThrow(() => {}, 'paramName15', 'Function');
     });
 
     it('throws correct error', () => {
@@ -446,6 +455,9 @@ describe('utils.checkParamOrThrow()', () => {
         expect(
             () => utils.checkParamOrThrow(new Buffer(120), 'paramName14', 'String'),
         ).to.throw('Parameter "paramName14" of type String must be provided');
+        expect(
+            () => utils.checkParamOrThrow(new Buffer(120), 'paramName15', 'Function'),
+        ).to.throw('Parameter "paramName15" of type Function must be provided');
     });
 });
 

@@ -132,6 +132,8 @@ export const requestPromise = (options, iteration = 0) => {
  * Checks that given parameter is of given type and throws ApifyError.
  * If errorMessage is not provided then error message is created from name and type of param.
  *
+ * TODO: move this into apify-shared along with an ApifyError
+ *
  * @param {String} value - user entered value of that parameter
  * @param {String} name - parameter name (crawlerId for options.crawlerId)
  * @param {String} type - "String", "Number", ... (see ee: https://github.com/gkz/type-check)
@@ -146,8 +148,10 @@ export const checkParamOrThrow = (value, name, type, errorMessage, isApiV1) => {
 
     // This is workaround since Buffer doesn't seem to be possible to define using options.customTypes.
     const allowsBuffer = allowedTypes.filter(item => item.type === 'Buffer').length;
+    const allowsFunction = allowedTypes.filter(item => item.type === 'Function').length;
 
     if (allowsBuffer && Buffer.isBuffer(value)) return;
+    if (allowsFunction && _.isFunction(value)) return;
 
     // This will ignore Buffer type.
     if (!parsedTypeCheck(allowedTypes, value)) {
