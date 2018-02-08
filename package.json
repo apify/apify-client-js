@@ -1,6 +1,6 @@
 {
   "name": "apify-client",
-  "version": "0.1.66",
+  "version": "0.1.68",
   "description": "Apify API client for JavaScript",
   "main": "build/index.js",
   "keywords": [
@@ -22,12 +22,12 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/apifier/apify-client-js"
+    "url": "git+https://github.com/apifytech/apify-client-js"
   },
   "bugs": {
-    "url": "https://github.com/apifier/apify-client-js/issues"
+    "url": "https://github.com/apifytech/apify-client-js/issues"
   },
-  "homepage": "https://github.com/apifier/apify-client-js",
+  "homepage": "https://github.com/apifytech/apify-client-js",
   "files": [
     "build"
   ],
@@ -66,7 +66,7 @@
     "isparta": "^4.0.0",
     "jsdoc": "^3.4.3",
     "jsdoc-export-default-interop": "^0.3.1",
-    "apify-jsdoc-template": "github:Apifier/apify-jsdoc-template",
+    "apify-jsdoc-template": "github:apifytech/apify-jsdoc-template",
     "mocha": "^4.0.1",
     "sinon": "^4.1.2"
   }
