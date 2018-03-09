@@ -226,6 +226,13 @@ describe('Dataset', () => {
                 limit: 1,
                 items: [{ test: 'value' }],
             };
+            const headers = {
+                'content-type': 'application/json; chartset=utf-8',
+                'x-apify-pagination-total': '1',
+                'x-apify-pagination-offset': '1',
+                'x-apify-pagination-count': '1',
+                'x-apify-pagination-limit': '1',
+            };
 
             requestExpectCall({
                 json: false,
@@ -235,14 +242,7 @@ describe('Dataset', () => {
                 qs: { limit: 1, offset: 1 },
                 resolveWithResponse: true,
                 encoding: null,
-            }, JSON.stringify(expected.items), { headers: {
-                    'content-type': 'application/json; chartset=utf-8',
-                    'x-apify-pagination-total': '1',
-                    'x-apify-pagination-offset': '1',
-                    'x-apify-pagination-count': '1',
-                    'x-apify-pagination-limit': '1',
-                }
-            });
+            }, JSON.stringify(expected.items), { headers });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
@@ -263,6 +263,13 @@ describe('Dataset', () => {
                 limit: 100000,
                 items: JSON.parse(body),
             };
+            const headers = {
+                'content-type': contentType,
+                'x-apify-pagination-total': '1',
+                'x-apify-pagination-offset': '0',
+                'x-apify-pagination-count': '1',
+                'x-apify-pagination-limit': '100000',
+            };
 
             requestExpectCall({
                 json: false,
@@ -272,14 +279,7 @@ describe('Dataset', () => {
                 qs: {},
                 resolveWithResponse: true,
                 encoding: null,
-            }, body, { headers: {
-                    'content-type': contentType,
-                    'x-apify-pagination-total': '1',
-                    'x-apify-pagination-offset': '0',
-                    'x-apify-pagination-count': '1',
-                    'x-apify-pagination-limit': '100000',
-                },
-            });
+            }, body, { headers });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
@@ -302,6 +302,13 @@ describe('Dataset', () => {
                 limit: 100000,
                 items: body,
             };
+            const headers = {
+                'content-type': contentType,
+                'x-apify-pagination-total': '1',
+                'x-apify-pagination-offset': '0',
+                'x-apify-pagination-count': '1',
+                'x-apify-pagination-limit': '100000',
+            };
 
             requestExpectCall({
                 json: false,
@@ -311,14 +318,7 @@ describe('Dataset', () => {
                 qs: {},
                 resolveWithResponse: true,
                 encoding: null,
-            }, body, { headers: {
-                    'content-type': contentType,
-                    'x-apify-pagination-total': '1',
-                    'x-apify-pagination-offset': '0',
-                    'x-apify-pagination-count': '1',
-                    'x-apify-pagination-limit': '100000',
-                },
-            });
+            }, body, { headers });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
