@@ -199,3 +199,24 @@ export const parseBody = (body, contentType) => {
         default: return body;
     }
 };
+
+/**
+ * Wrap results from response and parse attributes from apifier headers.
+ */
+export function wrapArray(response) {
+    /**
+     * @typedef {Object} PaginationList
+     * @property {Array} items - List of returned objects
+     * @property {Number} total - Total number of object
+     * @property {Number} offset - Number of Request objects that was skipped at the start.
+     * @property {Number} count - Number of returned objects
+     * @property {Number} limit - Requested limit
+     */
+    return {
+        items: response.body,
+        total: parseInt(response.headers['x-apifier-pagination-total'] || response.headers['x-apify-pagination-total'], 10),
+        offset: parseInt(response.headers['x-apifier-pagination-offset'] || response.headers['x-apify-pagination-offset'], 10),
+        count: parseInt(response.headers['x-apifier-pagination-count'] || response.headers['x-apify-pagination-count'], 10),
+        limit: parseInt(response.headers['x-apifier-pagination-limit'] || response.headers['x-apify-pagination-limit'], 10),
+    };
+}

@@ -1,6 +1,6 @@
 import _ from 'underscore';
 
-import { checkParamOrThrow, catchNotFoundOrThrow } from './utils';
+import { checkParamOrThrow, catchNotFoundOrThrow, wrapArray } from './utils';
 
 /**
  * Crawlers
@@ -65,24 +65,6 @@ import { checkParamOrThrow, catchNotFoundOrThrow } from './utils';
  */
 
 export const BASE_PATH = '/v1';
-
-function wrapArray(response) {
-    /**
-     * @typedef {Object} PaginationList
-     * @property {Array} items - List of returned objects
-     * @property {Number} total - Total number of object
-     * @property {Number} offset - Number of Request objects that was skipped at the start.
-     * @property {Number} count - Number of returned objects
-     * @property {Number} limit - Requested limit
-     */
-    return {
-        items: response.body,
-        total: parseInt(response.headers['x-apifier-pagination-total'], 10),
-        offset: parseInt(response.headers['x-apifier-pagination-offset'], 10),
-        count: parseInt(response.headers['x-apifier-pagination-count'], 10),
-        limit: parseInt(response.headers['x-apifier-pagination-limit'], 10),
-    };
-}
 
 export default {
     /**

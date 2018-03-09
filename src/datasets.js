@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody } from './utils';
+import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody, wrapArray } from './utils';
 
 /**
  * Datasets
@@ -265,10 +265,10 @@ export default {
         }
 
         const parseResponse = (response) => {
-            const responseBody = response.body;
             const contentType = response.headers['content-type'];
-            const body = disableBodyParser ? responseBody : parseBody(responseBody, contentType);
-            return body;
+            const wrappedItems = wrapArray(response);
+            if (!disableBodyParser) wrappedItems.items = parseBody(wrappedItems.items, contentType);
+            return wrappedItems;
         };
 
         return requestPromise(requestOpts)
