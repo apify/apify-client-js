@@ -191,6 +191,13 @@ describe('Dataset', () => {
                 limit: 100000,
                 items: [],
             };
+            const headers = {
+                'content-type': 'application/json; chartset=utf-8',
+                'x-apify-pagination-total': '0',
+                'x-apify-pagination-offset': '0',
+                'x-apify-pagination-count': '0',
+                'x-apify-pagination-limit': '100000',
+            };
 
             requestExpectCall({
                 json: false,
@@ -200,14 +207,7 @@ describe('Dataset', () => {
                 qs: {},
                 resolveWithResponse: true,
                 encoding: null,
-            }, JSON.stringify(expected.items), { headers: {
-                    'content-type': 'application/json; chartset=utf-8',
-                    'x-apify-pagination-total': '0',
-                    'x-apify-pagination-offset': '0',
-                    'x-apify-pagination-count': '0',
-                    'x-apify-pagination-limit': '100000',
-                },
-            });
+            }, JSON.stringify(expected.items), { headers });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
