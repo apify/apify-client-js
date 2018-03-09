@@ -31,7 +31,8 @@ import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseB
  * });
  *
  * // Get items from dataset and delete it.
- * const items = await datasets.getItems();
+ * const paginationList = await datasets.getItems();
+ * const items = paginationList.items;
  * await datasets.deleteStore();
  * ```
  *
@@ -47,7 +48,8 @@ import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseB
  *
  * // Promise
  * datasets.getItems()
- * .then((items) => {
+ * .then((paginationList) => {
+ *      console.log(paginationList.items)
  *      // Do something with items ...
  * })
  * .catch((err) => {
@@ -55,7 +57,8 @@ import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseB
  * });
  *
  * // Callback
- * datasets.getItems((err, items) => {
+ * datasets.getItems((err, paginationList) => {
+ *      console.log(paginationList.items)
  *      // Do something with error or items ...
  * });
  * ```
