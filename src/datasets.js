@@ -210,7 +210,7 @@ export default {
      * @param {String} [options.xmlRow] - Overrides default element name that wraps each page or page function result object in xml output.
      *                                    By default the element name is page or result based on value of simplified parameter.
      * @param callback
-     * @returns {DatasetItems}
+     * @returns {PaginationList}
      */
     getItems: (requestPromise, options) => {
         const {
