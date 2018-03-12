@@ -212,6 +212,7 @@ export default {
      * @param {String} [options.xmlRoot] - Overrides default root element name of xml output. By default the root element is results.
      * @param {String} [options.xmlRow] - Overrides default element name that wraps each page or page function result object in xml output.
      *                                    By default the element name is page or result based on value of simplified parameter.
+     * @param {Number} [options.skipHeaderRow] - If set to `1` then header row in csv format is skipped.
      * @param callback
      * @returns {PaginationList}
      */
@@ -231,6 +232,7 @@ export default {
             disableBodyParser,
             xmlRoot,
             xmlRow,
+            skipHeaderRow,
         } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
@@ -246,6 +248,7 @@ export default {
         checkParamOrThrow(delimiter, 'delimiter', 'Maybe String');
         checkParamOrThrow(xmlRoot, 'xmlRoot', 'Maybe String');
         checkParamOrThrow(xmlRow, 'xmlRow', 'Maybe String');
+        checkParamOrThrow(skipHeaderRow, 'skipHeaderRow', 'Maybe Number');
 
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,
@@ -260,7 +263,7 @@ export default {
         const queryString = _.pick(options,
             'format', 'fields', 'omit', 'unwind', 'offset',
             'limit', 'desc', 'attachment',
-            'delimiter', 'bom', 'xmlRoot', 'xmlRow');
+            'delimiter', 'bom', 'xmlRoot', 'xmlRow', 'skipHeaderRow');
 
         if (!_.isEmpty(queryString)) {
             if (queryString && queryString.fields) queryString.fields = queryString.fields.join(',');
