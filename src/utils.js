@@ -3,6 +3,8 @@ import _ from 'underscore';
 import contentTypeParser from 'content-type';
 import { parseType, parsedTypeCheck } from 'type-check';
 import { gzip } from 'zlib';
+import os from 'os';
+import { version } from '../package.json';
 import ApifyError, {
     INVALID_PARAMETER_ERROR_TYPE_V1,
     INVALID_PARAMETER_ERROR_TYPE_V2,
@@ -80,6 +82,10 @@ export const requestPromise = (options, iteration = 0) => {
     const expBackOffMaxRepeats = options.expBackOffMaxRepeats || EXP_BACKOFF_MAX_REPEATS;
     const method = _.isString(options.method) ? options.method.toLowerCase() : options.method;
     const resolveWithResponse = options.resolveWithResponse;
+
+    // Add custom user-agent to all API calls
+    const userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version})`;
+    options.headers = Object.assign({}, options.headers, { 'User-Agent': userAgent });
 
     if (typeof PromisesDependency !== 'function') {
         throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, '"options.promise" parameter must be provided');
