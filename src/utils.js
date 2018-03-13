@@ -19,6 +19,7 @@ const EXP_BACKOFF_MILLIS = 500;
 const EXP_BACKOFF_MAX_REPEATS = 8; // 64s
 const CONTENT_TYPE_JSON = 'application/json';
 const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
+const CLIENT_USER_AGENT = `ApifyClient/${version} (${os.type()}; Node/${process.version})`;
 
 export const REQUEST_PROMISE_OPTIONS = ['promise', 'expBackOffMillis', 'expBackOffMaxRepeats'];
 
@@ -84,8 +85,7 @@ export const requestPromise = (options, iteration = 0) => {
     const resolveWithResponse = options.resolveWithResponse;
 
     // Add custom user-agent to all API calls
-    const userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version})`;
-    options.headers = Object.assign({}, options.headers, { 'User-Agent': userAgent });
+    options.headers = Object.assign({}, options.headers, { 'User-Agent': CLIENT_USER_AGENT });
 
     if (typeof PromisesDependency !== 'function') {
         throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, '"options.promise" parameter must be provided');
