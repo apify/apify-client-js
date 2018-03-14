@@ -314,7 +314,6 @@ export default {
      *
      * @memberof ApifyClient.keyValueStores
      * @instance
-     * @param requestPromise
      * @param {Object} options
      * @param {String} options.storeId - Unique store Id
      * @param {String} [options.exclusiveStartKey] - All keys up to this one (including) are skipped from the result.
