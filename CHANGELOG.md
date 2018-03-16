@@ -1,3 +1,7 @@
+xxxxxx
+===================
+- RequestQueue added
+
 0.1.69 / 2018-02-08
 ===================
 - Support for Function type added to utils.checkParamOrThrow()
