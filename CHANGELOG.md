@@ -1,7 +1,6 @@
 0.2.0 / 2018-03-09
 ==================
-- Method datasets.getItems() returns object PaginationList with items inside instead of plain items. It helps to iterate through all items using pagination.
-- This change is not backward compatible.
+- WARNING: Method datasets.getItems() now returns object PaginationList with items wrapped inside instead of plain items array. This helps to iterate through all the items using pagination. This change is not backward compatible!
 
 0.1.69 / 2018-02-08
 ===================
