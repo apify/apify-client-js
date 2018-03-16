@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import { gzipSync } from 'zlib';
 import ApifyClient from '../build';
 import { BASE_PATH } from '../build/request_queues';
 import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
