@@ -33,7 +33,7 @@ import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseB
  * // Get items from dataset and delete it.
  * const paginationList = await datasets.getItems();
  * const items = paginationList.items;
- * await datasets.deleteStore();
+ * await datasets.deleteDataset();
  * ```
  *
  * Every method can be used as either promise or with callback. If your Node version supports await/async then you can await promise result.
