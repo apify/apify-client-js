@@ -23,10 +23,10 @@ import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseB
  * apifyClient.setOptions({ datasetId: dataset.id });
  *
  * // Save some object and array of objects to dataset.
- * await datasets.putItem({
+ * await datasets.putItems({
  *      data: { foo: 'bar' }
  * });
- * await datasets.putItem({
+ * await datasets.putItems({
  *      data: [{ foo: 'hotel' }, { foo: 'restaurant' }],
  * });
  *
