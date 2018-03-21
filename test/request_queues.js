@@ -181,7 +181,7 @@ describe('Request queue', () => {
                 .deleteQueue({ queueId });
         });
 
-        it('addRequest() works without putInFront param', () => {
+        it('addRequest() works without forefront param', () => {
             const queueId = 'some-id';
             const request = { url: 'http://example.com' };
             const response = { foo: 'bar' };
@@ -191,7 +191,7 @@ describe('Request queue', () => {
                 method: 'POST',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests`,
                 body: request,
-                qs: { putInFront: false },
+                qs: { forefront: false },
             }, { data: response });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -202,7 +202,7 @@ describe('Request queue', () => {
                 .then(data => expect(data).to.be.eql(response));
         });
 
-        it('addRequest() works with putInFront param', () => {
+        it('addRequest() works with forefront param', () => {
             const queueId = 'some-id';
             const request = { url: 'http://example.com' };
             const response = { foo: 'bar' };
@@ -212,14 +212,14 @@ describe('Request queue', () => {
                 method: 'POST',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests`,
                 body: request,
-                qs: { putInFront: true },
+                qs: { forefront: true },
             }, { data: response });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .requestQueues
-                .addRequest({ queueId, request, putInFront: true })
+                .addRequest({ queueId, request, forefront: true })
                 .then(data => expect(data).to.be.eql(response));
         });
 
@@ -270,7 +270,7 @@ describe('Request queue', () => {
                 method: 'PUT',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
                 body: request,
-                qs: { putInFront: false },
+                qs: { forefront: false },
             }, { data: response });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -292,14 +292,14 @@ describe('Request queue', () => {
                 method: 'PUT',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
                 body: request,
-                qs: { putInFront: true },
+                qs: { forefront: true },
             }, { data: response });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .requestQueues
-                .updateRequest({ queueId, request, putInFront: true })
+                .updateRequest({ queueId, request, forefront: true })
                 .then(data => expect(data).to.be.eql(response));
         });
 

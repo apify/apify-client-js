@@ -206,25 +206,25 @@ export default {
      * @param {Object} options
      * @param {String} options.queueId - Unique queue ID
      * @param {Object} options.request - Request object
-     * @param {Object} [options.putInFront] - If yes then request will be enqueued to the begining of the queue
+     * @param {Object} [options.forefront] - If yes then request will be enqueued to the begining of the queue
      *                                        and to the end of the queue otherwise.
      * @param callback
      * @returns {RequestOperationInfo}
      */
     addRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, request, putInFront = false } = options;
+        const { baseUrl, queueId, request, forefront = false } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(request, 'request', 'Object');
-        checkParamOrThrow(putInFront, 'putInFront', 'Boolean');
+        checkParamOrThrow(forefront, 'forefront', 'Boolean');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests`,
             json: true,
             method: 'POST',
             body: request,
-            qs: { putInFront },
+            qs: { forefront },
         })
             .then(pluckData);
     },
@@ -290,13 +290,13 @@ export default {
      * @param {String} options.queueId - Unique queue ID
      * @param {Object} options.request - Request object
      * @param {String} [options.requestId] - Unique request ID
-     * @param {Object} [options.putInFront] - If yes then request will be enqueued to the begining of the queue
+     * @param {Object} [options.forefront] - If yes then request will be enqueued to the begining of the queue
      *                                        and to the end of the queue otherwise.
      * @param callback
      * @returns {RequestOperationInfo}
      */
     updateRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, requestId, request, putInFront = false } = options;
+        const { baseUrl, queueId, requestId, request, forefront = false } = options;
 
         checkParamOrThrow(request, 'request', 'Object');
 
@@ -305,14 +305,14 @@ export default {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(safeRequestId, 'requestId', 'String');
-        checkParamOrThrow(putInFront, 'putInFront', 'Boolean');
+        checkParamOrThrow(forefront, 'forefront', 'Boolean');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests/${safeRequestId}`,
             json: true,
             method: 'PUT',
             body: request,
-            qs: { putInFront },
+            qs: { forefront },
         })
             .then(pluckData);
     },
