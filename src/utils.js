@@ -3,6 +3,8 @@ import _ from 'underscore';
 import contentTypeParser from 'content-type';
 import { parseType, parsedTypeCheck } from 'type-check';
 import { gzip } from 'zlib';
+import os from 'os';
+import { version } from '../package.json';
 import ApifyError, {
     INVALID_PARAMETER_ERROR_TYPE_V1,
     INVALID_PARAMETER_ERROR_TYPE_V2,
@@ -17,6 +19,7 @@ const EXP_BACKOFF_MILLIS = 500;
 const EXP_BACKOFF_MAX_REPEATS = 8; // 64s
 const CONTENT_TYPE_JSON = 'application/json';
 const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
+const CLIENT_USER_AGENT = `ApifyClient/${version} (${os.type()}; Node/${process.version})`;
 
 export const REQUEST_PROMISE_OPTIONS = ['promise', 'expBackOffMillis', 'expBackOffMaxRepeats'];
 
@@ -80,6 +83,9 @@ export const requestPromise = (options, iteration = 0) => {
     const expBackOffMaxRepeats = options.expBackOffMaxRepeats || EXP_BACKOFF_MAX_REPEATS;
     const method = _.isString(options.method) ? options.method.toLowerCase() : options.method;
     const resolveWithResponse = options.resolveWithResponse;
+
+    // Add custom user-agent to all API calls
+    options.headers = Object.assign({}, options.headers, { 'User-Agent': CLIENT_USER_AGENT });
 
     if (typeof PromisesDependency !== 'function') {
         throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, '"options.promise" parameter must be provided');
@@ -199,3 +205,24 @@ export const parseBody = (body, contentType) => {
         default: return body;
     }
 };
+
+/**
+ * Wrap results from response and parse attributes from apifier headers.
+ */
+export function wrapArray(response) {
+    /**
+     * @typedef {Object} PaginationList
+     * @property {Array} items - List of returned objects
+     * @property {Number} total - Total number of object
+     * @property {Number} offset - Number of Request objects that was skipped at the start.
+     * @property {Number} count - Number of returned objects
+     * @property {Number} limit - Requested limit
+     */
+    return {
+        items: response.body,
+        total: parseInt(response.headers['x-apifier-pagination-total'] || response.headers['x-apify-pagination-total'], 10),
+        offset: parseInt(response.headers['x-apifier-pagination-offset'] || response.headers['x-apify-pagination-offset'], 10),
+        count: parseInt(response.headers['x-apifier-pagination-count'] || response.headers['x-apify-pagination-count'], 10),
+        limit: parseInt(response.headers['x-apifier-pagination-limit'] || response.headers['x-apify-pagination-limit'], 10),
+    };
+}

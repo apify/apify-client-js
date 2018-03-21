@@ -1,6 +1,6 @@
-xxxxxx
-===================
-- RequestQueue added
+0.2.0 / 2018-03-09
+==================
+- WARNING: Method datasets.getItems() now returns object PaginationList with items wrapped inside instead of plain items array. This helps to iterate through all the items using pagination. This change is not backward compatible!
 
 0.1.69 / 2018-02-08
 ===================

@@ -184,7 +184,20 @@ describe('Dataset', () => {
 
         it('getItems() works', () => {
             const datasetId = 'some-id';
-            const expected = [];
+            const expected = {
+                total: 0,
+                offset: 0,
+                count: 0,
+                limit: 100000,
+                items: [],
+            };
+            const headers = {
+                'content-type': 'application/json; chartset=utf-8',
+                'x-apify-pagination-total': '0',
+                'x-apify-pagination-offset': '0',
+                'x-apify-pagination-count': '0',
+                'x-apify-pagination-limit': '100000',
+            };
 
             requestExpectCall({
                 json: false,
@@ -194,7 +207,7 @@ describe('Dataset', () => {
                 qs: {},
                 resolveWithResponse: true,
                 encoding: null,
-            }, JSON.stringify(expected), { headers: { 'content-type': 'application/json; chartset=utf-8' } });
+            }, JSON.stringify(expected.items), { headers });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
@@ -204,11 +217,59 @@ describe('Dataset', () => {
                 .then(given => expect(given).to.be.eql(expected));
         });
 
+        it('getItems() limit and offset work', () => {
+            const datasetId = 'some-id';
+            const expected = {
+                total: 1,
+                offset: 1,
+                count: 1,
+                limit: 1,
+                items: [{ test: 'value' }],
+            };
+            const headers = {
+                'content-type': 'application/json; chartset=utf-8',
+                'x-apify-pagination-total': '1',
+                'x-apify-pagination-offset': '1',
+                'x-apify-pagination-count': '1',
+                'x-apify-pagination-limit': '1',
+            };
+
+            requestExpectCall({
+                json: false,
+                method: 'GET',
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
+                gzip: true,
+                qs: { limit: 1, offset: 1 },
+                resolveWithResponse: true,
+                encoding: null,
+            }, JSON.stringify(expected.items), { headers });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .datasets
+                .getItems({ datasetId, limit: 1, offset: 1 })
+                .then(given => expect(given).to.be.eql(expected));
+        });
+
         it('getItems() parses JSON', () => {
             const datasetId = 'some-id';
             const body = JSON.stringify([{ a: 'foo', b: ['bar1', 'bar2'] }]);
             const contentType = 'application/json';
-            const expected = JSON.parse(body);
+            const expected = {
+                total: 1,
+                offset: 0,
+                count: 1,
+                limit: 100000,
+                items: JSON.parse(body),
+            };
+            const headers = {
+                'content-type': contentType,
+                'x-apify-pagination-total': '1',
+                'x-apify-pagination-offset': '0',
+                'x-apify-pagination-count': '1',
+                'x-apify-pagination-limit': '100000',
+            };
 
             requestExpectCall({
                 json: false,
@@ -218,7 +279,7 @@ describe('Dataset', () => {
                 qs: {},
                 resolveWithResponse: true,
                 encoding: null,
-            }, body, { headers: { 'content-type': contentType } });
+            }, body, { headers });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
@@ -234,7 +295,20 @@ describe('Dataset', () => {
             const datasetId = 'some-id';
             const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });
             const contentType = 'application/json';
-            const expected = body;
+            const expected = {
+                total: 1,
+                offset: 0,
+                count: 1,
+                limit: 100000,
+                items: body,
+            };
+            const headers = {
+                'content-type': contentType,
+                'x-apify-pagination-total': '1',
+                'x-apify-pagination-offset': '0',
+                'x-apify-pagination-count': '1',
+                'x-apify-pagination-limit': '100000',
+            };
 
             requestExpectCall({
                 json: false,
@@ -244,7 +318,7 @@ describe('Dataset', () => {
                 qs: {},
                 resolveWithResponse: true,
                 encoding: null,
-            }, body, { headers: { 'content-type': contentType } });
+            }, body, { headers });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
