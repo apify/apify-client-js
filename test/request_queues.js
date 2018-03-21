@@ -303,7 +303,7 @@ describe('Request queue', () => {
                 .then(data => expect(data).to.be.eql(response));
         });
 
-        it('queryQueueHead() works', () => {
+        it('getHead() works', () => {
             const queueId = 'some-id';
             const response = { foo: 'bar' };
 
@@ -318,7 +318,7 @@ describe('Request queue', () => {
 
             return apifyClient
                 .requestQueues
-                .queryQueueHead({ queueId, limit: 5 })
+                .getHead({ queueId, limit: 5 })
                 .then(data => expect(data).to.be.eql(response));
         });
     });

@@ -1,6 +1,21 @@
 import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
 
 /**
+ * @typedef {Object} RequestOperationInfo
+ * @property {Boolean} wasAlreadyPresent Indicates if request was already present in the queue.
+ * @property {Boolean} wasAlreadyHandled Indicates if request was already marked as handled.
+ * @property {String} requestId The ID of the added request
+ */
+
+/**
+ * @typedef {Object} QueueHead
+ * @property {Number} limit Maximum number of items to be returned.
+ * @property {Array} items
+ */
+
+/**
+ * @ignore
+ *
  * RequestQueues
  * @memberOf ApifyClient
  * @description
@@ -183,14 +198,8 @@ export default {
     },
 
     /**
-     * @typedef {Object} AddedRequetInfo
-     * @property {Boolean} wasAlreadyPresent Indicates if request was already present in the queue.
-     * @property {Boolean} wasAlreadyHandled Indicates if request was already marked as handled.
-     * @property {String} id The ID of the added request
-     */
-
-    /**
-     * Adds request to queue.
+     * Adds request to the queue.
+     * If request is already in the queue then returns info about existing request.
      *
      * @memberof ApifyClient.requestQueues
      * @instance
@@ -200,7 +209,7 @@ export default {
      * @param {Object} [options.putInFront] - If yes then request will be enqueued to the begining of the queue
      *                                        and to the end of the queue otherwise.
      * @param callback
-     * @returns {AddedRequetInfo}
+     * @returns {RequestOperationInfo}
      */
     addRequest: (requestPromise, options) => {
         const { baseUrl, queueId, request, putInFront = false } = options;
@@ -221,7 +230,7 @@ export default {
     },
 
     /**
-     * Gets request queue.
+     * Gets request from the queue.
      *
      * @memberof ApifyClient.requestQueues
      * @instance
@@ -273,7 +282,7 @@ export default {
     },
 
     /**
-     * Updates request in queue.
+     * Updates request in the queue.
      *
      * @memberof ApifyClient.requestQueues
      * @instance
@@ -284,7 +293,7 @@ export default {
      * @param {Object} [options.putInFront] - If yes then request will be enqueued to the begining of the queue
      *                                        and to the end of the queue otherwise.
      * @param callback
-     * @returns {AddedRequetInfo}
+     * @returns {RequestOperationInfo}
      */
     updateRequest: (requestPromise, options) => {
         const { baseUrl, queueId, requestId, request, putInFront = false } = options;
@@ -317,9 +326,9 @@ export default {
      * @param {String} options.queueId - Unique queue ID
      * @param {Number} options.limit - Maximum number of the items to be returned.
      * @param callback
-     * @returns {Request}
+     * @returns {QueueHead}
      */
-    queryQueueHead: (requestPromise, options) => {
+    getHead: (requestPromise, options) => {
         const { baseUrl, queueId, limit } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
