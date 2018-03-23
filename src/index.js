@@ -5,6 +5,7 @@ import crawlers from './crawlers';
 import keyValueStores from './key_value_stores';
 import datasets from './datasets';
 import logs from './logs';
+import users from './users';
 import requestQueues from './request_queues';
 import ApifyError, { INVALID_PARAMETER_ERROR_TYPE_V2 } from './apify_error';
 
@@ -41,6 +42,7 @@ const methodGroups = {
     datasets,
     requestQueues,
     logs,
+    users,
 };
 
 /**
