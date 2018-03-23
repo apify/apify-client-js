@@ -33,7 +33,7 @@ describe('Users', () => {
     });
 
 
-    it('getAccount() works', () => {
+    it('getUser() with no userId, but with token works', () => {
         const token = 'my-token';
         const expected = {
             id: 'my-user-id',
@@ -55,7 +55,7 @@ describe('Users', () => {
 
         return apifyClient
             .users
-            .getAccount()
+            .getUser()
             .then(given => expect(given).to.be.eql(expected));
     });
 });
