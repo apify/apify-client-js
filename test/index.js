@@ -11,6 +11,7 @@ const APIFY_INSTANCE_KEYS = [
     'datasets',
     'requestQueues',
     'logs',
+    'users',
     'setOptions',
     'getOptions',
     'getDefaultOptions',

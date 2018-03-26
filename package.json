@@ -1,6 +1,6 @@
 {
   "name": "apify-client",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Apify API client for JavaScript",
   "main": "build/index.js",
   "keywords": [
@@ -42,6 +42,7 @@
     "lint": "npm run build && eslint src test"
   },
   "dependencies": {
+    "apify-shared": "0.0.23",
     "content-type": "^1.0.3",
     "request": "^2.81.0",
     "type-check": "^0.3.2",
