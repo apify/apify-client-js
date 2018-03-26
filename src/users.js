@@ -17,14 +17,14 @@ export default {
      * @returns {UserInfo}<
      */
     getUser: (requestPromise, options) => {
-        const { baseUrl, userId, token } = options;
+        const { baseUrl, userId = ME_USER_NAME_PLACEHOLDER, token } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(userId, 'userId', 'Maybe String');
+        checkParamOrThrow(userId, 'userId', 'String');
         checkParamOrThrow(token, 'token', 'Maybe String');
 
         const requestOpts = {
-            url: `${baseUrl}${BASE_PATH}/${userId || ME_USER_NAME_PLACEHOLDER}`,
+            url: `${baseUrl}${BASE_PATH}/${userId}`,
             json: true,
             method: 'GET',
         };
