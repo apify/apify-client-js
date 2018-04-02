@@ -1,5 +1,6 @@
 xxxxx / xxxxxxxxxx
 - Added `client.requestQueues` providing access to Apify Request Queue.
+- RequestQueue / KeyValueStore / Dataset now support `[username]~[store-name]` instead of store ID.
 
 0.2.6 / 2018-03-26
 ==================
