@@ -10,7 +10,7 @@ import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
 /**
  * @typedef {Object} QueueHead
  * @property {Number} limit Maximum number of items to be returned.
- * @property {Date} queueModifiedAt Maximum number of items to be returned.
+ * @property {Date} queueModifiedAt Date of the last modification of the queue.
  * @property {Array} items Array of objects containing `id`, `url`, `method`, `uniqueKey` and `retryCount` attributes.
  */
 
