@@ -1,3 +1,6 @@
+xxxxx / xxxxxxxxxx
+- Added `client.requestQueues` providing access to Apify Request Queue.
+
 0.2.6 / 2018-03-26
 ==================
 - Added `client.users.getUser()` method that retrieves own accout details including usage and limits.
