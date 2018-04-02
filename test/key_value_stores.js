@@ -20,6 +20,7 @@ describe('Key value store', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}`,
+                qs: {},
             }, {
                 data: {
                     id: storeId,
@@ -43,6 +44,7 @@ describe('Key value store', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}`,
+                qs: {},
             }, {
                 data: {
                     id: storeId,
@@ -140,6 +142,7 @@ describe('Key value store', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}`,
+                qs: {},
             }, { data: expected });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -157,6 +160,7 @@ describe('Key value store', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}`,
+                qs: {},
             }, false, 404);
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -174,6 +178,7 @@ describe('Key value store', () => {
                 json: true,
                 method: 'DELETE',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}`,
+                qs: {},
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -303,6 +308,7 @@ describe('Key value store', () => {
                 json: false,
                 method: 'PUT',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                qs: {},
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -326,6 +332,7 @@ describe('Key value store', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}/direct-upload-url`,
+                qs: {},
             }, { data: { signedUrl } });
 
             requestExpectCall({
@@ -337,6 +344,7 @@ describe('Key value store', () => {
                     'Content-Encoding': 'gzip',
                 },
                 body: gzipSync(body),
+                qs: null,
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -354,6 +362,7 @@ describe('Key value store', () => {
                 json: true,
                 method: 'DELETE',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
+                qs: {},
             });
 
             const apifyClient = new ApifyClient(OPTIONS);

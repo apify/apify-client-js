@@ -147,19 +147,26 @@ export default {
      * @instance
      * @param {Object} options
      * @param {String} options.datasetId - Unique dataset Id
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~dataset-name" format for datasetId.
      * @param callback
      * @returns {Dataset}
      */
     getDataset: (requestPromise, options) => {
-        const { baseUrl, datasetId } = options;
+        const { baseUrl, datasetId, token } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(datasetId, 'datasetId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const query = {};
+        if (token) query.token = token;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${datasetId}`,
             json: true,
             method: 'GET',
+            qs: query,
         })
             .then(pluckData)
             .catch(catchNotFoundOrThrow);
@@ -172,19 +179,26 @@ export default {
      * @instance
      * @param {Object} options
      * @param {String} options.datasetId - Store Id
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~dataset-name" format for datasetId.
      * @param callback
      * @returns {*}
      */
     deleteDataset: (requestPromise, options) => {
-        const { baseUrl, datasetId } = options;
+        const { baseUrl, datasetId, token } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(datasetId, 'datasetId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const query = {};
+        if (token) query.token = token;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${datasetId}`,
             json: true,
             method: 'DELETE',
+            qs: query,
         });
     },
 
@@ -213,6 +227,8 @@ export default {
      * @param {String} [options.xmlRow] - Overrides default element name that wraps each page or page function result object in xml output.
      *                                    By default the element name is page or result based on value of simplified parameter.
      * @param {Number} [options.skipHeaderRow] - If set to `1` then header row in csv format is skipped.
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~dataset-name" format for datasetId.
      * @param callback
      * @returns {PaginationList}
      */
@@ -233,6 +249,7 @@ export default {
             xmlRoot,
             xmlRow,
             skipHeaderRow,
+            token,
         } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
@@ -249,6 +266,7 @@ export default {
         checkParamOrThrow(xmlRoot, 'xmlRoot', 'Maybe String');
         checkParamOrThrow(xmlRow, 'xmlRow', 'Maybe String');
         checkParamOrThrow(skipHeaderRow, 'skipHeaderRow', 'Maybe Number');
+        checkParamOrThrow(token, 'token', 'Maybe String');
 
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,
@@ -264,6 +282,8 @@ export default {
             'format', 'fields', 'omit', 'unwind', 'offset',
             'limit', 'desc', 'attachment',
             'delimiter', 'bom', 'xmlRoot', 'xmlRow', 'skipHeaderRow');
+
+        if (token) queryString.token = token;
 
         if (!_.isEmpty(queryString)) {
             if (queryString && queryString.fields) queryString.fields = queryString.fields.join(',');
@@ -290,14 +310,20 @@ export default {
      * @param {Object} options
      * @param {String} options.datasetId - Unique dataset Id
      * @param {Object | Array} options.data - Object or Array of objects, only objects that can be JSON.stringified are allowed
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~dataset-name" format for datasetId.
      * @param callback
      * @returns {*}
      */
     putItems: (requestPromise, options) => {
-        const { baseUrl, datasetId, data } = options;
+        const { baseUrl, datasetId, data, token } = options;
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(datasetId, 'datasetId', 'String');
         checkParamOrThrow(data, 'data', 'Object | Array');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const query = {};
+        if (token) query.token = token;
 
         return gzipPromise(options.promise, JSON.stringify(data))
             .then((gzipedBody) => {
@@ -310,6 +336,7 @@ export default {
                         'Content-Type': 'application/json; charset=utf-8',
                         'Content-Encoding': 'gzip',
                     },
+                    qs: query,
                 };
 
                 // Uploading via our servers:

@@ -19,6 +19,7 @@ describe('Dataset', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
+                qs: {},
             }, {
                 data: {
                     id: datasetId,
@@ -42,6 +43,7 @@ describe('Dataset', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
+                qs: {},
             }, {
                 data: {
                     id: datasetId,
@@ -139,6 +141,7 @@ describe('Dataset', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
+                qs: {},
             }, { data: expected });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -156,6 +159,7 @@ describe('Dataset', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
+                qs: {},
             }, false, 404);
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -173,6 +177,7 @@ describe('Dataset', () => {
                 json: true,
                 method: 'DELETE',
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
+                qs: {},
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -344,6 +349,7 @@ describe('Dataset', () => {
                 json: false,
                 method: 'POST',
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
+                qs: {},
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -366,6 +372,7 @@ describe('Dataset', () => {
                 json: false,
                 method: 'POST',
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
+                qs: {},
             });
 
             const apifyClient = new ApifyClient(OPTIONS);

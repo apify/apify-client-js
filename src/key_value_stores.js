@@ -135,19 +135,26 @@ export default {
      * @instance
      * @param {Object} options
      * @param {String} options.storeId - Unique store Id
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~store-name" format for storeId.
      * @param callback
      * @returns {KeyValueStore}
      */
     getStore: (requestPromise, options) => {
-        const { baseUrl, storeId } = options;
+        const { baseUrl, storeId, token } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const query = {};
+        if (token) query.token = token;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${storeId}`,
             json: true,
             method: 'GET',
+            qs: query,
         })
             .then(pluckData)
             .catch(catchNotFoundOrThrow);
@@ -160,19 +167,26 @@ export default {
      * @instance
      * @param {Object} options
      * @param {String} options.storeId - Store Id
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~store-name" format for storeId.
      * @param callback
      * @returns {*}
      */
     deleteStore: (requestPromise, options) => {
-        const { baseUrl, storeId } = options;
+        const { baseUrl, storeId, token } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const query = {};
+        if (token) query.token = token;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${storeId}`,
             json: true,
             method: 'DELETE',
+            qs: query,
         });
     },
 
@@ -187,17 +201,20 @@ export default {
      * @param {Boolean} [options.disableBodyParser] - It true, it doesn't parse record's body based on content type.
      * @param {Boolean} [options.disableRedirect] - API by default redirects user to signed record url for faster download.
                                                     If disableRedirect=1 is set then API returns the record value directly.
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~store-name" format for storeId.
      * @param callback
      * @returns {KeyValueStoreRecord}
      */
     getRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, disableBodyParser, disableRedirect } = options;
+        const { baseUrl, storeId, key, disableBodyParser, disableRedirect, token } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
         checkParamOrThrow(disableRedirect, 'disableRedirect', 'Maybe Boolean');
+        checkParamOrThrow(token, 'token', 'Maybe String');
 
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
@@ -210,6 +227,7 @@ export default {
         };
 
         if (disableRedirect) requestOpts.qs.disableRedirect = 1;
+        if (token) requestOpts.qs.token = token;
 
         const parseResponse = (response) => {
             const responseBody = response.body;
@@ -237,17 +255,22 @@ export default {
      * @param {String} options.key - Key of the record
      * @param {String} options.contentType - Content type of body
      * @param {string|Buffer} options.body - Body in string or Buffer
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~store-name" format for storeId.
      * @param callback
      * @returns {*}
      */
     putRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, body, contentType = 'text/plain; charset=utf-8' } = options;
+        const { baseUrl, storeId, key, body, contentType = 'text/plain; charset=utf-8', token } = options;
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(contentType, 'contentType', 'String');
-
         checkParamOrThrow(body, 'body', 'Buffer | String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const query = {};
+        if (token) query.token = token;
 
         return gzipPromise(options.promise, body)
             .then((gzipedBody) => {
@@ -260,6 +283,7 @@ export default {
                         'Content-Type': contentType,
                         'Content-Encoding': 'gzip',
                     },
+                    qs: query,
                 };
 
                 // Uploading via our servers:
@@ -273,10 +297,11 @@ export default {
                     headers: {
                         'Content-Type': contentType,
                     },
+                    qs: query,
                 })
                     .then((response) => {
                         const signedUrl = response.data.signedUrl;
-                        const s3RequestOpts = Object.assign({}, requestOpts, { url: signedUrl });
+                        const s3RequestOpts = Object.assign({}, requestOpts, { url: signedUrl, qs: null });
 
                         return requestPromise(s3RequestOpts);
                     });
@@ -291,19 +316,26 @@ export default {
      * @param {Object} options
      * @param {String} options.storeId - Unique store Id
      * @param {String} options.key - Key of the record
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~store-name" format for storeId.
      * @param callback
      */
     deleteRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key } = options;
+        const { baseUrl, storeId, key, token } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const query = {};
+        if (token) query.token = token;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             json: true,
             method: 'DELETE',
+            qs: query,
         });
     },
 
@@ -318,19 +350,22 @@ export default {
      * @param {String} options.storeId - Unique store Id
      * @param {String} [options.exclusiveStartKey] - All keys up to this one (including) are skipped from the result.
      * @param {Number} [options.limit] - Number of keys to be returned. Maximum value is 1000
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~store-name" format for storeId.
      * @param callback
      * @returns {PaginationList}
      */
     listKeys: (requestPromise, options) => {
-        const { baseUrl, storeId, exclusiveStartKey, limit } = options;
+        const { baseUrl, storeId, exclusiveStartKey, limit, token } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(exclusiveStartKey, 'exclusiveStartKey', 'Maybe String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
+        checkParamOrThrow(token, 'token', 'Maybe String');
 
         const query = {};
-
+        if (token) query.token = token;
         if (exclusiveStartKey) query.exclusiveStartKey = exclusiveStartKey;
         if (limit) query.limit = limit;
 
