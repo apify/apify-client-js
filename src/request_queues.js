@@ -10,7 +10,8 @@ import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
 /**
  * @typedef {Object} QueueHead
  * @property {Number} limit Maximum number of items to be returned.
- * @property {Array} items
+ * @property {Date} queueModifiedAt Date of the last modification of the queue.
+ * @property {Array} items Array of objects containing `id`, `url`, `method`, `uniqueKey` and `retryCount` attributes.
  */
 
 /**
@@ -156,19 +157,26 @@ export default {
      * @instance
      * @param {Object} options
      * @param {String} options.queueId - Unique queue ID
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~queue-name" format for queueId.
      * @param callback
      * @returns {RequestQueue}
      */
     getQueue: (requestPromise, options) => {
-        const { baseUrl, queueId } = options;
+        const { baseUrl, queueId, token } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const query = {};
+        if (token) query.token = token;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}`,
             json: true,
             method: 'GET',
+            qs: query,
         })
             .then(pluckData)
             .catch(catchNotFoundOrThrow);
@@ -181,19 +189,26 @@ export default {
      * @instance
      * @param {Object} options
      * @param {String} options.queueId - Unique queue ID
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~queue-name" format for queueId.
      * @param callback
      * @returns {*}
      */
     deleteQueue: (requestPromise, options) => {
-        const { baseUrl, queueId } = options;
+        const { baseUrl, queueId, token } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const query = {};
+        if (token) query.token = token;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}`,
             json: true,
             method: 'DELETE',
+            qs: query,
         });
     },
 
@@ -208,23 +223,29 @@ export default {
      * @param {Object} options.request - Request object
      * @param {Object} [options.forefront] - If yes then request will be enqueued to the begining of the queue
      *                                        and to the end of the queue otherwise.
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~queue-name" format for queueId.
      * @param callback
      * @returns {RequestOperationInfo}
      */
     addRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, request, forefront = false } = options;
+        const { baseUrl, queueId, request, forefront = false, token } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(request, 'request', 'Object');
         checkParamOrThrow(forefront, 'forefront', 'Boolean');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const query = { forefront };
+        if (token) query.token = token;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests`,
             json: true,
             method: 'POST',
             body: request,
-            qs: { forefront },
+            qs: query,
         })
             .then(pluckData);
     },
@@ -237,20 +258,27 @@ export default {
      * @param {Object} options
      * @param {String} options.queueId - Unique queue ID
      * @param {String} options.requestId - Unique request ID
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~queue-name" format for queueId.
      * @param callback
      * @returns {Request}
      */
     getRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, requestId } = options;
+        const { baseUrl, queueId, requestId, token } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(requestId, 'requestId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const query = {};
+        if (token) query.token = token;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests/${requestId}`,
             json: true,
             method: 'GET',
+            qs: query,
         })
             .then(pluckData)
             .catch(catchNotFoundOrThrow);
@@ -264,20 +292,27 @@ export default {
      * @param {Object} options
      * @param {String} options.queueId - Unique queue ID
      * @param {String} options.requestId - Unique request ID
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~queue-name" format for queueId.
      * @param callback
      * @returns {*}
      */
     deleteRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, requestId } = options;
+        const { baseUrl, queueId, requestId, token } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(requestId, 'requestId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const query = {};
+        if (token) query.token = token;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests/${requestId}`,
             json: true,
             method: 'DELETE',
+            qs: query,
         });
     },
 
@@ -292,11 +327,13 @@ export default {
      * @param {String} [options.requestId] - Unique request ID
      * @param {Object} [options.forefront] - If yes then request will be enqueued to the begining of the queue
      *                                        and to the end of the queue otherwise.
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~queue-name" format for queueId.
      * @param callback
      * @returns {RequestOperationInfo}
      */
     updateRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, requestId, request, forefront = false } = options;
+        const { baseUrl, queueId, requestId, request, forefront = false, token } = options;
 
         checkParamOrThrow(request, 'request', 'Object');
 
@@ -306,13 +343,17 @@ export default {
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(safeRequestId, 'requestId', 'String');
         checkParamOrThrow(forefront, 'forefront', 'Boolean');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const query = { forefront };
+        if (token) query.token = token;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests/${safeRequestId}`,
             json: true,
             method: 'PUT',
             body: request,
-            qs: { forefront },
+            qs: query,
         })
             .then(pluckData);
     },
@@ -325,18 +366,22 @@ export default {
      * @param {Object} options
      * @param {String} options.queueId - Unique queue ID
      * @param {Number} options.limit - Maximum number of the items to be returned.
+     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
+     *                                   only when using "username~queue-name" format for queueId.
      * @param callback
      * @returns {QueueHead}
      */
     getHead: (requestPromise, options) => {
-        const { baseUrl, queueId, limit } = options;
+        const { baseUrl, queueId, limit, token } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(limit, 'limit', 'Number');
+        checkParamOrThrow(token, 'token', 'Maybe String');
 
         const query = {};
         if (limit) query.limit = limit;
+        if (token) query.token = token;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/head`,

@@ -18,6 +18,7 @@ describe('Request queue', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}`,
+                qs: {},
             }, {
                 data: {
                     id: queueId,
@@ -41,6 +42,7 @@ describe('Request queue', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}`,
+                qs: {},
             }, {
                 data: {
                     id: queueId,
@@ -138,6 +140,7 @@ describe('Request queue', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}`,
+                qs: {},
             }, { data: expected });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -155,6 +158,7 @@ describe('Request queue', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}`,
+                qs: {},
             }, false, 404);
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -172,6 +176,7 @@ describe('Request queue', () => {
                 json: true,
                 method: 'DELETE',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}`,
+                qs: {},
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -232,6 +237,7 @@ describe('Request queue', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
+                qs: {},
             }, { data: response });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -250,6 +256,7 @@ describe('Request queue', () => {
                 json: true,
                 method: 'DELETE',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
+                qs: {},
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
