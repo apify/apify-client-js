@@ -16,9 +16,10 @@ export default {
      * @memberof ApifyClient.users
      * @instance
      * @param {Object} options
-     * @param {String} [options.token] - If is set, it shows private and public information about user account, otherwise only public.
-     * @param {String} [options.userId = 'me'] - User ID or username of the user,
-     *                                          if not set it returns information about current user account.
+     * @param {String} [options.token] - If set, the function returns a private and public information for the user account,
+     *                                   otherwise it only returns public information.
+     * @param {String} [options.userId = 'me'] - Desired user ID or username. By default it is `'me'`,
+     *                                           which causes the function to return information about the current user.
      * @param {function} [callback] - Callback function
      * @returns {UserInfo}
      */
