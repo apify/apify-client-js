@@ -7,6 +7,7 @@ node_modules
 .DS_Store
 lib
 coverage
+.nyc_output
 logs
 pids
 .idea
