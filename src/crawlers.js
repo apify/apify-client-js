@@ -1,6 +1,6 @@
 import _ from 'underscore';
 
-import { checkParamOrThrow, catchNotFoundOrThrow, wrapArray } from './utils';
+import { checkParamOrThrow, catchNotFoundOrThrow, wrapArray, parseDateFields } from './utils';
 
 /**
  * Crawlers
@@ -98,7 +98,9 @@ export default {
             qs: queryString,
             resolveWithResponse: true,
             isApiV1: true,
-        }).then(wrapArray);
+        })
+            .then(wrapArray)
+            .then(parseDateFields);
     },
 
     /**
@@ -132,7 +134,8 @@ export default {
             isApiV1: true,
         };
 
-        return requestPromise(requestParams);
+        return requestPromise(requestParams)
+            .then(parseDateFields);
     },
 
     /**
@@ -167,7 +170,8 @@ export default {
             isApiV1: true,
         };
 
-        return requestPromise(requestParams);
+        return requestPromise(requestParams)
+            .then(parseDateFields);
     },
 
     /**
@@ -197,7 +201,9 @@ export default {
             method: 'GET',
             qs: queryString,
             isApiV1: true,
-        }).catch(catchNotFoundOrThrow);
+        })
+            .then(parseDateFields)
+            .catch(catchNotFoundOrThrow);
     },
 
     /**
@@ -278,7 +284,8 @@ export default {
             requestParams.body = settings;
         }
 
-        return requestPromise(requestParams);
+        return requestPromise(requestParams)
+            .then(parseDateFields);
     },
 
     /**
@@ -307,7 +314,8 @@ export default {
             isApiV1: true,
         };
 
-        return requestPromise(requestParams);
+        return requestPromise(requestParams)
+            .then(parseDateFields);
     },
 
     /**
@@ -345,7 +353,9 @@ export default {
             qs: queryString,
             resolveWithResponse: true,
             isApiV1: true,
-        }).then(wrapArray);
+        })
+            .then(parseDateFields)
+            .then(wrapArray);
     },
 
     /**
@@ -368,7 +378,9 @@ export default {
             json: true,
             method: 'GET',
             isApiV1: true,
-        }).catch(catchNotFoundOrThrow);
+        })
+            .then(parseDateFields)
+            .catch(catchNotFoundOrThrow);
     },
 
     /**
@@ -401,7 +413,8 @@ export default {
             method: 'GET',
             qs: queryString,
             isApiV1: true,
-        });
+        })
+            .then(parseDateFields);
     },
 
     /**

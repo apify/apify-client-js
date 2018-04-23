@@ -33,6 +33,20 @@ describe('Crawlers', () => {
                 modifiedAt: '2017-04-03T15:02:05.789Z',
             },
         ];
+        const expectedBody = [
+            {
+                _id: 'wKw8QeHiHiyd8YGN8',
+                customId: 'Example_RSS',
+                createdAt: new Date('2017-04-03T15:02:05.789Z'),
+                modifiedAt: new Date('2017-04-03T15:02:05.789Z'),
+            },
+            {
+                _id: 'EfEjTWAgnDGavzccq',
+                customId: 'Example_Hacker_News',
+                createdAt: new Date('2017-04-03T15:02:05.789Z'),
+                modifiedAt: new Date('2017-04-03T15:02:05.789Z'),
+            },
+        ];
         const sampleResponse = { body: sampleBody,
             headers: { date: 'Tue, 30 May 2017 09:34:08 GMT',
                 'content-type': 'application/json; charset=utf-8',
@@ -109,7 +123,7 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            const expected = { items: sampleBody,
+            const expected = { items: expectedBody,
                 total: 35,
                 count: 35,
                 offset: 0,
@@ -388,8 +402,10 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
+            const expected = Object.assign({}, apiResponse, { startedAt: new Date(apiResponse.startedAt) });
+
             return crawlerClient.startExecution({ crawlerId: 'dummyCrawler' }).then((execution) => {
-                expect(execution).to.deep.equal(apiResponse);
+                expect(execution).to.deep.equal(expected);
             });
         });
 
@@ -429,13 +445,15 @@ describe('Crawlers', () => {
                 _id: 'br9CKmk457',
                 actId: 'i6tjys5XNh',
                 startedAt: '2015-10-29T07:34:24.202Z',
-                finishedAt: 'null',
+                finishedAt: null,
                 status: 'RUNNING',
-                statusMessage: 'null',
+                statusMessage: null,
                 tag: 'my_test_run',
                 detailsUrl: 'https://api.apify.com/v1/execs/br9CKmk457',
                 resultsUrl: 'https://api.apify.com/v1/execs/br9CKmk457/results',
             };
+
+            const expected = Object.assign({}, apiResponse, { startedAt: new Date(apiResponse.startedAt) });
 
             requestExpectCall({
                 json: true,
@@ -448,7 +466,7 @@ describe('Crawlers', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
             return crawlerClient.stopExecution({ executionId: 'dummyExecution' }).then((execution) => {
-                expect(execution).to.deep.equal(apiResponse);
+                expect(execution).to.deep.equal(expected);
             });
         });
     });
@@ -470,9 +488,9 @@ describe('Crawlers', () => {
                     _id: 'br9CKmk457',
                     actId: 'i6tjys5XNh',
                     startedAt: '2015-10-29T07:34:24.202Z',
-                    finishedAt: 'null',
+                    finishedAt: null,
                     status: 'RUNNING',
-                    statusMessage: 'null',
+                    statusMessage: null,
                     tag: 'my_test_run',
                     stats: {
                         downloadedBytes: 74232,
@@ -530,12 +548,16 @@ describe('Crawlers', () => {
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
-            const expected = { items: sampleBody,
+            const expected = {
+                items: sampleBody,
                 total: 35,
                 count: 35,
                 offset: 0,
                 limit: 1000,
             };
+
+            expected.items[0].startedAt = new Date(expected.items[0].startedAt);
+            expected.items[0].meta.scheduledAt = new Date(expected.items[0].meta.scheduledAt);
 
             return crawlerClient.getListOfExecutions({ crawlerId: 'dummyCrawler' }).then((response) => {
                 expect(response).to.deep.equal(expected);
@@ -554,9 +576,11 @@ describe('Crawlers', () => {
                 _id: 'br9CKmk457',
                 actId: 'i6tjys5XNh',
                 startedAt: '2015-10-29T07:34:24.202Z',
-                finishedAt: 'null',
+                finishedAt: null,
                 status: 'RUNNING',
             };
+
+            const expected = Object.assign({}, apiResponse, { startedAt: new Date(apiResponse.startedAt) });
 
             requestExpectCall({
                 json: true,
@@ -568,7 +592,7 @@ describe('Crawlers', () => {
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
 
             return crawlerClient.getExecutionDetails({ executionId: 'dummyExecution' }).then((execution) => {
-                expect(execution).to.deep.equal(apiResponse);
+                expect(execution).to.deep.equal(expected);
             });
         });
 
@@ -604,11 +628,13 @@ describe('Crawlers', () => {
                 _id: 'br9CKmk457',
                 actId: 'i6tjys5XNh',
                 startedAt: '2015-10-29T07:34:24.202Z',
-                finishedAt: 'null',
+                finishedAt: null,
                 status: 'RUNNING',
                 detailsUrl: 'https://api.apify.com/v1/execs/br9CKmk457',
                 resultsUrl: 'https://api.apify.com/v1/execs/br9CKmk457/results',
             };
+
+            const expected = Object.assign({}, apiResponse, { startedAt: new Date(apiResponse.startedAt) });
 
             requestExpectCall({
                 json: true,
@@ -621,7 +647,7 @@ describe('Crawlers', () => {
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
 
             return crawlerClient.getLastExecution({ crawlerId: 'dummyCrawler' }).then((execution) => {
-                expect(execution).to.deep.equal(apiResponse);
+                expect(execution).to.deep.equal(expected);
             });
         });
     });

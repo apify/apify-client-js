@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody, wrapArray } from './utils';
+import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody, wrapArray, parseDateFields } from './utils';
 
 /**
  * Datasets
@@ -93,7 +93,8 @@ export default {
             method: 'POST',
             qs: { name: datasetName, token },
         })
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 
     /**
@@ -137,7 +138,8 @@ export default {
             method: 'GET',
             qs: query,
         })
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 
     /**
@@ -169,6 +171,7 @@ export default {
             qs: query,
         })
             .then(pluckData)
+            .then(parseDateFields)
             .catch(catchNotFoundOrThrow);
     },
 

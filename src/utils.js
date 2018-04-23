@@ -20,6 +20,8 @@ const EXP_BACKOFF_MAX_REPEATS = 8; // 64s
 const CONTENT_TYPE_JSON = 'application/json';
 const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
 const CLIENT_USER_AGENT = `ApifyClient/${version} (${os.type()}; Node/${process.version})`;
+const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
+const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
 
 export const REQUEST_PROMISE_OPTIONS = ['promise', 'expBackOffMillis', 'expBackOffMaxRepeats'];
 
@@ -225,4 +227,20 @@ export function wrapArray(response) {
         count: parseInt(response.headers['x-apifier-pagination-count'] || response.headers['x-apify-pagination-count'], 10),
         limit: parseInt(response.headers['x-apifier-pagination-limit'] || response.headers['x-apify-pagination-limit'], 10),
     };
+}
+
+/**
+ * Helper function that traverses JSON structure and parses fields such as modifiedAt or createdAt to dates.
+ */
+export function parseDateFields(obj, depth = 0) {
+    if (depth > PARSE_DATE_FIELDS_MAX_DEPTH) return obj;
+    else if (_.isArray(obj)) return obj.map(child => parseDateFields(child, depth + 1));
+    else if (!_.isObject(obj)) return obj;
+
+    return _.mapObject(obj, (val, key) => {
+        if (key.endsWith(PARSE_DATE_FIELDS_KEY_SUFFIX)) return val ? new Date(val) : val;
+        else if (_.isArray(val) || _.isObject(val)) return parseDateFields(val, depth + 1);
+
+        return val;
+    });
 }

@@ -1,4 +1,4 @@
-import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
+import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseDateFields } from './utils';
 
 /**
  * @typedef {Object} RequestOperationInfo
@@ -101,7 +101,8 @@ export default {
             method: 'POST',
             qs: { name: queueName, token },
         })
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 
     /**
@@ -145,7 +146,8 @@ export default {
             method: 'GET',
             qs: query,
         })
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 
     /**
@@ -177,6 +179,7 @@ export default {
             qs: query,
         })
             .then(pluckData)
+            .then(parseDateFields)
             .catch(catchNotFoundOrThrow);
     },
 
@@ -245,7 +248,8 @@ export default {
             body: request,
             qs: query,
         })
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 
     /**
@@ -279,6 +283,7 @@ export default {
             qs: query,
         })
             .then(pluckData)
+            .then(parseDateFields)
             .catch(catchNotFoundOrThrow);
     },
 
@@ -353,7 +358,8 @@ export default {
             body: request,
             qs: query,
         })
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 
     /**
@@ -387,6 +393,7 @@ export default {
             method: 'GET',
             qs: query,
         })
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 };
