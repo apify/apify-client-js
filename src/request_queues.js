@@ -15,8 +15,6 @@ import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
  */
 
 /**
- * @ignore
- *
  * RequestQueues
  * @memberOf ApifyClient
  * @description
