@@ -24,11 +24,15 @@ const APIFY_GENERIC_PARAMS = {
 exports.handlers = {
     processingComplete: (evn) => {
         evn.doclets.forEach((doclet) => {
-            // adds params to generic functions parameters
-            if (!doclet.undocumented && doclet.params) {
-                doclet.params.forEach((param) => {
-                    if (APIFY_GENERIC_PARAMS[param.name]) Object.assign(param, APIFY_GENERIC_PARAMS[param.name]);
-                });
+            // Skip setting generic params for whole ApifyClient.users
+            // We need set different comments for userId and token
+            if (doclet.memberof !== 'ApifyClient.users') {
+                // adds params to generic functions parameters
+                if (!doclet.undocumented && doclet.params) {
+                    doclet.params.forEach((param) => {
+                        if (APIFY_GENERIC_PARAMS[param.name]) Object.assign(param, APIFY_GENERIC_PARAMS[param.name]);
+                    });
+                }
             }
         });
     },
