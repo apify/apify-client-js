@@ -146,7 +146,7 @@ export default {
      * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
-     * @param {String} options.datasetId - Unique dataset Id
+     * @param {String} options.datasetId - Unique dataset ID
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~dataset-name" format for datasetId.
      * @param callback
@@ -178,7 +178,7 @@ export default {
      * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
-     * @param {String} options.datasetId - Store Id
+     * @param {String} options.datasetId - Unique dataset ID
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~dataset-name" format for datasetId.
      * @param callback
@@ -208,7 +208,7 @@ export default {
      * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
-     * @param {String} options.datasetId - Unique dataset Id
+     * @param {String} options.datasetId - Unique dataset ID
      * @param {String} [options.format='json'] - Format of the items, possible values are: json, csv, xlsx, html, xml and rss.
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=100000] - Maximum number of array elements to return.
@@ -308,7 +308,7 @@ export default {
      * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
-     * @param {String} options.datasetId - Unique dataset Id
+     * @param {String} options.datasetId - Unique dataset ID
      * @param {Object | Array} options.data - Object or Array of objects, only objects that can be JSON.stringified are allowed
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~dataset-name" format for datasetId.

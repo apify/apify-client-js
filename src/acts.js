@@ -120,7 +120,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {String} options.actId - Act ID
+     * @param {String} options.actId - Unique act ID
      * @param {Object} options.act
      * @param callback
      * @returns {Act}
@@ -151,7 +151,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {String} options.actId - Act ID
+     * @param {String} options.actId - Unique act ID
      * @param callback
      */
     deleteAct: (requestPromise, options) => {
@@ -178,7 +178,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {String} options.actId - Act ID
+     * @param {String} options.actId - Unique act ID
      * @param callback
      * @returns {Act}
      */
@@ -214,7 +214,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {String} options.actId - Act ID
+     * @param {String} options.actId - Unique act ID
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
@@ -253,7 +253,7 @@ export default {
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
-     * @param {String} options.actId - Act ID
+     * @param {String} options.actId - Unique act ID
      * @param [options.token]
      * @param {String|Buffer} [options.body] - Act input, passed as HTTP POST payload
      * @param {String} [options.contentType] - Content type of act input e.g 'application/json'
@@ -311,8 +311,8 @@ export default {
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
-     * @param {String} options.actId - Act ID
-     * @param {String} options.runId - Act run ID
+     * @param {String} options.actId - Unique act ID
+     * @param {String} options.runId - Unique run ID
      * @param [options.token]
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for act to finish. Maximum value is 120s.
                                                  If act doesn't finish in time then act run in RUNNING state is returned.
@@ -357,7 +357,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {String} options.actId - Act ID
+     * @param {String} options.actId - Unique act ID
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
@@ -397,7 +397,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {String} options.actId - Act ID
+     * @param {String} options.actId - Unique act ID
      * @param {String} options.version - Version of the act to build.
      * @param {Boolean} [options.betaPackages] - If true, the Docker container will be rebuild using layer cache.
                                                  This is to enable quick rebuild during development.
@@ -449,8 +449,8 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {String} options.actId - Act ID
-     * @param {String} options.buildId - Act build ID
+     * @param {String} options.actId - Unique act ID
+     * @param {String} options.buildId - Unique build ID
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for act to finish. Maximum value is 120s.
                                                  If act doesn't finish in time then act run in RUNNING state is returned.
      * @param callback
