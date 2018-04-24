@@ -134,7 +134,7 @@ export default {
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Unique store Id
+     * @param {String} options.storeId - Unique store ID
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~store-name" format for storeId.
      * @param callback
@@ -166,7 +166,7 @@ export default {
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Store Id
+     * @param {String} options.storeId - Unique store ID
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~store-name" format for storeId.
      * @param callback
@@ -196,7 +196,7 @@ export default {
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Unique store Id
+     * @param {String} options.storeId - Unique store ID
      * @param {String} options.key - Key of the record
      * @param {Boolean} [options.disableBodyParser] - It true, it doesn't parse record's body based on content type.
      * @param {Boolean} [options.disableRedirect] - API by default redirects user to signed record url for faster download.
@@ -251,7 +251,7 @@ export default {
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Unique store Id
+     * @param {String} options.storeId - Unique store ID
      * @param {String} options.key - Key of the record
      * @param {String} options.contentType - Content type of body
      * @param {string|Buffer} options.body - Body in string or Buffer
@@ -314,7 +314,7 @@ export default {
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Unique store Id
+     * @param {String} options.storeId - Unique store ID
      * @param {String} options.key - Key of the record
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~store-name" format for storeId.
@@ -347,7 +347,7 @@ export default {
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Unique store Id
+     * @param {String} options.storeId - Unique store ID
      * @param {String} [options.exclusiveStartKey] - All keys up to this one (including) are skipped from the result.
      * @param {Number} [options.limit] - Number of keys to be returned. Maximum value is 1000
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
