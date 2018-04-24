@@ -94,6 +94,15 @@ apifyClient.crawlers.getCrawlerSettings(options, (err, crawler) => {
 });
 ```
 
+## Parsing of date fields
+
+Apify Client automatically parses fields that ends with `At` such as `modifiedAt` or `createdAt` to `Date` object.
+This doesn't apply to user generated content such as:
+
+* crawler results
+* dataset content
+* key-value store records
+
 ## Package maintenance
 
 * `npm run test` to run tests
