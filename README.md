@@ -4,6 +4,20 @@ Apify Client for JavaScript
 
 This package is still a work in progress, stay tuned.
 
+## Table of Contents
+
+<!-- toc -->
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Global configuration](#global-configuration)
+- [Promises, await, callbacks](#promises-await-callbacks)
+- [Parsing of date fields](#parsing-of-date-fields)
+- [Package maintenance](#package-maintenance)
+- [License](#license)
+
+<!-- tocstop -->
+
 ## Installation
 
 ```bash
