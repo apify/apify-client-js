@@ -1,4 +1,4 @@
-xxxxxxxxxxxxxxxxxx
+0.2.8 / 2018-04-42
 ==================
 - All date fields (ending with `At`) such as `modifiedAt`, `createdAt`, etc. are now parsed to `Date` object.
 
