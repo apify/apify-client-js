@@ -525,3 +525,48 @@ describe('utils.parseBody()', () => {
         expect(parseBody(inputBuffer, 'text/something')).to.be.eql(inputBuffer);
     });
 });
+
+const expectDatesDame = (d1, d2) => expect(d1).to.be.eql(d2);
+
+describe('utils.parseDateFields()', () => {
+    it('works', () => {
+        const date = new Date('2018-01-11T14:44:48.997Z');
+        const original = { fooAt: date, barat: date };
+        const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(original)));
+
+        expect(parsed.fooAt).to.be.a('date');
+        expect(parsed.barat).to.be.a('string');
+        expectDatesDame(parsed.fooAt, date);
+    });
+
+    it('works with depth enough', () => {
+        const date = new Date('2018-02-22T14:44:48.997Z');
+        const original = {
+            data: {
+                foo: [
+                    { fooAt: date, barat: date, tooDeep: { fooAt: date } },
+                    { fooAt: date, barat: date, tooDeep: { fooAt: date } },
+                ],
+            },
+        };
+
+        const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(original)));
+
+        expect(parsed.data.foo[0].fooAt).to.be.a('date');
+        expect(parsed.data.foo[0].barat).to.be.a('string');
+        expect(parsed.data.foo[0].tooDeep.fooAt).to.be.a('string');
+        expectDatesDame(parsed.data.foo[0].fooAt, date);
+        expect(parsed.data.foo[1].fooAt).to.be.a('date');
+        expect(parsed.data.foo[1].barat).to.be.a('string');
+        expect(parsed.data.foo[1].tooDeep.fooAt).to.be.a('string');
+        expectDatesDame(parsed.data.foo[1].fooAt, date);
+    });
+
+    it('doesn\'t parse falsy values', () => {
+        const original = { fooAt: null, barAt: '' };
+        const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(original)));
+
+        expect(parsed.fooAt).to.be.eql(null);
+        expect(parsed.barAt).to.be.eql('');
+    });
+});

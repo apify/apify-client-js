@@ -1,4 +1,4 @@
-import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody } from './utils';
+import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody, parseDateFields } from './utils';
 
 /**
  * Key-value Stores
@@ -81,7 +81,8 @@ export default {
             method: 'POST',
             qs: { name: storeName, token },
         })
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 
     /**
@@ -125,7 +126,8 @@ export default {
             method: 'GET',
             qs: query,
         })
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 
     /**
@@ -157,6 +159,7 @@ export default {
             qs: query,
         })
             .then(pluckData)
+            .then(parseDateFields)
             .catch(catchNotFoundOrThrow);
     },
 
@@ -376,6 +379,8 @@ export default {
             qs: query,
         };
 
-        return requestPromise(requestOpts).then(pluckData);
+        return requestPromise(requestOpts)
+            .then(pluckData)
+            .then(parseDateFields);
     },
 };

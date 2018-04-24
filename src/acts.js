@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import { checkParamOrThrow, pluckData, catchNotFoundOrThrow } from './utils';
+import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow } from './utils';
 
 /**
  * Acts
@@ -82,7 +82,8 @@ export default {
             method: 'GET',
             qs: query,
         })
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 
     /**
@@ -110,7 +111,8 @@ export default {
             qs: { token },
             body: act,
         })
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 
     /**
@@ -141,7 +143,8 @@ export default {
             qs: { token },
             body: _.omit(act, 'id'),
         })
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 
     /**
@@ -168,7 +171,8 @@ export default {
             json: true,
             method: 'DELETE',
             qs: { token },
-        });
+        })
+            .then(parseDateFields);
     },
 
     /**
@@ -198,6 +202,7 @@ export default {
             qs: { token },
         })
             .then(pluckData)
+            .then(parseDateFields)
             .catch(catchNotFoundOrThrow);
     },
 
@@ -244,7 +249,8 @@ export default {
             method: 'GET',
             qs: query,
         })
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 
     /**
@@ -302,7 +308,8 @@ export default {
 
         return requestPromise(opts)
             .then(response => JSON.parse(response))
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 
     /**
@@ -341,6 +348,7 @@ export default {
             qs: query,
         })
             .then(pluckData)
+            .then(parseDateFields)
             .catch(catchNotFoundOrThrow);
     },
 
@@ -387,7 +395,8 @@ export default {
             method: 'GET',
             qs: query,
         })
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 
     /**
@@ -439,7 +448,8 @@ export default {
             method: 'POST',
             qs: query,
         })
-            .then(pluckData);
+            .then(pluckData)
+            .then(parseDateFields);
     },
 
     /**
@@ -477,6 +487,7 @@ export default {
             qs: query,
         })
             .then(pluckData)
+            .then(parseDateFields)
             .catch(catchNotFoundOrThrow);
     },
 

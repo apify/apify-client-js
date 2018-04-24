@@ -1,5 +1,5 @@
 import { ME_USER_NAME_PLACEHOLDER } from 'apify-shared/consts';
-import { checkParamOrThrow, pluckData } from './utils';
+import { checkParamOrThrow, pluckData, parseDateFields } from './utils';
 
 /**
  * Users
@@ -38,6 +38,8 @@ export default {
 
         if (token) requestOpts.qs = { token };
 
-        return requestPromise(requestOpts).then(pluckData);
+        return requestPromise(requestOpts)
+            .then(pluckData)
+            .then(parseDateFields);
     },
 };

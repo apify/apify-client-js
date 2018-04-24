@@ -1,3 +1,7 @@
+xxxxxxxxxxxxxxxxxx
+==================
+- All date fields (ending with `At`) such as `modifiedAt`, `createdAt`, etc. are now parsed to `Date` object.
+
 0.2.7 / 2018-04-03
 ==================
 - Added `client.requestQueues` providing access to Apify Request Queue.
