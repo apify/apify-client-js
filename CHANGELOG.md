@@ -1,3 +1,7 @@
+0.2.9 / 2018-05-10
+==================
+- Thrown error in a case of failed request now contains details such as `URL`, `method`, ... .
+
 0.2.8 / 2018-04-42
 ==================
 - All date fields (ending with `At`) such as `modifiedAt`, `createdAt`, etc. are now parsed to `Date` object.

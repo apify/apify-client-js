@@ -112,8 +112,14 @@ export const requestPromise = (options, iteration = 0) => {
             if (error || statusCode >= 500 || statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE) {
                 if (iteration >= expBackOffMaxRepeats) {
                     const errMessage = `Server request failed with ${iteration + 1} tries.`;
+                    const errDetails = Object.assign(_.pick(options, 'url', 'method', 'qs'), {
+                        hasBody: !!options.body,
+                        statusCode,
+                        iteration,
+                        error,
+                    });
 
-                    return reject(new ApifyError(REQUEST_FAILED_ERROR_TYPE, errMessage, { statusCode, iteration, error }));
+                    return reject(new ApifyError(REQUEST_FAILED_ERROR_TYPE, errMessage, errDetails));
                 }
 
                 const waitMillis = _.random(expBackOffMillis, expBackOffMillis * 2);
