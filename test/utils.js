@@ -152,7 +152,15 @@ describe('utils.requestPromise()', () => {
 
     it('works as expected when request throws an error 9 times so it fails', () => {
         const method = 'POST';
-        const opts = { method, foo: 'bar', promise: Promise, expBackOffMaxRepeats: 8, expBackOffMillis: 5 };
+        const opts = {
+            method,
+            url: 'http://example.com/a/b',
+            qs: { foo: 'bar' },
+            foo: 'bar',
+            promise: Promise,
+            expBackOffMaxRepeats: 8,
+            expBackOffMillis: 5,
+        };
         const error = new Error('some-error');
 
         let iteration = 0;
@@ -175,6 +183,11 @@ describe('utils.requestPromise()', () => {
                 expect(err.details.iteration).to.be.eql(opts.expBackOffMaxRepeats);
                 expect(err.details.statusCode).to.be.eql(null);
                 expect(err.details.error).to.be.eql(error);
+                expect(err.details.hasBody).to.be.eql(false);
+                expect(err.details.method).to.be.eql(method);
+                expect(err.details.error).to.be.eql(error);
+                expect(err.details.url).to.be.eql('http://example.com/a/b');
+                expect(err.details.qs).to.be.eql({ foo: 'bar' });
                 stub.restore();
             });
     });
