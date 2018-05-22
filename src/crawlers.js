@@ -188,12 +188,12 @@ export default {
      * @returns {CrawlerSettings}
      */
     getCrawlerSettings: (requestPromise, options) => {
-        const { userId, token, crawlerId } = options;
+        const { userId, token, crawlerId, executionId } = options;
 
         checkParamOrThrow(userId, 'userId', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(crawlerId, 'crawlerId', 'String');
-        checkParamOrThrow(crawlerId, 'executionId', 'String');
+        checkParamOrThrow(executionId, 'executionId', 'Maybe String');
 
         const queryString = _.pick(options, 'token', 'nosecrets', 'executionId');
 
