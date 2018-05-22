@@ -300,6 +300,26 @@ describe('Crawlers', () => {
             return crawlerClient.getCrawlerSettings({ crawlerId: 'dummyCrawler', nosecrets: 1 });
         });
 
+        it('should return settings for executionId', () => {
+            const executionId = 'myExecution';
+            const exepectedCrawler = {
+                customData: 'myTest',
+            };
+            requestExpectCall({
+                json: true,
+                method: 'GET',
+                url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler`,
+                qs: { executionId, token: credentials.token },
+                isApiV1: true,
+            }, exepectedCrawler);
+
+            const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;
+
+            return crawlerClient.getCrawlerSettings({ crawlerId: 'dummyCrawler', executionId }).then((settings) => {
+                expect(settings).to.be.eql(exepectedCrawler);
+            });
+        });
+
         it('should return null on 404 status code (RECORD_NOT_FOUND)', () => {
             requestExpectErrorCall({
                 json: true,

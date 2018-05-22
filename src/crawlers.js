@@ -183,6 +183,7 @@ export default {
      * @param options.userId
      * @param options.token
      * @param {String} options.crawlerId - Crawler ID or crawler custom ID
+     * @param {String} options.executionId - Crawler execution ID for which the crawler settings should be returned.
      * @param callback
      * @returns {CrawlerSettings}
      */
@@ -192,8 +193,9 @@ export default {
         checkParamOrThrow(userId, 'userId', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(crawlerId, 'crawlerId', 'String');
+        checkParamOrThrow(crawlerId, 'executionId', 'String');
 
-        const queryString = _.pick(options, 'token', 'nosecrets');
+        const queryString = _.pick(options, 'token', 'nosecrets', 'executionId');
 
         return requestPromise({
             url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawlerId}`,
