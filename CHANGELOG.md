@@ -1,3 +1,7 @@
+0.2.10 / 2018-05-23
+===================
+- Added `executionId` parameter to getCrawlerSettings method. You can get crawler settings for specific execution with that.
+
 0.2.9 / 2018-05-10
 ==================
 - Thrown error in a case of failed request now contains details such as `URL`, `method`, ... .
