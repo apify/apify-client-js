@@ -384,8 +384,7 @@ export default {
             qs: query,
         })
             .then(pluckData)
-            .then(parseDateFields)
-            .catch(catchNotFoundOrThrow);
+            .then(parseDateFields);
     },
 
     /**
@@ -550,7 +549,6 @@ export default {
         const safeActId = replaceSlashWithTilde(actId);
         const query = { token };
 
-
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${safeActId}/builds/${buildId}/abort`,
             json: true,
@@ -558,7 +556,6 @@ export default {
             qs: query,
         })
             .then(pluckData)
-            .then(parseDateFields)
-            .catch(catchNotFoundOrThrow);
+            .then(parseDateFields);
     },
 };
