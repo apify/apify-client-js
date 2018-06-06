@@ -353,6 +353,41 @@ export default {
     },
 
     /**
+     * Abort act run.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param {String} options.actId - Unique act ID
+     * @param {String} options.runId - Unique run ID
+     * @param [options.token]
+     * @param callback
+     * @returns {ActRun}
+     */
+    abortRun: (requestPromise, options) => {
+        const { baseUrl, token, actId, runId } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(runId, 'runId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const safeActId = replaceSlashWithTilde(actId);
+        const query = {};
+
+        if (token) query.token = token;
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/runs/${runId}/abort`,
+            json: true,
+            method: 'POST',
+            qs: query,
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+
+    /**
      * Gets list of act builds.
      *
      * By default, the objects are sorted by the startedAt field in ascending order,
@@ -491,4 +526,36 @@ export default {
             .catch(catchNotFoundOrThrow);
     },
 
+    /**
+     * Abort act build.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Unique act ID
+     * @param {String} options.buildId - Unique build ID
+     * @param callback
+     * @returns {ActBuild}
+     */
+    abortBuild: (requestPromise, options) => {
+        const { baseUrl, token, actId, buildId } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(buildId, 'buildId', 'String');
+
+        const safeActId = replaceSlashWithTilde(actId);
+        const query = { token };
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/builds/${buildId}/abort`,
+            json: true,
+            method: 'POST',
+            qs: query,
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
 };

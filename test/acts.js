@@ -319,6 +319,29 @@ describe('Act method', () => {
             .then(response => expect(response).to.be.eql(run));
     });
 
+    it('abortRun() works', () => {
+        const actId = 'some-act-id';
+        const runId = 'some-run-id';
+        const token = 'some-token';
+        const run = { foo: 'bar' };
+
+        requestExpectCall({
+            json: true,
+            method: 'POST',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/runs/${runId}/abort`,
+            qs: { token },
+        }, {
+            data: run,
+        });
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .abortRun({ actId, token, runId })
+            .then(response => expect(response).to.be.eql(run));
+    });
+
     it('getRun() works without token', () => {
         const actId = 'some-act-id';
         const runId = 'some-run-id';
@@ -473,5 +496,28 @@ describe('Act method', () => {
             .acts
             .getBuild({ actId, buildId, token })
             .then(given => expect(given).to.be.eql(null));
+    });
+
+    it('abortBuild() works', () => {
+        const actId = 'some-act-id';
+        const buildId = 'some-build-id';
+        const token = 'some-token';
+        const build = { foo: 'bar' };
+
+        requestExpectCall({
+            json: true,
+            method: 'POST',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/builds/${buildId}/abort`,
+            qs: { token },
+        }, {
+            data: build,
+        });
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .abortBuild({ actId, token, buildId })
+            .then(response => expect(response).to.be.eql(build));
     });
 });
