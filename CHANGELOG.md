@@ -1,3 +1,7 @@
+xxxxxxxxxxxxxxxxxxx
+===================
+- Added support for pre-serialized data (strings) to `Apify.datasets.putItems()`.  
+
 0.2.10 / 2018-05-23
 ===================
 - Added `executionId` parameter to getCrawlerSettings method. You can get crawler settings for specific execution with that.
