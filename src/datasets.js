@@ -312,7 +312,8 @@ export default {
      * @instance
      * @param {Object} options
      * @param {String} options.datasetId - Unique dataset ID
-     * @param {Object | Array} options.data - Object or Array of objects, only objects that can be JSON.stringified are allowed
+     * @param {Object | Array | String} options.data - String, Object or Array of objects,
+     *                                                 only objects that can be JSON.stringified are allowed.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~dataset-name" format for datasetId.
      * @param callback
@@ -322,13 +323,15 @@ export default {
         const { baseUrl, datasetId, data, token } = options;
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(datasetId, 'datasetId', 'String');
-        checkParamOrThrow(data, 'data', 'Object | Array');
+        checkParamOrThrow(data, 'data', 'Object | Array | String');
         checkParamOrThrow(token, 'token', 'Maybe String');
 
         const query = {};
         if (token) query.token = token;
 
-        return gzipPromise(options.promise, JSON.stringify(data))
+        const payload = typeof data === 'string' ? data : JSON.stringify(data);
+
+        return gzipPromise(options.promise, payload)
             .then((gzipedBody) => {
                 const requestOpts = {
                     url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,

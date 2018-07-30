@@ -381,5 +381,28 @@ describe('Dataset', () => {
                 .datasets
                 .putItems({ datasetId, data });
         });
+        it('putItems() works with string', () => {
+            const datasetId = 'some-id';
+            const contentType = 'application/json; charset=utf-8';
+            const data = JSON.stringify([{ someData: 'someValue' }, { someData: 'someValue' }]);
+
+            requestExpectCall({
+                body: gzipSync(data),
+                headers: {
+                    'Content-Type': contentType,
+                    'Content-Encoding': 'gzip',
+                },
+                json: false,
+                method: 'POST',
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
+                qs: {},
+            });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .datasets
+                .putItems({ datasetId, data });
+        });
     });
 });
