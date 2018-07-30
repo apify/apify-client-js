@@ -312,8 +312,8 @@ export default {
      * @instance
      * @param {Object} options
      * @param {String} options.datasetId - Unique dataset ID
-     * @param {Object | Array | String} options.data - String, Object or Array of objects,
-     *                                                 only objects that can be JSON.stringified are allowed.
+     * @param {Object | Array | String} options.data - Object, Array of objects or a String. String must be a valid JSON.
+     *                                                 Arrays and Objects must be JSON.stringifiable.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~dataset-name" format for datasetId.
      * @param callback
