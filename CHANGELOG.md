@@ -1,4 +1,4 @@
-xxxxxxxxxxxxxxxxxxx
+0.2.12 / 2018-08-01
 ===================
 - Added support for pre-serialized data (strings) to `Apify.datasets.putItems()`.  
 
