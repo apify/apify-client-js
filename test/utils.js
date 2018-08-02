@@ -536,6 +536,14 @@ describe('utils.parseBody()', () => {
         expect(parseBody(inputBuffer, 'text/plain; charset=something')).to.be.eql(inputStr);
         expect(parseBody(inputBuffer, 'text/plain; charset=utf-8')).to.be.eql(inputStr);
         expect(parseBody(inputBuffer, 'text/something')).to.be.eql(inputBuffer);
+
+        expect(parseBody(inputBuffer, 'text/html')).to.be.eql(inputStr);
+        expect(parseBody(inputBuffer, 'text/html; charset=something')).to.be.eql(inputStr);
+        expect(parseBody(inputBuffer, 'text/html; charset=utf-8')).to.be.eql(inputStr);
+
+        expect(parseBody(inputBuffer, 'application/xml')).to.be.eql(inputStr);
+        expect(parseBody(inputBuffer, 'application/xml; charset=something')).to.be.eql(inputStr);
+        expect(parseBody(inputBuffer, 'application/xml; charset=utf-8')).to.be.eql(inputStr);
     });
 });
 
