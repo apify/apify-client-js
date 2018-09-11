@@ -1,10 +1,18 @@
-# Apify Client JS [![Build Status](https://travis-ci.org/apifytech/apify-client-js.svg)](https://travis-ci.org/apifytech/apify-client-js) [![npm version](https://badge.fury.io/js/apify-client.svg)](http://badge.fury.io/js/apify-client)
+# Apify API client for JavaScript
 
-Apify Client for JavaScript
+[![Build Status](https://travis-ci.org/apifytech/apify-client-js.svg)](https://travis-ci.org/apifytech/apify-client-js)
+[![npm version](https://badge.fury.io/js/apify-client.svg?branch=master)](http://badge.fury.io/js/apify-client)
 
-This package is still a work in progress, stay tuned.
+This library implements a JavaScript / Node.js client for the <a href="https://www.apify.com/docs/api">Apify API</a>.
+The main philosophy is that the library is just a thin wrapper around the API - its functions should exactly correspond
+to the API endpoints and have the same parameters.
 
-## Table of Contents
+The full <a href="https://www.apify.com/docs/sdk/apify-client-js/latest/" target="_blank">Apify client documentation</a>
+is available on a separate web page.
+For more complex operations with the Apify platform,
+see the <a href="https://github.com/apifytech/apify-js">Apify SDK</a>.
+
+## Table of Content
 
 <!-- toc -->
 
@@ -35,7 +43,7 @@ const apifyClient = new ApifyClient({
     token: 'SNjkeiuoeD443lpod68dk',
 });
 
-// Storages
+// Storage
 const store = await apifyClient.keyValueStores.getOrCreateStore({ storeName: 'my-store' });
 apifyClient.setOptions({ storeId: store._id });
 await apifyClient.keyValueStores.putRecord({
@@ -110,12 +118,12 @@ apifyClient.crawlers.getCrawlerSettings(options, (err, crawler) => {
 
 ## Parsing of date fields
 
-Apify Client automatically parses fields that ends with `At` such as `modifiedAt` or `createdAt` to `Date` object.
-This doesn't apply to user generated content such as:
+Apify client automatically parses fields that ends with `At` such as `modifiedAt` or `createdAt` to `Date` object.
+This does not apply to user generated content such as:
 
-* crawler results
-* dataset content
-* key-value store records
+* Crawler results
+* Dataset content
+* Key-value store records
 
 ## Package maintenance
 
