@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import sinon from 'sinon';
 import * as utils from '../build/utils';
-import ApifyError, { REQUEST_FAILED_ERROR_TYPE, REQUEST_FAILED_ERROR_MESSAGE } from '../build/apify_error';
+import ApifyClientError, { REQUEST_FAILED_ERROR_TYPE, REQUEST_FAILED_ERROR_MESSAGE } from '../build/apify_error';
 
 let requestMock;
 
@@ -31,7 +31,7 @@ export const requestExpectErrorCall = (requestOpts, resolveWithResponse, statusC
     const expectedRequestOpts = Object.assign({}, requestOpts, { promise: Promise });
     if (resolveWithResponse) expectedRequestOpts.resolveWithResponse = true;
 
-    const error = new ApifyError(REQUEST_FAILED_ERROR_TYPE, REQUEST_FAILED_ERROR_MESSAGE, { statusCode });
+    const error = new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, REQUEST_FAILED_ERROR_MESSAGE, { statusCode });
 
     requestMock
         .expects('requestPromise')

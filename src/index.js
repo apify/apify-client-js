@@ -7,7 +7,7 @@ import datasets from './datasets';
 import logs from './logs';
 import users from './users';
 import requestQueues from './request_queues';
-import ApifyError, { INVALID_PARAMETER_ERROR_TYPE_V2 } from './apify_error';
+import ApifyClientError, { INVALID_PARAMETER_ERROR_TYPE_V2 } from './apify_error';
 
 /** @ignore */
 const getDefaultOptions = () => ({
@@ -82,7 +82,7 @@ const ApifyClient = function (options = {}) {
         if (typeof Promise === 'function') {
             instanceOpts.promise = Promise;
         } else {
-            throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE_V2, 'The "options.promise" parameter is required when native Promise is not available');
+            throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE_V2, 'The "options.promise" parameter is required when native Promise is not available'); // eslint-disable-line max-len
         }
     }
 
@@ -99,7 +99,7 @@ const ApifyClient = function (options = {}) {
             const mergedOpts = Object.assign({}, instanceOpts, callOpts);
 
             // Check that all required parameters are set.
-            if (!instanceOpts.baseUrl) throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE_V2, 'The "options.baseUrl" parameter is required');
+            if (!instanceOpts.baseUrl) throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE_V2, 'The "options.baseUrl" parameter is required');
 
             // Remove traling forward slash from baseUrl.
             if (mergedOpts.baseUrl.substr(-1) === '/') mergedOpts.baseUrl = mergedOpts.baseUrl.slice(0, -1);

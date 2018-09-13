@@ -5,7 +5,7 @@ import { parseType, parsedTypeCheck } from 'type-check';
 import { gzip } from 'zlib';
 import os from 'os';
 import { version } from '../package.json';
-import ApifyError, {
+import ApifyClientError, {
     INVALID_PARAMETER_ERROR_TYPE_V1,
     INVALID_PARAMETER_ERROR_TYPE_V2,
     REQUEST_FAILED_ERROR_TYPE_V1,
@@ -50,7 +50,7 @@ export const safeJsonParse = (str) => {
  *
  * then uses it's error type or message or both.
  */
-export const newApifyErrorFromResponse = (statusCode, body, isApiV1) => {
+export const newApifyClientErrorFromResponse = (statusCode, body, isApiV1) => {
     const REQUEST_FAILED_ERROR_TYPE = isApiV1 ? REQUEST_FAILED_ERROR_TYPE_V1 : REQUEST_FAILED_ERROR_TYPE_V2;
     let parsedBody = {};
 
@@ -61,7 +61,7 @@ export const newApifyErrorFromResponse = (statusCode, body, isApiV1) => {
     const type = error.type || REQUEST_FAILED_ERROR_TYPE;
     const message = error.message || REQUEST_FAILED_ERROR_MESSAGE;
 
-    return new ApifyError(type, message, { statusCode });
+    return new ApifyClientError(type, message, { statusCode });
 };
 
 /**
@@ -92,15 +92,15 @@ export const requestPromise = (options, iteration = 0) => {
     options.headers = Object.assign({}, options.headers, { 'User-Agent': CLIENT_USER_AGENT });
 
     if (typeof PromisesDependency !== 'function') {
-        throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, '"options.promise" parameter must be provided');
+        throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, '"options.promise" parameter must be provided');
     }
 
     if (!method) {
-        throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, '"options.method" parameter must be provided');
+        throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, '"options.method" parameter must be provided');
     }
 
     if (!request[method]) {
-        throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, '"options.method" is not a valid http request method');
+        throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, '"options.method" is not a valid http request method');
     }
 
     return new PromisesDependency((resolve, reject) => {
@@ -121,7 +121,7 @@ export const requestPromise = (options, iteration = 0) => {
                         error,
                     });
 
-                    return reject(new ApifyError(REQUEST_FAILED_ERROR_TYPE, errMessage, errDetails));
+                    return reject(new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, errMessage, errDetails));
                 }
 
                 const waitMillis = _.random(expBackOffMillis, expBackOffMillis * 2);
@@ -136,7 +136,7 @@ export const requestPromise = (options, iteration = 0) => {
 
             // For status codes 300-499 except RATE_LIMIT_EXCEEDED_STATUS_CODE we immediately rejects the promise
             // since it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
-            if (statusCode >= 300) return reject(newApifyErrorFromResponse(statusCode, body, isApiV1));
+            if (statusCode >= 300) return reject(newApifyClientErrorFromResponse(statusCode, body, isApiV1));
 
             if (resolveWithResponse) resolve(response);
             else resolve(body);
@@ -145,10 +145,10 @@ export const requestPromise = (options, iteration = 0) => {
 };
 
 /**
- * Checks that given parameter is of given type and throws ApifyError.
+ * Checks that given parameter is of given type and throws ApifyClientError.
  * If errorMessage is not provided then error message is created from name and type of param.
  *
- * TODO: move this into apify-shared along with an ApifyError
+ * TODO: move this into apify-shared along with an ApifyClientError
  *
  * @param {String} value - user entered value of that parameter
  * @param {String} name - parameter name (crawlerId for options.crawlerId)
@@ -171,7 +171,7 @@ export const checkParamOrThrow = (value, name, type, errorMessage, isApiV1) => {
 
     // This will ignore Buffer type.
     if (!parsedTypeCheck(allowedTypes, value)) {
-        throw new ApifyError(INVALID_PARAMETER_ERROR_TYPE, errorMessage);
+        throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, errorMessage);
     }
 };
 

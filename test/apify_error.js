@@ -1,10 +1,10 @@
 import { expect } from 'chai';
-import ApifyError, { APIFY_ERROR_NAME } from '../build/apify_error';
+import ApifyClientError, { APIFY_ERROR_NAME } from '../build/apify_error';
 
-describe('ApifyError', () => {
+describe('ApifyClientError', () => {
     it('should correctly handle all the information', () => {
         try {
-            throw new ApifyError('SOME_CODE', 'Some message.', { foo: 'bar' });
+            throw new ApifyClientError('SOME_CODE', 'Some message.', { foo: 'bar' });
         } catch (err) {
             expect(err.details).to.be.eql({ foo: 'bar' });
             expect(err.message).to.be.eql('Some message.');
