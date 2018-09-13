@@ -244,13 +244,12 @@ export function wrapArray(response) {
  */
 export function parseDateFields(obj, depth = 0) {
     if (depth > PARSE_DATE_FIELDS_MAX_DEPTH) return obj;
-    else if (_.isArray(obj)) return obj.map(child => parseDateFields(child, depth + 1));
-    else if (!_.isObject(obj)) return obj;
+    if (_.isArray(obj)) return obj.map(child => parseDateFields(child, depth + 1));
+    if (!_.isObject(obj)) return obj;
 
     return _.mapObject(obj, (val, key) => {
         if (key.endsWith(PARSE_DATE_FIELDS_KEY_SUFFIX)) return val ? new Date(val) : val;
-        else if (_.isArray(val) || _.isObject(val)) return parseDateFields(val, depth + 1);
-
+        if (_.isArray(val) || _.isObject(val)) return parseDateFields(val, depth + 1);
         return val;
     });
 }
