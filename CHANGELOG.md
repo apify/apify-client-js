@@ -1,10 +1,15 @@
+0.3.0 / 2018-08-06
+===================
+- Upgraded NPM dependencies
+- Renamed `ApifyError` to `ApifyClientError`
+
 0.2.13 / 2018-08-06
 ===================
 - Added support for more content types to `utils.parseBody()`.
 
 0.2.12 / 2018-08-01
 ===================
-- Added support for pre-serialized data (strings) to `Apify.datasets.putItems()`.  
+- Added support for pre-serialized data (strings) to `Apify.datasets.putItems()`.
 
 0.2.10 / 2018-05-23
 ===================

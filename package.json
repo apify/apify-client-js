@@ -1,10 +1,11 @@
 {
   "name": "apify-client",
-  "version": "0.2.13",
+  "version": "0.3.0",
   "description": "Apify API client for JavaScript",
   "main": "build/index.js",
   "keywords": [
     "apify",
+    "api",
     "apifier",
     "crawler",
     "scraper"
