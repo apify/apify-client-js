@@ -128,7 +128,7 @@ const ApifyClient = function (options = {}) {
      * @memberof ApifyClient
      * @function setOptions
      * @instance
-     * @param {Object} options - See {@link ApifyClient} options object for ApifyClient
+     * @param {Object} options - See {@link ApifyClient} options object
      */
     this.setOptions = (newOptions) => {
         _.forEach(newOptions, (val, key) => {
