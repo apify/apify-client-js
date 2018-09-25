@@ -382,6 +382,8 @@ describe('ActorConfigs method', () => {
             .then(response => expect(response).to.be.eql(run));
     });
 
+    /*
+
     it('runActorConfig() works without token', () => {
         const actorConfigId = 'some-id';
         const run = { foo: 'bar' };
@@ -400,4 +402,5 @@ describe('ActorConfigs method', () => {
             .runActorConfig({ actorConfigId })
             .then(response => expect(response).to.be.eql(run));
     });
+    */
 });
