@@ -1,3 +1,7 @@
+0.3.1 / 2018-08-06
+===================
+- Added `client.actorConfigs` providing access to Apify Actor Configs.
+
 0.3.0 / 2018-08-06
 ===================
 - Upgraded NPM dependencies
