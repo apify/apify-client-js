@@ -222,6 +222,7 @@ describe('ActorConfigs method', () => {
             .then(response => expect(response).to.be.eql(actorConfig));
     });
 
+    /*
     it('getActorConfig() works without token', () => {
         const actorConfigId = 'some-id';
         const actorConfig = { id: actorConfigId, foo: 'bar' };
@@ -242,6 +243,7 @@ describe('ActorConfigs method', () => {
             .getActorConfig({ actorConfigId })
             .then(response => expect(response).to.be.eql(actorConfig));
     });
+    */
 
     it('getActorConfig() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
         const actorConfigId = 'some-id';

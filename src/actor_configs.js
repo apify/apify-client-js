@@ -132,15 +132,12 @@ export default {
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(actorConfig, 'actorConfig', 'Object');
 
         if (actorConfigId) checkParamOrThrow(actorConfigId, 'actorConfigId', 'String');
-        else if (actorConfig) checkParamOrThrow(actorConfig.id, 'actorConfig.id', 'String');
-        // this is here so that readable error is throws when id is not provided
-        else checkParamOrThrow(actorConfigId, 'actorConfigId', 'String');
+        else checkParamOrThrow(actorConfig.id, 'actorConfig.id', 'String');
 
         const safeActorConfigId = replaceSlashWithTilde(!actorConfigId && actorConfig.id ? actorConfig.id : actorConfigId);
-
-        checkParamOrThrow(actorConfig, 'actorConfig', 'Object');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${safeActorConfigId}`,
@@ -196,12 +193,17 @@ export default {
         const { baseUrl, token, actorConfigId } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        // Remove line bellow when we enable public actor configs
+        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(actorConfigId, 'actorConfigId', 'String');
 
         const safeActorConfigId = replaceSlashWithTilde(actorConfigId);
 
         const qs = {};
-        if (token) qs.token = token;
+        // Line bellow will be used if we enable actor configs to be public
+        // if (token) qs.token = token;
+        qs.token = token;
+
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${safeActorConfigId}`,
