@@ -2,7 +2,7 @@ import _ from 'underscore';
 import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow } from './utils';
 
 /**
- * ActorConfigor Configs
+ * Tasks
  * @memberOf ApifyClient
  * @description
  * ### Basic usage
@@ -17,41 +17,41 @@ import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow } f
  *
  * // Awaited promise
  * try {
- *      const actorConfigsList = await apifyClient.actorConfigs.listActorConfigorConfigs({});
- *      // Do something with the actorConfigsList ...
+ *      const tasksList = await apifyClient.tasks.listTasks({});
+ *      // Do something with the tasksList ...
  * } catch (err) {
  *      // Do something with error ...
  * }
  *
  * // Promise
- * apifyClient.actorConfigs.listActorConfigorConfigs({})
- * .then((actorConfigsList) => {
- *      // Do something actorConfigsList ...
+ * apifyClient.tasks.listTasks({})
+ * .then((tasksList) => {
+ *      // Do something tasksList ...
  * })
  * .catch((err) => {
  *      // Do something with error ...
  * });
  *
  * // Callback
- * apifyClient.actorConfigs.listActorConfigorConfigs({}, (err, actorConfigsList) => {
- *      // Do something with error or actorConfigsList ...
+ * apifyClient.tasks.listTasks({}, (err, tasksList) => {
+ *      // Do something with error or tasksList ...
  * });
  * ```
- * @namespace actorConfigs
+ * @namespace tasks
  */
 
-export const BASE_PATH = '/v2/actor-configs';
+export const BASE_PATH = '/v2/tasks';
 
 const replaceSlashWithTilde = str => str.replace('/', '~');
 
 export default {
     /**
-     * Gets list of your actor configs.
+     * Gets list of your tasks.
      * @description By default, the objects are sorted by the createdAt field in ascending order,
-     * therefore you can use pagination to incrementally fetch all actor configs while new ones are still being created.
+     * therefore you can use pagination to incrementally fetch all tasks while new ones are still being created.
      * To sort them in descending order, use desc: 1 parameter.
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
-     * @memberof ApifyClient.actorConfigs
+     * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
      * @param options.token
@@ -61,7 +61,7 @@ export default {
      * @param callback
      * @returns {PaginationList}
      */
-    listActorConfigs: (requestPromise, options) => {
+    listTasks: (requestPromise, options) => {
         const { baseUrl, token, offset, limit, desc } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
@@ -87,90 +87,90 @@ export default {
     },
 
     /**
-     * Creates a new actor config.
+     * Creates a new task.
      *
-     * @memberof ApifyClient.actorConfigs
+     * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {Object} options.actorConfig Object containing configuration of the actor config
+     * @param {Object} options.task Object containing configuration of the task
      * @param callback
-     * @returns {ActorConfig}
+     * @returns {Task}
      */
-    createActorConfig: (requestPromise, options) => {
-        const { baseUrl, token, actorConfig } = options;
+    createTask: (requestPromise, options) => {
+        const { baseUrl, token, task } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(actorConfig, 'actorConfig', 'Object');
+        checkParamOrThrow(task, 'task', 'Object');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}`,
             json: true,
             method: 'POST',
             qs: { token },
-            body: actorConfig,
+            body: task,
         })
             .then(pluckData)
             .then(parseDateFields);
     },
 
     /**
-     * Updates actorConfig.
+     * Updates task.
      *
-     * @memberof ApifyClient.actorConfig
+     * @memberof ApifyClient.task
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {String} options.actorConfigId - Unique actorConfig ID
-     * @param {Object} options.actorConfig
+     * @param {String} options.taskId - Unique task ID
+     * @param {Object} options.task
      * @param callback
-     * @returns {ActorConfig}
+     * @returns {Task}
      */
-    updateActorConfig: (requestPromise, options) => {
-        const { baseUrl, token, actorConfigId, actorConfig } = options;
+    updateTask: (requestPromise, options) => {
+        const { baseUrl, token, taskId, task } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(actorConfig, 'actorConfig', 'Object');
+        checkParamOrThrow(task, 'task', 'Object');
 
-        if (actorConfigId) checkParamOrThrow(actorConfigId, 'actorConfigId', 'String');
-        else checkParamOrThrow(actorConfig.id, 'actorConfig.id', 'String');
+        if (taskId) checkParamOrThrow(taskId, 'taskId', 'String');
+        else checkParamOrThrow(task.id, 'task.id', 'String');
 
-        const safeActorConfigId = replaceSlashWithTilde(!actorConfigId && actorConfig.id ? actorConfig.id : actorConfigId);
+        const safeTaskId = replaceSlashWithTilde(!taskId && task.id ? task.id : taskId);
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${safeActorConfigId}`,
+            url: `${baseUrl}${BASE_PATH}/${safeTaskId}`,
             json: true,
             method: 'PUT',
             qs: { token },
-            body: _.omit(actorConfig, 'id'),
+            body: _.omit(task, 'id'),
         })
             .then(pluckData)
             .then(parseDateFields);
     },
 
     /**
-     * Deletes actorConfig.
+     * Deletes task.
      *
-     * @memberof ApifyClient.actorConfig
+     * @memberof ApifyClient.task
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {String} options.actorConfigId - Unique actorConfig ID
+     * @param {String} options.taskId - Unique task ID
      * @param callback
      */
-    deleteActorConfig: (requestPromise, options) => {
-        const { baseUrl, token, actorConfigId } = options;
+    deleteTask: (requestPromise, options) => {
+        const { baseUrl, token, taskId } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(actorConfigId, 'actorConfigId', 'String');
+        checkParamOrThrow(taskId, 'taskId', 'String');
 
-        const safeActorConfigId = replaceSlashWithTilde(actorConfigId);
+        const safeTaskId = replaceSlashWithTilde(taskId);
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${safeActorConfigId}`,
+            url: `${baseUrl}${BASE_PATH}/${safeTaskId}`,
             json: true,
             method: 'DELETE',
             qs: { token },
@@ -179,34 +179,34 @@ export default {
     },
 
     /**
-     * Gets actorConfig object.
+     * Gets task object.
      *
-     * @memberof ApifyClient.actorConfig
+     * @memberof ApifyClient.task
      * @instance
      * @param {Object} options
      * @param {String} options.token Optional
-     * @param {String} options.actorConfigId - Unique actorConfig ID
+     * @param {String} options.taskId - Unique task ID
      * @param callback
-     * @returns {ActorConfig}
+     * @returns {Task}
      */
-    getActorConfig: (requestPromise, options) => {
-        const { baseUrl, token, actorConfigId } = options;
+    getTask: (requestPromise, options) => {
+        const { baseUrl, token, taskId } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        // Remove line bellow when we enable public actor configs
+        // Remove line bellow when we enable public tasks
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(actorConfigId, 'actorConfigId', 'String');
+        checkParamOrThrow(taskId, 'taskId', 'String');
 
-        const safeActorConfigId = replaceSlashWithTilde(actorConfigId);
+        const safeTaskId = replaceSlashWithTilde(taskId);
 
         const qs = {};
-        // Line bellow will be used if we enable actor configs to be public
+        // Line bellow will be used if we enable tasks to be public
         // if (token) qs.token = token;
         qs.token = token;
 
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${safeActorConfigId}`,
+            url: `${baseUrl}${BASE_PATH}/${safeTaskId}`,
             json: true,
             method: 'GET',
             qs,
@@ -217,7 +217,7 @@ export default {
     },
 
     /**
-     * Gets list of actorConfig runs.
+     * Gets list of task runs.
      *
      * By default, the objects are sorted by the startedAt field in ascending order,
      * therefore you can use pagination to incrementally fetch all builds while new ones are still being created.
@@ -225,28 +225,28 @@ export default {
      *
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      *
-     * @memberof ApifyClient.actorConfig
+     * @memberof ApifyClient.task
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {String} options.actorConfigId - Unique actorConfig ID
+     * @param {String} options.taskId - Unique task ID
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
      * @param callback
      * @returns {PaginationList}
      */
-    listActorConfigRuns: (requestPromise, options) => {
-        const { baseUrl, token, actorConfigId, offset, limit, desc } = options;
+    listTaskRuns: (requestPromise, options) => {
+        const { baseUrl, token, taskId, offset, limit, desc } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(actorConfigId, 'actorConfigId', 'String');
+        checkParamOrThrow(taskId, 'taskId', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
-        const safeActorConfigId = replaceSlashWithTilde(actorConfigId);
+        const safeTaskId = replaceSlashWithTilde(taskId);
         const query = { token };
 
         if (limit) query.limit = limit;
@@ -254,7 +254,7 @@ export default {
         if (desc) query.desc = 1;
 
         return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${safeActorConfigId}/runs`,
+            url: `${baseUrl}${BASE_PATH}/${safeTaskId}/runs`,
             json: true,
             method: 'GET',
             qs: query,
@@ -264,34 +264,34 @@ export default {
     },
 
     /**
-     * Runs the given actorConfig.
+     * Runs the given task.
      *
-     * @memberof ApifyClient.actorConfig
+     * @memberof ApifyClient.task
      * @instance
      * @param {Object} options
-     * @param {String} options.actorConfigId - Unique actorConfig ID
+     * @param {String} options.taskId - Unique task ID
      * @param [options.token]
-     * @param {Number} [options.waitForFinish] - Number of seconds to wait for actorConfig to finish. Maximum value is 120s.
-                                                 If actorConfig doesn't finish in time then actorConfig run in RUNNING state is returned.
+     * @param {Number} [options.waitForFinish] - Number of seconds to wait for task to finish. Maximum value is 120s.
+                                                 If task doesn't finish in time then task run in RUNNING state is returned.
      * @param callback
      * @returns {ActRun}
      */
-    runActorConfig: (requestPromise, options) => {
-        const { baseUrl, token, actorConfigId, waitForFinish } = options;
+    runTask: (requestPromise, options) => {
+        const { baseUrl, token, taskId, waitForFinish } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(actorConfigId, 'actorConfigId', 'String');
+        checkParamOrThrow(taskId, 'taskId', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
 
-        const safeActorConfigId = replaceSlashWithTilde(actorConfigId);
+        const safeTaskId = replaceSlashWithTilde(taskId);
         const query = {};
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
         if (token) query.token = token;
 
         const opts = {
-            url: `${baseUrl}${BASE_PATH}/${safeActorConfigId}/runs`,
+            url: `${baseUrl}${BASE_PATH}/${safeTaskId}/runs`,
             method: 'POST',
             qs: query,
         };

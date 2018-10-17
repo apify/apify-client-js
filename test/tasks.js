@@ -1,17 +1,17 @@
 import _ from 'underscore';
 import { expect } from 'chai';
 import ApifyClient from '../build';
-import { BASE_PATH } from '../build/actor_configs';
+import { BASE_PATH } from '../build/tasks';
 import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
 
 const BASE_URL = 'http://example.com/something';
 const OPTIONS = { baseUrl: BASE_URL };
 
-describe('ActorConfigs method', () => {
+describe('Tasks method', () => {
     before(mockRequest);
     after(restoreRequest);
 
-    it('listActorConfigs() works', () => {
+    it('listTasks() works', () => {
         const callOptions = {
             token: 'sometoken',
             limit: 5,
@@ -32,7 +32,7 @@ describe('ActorConfigs method', () => {
             count: 5,
             total: 10,
             desc: true,
-            items: ['actorConfig1', 'actorConfig2'],
+            items: ['task1', 'task2'],
         };
 
         requestExpectCall({
@@ -47,12 +47,12 @@ describe('ActorConfigs method', () => {
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
-            .actorConfigs
-            .listActorConfigs(callOptions)
+            .tasks
+            .listTasks(callOptions)
             .then(response => expect(response).to.be.eql(expected));
     });
 
-    it('listActorConfigs() works without pagination', () => {
+    it('listTasks() works without pagination', () => {
         const callOptions = {
             token: 'sometoken',
         };
@@ -67,7 +67,7 @@ describe('ActorConfigs method', () => {
             count: 2,
             total: 2,
             desc: false,
-            items: ['actorConfig1', 'actorConfig2'],
+            items: ['task1', 'task2'],
         };
 
         requestExpectCall({
@@ -82,13 +82,13 @@ describe('ActorConfigs method', () => {
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
-            .actorConfigs
-            .listActorConfigs(callOptions)
+            .tasks
+            .listTasks(callOptions)
             .then(response => expect(response).to.be.eql(expected));
     });
 
-    it('createActorConfig() works', () => {
-        const actorConfig = { foo: 'bar' };
+    it('createTask() works', () => {
+        const task = { foo: 'bar' };
         const token = 'some-token';
 
         requestExpectCall({
@@ -96,22 +96,22 @@ describe('ActorConfigs method', () => {
             method: 'POST',
             url: `${BASE_URL}${BASE_PATH}`,
             qs: { token },
-            body: actorConfig,
+            body: task,
         }, {
-            data: actorConfig,
+            data: task,
         });
 
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
-            .actorConfigs
-            .createActorConfig({ actorConfig, token })
-            .then(response => expect(response).to.be.eql(actorConfig));
+            .tasks
+            .createTask({ task, token })
+            .then(response => expect(response).to.be.eql(task));
     });
 
-    it('updateActorConfig() works with both actorConfigId parameter and actorConfigId in actorConfig object', () => {
-        const actorConfigId = 'some-user/some-id';
-        const actorConfig = { id: actorConfigId, foo: 'bar' };
+    it('updateTask() works with both taskId parameter and taskId in task object', () => {
+        const taskId = 'some-user/some-id';
+        const task = { id: taskId, foo: 'bar' };
         const token = 'some-token';
 
         requestExpectCall({
@@ -119,171 +119,171 @@ describe('ActorConfigs method', () => {
             method: 'PUT',
             url: `${BASE_URL}${BASE_PATH}/some-user~some-id`,
             qs: { token },
-            body: _.omit(actorConfig, 'id'),
+            body: _.omit(task, 'id'),
         }, {
-            data: actorConfig,
+            data: task,
         });
 
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
-            .actorConfigs
-            .updateActorConfig({ actorConfigId, actorConfig, token })
-            .then(response => expect(response).to.be.eql(actorConfig));
+            .tasks
+            .updateTask({ taskId, task, token })
+            .then(response => expect(response).to.be.eql(task));
     });
 
-    it('updateActorConfig() works with actorConfigId in actorConfig object', () => {
-        const actorConfigId = 'some-id';
-        const actorConfig = { id: actorConfigId, foo: 'bar' };
+    it('updateTask() works with taskId in task object', () => {
+        const taskId = 'some-id';
+        const task = { id: taskId, foo: 'bar' };
         const token = 'some-token';
 
         requestExpectCall({
             json: true,
             method: 'PUT',
-            url: `${BASE_URL}${BASE_PATH}/${actorConfigId}`,
+            url: `${BASE_URL}${BASE_PATH}/${taskId}`,
             qs: { token },
-            body: _.omit(actorConfig, 'id'),
+            body: _.omit(task, 'id'),
         }, {
-            data: actorConfig,
+            data: task,
         });
 
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
-            .actorConfigs
-            .updateActorConfig({ actorConfig, token })
-            .then(response => expect(response).to.be.eql(actorConfig));
+            .tasks
+            .updateTask({ task, token })
+            .then(response => expect(response).to.be.eql(task));
     });
 
-    it('updateActorConfig() works with actorConfigId parameter', () => {
-        const actorConfigId = 'some-id';
-        const actorConfig = { foo: 'bar' };
+    it('updateTask() works with taskId parameter', () => {
+        const taskId = 'some-id';
+        const task = { foo: 'bar' };
         const token = 'some-token';
 
         requestExpectCall({
             json: true,
             method: 'PUT',
-            url: `${BASE_URL}${BASE_PATH}/${actorConfigId}`,
+            url: `${BASE_URL}${BASE_PATH}/${taskId}`,
             qs: { token },
-            body: actorConfig,
+            body: task,
         }, {
-            data: actorConfig,
+            data: task,
         });
 
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
-            .actorConfigs
-            .updateActorConfig({ actorConfigId, actorConfig, token })
-            .then(response => expect(response).to.be.eql(actorConfig));
+            .tasks
+            .updateTask({ taskId, task, token })
+            .then(response => expect(response).to.be.eql(task));
     });
 
-    it('updateActorConfig() works with actorConfigId as part actorConfig.id parameter', () => {
-        const actorConfig = { id: 'some-id', foo: 'bar' };
+    it('updateTask() works with taskId as part task.id parameter', () => {
+        const task = { id: 'some-id', foo: 'bar' };
         const token = 'some-token';
 
         requestExpectCall({
             json: true,
             method: 'PUT',
-            url: `${BASE_URL}${BASE_PATH}/${actorConfig.id}`,
+            url: `${BASE_URL}${BASE_PATH}/${task.id}`,
             qs: { token },
             body: { foo: 'bar' },
         }, {
-            data: actorConfig,
+            data: task,
         });
 
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
-            .actorConfigs
-            .updateActorConfig({ actorConfig, token })
-            .then(response => expect(response).to.be.eql(actorConfig));
+            .tasks
+            .updateTask({ task, token })
+            .then(response => expect(response).to.be.eql(task));
     });
 
-    it('getActorConfig() works', () => {
-        const actorConfigId = 'some-id';
-        const actorConfig = { id: actorConfigId, foo: 'bar' };
+    it('getTask() works', () => {
+        const taskId = 'some-id';
+        const task = { id: taskId, foo: 'bar' };
         const token = 'some-token';
 
         requestExpectCall({
             json: true,
             method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${actorConfigId}`,
+            url: `${BASE_URL}${BASE_PATH}/${taskId}`,
             qs: { token },
         }, {
-            data: actorConfig,
+            data: task,
         });
 
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
-            .actorConfigs
-            .getActorConfig({ actorConfigId, token })
-            .then(response => expect(response).to.be.eql(actorConfig));
+            .tasks
+            .getTask({ taskId, token })
+            .then(response => expect(response).to.be.eql(task));
     });
 
     /*
-    it('getActorConfig() works without token', () => {
-        const actorConfigId = 'some-id';
-        const actorConfig = { id: actorConfigId, foo: 'bar' };
+    it('getTask() works without token', () => {
+        const taskId = 'some-id';
+        const task = { id: taskId, foo: 'bar' };
 
         requestExpectCall({
             json: true,
             method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${actorConfigId}`,
+            url: `${BASE_URL}${BASE_PATH}/${taskId}`,
             qs: {},
         }, {
-            data: actorConfig,
+            data: task,
         });
 
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
-            .actorConfigs
-            .getActorConfig({ actorConfigId })
-            .then(response => expect(response).to.be.eql(actorConfig));
+            .tasks
+            .getTask({ taskId })
+            .then(response => expect(response).to.be.eql(task));
     });
     */
 
-    it('getActorConfig() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
-        const actorConfigId = 'some-id';
+    it('getTask() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
+        const taskId = 'some-id';
         const token = 'some-token';
 
         requestExpectErrorCall({
             json: true,
             method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${actorConfigId}`,
+            url: `${BASE_URL}${BASE_PATH}/${taskId}`,
             qs: { token },
         }, false, 404);
 
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
-            .actorConfigs
-            .getActorConfig({ actorConfigId, token })
+            .tasks
+            .getTask({ taskId, token })
             .then(given => expect(given).to.be.eql(null));
     });
 
-    it('deleteActorConfig() works', () => {
-        const actorConfigId = 'some-id';
+    it('deleteTask() works', () => {
+        const taskId = 'some-id';
         const token = 'some-token';
 
         requestExpectCall({
             json: true,
             method: 'DELETE',
-            url: `${BASE_URL}${BASE_PATH}/${actorConfigId}`,
+            url: `${BASE_URL}${BASE_PATH}/${taskId}`,
             qs: { token },
         });
 
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
-            .actorConfigs
-            .deleteActorConfig({ actorConfigId, token });
+            .tasks
+            .deleteTask({ taskId, token });
     });
 
-    it('listActorConfigRuns() works', () => {
-        const actorConfigId = 'some-id';
+    it('listTaskRuns() works', () => {
+        const taskId = 'some-id';
 
         const callOptions = {
             token: 'sometoken',
@@ -311,7 +311,7 @@ describe('ActorConfigs method', () => {
         requestExpectCall({
             json: true,
             method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${actorConfigId}/runs`,
+            url: `${BASE_URL}${BASE_PATH}/${taskId}/runs`,
             qs: queryString,
         }, {
             data: expected,
@@ -320,13 +320,13 @@ describe('ActorConfigs method', () => {
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
-            .actorConfigs
-            .listActorConfigRuns(Object.assign({}, callOptions, { actorConfigId }))
+            .tasks
+            .listTaskRuns(Object.assign({}, callOptions, { taskId }))
             .then(response => expect(response).to.be.eql(expected));
     });
 
-    it('listActorConfigRuns() works without pagination params', () => {
-        const actorConfigId = 'some-id';
+    it('listTaskRuns() works without pagination params', () => {
+        const taskId = 'some-id';
 
         const callOptions = {
             token: 'sometoken',
@@ -348,7 +348,7 @@ describe('ActorConfigs method', () => {
         requestExpectCall({
             json: true,
             method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${actorConfigId}/runs`,
+            url: `${BASE_URL}${BASE_PATH}/${taskId}/runs`,
             qs: queryString,
         }, {
             data: expected,
@@ -357,13 +357,13 @@ describe('ActorConfigs method', () => {
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
-            .actorConfigs
-            .listActorConfigRuns(Object.assign({}, callOptions, { actorConfigId }))
+            .tasks
+            .listTaskRuns(Object.assign({}, callOptions, { taskId }))
             .then(response => expect(response).to.be.eql(expected));
     });
 
-    it('runActorConfig() works', () => {
-        const actorConfigId = 'some-id';
+    it('runTask() works', () => {
+        const taskId = 'some-id';
         const token = 'some-token';
         const run = { foo: 'bar' };
         const apiResponse = JSON.stringify({ data: run });
@@ -372,36 +372,36 @@ describe('ActorConfigs method', () => {
 
         requestExpectCall({
             method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${actorConfigId}/runs`,
+            url: `${BASE_URL}${BASE_PATH}/${taskId}/runs`,
             qs: { token, waitForFinish },
         }, apiResponse);
 
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
-            .actorConfigs
-            .runActorConfig({ actorConfigId, token, waitForFinish })
+            .tasks
+            .runTask({ taskId, token, waitForFinish })
             .then(response => expect(response).to.be.eql(run));
     });
 
     /*
 
-    it('runActorConfig() works without token', () => {
-        const actorConfigId = 'some-id';
+    it('runTask() works without token', () => {
+        const taskId = 'some-id';
         const run = { foo: 'bar' };
         const apiResponse = JSON.stringify({ data: run });
 
         requestExpectCall({
             method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${actorConfigId}/runs`,
+            url: `${BASE_URL}${BASE_PATH}/${taskId}/runs`,
             qs: {},
         }, apiResponse);
 
         const apifyClient = new ApifyClient(OPTIONS);
 
         return apifyClient
-            .actorConfigs
-            .runActorConfig({ actorConfigId })
+            .tasks
+            .runTask({ taskId })
             .then(response => expect(response).to.be.eql(run));
     });
     */
