@@ -1,6 +1,6 @@
 0.3.1 / 2018-08-06
 ===================
-- Added `client.actorConfigs` providing access to Apify Actor Configs.
+- Added `client.tasks` providing access to Apify tasks.
 
 0.3.0 / 2018-08-06
 ===================
