@@ -40,7 +40,7 @@ import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow } f
  * @namespace tasks
  */
 
-export const BASE_PATH = '/v2/tasks';
+export const BASE_PATH = '/v2/actor-tasks';
 
 const replaceSlashWithTilde = str => str.replace('/', '~');
 
