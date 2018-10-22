@@ -38,6 +38,7 @@ import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow } f
  * });
  * ```
  * @namespace tasks
+ * @ignore
  */
 
 export const BASE_PATH = '/v2/actor-tasks';
@@ -118,7 +119,7 @@ export default {
     /**
      * Updates task.
      *
-     * @memberof ApifyClient.task
+     * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
      * @param options.token
@@ -153,7 +154,7 @@ export default {
     /**
      * Deletes task.
      *
-     * @memberof ApifyClient.task
+     * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
      * @param options.token
@@ -181,7 +182,7 @@ export default {
     /**
      * Gets task object.
      *
-     * @memberof ApifyClient.task
+     * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
      * @param {String} options.token Optional
@@ -225,7 +226,7 @@ export default {
      *
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      *
-     * @memberof ApifyClient.task
+     * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
      * @param options.token
@@ -236,7 +237,7 @@ export default {
      * @param callback
      * @returns {PaginationList}
      */
-    listTaskRuns: (requestPromise, options) => {
+    listRuns: (requestPromise, options) => {
         const { baseUrl, token, taskId, offset, limit, desc } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
@@ -266,7 +267,7 @@ export default {
     /**
      * Runs the given task.
      *
-     * @memberof ApifyClient.task
+     * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
      * @param {String} options.taskId - Unique task ID

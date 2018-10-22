@@ -282,7 +282,7 @@ describe('Tasks method', () => {
             .deleteTask({ taskId, token });
     });
 
-    it('listTaskRuns() works', () => {
+    it('listRuns() works', () => {
         const taskId = 'some-id';
 
         const callOptions = {
@@ -321,11 +321,11 @@ describe('Tasks method', () => {
 
         return apifyClient
             .tasks
-            .listTaskRuns(Object.assign({}, callOptions, { taskId }))
+            .listRuns(Object.assign({}, callOptions, { taskId }))
             .then(response => expect(response).to.be.eql(expected));
     });
 
-    it('listTaskRuns() works without pagination params', () => {
+    it('listRuns() works without pagination params', () => {
         const taskId = 'some-id';
 
         const callOptions = {
@@ -358,7 +358,7 @@ describe('Tasks method', () => {
 
         return apifyClient
             .tasks
-            .listTaskRuns(Object.assign({}, callOptions, { taskId }))
+            .listRuns(Object.assign({}, callOptions, { taskId }))
             .then(response => expect(response).to.be.eql(expected));
     });
 
