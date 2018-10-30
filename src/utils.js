@@ -148,14 +148,15 @@ export const requestPromise = (options, iteration = 0) => {
  * Checks that given parameter is of given type and throws ApifyClientError.
  * If errorMessage is not provided then error message is created from name and type of param.
  *
- * TODO: move this into apify-shared along with an ApifyClientError
- *
  * @param {String} value - user entered value of that parameter
  * @param {String} name - parameter name (crawlerId for options.crawlerId)
  * @param {String} type - "String", "Number", ... (see ee: https://github.com/gkz/type-check)
  * @param {String} errorMessage - optional error message
  */
 export const checkParamOrThrow = (value, name, type, errorMessage, isApiV1) => {
+    // TODO: move this into apify-shared along with an ApifyClientError,
+    // actually it shouldn't be ApifyClientError but ApifyError in most cases!
+
     const INVALID_PARAMETER_ERROR_TYPE = isApiV1 ? INVALID_PARAMETER_ERROR_TYPE_V1 : INVALID_PARAMETER_ERROR_TYPE_V2;
 
     if (!errorMessage) errorMessage = `Parameter "${name}" of type ${type} must be provided`;
