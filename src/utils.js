@@ -1,6 +1,7 @@
 import request from 'request';
 import _ from 'underscore';
 import contentTypeParser from 'content-type';
+import log from 'apify-shared/log';
 import { parseType, parsedTypeCheck } from 'type-check';
 import { gzip } from 'zlib';
 import os from 'os';
@@ -16,7 +17,7 @@ import ApifyClientError, {
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 const EXP_BACKOFF_MILLIS = 500;
-const EXP_BACKOFF_MAX_REPEATS = 8; // 64s
+const EXP_BACKOFF_MAX_REPEATS = 8; // 128s
 const CONTENT_TYPE_JSON = 'application/json';
 const CONTENT_TYPE_XML = 'application/xml';
 const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
@@ -130,6 +131,15 @@ export const requestPromise = (options, iteration = 0) => {
 
                     requestPromise(nextCallOptions, iteration + 1).then(resolve, reject);
                 };
+
+                if (iteration === Math.round(expBackOffMaxRepeats / 2)) {
+                    log.warning(`Request failed ${iteration} times and will be repeated in ${waitMillis}ms`, {
+                        hasBody: !!options.body,
+                        statusCode,
+                        iteration,
+                        error,
+                    });
+                }
 
                 return setTimeout(repeatCall, waitMillis);
             }

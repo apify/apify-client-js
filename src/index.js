@@ -1,6 +1,7 @@
 import _ from 'underscore';
 import { requestPromise, REQUEST_PROMISE_OPTIONS } from './utils';
 import acts from './acts';
+import tasks from './tasks';
 import crawlers from './crawlers';
 import keyValueStores from './key_value_stores';
 import datasets from './datasets';
@@ -37,6 +38,7 @@ const getDefaultOptions = () => ({
  */
 const methodGroups = {
     acts,
+    tasks,
     crawlers,
     keyValueStores,
     datasets,

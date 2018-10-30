@@ -55,13 +55,13 @@ const record = await apifyClient.keyValueStores.getRecord({ key: 'foo' });
 const keys = await apifyClient.keyValueStores.getRecordsKeys();
 await apifyClient.keyValueStores.deleteRecord({ key: 'foo' });
 
-// Crawler
+// Crawlers
 const crawler = await apifyClient.crawlers.getCrawlerSettings({ crawlerId: 'DNjkhrkjnri' });
 const execution = await apifyClient.crawlers.startExecution({ crawlerId: 'DNjkhrkjnri' });
 apifyClient.setOptions({ crawlerId: 'DNjkhrkjnri' });
 const execution = await apifyClient.crawlers.startExecution();
 
-// Acts
+// Actors
 const act = await apifyClient.acts.getAct({ actId: 'kjnjknDDNkl' });
 apifyClient.setOptions({ actId: 'kjnjknDDNkl' });
 const build = await apifyClient.acts.buildAct();

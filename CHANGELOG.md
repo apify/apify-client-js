@@ -1,3 +1,11 @@
+0.3.3 / 2018/10/25
+==================
+- Requests repeated more than `expBackOffMaxRepeats/2` times are logged.
+
+0.3.1 / 2018-08-06
+===================
+- Added `client.tasks` providing access to Apify tasks.
+
 0.3.0 / 2018-08-06
 ===================
 - Upgraded NPM dependencies
