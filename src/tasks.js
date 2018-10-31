@@ -38,7 +38,6 @@ import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow } f
  * });
  * ```
  * @namespace tasks
- * @ignore
  */
 
 export const BASE_PATH = '/v2/actor-tasks';

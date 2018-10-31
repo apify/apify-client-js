@@ -1,3 +1,7 @@
+0.3.4 / 2018/10/31
+==================
+- Added support for actor tasks API.
+
 0.3.3 / 2018/10/25
 ==================
 - Requests repeated more than `expBackOffMaxRepeats/2` times are logged.
