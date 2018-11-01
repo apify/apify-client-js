@@ -1,3 +1,7 @@
+xxxxxxxxxxxxxxxxxx
+==================
+- All key-value store records with content type `text/*` are now parsed into string.
+
 0.3.4 / 2018/10/31
 ==================
 - Added support for actor tasks API.
