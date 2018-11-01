@@ -42,8 +42,6 @@ describe('ApifyClient', () => {
         const callOpts = { storeId: 'newStore', recordKey: 'someKey' };
         const expected = Object.assign({}, defaultOpts, instanceOpts, callOpts);
 
-        expected.promise = Promise;
-
         return apifyClient
             .group1
             .method1(callOpts)
@@ -192,7 +190,6 @@ describe('ApifyClient', () => {
     it('should passed preconfigured utils.requestPromise to each method', () => {
         const requestPromiseMock = sinon.mock(utils, 'requestPromise');
         const expected = {
-            promise: Promise,
             method: 'get',
             url: 'http://example.com',
             expBackOffMillis: 999,

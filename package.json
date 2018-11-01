@@ -10,6 +10,9 @@
     "crawler",
     "scraper"
   ],
+  "engines": {
+    "node": ">=8.0.0"
+  },
   "author": {
     "name": "Apify",
     "email": "support@apify.com",

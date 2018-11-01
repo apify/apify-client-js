@@ -275,7 +275,7 @@ export default {
         const query = {};
         if (token) query.token = token;
 
-        return gzipPromise(options.promise, body)
+        return gzipPromise(body)
             .then((gzipedBody) => {
                 const requestOpts = {
                     url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
