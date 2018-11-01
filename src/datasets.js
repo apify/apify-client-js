@@ -262,49 +262,32 @@ export default {
             baseUrl,
             datasetId,
             disableBodyParser,
-            token,
-
-            // Query params:
-            offset,
-            limit,
-            fields,
-            omit,
-            unwind,
-            desc,
-            xmlRoot,
-            xmlRow,
-
-            // Booleans query params:
-            bom,
-            attachment,
-            delimiter,
-            skipHeaderRow,
         } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(datasetId, 'datasetId', 'String');
-        checkParamOrThrow(disableBodyParser, 'datasetId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
+        checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
 
         // Query params:
-        checkParamOrThrow(offset, 'offset', 'Maybe Number');
-        checkParamOrThrow(limit, 'limit', 'Maybe Number');
-        checkParamOrThrow(fields, 'fields', 'Maybe [String]');
-        checkParamOrThrow(omit, 'omit', 'Maybe Array');
-        checkParamOrThrow(delimiter, 'delimiter', 'Maybe String');
-        checkParamOrThrow(unwind, 'unwind', 'Maybe String');
-        checkParamOrThrow(xmlRoot, 'xmlRoot', 'Maybe String');
-        checkParamOrThrow(xmlRow, 'xmlRow', 'Maybe String');
-        checkParamOrThrow(format, 'format', 'Maybe String');
+        checkParamOrThrow(options.token, 'token', 'Maybe String');
+        checkParamOrThrow(options.offset, 'offset', 'Maybe Number');
+        checkParamOrThrow(options.limit, 'limit', 'Maybe Number');
+        checkParamOrThrow(options.fields, 'fields', 'Maybe [String]');
+        checkParamOrThrow(options.omit, 'omit', 'Maybe Array');
+        checkParamOrThrow(options.delimiter, 'delimiter', 'Maybe String');
+        checkParamOrThrow(options.unwind, 'unwind', 'Maybe String');
+        checkParamOrThrow(options.xmlRoot, 'xmlRoot', 'Maybe String');
+        checkParamOrThrow(options.xmlRow, 'xmlRow', 'Maybe String');
+        checkParamOrThrow(options.format, 'format', 'Maybe String');
 
         // Booleans query params:
-        checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
-        checkParamOrThrow(bom, 'bom', 'Maybe Boolean');
-        checkParamOrThrow(attachment, 'attachment', 'Maybe Boolean');
-        checkParamOrThrow(skipHeaderRow, 'skipHeaderRow', 'Maybe Boolean');
+        checkParamOrThrow(options.desc, 'desc', 'Maybe Boolean');
+        checkParamOrThrow(options.bom, 'bom', 'Maybe Boolean');
+        checkParamOrThrow(options.attachment, 'attachment', 'Maybe Boolean');
+        checkParamOrThrow(options.skipHeaderRow, 'skipHeaderRow', 'Maybe Boolean');
 
         // Pick query params.
-        const query = { offset, limit, fields, omit, delimiter, unwind, xmlRoot, xmlRow, format, token };
+        const query = _.pick(options, 'offset', 'limit', 'fields', 'omit', 'delimiter', 'unwind', 'xmlRoot', 'xmlRow', 'format', 'token');
 
         // Add Boolean query params.
         if (options.skipHeaderRow) query.skipHeaderRow = 1;
@@ -363,7 +346,7 @@ export default {
 
         const payload = typeof data === 'string' ? data : JSON.stringify(data);
 
-        return gzipPromise(payload)
+        return gzipPromise(options.promise, payload)
             .then((gzipedBody) => {
                 const requestOpts = {
                     url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,
