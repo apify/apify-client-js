@@ -113,9 +113,10 @@ export default {
      *   Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000]
      *   Maximum number of array elements to return.
-     * @param {Number} [options.desc]
-     *   If `true` then the objects are sorted by the `startedAt` field in descending order.
-     *   Otherwise they are sorted in ascending order.
+     * @param {Boolean} [options.desc]
+     *   If `true` then the objects are sorted by the startedAt field in descending order.
+     * @param {Boolean} [options.unnamed]
+     *   If `true` then also unnamed stores will be returned. By default only named stores are returned.
      * @param callback
      * @returns {PaginationList}
      */
@@ -248,7 +249,7 @@ export default {
      * @param {String} [options.xmlRow]
      *   Overrides the default element name that wraps each page or page function result object in XML output.
      *   By default, the element name is `page` or `result`, depending on the value of the `simplified` option.
-     * @param {Number} [options.skipHeaderRow]
+     * @param {Boolean} [options.skipHeaderRow]
      *   If set to `1` then header row in csv format is skipped.
      * @param {String} [options.token]
      *   Your API token at apify.com. This parameter is required
@@ -260,59 +261,69 @@ export default {
         const {
             baseUrl,
             datasetId,
+            disableBodyParser,
+            token,
+
+            // Query params:
             offset,
             limit,
             fields,
             omit,
             unwind,
             desc,
+            xmlRoot,
+            xmlRow,
+
+            // Booleans query params:
             bom,
             attachment,
             delimiter,
-            disableBodyParser,
-            xmlRoot,
-            xmlRow,
             skipHeaderRow,
-            token,
         } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(datasetId, 'datasetId', 'String');
-        checkParamOrThrow(limit, 'limit', 'Maybe Number');
+        checkParamOrThrow(disableBodyParser, 'datasetId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        // Query params:
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
-        checkParamOrThrow(fields, 'fields', 'Maybe Array');
+        checkParamOrThrow(limit, 'limit', 'Maybe Number');
+        checkParamOrThrow(fields, 'fields', 'Maybe [String]');
         checkParamOrThrow(omit, 'omit', 'Maybe Array');
+        checkParamOrThrow(delimiter, 'delimiter', 'Maybe String');
         checkParamOrThrow(unwind, 'unwind', 'Maybe String');
+        checkParamOrThrow(xmlRoot, 'xmlRoot', 'Maybe String');
+        checkParamOrThrow(xmlRow, 'xmlRow', 'Maybe String');
+        checkParamOrThrow(format, 'format', 'Maybe String');
+
+        // Booleans query params:
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
         checkParamOrThrow(bom, 'bom', 'Maybe Boolean');
         checkParamOrThrow(attachment, 'attachment', 'Maybe Boolean');
-        checkParamOrThrow(delimiter, 'delimiter', 'Maybe String');
-        checkParamOrThrow(xmlRoot, 'xmlRoot', 'Maybe String');
-        checkParamOrThrow(xmlRow, 'xmlRow', 'Maybe String');
-        checkParamOrThrow(skipHeaderRow, 'skipHeaderRow', 'Maybe Number');
-        checkParamOrThrow(token, 'token', 'Maybe String');
+        checkParamOrThrow(skipHeaderRow, 'skipHeaderRow', 'Maybe Boolean');
+
+        // Pick query params.
+        const query = { offset, limit, fields, omit, delimiter, unwind, xmlRoot, xmlRow, format, token };
+
+        // Add Boolean query params.
+        if (options.skipHeaderRow) query.skipHeaderRow = 1;
+        if (options.desc) query.desc = 1;
+        if (options.bom) query.bom = 1;
+        if (options.attachment) query.attachment = 1;
+
+        if (query && query.fields) query.fields = query.fields.join(',');
 
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,
             method: 'GET',
-            qs: {},
+            qs: query,
             json: false,
             gzip: true,
             resolveWithResponse: true,
             encoding: null,
         };
 
-        const queryString = _.pick(options,
-            'format', 'fields', 'omit', 'unwind', 'offset',
-            'limit', 'desc', 'attachment',
-            'delimiter', 'bom', 'xmlRoot', 'xmlRow', 'skipHeaderRow');
-
-        if (token) queryString.token = token;
-
-        if (!_.isEmpty(queryString)) {
-            if (queryString && queryString.fields) queryString.fields = queryString.fields.join(',');
-            requestOpts.qs = queryString;
-        }
 
         const parseResponse = (response) => {
             const contentType = response.headers['content-type'];
@@ -352,7 +363,7 @@ export default {
 
         const payload = typeof data === 'string' ? data : JSON.stringify(data);
 
-        return gzipPromise(options.promise, payload)
+        return gzipPromise(payload)
             .then((gzipedBody) => {
                 const requestOpts = {
                     url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,

@@ -49,7 +49,7 @@ export default {
      * Gets list of your acts.
      * @description By default, the objects are sorted by the createdAt field in ascending order,
      * therefore you can use pagination to incrementally fetch all acts while new ones are still being created.
-     * To sort them in descending order, use desc: 1 parameter.
+     * To sort them in descending order, use desc: `true` parameter.
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      * @memberof ApifyClient.acts
      * @instance
@@ -57,7 +57,7 @@ export default {
      * @param options.token
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
-     * @param {Number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
+     * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @param callback
      * @returns {PaginationList}
      */
@@ -211,7 +211,7 @@ export default {
      *
      * By default, the objects are sorted by the startedAt field in ascending order,
      * therefore you can use pagination to incrementally fetch all builds while new ones are still being created.
-     * To sort them in descending order, use desc: 1 parameter.
+     * To sort them in descending order, use desc: `true` parameter.
      *
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      *
@@ -222,7 +222,7 @@ export default {
      * @param {String} options.actId - Unique act ID
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
-     * @param {Number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
+     * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @param callback
      * @returns {PaginationList}
      */
@@ -392,7 +392,7 @@ export default {
      *
      * By default, the objects are sorted by the startedAt field in ascending order,
      * therefore you can use pagination to incrementally fetch all builds while new ones are still being created.
-     * To sort them in descending order, use desc: 1 parameter.
+     * To sort them in descending order, use desc: `true` parameter.
      *
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      *
@@ -403,7 +403,7 @@ export default {
      * @param {String} options.actId - Unique act ID
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
-     * @param {Number} [options.desc] - If 1 then the objects are sorted by the createdAt field in descending order.
+     * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @param callback
      * @returns {PaginationList}
      */
