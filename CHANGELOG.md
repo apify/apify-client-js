@@ -1,3 +1,8 @@
+xxxxxxxxxxxxxxxxxx - Major upgrade!
+==================
+- Option `promise` to customize Promise implementation is not supported any more.
+- All methods now use native promises instead of Bluebird implementation. Make sure that your code doesn't depend on Bluebird.
+
 0.3.4 / 2018/10/31
 ==================
 - Added support for actor tasks API.
