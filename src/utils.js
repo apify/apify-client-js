@@ -143,7 +143,7 @@ export const requestPromise = async (options) => {
         }
 
         // If status code is >= 500 or RATE_LIMIT_EXCEEDED_STATUS_CODE then we repeat the request.
-        // We use exponential backoff alghorithm with up to `expBackOffMillis` repeats.
+        // We use exponential backoff alghorithm with up to `expBackOffMaxRepeats` repeats.
         if (error || statusCode >= 500 || statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE) {
             if (iteration >= expBackOffMaxRepeats) {
                 const errMessage = `Server request failed with ${iteration + 1} tries.`;
