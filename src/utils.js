@@ -20,8 +20,7 @@ const EXP_BACKOFF_MILLIS = 500;
 const EXP_BACKOFF_MAX_REPEATS = 8; // 128s
 const CONTENT_TYPE_JSON = 'application/json';
 const CONTENT_TYPE_XML = 'application/xml';
-const CONTENT_TYPE_TEXT_PLAIN = 'text/plain';
-const CONTENT_TYPE_TEXT_HTML = 'text/html';
+const CONTENT_TYPE_TEXT_PREFIX = 'text/';
 const CLIENT_USER_AGENT = `ApifyClient/${version} (${os.type()}; Node/${process.version})`;
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
 const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
@@ -222,11 +221,11 @@ export const gzipPromise = (buffer) => {
 export const parseBody = (body, contentType) => {
     const type = contentTypeParser.parse(contentType).type;
 
+    if (type.startsWith(CONTENT_TYPE_TEXT_PREFIX)) return body.toString();
+
     switch (type) {
         case CONTENT_TYPE_JSON: return JSON.parse(body);
-        case CONTENT_TYPE_XML:
-        case CONTENT_TYPE_TEXT_HTML:
-        case CONTENT_TYPE_TEXT_PLAIN: return body.toString();
+        case CONTENT_TYPE_XML: return body.toString();
         default: return body;
     }
 };
