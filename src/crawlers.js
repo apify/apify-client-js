@@ -462,6 +462,7 @@ export default {
             method: 'GET',
             resolveWithResponse: true,
             isApiV1: true,
+            encoding: null,
         };
         const queryString = _.pick(options,
             'format', 'simplified', 'offset',
@@ -524,6 +525,7 @@ export default {
             method: 'GET',
             resolveWithResponse: true,
             isApiV1: true,
+            encoding: null,
         };
         const queryString = _.pick(options,
             'status', 'token', 'format',
