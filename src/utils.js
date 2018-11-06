@@ -1,4 +1,4 @@
-import request from 'request';
+import request from 'request-promise-native';
 import _ from 'underscore';
 import contentTypeParser from 'content-type';
 import log from 'apify-shared/log';
@@ -66,24 +66,6 @@ export const newApifyClientErrorFromResponse = (statusCode, body, isApiV1) => {
 };
 
 /**
- * Promisified version of request() package.
- *
- * @param  {String} method
- * @param  {Object} options
- * @return {Promise<[response, body]>}
- */
-const promisifiedRequest = (method, options) => {
-    return new Promise((resolve, reject) => {
-        // We have to use request[method]({ ... }) instead of request({ method, ... })
-        // to be able to mock request when unit testing requestPromise().
-        request[method](options, (error, response, body) => {
-            if (error) return reject(error);
-            resolve([response, body]);
-        });
-    });
-};
-
-/**
  * Returns promise that resolves after given number of milliseconds.
  *
  * @param  {Number} sleepMillis
@@ -125,13 +107,13 @@ export const requestPromise = async (options) => {
     while (iteration <= expBackOffMaxRepeats) {
         let statusCode;
         let response;
-        let body;
         let error;
 
         try {
-            [response, body] = await promisifiedRequest(method, options); // eslint-disable-line
+            const requestParams = Object.assign({}, options, { resolveWithResponse: true });
+            response = await request[method](requestParams); // eslint-disable-line
             statusCode = response ? response.statusCode : null;
-            if (!statusCode || statusCode < 300) return options.resolveWithResponse ? response : body;
+            if (!statusCode || statusCode < 300) return options.resolveWithResponse ? response : response.body;
         } catch (err) {
             error = err;
         }
@@ -139,7 +121,7 @@ export const requestPromise = async (options) => {
         // For status codes 300-499 except RATE_LIMIT_EXCEEDED_STATUS_CODE we immediately rejects the promise
         // since it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
         if (statusCode >= 300 && statusCode < 500) {
-            throw newApifyClientErrorFromResponse(statusCode, body, isApiV1);
+            throw newApifyClientErrorFromResponse(statusCode, response.body, isApiV1);
         }
 
         // If status code is >= 500 or RATE_LIMIT_EXCEEDED_STATUS_CODE then we repeat the request.

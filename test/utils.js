@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import request from 'request';
+import request from 'request-promise-native';
 import { gunzipSync } from 'zlib';
 import { expect } from 'chai';
 import _ from 'underscore';
@@ -88,9 +88,9 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                expect(passedOpts).to.be.eql(opts);
-                callback(null, {}, expectedBody);
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                return Promise.resolve({ body: expectedBody });
             });
 
         return utils
@@ -109,9 +109,9 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                expect(passedOpts).to.be.eql(opts);
-                callback(null, expectedResponse, expectedBody);
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                return Promise.resolve(expectedResponse);
             });
 
         return utils
@@ -133,11 +133,11 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                expect(passedOpts).to.be.eql(opts);
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
                 iteration++;
-                if (iteration < 8) return callback(new Error(errorMsg), null, {});
-                callback(null, {}, expectedBody);
+                if (iteration < 8) return Promise.reject(new Error(errorMsg), null, {});
+                return Promise.resolve({ body: expectedBody });
             });
 
         return utils
@@ -164,9 +164,9 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                expect(passedOpts).to.be.eql(opts);
-                callback(error, null, {});
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                return Promise.reject(error);
             });
 
         return utils
@@ -195,9 +195,9 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                expect(passedOpts).to.be.eql(opts);
-                callback(error, null, {});
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                return Promise.reject(error);
             });
 
         return utils
@@ -223,9 +223,9 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                expect(passedOpts).to.be.eql(opts);
-                callback(null, { statusCode }, JSON.stringify({ type, message }));
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                return Promise.resolve({ statusCode, body: JSON.stringify({ type, message }) });
             });
 
         return utils
@@ -248,9 +248,9 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                expect(passedOpts).to.be.eql(opts);
-                callback(null, { statusCode: 404 }, '');
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                return Promise.resolve({ statusCode: 404, body: '' });
             });
 
         return utils
@@ -305,11 +305,11 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                expect(passedOpts).to.be.eql(opts);
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
                 iteration++;
-                if (iteration < 8) return callback(null, { statusCode: 500 }, {});
-                callback(null, {}, expectedBody);
+                if (iteration < 8) return Promise.resolve({ statusCode: 500 });
+                return Promise.resolve({ body: expectedBody });
             });
 
         return utils
@@ -330,11 +330,11 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                expect(passedOpts).to.be.eql(opts);
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
                 iteration++;
-                if (iteration <= 4) return callback(null, { statusCode: 500 }, {});
-                callback(null, {}, expectedBody);
+                if (iteration <= 4) return Promise.resolve({ statusCode: 500 });
+                return Promise.resolve({ body: expectedBody });
             });
 
         return utils
