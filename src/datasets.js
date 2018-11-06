@@ -295,7 +295,7 @@ export default {
         if (options.bom) query.bom = 1;
         if (options.attachment) query.attachment = 1;
 
-        if (query && query.fields) query.fields = query.fields.join(',');
+        if (query.fields) query.fields = query.fields.join(',');
 
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,
