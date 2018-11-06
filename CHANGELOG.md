@@ -5,6 +5,8 @@
 - All methods now use native promises instead of Bluebird implementation. Make sure that your code doesn't depend on Bluebird.
 - All Boolean parameters of v2 endpoints (Actor, Storages) are now truly Boolean and don't accept `1` as `true`.
   Legacy crawler API hasn't changed.
+- Added support for actor versions API.
+- Endpoint to get items from dataset now passes `encoding: null` to support XSLX format.
 
 0.3.4 / 2018/10/31
 ==================
