@@ -1,3 +1,8 @@
+##################
+==================
+- All Boolean parameters of v2 endpoints (Actor, Storages) are now truly Boolean and don't accept `1` as `true`.
+  Legacy crawler API hasn't changed.
+
 0.3.4 / 2018/10/31
 ==================
 - Added support for actor tasks API.
