@@ -596,7 +596,7 @@ export default {
      * @param {Object} options
      * @param options.token
      * @param {String} options.actId - Unique act ID
-     * @param {String} options.actVersion - Act Version
+     * @param {Object} options.actVersion - Act version
      * @return {ActVersion}
      */
     createActVersion: (requestPromise, options) => {
@@ -660,7 +660,7 @@ export default {
      * @param options.token
      * @param {String} options.actId - Unique act ID
      * @param {String} options.versionNumber - Version number of act version
-     * @param {Object} options.actVersion - Version
+     * @param {Object} options.actVersion - Act version
      * @return {ActVersion}
      */
     updateActVersion: (requestPromise, options) => {
