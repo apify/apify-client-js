@@ -346,7 +346,7 @@ export default {
 
         const payload = typeof data === 'string' ? data : JSON.stringify(data);
 
-        return gzipPromise(options.promise, payload)
+        return gzipPromise(payload)
             .then((gzipedBody) => {
                 const requestOpts = {
                     url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,

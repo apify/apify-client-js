@@ -223,6 +223,8 @@ describe('Tasks method', () => {
     });
 
     /*
+    NOTE: not allowed currently.
+
     it('getTask() works without token', () => {
         const taskId = 'some-id';
         const task = { id: taskId, foo: 'bar' };
@@ -385,6 +387,7 @@ describe('Tasks method', () => {
     });
 
     /*
+    NOTE: not allowed currently.
 
     it('runTask() works without token', () => {
         const taskId = 'some-id';
