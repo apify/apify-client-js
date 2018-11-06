@@ -110,7 +110,7 @@ export default {
      *
      * By default, the objects are sorted by the createdAt field in ascending order,
      * therefore you can use pagination to incrementally fetch all queues while new ones are still being created.
-     * To sort them in descending order, use desc: 1 parameter.
+     * To sort them in descending order, use desc: `true` parameter.
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      *
      * @memberof ApifyClient.requestQueues
@@ -119,7 +119,8 @@ export default {
      * @param options.token
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
-     * @param {Number} [options.desc] - If 1 then the objects are sorted by the startedAt field in descending order.
+     * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the startedAt field in descending order.
+     * @param {Boolean} [options.unnamed] - If `true` then also unnamed stores will be returned. By default only named stores are returned.
      * @param callback
      * @returns {PaginationList}
      */
@@ -222,7 +223,7 @@ export default {
      * @param {Object} options
      * @param {String} options.queueId - Unique queue ID
      * @param {Object} options.request - Request object
-     * @param {Object} [options.forefront] - If yes then request will be enqueued to the begining of the queue
+     * @param {Boolean} [options.forefront] - If yes then request will be enqueued to the begining of the queue
      *                                        and to the end of the queue otherwise.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
@@ -328,7 +329,7 @@ export default {
      * @param {String} options.queueId - Unique queue ID
      * @param {Object} options.request - Request object
      * @param {String} [options.requestId] - Unique request ID
-     * @param {Object} [options.forefront] - If yes then request will be enqueued to the begining of the queue
+     * @param {Boolean} [options.forefront] - If yes then request will be enqueued to the begining of the queue
      *                                        and to the end of the queue otherwise.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.

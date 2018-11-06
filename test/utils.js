@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import request from 'request';
+import request from 'request-promise-native';
 import { gunzipSync } from 'zlib';
 import { expect } from 'chai';
 import _ from 'underscore';
@@ -88,9 +88,9 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                expect(passedOpts).to.be.eql(opts);
-                callback(null, {}, expectedBody);
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                return Promise.resolve({ body: expectedBody });
             });
 
         return utils
@@ -109,9 +109,9 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                expect(passedOpts).to.be.eql(opts);
-                callback(null, expectedResponse, expectedBody);
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                return Promise.resolve(expectedResponse);
             });
 
         return utils
@@ -125,7 +125,7 @@ describe('utils.requestPromise()', () => {
 
     it('works as expected when request throws an error 8 times and then succeeds', () => {
         const method = 'POST';
-        const opts = { method, foo: 'bar', promise: Promise, expBackOffMaxRepeats: 8, expBackOffMillis: 5 };
+        const opts = { method, foo: 'bar', expBackOffMaxRepeats: 8, expBackOffMillis: 5 };
         const errorMsg = 'some-error';
         const expectedBody = 'foo-bar';
 
@@ -133,12 +133,11 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                const expectedOpts = Object.assign({}, opts, { expBackOffMillis: opts.expBackOffMillis * (2 ** iteration) });
-                expect(passedOpts).to.be.eql(expectedOpts);
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
                 iteration++;
-                if (iteration < 8) return callback(new Error(errorMsg), null, {});
-                callback(null, {}, expectedBody);
+                if (iteration < 8) return Promise.reject(new Error(errorMsg), null, {});
+                return Promise.resolve({ body: expectedBody });
             });
 
         return utils
@@ -163,14 +162,11 @@ describe('utils.requestPromise()', () => {
         };
         const error = new Error('some-error');
 
-        let iteration = 0;
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                const expectedOpts = Object.assign({}, opts, { expBackOffMillis: opts.expBackOffMillis * (2 ** iteration) });
-                expect(passedOpts).to.be.eql(expectedOpts);
-                iteration++;
-                callback(error, null, {});
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                return Promise.reject(error);
             });
 
         return utils
@@ -181,7 +177,7 @@ describe('utils.requestPromise()', () => {
                 expect(err.name).to.be.eql(APIFY_ERROR_NAME);
                 expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
                 expect(err.details.iteration).to.be.eql(opts.expBackOffMaxRepeats);
-                expect(err.details.statusCode).to.be.eql(null);
+                expect(err.details.statusCode).to.be.eql(undefined);
                 expect(err.details.error).to.be.eql(error);
                 expect(err.details.hasBody).to.be.eql(false);
                 expect(err.details.method).to.be.eql(method);
@@ -197,14 +193,11 @@ describe('utils.requestPromise()', () => {
         const opts = { method, foo: 'bar', promise: Promise, isApiV1: true, expBackOffMaxRepeats: 8, expBackOffMillis: 5 };
         const error = new Error('some-error');
 
-        let iteration = 0;
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                const expectedOpts = Object.assign({}, opts, { expBackOffMillis: opts.expBackOffMillis * (2 ** iteration) });
-                expect(passedOpts).to.be.eql(expectedOpts);
-                iteration++;
-                callback(error, null, {});
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                return Promise.reject(error);
             });
 
         return utils
@@ -215,7 +208,7 @@ describe('utils.requestPromise()', () => {
                 expect(err.name).to.be.eql(APIFY_ERROR_NAME);
                 expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V1);
                 expect(err.details.iteration).to.be.eql(opts.expBackOffMaxRepeats);
-                expect(err.details.statusCode).to.be.eql(null);
+                expect(err.details.statusCode).to.be.eql(undefined);
                 expect(err.details.error).to.be.eql(error);
                 stub.restore();
             });
@@ -230,9 +223,9 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                expect(passedOpts).to.be.eql(opts);
-                callback(null, { statusCode }, JSON.stringify({ type, message }));
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                return Promise.resolve({ statusCode, body: JSON.stringify({ type, message }) });
             });
 
         return utils
@@ -255,9 +248,9 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                expect(passedOpts).to.be.eql(opts);
-                callback(null, { statusCode: 404 }, '');
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                return Promise.resolve({ statusCode: 404, body: '' });
             });
 
         return utils
@@ -273,11 +266,11 @@ describe('utils.requestPromise()', () => {
             });
     });
 
-    it('fails when method parameter is not provided', () => {
+    it('fails when method parameter is not provided', async () => {
         let hasFailed = false;
 
         try {
-            utils.requestPromise({ method: null, promise: Promise });
+            await utils.requestPromise({ method: null });
         } catch (err) {
             expect(err.name).to.be.eql(APIFY_ERROR_NAME);
             expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE_V2);
@@ -288,75 +281,15 @@ describe('utils.requestPromise()', () => {
         expect(hasFailed).to.be.eql(true);
     });
 
-    it('fails when method parameter is not provided for API V1', () => {
+    it('fails when method parameter is not provided for API V1', async () => {
         let hasFailed = false;
 
         try {
-            utils.requestPromise({ method: null, promise: Promise, isApiV1: true });
+            await utils.requestPromise({ method: null, isApiV1: true });
         } catch (err) {
             expect(err.name).to.be.eql(APIFY_ERROR_NAME);
             expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE_V1);
             expect(err.message).to.be.eql('"options.method" parameter must be provided');
-            hasFailed = true;
-        }
-
-        expect(hasFailed).to.be.eql(true);
-    });
-
-    it('fails when request[method] doesn\'t exist', () => {
-        let hasFailed = false;
-
-        try {
-            utils.requestPromise({ method: 'something', promise: Promise });
-        } catch (err) {
-            expect(err.name).to.be.eql(APIFY_ERROR_NAME);
-            expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE_V2);
-            expect(err.message).to.be.eql('"options.method" is not a valid http request method');
-            hasFailed = true;
-        }
-
-        expect(hasFailed).to.be.eql(true);
-    });
-
-    it('fails when request[method] doesn\'t exist for API V1', () => {
-        let hasFailed = false;
-
-        try {
-            utils.requestPromise({ method: 'something', promise: Promise, isApiV1: true });
-        } catch (err) {
-            expect(err.name).to.be.eql(APIFY_ERROR_NAME);
-            expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE_V1);
-            expect(err.message).to.be.eql('"options.method" is not a valid http request method');
-            hasFailed = true;
-        }
-
-        expect(hasFailed).to.be.eql(true);
-    });
-
-    it('fails when promise parameter is not provided', () => {
-        let hasFailed = false;
-
-        try {
-            utils.requestPromise({ method: 'get' });
-        } catch (err) {
-            expect(err.name).to.be.eql(APIFY_ERROR_NAME);
-            expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE_V2);
-            expect(err.message).to.be.eql('"options.promise" parameter must be provided');
-            hasFailed = true;
-        }
-
-        expect(hasFailed).to.be.eql(true);
-    });
-
-    it('fails when promise parameter is not provided for API V1', () => {
-        let hasFailed = false;
-
-        try {
-            utils.requestPromise({ method: 'get', isApiV1: true });
-        } catch (err) {
-            expect(err.name).to.be.eql(APIFY_ERROR_NAME);
-            expect(err.type).to.be.eql(INVALID_PARAMETER_ERROR_TYPE_V1);
-            expect(err.message).to.be.eql('"options.promise" parameter must be provided');
             hasFailed = true;
         }
 
@@ -372,16 +305,11 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                const expectedOpts = Object.assign({}, opts, { expBackOffMillis: opts.expBackOffMillis * (2 ** iteration) });
-
-                expect(passedOpts).to.be.eql(expectedOpts);
-
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
                 iteration++;
-
-                if (iteration < 8) return callback(null, { statusCode: 500 }, {});
-
-                callback(null, {}, expectedBody);
+                if (iteration < 8) return Promise.resolve({ statusCode: 500 });
+                return Promise.resolve({ body: expectedBody });
             });
 
         return utils
@@ -402,16 +330,11 @@ describe('utils.requestPromise()', () => {
 
         const stub = sinon
             .stub(request, method.toLowerCase())
-            .callsFake((passedOpts, callback) => {
-                const expectedOpts = Object.assign({}, opts, { expBackOffMillis: opts.expBackOffMillis * (2 ** iteration) });
-
-                expect(passedOpts).to.be.eql(expectedOpts);
-
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
                 iteration++;
-
-                if (iteration <= 4) return callback(null, { statusCode: 500 }, {});
-
-                callback(null, {}, expectedBody);
+                if (iteration <= 4) return Promise.resolve({ statusCode: 500 });
+                return Promise.resolve({ body: expectedBody });
             });
 
         return utils
@@ -497,18 +420,18 @@ describe('utils.catchNotFoundOrThrow()', () => {
     });
 });
 
-describe('utils.pluckData()', () => {
+describe('utils.gzipPromise()', () => {
     it('works', () => {
         const buffer = new Buffer([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]);
         const str = 'foobar';
 
         const testBuffer = utils
-            .gzipPromise(Promise, buffer)
+            .gzipPromise(buffer)
             .then(gzipped => gunzipSync(gzipped))
             .then(ungzipped => expect(ungzipped).to.be.eql(buffer));
 
         const testString = utils
-            .gzipPromise(Promise, str)
+            .gzipPromise(str)
             .then(gzipped => gunzipSync(gzipped))
             .then(ungzipped => expect(ungzipped.toString()).to.be.eql(str));
 

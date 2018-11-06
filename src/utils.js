@@ -1,4 +1,4 @@
-import request from 'request';
+import request from 'request-promise-native';
 import _ from 'underscore';
 import contentTypeParser from 'content-type';
 import log from 'apify-shared/log';
@@ -25,7 +25,7 @@ const CLIENT_USER_AGENT = `ApifyClient/${version} (${os.type()}; Node/${process.
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
 const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
 
-export const REQUEST_PROMISE_OPTIONS = ['promise', 'expBackOffMillis', 'expBackOffMaxRepeats'];
+export const REQUEST_PROMISE_OPTIONS = ['expBackOffMillis', 'expBackOffMaxRepeats'];
 
 /**
  * Parses a JSON string. If string is not JSON then catches an error and returns empty object.
@@ -65,6 +65,16 @@ export const newApifyClientErrorFromResponse = (statusCode, body, isApiV1) => {
 };
 
 /**
+ * Returns promise that resolves after given number of milliseconds.
+ *
+ * @param  {Number} sleepMillis
+ * @return {Promise}
+ */
+const promiseSleepMillis = (sleepMillis) => {
+    return new Promise(resolve => setTimeout(resolve, sleepMillis));
+};
+
+/**
  * Promised version of request(options) function.
  *
  * If response status code is >= 500 or RATE_LIMIT_EXCEEDED_STATUS_CODE then uses exponential backoff
@@ -76,81 +86,73 @@ export const newApifyClientErrorFromResponse = (statusCode, body, isApiV1) => {
  * - expBackOffMillis - initial wait time before next repeat in a case of error
  * - expBackOffMaxRepeats - maximal number of repeats
  */
-export const requestPromise = (options, iteration = 0) => {
+export const requestPromise = async (options) => {
     const isApiV1 = options.isApiV1;
 
     const INVALID_PARAMETER_ERROR_TYPE = isApiV1 ? INVALID_PARAMETER_ERROR_TYPE_V1 : INVALID_PARAMETER_ERROR_TYPE_V2;
     const REQUEST_FAILED_ERROR_TYPE = isApiV1 ? REQUEST_FAILED_ERROR_TYPE_V1 : REQUEST_FAILED_ERROR_TYPE_V2;
 
-    const PromisesDependency = options.promise;
     const expBackOffMillis = options.expBackOffMillis || EXP_BACKOFF_MILLIS;
     const expBackOffMaxRepeats = options.expBackOffMaxRepeats || EXP_BACKOFF_MAX_REPEATS;
     const method = _.isString(options.method) ? options.method.toLowerCase() : options.method;
-    const resolveWithResponse = options.resolveWithResponse;
 
     // Add custom user-agent to all API calls
     options.headers = Object.assign({}, options.headers, { 'User-Agent': CLIENT_USER_AGENT });
 
-    if (typeof PromisesDependency !== 'function') {
-        throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, '"options.promise" parameter must be provided');
-    }
+    if (!method) throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, '"options.method" parameter must be provided');
+    if (!request[method]) throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, '"options.method" is not a valid http request method');
 
-    if (!method) {
-        throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, '"options.method" parameter must be provided');
-    }
+    let iteration = 0;
+    while (iteration <= expBackOffMaxRepeats) {
+        let statusCode;
+        let response;
+        let error;
 
-    if (!request[method]) {
-        throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, '"options.method" is not a valid http request method');
-    }
+        try {
+            const requestParams = Object.assign({}, options, { resolveWithResponse: true });
+            response = await request[method](requestParams); // eslint-disable-line
+            statusCode = response ? response.statusCode : null;
+            if (!statusCode || statusCode < 300) return options.resolveWithResponse ? response : response.body;
+        } catch (err) {
+            error = err;
+        }
 
-    return new PromisesDependency((resolve, reject) => {
-        // We have to use request[method]({ ... }) instead of request({ method, ... })
-        // to be able to mock request when unit testing requestPromise().
-        request[method](options, (error, response, body) => {
-            const statusCode = response ? response.statusCode : null;
+        // For status codes 300-499 except RATE_LIMIT_EXCEEDED_STATUS_CODE we immediately rejects the promise
+        // since it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
+        if (statusCode >= 300 && statusCode < 500) {
+            throw newApifyClientErrorFromResponse(statusCode, response.body, isApiV1);
+        }
 
-            // If status code is >= 500 or RATE_LIMIT_EXCEEDED_STATUS_CODE then we repeat the request.
-            // We use exponential backoff alghorithm with up to `expBackOffMillis` repeats.
-            if (error || statusCode >= 500 || statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE) {
-                if (iteration >= expBackOffMaxRepeats) {
-                    const errMessage = `Server request failed with ${iteration + 1} tries.`;
-                    const errDetails = Object.assign(_.pick(options, 'url', 'method', 'qs'), {
-                        hasBody: !!options.body,
-                        statusCode,
-                        iteration,
-                        error,
-                    });
+        // If status code is >= 500 or RATE_LIMIT_EXCEEDED_STATUS_CODE then we repeat the request.
+        // We use exponential backoff alghorithm with up to `expBackOffMaxRepeats` repeats.
+        if (error || statusCode >= 500 || statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE) {
+            if (iteration >= expBackOffMaxRepeats) {
+                const errMessage = `Server request failed with ${iteration + 1} tries.`;
+                const errDetails = Object.assign(_.pick(options, 'url', 'method', 'qs'), {
+                    hasBody: !!options.body,
+                    iteration,
+                    error,
+                    statusCode,
+                });
 
-                    return reject(new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, errMessage, errDetails));
-                }
-
-                const waitMillis = _.random(expBackOffMillis, expBackOffMillis * 2);
-                const repeatCall = () => {
-                    const nextCallOptions = Object.assign({}, options, { expBackOffMillis: expBackOffMillis * 2 });
-
-                    requestPromise(nextCallOptions, iteration + 1).then(resolve, reject);
-                };
-
-                if (iteration === Math.round(expBackOffMaxRepeats / 2)) {
-                    log.warning(`Request failed ${iteration} times and will be repeated in ${waitMillis}ms`, {
-                        hasBody: !!options.body,
-                        statusCode,
-                        iteration,
-                        error,
-                    });
-                }
-
-                return setTimeout(repeatCall, waitMillis);
+                throw new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, errMessage, errDetails);
             }
+        }
 
-            // For status codes 300-499 except RATE_LIMIT_EXCEEDED_STATUS_CODE we immediately rejects the promise
-            // since it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
-            if (statusCode >= 300) return reject(newApifyClientErrorFromResponse(statusCode, body, isApiV1));
+        const waitMillis = expBackOffMillis * (2 ** iteration);
+        const randomizedWaitMillis = _.random(waitMillis, waitMillis * 2);
+        iteration++;
+        if (iteration === Math.round(expBackOffMaxRepeats / 2)) {
+            log.warning(`Request failed ${iteration} times and will be repeated in ${waitMillis}ms`, {
+                hasBody: !!options.body,
+                statusCode,
+                iteration,
+                error,
+            });
+        }
 
-            if (resolveWithResponse) resolve(response);
-            else resolve(body);
-        });
-    });
+        await promiseSleepMillis(randomizedWaitMillis); // eslint-disable-line
+    }
 };
 
 /**
@@ -203,7 +205,7 @@ export const catchNotFoundOrThrow = (err) => {
 /**
  * Promisified zlib.gzip().
  */
-export const gzipPromise = (Promise, buffer) => {
+export const gzipPromise = (buffer) => {
     return new Promise((resolve, reject) => {
         gzip(buffer, (err, gzippedBuffer) => {
             if (err) return reject(err);

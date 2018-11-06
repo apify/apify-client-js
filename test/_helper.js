@@ -13,7 +13,7 @@ export const requestExpectCall = (requestOpts, body, response) => {
     if (!_.isObject(requestOpts)) throw new Error('"requestOpts" parameter must be an object!');
     if (!requestOpts.method) throw new Error('"requestOpts.method" parameter is not set!');
 
-    const expectedRequestOpts = Object.assign({}, requestOpts, { promise: Promise });
+    const expectedRequestOpts = Object.assign({}, requestOpts);
     if (response) expectedRequestOpts.resolveWithResponse = true;
     const output = response ? Object.assign({}, response, { body }) : body;
 
@@ -28,7 +28,7 @@ export const requestExpectErrorCall = (requestOpts, resolveWithResponse, statusC
     if (!_.isObject(requestOpts)) throw new Error('"requestOpts" parameter must be an object!');
     if (!requestOpts.method) throw new Error('"requestOpts.method" parameter is not set!');
 
-    const expectedRequestOpts = Object.assign({}, requestOpts, { promise: Promise });
+    const expectedRequestOpts = Object.assign({}, requestOpts);
     if (resolveWithResponse) expectedRequestOpts.resolveWithResponse = true;
 
     const error = new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, REQUEST_FAILED_ERROR_MESSAGE, { statusCode });

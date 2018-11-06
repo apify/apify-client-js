@@ -1,6 +1,10 @@
-xxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxx - Major upgrade!
 ==================
 - All key-value store records with content type `text/*` are now parsed into string.
+- Option `promise` to customize Promise implementation is not supported any more.
+- All methods now use native promises instead of Bluebird implementation. Make sure that your code doesn't depend on Bluebird.
+- All Boolean parameters of v2 endpoints (Actor, Storages) are now truly Boolean and don't accept `1` as `true`.
+  Legacy crawler API hasn't changed.
 
 0.3.4 / 2018/10/31
 ==================

@@ -753,6 +753,7 @@ describe('Crawlers', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/execs/dummyExecution/results`,
                 isApiV1: true,
+                encoding: null,
             }, sampleBody, sampleResponse);
 
             const crawlerClient = new ApifyClient(basicOptions).crawlers;
@@ -778,6 +779,7 @@ describe('Crawlers', () => {
                     bom: 0,
                 },
                 resolveWithResponse: true,
+                encoding: null,
                 isApiV1: true,
             }, sampleBody, sampleResponse);
 
@@ -791,6 +793,7 @@ describe('Crawlers', () => {
                 desc: 1,
                 attachment: 1,
                 delimiter: ',',
+                encoding: null,
                 bom: 0 });
         });
     });
@@ -883,6 +886,7 @@ describe('Crawlers', () => {
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExec/results`,
                 qs: { token: credentials.token },
                 resolveWithResponse: true,
+                encoding: null,
                 isApiV1: true,
             }, sampleBody, sampleResponse);
 
@@ -901,6 +905,7 @@ describe('Crawlers', () => {
                 qs: { token: credentials.token, status: 'RUNNING' },
                 resolveWithResponse: true,
                 isApiV1: true,
+                encoding: null,
             }, sampleBody, sampleResponse);
 
             const crawlerClient = new ApifyClient(optionsWithCredentials).crawlers;

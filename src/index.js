@@ -55,11 +55,10 @@ const methodGroups = {
  *                             crawler's method.
  * @param {String} [options.userId] - Your user ID at apify.com
  * @param {String} [options.token] - Your API token at apify.com
- * @param {Object} [options.promise=Promise] - Promises dependency to use (default is native Promise)
  * @param {Number} [options.expBackOffMillis=500] - Wait time in milliseconds before repeating request to Apify API in a case of server
                                                     or rate limit error
  * @param {Number} [options.expBackOffMaxRepeats=8] - Maximum number of repeats in a case of error
- * @description Basic usage of ApifyClient with Bluebird promise:
+ * @description Basic usage of ApifyClient:
  * ```javascript
  * const ApifyClient = require('apify-client');
  *
@@ -79,20 +78,11 @@ const ApifyClient = function (options = {}) {
 
     const instanceOpts = Object.assign({}, getDefaultOptions(), options);
 
-    // Choose Promises dependency and throw if no one is set.
-    if (!instanceOpts.promise) {
-        if (typeof Promise === 'function') {
-            instanceOpts.promise = Promise;
-        } else {
-            throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE_V2, 'The "options.promise" parameter is required when native Promise is not available'); // eslint-disable-line max-len
-        }
-    }
-
     /**
      * This decorator does:
      * - extends "options" parameter with values from default options and from ApifyClient instance options
      * - adds options.baseUrl
-     * - passes preconfigured utils.requestPromise with Promises dependency set
+     * - passes preconfigured utils.requestPromise
      * - allows to use method with both callbacks and promises
      * @ignore
      */
@@ -111,7 +101,6 @@ const ApifyClient = function (options = {}) {
             };
 
             const promise = method(preconfiguredRequestPromise, mergedOpts);
-
             if (!callback) return promise;
 
             promise.then(
