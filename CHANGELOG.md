@@ -1,4 +1,4 @@
-xxxxxxxxxxxxxxxxxx - Major upgrade!
+0.4.0 / 2018/11/06
 ==================
 - All key-value store records with content type `text/*` are now parsed into string.
 - Option `promise` to customize Promise implementation is not supported any more.
