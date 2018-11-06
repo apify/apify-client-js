@@ -520,4 +520,128 @@ describe('Act method', () => {
             .abortBuild({ actId, token, buildId })
             .then(response => expect(response).to.be.eql(build));
     });
+
+    it('listActVersions() works', () => {
+        const actId = 'some-act-id';
+        const token = 'some-token';
+        const expected = {
+            total: 2,
+            items: ['actVersion1', 'actVersion2'],
+        };
+
+        requestExpectCall({
+            json: true,
+            method: 'GET',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/versions`,
+            qs: { token },
+        }, {
+            data: expected,
+        });
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .listActVersions({ actId, token })
+            .then(response => expect(response).to.be.eql(expected));
+    });
+
+    it('createActVersion() works', () => {
+        const actId = 'some-act-id';
+        const token = 'some-token';
+        const actVersion = {
+            versionNumber: '0.0',
+            foo: 'bar',
+        };
+
+        requestExpectCall({
+            json: true,
+            method: 'POST',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/versions`,
+            body: actVersion,
+            qs: { token },
+        }, {
+            data: actVersion,
+        });
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .createActVersion({ actId, token, actVersion })
+            .then(response => expect(response).to.be.eql(actVersion));
+    });
+
+    it('getActVersion() works', () => {
+        const actId = 'some-act-id';
+        const token = 'some-token';
+        const versionNumber = '0.0';
+        const actVersion = {
+            versionNumber: '0.0',
+            foo: 'bar',
+        };
+
+        requestExpectCall({
+            json: true,
+            method: 'GET',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/versions/${versionNumber}`,
+            qs: { token },
+        }, {
+            data: actVersion,
+        });
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .getActVersion({ actId, token, versionNumber })
+            .then(response => expect(response).to.be.eql(actVersion));
+    });
+
+    it('updateActVersion() works', () => {
+        const actId = 'some-act-id';
+        const token = 'some-token';
+        const versionNumber = '0.0';
+        const actVersion = {
+            versionNumber: '0.0',
+            foo: 'bar',
+        };
+
+        requestExpectCall({
+            json: true,
+            method: 'PUT',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/versions/${versionNumber}`,
+            body: actVersion,
+            qs: { token },
+        }, {
+            data: actVersion,
+        });
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .updateActVersion({ actId, token, actVersion, versionNumber })
+            .then(response => expect(response).to.be.eql(actVersion));
+    });
+
+    it('deleteActVersion() works', () => {
+        const actId = 'some-act-id';
+        const token = 'some-token';
+        const versionNumber = '0.0';
+
+        requestExpectCall({
+            json: true,
+            method: 'DELETE',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/versions/${versionNumber}`,
+            qs: { token },
+        }, {});
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .deleteActVersion({ actId, token, versionNumber })
+            .then(response => expect(response).to.be.eql(null));
+    });
 });

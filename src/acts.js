@@ -558,4 +558,161 @@ export default {
             .then(pluckData)
             .then(parseDateFields);
     },
+
+    /**
+     * Gets the list of versions of a specific act.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Unique act ID
+     * @return {PaginationList}
+     */
+    listActVersions: (requestPromise, options) => {
+        const { baseUrl, token, actId } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const safeActId = replaceSlashWithTilde(actId);
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/versions`,
+            json: true,
+            method: 'GET',
+            qs: token ? { token } : {},
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+
+    /**
+     * Creates an act version.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Unique act ID
+     * @param {Object} options.actVersion - Act version
+     * @return {ActVersion}
+     */
+    createActVersion: (requestPromise, options) => {
+        const { baseUrl, token, actId, actVersion } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(actVersion, 'actVersion', 'Object');
+
+        const safeActId = replaceSlashWithTilde(actId);
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/versions`,
+            json: true,
+            method: 'POST',
+            body: actVersion,
+            qs: { token },
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+
+    /**
+     * Gets an act version.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Unique act ID
+     * @param {String} options.versionNumber - Version number of act version
+     * @return {ActVersion}
+     */
+    getActVersion: (requestPromise, options) => {
+        const { baseUrl, token, actId, versionNumber } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+        checkParamOrThrow(versionNumber, 'versionNumber', 'String');
+
+        const safeActId = replaceSlashWithTilde(actId);
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/versions/${versionNumber}`,
+            json: true,
+            method: 'GET',
+            qs: token ? { token } : {},
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+
+    /**
+     * Updates an act version.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Unique act ID
+     * @param {String} options.versionNumber - Version number of act version
+     * @param {Object} options.actVersion - Act version
+     * @return {ActVersion}
+     */
+    updateActVersion: (requestPromise, options) => {
+        const { baseUrl, token, actId, actVersion, versionNumber } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(actVersion, 'actVersion', 'Object');
+        checkParamOrThrow(versionNumber, 'versionNumber', 'String');
+
+        const safeActId = replaceSlashWithTilde(actId);
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/versions/${versionNumber}`,
+            json: true,
+            method: 'PUT',
+            body: actVersion,
+            qs: { token },
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+
+    /**
+     * Deletes an act version.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Unique act ID
+     * @param {String} options.versionNumber - Version number of act version
+     * @return {}
+     */
+    deleteActVersion: (requestPromise, options) => {
+        const { baseUrl, token, actId, versionNumber } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(versionNumber, 'versionNumber', 'String');
+
+        const safeActId = replaceSlashWithTilde(actId);
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/versions/${versionNumber}`,
+            json: true,
+            method: 'DELETE',
+            qs: { token },
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
 };
