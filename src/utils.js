@@ -109,7 +109,7 @@ export const requestPromise = async (options) => {
         let error;
 
         try {
-            const requestParams = Object.assign({}, options, { resolveWithResponse: true });
+            const requestParams = Object.assign({}, options, { resolveWithFullResponse: true });
             response = await request[method](requestParams); // eslint-disable-line
             statusCode = response ? response.statusCode : null;
             if (!statusCode || statusCode < 300) return options.resolveWithResponse ? response : response.body;
