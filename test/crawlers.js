@@ -87,7 +87,7 @@ describe('Crawlers', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers`,
                 qs: { token: credentials.token },
-                resolveWithResponse: true,
+                resolveWithFullResponse: true,
                 isApiV1: true,
             }, {}, sampleResponse);
 
@@ -102,7 +102,7 @@ describe('Crawlers', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/userIdParameter/crawlers`,
                 qs: { token: 'tokenParameter' },
-                resolveWithResponse: true,
+                resolveWithFullResponse: true,
                 isApiV1: true,
             }, {}, sampleResponse);
 
@@ -117,7 +117,7 @@ describe('Crawlers', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers`,
                 qs: { token: credentials.token },
-                resolveWithResponse: true,
+                resolveWithFullResponse: true,
                 isApiV1: true,
             }, sampleResponse);
 
@@ -562,7 +562,7 @@ describe('Crawlers', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/execs`,
                 qs: { token: credentials.token },
-                resolveWithResponse: true,
+                resolveWithFullResponse: true,
                 isApiV1: true,
             }, sampleBody, sampleResponse);
 
@@ -778,7 +778,7 @@ describe('Crawlers', () => {
                     delimiter: ',',
                     bom: 0,
                 },
-                resolveWithResponse: true,
+                resolveWithFullResponse: true,
                 encoding: null,
                 isApiV1: true,
             }, sampleBody, sampleResponse);
@@ -885,7 +885,7 @@ describe('Crawlers', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExec/results`,
                 qs: { token: credentials.token },
-                resolveWithResponse: true,
+                resolveWithFullResponse: true,
                 encoding: null,
                 isApiV1: true,
             }, sampleBody, sampleResponse);
@@ -903,7 +903,7 @@ describe('Crawlers', () => {
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/${credentials.userId}/crawlers/dummyCrawler/lastExec/results`,
                 qs: { token: credentials.token, status: 'RUNNING' },
-                resolveWithResponse: true,
+                resolveWithFullResponse: true,
                 isApiV1: true,
                 encoding: null,
             }, sampleBody, sampleResponse);

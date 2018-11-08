@@ -303,7 +303,7 @@ export default {
             qs: query,
             json: false,
             gzip: true,
-            resolveWithResponse: true,
+            resolveWithFullResponse: true,
             encoding: null,
         };
 

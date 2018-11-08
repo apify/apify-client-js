@@ -226,7 +226,7 @@ export default {
             json: false,
             qs: {},
             gzip: true,
-            resolveWithResponse: true,
+            resolveWithFullResponse: true,
             encoding: null,
         };
 

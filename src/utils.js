@@ -82,7 +82,7 @@ const promiseSleepMillis = (sleepMillis) => {
  *
  * Possible options parameters are:
  * - everything supported by 'request' npm package (mainly 'method', 'url' and 'qs')
- * - resolveWithResponse - to resolve promise with whole response instead of just body
+ * - resolveWithFullResponse - to resolve promise with whole response instead of just body
  * - expBackOffMillis - initial wait time before next repeat in a case of error
  * - expBackOffMaxRepeats - maximal number of repeats
  */
@@ -112,7 +112,7 @@ export const requestPromise = async (options) => {
             const requestParams = Object.assign({}, options, { resolveWithFullResponse: true });
             response = await request[method](requestParams); // eslint-disable-line
             statusCode = response ? response.statusCode : null;
-            if (!statusCode || statusCode < 300) return options.resolveWithResponse ? response : response.body;
+            if (!statusCode || statusCode < 300) return options.resolveWithFullResponse ? response : response.body;
         } catch (err) {
             error = err;
         }

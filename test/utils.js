@@ -103,7 +103,7 @@ describe('utils.requestPromise()', () => {
 
     it('works as expected with full response when request succeeds', () => {
         const method = 'DELETE';
-        const opts = { method, foo: 'bar', resolveWithResponse: true, promise: Promise };
+        const opts = { method, foo: 'bar', resolveWithFullResponse: true, promise: Promise };
         const expectedBody = { foo: 'something', bar: 123 };
         const expectedResponse = { statusCode: 123, foo: 'bar', body: expectedBody };
 
@@ -306,7 +306,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
                 iteration++;
                 if (iteration < 8) return Promise.resolve({ statusCode: 500 });
                 return Promise.resolve({ body: expectedBody });
@@ -331,7 +331,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
                 iteration++;
                 if (iteration <= 4) return Promise.resolve({ statusCode: 500 });
                 return Promise.resolve({ body: expectedBody });

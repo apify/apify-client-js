@@ -202,7 +202,7 @@ describe('Key value store', () => {
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
                 gzip: true,
                 qs: {},
-                resolveWithResponse: true,
+                resolveWithFullResponse: true,
                 encoding: null,
             }, expected.body, { headers: { 'content-type': 'text/plain' } });
 
@@ -230,7 +230,7 @@ describe('Key value store', () => {
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
                 gzip: true,
                 qs: {},
-                resolveWithResponse: true,
+                resolveWithFullResponse: true,
                 encoding: null,
             }, body, { headers: { 'content-type': contentType } });
 
@@ -257,7 +257,7 @@ describe('Key value store', () => {
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
                 gzip: true,
                 qs: {},
-                resolveWithResponse: true,
+                resolveWithFullResponse: true,
                 encoding: null,
             }, body, { headers: { 'content-type': contentType } });
 
@@ -281,7 +281,7 @@ describe('Key value store', () => {
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
                 gzip: true,
                 qs: {},
-                resolveWithResponse: true,
+                resolveWithFullResponse: true,
                 encoding: null,
             }, false, 404);
 

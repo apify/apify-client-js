@@ -210,7 +210,7 @@ describe('Dataset', () => {
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
                 gzip: true,
                 qs: {},
-                resolveWithResponse: true,
+                resolveWithFullResponse: true,
                 encoding: null,
             }, JSON.stringify(expected.items), { headers });
 
@@ -245,7 +245,7 @@ describe('Dataset', () => {
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
                 gzip: true,
                 qs: { limit: 1, offset: 1 },
-                resolveWithResponse: true,
+                resolveWithFullResponse: true,
                 encoding: null,
             }, JSON.stringify(expected.items), { headers });
 
@@ -282,7 +282,7 @@ describe('Dataset', () => {
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
                 gzip: true,
                 qs: {},
-                resolveWithResponse: true,
+                resolveWithFullResponse: true,
                 encoding: null,
             }, body, { headers });
 
@@ -321,7 +321,7 @@ describe('Dataset', () => {
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
                 gzip: true,
                 qs: {},
-                resolveWithResponse: true,
+                resolveWithFullResponse: true,
                 encoding: null,
             }, body, { headers });
 

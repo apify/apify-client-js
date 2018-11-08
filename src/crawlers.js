@@ -96,7 +96,7 @@ export default {
             json: true,
             method: 'GET',
             qs: queryString,
-            resolveWithResponse: true,
+            resolveWithFullResponse: true,
             isApiV1: true,
         })
             .then(wrapArray)
@@ -353,7 +353,7 @@ export default {
             json: true,
             method: 'GET',
             qs: queryString,
-            resolveWithResponse: true,
+            resolveWithFullResponse: true,
             isApiV1: true,
         })
             .then(parseDateFields)
@@ -460,7 +460,7 @@ export default {
             url: `${options.baseUrl}${BASE_PATH}/execs/${executionId}/results`,
             json: true,
             method: 'GET',
-            resolveWithResponse: true,
+            resolveWithFullResponse: true,
             isApiV1: true,
             encoding: null,
         };
@@ -523,7 +523,7 @@ export default {
             url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawlerId}/lastExec/results`,
             json: true,
             method: 'GET',
-            resolveWithResponse: true,
+            resolveWithFullResponse: true,
             isApiV1: true,
             encoding: null,
         };
