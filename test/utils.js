@@ -89,7 +89,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
                 return Promise.resolve({ body: expectedBody });
             });
 
@@ -110,7 +110,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
                 return Promise.resolve(expectedResponse);
             });
 
@@ -134,7 +134,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
                 iteration++;
                 if (iteration < 8) return Promise.reject(new Error(errorMsg), null, {});
                 return Promise.resolve({ body: expectedBody });
@@ -165,7 +165,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
                 return Promise.reject(error);
             });
 
@@ -196,7 +196,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
                 return Promise.reject(error);
             });
 
@@ -224,7 +224,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
                 return Promise.resolve({ statusCode, body: JSON.stringify({ type, message }) });
             });
 
@@ -249,7 +249,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
                 return Promise.resolve({ statusCode: 404, body: '' });
             });
 
