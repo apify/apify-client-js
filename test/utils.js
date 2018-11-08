@@ -83,13 +83,13 @@ describe('utils.newApifyClientErrorFromResponse()', () => {
 describe('utils.requestPromise()', () => {
     it('works as expected when request succeeds', () => {
         const method = 'DELETE';
-        const opts = { method, foo: 'bar', promise: Promise };
+        const opts = { method, foo: 'bar' };
         const expectedBody = { foo: 'something', bar: 123 };
 
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
                 return Promise.resolve({ body: expectedBody });
             });
 
@@ -103,14 +103,14 @@ describe('utils.requestPromise()', () => {
 
     it('works as expected with full response when request succeeds', () => {
         const method = 'DELETE';
-        const opts = { method, foo: 'bar', resolveWithFullResponse: true, promise: Promise };
+        const opts = { method, foo: 'bar', resolveWithFullResponse: true };
         const expectedBody = { foo: 'something', bar: 123 };
         const expectedResponse = { statusCode: 123, foo: 'bar', body: expectedBody };
 
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
                 return Promise.resolve(expectedResponse);
             });
 
@@ -134,7 +134,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
                 iteration++;
                 if (iteration < 8) return Promise.reject(new Error(errorMsg), null, {});
                 return Promise.resolve({ body: expectedBody });
@@ -165,7 +165,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
                 return Promise.reject(error);
             });
 
@@ -178,10 +178,9 @@ describe('utils.requestPromise()', () => {
                 expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
                 expect(err.details.iteration).to.be.eql(opts.expBackOffMaxRepeats);
                 expect(err.details.statusCode).to.be.eql(undefined);
-                expect(err.details.error).to.be.eql(error);
+                expect(err.details.error).to.be.eql(error.message);
                 expect(err.details.hasBody).to.be.eql(false);
                 expect(err.details.method).to.be.eql(method);
-                expect(err.details.error).to.be.eql(error);
                 expect(err.details.url).to.be.eql('http://example.com/a/b');
                 expect(err.details.qs).to.be.eql({ foo: 'bar' });
                 stub.restore();
@@ -190,13 +189,13 @@ describe('utils.requestPromise()', () => {
 
     it('works as expected when request throws an error for API V1', () => {
         const method = 'POST';
-        const opts = { method, foo: 'bar', promise: Promise, isApiV1: true, expBackOffMaxRepeats: 8, expBackOffMillis: 5 };
+        const opts = { method, foo: 'bar', isApiV1: true, expBackOffMaxRepeats: 8, expBackOffMillis: 5 };
         const error = new Error('some-error');
 
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
                 return Promise.reject(error);
             });
 
@@ -209,14 +208,14 @@ describe('utils.requestPromise()', () => {
                 expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V1);
                 expect(err.details.iteration).to.be.eql(opts.expBackOffMaxRepeats);
                 expect(err.details.statusCode).to.be.eql(undefined);
-                expect(err.details.error).to.be.eql(error);
+                expect(err.details.error).to.be.eql(error.message);
                 stub.restore();
             });
     });
 
     it('works as expected when response contains error code and error details', () => {
         const method = 'POST';
-        const opts = { method, foo: 'bar', promise: Promise };
+        const opts = { method, foo: 'bar' };
         const type = 'SOME-TYPE';
         const message = 'Some message';
         const statusCode = 404;
@@ -224,7 +223,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
                 return Promise.resolve({ statusCode, body: JSON.stringify({ type, message }) });
             });
 
@@ -243,13 +242,13 @@ describe('utils.requestPromise()', () => {
 
     it('works as expected when response contains only error code', () => {
         const method = 'POST';
-        const opts = { method, foo: 'bar', promise: Promise };
+        const opts = { method, foo: 'bar' };
         const statusCode = 404;
 
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
                 return Promise.resolve({ statusCode: 404, body: '' });
             });
 
@@ -298,7 +297,7 @@ describe('utils.requestPromise()', () => {
 
     it('supports exponential backoff', () => {
         const method = 'DELETE';
-        const opts = { method, foo: 'bar', expBackOffMillis: 5, expBackOffMaxRepeats: 8, promise: Promise };
+        const opts = { method, foo: 'bar', expBackOffMillis: 5, expBackOffMaxRepeats: 8 };
         const expectedBody = { foo: 'something', bar: 123 };
 
         let iteration = 0;
@@ -306,7 +305,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
                 iteration++;
                 if (iteration < 8) return Promise.resolve({ statusCode: 500 });
                 return Promise.resolve({ body: expectedBody });
@@ -323,7 +322,7 @@ describe('utils.requestPromise()', () => {
 
     it('supports limit of exponential backoff iterations', () => {
         const method = 'DELETE';
-        const opts = { method, foo: 'bar', expBackOffMillis: 5, expBackOffMaxRepeats: 3, promise: Promise };
+        const opts = { method, foo: 'bar', expBackOffMillis: 5, expBackOffMaxRepeats: 3 };
         const expectedBody = { foo: 'something', bar: 123 };
 
         let iteration = 0;
@@ -331,7 +330,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
                 iteration++;
                 if (iteration <= 4) return Promise.resolve({ statusCode: 500 });
                 return Promise.resolve({ body: expectedBody });

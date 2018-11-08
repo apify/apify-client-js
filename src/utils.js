@@ -109,7 +109,10 @@ export const requestPromise = async (options) => {
         let error;
 
         try {
-            const requestParams = Object.assign({}, options, { resolveWithFullResponse: true });
+            const requestParams = Object.assign({}, options, {
+                resolveWithFullResponse: true,
+                simple: false,
+            });
             response = await request[method](requestParams); // eslint-disable-line
             statusCode = response ? response.statusCode : null;
             if (!statusCode || statusCode < 300) return options.resolveWithFullResponse ? response : response.body;
@@ -119,36 +122,33 @@ export const requestPromise = async (options) => {
 
         // For status codes 300-499 except RATE_LIMIT_EXCEEDED_STATUS_CODE we immediately rejects the promise
         // since it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
-        if (statusCode >= 300 && statusCode < 500) {
+        if (statusCode >= 300 && statusCode < 500 && statusCode !== RATE_LIMIT_EXCEEDED_STATUS_CODE) {
             throw newApifyClientErrorFromResponse(statusCode, response.body, isApiV1);
         }
 
-        // If status code is >= 500 or RATE_LIMIT_EXCEEDED_STATUS_CODE then we repeat the request.
-        // We use exponential backoff alghorithm with up to `expBackOffMaxRepeats` repeats.
-        if (error || statusCode >= 500 || statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE) {
-            if (iteration >= expBackOffMaxRepeats) {
-                const errMessage = `Server request failed with ${iteration + 1} tries.`;
-                const errDetails = Object.assign(_.pick(options, 'url', 'method', 'qs'), {
-                    hasBody: !!options.body,
-                    iteration,
-                    error,
-                    statusCode,
-                });
+        const errorDetails = Object.assign(_.pick(options, 'url', 'method', 'qs'), {
+            hasBody: !!options.body,
+            iteration,
+            error: error && error.message ? error.message : error,
+            statusCode,
+        });
 
-                throw new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, errMessage, errDetails);
-            }
+        // If one of these happened:
+        // - error occurd
+        // - status code is >= 500
+        // - RATE_LIMIT_EXCEEDED_STATUS_CODE
+        // then we repeat the request with exponential backoff alghorithm with up to `expBackOffMaxRepeats` repeats.
+        if (iteration >= expBackOffMaxRepeats) {
+            throw new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, `Server request failed with ${iteration + 1} tries.`, errorDetails);
         }
 
         const waitMillis = expBackOffMillis * (2 ** iteration);
         const randomizedWaitMillis = _.random(waitMillis, waitMillis * 2);
         iteration++;
+
+        // Print warning when request is repeated 4 times.
         if (iteration === Math.round(expBackOffMaxRepeats / 2)) {
-            log.warning(`Request failed ${iteration} times and will be repeated in ${waitMillis}ms`, {
-                hasBody: !!options.body,
-                statusCode,
-                iteration,
-                error,
-            });
+            log.warning(`Request failed ${iteration} times and will be repeated in ${waitMillis}ms`, errorDetails);
         }
 
         await promiseSleepMillis(randomizedWaitMillis); // eslint-disable-line
