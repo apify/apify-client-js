@@ -172,19 +172,20 @@ describe('Dataset', () => {
 
         it('deleteDataset() works', () => {
             const datasetId = 'some-id';
+            const token = 'my-token';
 
             requestExpectCall({
                 json: true,
                 method: 'DELETE',
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
-                qs: {},
+                qs: { token },
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .datasets
-                .deleteDataset({ datasetId });
+                .deleteDataset({ datasetId, token });
         });
 
         it('getItems() works', () => {
@@ -339,6 +340,7 @@ describe('Dataset', () => {
             const datasetId = 'some-id';
             const contentType = 'application/json; charset=utf-8';
             const data = { someData: 'someValue' };
+            const token = 'my-token';
 
             requestExpectCall({
                 body: gzipSync(JSON.stringify(data)),
@@ -349,19 +351,20 @@ describe('Dataset', () => {
                 json: false,
                 method: 'POST',
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
-                qs: {},
+                qs: { token },
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .datasets
-                .putItems({ datasetId, data });
+                .putItems({ datasetId, data, token });
         });
         it('putItems() works with array', () => {
             const datasetId = 'some-id';
             const contentType = 'application/json; charset=utf-8';
             const data = [{ someData: 'someValue' }, { someData: 'someValue' }];
+            const token = 'my-token';
 
             requestExpectCall({
                 body: gzipSync(JSON.stringify(data)),
@@ -372,19 +375,20 @@ describe('Dataset', () => {
                 json: false,
                 method: 'POST',
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
-                qs: {},
+                qs: { token },
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .datasets
-                .putItems({ datasetId, data });
+                .putItems({ datasetId, data, token });
         });
         it('putItems() works with string', () => {
             const datasetId = 'some-id';
             const contentType = 'application/json; charset=utf-8';
             const data = JSON.stringify([{ someData: 'someValue' }, { someData: 'someValue' }]);
+            const token = 'my-token';
 
             requestExpectCall({
                 body: gzipSync(data),
@@ -395,14 +399,14 @@ describe('Dataset', () => {
                 json: false,
                 method: 'POST',
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
-                qs: {},
+                qs: { token },
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .datasets
-                .putItems({ datasetId, data });
+                .putItems({ datasetId, data, token });
         });
     });
 });
