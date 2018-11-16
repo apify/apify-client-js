@@ -273,28 +273,47 @@ export default {
      * @param [options.token]
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for task to finish. Maximum value is 120s.
                                                  If task doesn't finish in time then task run in RUNNING state is returned.
+     * @param {String} [options.body] - Actor input stringified as JSON, passed as HTTP POST payload
+     * @param {String} [options.contentType] - Content type of act input e.g 'application/json'
+     * @param {Number} [options.timeout] - Timeout for the act run in seconds. Zero value means there is no timeout.
+     * @param {Number} [options.memory] - Amount of memory allocated for the act run, in megabytes.
+     * @param {String} [options.build] - Tag or number of the build to run (e.g. <code>latest</code> or <code>1.2.34</code>).
      * @param callback
      * @returns {ActRun}
      */
     runTask: (requestPromise, options) => {
-        const { baseUrl, token, taskId, waitForFinish } = options;
+        const { baseUrl, token, taskId, waitForFinish, body, contentType, timeout, memory, build } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(taskId, 'taskId', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
+        checkParamOrThrow(contentType, 'contentType', 'Maybe String');
+        checkParamOrThrow(timeout, 'timeout', 'Maybe Number');
+        checkParamOrThrow(memory, 'memory', 'Maybe Number');
+        checkParamOrThrow(build, 'build', 'Maybe String');
 
         const safeTaskId = replaceSlashWithTilde(taskId);
         const query = {};
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
         if (token) query.token = token;
+        if (timeout) query.timeout = timeout;
+        if (memory) query.memory = memory;
+        if (build) query.build = build;
 
         const opts = {
             url: `${baseUrl}${BASE_PATH}/${safeTaskId}/runs`,
             method: 'POST',
             qs: query,
         };
+
+        if (contentType) opts.headers = { 'Content-Type': contentType };
+
+        if (body) {
+            checkParamOrThrow(body, 'body', 'String');
+            opts.body = body;
+        }
 
         return requestPromise(opts)
             .then(response => JSON.parse(response))

@@ -1,3 +1,7 @@
+xxxxxxxxxxxxxxxxxx
+==================
+- `tasks.runTask()` method now allows to overload input and options from actor task configuration.
+
 0.4.0 / 2018/11/06
 ==================
 - All key-value store records with content type `text/*` are now parsed into string.

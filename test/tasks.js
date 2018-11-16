@@ -386,6 +386,33 @@ describe('Tasks method', () => {
             .then(response => expect(response).to.be.eql(run));
     });
 
+    it('runTask() works with input and options overrides', () => {
+        const taskId = 'some-id';
+        const token = 'some-token';
+        const run = { foo: 'bar' };
+        const apiResponse = JSON.stringify({ data: run });
+        const memory = 512;
+        const contentType = 'application/json; charset=utf-8';
+        const body = '{ "foo": "bar" }';
+
+        const waitForFinish = 120;
+
+        requestExpectCall({
+            method: 'POST',
+            url: `${BASE_URL}${BASE_PATH}/${taskId}/runs`,
+            headers: { 'Content-Type': contentType },
+            qs: { token, waitForFinish, memory },
+            body,
+        }, apiResponse);
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .tasks
+            .runTask({ taskId, token, waitForFinish, memory, body, contentType })
+            .then(response => expect(response).to.be.eql(run));
+    });
+
     /*
     NOTE: not allowed currently.
 
