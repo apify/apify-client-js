@@ -1,3 +1,8 @@
+################## breaking !!!!
+==================
+- Methods for Apify storages (i.e. key-value stores, datasets and request queues) that use other than GET HTTP method
+  now require token parameter.
+
 0.4.0 / 2018/11/06
 ==================
 - All key-value store records with content type `text/*` are now parsed into string.

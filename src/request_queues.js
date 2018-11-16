@@ -201,16 +201,13 @@ export default {
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
-
-        const query = {};
-        if (token) query.token = token;
+        checkParamOrThrow(token, 'token', 'String');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}`,
             json: true,
             method: 'DELETE',
-            qs: query,
+            qs: { token },
         });
     },
 
@@ -237,17 +234,14 @@ export default {
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(request, 'request', 'Object');
         checkParamOrThrow(forefront, 'forefront', 'Boolean');
-        checkParamOrThrow(token, 'token', 'Maybe String');
-
-        const query = { forefront };
-        if (token) query.token = token;
+        checkParamOrThrow(token, 'token', 'String');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests`,
             json: true,
             method: 'POST',
             body: request,
-            qs: query,
+            qs: { forefront, token },
         })
             .then(pluckData)
             .then(parseDateFields);
@@ -307,16 +301,13 @@ export default {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(requestId, 'requestId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
-
-        const query = {};
-        if (token) query.token = token;
+        checkParamOrThrow(token, 'token', 'String');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests/${requestId}`,
             json: true,
             method: 'DELETE',
-            qs: query,
+            qs: { token },
         });
     },
 
@@ -347,17 +338,14 @@ export default {
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(safeRequestId, 'requestId', 'String');
         checkParamOrThrow(forefront, 'forefront', 'Boolean');
-        checkParamOrThrow(token, 'token', 'Maybe String');
-
-        const query = { forefront };
-        if (token) query.token = token;
+        checkParamOrThrow(token, 'token', 'String');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests/${safeRequestId}`,
             json: true,
             method: 'PUT',
             body: request,
-            qs: query,
+            qs: { forefront, token },
         })
             .then(pluckData)
             .then(parseDateFields);
