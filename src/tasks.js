@@ -294,10 +294,9 @@ export default {
         checkParamOrThrow(build, 'build', 'Maybe String');
 
         const safeTaskId = replaceSlashWithTilde(taskId);
-        const query = {};
+        const query = { token };
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
-        if (token) query.token = token;
         if (timeout) query.timeout = timeout;
         if (memory) query.memory = memory;
         if (build) query.build = build;
