@@ -1,6 +1,6 @@
 {
   "name": "apify-client",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Apify API client for JavaScript",
   "main": "build/index.js",
   "keywords": [
@@ -21,7 +21,9 @@
   "contributors": [
     "Jan Curn <jan@apify.com>",
     "Marek Trunkát <marek@apify.com>",
-    "Lubos Turek <lubos.turek@gmail.com>"
+    "Lubos Turek <lubos.turek@gmail.com>",
+    "Ondra Urban <ondra@apify.com>",
+    "Jakub Drobník <drobnik.j@apify.com>"
   ],
   "license": "Apache-2.0",
   "repository": {

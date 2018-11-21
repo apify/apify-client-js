@@ -1,4 +1,4 @@
-################## breaking !!!!
+0.5.0 / 2018/11/21
 ==================
 - Methods for Apify storages (i.e. key-value stores, datasets and request queues) that use other than GET HTTP method
   now require token parameter.
