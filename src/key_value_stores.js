@@ -181,16 +181,13 @@ export default {
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
-
-        const query = {};
-        if (token) query.token = token;
+        checkParamOrThrow(token, 'token', 'String');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${storeId}`,
             json: true,
             method: 'DELETE',
-            qs: query,
+            qs: { token },
         });
     },
 
@@ -271,10 +268,7 @@ export default {
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(contentType, 'contentType', 'String');
         checkParamOrThrow(body, 'body', 'Buffer | String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
-
-        const query = {};
-        if (token) query.token = token;
+        checkParamOrThrow(token, 'token', 'String');
 
         return gzipPromise(body)
             .then((gzipedBody) => {
@@ -287,7 +281,7 @@ export default {
                         'Content-Type': contentType,
                         'Content-Encoding': 'gzip',
                     },
-                    qs: query,
+                    qs: { token },
                 };
 
                 // Uploading via our servers:
@@ -301,7 +295,7 @@ export default {
                     headers: {
                         'Content-Type': contentType,
                     },
-                    qs: query,
+                    qs: { token },
                 })
                     .then((response) => {
                         const signedUrl = response.data.signedUrl;
@@ -330,16 +324,13 @@ export default {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
-
-        const query = {};
-        if (token) query.token = token;
+        checkParamOrThrow(token, 'token', 'String');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
             json: true,
             method: 'DELETE',
-            qs: query,
+            qs: { token },
         });
     },
 

@@ -171,39 +171,41 @@ describe('Request queue', () => {
 
         it('deleteQueue() works', () => {
             const queueId = 'some-id';
+            const token = 'my-token';
 
             requestExpectCall({
                 json: true,
                 method: 'DELETE',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}`,
-                qs: {},
+                qs: { token },
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .requestQueues
-                .deleteQueue({ queueId });
+                .deleteQueue({ queueId, token });
         });
 
         it('addRequest() works without forefront param', () => {
             const queueId = 'some-id';
             const request = { url: 'http://example.com' };
             const response = { foo: 'bar' };
+            const token = 'my-token';
 
             requestExpectCall({
                 json: true,
                 method: 'POST',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests`,
                 body: request,
-                qs: { forefront: false },
+                qs: { forefront: false, token },
             }, { data: response });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .requestQueues
-                .addRequest({ queueId, request })
+                .addRequest({ queueId, request, token })
                 .then(data => expect(data).to.be.eql(response));
         });
 
@@ -211,20 +213,21 @@ describe('Request queue', () => {
             const queueId = 'some-id';
             const request = { url: 'http://example.com' };
             const response = { foo: 'bar' };
+            const token = 'my-token';
 
             requestExpectCall({
                 json: true,
                 method: 'POST',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests`,
                 body: request,
-                qs: { forefront: true },
+                qs: { forefront: true, token },
             }, { data: response });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .requestQueues
-                .addRequest({ queueId, request, forefront: true })
+                .addRequest({ queueId, request, forefront: true, token })
                 .then(data => expect(data).to.be.eql(response));
         });
 
@@ -251,19 +254,20 @@ describe('Request queue', () => {
         it('deleteRequest() works', () => {
             const queueId = 'some-id';
             const requestId = 'xxx';
+            const token = 'my-token';
 
             requestExpectCall({
                 json: true,
                 method: 'DELETE',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
-                qs: {},
+                qs: { token },
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .requestQueues
-                .deleteRequest({ queueId, requestId });
+                .deleteRequest({ queueId, requestId, token });
         });
 
         it('updateRequest() works with requestId param', () => {
@@ -271,20 +275,21 @@ describe('Request queue', () => {
             const requestId = 'xxx';
             const request = { url: 'http://example.com' };
             const response = { foo: 'bar' };
+            const token = 'my-token';
 
             requestExpectCall({
                 json: true,
                 method: 'PUT',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
                 body: request,
-                qs: { forefront: false },
+                qs: { forefront: false, token },
             }, { data: response });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .requestQueues
-                .updateRequest({ queueId, requestId, request })
+                .updateRequest({ queueId, requestId, request, token })
                 .then(data => expect(data).to.be.eql(response));
         });
 
@@ -293,20 +298,21 @@ describe('Request queue', () => {
             const requestId = 'xxx';
             const request = { url: 'http://example.com', id: requestId };
             const response = { foo: 'bar' };
+            const token = 'my-token';
 
             requestExpectCall({
                 json: true,
                 method: 'PUT',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
                 body: request,
-                qs: { forefront: true },
+                qs: { forefront: true, token },
             }, { data: response });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .requestQueues
-                .updateRequest({ queueId, request, forefront: true })
+                .updateRequest({ queueId, request, forefront: true, token })
                 .then(data => expect(data).to.be.eql(response));
         });
 
