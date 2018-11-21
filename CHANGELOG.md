@@ -1,5 +1,7 @@
-xxxxxxxxxxxxxxxxxx
+################## breaking !!!!
 ==================
+- Methods for Apify storages (i.e. key-value stores, datasets and request queues) that use other than GET HTTP method
+  now require token parameter.
 - `tasks.runTask()` method now allows to overload input and options from actor task configuration.
 
 0.4.0 / 2018/11/06

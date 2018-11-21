@@ -173,19 +173,20 @@ describe('Key value store', () => {
 
         it('deleteStore() works', () => {
             const storeId = 'some-id';
+            const token = 'my-token';
 
             requestExpectCall({
                 json: true,
                 method: 'DELETE',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}`,
-                qs: {},
+                qs: { token },
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .keyValueStores
-                .deleteStore({ storeId });
+                .deleteStore({ storeId, token });
         });
 
         it('getRecord() works', () => {
@@ -298,6 +299,7 @@ describe('Key value store', () => {
             const storeId = 'some-id';
             const contentType = 'text/plain';
             const body = 'someValue';
+            const token = 'my-token';
 
             requestExpectCall({
                 body: gzipSync('someValue'),
@@ -308,14 +310,14 @@ describe('Key value store', () => {
                 json: false,
                 method: 'PUT',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
-                qs: {},
+                qs: { token },
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .keyValueStores
-                .putRecord({ storeId, key, contentType, body });
+                .putRecord({ storeId, key, contentType, body, token });
         });
 
         it('putRecord() uploads via signed url when gzipped buffer.length > SIGNED_URL_UPLOAD_MIN_BYTESIZE', () => {
@@ -324,6 +326,7 @@ describe('Key value store', () => {
             const contentType = 'application/octet-stream';
             const body = randomBytes(SIGNED_URL_UPLOAD_MIN_BYTESIZE);
             const signedUrl = 'http://something.aws.com/foo';
+            const token = 'my-token';
 
             requestExpectCall({
                 headers: {
@@ -332,7 +335,7 @@ describe('Key value store', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}/direct-upload-url`,
-                qs: {},
+                qs: { token },
             }, { data: { signedUrl } });
 
             requestExpectCall({
@@ -351,25 +354,26 @@ describe('Key value store', () => {
 
             return apifyClient
                 .keyValueStores
-                .putRecord({ storeId, key, contentType, body });
+                .putRecord({ storeId, key, contentType, body, token });
         });
 
         it('deleteRecord() works', () => {
             const key = 'some-key';
             const storeId = 'some-id';
+            const token = 'my-token';
 
             requestExpectCall({
                 json: true,
                 method: 'DELETE',
                 url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
-                qs: {},
+                qs: { token },
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
 
             return apifyClient
                 .keyValueStores
-                .deleteRecord({ storeId, key });
+                .deleteRecord({ storeId, key, token });
         });
 
         it('listKeys() works', () => {
