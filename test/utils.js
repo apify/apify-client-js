@@ -12,6 +12,7 @@ import ApifyClientError, {
     INVALID_PARAMETER_ERROR_TYPE_V2,
     NOT_FOUND_STATUS_CODE,
 } from '../build/apify_error';
+import { newEmptyStats } from './_helper';
 import * as utils from '../build/utils';
 
 describe('utils.safeJsonParse()', () => {
@@ -93,10 +94,17 @@ describe('utils.requestPromise()', () => {
                 return Promise.resolve({ body: expectedBody });
             });
 
+        const stats = newEmptyStats();
+
         return utils
-            .requestPromise(opts)
+            .requestPromise(opts, stats)
             .then((body) => {
                 expect(body).to.be.eql(expectedBody);
+                expect(stats).to.include({
+                    calls: 1,
+                    requests: 1,
+                    rateLimitErrors: 0,
+                });
                 stub.restore();
             });
     });
@@ -140,11 +148,18 @@ describe('utils.requestPromise()', () => {
                 return Promise.resolve({ body: expectedBody });
             });
 
+        const stats = newEmptyStats();
+
         return utils
-            .requestPromise(opts)
+            .requestPromise(opts, stats)
             .then((body) => {
                 expect(body).to.be.eql(expectedBody);
                 expect(iteration).to.be.eql(8);
+                expect(stats).to.include({
+                    calls: 1,
+                    requests: 8,
+                    rateLimitErrors: 0,
+                });
                 stub.restore();
             });
     });
@@ -199,8 +214,10 @@ describe('utils.requestPromise()', () => {
                 return Promise.reject(error);
             });
 
+        const stats = newEmptyStats();
+
         return utils
-            .requestPromise(opts)
+            .requestPromise(opts, stats)
             .then(() => {
                 throw new Error('Should fail!!!');
             }, (err) => {
@@ -209,6 +226,11 @@ describe('utils.requestPromise()', () => {
                 expect(err.details.iteration).to.be.eql(opts.expBackOffMaxRepeats);
                 expect(err.details.statusCode).to.be.eql(undefined);
                 expect(err.details.error).to.be.eql(error.message);
+                expect(stats).to.include({
+                    calls: 1,
+                    requests: 9,
+                    rateLimitErrors: 0,
+                });
                 stub.restore();
             });
     });
@@ -343,7 +365,7 @@ describe('utils.requestPromise()', () => {
                 (err) => {
                     expect(iteration).to.be.eql(4);
                     expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
-                    expect(err.message).to.be.eql(`Server request failed with ${iteration} tries.`);
+                    expect(err.message).to.be.eql(`API request failed after ${iteration - 1} retries.`);
                     expect(err.details.statusCode).to.be.eql(500);
                     stub.restore();
                 },

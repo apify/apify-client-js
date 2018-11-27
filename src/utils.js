@@ -78,15 +78,19 @@ const promiseSleepMillis = (sleepMillis) => {
  * Promised version of request(options) function.
  *
  * If response status code is >= 500 or RATE_LIMIT_EXCEEDED_STATUS_CODE then uses exponential backoff
- * alghorithm to repeat the request.
+ * algorithm to repeat the request.
  *
  * Possible options parameters are:
  * - everything supported by 'request' npm package (mainly 'method', 'url' and 'qs')
  * - resolveWithFullResponse - to resolve promise with whole response instead of just body
  * - expBackOffMillis - initial wait time before next repeat in a case of error
  * - expBackOffMaxRepeats - maximal number of repeats
+ *
+ * @param options
+ * @param stats Optional object that receives the stats.
+ * @return {Promise<*>}
  */
-export const requestPromise = async (options) => {
+export const requestPromise = async (options, stats) => {
     const isApiV1 = options.isApiV1;
 
     const INVALID_PARAMETER_ERROR_TYPE = isApiV1 ? INVALID_PARAMETER_ERROR_TYPE_V1 : INVALID_PARAMETER_ERROR_TYPE_V2;
@@ -102,6 +106,8 @@ export const requestPromise = async (options) => {
     if (!method) throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, '"options.method" parameter must be provided');
     if (!request[method]) throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, '"options.method" is not a valid http request method');
 
+    if (stats) stats.calls++;
+
     let iteration = 0;
     while (iteration <= expBackOffMaxRepeats) {
         let statusCode;
@@ -113,12 +119,15 @@ export const requestPromise = async (options) => {
                 resolveWithFullResponse: true,
                 simple: false,
             });
+            if (stats) stats.requests++;
             response = await request[method](requestParams); // eslint-disable-line
             statusCode = response ? response.statusCode : null;
             if (!statusCode || statusCode < 300) return options.resolveWithFullResponse ? response : response.body;
         } catch (err) {
             error = err;
         }
+
+        if (statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE && stats) stats.rateLimitErrors++;
 
         // For status codes 300-499 except RATE_LIMIT_EXCEEDED_STATUS_CODE we immediately rejects the promise
         // since it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
@@ -134,12 +143,12 @@ export const requestPromise = async (options) => {
         });
 
         // If one of these happened:
-        // - error occurd
+        // - error occurred
         // - status code is >= 500
         // - RATE_LIMIT_EXCEEDED_STATUS_CODE
         // then we repeat the request with exponential backoff alghorithm with up to `expBackOffMaxRepeats` repeats.
         if (iteration >= expBackOffMaxRepeats) {
-            throw new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, `Server request failed with ${iteration + 1} tries.`, errorDetails);
+            throw new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, `API request failed after ${iteration} retries.`, errorDetails);
         }
 
         const waitMillis = expBackOffMillis * (2 ** iteration);
