@@ -1,4 +1,4 @@
-xxx
+0.5.1 / 2018/11/27
 ==================
 - Added `ApifyClient.stats` object that collects various statistics of the API client
 
