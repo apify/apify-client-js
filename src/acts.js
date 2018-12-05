@@ -648,7 +648,8 @@ export default {
             qs: token ? { token } : {},
         })
             .then(pluckData)
-            .then(parseDateFields);
+            .then(parseDateFields)
+            .catch(catchNotFoundOrThrow);
     },
 
     /**
