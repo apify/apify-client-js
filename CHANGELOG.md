@@ -1,3 +1,7 @@
+0.5.2 / 2018/12/05
+==================
+- Fixed getActorVersion method, now returns `null` if version does not exist
+
 0.5.1 / 2018/11/27
 ==================
 - Added `ApifyClient.stats` object that collects various statistics of the API client
