@@ -1,6 +1,7 @@
 import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseDateFields } from './utils';
 
-const REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS = 9; // 256s - we use more for queries pointing to DynamoDB as it may be slower to scale.
+// 256s - we use more for queries pointing to DynamoDB as it may sometimes need more time to scale up.
+const REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS = 9;
 
 /**
  * @typedef {Object} RequestOperationInfo
