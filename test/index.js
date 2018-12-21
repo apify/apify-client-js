@@ -16,6 +16,7 @@ const APIFY_INSTANCE_KEYS = [
     'setOptions',
     'getOptions',
     'getDefaultOptions',
+    'stats',
 ];
 
 describe('ApifyClient', () => {

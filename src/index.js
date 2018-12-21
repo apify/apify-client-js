@@ -97,7 +97,7 @@ const ApifyClient = function (options = {}) {
             if (mergedOpts.baseUrl.substr(-1) === '/') mergedOpts.baseUrl = mergedOpts.baseUrl.slice(0, -1);
 
             const preconfiguredRequestPromise = (requestPromiseOptions) => {
-                return requestPromise(Object.assign({}, _.pick(mergedOpts, REQUEST_PROMISE_OPTIONS), requestPromiseOptions));
+                return requestPromise(Object.assign({}, _.pick(mergedOpts, REQUEST_PROMISE_OPTIONS), requestPromiseOptions), this.stats);
             };
 
             const promise = method(preconfiguredRequestPromise, mergedOpts);
@@ -126,6 +126,7 @@ const ApifyClient = function (options = {}) {
             instanceOpts[key] = val;
         });
     };
+
     /**
      * Returns options of ApifyClient instance.
      * @memberof ApifyClient
@@ -142,6 +143,24 @@ const ApifyClient = function (options = {}) {
      * @ignore
      */
     this.getDefaultOptions = getDefaultOptions;
+
+    /**
+     * An object that contains various statistics about the API operations.
+     * @memberof ApifyClient
+     * @instance
+     */
+    this.stats = {
+        // Number of Apify client function calls
+        calls: 0,
+
+        // Number of Apify API requests
+        requests: 0,
+
+        // Number of times the API returned 429 error
+        rateLimitErrors: 0,
+
+        // TODO: We can add internalServerErrors and other stuff here...
+    };
 };
 
 export default ApifyClient;

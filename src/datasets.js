@@ -197,16 +197,13 @@ export default {
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(datasetId, 'datasetId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
-
-        const query = {};
-        if (token) query.token = token;
+        checkParamOrThrow(token, 'token', 'String');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${datasetId}`,
             json: true,
             method: 'DELETE',
-            qs: query,
+            qs: { token },
         });
     },
 
@@ -339,10 +336,7 @@ export default {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(datasetId, 'datasetId', 'String');
         checkParamOrThrow(data, 'data', 'Object | Array | String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
-
-        const query = {};
-        if (token) query.token = token;
+        checkParamOrThrow(token, 'token', 'String');
 
         const payload = typeof data === 'string' ? data : JSON.stringify(data);
 
@@ -357,7 +351,7 @@ export default {
                         'Content-Type': 'application/json; charset=utf-8',
                         'Content-Encoding': 'gzip',
                     },
-                    qs: query,
+                    qs: { token },
                 };
 
                 // Uploading via our servers:
