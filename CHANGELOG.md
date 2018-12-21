@@ -1,3 +1,17 @@
+0.5.2 / 2018/12/05
+==================
+- Fixed getActorVersion method, now returns `null` if version does not exist
+
+0.5.1 / 2018/11/27
+==================
+- Added `ApifyClient.stats` object that collects various statistics of the API client
+
+0.5.0 / 2018/11/21
+==================
+- Methods for Apify storages (i.e. key-value stores, datasets and request queues) that use other than GET HTTP method
+  now require token parameter.
+- `tasks.runTask()` method now allows to overload input and options from actor task configuration.
+
 0.4.0 / 2018/11/06
 ==================
 - All key-value store records with content type `text/*` are now parsed into string.

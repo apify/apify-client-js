@@ -9,6 +9,14 @@ export const mockRequest = () => {
     requestMock = sinon.mock(utils, 'requestPromise');
 };
 
+export const newEmptyStats = () => {
+    return {
+        calls: 0,
+        requests: 0,
+        rateLimitErrors: 0,
+    };
+};
+
 export const requestExpectCall = (requestOpts, body, response) => {
     if (!_.isObject(requestOpts)) throw new Error('"requestOpts" parameter must be an object!');
     if (!requestOpts.method) throw new Error('"requestOpts.method" parameter is not set!');
@@ -20,7 +28,7 @@ export const requestExpectCall = (requestOpts, body, response) => {
     requestMock
         .expects('requestPromise')
         .once()
-        .withArgs(expectedRequestOpts)
+        .withArgs(expectedRequestOpts, newEmptyStats())
         .returns(Promise.resolve(output));
 };
 
@@ -36,7 +44,7 @@ export const requestExpectErrorCall = (requestOpts, resolveWithFullResponse, sta
     requestMock
         .expects('requestPromise')
         .once()
-        .withArgs(expectedRequestOpts)
+        .withArgs(expectedRequestOpts, newEmptyStats())
         .returns(Promise.reject(error));
 };
 

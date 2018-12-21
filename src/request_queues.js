@@ -1,6 +1,7 @@
 import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseDateFields } from './utils';
 
-export const REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS = 9; // 256s - we use more for queries pointing to DynamoDB as it may be slower to scale.
+// 256s - we use more for queries pointing to DynamoDB as it may sometimes need more time to scale up.
+export const REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS = 9;
 
 /**
  * @typedef {Object} RequestOperationInfo
@@ -203,16 +204,13 @@ export default {
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
-
-        const query = {};
-        if (token) query.token = token;
+        checkParamOrThrow(token, 'token', 'String');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}`,
             json: true,
             method: 'DELETE',
-            qs: query,
+            qs: { token },
         });
     },
 
@@ -239,17 +237,14 @@ export default {
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(request, 'request', 'Object');
         checkParamOrThrow(forefront, 'forefront', 'Boolean');
-        checkParamOrThrow(token, 'token', 'Maybe String');
-
-        const query = { forefront };
-        if (token) query.token = token;
+        checkParamOrThrow(token, 'token', 'String');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests`,
             json: true,
             method: 'POST',
             body: request,
-            qs: query,
+            qs: { forefront, token },
             expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
         })
             .then(pluckData)
@@ -311,16 +306,13 @@ export default {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(requestId, 'requestId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
-
-        const query = {};
-        if (token) query.token = token;
+        checkParamOrThrow(token, 'token', 'String');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests/${requestId}`,
             json: true,
             method: 'DELETE',
-            qs: query,
+            qs: { token },
             expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
         });
     },
@@ -352,17 +344,14 @@ export default {
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(safeRequestId, 'requestId', 'String');
         checkParamOrThrow(forefront, 'forefront', 'Boolean');
-        checkParamOrThrow(token, 'token', 'Maybe String');
-
-        const query = { forefront };
-        if (token) query.token = token;
+        checkParamOrThrow(token, 'token', 'String');
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests/${safeRequestId}`,
             json: true,
             method: 'PUT',
             body: request,
-            qs: query,
+            qs: { forefront, token },
             expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
         })
             .then(pluckData)

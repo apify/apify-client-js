@@ -598,6 +598,26 @@ describe('Act method', () => {
             .then(response => expect(response).to.be.eql(actVersion));
     });
 
+    it('getActVersion() works if version did not exist', () => {
+        const actId = 'some-act-id';
+        const token = 'some-token';
+        const versionNumber = '11.0';
+
+        requestExpectErrorCall({
+            json: true,
+            method: 'GET',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/versions/${versionNumber}`,
+            qs: { token },
+        }, false, 404);
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .getActVersion({ actId, token, versionNumber })
+            .then(response => expect(response).to.be.eql(null));
+    });
+
     it('updateActVersion() works', () => {
         const actId = 'some-act-id';
         const token = 'some-token';
