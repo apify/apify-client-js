@@ -1,3 +1,7 @@
+0.5.3 / 2018/12/31
+==================
+- Increased number of retries for request queue endpoints that may be slower to scale up.
+
 0.5.2 / 2018/12/05
 ==================
 - Fixed getActorVersion method, now returns `null` if version does not exist
