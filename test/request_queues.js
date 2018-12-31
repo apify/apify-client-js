@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import ApifyClient from '../build';
-import { BASE_PATH } from '../build/request_queues';
+import { BASE_PATH, REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from '../build/request_queues';
 import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
 
 const BASE_URL = 'http://example.com/something';
@@ -199,6 +199,7 @@ describe('Request queue', () => {
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests`,
                 body: request,
                 qs: { forefront: false, token },
+                expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
             }, { data: response });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -221,6 +222,7 @@ describe('Request queue', () => {
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests`,
                 body: request,
                 qs: { forefront: true, token },
+                expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
             }, { data: response });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -241,6 +243,7 @@ describe('Request queue', () => {
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
                 qs: {},
+                expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
             }, { data: response });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -261,6 +264,7 @@ describe('Request queue', () => {
                 method: 'DELETE',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
                 qs: { token },
+                expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
             });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -283,6 +287,7 @@ describe('Request queue', () => {
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
                 body: request,
                 qs: { forefront: false, token },
+                expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
             }, { data: response });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -306,6 +311,7 @@ describe('Request queue', () => {
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
                 body: request,
                 qs: { forefront: true, token },
+                expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
             }, { data: response });
 
             const apifyClient = new ApifyClient(OPTIONS);
@@ -325,6 +331,7 @@ describe('Request queue', () => {
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/head`,
                 qs: { limit: 5 },
+                expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
             }, { data: response });
 
             const apifyClient = new ApifyClient(OPTIONS);

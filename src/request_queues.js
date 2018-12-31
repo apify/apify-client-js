@@ -1,5 +1,8 @@
 import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseDateFields } from './utils';
 
+// 256s - we use more for queries pointing to DynamoDB as it may sometimes need more time to scale up.
+export const REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS = 9;
+
 /**
  * @typedef {Object} RequestOperationInfo
  * @property {Boolean} wasAlreadyPresent Indicates if request was already present in the queue.
@@ -242,6 +245,7 @@ export default {
             method: 'POST',
             body: request,
             qs: { forefront, token },
+            expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
         })
             .then(pluckData)
             .then(parseDateFields);
@@ -276,6 +280,7 @@ export default {
             json: true,
             method: 'GET',
             qs: query,
+            expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
         })
             .then(pluckData)
             .then(parseDateFields)
@@ -308,6 +313,7 @@ export default {
             json: true,
             method: 'DELETE',
             qs: { token },
+            expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
         });
     },
 
@@ -346,6 +352,7 @@ export default {
             method: 'PUT',
             body: request,
             qs: { forefront, token },
+            expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
         })
             .then(pluckData)
             .then(parseDateFields);
@@ -381,6 +388,7 @@ export default {
             json: true,
             method: 'GET',
             qs: query,
+            expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
         })
             .then(pluckData)
             .then(parseDateFields);
