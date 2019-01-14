@@ -248,9 +248,14 @@ export default {
      *   By default, the element name is `page` or `result`, depending on the value of the `simplified` option.
      * @param {Boolean} [options.skipHeaderRow]
      *   If set to `true` then header row in csv format is skipped.
-     * @param {Boolean} [options.hiddenFields]
-     *   If set to `true` then hidden fields (fields with name starting with "#" character) will be shown in the result.
-     *   By default hidden fields are omitted from result.
+     * @param {Boolean} [options.clean]
+     *   If `true` then returns only nonempty items without hidden fields (fields starting with "#" character).
+     *   Note that in this case the returned number of items might be lower than limit parameter and pagination must be done using the `limit` value.
+     * @param {Boolean} [options.skipHidden]
+     *   If `true` then doesn't return hidden fields (fields starting with "#" character).
+     * @param {Boolean} [options.skipEmpty]
+     *   If `true` then doesn't return empty items.
+     *   Note that in this case the returned number of items might be lower than limit parameter and pagination must be done using the `limit` value.
      * @param {String} [options.token]
      *   Your API token at apify.com. This parameter is required
      *   only when using "username~dataset-name" format for datasetId.
@@ -285,7 +290,9 @@ export default {
         checkParamOrThrow(options.bom, 'bom', 'Maybe Boolean');
         checkParamOrThrow(options.attachment, 'attachment', 'Maybe Boolean');
         checkParamOrThrow(options.skipHeaderRow, 'skipHeaderRow', 'Maybe Boolean');
-        checkParamOrThrow(options.hiddenFields, 'hiddenFields', 'Maybe Boolean');
+        checkParamOrThrow(options.clean, 'clean', 'Maybe Boolean');
+        checkParamOrThrow(options.skipHidden, 'skipHidden', 'Maybe Boolean');
+        checkParamOrThrow(options.skipEmpty, 'skipEmpty', 'Maybe Boolean');
 
         // Pick query params.
         const query = _.pick(options, 'offset', 'limit', 'fields', 'omit', 'delimiter', 'unwind', 'xmlRoot', 'xmlRow', 'format', 'token');
@@ -295,7 +302,9 @@ export default {
         if (options.desc) query.desc = 1;
         if (options.bom) query.bom = 1;
         if (options.attachment) query.attachment = 1;
-        if (options.hiddenFields) query.hiddenFields = 1;
+        if (options.clean) query.clean = 1;
+        if (options.skipHidden) query.skipHidden = 1;
+        if (options.skipEmpty) query.skipEmpty = 1;
 
         if (query.fields) query.fields = query.fields.join(',');
 
