@@ -249,12 +249,12 @@ export default {
      * @param {Boolean} [options.skipHeaderRow]
      *   If set to `true` then header row in csv format is skipped.
      * @param {Boolean} [options.clean]
-     *   If `true` then returns only nonempty items without hidden fields (fields starting with "#" character).
-     *   Note that in this case the returned number of items might be lower than limit parameter and pagination must be done using the `limit` value.
+     *   If `true` then the function returns only non-empty items and skips hidden fields (i.e. fields starting with `#` character).
+     *   Note that the `clean` parameter is a shortcut for `skipHidden: true` and `skipEmpty: true` options.
      * @param {Boolean} [options.skipHidden]
-     *   If `true` then doesn't return hidden fields (fields starting with "#" character).
+     *   If `true` then the function doesn't return hidden fields (fields starting with "#" character).
      * @param {Boolean} [options.skipEmpty]
-     *   If `true` then doesn't return empty items.
+     *   If `true` then the function doesn't return empty items.
      *   Note that in this case the returned number of items might be lower than limit parameter and pagination must be done using the `limit` value.
      * @param {String} [options.token]
      *   Your API token at apify.com. This parameter is required
