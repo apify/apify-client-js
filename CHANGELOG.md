@@ -1,3 +1,7 @@
+0.5.4 / 2019/01/15
+==================
+- Added `clean`, `skipHidden` and `skipEmpty` parameters to `client.datasets.getItems()` method.
+
 0.5.3 / 2018/12/31
 ==================
 - Increased number of retries for request queue endpoints that may be slower to scale up.
