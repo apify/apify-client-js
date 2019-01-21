@@ -12,4 +12,10 @@ describe('ApifyClientError', () => {
             expect(err.name).to.be.eql(APIFY_ERROR_NAME);
         }
     });
+
+    it('should return all info in toString()', () => {
+        const err = new ApifyClientError('SOME_CODE', 'Some message.', { foo: 'bar', a: { b: 'c' } });
+
+        expect(String(err)).to.be.eql('[ApifyClientError] ApifyClientError: Some message. (foo="bar", a={"b":"c"})');
+    });
 });
