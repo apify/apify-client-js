@@ -1,3 +1,7 @@
+0.5.5 / 2019/01/24
+==================
+- Improve `.toString()` message of `ApifyClientError`.
+
 0.5.4 / 2019/01/15
 ==================
 - Added `clean`, `skipHidden` and `skipEmpty` parameters to `client.datasets.getItems()` method.
