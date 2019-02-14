@@ -25,56 +25,58 @@ describe('utils.safeJsonParse()', () => {
 
 describe('utils.newApifyClientErrorFromResponse()', () => {
     it('works with body as object', () => {
-        const error = utils.newApifyClientErrorFromResponse(404, { type: 'SOME_TYPE', message: 'Some message.' });
-        expect(error.details.statusCode).to.be.eql(404);
+        const details = { statusCode: 404 };
+        const error = utils.newApifyClientErrorFromResponse({ type: 'SOME_TYPE', message: 'Some message.' }, false, details);
+        expect(error.details).to.be.eql(details);
         expect(error.type).to.be.eql('SOME_TYPE');
         expect(error.message).to.be.eql('Some message.');
     });
 
     it('works with body as JSON string', () => {
-        const error = utils.newApifyClientErrorFromResponse(404, JSON.stringify({ type: 'SOME_TYPE', message: 'Some message.' }));
+        const error = utils.newApifyClientErrorFromResponse(
+            JSON.stringify({ type: 'SOME_TYPE', message: 'Some message.' }), false, { statusCode: 404 });
         expect(error.details.statusCode).to.be.eql(404);
         expect(error.type).to.be.eql('SOME_TYPE');
         expect(error.message).to.be.eql('Some message.');
     });
 
     it('works withhout type and message in body', () => {
-        const error = utils.newApifyClientErrorFromResponse(404, { foo: 'bar' });
+        const error = utils.newApifyClientErrorFromResponse({ foo: 'bar' }, false, { statusCode: 404 });
         expect(error.details.statusCode).to.be.eql(404);
         expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
         expect(error.message).to.be.eql(REQUEST_FAILED_ERROR_MESSAGE);
     });
 
     it('works withhout type in body', () => {
-        const error = utils.newApifyClientErrorFromResponse(404, { foo: 'bar', message: 'Some message.' });
+        const error = utils.newApifyClientErrorFromResponse({ foo: 'bar', message: 'Some message.' }, false, { statusCode: 404 });
         expect(error.details.statusCode).to.be.eql(404);
         expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
         expect(error.message).to.be.eql('Some message.');
     });
 
     it('works withhout type and message in body for API V1', () => {
-        const error = utils.newApifyClientErrorFromResponse(404, { foo: 'bar' }, true);
+        const error = utils.newApifyClientErrorFromResponse({ foo: 'bar' }, true, { statusCode: 404 });
         expect(error.details.statusCode).to.be.eql(404);
         expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V1);
         expect(error.message).to.be.eql(REQUEST_FAILED_ERROR_MESSAGE);
     });
 
     it('works withhout type in body for API V1', () => {
-        const error = utils.newApifyClientErrorFromResponse(404, { foo: 'bar', message: 'Some message.' }, true);
+        const error = utils.newApifyClientErrorFromResponse({ foo: 'bar', message: 'Some message.' }, true, { statusCode: 404 });
         expect(error.details.statusCode).to.be.eql(404);
         expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V1);
         expect(error.message).to.be.eql('Some message.');
     });
 
     it('works withhout message in body', () => {
-        const error = utils.newApifyClientErrorFromResponse(404, { foo: 'bar', type: 'SOME_TYPE' });
+        const error = utils.newApifyClientErrorFromResponse({ foo: 'bar', type: 'SOME_TYPE' }, false, { statusCode: 404 });
         expect(error.details.statusCode).to.be.eql(404);
         expect(error.type).to.be.eql('SOME_TYPE');
         expect(error.message).to.be.eql(REQUEST_FAILED_ERROR_MESSAGE);
     });
 
     it('works with error as subobject', () => {
-        const error = utils.newApifyClientErrorFromResponse(404, { error: { type: 'SOME_TYPE', message: 'Some message.' } });
+        const error = utils.newApifyClientErrorFromResponse({ error: { type: 'SOME_TYPE', message: 'Some message.' } }, false, { statusCode: 404 });
         expect(error.details.statusCode).to.be.eql(404);
         expect(error.type).to.be.eql('SOME_TYPE');
         expect(error.message).to.be.eql('Some message.');
