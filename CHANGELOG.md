@@ -1,3 +1,7 @@
+xxx
+==================
+- Added more details to `ApifyClientError` for easier debugging
+
 0.5.5 / 2019/01/24
 ==================
 - Improve `.toString()` message of `ApifyClientError`.

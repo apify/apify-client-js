@@ -48,9 +48,9 @@ export const safeJsonParse = (str) => {
  *
  * { type: 'ITEM_NOT_FOUND', message: 'Requested item was not found.' }
  *
- * then uses it's error type or message or both.
+ * then uses its error type or message or both.
  */
-export const newApifyClientErrorFromResponse = (statusCode, body, isApiV1) => {
+export const newApifyClientErrorFromResponse = (body, isApiV1, details) => {
     const REQUEST_FAILED_ERROR_TYPE = isApiV1 ? REQUEST_FAILED_ERROR_TYPE_V1 : REQUEST_FAILED_ERROR_TYPE_V2;
     let parsedBody = {};
 
@@ -61,7 +61,7 @@ export const newApifyClientErrorFromResponse = (statusCode, body, isApiV1) => {
     const type = error.type || REQUEST_FAILED_ERROR_TYPE;
     const message = error.message || REQUEST_FAILED_ERROR_MESSAGE;
 
-    return new ApifyClientError(type, message, { statusCode });
+    return new ApifyClientError(type, message, details);
 };
 
 /**
@@ -132,7 +132,7 @@ export const requestPromise = async (options, stats) => {
         // For status codes 300-499 except RATE_LIMIT_EXCEEDED_STATUS_CODE we immediately rejects the promise
         // since it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
         if (statusCode >= 300 && statusCode < 500 && statusCode !== RATE_LIMIT_EXCEEDED_STATUS_CODE) {
-            throw newApifyClientErrorFromResponse(statusCode, response.body, isApiV1);
+            throw newApifyClientErrorFromResponse(response.body, isApiV1, { statusCode, url: options.url, method: options.method });
         }
 
         const errorDetails = Object.assign(_.pick(options, 'url', 'method', 'qs'), {
