@@ -14,6 +14,7 @@ import ApifyClientError, {
 } from '../build/apify_error';
 import { newEmptyStats } from './_helper';
 import * as utils from '../build/utils';
+import {RetryableError} from "apify-shared/exponential_backoff";
 
 describe('utils.safeJsonParse()', () => {
     it('works', () => {
@@ -228,7 +229,7 @@ describe('utils.requestPromise()', () => {
                 expect(err.details.error).to.be.eql(error.message);
                 expect(stats).to.include({
                     calls: 1,
-                    requests: 9,
+                    requests: opts.expBackOffMaxRepeats,
                     rateLimitErrors: 0,
                 });
                 stub.restore();
@@ -344,7 +345,7 @@ describe('utils.requestPromise()', () => {
 
     it('supports limit of exponential backoff iterations', () => {
         const method = 'DELETE';
-        const opts = { method, foo: 'bar', expBackOffMillis: 5, expBackOffMaxRepeats: 3 };
+        const opts = { method, foo: 'bar', expBackOffMillis: 5, expBackOffMaxRepeats: 4 };
         const expectedBody = { foo: 'something', bar: 123 };
 
         let iteration = 0;
@@ -365,7 +366,7 @@ describe('utils.requestPromise()', () => {
                 (err) => {
                     expect(iteration).to.be.eql(4);
                     expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
-                    expect(err.message).to.be.eql(`API request failed after ${iteration - 1} retries.`);
+                    expect(err.message).to.be.eql(`API request failed after ${iteration} retries.`);
                     expect(err.details.statusCode).to.be.eql(500);
                     stub.restore();
                 },
