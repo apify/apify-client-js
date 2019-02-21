@@ -1,5 +1,7 @@
 import _ from 'underscore';
+import { retryWithExpBackoff, RetryableError } from 'apify-shared/exponential_backoff';
 import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody, wrapArray, parseDateFields } from './utils';
+
 
 /**
  * Datasets
@@ -322,13 +324,25 @@ export default {
         const parseResponse = (response) => {
             const contentType = response.headers['content-type'];
             const wrappedItems = wrapArray(response);
-            if (!disableBodyParser) wrappedItems.items = parseBody(wrappedItems.items, contentType);
+            try {
+                if (!disableBodyParser) wrappedItems.items = parseBody(wrappedItems.items, contentType);
+            } catch (e) {
+                throw new RetryableError(e);
+            }
             return wrappedItems;
         };
 
-        return requestPromise(requestOpts)
-            .then(parseResponse)
-            .catch(catchNotFoundOrThrow);
+        const getData = async () => {
+            let response;
+            try {
+                response = await requestPromise(requestOpts);
+            } catch (e) {
+                catchNotFoundOrThrow(e);
+            }
+            return parseResponse(response);
+        };
+
+        return retryWithExpBackoff({ func: getData, expBackoffMillis: 200, expBackoffMaxRepeats: 5 });
     },
 
     /**
