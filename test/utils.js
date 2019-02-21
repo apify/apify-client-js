@@ -14,7 +14,6 @@ import ApifyClientError, {
 } from '../build/apify_error';
 import { newEmptyStats } from './_helper';
 import * as utils from '../build/utils';
-import {RetryableError} from "apify-shared/exponential_backoff";
 
 describe('utils.safeJsonParse()', () => {
     it('works', () => {

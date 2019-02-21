@@ -1,7 +1,6 @@
 import request from 'request-promise-native';
 import _ from 'underscore';
 import contentTypeParser from 'content-type';
-import log from 'apify-shared/log';
 import { retryWithExpBackoff, RetryableError } from 'apify-shared/exponential_backoff';
 import { parseType, parsedTypeCheck } from 'type-check';
 import { gzip } from 'zlib';
@@ -63,16 +62,6 @@ export const newApifyClientErrorFromResponse = (statusCode, body, isApiV1) => {
     const message = error.message || REQUEST_FAILED_ERROR_MESSAGE;
 
     return new ApifyClientError(type, message, { statusCode });
-};
-
-/**
- * Returns promise that resolves after given number of milliseconds.
- *
- * @param  {Number} sleepMillis
- * @return {Promise}
- */
-const promiseSleepMillis = (sleepMillis) => {
-    return new Promise(resolve => setTimeout(resolve, sleepMillis));
 };
 
 /**
