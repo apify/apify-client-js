@@ -342,6 +342,35 @@ describe('Act method', () => {
             .then(response => expect(response).to.be.eql(run));
     });
 
+    it('metamorphRun() works', () => {
+        const actId = 'some-id';
+        const token = 'some-token';
+        const contentType = 'some-type';
+        const body = 'some-body';
+        const run = { foo: 'bar' };
+        const runId = 'some-run-id';
+        const apiResponse = JSON.stringify({ data: run });
+        const build = '1.2.0';
+        const targetActorId = 'some-actor-id';
+
+        requestExpectCall({
+            method: 'POST',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/runs/${runId}/metamorph`,
+            qs: { token, build, targetActorId },
+            headers: {
+                'Content-Type': contentType,
+            },
+            body,
+        }, apiResponse);
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .metamorphRun({ actId, token, contentType, body, build, runId, targetActorId })
+            .then(response => expect(response).to.be.eql(run));
+    });
+
     it('getRun() works without token', () => {
         const actId = 'some-act-id';
         const runId = 'some-run-id';

@@ -388,6 +388,62 @@ export default {
     },
 
     /**
+     * Runs the latest build of given act.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param {String} options.actId - Unique act ID
+     * @param options.token
+     * @param {String} options.runId - ID a an actor run to metamorph.
+     * @param {String} options.targetActorId - ID of an actor to which run should metamorph.
+     * @param {String|Buffer} [options.body] - Act input, passed as HTTP POST payload
+     * @param {String} [options.contentType] - Content type of act input e.g 'application/json'
+     * @param {String} [options.build] - Tag or number of the build to run (e.g. <code>latest</code> or <code>1.2.34</code>).
+     * @param callback
+     * @returns {ActRun}
+     */
+    metamorphRun: (requestPromise, options) => {
+        const { baseUrl, token, actId, runId, targetActorId, contentType, body, build } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(runId, 'runId', 'String');
+        checkParamOrThrow(targetActorId, 'targetActorId', 'String');
+        checkParamOrThrow(contentType, 'contentType', 'Maybe String');
+        checkParamOrThrow(build, 'build', 'Maybe String');
+
+        const safeActId = replaceSlashWithTilde(actId);
+        const safeTargetActorId = replaceSlashWithTilde(targetActorId);
+
+        const query = {
+            token,
+            targetActorId: safeTargetActorId,
+        };
+        if (build) query.build = build;
+
+        const opts = {
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/runs/${runId}/metamorph`,
+            method: 'POST',
+            qs: query,
+        };
+
+        if (contentType) opts.headers = { 'Content-Type': contentType };
+
+        if (body) {
+            checkParamOrThrow(body, 'body', 'Buffer | String');
+
+            opts.body = body;
+        }
+
+        return requestPromise(opts)
+            .then(response => JSON.parse(response))
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+
+    /**
      * Gets list of act builds.
      *
      * By default, the objects are sorted by the startedAt field in ascending order,
