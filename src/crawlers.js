@@ -112,7 +112,7 @@ export default {
      * @param options.userId
      * @param options.token
      * @param {Object} options.settings - Crawler settings, `customId` is required. See
-     *                 {@link https://www.apify.com/docs/crawler|Crawler documentation} for detailed
+     *                 {@link https://apify.com/docs/crawler|Crawler documentation} for detailed
      *                 description of crawler settings. Unknown properties in the object are silently ignored.
      * @param callback
      * @returns {CrawlerSettings}
@@ -148,7 +148,7 @@ export default {
      * @param options.token
      * @param {String} options.crawlerId - Crawler ID or crawler custom ID
      * @param {Object} options.settings - Crawler settings, `customId` is required. See
-     *                 {@link https://www.apify.com/docs/crawler|Crawler documentation} for detailed
+     *                 {@link https://apify.com/docs/crawler|Crawler documentation} for detailed
      *                 description of crawler settings. Unknown properties in the object are silently ignored.
      * @param callback
      * @returns {CrawlerSettings}
