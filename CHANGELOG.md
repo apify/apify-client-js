@@ -1,4 +1,4 @@
-xxx
+0.5.6 / 2019/02/26
 ==================
 - Added more details to `ApifyClientError` for easier debugging
 - Added `client.acts.metamorphRun()`, see documentation for more information.
