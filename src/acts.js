@@ -388,7 +388,7 @@ export default {
     },
 
     /**
-     * Runs the latest build of given act.
+     * Transforms the actor run to an actor run of a given actor.
      *
      * @memberof ApifyClient.acts
      * @instance
