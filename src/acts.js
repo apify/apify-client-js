@@ -414,7 +414,7 @@ export default {
         checkParamOrThrow(contentType, 'contentType', 'Maybe String');
         checkParamOrThrow(build, 'build', 'Maybe String');
 
-        const safeActId = replaceSlashWithTilde(actId);
+        const safeActorId = replaceSlashWithTilde(actId);
         const safeTargetActorId = replaceSlashWithTilde(targetActorId);
 
         const query = {
@@ -424,7 +424,7 @@ export default {
         if (build) query.build = build;
 
         const opts = {
-            url: `${baseUrl}${BASE_PATH}/${safeActId}/runs/${runId}/metamorph`,
+            url: `${baseUrl}${BASE_PATH}/${safeActorId}/runs/${runId}/metamorph`,
             method: 'POST',
             qs: query,
         };
