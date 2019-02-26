@@ -327,19 +327,21 @@ export default {
             try {
                 if (!disableBodyParser) wrappedItems.items = parseBody(wrappedItems.items, contentType);
             } catch (e) {
-                throw new RetryableError(e);
+                if (e.message === 'Unexpected end of JSON input') {
+                    throw new RetryableError(e);
+                }
+                throw e;
             }
             return wrappedItems;
         };
 
         const getData = async () => {
-            let response;
             try {
-                response = await requestPromise(requestOpts);
-            } catch (e) {
-                catchNotFoundOrThrow(e);
+                const response = await requestPromise(requestOpts);
+                return parseResponse(response);
+            } catch (err) {
+                catchNotFoundOrThrow(err);
             }
-            return parseResponse(response);
         };
 
         return retryWithExpBackoff({ func: getData, expBackoffMillis: 200, expBackoffMaxRepeats: 5 });
