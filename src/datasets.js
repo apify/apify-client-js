@@ -327,7 +327,7 @@ export default {
             try {
                 if (!disableBodyParser) wrappedItems.items = parseBody(wrappedItems.items, contentType);
             } catch (e) {
-                if (e.message === 'Unexpected end of JSON input') {
+                if (e.message.includes('Unexpected end of JSON input')) {
                     throw new RetryableError(e);
                 }
                 throw e;
