@@ -1,6 +1,14 @@
 import _ from 'underscore';
 import { retryWithExpBackoff, RetryableError } from 'apify-shared/exponential_backoff';
-import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody, wrapArray, parseDateFields } from './utils';
+import {
+    checkParamOrThrow,
+    gzipPromise,
+    pluckData,
+    catchNotFoundOrThrow,
+    wrapArray,
+    parseDateFields,
+} from './utils'; // eslint-disable-line import/no-duplicates
+import * as Utils from './utils'; // eslint-disable-line import/no-duplicates
 
 
 /**
@@ -309,7 +317,6 @@ export default {
         if (options.skipEmpty) query.skipEmpty = 1;
 
         if (query.fields) query.fields = query.fields.join(',');
-
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,
             method: 'GET',
@@ -320,31 +327,11 @@ export default {
             encoding: null,
         };
 
-
-        const parseResponse = (response) => {
-            const contentType = response.headers['content-type'];
-            const wrappedItems = wrapArray(response);
-            try {
-                if (!disableBodyParser) wrappedItems.items = parseBody(wrappedItems.items, contentType);
-            } catch (e) {
-                if (e.message.includes('Unexpected end of JSON input')) {
-                    throw new RetryableError(e);
-                }
-                throw e;
-            }
-            return wrappedItems;
-        };
-
-        const getData = async () => {
-            try {
-                const response = await requestPromise(requestOpts);
-                return parseResponse(response);
-            } catch (err) {
-                catchNotFoundOrThrow(err);
-            }
-        };
-
-        return retryWithExpBackoff({ func: getData, expBackoffMillis: 200, expBackoffMaxRepeats: 5 });
+        return retryWithExpBackoff({
+            func: () => getData(requestPromise, requestOpts, disableBodyParser),
+            expBackoffMillis: 200,
+            expBackoffMaxRepeats: 5,
+        });
     },
 
     /**
@@ -389,3 +376,26 @@ export default {
             });
     },
 };
+
+export function parseResponse(response, disableBodyParser) {
+    const contentType = response.headers['content-type'];
+    const wrappedItems = wrapArray(response);
+    try {
+        if (!disableBodyParser) wrappedItems.items = Utils.parseBody(wrappedItems.items, contentType);
+    } catch (e) {
+        if (e.message.includes('Unexpected end of JSON input')) {
+            throw new RetryableError(e);
+        }
+        throw e;
+    }
+    return wrappedItems;
+}
+
+export async function getData(requestPromise, requestOpts, disableBodyParser) {
+    try {
+        const response = await requestPromise(requestOpts);
+        return parseResponse(response, disableBodyParser);
+    } catch (err) {
+        return catchNotFoundOrThrow(err);
+    }
+}
