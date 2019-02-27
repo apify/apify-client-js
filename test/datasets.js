@@ -1,8 +1,13 @@
 import { expect } from 'chai';
 import { gzipSync } from 'zlib';
+import sinon from 'sinon';
+import * as exponentialBackoff from 'apify-shared/exponential_backoff';
+import { retryWithExpBackoff } from 'apify-shared/exponential_backoff';
 import ApifyClient from '../build';
-import { BASE_PATH } from '../build/datasets';
 import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
+import * as utils from '../build/utils';
+import { getData, parseResponse, BASE_PATH } from '../build/datasets';
+import ApifyClientError, { NOT_FOUND_STATUS_CODE } from '../src/apify_error';
 
 const BASE_URL = 'http://example.com/something';
 const OPTIONS = { baseUrl: BASE_URL };
@@ -221,6 +226,87 @@ describe('Dataset', () => {
                 .datasets
                 .getItems({ datasetId })
                 .then(given => expect(given).to.be.eql(expected));
+        });
+
+        describe('getData()', () => {
+            const message = 'CUSTOM ERROR';
+            it('getData() should return null for 404', async () => {
+                const requestPromise = () => {
+                    throw new ApifyClientError('NOTFOUND', 'Not found', { statusCode: NOT_FOUND_STATUS_CODE });
+                };
+
+                const data = await getData(requestPromise);
+                expect(data).to.eql(null);
+            });
+
+            it('parseResponse() should rethrow errors', async () => {
+                const response = {
+                    headers: {
+                        'content-type': 'application/json',
+                    },
+                    body: {
+
+                    },
+                };
+                const stub = sinon.stub(utils, 'parseBody');
+                stub.callsFake(() => {
+                    throw new Error(message);
+                });
+                let error;
+                try {
+                    parseResponse(response, false);
+                } catch (e) {
+                    error = e;
+                }
+                expect(error instanceof Error).to.be.eql(true);
+                expect(error.message).to.be.eql(message);
+                utils.parseBody.restore();
+            });
+
+            it('parseResponse() should throw RetryableError if  Unexpected end of JSON input', async () => {
+                const response = {
+                    headers: {
+                        'content-type': 'application/json',
+                    },
+                    body: {
+
+                    },
+                };
+                const stub = sinon.stub(utils, 'parseBody');
+                stub.callsFake(() => {
+                    throw new Error('Unexpected end of JSON input');
+                });
+                let error;
+                try {
+                    parseResponse(response, false);
+                } catch (e) {
+                    error = e;
+                }
+                expect(error instanceof exponentialBackoff.RetryableError).to.be.eql(true);
+                expect(error.error.message).to.be.eql('Unexpected end of JSON input');
+                utils.parseBody.restore();
+            });
+        });
+
+        it('getItems should retry with exponentialBackoff', async () => {
+            const datasetId = 'some-id';
+            let run = false;
+            const stub = sinon.stub(utils, 'parseBody');
+            const stubRetryWithExpBackoff = sinon.stub(exponentialBackoff, 'retryWithExpBackoff');
+            stub.callsFake(() => {
+                throw new exponentialBackoff.RetryableError(new Error(message));
+            });
+            stubRetryWithExpBackoff.callsFake(() => {
+                run = true;
+            });
+            try {
+                const apifyClient = new ApifyClient(OPTIONS);
+                await apifyClient.datasets.getItems({ datasetId, limit: 1, offset: 1 });
+            } catch (e) {
+            }
+            expect(run).to.be.eql(true);
+            utils.parseBody.restore();
+            exponentialBackoff.retryWithExpBackoff.restore();
         });
 
         it('getItems() limit and offset work', () => {
