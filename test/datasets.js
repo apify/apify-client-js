@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import { gzipSync } from 'zlib';
 import sinon from 'sinon';
 import * as exponentialBackoff from 'apify-shared/exponential_backoff';
-import { retryWithExpBackoff } from 'apify-shared/exponential_backoff';
 import ApifyClient from '../build';
 import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
 import * as utils from '../build/utils';
@@ -299,11 +298,8 @@ describe('Dataset', () => {
             stubRetryWithExpBackoff.callsFake(() => {
                 run = true;
             });
-            try {
-                const apifyClient = new ApifyClient(OPTIONS);
-                await apifyClient.datasets.getItems({ datasetId, limit: 1, offset: 1 });
-            } catch (e) {
-            }
+            const apifyClient = new ApifyClient(OPTIONS);
+            await apifyClient.datasets.getItems({ datasetId, limit: 1, offset: 1 });
             expect(run).to.be.eql(true);
             utils.parseBody.restore();
             exponentialBackoff.retryWithExpBackoff.restore();
