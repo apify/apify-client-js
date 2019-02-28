@@ -5,7 +5,7 @@ import * as exponentialBackoff from 'apify-shared/exponential_backoff';
 import ApifyClient from '../build';
 import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
 import * as utils from '../build/utils';
-import { getData, parseResponse, BASE_PATH } from '../build/datasets';
+import { getDatasetItems, parseDatasetItemsResponse, BASE_PATH } from '../build/datasets';
 import ApifyClientError, { NOT_FOUND_STATUS_CODE } from '../src/apify_error';
 
 const BASE_URL = 'http://example.com/something';
@@ -227,18 +227,18 @@ describe('Dataset', () => {
                 .then(given => expect(given).to.be.eql(expected));
         });
 
-        describe('getData()', () => {
+        describe('getDatasetItems()', () => {
             const message = 'CUSTOM ERROR';
-            it('getData() should return null for 404', async () => {
+            it('getDatasetItems() should return null for 404', async () => {
                 const requestPromise = () => {
                     throw new ApifyClientError('NOTFOUND', 'Not found', { statusCode: NOT_FOUND_STATUS_CODE });
                 };
 
-                const data = await getData(requestPromise);
+                const data = await getDatasetItems(requestPromise);
                 expect(data).to.eql(null);
             });
 
-            it('parseResponse() should rethrow errors', async () => {
+            it('parseDatasetItemsResponse() should rethrow errors', async () => {
                 const response = {
                     headers: {
                         'content-type': 'application/json',
@@ -253,7 +253,7 @@ describe('Dataset', () => {
                 });
                 let error;
                 try {
-                    parseResponse(response, false);
+                    parseDatasetItemsResponse(response, false);
                 } catch (e) {
                     error = e;
                 }
@@ -262,7 +262,7 @@ describe('Dataset', () => {
                 utils.parseBody.restore();
             });
 
-            it('parseResponse() should throw RetryableError if  Unexpected end of JSON input', async () => {
+            it('parseDatasetItemsResponse() should throw RetryableError if  Unexpected end of JSON input', async () => {
                 const response = {
                     headers: {
                         'content-type': 'application/json',
@@ -277,7 +277,7 @@ describe('Dataset', () => {
                 });
                 let error;
                 try {
-                    parseResponse(response, false);
+                    parseDatasetItemsResponse(response, false);
                 } catch (e) {
                     error = e;
                 }

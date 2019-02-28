@@ -328,7 +328,7 @@ export default {
         };
 
         return retryWithExpBackoff({
-            func: () => getData(requestPromise, requestOpts, disableBodyParser),
+            func: () => getDatasetItems(requestPromise, requestOpts, disableBodyParser),
             expBackoffMillis: 200,
             expBackoffMaxRepeats: 5,
         });
@@ -377,13 +377,14 @@ export default {
     },
 };
 
-export function parseResponse(response, disableBodyParser) {
+export function parseDatasetItemsResponse(response, disableBodyParser) {
     const contentType = response.headers['content-type'];
     const wrappedItems = wrapArray(response);
     try {
         if (!disableBodyParser) wrappedItems.items = Utils.parseBody(wrappedItems.items, contentType);
     } catch (e) {
         if (e.message.includes('Unexpected end of JSON input')) {
+            // Getting invalid JSON error should be retried, because it is similar to getting 500 response code.
             throw new RetryableError(e);
         }
         throw e;
@@ -391,10 +392,10 @@ export function parseResponse(response, disableBodyParser) {
     return wrappedItems;
 }
 
-export async function getData(requestPromise, requestOpts, disableBodyParser) {
+export async function getDatasetItems(requestPromise, requestOpts, disableBodyParser) {
     try {
         const response = await requestPromise(requestOpts);
-        return parseResponse(response, disableBodyParser);
+        return parseDatasetItemsResponse(response, disableBodyParser);
     } catch (err) {
         return catchNotFoundOrThrow(err);
     }
