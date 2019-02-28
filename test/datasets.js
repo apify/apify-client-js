@@ -273,7 +273,7 @@ describe('Dataset', () => {
                 };
                 const stub = sinon.stub(utils, 'parseBody');
                 stub.callsFake(() => {
-                    throw new Error('Unexpected end of JSON input');
+                    JSON.parse('{"foo":');
                 });
                 let error;
                 try {
