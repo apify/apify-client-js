@@ -1,0 +1,207 @@
+import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } from './utils';
+
+
+/**
+ * Webhooks
+ * @memberOf ApifyClient
+ * @description
+ * ### Basic usage
+ * TODO
+ * ```
+ * @namespace webhooks
+ */
+export const BASE_PATH = '/v2/webhooks';
+
+export default {
+    /**
+     * Creates new webhook.
+     *
+     * @description TODO
+     * @memberof ApifyClient.webhooks
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param option.webhook - Webhook
+     * @param callback
+     * @returns {Webhook}
+     */
+    createWebhook: (requestPromise, options) => {
+        const { baseUrl, token, webhook } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(webhook, 'webhook', 'Object');
+        checkParamOrThrow(token, 'token', 'String');
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}`,
+            json: true,
+            method: 'POST',
+            body: webhook,
+            qs: { token },
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+    /**
+     * Gets list of your acts.
+     * @description TODO
+     * @memberof ApifyClient.webhooks
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
+     * @param callback
+     * @returns {PaginationList}
+     */
+    listWebhooks: (requestPromise, options) => {
+        const { baseUrl, token, offset, limit, desc } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(limit, 'limit', 'Maybe Number');
+        checkParamOrThrow(offset, 'offset', 'Maybe Number');
+        checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
+
+        const query = { token };
+
+        if (limit) query.limit = limit;
+        if (offset) query.offset = offset;
+        if (desc) query.desc = 1;
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}`,
+            json: true,
+            method: 'GET',
+            qs: query,
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+    /**
+     * Gets webhook object.
+     * @description TODO
+     * @memberof ApifyClient.webhooks
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param option.webhookId - Webhook ID
+     * @param callback
+     * @returns {Webhook}
+     */
+    getWebhook: (requestPromise, options) => {
+        const { baseUrl, token, webhookId } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(webhookId, 'webhookId', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${webhookId}`,
+            json: true,
+            method: 'GET',
+            qs: { token },
+        })
+            .then(pluckData)
+            .then(parseDateFields)
+            .catch(catchNotFoundOrThrow);
+    },
+    /**
+     * Updates webhook.
+     *
+     * @description TODO
+     * @memberof ApifyClient.webhooks
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param option.webhookId - Webhook ID
+     * @param option.webhook - Webhook
+     * @param callback
+     */
+    updateWebhook: (requestPromise, options) => {
+        const { baseUrl, token, webhookId, webhook } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(webhookId, 'webhookId', 'String');
+        checkParamOrThrow(webhook, 'webhook', 'Object');
+        checkParamOrThrow(token, 'token', 'String');
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${webhookId}`,
+            json: true,
+            method: 'PUT',
+            body: webhook,
+            qs: { token },
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+
+    /**
+     * Deletes webhook.
+     * @description TODO
+     * @memberof ApifyClient.webhooks
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param option.webhookId - Webhook ID
+     * @param callback
+     * @returns {}
+     */
+    deleteWebhook: (requestPromise, options) => {
+        const { baseUrl, token, webhookId } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(webhookId, 'webhookId', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${webhookId}`,
+            json: true,
+            method: 'DELETE',
+            qs: { token },
+        })
+            .then(parseDateFields);
+    },
+
+    /**
+     * Get list dispatches for webhook.
+     * @description TODO
+     * @memberof ApifyClient.webhooks
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param option.webhookId - Webhook ID
+     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
+     * @param callback
+     * @returns {PaginationList}
+     */
+    listDispatches: (requestPromise, options) => {
+        const { baseUrl, token, webhookId, limit, offset, desc } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(webhookId, 'webhookId', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(limit, 'limit', 'Maybe Number');
+        checkParamOrThrow(offset, 'offset', 'Maybe Number');
+        checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
+
+        const query = { token };
+
+        if (limit) query.limit = limit;
+        if (offset) query.offset = offset;
+        if (desc) query.desc = 1;
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${webhookId}/dispatches`,
+            json: true,
+            method: 'GET',
+            qs: query,
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+};

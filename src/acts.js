@@ -772,4 +772,45 @@ export default {
             .then(pluckData)
             .then(parseDateFields);
     },
+
+    /**
+     * Gets list of act webhooks.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Unique act ID
+     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
+     * @param callback
+     * @returns {PaginationList}
+     */
+    listWebhooks: (requestPromise, options) => {
+        const { baseUrl, token, actId, offset, limit, desc } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(limit, 'limit', 'Maybe Number');
+        checkParamOrThrow(offset, 'offset', 'Maybe Number');
+        checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
+
+        const safeActId = replaceSlashWithTilde(actId);
+        const query = { token };
+
+        if (limit) query.limit = limit;
+        if (offset) query.offset = offset;
+        if (desc) query.desc = 1;
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/webhooks`,
+            json: true,
+            method: 'GET',
+            qs: query,
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
 };
