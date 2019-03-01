@@ -1,5 +1,15 @@
 import _ from 'underscore';
-import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody, wrapArray, parseDateFields } from './utils';
+import { retryWithExpBackoff, RetryableError } from 'apify-shared/exponential_backoff';
+import {
+    checkParamOrThrow,
+    gzipPromise,
+    pluckData,
+    catchNotFoundOrThrow,
+    wrapArray,
+    parseDateFields,
+} from './utils'; // eslint-disable-line import/no-duplicates
+import * as Utils from './utils'; // eslint-disable-line import/no-duplicates
+
 
 /**
  * Datasets
@@ -307,7 +317,6 @@ export default {
         if (options.skipEmpty) query.skipEmpty = 1;
 
         if (query.fields) query.fields = query.fields.join(',');
-
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,
             method: 'GET',
@@ -318,17 +327,11 @@ export default {
             encoding: null,
         };
 
-
-        const parseResponse = (response) => {
-            const contentType = response.headers['content-type'];
-            const wrappedItems = wrapArray(response);
-            if (!disableBodyParser) wrappedItems.items = parseBody(wrappedItems.items, contentType);
-            return wrappedItems;
-        };
-
-        return requestPromise(requestOpts)
-            .then(parseResponse)
-            .catch(catchNotFoundOrThrow);
+        return retryWithExpBackoff({
+            func: () => getDatasetItems(requestPromise, requestOpts, disableBodyParser),
+            expBackoffMillis: 200,
+            expBackoffMaxRepeats: 5,
+        });
     },
 
     /**
@@ -373,3 +376,27 @@ export default {
             });
     },
 };
+
+export function parseDatasetItemsResponse(response, disableBodyParser) {
+    const contentType = response.headers['content-type'];
+    const wrappedItems = wrapArray(response);
+    try {
+        if (!disableBodyParser) wrappedItems.items = Utils.parseBody(wrappedItems.items, contentType);
+    } catch (e) {
+        if (e.message.includes('Unexpected end of JSON input')) {
+            // Getting invalid JSON error should be retried, because it is similar to getting 500 response code.
+            throw new RetryableError(e);
+        }
+        throw e;
+    }
+    return wrappedItems;
+}
+
+export async function getDatasetItems(requestPromise, requestOpts, disableBodyParser) {
+    try {
+        const response = await requestPromise(requestOpts);
+        return parseDatasetItemsResponse(response, disableBodyParser);
+    } catch (err) {
+        return catchNotFoundOrThrow(err);
+    }
+}
