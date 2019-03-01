@@ -774,7 +774,7 @@ export default {
     },
 
     /**
-     * Gets list of act webhooks.
+     * Gets list of webhooks for given actor.
      *
      * @memberof ApifyClient.acts
      * @instance
