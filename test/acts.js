@@ -693,4 +693,34 @@ describe('Act method', () => {
             .deleteActVersion({ actId, token, versionNumber })
             .then(response => expect(response).to.be.eql(null));
     });
+
+    it('listWebhooks() works', () => {
+        const actId = 'some-act-id';
+        const token = 'some-token';
+
+        const expected = {
+            limit: 5,
+            offset: 3,
+            desc: true,
+            count: 5,
+            total: 10,
+            items: ['run1', 'run2'],
+        };
+
+        requestExpectCall({
+            json: true,
+            method: 'GET',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/webhooks`,
+            qs: { token },
+        }, {
+            data: expected,
+        });
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .listWebhooks({ actId, token })
+            .then(response => expect(response).to.be.eql(expected));
+    });
 });

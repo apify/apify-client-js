@@ -6,7 +6,36 @@ import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } f
  * @memberOf ApifyClient
  * @description
  * ### Basic usage
- * TODO
+ * Every method can be used as either promise or with callback. If your Node version supports await/async then you can await promise result.
+ * ```javascript
+ * const ApifyClient = require('apify-client');
+ *
+ * const apifyClient = new ApifyClient({
+ *  userId: 'jklnDMNKLekk',
+ *  token: 'SNjkeiuoeD443lpod68dk',
+ * });
+ *
+ * // Awaited promise
+ * try {
+ *      const webhooks = await apifyClient.webhooks.listWebhooks({});
+ *      // Do something with list ...
+ * } catch (err) {
+ *      // Do something with error ...
+ * }
+ *
+ * // Promise
+ * apifyClient.webhooks.listWebhooks({})
+ * .then((actsList) => {
+ *      // Do something with list ...
+ * })
+ * .catch((err) => {
+ *      // Do something with error ...
+ * });
+ *
+ * // Callback
+ * apifyClient.webhooks.listWebhooks({}, (err, actsList) => {
+ *      // Do something with error or list ...
+ * });
  * ```
  * @namespace webhooks
  */
@@ -16,7 +45,6 @@ export default {
     /**
      * Creates new webhook.
      *
-     * @description TODO
      * @memberof ApifyClient.webhooks
      * @instance
      * @param {Object} options
@@ -43,8 +71,10 @@ export default {
             .then(parseDateFields);
     },
     /**
-     * Gets list of your acts.
-     * @description TODO
+     * Gets list of webhooks.
+     * @description By default, the objects are sorted by the createdAt field in ascending order,
+     * therefore you can use pagination to incrementally fetch all webhooks.
+     * To sort them in descending order, use desc: `true` parameter.
      * @memberof ApifyClient.webhooks
      * @instance
      * @param {Object} options
@@ -81,7 +111,6 @@ export default {
     },
     /**
      * Gets webhook object.
-     * @description TODO
      * @memberof ApifyClient.webhooks
      * @instance
      * @param {Object} options
@@ -109,8 +138,6 @@ export default {
     },
     /**
      * Updates webhook.
-     *
-     * @description TODO
      * @memberof ApifyClient.webhooks
      * @instance
      * @param {Object} options
@@ -166,8 +193,8 @@ export default {
     },
 
     /**
-     * Get list dispatches for webhook.
-     * @description TODO
+     * Gets list dispatches for webhook.
+     * @description By default, the objects are sorted by the createdAt.
      * @memberof ApifyClient.webhooks
      * @instance
      * @param {Object} options

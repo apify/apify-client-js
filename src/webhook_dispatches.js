@@ -6,7 +6,36 @@ import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } f
  * @memberOf ApifyClient
  * @description
  * ### Basic usage
- * TODO
+ * Every method can be used as either promise or with callback. If your Node version supports await/async then you can await promise result.
+ * ```javascript
+ * const ApifyClient = require('apify-client');
+ *
+ * const apifyClient = new ApifyClient({
+ *  userId: 'jklnDMNKLekk',
+ *  token: 'SNjkeiuoeD443lpod68dk',
+ * });
+ *
+ * // Awaited promise
+ * try {
+ *      const dispatchesList = await apifyClient.webhookDispatches.listWebhookDispatches({});
+ *      // Do something with the list ...
+ * } catch (err) {
+ *      // Do something with error ...
+ * }
+ *
+ * // Promise
+ * apifyClient.webhookDispatches.listWebhookDispatches({})
+ * .then((tasksList) => {
+ *      // Do something with the list ...
+ * })
+ * .catch((err) => {
+ *      // Do something with error ...
+ * });
+ *
+ * // Callback
+ * apifyClient.webhookDispatches.listWebhookDispatches({}, (err, tasksList) => {
+ *      // Do something with error or list ...
+ * });
  * ```
  * @namespace webhookDispatches
  */
@@ -15,15 +44,18 @@ export const BASE_PATH = '/v2/webhook-dispatches';
 
 export default {
     /**
-     * Get list of webhook dispatches.
-     * @description TODO
+     * Gets list of webhook dispatches.
+     * @description By default, the objects are sorted by the startedAt field in ascending order,
+     * therefore you can use pagination to incrementally fetch all dispatches.
+     * To sort them in descending order, use desc: `true` parameter.
+     * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      * @memberof ApifyClient.webhookDispatches
      * @instance
      * @param {Object} options
      * @param options.token
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
-     * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
+     * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the startedAd field in descending order.
      * @param callback
      * @returns {PaginationList}
      */
@@ -52,8 +84,7 @@ export default {
             .then(parseDateFields);
     },
     /**
-     * Get webhook dispatch.
-     * @description TODO
+     * Gets webhook dispatch.
      * @memberof ApifyClient.webhookDispatches
      * @instance
      * @param {Object} options
