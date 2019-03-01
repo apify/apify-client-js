@@ -1,3 +1,7 @@
+0.5.7 / 2019/03/01
+==================
+- Added exponential backoff to `datasets.getItems()` in a case of "Unexpected end of JSON input" error
+
 0.5.6 / 2019/02/26
 ==================
 - Added more details to `ApifyClientError` for easier debugging
