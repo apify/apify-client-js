@@ -1,7 +1,7 @@
 import request from 'request-promise-native';
 import _ from 'underscore';
 import contentTypeParser from 'content-type';
-import log from 'apify-shared/log';
+import { retryWithExpBackoff, RetryableError } from 'apify-shared/exponential_backoff';
 import { parseType, parsedTypeCheck } from 'type-check';
 import { gzip } from 'zlib';
 import os from 'os';
@@ -65,16 +65,6 @@ export const newApifyClientErrorFromResponse = (body, isApiV1, details) => {
 };
 
 /**
- * Returns promise that resolves after given number of milliseconds.
- *
- * @param  {Number} sleepMillis
- * @return {Promise}
- */
-const promiseSleepMillis = (sleepMillis) => {
-    return new Promise(resolve => setTimeout(resolve, sleepMillis));
-};
-
-/**
  * Promised version of request(options) function.
  *
  * If response status code is >= 500 or RATE_LIMIT_EXCEEDED_STATUS_CODE then uses exponential backoff
@@ -96,8 +86,8 @@ export const requestPromise = async (options, stats) => {
     const INVALID_PARAMETER_ERROR_TYPE = isApiV1 ? INVALID_PARAMETER_ERROR_TYPE_V1 : INVALID_PARAMETER_ERROR_TYPE_V2;
     const REQUEST_FAILED_ERROR_TYPE = isApiV1 ? REQUEST_FAILED_ERROR_TYPE_V1 : REQUEST_FAILED_ERROR_TYPE_V2;
 
-    const expBackOffMillis = options.expBackOffMillis || EXP_BACKOFF_MILLIS;
-    const expBackOffMaxRepeats = options.expBackOffMaxRepeats || EXP_BACKOFF_MAX_REPEATS;
+    const expBackoffMillis = options.expBackOffMillis || EXP_BACKOFF_MILLIS;
+    const expBackoffMaxRepeats = options.expBackOffMaxRepeats || EXP_BACKOFF_MAX_REPEATS;
     const method = _.isString(options.method) ? options.method.toLowerCase() : options.method;
 
     // Add custom user-agent to all API calls
@@ -107,9 +97,10 @@ export const requestPromise = async (options, stats) => {
     if (!request[method]) throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, '"options.method" is not a valid http request method');
 
     if (stats) stats.calls++;
-
     let iteration = 0;
-    while (iteration <= expBackOffMaxRepeats) {
+
+    const makeRequest = async () => {
+        iteration += 1;
         let statusCode;
         let response;
         let error;
@@ -137,31 +128,24 @@ export const requestPromise = async (options, stats) => {
 
         const errorDetails = Object.assign(_.pick(options, 'url', 'method', 'qs'), {
             hasBody: !!options.body,
-            iteration,
             error: error && error.message ? error.message : error,
             statusCode,
+            iteration,
         });
 
         // If one of these happened:
         // - error occurred
         // - status code is >= 500
         // - RATE_LIMIT_EXCEEDED_STATUS_CODE
-        // then we repeat the request with exponential backoff alghorithm with up to `expBackOffMaxRepeats` repeats.
-        if (iteration >= expBackOffMaxRepeats) {
-            throw new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, `API request failed after ${iteration} retries.`, errorDetails);
-        }
-
-        const waitMillis = expBackOffMillis * (2 ** iteration);
-        const randomizedWaitMillis = _.random(waitMillis, waitMillis * 2);
-        iteration++;
-
-        // Print warning when request is repeated 4 times.
-        if (iteration === Math.round(expBackOffMaxRepeats / 2)) {
-            log.warning(`Request failed ${iteration} times and will be repeated in ${waitMillis}ms`, errorDetails);
-        }
-
-        await promiseSleepMillis(randomizedWaitMillis); // eslint-disable-line
-    }
+        // then we throw the retryable error that is repeated by the retryWithExpBackoff function up to `expBackOffMaxRepeats` repeats.
+        const originalError = new ApifyClientError(
+            REQUEST_FAILED_ERROR_TYPE,
+            `API request failed after ${iteration} retries.`,
+            errorDetails,
+        );
+        throw new RetryableError(originalError);
+    };
+    return retryWithExpBackoff({ func: makeRequest, expBackoffMaxRepeats, expBackoffMillis });
 };
 
 /**
