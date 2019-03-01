@@ -145,6 +145,7 @@ export default {
      * @param option.webhookId - Webhook ID
      * @param option.webhook - Webhook
      * @param callback
+     * @returns {Webhook}
      */
     updateWebhook: (requestPromise, options) => {
         const { baseUrl, token, webhookId, webhook } = options;
