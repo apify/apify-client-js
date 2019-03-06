@@ -12,7 +12,7 @@ describe('Webhook dispatches methods', () => {
     before(mockRequest);
     after(restoreRequest);
 
-    it('listWebhookDispatches() works', () => {
+    it('listDispatches() works', () => {
         const dispatches = {
             count: 1,
             total: 10,
@@ -34,11 +34,11 @@ describe('Webhook dispatches methods', () => {
 
         return apifyClient
             .webhookDispatches
-            .listWebhookDispatches({ token })
+            .listDispatches({ token })
             .then(response => expect(response).to.be.deep.eql(dispatches));
     });
 
-    it('listWebhookDispatches() works', () => {
+    it('listDispatches() works', () => {
         const webhookDispatchId = 'some-id';
         const dispatch = {
             foo: 'bar',
@@ -55,7 +55,7 @@ describe('Webhook dispatches methods', () => {
 
         return apifyClient
             .webhookDispatches
-            .getWebhookDispatch({ token, webhookDispatchId })
+            .getDispatch({ token, webhookDispatchId })
             .then(response => expect(response).to.be.deep.eql(dispatch));
     });
 });

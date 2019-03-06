@@ -59,7 +59,7 @@ export default {
      * @param callback
      * @returns {PaginationList}
      */
-    listWebhookDispatches: (requestPromise, options) => {
+    listDispatches: (requestPromise, options) => {
         const { baseUrl, token, offset, limit, desc } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
@@ -83,6 +83,7 @@ export default {
             .then(pluckData)
             .then(parseDateFields);
     },
+
     /**
      * Gets webhook dispatch.
      * @memberof ApifyClient.webhookDispatches
@@ -93,7 +94,7 @@ export default {
      * @param callback
      * @returns {WebhookDispatch}
      */
-    getWebhookDispatch: (requestPromise, options) => {
+    getDispatch: (requestPromise, options) => {
         const { baseUrl, token, webhookDispatchId } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');

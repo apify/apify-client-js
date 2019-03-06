@@ -70,6 +70,7 @@ export default {
             .then(pluckData)
             .then(parseDateFields);
     },
+
     /**
      * Gets list of webhooks.
      * @description By default, the objects are sorted by the createdAt field in ascending order,
@@ -109,6 +110,7 @@ export default {
             .then(pluckData)
             .then(parseDateFields);
     },
+
     /**
      * Gets webhook object.
      * @memberof ApifyClient.webhooks
@@ -136,6 +138,7 @@ export default {
             .then(parseDateFields)
             .catch(catchNotFoundOrThrow);
     },
+
     /**
      * Updates webhook.
      * @memberof ApifyClient.webhooks
