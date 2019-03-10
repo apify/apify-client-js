@@ -1,5 +1,11 @@
 import _ from 'underscore';
-import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow } from './utils';
+import {
+    checkParamOrThrow,
+    pluckData,
+    parseDateFields,
+    catchNotFoundOrThrow,
+    stringifyWebhoohsToBase64,
+} from './utils';
 
 /**
  * Tasks
@@ -278,11 +284,14 @@ export default {
      * @param {Number} [options.timeout] - Timeout for the act run in seconds. Zero value means there is no timeout.
      * @param {Number} [options.memory] - Amount of memory allocated for the act run, in megabytes.
      * @param {String} [options.build] - Tag or number of the build to run (e.g. <code>latest</code> or <code>1.2.34</code>).
+     * @param {Array}  [options.webhooks] - Specifies optional webhooks associated with the actor run,
+     *                                      which can be used to receive a notification e.g. when the actor finished or failed,
+     *                                      see {@link https://apify.com/docs/webhooks#adhoc|ad hook webhooks documentation} for detailed description.
      * @param callback
      * @returns {ActRun}
      */
     runTask: (requestPromise, options) => {
-        const { baseUrl, token, taskId, waitForFinish, body, contentType, timeout, memory, build } = options;
+        const { baseUrl, token, taskId, waitForFinish, body, contentType, timeout, memory, build, webhooks } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
@@ -300,6 +309,7 @@ export default {
         if (timeout) query.timeout = timeout;
         if (memory) query.memory = memory;
         if (build) query.build = build;
+        if (webhooks) query.webhooks = stringifyWebhoohsToBase64(webhooks);
 
         const opts = {
             url: `${baseUrl}${BASE_PATH}/${safeTaskId}/runs`,
