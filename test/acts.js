@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import { expect } from 'chai';
 import ApifyClient from '../build';
-import { stringifyWebhoohsToBase64 } from '../build/utils';
+import { stringifyWebhooksToBase64 } from '../build/utils';
 import { BASE_PATH } from '../build/acts';
 import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
 
@@ -295,7 +295,7 @@ describe('Act method', () => {
         requestExpectCall({
             method: 'POST',
             url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
-            qs: { token, webhooks: stringifyWebhoohsToBase64(webhooks) },
+            qs: { token, webhooks: stringifyWebhooksToBase64(webhooks) },
         }, JSON.stringify({ data: run }));
 
         const apifyClient = new ApifyClient(OPTIONS);

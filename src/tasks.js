@@ -4,7 +4,7 @@ import {
     pluckData,
     parseDateFields,
     catchNotFoundOrThrow,
-    stringifyWebhoohsToBase64,
+    stringifyWebhooksToBase64,
 } from './utils';
 
 /**
@@ -301,6 +301,7 @@ export default {
         checkParamOrThrow(timeout, 'timeout', 'Maybe Number');
         checkParamOrThrow(memory, 'memory', 'Maybe Number');
         checkParamOrThrow(build, 'build', 'Maybe String');
+        checkParamOrThrow(webhooks, 'webhooks', 'Maybe Array');
 
         const safeTaskId = replaceSlashWithTilde(taskId);
         const query = { token };
@@ -309,7 +310,7 @@ export default {
         if (timeout) query.timeout = timeout;
         if (memory) query.memory = memory;
         if (build) query.build = build;
-        if (webhooks) query.webhooks = stringifyWebhoohsToBase64(webhooks);
+        if (webhooks) query.webhooks = stringifyWebhooksToBase64(webhooks);
 
         const opts = {
             url: `${baseUrl}${BASE_PATH}/${safeTaskId}/runs`,

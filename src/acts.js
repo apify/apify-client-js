@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow, stringifyWebhoohsToBase64 } from './utils';
+import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow, stringifyWebhooksToBase64 } from './utils';
 
 /**
  * Acts
@@ -295,7 +295,7 @@ export default {
         if (memory) query.memory = memory;
         if (build) query.build = build;
         if (token) query.token = token;
-        if (webhooks) query.webhooks = stringifyWebhoohsToBase64(webhooks);
+        if (webhooks) query.webhooks = stringifyWebhooksToBase64(webhooks);
 
         const opts = {
             url: `${baseUrl}${BASE_PATH}/${safeActId}/runs`,
