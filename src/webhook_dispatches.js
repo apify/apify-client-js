@@ -1,6 +1,5 @@
 import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } from './utils';
 
-
 /**
  * Webhook dispatches
  * @memberOf ApifyClient
@@ -40,7 +39,6 @@ import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } f
  * @namespace webhookDispatches
  */
 export const BASE_PATH = '/v2/webhook-dispatches';
-
 
 export default {
     /**
