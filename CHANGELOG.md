@@ -1,3 +1,9 @@
+0.5.8 / 2019/03/14
+==================
+- Added `client.webhooks` providing access to Apify webhooks.
+- Added `client.webhookDispatches` providing access to Apify webhook dispatches.
+- Added `client.acts.listWebhooks()` to list actor webhooks.
+
 0.5.7 / 2019/03/01
 ==================
 - Added exponential backoff to `datasets.getItems()` in a case of "Unexpected end of JSON input" error
