@@ -13,6 +13,8 @@ const APIFY_INSTANCE_KEYS = [
     'requestQueues',
     'logs',
     'users',
+    'webhooks',
+    'webhookDispatches',
     'setOptions',
     'getOptions',
     'getDefaultOptions',

@@ -7,6 +7,8 @@ import keyValueStores from './key_value_stores';
 import datasets from './datasets';
 import logs from './logs';
 import users from './users';
+import webhooks from './webhooks';
+import webhookDispatches from './webhook_dispatches';
 import requestQueues from './request_queues';
 import ApifyClientError, { INVALID_PARAMETER_ERROR_TYPE_V2 } from './apify_error';
 
@@ -45,6 +47,8 @@ const methodGroups = {
     requestQueues,
     logs,
     users,
+    webhooks,
+    webhookDispatches,
 };
 
 /**

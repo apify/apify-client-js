@@ -1,6 +1,7 @@
 import _ from 'underscore';
 import { expect } from 'chai';
 import ApifyClient from '../build';
+import { stringifyWebhooksToBase64 } from '../build/utils';
 import { BASE_PATH } from '../build/acts';
 import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
 
@@ -273,6 +274,35 @@ describe('Act method', () => {
         return apifyClient
             .acts
             .runAct({ actId, token, contentType, body, waitForFinish, timeout, memory, build })
+            .then(response => expect(response).to.be.eql(run));
+    });
+
+    it('runAct() with webhook works', () => {
+        const actId = 'some-id';
+        const token = 'some-token';
+        const run = { foo: 'bar' };
+        const webhooks = [
+            {
+                eventTypes: ['ACTOR.RUN.CREATED'],
+                requestUrl: 'https://example.com/run-created',
+            },
+            {
+                eventTypes: ['ACTOR.RUN.SUCCEEDED'],
+                requestUrl: 'https://example.com/run-succeeded',
+            },
+        ];
+
+        requestExpectCall({
+            method: 'POST',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
+            qs: { token, webhooks: stringifyWebhooksToBase64(webhooks) },
+        }, JSON.stringify({ data: run }));
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .runAct({ actId, token, webhooks })
             .then(response => expect(response).to.be.eql(run));
     });
 
@@ -692,5 +722,35 @@ describe('Act method', () => {
             .acts
             .deleteActVersion({ actId, token, versionNumber })
             .then(response => expect(response).to.be.eql(null));
+    });
+
+    it('listWebhooks() works', () => {
+        const actId = 'some-act-id';
+        const token = 'some-token';
+
+        const expected = {
+            limit: 5,
+            offset: 3,
+            desc: true,
+            count: 5,
+            total: 10,
+            items: ['run1', 'run2'],
+        };
+
+        requestExpectCall({
+            json: true,
+            method: 'GET',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/webhooks`,
+            qs: { token },
+        }, {
+            data: expected,
+        });
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .listWebhooks({ actId, token })
+            .then(response => expect(response).to.be.eql(expected));
     });
 });

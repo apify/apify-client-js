@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow } from './utils';
+import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow, stringifyWebhooksToBase64 } from './utils';
 
 /**
  * Acts
@@ -268,11 +268,14 @@ export default {
      * @param {Number} [options.timeout] - Timeout for the act run in seconds. Zero value means there is no timeout.
      * @param {Number} [options.memory] - Amount of memory allocated for the act run, in megabytes.
      * @param {String} [options.build] - Tag or number of the build to run (e.g. <code>latest</code> or <code>1.2.34</code>).
+     * @param {Array}  [options.webhooks] - Specifies optional webhooks associated with the actor run,
+     *                                      which can be used to receive a notification e.g. when the actor finished or failed,
+     *                                      see {@link https://apify.com/docs/webhooks#adhoc|ad hook webhooks documentation} for detailed description.
      * @param callback
      * @returns {ActRun}
      */
     runAct: (requestPromise, options) => {
-        const { baseUrl, token, actId, contentType, body, waitForFinish, timeout, memory, build } = options;
+        const { baseUrl, token, actId, contentType, body, waitForFinish, timeout, memory, build, webhooks } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(actId, 'actId', 'String');
@@ -282,6 +285,7 @@ export default {
         checkParamOrThrow(timeout, 'timeout', 'Maybe Number');
         checkParamOrThrow(memory, 'memory', 'Maybe Number');
         checkParamOrThrow(build, 'build', 'Maybe String');
+        checkParamOrThrow(webhooks, 'webhooks', 'Maybe Array');
 
         const safeActId = replaceSlashWithTilde(actId);
         const query = {};
@@ -291,6 +295,7 @@ export default {
         if (memory) query.memory = memory;
         if (build) query.build = build;
         if (token) query.token = token;
+        if (webhooks) query.webhooks = stringifyWebhooksToBase64(webhooks);
 
         const opts = {
             url: `${baseUrl}${BASE_PATH}/${safeActId}/runs`,
@@ -768,6 +773,47 @@ export default {
             json: true,
             method: 'DELETE',
             qs: { token },
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+
+    /**
+     * Gets list of webhooks for given actor.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.actId - Unique act ID
+     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
+     * @param callback
+     * @returns {PaginationList}
+     */
+    listWebhooks: (requestPromise, options) => {
+        const { baseUrl, token, actId, offset, limit, desc } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(limit, 'limit', 'Maybe Number');
+        checkParamOrThrow(offset, 'offset', 'Maybe Number');
+        checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
+
+        const safeActId = replaceSlashWithTilde(actId);
+        const query = { token };
+
+        if (limit) query.limit = limit;
+        if (offset) query.offset = offset;
+        if (desc) query.desc = 1;
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/webhooks`,
+            json: true,
+            method: 'GET',
+            qs: query,
         })
             .then(pluckData)
             .then(parseDateFields);

@@ -538,3 +538,21 @@ describe('utils.parseDateFields()', () => {
         expect(parsed.barAt).to.be.eql('');
     });
 });
+
+
+describe('utils.stringifyWebhooksToBase64()', () => {
+    it('works', () => {
+        const webhooks = [
+            {
+                foo1: 'bar1',
+            },
+            {
+                foo2: 'bar2',
+            },
+        ];
+        const base64String = utils.stringifyWebhooksToBase64(webhooks);
+
+        expect(base64String).to.equal(Buffer.from(JSON.stringify(webhooks), 'utf8').toString('base64'));
+        expect(JSON.parse(Buffer.from(base64String, 'base64').toString('utf8'))).to.deep.equal(webhooks);
+    });
+});

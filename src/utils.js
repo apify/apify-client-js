@@ -258,3 +258,11 @@ export function parseDateFields(obj, depth = 0) {
         return val;
     });
 }
+
+/**
+ * Helper function that converts array of webhooks to base64 string
+ */
+export function stringifyWebhooksToBase64(webhooks) {
+    const webhooksJson = JSON.stringify(webhooks);
+    return Buffer.from(webhooksJson, 'utf8').toString('base64');
+}
