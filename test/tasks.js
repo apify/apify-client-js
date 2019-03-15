@@ -465,4 +465,34 @@ describe('Tasks method', () => {
             .then(response => expect(response).to.be.eql(run));
     });
     */
+
+    it('listWebhooks() works', () => {
+        const taskId = 'some-id';
+        const token = 'some-token';
+
+        const expected = {
+            limit: 5,
+            offset: 3,
+            desc: true,
+            count: 5,
+            total: 10,
+            items: ['webhook1', 'webhook2'],
+        };
+
+        requestExpectCall({
+            json: true,
+            method: 'GET',
+            url: `${BASE_URL}${BASE_PATH}/${taskId}/webhooks`,
+            qs: { token },
+        }, {
+            data: expected,
+        });
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .tasks
+            .listWebhooks({ taskId, token })
+            .then(response => expect(response).to.be.eql(expected));
+    });
 });

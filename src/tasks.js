@@ -330,4 +330,45 @@ export default {
             .then(pluckData)
             .then(parseDateFields);
     },
+
+    /**
+     * Gets list of webhooks for given actor task.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.taskId - Unique task ID
+     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
+     * @param callback
+     * @returns {PaginationList}
+     */
+    listWebhooks: (requestPromise, options) => {
+        const { baseUrl, token, taskId, offset, limit, desc } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(taskId, 'taskId', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(limit, 'limit', 'Maybe Number');
+        checkParamOrThrow(offset, 'offset', 'Maybe Number');
+        checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
+
+        const safeTaskId = replaceSlashWithTilde(taskId);
+        const query = { token };
+
+        if (limit) query.limit = limit;
+        if (offset) query.offset = offset;
+        if (desc) query.desc = 1;
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${safeTaskId}/webhooks`,
+            json: true,
+            method: 'GET',
+            qs: query,
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
 };
