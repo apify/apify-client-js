@@ -1,3 +1,7 @@
+0.5.8 / 2019/03/15
+==================
+- Added `client.tasks.listWebhooks()` to list task webhooks.
+
 0.5.8 / 2019/03/14
 ==================
 - Added `client.webhooks` providing access to Apify webhooks.
