@@ -171,7 +171,7 @@ export default {
 
     /**
      * Deletes webhook.
-     * @description TODO
+     *
      * @memberof ApifyClient.webhooks
      * @instance
      * @param {Object} options
