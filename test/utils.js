@@ -105,8 +105,8 @@ describe('utils.requestPromise()', () => {
                 expect(stats).to.include({
                     calls: 1,
                     requests: 1,
-                    rateLimitErrors: 0,
                 });
+                expect(stats.rateLimitErrors).to.be.eql([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
                 stub.restore();
             });
     });
@@ -146,7 +146,7 @@ describe('utils.requestPromise()', () => {
             .callsFake((passedOpts) => {
                 expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
                 iteration++;
-                if (iteration < 8) return Promise.reject(new Error(errorMsg), null, {});
+                if (iteration < 8) return Promise.reject(new Error(errorMsg));
                 return Promise.resolve({ body: expectedBody });
             });
 
@@ -160,8 +160,8 @@ describe('utils.requestPromise()', () => {
                 expect(stats).to.include({
                     calls: 1,
                     requests: 8,
-                    rateLimitErrors: 0,
                 });
+                expect(stats.rateLimitErrors).to.be.eql([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
                 stub.restore();
             });
     });
@@ -204,6 +204,38 @@ describe('utils.requestPromise()', () => {
             });
     });
 
+    it('correctly counts rate limit errors', () => {
+        const method = 'POST';
+        const opts = { method, foo: 'bar', expBackOffMaxRepeats: 8, expBackOffMillis: 1 };
+        const expectedBody = 'foo-bar';
+
+        let iteration = 0;
+
+        const stub = sinon
+            .stub(request, method.toLowerCase())
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
+                iteration++;
+                if (iteration < 6) return Promise.resolve({ statusCode: 429 });
+                return Promise.resolve({ body: expectedBody });
+            });
+
+        const stats = newEmptyStats();
+
+        return utils
+            .requestPromise(opts, stats)
+            .then((body) => {
+                expect(body).to.be.eql(expectedBody);
+                expect(iteration).to.be.eql(6);
+                expect(stats).to.include({
+                    calls: 1,
+                    requests: 6,
+                });
+                expect(stats.rateLimitErrors).to.be.eql([1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+                stub.restore();
+            });
+    });
+
     it('works as expected when request throws an error for API V1', () => {
         const method = 'POST';
         const opts = { method, foo: 'bar', isApiV1: true, expBackOffMaxRepeats: 8, expBackOffMillis: 5 };
@@ -231,7 +263,6 @@ describe('utils.requestPromise()', () => {
                 expect(stats).to.include({
                     calls: 1,
                     requests: opts.expBackOffMaxRepeats,
-                    rateLimitErrors: 0,
                 });
                 stub.restore();
             });
