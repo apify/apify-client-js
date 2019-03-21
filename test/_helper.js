@@ -13,7 +13,7 @@ export const newEmptyStats = () => {
     return {
         calls: 0,
         requests: 0,
-        rateLimitErrors: 0,
+        rateLimitErrors: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     };
 };
 

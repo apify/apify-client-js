@@ -1,4 +1,8 @@
-0.5.8 / 2019/03/15
+xxx
+==================
+- `apifyClient.stats.rateLimitErrors` is now an `Array` and tracks errors per retry count. 
+
+0.5.9 / 2019/03/15
 ==================
 - Added `client.tasks.listWebhooks()` to list task webhooks.
 

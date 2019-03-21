@@ -48,12 +48,12 @@
     "lint": "npm run build && eslint src test"
   },
   "dependencies": {
-    "apify-shared": "^0.1.9",
-    "content-type": "^1.0.3",
-    "request": "^2.81.0",
-    "request-promise-native": "^1.0.5",
+    "apify-shared": "^0.1.32",
+    "content-type": "^1.0.4",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.7",
     "type-check": "^0.3.2",
-    "underscore": "^1.9.0"
+    "underscore": "^1.9.1"
   },
   "devDependencies": {
     "apify-jsdoc-template": "github:apifytech/apify-jsdoc-template",

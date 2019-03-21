@@ -160,8 +160,8 @@ const ApifyClient = function (options = {}) {
         // Number of Apify API requests
         requests: 0,
 
-        // Number of times the API returned 429 error
-        rateLimitErrors: 0,
+        // Number of times the API returned 429 error. Spread based on number of retries.
+        rateLimitErrors: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 
         // TODO: We can add internalServerErrors and other stuff here...
     };
