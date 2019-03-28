@@ -1,6 +1,10 @@
+0.5.11 / 2019/03/28
+===================
+- Fixed bug where rateLimitError stats were stored to previous iteration after 10 retries.
+
 0.5.10 / 2019/03/21
 ===================
-- `apifyClient.stats.rateLimitErrors` is now an `Array` and tracks errors per retry count. 
+- `apifyClient.stats.rateLimitErrors` is now an `Array` and tracks errors per retry count.
 
 0.5.9 / 2019/03/15
 ==================
