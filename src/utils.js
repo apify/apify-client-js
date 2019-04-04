@@ -109,11 +109,20 @@ export const requestPromise = async (options, stats) => {
             const requestParams = Object.assign({}, options, {
                 resolveWithFullResponse: true,
                 simple: false,
+                json: false, // We are parsing JSON ourselves below to be able to retry on incomplete response.
             });
             if (stats) stats.requests++;
             response = await request[method](requestParams); // eslint-disable-line
             statusCode = response ? response.statusCode : null;
-            if (!statusCode || statusCode < 300) return options.resolveWithFullResponse ? response : response.body;
+
+            // It may happen that response is incomplete but request package silently returns original
+            // response as string instead of throwing an error. So we call JSON.parse() manually here.
+            // If parsing throws then the request gets retried with exponential backoff.
+            if (options.json) response.body = JSON.parse(response.body);
+
+            if (!statusCode || statusCode < 300) {
+                return options.resolveWithFullResponse ? response : response.body;
+            }
         } catch (err) {
             error = err;
         }

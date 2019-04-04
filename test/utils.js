@@ -92,7 +92,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
                 return Promise.resolve({ body: expectedBody });
             });
 
@@ -120,7 +120,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
                 return Promise.resolve(expectedResponse);
             });
 
@@ -144,7 +144,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
                 iteration++;
                 if (iteration < 8) return Promise.reject(new Error(errorMsg));
                 return Promise.resolve({ body: expectedBody });
@@ -182,7 +182,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
                 return Promise.reject(error);
             });
 
@@ -214,7 +214,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
                 iteration++;
                 if (iteration < 6) return Promise.resolve({ statusCode: 429 });
                 return Promise.resolve({ body: expectedBody });
@@ -244,7 +244,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
                 return Promise.reject(error);
             });
 
@@ -278,7 +278,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
                 return Promise.resolve({ statusCode, body: JSON.stringify({ type, message }) });
             });
 
@@ -303,7 +303,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
                 return Promise.resolve({ statusCode: 404, body: '' });
             });
 
@@ -360,7 +360,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
                 iteration++;
                 if (iteration < 8) return Promise.resolve({ statusCode: 500 });
                 return Promise.resolve({ body: expectedBody });
@@ -385,7 +385,7 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
                 iteration++;
                 if (iteration <= 4) return Promise.resolve({ statusCode: 500 });
                 return Promise.resolve({ body: expectedBody });
@@ -403,6 +403,62 @@ describe('utils.requestPromise()', () => {
                     stub.restore();
                 },
             );
+    });
+
+    it('should parse JSON when json=true', () => {
+        const method = 'DELETE';
+        const opts = { method, json: true };
+        const expectedBody = { foo: 'something', bar: 123 };
+
+        const stub = sinon
+            .stub(request, method.toLowerCase())
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
+                return Promise.resolve({ body: JSON.stringify(expectedBody) });
+            });
+
+        const stats = newEmptyStats();
+
+        return utils
+            .requestPromise(opts, stats)
+            .then((body) => {
+                expect(body).to.be.eql(expectedBody);
+                expect(stats).to.include({
+                    calls: 1,
+                    requests: 1,
+                });
+                expect(stats.rateLimitErrors).to.be.eql([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+                stub.restore();
+            });
+    });
+
+    it('should retry request in a case of invalid JSON', () => {
+        const method = 'DELETE';
+        const opts = { method, foo: 'bar', expBackOffMillis: 5, expBackOffMaxRepeats: 8, json: true };
+        const expectedBody = { foo: 'something', bar: 123 };
+
+        let iteration = 0;
+
+        const stub = sinon
+            .stub(request, method.toLowerCase())
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
+                iteration++;
+                const validJson = JSON.stringify(expectedBody);
+                if (iteration < 8) {
+                    const invalidJson = validJson.substring(0, validJson.length - 3);
+                    return Promise.resolve({ body: invalidJson });
+                }
+                return Promise.resolve({ body: validJson });
+            });
+
+        return utils
+            .requestPromise(opts)
+            .then((body) => {
+                expect(body).to.be.eql(expectedBody);
+                expect(iteration).to.be.eql(8);
+                stub.restore();
+            });
     });
 });
 
