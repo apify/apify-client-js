@@ -15,6 +15,8 @@ import ApifyClientError, {
 import { newEmptyStats } from './_helper';
 import * as utils from '../build/utils';
 
+const { CLIENT_USER_AGENT, CONTENT_TYPE_JSON_HEADER } = utils;
+
 describe('utils.safeJsonParse()', () => {
     it('works', () => {
         expect(utils.safeJsonParse('{ "foo": "bar" }')).to.be.eql({ foo: 'bar' });
@@ -92,7 +94,12 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT },
+                }));
                 return Promise.resolve({ body: expectedBody });
             });
 
@@ -120,7 +127,12 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT },
+                }));
                 return Promise.resolve(expectedResponse);
             });
 
@@ -144,7 +156,12 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT },
+                }));
                 iteration++;
                 if (iteration < 8) return Promise.reject(new Error(errorMsg));
                 return Promise.resolve({ body: expectedBody });
@@ -182,7 +199,12 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT },
+                }));
                 return Promise.reject(error);
             });
 
@@ -214,7 +236,12 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT },
+                }));
                 iteration++;
                 if (iteration < 6) return Promise.resolve({ statusCode: 429 });
                 return Promise.resolve({ body: expectedBody });
@@ -244,7 +271,12 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT },
+                }));
                 return Promise.reject(error);
             });
 
@@ -278,7 +310,12 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT },
+                }));
                 return Promise.resolve({ statusCode, body: JSON.stringify({ type, message }) });
             });
 
@@ -303,7 +340,12 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT },
+                }));
                 return Promise.resolve({ statusCode: 404, body: '' });
             });
 
@@ -360,7 +402,12 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT },
+                }));
                 iteration++;
                 if (iteration < 8) return Promise.resolve({ statusCode: 500 });
                 return Promise.resolve({ body: expectedBody });
@@ -385,7 +432,12 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT },
+                }));
                 iteration++;
                 if (iteration <= 4) return Promise.resolve({ statusCode: 500 });
                 return Promise.resolve({ body: expectedBody });
@@ -413,7 +465,12 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT, 'Content-Type': CONTENT_TYPE_JSON_HEADER },
+                }));
                 return Promise.resolve({ body: JSON.stringify(expectedBody) });
             });
 
@@ -423,6 +480,37 @@ describe('utils.requestPromise()', () => {
             .requestPromise(opts, stats)
             .then((body) => {
                 expect(body).to.be.eql(expectedBody);
+                expect(stats).to.include({
+                    calls: 1,
+                    requests: 1,
+                });
+                expect(stats.rateLimitErrors).to.be.eql([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+                stub.restore();
+            });
+    });
+
+    it('should stringify JSON when json=true', () => {
+        const method = 'POST';
+        const body = { foo: 'something', bar: 123 };
+        const opts = { method, json: true, body };
+
+        const stub = sinon
+            .stub(request, method.toLowerCase())
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT, 'Content-Type': CONTENT_TYPE_JSON_HEADER },
+                    body: JSON.stringify(body),
+                }));
+                return Promise.resolve({});
+            });
+        const stats = newEmptyStats();
+
+        return utils
+            .requestPromise(opts, stats)
+            .then(() => {
                 expect(stats).to.include({
                     calls: 1,
                     requests: 1,
@@ -442,7 +530,12 @@ describe('utils.requestPromise()', () => {
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
-                expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false, json: false }));
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT, 'Content-Type': CONTENT_TYPE_JSON_HEADER },
+                }));
                 iteration++;
                 const validJson = JSON.stringify(expectedBody);
                 if (iteration < 8) {
