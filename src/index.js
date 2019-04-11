@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import { requestPromise, REQUEST_PROMISE_OPTIONS } from './utils';
+import { requestPromise, REQUEST_PROMISE_OPTIONS, EXP_BACKOFF_MAX_REPEATS } from './utils';
 import acts from './acts';
 import tasks from './tasks';
 import crawlers from './crawlers';
@@ -9,7 +9,7 @@ import logs from './logs';
 import users from './users';
 import webhooks from './webhooks';
 import webhookDispatches from './webhook_dispatches';
-import requestQueues from './request_queues';
+import requestQueues, { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from './request_queues';
 import ApifyClientError, { INVALID_PARAMETER_ERROR_TYPE_V2 } from './apify_error';
 
 /** @ignore */
@@ -161,7 +161,7 @@ const ApifyClient = function (options = {}) {
         requests: 0,
 
         // Number of times the API returned 429 error. Spread based on number of retries.
-        rateLimitErrors: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        rateLimitErrors: new Array(Math.max(REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, EXP_BACKOFF_MAX_REPEATS)).fill(0),
 
         // TODO: We can add internalServerErrors and other stuff here...
     };

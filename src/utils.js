@@ -17,7 +17,7 @@ import ApifyClientError, {
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 const EXP_BACKOFF_MILLIS = 500;
-const EXP_BACKOFF_MAX_REPEATS = 8; // 128s
+export const EXP_BACKOFF_MAX_REPEATS = 8; // 128s
 const CONTENT_TYPE_JSON = 'application/json';
 const CONTENT_TYPE_XML = 'application/xml';
 const CONTENT_TYPE_TEXT_PREFIX = 'text/';

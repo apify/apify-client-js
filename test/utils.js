@@ -12,7 +12,7 @@ import ApifyClientError, {
     INVALID_PARAMETER_ERROR_TYPE_V2,
     NOT_FOUND_STATUS_CODE,
 } from '../build/apify_error';
-import { newEmptyStats } from './_helper';
+import { newEmptyStats, DEFAULT_RATE_LIMIT_ERRORS } from './_helper';
 import * as utils from '../build/utils';
 
 describe('utils.safeJsonParse()', () => {
@@ -106,7 +106,7 @@ describe('utils.requestPromise()', () => {
                     calls: 1,
                     requests: 1,
                 });
-                expect(stats.rateLimitErrors).to.be.eql([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+                expect(stats.rateLimitErrors).to.be.eql(DEFAULT_RATE_LIMIT_ERRORS);
                 stub.restore();
             });
     });
@@ -161,7 +161,7 @@ describe('utils.requestPromise()', () => {
                     calls: 1,
                     requests: 8,
                 });
-                expect(stats.rateLimitErrors).to.be.eql([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+                expect(stats.rateLimitErrors).to.be.eql(DEFAULT_RATE_LIMIT_ERRORS);
                 stub.restore();
             });
     });
@@ -210,28 +210,32 @@ describe('utils.requestPromise()', () => {
         const expectedBody = 'foo-bar';
 
         let iteration = 0;
+        const rateLimitedIterations = 5;
 
         const stub = sinon
             .stub(request, method.toLowerCase())
             .callsFake((passedOpts) => {
                 expect(passedOpts).to.be.eql(Object.assign({}, opts, { resolveWithFullResponse: true, simple: false }));
                 iteration++;
-                if (iteration < 6) return Promise.resolve({ statusCode: 429 });
+                if (iteration <= rateLimitedIterations) return Promise.resolve({ statusCode: 429 });
                 return Promise.resolve({ body: expectedBody });
             });
 
         const stats = newEmptyStats();
 
+        const expectedRateLimitErrors = [...DEFAULT_RATE_LIMIT_ERRORS];
+        for (let i = 0; i < rateLimitedIterations; i++) expectedRateLimitErrors[i] = 1;
+
         return utils
             .requestPromise(opts, stats)
             .then((body) => {
                 expect(body).to.be.eql(expectedBody);
-                expect(iteration).to.be.eql(6);
+                expect(iteration).to.be.eql(rateLimitedIterations + 1);
                 expect(stats).to.include({
                     calls: 1,
-                    requests: 6,
+                    requests: rateLimitedIterations + 1,
                 });
-                expect(stats.rateLimitErrors).to.be.eql([1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
+                expect(stats.rateLimitErrors).to.be.eql(expectedRateLimitErrors);
                 stub.restore();
             });
     });
@@ -403,6 +407,103 @@ describe('utils.requestPromise()', () => {
                     stub.restore();
                 },
             );
+    });
+
+    it('should parse JSON when json=true', () => {
+        const method = 'DELETE';
+        const opts = { method, json: true };
+        const expectedBody = { foo: 'something', bar: 123 };
+
+        const stub = sinon
+            .stub(request, method.toLowerCase())
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT, 'Content-Type': CONTENT_TYPE_JSON_HEADER },
+                }));
+                return Promise.resolve({ body: JSON.stringify(expectedBody) });
+            });
+
+        const stats = newEmptyStats();
+
+        return utils
+            .requestPromise(opts, stats)
+            .then((body) => {
+                expect(body).to.be.eql(expectedBody);
+                expect(stats).to.include({
+                    calls: 1,
+                    requests: 1,
+                });
+                expect(stats.rateLimitErrors).to.be.eql(DEFAULT_RATE_LIMIT_ERRORS);
+                stub.restore();
+            });
+    });
+
+    it('should stringify JSON when json=true', () => {
+        const method = 'POST';
+        const body = { foo: 'something', bar: 123 };
+        const opts = { method, json: true, body };
+
+        const stub = sinon
+            .stub(request, method.toLowerCase())
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT, 'Content-Type': CONTENT_TYPE_JSON_HEADER },
+                    body: JSON.stringify(body),
+                }));
+                return Promise.resolve({});
+            });
+        const stats = newEmptyStats();
+
+        return utils
+            .requestPromise(opts, stats)
+            .then(() => {
+                expect(stats).to.include({
+                    calls: 1,
+                    requests: 1,
+                });
+                expect(stats.rateLimitErrors).to.be.eql(DEFAULT_RATE_LIMIT_ERRORS);
+                stub.restore();
+            });
+    });
+
+    it('should retry request in a case of invalid JSON', () => {
+        const method = 'DELETE';
+        const opts = { method, foo: 'bar', expBackOffMillis: 5, expBackOffMaxRepeats: 8, json: true };
+        const expectedBody = { foo: 'something', bar: 123 };
+
+        let iteration = 0;
+
+        const stub = sinon
+            .stub(request, method.toLowerCase())
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT, 'Content-Type': CONTENT_TYPE_JSON_HEADER },
+                }));
+                iteration++;
+                const validJson = JSON.stringify(expectedBody);
+                if (iteration < 8) {
+                    const invalidJson = validJson.substring(0, validJson.length - 3);
+                    return Promise.resolve({ body: invalidJson });
+                }
+                return Promise.resolve({ body: validJson });
+            });
+
+        return utils
+            .requestPromise(opts)
+            .then((body) => {
+                expect(body).to.be.eql(expectedBody);
+                expect(iteration).to.be.eql(8);
+                stub.restore();
+            });
     });
 });
 
