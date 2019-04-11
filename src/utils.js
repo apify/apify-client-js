@@ -21,10 +21,11 @@ export const EXP_BACKOFF_MAX_REPEATS = 8; // 128s
 const CONTENT_TYPE_JSON = 'application/json';
 const CONTENT_TYPE_XML = 'application/xml';
 const CONTENT_TYPE_TEXT_PREFIX = 'text/';
-const CLIENT_USER_AGENT = `ApifyClient/${version} (${os.type()}; Node/${process.version})`;
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
 const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
 
+export const CONTENT_TYPE_JSON_HEADER = `${CONTENT_TYPE_JSON}; charset=utf-8`;
+export const CLIENT_USER_AGENT = `ApifyClient/${version} (${os.type()}; Node/${process.version})`;
 export const REQUEST_PROMISE_OPTIONS = ['expBackOffMillis', 'expBackOffMaxRepeats'];
 
 /**
@@ -90,11 +91,24 @@ export const requestPromise = async (options, stats) => {
     const expBackoffMaxRepeats = options.expBackOffMaxRepeats || EXP_BACKOFF_MAX_REPEATS;
     const method = _.isString(options.method) ? options.method.toLowerCase() : options.method;
 
-    // Add custom user-agent to all API calls
-    options.headers = Object.assign({}, options.headers, { 'User-Agent': CLIENT_USER_AGENT });
-
     if (!method) throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, '"options.method" parameter must be provided');
     if (!request[method]) throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, '"options.method" is not a valid http request method');
+
+    const requestParams = Object.assign({}, options, {
+        resolveWithFullResponse: true,
+        simple: false,
+
+        // Add custom user-agent to all API calls
+        headers: Object.assign({}, options.headers, { 'User-Agent': CLIENT_USER_AGENT }),
+
+        // We are parsing and stringifycating JSON ourselves below to be able to retry on incomplete response.
+        json: false,
+    });
+
+    if (options.json) {
+        requestParams.headers['Content-Type'] = CONTENT_TYPE_JSON_HEADER;
+        if (requestParams.body) requestParams.body = JSON.stringify(requestParams.body);
+    }
 
     if (stats) stats.calls++;
     let iteration = 0;
@@ -106,14 +120,18 @@ export const requestPromise = async (options, stats) => {
         let error;
 
         try {
-            const requestParams = Object.assign({}, options, {
-                resolveWithFullResponse: true,
-                simple: false,
-            });
             if (stats) stats.requests++;
             response = await request[method](requestParams); // eslint-disable-line
             statusCode = response ? response.statusCode : null;
-            if (!statusCode || statusCode < 300) return options.resolveWithFullResponse ? response : response.body;
+
+            // It may happen that response is incomplete but request package silently returns original
+            // response as string instead of throwing an error. So we call JSON.parse() manually here.
+            // If parsing throws then the request gets retried with exponential backoff.
+            if (options.json && response.body) response.body = JSON.parse(response.body);
+
+            if (!statusCode || statusCode < 300) {
+                return options.resolveWithFullResponse ? response : response.body;
+            }
         } catch (err) {
             error = err;
         }
@@ -149,6 +167,7 @@ export const requestPromise = async (options, stats) => {
         );
         throw new RetryableError(originalError);
     };
+
     return retryWithExpBackoff({ func: makeRequest, expBackoffMaxRepeats, expBackoffMillis });
 };
 

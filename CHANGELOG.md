@@ -1,6 +1,6 @@
-0.5.11 / 2019/03/28
+0.5.11 / 2019/04/04
 ===================
-- Fixed bug where rateLimitError stats were stored to previous iteration after 10 retries.
+- Client now retries request in a case of an invalid JSON response (incomplete response payload).
 
 0.5.10 / 2019/03/21
 ===================
