@@ -1,3 +1,7 @@
+0.5.13 / 2019/04/15
+===================
+- Fixed a bug where last retry stats would not be saved correctly.
+
 0.5.11 / 2019/04/04
 ===================
 - Client now retries request in a case of an invalid JSON response (incomplete response payload).
