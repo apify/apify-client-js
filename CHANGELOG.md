@@ -4,7 +4,7 @@
 
 0.5.10 / 2019/03/21
 ===================
-- `apifyClient.stats.rateLimitErrors` is now an `Array` and tracks errors per retry count. 
+- `apifyClient.stats.rateLimitErrors` is now an `Array` and tracks errors per retry count.
 
 0.5.9 / 2019/03/15
 ==================

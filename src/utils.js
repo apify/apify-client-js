@@ -17,7 +17,7 @@ import ApifyClientError, {
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 const EXP_BACKOFF_MILLIS = 500;
-const EXP_BACKOFF_MAX_REPEATS = 8; // 128s
+export const EXP_BACKOFF_MAX_REPEATS = 8; // 128s
 const CONTENT_TYPE_JSON = 'application/json';
 const CONTENT_TYPE_XML = 'application/xml';
 const CONTENT_TYPE_TEXT_PREFIX = 'text/';
@@ -138,8 +138,8 @@ export const requestPromise = async (options, stats) => {
 
         if (statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE && stats) {
             // Make sure this doesn't fail when someone increases number of retries on anything.
-            if (typeof stats.rateLimitErrors[iteration] === 'number') stats.rateLimitErrors[iteration - 1]++;
-            else stats.rateLimitErrors[iteration] = 1;
+            if (typeof stats.rateLimitErrors[iteration - 1] === 'number') stats.rateLimitErrors[iteration - 1]++;
+            else stats.rateLimitErrors[iteration - 1] = 1;
         }
 
         // For status codes 300-499 except RATE_LIMIT_EXCEEDED_STATUS_CODE we immediately rejects the promise
