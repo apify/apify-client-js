@@ -311,6 +311,7 @@ export default {
         if (options.skipHeaderRow) query.skipHeaderRow = 1;
         if (options.desc) query.desc = 1;
         if (options.bom) query.bom = 1;
+        else if (options.bom === false) query.bom = 0;
         if (options.attachment) query.attachment = 1;
         if (options.clean) query.clean = 1;
         if (options.skipHidden) query.skipHidden = 1;

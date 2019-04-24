@@ -227,6 +227,41 @@ describe('Dataset', () => {
                 .then(given => expect(given).to.be.eql(expected));
         });
 
+        it('getItems() works with bom=false', () => {
+            const datasetId = 'some-id';
+            const expected = {
+                total: 0,
+                offset: 0,
+                count: 0,
+                limit: 100000,
+                items: [],
+            };
+            const headers = {
+                'content-type': 'application/json; chartset=utf-8',
+                'x-apify-pagination-total': '0',
+                'x-apify-pagination-offset': '0',
+                'x-apify-pagination-count': '0',
+                'x-apify-pagination-limit': '100000',
+            };
+
+            requestExpectCall({
+                json: false,
+                method: 'GET',
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
+                gzip: true,
+                qs: { bom: 0 },
+                resolveWithFullResponse: true,
+                encoding: null,
+            }, JSON.stringify(expected.items), { headers });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .datasets
+                .getItems({ datasetId, bom: false })
+                .then(given => expect(given).to.be.eql(expected));
+        });
+
         describe('getDatasetItems()', () => {
             const message = 'CUSTOM ERROR';
             it('getDatasetItems() should return null for 404', async () => {
