@@ -227,24 +227,24 @@ export default {
      *                                        and to the end of the queue otherwise.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
-     * @param {String} [options.clientId] - Unique ID identifying client accessing the request queue.
+     * @param {String} [options.clientKey] - Unique ID identifying client accessing the request queue.
      *                                      This ID is used to identify how many clients used the queue.
-     *                                      This ID must be a string with length between 1 and 64 characters.
+     *                                      This ID must be a string with length between 1 and 32 characters.
      * @param callback
      * @returns {RequestOperationInfo}
      */
     addRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, request, forefront = false, token, clientId } = options;
+        const { baseUrl, queueId, request, forefront = false, token, clientKey } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(request, 'request', 'Object');
         checkParamOrThrow(forefront, 'forefront', 'Boolean');
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(clientId, 'clientId', 'Maybe String');
+        checkParamOrThrow(clientKey, 'clientKey', 'Maybe String');
 
         const query = { forefront, token };
-        if (clientId) query.clientId = clientId;
+        if (clientKey) query.clientKey = clientKey;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests`,
@@ -304,23 +304,23 @@ export default {
      * @param {String} options.requestId - Unique request ID
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
-     * @param {String} [options.clientId] - Unique ID identifying client accessing the request queue.
+     * @param {String} [options.clientKey] - Unique ID identifying client accessing the request queue.
      *                                      This ID is used to identify how many clients used the queue.
-     *                                      This ID must be a string with length between 1 and 64 characters.
+     *                                      This ID must be a string with length between 1 and 32 characters.
      * @param callback
      * @returns {*}
      */
     deleteRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, requestId, token, clientId } = options;
+        const { baseUrl, queueId, requestId, token, clientKey } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(requestId, 'requestId', 'String');
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(clientId, 'clientId', 'Maybe String');
+        checkParamOrThrow(clientKey, 'clientKey', 'Maybe String');
 
         const query = { token };
-        if (clientId) query.clientId = clientId;
+        if (clientKey) query.clientKey = clientKey;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests/${requestId}`,
@@ -344,14 +344,14 @@ export default {
      *                                        and to the end of the queue otherwise.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
-     * @param {String} [options.clientId] - Unique ID identifying client accessing the request queue.
+     * @param {String} [options.clientKey] - Unique ID identifying client accessing the request queue.
      *                                      This ID is used to identify how many clients used the queue.
-     *                                      This ID must be a string with length between 1 and 64 characters.
+     *                                      This ID must be a string with length between 1 and 32 characters.
      * @param callback
      * @returns {RequestOperationInfo}
      */
     updateRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, requestId, request, forefront = false, token, clientId } = options;
+        const { baseUrl, queueId, requestId, request, forefront = false, token, clientKey } = options;
 
         checkParamOrThrow(request, 'request', 'Object');
 
@@ -362,10 +362,10 @@ export default {
         checkParamOrThrow(safeRequestId, 'requestId', 'String');
         checkParamOrThrow(forefront, 'forefront', 'Boolean');
         checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(clientId, 'clientId', 'Maybe String');
+        checkParamOrThrow(clientKey, 'clientKey', 'Maybe String');
 
         const query = { forefront, token };
-        if (clientId) query.clientId = clientId;
+        if (clientKey) query.clientKey = clientKey;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests/${safeRequestId}`,
