@@ -389,20 +389,25 @@ export default {
      * @param {Number} options.limit - Maximum number of the items to be returned.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
+     * @param {String} [options.clientKey] - Unique ID identifying client accessing the request queue.
+     *                                      This ID is used to identify how many clients used the queue.
+     *                                      This ID must be a string with length between 1 and 32 characters.
      * @param callback
      * @returns {QueueHead}
      */
     getHead: (requestPromise, options) => {
-        const { baseUrl, queueId, limit, token } = options;
+        const { baseUrl, queueId, limit, token, clientKey } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(limit, 'limit', 'Number');
         checkParamOrThrow(token, 'token', 'Maybe String');
+        checkParamOrThrow(clientKey, 'clientKey', 'Maybe String');
 
         const query = {};
         if (limit) query.limit = limit;
         if (token) query.token = token;
+        if (clientKey) query.clientKey = clientKey;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/head`,

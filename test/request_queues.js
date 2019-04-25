@@ -330,7 +330,7 @@ describe('Request queue', () => {
                 json: true,
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/head`,
-                qs: { limit: 5 },
+                qs: { limit: 5, clientKey: 'some-id' },
                 expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
             }, { data: response });
 
@@ -338,7 +338,7 @@ describe('Request queue', () => {
 
             return apifyClient
                 .requestQueues
-                .getHead({ queueId, limit: 5 })
+                .getHead({ queueId, limit: 5, clientKey: 'some-id' })
                 .then(data => expect(data).to.be.eql(response));
         });
     });
