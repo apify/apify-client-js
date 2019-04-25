@@ -227,24 +227,31 @@ export default {
      *                                        and to the end of the queue otherwise.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
+     * @param {String} [options.clientKey] - Unique ID identifying client accessing the request queue.
+     *                                      This ID is used to identify how many clients used the queue.
+     *                                      This ID must be a string with length between 1 and 32 characters.
      * @param callback
      * @returns {RequestOperationInfo}
      */
     addRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, request, forefront = false, token } = options;
+        const { baseUrl, queueId, request, forefront = false, token, clientKey } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(request, 'request', 'Object');
         checkParamOrThrow(forefront, 'forefront', 'Boolean');
         checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(clientKey, 'clientKey', 'Maybe String');
+
+        const query = { forefront, token };
+        if (clientKey) query.clientKey = clientKey;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests`,
             json: true,
             method: 'POST',
             body: request,
-            qs: { forefront, token },
+            qs: query,
             expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
         })
             .then(pluckData)
@@ -297,22 +304,29 @@ export default {
      * @param {String} options.requestId - Unique request ID
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
+     * @param {String} [options.clientKey] - Unique ID identifying client accessing the request queue.
+     *                                      This ID is used to identify how many clients used the queue.
+     *                                      This ID must be a string with length between 1 and 32 characters.
      * @param callback
      * @returns {*}
      */
     deleteRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, requestId, token } = options;
+        const { baseUrl, queueId, requestId, token, clientKey } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(requestId, 'requestId', 'String');
         checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(clientKey, 'clientKey', 'Maybe String');
+
+        const query = { token };
+        if (clientKey) query.clientKey = clientKey;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests/${requestId}`,
             json: true,
             method: 'DELETE',
-            qs: { token },
+            qs: query,
             expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
         });
     },
@@ -330,11 +344,14 @@ export default {
      *                                        and to the end of the queue otherwise.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
+     * @param {String} [options.clientKey] - Unique ID identifying client accessing the request queue.
+     *                                      This ID is used to identify how many clients used the queue.
+     *                                      This ID must be a string with length between 1 and 32 characters.
      * @param callback
      * @returns {RequestOperationInfo}
      */
     updateRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, requestId, request, forefront = false, token } = options;
+        const { baseUrl, queueId, requestId, request, forefront = false, token, clientKey } = options;
 
         checkParamOrThrow(request, 'request', 'Object');
 
@@ -345,13 +362,17 @@ export default {
         checkParamOrThrow(safeRequestId, 'requestId', 'String');
         checkParamOrThrow(forefront, 'forefront', 'Boolean');
         checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(clientKey, 'clientKey', 'Maybe String');
+
+        const query = { forefront, token };
+        if (clientKey) query.clientKey = clientKey;
 
         return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${queueId}/requests/${safeRequestId}`,
             json: true,
             method: 'PUT',
             body: request,
-            qs: { forefront, token },
+            qs: query,
             expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
         })
             .then(pluckData)

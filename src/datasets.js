@@ -310,11 +310,14 @@ export default {
         // Add Boolean query params.
         if (options.skipHeaderRow) query.skipHeaderRow = 1;
         if (options.desc) query.desc = 1;
-        if (options.bom) query.bom = 1;
         if (options.attachment) query.attachment = 1;
         if (options.clean) query.clean = 1;
         if (options.skipHidden) query.skipHidden = 1;
         if (options.skipEmpty) query.skipEmpty = 1;
+        // Bom is handled special way because its default value is true which means that we need to make sure
+        // that falsy value is passed in a query string as zero.
+        if (options.bom) query.bom = 1;
+        else if (options.bom === false) query.bom = 0;
 
         if (query.fields) query.fields = query.fields.join(',');
         const requestOpts = {

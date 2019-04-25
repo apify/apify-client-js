@@ -198,7 +198,7 @@ describe('Request queue', () => {
                 method: 'POST',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests`,
                 body: request,
-                qs: { forefront: false, token },
+                qs: { forefront: false, token, clientKey: 'my-client-id' },
                 expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
             }, { data: response });
 
@@ -206,7 +206,7 @@ describe('Request queue', () => {
 
             return apifyClient
                 .requestQueues
-                .addRequest({ queueId, request, token })
+                .addRequest({ queueId, request, token, clientKey: 'my-client-id' })
                 .then(data => expect(data).to.be.eql(response));
         });
 
@@ -263,7 +263,7 @@ describe('Request queue', () => {
                 json: true,
                 method: 'DELETE',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
-                qs: { token },
+                qs: { token, clientKey: 'my-client-id' },
                 expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
             });
 
@@ -271,7 +271,7 @@ describe('Request queue', () => {
 
             return apifyClient
                 .requestQueues
-                .deleteRequest({ queueId, requestId, token });
+                .deleteRequest({ queueId, requestId, token, clientKey: 'my-client-id' });
         });
 
         it('updateRequest() works with requestId param', () => {
@@ -286,7 +286,7 @@ describe('Request queue', () => {
                 method: 'PUT',
                 url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
                 body: request,
-                qs: { forefront: false, token },
+                qs: { forefront: false, token, clientKey: 'my-client-id' },
                 expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
             }, { data: response });
 
@@ -294,7 +294,7 @@ describe('Request queue', () => {
 
             return apifyClient
                 .requestQueues
-                .updateRequest({ queueId, requestId, request, token })
+                .updateRequest({ queueId, requestId, request, token, clientKey: 'my-client-id' })
                 .then(data => expect(data).to.be.eql(response));
         });
 
