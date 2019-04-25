@@ -1,3 +1,7 @@
+0.5.15 / 2019/04/25
+===================
+- Added support for clientKey parameter to request queue endpoints.
+
 0.5.13 / 2019/04/15
 ===================
 - Fixed a bug where last retry stats would not be saved correctly.
