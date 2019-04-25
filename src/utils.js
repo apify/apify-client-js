@@ -106,7 +106,7 @@ export const requestPromise = async (options, stats) => {
     });
 
     if (options.json) {
-        requestParams.headers['Content-Type'] = CONTENT_TYPE_JSON_HEADER;
+        if (!requestParams.headers['Content-Type']) requestParams.headers['Content-Type'] = CONTENT_TYPE_JSON_HEADER;
         if (requestParams.body) requestParams.body = JSON.stringify(requestParams.body);
     }
 

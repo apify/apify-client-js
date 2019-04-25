@@ -493,6 +493,40 @@ describe('utils.requestPromise()', () => {
             });
     });
 
+    it('should not override existing content type header when json=true', () => {
+        const method = 'DELETE';
+        const opts = {
+            method,
+            json: true,
+            headers: {
+                'Content-Type': 'text/plain; charset=utf-8',
+            },
+        };
+
+        const stub = sinon
+            .stub(request, method.toLowerCase())
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: {
+                        'User-Agent': CLIENT_USER_AGENT,
+                        'Content-Type': 'text/plain; charset=utf-8',
+                    },
+                }));
+                return Promise.resolve('{ "foo": "bar" }');
+            });
+
+        const stats = newEmptyStats();
+
+        return utils
+            .requestPromise(opts, stats)
+            .then(() => {
+                stub.restore();
+            });
+    });
+
     it('should stringify JSON when json=true', () => {
         const method = 'POST';
         const body = { foo: 'something', bar: 123 };
