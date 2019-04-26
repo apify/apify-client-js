@@ -314,8 +314,8 @@ export default {
         if (options.clean) query.clean = 1;
         if (options.skipHidden) query.skipHidden = 1;
         if (options.skipEmpty) query.skipEmpty = 1;
-        // Bom is handled special way because its default value is true which means that we need to make sure
-        // that falsy value is passed in a query string as zero.
+        // Bom is handled special way because its default value for certain formats (CSV) is true which means that we need to make sure
+        // that falsy value is passed in a query string as a zero.
         if (options.bom) query.bom = 1;
         else if (options.bom === false) query.bom = 0;
 
