@@ -25,7 +25,7 @@ import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } f
  *
  * // Promise
  * apifyClient.webhooks.listWebhooks({})
- * .then((actsList) => {
+ * .then((webhooksList) => {
  *      // Do something with list ...
  * })
  * .catch((err) => {
@@ -33,7 +33,7 @@ import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } f
  * });
  *
  * // Callback
- * apifyClient.webhooks.listWebhooks({}, (err, actsList) => {
+ * apifyClient.webhooks.listWebhooks({}, (err, webhooksList) => {
  *      // Do something with error or list ...
  * });
  * ```
@@ -49,7 +49,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param option.webhook - Webhook
+     * @param options.webhook - Webhook
      * @param callback
      * @returns {Webhook}
      */
@@ -117,7 +117,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param option.webhookId - Webhook ID
+     * @param options.webhookId - Webhook ID
      * @param callback
      * @returns {Webhook}
      */
@@ -145,8 +145,8 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param option.webhookId - Webhook ID
-     * @param option.webhook - Webhook
+     * @param options.webhookId - Webhook ID
+     * @param options.webhook - Webhook
      * @param callback
      * @returns {Webhook}
      */
@@ -176,7 +176,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param option.webhookId - Webhook ID
+     * @param options.webhookId - Webhook ID
      * @param callback
      * @returns {}
      */
@@ -203,7 +203,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param option.webhookId - Webhook ID
+     * @param options.webhookId - Webhook ID
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
