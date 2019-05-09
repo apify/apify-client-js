@@ -24,7 +24,7 @@ import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } f
  *
  * // Promise
  * apifyClient.webhookDispatches.listWebhookDispatches({})
- * .then((tasksList) => {
+ * .then((webhooksList) => {
  *      // Do something with the list ...
  * })
  * .catch((err) => {
@@ -32,7 +32,7 @@ import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } f
  * });
  *
  * // Callback
- * apifyClient.webhookDispatches.listWebhookDispatches({}, (err, tasksList) => {
+ * apifyClient.webhookDispatches.listWebhookDispatches({}, (err, webhooksList) => {
  *      // Do something with error or list ...
  * });
  * ```
@@ -88,7 +88,7 @@ export default {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param option.webhookDispatchId - Webhook dispatch ID
+     * @param options.webhookDispatchId - Webhook dispatch ID
      * @param callback
      * @returns {WebhookDispatch}
      */
