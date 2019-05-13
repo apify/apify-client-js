@@ -454,7 +454,7 @@ describe('utils.requestPromise()', () => {
                 (err) => {
                     expect(iteration).to.be.eql(4);
                     expect(err.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
-                    expect(err.message).to.be.eql(`API request failed after ${iteration} retries.`);
+                    expect(err.message).to.be.eql('API request failed on retry number 4');
                     expect(err.details.statusCode).to.be.eql(500);
                     stub.restore();
                 },
