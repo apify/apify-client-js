@@ -160,11 +160,10 @@ export const requestPromise = async (options, stats) => {
         // - status code is >= 500
         // - RATE_LIMIT_EXCEEDED_STATUS_CODE
         // then we throw the retryable error that is repeated by the retryWithExpBackoff function up to `expBackOffMaxRepeats` repeats.
-        const originalError = new ApifyClientError(
-            REQUEST_FAILED_ERROR_TYPE,
-            `API request failed after ${iteration} retries.`,
-            errorDetails,
-        );
+        const errorMsg = iteration === 0
+            ? 'API request failed on the first retry'
+            : `API request failed on retry number ${iteration}`;
+        const originalError = new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, errorMsg, errorDetails);
         throw new RetryableError(originalError);
     };
 

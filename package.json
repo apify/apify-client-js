@@ -48,7 +48,7 @@
     "lint": "npm run build && eslint src test"
   },
   "dependencies": {
-    "apify-shared": "^0.1.32",
+    "apify-shared": "^0.1.45",
     "content-type": "^1.0.4",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",

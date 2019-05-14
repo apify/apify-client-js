@@ -765,7 +765,7 @@ describe('Crawlers', () => {
 
         it('should put parameters into query string', () => {
             requestExpectCall({
-                json: true,
+                json: false,
                 method: 'GET',
                 url: `http://myhost:80/mypath${BASE_PATH}/execs/dummyExecution/results`,
                 qs: {

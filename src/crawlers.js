@@ -458,7 +458,7 @@ export default {
 
         const requestParams = {
             url: `${options.baseUrl}${BASE_PATH}/execs/${executionId}/results`,
-            json: true,
+            json: !options.format || options.format === 'json',
             method: 'GET',
             resolveWithFullResponse: true,
             isApiV1: true,
@@ -521,12 +521,13 @@ export default {
 
         const requestParams = {
             url: `${options.baseUrl}${BASE_PATH}/${userId}/crawlers/${crawlerId}/lastExec/results`,
-            json: true,
+            json: !options.format || options.format === 'json',
             method: 'GET',
             resolveWithFullResponse: true,
             isApiV1: true,
             encoding: null,
         };
+
         const queryString = _.pick(options,
             'status', 'token', 'format',
             'simplified', 'offset', 'limit',
