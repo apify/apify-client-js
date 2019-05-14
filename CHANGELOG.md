@@ -1,3 +1,7 @@
+0.5.17 / 2019/05/14
+===================
+- Fix of non-JSON crawler execution results retrieval
+
 0.5.15 / 2019/04/25
 ===================
 - Added support for clientKey parameter to request queue endpoints.
