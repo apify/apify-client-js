@@ -15,7 +15,7 @@ import ApifyClientError, {
     NOT_FOUND_STATUS_CODE,
 } from './apify_error';
 
-const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
+export const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 const EXP_BACKOFF_MILLIS = 500;
 export const EXP_BACKOFF_MAX_REPEATS = 8; // 128s
 const CONTENT_TYPE_JSON = 'application/json';
@@ -26,7 +26,7 @@ const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
 
 export const CONTENT_TYPE_JSON_HEADER = `${CONTENT_TYPE_JSON}; charset=utf-8`;
 export const CLIENT_USER_AGENT = `ApifyClient/${version} (${os.type()}; Node/${process.version})`;
-export const REQUEST_PROMISE_OPTIONS = ['expBackOffMillis', 'expBackOffMaxRepeats'];
+export const REQUEST_PROMISE_OPTIONS = ['expBackOffMillis', 'expBackOffMaxRepeats', 'retryOnStatusCodes'];
 
 /**
  * Parses a JSON string. If string is not JSON then catches an error and returns empty object.
@@ -76,6 +76,7 @@ export const newApifyClientErrorFromResponse = (body, isApiV1, details) => {
  * - resolveWithFullResponse - to resolve promise with whole response instead of just body
  * - expBackOffMillis - initial wait time before next repeat in a case of error
  * - expBackOffMaxRepeats - maximal number of repeats
+ * - retryOnStatusCodes - an array of status codes on which requests are retried
  *
  * @param options
  * @param stats Optional object that receives the stats.
@@ -89,6 +90,7 @@ export const requestPromise = async (options, stats) => {
 
     const expBackoffMillis = options.expBackOffMillis || EXP_BACKOFF_MILLIS;
     const expBackoffMaxRepeats = options.expBackOffMaxRepeats || EXP_BACKOFF_MAX_REPEATS;
+    const retryOnStatusCodes = options.retryOnStatusCodes || [RATE_LIMIT_EXCEEDED_STATUS_CODE];
     const method = _.isString(options.method) ? options.method.toLowerCase() : options.method;
 
     if (!method) throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, '"options.method" parameter must be provided');
@@ -142,9 +144,13 @@ export const requestPromise = async (options, stats) => {
             else stats.rateLimitErrors[iteration - 1] = 1;
         }
 
-        // For status codes 300-499 except RATE_LIMIT_EXCEEDED_STATUS_CODE we immediately rejects the promise
+        // For status codes 300-499 except options.retryOnStatusCodes we immediately rejects the promise
         // since it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
-        if (statusCode >= 300 && statusCode < 500 && statusCode !== RATE_LIMIT_EXCEEDED_STATUS_CODE) {
+        if (
+            statusCode >= 300
+            && statusCode < 500
+            && !retryOnStatusCodes.includes(statusCode)
+        ) {
             throw newApifyClientErrorFromResponse(response.body, isApiV1, { statusCode, url: options.url, method: options.method });
         }
 
@@ -158,7 +164,7 @@ export const requestPromise = async (options, stats) => {
         // If one of these happened:
         // - error occurred
         // - status code is >= 500
-        // - RATE_LIMIT_EXCEEDED_STATUS_CODE
+        // - status code in one of retryOnStatusCodes (by default RATE_LIMIT_EXCEEDED_STATUS_CODE)
         // then we throw the retryable error that is repeated by the retryWithExpBackoff function up to `expBackOffMaxRepeats` repeats.
         const errorMsg = iteration === 0
             ? 'API request failed on the first retry'

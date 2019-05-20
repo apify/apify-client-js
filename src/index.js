@@ -62,6 +62,8 @@ const methodGroups = {
  * @param {Number} [options.expBackOffMillis=500] - Wait time in milliseconds before repeating request to Apify API in a case of server
                                                     or rate limit error
  * @param {Number} [options.expBackOffMaxRepeats=8] - Maximum number of repeats in a case of error
+ * @param {Array<Number>} [options.retryOnStatusCodes=[429]] - An array of status codes on which request gets retried. By default requests are retried
+ *                                                             only in a case of limit error (status code 429).
  * @description Basic usage of ApifyClient:
  * ```javascript
  * const ApifyClient = require('apify-client');
