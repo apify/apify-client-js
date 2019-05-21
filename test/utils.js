@@ -267,6 +267,38 @@ describe('utils.requestPromise()', () => {
             });
     });
 
+    it('should retry on error codes from options.retryOnStatusCodes', () => {
+        const method = 'POST';
+        const opts = { method, foo: 'bar', expBackOffMaxRepeats: 8, expBackOffMillis: 1, retryOnStatusCodes: [402] };
+        const expectedBody = 'foo-bar';
+
+        let iteration = 0;
+        const rateLimitedIterations = 5;
+
+        const stub = sinon
+            .stub(request, method.toLowerCase())
+            .callsFake((passedOpts) => {
+                expect(passedOpts).to.be.eql(Object.assign({}, opts, {
+                    resolveWithFullResponse: true,
+                    simple: false,
+                    json: false,
+                    headers: { 'User-Agent': CLIENT_USER_AGENT },
+                    retryOnStatusCodes: [402],
+                }));
+                iteration++;
+                if (iteration <= rateLimitedIterations) return Promise.resolve({ statusCode: 402 });
+                return Promise.resolve({ body: expectedBody });
+            });
+
+        return utils
+            .requestPromise(opts)
+            .then((body) => {
+                expect(body).to.be.eql(expectedBody);
+                expect(iteration).to.be.eql(rateLimitedIterations + 1);
+                stub.restore();
+            });
+    });
+
     it('works as expected when request throws an error for API V1', () => {
         const method = 'POST';
         const opts = { method, foo: 'bar', isApiV1: true, expBackOffMaxRepeats: 8, expBackOffMillis: 5 };
