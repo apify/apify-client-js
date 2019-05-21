@@ -1,3 +1,8 @@
+0.5.18 / 2019/05/21
+===================
+- Added parameter retryOnStatusCodes to define an array of HTTP status codes on which
+  client retries the request. Default value is `[429]` (only rate limit exceeded).
+
 0.5.17 / 2019/05/14
 ===================
 - Fix of non-JSON crawler execution results retrieval
