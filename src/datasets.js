@@ -267,7 +267,7 @@ export default {
      *   If `true` then the function doesn't return empty items.
      *   Note that in this case the returned number of items might be lower than limit parameter and pagination must be done using the `limit` value.
      * @param {Boolean} [options.simplified]
-     *   If true then, the function applies the `fields: ['url','pageFunctionResult','errorInfo']` and `unwind: ['pageFunctionResult']` options.
+     *   If true then, the function applies the `fields: ['url','pageFunctionResult','errorInfo']` and `unwind: 'pageFunctionResult'` options.
      *   This feature is used to emulate simplified results provided by the legacy Apify Crawler product
      *   and it's not recommended to use it in new integrations.
      * @param {Boolean} [options.skipFailedPages]
