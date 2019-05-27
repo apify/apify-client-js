@@ -311,8 +311,8 @@ export default {
         checkParamOrThrow(options.clean, 'clean', 'Maybe Boolean');
         checkParamOrThrow(options.skipHidden, 'skipHidden', 'Maybe Boolean');
         checkParamOrThrow(options.skipEmpty, 'skipEmpty', 'Maybe Boolean');
-        checkParamOrThrow(options.skipEmpty, 'simplified', 'Maybe Boolean');
-        checkParamOrThrow(options.skipEmpty, 'skipFailedPages', 'Maybe Boolean');
+        checkParamOrThrow(options.simplified, 'simplified', 'Maybe Boolean');
+        checkParamOrThrow(options.skipFailedPages, 'skipFailedPages', 'Maybe Boolean');
 
         // Pick query params.
         const query = _.pick(options, 'offset', 'limit', 'fields', 'omit', 'delimiter', 'unwind', 'xmlRoot', 'xmlRow', 'format', 'token');
