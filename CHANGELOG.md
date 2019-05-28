@@ -1,3 +1,8 @@
+0.5.19 / 2019/05/28
+===================
+- Added `simplified` and `skipFailedPages` parameters to `datasets.getItems()` 
+  to support legacy crawler produced datasets.
+
 0.5.18 / 2019/05/21
 ===================
 - Added parameter retryOnStatusCodes to define an array of HTTP status codes on which
