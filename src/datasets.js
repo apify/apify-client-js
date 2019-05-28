@@ -266,6 +266,14 @@ export default {
      * @param {Boolean} [options.skipEmpty]
      *   If `true` then the function doesn't return empty items.
      *   Note that in this case the returned number of items might be lower than limit parameter and pagination must be done using the `limit` value.
+     * @param {Boolean} [options.simplified]
+     *   If true then, the function applies the `fields: ['url','pageFunctionResult','errorInfo']` and `unwind: 'pageFunctionResult'` options.
+     *   This feature is used to emulate simplified results provided by the legacy Apify Crawler product
+     *   and it's not recommended to use it in new integrations.
+     * @param {Boolean} [options.skipFailedPages]
+     *   If true then, the all the items with errorInfo property will be skipped from the output.
+     *   This feature is here to emulate functionality of API v1 used for
+     *   the legacy Apify Crawler product and it's not recommended to use it in new integrations.
      * @param {String} [options.token]
      *   Your API token at apify.com. This parameter is required
      *   only when using "username~dataset-name" format for datasetId.
@@ -303,6 +311,8 @@ export default {
         checkParamOrThrow(options.clean, 'clean', 'Maybe Boolean');
         checkParamOrThrow(options.skipHidden, 'skipHidden', 'Maybe Boolean');
         checkParamOrThrow(options.skipEmpty, 'skipEmpty', 'Maybe Boolean');
+        checkParamOrThrow(options.simplified, 'simplified', 'Maybe Boolean');
+        checkParamOrThrow(options.skipFailedPages, 'skipFailedPages', 'Maybe Boolean');
 
         // Pick query params.
         const query = _.pick(options, 'offset', 'limit', 'fields', 'omit', 'delimiter', 'unwind', 'xmlRoot', 'xmlRow', 'format', 'token');
@@ -314,6 +324,8 @@ export default {
         if (options.clean) query.clean = 1;
         if (options.skipHidden) query.skipHidden = 1;
         if (options.skipEmpty) query.skipEmpty = 1;
+        if (options.simplified) query.simplified = 1;
+        if (options.skipFailedPages) query.skipFailedPages = 1;
         // Bom is handled special way because its default value for certain formats (CSV) is true which means that we need to make sure
         // that falsy value is passed in a query string as a zero.
         if (options.bom) query.bom = 1;
