@@ -391,8 +391,33 @@ describe('Tasks method', () => {
         const taskId = 'some-id';
         const token = 'some-token';
         const run = { foo: 'bar' };
-        const apiResponse = JSON.stringify({ data: run });
+        const apiResponse = { data: run };
         const memory = 512;
+        const input = { foo: 'bar' };
+
+        const waitForFinish = 120;
+
+        requestExpectCall({
+            method: 'POST',
+            url: `${BASE_URL}${BASE_PATH}/${taskId}/runs`,
+            json: true,
+            qs: { token, waitForFinish, memory },
+            body: input,
+        }, apiResponse);
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .tasks
+            .runTask({ taskId, token, waitForFinish, memory, input })
+            .then(response => expect(response).to.be.eql(run));
+    });
+
+    it('runTask() works with deprecated input body and contentType params', () => {
+        const taskId = 'some-id';
+        const token = 'some-token';
+        const run = { foo: 'bar' };
+        const apiResponse = JSON.stringify({ data: run });
         const contentType = 'application/json; charset=utf-8';
         const body = '{ "foo": "bar" }';
 
@@ -402,7 +427,7 @@ describe('Tasks method', () => {
             method: 'POST',
             url: `${BASE_URL}${BASE_PATH}/${taskId}/runs`,
             headers: { 'Content-Type': contentType },
-            qs: { token, waitForFinish, memory },
+            qs: { token, waitForFinish },
             body,
         }, apiResponse);
 
@@ -410,7 +435,7 @@ describe('Tasks method', () => {
 
         return apifyClient
             .tasks
-            .runTask({ taskId, token, waitForFinish, memory, body, contentType })
+            .runTask({ taskId, token, waitForFinish, body, contentType })
             .then(response => expect(response).to.be.eql(run));
     });
 
@@ -494,5 +519,51 @@ describe('Tasks method', () => {
             .tasks
             .listWebhooks({ taskId, token })
             .then(response => expect(response).to.be.eql(expected));
+    });
+
+    it('getInput() works', () => {
+        const taskId = 'some-id';
+        const input = { foo: 'bar' };
+        const token = 'some-token';
+
+        requestExpectCall({
+            json: true,
+            method: 'GET',
+            url: `${BASE_URL}${BASE_PATH}/${taskId}/input`,
+            qs: { token },
+        }, {
+            data: input,
+        });
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .tasks
+            .getInput({ taskId, token })
+            .then(response => expect(response).to.be.eql(input));
+    });
+
+    it('updateInput() works', () => {
+        const taskId = 'some-id';
+        const input = { foo: 'bar' };
+        const returnedInput = { foo: 'bar', hotel: 'restaurant' };
+        const token = 'some-token';
+
+        requestExpectCall({
+            json: true,
+            method: 'POST',
+            url: `${BASE_URL}${BASE_PATH}/${taskId}/input`,
+            qs: { token },
+            body: input,
+        }, {
+            data: returnedInput,
+        });
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .tasks
+            .updateInput({ taskId, token, input })
+            .then(response => expect(response).to.be.eql(returnedInput));
     });
 });

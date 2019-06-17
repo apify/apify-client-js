@@ -1,6 +1,10 @@
+xxxxxxxxxxxxxxxxxxx
+- `body` and `contentType` parameters of `client.tasks.runTask()` were deprecated in favor of new `input` parameter.
+- Added new methods to get and update input of actor task - `client.tasks.getInput()` and `client.tasks.updateInput()`.
+
 0.5.19 / 2019/05/28
 ===================
-- Added `simplified` and `skipFailedPages` parameters to `datasets.getItems()` 
+- Added `simplified` and `skipFailedPages` parameters to `datasets.getItems()`
   to support legacy crawler produced datasets.
 
 0.5.18 / 2019/05/21

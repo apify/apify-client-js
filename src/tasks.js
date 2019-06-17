@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import log from 'apify-shared/log';
 import {
     checkParamOrThrow,
     pluckData,
@@ -279,8 +280,7 @@ export default {
      * @param [options.token]
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for task to finish. Maximum value is 120s.
                                                  If task doesn't finish in time then task run in RUNNING state is returned.
-     * @param {String} [options.body] - Actor input stringified as JSON, passed as HTTP POST payload
-     * @param {String} [options.contentType] - Content type of act input e.g 'application/json'
+     * @param {Object} [options.input] - Actor task input object.
      * @param {Number} [options.timeout] - Timeout for the act run in seconds. Zero value means there is no timeout.
      * @param {Number} [options.memory] - Amount of memory allocated for the act run, in megabytes.
      * @param {String} [options.build] - Tag or number of the build to run (e.g. <code>latest</code> or <code>1.2.34</code>).
@@ -291,17 +291,17 @@ export default {
      * @returns {ActRun}
      */
     runTask: (requestPromise, options) => {
-        const { baseUrl, token, taskId, waitForFinish, body, contentType, timeout, memory, build, webhooks } = options;
+        const { baseUrl, token, taskId, waitForFinish, body, contentType, timeout, memory, build, webhooks, input } = options;
 
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(taskId, 'taskId', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
-        checkParamOrThrow(contentType, 'contentType', 'Maybe String');
         checkParamOrThrow(timeout, 'timeout', 'Maybe Number');
         checkParamOrThrow(memory, 'memory', 'Maybe Number');
         checkParamOrThrow(build, 'build', 'Maybe String');
         checkParamOrThrow(webhooks, 'webhooks', 'Maybe Array');
+        checkParamOrThrow(input, 'input', 'Maybe Object');
 
         const safeTaskId = replaceSlashWithTilde(taskId);
         const query = { token };
@@ -318,15 +318,26 @@ export default {
             qs: query,
         };
 
-        if (contentType) opts.headers = { 'Content-Type': contentType };
-
+        // This is for backwards compatiblity.
+        // TODO: Remove when releasing v1.0.
         if (body) {
+            if (input) {
+                throw new Error('You cannot use deprecated parameter "body" along with its replacement "input"!');
+            }
+            checkParamOrThrow(contentType, 'contentType', 'Maybe String');
             checkParamOrThrow(body, 'body', 'String');
+            log.deprecated('Parameter "body" of client.tasks.runTask() method is depredated. Use "input" parameter instead.');
             opts.body = body;
+            if (contentType) opts.headers = { 'Content-Type': contentType };
+        }
+
+        if (input) {
+            opts.body = input;
+            opts.json = true;
         }
 
         return requestPromise(opts)
-            .then(response => JSON.parse(response))
+            .then(response => (opts.json ? response : JSON.parse(response)))
             .then(pluckData)
             .then(parseDateFields);
     },
@@ -370,5 +381,66 @@ export default {
         })
             .then(pluckData)
             .then(parseDateFields);
+    },
+
+    /**
+     * Gets the actor task input.
+     *
+     * @memberof ApifyClient.tasks
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.taskId - Unique task ID
+     * @param callback
+     * @returns {PaginationList}
+     */
+    getInput: (requestPromise, options) => {
+        const { baseUrl, token, taskId } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(taskId, 'taskId', 'String');
+
+        const safeTaskId = replaceSlashWithTilde(taskId);
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${safeTaskId}/input`,
+            json: true,
+            method: 'GET',
+            qs: { token },
+        })
+            .then(pluckData);
+    },
+
+    /**
+     * Updates the actor task input.
+     *
+     * @memberof ApifyClient.tasks
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.taskId - Unique task ID
+     * @param {Object} options.input - Input object.
+     * @param callback
+     * @returns {PaginationList}
+     */
+    updateInput: (requestPromise, options) => {
+        const { baseUrl, token, taskId, input } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(taskId, 'taskId', 'String');
+        checkParamOrThrow(input, 'input', 'Maybe Object');
+
+        const safeTaskId = replaceSlashWithTilde(taskId);
+        const opts = {
+            url: `${baseUrl}${BASE_PATH}/${safeTaskId}/input`,
+            json: true,
+            method: 'POST',
+            qs: { token },
+        };
+        if (input) opts.body = input;
+
+        return requestPromise(opts).then(pluckData);
     },
 };
