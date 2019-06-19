@@ -7,6 +7,28 @@ import { checkParamOrThrow, catchNotFoundOrThrow, wrapArray, parseDateFields } f
  * @memberof ApifyClient
  * @namespace crawlers
  * @description
+ *
+ * <div style="color: #a94442; background-color: #f2dede; border-color: #ebccd1; padding: 15px; border: 1px solid transparent; border-radius: 4px;">
+ *     <h3>APIFY CRAWLER IS BEING PHASED OUT</h3>
+ *     <p>
+ *         On September 30, 2019, we'll be retiring the legacy Apify Crawler product together with API version 1.
+ *         To avoid any disruption, you'll need to migrate your crawlers to the new
+ *         <a style="color: #337ab7;" href="https://apify.com/apify/legacy-phantomjs-crawler" target="_blank">apify/legacy-phantomjs-crawler</a>
+ *         actor, which provides the the same functionality, configuration options and results as legacy Crawler.
+ *     </p>
+ *     <p>
+ *         Please read this
+ *         <a style="color: #337ab7;" href="https://blog.apify.com/apify-crawler-to-be-replaced-by-apify-actors-c67df1366e00" target="_blank">
+ *             blog post
+ *         </a>
+ *         to find out why we are retiring the Crawler product, what it means for you and how you can migrate your
+ *         crawlers to the new actor. Once you read the blog post and understand all the implications,
+ *         you can trigger migration at
+ *         <a style="color: #337ab7;" href="https://my.apify.com/crawlers" target="_blank">crawlers</a>
+ *         page in Apify app.
+ *     </p>
+ * </div>
+ *
  * ### Basic usage
  * ```javascript
  * const ApifyClient = require('apify-client');
