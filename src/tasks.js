@@ -392,7 +392,7 @@ export default {
      * @param options.token
      * @param {String} options.taskId - Unique task ID
      * @param callback
-     * @returns {PaginationList}
+     * @returns {Object}
      */
     getInput: (requestPromise, options) => {
         const { baseUrl, token, taskId } = options;
@@ -408,8 +408,7 @@ export default {
             json: true,
             method: 'GET',
             qs: { token },
-        })
-            .then(pluckData);
+        });
     },
 
     /**
@@ -422,7 +421,7 @@ export default {
      * @param {String} options.taskId - Unique task ID
      * @param {Object} options.input - Input object.
      * @param callback
-     * @returns {PaginationList}
+     * @returns {Object}
      */
     updateInput: (requestPromise, options) => {
         const { baseUrl, token, taskId, input } = options;
@@ -430,17 +429,16 @@ export default {
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(taskId, 'taskId', 'String');
-        checkParamOrThrow(input, 'input', 'Maybe Object');
+        checkParamOrThrow(input, 'input', 'Object');
 
         const safeTaskId = replaceSlashWithTilde(taskId);
-        const opts = {
+
+        return requestPromise({
             url: `${baseUrl}${BASE_PATH}/${safeTaskId}/input`,
             json: true,
-            method: 'POST',
+            method: 'PUT',
             qs: { token },
-        };
-        if (input) opts.body = input;
-
-        return requestPromise(opts).then(pluckData);
+            body: input,
+        });
     },
 };

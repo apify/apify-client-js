@@ -531,9 +531,7 @@ describe('Tasks method', () => {
             method: 'GET',
             url: `${BASE_URL}${BASE_PATH}/${taskId}/input`,
             qs: { token },
-        }, {
-            data: input,
-        });
+        }, input);
 
         const apifyClient = new ApifyClient(OPTIONS);
 
@@ -551,13 +549,11 @@ describe('Tasks method', () => {
 
         requestExpectCall({
             json: true,
-            method: 'POST',
+            method: 'PUT',
             url: `${BASE_URL}${BASE_PATH}/${taskId}/input`,
             qs: { token },
             body: input,
-        }, {
-            data: returnedInput,
-        });
+        }, returnedInput);
 
         const apifyClient = new ApifyClient(OPTIONS);
 
