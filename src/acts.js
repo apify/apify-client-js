@@ -449,6 +449,42 @@ export default {
     },
 
     /**
+     * Resurrects finished (even failed) actor run.
+     * Container gets restarted with original storages.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param {String} options.actId - Unique act ID
+     * @param {String} options.runId - Unique run ID
+     * @param [options.token]
+     * @param callback
+     * @returns {ActRun}
+     */
+    resurrectRun: (requestPromise, options) => {
+        const { baseUrl, token, actId, runId } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(runId, 'runId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const safeActId = replaceSlashWithTilde(actId);
+        const query = {};
+
+        if (token) query.token = token;
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/runs/${runId}/resurrect`,
+            json: true,
+            method: 'POST',
+            qs: query,
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+
+    /**
      * Gets list of act builds.
      *
      * By default, the objects are sorted by the startedAt field in ascending order,
