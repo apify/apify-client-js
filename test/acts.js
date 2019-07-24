@@ -372,6 +372,29 @@ describe('Act method', () => {
             .then(response => expect(response).to.be.eql(run));
     });
 
+    it('resurrectRun() works', () => {
+        const actId = 'some-act-id';
+        const runId = 'some-run-id';
+        const token = 'some-token';
+        const run = { foo: 'bar' };
+
+        requestExpectCall({
+            json: true,
+            method: 'POST',
+            url: `${BASE_URL}${BASE_PATH}/${actId}/runs/${runId}/resurrect`,
+            qs: { token },
+        }, {
+            data: run,
+        });
+
+        const apifyClient = new ApifyClient(OPTIONS);
+
+        return apifyClient
+            .acts
+            .resurrectRun({ actId, token, runId })
+            .then(response => expect(response).to.be.eql(run));
+    });
+
     it('metamorphRun() works', () => {
         const actId = 'some-id';
         const token = 'some-token';

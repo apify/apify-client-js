@@ -1,3 +1,7 @@
+xxxxxxxxxxxxxxxxxxx
+===================
+- Added new method `client.acts.resurrectRun()` that resurrects finished (even failed) actor run.
+
 0.5.20 / 2019/06/18
 ===================
 - `body` and `contentType` parameters of `client.tasks.runTask()` were deprecated in favor of new `input` parameter.
