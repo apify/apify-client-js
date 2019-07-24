@@ -1,4 +1,4 @@
-xxxxxxxxxxxxxxxxxxx
+0.5.23 / 2019/07/24
 ===================
 - Added new method `client.acts.resurrectRun()` that resurrects finished (even failed) actor run.
 
