@@ -270,6 +270,8 @@ export default {
         checkParamOrThrow(body, 'body', 'Buffer | String');
         checkParamOrThrow(token, 'token', 'String');
 
+        const bufferForLengthCheck = Buffer.isBuffer(body) ? body : Buffer.from(body, 'utf-8');
+
         return gzipPromise(body)
             .then((gzipedBody) => {
                 const requestOpts = {
@@ -285,7 +287,7 @@ export default {
                 };
 
                 // Uploading via our servers:
-                if (gzipedBody.length < SIGNED_URL_UPLOAD_MIN_BYTESIZE) return requestPromise(requestOpts);
+                if (bufferForLengthCheck.byteLength < SIGNED_URL_UPLOAD_MIN_BYTESIZE) return requestPromise(requestOpts);
 
                 // ... or via signed url directly to S3:
                 return requestPromise({

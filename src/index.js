@@ -73,6 +73,11 @@ const methodGroups = {
  *   token: 'SNjkeiuoeD443lpod68dk',
  * });
  * ```
+ *
+ * All API calls done through this client are made with exponential backoff.
+ * What this means, is that if the API call fails, this client will attempt the call again with a small delay.
+ * If it fails again, it will do another attempt after twice as long and so on, until one attempt succeeds
+ * or 8th attempt fails.
  */
 const ApifyClient = function (options = {}) {
     // This allows to initiate ApifyClient both ways - with and without "new".
