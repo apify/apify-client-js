@@ -249,7 +249,7 @@ describe('Dataset', () => {
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
                 gzip: true,
-                qs: { bom: 0 },
+                qs: { bom: 0, format: 'csv', delimiter: ';', fields: 'a,b', omit: 'c,d' },
                 resolveWithFullResponse: true,
                 encoding: null,
             }, JSON.stringify(expected.items), { headers });
@@ -258,7 +258,14 @@ describe('Dataset', () => {
 
             return apifyClient
                 .datasets
-                .getItems({ datasetId, bom: false })
+                .getItems({
+                    datasetId,
+                    bom: false,
+                    fields: ['a', 'b'],
+                    omit: ['c', 'd'],
+                    format: 'csv',
+                    delimiter: ';',
+                })
                 .then(given => expect(given).to.be.eql(expected));
         });
 
