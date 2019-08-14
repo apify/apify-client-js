@@ -298,7 +298,7 @@ export default {
         checkParamOrThrow(options.offset, 'offset', 'Maybe Number');
         checkParamOrThrow(options.limit, 'limit', 'Maybe Number');
         checkParamOrThrow(options.fields, 'fields', 'Maybe [String]');
-        checkParamOrThrow(options.omit, 'omit', 'Maybe Array');
+        checkParamOrThrow(options.omit, 'omit', 'Maybe [String]');
         checkParamOrThrow(options.delimiter, 'delimiter', 'Maybe String');
         checkParamOrThrow(options.unwind, 'unwind', 'Maybe String');
         checkParamOrThrow(options.xmlRoot, 'xmlRoot', 'Maybe String');
@@ -317,7 +317,7 @@ export default {
         checkParamOrThrow(options.skipFailedPages, 'skipFailedPages', 'Maybe Boolean');
 
         // Pick query params.
-        const query = _.pick(options, 'offset', 'limit', 'fields', 'omit', 'delimiter', 'unwind', 'xmlRoot', 'xmlRow', 'format', 'token');
+        const query = _.pick(options, 'offset', 'limit', 'delimiter', 'unwind', 'xmlRoot', 'xmlRow', 'format', 'token');
 
         // Add Boolean query params.
         if (options.skipHeaderRow) query.skipHeaderRow = 1;
@@ -333,8 +333,8 @@ export default {
         if (options.bom) query.bom = 1;
         else if (options.bom === false) query.bom = 0;
 
-        if (query.fields) query.fields = query.fields.join(',');
-        if (query.omit) query.omit = query.omit.join(',');
+        if (options.fields) query.fields = options.fields.join(',');
+        if (options.omit) query.omit = options.omit.join(',');
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,
             method: 'GET',
