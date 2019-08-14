@@ -236,6 +236,8 @@ export default {
      *   Otherwise they are sorted in ascending order.
      * @param {Array} [options.fields]
      *   An array of field names that will be included in the result. If omitted, all fields are included in the results.
+     * @param {Array} [options.omit]
+     *   An array of field names that will be removed from the result. If omitted, all fields are included in the results.
      * @param {String} [options.unwind]
      *   Specifies a name of the field in the result objects that will be used to unwind the resulting objects.
      *   By default, the results are returned as they are.
@@ -332,6 +334,7 @@ export default {
         else if (options.bom === false) query.bom = 0;
 
         if (query.fields) query.fields = query.fields.join(',');
+        if (query.omit) query.omit = query.omit.join(',');
         const requestOpts = {
             url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,
             method: 'GET',
