@@ -1,6 +1,4 @@
-import _ from 'underscore';
-import { requestPromise, REQUEST_PROMISE_OPTIONS, EXP_BACKOFF_MAX_REPEATS } from './utils';
-import acts from './acts';
+import Actors from './actors';
 import tasks from './tasks';
 import crawlers from './crawlers';
 import keyValueStores from './key_value_stores';
@@ -10,12 +8,12 @@ import users from './users';
 import webhooks from './webhooks';
 import webhookDispatches from './webhook_dispatches';
 import requestQueues, { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from './request_queues';
-import ApifyClientError, { INVALID_PARAMETER_ERROR_TYPE_V2 } from './apify_error';
+import { HttpClient, EXP_BACKOFF_MAX_REPEATS } from './http-client';
 
 /** @ignore */
-const getDefaultOptions = () => ({
+const DEFAULT_CLIENT_OPTIONS = {
     baseUrl: 'https://api.apify.com',
-});
+};
 
 /**
  * IMPORTANT:
@@ -38,17 +36,18 @@ const getDefaultOptions = () => ({
  * Method must return promise.
  * @ignore
  */
-const methodGroups = {
-    acts,
-    tasks,
-    crawlers,
-    keyValueStores,
-    datasets,
-    requestQueues,
-    logs,
-    users,
-    webhooks,
-    webhookDispatches,
+const endpointClasses = {
+    actors: Actors,
+    acts: Actors,
+    // tasks,
+    // crawlers,
+    // keyValueStores,
+    // datasets,
+    // requestQueues,
+    // logs,
+    // users,
+    // webhooks,
+    // webhookDispatches,
 };
 
 /**
@@ -59,9 +58,9 @@ const methodGroups = {
  *                             crawler's method.
  * @param {String} [options.userId] - Your user ID at apify.com
  * @param {String} [options.token] - Your API token at apify.com
- * @param {Number} [options.expBackOffMillis=500] - Wait time in milliseconds before repeating request to Apify API in a case of server
+ * @param {Number} [options.expBackoffMillis=500] - Wait time in milliseconds before repeating request to Apify API in a case of server
                                                     or rate limit error
- * @param {Number} [options.expBackOffMaxRepeats=8] - Maximum number of repeats in a case of error
+ * @param {Number} [options.expBackoffMaxRepeats=8] - Maximum number of repeats in a case of error
  * @param {Array<Number>} [options.retryOnStatusCodes=[429]] - An array of status codes on which request gets retried. By default requests are retried
  *                                                             only in a case of limit error (status code 429).
  * @description Basic usage of ApifyClient:
@@ -79,64 +78,52 @@ const methodGroups = {
  * If it fails again, it will do another attempt after twice as long and so on, until one attempt succeeds
  * or 8th attempt fails.
  */
-const ApifyClient = function (options = {}) {
-    // This allows to initiate ApifyClient both ways - with and without "new".
-    if (!this || this.constructor !== ApifyClient) return new ApifyClient(options);
-
-    // This is used only internally for unit testing of ApifyClient.
-    const undecoratedMethodGroups = options._overrideMethodGroups || methodGroups;
-    delete options._overrideMethodGroups;
-
-    const instanceOpts = Object.assign({}, getDefaultOptions(), options);
-
-    /**
-     * This decorator does:
-     * - extends "options" parameter with values from default options and from ApifyClient instance options
-     * - adds options.baseUrl
-     * - passes preconfigured utils.requestPromise
-     * - allows to use method with both callbacks and promises
-     * @ignore
-     */
-    const methodDecorator = (method) => {
-        return (callOpts, callback) => {
-            const mergedOpts = Object.assign({}, instanceOpts, callOpts);
-
-            // Check that all required parameters are set.
-            if (!instanceOpts.baseUrl) throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE_V2, 'The "options.baseUrl" parameter is required');
-
-            // Remove traling forward slash from baseUrl.
-            if (mergedOpts.baseUrl.substr(-1) === '/') mergedOpts.baseUrl = mergedOpts.baseUrl.slice(0, -1);
-
-            const preconfiguredRequestPromise = (requestPromiseOptions) => {
-                return requestPromise(Object.assign({}, _.pick(mergedOpts, REQUEST_PROMISE_OPTIONS), requestPromiseOptions), this.stats);
-            };
-
-            const promise = method(preconfiguredRequestPromise, mergedOpts);
-            if (!callback) return promise;
-
-            promise.then(
-                result => callback(null, result),
-                error => callback(error),
-            );
+class ApifyClient {
+    constructor(options = {}) {
+        this.options = {
+            ...this.getDefaultOptions(),
+            ...options,
         };
-    };
 
-    // Decorate methods and bind them to this object.
-    _.forEach(undecoratedMethodGroups, (methodGroup, name) => {
-        this[name] = _.mapObject(methodGroup, methodDecorator);
-    });
+        /**
+         * An object that contains various statistics about the API operations.
+         * @memberof ApifyClient
+         * @instance
+         */
+        this.stats = {
+            // Number of Apify client function calls
+            calls: 0,
+
+            // Number of Apify API requests
+            requests: 0,
+
+            // Number of times the API returned 429 error. Spread based on number of retries.
+            rateLimitErrors: new Array(Math.max(REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, EXP_BACKOFF_MAX_REPEATS)).fill(0),
+
+            // TODO: We can add internalServerErrors and other stuff here...
+        };
+
+        this.httpClient = new HttpClient({ ...this.options }, this.stats);
+
+        // Create instances of individual endpoint groups
+        Object.entries(endpointClasses).forEach(([name, EndpointClass]) => {
+            this[name] = new EndpointClass(this.httpClient);
+        });
+    }
+
     /**
      * Overrides options of ApifyClient instance.
      * @memberof ApifyClient
      * @function setOptions
      * @instance
-     * @param {Object} options - See {@link ApifyClient} options object
+     * @param {Object} newOptions - See {@link ApifyClient} options object
      */
-    this.setOptions = (newOptions) => {
-        _.forEach(newOptions, (val, key) => {
-            instanceOpts[key] = val;
-        });
-    };
+    setOptions(newOptions) {
+        this.options = {
+            ...this.options,
+            ...newOptions,
+        };
+    }
 
     /**
      * Returns options of ApifyClient instance.
@@ -145,33 +132,17 @@ const ApifyClient = function (options = {}) {
      * @instance
      * @return {Object} See {@link ApifyClient} constructor options
      */
-    this.getOptions = () => {
-        return _.clone(instanceOpts);
-    };
+    getOptions() {
+        return { ...this.options };
+    }
 
     /**
      * This helper function is used in unit tests.
      * @ignore
      */
-    this.getDefaultOptions = getDefaultOptions;
-
-    /**
-     * An object that contains various statistics about the API operations.
-     * @memberof ApifyClient
-     * @instance
-     */
-    this.stats = {
-        // Number of Apify client function calls
-        calls: 0,
-
-        // Number of Apify API requests
-        requests: 0,
-
-        // Number of times the API returned 429 error. Spread based on number of retries.
-        rateLimitErrors: new Array(Math.max(REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, EXP_BACKOFF_MAX_REPEATS)).fill(0),
-
-        // TODO: We can add internalServerErrors and other stuff here...
-    };
-};
+    getDefaultOptions() {
+        return DEFAULT_CLIENT_OPTIONS;
+    }
+}
 
 export default ApifyClient;

@@ -1,12 +1,9 @@
 {
-  "presets": [
-    ["babel-preset-env", {
-      "targets": {
-        "node": "8.0.0"
-      }
-    }]
-  ],
-  "plugins": [
-    "add-module-exports"
-  ]
+    "presets": [
+        ["@babel/preset-env", {
+            "targets": {
+                "node": "8.14.0"
+            }
+        }]
+    ]
 }

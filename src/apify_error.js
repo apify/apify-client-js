@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import { VError } from 'verror';
 
 export const APIFY_ERROR_NAME = 'ApifyClientError';
 
@@ -9,14 +10,14 @@ export const REQUEST_FAILED_ERROR_TYPE_V2 = 'request-failed';
 export const REQUEST_FAILED_ERROR_MESSAGE = 'Server request failed.';
 export const NOT_FOUND_STATUS_CODE = 404;
 
-export default class ApifyClientError extends Error {
-    constructor(type, message, details) {
-        super(message);
+export default class ApifyClientError extends VError {
+    constructor(type, message, details, cause) {
+        if (cause) super(cause, message);
+        else super(message);
         this.name = APIFY_ERROR_NAME;
         this.type = type;
         this.details = details;
-
-        Error.captureStackTrace(this, ApifyClientError);
+        this.stack = VError.fullStack(this);
     }
 
     toString() {

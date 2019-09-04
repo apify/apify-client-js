@@ -293,10 +293,6 @@ export default {
                 return requestPromise({
                     url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}/direct-upload-url`,
                     method: 'GET',
-                    json: true,
-                    headers: {
-                        'Content-Type': contentType,
-                    },
                     qs: { token },
                 })
                     .then((response) => {
