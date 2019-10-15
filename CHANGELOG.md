@@ -1,3 +1,7 @@
+0.5.26 / 2019/07/24
+===================
+- Added update method for request queues, datasets and key-value stores.
+
 0.5.23 / 2019/07/24
 ===================
 - Added new method `client.acts.resurrectRun()` that resurrects finished (even failed) actor run.

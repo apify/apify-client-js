@@ -191,6 +191,37 @@ export default {
     },
 
     /**
+     * Updates dataset.
+     *
+     * @memberof ApifyClient.datasets
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.datasetId - Unique dataset ID
+     * @param {Object} options.dataset
+     * @param callback
+     * @returns {Dataset}
+     */
+    updateDataset: (requestPromise, options) => {
+        const { baseUrl, token, datasetId, dataset } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(datasetId, 'datasetId', 'String');
+        checkParamOrThrow(dataset, 'dataset', 'Object');
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${datasetId}`,
+            json: true,
+            method: 'PUT',
+            qs: { token },
+            body: _.omit(dataset, 'id'),
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+
+    /**
      * Deletes given dataset.
      *
      * @memberof ApifyClient.datasets
