@@ -1,3 +1,4 @@
+import _ from 'underscore';
 import { expect } from 'chai';
 import ApifyClient from '../build';
 import { BASE_PATH, REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from '../build/request_queues';
@@ -167,6 +168,26 @@ describe('Request queue', () => {
                 .requestQueues
                 .getQueue({ queueId })
                 .then(given => expect(given).to.be.eql(null));
+        });
+
+        it('updateQueue() works', () => {
+            const queueId = 'some-id';
+            const token = 'my-token';
+            const queue = { id: queueId, name: 'my-name' };
+
+            requestExpectCall({
+                json: true,
+                method: 'PUT',
+                url: `${BASE_URL}${BASE_PATH}/${queueId}`,
+                qs: { token },
+                body: _.omit(queue, 'id'),
+            });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .requestQueues
+                .updateQueue({ queueId, queue, token });
         });
 
         it('deleteQueue() works', () => {

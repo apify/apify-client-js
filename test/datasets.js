@@ -1,3 +1,4 @@
+import _ from 'underscore';
 import { expect } from 'chai';
 import { gzipSync } from 'zlib';
 import sinon from 'sinon';
@@ -172,6 +173,26 @@ describe('Dataset', () => {
                 .datasets
                 .getDataset({ datasetId })
                 .then(given => expect(given).to.be.eql(null));
+        });
+
+        it('updateDataset() works', () => {
+            const datasetId = 'some-id';
+            const token = 'my-token';
+            const dataset = { id: datasetId, name: 'my-name' };
+
+            requestExpectCall({
+                json: true,
+                method: 'PUT',
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
+                qs: { token },
+                body: _.omit(dataset, 'id'),
+            });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .datasets
+                .updateDataset({ datasetId, dataset, token });
         });
 
         it('deleteDataset() works', () => {
