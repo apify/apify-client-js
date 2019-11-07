@@ -255,6 +255,8 @@ export const parseBody = (body, contentType) => {
  * Wrap results from response and parse attributes from apifier headers.
  */
 export function wrapArray(response) {
+    const limit = response.headers['x-apifier-pagination-limit'] || response.headers['x-apify-pagination-limit'];
+
     /**
      * @typedef {Object} PaginationList
      * @property {Array} items - List of returned objects
@@ -268,7 +270,7 @@ export function wrapArray(response) {
         total: parseInt(response.headers['x-apifier-pagination-total'] || response.headers['x-apify-pagination-total'], 10),
         offset: parseInt(response.headers['x-apifier-pagination-offset'] || response.headers['x-apify-pagination-offset'], 10),
         count: parseInt(response.headers['x-apifier-pagination-count'] || response.headers['x-apify-pagination-count'], 10),
-        limit: parseInt(response.headers['x-apifier-pagination-limit'] || response.headers['x-apify-pagination-limit'], 10),
+        limit: limit ? parseInt(limit, 10) : null, // Limit can be null in a case of dataset items.
     };
 }
 
