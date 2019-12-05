@@ -1,4 +1,4 @@
-xxxxxxxxxxxxxxxxxxx
+0.6.0 / 2019/12/05
 ===================
 - Removed legacy Apify Crawler methods that are no longer supported by Apify API.
 
