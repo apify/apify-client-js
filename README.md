@@ -3,11 +3,11 @@
 [![Build Status](https://travis-ci.org/apifytech/apify-client-js.svg)](https://travis-ci.org/apifytech/apify-client-js)
 [![npm version](https://badge.fury.io/js/apify-client.svg?branch=master)](http://badge.fury.io/js/apify-client)
 
-This library implements a JavaScript / Node.js client for the <a href="https://apify.com/docs/api">Apify API</a>.
+This library implements a JavaScript / Node.js client for the <a href="https://docs.apify.com/api/v2">Apify API</a>.
 The main philosophy is that the library is just a thin wrapper around the API - its functions should exactly correspond
 to the API endpoints and have the same parameters.
 
-The full <a href="https://apify.com/docs/sdk/apify-client-js/latest/" target="_blank">Apify client documentation</a>
+The full <a href="https://docs.apify.com/api/apify-client-js/latest" target="_blank">Apify client documentation</a>
 is available on a separate web page.
 For more complex operations with the Apify platform,
 see the <a href="https://github.com/apifytech/apify-js">Apify SDK</a>.
