@@ -3,11 +3,11 @@
 [![Build Status](https://travis-ci.org/apifytech/apify-client-js.svg)](https://travis-ci.org/apifytech/apify-client-js)
 [![npm version](https://badge.fury.io/js/apify-client.svg?branch=master)](http://badge.fury.io/js/apify-client)
 
-This library implements a JavaScript / Node.js client for the <a href="https://apify.com/docs/api">Apify API</a>.
+This library implements a JavaScript / Node.js client for the <a href="https://docs.apify.com/api/v2">Apify API</a>.
 The main philosophy is that the library is just a thin wrapper around the API - its functions should exactly correspond
 to the API endpoints and have the same parameters.
 
-The full <a href="https://apify.com/docs/sdk/apify-client-js/latest/" target="_blank">Apify client documentation</a>
+The full <a href="https://docs.apify.com/api/apify-client-js/latest" target="_blank">Apify client documentation</a>
 is available on a separate web page.
 For more complex operations with the Apify platform,
 see the <a href="https://github.com/apifytech/apify-js">Apify SDK</a>.
@@ -55,12 +55,6 @@ const record = await apifyClient.keyValueStores.getRecord({ key: 'foo' });
 const keys = await apifyClient.keyValueStores.getRecordsKeys();
 await apifyClient.keyValueStores.deleteRecord({ key: 'foo' });
 
-// Crawlers
-const crawler = await apifyClient.crawlers.getCrawlerSettings({ crawlerId: 'DNjkhrkjnri' });
-const execution = await apifyClient.crawlers.startExecution({ crawlerId: 'DNjkhrkjnri' });
-apifyClient.setOptions({ crawlerId: 'DNjkhrkjnri' });
-const execution = await apifyClient.crawlers.startExecution();
-
 // Actors
 const act = await apifyClient.acts.getAct({ actId: 'kjnjknDDNkl' });
 apifyClient.setOptions({ actId: 'kjnjknDDNkl' });
@@ -90,29 +84,29 @@ Tp obtain your user ID and API token please visit your [Apify Account page](http
 Every method can be used as either **promise** or with **callback**. If your Node version supports await/async then you can await promise result.
 
 ```javascript
-const options = { crawlerId: 'DNjkhrkjnri' };
+const options = { actId: 'DNjkhrkjnri' };
 
 // Awaited promise
 try {
-    const crawler = await apifyClient.crawlers.getCrawlerSettings(options);
+    const actor = await apifyClient.acts.getAct(options);
 
-    // Do something crawler ...
+    // Do something actor ...
 } catch (err) {
     // Do something with error ...
 }
 
 // Promise
-apifyClient.crawlers.getCrawlerSettings(options)
-    .then((crawler) => {
-        // Do something crawler ...
+apifyClient.acts.getAct(options)
+    .then((actor) => {
+        // Do something actor ...
     })
     .catch((err) => {
         // Do something with error ...
     });
 
 // Callback
-apifyClient.crawlers.getCrawlerSettings(options, (err, crawler) => {
-    // Do something with error and crawler ...
+apifyClient.acts.getAct(options, (err, actor) => {
+    // Do something with error and actor ...
 });
 ```
 
@@ -121,7 +115,6 @@ apifyClient.crawlers.getCrawlerSettings(options, (err, crawler) => {
 Apify client automatically parses fields that ends with `At` such as `modifiedAt` or `createdAt` to `Date` object.
 This does not apply to user generated content such as:
 
-* Crawler results
 * Dataset content
 * Key-value store records
 

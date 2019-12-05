@@ -17,8 +17,8 @@ import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow, st
  *
  * // Awaited promise
  * try {
- *      const crawler = await apifyClient.acts.listActs({});
- *      // Do something acts list ...
+ *      const actors = await apifyClient.acts.listActs({});
+ *      // Do something actors list ...
  * } catch (err) {
  *      // Do something with error ...
  * }
@@ -270,7 +270,8 @@ export default {
      * @param {String} [options.build] - Tag or number of the build to run (e.g. <code>latest</code> or <code>1.2.34</code>).
      * @param {Array}  [options.webhooks] - Specifies optional webhooks associated with the actor run,
      *                                      which can be used to receive a notification e.g. when the actor finished or failed,
-     *                                      see {@link https://apify.com/docs/webhooks#adhoc|ad hook webhooks documentation} for detailed description.
+     *                                      see {@link https://docs.apify.com/webhooks/ad-hoc-webhooks|ad hook webhooks documentation}
+     *                                      for detailed description.
      * @param callback
      * @returns {ActRun}
      */
