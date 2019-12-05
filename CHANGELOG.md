@@ -1,3 +1,7 @@
+xxxxxxxxxxxxxxxxxxx
+===================
+- Removed legacy Apify Crawler methods that are no longer supported by Apify API.
+
 0.5.26 / 2019/07/24
 ===================
 - Added update method for request queues, datasets and key-value stores.

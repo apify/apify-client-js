@@ -17,8 +17,8 @@ import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow, st
  *
  * // Awaited promise
  * try {
- *      const crawler = await apifyClient.acts.listActs({});
- *      // Do something acts list ...
+ *      const actors = await apifyClient.acts.listActs({});
+ *      // Do something actors list ...
  * } catch (err) {
  *      // Do something with error ...
  * }
