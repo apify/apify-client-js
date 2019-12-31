@@ -173,3 +173,13 @@ export function stringifyWebhooksToBase64(webhooks) {
     const webhooksJson = JSON.stringify(webhooks);
     return Buffer.from(webhooksJson, 'utf8').toString('base64');
 }
+
+/**
+ * Replaces slash with tilde to url save string.
+ * @param stringWithSlash {String}
+ * @return {String}
+ * TODO: TEST
+ */
+export function replaceSlashWithTilde(stringWithSlash) {
+    return stringWithSlash.replace('/', '~');
+}

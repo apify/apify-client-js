@@ -1,6 +1,13 @@
 import _ from 'lodash';
 import log from 'apify-shared/log';
-import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow, stringifyWebhooksToBase64 } from './utils';
+import {
+    checkParamOrThrow,
+    pluckData,
+    parseDateFields,
+    catchNotFoundOrThrow,
+    stringifyWebhooksToBase64,
+    replaceSlashWithTilde,
+} from './utils';
 
 /**
  * Actors
@@ -24,8 +31,6 @@ import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow, st
  * ```
  * @namespace actors
  */
-
-const replaceSlashWithTilde = str => str.replace('/', '~');
 
 export default class Actors {
     constructor(httpClient) {
@@ -610,7 +615,7 @@ export default class Actors {
                                                  If actor doesn't finish in time then actor run in RUNNING state is returned.
      * @returns {ActorBuild}
      */
-    getBuild(options) {
+    async getBuild(options) {
         const actorId = options.actorId || options.actId;
         const { buildId, waitForFinish } = options;
 
@@ -630,7 +635,7 @@ export default class Actors {
         };
 
         try {
-            const response = this._call(options, endpointOptions);
+            const response = await this._call(options, endpointOptions);
             return parseDateFields(pluckData(response));
         } catch (err) {
             return catchNotFoundOrThrow(err);
