@@ -44,7 +44,7 @@ const endpointClasses = {
     // keyValueStores,
     // datasets,
     // requestQueues,
-    // logs,
+    logs,
     users,
     // webhooks,
     // webhookDispatches,

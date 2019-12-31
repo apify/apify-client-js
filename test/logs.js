@@ -1,30 +1,70 @@
 import { expect } from 'chai';
 import ApifyClient from '../build';
-import { BASE_PATH } from '../build/logs';
-import { mockRequest, requestExpectCall, restoreRequest } from './_helper';
 
-const BASE_URL = 'http://example.com/something';
-const OPTIONS = { baseUrl: BASE_URL };
+import mockServer from './mock_server/server';
 
-describe('Logs', () => {
-    before(mockRequest);
-    after(restoreRequest);
+const DEFAULT_QUERY = {
+    token: 'default-token',
+};
 
-    it('getLog() works', () => {
+function validateRequest(query = {}, params = {}, body = {}, headers = {}) {
+    const request = mockServer.getLastRequest();
+    const expectedQuery = getExpectedQuery(query);
+    expect(request.query).to.be.eql(expectedQuery);
+    expect(request.params).to.be.eql(params);
+    expect(request.body).to.be.eql(body);
+    expect(request.headers).to.include(headers);
+}
+
+function getExpectedQuery(callQuery = {}) {
+    const query = optsToQuery(callQuery);
+    return {
+        ...DEFAULT_QUERY,
+        ...query,
+    };
+}
+
+function optsToQuery(params) {
+    return Object
+        .entries(params)
+        .filter(([k, v]) => v !== false) // eslint-disable-line no-unused-vars
+        .map(([k, v]) => {
+            if (v === true) v = '1';
+            else if (typeof v === 'number') v = v.toString();
+            return [k, v];
+        })
+        .reduce((newObj, [k, v]) => {
+            newObj[k] = v;
+            return newObj;
+        }, {});
+}
+
+describe('Log methods', () => {
+    let baseUrl = null;
+    before(async () => {
+        const server = await mockServer.start(3333);
+        baseUrl = `http://localhost:${server.address().port}`;
+    });
+    after(() => mockServer.close());
+
+    let client = null;
+    beforeEach(() => {
+        client = new ApifyClient({
+            baseUrl,
+            expBackoffMaxRepeats: 0,
+            expBackoffMillis: 1,
+            ...DEFAULT_QUERY,
+        });
+    });
+    afterEach(() => {
+        client = null;
+    });
+
+    it('getLog() works', async () => {
         const logId = 'some-id';
-        const expected = 'line \n line \n line;';
 
-        requestExpectCall({
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${logId}`,
-            gzip: true,
-        }, expected);
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .logs
-            .getLog({ logId })
-            .then(given => expect(given).to.be.eql(expected));
+        const res = await client.logs.getLog({ logId });
+        expect(res.id).to.be.eql('get-log');
+        validateRequest({}, { logId });
     });
 });

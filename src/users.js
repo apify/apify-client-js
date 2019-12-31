@@ -38,7 +38,6 @@ export default class User {
      * @param {Object} options
      * @param {String} [options.userId = 'me'] - Desired user ID or username. By default it is `'me'`,
      *                                           which causes the function to return information about the current user.
-     * @param {function} [callback] - Callback function
      * @returns {UserInfo}
      */
     async getUser(options = {}) {
