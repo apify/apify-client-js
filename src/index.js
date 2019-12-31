@@ -1,5 +1,5 @@
 import Actors from './actors';
-import tasks from './tasks';
+import Tasks from './tasks';
 import crawlers from './crawlers';
 import keyValueStores from './key_value_stores';
 import datasets from './datasets';
@@ -39,7 +39,7 @@ const DEFAULT_CLIENT_OPTIONS = {
 const endpointClasses = {
     actors: Actors,
     acts: Actors,
-    // tasks,
+    tasks: Tasks,
     // crawlers,
     // keyValueStores,
     // datasets,

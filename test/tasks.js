@@ -1,185 +1,123 @@
-import _ from 'underscore';
 import { expect } from 'chai';
 import ApifyClient from '../build';
-import { BASE_PATH } from '../build/tasks';
-import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
 import { stringifyWebhooksToBase64 } from '../build/utils';
 
-const BASE_URL = 'http://example.com/something';
-const OPTIONS = { baseUrl: BASE_URL };
+import mockServer from './mock_server/server';
 
-describe('Tasks method', () => {
-    before(mockRequest);
-    after(restoreRequest);
+const DEFAULT_QUERY = {
+    token: 'default-token',
+};
 
-    it('listTasks() works', () => {
-        const callOptions = {
-            token: 'sometoken',
+function validateRequest(query = {}, params = {}, body = {}, headers = {}) {
+    const request = mockServer.getLastRequest();
+    const expectedQuery = getExpectedQuery(query);
+    expect(request.query).to.be.eql(expectedQuery);
+    expect(request.params).to.be.eql(params);
+    expect(request.body).to.be.eql(body);
+    expect(request.headers).to.include(headers);
+}
+
+function getExpectedQuery(callQuery = {}) {
+    const query = optsToQuery(callQuery);
+    return {
+        ...DEFAULT_QUERY,
+        ...query,
+    };
+}
+
+function optsToQuery(params) {
+    return Object
+        .entries(params)
+        .filter(([k, v]) => v !== false) // eslint-disable-line no-unused-vars
+        .map(([k, v]) => {
+            if (v === true) v = '1';
+            else if (typeof v === 'number') v = v.toString();
+            return [k, v];
+        })
+        .reduce((newObj, [k, v]) => {
+            newObj[k] = v;
+            return newObj;
+        }, {});
+}
+
+describe('Actor methods', () => {
+    let baseUrl = null;
+    before(async () => {
+        const server = await mockServer.start(3333);
+        baseUrl = `http://localhost:${server.address().port}`;
+    });
+    after(() => mockServer.close());
+
+    let client = null;
+    beforeEach(() => {
+        client = new ApifyClient({
+            baseUrl,
+            expBackoffMaxRepeats: 0,
+            expBackoffMillis: 1,
+            ...DEFAULT_QUERY,
+        });
+    });
+    afterEach(() => {
+        client = null;
+    });
+
+    it('listTasks() works', async () => {
+        const opts = {
             limit: 5,
             offset: 3,
             desc: true,
         };
 
-        const queryString = {
-            token: 'sometoken',
-            limit: 5,
-            offset: 3,
-            desc: 1,
-        };
-
-        const expected = {
-            limit: 5,
-            offset: 3,
-            count: 5,
-            total: 10,
-            desc: true,
-            items: ['task1', 'task2'],
-        };
-
-        requestExpectCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}`,
-            qs: queryString,
-        }, {
-            data: expected,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .listTasks(callOptions)
-            .then(response => expect(response).to.be.eql(expected));
+        const res = await client.tasks.listTasks(opts);
+        expect(res.id).to.be.eql('list-tasks');
+        validateRequest(opts);
     });
 
-    it('listTasks() works without pagination', () => {
-        const callOptions = {
-            token: 'sometoken',
-        };
+    it('listTasks() works without pagination', async () => {
+        const opts = {};
 
-        const queryString = {
-            token: 'sometoken',
-        };
-
-        const expected = {
-            limit: 1000,
-            offset: 0,
-            count: 2,
-            total: 2,
-            desc: false,
-            items: ['task1', 'task2'],
-        };
-
-        requestExpectCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}`,
-            qs: queryString,
-        }, {
-            data: expected,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .listTasks(callOptions)
-            .then(response => expect(response).to.be.eql(expected));
+        const res = await client.tasks.listTasks(opts);
+        expect(res.id).to.be.eql('list-tasks');
+        validateRequest(opts);
     });
 
-    it('createTask() works', () => {
+    it('createTask() works', async () => {
         const task = { foo: 'bar' };
-        const token = 'some-token';
 
-        requestExpectCall({
-            json: true,
-            method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}`,
-            qs: { token },
-            body: task,
-        }, {
-            data: task,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .createTask({ task, token })
-            .then(response => expect(response).to.be.eql(task));
+        const res = await client.tasks.createTask({ task });
+        expect(res.id).to.be.eql('create-task');
+        validateRequest({}, {}, task);
     });
 
-    it('updateTask() works with both taskId parameter and taskId in task object', () => {
+    it('updateTask() works with both taskId parameter and taskId in task object', async () => {
         const taskId = 'some-user/some-id';
         const task = { id: taskId, foo: 'bar' };
-        const token = 'some-token';
 
-        requestExpectCall({
-            json: true,
-            method: 'PUT',
-            url: `${BASE_URL}${BASE_PATH}/some-user~some-id`,
-            qs: { token },
-            body: _.omit(task, 'id'),
-        }, {
-            data: task,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .updateTask({ taskId, task, token })
-            .then(response => expect(response).to.be.eql(task));
+        const res = await client.tasks.updateTask({ taskId, task });
+        expect(res.id).to.be.eql('update-task');
+        validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
     });
 
-    it('updateTask() works with taskId in task object', () => {
-        const taskId = 'some-id';
+    it('updateTask() works with taskId in task object', async () => {
+        const taskId = 'some-user/some-id';
         const task = { id: taskId, foo: 'bar' };
-        const token = 'some-token';
 
-        requestExpectCall({
-            json: true,
-            method: 'PUT',
-            url: `${BASE_URL}${BASE_PATH}/${taskId}`,
-            qs: { token },
-            body: _.omit(task, 'id'),
-        }, {
-            data: task,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .updateTask({ task, token })
-            .then(response => expect(response).to.be.eql(task));
+        const res = await client.tasks.updateTask({ task });
+        expect(res.id).to.be.eql('update-task');
+        validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
     });
 
-    it('updateTask() works with taskId parameter', () => {
-        const taskId = 'some-id';
+    it('updateTask() works with taskId parameter', async () => {
+        const taskId = 'some-user/some-id';
         const task = { foo: 'bar' };
-        const token = 'some-token';
 
-        requestExpectCall({
-            json: true,
-            method: 'PUT',
-            url: `${BASE_URL}${BASE_PATH}/${taskId}`,
-            qs: { token },
-            body: task,
-        }, {
-            data: task,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .updateTask({ taskId, task, token })
-            .then(response => expect(response).to.be.eql(task));
+        const res = await client.tasks.updateTask({ taskId, task });
+        expect(res.id).to.be.eql('update-task');
+        validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
     });
 
-    it('updateTask() works with taskId as part task.id parameter', () => {
+    xit('updateTask() works with taskId as part task.id parameter', () => {
+        // TODO: I think that this is duplicate of:  "updateTask() works with taskId in task object"
         const task = { id: 'some-id', foo: 'bar' };
         const token = 'some-token';
 
@@ -201,26 +139,20 @@ describe('Tasks method', () => {
             .then(response => expect(response).to.be.eql(task));
     });
 
-    it('getTask() works', () => {
+    it('deleteTask() works', async () => {
+        const taskId = '204';
+
+        const res = await client.tasks.deleteTask({ taskId });
+        expect(res).to.be.eql('');
+        validateRequest({}, { taskId });
+    });
+
+    it('getTask() works', async () => {
         const taskId = 'some-id';
-        const task = { id: taskId, foo: 'bar' };
-        const token = 'some-token';
 
-        requestExpectCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${taskId}`,
-            qs: { token },
-        }, {
-            data: task,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .getTask({ taskId, token })
-            .then(response => expect(response).to.be.eql(task));
+        const res = await client.tasks.getTask({ taskId });
+        expect(res.id).to.be.eql('get-task');
+        validateRequest({}, { taskId });
     });
 
     /*
@@ -248,198 +180,78 @@ describe('Tasks method', () => {
     });
     */
 
-    it('getTask() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
-        const taskId = 'some-id';
-        const token = 'some-token';
+    it('getTask() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
+        const taskId = '404';
 
-        requestExpectErrorCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${taskId}`,
-            qs: { token },
-        }, false, 404);
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .getTask({ taskId, token })
-            .then(given => expect(given).to.be.eql(null));
+        const res = await client.tasks.getTask({ taskId });
+        expect(res).to.be.eql(null);
+        validateRequest({}, { taskId });
     });
 
-    it('deleteTask() works', () => {
-        const taskId = 'some-id';
-        const token = 'some-token';
+    it('listRuns() works', async () => {
+        const taskId = 'task-id';
 
-        requestExpectCall({
-            json: true,
-            method: 'DELETE',
-            url: `${BASE_URL}${BASE_PATH}/${taskId}`,
-            qs: { token },
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .deleteTask({ taskId, token });
-    });
-
-    it('listRuns() works', () => {
-        const taskId = 'some-id';
-
-        const callOptions = {
-            token: 'sometoken',
+        const query = {
             limit: 5,
             offset: 3,
             desc: true,
         };
 
-        const queryString = {
-            token: 'sometoken',
-            limit: 5,
-            offset: 3,
-            desc: 1,
-        };
-
-        const expected = {
-            limit: 5,
-            offset: 3,
-            desc: true,
-            count: 5,
-            total: 10,
-            items: ['run1', 'run2'],
-        };
-
-        requestExpectCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${taskId}/runs`,
-            qs: queryString,
-        }, {
-            data: expected,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .listRuns(Object.assign({}, callOptions, { taskId }))
-            .then(response => expect(response).to.be.eql(expected));
+        const res = await client.tasks.listRuns({ taskId, ...query });
+        expect(res.id).to.be.eql('list-runs');
+        validateRequest(query, { taskId });
     });
 
-    it('listRuns() works without pagination params', () => {
-        const taskId = 'some-id';
+    it('listRuns() works without pagination params', async () => {
+        const taskId = 'task-id';
 
-        const callOptions = {
-            token: 'sometoken',
-        };
-
-        const queryString = {
-            token: 'sometoken',
-        };
-
-        const expected = {
-            limit: 1000,
-            offset: 0,
-            desc: false,
-            count: 2,
-            total: 2,
-            items: ['run1', 'run2'],
-        };
-
-        requestExpectCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${taskId}/runs`,
-            qs: queryString,
-        }, {
-            data: expected,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .listRuns(Object.assign({}, callOptions, { taskId }))
-            .then(response => expect(response).to.be.eql(expected));
+        const query = {};
+        const res = await client.tasks.listRuns({ taskId, ...query });
+        expect(res.id).to.be.eql('list-runs');
+        validateRequest(query, { taskId });
     });
 
-    it('runTask() works', () => {
+    it('runTask() works', async () => {
         const taskId = 'some-id';
-        const token = 'some-token';
-        const run = { foo: 'bar' };
-        const apiResponse = JSON.stringify({ data: run });
+        const query = {
+            waitForFinish: 100,
+        };
 
-        const waitForFinish = 120;
-
-        requestExpectCall({
-            method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${taskId}/runs`,
-            qs: { token, waitForFinish },
-        }, apiResponse);
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .runTask({ taskId, token, waitForFinish })
-            .then(response => expect(response).to.be.eql(run));
+        const res = await client.tasks.runTask({ taskId, ...query });
+        expect(res.id).to.be.eql('run-task');
+        validateRequest(query, { taskId });
     });
 
-    it('runTask() works with input and options overrides', () => {
+    it('runTask() works with input and options overrides', async () => {
         const taskId = 'some-id';
-        const token = 'some-token';
-        const run = { foo: 'bar' };
-        const apiResponse = { data: run };
-        const memory = 512;
         const input = { foo: 'bar' };
 
-        const waitForFinish = 120;
+        const query = {
+            waitForFinish: 100,
+            memory: 512,
+        };
 
-        requestExpectCall({
-            method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${taskId}/runs`,
-            json: true,
-            qs: { token, waitForFinish, memory },
-            body: input,
-        }, apiResponse);
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .runTask({ taskId, token, waitForFinish, memory, input })
-            .then(response => expect(response).to.be.eql(run));
+        const res = await client.tasks.runTask({ taskId, input, ...query });
+        expect(res.id).to.be.eql('run-task');
+        validateRequest(query, { taskId }, input);
     });
 
-    it('runTask() works with deprecated input body and contentType params', () => {
+    xit('runTask() works with deprecated input body and contentType params', async () => {
         const taskId = 'some-id';
-        const token = 'some-token';
-        const run = { foo: 'bar' };
-        const apiResponse = JSON.stringify({ data: run });
-        const contentType = 'application/json; charset=utf-8';
-        const body = '{ "foo": "bar" }';
+        const body = JSON.stringify({ foo: 'bar' });
 
-        const waitForFinish = 120;
+        const query = {
+            waitForFinish: 100,
+            memory: 512,
+            contentType: 'application/json; charset=utf-8',
+        };
 
-        requestExpectCall({
-            method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${taskId}/runs`,
-            headers: { 'Content-Type': contentType },
-            qs: { token, waitForFinish },
-            body,
-        }, apiResponse);
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .runTask({ taskId, token, waitForFinish, body, contentType })
-            .then(response => expect(response).to.be.eql(run));
+        const res = await client.tasks.runTask({ taskId, body, ...query });
+        expect(res.id).to.be.eql('run-task');
+        validateRequest(query, { taskId }, body);
     });
 
-    it('runTask() works with webhooks', () => {
+    xit('runTask() works with webhooks', () => {
         const taskId = 'some-id';
         const token = 'some-token';
         const run = { foo: 'bar' };
@@ -491,75 +303,37 @@ describe('Tasks method', () => {
     });
     */
 
-    it('listWebhooks() works', () => {
-        const taskId = 'some-id';
-        const token = 'some-token';
-
-        const expected = {
+    it('listWebhooks() works', async () => {
+        const taskId = 'some-task-id';
+        const query = {
             limit: 5,
             offset: 3,
             desc: true,
-            count: 5,
-            total: 10,
-            items: ['webhook1', 'webhook2'],
         };
 
-        requestExpectCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${taskId}/webhooks`,
-            qs: { token },
-        }, {
-            data: expected,
-        });
 
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .listWebhooks({ taskId, token })
-            .then(response => expect(response).to.be.eql(expected));
+        const res = await client.tasks.listWebhooks({ taskId, ...query });
+        expect(res.id).to.be.eql('list-webhooks');
+        validateRequest(query, { taskId });
     });
 
-    it('getInput() works', () => {
-        const taskId = 'some-id';
-        const input = { foo: 'bar' };
-        const token = 'some-token';
+    it('getInput() works', async () => {
+        const taskId = 'some-task-id';
+        const query = {};
 
-        requestExpectCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${taskId}/input`,
-            qs: { token },
-        }, input);
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .getInput({ taskId, token })
-            .then(response => expect(response).to.be.eql(input));
+        const res = await client.tasks.getInput({ taskId, ...query });
+        expect(res.id).to.be.eql('get-input');
+        validateRequest(query, { taskId });
     });
 
-    it('updateInput() works', () => {
-        const taskId = 'some-id';
+    it('updateInput() works', async () => {
+        const taskId = 'some-task-id';
         const input = { foo: 'bar' };
-        const returnedInput = { foo: 'bar', hotel: 'restaurant' };
-        const token = 'some-token';
 
-        requestExpectCall({
-            json: true,
-            method: 'PUT',
-            url: `${BASE_URL}${BASE_PATH}/${taskId}/input`,
-            qs: { token },
-            body: input,
-        }, returnedInput);
+        const query = {};
 
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .updateInput({ taskId, token, input })
-            .then(response => expect(response).to.be.eql(returnedInput));
+        const res = await client.tasks.updateInput({ taskId, input, ...query });
+        expect(res.id).to.be.eql('get-input');
+        validateRequest(query, { taskId }, input);
     });
 });

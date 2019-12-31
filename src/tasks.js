@@ -1,11 +1,12 @@
-import _ from 'underscore';
 import log from 'apify-shared/log';
+import _ from 'lodash';
 import {
     checkParamOrThrow,
     pluckData,
     parseDateFields,
     catchNotFoundOrThrow,
     stringifyWebhooksToBase64,
+    replaceSlashWithTilde,
 } from './utils';
 
 /**
@@ -47,11 +48,29 @@ import {
  * @namespace tasks
  */
 
-export const BASE_PATH = '/v2/actor-tasks';
+export default class Tasks {
+    constructor(httpClient) {
+        this.basePath = '/v2/actor-tasks';
+        this.client = httpClient;
+    }
 
-const replaceSlashWithTilde = str => str.replace('/', '~');
+    _call(userOptions, endpointOptions) {
+        const callOptions = this._getCallOptions(userOptions, endpointOptions);
+        return this.client.call(callOptions);
+    }
 
-export default {
+    _getCallOptions(userOptions, endpointOptions) {
+        const { baseUrl, token } = userOptions;
+        const callOptions = {
+            basePath: this.basePath,
+            json: true,
+            ...endpointOptions,
+        };
+        if (baseUrl) callOptions.baseUrl = baseUrl;
+        if (token) callOptions.token = token;
+        return callOptions;
+    }
+
     /**
      * Gets list of your tasks.
      * @description By default, the objects are sorted by the createdAt field in ascending order,
@@ -61,37 +80,33 @@ export default {
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
-     * @param callback
-     * @returns {PaginationList}
+     * @returns {Promise<PaginationList>}
      */
-    listTasks: (requestPromise, options) => {
-        const { baseUrl, token, offset, limit, desc } = options;
+    async listTasks(options) {
+        const { offset, limit, desc } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
-        const query = { token };
+        const query = {};
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
         if (desc) query.desc = 1;
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}`,
-            json: true,
+        const endpointOptions = {
+            url: '',
             method: 'GET',
             qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Creates a new task.
@@ -99,28 +114,23 @@ export default {
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {Object} options.task Object containing configuration of the task
-     * @param callback
      * @returns {Task}
      */
-    createTask: (requestPromise, options) => {
-        const { baseUrl, token, task } = options;
+    async createTask(options) {
+        const { task } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(task, 'task', 'Object');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}`,
-            json: true,
+        const endpointOptions = {
+            url: '',
             method: 'POST',
-            qs: { token },
             body: task,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Updates task.
@@ -128,17 +138,13 @@ export default {
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {String} options.taskId - Unique task ID
      * @param {Object} options.task
      * @param callback
      * @returns {Task}
      */
-    updateTask: (requestPromise, options) => {
-        const { baseUrl, token, taskId, task } = options;
-
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
+    async updateTask(options) {
+        const { taskId, task } = options;
         checkParamOrThrow(task, 'task', 'Object');
 
         if (taskId) checkParamOrThrow(taskId, 'taskId', 'String');
@@ -146,16 +152,15 @@ export default {
 
         const safeTaskId = replaceSlashWithTilde(!taskId && task.id ? task.id : taskId);
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${safeTaskId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${safeTaskId}`,
             method: 'PUT',
-            qs: { token },
             body: _.omit(task, 'id'),
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Deletes task.
@@ -163,27 +168,23 @@ export default {
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {String} options.taskId - Unique task ID
-     * @param callback
      */
-    deleteTask: (requestPromise, options) => {
-        const { baseUrl, token, taskId } = options;
+    async deleteTask(options) {
+        const { taskId } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(taskId, 'taskId', 'String');
 
         const safeTaskId = replaceSlashWithTilde(taskId);
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${safeTaskId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${safeTaskId}`,
             method: 'DELETE',
-            qs: { token },
-        })
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(response);
+    }
 
     /**
      * Gets task object.
@@ -191,37 +192,28 @@ export default {
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param {String} options.token Optional
      * @param {String} options.taskId - Unique task ID
-     * @param callback
      * @returns {Task}
      */
-    getTask: (requestPromise, options) => {
-        const { baseUrl, token, taskId } = options;
+    async getTask(options) {
+        const { taskId } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        // Remove line bellow when we enable public tasks
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(taskId, 'taskId', 'String');
 
         const safeTaskId = replaceSlashWithTilde(taskId);
 
-        const qs = {};
-        // Line bellow will be used if we enable tasks to be public
-        // if (token) qs.token = token;
-        qs.token = token;
-
-
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${safeTaskId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${safeTaskId}`,
             method: 'GET',
-            qs,
-        })
-            .then(pluckData)
-            .then(parseDateFields)
-            .catch(catchNotFoundOrThrow);
-    },
+        };
+
+        try {
+            const response = await this._call(options, endpointOptions);
+            return parseDateFields(pluckData(response));
+        } catch (err) {
+            return catchNotFoundOrThrow(err);
+        }
+    }
 
     /**
      * Gets list of task runs.
@@ -235,40 +227,36 @@ export default {
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {String} options.taskId - Unique task ID
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
-     * @param callback
      * @returns {PaginationList}
      */
-    listRuns: (requestPromise, options) => {
-        const { baseUrl, token, taskId, offset, limit, desc } = options;
+    async listRuns(options) {
+        const { offset, limit, desc, taskId } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(taskId, 'taskId', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
         const safeTaskId = replaceSlashWithTilde(taskId);
-        const query = { token };
+        const query = {};
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
         if (desc) query.desc = 1;
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${safeTaskId}/runs`,
-            json: true,
+        const endpointOptions = {
+            url: `/${safeTaskId}/runs`,
             method: 'GET',
             qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Runs the given task.
@@ -277,7 +265,6 @@ export default {
      * @instance
      * @param {Object} options
      * @param {String} options.taskId - Unique task ID
-     * @param [options.token]
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for task to finish. Maximum value is 120s.
                                                  If task doesn't finish in time then task run in RUNNING state is returned.
      * @param {Object} [options.input] - Actor task input object.
@@ -287,14 +274,12 @@ export default {
      * @param {Array}  [options.webhooks] - Specifies optional webhooks associated with the actor run,
      *                                      which can be used to receive a notification e.g. when the actor finished or failed,
      *                                      see {@link https://apify.com/docs/webhooks#adhoc|ad hook webhooks documentation} for detailed description.
-     * @param callback
      * @returns {ActRun}
      */
-    runTask: (requestPromise, options) => {
-        const { baseUrl, token, taskId, waitForFinish, body, contentType, timeout, memory, build, webhooks, input } = options;
+    async runTask(options) {
+        // TODO: NOt finished.
+        const { taskId, waitForFinish, body, contentType, timeout, memory, build, webhooks, input } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(taskId, 'taskId', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
         checkParamOrThrow(timeout, 'timeout', 'Maybe Number');
@@ -304,7 +289,7 @@ export default {
         checkParamOrThrow(input, 'input', 'Maybe Object');
 
         const safeTaskId = replaceSlashWithTilde(taskId);
-        const query = { token };
+        const query = {};
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
         if (timeout) query.timeout = timeout;
@@ -312,8 +297,8 @@ export default {
         if (build) query.build = build;
         if (webhooks) query.webhooks = stringifyWebhooksToBase64(webhooks);
 
-        const opts = {
-            url: `${baseUrl}${BASE_PATH}/${safeTaskId}/runs`,
+        const endpointOptions = {
+            url: `${safeTaskId}/runs`,
             method: 'POST',
             qs: query,
         };
@@ -327,20 +312,18 @@ export default {
             checkParamOrThrow(contentType, 'contentType', 'Maybe String');
             checkParamOrThrow(body, 'body', 'String');
             log.deprecated('Parameter "body" of client.tasks.runTask() method is depredated. Use "input" parameter instead.');
-            opts.body = body;
-            if (contentType) opts.headers = { 'Content-Type': contentType };
+            endpointOptions.body = body;
+            if (contentType) endpointOptions.headers = { 'Content-Type': contentType };
         }
 
         if (input) {
-            opts.body = input;
-            opts.json = true;
+            endpointOptions.body = input;
+            endpointOptions.json = true;
         }
 
-        return requestPromise(opts)
-            .then(response => (opts.json ? response : JSON.parse(response)))
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Gets list of webhooks for given actor task.
@@ -348,40 +331,37 @@ export default {
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {String} options.taskId - Unique task ID
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
-     * @param callback
      * @returns {PaginationList}
      */
-    listWebhooks: (requestPromise, options) => {
-        const { baseUrl, token, taskId, offset, limit, desc } = options;
+    async listWebhooks(options) {
+        const { taskId } = options;
+        const { offset, limit, desc } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(taskId, 'taskId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
         const safeTaskId = replaceSlashWithTilde(taskId);
-        const query = { token };
+        const query = {};
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
         if (desc) query.desc = 1;
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${safeTaskId}/webhooks`,
-            json: true,
+        const endpointOptions = {
+            url: `${safeTaskId}/webhooks`,
             method: 'GET',
             qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Gets the actor task input.
@@ -389,27 +369,24 @@ export default {
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {String} options.taskId - Unique task ID
-     * @param callback
      * @returns {Object}
      */
-    getInput: (requestPromise, options) => {
-        const { baseUrl, token, taskId } = options;
+    async getInput(options) {
+        const { taskId } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(taskId, 'taskId', 'String');
 
         const safeTaskId = replaceSlashWithTilde(taskId);
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${safeTaskId}/input`,
-            json: true,
+        const endpointOptions = {
+            url: `/${safeTaskId}/input`,
             method: 'GET',
-            qs: { token },
-        });
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Updates the actor task input.
@@ -417,28 +394,25 @@ export default {
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {String} options.taskId - Unique task ID
      * @param {Object} options.input - Input object.
-     * @param callback
      * @returns {Object}
      */
-    updateInput: (requestPromise, options) => {
-        const { baseUrl, token, taskId, input } = options;
+    async updateInput(options) {
+        const { taskId, input } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(taskId, 'taskId', 'String');
         checkParamOrThrow(input, 'input', 'Object');
 
         const safeTaskId = replaceSlashWithTilde(taskId);
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${safeTaskId}/input`,
-            json: true,
+        const endpointOptions = {
+            url: `/${safeTaskId}/input`,
             method: 'PUT',
-            qs: { token },
             body: input,
-        });
-    },
-};
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
+}
