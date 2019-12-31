@@ -20,6 +20,9 @@ const mockServer = {
     close() {
         if (this.server) this.server.close();
     },
+    getLastRequest() {
+        return this.requests.pop();
+    },
 };
 
 app.use(logger('dev'));

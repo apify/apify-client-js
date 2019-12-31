@@ -8,13 +8,21 @@ const DEFAULT_QUERY = {
     token: 'default-token',
 };
 
-function expectCorrectQuery(callQuery = {}) {
+function validateRequest(query = {}, params = {}, body = {}, headers = {}) {
+    const request = mockServer.getLastRequest();
+    const expectedQuery = getExpectedQuery(query);
+    expect(request.query).to.be.eql(expectedQuery);
+    expect(request.params).to.be.eql(params);
+    expect(request.body).to.be.eql(body);
+    expect(request.headers).to.include(headers);
+}
+
+function getExpectedQuery(callQuery = {}) {
     const query = optsToQuery(callQuery);
-    const request = mockServer.requests.pop();
-    expect(request.query).to.be.eql({
+    return {
         ...DEFAULT_QUERY,
         ...query,
-    });
+    };
 }
 
 function optsToQuery(params) {
@@ -60,190 +68,102 @@ describe('Actor methods', () => {
             desc: true,
         };
 
-        const response = await client.actors.listActs(opts);
-        expect(response.id).to.be.eql('list-actors');
-        expectCorrectQuery(opts);
+        const res = await client.acts.listActs(opts);
+        expect(res.id).to.be.eql('list-actors');
+        validateRequest(opts);
     });
 
     it('createAct() works', async () => {
         const act = { foo: 'bar' };
 
-        const response = await client.actors.createAct({ act });
-        expect(response.id).to.be.eql('create-actor');
-        expect(response.body).to.be.eql(act);
-        expectCorrectQuery();
+        const res = await client.acts.createAct({ act });
+        expect(res.id).to.be.eql('create-actor');
+        validateRequest({}, {}, act);
     });
 
     it('updateAct() works with both actId parameter and actId in act object', async () => {
         const actId = 'some-user/some-id';
         const act = { id: actId, foo: 'bar' };
 
-        const response = await client.actors.updateAct({ actId, act });
-        expect(response.id).to.be.eql('update-actor');
-        expect(response.body).to.be.eql(_.omit(act, 'id'));
-        expect(response.params.id).to.be.eql('some-user~some-id');
-        expectCorrectQuery();
+        const res = await client.acts.updateAct({ actId, act });
+        expect(res.id).to.be.eql('update-actor');
+        validateRequest({}, { actorId: 'some-user~some-id' }, { foo: 'bar' });
     });
 
     it('updateAct() works with actId in act object', async () => {
-        const actorId = 'some-id';
-        const act = { id: actorId, foo: 'bar' };
+        const actId = 'some-id';
+        const act = { id: actId, foo: 'bar' };
 
-        const response = await client.actors.updateAct({ act });
-        expect(response.id).to.be.eql('update-actor');
-        expect(response.body).to.be.eql({ foo: 'bar' });
-        expect(response.params.id).to.be.eql('some-id');
-        expectCorrectQuery();
+        const res = await client.acts.updateAct({ act });
+        expect(res.id).to.be.eql('update-actor');
+        validateRequest({}, { actorId: actId }, { foo: 'bar' });
     });
 
     it('updateAct() works with actId parameter', async () => {
         const actId = 'some-id';
         const act = { foo: 'bar' };
 
-        const response = await client.actors.updateAct({ actId, act });
-        expect(response.id).to.be.eql('update-actor');
-        expect(response.body).to.be.eql(act);
-        expect(response.params.id).to.be.eql('some-id');
-        expectCorrectQuery();
+        const res = await client.acts.updateAct({ actId, act });
+        expect(res.id).to.be.eql('update-actor');
+        validateRequest({}, { actorId: actId }, act);
     });
 
-    xit('getAct() works', () => {
+    it('getAct() works', async () => {
         const actId = 'some-id';
-        const act = { id: actId, foo: 'bar' };
-        const token = 'some-token';
 
-        requestExpectCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${actId}`,
-            qs: { token },
-        }, {
-            data: act,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .acts
-            .getAct({ actId, token })
-            .then(response => expect(response).to.be.eql(act));
+        const res = await client.acts.getAct({ actId });
+        expect(res.id).to.be.eql('get-actor');
+        validateRequest({}, { actorId: actId });
     });
 
-    xit('getAct() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
-        const actId = 'some-id';
-        const token = 'some-token';
+    it('getAct() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
+        const actId = '404';
 
-        requestExpectErrorCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${actId}`,
-            qs: { token },
-        }, false, 404);
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .acts
-            .getAct({ actId, token })
-            .then(given => expect(given).to.be.eql(null));
+        const res = await client.acts.getAct({ actId });
+        expect(res).to.be.eql(null);
+        validateRequest({}, { actorId: actId });
     });
 
-    xit('deleteAct() works', () => {
-        const actId = 'some-id';
-        const token = 'some-token';
-
-        requestExpectCall({
-            json: true,
-            method: 'DELETE',
-            url: `${BASE_URL}${BASE_PATH}/${actId}`,
-            qs: { token },
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .acts
-            .deleteAct({ actId, token });
+    it('deleteAct() works', async () => {
+        const actId = '204';
+        const res = await client.acts.deleteAct({ actId });
+        expect(res).to.be.eql('');
+        validateRequest({}, { actorId: actId });
     });
 
-    xit('listRuns() works', () => {
+    it('listRuns() works', async () => {
         const actId = 'some-id';
 
-        const callOptions = {
-            token: 'sometoken',
+        const query = {
             limit: 5,
             offset: 3,
             desc: true,
         };
 
-        const queryString = {
-            token: 'sometoken',
-            limit: 5,
-            offset: 3,
-            desc: 1,
-        };
-
-        const expected = {
-            limit: 5,
-            offset: 3,
-            desc: true,
-            count: 5,
-            total: 10,
-            items: ['run1', 'run2'],
-        };
-
-        requestExpectCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
-            qs: queryString,
-        }, {
-            data: expected,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .acts
-            .listRuns(Object.assign({}, callOptions, { actId }))
-            .then(response => expect(response).to.be.eql(expected));
+        const res = await client.acts.listRuns({ actId, ...query });
+        expect(res.id).to.be.eql('list-runs');
+        validateRequest(query, { actorId: actId });
     });
 
-    xit('runAct() works', () => {
+    it('runAct() works', async () => {
         const actId = 'some-id';
-        const token = 'some-token';
-        const contentType = 'some-type';
-        const body = 'some-body';
-        const run = { foo: 'bar' };
-        const apiResponse = JSON.stringify({ data: run });
+        const contentType = 'application/x-www-form-urlencoded';
+        const body = 'some=body';
 
-        const waitForFinish = 120;
-        const timeout = 120;
-        const memory = 256;
-        const build = '1.2.0';
+        const query = {
+            waitForFinish: 100,
+            timeout: 120,
+            memory: 256,
+            build: '1.2.0',
+        };
 
-        requestExpectCall({
-            method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
-            qs: { token, waitForFinish, timeout, memory, build },
-            headers: {
-                'Content-Type': contentType,
-            },
-            body,
-        }, apiResponse);
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .acts
-            .runAct({ actId, token, contentType, body, waitForFinish, timeout, memory, build })
-            .then(response => expect(response).to.be.eql(run));
+        const res = await client.acts.runAct({ actId, contentType, body, ...query });
+        expect(res.id).to.be.eql('run-actor');
+        validateRequest(query, { actorId: actId }, { some: 'body' }, { 'content-type': contentType });
     });
 
-    xit('runAct() with webhook works', () => {
+    it('runAct() with webhook works', async () => {
         const actId = 'some-id';
-        const token = 'some-token';
-        const run = { foo: 'bar' };
         const webhooks = [
             {
                 eventTypes: ['ACTOR.RUN.CREATED'],
@@ -255,164 +175,66 @@ describe('Actor methods', () => {
             },
         ];
 
-        requestExpectCall({
-            method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
-            qs: { token, webhooks: stringifyWebhooksToBase64(webhooks) },
-        }, JSON.stringify({ data: run }));
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .acts
-            .runAct({ actId, token, webhooks })
-            .then(response => expect(response).to.be.eql(run));
+        const res = await client.acts.runAct({ actId, webhooks });
+        expect(res.id).to.be.eql('run-actor');
+        validateRequest({ webhooks: stringifyWebhooksToBase64(webhooks) }, { actorId: actId });
     });
 
-    xit('runAct() works without token', () => {
+    it('getRun() works', async () => {
+        const actId = 'some-act-id';
+        const runId = 'some-run-id';
+
+        const query = {
+            waitForFinish: 100,
+        };
+
+        const res = await client.acts.getRun({ actId, runId, ...query });
+        expect(res.id).to.be.eql('get-run');
+        validateRequest(query, { actorId: actId, runId });
+    });
+
+    it('abortRun() works', async () => {
+        const actId = 'some-act-id';
+        const runId = 'some-run-id';
+
+        const res = await client.acts.abortRun({ actId, runId });
+        expect(res.id).to.be.eql('abort-run');
+        validateRequest({}, { actorId: actId, runId });
+    });
+
+    xit('resurrectRun() works', async () => {
+        const actId = 'some-act-id';
+        const runId = 'some-run-id';
+
+        const res = await client.acts.resurrectRun({ actId, runId });
+        expect(res.id).to.be.eql('resurrect-run');
+        validateRequest({}, { actorId: actId, runId });
+    });
+
+    it('metamorphRun() works', async () => {
         const actId = 'some-id';
-        const run = { foo: 'bar' };
-        const apiResponse = JSON.stringify({ data: run });
+        const runId = 'some-run-id';
+        const contentType = 'application/x-www-form-urlencoded';
+        const body = 'some=body';
 
-        requestExpectCall({
-            method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${actId}/runs`,
-            qs: {},
-        }, apiResponse);
 
-        const apifyClient = new ApifyClient(OPTIONS);
+        const query = {
+            build: '1.2.0',
+            targetActorId: 'some-actor-id',
+        };
 
-        return apifyClient
-            .acts
-            .runAct({ actId })
-            .then(response => expect(response).to.be.eql(run));
+        const res = await client.acts.metamorphRun({ actId, runId, contentType, body, ...query });
+        expect(res.id).to.be.eql('metamorph-run');
+        validateRequest(query, { actorId: actId, runId }, { some: 'body' }, { 'content-type': contentType });
     });
 
-    xit('getRun() works', () => {
+    it('getRun() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
         const actId = 'some-act-id';
         const runId = 'some-run-id';
-        const token = 'some-token';
-        const run = { foo: 'bar' };
-        const waitForFinish = 120;
 
-        requestExpectCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${actId}/runs/${runId}`,
-            qs: { token, waitForFinish },
-        }, {
-            data: run,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .acts
-            .getRun({ actId, token, runId, waitForFinish })
-            .then(response => expect(response).to.be.eql(run));
-    });
-
-    xit('abortRun() works', () => {
-        const actId = 'some-act-id';
-        const runId = 'some-run-id';
-        const token = 'some-token';
-        const run = { foo: 'bar' };
-
-        requestExpectCall({
-            json: true,
-            method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${actId}/runs/${runId}/abort`,
-            qs: { token },
-        }, {
-            data: run,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .acts
-            .abortRun({ actId, token, runId })
-            .then(response => expect(response).to.be.eql(run));
-    });
-
-    xit('resurrectRun() works', () => {
-        const actId = 'some-act-id';
-        const runId = 'some-run-id';
-        const token = 'some-token';
-        const run = { foo: 'bar' };
-
-        requestExpectCall({
-            json: true,
-            method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${actId}/runs/${runId}/resurrect`,
-            qs: { token },
-        }, {
-            data: run,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .acts
-            .resurrectRun({ actId, token, runId })
-            .then(response => expect(response).to.be.eql(run));
-    });
-
-    xit('metamorphRun() works', () => {
-        const actId = 'some-id';
-        const token = 'some-token';
-        const contentType = 'some-type';
-        const body = 'some-body';
-        const run = { foo: 'bar' };
-        const runId = 'some-run-id';
-        const apiResponse = JSON.stringify({ data: run });
-        const build = '1.2.0';
-        const targetActorId = 'some-actor-id';
-
-        requestExpectCall({
-            method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${actId}/runs/${runId}/metamorph`,
-            qs: { token, build, targetActorId },
-            headers: {
-                'Content-Type': contentType,
-            },
-            body,
-        }, apiResponse);
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .acts
-            .metamorphRun({ actId, token, contentType, body, build, runId, targetActorId })
-            .then(response => expect(response).to.be.eql(run));
-    });
-
-    xit('getRun() works without token', () => {
-        const actId = 'some-act-id';
-        const runId = 'some-run-id';
-        const run = { foo: 'bar' };
-
-        requestExpectCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${actId}/runs/${runId}`,
-            qs: {},
-        }, {
-            data: run,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .acts
-            .getRun({ actId, runId })
-            .then(response => expect(response).to.be.eql(run));
-    });
-
-    xit('getRun() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
-        const actId = 'some-act-id';
-        const runId = 'some-run-id';
-        const token = 'some-token';
+        const res = await client.acts.resurrectRun({ actId, runId });
+        expect(res.id).to.be.eql('resurrect-run');
+        validateRequest({}, { actorId: actId, runId });
 
         requestExpectErrorCall({
             json: true,
@@ -469,7 +291,7 @@ describe('Actor methods', () => {
         return apifyClient
             .acts
             .listBuilds(Object.assign({}, callOptions, { actId }))
-            .then(response => expect(response).to.be.eql(expected));
+            .then(res => expect(res).to.be.eql(expected));
     });
 
     xit('buildAct() works', () => {
@@ -496,7 +318,7 @@ describe('Actor methods', () => {
         return apifyClient
             .acts
             .buildAct({ actId, token, version, waitForFinish, tag, betaPackages, useCache })
-            .then(response => expect(response).to.be.eql(build));
+            .then(res => expect(res).to.be.eql(build));
     });
 
     xit('getBuild() works', () => {
@@ -520,7 +342,7 @@ describe('Actor methods', () => {
         return apifyClient
             .acts
             .getBuild({ actId, token, buildId, waitForFinish })
-            .then(response => expect(response).to.be.eql(build));
+            .then(res => expect(res).to.be.eql(build));
     });
 
     xit('getBuild() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
@@ -563,7 +385,7 @@ describe('Actor methods', () => {
         return apifyClient
             .acts
             .abortBuild({ actId, token, buildId })
-            .then(response => expect(response).to.be.eql(build));
+            .then(res => expect(res).to.be.eql(build));
     });
 
     xit('listActVersions() works', () => {
@@ -588,7 +410,7 @@ describe('Actor methods', () => {
         return apifyClient
             .acts
             .listActVersions({ actId, token })
-            .then(response => expect(response).to.be.eql(expected));
+            .then(res => expect(res).to.be.eql(expected));
     });
 
     xit('createActVersion() works', () => {
@@ -614,7 +436,7 @@ describe('Actor methods', () => {
         return apifyClient
             .acts
             .createActVersion({ actId, token, actVersion })
-            .then(response => expect(response).to.be.eql(actVersion));
+            .then(res => expect(res).to.be.eql(actVersion));
     });
 
     xit('getActVersion() works', () => {
@@ -640,7 +462,7 @@ describe('Actor methods', () => {
         return apifyClient
             .acts
             .getActVersion({ actId, token, versionNumber })
-            .then(response => expect(response).to.be.eql(actVersion));
+            .then(res => expect(res).to.be.eql(actVersion));
     });
 
     xit('getActVersion() works if version did not exist', () => {
@@ -660,7 +482,7 @@ describe('Actor methods', () => {
         return apifyClient
             .acts
             .getActVersion({ actId, token, versionNumber })
-            .then(response => expect(response).to.be.eql(null));
+            .then(res => expect(res).to.be.eql(null));
     });
 
     xit('updateActVersion() works', () => {
@@ -687,7 +509,7 @@ describe('Actor methods', () => {
         return apifyClient
             .acts
             .updateActVersion({ actId, token, actVersion, versionNumber })
-            .then(response => expect(response).to.be.eql(actVersion));
+            .then(res => expect(res).to.be.eql(actVersion));
     });
 
     xit('deleteActVersion() works', () => {
@@ -707,7 +529,7 @@ describe('Actor methods', () => {
         return apifyClient
             .acts
             .deleteActVersion({ actId, token, versionNumber })
-            .then(response => expect(response).to.be.eql(null));
+            .then(res => expect(res).to.be.eql(null));
     });
 
     xit('listWebhooks() works', () => {
@@ -737,6 +559,6 @@ describe('Actor methods', () => {
         return apifyClient
             .acts
             .listWebhooks({ actId, token })
-            .then(response => expect(response).to.be.eql(expected));
+            .then(res => expect(res).to.be.eql(expected));
     });
 });

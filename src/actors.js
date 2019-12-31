@@ -33,10 +33,14 @@ export default class Actors {
         this.client = httpClient;
     }
 
+    _call(userOptions, endpointOptions) {
+        const callOptions = this._getCallOptions(userOptions, endpointOptions);
+        return this.client.call(callOptions);
+    }
+
     _getCallOptions(userOptions, endpointOptions) {
         const { baseUrl, token } = userOptions;
         const callOptions = {
-            authRequired: true,
             basePath: this.basePath,
             json: true,
             ...endpointOptions,
@@ -83,9 +87,7 @@ export default class Actors {
             qs: query,
         };
 
-        const callOptions = this._getCallOptions(options, endpointOptions);
-
-        const response = await this.client.call(callOptions);
+        const response = await this._call(options, endpointOptions);
         return parseDateFields(pluckData(response));
     }
 
@@ -94,7 +96,7 @@ export default class Actors {
      * @deprecated
      */
     listActs(options) {
-        log.deprecated('apifyClient.acts.listActs is deprecated. Use apifyClient.actors.listActors instead.');
+        this._logDeprecated('listActs', 'listActors');
         return this.listActors(options);
     }
 
@@ -118,9 +120,7 @@ export default class Actors {
             body: actor,
         };
 
-        const callOptions = this._getCallOptions(options, endpointOptions);
-
-        const response = await this.client.call(callOptions);
+        const response = await this._call(options, endpointOptions);
         return parseDateFields(pluckData(response));
     }
 
@@ -129,12 +129,12 @@ export default class Actors {
      * @deprecated
      */
     createAct(options) {
-        log.deprecated('apifyClient.acts.createAct is deprecated. Use apifyClient.actors.createActor instead.');
+        this._logDeprecated('createAct', 'createActor');
         return this.createActor(options);
     }
 
     /**
-     * Updates act.
+     * Updates actor.
      *
      * @memberof ApifyClient.actors
      * @instance
@@ -146,10 +146,10 @@ export default class Actors {
     async updateActor(options) {
         const actorId = options.actorId || options.actId;
         const actor = options.actor || options.act;
-        const safeActorId = replaceSlashWithTilde(!actorId && actor.id ? actor.id : actorId);
-
-        checkParamOrThrow(safeActorId, 'actorId', 'String');
         checkParamOrThrow(actor, 'actor', 'Object');
+
+        const safeActorId = replaceSlashWithTilde(!actorId && actor.id ? actor.id : actorId);
+        checkParamOrThrow(safeActorId, 'actorId', 'String');
 
         const endpointOptions = {
             url: `/${safeActorId}`,
@@ -157,9 +157,7 @@ export default class Actors {
             body: _.omit(actor, 'id'),
         };
 
-        const callOptions = this._getCallOptions(options, endpointOptions);
-
-        const response = await this.client.call(callOptions);
+        const response = await this._call(options, endpointOptions);
         return parseDateFields(pluckData(response));
     }
 
@@ -168,36 +166,32 @@ export default class Actors {
      * @deprecated
      */
     updateAct(options) {
-        log.deprecated('apifyClient.acts.updateAct is deprecated. Use apifyClient.actors.updateActor instead.');
+        this._logDeprecated('updateAct', 'updateActor');
         return this.updateActor(options);
     }
 
     /**
-     * Deletes act.
+     * Deletes actor.
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param options.token
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      */
-    deleteActor(options) {
-        const { baseUrl, token, actId } = options;
+    async deleteActor(options) {
+        const actorId = options.actorId || options.actId;
 
-        checkParamOrThrow(actId, 'actId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
 
-        const safeActorId = replaceSlashWithTilde(actId);
+        const safeActorId = replaceSlashWithTilde(actorId);
 
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}`,
-            json: true,
             method: 'DELETE',
-            qs: { token },
-        })
-            .then(parseDateFields);
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(response);
     }
 
     /**
@@ -205,7 +199,7 @@ export default class Actors {
      * @deprecated
      */
     deleteAct(options) {
-        log.deprecated('apifyClient.acts.deleteAct is deprecated. Use apifyClient.actors.deleteActor instead.');
+        this._logDeprecated('deleteAct', 'deleteActor');
         return this.deleteActor(options);
     }
 
@@ -215,30 +209,27 @@ export default class Actors {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param options.token
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      * @returns {Actor}
      */
-    getActor(options) {
-        const { baseUrl, token, actId } = options;
+    async getActor(options) {
+        const actorId = options.actorId || options.actId;
 
+        checkParamOrThrow(actorId, 'actorId', 'String');
 
-        checkParamOrThrow(actId, 'actId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
+        const safeActorId = replaceSlashWithTilde(actorId);
 
-        const safeActorId = replaceSlashWithTilde(actId);
-
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}`,
-            json: true,
             method: 'GET',
-            qs: { token },
-        })
-            .then(pluckData)
-            .then(parseDateFields)
-            .catch(catchNotFoundOrThrow);
+        };
+
+        try {
+            const response = await this._call(options, endpointOptions);
+            return parseDateFields(pluckData(response));
+        } catch (err) {
+            return catchNotFoundOrThrow(err);
+        }
     }
 
     /**
@@ -246,7 +237,7 @@ export default class Actors {
      * @deprecated
      */
     getAct(options) {
-        log.deprecated('apifyClient.acts.getAct is deprecated. Use apifyClient.actors.getActor instead.');
+        this._logDeprecated('getAct', 'getActor');
         return this.getActor(options);
     }
 
@@ -262,50 +253,45 @@ export default class Actors {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param options.token
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @returns {PaginationList}
      */
-    listRuns(options) {
-        const { baseUrl, token, actId, offset, limit, desc } = options;
+    async listRuns(options) {
+        const actorId = options.actorId || options.actId;
+        const { offset, limit, desc } = options;
 
-
-        checkParamOrThrow(actId, 'actId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
-        const safeActorId = replaceSlashWithTilde(actId);
-        const query = { token };
+        const safeActorId = replaceSlashWithTilde(actorId);
+        const query = {};
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
         if (desc) query.desc = 1;
 
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}/runs`,
-            json: true,
             method: 'GET',
             qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
     }
 
     /**
-     * Runs the latest build of given act.
+     * Runs the latest build of given actor.
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actId - Unique actor ID
-     * @param [options.token]
+     * @param {String} options.actorId - Unique actor ID
      * @param {String|Buffer} [options.body] - Actor input, passed as HTTP POST payload
      * @param {String} [options.contentType] - Content type of actor input e.g 'application/json'
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for actor to finish. Maximum value is 120s.
@@ -315,15 +301,14 @@ export default class Actors {
      * @param {String} [options.build] - Tag or number of the build to run (e.g. <code>latest</code> or <code>1.2.34</code>).
      * @param {Array}  [options.webhooks] - Specifies optional webhooks associated with the actor run,
      *                                      which can be used to receive a notification e.g. when the actor finished or failed,
-     *                                      see {@link https://apify.com/docs/webhooks#adhoc|ad hook webhooks documentation} for detailed description.
+     *                                      see {@link https://apify.com/docs/webhooks#adhoc|adhoc webhooks documentation} for detailed description.
      * @returns {ActorRun}
      */
-    runActor(options) {
-        const { baseUrl, token, actId, contentType, body, waitForFinish, timeout, memory, build, webhooks } = options;
+    async runActor(options) {
+        const actorId = options.actorId || options.actId;
+        const { contentType, body, waitForFinish, timeout, memory, build, webhooks } = options;
 
-
-        checkParamOrThrow(actId, 'actId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
         checkParamOrThrow(contentType, 'contentType', 'Maybe String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
         checkParamOrThrow(timeout, 'timeout', 'Maybe Number');
@@ -331,36 +316,32 @@ export default class Actors {
         checkParamOrThrow(build, 'build', 'Maybe String');
         checkParamOrThrow(webhooks, 'webhooks', 'Maybe Array');
 
-        const safeActorId = replaceSlashWithTilde(actId);
+        const safeActorId = replaceSlashWithTilde(actorId);
         const query = {};
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
         if (timeout) query.timeout = timeout;
         if (memory) query.memory = memory;
         if (build) query.build = build;
-        if (token) query.token = token;
         if (webhooks) query.webhooks = stringifyWebhooksToBase64(webhooks);
 
-        const opts = {
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}/runs`,
             method: 'POST',
             qs: query,
+            json: false,
         };
 
-        if (contentType) opts.headers = { 'Content-Type': contentType };
+        if (contentType) endpointOptions.headers = { 'Content-Type': contentType };
 
         if (body) {
             checkParamOrThrow(body, 'body', 'Buffer | String');
-
-            opts.body = body;
+            endpointOptions.body = body;
         }
 
-        return this.client.call(opts)
-            .then(response => JSON.parse(response))
-            .then(pluckData)
-            .then(parseDateFields);
+        const rawResponse = await this._call(options, endpointOptions);
+        const response = JSON.parse(rawResponse);
+        return parseDateFields(pluckData(response));
     }
 
     /**
@@ -368,7 +349,7 @@ export default class Actors {
      * @deprecated
      */
     runAct(options) {
-        log.deprecated('apifyClient.acts.runAct is deprecated. Use apifyClient.actors.runActor instead.');
+        this._logDeprecated('runAct', 'runActor');
         return this.runActor(options);
     }
 
@@ -378,39 +359,34 @@ export default class Actors {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      * @param {String} options.runId - Unique run ID
-     * @param [options.token]
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for actor to finish. Maximum value is 120s.
                                                  If actor doesn't finish in time then actor run in RUNNING state is returned.
      * @returns {ActorRun}
      */
-    getRun(options) {
-        const { baseUrl, token, actId, runId, waitForFinish } = options;
+    async getRun(options) {
+        const actorId = options.actorId || options.actId;
+        const { runId, waitForFinish } = options;
 
-
-        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
         checkParamOrThrow(runId, 'runId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
 
-        const safeActorId = replaceSlashWithTilde(actId);
-        const query = {};
+        const safeActorId = replaceSlashWithTilde(actorId);
 
-        if (token) query.token = token;
-        if (waitForFinish) query.waitForFinish = waitForFinish;
-
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}/runs/${runId}`,
-            json: true,
             method: 'GET',
-            qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields)
-            .catch(catchNotFoundOrThrow);
+        };
+        if (waitForFinish) endpointOptions.qs = { waitForFinish };
+
+        try {
+            const response = await this._call(options, endpointOptions);
+            return parseDateFields(pluckData(response));
+        } catch (err) {
+            return catchNotFoundOrThrow(err);
+        }
     }
 
     /**
@@ -419,34 +395,26 @@ export default class Actors {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      * @param {String} options.runId - Unique run ID
-     * @param [options.token]
      * @returns {ActorRun}
      */
-    abortRun(options) {
-        const { baseUrl, token, actId, runId } = options;
+    async abortRun(options) {
+        const actorId = options.actorId || options.actId;
+        const { runId } = options;
 
-
-        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
         checkParamOrThrow(runId, 'runId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
 
-        const safeActorId = replaceSlashWithTilde(actId);
-        const query = {};
+        const safeActorId = replaceSlashWithTilde(actorId);
 
-        if (token) query.token = token;
-
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}/runs/${runId}/abort`,
-            json: true,
             method: 'POST',
-            qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
     }
 
     /**
@@ -455,8 +423,7 @@ export default class Actors {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actId - Unique actor ID
-     * @param options.token
+     * @param {String} options.actorId - Unique actor ID
      * @param {String} options.runId - ID a an actor run to metamorph.
      * @param {String} options.targetActorId - ID of an actor to which run should metamorph.
      * @param {String|Buffer} [options.body] - Actor input, passed as HTTP POST payload
@@ -464,46 +431,39 @@ export default class Actors {
      * @param {String} [options.build] - Tag or number of the build to run (e.g. <code>latest</code> or <code>1.2.34</code>).
      * @returns {ActorRun}
      */
-    metamorphRun(options) {
-        const { baseUrl, token, actId, runId, targetActorId, contentType, body, build } = options;
+    async metamorphRun(options) {
+        const actorId = options.actorId || options.actId;
+        const { runId, targetActorId, contentType, body, build } = options;
 
-
-        checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
         checkParamOrThrow(runId, 'runId', 'String');
         checkParamOrThrow(targetActorId, 'targetActorId', 'String');
         checkParamOrThrow(contentType, 'contentType', 'Maybe String');
         checkParamOrThrow(build, 'build', 'Maybe String');
 
-        const safeActorId = replaceSlashWithTilde(actId);
+        const safeActorId = replaceSlashWithTilde(actorId);
         const safeTargetActorId = replaceSlashWithTilde(targetActorId);
 
         const query = {
-            token,
             targetActorId: safeTargetActorId,
         };
         if (build) query.build = build;
 
-        const opts = {
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}/runs/${runId}/metamorph`,
             method: 'POST',
             qs: query,
+            json: false,
         };
-
-        if (contentType) opts.headers = { 'Content-Type': contentType };
-
+        if (contentType) endpointOptions.headers = { 'Content-Type': contentType };
         if (body) {
             checkParamOrThrow(body, 'body', 'Buffer | String');
-
-            opts.body = body;
+            endpointOptions.body = body;
         }
 
-        return this.client.call(opts)
-            .then(response => JSON.parse(response))
-            .then(pluckData)
-            .then(parseDateFields);
+        const rawResponse = await this._call(options, endpointOptions);
+        const response = JSON.parse(rawResponse);
+        return parseDateFields(pluckData(response));
     }
 
     /**
@@ -513,34 +473,26 @@ export default class Actors {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      * @param {String} options.runId - Unique run ID
-     * @param [options.token]
      * @returns {ActorRun}
      */
-    resurrectRun(options) {
-        const { baseUrl, token, actId, runId } = options;
+    async resurrectRun(options) {
+        const actorId = options.actorId || options.actId;
+        const { runId } = options;
 
-
-        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
         checkParamOrThrow(runId, 'runId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
 
-        const safeActorId = replaceSlashWithTilde(actId);
-        const query = {};
+        const safeActorId = replaceSlashWithTilde(actorId);
 
-        if (token) query.token = token;
-
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}/runs/${runId}/resurrect`,
-            json: true,
             method: 'POST',
-            qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
     }
 
     /**
@@ -555,40 +507,36 @@ export default class Actors {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param options.token
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @returns {PaginationList}
      */
-    listBuilds(options) {
-        const { baseUrl, token, actId, offset, limit, desc } = options;
+    async listBuilds(options) {
+        const actorId = options.actorId || options.actId;
+        const { offset, limit, desc } = options;
 
-
-        checkParamOrThrow(actId, 'actId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
-        const safeActorId = replaceSlashWithTilde(actId);
-        const query = { token };
+        const safeActorId = replaceSlashWithTilde(actorId);
+        const query = {};
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
         if (desc) query.desc = 1;
 
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}/builds`,
-            json: true,
             method: 'GET',
             qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
     }
 
     /**
@@ -597,8 +545,7 @@ export default class Actors {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param options.token
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      * @param {String} options.version - Version of the actor to build.
      * @param {Boolean} [options.betaPackages] - If true, the Docker container will be rebuild using layer cache.
                                                  This is to enable quick rebuild during development.
@@ -613,36 +560,33 @@ export default class Actors {
                                                  If actor doesn't finish in time then actor run in RUNNING state is returned.
      * @returns {ActorBuild}
      */
-    buildActor(options) {
-        const { baseUrl, token, actId, waitForFinish, version, tag, betaPackages, useCache } = options;
+    async buildActor(options) {
+        const actorId = options.actorId || options.actId;
+        const { waitForFinish, version, tag, betaPackages, useCache } = options;
 
-
-        checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
         checkParamOrThrow(version, 'version', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
         checkParamOrThrow(tag, 'tag', 'Maybe String');
         checkParamOrThrow(betaPackages, 'betaPackages', 'Maybe Boolean');
         checkParamOrThrow(useCache, 'useCache', 'Maybe Boolean');
 
-        const safeActorId = replaceSlashWithTilde(actId);
-        const query = { token, version };
+        const safeActorId = replaceSlashWithTilde(actorId);
+        const query = { version };
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
         if (betaPackages) query.betaPackages = 1;
         if (useCache) query.useCache = 1;
         if (tag) query.tag = tag;
 
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}/builds`,
-            json: true,
             method: 'POST',
             qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
     }
 
     /**
@@ -650,7 +594,7 @@ export default class Actors {
      * @deprecated
      */
     buildAct(options) {
-        log.deprecated('apifyClient.acts.buildAct is deprecated. Use apifyClient.actors.buildActor instead.');
+        this._logDeprecated('buildAct', 'buildActor');
         return this.buildActor(options);
     }
 
@@ -660,38 +604,37 @@ export default class Actors {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param options.token
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      * @param {String} options.buildId - Unique build ID
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for actor to finish. Maximum value is 120s.
                                                  If actor doesn't finish in time then actor run in RUNNING state is returned.
      * @returns {ActorBuild}
      */
     getBuild(options) {
-        const { baseUrl, token, actId, buildId, waitForFinish } = options;
+        const actorId = options.actorId || options.actId;
+        const { buildId, waitForFinish } = options;
 
-
-        checkParamOrThrow(actId, 'actId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
         checkParamOrThrow(buildId, 'buildId', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
 
-        const safeActorId = replaceSlashWithTilde(actId);
-        const query = { token };
+        const safeActorId = replaceSlashWithTilde(actorId);
+        const query = {};
 
         if (waitForFinish) query.waitForFinish = waitForFinish;
 
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}/builds/${buildId}`,
-            json: true,
             method: 'GET',
             qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields)
-            .catch(catchNotFoundOrThrow);
+        };
+
+        try {
+            const response = this._call(options, endpointOptions);
+            return parseDateFields(pluckData(response));
+        } catch (err) {
+            return catchNotFoundOrThrow(err);
+        }
     }
 
     /**
@@ -700,63 +643,51 @@ export default class Actors {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param options.token
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      * @param {String} options.buildId - Unique build ID
      * @returns {ActorBuild}
      */
-    abortBuild(options) {
-        const { baseUrl, token, actId, buildId } = options;
+    async abortBuild(options) {
+        const actorId = options.actorId || options.actId;
+        const { buildId } = options;
 
-
-        checkParamOrThrow(actId, 'actId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
         checkParamOrThrow(buildId, 'buildId', 'String');
 
-        const safeActorId = replaceSlashWithTilde(actId);
-        const query = { token };
+        const safeActorId = replaceSlashWithTilde(actorId);
 
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}/builds/${buildId}/abort`,
-            json: true,
             method: 'POST',
-            qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
     }
 
     /**
-     * Gets the list of versions of a specific act.
+     * Gets the list of versions of a specific actor.
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param options.token
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      * @return {PaginationList}
      */
-    listActorVersions(options) {
-        const { baseUrl, token, actId } = options;
+    async listActorVersions(options) {
+        const actorId = options.actorId || options.actId;
 
+        checkParamOrThrow(actorId, 'actorId', 'String');
 
-        checkParamOrThrow(actId, 'actId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
+        const safeActorId = replaceSlashWithTilde(actorId);
 
-        const safeActorId = replaceSlashWithTilde(actId);
-
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}/versions`,
-            json: true,
             method: 'GET',
-            qs: token ? { token } : {},
-        })
-            .then(pluckData)
-            .then(parseDateFields);
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
     }
 
     /**
@@ -764,7 +695,7 @@ export default class Actors {
      * @deprecated
      */
     listActVersions(options) {
-        log.deprecated('apifyClient.acts.listActVersions is deprecated. Use apifyClient.actors.listActorVersions instead.');
+        this._logDeprecated('listActVersions', 'listActorVersions');
         return this.listActorVersions(options);
     }
 
@@ -774,32 +705,27 @@ export default class Actors {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param options.token
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      * @param {Object} options.actVersion - Actor version
      * @return {ActorVersion}
      */
-    createActorVersion(options) {
-        const { baseUrl, token, actId, actVersion } = options;
+    async createActorVersion(options) {
+        const actorId = options.actorId || options.actId;
+        const { actVersion } = options;
 
-
-        checkParamOrThrow(actId, 'actId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
         checkParamOrThrow(actVersion, 'actVersion', 'Object');
 
-        const safeActorId = replaceSlashWithTilde(actId);
+        const safeActorId = replaceSlashWithTilde(actorId);
 
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}/versions`,
-            json: true,
             method: 'POST',
             body: actVersion,
-            qs: { token },
-        })
-            .then(pluckData)
-            .then(parseDateFields);
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
     }
 
     /**
@@ -807,7 +733,7 @@ export default class Actors {
      * @deprecated
      */
     createActVersion(options) {
-        log.deprecated('apifyClient.acts.createActVersion is deprecated. Use apifyClient.actors.createActorVersion instead.');
+        this._logDeprecated('createActVersion', 'createActVersion');
         return this.createActorVersion(options);
     }
 
@@ -817,32 +743,31 @@ export default class Actors {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param options.token
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      * @param {String} options.versionNumber - Version number of actor version
      * @return {ActorVersion}
      */
-    getActorVersion(options) {
-        const { baseUrl, token, actId, versionNumber } = options;
+    async getActorVersion(options) {
+        const actorId = options.actorId || options.actId;
+        const { versionNumber } = options;
 
 
-        checkParamOrThrow(actId, 'actId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
         checkParamOrThrow(versionNumber, 'versionNumber', 'String');
 
-        const safeActorId = replaceSlashWithTilde(actId);
+        const safeActorId = replaceSlashWithTilde(actorId);
 
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}/versions/${versionNumber}`,
-            json: true,
             method: 'GET',
-            qs: token ? { token } : {},
-        })
-            .then(pluckData)
-            .then(parseDateFields)
-            .catch(catchNotFoundOrThrow);
+        };
+
+        try {
+            const response = await this._call(options, endpointOptions);
+            return parseDateFields(pluckData(response));
+        } catch (err) {
+            return catchNotFoundOrThrow(err);
+        }
     }
 
     /**
@@ -850,7 +775,7 @@ export default class Actors {
      * @deprecated
      */
     getActVersion(options) {
-        log.deprecated('apifyClient.acts.getActVersion is deprecated. Use apifyClient.actors.getActorVersion instead.');
+        this._logDeprecated('getActVersion', 'getActorVersion');
         return this.getActorVersion(options);
     }
 
@@ -860,34 +785,30 @@ export default class Actors {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param options.token
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      * @param {String} options.versionNumber - Version number of actor version
      * @param {Object} options.actVersion - Actor version
      * @return {ActorVersion}
      */
-    updateActorVersion(options) {
-        const { baseUrl, token, actId, actVersion, versionNumber } = options;
+    async updateActorVersion(options) {
+        const actorId = options.actorId || options.actId;
+        const { actVersion, versionNumber } = options;
 
 
-        checkParamOrThrow(actId, 'actId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
         checkParamOrThrow(actVersion, 'actVersion', 'Object');
         checkParamOrThrow(versionNumber, 'versionNumber', 'String');
 
-        const safeActorId = replaceSlashWithTilde(actId);
+        const safeActorId = replaceSlashWithTilde(actorId);
 
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}/versions/${versionNumber}`,
-            json: true,
             method: 'PUT',
             body: actVersion,
-            qs: { token },
-        })
-            .then(pluckData)
-            .then(parseDateFields);
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
     }
 
     /**
@@ -895,7 +816,7 @@ export default class Actors {
      * @deprecated
      */
     updateActVersion(options) {
-        log.deprecated('apifyClient.acts.updateActVersion is deprecated. Use apifyClient.actors.updateActorVersion instead.');
+        this._logDeprecated('updateActVersion', 'updateActorVersion');
         return this.updateActorVersion(options);
     }
 
@@ -905,31 +826,26 @@ export default class Actors {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param options.token
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      * @param {String} options.versionNumber - Version number of actor version
-     * @return {}
+     * @return {Object}
      */
-    deleteActorVersion(options) {
-        const { baseUrl, token, actId, versionNumber } = options;
+    async deleteActorVersion(options) {
+        const actorId = options.actorId || options.actId;
+        const { versionNumber } = options;
 
-
-        checkParamOrThrow(actId, 'actId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
         checkParamOrThrow(versionNumber, 'versionNumber', 'String');
 
-        const safeActorId = replaceSlashWithTilde(actId);
+        const safeActorId = replaceSlashWithTilde(actorId);
 
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `/${safeActorId}/versions/${versionNumber}`,
-            json: true,
             method: 'DELETE',
-            qs: { token },
-        })
-            .then(pluckData)
-            .then(parseDateFields);
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
     }
 
     /**
@@ -937,7 +853,7 @@ export default class Actors {
      * @deprecated
      */
     deleteActVersion(options) {
-        log.deprecated('apifyClient.acts.deleteActVersion is deprecated. Use apifyClient.actors.deleteActorVersion instead.');
+        this._logDeprecated('deleteActVersion', 'deleteActorVersion');
         return this.deleteActorVersion(options);
     }
 
@@ -947,39 +863,35 @@ export default class Actors {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param options.token
-     * @param {String} options.actId - Unique actor ID
+     * @param {String} options.actorId - Unique actor ID
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @returns {PaginationList}
      */
-    listWebhooks(options) {
-        const { baseUrl, token, actId, offset, limit, desc } = options;
+    async listWebhooks(options) {
+        const actorId = options.actorId || options.actId;
+        const { offset, limit, desc } = options;
 
-
-        checkParamOrThrow(actId, 'actId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(actorId, 'actorId', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
-        const safeActorId = replaceSlashWithTilde(actId);
-        const query = { token };
+        const safeActorId = replaceSlashWithTilde(actorId);
+        const query = {};
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
         if (desc) query.desc = 1;
 
-        return this.client.call({
-            baseUrl,
-            basePath: this.basePath,
+        const endpointOptions = {
             url: `${safeActorId}/webhooks`,
-            json: true,
             method: 'GET',
             qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
     }
 }

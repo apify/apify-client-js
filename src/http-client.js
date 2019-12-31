@@ -44,7 +44,6 @@ export class HttpClient {
             isApiV1,
             baseUrl,
             method,
-            authRequired,
             token,
             expBackoffMillis = EXP_BACKOFF_MILLIS,
             expBackoffMaxRepeats = EXP_BACKOFF_MAX_REPEATS,
@@ -71,8 +70,8 @@ export class HttpClient {
             );
         }
 
-        if (authRequired && typeof token !== 'string') {
-            throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, 'The "options.token" parameter of type string is required.');
+        if (token && typeof token !== 'string') {
+            throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, 'The "options.token" parameter must be a string.');
         }
 
         return {

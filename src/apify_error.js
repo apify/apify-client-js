@@ -1,4 +1,4 @@
-import _ from 'underscore';
+import _ from 'lodash';
 import { VError } from 'verror';
 
 export const APIFY_ERROR_NAME = 'ApifyClientError';
@@ -25,7 +25,7 @@ export default class ApifyClientError extends VError {
 
         if (this.details) {
             const items = [];
-            _.mapObject(this.details, (val, key) => {
+            _.mapValues(this.details, (val, key) => {
                 items.push(`${key}=${JSON.stringify(val)}`);
             });
             details = `(${items.join(', ')})`;
