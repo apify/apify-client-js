@@ -1,61 +1,78 @@
 import { ME_USER_NAME_PLACEHOLDER } from 'apify-shared/consts';
 import { expect } from 'chai';
 import ApifyClient from '../build';
-import { BASE_PATH } from '../build/users';
-import { mockRequest, requestExpectCall, restoreRequest } from './_helper';
 
-const BASE_URL = 'http://example.com/something';
-const OPTIONS = { baseUrl: BASE_URL };
+import mockServer from './mock_server/server';
 
-describe('Users', () => {
-    before(mockRequest);
-    after(restoreRequest);
+const DEFAULT_QUERY = {
+    token: 'default-token',
+};
 
-    it('getUser() works', () => {
-        const userId = 'my-user-id';
-        const expected = {
-            username: 'myuser',
-            profile: {},
-        };
+function validateRequest(query = {}, params = {}, body = {}, headers = {}) {
+    const request = mockServer.getLastRequest();
+    const expectedQuery = getExpectedQuery(query);
+    expect(request.query).to.be.eql(expectedQuery);
+    expect(request.params).to.be.eql(params);
+    expect(request.body).to.be.eql(body);
+    expect(request.headers).to.include(headers);
+}
 
-        requestExpectCall({
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${userId}`,
-            json: true,
-        }, { data: expected });
+function getExpectedQuery(callQuery = {}) {
+    const query = optsToQuery(callQuery);
+    return {
+        ...DEFAULT_QUERY,
+        ...query,
+    };
+}
 
-        const apifyClient = new ApifyClient(OPTIONS);
+function optsToQuery(params) {
+    return Object
+        .entries(params)
+        .filter(([k, v]) => v !== false) // eslint-disable-line no-unused-vars
+        .map(([k, v]) => {
+            if (v === true) v = '1';
+            else if (typeof v === 'number') v = v.toString();
+            return [k, v];
+        })
+        .reduce((newObj, [k, v]) => {
+            newObj[k] = v;
+            return newObj;
+        }, {});
+}
 
-        return apifyClient
-            .users
-            .getUser({ userId })
-            .then(given => expect(given).to.be.eql(expected));
+describe('User methods', () => {
+    let baseUrl = null;
+    before(async () => {
+        const server = await mockServer.start(3333);
+        baseUrl = `http://localhost:${server.address().port}`;
+    });
+    after(() => mockServer.close());
+
+    let client = null;
+    beforeEach(() => {
+        client = new ApifyClient({
+            baseUrl,
+            expBackoffMaxRepeats: 0,
+            expBackoffMillis: 1,
+            ...DEFAULT_QUERY,
+        });
+    });
+    afterEach(() => {
+        client = null;
+    });
+
+    it('getUser() works', async () => {
+        const userId = 'some-id';
+
+        const res = await client.users.getUser({ userId });
+        expect(res.id).to.be.eql('get-user');
+        validateRequest({}, { userId });
     });
 
 
-    it('getUser() with no userId, but with token works', () => {
-        const token = 'my-token';
-        const expected = {
-            id: 'my-user-id',
-            username: 'myuser',
-            profile: {},
-            limits: {},
-            proxy: {},
-            currentBillingPeriod: {},
-        };
-
-        requestExpectCall({
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${ME_USER_NAME_PLACEHOLDER}`,
-            json: true,
-            qs: { token },
-        }, { data: expected });
-
-        const apifyClient = new ApifyClient(Object.assign(OPTIONS, { token }));
-
-        return apifyClient
-            .users
-            .getUser()
-            .then(given => expect(given).to.be.eql(expected));
+    it('getUser() with no userId, but with token works', async () => {
+        const res = await client.users.getUser();
+        expect(res.id).to.be.eql('get-user');
+        validateRequest({}, { userId: ME_USER_NAME_PLACEHOLDER });
     });
 });

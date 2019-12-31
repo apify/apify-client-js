@@ -45,7 +45,7 @@ const endpointClasses = {
     // datasets,
     // requestQueues,
     // logs,
-    // users,
+    users,
     // webhooks,
     // webhookDispatches,
 };

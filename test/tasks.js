@@ -40,7 +40,7 @@ function optsToQuery(params) {
         }, {});
 }
 
-describe('Actor methods', () => {
+describe('Task methods', () => {
     let baseUrl = null;
     before(async () => {
         const server = await mockServer.start(3333);

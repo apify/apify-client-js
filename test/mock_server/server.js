@@ -5,6 +5,7 @@ const logger = require('morgan');
 const compression = require('compression');
 const actorRouter = require('./routes/actors');
 const taskRouter = require('./routes/tasks');
+const userouter = require('./routes/users');
 
 const app = express();
 const v2Router = express.Router();
@@ -40,5 +41,6 @@ app.use('/', (req, res, next) => {
 app.use('/v2', v2Router);
 v2Router.use('/acts', actorRouter);
 v2Router.use('/actor-tasks', taskRouter);
+v2Router.use('/users', userouter);
 
 module.exports = mockServer;
