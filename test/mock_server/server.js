@@ -3,10 +3,13 @@ const path = require('path');
 const http = require('http');
 const logger = require('morgan');
 const compression = require('compression');
+
+// Routers
 const actorRouter = require('./routes/actors');
 const taskRouter = require('./routes/tasks');
 const userRouter = require('./routes/users');
 const logRouter = require('./routes/logs');
+const datasetRouter = require('./routes/datasets');
 
 const app = express();
 const v2Router = express.Router();
@@ -40,9 +43,12 @@ app.use('/', (req, res, next) => {
 });
 
 app.use('/v2', v2Router);
+
+// Attaching V2 routers
 v2Router.use('/acts', actorRouter);
 v2Router.use('/actor-tasks', taskRouter);
 v2Router.use('/users', userRouter);
 v2Router.use('/logs', logRouter);
+v2Router.use('/datasets', datasetRouter);
 
 module.exports = mockServer;

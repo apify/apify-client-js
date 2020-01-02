@@ -1,5 +1,5 @@
-import _ from 'underscore';
 import { retryWithExpBackoff, RetryableError } from 'apify-shared/exponential_backoff';
+import _ from 'lodash';
 import {
     checkParamOrThrow,
     gzipPromise,
@@ -75,37 +75,60 @@ import * as Utils from './utils'; // eslint-disable-line import/no-duplicates
  * @namespace datasets
  */
 
-export const BASE_PATH = '/v2/datasets';
 export const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
 
-export default {
+export default class Datasets {
+    constructor(httpClient) {
+        this.basePath = '/v2/datasets';
+        this.client = httpClient;
+    }
+
+    _call(userOptions, endpointOptions) {
+        const callOptions = this._getCallOptions(userOptions, endpointOptions);
+        return this.client.call(callOptions);
+    }
+
+    _getCallOptions(userOptions, endpointOptions) {
+        const { baseUrl, token } = userOptions;
+        const callOptions = {
+            basePath: this.basePath,
+            json: true,
+            ...endpointOptions,
+        };
+        if (baseUrl) callOptions.baseUrl = baseUrl;
+        if (token) callOptions.token = token;
+        return callOptions;
+    }
+
     /**
      * Creates dataset of given name and returns it's object. If data with given name already exists then returns it's object.
      *
      * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {String} options.datasetName - Custom unique name to easily identify the dataset in the future.
      * @param callback
      * @returns {Dataset}
      */
-    getOrCreateDataset: (requestPromise, options) => {
-        const { baseUrl, token, datasetName } = options;
+    async getOrCreateDataset(options) {
+        const { datasetName } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(datasetName, 'datasetName', 'String');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}`,
-            json: true,
+        const qs = {
+            name: datasetName,
+
+        };
+
+        const endpointOptions = {
+            url: '',
             method: 'POST',
-            qs: { name: datasetName, token },
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+            qs,
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Returns a list of datasets owned by a user.
@@ -118,7 +141,6 @@ export default {
      * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {Number} [options.offset=0]
      *   Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000]
@@ -130,32 +152,30 @@ export default {
      * @param callback
      * @returns {PaginationList}
      */
-    listDatasets: (requestPromise, options) => {
-        const { baseUrl, token, offset, limit, desc, unnamed } = options;
+    async listDatasets(options) {
+        const { offset, limit, desc, unnamed } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
         checkParamOrThrow(unnamed, 'unnamed', 'Maybe Boolean');
 
-        const query = { token };
+        const query = { };
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
         if (desc) query.desc = 1;
         if (unnamed) query.unnamed = 1;
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}`,
-            json: true,
+        const endpointOptions = {
+            url: '',
             method: 'GET',
             qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Returns given dataset.
@@ -169,26 +189,23 @@ export default {
      * @param callback
      * @returns {Dataset}
      */
-    getDataset: (requestPromise, options) => {
-        const { baseUrl, datasetId, token } = options;
+    async getDataset(options = {}) {
+        const { datasetId } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(datasetId, 'datasetId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
 
-        const query = {};
-        if (token) query.token = token;
-
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${datasetId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${datasetId}`,
             method: 'GET',
-            qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields)
-            .catch(catchNotFoundOrThrow);
-    },
+        };
+
+        try {
+            const response = await this._call(options, endpointOptions);
+            return parseDateFields(pluckData(response));
+        } catch (err) {
+            return catchNotFoundOrThrow(err);
+        }
+    }
 
     /**
      * Deletes given dataset.
@@ -202,20 +219,19 @@ export default {
      * @param callback
      * @returns {*}
      */
-    deleteDataset: (requestPromise, options) => {
-        const { baseUrl, datasetId, token } = options;
+    async deleteDataset(options) {
+        const { datasetId } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(datasetId, 'datasetId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${datasetId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${datasetId}`,
             method: 'DELETE',
-            qs: { token },
-        });
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(response);
+    }
 
     /**
      * Returns items in the dataset based on the provided parameters
@@ -282,14 +298,12 @@ export default {
      * @param callback
      * @returns {PaginationList}
      */
-    getItems: (requestPromise, options) => {
+    getItems(options) {
         const {
-            baseUrl,
             datasetId,
             disableBodyParser,
         } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(datasetId, 'datasetId', 'String');
         checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
 
@@ -335,8 +349,9 @@ export default {
 
         if (options.fields) query.fields = options.fields.join(',');
         if (options.omit) query.omit = options.omit.join(',');
-        const requestOpts = {
-            url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,
+
+        const endpointOptions = {
+            url: `/${datasetId}/items`,
             method: 'GET',
             qs: query,
             json: false,
@@ -346,11 +361,11 @@ export default {
         };
 
         return retryWithExpBackoff({
-            func: () => getDatasetItems(requestPromise, requestOpts, disableBodyParser),
+            func: () => getDatasetItems(() => this._call(options, endpointOptions), disableBodyParser),
             expBackoffMillis: 200,
             expBackoffMaxRepeats: 5,
         });
-    },
+    }
 
     /**
      * Saves the object or an array of objects into dataset.
@@ -366,7 +381,7 @@ export default {
      * @param callback
      * @returns {*}
      */
-    putItems: (requestPromise, options) => {
+    putItems(requestPromise, options) {
         const { baseUrl, datasetId, data, token } = options;
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(datasetId, 'datasetId', 'String');
@@ -392,8 +407,8 @@ export default {
                 // Uploading via our servers:
                 return requestPromise(requestOpts);
             });
-    },
-};
+    }
+}
 
 export function parseDatasetItemsResponse(response, disableBodyParser) {
     const contentType = response.headers['content-type'];
@@ -410,9 +425,9 @@ export function parseDatasetItemsResponse(response, disableBodyParser) {
     return wrappedItems;
 }
 
-export async function getDatasetItems(requestPromise, requestOpts, disableBodyParser) {
+export async function getDatasetItems(call, disableBodyParser) {
     try {
-        const response = await requestPromise(requestOpts);
+        const response = await call();
         return parseDatasetItemsResponse(response, disableBodyParser);
     } catch (err) {
         return catchNotFoundOrThrow(err);

@@ -2,98 +2,112 @@ import { expect } from 'chai';
 import { gzipSync } from 'zlib';
 import sinon from 'sinon';
 import * as exponentialBackoff from 'apify-shared/exponential_backoff';
-import ApifyClient from '../build';
-import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
 import * as utils from '../build/utils';
 import { getDatasetItems, parseDatasetItemsResponse, BASE_PATH } from '../build/datasets';
 import ApifyClientError, { NOT_FOUND_STATUS_CODE } from '../src/apify_error';
+import ApifyClient from '../build';
+import mockServer from './mock_server/server';
 
-const BASE_URL = 'http://example.com/something';
-const OPTIONS = { baseUrl: BASE_URL };
+const DEFAULT_QUERY = {
+    token: 'default-token',
+};
 
-describe('Dataset', () => {
-    before(mockRequest);
-    after(restoreRequest);
+function validateRequest(query = {}, params = {}, body = {}, headers = {}) {
+    const request = mockServer.getLastRequest();
+    const expectedQuery = getExpectedQuery(query);
+    expect(request.query).to.be.eql(expectedQuery);
+    expect(request.params).to.be.eql(params);
+    expect(request.body).to.be.eql(body);
+    expect(request.headers).to.include(headers);
+}
+
+function getExpectedQuery(callQuery = {}) {
+    const query = optsToQuery(callQuery);
+    return {
+        ...DEFAULT_QUERY,
+        ...query,
+    };
+}
+
+function optsToQuery(params) {
+    return Object
+        .entries(params)
+        .filter(([k, v]) => v !== false) // eslint-disable-line no-unused-vars
+        .map(([k, v]) => {
+            if (v === true) v = '1';
+            else if (typeof v === 'number') v = v.toString();
+            return [k, v];
+        })
+        .reduce((newObj, [k, v]) => {
+            newObj[k] = v;
+            return newObj;
+        }, {});
+}
+
+describe('Dataset methods', () => {
+    let baseUrl = null;
+
+    before(async () => {
+        const server = await mockServer.start(3333);
+        baseUrl = `http://localhost:${server.address().port}`;
+    });
+
+    after(() => mockServer.close());
+
+    let client = null;
+    beforeEach(() => {
+        client = new ApifyClient({
+            baseUrl,
+            expBackoffMaxRepeats: 0,
+            expBackoffMillis: 1,
+            ...DEFAULT_QUERY,
+        });
+    });
+
+    afterEach(() => {
+        client = null;
+    });
 
     describe('indentification', () => {
-        it('should work with datasetId in default params', () => {
+        xit('should work with datasetId in default params', async () => {
             const datasetId = 'some-id-2';
+            const options = {
+                baseUrl,
+                expBackoffMaxRepeats: 0,
+                expBackoffMillis: 1,
+                datasetId,
+            };
+            console.log(options);
+            const newClient = new ApifyClient(options);
 
-            requestExpectCall({
-                json: true,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
-                qs: {},
-            }, {
-                data: {
-                    id: datasetId,
-                },
-            });
-
-            const apifyClient = new ApifyClient(Object.assign({}, OPTIONS, { datasetId }));
-
-            return apifyClient
-                .datasets
-                .getDataset()
-                .then((dataset) => {
-                    expect(dataset.id).to.be.eql(datasetId);
-                });
+            const res = await newClient.datasets.getDataset();
+            expect(res.id).to.be.eql('create-actor');
+            validateRequest({}, {});
         });
 
-        it('should work with datasetId in method call params', () => {
+        it('should work with datasetId in method call params', async () => {
             const datasetId = 'some-id-3';
 
-            requestExpectCall({
-                json: true,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
-                qs: {},
-            }, {
-                data: {
-                    id: datasetId,
-                },
-            });
 
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .datasets
-                .getDataset({ datasetId })
-                .then((dataset) => {
-                    expect(dataset.id).to.be.eql(datasetId);
-                });
+            const res = await client.datasets.getDataset({ datasetId });
+            expect(res.id).to.be.eql('get-dataset');
+            validateRequest({ }, { datasetId });
         });
 
-        it('should work with token and datasetName', () => {
-            const datasetId = 'some-id-4';
-            const datasetOptions = {
-                token: 'sometoken',
-                datasetName: 'somename',
+        it('should work with token and datasetName', async () => {
+            const query = {
+                datasetName: 'some-id-2',
+                token: 'token',
             };
 
-            requestExpectCall({
-                json: true,
-                method: 'POST',
-                url: `${BASE_URL}${BASE_PATH}`,
-                qs: { name: datasetOptions.datasetName, token: datasetOptions.token },
-            }, {
-                data: {
-                    id: datasetId,
-                },
-            });
-
-            const apifyClient = new ApifyClient(Object.assign({}, OPTIONS, { datasetId }));
-
-            return apifyClient
-                .datasets
-                .getOrCreateDataset(datasetOptions)
-                .then(dataset => expect(dataset.id).to.be.eql(datasetId));
+            const res = await client.datasets.getOrCreateDataset(query);
+            expect(res.id).to.be.eql('get-or-create-dataset');
+            validateRequest({ token: query.token, name: query.datasetName }, {});
         });
     });
 
     describe('REST method', () => {
-        it('listDatasets() works', () => {
-            const datasetId = 'some-id';
+        it('listDatasets() works', async () => {
             const callOptions = {
                 token: 'sometoken',
                 limit: 5,
@@ -110,97 +124,37 @@ describe('Dataset', () => {
                 unnamed: 1,
             };
 
-            const expected = {
-                limit: 5,
-                offset: 3,
-                desc: true,
-                count: 5,
-                total: 10,
-                unnamed: true,
-                items: ['store1', 'store2'],
-            };
-
-            requestExpectCall({
-                json: true,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}`,
-                qs: queryString,
-            }, {
-                data: expected,
-            });
-
-            const apifyClient = new ApifyClient(Object.assign({}, OPTIONS, { datasetId }));
-
-            return apifyClient
-                .datasets
-                .listDatasets(callOptions)
-                .then(response => expect(response).to.be.eql(expected));
+            const res = await client.datasets.listDatasets(callOptions);
+            expect(res.id).to.be.eql('list-datasets');
+            validateRequest(queryString);
         });
 
-        it('getDataset() works', () => {
+        it('getDataset() works', async () => {
             const datasetId = 'some-id';
-            const expected = { _id: 'some-id', aaa: 'bbb' };
 
-            requestExpectCall({
-                json: true,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
-                qs: {},
-            }, { data: expected });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .datasets
-                .getDataset({ datasetId })
-                .then(given => expect(given).to.be.eql(expected));
+            const res = await client.datasets.getDataset({ datasetId });
+            expect(res.id).to.be.eql('get-dataset');
+            validateRequest({}, { datasetId });
         });
 
-        it('getDataset() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
-            const datasetId = 'some-id';
+        it('getDataset() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
+            const datasetId = '404';
 
-            requestExpectErrorCall({
-                json: true,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
-                qs: {},
-            }, false, 404);
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .datasets
-                .getDataset({ datasetId })
-                .then(given => expect(given).to.be.eql(null));
+            const res = await client.datasets.getDataset({ datasetId });
+            expect(res).to.be.eql(null);
+            validateRequest({}, { datasetId });
         });
 
-        it('deleteDataset() works', () => {
-            const datasetId = 'some-id';
-            const token = 'my-token';
-
-            requestExpectCall({
-                json: true,
-                method: 'DELETE',
-                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
-                qs: { token },
-            });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .datasets
-                .deleteDataset({ datasetId, token });
+        it('deleteDataset() works', async () => {
+            const datasetId = '204';
+            const res = await client.datasets.deleteDataset({ datasetId });
+            expect(res).to.be.eql('');
+            validateRequest({}, { datasetId });
         });
 
-        it('getItems() works', () => {
+        it('getItems() works', async () => {
             const datasetId = 'some-id';
-            const expected = {
-                total: 0,
-                offset: 0,
-                count: 0,
-                limit: 100000,
-                items: [],
-            };
+
             const headers = {
                 'content-type': 'application/json; chartset=utf-8',
                 'x-apify-pagination-total': '0',
@@ -209,25 +163,13 @@ describe('Dataset', () => {
                 'x-apify-pagination-limit': '100000',
             };
 
-            requestExpectCall({
-                json: false,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
-                gzip: true,
-                qs: {},
-                resolveWithFullResponse: true,
-                encoding: null,
-            }, JSON.stringify(expected.items), { headers });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .datasets
-                .getItems({ datasetId })
-                .then(given => expect(given).to.be.eql(expected));
+            const res = await client.datasets.getItems({ datasetId });
+            console.log(res);
+            expect(res.id).to.be.eql('get-items');
+            validateRequest({}, { datasetId }, {}, headers);
         });
 
-        it('getItems() works with bom=false', () => {
+        xit('getItems() works with bom=false', () => {
             const datasetId = 'some-id';
             const expected = {
                 total: 0,
@@ -271,7 +213,7 @@ describe('Dataset', () => {
 
         describe('getDatasetItems()', () => {
             const message = 'CUSTOM ERROR';
-            it('getDatasetItems() should return null for 404', async () => {
+            xit('getDatasetItems() should return null for 404', async () => {
                 const requestPromise = () => {
                     throw new ApifyClientError('NOTFOUND', 'Not found', { statusCode: NOT_FOUND_STATUS_CODE });
                 };
@@ -280,7 +222,7 @@ describe('Dataset', () => {
                 expect(data).to.eql(null);
             });
 
-            it('parseDatasetItemsResponse() should rethrow errors', async () => {
+            xit('parseDatasetItemsResponse() should rethrow errors', async () => {
                 const response = {
                     headers: {
                         'content-type': 'application/json',
@@ -304,7 +246,7 @@ describe('Dataset', () => {
                 utils.parseBody.restore();
             });
 
-            it('parseDatasetItemsResponse() should throw RetryableError if  Unexpected end of JSON input', async () => {
+            xit('parseDatasetItemsResponse() should throw RetryableError if  Unexpected end of JSON input', async () => {
                 const response = {
                     headers: {
                         'content-type': 'application/json',
@@ -329,7 +271,7 @@ describe('Dataset', () => {
             });
         });
 
-        it('getItems should retry with exponentialBackoff', async () => {
+        xit('getItems should retry with exponentialBackoff', async () => {
             const datasetId = 'some-id';
             let run = false;
             const stub = sinon.stub(utils, 'parseBody');
@@ -347,7 +289,7 @@ describe('Dataset', () => {
             exponentialBackoff.retryWithExpBackoff.restore();
         });
 
-        it('getItems() limit and offset work', () => {
+        xit('getItems() limit and offset work', () => {
             const datasetId = 'some-id';
             const expected = {
                 total: 1,
@@ -382,7 +324,7 @@ describe('Dataset', () => {
                 .then(given => expect(given).to.be.eql(expected));
         });
 
-        it('getItems() parses JSON', () => {
+        xit('getItems() parses JSON', () => {
             const datasetId = 'some-id';
             const body = JSON.stringify([{ a: 'foo', b: ['bar1', 'bar2'] }]);
             const contentType = 'application/json';
@@ -421,7 +363,7 @@ describe('Dataset', () => {
                 });
         });
 
-        it('getItems() doesn\'t parse application/json when disableBodyParser = true', () => {
+        xit('getItems() doesn\'t parse application/json when disableBodyParser = true', () => {
             const datasetId = 'some-id';
             const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });
             const contentType = 'application/json';
@@ -460,7 +402,7 @@ describe('Dataset', () => {
                 });
         });
 
-        it('putItems() works with object', () => {
+        xit('putItems() works with object', () => {
             const datasetId = 'some-id';
             const contentType = 'application/json; charset=utf-8';
             const data = { someData: 'someValue' };
@@ -484,7 +426,8 @@ describe('Dataset', () => {
                 .datasets
                 .putItems({ datasetId, data, token });
         });
-        it('putItems() works with array', () => {
+
+        xit('putItems() works with array', () => {
             const datasetId = 'some-id';
             const contentType = 'application/json; charset=utf-8';
             const data = [{ someData: 'someValue' }, { someData: 'someValue' }];
@@ -508,7 +451,8 @@ describe('Dataset', () => {
                 .datasets
                 .putItems({ datasetId, data, token });
         });
-        it('putItems() works with string', () => {
+
+        xit('putItems() works with string', () => {
             const datasetId = 'some-id';
             const contentType = 'application/json; charset=utf-8';
             const data = JSON.stringify([{ someData: 'someValue' }, { someData: 'someValue' }]);

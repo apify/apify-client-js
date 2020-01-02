@@ -2,9 +2,9 @@ import Actors from './actors';
 import Tasks from './tasks';
 import crawlers from './crawlers';
 import keyValueStores from './key_value_stores';
-import datasets from './datasets';
-import logs from './logs';
-import users from './users';
+import Logs from './logs';
+import Users from './users';
+import Datasets from './datasets';
 import webhooks from './webhooks';
 import webhookDispatches from './webhook_dispatches';
 import requestQueues, { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from './request_queues';
@@ -42,10 +42,10 @@ const endpointClasses = {
     tasks: Tasks,
     // crawlers,
     // keyValueStores,
-    // datasets,
+    datasets: Datasets,
     // requestQueues,
-    logs,
-    users,
+    logs: Logs,
+    users: Users,
     // webhooks,
     // webhookDispatches,
 };
