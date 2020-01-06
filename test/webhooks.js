@@ -1,147 +1,132 @@
 import { expect } from 'chai';
 import ApifyClient from '../build';
 import { BASE_PATH } from '../build/webhooks';
-import { mockRequest, requestExpectCall, restoreRequest } from './_helper';
 
-const BASE_URL = 'http://example.com/something';
-const OPTIONS = { baseUrl: BASE_URL };
+import mockServer from './mock_server/server';
 
-const token = 'some-token';
+const DEFAULT_QUERY = {
+    token: 'default-token',
+};
 
-describe('Webhooks methods', () => {
-    before(mockRequest);
-    after(restoreRequest);
+function validateRequest(query = {}, params = {}, body = {}, headers = {}) {
+    const request = mockServer.getLastRequest();
+    const expectedQuery = getExpectedQuery(query);
+    expect(request.query).to.be.eql(expectedQuery);
+    expect(request.params).to.be.eql(params);
+    expect(request.body).to.be.eql(body);
+    expect(request.headers).to.include(headers);
+}
 
-    it('createWebhook() works', () => {
-        const webhook = {
-            actId: 'actId',
-            foo: 'bar',
+function getExpectedQuery(callQuery = {}) {
+    const query = optsToQuery(callQuery);
+    return {
+        ...DEFAULT_QUERY,
+        ...query,
+    };
+}
+
+function optsToQuery(params) {
+    return Object
+        .entries(params)
+        .filter(([k, v]) => v !== false) // eslint-disable-line no-unused-vars
+        .map(([k, v]) => {
+            if (v === true) v = '1';
+            else if (typeof v === 'number') v = v.toString();
+            return [k, v];
+        })
+        .reduce((newObj, [k, v]) => {
+            newObj[k] = v;
+            return newObj;
+        }, {});
+}
+
+describe('Actor methods', () => {
+    let baseUrl = null;
+    before(async () => {
+        const server = await mockServer.start(3333);
+        baseUrl = `http://localhost:${server.address().port}`;
+    });
+    after(() => mockServer.close());
+
+    let client = null;
+    beforeEach(() => {
+        client = new ApifyClient({
+            baseUrl,
+            expBackoffMaxRepeats: 0,
+            expBackoffMillis: 1,
+            ...DEFAULT_QUERY,
+        });
+    });
+    afterEach(() => {
+        client = null;
+    });
+
+    it('createWebhook() works', async () => {
+        const webhook = { foo: 'bar' };
+
+        const res = await client.webhooks.createWebhook({ webhook });
+        expect(res.id).to.be.eql('create-webhook');
+        validateRequest({}, {}, webhook);
+    });
+
+    it('listWebhooks() works', async () => {
+        const opts = {
+            limit: 5,
+            offset: 3,
+            desc: true,
         };
 
-        requestExpectCall({
-            json: true,
-            method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}`,
-            qs: { token },
-            body: webhook,
-        }, { data: webhook });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .webhooks
-            .createWebhook({ webhook, token })
-            .then(response => expect(response).to.be.eql(webhook));
+        const res = await client.webhooks.listWebhooks(opts);
+        expect(res.id).to.be.eql('list-webhooks');
+        validateRequest(opts);
     });
-    it('listWebhooks() works', () => {
-        const webhooks = {
-            count: 1,
-            total: 10,
-            items: [
-                'webhook1',
-                'webhook2',
-                'webhook3',
-            ],
-        };
 
-        requestExpectCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}`,
-            qs: { token },
-        }, { data: webhooks });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .webhooks
-            .listWebhooks({ token })
-            .then(response => expect(response).to.be.deep.eql(webhooks));
-    });
-    it('getWebhook() works', () => {
+    it('getWebhook() works', async () => {
         const webhookId = 'webhook_id';
-        const webhook = {
-            id: webhookId,
-            foo: 'bar',
-        };
 
-        requestExpectCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${webhookId}`,
-            qs: { token },
-        }, { data: webhook });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .webhooks
-            .getWebhook({ token, webhookId })
-            .then(response => expect(response).to.be.eql(webhook));
+        const res = await client.webhooks.getWebhook({ webhookId });
+        expect(res.id).to.be.eql('get-webhook');
+        validateRequest({}, { webhookId });
     });
-    it('updateWebhook() works', () => {
+
+    it('getWebhook() 404', async () => {
+        const webhookId = '404';
+
+        const res = await client.webhooks.getWebhook({ webhookId });
+        expect(res).to.be.eql(null);
+        validateRequest({}, { webhookId });
+    });
+
+    it('updateWebhook() works', async () => {
         const webhookId = 'webhook_id';
         const webhook = {
             foo: 'bar',
             updated: 'value',
         };
 
-        requestExpectCall({
-            json: true,
-            method: 'PUT',
-            url: `${BASE_URL}${BASE_PATH}/${webhookId}`,
-            qs: { token },
-            body: webhook,
-        }, { data: webhook });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .webhooks
-            .updateWebhook({ token, webhook, webhookId })
-            .then(response => expect(response).to.be.eql(webhook));
+        const res = await client.webhooks.updateWebhook({ webhookId, webhook });
+        expect(res.id).to.be.eql('update-webhook');
+        validateRequest({}, { webhookId }, webhook);
     });
-    it('deleteWebhook() works', () => {
-        const webhookId = 'webhook_id';
 
-        requestExpectCall({
-            json: true,
-            method: 'DELETE',
-            url: `${BASE_URL}${BASE_PATH}/${webhookId}`,
-            qs: { token },
-        }, {});
+    it('deleteWebhook() works', async () => {
+        const webhookId = '204';
 
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .webhooks
-            .deleteWebhook({ token, webhookId })
-            .then(response => expect(response).to.be.eql({}));
+        const res = await client.webhooks.deleteWebhook({ webhookId });
+        expect(res).to.be.eql('');
+        validateRequest({}, { webhookId });
     });
-    it('listDispatches() works', () => {
+
+    it('listDispatches() works', async () => {
         const webhookId = 'webhook_id';
-        const dispatches = {
-            count: 1,
-            total: 10,
-            items: [
-                'dispatch1',
-                'dispatch2',
-                'dispatch3',
-            ],
+        const opts = {
+            limit: 5,
+            offset: 3,
+            desc: true,
         };
 
-        requestExpectCall({
-            json: true,
-            method: 'GET',
-            url: `${BASE_URL}${BASE_PATH}/${webhookId}/dispatches`,
-            qs: { token },
-        }, { data: dispatches });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .webhooks
-            .listDispatches({ token, webhookId })
-            .then(response => expect(response).to.be.deep.eql(dispatches));
+        const res = await client.webhooks.listDispatches({ webhookId, ...opts });
+        expect(res.id).to.be.eql('list-dispatches');
+        validateRequest(opts, { webhookId });
     });
 });

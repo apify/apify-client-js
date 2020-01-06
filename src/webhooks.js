@@ -1,6 +1,5 @@
 import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } from './utils';
 
-
 /**
  * Webhooks
  * @memberOf ApifyClient
@@ -39,37 +38,53 @@ import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } f
  * ```
  * @namespace webhooks
  */
-export const BASE_PATH = '/v2/webhooks';
 
-export default {
+export default class Webhooks {
+    constructor(httpClient) {
+        this.basePath = '/v2/webhooks';
+        this.client = httpClient;
+    }
+
+    _call(userOptions, endpointOptions) {
+        const callOptions = this._getCallOptions(userOptions, endpointOptions);
+        return this.client.call(callOptions);
+    }
+
+    _getCallOptions(userOptions, endpointOptions) {
+        const { baseUrl, token } = userOptions;
+        const callOptions = {
+            basePath: this.basePath,
+            json: true,
+            ...endpointOptions,
+        };
+        if (baseUrl) callOptions.baseUrl = baseUrl;
+        if (token) callOptions.token = token;
+        return callOptions;
+    }
+
     /**
      * Creates new webhook.
      *
      * @memberof ApifyClient.webhooks
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param options.webhook - Webhook
-     * @param callback
      * @returns {Webhook}
      */
-    createWebhook: (requestPromise, options) => {
-        const { baseUrl, token, webhook } = options;
+    async createWebhook(options) {
+        const { webhook } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(webhook, 'webhook', 'Object');
-        checkParamOrThrow(token, 'token', 'String');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}`,
-            json: true,
+        const endpointOptions = {
+            url: '',
             method: 'POST',
             body: webhook,
-            qs: { token },
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Gets list of webhooks.
@@ -79,65 +94,59 @@ export default {
      * @memberof ApifyClient.webhooks
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
-     * @param callback
      * @returns {PaginationList}
      */
-    listWebhooks: (requestPromise, options) => {
-        const { baseUrl, token, offset, limit, desc } = options;
+    async listWebhooks(options) {
+        const { offset, limit, desc } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
-        const query = { token };
+        const query = {};
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
         if (desc) query.desc = 1;
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}`,
-            json: true,
+        const endpointOptions = {
+            url: '',
             method: 'GET',
             qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Gets webhook object.
      * @memberof ApifyClient.webhooks
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param options.webhookId - Webhook ID
-     * @param callback
      * @returns {Webhook}
      */
-    getWebhook: (requestPromise, options) => {
-        const { baseUrl, token, webhookId } = options;
+    async getWebhook(options) {
+        const { webhookId } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(webhookId, 'webhookId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${webhookId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${webhookId}`,
             method: 'GET',
-            qs: { token },
-        })
-            .then(pluckData)
-            .then(parseDateFields)
-            .catch(catchNotFoundOrThrow);
-    },
+        };
+
+        try {
+            const response = await this._call(options, endpointOptions);
+            return parseDateFields(pluckData(response));
+        } catch (err) {
+            return catchNotFoundOrThrow(err);
+        }
+    }
 
     /**
      * Updates webhook.
@@ -147,27 +156,22 @@ export default {
      * @param options.token
      * @param options.webhookId - Webhook ID
      * @param options.webhook - Webhook
-     * @param callback
      * @returns {Webhook}
      */
-    updateWebhook: (requestPromise, options) => {
-        const { baseUrl, token, webhookId, webhook } = options;
+    async updateWebhook(options) {
+        const { webhookId, webhook } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(webhookId, 'webhookId', 'String');
         checkParamOrThrow(webhook, 'webhook', 'Object');
-        checkParamOrThrow(token, 'token', 'String');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${webhookId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${webhookId}`,
             method: 'PUT',
             body: webhook,
-            qs: { token },
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Deletes webhook.
@@ -175,26 +179,22 @@ export default {
      * @memberof ApifyClient.webhooks
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param options.webhookId - Webhook ID
-     * @param callback
      * @returns {}
      */
-    deleteWebhook: (requestPromise, options) => {
-        const { baseUrl, token, webhookId } = options;
+    async deleteWebhook(options) {
+        const { webhookId } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(webhookId, 'webhookId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${webhookId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${webhookId}`,
             method: 'DELETE',
-            qs: { token },
-        })
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(response);
+    }
 
     /**
      * Gets list dispatches for webhook.
@@ -202,37 +202,33 @@ export default {
      * @memberof ApifyClient.webhooks
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param options.webhookId - Webhook ID
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
-     * @param callback
      * @returns {PaginationList}
      */
-    listDispatches: (requestPromise, options) => {
-        const { baseUrl, token, webhookId, limit, offset, desc } = options;
+    async listDispatches(options) {
+        const { webhookId, limit, offset, desc } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(webhookId, 'webhookId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
-        const query = { token };
+        const query = {};
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
         if (desc) query.desc = 1;
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${webhookId}/dispatches`,
-            json: true,
+        const endpointOptions = {
+            url: `/${webhookId}/dispatches`,
             method: 'GET',
             qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
-};
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
+}

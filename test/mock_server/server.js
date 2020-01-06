@@ -12,6 +12,7 @@ const logRouter = require('./routes/logs');
 const datasetRouter = require('./routes/datasets');
 const keyValueStores = require('./routes/key_value_stores');
 const requestQueues = require('./routes/request_queues');
+const webhooks = require('./routes/webhooks');
 
 const app = express();
 const v2Router = express.Router();
@@ -54,5 +55,6 @@ v2Router.use('/logs', logRouter);
 v2Router.use('/datasets', datasetRouter);
 v2Router.use('/key-value-stores', keyValueStores);
 v2Router.use('/request-queues', requestQueues);
+v2Router.use('/webhooks', webhooks);
 
 module.exports = mockServer;
