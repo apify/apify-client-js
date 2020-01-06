@@ -6,8 +6,8 @@ import Logs from './logs';
 import Users from './users';
 import Datasets from './datasets';
 import Webhooks from './webhooks';
-import webhookDispatches from './webhook_dispatches';
-import RequestQueues, {REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS} from './request_queues';
+import WebhookDispatches from './webhook_dispatches';
+import RequestQueues, { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from './request_queues';
 import { HttpClient, EXP_BACKOFF_MAX_REPEATS } from './http-client';
 
 /** @ignore */
@@ -47,7 +47,7 @@ const endpointClasses = {
     logs: Logs,
     users: Users,
     webhooks: Webhooks,
-    // webhookDispatches,
+    webhookDispatches: WebhookDispatches,
 };
 
 /**

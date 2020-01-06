@@ -38,9 +38,30 @@ import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } f
  * ```
  * @namespace webhookDispatches
  */
-export const BASE_PATH = '/v2/webhook-dispatches';
 
-export default {
+export default class WebhookDispatches {
+    constructor(httpClient) {
+        this.basePath = '/v2/webhook-dispatches';
+        this.client = httpClient;
+    }
+
+    _call(userOptions, endpointOptions) {
+        const callOptions = this._getCallOptions(userOptions, endpointOptions);
+        return this.client.call(callOptions);
+    }
+
+    _getCallOptions(userOptions, endpointOptions) {
+        const { baseUrl, token } = userOptions;
+        const callOptions = {
+            basePath: this.basePath,
+            json: true,
+            ...endpointOptions,
+        };
+        if (baseUrl) callOptions.baseUrl = baseUrl;
+        if (token) callOptions.token = token;
+        return callOptions;
+    }
+
     /**
      * Gets list of webhook dispatches.
      * @description By default, the objects are sorted by the startedAt field in ascending order,
@@ -50,63 +71,57 @@ export default {
      * @memberof ApifyClient.webhookDispatches
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the startedAd field in descending order.
-     * @param callback
      * @returns {PaginationList}
      */
-    listDispatches: (requestPromise, options) => {
-        const { baseUrl, token, offset, limit, desc } = options;
+    async listDispatches(options) {
+        const { offset, limit, desc } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
-        const query = { token };
+        const query = {};
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
         if (desc) query.desc = 1;
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}`,
-            json: true,
+        const endpointOptions = {
+            url: '',
             method: 'GET',
             qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Gets webhook dispatch.
      * @memberof ApifyClient.webhookDispatches
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param options.webhookDispatchId - Webhook dispatch ID
-     * @param callback
      * @returns {WebhookDispatch}
      */
-    getDispatch: (requestPromise, options) => {
-        const { baseUrl, token, webhookDispatchId } = options;
+    async getDispatch(options) {
+        const { webhookDispatchId } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(webhookDispatchId, 'webhookDispatchId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${webhookDispatchId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${webhookDispatchId}`,
             method: 'GET',
-            qs: { token },
-        })
-            .then(pluckData)
-            .then(parseDateFields)
-            .catch(catchNotFoundOrThrow);
-    },
-};
+        };
+
+        try {
+            const response = await this._call(options, endpointOptions);
+            return parseDateFields(pluckData(response));
+        } catch (err) {
+            return catchNotFoundOrThrow(err);
+        }
+    }
+}
