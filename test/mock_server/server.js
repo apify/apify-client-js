@@ -10,6 +10,7 @@ const taskRouter = require('./routes/tasks');
 const userRouter = require('./routes/users');
 const logRouter = require('./routes/logs');
 const datasetRouter = require('./routes/datasets');
+const keyValueStores = require('./routes/key_value_stores');
 
 const app = express();
 const v2Router = express.Router();
@@ -50,5 +51,6 @@ v2Router.use('/actor-tasks', taskRouter);
 v2Router.use('/users', userRouter);
 v2Router.use('/logs', logRouter);
 v2Router.use('/datasets', datasetRouter);
+v2Router.use('/key-value-stores', keyValueStores);
 
 module.exports = mockServer;

@@ -53,37 +53,58 @@ import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseB
  * @namespace keyValueStores
  */
 
-export const BASE_PATH = '/v2/key-value-stores';
 export const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
 
-export default {
+export default class KeyValueStores {
+    constructor(httpClient) {
+        this.basePath = '/v2/key-value-stores';
+        this.client = httpClient;
+    }
+
+    _call(userOptions, endpointOptions) {
+        const callOptions = this._getCallOptions(userOptions, endpointOptions);
+        return this.client.call(callOptions);
+    }
+
+    _getCallOptions(userOptions, endpointOptions) {
+        const { baseUrl, token } = userOptions;
+        const callOptions = {
+            basePath: this.basePath,
+            json: true,
+            ...endpointOptions,
+        };
+        if (baseUrl) callOptions.baseUrl = baseUrl;
+        if (token) callOptions.token = token;
+        return callOptions;
+    }
+
     /**
      * Creates store of given name and returns it's object. If store with given name already exists then returns it's object.
      *
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {String} options.storeName - Custom unique name to easily identify the store in the future.
-     * @param callback
      * @returns {KeyValueStore}
      */
-    getOrCreateStore: (requestPromise, options) => {
-        const { baseUrl, token, storeName } = options;
+    async getOrCreateStore(options) {
+        const { storeName } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(storeName, 'storeName', 'String');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}`,
-            json: true,
+        const qs = {
+            name: storeName,
+        };
+
+        const endpointOptions = {
+            url: '',
             method: 'POST',
-            qs: { name: storeName, token },
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+            qs,
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Gets list of key-value stores.
@@ -96,40 +117,36 @@ export default {
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the startedAt field in descending order.
      * @param {Boolean} [options.unnamed] - If `true` then also unnamed stores will be returned. By default only named stores are returned.
-     * @param callback
      * @returns {PaginationList}
      */
-    listStores: (requestPromise, options) => {
-        const { baseUrl, token, offset, limit, desc, unnamed } = options;
+    async listStores(options) {
+        const { offset, limit, desc, unnamed } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
         checkParamOrThrow(unnamed, 'unnamed', 'Maybe Boolean');
 
-        const query = { token };
+        const query = {};
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
         if (desc) query.desc = 1;
         if (unnamed) query.unnamed = 1;
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}`,
-            json: true,
+        const endpointOptions = {
+            url: '',
             method: 'GET',
             qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Gets key-value store.
@@ -140,29 +157,25 @@ export default {
      * @param {String} options.storeId - Unique store ID
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~store-name" format for storeId.
-     * @param callback
      * @returns {KeyValueStore}
      */
-    getStore: (requestPromise, options) => {
-        const { baseUrl, storeId, token } = options;
+    async getStore(options) {
+        const { storeId } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
 
-        const query = {};
-        if (token) query.token = token;
-
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${storeId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${storeId}`,
             method: 'GET',
-            qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields)
-            .catch(catchNotFoundOrThrow);
-    },
+        };
+
+        try {
+            const response = await this._call(options, endpointOptions);
+            return parseDateFields(pluckData(response));
+        } catch (err) {
+            return catchNotFoundOrThrow(err);
+        }
+    }
 
     /**
      * Deletes key-value store.
@@ -173,23 +186,21 @@ export default {
      * @param {String} options.storeId - Unique store ID
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~store-name" format for storeId.
-     * @param callback
      * @returns {*}
      */
-    deleteStore: (requestPromise, options) => {
-        const { baseUrl, storeId, token } = options;
+    async deleteStore(options) {
+        const { storeId } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${storeId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${storeId}`,
             method: 'DELETE',
-            qs: { token },
-        });
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(response);
+    }
 
     /**
      * Gets value stored in the key-value store under the given key.
@@ -204,21 +215,18 @@ export default {
                                                     If disableRedirect=1 is set then API returns the record value directly.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~store-name" format for storeId.
-     * @param callback
      * @returns {KeyValueStoreRecord}
      */
-    getRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, disableBodyParser, disableRedirect, token } = options;
+    async getRecord(options) {
+        const { storeId, key, disableBodyParser, disableRedirect } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(disableBodyParser, 'disableBodyParser', 'Maybe Boolean');
         checkParamOrThrow(disableRedirect, 'disableRedirect', 'Maybe Boolean');
-        checkParamOrThrow(token, 'token', 'Maybe String');
 
-        const requestOpts = {
-            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
+        const endpointOptions = {
+            url: `/${storeId}/records/${key}`,
             method: 'GET',
             json: false,
             qs: {},
@@ -227,9 +235,7 @@ export default {
             encoding: null,
         };
 
-        if (disableRedirect) requestOpts.qs.disableRedirect = 1;
-        if (token) requestOpts.qs.token = token;
-
+        if (disableRedirect) endpointOptions.qs.disableRedirect = 1;
         const parseResponse = (response) => {
             const responseBody = response.body;
             const contentType = response.headers['content-type'];
@@ -240,11 +246,13 @@ export default {
                 body,
             };
         };
-
-        return requestPromise(requestOpts)
-            .then(parseResponse)
-            .catch(catchNotFoundOrThrow);
-    },
+        try {
+            const response = await this._call(options, endpointOptions);
+            return parseDateFields(pluckData(parseResponse(response)));
+        } catch (err) {
+            return catchNotFoundOrThrow(err);
+        }
+    }
 
     /**
      * Saves the record into key-value store.
@@ -261,7 +269,7 @@ export default {
      * @param callback
      * @returns {*}
      */
-    putRecord: (requestPromise, options) => {
+    putRecord(requestPromise, options) {
         const { baseUrl, storeId, key, body, contentType = 'text/plain; charset=utf-8', token } = options;
         checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
@@ -296,13 +304,13 @@ export default {
                     qs: { token },
                 })
                     .then((response) => {
-                        const signedUrl = response.data.signedUrl;
+                        const { signedUrl } = response.data;
                         const s3RequestOpts = Object.assign({}, requestOpts, { url: signedUrl, qs: null });
 
                         return requestPromise(s3RequestOpts);
                     });
             });
-    },
+    }
 
     /**
      * Deletes given record.
@@ -314,23 +322,21 @@ export default {
      * @param {String} options.key - Key of the record
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~store-name" format for storeId.
-     * @param callback
      */
-    deleteRecord: (requestPromise, options) => {
-        const { baseUrl, storeId, key, token } = options;
+    async deleteRecord(options) {
+        const { storeId, key } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
-        checkParamOrThrow(token, 'token', 'String');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${storeId}/record/${key}`,
             method: 'DELETE',
-            qs: { token },
-        });
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(response);
+    }
 
     /**
      * Returns an array containing objects representing keys in given store.
@@ -345,32 +351,27 @@ export default {
      * @param {Number} [options.limit] - Number of keys to be returned. Maximum value is 1000
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~store-name" format for storeId.
-     * @param callback
      * @returns {PaginationList}
      */
-    listKeys: (requestPromise, options) => {
-        const { baseUrl, storeId, exclusiveStartKey, limit, token } = options;
+    async listKeys(options) {
+        const { storeId, exclusiveStartKey, limit } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(exclusiveStartKey, 'exclusiveStartKey', 'Maybe String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
-        checkParamOrThrow(token, 'token', 'Maybe String');
 
         const query = {};
-        if (token) query.token = token;
         if (exclusiveStartKey) query.exclusiveStartKey = exclusiveStartKey;
         if (limit) query.limit = limit;
 
-        const requestOpts = {
-            url: `${baseUrl}${BASE_PATH}/${storeId}/keys`,
+        const endpointOptions = {
+            url: `/${storeId}/keys`,
             json: true,
             method: 'GET',
             qs: query,
         };
 
-        return requestPromise(requestOpts)
-            .then(pluckData)
-            .then(parseDateFields);
-    },
-};
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
+}
