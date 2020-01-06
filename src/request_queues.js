@@ -77,9 +77,30 @@ export const REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS = 9;
  * @namespace requestQueues
  */
 
-export const BASE_PATH = '/v2/request-queues';
+export default class RequestQueues {
+    constructor(httpClient) {
+        this.basePath = '/v2/request-queues';
+        this.client = httpClient;
+    }
 
-export default {
+    _call(userOptions, endpointOptions) {
+        const callOptions = this._getCallOptions(userOptions, endpointOptions);
+        return this.client.call(callOptions);
+    }
+
+    _getCallOptions(userOptions, endpointOptions) {
+        const { baseUrl, token } = userOptions;
+        const callOptions = {
+            basePath: this.basePath,
+            json: true,
+            expBackoffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
+            ...endpointOptions,
+        };
+        if (baseUrl) callOptions.baseUrl = baseUrl;
+        if (token) callOptions.token = token;
+        return callOptions;
+    }
+
     /**
      * Creates request queue of given name and returns it's object. If queue with given name already exists then returns it's object.
      *
@@ -88,25 +109,27 @@ export default {
      * @param {Object} options
      * @param options.token
      * @param {String} options.queueName - Custom unique name to easily identify the queue in the future.
-     * @param callback
      * @returns {RequestQueue}
      */
-    getOrCreateQueue: (requestPromise, options) => {
-        const { baseUrl, token, queueName } = options;
+    async getOrCreateQueue(options) {
+        const { queueName } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
-        checkParamOrThrow(queueName, 'queueName', 'String');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}`,
-            json: true,
+        checkParamOrThrow(queueName, 'storeName', 'String');
+
+        const qs = {
+            name: queueName,
+        };
+
+        const endpointOptions = {
+            url: '',
             method: 'POST',
-            qs: { name: queueName, token },
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+            qs,
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Gets list of request queues.
@@ -119,40 +142,36 @@ export default {
      * @memberof ApifyClient.requestQueues
      * @instance
      * @param {Object} options
-     * @param options.token
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the startedAt field in descending order.
      * @param {Boolean} [options.unnamed] - If `true` then also unnamed stores will be returned. By default only named stores are returned.
-     * @param callback
      * @returns {PaginationList}
      */
-    listQueues: (requestPromise, options) => {
-        const { baseUrl, token, offset, limit, desc, unnamed } = options;
+    async listQueues(options) {
+        const { offset, limit, desc, unnamed } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
         checkParamOrThrow(unnamed, 'unnamed', 'Maybe Boolean');
 
-        const query = { token };
+        const query = {};
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
         if (desc) query.desc = 1;
         if (unnamed) query.unnamed = 1;
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}`,
-            json: true,
+        const endpointOptions = {
+            url: '',
             method: 'GET',
             qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Gets request queue.
@@ -163,29 +182,25 @@ export default {
      * @param {String} options.queueId - Unique queue ID
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
-     * @param callback
      * @returns {RequestQueue}
      */
-    getQueue: (requestPromise, options) => {
-        const { baseUrl, queueId, token } = options;
+    async getQueue(options) {
+        const { queueId } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
 
-        const query = {};
-        if (token) query.token = token;
-
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${queueId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${queueId}`,
             method: 'GET',
-            qs: query,
-        })
-            .then(pluckData)
-            .then(parseDateFields)
-            .catch(catchNotFoundOrThrow);
-    },
+        };
+
+        try {
+            const response = await this._call(options, endpointOptions);
+            return parseDateFields(pluckData(response));
+        } catch (err) {
+            return catchNotFoundOrThrow(err);
+        }
+    }
 
     /**
      * Deletes request queue.
@@ -196,23 +211,21 @@ export default {
      * @param {String} options.queueId - Unique queue ID
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
-     * @param callback
      * @returns {*}
      */
-    deleteQueue: (requestPromise, options) => {
-        const { baseUrl, queueId, token } = options;
+    async deleteQueue(options) {
+        const { queueId } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${queueId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${queueId}`,
             method: 'DELETE',
-            qs: { token },
-        });
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(response);
+    }
 
     /**
      * Adds request to the queue.
@@ -230,33 +243,30 @@ export default {
      * @param {String} [options.clientKey] - Unique ID identifying client accessing the request queue.
      *                                      This ID is used to identify how many clients used the queue.
      *                                      This ID must be a string with length between 1 and 32 characters.
-     * @param callback
      * @returns {RequestOperationInfo}
      */
-    addRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, request, forefront = false, token, clientKey } = options;
+    async addRequest(options) {
+        const { queueId, request, forefront = false, clientKey } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(request, 'request', 'Object');
         checkParamOrThrow(forefront, 'forefront', 'Boolean');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(clientKey, 'clientKey', 'Maybe String');
 
-        const query = { forefront, token };
+        const query = { forefront };
         if (clientKey) query.clientKey = clientKey;
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${queueId}/requests`,
-            json: true,
+        const endpointOptions = {
+            url: `${queueId}/requests`,
             method: 'POST',
             body: request,
             qs: query,
             expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Gets request from the queue.
@@ -268,31 +278,32 @@ export default {
      * @param {String} options.requestId - Unique request ID
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
-     * @param callback
      * @returns {Request}
      */
-    getRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, requestId, token } = options;
+    async getRequest(options) {
+        const { queueId, requestId, token } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(requestId, 'requestId', 'String');
-        checkParamOrThrow(token, 'token', 'Maybe String');
 
         const query = {};
         if (token) query.token = token;
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${queueId}/requests/${requestId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${queueId}/requests/${requestId}`,
             method: 'GET',
             qs: query,
             expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
-        })
-            .then(pluckData)
-            .then(parseDateFields)
-            .catch(catchNotFoundOrThrow);
-    },
+
+        };
+
+        try {
+            const response = await this._call(options, endpointOptions);
+            return parseDateFields(pluckData(response));
+        } catch (err) {
+            return catchNotFoundOrThrow(err);
+        }
+    }
 
     /**
      * Deletes request from queue.
@@ -307,29 +318,28 @@ export default {
      * @param {String} [options.clientKey] - Unique ID identifying client accessing the request queue.
      *                                      This ID is used to identify how many clients used the queue.
      *                                      This ID must be a string with length between 1 and 32 characters.
-     * @param callback
      * @returns {*}
      */
-    deleteRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, requestId, token, clientKey } = options;
+    async deleteRequest(options) {
+        const { queueId, requestId, clientKey } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(requestId, 'requestId', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(clientKey, 'clientKey', 'Maybe String');
 
-        const query = { token };
+        const query = { };
         if (clientKey) query.clientKey = clientKey;
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${queueId}/requests/${requestId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${queueId}/requests/${requestId}`,
             method: 'DELETE',
             qs: query,
             expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
-        });
-    },
+
+        };
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(response);
+    }
 
     /**
      * Updates request in the queue.
@@ -347,37 +357,34 @@ export default {
      * @param {String} [options.clientKey] - Unique ID identifying client accessing the request queue.
      *                                      This ID is used to identify how many clients used the queue.
      *                                      This ID must be a string with length between 1 and 32 characters.
-     * @param callback
      * @returns {RequestOperationInfo}
      */
-    updateRequest: (requestPromise, options) => {
-        const { baseUrl, queueId, requestId, request, forefront = false, token, clientKey } = options;
+    async updateRequest(options) {
+        const { queueId, requestId, request, forefront = false, clientKey } = options;
 
         checkParamOrThrow(request, 'request', 'Object');
 
         const safeRequestId = requestId || request.id;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(safeRequestId, 'requestId', 'String');
         checkParamOrThrow(forefront, 'forefront', 'Boolean');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(clientKey, 'clientKey', 'Maybe String');
 
-        const query = { forefront, token };
+        const query = { forefront };
         if (clientKey) query.clientKey = clientKey;
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${queueId}/requests/${safeRequestId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${queueId}/requests/${safeRequestId}`,
             method: 'PUT',
             body: request,
             qs: query,
             expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Returns given number of the first unhandled requests in he queue.
@@ -392,31 +399,27 @@ export default {
      * @param {String} [options.clientKey] - Unique ID identifying client accessing the request queue.
      *                                      This ID is used to identify how many clients used the queue.
      *                                      This ID must be a string with length between 1 and 32 characters.
-     * @param callback
      * @returns {QueueHead}
      */
-    getHead: (requestPromise, options) => {
-        const { baseUrl, queueId, limit, token, clientKey } = options;
+    async getHead(options) {
+        const { queueId, limit, clientKey } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(limit, 'limit', 'Number');
-        checkParamOrThrow(token, 'token', 'Maybe String');
         checkParamOrThrow(clientKey, 'clientKey', 'Maybe String');
 
         const query = {};
         if (limit) query.limit = limit;
-        if (token) query.token = token;
         if (clientKey) query.clientKey = clientKey;
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${queueId}/head`,
-            json: true,
+        const endpointOptions = {
+            url: `/${queueId}/head`,
             method: 'GET',
             qs: query,
             expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
-};
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
+}

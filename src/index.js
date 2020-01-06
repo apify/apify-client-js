@@ -7,7 +7,7 @@ import Users from './users';
 import Datasets from './datasets';
 import webhooks from './webhooks';
 import webhookDispatches from './webhook_dispatches';
-import requestQueues, { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from './request_queues';
+import RequestQueues, {REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS} from './request_queues';
 import { HttpClient, EXP_BACKOFF_MAX_REPEATS } from './http-client';
 
 /** @ignore */
@@ -43,7 +43,7 @@ const endpointClasses = {
     // crawlers,
     keyValueStores: KeyValueStores,
     datasets: Datasets,
-    // requestQueues,
+    requestQueues: RequestQueues,
     logs: Logs,
     users: Users,
     // webhooks,

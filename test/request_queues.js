@@ -1,17 +1,73 @@
 import { expect } from 'chai';
 import ApifyClient from '../build';
 import { BASE_PATH, REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from '../build/request_queues';
-import { mockRequest, requestExpectCall, requestExpectErrorCall, restoreRequest } from './_helper';
+import mockServer from './mock_server/server';
 
-const BASE_URL = 'http://example.com/something';
-const OPTIONS = { baseUrl: BASE_URL };
+const DEFAULT_QUERY = {
+    token: 'default-token',
+};
 
-describe('Request queue', () => {
-    before(mockRequest);
-    after(restoreRequest);
+function validateRequest(query = {}, params = {}, body = {}, headers = {}) {
+    const request = mockServer.getLastRequest();
+    const expectedQuery = getExpectedQuery(query);
+    expect(request.query).to.be.eql(expectedQuery);
+    expect(request.params).to.be.eql(params);
+    expect(request.body).to.be.eql(body);
+    expect(request.headers).to.include(headers);
+}
+
+function getExpectedQuery(callQuery = {}) {
+    const query = optsToQuery(callQuery);
+    return {
+        ...DEFAULT_QUERY,
+        ...query,
+    };
+}
+
+function optsToQuery(params) {
+    return Object
+        .entries(params)
+        .filter(([k, v]) => {
+            if (typeof v === 'boolean') {
+                return true;
+            }
+
+            return v !== false;
+        }) // eslint-disable-line no-unused-vars
+        .map(([k, v]) => {
+            if (typeof v === 'number') v = v.toString();
+            else if (typeof v === 'boolean') v = v.toString();
+            return [k, v];
+        })
+        .reduce((newObj, [k, v]) => {
+            newObj[k] = v;
+            return newObj;
+        }, {});
+}
+
+describe('RequestQueues methods', () => {
+    let baseUrl = null;
+    before(async () => {
+        const server = await mockServer.start(3333);
+        baseUrl = `http://localhost:${server.address().port}`;
+    });
+    after(() => mockServer.close());
+
+    let client = null;
+    beforeEach(() => {
+        client = new ApifyClient({
+            baseUrl,
+            expBackoffMaxRepeats: 0,
+            expBackoffMillis: 1,
+            ...DEFAULT_QUERY,
+        });
+    });
+    afterEach(() => {
+        client = null;
+    });
 
     describe('indentification', () => {
-        it('should work with queueId in default params', () => {
+        xit('should work with queueId in default params', () => {
             const queueId = 'some-id-2';
 
             requestExpectCall({
@@ -35,62 +91,29 @@ describe('Request queue', () => {
                 });
         });
 
-        it('should work with queueId in method call params', () => {
-            const queueId = 'some-id-3';
+        it('should work with queueId in method call params', async () => {
+            const queueId = 'someId';
 
-            requestExpectCall({
-                json: true,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${queueId}`,
-                qs: {},
-            }, {
-                data: {
-                    id: queueId,
-                },
-            });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .requestQueues
-                .getQueue({ queueId })
-                .then((queue) => {
-                    expect(queue.id).to.be.eql(queueId);
-                });
+            const res = await client.requestQueues.getQueue({ queueId });
+            expect(res.id).to.be.eql('get-queue');
+            validateRequest({}, { queueId });
         });
 
-        it('should work with token and queueName', () => {
-            const queueId = 'some-id-4';
+        it('should work with token and queueName', async () => {
             const queueOptions = {
                 token: 'sometoken',
                 queueName: 'somename',
             };
 
-            requestExpectCall({
-                json: true,
-                method: 'POST',
-                url: `${BASE_URL}${BASE_PATH}`,
-                qs: { name: queueOptions.queueName, token: queueOptions.token },
-            }, {
-                data: {
-                    id: queueId,
-                },
-            });
-
-            const apifyClient = new ApifyClient(Object.assign({}, OPTIONS, { queueId }));
-
-            return apifyClient
-                .requestQueues
-                .getOrCreateQueue(queueOptions)
-                .then(queue => expect(queue.id).to.be.eql(queueId));
+            const res = await client.requestQueues.getOrCreateQueue(queueOptions);
+            expect(res.id).to.be.eql('get-or-create-request-queue');
+            validateRequest({ name: queueOptions.queueName, token: queueOptions.token }, { });
         });
     });
 
     describe('REST method', () => {
-        it('listQueues() works', () => {
-            const queueId = 'some-id';
+        it('listQueues() works', async () => {
             const callOptions = {
-                token: 'sometoken',
                 limit: 5,
                 offset: 3,
                 desc: true,
@@ -98,248 +121,116 @@ describe('Request queue', () => {
             };
 
             const queryString = {
-                token: 'sometoken',
                 limit: 5,
                 offset: 3,
                 desc: 1,
                 unnamed: 1,
             };
 
-            const expected = {
-                limit: 5,
-                offset: 3,
-                desc: true,
-                count: 5,
-                total: 10,
-                unnamed: true,
-                items: ['queue1', 'queue2'],
+            const res = await client.requestQueues.listQueues(callOptions);
+            expect(res.id).to.be.eql('list-queues');
+            validateRequest(queryString, {});
+        });
+
+        it('getQueue() works', async () => {
+            const queueId = 'some-id';
+
+            const res = await client.requestQueues.getQueue({ queueId });
+            expect(res.id).to.be.eql('get-queue');
+            validateRequest({}, { queueId });
+        });
+
+        it('getQueue() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
+            const queueId = '404';
+
+
+            const res = await client.requestQueues.getQueue({ queueId });
+            expect(res).to.be.eql(null);
+            validateRequest({}, { queueId });
+        });
+
+        it('deleteQueue() works', async () => {
+            const queueId = '204';
+
+            const res = await client.requestQueues.deleteQueue({ queueId });
+            expect(res).to.be.eql('');
+            validateRequest({}, { queueId });
+        });
+
+        it('addRequest() works without forefront param', async () => {
+            const queueId = 'some-id';
+            const request = { url: 'http://example.com' };
+
+            const endpointOptions = {
+                request,
+                clientKey: 'my-client-id',
             };
 
-            requestExpectCall({
-                json: true,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}`,
-                qs: queryString,
-            }, {
-                data: expected,
-            });
-
-            const apifyClient = new ApifyClient(Object.assign({}, OPTIONS, { queueId }));
-
-            return apifyClient
-                .requestQueues
-                .listQueues(callOptions)
-                .then(response => expect(response).to.be.eql(expected));
+            const res = await client.requestQueues.addRequest({ queueId, ...endpointOptions });
+            expect(res.id).to.be.eql('add-request');
+            validateRequest({ forefront: false, clientKey: endpointOptions.clientKey }, { queueId }, request);
         });
 
-        it('getQueue() works', () => {
-            const queueId = 'some-id';
-            const expected = { _id: 'some-id', aaa: 'bbb' };
-
-            requestExpectCall({
-                json: true,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${queueId}`,
-                qs: {},
-            }, { data: expected });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .requestQueues
-                .getQueue({ queueId })
-                .then(given => expect(given).to.be.eql(expected));
-        });
-
-        it('getQueue() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
-            const queueId = 'some-id';
-
-            requestExpectErrorCall({
-                json: true,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${queueId}`,
-                qs: {},
-            }, false, 404);
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .requestQueues
-                .getQueue({ queueId })
-                .then(given => expect(given).to.be.eql(null));
-        });
-
-        it('deleteQueue() works', () => {
-            const queueId = 'some-id';
-            const token = 'my-token';
-
-            requestExpectCall({
-                json: true,
-                method: 'DELETE',
-                url: `${BASE_URL}${BASE_PATH}/${queueId}`,
-                qs: { token },
-            });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .requestQueues
-                .deleteQueue({ queueId, token });
-        });
-
-        it('addRequest() works without forefront param', () => {
+        it('addRequest() works with forefront param', async () => {
             const queueId = 'some-id';
             const request = { url: 'http://example.com' };
-            const response = { foo: 'bar' };
-            const token = 'my-token';
 
-            requestExpectCall({
-                json: true,
-                method: 'POST',
-                url: `${BASE_URL}${BASE_PATH}/${queueId}/requests`,
-                body: request,
-                qs: { forefront: false, token, clientKey: 'my-client-id' },
-                expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
-            }, { data: response });
+            const endpointOptions = {
+                request,
+                clientKey: 'my-client-id',
+                forefront: true,
+            };
 
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .requestQueues
-                .addRequest({ queueId, request, token, clientKey: 'my-client-id' })
-                .then(data => expect(data).to.be.eql(response));
+            const res = await client.requestQueues.addRequest({ queueId, ...endpointOptions });
+            expect(res.id).to.be.eql('add-request');
+            validateRequest({ forefront: true, clientKey: endpointOptions.clientKey }, { queueId }, request);
         });
 
-        it('addRequest() works with forefront param', () => {
-            const queueId = 'some-id';
-            const request = { url: 'http://example.com' };
-            const response = { foo: 'bar' };
-            const token = 'my-token';
-
-            requestExpectCall({
-                json: true,
-                method: 'POST',
-                url: `${BASE_URL}${BASE_PATH}/${queueId}/requests`,
-                body: request,
-                qs: { forefront: true, token },
-                expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
-            }, { data: response });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .requestQueues
-                .addRequest({ queueId, request, forefront: true, token })
-                .then(data => expect(data).to.be.eql(response));
-        });
-
-        it('getRequest() works', () => {
+        it('getRequest() works', async () => {
             const queueId = 'some-id';
             const requestId = 'xxx';
-            const response = { foo: 'bar' };
 
-            requestExpectCall({
-                json: true,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
-                qs: {},
-                expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
-            }, { data: response });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .requestQueues
-                .getRequest({ queueId, requestId })
-                .then(data => expect(data).to.be.eql(response));
+            const res = await client.requestQueues.getRequest({ queueId, requestId });
+            expect(res.id).to.be.eql('get-request');
+            validateRequest({}, { queueId, requestId });
         });
 
-        it('deleteRequest() works', () => {
-            const queueId = 'some-id';
+        it('deleteRequest() works', async () => {
             const requestId = 'xxx';
-            const token = 'my-token';
+            const queueId = '204';
 
-            requestExpectCall({
-                json: true,
-                method: 'DELETE',
-                url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
-                qs: { token, clientKey: 'my-client-id' },
-                expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
-            });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .requestQueues
-                .deleteRequest({ queueId, requestId, token, clientKey: 'my-client-id' });
+            const res = await client.requestQueues.deleteRequest({ queueId, requestId });
+            expect(res).to.be.eql('');
+            validateRequest({}, { queueId, requestId });
         });
 
-        it('updateRequest() works with requestId param', () => {
+        it('updateRequest() works with requestId param', async () => {
             const queueId = 'some-id';
             const requestId = 'xxx';
             const request = { url: 'http://example.com' };
-            const response = { foo: 'bar' };
-            const token = 'my-token';
 
-            requestExpectCall({
-                json: true,
-                method: 'PUT',
-                url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
-                body: request,
-                qs: { forefront: false, token, clientKey: 'my-client-id' },
-                expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
-            }, { data: response });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .requestQueues
-                .updateRequest({ queueId, requestId, request, token, clientKey: 'my-client-id' })
-                .then(data => expect(data).to.be.eql(response));
+            const res = await client.requestQueues.updateRequest({ queueId, requestId, request });
+            expect(res.id).to.be.eql('update-request');
+            validateRequest({ forefront: false }, { queueId, requestId }, request);
         });
 
-        it('updateRequest() works without requestId param', () => {
+        it('updateRequest() works without requestId param', async () => {
             const queueId = 'some-id';
             const requestId = 'xxx';
             const request = { url: 'http://example.com', id: requestId };
-            const response = { foo: 'bar' };
-            const token = 'my-token';
 
-            requestExpectCall({
-                json: true,
-                method: 'PUT',
-                url: `${BASE_URL}${BASE_PATH}/${queueId}/requests/${requestId}`,
-                body: request,
-                qs: { forefront: true, token },
-                expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
-            }, { data: response });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .requestQueues
-                .updateRequest({ queueId, request, forefront: true, token })
-                .then(data => expect(data).to.be.eql(response));
+            const res = await client.requestQueues.updateRequest({ queueId, request });
+            expect(res.id).to.be.eql('update-request');
+            validateRequest({ forefront: false }, { queueId, requestId }, request);
         });
 
-        it('getHead() works', () => {
+        it('getHead() works', async () => {
             const queueId = 'some-id';
-            const response = { foo: 'bar' };
+            const qs = { limit: 5, clientKey: 'some-id' };
 
-            requestExpectCall({
-                json: true,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${queueId}/head`,
-                qs: { limit: 5, clientKey: 'some-id' },
-                expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
-            }, { data: response });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .requestQueues
-                .getHead({ queueId, limit: 5, clientKey: 'some-id' })
-                .then(data => expect(data).to.be.eql(response));
+            const res = await client.requestQueues.getHead({ queueId, ...qs });
+            expect(res.id).to.be.eql('get-head');
+            validateRequest(qs, { queueId });
         });
     });
 });
