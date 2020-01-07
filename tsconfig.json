@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "lib": [
+            "es2017"
+        ],
+        "allowJs": true,
+        "checkJs": false,
+        "noEmit": false,
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "strict": false,
+        "noImplicitThis": true,
+        "alwaysStrict": true,
+        "esModuleInterop": true,
+        "outDir": "types/"
+    },
+    "include": [
+        "src/*.js"
+    ],
+    "exclude": [
+        "src/index.js"
+    ]
+}

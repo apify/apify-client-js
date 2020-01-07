@@ -3,6 +3,7 @@
   "version": "0.6.0",
   "description": "Apify API client for JavaScript",
   "main": "build/index.js",
+  "types": "types/index.d.ts",
   "keywords": [
     "apify",
     "api",
@@ -35,16 +36,18 @@
   },
   "homepage": "https://apify.com/docs/sdk/apify-client-js/latest",
   "files": [
-    "build"
+    "build",
+    "types"
   ],
   "scripts": {
     "build": "babel src --out-dir build",
     "build-doc": "npm run clean && npm run build && node ./node_modules/jsdoc/jsdoc.js --package ./package.json -c ./jsdoc/conf.json -d docs",
     "build-toc": "./node_modules/.bin/markdown-toc README.md -i",
+    "build-types": "./node_modules/.bin/tsc -p tsconfig.json",
     "test": "npm run build && nyc --reporter=html --reporter=text mocha --timeout 5000 --compilers js:babel-core/register --recursive",
-    "prepare": "npm run build-toc && npm run build",
+    "prepare": "npm run build-toc && npm run build-types && npm run build",
     "prepublishOnly": "(test $RUNNING_FROM_SCRIPT || (echo \"You must use publish.sh instead of 'npm publish' directly!\"; exit 1)) && npm test && npm run lint",
-    "clean": "rm -rf build && rm -rf docs",
+    "clean": "rm -rf build && rm -rf docs && find types/ -type f -name '*.d.ts' ! -name index.d.ts | xargs rm -f",
     "lint": "npm run build && eslint src test"
   },
   "dependencies": {
@@ -74,6 +77,7 @@
     "markdown-toc": "^1.2.0",
     "mocha": "^5.2.0",
     "nyc": "^13.0.1",
-    "sinon": "^6.3.1"
+    "sinon": "^6.3.1",
+    "typescript": "^3.7.4"
   }
 }

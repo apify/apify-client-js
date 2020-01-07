@@ -13,3 +13,5 @@ pids
 .idea
 yarn.lock
 package-lock.json
+types/*
+!types/index.d.ts
