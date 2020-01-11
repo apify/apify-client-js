@@ -7,7 +7,6 @@ import ApifyClient from '../build';
 const APIFY_INSTANCE_KEYS = [
     'acts',
     'tasks',
-    'crawlers',
     'keyValueStores',
     'datasets',
     'requestQueues',

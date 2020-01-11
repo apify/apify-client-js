@@ -378,35 +378,29 @@ export default class Datasets {
      *                                                 Arrays and Objects must be JSON.stringifiable.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~dataset-name" format for datasetId.
-     * @param callback
      * @returns {*}
      */
-    putItems(requestPromise, options) {
-        const { baseUrl, datasetId, data, token } = options;
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+    async putItems(options) {
+        const { datasetId, data } = options;
         checkParamOrThrow(datasetId, 'datasetId', 'String');
         checkParamOrThrow(data, 'data', 'Object | Array | String');
-        checkParamOrThrow(token, 'token', 'String');
 
         const payload = typeof data === 'string' ? data : JSON.stringify(data);
+        const gzipedBody = await gzipPromise(payload);
 
-        return gzipPromise(payload)
-            .then((gzipedBody) => {
-                const requestOpts = {
-                    url: `${baseUrl}${BASE_PATH}/${datasetId}/items`,
-                    method: 'POST',
-                    body: gzipedBody,
-                    json: false,
-                    headers: {
-                        'Content-Type': 'application/json; charset=utf-8',
-                        'Content-Encoding': 'gzip',
-                    },
-                    qs: { token },
-                };
 
-                // Uploading via our servers:
-                return requestPromise(requestOpts);
-            });
+        const endpointOptions = {
+            url: `/${datasetId}/items`,
+            method: 'POST',
+            body: gzipedBody,
+            json: false,
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8',
+                'Content-Encoding': 'gzip',
+            },
+        };
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(response);
     }
 }
 

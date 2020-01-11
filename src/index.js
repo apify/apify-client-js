@@ -1,6 +1,5 @@
 import Actors from './actors';
 import Tasks from './tasks';
-import crawlers from './crawlers';
 import KeyValueStores from './key_value_stores';
 import Logs from './logs';
 import Users from './users';
@@ -40,7 +39,6 @@ const endpointClasses = {
     actors: Actors,
     acts: Actors,
     tasks: Tasks,
-    // crawlers,
     keyValueStores: KeyValueStores,
     datasets: Datasets,
     requestQueues: RequestQueues,

@@ -7,19 +7,38 @@ const ROUTES = [
     { id: 'list-datasets', method: 'GET', path: '/' },
     { id: 'get-dataset', method: 'GET', path: '/:datasetId' },
     { id: 'delete-dataset', method: 'DELETE', path: '/:datasetId' },
-    { id: 'get-items', method: 'GET', path: '/:datasetId/items' },
+    { id: 'get-items', method: 'GET', path: '/:datasetId/items', type: 'responseJsonMock' },
+    { id: 'put-items', method: 'POST', path: '/:datasetId/items' },
 ];
 
 const HANDLERS = {
     json(id) {
         return (req, res) => {
             const responseStatusCode = Number(req.params.datasetId) || 200;
-            const payload = responseStatusCode === 204
-                ? null
-                : { data: { id } };
+            let payload;
+            switch (responseStatusCode) {
+                case 204:
+                    payload = null;
+                    break;
+                case 201:
+                    payload = {};
+                    break;
+                default:
+                    payload = { data: { id } };
+            }
             res
                 .status(responseStatusCode)
                 .json(payload);
+        };
+    },
+    responseJsonMock(id) {
+        return (req, res) => {
+            const mockServer = req.app.get('mockServer');
+            const { body, headers = {} } = mockServer.response;
+            res
+                .status(200)
+                .set(headers)
+                .json(body);
         };
     },
 };

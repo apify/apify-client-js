@@ -154,7 +154,13 @@ describe('Dataset methods', () => {
 
         it('getItems() works', async () => {
             const datasetId = 'some-id';
-
+            const expected = {
+                total: 0,
+                offset: 0,
+                count: 0,
+                limit: 100000,
+                items: [],
+            };
             const headers = {
                 'content-type': 'application/json; chartset=utf-8',
                 'x-apify-pagination-total': '0',
@@ -162,14 +168,15 @@ describe('Dataset methods', () => {
                 'x-apify-pagination-count': '0',
                 'x-apify-pagination-limit': '100000',
             };
+            mockServer.setResponse({ body: {}, headers });
+
 
             const res = await client.datasets.getItems({ datasetId });
-            console.log(res);
-            expect(res.id).to.be.eql('get-items');
-            validateRequest({}, { datasetId }, {}, headers);
+            expect(res.toString()).to.be.eql(expected.toString());
+            validateRequest({}, { datasetId }, {});
         });
 
-        xit('getItems() works with bom=false', () => {
+        it('getItems() works with bom=false', async () => {
             const datasetId = 'some-id';
             const expected = {
                 total: 0,
@@ -185,35 +192,27 @@ describe('Dataset methods', () => {
                 'x-apify-pagination-count': '0',
                 'x-apify-pagination-limit': '100000',
             };
+            mockServer.setResponse({ body: {}, headers });
+            const qs = { bom: 0, format: 'csv', delimiter: ';', fields: 'a,b', omit: 'c,d' };
 
-            requestExpectCall({
-                json: false,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
-                gzip: true,
-                qs: { bom: 0, format: 'csv', delimiter: ';', fields: 'a,b', omit: 'c,d' },
-                resolveWithFullResponse: true,
-                encoding: null,
-            }, JSON.stringify(expected.items), { headers });
+            const options = {
+                datasetId,
+                bom: false,
+                fields: ['a', 'b'],
+                omit: ['c', 'd'],
+                format: 'csv',
+                delimiter: ';',
+            };
 
-            const apifyClient = new ApifyClient(OPTIONS);
 
-            return apifyClient
-                .datasets
-                .getItems({
-                    datasetId,
-                    bom: false,
-                    fields: ['a', 'b'],
-                    omit: ['c', 'd'],
-                    format: 'csv',
-                    delimiter: ';',
-                })
-                .then(given => expect(given).to.be.eql(expected));
+            const res = await client.datasets.getItems(options);
+            expect(res.toString()).to.be.eql(expected.toString());
+            validateRequest(qs, { datasetId }, {});
         });
 
         describe('getDatasetItems()', () => {
             const message = 'CUSTOM ERROR';
-            xit('getDatasetItems() should return null for 404', async () => {
+            it('getDatasetItems() should return null for 404', async () => {
                 const requestPromise = () => {
                     throw new ApifyClientError('NOTFOUND', 'Not found', { statusCode: NOT_FOUND_STATUS_CODE });
                 };
@@ -222,7 +221,7 @@ describe('Dataset methods', () => {
                 expect(data).to.eql(null);
             });
 
-            xit('parseDatasetItemsResponse() should rethrow errors', async () => {
+            it('parseDatasetItemsResponse() should rethrow errors', async () => {
                 const response = {
                     headers: {
                         'content-type': 'application/json',
@@ -246,7 +245,7 @@ describe('Dataset methods', () => {
                 utils.parseBody.restore();
             });
 
-            xit('parseDatasetItemsResponse() should throw RetryableError if  Unexpected end of JSON input', async () => {
+            it('parseDatasetItemsResponse() should throw RetryableError if  Unexpected end of JSON input', async () => {
                 const response = {
                     headers: {
                         'content-type': 'application/json',
@@ -271,7 +270,7 @@ describe('Dataset methods', () => {
             });
         });
 
-        xit('getItems should retry with exponentialBackoff', async () => {
+        it('getItems should retry with exponentialBackoff', async () => {
             const datasetId = 'some-id';
             let run = false;
             const stub = sinon.stub(utils, 'parseBody');
@@ -282,21 +281,21 @@ describe('Dataset methods', () => {
             stubRetryWithExpBackoff.callsFake(() => {
                 run = true;
             });
-            const apifyClient = new ApifyClient(OPTIONS);
-            await apifyClient.datasets.getItems({ datasetId, limit: 1, offset: 1 });
+            await client.datasets.getItems({ datasetId, limit: 1, offset: 1 });
             expect(run).to.be.eql(true);
             utils.parseBody.restore();
             exponentialBackoff.retryWithExpBackoff.restore();
         });
 
-        xit('getItems() limit and offset work', () => {
+        it('getItems() limit and offset work', async () => {
             const datasetId = 'some-id';
+            const body = [{ test: 'value' }];
             const expected = {
                 total: 1,
                 offset: 1,
                 count: 1,
                 limit: 1,
-                items: [{ test: 'value' }],
+                items: body,
             };
             const headers = {
                 'content-type': 'application/json; chartset=utf-8',
@@ -305,26 +304,15 @@ describe('Dataset methods', () => {
                 'x-apify-pagination-count': '1',
                 'x-apify-pagination-limit': '1',
             };
+            const qs = { limit: 1, offset: 1 };
+            mockServer.setResponse({ body, headers });
 
-            requestExpectCall({
-                json: false,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
-                gzip: true,
-                qs: { limit: 1, offset: 1 },
-                resolveWithFullResponse: true,
-                encoding: null,
-            }, JSON.stringify(expected.items), { headers });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .datasets
-                .getItems({ datasetId, limit: 1, offset: 1 })
-                .then(given => expect(given).to.be.eql(expected));
+            const res = await client.datasets.getItems({ datasetId, limit: 1, offset: 1 });
+            expect(res.toString()).to.be.eql(expected.toString());
+            validateRequest(qs, { datasetId });
         });
 
-        xit('getItems() parses JSON', () => {
+        it('getItems() parses JSON', async () => {
             const datasetId = 'some-id';
             const body = JSON.stringify([{ a: 'foo', b: ['bar1', 'bar2'] }]);
             const contentType = 'application/json';
@@ -342,28 +330,14 @@ describe('Dataset methods', () => {
                 'x-apify-pagination-count': '1',
                 'x-apify-pagination-limit': '100000',
             };
+            mockServer.setResponse({ body: expected.items, headers });
 
-            requestExpectCall({
-                json: false,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
-                gzip: true,
-                qs: {},
-                resolveWithFullResponse: true,
-                encoding: null,
-            }, body, { headers });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .datasets
-                .getItems({ datasetId })
-                .then((given) => {
-                    expect(given).to.be.eql(expected);
-                });
+            const res = await client.datasets.getItems({ datasetId });
+            expect(res.toString()).to.be.eql(expected.toString());
+            validateRequest({}, { datasetId });
         });
 
-        xit('getItems() doesn\'t parse application/json when disableBodyParser = true', () => {
+        it('getItems() doesn\'t parse application/json when disableBodyParser = true', async () => {
             const datasetId = 'some-id';
             const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });
             const contentType = 'application/json';
@@ -381,100 +355,53 @@ describe('Dataset methods', () => {
                 'x-apify-pagination-count': '1',
                 'x-apify-pagination-limit': '100000',
             };
+            mockServer.setResponse({ body: expected.items, headers });
 
-            requestExpectCall({
-                json: false,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
-                gzip: true,
-                qs: {},
-                resolveWithFullResponse: true,
-                encoding: null,
-            }, body, { headers });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .datasets
-                .getItems({ datasetId, disableBodyParser: true })
-                .then((given) => {
-                    expect(given).to.be.eql(expected);
-                });
+            const res = await client.datasets.getItems({ datasetId });
+            expect(res.toString()).to.be.eql(expected.toString());
+            validateRequest({}, { datasetId });
         });
 
-        xit('putItems() works with object', () => {
-            const datasetId = 'some-id';
+        it('putItems() works with object', async () => {
+            const datasetId = '201';
             const contentType = 'application/json; charset=utf-8';
             const data = { someData: 'someValue' };
-            const token = 'my-token';
+            const headers = {
+                'content-type': contentType,
+                'content-encoding': 'gzip',
+            };
 
-            requestExpectCall({
-                body: gzipSync(JSON.stringify(data)),
-                headers: {
-                    'Content-Type': contentType,
-                    'Content-Encoding': 'gzip',
-                },
-                json: false,
-                method: 'POST',
-                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
-                qs: { token },
-            });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .datasets
-                .putItems({ datasetId, data, token });
+            const res = await client.datasets.putItems({ datasetId, data });
+            expect(res.toString()).to.be.eql('{}');
+            validateRequest({}, { datasetId }, data, headers);
         });
 
-        xit('putItems() works with array', () => {
-            const datasetId = 'some-id';
+        it('putItems() works with array', async () => {
+            const datasetId = '201';
             const contentType = 'application/json; charset=utf-8';
             const data = [{ someData: 'someValue' }, { someData: 'someValue' }];
-            const token = 'my-token';
+            const headers = {
+                'content-type': contentType,
+                'content-encoding': 'gzip',
+            };
 
-            requestExpectCall({
-                body: gzipSync(JSON.stringify(data)),
-                headers: {
-                    'Content-Type': contentType,
-                    'Content-Encoding': 'gzip',
-                },
-                json: false,
-                method: 'POST',
-                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
-                qs: { token },
-            });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .datasets
-                .putItems({ datasetId, data, token });
+            const res = await client.datasets.putItems({ datasetId, data });
+            expect(res.toString()).to.be.eql('{}');
+            validateRequest({}, { datasetId }, data, headers);
         });
 
-        xit('putItems() works with string', () => {
-            const datasetId = 'some-id';
+        it('putItems() works with string', async () => {
+            const datasetId = '201';
             const contentType = 'application/json; charset=utf-8';
             const data = JSON.stringify([{ someData: 'someValue' }, { someData: 'someValue' }]);
-            const token = 'my-token';
+            const headers = {
+                'content-type': contentType,
+                'content-encoding': 'gzip',
+            };
 
-            requestExpectCall({
-                body: gzipSync(data),
-                headers: {
-                    'Content-Type': contentType,
-                    'Content-Encoding': 'gzip',
-                },
-                json: false,
-                method: 'POST',
-                url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
-                qs: { token },
-            });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .datasets
-                .putItems({ datasetId, data, token });
+            const res = await client.datasets.putItems({ datasetId, data });
+            expect(res.toString()).to.be.eql('{}');
+            validateRequest({}, { datasetId }, JSON.parse(data), headers);
         });
     });
 });

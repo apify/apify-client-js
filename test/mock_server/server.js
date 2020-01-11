@@ -19,6 +19,7 @@ const app = express();
 const v2Router = express.Router();
 const mockServer = {
     requests: [],
+    response: null,
     async start(port = 0) {
         this.server = http.createServer(app);
         return new Promise((resolve, reject) => {
@@ -33,6 +34,9 @@ const mockServer = {
     getLastRequest() {
         return this.requests.pop();
     },
+    setResponse(response) {
+        this.response = response;
+    },
 };
 
 app.use(logger('dev'));
@@ -45,7 +49,7 @@ app.use('/', (req, res, next) => {
     mockServer.requests.push(req);
     next();
 });
-
+app.set('mockServer', mockServer);
 app.use('/v2', v2Router);
 
 // Attaching V2 routers
