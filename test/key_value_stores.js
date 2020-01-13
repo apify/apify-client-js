@@ -64,6 +64,7 @@ describe('KeyValueStores methods', () => {
 
     describe('indentification', () => {
         xit('should work with storeId in default params', () => {
+            // TODO: DO we want to keep the support for the default params?
             const storeId = 'some-id-2';
 
             requestExpectCall({
@@ -151,121 +152,72 @@ describe('KeyValueStores methods', () => {
             validateRequest({}, { storeId });
         });
 
-        xit('getRecord() works', async () => {
+        it('getRecord() works', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
 
-            const res = await client.keyValueStores.getRecord({ storeId, key });
-            expect(res.id).to.be.eql('get-record');
+            const body = { a: 'foo', b: ['bar1', 'bar2'] };
+            const contentType = 'application/json';
+
+            mockServer.setResponse({ headers: { 'content-type': contentType }, body });
+
+            await client.keyValueStores.getRecord({ storeId, key });
             validateRequest({}, { storeId, key });
         });
 
-        xit('getRecord() parses JSON', () => {
+        it('getRecord() parses JSON', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
-            const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });
+            const body = { a: 'foo', b: ['bar1', 'bar2'] };
             const contentType = 'application/json';
-            const expected = {
-                body: JSON.parse(body),
-                contentType,
-            };
 
-            requestExpectCall({
-                json: false,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
-                gzip: true,
-                qs: {},
-                resolveWithFullResponse: true,
-                encoding: null,
-            }, body, { headers: { 'content-type': contentType } });
+            mockServer.setResponse({ headers: { 'content-type': contentType }, body });
 
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .keyValueStores
-                .getRecord({ storeId, key })
-                .then((given) => {
-                    expect(given).to.be.eql(expected);
-                });
+            const res = await client.keyValueStores.getRecord({ storeId, key });
+            expect(res).to.be.eql(body);
         });
 
-        xit('getRecord() doesn\'t parse application/json when disableBodyParser = true', () => {
+        it('getRecord() doesn\'t parse application/json when disableBodyParser = true', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
-            const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });
+            const body = { a: 'foo', b: ['bar1', 'bar2'] };
             const contentType = 'application/json';
-            const expected = { body, contentType };
 
-            requestExpectCall({
-                json: false,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
-                gzip: true,
-                qs: {},
-                resolveWithFullResponse: true,
-                encoding: null,
-            }, body, { headers: { 'content-type': contentType } });
+            mockServer.setResponse({ headers: { 'content-type': contentType }, body });
 
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .keyValueStores
-                .getRecord({ storeId, key, disableBodyParser: true })
-                .then((given) => {
-                    expect(given).to.be.eql(expected);
-                });
+            const res = await client.keyValueStores.getRecord({ storeId, key, disableBodyParser: true });
+            expect(res).to.be.eql(JSON.stringify(body));
         });
 
-        xit('getRecord() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
+        it('getRecord() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
+            const body = { a: 'foo', b: ['bar1', 'bar2'] };
 
-            requestExpectErrorCall({
-                json: false,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
-                gzip: true,
-                qs: {},
-                resolveWithFullResponse: true,
-                encoding: null,
-            }, false, 404);
+            mockServer.setResponse({ body, statusCode: 404 });
 
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .keyValueStores
-                .getRecord({ storeId, key })
-                .then(given => expect(given).to.be.eql(null));
+            const res = await client.keyValueStores.getRecord({ storeId, key, disableBodyParser: true });
+            expect(res).to.be.eql(null);
         });
 
-        xit('putRecord() works', () => {
+        it('putRecord() works', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const contentType = 'text/plain';
             const body = 'someValue';
-            const token = 'my-token';
 
-            requestExpectCall({
-                body: gzipSync('someValue'),
+            mockServer.setResponse({ body: gzipSync(body),
                 headers: {
                     'Content-Type': contentType,
                     'Content-Encoding': 'gzip',
-                },
-                json: false,
-                method: 'PUT',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}`,
-                qs: { token },
-            });
+                } });
 
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .keyValueStores
-                .putRecord({ storeId, key, contentType, body, token });
+            const res = await client.keyValueStores.putRecord({ storeId, key, contentType, body });
+            expect(res).to.be.eql(body);
         });
 
         xit('putRecord() uploads via signed url when gzipped buffer.length > SIGNED_URL_UPLOAD_MIN_BYTESIZE', () => {
+            // TODO: I have no idea how to test this using this mock flow :(
             const key = 'some-key';
             const storeId = 'some-id';
             const contentType = 'application/octet-stream';

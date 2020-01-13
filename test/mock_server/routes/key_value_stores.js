@@ -7,7 +7,8 @@ const ROUTES = [
     { id: 'get-or-create-store', method: 'POST', path: '/' },
     { id: 'get-store', method: 'GET', path: '/:storeId' },
     { id: 'delete-store', method: 'DELETE', path: '/:storeId' },
-    { id: 'get-record', method: 'GET', path: '/:storeId/record/:key' },
+    { id: 'get-record', method: 'GET', path: '/:storeId/records/:key', type: 'responseJsonMock' },
+    { id: 'put-record', method: 'PUT', path: '/:storeId/records/:key', type: 'responseJsonMock' },
     { id: 'delete-record', method: 'DELETE', path: '/:storeId/record/:key' },
     { id: 'list-keys', method: 'GET', path: '/:storeId/keys' },
 
@@ -24,6 +25,17 @@ const HANDLERS = {
             res
                 .status(responseStatusCode)
                 .json(payload);
+        };
+    },
+    responseJsonMock(id) {
+        return (req, res) => {
+            const mockServer = req.app.get('mockServer');
+            const { body, headers = {}, statusCode = 200 } = mockServer.response;
+            const payload = statusCode === 200 ? body : null;
+            res
+                .status(statusCode)
+                .set(headers)
+                .send(payload);
         };
     },
 };

@@ -239,11 +239,11 @@ export default class KeyValueStores {
         const parseResponse = (response) => {
             const responseBody = response.body;
             const contentType = response.headers['content-type'];
-            const body = disableBodyParser ? responseBody : parseBody(responseBody, contentType);
+            const body = disableBodyParser ? responseBody.toString() : parseBody(responseBody, contentType);
 
             return {
                 contentType,
-                body,
+                data: body,
             };
         };
         try {
@@ -266,50 +266,43 @@ export default class KeyValueStores {
      * @param {string|Buffer} options.body - Body in string or Buffer
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~store-name" format for storeId.
-     * @param callback
      * @returns {*}
      */
-    putRecord(requestPromise, options) {
-        const { baseUrl, storeId, key, body, contentType = 'text/plain; charset=utf-8', token } = options;
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+    async putRecord(options) {
+        const { storeId, key, body, contentType = 'text/plain; charset=utf-8' } = options;
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
         checkParamOrThrow(contentType, 'contentType', 'String');
         checkParamOrThrow(body, 'body', 'Buffer | String');
-        checkParamOrThrow(token, 'token', 'String');
 
         const bufferForLengthCheck = Buffer.isBuffer(body) ? body : Buffer.from(body, 'utf-8');
+        const gzipedBody = await gzipPromise(body);
 
-        return gzipPromise(body)
-            .then((gzipedBody) => {
-                const requestOpts = {
-                    url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}`,
-                    method: 'PUT',
-                    body: gzipedBody,
-                    json: false,
-                    headers: {
-                        'Content-Type': contentType,
-                        'Content-Encoding': 'gzip',
-                    },
-                    qs: { token },
-                };
+        const endpointOptions = {
+            url: `/${storeId}/records/${key}`,
+            method: 'PUT',
+            body: gzipedBody,
+            json: false,
+            headers: {
+                'Content-Type': contentType,
+                'Content-Encoding': 'gzip',
+            },
+        };
 
-                // Uploading via our servers:
-                if (bufferForLengthCheck.byteLength < SIGNED_URL_UPLOAD_MIN_BYTESIZE) return requestPromise(requestOpts);
+        // Uploading via our servers:
+        if (bufferForLengthCheck.byteLength < SIGNED_URL_UPLOAD_MIN_BYTESIZE) return this._call(options, endpointOptions);
 
-                // ... or via signed url directly to S3:
-                return requestPromise({
-                    url: `${baseUrl}${BASE_PATH}/${storeId}/records/${key}/direct-upload-url`,
-                    method: 'GET',
-                    qs: { token },
-                })
-                    .then((response) => {
-                        const { signedUrl } = response.data;
-                        const s3RequestOpts = Object.assign({}, requestOpts, { url: signedUrl, qs: null });
+        // ... or via signed url directly to S3:
+        const directEndpointOptions = {
+            url: `/${storeId}/records/${key}/direct-upload-url`,
+            method: 'GET',
+        };
+        const response = await this._call(options, directEndpointOptions);
 
-                        return requestPromise(s3RequestOpts);
-                    });
-            });
+        const { signedUrl } = response.data;
+        const s3RequestOpts = Object.assign({}, endpointOptions, { url: signedUrl, qs: null });
+
+        return this._call(options, s3RequestOpts);
     }
 
     /**
