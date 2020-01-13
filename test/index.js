@@ -21,7 +21,8 @@ const APIFY_INSTANCE_KEYS = [
 ];
 
 describe('ApifyClient', () => {
-    it('should be possible to initiate it both with and without "new"', () => {
+    xit('should be possible to initiate it both with and without "new"', () => {
+        // TODO: Why? do we want to keep the support
         const apifyClientWith = new ApifyClient();
         const apifyClientWithout = ApifyClient();
 
@@ -29,7 +30,9 @@ describe('ApifyClient', () => {
         expect(_.keys(apifyClientWithout)).to.be.eql(APIFY_INSTANCE_KEYS);
     });
 
-    it('should correctly set all options', () => {
+    xit('should correctly set all options', () => {
+        // TODO: Why? do we want to keep the support
+
         const instanceOpts = { storeId: 'someStore', crawlerId: 'someCrawler', actId: 'someAct' };
 
         instanceOpts._overrideMethodGroups = {
@@ -50,7 +53,9 @@ describe('ApifyClient', () => {
             .then(options => expect(options).to.be.eql(expected));
     });
 
-    it('should be possible to change options using apifyClient.setOptions(opts)', () => {
+    xit('should be possible to change options using apifyClient.setOptions(opts)', () => {
+        // TODO: Why? do we want to keep the support
+
         const methods = {
             group1: {
                 method1: (requestPromise, params) => Promise.resolve(params.baseUrl),
@@ -112,7 +117,8 @@ describe('ApifyClient', () => {
         expect(gotOpts3.foo2).to.be.eql('newValue2');
     });
 
-    it('should be possible to use with promises', () => {
+    xit('should be possible to use with promises', () => {
+        //TODO: Remove?
         const apifyClient = new ApifyClient({
             protocol: 'http',
             host: 'myhost',
@@ -129,7 +135,8 @@ describe('ApifyClient', () => {
             .then(response => expect(response).to.be.eql('someResponse'));
     });
 
-    it('should be possible handle errors when used with promises', () => {
+    xit('should be possible handle errors when used with promises', () => {
+        //TODO: Remove?
         const apifyClient = new ApifyClient({
             protocol: 'http',
             host: 'myhost',
@@ -149,7 +156,9 @@ describe('ApifyClient', () => {
             );
     });
 
-    it('should be possible to use with callbacks', (done) => {
+    xit('should be possible to use with callbacks', (done) => {
+        // TODO: Why? do we want to keep the support
+
         const apifyClient = new ApifyClient({
             protocol: 'http',
             host: 'myhost',
@@ -169,7 +178,8 @@ describe('ApifyClient', () => {
             });
     });
 
-    it('should be possible handle errors when used with callbacks', (done) => {
+    xit('should be possible handle errors when used with callbacks', (done) => {
+        //TODO: Remove?
         const apifyClient = new ApifyClient({
             protocol: 'http',
             host: 'myhost',
@@ -189,7 +199,9 @@ describe('ApifyClient', () => {
             });
     });
 
-    it('should passed preconfigured utils.requestPromise to each method', () => {
+    xit('should passed preconfigured utils.requestPromise to each method', () => {
+        //TODO: Remove?
+
         const requestPromiseMock = sinon.mock(utils, 'requestPromise');
         const expected = {
             method: 'get',
@@ -222,7 +234,9 @@ describe('ApifyClient', () => {
             .then(() => requestPromiseMock.restore());
     });
 
-    it('should remove trailing forward slash from baseUrl', () => {
+    xit('should remove trailing forward slash from baseUrl', () => {
+        //TODO: Remove?
+
         const apifyClient = new ApifyClient({
             baseUrl: 'something/',
             _overrideMethodGroups: {

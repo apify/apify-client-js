@@ -1,9 +1,9 @@
-import * as utils from '../build/utils';
+import * as httpClient from '../build/http-client';
 import { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from '../build/request_queues';
 
 
 export const DEFAULT_RATE_LIMIT_ERRORS = new Array(
-    Math.max(REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, utils.EXP_BACKOFF_MAX_REPEATS),
+    Math.max(REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, httpClient.EXP_BACKOFF_MAX_REPEATS),
 ).fill(0);
 
 
