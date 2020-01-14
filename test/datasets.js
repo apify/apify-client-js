@@ -1,3 +1,4 @@
+import _ from 'underscore';
 import { expect } from 'chai';
 import { gzipSync } from 'zlib';
 import sinon from 'sinon';
@@ -174,6 +175,26 @@ describe('Dataset', () => {
                 .then(given => expect(given).to.be.eql(null));
         });
 
+        it('updateDataset() works', () => {
+            const datasetId = 'some-id';
+            const token = 'my-token';
+            const dataset = { id: datasetId, name: 'my-name' };
+
+            requestExpectCall({
+                json: true,
+                method: 'PUT',
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
+                qs: { token },
+                body: _.omit(dataset, 'id'),
+            });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .datasets
+                .updateDataset({ datasetId, dataset, token });
+        });
+
         it('deleteDataset() works', () => {
             const datasetId = 'some-id';
             const token = 'my-token';
@@ -249,7 +270,7 @@ describe('Dataset', () => {
                 method: 'GET',
                 url: `${BASE_URL}${BASE_PATH}/${datasetId}/items`,
                 gzip: true,
-                qs: { bom: 0 },
+                qs: { bom: 0, format: 'csv', delimiter: ';', fields: 'a,b', omit: 'c,d' },
                 resolveWithFullResponse: true,
                 encoding: null,
             }, JSON.stringify(expected.items), { headers });
@@ -258,7 +279,14 @@ describe('Dataset', () => {
 
             return apifyClient
                 .datasets
-                .getItems({ datasetId, bom: false })
+                .getItems({
+                    datasetId,
+                    bom: false,
+                    fields: ['a', 'b'],
+                    omit: ['c', 'd'],
+                    format: 'csv',
+                    delimiter: ';',
+                })
                 .then(given => expect(given).to.be.eql(expected));
         });
 

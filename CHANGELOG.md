@@ -1,3 +1,15 @@
+0.6.0 / 2019/12/05
+===================
+- Removed legacy Apify Crawler methods that are no longer supported by Apify API.
+
+0.5.26 / 2019/07/24
+===================
+- Added update method for request queues, datasets and key-value stores.
+
+0.5.23 / 2019/07/24
+===================
+- Added new method `client.acts.resurrectRun()` that resurrects finished (even failed) actor run.
+
 0.5.20 / 2019/06/18
 ===================
 - `body` and `contentType` parameters of `client.tasks.runTask()` were deprecated in favor of new `input` parameter.

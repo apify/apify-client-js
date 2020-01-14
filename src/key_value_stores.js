@@ -1,3 +1,4 @@
+import _ from 'underscore';
 import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody, parseDateFields } from './utils';
 
 /**
@@ -165,6 +166,37 @@ export default {
     },
 
     /**
+     * Updates key-value store.
+     *
+     * @memberof ApifyClient.stores
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.storeId - Unique store ID
+     * @param {Object} options.store
+     * @param callback
+     * @returns {KeyValueStore}
+     */
+    updateStore: (requestPromise, options) => {
+        const { baseUrl, token, storeId, store } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(store, 'store', 'Object');
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${storeId}`,
+            json: true,
+            method: 'PUT',
+            qs: { token },
+            body: _.omit(store, 'id'),
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+
+    /**
      * Deletes key-value store.
      *
      * @memberof ApifyClient.keyValueStores
@@ -270,6 +302,8 @@ export default {
         checkParamOrThrow(body, 'body', 'Buffer | String');
         checkParamOrThrow(token, 'token', 'String');
 
+        const bufferForLengthCheck = Buffer.isBuffer(body) ? body : Buffer.from(body, 'utf-8');
+
         return gzipPromise(body)
             .then((gzipedBody) => {
                 const requestOpts = {
@@ -285,7 +319,7 @@ export default {
                 };
 
                 // Uploading via our servers:
-                if (gzipedBody.length < SIGNED_URL_UPLOAD_MIN_BYTESIZE) return requestPromise(requestOpts);
+                if (bufferForLengthCheck.byteLength < SIGNED_URL_UPLOAD_MIN_BYTESIZE) return requestPromise(requestOpts);
 
                 // ... or via signed url directly to S3:
                 return requestPromise({

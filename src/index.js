@@ -2,7 +2,6 @@ import _ from 'underscore';
 import { requestPromise, REQUEST_PROMISE_OPTIONS, EXP_BACKOFF_MAX_REPEATS } from './utils';
 import acts from './acts';
 import tasks from './tasks';
-import crawlers from './crawlers';
 import keyValueStores from './key_value_stores';
 import datasets from './datasets';
 import logs from './logs';
@@ -10,7 +9,7 @@ import users from './users';
 import webhooks from './webhooks';
 import webhookDispatches from './webhook_dispatches';
 import requestQueues, { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from './request_queues';
-import ApifyClientError, { INVALID_PARAMETER_ERROR_TYPE_V2 } from './apify_error';
+import ApifyClientError, { INVALID_PARAMETER_ERROR_TYPE } from './apify_error';
 
 /** @ignore */
 const getDefaultOptions = () => ({
@@ -41,7 +40,6 @@ const getDefaultOptions = () => ({
 const methodGroups = {
     acts,
     tasks,
-    crawlers,
     keyValueStores,
     datasets,
     requestQueues,
@@ -55,8 +53,8 @@ const methodGroups = {
  * @type package
  * @class ApifyClient
  * @param {Object} [options] - Global options for ApifyClient. You can globally configure here any method option from any namespace. For example
- *                             if you are working with just one crawler then you can preset it's crawlerId here instead of passing it to each
- *                             crawler's method.
+ *                             if you are working with just one actor then you can preset it's actId here instead of passing it to each
+ *                             actor's method.
  * @param {String} [options.userId] - Your user ID at apify.com
  * @param {String} [options.token] - Your API token at apify.com
  * @param {Number} [options.expBackOffMillis=500] - Wait time in milliseconds before repeating request to Apify API in a case of server
@@ -73,6 +71,11 @@ const methodGroups = {
  *   token: 'SNjkeiuoeD443lpod68dk',
  * });
  * ```
+ *
+ * All API calls done through this client are made with exponential backoff.
+ * What this means, is that if the API call fails, this client will attempt the call again with a small delay.
+ * If it fails again, it will do another attempt after twice as long and so on, until one attempt succeeds
+ * or 8th attempt fails.
  */
 const ApifyClient = function (options = {}) {
     // This allows to initiate ApifyClient both ways - with and without "new".
@@ -97,7 +100,7 @@ const ApifyClient = function (options = {}) {
             const mergedOpts = Object.assign({}, instanceOpts, callOpts);
 
             // Check that all required parameters are set.
-            if (!instanceOpts.baseUrl) throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE_V2, 'The "options.baseUrl" parameter is required');
+            if (!instanceOpts.baseUrl) throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, 'The "options.baseUrl" parameter is required');
 
             // Remove traling forward slash from baseUrl.
             if (mergedOpts.baseUrl.substr(-1) === '/') mergedOpts.baseUrl = mergedOpts.baseUrl.slice(0, -1);

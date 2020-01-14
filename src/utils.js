@@ -7,10 +7,8 @@ import { gzip } from 'zlib';
 import os from 'os';
 import { version } from '../package.json';
 import ApifyClientError, {
-    INVALID_PARAMETER_ERROR_TYPE_V1,
-    INVALID_PARAMETER_ERROR_TYPE_V2,
-    REQUEST_FAILED_ERROR_TYPE_V1,
-    REQUEST_FAILED_ERROR_TYPE_V2,
+    INVALID_PARAMETER_ERROR_TYPE,
+    REQUEST_FAILED_ERROR_TYPE,
     REQUEST_FAILED_ERROR_MESSAGE,
     NOT_FOUND_STATUS_CODE,
 } from './apify_error';
@@ -51,8 +49,7 @@ export const safeJsonParse = (str) => {
  *
  * then uses its error type or message or both.
  */
-export const newApifyClientErrorFromResponse = (body, isApiV1, details) => {
-    const REQUEST_FAILED_ERROR_TYPE = isApiV1 ? REQUEST_FAILED_ERROR_TYPE_V1 : REQUEST_FAILED_ERROR_TYPE_V2;
+export const newApifyClientErrorFromResponse = (body, details) => {
     let parsedBody = {};
 
     if (_.isObject(body)) parsedBody = body;
@@ -83,11 +80,6 @@ export const newApifyClientErrorFromResponse = (body, isApiV1, details) => {
  * @return {Promise<*>}
  */
 export const requestPromise = async (options, stats) => {
-    const isApiV1 = options.isApiV1;
-
-    const INVALID_PARAMETER_ERROR_TYPE = isApiV1 ? INVALID_PARAMETER_ERROR_TYPE_V1 : INVALID_PARAMETER_ERROR_TYPE_V2;
-    const REQUEST_FAILED_ERROR_TYPE = isApiV1 ? REQUEST_FAILED_ERROR_TYPE_V1 : REQUEST_FAILED_ERROR_TYPE_V2;
-
     const expBackoffMillis = options.expBackOffMillis || EXP_BACKOFF_MILLIS;
     const expBackoffMaxRepeats = options.expBackOffMaxRepeats || EXP_BACKOFF_MAX_REPEATS;
     const retryOnStatusCodes = options.retryOnStatusCodes || [RATE_LIMIT_EXCEEDED_STATUS_CODE];
@@ -151,7 +143,7 @@ export const requestPromise = async (options, stats) => {
             && statusCode < 500
             && !retryOnStatusCodes.includes(statusCode)
         ) {
-            throw newApifyClientErrorFromResponse(response.body, isApiV1, { statusCode, url: options.url, method: options.method });
+            throw newApifyClientErrorFromResponse(response.body, { statusCode, url: options.url, method: options.method });
         }
 
         const errorDetails = Object.assign(_.pick(options, 'url', 'method', 'qs'), {
@@ -181,15 +173,13 @@ export const requestPromise = async (options, stats) => {
  * If errorMessage is not provided then error message is created from name and type of param.
  *
  * @param {String} value - user entered value of that parameter
- * @param {String} name - parameter name (crawlerId for options.crawlerId)
+ * @param {String} name - parameter name (actId for options.actId)
  * @param {String} type - "String", "Number", ... (see ee: https://github.com/gkz/type-check)
  * @param {String} errorMessage - optional error message
  */
-export const checkParamOrThrow = (value, name, type, errorMessage, isApiV1) => {
+export const checkParamOrThrow = (value, name, type, errorMessage) => {
     // TODO: move this into apify-shared along with an ApifyClientError,
     // actually it shouldn't be ApifyClientError but ApifyError in most cases!
-
-    const INVALID_PARAMETER_ERROR_TYPE = isApiV1 ? INVALID_PARAMETER_ERROR_TYPE_V1 : INVALID_PARAMETER_ERROR_TYPE_V2;
 
     if (!errorMessage) errorMessage = `Parameter "${name}" of type ${type} must be provided`;
 
@@ -255,6 +245,8 @@ export const parseBody = (body, contentType) => {
  * Wrap results from response and parse attributes from apifier headers.
  */
 export function wrapArray(response) {
+    const limit = response.headers['x-apifier-pagination-limit'] || response.headers['x-apify-pagination-limit'];
+
     /**
      * @typedef {Object} PaginationList
      * @property {Array} items - List of returned objects
@@ -268,7 +260,7 @@ export function wrapArray(response) {
         total: parseInt(response.headers['x-apifier-pagination-total'] || response.headers['x-apify-pagination-total'], 10),
         offset: parseInt(response.headers['x-apifier-pagination-offset'] || response.headers['x-apify-pagination-offset'], 10),
         count: parseInt(response.headers['x-apifier-pagination-count'] || response.headers['x-apify-pagination-count'], 10),
-        limit: parseInt(response.headers['x-apifier-pagination-limit'] || response.headers['x-apify-pagination-limit'], 10),
+        limit: limit ? parseInt(limit, 10) : null, // Limit can be null in a case of dataset items.
     };
 }
 

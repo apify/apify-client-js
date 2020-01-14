@@ -1,3 +1,4 @@
+import _ from 'underscore';
 import { expect } from 'chai';
 import { gzipSync } from 'zlib';
 import { randomBytes } from 'crypto';
@@ -169,6 +170,26 @@ describe('Key value store', () => {
                 .keyValueStores
                 .getStore({ storeId })
                 .then(given => expect(given).to.be.eql(null));
+        });
+
+        it('updateStore() works', () => {
+            const storeId = 'some-id';
+            const token = 'my-token';
+            const store = { id: storeId, name: 'my-name' };
+
+            requestExpectCall({
+                json: true,
+                method: 'PUT',
+                url: `${BASE_URL}${BASE_PATH}/${storeId}`,
+                qs: { token },
+                body: _.omit(store, 'id'),
+            });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .keyValueStores
+                .updateStore({ storeId, store, token });
         });
 
         it('deleteStore() works', () => {

@@ -17,8 +17,8 @@ import { checkParamOrThrow, pluckData, parseDateFields, catchNotFoundOrThrow, st
  *
  * // Awaited promise
  * try {
- *      const crawler = await apifyClient.acts.listActs({});
- *      // Do something acts list ...
+ *      const actors = await apifyClient.acts.listActs({});
+ *      // Do something actors list ...
  * } catch (err) {
  *      // Do something with error ...
  * }
@@ -270,7 +270,8 @@ export default {
      * @param {String} [options.build] - Tag or number of the build to run (e.g. <code>latest</code> or <code>1.2.34</code>).
      * @param {Array}  [options.webhooks] - Specifies optional webhooks associated with the actor run,
      *                                      which can be used to receive a notification e.g. when the actor finished or failed,
-     *                                      see {@link https://apify.com/docs/webhooks#adhoc|ad hook webhooks documentation} for detailed description.
+     *                                      see {@link https://docs.apify.com/webhooks/ad-hoc-webhooks|ad hook webhooks documentation}
+     *                                      for detailed description.
      * @param callback
      * @returns {ActRun}
      */
@@ -444,6 +445,42 @@ export default {
 
         return requestPromise(opts)
             .then(response => JSON.parse(response))
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+
+    /**
+     * Resurrects finished (even failed) actor run.
+     * Container gets restarted with original storages.
+     *
+     * @memberof ApifyClient.acts
+     * @instance
+     * @param {Object} options
+     * @param {String} options.actId - Unique act ID
+     * @param {String} options.runId - Unique run ID
+     * @param [options.token]
+     * @param callback
+     * @returns {ActRun}
+     */
+    resurrectRun: (requestPromise, options) => {
+        const { baseUrl, token, actId, runId } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(actId, 'actId', 'String');
+        checkParamOrThrow(runId, 'runId', 'String');
+        checkParamOrThrow(token, 'token', 'Maybe String');
+
+        const safeActId = replaceSlashWithTilde(actId);
+        const query = {};
+
+        if (token) query.token = token;
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${safeActId}/runs/${runId}/resurrect`,
+            json: true,
+            method: 'POST',
+            qs: query,
+        })
             .then(pluckData)
             .then(parseDateFields);
     },
