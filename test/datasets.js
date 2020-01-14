@@ -3,7 +3,7 @@ import { gzipSync } from 'zlib';
 import sinon from 'sinon';
 import * as exponentialBackoff from 'apify-shared/exponential_backoff';
 import * as utils from '../build/utils';
-import { getDatasetItems, parseDatasetItemsResponse, BASE_PATH } from '../build/datasets';
+import { getDatasetItems, parseDatasetItemsResponse, RETRIES, BACKOFF_MILLIS } from '../build/datasets';
 import ApifyClientError, { NOT_FOUND_STATUS_CODE } from '../src/apify_error';
 import ApifyClient from '../build';
 import mockServer from './mock_server/server';
@@ -272,19 +272,17 @@ describe('Dataset methods', () => {
 
         it('getItems should retry with exponentialBackoff', async () => {
             const datasetId = 'some-id';
-            let run = false;
-            const stub = sinon.stub(utils, 'parseBody');
-            const stubRetryWithExpBackoff = sinon.stub(exponentialBackoff, 'retryWithExpBackoff');
-            stub.callsFake(() => {
-                throw new exponentialBackoff.RetryableError(new Error(message));
-            });
-            stubRetryWithExpBackoff.callsFake(() => {
-                run = true;
+            const originalRetry = utils.retryWithExpBackoff;
+            const stub = sinon.stub(utils, 'retryWithExpBackoff');
+            stub.callsFake((func, opts) => {
+                console.log(func, opts)
+                expect(typeof func).to.be.eql('function');
+                expect(opts.retry).to.be.eql(RETRIES);
+                expect(opts.minTimeout).to.be.eql(BACKOFF_MILLIS);
+                return originalRetry(func, opts);
             });
             await client.datasets.getItems({ datasetId, limit: 1, offset: 1 });
-            expect(run).to.be.eql(true);
-            utils.parseBody.restore();
-            exponentialBackoff.retryWithExpBackoff.restore();
+            stub.restore();
         });
 
         it('getItems() limit and offset work', async () => {
@@ -358,6 +356,7 @@ describe('Dataset methods', () => {
             mockServer.setResponse({ body: expected.items, headers });
 
             const res = await client.datasets.getItems({ datasetId });
+            console.dir(res);
             expect(res.toString()).to.be.eql(expected.toString());
             validateRequest({}, { datasetId });
         });

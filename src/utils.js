@@ -2,6 +2,8 @@ import _ from 'lodash';
 import contentTypeParser from 'content-type';
 import { parseType, parsedTypeCheck } from 'type-check';
 import { gzip } from 'zlib';
+import log from 'apify-shared/log';
+import retry from 'async-retry';
 import ApifyClientError, {
     INVALID_PARAMETER_ERROR_TYPE_V1,
     INVALID_PARAMETER_ERROR_TYPE_V2,
@@ -183,3 +185,26 @@ export function stringifyWebhooksToBase64(webhooks) {
 export function replaceSlashWithTilde(stringWithSlash) {
     return stringWithSlash.replace('/', '~');
 }
+
+// TODO: Move to the apify-shared
+/**
+ *
+ * @param func
+ * @param opts
+ * @return {Promise | Promise<any>}
+ */
+export const retryWithExpBackoff = (func, opts) => {
+    let retryCount = 0;
+    const onRetry = (error) => {
+        retryCount += 1;
+        if (retryCount === Math.round(opts.retries / 2)) {
+            log.warning(`Retry failed ${retryCount} times and will be repeated later`, {
+                originalError: error.error.message,
+                errorDetails: error.error.details,
+            });
+        }
+    };
+    const options = Object.assign({}, { onRetry }, opts);
+
+    return retry(func, options);
+};

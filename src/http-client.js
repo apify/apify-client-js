@@ -1,14 +1,13 @@
 import axios from 'axios';
 import KeepAliveAgent from 'agentkeepalive';
-import { RetryableError, retryWithExpBackoff } from 'apify-shared/exponential_backoff';
 import os from 'os';
 import ApifyClientError, {
     INVALID_PARAMETER_ERROR_TYPE_V1,
     INVALID_PARAMETER_ERROR_TYPE_V2,
     REQUEST_FAILED_ERROR_TYPE_V1, REQUEST_FAILED_ERROR_TYPE_V2,
 } from './apify_error';
-import { checkParamOrThrow, CONTENT_TYPE_JSON, newApifyClientErrorFromResponse } from './utils';
-import { version } from '../package';
+import { checkParamOrThrow, CONTENT_TYPE_JSON, newApifyClientErrorFromResponse, retryWithExpBackoff } from './utils';
+import { version } from '../package.json';
 
 export const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 export const EXP_BACKOFF_MILLIS = 500;
@@ -132,7 +131,7 @@ export class HttpClient {
 
         const axiosConfig = this._getAxiosConfig(options);
 
-        const makeRequest = async () => {
+        const makeRequest = async (bail) => {
             iteration += 1;
             let statusCode;
             let response;
@@ -168,11 +167,13 @@ export class HttpClient {
             // For status codes 300-499 except options.retryOnStatusCodes we immediately rejects the promise
             // since it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
             if (
-                statusCode >= 300
+                !(statusCode >= 300
                 && statusCode < 500
                 && !retryOnStatusCodes.includes(statusCode)
+                    )
             ) {
-                throw newApifyClientErrorFromResponse(response.body, isApiV1, { statusCode, url: options.url, method: options.method });
+                bail(newApifyClientErrorFromResponse(response.body, isApiV1, { statusCode, url: options.url, method: options.method }));
+
             }
 
             const errorDetails = {
@@ -194,10 +195,8 @@ export class HttpClient {
                 ? 'API request failed on the first try'
                 : `API request failed on retry number ${iteration - 1}`;
             const REQUEST_FAILED_ERROR_TYPE = isApiV1 ? REQUEST_FAILED_ERROR_TYPE_V1 : REQUEST_FAILED_ERROR_TYPE_V2;
-            const originalError = new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, errorMsg, errorDetails, error);
-            throw new RetryableError(originalError);
+            throw new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, errorMsg, errorDetails, error);
         };
-
-        return retryWithExpBackoff({ func: makeRequest, expBackoffMaxRepeats, expBackoffMillis });
+        return retryWithExpBackoff(makeRequest, { retries: expBackoffMaxRepeats, minTimeout: expBackoffMillis });
     }
 }

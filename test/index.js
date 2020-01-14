@@ -118,7 +118,7 @@ describe('ApifyClient', () => {
     });
 
     xit('should be possible to use with promises', () => {
-        //TODO: Remove?
+        // TODO: Remove?
         const apifyClient = new ApifyClient({
             protocol: 'http',
             host: 'myhost',
@@ -136,7 +136,7 @@ describe('ApifyClient', () => {
     });
 
     xit('should be possible handle errors when used with promises', () => {
-        //TODO: Remove?
+        // TODO: Remove?
         const apifyClient = new ApifyClient({
             protocol: 'http',
             host: 'myhost',
@@ -179,7 +179,7 @@ describe('ApifyClient', () => {
     });
 
     xit('should be possible handle errors when used with callbacks', (done) => {
-        //TODO: Remove?
+        // TODO: Remove?
         const apifyClient = new ApifyClient({
             protocol: 'http',
             host: 'myhost',
@@ -200,7 +200,7 @@ describe('ApifyClient', () => {
     });
 
     xit('should passed preconfigured utils.requestPromise to each method', () => {
-        //TODO: Remove?
+        // TODO: Remove?
 
         const requestPromiseMock = sinon.mock(utils, 'requestPromise');
         const expected = {
@@ -235,7 +235,7 @@ describe('ApifyClient', () => {
     });
 
     xit('should remove trailing forward slash from baseUrl', () => {
-        //TODO: Remove?
+        // TODO: Remove?
 
         const apifyClient = new ApifyClient({
             baseUrl: 'something/',

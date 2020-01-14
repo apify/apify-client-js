@@ -1,4 +1,3 @@
-import { retryWithExpBackoff, RetryableError } from 'apify-shared/exponential_backoff';
 import _ from 'lodash';
 import {
     checkParamOrThrow,
@@ -10,7 +9,8 @@ import {
 } from './utils'; // eslint-disable-line import/no-duplicates
 import * as Utils from './utils'; // eslint-disable-line import/no-duplicates
 
-
+export const RETRIES = 5;
+export const BACKOFF_MILLIS = 200;
 /**
  * Datasets
  * @memberOf ApifyClient
@@ -360,11 +360,13 @@ export default class Datasets {
             encoding: null,
         };
 
-        return retryWithExpBackoff({
-            func: () => getDatasetItems(() => this._call(options, endpointOptions), disableBodyParser),
-            expBackoffMillis: 200,
-            expBackoffMaxRepeats: 5,
-        });
+        return Utils.retryWithExpBackoff(
+            bail => getDatasetItems(() => this._call(options, endpointOptions), disableBodyParser, bail),
+            {
+                retry: RETRIES,
+                minTimeout: BACKOFF_MILLIS,
+            },
+        );
     }
 
     /**
@@ -404,25 +406,25 @@ export default class Datasets {
     }
 }
 
-export function parseDatasetItemsResponse(response, disableBodyParser) {
+export function parseDatasetItemsResponse(response, disableBodyParser, bail) {
     const contentType = response.headers['content-type'];
     const wrappedItems = wrapArray(response);
     try {
         if (!disableBodyParser) wrappedItems.items = Utils.parseBody(wrappedItems.items, contentType);
     } catch (e) {
-        if (e.message.includes('Unexpected end of JSON input')) {
+        if (!e.message.includes('Unexpected end of JSON input')) {
             // Getting invalid JSON error should be retried, because it is similar to getting 500 response code.
-            throw new RetryableError(e);
+            bail(e);
         }
-        throw e;
     }
     return wrappedItems;
 }
 
-export async function getDatasetItems(call, disableBodyParser) {
+export async function getDatasetItems(call, disableBodyParser, bail) {
     try {
         const response = await call();
-        return parseDatasetItemsResponse(response, disableBodyParser);
+        console.dir(response.body.toString());
+        return parseDatasetItemsResponse(response, disableBodyParser, bail);
     } catch (err) {
         return catchNotFoundOrThrow(err);
     }
