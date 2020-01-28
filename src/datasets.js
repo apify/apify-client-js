@@ -414,8 +414,9 @@ export function parseDatasetItemsResponse(response, disableBodyParser, bail) {
     } catch (e) {
         if (!e.message.includes('Unexpected end of JSON input')) {
             // Getting invalid JSON error should be retried, because it is similar to getting 500 response code.
-            bail(e);
+            throw e;
         }
+        bail(e);
     }
     return wrappedItems;
 }
@@ -423,9 +424,12 @@ export function parseDatasetItemsResponse(response, disableBodyParser, bail) {
 export async function getDatasetItems(call, disableBodyParser, bail) {
     try {
         const response = await call();
-        console.dir(response.body.toString());
         return parseDatasetItemsResponse(response, disableBodyParser, bail);
     } catch (err) {
-        return catchNotFoundOrThrow(err);
+        try {
+            return catchNotFoundOrThrow(err, bail);
+        } catch (e) {
+            bail(e);
+        }
     }
 }

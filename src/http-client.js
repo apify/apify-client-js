@@ -170,10 +170,10 @@ export class HttpClient {
                 !(statusCode >= 300
                 && statusCode < 500
                 && !retryOnStatusCodes.includes(statusCode)
-                    )
+                )
             ) {
                 bail(newApifyClientErrorFromResponse(response.body, isApiV1, { statusCode, url: options.url, method: options.method }));
-
+                return;
             }
 
             const errorDetails = {

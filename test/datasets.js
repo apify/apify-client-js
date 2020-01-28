@@ -244,44 +244,21 @@ describe('Dataset methods', () => {
                 expect(error.message).to.be.eql(message);
                 utils.parseBody.restore();
             });
-
-            it('parseDatasetItemsResponse() should throw RetryableError if  Unexpected end of JSON input', async () => {
-                const response = {
-                    headers: {
-                        'content-type': 'application/json',
-                    },
-                    body: {
-
-                    },
-                };
-                const stub = sinon.stub(utils, 'parseBody');
-                stub.callsFake(() => {
-                    JSON.parse('{"foo":');
-                });
-                let error;
-                try {
-                    parseDatasetItemsResponse(response, false);
-                } catch (e) {
-                    error = e;
-                }
-                expect(error instanceof exponentialBackoff.RetryableError).to.be.eql(true);
-                expect(error.error.message).to.be.eql('Unexpected end of JSON input');
-                utils.parseBody.restore();
-            });
         });
 
         it('getItems should retry with exponentialBackoff', async () => {
             const datasetId = 'some-id';
             const originalRetry = utils.retryWithExpBackoff;
             const stub = sinon.stub(utils, 'retryWithExpBackoff');
+            let firstCall;
             stub.callsFake((func, opts) => {
-                console.log(func, opts)
-                expect(typeof func).to.be.eql('function');
-                expect(opts.retry).to.be.eql(RETRIES);
-                expect(opts.minTimeout).to.be.eql(BACKOFF_MILLIS);
-                return originalRetry(func, opts);
+                if (!firstCall) firstCall = { func, opts };
+                return originalRetry;
             });
             await client.datasets.getItems({ datasetId, limit: 1, offset: 1 });
+            expect(typeof firstCall.func).to.be.eql('function');
+            expect(firstCall.opts.retry).to.be.eql(RETRIES);
+            expect(firstCall.opts.minTimeout).to.be.eql(BACKOFF_MILLIS);
             stub.restore();
         });
 
