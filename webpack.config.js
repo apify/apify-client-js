@@ -1,11 +1,14 @@
 module.exports = {
     entry: './src/index.js',
+    target: 'web',
     module: {
         rules: [
             {
                 test: /\.(js)$/,
                 exclude: /node_modules/,
-                use: ['babel-loader'],
+                use: {
+                    loader: 'babel-loader',
+                },
             },
         ],
     },
@@ -14,8 +17,10 @@ module.exports = {
     },
     output: {
         path: `${__dirname}/dist`,
-        publicPath: '/',
         filename: 'bundle.js',
+        libraryTarget: 'umd',
+        libraryExport: 'default',
+        library: 'ApifyClient',
     },
-    mode: 'production',
+    mode: 'development',
 };

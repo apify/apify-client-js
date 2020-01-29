@@ -57,7 +57,7 @@ const endpointClasses = {
  * @param {String} [options.userId] - Your user ID at apify.com
  * @param {String} [options.token] - Your API token at apify.com
  * @param {Number} [options.expBackoffMillis=500] - Wait time in milliseconds before repeating request to Apify API in a case of server
-                                                    or rate limit error
+ or rate limit error
  * @param {Number} [options.expBackoffMaxRepeats=8] - Maximum number of repeats in a case of error
  * @param {Array<Number>} [options.retryOnStatusCodes=[429]] - An array of status codes on which request gets retried. By default requests are retried
  *                                                             only in a case of limit error (status code 429).

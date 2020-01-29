@@ -118,6 +118,27 @@ export class HttpClient {
         };
     }
 
+    _getResponseLike(axiosResponse) {
+        let response;
+
+        if (axiosResponse.request.res) {
+            // It is in node
+            // return standard Node.Js response-like object;
+            response = axiosResponse.request.res;
+            response.body = axiosResponse.data;
+        } else {
+            const { data, status, statusText, headers, config } = axiosResponse;
+            response = {
+                body: data,
+                statusCode: status,
+                statusText,
+                headers,
+                config,
+            };
+        }
+        return response;
+    }
+
     async _call(options) {
         const {
             isApiV1,
@@ -141,9 +162,8 @@ export class HttpClient {
                 this.stats.requests++;
                 const axiosResponse = await axios.request(axiosConfig); // eslint-disable-line
                 // TODO Emulate Request API for now
-                response = axiosResponse.request.res;
+                response = this._getResponseLike(axiosResponse);
                 statusCode = response ? response.statusCode : null;
-                response.body = axiosResponse.data;
 
                 // TODO Retest this with Axios
                 // It may happen that response is incomplete but request package silently returns original
