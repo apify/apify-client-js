@@ -3,6 +3,7 @@ import ApifyClient from '../build';
 import { stringifyWebhooksToBase64 } from '../build/utils';
 
 import mockServer from './mock_server/server';
+import { cleanUpBrowser, getInjectedPage } from './_helper';
 
 const DEFAULT_QUERY = {
     token: 'default-token',
@@ -42,6 +43,7 @@ function optsToQuery(params) {
 
 describe('Task methods', () => {
     let baseUrl = null;
+    let page;
     before(async () => {
         const server = await mockServer.start(3333);
         baseUrl = `http://localhost:${server.address().port}`;
@@ -49,7 +51,8 @@ describe('Task methods', () => {
     after(() => mockServer.close());
 
     let client = null;
-    beforeEach(() => {
+    beforeEach(async () => {
+        page = await getInjectedPage(baseUrl, DEFAULT_QUERY);
         client = new ApifyClient({
             baseUrl,
             expBackoffMaxRepeats: 0,
@@ -57,8 +60,9 @@ describe('Task methods', () => {
             ...DEFAULT_QUERY,
         });
     });
-    afterEach(() => {
+    afterEach(async () => {
         client = null;
+        await cleanUpBrowser(page);
     });
 
     it('listTasks() works', async () => {
@@ -71,6 +75,10 @@ describe('Task methods', () => {
         const res = await client.tasks.listTasks(opts);
         expect(res.id).to.be.eql('list-tasks');
         validateRequest(opts);
+
+        const browserRes = await page.evaluate(options => client.tasks.listTasks(options), opts);
+        expect(browserRes).to.eql(res);
+        validateRequest(opts);
     });
 
     it('listTasks() works without pagination', async () => {
@@ -79,6 +87,10 @@ describe('Task methods', () => {
         const res = await client.tasks.listTasks(opts);
         expect(res.id).to.be.eql('list-tasks');
         validateRequest(opts);
+
+        const browserRes = await page.evaluate(options => client.tasks.listTasks(options), opts);
+        expect(browserRes).to.eql(res);
+        validateRequest(opts);
     });
 
     it('createTask() works', async () => {
@@ -86,6 +98,10 @@ describe('Task methods', () => {
 
         const res = await client.tasks.createTask({ task });
         expect(res.id).to.be.eql('create-task');
+        validateRequest({}, {}, task);
+
+        const browserRes = await page.evaluate(options => client.tasks.createTask(options), { task });
+        expect(browserRes).to.eql(res);
         validateRequest({}, {}, task);
     });
 
@@ -96,6 +112,10 @@ describe('Task methods', () => {
         const res = await client.tasks.updateTask({ taskId, task });
         expect(res.id).to.be.eql('update-task');
         validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
+
+        const browserRes = await page.evaluate(options => client.tasks.updateTask(options), { taskId, task });
+        expect(browserRes).to.eql(res);
+        validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
     });
 
     it('updateTask() works with taskId in task object', async () => {
@@ -105,6 +125,10 @@ describe('Task methods', () => {
         const res = await client.tasks.updateTask({ task });
         expect(res.id).to.be.eql('update-task');
         validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
+
+        const browserRes = await page.evaluate(options => client.tasks.updateTask(options), { taskId, task });
+        expect(browserRes).to.eql(res);
+        validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
     });
 
     it('updateTask() works with taskId parameter', async () => {
@@ -113,6 +137,10 @@ describe('Task methods', () => {
 
         const res = await client.tasks.updateTask({ taskId, task });
         expect(res.id).to.be.eql('update-task');
+        validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
+
+        const browserRes = await page.evaluate(options => client.tasks.updateTask(options), { taskId, task });
+        expect(browserRes).to.eql(res);
         validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
     });
 
@@ -145,6 +173,10 @@ describe('Task methods', () => {
         const res = await client.tasks.deleteTask({ taskId });
         expect(res).to.be.eql('');
         validateRequest({}, { taskId });
+
+        const browserRes = await page.evaluate(options => client.tasks.deleteTask(options), { taskId });
+        expect(browserRes).to.eql(res);
+        validateRequest({}, { taskId });
     });
 
     it('getTask() works', async () => {
@@ -152,6 +184,10 @@ describe('Task methods', () => {
 
         const res = await client.tasks.getTask({ taskId });
         expect(res.id).to.be.eql('get-task');
+        validateRequest({}, { taskId });
+
+        const browserRes = await page.evaluate(options => client.tasks.getTask(options), { taskId });
+        expect(browserRes).to.eql(res);
         validateRequest({}, { taskId });
     });
 
@@ -186,6 +222,10 @@ describe('Task methods', () => {
         const res = await client.tasks.getTask({ taskId });
         expect(res).to.be.eql(null);
         validateRequest({}, { taskId });
+
+        const browserRes = await page.evaluate(options => client.tasks.getTask(options), { taskId });
+        expect(browserRes).to.eql(res);
+        validateRequest({}, { taskId });
     });
 
     it('listRuns() works', async () => {
@@ -200,6 +240,10 @@ describe('Task methods', () => {
         const res = await client.tasks.listRuns({ taskId, ...query });
         expect(res.id).to.be.eql('list-runs');
         validateRequest(query, { taskId });
+
+        const browserRes = await page.evaluate(options => client.tasks.listRuns(options), { taskId, ...query });
+        expect(browserRes).to.eql(res);
+        validateRequest(query, { taskId });
     });
 
     it('listRuns() works without pagination params', async () => {
@@ -208,6 +252,10 @@ describe('Task methods', () => {
         const query = {};
         const res = await client.tasks.listRuns({ taskId, ...query });
         expect(res.id).to.be.eql('list-runs');
+        validateRequest(query, { taskId });
+
+        const browserRes = await page.evaluate(options => client.tasks.listRuns(options), { taskId, ...query });
+        expect(browserRes).to.eql(res);
         validateRequest(query, { taskId });
     });
 
@@ -219,6 +267,10 @@ describe('Task methods', () => {
 
         const res = await client.tasks.runTask({ taskId, ...query });
         expect(res.id).to.be.eql('run-task');
+        validateRequest(query, { taskId });
+
+        const browserRes = await page.evaluate(options => client.tasks.runTask(options), { taskId, ...query });
+        expect(browserRes).to.eql(res);
         validateRequest(query, { taskId });
     });
 
@@ -233,6 +285,10 @@ describe('Task methods', () => {
 
         const res = await client.tasks.runTask({ taskId, input, ...query });
         expect(res.id).to.be.eql('run-task');
+        validateRequest(query, { taskId }, input);
+
+        const browserRes = await page.evaluate(options => client.tasks.runTask(options), { taskId, input, ...query });
+        expect(browserRes).to.eql(res);
         validateRequest(query, { taskId }, input);
     });
 
@@ -315,6 +371,10 @@ describe('Task methods', () => {
         const res = await client.tasks.listWebhooks({ taskId, ...query });
         expect(res.id).to.be.eql('list-webhooks');
         validateRequest(query, { taskId });
+
+        const browserRes = await page.evaluate(options => client.tasks.listWebhooks(options), { taskId, ...query });
+        expect(browserRes).to.eql(res);
+        validateRequest(query, { taskId });
     });
 
     it('getInput() works', async () => {
@@ -323,6 +383,10 @@ describe('Task methods', () => {
 
         const res = await client.tasks.getInput({ taskId, ...query });
         expect(res.id).to.be.eql('get-input');
+        validateRequest(query, { taskId });
+
+        const browserRes = await page.evaluate(options => client.tasks.getInput(options), { taskId, ...query });
+        expect(browserRes).to.eql(res);
         validateRequest(query, { taskId });
     });
 
@@ -333,7 +397,11 @@ describe('Task methods', () => {
         const query = {};
 
         const res = await client.tasks.updateInput({ taskId, input, ...query });
-        expect(res.id).to.be.eql('get-input');
+        expect(res.id).to.be.eql('update-input');
+        validateRequest(query, { taskId }, input);
+
+        const browserRes = await page.evaluate(options => client.tasks.updateInput(options), { taskId, input, ...query });
+        expect(browserRes).to.eql(res);
         validateRequest(query, { taskId }, input);
     });
 });

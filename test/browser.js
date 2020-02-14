@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import Apify from 'Apify';
 import mockServer from './mock_server/server';
+import { cleanUpBrowser, getInjectedPage } from './_helper';
 
 const DEFAULT_QUERY = {
     token: 'default-token',
@@ -40,12 +41,6 @@ function optsToQuery(params) {
 describe('Actor methods', () => {
     let baseUrl = null;
     let page = null;
-    let browser = null;
-    const getBrowserResponse = (func, opts) => {
-        return page.evaluate(() => {
-            return eval(`$${func}(${opts})`);
-        });
-    };
     before(async () => {
         const server = await mockServer.start(3333);
         baseUrl = `http://localhost:${server.address().port}`;
@@ -54,22 +49,10 @@ describe('Actor methods', () => {
 
     let client = null;
     beforeEach(async () => {
-        browser = await Apify.launchPuppeteer({ headless: true, args: ['--disable-web-security'] });
-        page = await browser.newPage();
-        await Apify.utils.puppeteer.injectFile(page, `${__dirname}/../dist/bundle.js`);
-
-        await page.evaluate((url, defaultQuery) => {
-            client = new ApifyClient({
-                baseUrl: url,
-                expBackoffMaxRepeats: 0,
-                expBackoffMillis: 1,
-                ...defaultQuery,
-            });
-        }, baseUrl, DEFAULT_QUERY);
+        page = await getInjectedPage(baseUrl, DEFAULT_QUERY);
     });
     afterEach(async () => {
-        await page.close();
-        await browser.close();
+        await cleanUpBrowser(page);
         client = null;
     });
     it('listActs() works', async () => {
@@ -78,7 +61,6 @@ describe('Actor methods', () => {
             offset: 3,
             desc: true,
         };
-        await getBrowserResponse()
 
         const res = await page.evaluate(async () => client.acts.listActs({
             limit: 5,

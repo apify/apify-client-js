@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import ApifyClient from '../build';
 import { stringifyWebhooksToBase64 } from '../build/utils';
 import mockServer from './mock_server/server';
+import { cleanUpBrowser, getInjectedPage } from './_helper';
 
 const DEFAULT_QUERY = {
     token: 'default-token',
@@ -41,6 +42,7 @@ function optsToQuery(params) {
 
 describe('Actor methods', () => {
     let baseUrl = null;
+    let page;
     before(async () => {
         const server = await mockServer.start(3333);
         baseUrl = `http://localhost:${server.address().port}`;
@@ -48,7 +50,8 @@ describe('Actor methods', () => {
     after(() => mockServer.close());
 
     let client = null;
-    beforeEach(() => {
+    beforeEach(async () => {
+        page = await getInjectedPage(baseUrl, DEFAULT_QUERY);
         client = new ApifyClient({
             baseUrl,
             expBackoffMaxRepeats: 0,
@@ -56,8 +59,9 @@ describe('Actor methods', () => {
             ...DEFAULT_QUERY,
         });
     });
-    afterEach(() => {
+    afterEach(async () => {
         client = null;
+        await cleanUpBrowser(page);
     });
 
     it('listActs() works', async () => {
@@ -70,6 +74,9 @@ describe('Actor methods', () => {
         const res = await client.acts.listActs(opts);
         expect(res.id).to.be.eql('list-actors');
         validateRequest(opts);
+        const browserRes = await page.evaluate(opts => client.acts.listActs(opts), opts);
+        expect(browserRes).to.eql(res);
+        validateRequest(opts);
     });
 
     it('createAct() works', async () => {
@@ -77,6 +84,9 @@ describe('Actor methods', () => {
 
         const res = await client.acts.createAct({ act });
         expect(res.id).to.be.eql('create-actor');
+        validateRequest({}, {}, act);
+        const browserRes = await page.evaluate(opts => client.acts.createAct(opts), { act });
+        expect(browserRes).to.eql(res);
         validateRequest({}, {}, act);
     });
 
@@ -87,6 +97,10 @@ describe('Actor methods', () => {
         const res = await client.acts.updateAct({ actId, act });
         expect(res.id).to.be.eql('update-actor');
         validateRequest({}, { actorId: 'some-user~some-id' }, { foo: 'bar' });
+
+        const browserRes = await page.evaluate(opts => client.acts.updateAct(opts), { actId, act });
+        expect(browserRes).to.eql(res);
+        validateRequest({}, { actorId: 'some-user~some-id' }, { foo: 'bar' });
     });
 
     it('updateAct() works with actId in act object', async () => {
@@ -95,6 +109,10 @@ describe('Actor methods', () => {
 
         const res = await client.acts.updateAct({ act });
         expect(res.id).to.be.eql('update-actor');
+        validateRequest({}, { actorId: actId }, { foo: 'bar' });
+
+        const browserRes = await page.evaluate(opts => client.acts.updateAct(opts), { act });
+        expect(browserRes).to.eql(res);
         validateRequest({}, { actorId: actId }, { foo: 'bar' });
     });
 
@@ -105,6 +123,10 @@ describe('Actor methods', () => {
         const res = await client.acts.updateAct({ actId, act });
         expect(res.id).to.be.eql('update-actor');
         validateRequest({}, { actorId: actId }, act);
+
+        const browserRes = await page.evaluate(opts => client.acts.updateAct(opts), { actId, act });
+        expect(browserRes).to.eql(res);
+        validateRequest({}, { actorId: actId }, act);
     });
 
     it('getAct() works', async () => {
@@ -112,6 +134,10 @@ describe('Actor methods', () => {
 
         const res = await client.acts.getAct({ actId });
         expect(res.id).to.be.eql('get-actor');
+        validateRequest({}, { actorId: actId });
+
+        const browserRes = await page.evaluate(opts => client.acts.getAct(opts), { actId });
+        expect(browserRes).to.eql(res);
         validateRequest({}, { actorId: actId });
     });
 
@@ -121,12 +147,19 @@ describe('Actor methods', () => {
         const res = await client.acts.getAct({ actId });
         expect(res).to.be.eql(null);
         validateRequest({}, { actorId: actId });
+
+        const browserRes = await page.evaluate(opts => client.acts.getAct(opts), { actId });
+        expect(browserRes).to.eql(res);
+        validateRequest({}, { actorId: actId });
     });
 
     it('deleteAct() works', async () => {
         const actId = '204';
         const res = await client.acts.deleteAct({ actId });
         expect(res).to.be.eql('');
+        validateRequest({}, { actorId: actId });
+
+        await page.evaluate(opts => client.acts.getAct(opts), { actId });
         validateRequest({}, { actorId: actId });
     });
 
@@ -141,6 +174,10 @@ describe('Actor methods', () => {
 
         const res = await client.acts.listRuns({ actId, ...query });
         expect(res.id).to.be.eql('list-runs');
+        validateRequest(query, { actorId: actId });
+
+        const browserRes = await page.evaluate(opts => client.acts.listRuns(opts), { actId, ...query });
+        expect(browserRes).to.eql(res);
         validateRequest(query, { actorId: actId });
     });
 
@@ -158,6 +195,10 @@ describe('Actor methods', () => {
 
         const res = await client.acts.runAct({ actId, contentType, body, ...query });
         expect(res.id).to.be.eql('run-actor');
+        validateRequest(query, { actorId: actId }, { some: 'body' }, { 'content-type': contentType });
+
+        const browserRes = await page.evaluate(opts => client.acts.runAct(opts), { actId, contentType, body, ...query });
+        expect(browserRes).to.eql(res);
         validateRequest(query, { actorId: actId }, { some: 'body' }, { 'content-type': contentType });
     });
 
@@ -177,6 +218,10 @@ describe('Actor methods', () => {
         const res = await client.acts.runAct({ actId, webhooks });
         expect(res.id).to.be.eql('run-actor');
         validateRequest({ webhooks: stringifyWebhooksToBase64(webhooks) }, { actorId: actId });
+
+        const browserRes = await page.evaluate(opts => client.acts.runAct(opts), { actId, webhooks });
+        expect(browserRes).to.eql(res);
+        validateRequest({ webhooks: stringifyWebhooksToBase64(webhooks) }, { actorId: actId });
     });
 
     it('getRun() works', async () => {
@@ -190,6 +235,10 @@ describe('Actor methods', () => {
         const res = await client.acts.getRun({ actId, runId, ...query });
         expect(res.id).to.be.eql('get-run');
         validateRequest(query, { actorId: actId, runId });
+
+        const browserRes = await page.evaluate(opts => client.acts.getRun(opts), { actId, runId, ...query });
+        expect(browserRes).to.eql(res);
+        validateRequest(query, { actorId: actId, runId });
     });
 
     it('abortRun() works', async () => {
@@ -199,6 +248,10 @@ describe('Actor methods', () => {
         const res = await client.acts.abortRun({ actId, runId });
         expect(res.id).to.be.eql('abort-run');
         validateRequest({}, { actorId: actId, runId });
+
+        const browserRes = await page.evaluate(opts => client.acts.abortRun(opts), { actId, runId });
+        expect(browserRes).to.eql(res);
+        validateRequest({}, { actorId: actId, runId });
     });
 
     it('resurrectRun() works', async () => {
@@ -207,6 +260,10 @@ describe('Actor methods', () => {
 
         const res = await client.acts.resurrectRun({ actId, runId });
         expect(res.id).to.be.eql('resurrect-run');
+        validateRequest({}, { actorId: actId, runId });
+
+        const browserRes = await page.evaluate(opts => client.acts.resurrectRun(opts), { actId, runId });
+        expect(browserRes).to.eql(res);
         validateRequest({}, { actorId: actId, runId });
     });
 
@@ -225,6 +282,10 @@ describe('Actor methods', () => {
         const res = await client.acts.metamorphRun({ actId, runId, contentType, body, ...query });
         expect(res.id).to.be.eql('metamorph-run');
         validateRequest(query, { actorId: actId, runId }, { some: 'body' }, { 'content-type': contentType });
+
+        const browserRes = await page.evaluate(opts => client.acts.metamorphRun(opts), { actId, runId, contentType, body, ...query });
+        expect(browserRes).to.eql(res);
+        validateRequest(query, { actorId: actId, runId }, { some: 'body' }, { 'content-type': contentType });
     });
 
     it('getRun() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
@@ -235,6 +296,10 @@ describe('Actor methods', () => {
 
         const res = await client.acts.getRun({ actId, runId, ...query });
         expect(res).to.be.eql(null);
+        validateRequest(query, { actorId: actId, runId });
+
+        const browserRes = await page.evaluate(opts => client.acts.getRun(opts), { actId, runId, ...query });
+        expect(browserRes).to.eql(res);
         validateRequest(query, { actorId: actId, runId });
     });
 
@@ -249,6 +314,10 @@ describe('Actor methods', () => {
 
         const res = await client.acts.listBuilds({ actId, ...query });
         expect(res.id).to.be.eql('list-builds');
+        validateRequest(query, { actorId: actId });
+
+        const browserRes = await page.evaluate(opts => client.acts.listBuilds(opts), { actId, ...query });
+        expect(browserRes).to.eql(res);
         validateRequest(query, { actorId: actId });
     });
 
@@ -267,6 +336,10 @@ describe('Actor methods', () => {
         const res = await client.acts.buildAct({ actId, ...query });
         expect(res.id).to.be.eql('build-actor');
         validateRequest(query, { actorId: actId });
+
+        const browserRes = await page.evaluate(opts => client.acts.buildAct(opts), { actId, ...query });
+        expect(browserRes).to.eql(res);
+        validateRequest(query, { actorId: actId });
     });
 
     it('getBuild() works', async () => {
@@ -278,8 +351,11 @@ describe('Actor methods', () => {
         };
 
         const res = await client.acts.getBuild({ actId, buildId, ...query });
-        console.log(res, 'RES');
         expect(res.id).to.be.eql('get-build');
+        validateRequest(query, { actorId: actId, buildId });
+
+        const browserRes = await page.evaluate(opts => client.acts.getBuild(opts), { actId, buildId, ...query });
+        expect(browserRes).to.eql(res);
         validateRequest(query, { actorId: actId, buildId });
     });
 
@@ -294,6 +370,10 @@ describe('Actor methods', () => {
         const res = await client.acts.getBuild({ actId, buildId, ...query });
         expect(res).to.be.eql(null);
         validateRequest(query, { actorId: actId, buildId });
+
+        const browserRes = await page.evaluate(opts => client.acts.getBuild(opts), { actId, buildId, ...query });
+        expect(browserRes).to.eql(res);
+        validateRequest(query, { actorId: actId, buildId });
     });
 
     it('abortBuild() works', async () => {
@@ -302,6 +382,10 @@ describe('Actor methods', () => {
 
         const res = await client.acts.abortBuild({ actId, buildId });
         expect(res.id).to.be.eql('abort-build');
+        validateRequest({}, { actorId: actId, buildId });
+
+        const browserRes = await page.evaluate(opts => client.acts.abortBuild(opts), { actId, buildId });
+        expect(browserRes).to.eql(res);
         validateRequest({}, { actorId: actId, buildId });
     });
 
@@ -313,6 +397,10 @@ describe('Actor methods', () => {
         const res = await client.acts.listActVersions({ actId });
         expect(res.id).to.be.eql('list-actor-versions');
         validateRequest(query, { actorId: actId });
+
+        const browserRes = await page.evaluate(opts => client.acts.listActVersions(opts), { actId });
+        expect(browserRes).to.eql(res);
+        validateRequest({}, { actorId: actId });
     });
 
     it('createActVersion() works', async () => {
@@ -325,6 +413,10 @@ describe('Actor methods', () => {
         const res = await client.acts.createActVersion({ actId, actVersion });
         expect(res.id).to.be.eql('create-actor-version');
         validateRequest({}, { actorId: actId }, actVersion);
+
+        const browserRes = await page.evaluate(opts => client.acts.createActVersion(opts), { actId, actVersion });
+        expect(browserRes).to.eql(res);
+        validateRequest({}, { actorId: actId }, actVersion);
     });
 
     it('getActVersion() works', async () => {
@@ -334,6 +426,10 @@ describe('Actor methods', () => {
         const res = await client.acts.getActorVersion({ actId, versionNumber });
         expect(res.id).to.be.eql('get-actor-version');
         validateRequest({}, { actorId: actId, versionNumber });
+
+        const browserRes = await page.evaluate(opts => client.acts.getActorVersion(opts), { actId, versionNumber });
+        expect(browserRes).to.eql(res);
+        validateRequest({}, { actorId: actId, versionNumber });
     });
 
     it('getActVersion() works if version did not exist', async () => {
@@ -342,6 +438,10 @@ describe('Actor methods', () => {
 
         const res = await client.acts.getActorVersion({ actId, versionNumber });
         expect(res).to.be.eql(null);
+        validateRequest({}, { actorId: actId, versionNumber });
+
+        const browserRes = await page.evaluate(opts => client.acts.getActorVersion(opts), { actId, versionNumber });
+        expect(browserRes).to.eql(res);
         validateRequest({}, { actorId: actId, versionNumber });
     });
 
@@ -356,6 +456,10 @@ describe('Actor methods', () => {
         const res = await client.acts.updateActVersion({ actId, versionNumber, actVersion });
         expect(res.id).to.be.eql('update-actor-version');
         validateRequest({}, { actorId: 'some-user~some-id', versionNumber }, actVersion);
+
+        const browserRes = await page.evaluate(opts => client.acts.updateActVersion(opts), { actId, versionNumber, actVersion });
+        expect(browserRes).to.eql(res);
+        validateRequest({}, { actorId: 'some-user~some-id', versionNumber }, actVersion);
     });
 
     it('deleteActVersion() works', async () => {
@@ -364,6 +468,10 @@ describe('Actor methods', () => {
 
         const res = await client.acts.deleteActVersion({ actId, versionNumber });
         expect(res).to.be.eql(null);
+        validateRequest({}, { actorId: actId, versionNumber });
+
+        const browserRes = await page.evaluate(opts => client.acts.deleteActVersion(opts), { actId, versionNumber });
+        expect(browserRes).to.eql(res);
         validateRequest({}, { actorId: actId, versionNumber });
     });
 
@@ -378,6 +486,10 @@ describe('Actor methods', () => {
 
         const res = await client.acts.listWebhooks({ actId, ...query });
         expect(res.id).to.be.eql('list-webhooks');
+        validateRequest(query, { actorId: actId });
+
+        const browserRes = await page.evaluate(opts => client.acts.listWebhooks(opts), { actId, ...query });
+        expect(browserRes).to.eql(res);
         validateRequest(query, { actorId: actId });
     });
 });

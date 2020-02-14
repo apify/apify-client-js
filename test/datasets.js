@@ -1,12 +1,11 @@
 import { expect } from 'chai';
-import { gzipSync } from 'zlib';
 import sinon from 'sinon';
-import * as exponentialBackoff from 'apify-shared/exponential_backoff';
 import * as utils from '../build/utils';
 import { getDatasetItems, parseDatasetItemsResponse, RETRIES, BACKOFF_MILLIS } from '../build/datasets';
 import ApifyClientError, { NOT_FOUND_STATUS_CODE } from '../src/apify_error';
 import ApifyClient from '../build';
 import mockServer from './mock_server/server';
+import { cleanUpBrowser, getInjectedPage } from './_helper';
 
 const DEFAULT_QUERY = {
     token: 'default-token',
@@ -46,16 +45,16 @@ function optsToQuery(params) {
 
 describe('Dataset methods', () => {
     let baseUrl = null;
-
+    let page;
     before(async () => {
         const server = await mockServer.start(3333);
         baseUrl = `http://localhost:${server.address().port}`;
     });
-
     after(() => mockServer.close());
 
     let client = null;
-    beforeEach(() => {
+    beforeEach(async () => {
+        page = await getInjectedPage(baseUrl, DEFAULT_QUERY);
         client = new ApifyClient({
             baseUrl,
             expBackoffMaxRepeats: 0,
@@ -63,9 +62,9 @@ describe('Dataset methods', () => {
             ...DEFAULT_QUERY,
         });
     });
-
-    afterEach(() => {
+    afterEach(async () => {
         client = null;
+        await cleanUpBrowser(page);
     });
 
     describe('indentification', () => {
@@ -92,6 +91,10 @@ describe('Dataset methods', () => {
             const res = await client.datasets.getDataset({ datasetId });
             expect(res.id).to.be.eql('get-dataset');
             validateRequest({ }, { datasetId });
+
+            const browserRes = await page.evaluate(options => client.datasets.getDataset(options), { datasetId });
+            expect(browserRes).to.eql(res);
+            validateRequest({}, { datasetId });
         });
 
         it('should work with token and datasetName', async () => {
@@ -102,6 +105,10 @@ describe('Dataset methods', () => {
 
             const res = await client.datasets.getOrCreateDataset(query);
             expect(res.id).to.be.eql('get-or-create-dataset');
+            validateRequest({ token: query.token, name: query.datasetName }, {});
+
+            const browserRes = await page.evaluate(options => client.datasets.getOrCreateDataset(options), query);
+            expect(browserRes).to.eql(res);
             validateRequest({ token: query.token, name: query.datasetName }, {});
         });
     });
@@ -127,6 +134,10 @@ describe('Dataset methods', () => {
             const res = await client.datasets.listDatasets(callOptions);
             expect(res.id).to.be.eql('list-datasets');
             validateRequest(queryString);
+
+            const browserRes = await page.evaluate(options => client.datasets.listDatasets(options), callOptions);
+            expect(browserRes).to.eql(res);
+            validateRequest(queryString);
         });
 
         it('getDataset() works', async () => {
@@ -134,6 +145,10 @@ describe('Dataset methods', () => {
 
             const res = await client.datasets.getDataset({ datasetId });
             expect(res.id).to.be.eql('get-dataset');
+            validateRequest({}, { datasetId });
+
+            const browserRes = await page.evaluate(options => client.datasets.getDataset(options), { datasetId });
+            expect(browserRes).to.eql(res);
             validateRequest({}, { datasetId });
         });
 
@@ -143,12 +158,20 @@ describe('Dataset methods', () => {
             const res = await client.datasets.getDataset({ datasetId });
             expect(res).to.be.eql(null);
             validateRequest({}, { datasetId });
+
+            const browserRes = await page.evaluate(options => client.datasets.getDataset(options), { datasetId });
+            expect(browserRes).to.eql(res);
+            validateRequest({}, { datasetId });
         });
 
         it('deleteDataset() works', async () => {
             const datasetId = '204';
             const res = await client.datasets.deleteDataset({ datasetId });
             expect(res).to.be.eql('');
+            validateRequest({}, { datasetId });
+
+            const browserRes = await page.evaluate(options => client.datasets.deleteDataset(options), { datasetId });
+            expect(browserRes).to.eql(res);
             validateRequest({}, { datasetId });
         });
 
@@ -173,6 +196,10 @@ describe('Dataset methods', () => {
 
             const res = await client.datasets.getItems({ datasetId });
             expect(res.toString()).to.be.eql(expected.toString());
+            validateRequest({}, { datasetId }, {});
+
+            const browserRes = await page.evaluate(options => client.datasets.getItems(options), { datasetId });
+            expect(browserRes).to.eql(res);
             validateRequest({}, { datasetId }, {});
         });
 
@@ -208,6 +235,10 @@ describe('Dataset methods', () => {
             const res = await client.datasets.getItems(options);
             expect(res.toString()).to.be.eql(expected.toString());
             validateRequest(qs, { datasetId }, {});
+
+            const browserRes = await page.evaluate(options => client.datasets.getItems(options), { datasetId });
+            expect(browserRes).to.eql(res);
+            validateRequest({}, { datasetId }, {});
         });
 
         describe('getDatasetItems()', () => {
@@ -285,6 +316,10 @@ describe('Dataset methods', () => {
             const res = await client.datasets.getItems({ datasetId, limit: 1, offset: 1 });
             expect(res.toString()).to.be.eql(expected.toString());
             validateRequest(qs, { datasetId });
+
+            const browserRes = await page.evaluate(options => client.datasets.getItems(options), { datasetId, limit: 1, offset: 1 });
+            expect(browserRes).to.eql(res);
+            validateRequest(qs, { datasetId });
         });
 
         it('getItems() parses JSON', async () => {
@@ -310,6 +345,10 @@ describe('Dataset methods', () => {
             const res = await client.datasets.getItems({ datasetId });
             expect(res.toString()).to.be.eql(expected.toString());
             validateRequest({}, { datasetId });
+
+            const browserRes = await page.evaluate(options => client.datasets.getItems(options), { datasetId });
+            expect(browserRes).to.eql(res);
+            validateRequest({}, { datasetId });
         });
 
         it('getItems() doesn\'t parse application/json when disableBodyParser = true', async () => {
@@ -333,8 +372,11 @@ describe('Dataset methods', () => {
             mockServer.setResponse({ body: expected.items, headers });
 
             const res = await client.datasets.getItems({ datasetId });
-            console.dir(res);
             expect(res.toString()).to.be.eql(expected.toString());
+            validateRequest({}, { datasetId });
+
+            const browserRes = await page.evaluate(options => client.datasets.getItems(options), { datasetId });
+            expect(browserRes).to.eql(res);
             validateRequest({}, { datasetId });
         });
 
@@ -350,6 +392,10 @@ describe('Dataset methods', () => {
             const res = await client.datasets.putItems({ datasetId, data });
             expect(res.toString()).to.be.eql('{}');
             validateRequest({}, { datasetId }, data, headers);
+
+            const browserRes = await page.evaluate(options => client.datasets.putItems(options), { datasetId, data });
+            expect(browserRes).to.eql(res);
+            validateRequest({}, { datasetId }, data, headers);
         });
 
         it('putItems() works with array', async () => {
@@ -364,6 +410,10 @@ describe('Dataset methods', () => {
             const res = await client.datasets.putItems({ datasetId, data });
             expect(res.toString()).to.be.eql('{}');
             validateRequest({}, { datasetId }, data, headers);
+
+            const browserRes = await page.evaluate(options => client.datasets.putItems(options), { datasetId, data });
+            expect(browserRes).to.eql(res);
+            validateRequest({}, { datasetId }, data, headers);
         });
 
         it('putItems() works with string', async () => {
@@ -377,6 +427,10 @@ describe('Dataset methods', () => {
 
             const res = await client.datasets.putItems({ datasetId, data });
             expect(res.toString()).to.be.eql('{}');
+            validateRequest({}, { datasetId }, JSON.parse(data), headers);
+
+            const browserRes = await page.evaluate(options => client.datasets.putItems(options), { datasetId, data });
+            expect(browserRes).to.eql(res);
             validateRequest({}, { datasetId }, JSON.parse(data), headers);
         });
     });

@@ -98,17 +98,6 @@ export class HttpClient {
                 token: options.token,
             },
             data: options.body,
-            transformRequest: (data, headers) => {
-                if (options.json && data) {
-                    const cTypeLower = CONTENT_TYPE_HEADER_NAME.toLowerCase();
-                    // Headers will normalized by Node so make sure we don't have
-                    // a bad header there by setting both possible values.
-                    headers[CONTENT_TYPE_HEADER_NAME] = CONTENT_TYPE_JSON_HEADER;
-                    headers[cTypeLower] = CONTENT_TYPE_JSON_HEADER;
-                    return JSON.stringify(data);
-                }
-                return data;
-            },
             // Override the default transform function to get unparsed response.
             transformResponse: res => res,
             httpAgent: this.httpAgent,
@@ -187,10 +176,9 @@ export class HttpClient {
             // For status codes 300-499 except options.retryOnStatusCodes we immediately rejects the promise
             // since it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
             if (
-                !(statusCode >= 300
+                statusCode >= 300
                 && statusCode < 500
                 && !retryOnStatusCodes.includes(statusCode)
-                )
             ) {
                 bail(newApifyClientErrorFromResponse(response.body, isApiV1, { statusCode, url: options.url, method: options.method }));
                 return;

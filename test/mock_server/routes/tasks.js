@@ -12,7 +12,7 @@ const ROUTES = [
     { id: 'run-task', method: 'POST', path: '/:taskId/runs' },
     { id: 'list-webhooks', method: 'GET', path: '/:taskId/webhooks' },
     { id: 'get-input', method: 'GET', path: '/:taskId/input' },
-    { id: 'get-input', method: 'PUT', path: '/:taskId/input' },
+    { id: 'update-input', method: 'PUT', path: '/:taskId/input' },
 
 
 ];

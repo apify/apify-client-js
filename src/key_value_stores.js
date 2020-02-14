@@ -1,4 +1,4 @@
-import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody, parseDateFields } from './utils';
+import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody, parseDateFields, isomorphicBufferToString } from './utils';
 
 /**
  * Key-value Stores
@@ -239,7 +239,7 @@ export default class KeyValueStores {
         const parseResponse = (response) => {
             const responseBody = response.body;
             const contentType = response.headers['content-type'];
-            const body = disableBodyParser ? responseBody.toString() : parseBody(responseBody, contentType);
+            const body = disableBodyParser ? isomorphicBufferToString(responseBody) : parseBody(responseBody, contentType);
 
             return {
                 contentType,

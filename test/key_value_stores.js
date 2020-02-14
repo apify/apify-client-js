@@ -4,6 +4,7 @@ import { randomBytes } from 'crypto';
 import ApifyClient from '../build';
 import { BASE_PATH, SIGNED_URL_UPLOAD_MIN_BYTESIZE } from '../build/key_value_stores';
 import mockServer from './mock_server/server';
+import { cleanUpBrowser, getInjectedPage } from './_helper';
 
 const DEFAULT_QUERY = {
     token: 'default-token',
@@ -43,6 +44,7 @@ function optsToQuery(params) {
 
 describe('KeyValueStores methods', () => {
     let baseUrl = null;
+    let page;
     before(async () => {
         const server = await mockServer.start(3333);
         baseUrl = `http://localhost:${server.address().port}`;
@@ -50,7 +52,9 @@ describe('KeyValueStores methods', () => {
     after(() => mockServer.close());
 
     let client = null;
-    beforeEach(() => {
+    beforeEach(async () => {
+        page = await getInjectedPage(baseUrl, DEFAULT_QUERY);
+
         client = new ApifyClient({
             baseUrl,
             expBackoffMaxRepeats: 0,
@@ -58,8 +62,10 @@ describe('KeyValueStores methods', () => {
             ...DEFAULT_QUERY,
         });
     });
-    afterEach(() => {
+
+    afterEach(async () => {
         client = null;
+        await cleanUpBrowser(page);
     });
 
     describe('indentification', () => {
@@ -94,6 +100,10 @@ describe('KeyValueStores methods', () => {
             const res = await client.keyValueStores.getStore({ storeId });
             expect(res.id).to.be.eql('get-store');
             validateRequest({}, { storeId });
+
+            const browserRes = await page.evaluate(opts => client.keyValueStores.getStore(opts), { storeId });
+            expect(browserRes).to.eql(res);
+            validateRequest({}, { storeId });
         });
 
         it('should work with token and storeName', async () => {
@@ -104,6 +114,10 @@ describe('KeyValueStores methods', () => {
 
             const res = await client.keyValueStores.getOrCreateStore(storeOptions);
             expect(res.id).to.be.eql('get-or-create-store');
+            validateRequest({ token: storeOptions.token, name: storeOptions.storeName }, {});
+
+            const browserRes = await page.evaluate(opts => client.keyValueStores.getOrCreateStore(opts), storeOptions);
+            expect(browserRes).to.eql(res);
             validateRequest({ token: storeOptions.token, name: storeOptions.storeName }, {});
         });
     });
@@ -127,6 +141,10 @@ describe('KeyValueStores methods', () => {
             const res = await client.keyValueStores.listStores(callOptions);
             expect(res.id).to.be.eql('list-stores');
             validateRequest(queryString, {});
+
+            const browserRes = await page.evaluate(opts => client.keyValueStores.listStores(opts), callOptions);
+            expect(browserRes).to.eql(res);
+            validateRequest(queryString, {});
         });
 
         it('getStore() works', async () => {
@@ -134,6 +152,10 @@ describe('KeyValueStores methods', () => {
 
             const res = await client.keyValueStores.getStore({ storeId });
             expect(res.id).to.be.eql('get-store');
+            validateRequest({}, { storeId });
+
+            const browserRes = await page.evaluate(opts => client.keyValueStores.getStore(opts), { storeId });
+            expect(browserRes).to.eql(res);
             validateRequest({}, { storeId });
         });
 
@@ -143,12 +165,20 @@ describe('KeyValueStores methods', () => {
             const res = await client.keyValueStores.getStore({ storeId });
             expect(res).to.be.eql(null);
             validateRequest({}, { storeId });
+
+            const browserRes = await page.evaluate(opts => client.keyValueStores.getStore(opts), { storeId });
+            expect(browserRes).to.eql(res);
+            validateRequest({}, { storeId });
         });
 
         it('deleteStore() works', async () => {
             const storeId = '204';
             const res = await client.keyValueStores.deleteStore({ storeId });
             expect(res).to.be.eql('');
+            validateRequest({}, { storeId });
+
+            const browserRes = await page.evaluate(opts => client.keyValueStores.deleteStore(opts), { storeId });
+            expect(browserRes).to.eql(res);
             validateRequest({}, { storeId });
         });
 
@@ -163,6 +193,9 @@ describe('KeyValueStores methods', () => {
 
             await client.keyValueStores.getRecord({ storeId, key });
             validateRequest({}, { storeId, key });
+
+            await page.evaluate(opts => client.keyValueStores.getRecord(opts), { storeId, key });
+            validateRequest({}, { storeId, key });
         });
 
         it('getRecord() parses JSON', async () => {
@@ -175,6 +208,9 @@ describe('KeyValueStores methods', () => {
 
             const res = await client.keyValueStores.getRecord({ storeId, key });
             expect(res).to.be.eql(body);
+
+            const browserRes = await page.evaluate(opts => client.keyValueStores.getRecord(opts), { storeId, key });
+            expect(browserRes).to.eql(res);
         });
 
         it('getRecord() doesn\'t parse application/json when disableBodyParser = true', async () => {
@@ -187,6 +223,9 @@ describe('KeyValueStores methods', () => {
 
             const res = await client.keyValueStores.getRecord({ storeId, key, disableBodyParser: true });
             expect(res).to.be.eql(JSON.stringify(body));
+
+            const browserRes = await page.evaluate(opts => client.keyValueStores.getRecord(opts), { storeId, key, disableBodyParser: true });
+            expect(browserRes).to.eql(res);
         });
 
         it('getRecord() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
@@ -198,6 +237,9 @@ describe('KeyValueStores methods', () => {
 
             const res = await client.keyValueStores.getRecord({ storeId, key, disableBodyParser: true });
             expect(res).to.be.eql(null);
+
+            const browserRes = await page.evaluate(opts => client.keyValueStores.getRecord(opts), { storeId, key, disableBodyParser: true });
+            expect(browserRes).to.eql(res);
         });
 
         it('putRecord() works', async () => {
@@ -214,6 +256,9 @@ describe('KeyValueStores methods', () => {
 
             const res = await client.keyValueStores.putRecord({ storeId, key, contentType, body });
             expect(res).to.be.eql(body);
+
+            const browserRes = await page.evaluate(opts => client.keyValueStores.putRecord(opts), { storeId, key, contentType, body });
+            expect(browserRes).to.eql(res);
         });
 
         xit('putRecord() uploads via signed url when gzipped buffer.length > SIGNED_URL_UPLOAD_MIN_BYTESIZE', () => {
@@ -261,6 +306,10 @@ describe('KeyValueStores methods', () => {
             const res = await client.keyValueStores.deleteRecord({ storeId, key });
             expect(res).to.be.eql('');
             validateRequest({}, { storeId, key });
+
+            const browserRes = await page.evaluate(opts => client.keyValueStores.deleteRecord(opts), { storeId, key });
+            expect(browserRes).to.eql(res);
+            validateRequest({}, { storeId, key });
         });
 
         it('listKeys() works', async () => {
@@ -273,6 +322,10 @@ describe('KeyValueStores methods', () => {
 
             const res = await client.keyValueStores.listKeys({ storeId, ...query });
             expect(res.id).to.be.eql('list-keys');
+            validateRequest(query, { storeId });
+
+            const browserRes = await page.evaluate(opts => client.keyValueStores.listKeys(opts), { storeId, ...query });
+            expect(browserRes).to.eql(res);
             validateRequest(query, { storeId });
         });
     });

@@ -123,11 +123,11 @@ export const gzipPromise = (buffer) => {
 export const parseBody = (body, contentType) => {
     const { type } = contentTypeParser.parse(contentType);
 
-    if (type.startsWith(CONTENT_TYPE_TEXT_PREFIX)) return body.toString();
+    if (type.startsWith(CONTENT_TYPE_TEXT_PREFIX)) return isomorphicBufferToString(body);
 
     switch (type) {
-        case CONTENT_TYPE_JSON: return JSON.parse(body);
-        case CONTENT_TYPE_XML: return body.toString();
+        case CONTENT_TYPE_JSON: return JSON.parse(isomorphicBufferToString(body));
+        case CONTENT_TYPE_XML: return isomorphicBufferToString(body);
         default: return body;
     }
 };
@@ -199,12 +199,21 @@ export const retryWithExpBackoff = (func, opts) => {
         retryCount += 1;
         if (retryCount === Math.round(opts.retries / 2)) {
             log.warning(`Retry failed ${retryCount} times and will be repeated later`, {
-                originalError: error.error.message,
-                errorDetails: error.error.details,
+                originalError: error.error ? error.error.message : error,
+                errorDetails: error.error ? error.error.details : error,
             });
         }
     };
     const options = Object.assign({}, { onRetry }, opts);
 
     return retry(func, options);
+};
+
+export const isomorphicBufferToString = (buffer) => {
+    if (buffer.constructor.name !== ArrayBuffer.name) {
+        return buffer.toString();
+    }
+
+    // expect UTF-8
+    return String.fromCharCode.apply(null, new Uint8Array(buffer));
 };
