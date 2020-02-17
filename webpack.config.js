@@ -1,4 +1,3 @@
-const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const BrotliPlugin = require('brotli-webpack-plugin');
 
 
@@ -34,6 +33,5 @@ module.exports = {
             threshold: 10240,
             minRatio: 0.8,
         }),
-        new BundleAnalyzerPlugin(),
     ],
 };
