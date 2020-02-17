@@ -126,7 +126,7 @@ describe('Dataset methods', () => {
                 const browserRes = await page.evaluate(options => client.datasets.getDataset(options), { datasetId });
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { datasetId });
-            }
+            },
         );
 
         test('deleteDataset() works', async () => {
@@ -358,7 +358,7 @@ describe('Dataset methods', () => {
                 const browserRes = await page.evaluate(options => client.datasets.getItems(options), { datasetId });
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { datasetId });
-            }
+            },
         );
 
         test('putItems() works with object', async () => {

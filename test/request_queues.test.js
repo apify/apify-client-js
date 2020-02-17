@@ -153,7 +153,7 @@ describe('RequestQueues methods', () => {
                 const browserRes = await page.evaluate(options => client.requestQueues.getQueue(options), { queueId });
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { queueId });
-            }
+            },
         );
 
         test('deleteQueue() works', async () => {

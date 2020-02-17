@@ -16,7 +16,7 @@ describe('ApifyClientError', () => {
         const err = new ApifyClientError('SOME_CODE', 'Some message.', { foo: 'bar', a: { b: 'c' } });
 
         expect(String(err)).toEqual(
-            '[ApifyClientError] ApifyClientError: Some message. (foo="bar", a={"b":"c"})'
+            '[ApifyClientError] ApifyClientError: Some message. (foo="bar", a={"b":"c"})',
         );
     });
 });
