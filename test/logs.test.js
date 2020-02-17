@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import ApifyClient from '../build';
 
 import mockServer from './mock_server/server';
@@ -7,11 +6,11 @@ import { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } from 
 describe('Log methods', () => {
     let baseUrl = null;
     let page;
-    before(async () => {
-        const server = await mockServer.start(3333);
+    beforeAll(async () => {
+        const server = await mockServer.start();
         baseUrl = `http://localhost:${server.address().port}`;
     });
-    after(() => mockServer.close());
+    afterAll(() => mockServer.close());
 
     let client = null;
     beforeEach(async () => {
@@ -29,15 +28,15 @@ describe('Log methods', () => {
     });
 
 
-    it('getLog() works', async () => {
+    test('getLog() works', async () => {
         const logId = 'some-id';
 
         const res = await client.logs.getLog({ logId });
-        expect(res.id).to.be.eql('get-log');
+        expect(res.id).toEqual('get-log');
         validateRequest({}, { logId });
 
         const browserRes = await page.evaluate(options => client.logs.getLog(options), { logId });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest({}, { logId });
     });
 });

@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import ApifyClient from '../build';
 import mockServer from './mock_server/server';
 import { cleanUpBrowser, getInjectedPage } from './_helper';
@@ -10,10 +9,12 @@ const DEFAULT_QUERY = {
 function validateRequest(query = {}, params = {}, body = {}, headers = {}) {
     const request = mockServer.getLastRequest();
     const expectedQuery = getExpectedQuery(query);
-    expect(request.query).to.be.eql(expectedQuery);
-    expect(request.params).to.be.eql(params);
-    expect(request.body).to.be.eql(body);
-    expect(request.headers).to.include(headers);
+    expect(request.query).toEqual(expectedQuery);
+    expect(request.params).toEqual(params);
+    expect(request.body).toEqual(body);
+    Object.entries(headers).forEach(([key, value]) => {
+        expect(request.headers).toHaveProperty(key, value);
+    });
 }
 
 function getExpectedQuery(callQuery = {}) {
@@ -48,11 +49,11 @@ function optsToQuery(params) {
 describe('RequestQueues methods', () => {
     let baseUrl = null;
     let page;
-    before(async () => {
-        const server = await mockServer.start(3333);
+    beforeAll(async () => {
+        const server = await mockServer.start();
         baseUrl = `http://localhost:${server.address().port}`;
     });
-    after(() => mockServer.close());
+    afterAll(() => mockServer.close());
 
     let client = null;
     beforeEach(async () => {
@@ -70,40 +71,40 @@ describe('RequestQueues methods', () => {
     });
 
     describe('indentification', () => {
-        xit('should work with queueId in default params', () => {
+        test.skip('should work with queueId in default params', () => {
             // TODO: Do we want to support it?
         });
 
-        it('should work with queueId in method call params', async () => {
+        test('should work with queueId in method call params', async () => {
             const queueId = 'someId';
 
             const res = await client.requestQueues.getQueue({ queueId });
-            expect(res.id).to.be.eql('get-queue');
+            expect(res.id).toEqual('get-queue');
             validateRequest({}, { queueId });
 
             const browserRes = await page.evaluate(options => client.requestQueues.getQueue(options), { queueId });
-            expect(browserRes).to.eql(res);
+            expect(browserRes).toEqual(res);
             validateRequest({}, { queueId });
         });
 
-        it('should work with token and queueName', async () => {
+        test('should work with token and queueName', async () => {
             const queueOptions = {
                 token: 'sometoken',
                 queueName: 'somename',
             };
 
             const res = await client.requestQueues.getOrCreateQueue(queueOptions);
-            expect(res.id).to.be.eql('get-or-create-request-queue');
+            expect(res.id).toEqual('get-or-create-request-queue');
             validateRequest({ name: queueOptions.queueName, token: queueOptions.token }, { });
 
             const browserRes = await page.evaluate(options => client.requestQueues.getOrCreateQueue(options), queueOptions);
-            expect(browserRes).to.eql(res);
+            expect(browserRes).toEqual(res);
             validateRequest({ name: queueOptions.queueName, token: queueOptions.token }, { });
         });
     });
 
     describe('REST method', () => {
-        it('listQueues() works', async () => {
+        test('listQueues() works', async () => {
             const callOptions = {
                 limit: 5,
                 offset: 3,
@@ -119,66 +120,69 @@ describe('RequestQueues methods', () => {
             };
 
             const res = await client.requestQueues.listQueues(callOptions);
-            expect(res.id).to.be.eql('list-queues');
+            expect(res.id).toEqual('list-queues');
             validateRequest(queryString, {});
 
             const browserRes = await page.evaluate(options => client.requestQueues.listQueues(options), callOptions);
-            expect(browserRes).to.eql(res);
+            expect(browserRes).toEqual(res);
             validateRequest(queryString, {});
         });
 
-        it('getQueue() works', async () => {
+        test('getQueue() works', async () => {
             const queueId = 'some-id';
 
             const res = await client.requestQueues.getQueue({ queueId });
-            expect(res.id).to.be.eql('get-queue');
+            expect(res.id).toEqual('get-queue');
             validateRequest({}, { queueId });
 
             const browserRes = await page.evaluate(options => client.requestQueues.getQueue(options), { queueId });
-            expect(browserRes).to.eql(res);
+            expect(browserRes).toEqual(res);
             validateRequest({}, { queueId });
         });
 
-        it('getQueue() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
-            const queueId = '404';
+        test(
+            'getQueue() returns null on 404 status code (RECORD_NOT_FOUND)',
+            async () => {
+                const queueId = '404';
 
 
-            const res = await client.requestQueues.getQueue({ queueId });
-            expect(res).to.be.eql(null);
-            validateRequest({}, { queueId });
+                const res = await client.requestQueues.getQueue({ queueId });
+                expect(res).toEqual(null);
+                validateRequest({}, { queueId });
 
-            const browserRes = await page.evaluate(options => client.requestQueues.getQueue(options), { queueId });
-            expect(browserRes).to.eql(res);
-            validateRequest({}, { queueId });
-        });
+                const browserRes = await page.evaluate(options => client.requestQueues.getQueue(options), { queueId });
+                expect(browserRes).toEqual(res);
+                validateRequest({}, { queueId });
+            }
+        );
 
-        it('deleteQueue() works', async () => {
+        test('deleteQueue() works', async () => {
             const queueId = '204';
 
             const res = await client.requestQueues.deleteQueue({ queueId });
-            expect(res).to.be.eql('');
+            expect(res).toEqual('');
             validateRequest({}, { queueId });
 
             const browserRes = await page.evaluate(options => client.requestQueues.deleteQueue(options), { queueId });
-            expect(browserRes).to.eql(res);
+            expect(browserRes).toEqual(res);
             validateRequest({}, { queueId });
         });
 
-        it('updateQueue() works', async () => {
+        test('updateQueue() works', async () => {
             const queueId = 'some-id';
             const queue = { id: queueId, name: 'my-name' };
 
             const res = await client.requestQueues.updateQueue({ queueId, queue });
-            expect(res.id).to.be.eql('update-queue');
+            expect(res.id).toEqual('update-queue');
             validateRequest({}, { queueId }, { name: queue.name });
 
             const browserRes = await page.evaluate(opts => client.requestQueues.updateQueue(opts), { queueId, queue });
-            expect(browserRes).to.eql(res);
+            expect(browserRes).toEqual(res);
             validateRequest({}, { queueId }, { name: queue.name });
         });
 
 
-        it('addRequest() works without forefront param', async () => {
+        test('addRequest() works without forefront param', async () => {
             const queueId = 'some-id';
             const request = { url: 'http://example.com' };
 
@@ -188,15 +192,15 @@ describe('RequestQueues methods', () => {
             };
 
             const res = await client.requestQueues.addRequest({ queueId, ...endpointOptions });
-            expect(res.id).to.be.eql('add-request');
+            expect(res.id).toEqual('add-request');
             validateRequest({ forefront: false, clientKey: endpointOptions.clientKey }, { queueId }, request);
 
             const browserRes = await page.evaluate(options => client.requestQueues.addRequest(options), { queueId, ...endpointOptions });
-            expect(browserRes).to.eql(res);
+            expect(browserRes).toEqual(res);
             validateRequest({ forefront: false, clientKey: endpointOptions.clientKey }, { queueId }, request);
         });
 
-        it('addRequest() works with forefront param', async () => {
+        test('addRequest() works with forefront param', async () => {
             const queueId = 'some-id';
             const request = { url: 'http://example.com' };
 
@@ -207,78 +211,78 @@ describe('RequestQueues methods', () => {
             };
 
             const res = await client.requestQueues.addRequest({ queueId, ...endpointOptions });
-            expect(res.id).to.be.eql('add-request');
+            expect(res.id).toEqual('add-request');
             validateRequest({ forefront: true, clientKey: endpointOptions.clientKey }, { queueId }, request);
 
             const browserRes = await page.evaluate(options => client.requestQueues.addRequest(options), { queueId, ...endpointOptions });
-            expect(browserRes).to.eql(res);
+            expect(browserRes).toEqual(res);
             validateRequest({ forefront: true, clientKey: endpointOptions.clientKey }, { queueId }, request);
         });
 
-        it('getRequest() works', async () => {
+        test('getRequest() works', async () => {
             const queueId = 'some-id';
             const requestId = 'xxx';
 
             const res = await client.requestQueues.getRequest({ queueId, requestId });
-            expect(res.id).to.be.eql('get-request');
+            expect(res.id).toEqual('get-request');
             validateRequest({}, { queueId, requestId });
 
             const browserRes = await page.evaluate(options => client.requestQueues.getRequest(options), { queueId, requestId });
-            expect(browserRes).to.eql(res);
+            expect(browserRes).toEqual(res);
             validateRequest({}, { queueId, requestId });
         });
 
-        it('deleteRequest() works', async () => {
+        test('deleteRequest() works', async () => {
             const requestId = 'xxx';
             const queueId = '204';
 
             const res = await client.requestQueues.deleteRequest({ queueId, requestId });
-            expect(res).to.be.eql('');
+            expect(res).toEqual('');
             validateRequest({}, { queueId, requestId });
 
             const browserRes = await page.evaluate(options => client.requestQueues.deleteRequest(options), { queueId, requestId });
-            expect(browserRes).to.eql(res);
+            expect(browserRes).toEqual(res);
             validateRequest({}, { queueId, requestId });
         });
 
-        it('updateRequest() works with requestId param', async () => {
+        test('updateRequest() works with requestId param', async () => {
             const queueId = 'some-id';
             const requestId = 'xxx';
             const request = { url: 'http://example.com' };
 
             const res = await client.requestQueues.updateRequest({ queueId, requestId, request });
-            expect(res.id).to.be.eql('update-request');
+            expect(res.id).toEqual('update-request');
             validateRequest({ forefront: false }, { queueId, requestId }, request);
 
             const browserRes = await page.evaluate(options => client.requestQueues.updateRequest(options), { queueId, requestId, request });
-            expect(browserRes).to.eql(res);
+            expect(browserRes).toEqual(res);
             validateRequest({ forefront: false }, { queueId, requestId }, request);
         });
 
-        it('updateRequest() works without requestId param', async () => {
+        test('updateRequest() works without requestId param', async () => {
             const queueId = 'some-id';
             const requestId = 'xxx';
             const request = { url: 'http://example.com', id: requestId };
 
             const res = await client.requestQueues.updateRequest({ queueId, request });
-            expect(res.id).to.be.eql('update-request');
+            expect(res.id).toEqual('update-request');
             validateRequest({ forefront: false }, { queueId, requestId }, request);
 
             const browserRes = await page.evaluate(options => client.requestQueues.updateRequest(options), { queueId, request });
-            expect(browserRes).to.eql(res);
+            expect(browserRes).toEqual(res);
             validateRequest({ forefront: false }, { queueId, requestId }, request);
         });
 
-        it('getHead() works', async () => {
+        test('getHead() works', async () => {
             const queueId = 'some-id';
             const qs = { limit: 5, clientKey: 'some-id' };
 
             const res = await client.requestQueues.getHead({ queueId, ...qs });
-            expect(res.id).to.be.eql('get-head');
+            expect(res.id).toEqual('get-head');
             validateRequest(qs, { queueId });
 
             const browserRes = await page.evaluate(options => client.requestQueues.getHead(options), { queueId, ...qs });
-            expect(browserRes).to.eql(res);
+            expect(browserRes).toEqual(res);
             validateRequest(qs, { queueId });
         });
     });

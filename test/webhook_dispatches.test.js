@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import ApifyClient from '../build';
 import mockServer from './mock_server/server';
 import { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } from './_helper';
@@ -6,11 +5,11 @@ import { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } from 
 describe('Actor methods', () => {
     let baseUrl = null;
     let page;
-    before(async () => {
-        const server = await mockServer.start(3333);
+    beforeAll(async () => {
+        const server = await mockServer.start();
         baseUrl = `http://localhost:${server.address().port}`;
     });
-    after(() => mockServer.close());
+    afterAll(() => mockServer.close());
 
     let client = null;
     beforeEach(async () => {
@@ -27,7 +26,7 @@ describe('Actor methods', () => {
         await cleanUpBrowser(page);
     });
 
-    it('listDispatches() works', async () => {
+    test('listDispatches() works', async () => {
         const opts = {
             limit: 5,
             offset: 3,
@@ -35,35 +34,35 @@ describe('Actor methods', () => {
         };
 
         const res = await client.webhookDispatches.listDispatches(opts);
-        expect(res.id).to.be.eql('list-dispatches');
+        expect(res.id).toEqual('list-dispatches');
         validateRequest(opts);
 
         const browserRes = await page.evaluate(options => client.webhookDispatches.listDispatches(options), opts);
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest(opts);
     });
 
-    it('getDispatch() works', async () => {
+    test('getDispatch() works', async () => {
         const webhookDispatchId = 'some-id';
 
         const res = await client.webhookDispatches.getDispatch({ webhookDispatchId });
-        expect(res.id).to.be.eql('get-dispatch');
+        expect(res.id).toEqual('get-dispatch');
         validateRequest({}, { webhookDispatchId });
 
         const browserRes = await page.evaluate(options => client.webhookDispatches.getDispatch(options), { webhookDispatchId });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest({}, { webhookDispatchId });
     });
 
-    it('getDispatch() 404 works', async () => {
+    test('getDispatch() 404 works', async () => {
         const webhookDispatchId = '404';
 
         const res = await client.webhookDispatches.getDispatch({ webhookDispatchId });
-        expect(res).to.be.eql(null);
+        expect(res).toEqual(null);
         validateRequest({}, { webhookDispatchId });
 
         const browserRes = await page.evaluate(options => client.webhookDispatches.getDispatch(options), { webhookDispatchId });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest({}, { webhookDispatchId });
     });
 });

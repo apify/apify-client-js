@@ -1,6 +1,5 @@
 import sinon from 'sinon';
 import _ from 'lodash';
-import { expect } from 'chai';
 import * as utils from '../build/utils';
 import ApifyClient from '../build';
 
@@ -21,39 +20,16 @@ const APIFY_INSTANCE_KEYS = [
 ];
 
 describe('ApifyClient', () => {
-    xit('should be possible to initiate it both with and without "new"', () => {
+    test.skip('should be possible to initiate it both with and without "new"', () => {
         // TODO: Why? do we want to keep the support
         const apifyClientWith = new ApifyClient();
         const apifyClientWithout = ApifyClient();
 
-        expect(_.keys(apifyClientWith)).to.be.eql(APIFY_INSTANCE_KEYS);
-        expect(_.keys(apifyClientWithout)).to.be.eql(APIFY_INSTANCE_KEYS);
+        expect(_.keys(apifyClientWith)).toEqual(APIFY_INSTANCE_KEYS);
+        expect(_.keys(apifyClientWithout)).toEqual(APIFY_INSTANCE_KEYS);
     });
 
-    xit('should correctly set all options', () => {
-        // TODO: Why? do we want to keep the support
-
-        const instanceOpts = { storeId: 'someStore', crawlerId: 'someCrawler', actId: 'someAct' };
-
-        instanceOpts._overrideMethodGroups = { // eslint-disable-line
-            group1: {
-                method1: (requestPromise, params) => Promise.resolve(params),
-            },
-        };
-
-        const apifyClient = new ApifyClient(instanceOpts);
-
-        const defaultOpts = apifyClient.getDefaultOptions();
-        const callOpts = { storeId: 'newStore', recordKey: 'someKey' };
-        const expected = Object.assign({}, defaultOpts, instanceOpts, callOpts);
-
-        return apifyClient
-            .group1
-            .method1(callOpts)
-            .then(options => expect(options).to.be.eql(expected));
-    });
-
-    xit('should be possible to change options using apifyClient.setOptions(opts)', () => {
+    test.skip('should be possible to change options using apifyClient.setOptions(opts)', () => {
         // TODO: Why? do we want to keep the support
 
         const methods = {
@@ -78,8 +54,8 @@ describe('ApifyClient', () => {
                 apifyClient2.group1.method1(),
             ])
             .then(([baseUrl1, baseUrl2]) => {
-                expect(baseUrl1).to.be.eql('http://something-1.com/api-1');
-                expect(baseUrl2).to.be.eql('http://something-2.com/api-2');
+                expect(baseUrl1).toEqual('http://something-1.com/api-1');
+                expect(baseUrl2).toEqual('http://something-2.com/api-2');
 
                 apifyClient1.setOptions({ baseUrl: 'http://something-3.com/api-3' });
 
@@ -89,13 +65,13 @@ describe('ApifyClient', () => {
                         apifyClient2.group1.method1(),
                     ])
                     .then(([anotherBaseUrl1, anotherBaseUrl2]) => {
-                        expect(anotherBaseUrl1).to.be.eql('http://something-3.com/api-3');
-                        expect(anotherBaseUrl2).to.be.eql('http://something-2.com/api-2');
+                        expect(anotherBaseUrl1).toEqual('http://something-3.com/api-3');
+                        expect(anotherBaseUrl2).toEqual('http://something-2.com/api-2');
                     });
             });
     });
 
-    it('apifyClient.getOptions() works', () => {
+    test('apifyClient.getOptions() works', () => {
         const origOpts = {
             foo: 'bar',
             foo2: 'bar2',
@@ -104,59 +80,20 @@ describe('ApifyClient', () => {
 
         // Simplest usage
         const gotOpts = apifyClient.getOptions();
-        expect(origOpts).to.be.eql(_.pick(gotOpts, _.keys(origOpts)));
+        expect(origOpts).toEqual(_.pick(gotOpts, _.keys(origOpts)));
 
         // Updating the returned object must have no effect
         gotOpts.foo = 'newValue';
         const gotOpts2 = apifyClient.getOptions();
-        expect(origOpts).to.be.eql(_.pick(gotOpts2, _.keys(origOpts)));
+        expect(origOpts).toEqual(_.pick(gotOpts2, _.keys(origOpts)));
 
         // It should work event when setOptions() are called
         apifyClient.setOptions({ foo2: 'newValue2' });
         const gotOpts3 = apifyClient.getOptions();
-        expect(gotOpts3.foo2).to.be.eql('newValue2');
+        expect(gotOpts3.foo2).toEqual('newValue2');
     });
 
-    xit('should be possible to use with promises', () => {
-        // TODO: Remove?
-        const apifyClient = new ApifyClient({
-            protocol: 'http',
-            host: 'myhost',
-            _overrideMethodGroups: {
-                group1: {
-                    method1: () => Promise.resolve('someResponse'),
-                },
-            },
-        });
-
-        return apifyClient
-            .group1
-            .method1()
-            .then(response => expect(response).to.be.eql('someResponse'));
-    });
-
-    xit('should be possible handle errors when used with promises', () => {
-        // TODO: Remove?
-        const apifyClient = new ApifyClient({
-            protocol: 'http',
-            host: 'myhost',
-            _overrideMethodGroups: {
-                group1: {
-                    method1: () => Promise.reject(new Error('my-error')),
-                },
-            },
-        });
-
-        return apifyClient
-            .group1
-            .method1()
-            .then(
-                () => { throw new Error('error-not-handled'); },
-                err => expect(err.message).to.be.eql('my-error'),
-            );
-    });
-
-    xit('should be possible to use with callbacks', (done) => {
+    test.skip('should be possible to use with callbacks', (done) => {
         // TODO: Why? do we want to keep the support
 
         const apifyClient = new ApifyClient({
@@ -172,13 +109,13 @@ describe('ApifyClient', () => {
         apifyClient
             .group1
             .method1({}, (error, response) => {
-                expect(error).to.be.eql(null);
-                expect(response).to.be.eql('someResponse');
+                expect(error).toEqual(null);
+                expect(response).toEqual('someResponse');
                 done();
             });
     });
 
-    xit('should be possible handle errors when used with callbacks', (done) => {
+    test.skip('should be possible handle errors when used with callbacks', (done) => {
         // TODO: Remove?
         const apifyClient = new ApifyClient({
             protocol: 'http',
@@ -193,13 +130,13 @@ describe('ApifyClient', () => {
         apifyClient
             .group1
             .method1({}, (error, response) => {
-                expect(error.message).to.be.eql('my-error');
-                expect(response).to.be.eql(undefined);
+                expect(error.message).toEqual('my-error');
+                expect(response).toEqual(undefined);
                 done();
             });
     });
 
-    xit('should passed preconfigured utils.requestPromise to each method', () => {
+    test.skip('should passed preconfigured utils.requestPromise to each method', () => {
         // TODO: Remove?
 
         const requestPromiseMock = sinon.mock(utils, 'requestPromise');
@@ -232,23 +169,5 @@ describe('ApifyClient', () => {
             .group1
             .method1()
             .then(() => requestPromiseMock.restore());
-    });
-
-    xit('should remove trailing forward slash from baseUrl', () => {
-        // TODO: Remove?
-
-        const apifyClient = new ApifyClient({
-            baseUrl: 'something/',
-            _overrideMethodGroups: {
-                group1: {
-                    method1: (requestPromise, options) => Promise.resolve(options.baseUrl),
-                },
-            },
-        });
-
-        return apifyClient
-            .group1
-            .method1()
-            .then(baseUrl => expect(baseUrl).to.be.eql('something'));
     });
 });

@@ -1,5 +1,4 @@
 import Apify from 'apify';
-import { expect } from 'chai';
 import * as httpClient from '../build/http-client';
 import { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from '../build/request_queues';
 import mockServer from './mock_server/server';
@@ -68,8 +67,10 @@ function optsToQuery(params) {
 export const validateRequest = (query = {}, params = {}, body = {}, headers = {}) => {
     const request = mockServer.getLastRequest();
     const expectedQuery = getExpectedQuery(query);
-    expect(request.query).to.be.eql(expectedQuery);
-    expect(request.params).to.be.eql(params);
-    expect(request.body).to.be.eql(body);
-    expect(request.headers).to.include(headers);
+    expect(request.query).toEqual(expectedQuery);
+    expect(request.params).toEqual(params);
+    expect(request.body).toEqual(body);
+    Object.entries(headers).forEach(([key, value]) => {
+        expect(request.headers).toHaveProperty(key, value);
+    });
 };

@@ -1,5 +1,4 @@
 import { ME_USER_NAME_PLACEHOLDER } from 'apify-shared/consts';
-import { expect } from 'chai';
 import ApifyClient from '../build';
 
 import mockServer from './mock_server/server';
@@ -8,11 +7,11 @@ import { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } from 
 describe('User methods', () => {
     let baseUrl = null;
     let page;
-    before(async () => {
-        const server = await mockServer.start(3333);
+    beforeAll(async () => {
+        const server = await mockServer.start();
         baseUrl = `http://localhost:${server.address().port}`;
     });
-    after(() => mockServer.close());
+    afterAll(() => mockServer.close());
 
     let client = null;
     beforeEach(async () => {
@@ -29,26 +28,26 @@ describe('User methods', () => {
         await cleanUpBrowser(page);
     });
 
-    it('getUser() works', async () => {
+    test('getUser() works', async () => {
         const userId = 'some-id';
 
         const res = await client.users.getUser({ userId });
-        expect(res.id).to.be.eql('get-user');
+        expect(res.id).toEqual('get-user');
         validateRequest({}, { userId });
 
         const browserRes = await page.evaluate(options => client.users.getUser(options), { userId });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest({}, { userId });
     });
 
 
-    it('getUser() with no userId, but with token works', async () => {
+    test('getUser() with no userId, but with token works', async () => {
         const res = await client.users.getUser();
-        expect(res.id).to.be.eql('get-user');
+        expect(res.id).toEqual('get-user');
         validateRequest({}, { userId: ME_USER_NAME_PLACEHOLDER });
 
         const browserRes = await page.evaluate(options => client.users.getUser(options));
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest({}, { userId: ME_USER_NAME_PLACEHOLDER });
     });
 });

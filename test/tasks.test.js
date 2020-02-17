@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import ApifyClient from '../build';
 import { stringifyWebhooksToBase64 } from '../build/utils';
 
@@ -8,11 +7,11 @@ import { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } from 
 describe('Task methods', () => {
     let baseUrl = null;
     let page;
-    before(async () => {
-        const server = await mockServer.start(3333);
+    beforeAll(async () => {
+        const server = await mockServer.start();
         baseUrl = `http://localhost:${server.address().port}`;
     });
-    after(() => mockServer.close());
+    afterAll(() => mockServer.close());
 
     let client = null;
     beforeEach(async () => {
@@ -29,7 +28,7 @@ describe('Task methods', () => {
         await cleanUpBrowser(page);
     });
 
-    it('listTasks() works', async () => {
+    test('listTasks() works', async () => {
         const opts = {
             limit: 5,
             offset: 3,
@@ -37,74 +36,77 @@ describe('Task methods', () => {
         };
 
         const res = await client.tasks.listTasks(opts);
-        expect(res.id).to.be.eql('list-tasks');
+        expect(res.id).toEqual('list-tasks');
         validateRequest(opts);
 
         const browserRes = await page.evaluate(options => client.tasks.listTasks(options), opts);
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest(opts);
     });
 
-    it('listTasks() works without pagination', async () => {
+    test('listTasks() works without pagination', async () => {
         const opts = {};
 
         const res = await client.tasks.listTasks(opts);
-        expect(res.id).to.be.eql('list-tasks');
+        expect(res.id).toEqual('list-tasks');
         validateRequest(opts);
 
         const browserRes = await page.evaluate(options => client.tasks.listTasks(options), opts);
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest(opts);
     });
 
-    it('createTask() works', async () => {
+    test('createTask() works', async () => {
         const task = { foo: 'bar' };
 
         const res = await client.tasks.createTask({ task });
-        expect(res.id).to.be.eql('create-task');
+        expect(res.id).toEqual('create-task');
         validateRequest({}, {}, task);
 
         const browserRes = await page.evaluate(options => client.tasks.createTask(options), { task });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest({}, {}, task);
     });
 
-    it('updateTask() works with both taskId parameter and taskId in task object', async () => {
-        const taskId = 'some-user/some-id';
-        const task = { id: taskId, foo: 'bar' };
+    test(
+        'updateTask() works with both taskId parameter and taskId in task object',
+        async () => {
+            const taskId = 'some-user/some-id';
+            const task = { id: taskId, foo: 'bar' };
 
-        const res = await client.tasks.updateTask({ taskId, task });
-        expect(res.id).to.be.eql('update-task');
-        validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
+            const res = await client.tasks.updateTask({ taskId, task });
+            expect(res.id).toEqual('update-task');
+            validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
 
-        const browserRes = await page.evaluate(options => client.tasks.updateTask(options), { taskId, task });
-        expect(browserRes).to.eql(res);
-        validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
-    });
+            const browserRes = await page.evaluate(options => client.tasks.updateTask(options), { taskId, task });
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
+        },
+    );
 
-    it('updateTask() works with taskId in task object', async () => {
+    test('updateTask() works with taskId in task object', async () => {
         const taskId = 'some-user/some-id';
         const task = { id: taskId, foo: 'bar' };
 
         const res = await client.tasks.updateTask({ task });
-        expect(res.id).to.be.eql('update-task');
+        expect(res.id).toEqual('update-task');
         validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
 
         const browserRes = await page.evaluate(options => client.tasks.updateTask(options), { taskId, task });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
     });
 
-    it('updateTask() works with taskId parameter', async () => {
+    test('updateTask() works with taskId parameter', async () => {
         const taskId = 'some-user/some-id';
         const task = { foo: 'bar' };
 
         const res = await client.tasks.updateTask({ taskId, task });
-        expect(res.id).to.be.eql('update-task');
+        expect(res.id).toEqual('update-task');
         validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
 
         const browserRes = await page.evaluate(options => client.tasks.updateTask(options), { taskId, task });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
     });
 
@@ -112,27 +114,27 @@ describe('Task methods', () => {
         // TODO: I think that this is duplicate of:  "updateTask() works with taskId in task object"
     });
 
-    it('deleteTask() works', async () => {
+    test('deleteTask() works', async () => {
         const taskId = '204';
 
         const res = await client.tasks.deleteTask({ taskId });
-        expect(res).to.be.eql('');
+        expect(res).toEqual('');
         validateRequest({}, { taskId });
 
         const browserRes = await page.evaluate(options => client.tasks.deleteTask(options), { taskId });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest({}, { taskId });
     });
 
-    it('getTask() works', async () => {
+    test('getTask() works', async () => {
         const taskId = 'some-id';
 
         const res = await client.tasks.getTask({ taskId });
-        expect(res.id).to.be.eql('get-task');
+        expect(res.id).toEqual('get-task');
         validateRequest({}, { taskId });
 
         const browserRes = await page.evaluate(options => client.tasks.getTask(options), { taskId });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest({}, { taskId });
     });
 
@@ -161,19 +163,22 @@ describe('Task methods', () => {
     });
     */
 
-    it('getTask() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
-        const taskId = '404';
+    test(
+        'getTask() returns null on 404 status code (RECORD_NOT_FOUND)',
+        async () => {
+            const taskId = '404';
 
-        const res = await client.tasks.getTask({ taskId });
-        expect(res).to.be.eql(null);
-        validateRequest({}, { taskId });
+            const res = await client.tasks.getTask({ taskId });
+            expect(res).toEqual(null);
+            validateRequest({}, { taskId });
 
-        const browserRes = await page.evaluate(options => client.tasks.getTask(options), { taskId });
-        expect(browserRes).to.eql(res);
-        validateRequest({}, { taskId });
-    });
+            const browserRes = await page.evaluate(options => client.tasks.getTask(options), { taskId });
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { taskId });
+        },
+    );
 
-    it('listRuns() works', async () => {
+    test('listRuns() works', async () => {
         const taskId = 'task-id';
 
         const query = {
@@ -183,43 +188,43 @@ describe('Task methods', () => {
         };
 
         const res = await client.tasks.listRuns({ taskId, ...query });
-        expect(res.id).to.be.eql('list-runs');
+        expect(res.id).toEqual('list-runs');
         validateRequest(query, { taskId });
 
         const browserRes = await page.evaluate(options => client.tasks.listRuns(options), { taskId, ...query });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest(query, { taskId });
     });
 
-    it('listRuns() works without pagination params', async () => {
+    test('listRuns() works without pagination params', async () => {
         const taskId = 'task-id';
 
         const query = {};
         const res = await client.tasks.listRuns({ taskId, ...query });
-        expect(res.id).to.be.eql('list-runs');
+        expect(res.id).toEqual('list-runs');
         validateRequest(query, { taskId });
 
         const browserRes = await page.evaluate(options => client.tasks.listRuns(options), { taskId, ...query });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest(query, { taskId });
     });
 
-    it('runTask() works', async () => {
+    test('runTask() works', async () => {
         const taskId = 'some-id';
         const query = {
             waitForFinish: 100,
         };
 
         const res = await client.tasks.runTask({ taskId, ...query });
-        expect(res.id).to.be.eql('run-task');
+        expect(res.id).toEqual('run-task');
         validateRequest(query, { taskId });
 
         const browserRes = await page.evaluate(options => client.tasks.runTask(options), { taskId, ...query });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest(query, { taskId });
     });
 
-    it('runTask() works with input and options overrides', async () => {
+    test('runTask() works with input and options overrides', async () => {
         const taskId = 'some-id';
         const input = { foo: 'bar' };
 
@@ -229,15 +234,15 @@ describe('Task methods', () => {
         };
 
         const res = await client.tasks.runTask({ taskId, input, ...query });
-        expect(res.id).to.be.eql('run-task');
+        expect(res.id).toEqual('run-task');
         validateRequest(query, { taskId }, input);
 
         const browserRes = await page.evaluate(options => client.tasks.runTask(options), { taskId, input, ...query });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest(query, { taskId }, input);
     });
 
-    it('runTask() works with webhooks', async () => {
+    test('runTask() works with webhooks', async () => {
         const taskId = 'some-id';
         const webhooks = [
             {
@@ -252,7 +257,7 @@ describe('Task methods', () => {
 
         const query = { webhooks: stringifyWebhooksToBase64(webhooks) };
         const res = await client.tasks.runTask({ taskId, webhooks });
-        expect(res.id).to.be.eql('run-task');
+        expect(res.id).toEqual('run-task');
         validateRequest(query, { taskId });
 
         // const browserRes = await page.evaluate(options => client.tasks.runTask(options), { taskId, input, ...query });
@@ -283,7 +288,7 @@ describe('Task methods', () => {
     });
     */
 
-    it('listWebhooks() works', async () => {
+    test('listWebhooks() works', async () => {
         const taskId = 'some-task-id';
         const query = {
             limit: 5,
@@ -293,39 +298,39 @@ describe('Task methods', () => {
 
 
         const res = await client.tasks.listWebhooks({ taskId, ...query });
-        expect(res.id).to.be.eql('list-webhooks');
+        expect(res.id).toEqual('list-webhooks');
         validateRequest(query, { taskId });
 
         const browserRes = await page.evaluate(options => client.tasks.listWebhooks(options), { taskId, ...query });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest(query, { taskId });
     });
 
-    it('getInput() works', async () => {
+    test('getInput() works', async () => {
         const taskId = 'some-task-id';
         const query = {};
 
         const res = await client.tasks.getInput({ taskId, ...query });
-        expect(res.id).to.be.eql('get-input');
+        expect(res.id).toEqual('get-input');
         validateRequest(query, { taskId });
 
         const browserRes = await page.evaluate(options => client.tasks.getInput(options), { taskId, ...query });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest(query, { taskId });
     });
 
-    it('updateInput() works', async () => {
+    test('updateInput() works', async () => {
         const taskId = 'some-task-id';
         const input = { foo: 'bar' };
 
         const query = {};
 
         const res = await client.tasks.updateInput({ taskId, input, ...query });
-        expect(res.id).to.be.eql('update-input');
+        expect(res.id).toEqual('update-input');
         validateRequest(query, { taskId }, input);
 
         const browserRes = await page.evaluate(options => client.tasks.updateInput(options), { taskId, input, ...query });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest(query, { taskId }, input);
     });
 });

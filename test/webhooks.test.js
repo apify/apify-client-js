@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import ApifyClient from '../build';
 
 import mockServer from './mock_server/server';
@@ -8,11 +7,11 @@ import { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } from 
 describe('Actor methods', () => {
     let baseUrl = null;
     let page;
-    before(async () => {
-        const server = await mockServer.start(3333);
+    beforeAll(async () => {
+        const server = await mockServer.start();
         baseUrl = `http://localhost:${server.address().port}`;
     });
-    after(() => mockServer.close());
+    afterAll(() => mockServer.close());
 
     let client = null;
     beforeEach(async () => {
@@ -30,19 +29,19 @@ describe('Actor methods', () => {
     });
 
 
-    it('createWebhook() works', async () => {
+    test('createWebhook() works', async () => {
         const webhook = { foo: 'bar' };
 
         const res = await client.webhooks.createWebhook({ webhook });
-        expect(res.id).to.be.eql('create-webhook');
+        expect(res.id).toEqual('create-webhook');
         validateRequest({}, {}, webhook);
 
         const browserRes = await page.evaluate(options => client.webhooks.createWebhook(options), { webhook });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest({}, {}, webhook);
     });
 
-    it('listWebhooks() works', async () => {
+    test('listWebhooks() works', async () => {
         const opts = {
             limit: 5,
             offset: 3,
@@ -50,39 +49,39 @@ describe('Actor methods', () => {
         };
 
         const res = await client.webhooks.listWebhooks(opts);
-        expect(res.id).to.be.eql('list-webhooks');
+        expect(res.id).toEqual('list-webhooks');
         validateRequest(opts);
 
         const browserRes = await page.evaluate(options => client.webhooks.listWebhooks(options), opts);
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest(opts);
     });
 
-    it('getWebhook() works', async () => {
+    test('getWebhook() works', async () => {
         const webhookId = 'webhook_id';
 
         const res = await client.webhooks.getWebhook({ webhookId });
-        expect(res.id).to.be.eql('get-webhook');
+        expect(res.id).toEqual('get-webhook');
         validateRequest({}, { webhookId });
 
         const browserRes = await page.evaluate(options => client.webhooks.getWebhook(options), { webhookId });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest({}, { webhookId });
     });
 
-    it('getWebhook() 404', async () => {
+    test('getWebhook() 404', async () => {
         const webhookId = '404';
 
         const res = await client.webhooks.getWebhook({ webhookId });
-        expect(res).to.be.eql(null);
+        expect(res).toEqual(null);
         validateRequest({}, { webhookId });
 
         const browserRes = await page.evaluate(options => client.webhooks.getWebhook(options), { webhookId });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest({}, { webhookId });
     });
 
-    it('updateWebhook() works', async () => {
+    test('updateWebhook() works', async () => {
         const webhookId = 'webhook_id';
         const webhook = {
             foo: 'bar',
@@ -90,27 +89,27 @@ describe('Actor methods', () => {
         };
 
         const res = await client.webhooks.updateWebhook({ webhookId, webhook });
-        expect(res.id).to.be.eql('update-webhook');
+        expect(res.id).toEqual('update-webhook');
         validateRequest({}, { webhookId }, webhook);
 
         const browserRes = await page.evaluate(options => client.webhooks.updateWebhook(options), { webhookId, webhook });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest({}, { webhookId }, webhook);
     });
 
-    it('deleteWebhook() works', async () => {
+    test('deleteWebhook() works', async () => {
         const webhookId = '204';
 
         const res = await client.webhooks.deleteWebhook({ webhookId });
-        expect(res).to.be.eql('');
+        expect(res).toEqual('');
         validateRequest({}, { webhookId });
 
         const browserRes = await page.evaluate(options => client.webhooks.deleteWebhook(options), { webhookId });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest({}, { webhookId });
     });
 
-    it('listDispatches() works', async () => {
+    test('listDispatches() works', async () => {
         const webhookId = 'webhook_id';
         const opts = {
             limit: 5,
@@ -119,11 +118,11 @@ describe('Actor methods', () => {
         };
 
         const res = await client.webhooks.listDispatches({ webhookId, ...opts });
-        expect(res.id).to.be.eql('list-dispatches');
+        expect(res.id).toEqual('list-dispatches');
         validateRequest(opts, { webhookId });
 
         const browserRes = await page.evaluate(options => client.webhooks.listDispatches(options), { webhookId, ...opts });
-        expect(browserRes).to.eql(res);
+        expect(browserRes).toEqual(res);
         validateRequest(opts, { webhookId });
     });
 });
