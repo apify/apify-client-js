@@ -1,4 +1,9 @@
-import _ from 'lodash';
+import isObject from 'lodash/isObject';
+import isString from 'lodash/isString';
+import isFunction from 'lodash/isFunction';
+import isUndefined from 'lodash/isUndefined';
+import isArray from 'lodash/isArray';
+import mapValues from 'lodash/mapValues';
 import contentTypeParser from 'content-type';
 import { parseType, parsedTypeCheck } from 'type-check';
 import { gzip } from 'zlib';
@@ -43,8 +48,8 @@ export const safeJsonParse = (str) => {
 export const newApifyClientErrorFromResponse = (body, details) => {
     let parsedBody = {};
 
-    if (_.isObject(body)) parsedBody = body;
-    else if (_.isString(body)) parsedBody = safeJsonParse(body);
+    if (isObject(body)) parsedBody = body;
+    else if (isString(body)) parsedBody = safeJsonParse(body);
 
     const error = parsedBody.error || parsedBody;
     const type = error.type || REQUEST_FAILED_ERROR_TYPE;
@@ -63,7 +68,7 @@ export const newApifyClientErrorFromResponse = (body, details) => {
  * @param {String} [errorMessage] - optional error message
  * @param {Boolean} [isApiV1] - flag for legacy Crawler
  */
-export const checkParamOrThrow = (value, name, type, errorMessage, isApiV1) => {
+export const checkParamOrThrow = (value, name, type, errorMessage) => {
     // TODO: move this into apify-shared along with an ApifyClientError,
     // actually it shouldn't be ApifyClientError but ApifyError in most cases!
 
@@ -76,7 +81,7 @@ export const checkParamOrThrow = (value, name, type, errorMessage, isApiV1) => {
     const allowsFunction = allowedTypes.filter(item => item.type === 'Function').length;
 
     if (allowsBuffer && Buffer.isBuffer(value)) return;
-    if (allowsFunction && _.isFunction(value)) return;
+    if (allowsFunction && isFunction(value)) return;
 
     // This will ignore Buffer type.
     if (!parsedTypeCheck(allowedTypes, value)) {
@@ -87,7 +92,7 @@ export const checkParamOrThrow = (value, name, type, errorMessage, isApiV1) => {
 /**
  * Returns object's data property or null if parameter is not an object.
  */
-export const pluckData = obj => (_.isObject(obj) && !_.isUndefined(obj.data) ? obj.data : null);
+export const pluckData = obj => (isObject(obj) && !isUndefined(obj.data) ? obj.data : null);
 
 /**
  * If given HTTP error has NOT_FOUND_STATUS_CODE status code then returns null.
@@ -155,12 +160,12 @@ export function wrapArray(response) {
  */
 export function parseDateFields(obj, depth = 0) {
     if (depth > PARSE_DATE_FIELDS_MAX_DEPTH) return obj;
-    if (_.isArray(obj)) return obj.map(child => parseDateFields(child, depth + 1));
-    if (!_.isObject(obj)) return obj;
+    if (isArray(obj)) return obj.map(child => parseDateFields(child, depth + 1));
+    if (!isObject(obj)) return obj;
 
-    return _.mapValues(obj, (val, key) => {
+    return mapValues(obj, (val, key) => {
         if (key.endsWith(PARSE_DATE_FIELDS_KEY_SUFFIX)) return val ? new Date(val) : val;
-        if (_.isArray(val) || _.isObject(val)) return parseDateFields(val, depth + 1);
+        if (isArray(val) || isObject(val)) return parseDateFields(val, depth + 1);
         return val;
     });
 }

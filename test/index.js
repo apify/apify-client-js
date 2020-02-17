@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import _ from 'underscore';
+import _ from 'lodash';
 import { expect } from 'chai';
 import * as utils from '../build/utils';
 import ApifyClient from '../build';
@@ -35,7 +35,7 @@ describe('ApifyClient', () => {
 
         const instanceOpts = { storeId: 'someStore', crawlerId: 'someCrawler', actId: 'someAct' };
 
-        instanceOpts._overrideMethodGroups = {
+        instanceOpts._overrideMethodGroups = { // eslint-disable-line
             group1: {
                 method1: (requestPromise, params) => Promise.resolve(params),
             },

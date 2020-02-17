@@ -1,8 +1,8 @@
-import retry from 'async-retry';
-import log from 'apify-shared/log';
 import Apify from 'apify';
+import { expect } from 'chai';
 import * as httpClient from '../build/http-client';
 import { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from '../build/request_queues';
+import mockServer from './mock_server/server';
 
 
 export const DEFAULT_RATE_LIMIT_ERRORS = new Array(
@@ -23,7 +23,7 @@ export const getInjectedPage = async (baseUrl, DEFAULT_QUERY) => {
     await Apify.utils.puppeteer.injectFile(page, `${__dirname}/../dist/bundle.js`);
 
     await page.evaluate((url, defaultQuery) => {
-        client = new ApifyClient({
+        window.client = new window.ApifyClient({
             baseUrl: url,
             expBackoffMaxRepeats: 0,
             expBackoffMillis: 1,
@@ -36,4 +36,40 @@ export const cleanUpBrowser = async (page) => {
     const browser = await page.browser();
     await page.close();
     return browser.close();
+};
+
+export const DEFAULT_QUERY = {
+    token: 'default-token',
+};
+
+export const getExpectedQuery = (callQuery = {}) => {
+    const query = optsToQuery(callQuery);
+    return {
+        ...DEFAULT_QUERY,
+        ...query,
+    };
+};
+
+function optsToQuery(params) {
+    return Object
+        .entries(params)
+        .filter(([k, v]) => v !== false) // eslint-disable-line no-unused-vars
+        .map(([k, v]) => {
+            if (v === true) v = '1';
+            else if (typeof v === 'number') v = v.toString();
+            return [k, v];
+        })
+        .reduce((newObj, [k, v]) => {
+            newObj[k] = v;
+            return newObj;
+        }, {});
+}
+
+export const validateRequest = (query = {}, params = {}, body = {}, headers = {}) => {
+    const request = mockServer.getLastRequest();
+    const expectedQuery = getExpectedQuery(query);
+    expect(request.query).to.be.eql(expectedQuery);
+    expect(request.params).to.be.eql(params);
+    expect(request.body).to.be.eql(body);
+    expect(request.headers).to.include(headers);
 };

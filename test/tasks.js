@@ -3,43 +3,7 @@ import ApifyClient from '../build';
 import { stringifyWebhooksToBase64 } from '../build/utils';
 
 import mockServer from './mock_server/server';
-import { cleanUpBrowser, getInjectedPage } from './_helper';
-
-const DEFAULT_QUERY = {
-    token: 'default-token',
-};
-
-function validateRequest(query = {}, params = {}, body = {}, headers = {}) {
-    const request = mockServer.getLastRequest();
-    const expectedQuery = getExpectedQuery(query);
-    expect(request.query).to.be.eql(expectedQuery);
-    expect(request.params).to.be.eql(params);
-    expect(request.body).to.be.eql(body);
-    expect(request.headers).to.include(headers);
-}
-
-function getExpectedQuery(callQuery = {}) {
-    const query = optsToQuery(callQuery);
-    return {
-        ...DEFAULT_QUERY,
-        ...query,
-    };
-}
-
-function optsToQuery(params) {
-    return Object
-        .entries(params)
-        .filter(([k, v]) => v !== false) // eslint-disable-line no-unused-vars
-        .map(([k, v]) => {
-            if (v === true) v = '1';
-            else if (typeof v === 'number') v = v.toString();
-            return [k, v];
-        })
-        .reduce((newObj, [k, v]) => {
-            newObj[k] = v;
-            return newObj;
-        }, {});
-}
+import { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } from './_helper';
 
 describe('Task methods', () => {
     let baseUrl = null;
@@ -146,25 +110,6 @@ describe('Task methods', () => {
 
     xit('updateTask() works with taskId as part task.id parameter', () => {
         // TODO: I think that this is duplicate of:  "updateTask() works with taskId in task object"
-        const task = { id: 'some-id', foo: 'bar' };
-        const token = 'some-token';
-
-        requestExpectCall({
-            json: true,
-            method: 'PUT',
-            url: `${BASE_URL}${BASE_PATH}/${task.id}`,
-            qs: { token },
-            body: { foo: 'bar' },
-        }, {
-            data: task,
-        });
-
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .updateTask({ task, token })
-            .then(response => expect(response).to.be.eql(task));
     });
 
     it('deleteTask() works', async () => {

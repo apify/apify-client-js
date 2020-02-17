@@ -1,4 +1,5 @@
-import _ from 'lodash';
+import omit from 'lodash/omit';
+import pick from 'lodash/pick';
 import {
     checkParamOrThrow,
     gzipPromise,
@@ -228,7 +229,7 @@ export default class Datasets {
             url: `/${datasetId}`,
             method: 'PUT',
             qs: {},
-            body: _.omit(dataset, 'id'),
+            body: omit(dataset, 'id'),
         };
         const response = await this._call(options, endpointOptions);
         return parseDateFields(pluckData(response));
@@ -357,7 +358,7 @@ export default class Datasets {
         checkParamOrThrow(options.skipFailedPages, 'skipFailedPages', 'Maybe Boolean');
 
         // Pick query params.
-        const query = _.pick(options, 'offset', 'limit', 'delimiter', 'unwind', 'xmlRoot', 'xmlRow', 'format', 'token');
+        const query = pick(options, 'offset', 'limit', 'delimiter', 'unwind', 'xmlRoot', 'xmlRow', 'format', 'token');
 
         // Add Boolean query params.
         if (options.skipHeaderRow) query.skipHeaderRow = 1;

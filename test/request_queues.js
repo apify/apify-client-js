@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import ApifyClient from '../build';
-import { BASE_PATH } from '../build/request_queues';
 import mockServer from './mock_server/server';
 import { cleanUpBrowser, getInjectedPage } from './_helper';
 
@@ -28,7 +27,7 @@ function getExpectedQuery(callQuery = {}) {
 function optsToQuery(params) {
     return Object
         .entries(params)
-        .filter(([k, v]) => {
+        .filter(([k, v]) => { // eslint-disable-line
             if (typeof v === 'boolean') {
                 return true;
             }
@@ -72,27 +71,7 @@ describe('RequestQueues methods', () => {
 
     describe('indentification', () => {
         xit('should work with queueId in default params', () => {
-            const queueId = 'some-id-2';
-
-            requestExpectCall({
-                json: true,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${queueId}`,
-                qs: {},
-            }, {
-                data: {
-                    id: queueId,
-                },
-            });
-
-            const apifyClient = new ApifyClient(Object.assign({}, OPTIONS, { queueId }));
-
-            return apifyClient
-                .requestQueues
-                .getQueue()
-                .then((queue) => {
-                    expect(queue.id).to.be.eql(queueId);
-                });
+            // TODO: Do we want to support it?
         });
 
         it('should work with queueId in method call params', async () => {

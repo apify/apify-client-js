@@ -1,5 +1,5 @@
 import log from 'apify-shared/log';
-import _ from 'lodash';
+import omit from 'lodash/omit';
 import {
     checkParamOrThrow,
     pluckData,
@@ -155,7 +155,7 @@ export default class Tasks {
         const endpointOptions = {
             url: `/${safeTaskId}`,
             method: 'PUT',
-            body: _.omit(task, 'id'),
+            body: omit(task, 'id'),
         };
 
         const response = await this._call(options, endpointOptions);

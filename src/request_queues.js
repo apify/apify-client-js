@@ -1,4 +1,4 @@
-import _ from 'underscore';
+import omit from 'lodash/omit';
 import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseDateFields } from './utils';
 
 // 256s - we use more for queries pointing to DynamoDB as it may sometimes need more time to scale up.
@@ -224,7 +224,7 @@ export default class RequestQueues {
             url: `/${queueId}`,
             method: 'PUT',
             qs: {},
-            body: _.omit(queue, 'id'),
+            body: omit(queue, 'id'),
         };
 
         const response = await this._call(options, endpointOptions);

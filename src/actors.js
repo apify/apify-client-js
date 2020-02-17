@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import omit from 'lodash/omit';
 import log from 'apify-shared/log';
 import {
     checkParamOrThrow,
@@ -159,7 +159,7 @@ export default class Actors {
         const endpointOptions = {
             url: `/${safeActorId}`,
             method: 'PUT',
-            body: _.omit(actor, 'id'),
+            body: omit(actor, 'id'),
         };
 
         const response = await this._call(options, endpointOptions);

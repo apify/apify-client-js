@@ -1,46 +1,8 @@
 import { expect } from 'chai';
 import { gzipSync } from 'zlib';
-import { randomBytes } from 'crypto';
 import ApifyClient from '../build';
-import { BASE_PATH, SIGNED_URL_UPLOAD_MIN_BYTESIZE } from '../build/key_value_stores';
 import mockServer from './mock_server/server';
-import { cleanUpBrowser, getInjectedPage } from './_helper';
-
-const DEFAULT_QUERY = {
-    token: 'default-token',
-};
-
-function validateRequest(query = {}, params = {}, body = {}, headers = {}) {
-    const request = mockServer.getLastRequest();
-    const expectedQuery = getExpectedQuery(query);
-    expect(request.query).to.be.eql(expectedQuery);
-    expect(request.params).to.be.eql(params);
-    expect(request.body).to.be.eql(body);
-    expect(request.headers).to.include(headers);
-}
-
-function getExpectedQuery(callQuery = {}) {
-    const query = optsToQuery(callQuery);
-    return {
-        ...DEFAULT_QUERY,
-        ...query,
-    };
-}
-
-function optsToQuery(params) {
-    return Object
-        .entries(params)
-        .filter(([k, v]) => v !== false) // eslint-disable-line no-unused-vars
-        .map(([k, v]) => {
-            if (v === true) v = '1';
-            else if (typeof v === 'number') v = v.toString();
-            return [k, v];
-        })
-        .reduce((newObj, [k, v]) => {
-            newObj[k] = v;
-            return newObj;
-        }, {});
-}
+import { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } from './_helper';
 
 describe('KeyValueStores methods', () => {
     let baseUrl = null;
@@ -71,27 +33,7 @@ describe('KeyValueStores methods', () => {
     describe('indentification', () => {
         xit('should work with storeId in default params', () => {
             // TODO: DO we want to keep the support for the default params?
-            const storeId = 'some-id-2';
 
-            requestExpectCall({
-                json: true,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}`,
-                qs: {},
-            }, {
-                data: {
-                    id: storeId,
-                },
-            });
-
-            const apifyClient = new ApifyClient(Object.assign({}, OPTIONS, { storeId }));
-
-            return apifyClient
-                .keyValueStores
-                .getStore()
-                .then((store) => {
-                    expect(store.id).to.be.eql(storeId);
-                });
         });
 
         it('should work with storeId in method call params', async () => {
@@ -291,40 +233,6 @@ describe('KeyValueStores methods', () => {
 
         xit('putRecord() uploads via signed url when gzipped buffer.length > SIGNED_URL_UPLOAD_MIN_BYTESIZE', () => {
             // TODO: I have no idea how to test this using this mock flow :(
-            const key = 'some-key';
-            const storeId = 'some-id';
-            const contentType = 'application/octet-stream';
-            const body = randomBytes(SIGNED_URL_UPLOAD_MIN_BYTESIZE);
-            const signedUrl = 'http://something.aws.com/foo';
-            const token = 'my-token';
-
-            requestExpectCall({
-                headers: {
-                    'Content-Type': contentType,
-                },
-                json: true,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}/records/${key}/direct-upload-url`,
-                qs: { token },
-            }, { data: { signedUrl } });
-
-            requestExpectCall({
-                json: false,
-                method: 'PUT',
-                url: signedUrl,
-                headers: {
-                    'Content-Type': contentType,
-                    'Content-Encoding': 'gzip',
-                },
-                body: gzipSync(body),
-                qs: null,
-            });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .keyValueStores
-                .putRecord({ storeId, key, contentType, body, token });
         });
 
         it('deleteRecord() works', async () => {

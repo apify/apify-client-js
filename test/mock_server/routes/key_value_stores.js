@@ -28,7 +28,7 @@ const HANDLERS = {
                 .json(payload);
         };
     },
-    responseJsonMock(id) {
+    responseJsonMock() {
         return (req, res) => {
             const mockServer = req.app.get('mockServer');
             const { body, headers = {}, statusCode = 200 } = mockServer.response;

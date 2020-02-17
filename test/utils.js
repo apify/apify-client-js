@@ -1,19 +1,15 @@
-import sinon from 'sinon';
-import request from 'request-promise-native';
+
 import { gunzipSync } from 'zlib';
 import { expect } from 'chai';
-import _ from 'underscore';
+import _ from 'lodash';
 import ApifyClientError, {
-    APIFY_ERROR_NAME,
+
     REQUEST_FAILED_ERROR_TYPE,
     REQUEST_FAILED_ERROR_MESSAGE,
-    INVALID_PARAMETER_ERROR_TYPE,
+
     NOT_FOUND_STATUS_CODE,
 } from '../build/apify_error';
-import { newEmptyStats, DEFAULT_RATE_LIMIT_ERRORS } from './_helper';
 import * as utils from '../build/utils';
-
-const { CLIENT_USER_AGENT, CONTENT_TYPE_JSON_HEADER } = utils;
 
 describe('utils.safeJsonParse()', () => {
     it('works', () => {
@@ -34,7 +30,8 @@ describe('utils.newApifyClientErrorFromResponse()', () => {
 
     it('works with body as JSON string', () => {
         const error = utils.newApifyClientErrorFromResponse(
-            JSON.stringify({ type: 'SOME_TYPE', message: 'Some message.' }), { statusCode: 404 });
+            JSON.stringify({ type: 'SOME_TYPE', message: 'Some message.' }), { statusCode: 404 },
+        );
         expect(error.details.statusCode).to.be.eql(404);
         expect(error.type).to.be.eql('SOME_TYPE');
         expect(error.message).to.be.eql('Some message.');
