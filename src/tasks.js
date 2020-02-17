@@ -1,4 +1,3 @@
-import log from 'apify-shared/log';
 import omit from 'lodash/omit';
 import {
     checkParamOrThrow,
@@ -277,8 +276,7 @@ export default class Tasks {
      * @returns {ActRun}
      */
     async runTask(options) {
-        // TODO: NOt finished.
-        const { taskId, waitForFinish, body, contentType, timeout, memory, build, webhooks, input } = options;
+        const { taskId, waitForFinish, timeout, memory, build, webhooks, input } = options;
 
         checkParamOrThrow(taskId, 'taskId', 'String');
         checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
@@ -302,19 +300,6 @@ export default class Tasks {
             method: 'POST',
             qs: query,
         };
-
-        // This is for backwards compatiblity.
-        // TODO: Remove when releasing v1.0.
-        if (body) {
-            if (input) {
-                throw new Error('You cannot use deprecated parameter "body" along with its replacement "input"!');
-            }
-            checkParamOrThrow(contentType, 'contentType', 'Maybe String');
-            checkParamOrThrow(body, 'body', 'String');
-            log.deprecated('Parameter "body" of client.tasks.runTask() method is depredated. Use "input" parameter instead.');
-            endpointOptions.body = body;
-            if (contentType) endpointOptions.headers = { 'Content-Type': contentType };
-        }
 
         if (input) {
             endpointOptions.body = input;

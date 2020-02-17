@@ -237,25 +237,8 @@ describe('Task methods', () => {
         validateRequest(query, { taskId }, input);
     });
 
-    xit('runTask() works with deprecated input body and contentType params', async () => {
+    it('runTask() works with webhooks', async () => {
         const taskId = 'some-id';
-        const body = JSON.stringify({ foo: 'bar' });
-
-        const query = {
-            waitForFinish: 100,
-            memory: 512,
-            contentType: 'application/json; charset=utf-8',
-        };
-
-        const res = await client.tasks.runTask({ taskId, body, ...query });
-        expect(res.id).to.be.eql('run-task');
-        validateRequest(query, { taskId }, body);
-    });
-
-    xit('runTask() works with webhooks', () => {
-        const taskId = 'some-id';
-        const token = 'some-token';
-        const run = { foo: 'bar' };
         const webhooks = [
             {
                 eventTypes: ['ACTOR.RUN.CREATED'],
@@ -267,18 +250,14 @@ describe('Task methods', () => {
             },
         ];
 
-        requestExpectCall({
-            method: 'POST',
-            url: `${BASE_URL}${BASE_PATH}/${taskId}/runs`,
-            qs: { token, webhooks: stringifyWebhooksToBase64(webhooks) },
-        }, JSON.stringify({ data: run }));
+        const query = { webhooks: stringifyWebhooksToBase64(webhooks) };
+        const res = await client.tasks.runTask({ taskId, webhooks });
+        expect(res.id).to.be.eql('run-task');
+        validateRequest(query, { taskId });
 
-        const apifyClient = new ApifyClient(OPTIONS);
-
-        return apifyClient
-            .tasks
-            .runTask({ taskId, token, webhooks })
-            .then(response => expect(response).to.be.eql(run));
+        // const browserRes = await page.evaluate(options => client.tasks.runTask(options), { taskId, input, ...query });
+        //  expect(browserRes).to.eql(res);
+        // validateRequest(query, { taskId }, input);
     });
 
     /*
