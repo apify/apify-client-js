@@ -10,9 +10,6 @@
         "crawler",
         "scraper"
     ],
-    "engines": {
-        "node": ">=8.0.0"
-    },
     "author": {
         "name": "Apify",
         "email": "support@apify.com",
@@ -38,12 +35,12 @@
         "build"
     ],
     "scripts": {
-        "build": "babel src --out-dir build",
+        "build": "babel src --out-dir build && npm run build-browser",
         "build-doc": "npm run clean && npm run build && node ./node_modules/jsdoc/jsdoc.js --package ./package.json -c ./jsdoc/conf.json -d docs",
         "build-toc": "./node_modules/.bin/markdown-toc README.md -i",
         "test": "npm run build && nyc --reporter=html --reporter=text mocha --timeout 60000 --require @babel/register --recursive",
         "prepublishOnly": "(test $RUNNING_FROM_SCRIPT || (echo \"You must use publish.sh instead of 'npm publish' directly!\"; exit 1)) && npm test && npm run lint",
-        "clean": "rm -rf build && rm -rf docs",
+        "clean": "rm -rf build && rm -rf dist && rm -rf docs",
         "lint": "npm run build && eslint src test",
         "build-browser": "webpack"
     },
@@ -54,7 +51,6 @@
         "axios": "^0.19.0",
         "content-type": "^1.0.4",
         "lodash": "^4.17.15",
-        "regenerator-runtime": "^0.13.3",
         "type-check": "^0.3.2",
         "verror": "^1.10.0"
     },
@@ -68,7 +64,6 @@
         "@types/express": "^4.17.1",
         "@types/mocha": "^5.2.7",
         "@types/nock": "^10.0.3",
-        "add-module-exports-webpack-plugin": "^1.0.0",
         "apify": "^0.19.0",
         "apify-jsdoc-template": "github:apifytech/apify-jsdoc-template",
         "babel-loader": "^8.0.6",
