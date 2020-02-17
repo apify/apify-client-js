@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import ApifyClient from '../build';
-import { BASE_PATH, REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from '../build/request_queues';
+import { BASE_PATH } from '../build/request_queues';
 import mockServer from './mock_server/server';
 import { cleanUpBrowser, getInjectedPage } from './_helper';
 
@@ -185,63 +185,20 @@ describe('RequestQueues methods', () => {
             validateRequest({}, { queueId });
         });
 
-        it('getQueue() returns null on 404 status code (RECORD_NOT_FOUND)', () => {
+        it('updateQueue() works', async () => {
             const queueId = 'some-id';
-
-            requestExpectErrorCall({
-                json: true,
-                method: 'GET',
-                url: `${BASE_URL}${BASE_PATH}/${queueId}`,
-                qs: {},
-            }, false, 404);
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .requestQueues
-                .getQueue({ queueId })
-                .then(given => expect(given).to.be.eql(null));
-        });
-
-        it('updateQueue() works', () => {
-            const queueId = 'some-id';
-            const token = 'my-token';
             const queue = { id: queueId, name: 'my-name' };
 
-            requestExpectCall({
-                json: true,
-                method: 'PUT',
-                url: `${BASE_URL}${BASE_PATH}/${queueId}`,
-                qs: { token },
-                body: _.omit(queue, 'id'),
-            });
+            const res = await client.requestQueues.updateQueue({ queueId, queue });
+            expect(res.id).to.be.eql('update-queue');
+            validateRequest({}, { queueId }, { name: queue.name });
 
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .requestQueues
-                .updateQueue({ queueId, queue, token });
+            const browserRes = await page.evaluate(opts => client.requestQueues.updateQueue(opts), { queueId, queue });
+            expect(browserRes).to.eql(res);
+            validateRequest({}, { queueId }, { name: queue.name });
         });
 
-        it('deleteQueue() works', () => {
-            const queueId = 'some-id';
-            const token = 'my-token';
 
-            requestExpectCall({
-                json: true,
-                method: 'DELETE',
-                url: `${BASE_URL}${BASE_PATH}/${queueId}`,
-                qs: { token },
-            });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .requestQueues
-                .deleteQueue({ queueId, token });
-        });
-
-        it('addRequest() works without forefront param', () => {
         it('addRequest() works without forefront param', async () => {
             const queueId = 'some-id';
             const request = { url: 'http://example.com' };
@@ -255,7 +212,7 @@ describe('RequestQueues methods', () => {
             expect(res.id).to.be.eql('add-request');
             validateRequest({ forefront: false, clientKey: endpointOptions.clientKey }, { queueId }, request);
 
-            const browserRes = await page.evaluate(options => client.requestQueues.addRequest(options), { queueId, ...endpointOptions  });
+            const browserRes = await page.evaluate(options => client.requestQueues.addRequest(options), { queueId, ...endpointOptions });
             expect(browserRes).to.eql(res);
             validateRequest({ forefront: false, clientKey: endpointOptions.clientKey }, { queueId }, request);
         });
@@ -274,7 +231,7 @@ describe('RequestQueues methods', () => {
             expect(res.id).to.be.eql('add-request');
             validateRequest({ forefront: true, clientKey: endpointOptions.clientKey }, { queueId }, request);
 
-            const browserRes = await page.evaluate(options => client.requestQueues.addRequest(options), { queueId, ...endpointOptions  });
+            const browserRes = await page.evaluate(options => client.requestQueues.addRequest(options), { queueId, ...endpointOptions });
             expect(browserRes).to.eql(res);
             validateRequest({ forefront: true, clientKey: endpointOptions.clientKey }, { queueId }, request);
         });

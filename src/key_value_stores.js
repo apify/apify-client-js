@@ -1,3 +1,4 @@
+import omit from 'lodash/omit';
 import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody, parseDateFields, isomorphicBufferToString } from './utils';
 
 /**
@@ -186,27 +187,25 @@ export default class KeyValueStores {
      * @param options.token
      * @param {String} options.storeId - Unique store ID
      * @param {Object} options.store
-     * @param callback
      * @returns {KeyValueStore}
      */
-    updateStore: (requestPromise, options) => {
-        const { baseUrl, token, storeId, store } = options;
+    async updateStore(options) {
+        const { storeId, store } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(store, 'store', 'Object');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${storeId}`,
+        const endpointOptions = {
+            url: `/${storeId}`,
             json: true,
             method: 'PUT',
-            qs: { token },
-            body: _.omit(store, 'id'),
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+            qs: {},
+            body: omit(store, 'id'),
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Deletes key-value store.

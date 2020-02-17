@@ -212,27 +212,24 @@ export default class RequestQueues {
      * @param options.token
      * @param {String} options.queueId - Unique queue ID
      * @param {Object} options.queue
-     * @param callback
      * @returns {RequestQueue}
      */
-    updateQueue: (requestPromise, options) => {
-        const { baseUrl, token, queueId, queue } = options;
+    async updateQueue(options) {
+        const { queueId, queue } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(queue, 'queue', 'Object');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${queueId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${queueId}`,
             method: 'PUT',
-            qs: { token },
+            qs: {},
             body: _.omit(queue, 'id'),
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Deletes request queue.

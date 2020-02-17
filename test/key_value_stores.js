@@ -161,30 +161,6 @@ describe('KeyValueStores methods', () => {
 
         it('getStore() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
             const storeId = '404';
-
-        it('updateStore() works', () => {
-            const storeId = 'some-id';
-            const token = 'my-token';
-            const store = { id: storeId, name: 'my-name' };
-
-            requestExpectCall({
-                json: true,
-                method: 'PUT',
-                url: `${BASE_URL}${BASE_PATH}/${storeId}`,
-                qs: { token },
-                body: _.omit(store, 'id'),
-            });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .keyValueStores
-                .updateStore({ storeId, store, token });
-        });
-
-        it('deleteStore() works', () => {
-            const storeId = 'some-id';
-            const token = 'my-token';
             const res = await client.keyValueStores.getStore({ storeId });
             expect(res).to.be.eql(null);
             validateRequest({}, { storeId });
@@ -193,6 +169,20 @@ describe('KeyValueStores methods', () => {
             expect(browserRes).to.eql(res);
             validateRequest({}, { storeId });
         });
+
+        it('updateStore() works', async () => {
+            const storeId = 'some-id';
+            const store = { id: storeId, name: 'my-name' };
+
+            const res = await client.keyValueStores.updateStore({ storeId, store });
+            expect(res.id).to.be.eql('update-store');
+            validateRequest({}, { storeId }, { name: store.name });
+
+            const browserRes = await page.evaluate(opts => client.keyValueStores.updateStore(opts), { storeId, store });
+            expect(browserRes).to.eql(res);
+            validateRequest({}, { storeId }, { name: store.name });
+        });
+
 
         it('deleteStore() works', async () => {
             const storeId = '204';
@@ -247,7 +237,11 @@ describe('KeyValueStores methods', () => {
             const res = await client.keyValueStores.getRecord({ storeId, key, disableBodyParser: true });
             expect(res).to.be.eql(JSON.stringify(body));
 
-            const browserRes = await page.evaluate(opts => client.keyValueStores.getRecord(opts), { storeId, key, disableBodyParser: true });
+            const browserRes = await page.evaluate(opts => client.keyValueStores.getRecord(opts), {
+                storeId,
+                key,
+                disableBodyParser: true,
+            });
             expect(browserRes).to.eql(res);
         });
 
@@ -261,7 +255,11 @@ describe('KeyValueStores methods', () => {
             const res = await client.keyValueStores.getRecord({ storeId, key, disableBodyParser: true });
             expect(res).to.be.eql(null);
 
-            const browserRes = await page.evaluate(opts => client.keyValueStores.getRecord(opts), { storeId, key, disableBodyParser: true });
+            const browserRes = await page.evaluate(opts => client.keyValueStores.getRecord(opts), {
+                storeId,
+                key,
+                disableBodyParser: true,
+            });
             expect(browserRes).to.eql(res);
         });
 
@@ -271,16 +269,23 @@ describe('KeyValueStores methods', () => {
             const contentType = 'text/plain';
             const body = 'someValue';
 
-            mockServer.setResponse({ body: gzipSync(body),
+            mockServer.setResponse({
+                body: gzipSync(body),
                 headers: {
                     'Content-Type': contentType,
                     'Content-Encoding': 'gzip',
-                } });
+                },
+            });
 
             const res = await client.keyValueStores.putRecord({ storeId, key, contentType, body });
             expect(res).to.be.eql(body);
 
-            const browserRes = await page.evaluate(opts => client.keyValueStores.putRecord(opts), { storeId, key, contentType, body });
+            const browserRes = await page.evaluate(opts => client.keyValueStores.putRecord(opts), {
+                storeId,
+                key,
+                contentType,
+                body,
+            });
             expect(browserRes).to.eql(res);
         });
 

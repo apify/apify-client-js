@@ -7,6 +7,7 @@ const ROUTES = [
     { id: 'list-datasets', method: 'GET', path: '/' },
     { id: 'get-dataset', method: 'GET', path: '/:datasetId' },
     { id: 'delete-dataset', method: 'DELETE', path: '/:datasetId' },
+    { id: 'update-dataset', method: 'PUT', path: '/:datasetId' },
     { id: 'get-items', method: 'GET', path: '/:datasetId/items', type: 'responseJsonMock' },
     { id: 'put-items', method: 'POST', path: '/:datasetId/items' },
 ];

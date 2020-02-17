@@ -2,9 +2,8 @@ import axios from 'axios';
 import KeepAliveAgent from 'agentkeepalive';
 import os from 'os';
 import ApifyClientError, {
-    INVALID_PARAMETER_ERROR_TYPE_V1,
-    INVALID_PARAMETER_ERROR_TYPE_V2,
-    REQUEST_FAILED_ERROR_TYPE_V1, REQUEST_FAILED_ERROR_TYPE_V2,
+    INVALID_PARAMETER_ERROR_TYPE,
+    REQUEST_FAILED_ERROR_TYPE,
 } from './apify_error';
 import { checkParamOrThrow, CONTENT_TYPE_JSON, newApifyClientErrorFromResponse, retryWithExpBackoff } from './utils';
 import { version } from '../package.json';
@@ -40,7 +39,6 @@ export class HttpClient {
     _validateAndNormalizeOptions(options) {
         /* eslint-disable prefer-const */
         let {
-            isApiV1,
             baseUrl,
             method,
             token,
@@ -49,7 +47,6 @@ export class HttpClient {
             retryOnStatusCodes = [RATE_LIMIT_EXCEEDED_STATUS_CODE],
         } = options;
 
-        const INVALID_PARAMETER_ERROR_TYPE = isApiV1 ? INVALID_PARAMETER_ERROR_TYPE_V1 : INVALID_PARAMETER_ERROR_TYPE_V2;
 
         if (typeof baseUrl !== 'string') {
             throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, 'The "options.baseUrl" parameter of type string is required.');
@@ -63,7 +60,7 @@ export class HttpClient {
         method = method.toUpperCase();
         if (!ALLOWED_HTTP_METHODS.includes(method)) {
             throw new ApifyClientError(
-                INVALID_PARAMETER_ERROR_TYPE_V2,
+                INVALID_PARAMETER_ERROR_TYPE,
                 'The "options.method" parameter is invalid. '
                 + `Expected one of ${ALLOWED_HTTP_METHODS.join(', ')} but got: ${options.method}`,
             );
@@ -130,7 +127,6 @@ export class HttpClient {
 
     async _call(options) {
         const {
-            isApiV1,
             expBackoffMillis,
             expBackoffMaxRepeats,
             retryOnStatusCodes,
@@ -180,7 +176,7 @@ export class HttpClient {
                 && statusCode < 500
                 && !retryOnStatusCodes.includes(statusCode)
             ) {
-                bail(newApifyClientErrorFromResponse(response.body, isApiV1, { statusCode, url: options.url, method: options.method }));
+                bail(newApifyClientErrorFromResponse(response.body, { statusCode, url: options.url, method: options.method }));
                 return;
             }
 
@@ -202,7 +198,6 @@ export class HttpClient {
             const errorMsg = iteration === 1
                 ? 'API request failed on the first try'
                 : `API request failed on retry number ${iteration - 1}`;
-            const REQUEST_FAILED_ERROR_TYPE = isApiV1 ? REQUEST_FAILED_ERROR_TYPE_V1 : REQUEST_FAILED_ERROR_TYPE_V2;
             throw new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, errorMsg, errorDetails, error);
         };
         return retryWithExpBackoff(makeRequest, { retries: expBackoffMaxRepeats, minTimeout: expBackoffMillis });

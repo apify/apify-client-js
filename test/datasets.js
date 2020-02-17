@@ -76,7 +76,6 @@ describe('Dataset methods', () => {
                 expBackoffMillis: 1,
                 datasetId,
             };
-            console.log(options);
             const newClient = new ApifyClient(options);
 
             const res = await newClient.datasets.getDataset();
@@ -175,46 +174,20 @@ describe('Dataset methods', () => {
             validateRequest({}, { datasetId });
         });
 
-        it('getItems() works', async () => {
-        it('updateDataset() works', () => {
+        it('updateDataset() works', async () => {
             const datasetId = 'some-id';
-            const token = 'my-token';
             const dataset = { id: datasetId, name: 'my-name' };
 
-            requestExpectCall({
-                json: true,
-                method: 'PUT',
-                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
-                qs: { token },
-                body: _.omit(dataset, 'id'),
-            });
+            const res = await client.datasets.updateDataset({ datasetId, dataset });
+            expect(res.id).to.be.eql('update-dataset');
+            validateRequest({}, { datasetId }, { name: dataset.name });
 
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .datasets
-                .updateDataset({ datasetId, dataset, token });
+            const browserRes = await page.evaluate(opts => client.datasets.updateDataset(opts), { datasetId, dataset });
+            expect(browserRes).to.eql(res);
+            validateRequest({}, { datasetId }, { name: dataset.name });
         });
 
-        it('deleteDataset() works', () => {
-            const datasetId = 'some-id';
-            const token = 'my-token';
-
-            requestExpectCall({
-                json: true,
-                method: 'DELETE',
-                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
-                qs: { token },
-            });
-
-            const apifyClient = new ApifyClient(OPTIONS);
-
-            return apifyClient
-                .datasets
-                .deleteDataset({ datasetId, token });
-        });
-
-        it('getItems() works', () => {
+        it('getItems() works', async () => {
             const datasetId = 'some-id';
             const expected = {
                 total: 0,
@@ -275,7 +248,7 @@ describe('Dataset methods', () => {
             expect(res.toString()).to.be.eql(expected.toString());
             validateRequest(qs, { datasetId }, {});
 
-            const browserRes = await page.evaluate(options => client.datasets.getItems(options), { datasetId });
+            const browserRes = await page.evaluate(opts => client.datasets.getItems(opts), { datasetId });
             expect(browserRes).to.eql(res);
             validateRequest({}, { datasetId }, {});
         });

@@ -216,27 +216,23 @@ export default class Datasets {
      * @param options.token
      * @param {String} options.datasetId - Unique dataset ID
      * @param {Object} options.dataset
-     * @param callback
      * @returns {Dataset}
      */
-    updateDataset: (requestPromise, options) => {
-        const { baseUrl, token, datasetId, dataset } = options;
+    async updateDataset(options) {
+        const { datasetId, dataset } = options;
 
-        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
-        checkParamOrThrow(token, 'token', 'String');
         checkParamOrThrow(datasetId, 'datasetId', 'String');
         checkParamOrThrow(dataset, 'dataset', 'Object');
 
-        return requestPromise({
-            url: `${baseUrl}${BASE_PATH}/${datasetId}`,
-            json: true,
+        const endpointOptions = {
+            url: `/${datasetId}`,
             method: 'PUT',
-            qs: { token },
+            qs: {},
             body: _.omit(dataset, 'id'),
-        })
-            .then(pluckData)
-            .then(parseDateFields);
-    },
+        };
+        const response = await this._call(options, endpointOptions);
+        return parseDateFields(pluckData(response));
+    }
 
     /**
      * Deletes given dataset.

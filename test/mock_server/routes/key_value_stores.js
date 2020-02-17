@@ -7,6 +7,7 @@ const ROUTES = [
     { id: 'get-or-create-store', method: 'POST', path: '/' },
     { id: 'get-store', method: 'GET', path: '/:storeId' },
     { id: 'delete-store', method: 'DELETE', path: '/:storeId' },
+    { id: 'update-store', method: 'PUT', path: '/:storeId' },
     { id: 'get-record', method: 'GET', path: '/:storeId/records/:key', type: 'responseJsonMock' },
     { id: 'put-record', method: 'PUT', path: '/:storeId/records/:key', type: 'responseJsonMock' },
     { id: 'delete-record', method: 'DELETE', path: '/:storeId/record/:key' },
