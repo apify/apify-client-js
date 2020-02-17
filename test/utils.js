@@ -74,12 +74,12 @@ describe('utils.checkParamOrThrow()', () => {
         utils.checkParamOrThrow(2, 'paramName2', 'Maybe Number');
         utils.checkParamOrThrow(null, 'paramName3', 'Maybe Number');
 
-        utils.checkParamOrThrow(new Buffer(120), 'paramName4', 'Buffer');
+        utils.checkParamOrThrow(Buffer.alloc(120), 'paramName4', 'Buffer');
         utils.checkParamOrThrow(null, 'paramName5', 'Maybe Buffer');
-        utils.checkParamOrThrow(new Buffer(120), 'paramName6', 'Buffer|String');
+        utils.checkParamOrThrow(Buffer.alloc(120), 'paramName6', 'Buffer|String');
         utils.checkParamOrThrow('aaa', 'paramName7', 'Buffer|String');
         utils.checkParamOrThrow(null, 'paramName8', 'Maybe Buffer|String');
-        utils.checkParamOrThrow(new Buffer(120), 'paramName8', 'Maybe Buffer|String');
+        utils.checkParamOrThrow(Buffer.alloc(120), 'paramName8', 'Maybe Buffer|String');
         utils.checkParamOrThrow('aaa', 'paramName9', 'Maybe Buffer|String');
         utils.checkParamOrThrow(() => {}, 'paramName10', 'Function');
         utils.checkParamOrThrow(aaa, 'paramName11', 'Function');
@@ -103,10 +103,10 @@ describe('utils.checkParamOrThrow()', () => {
             () => utils.checkParamOrThrow(null, 'paramName13', 'Buffer'),
         ).to.throw('Parameter "paramName13" of type Buffer must be provided');
         expect(
-            () => utils.checkParamOrThrow(new Buffer(120), 'paramName14', 'String'),
+            () => utils.checkParamOrThrow(Buffer.alloc(120), 'paramName14', 'String'),
         ).to.throw('Parameter "paramName14" of type String must be provided');
         expect(
-            () => utils.checkParamOrThrow(new Buffer(120), 'paramName15', 'Function'),
+            () => utils.checkParamOrThrow(Buffer.alloc(120), 'paramName15', 'Function'),
         ).to.throw('Parameter "paramName15" of type Function must be provided');
     });
 });
@@ -136,7 +136,7 @@ describe('utils.catchNotFoundOrThrow()', () => {
 
 describe('utils.gzipPromise()', () => {
     it('works', () => {
-        const buffer = new Buffer([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]);
+        const buffer = Buffer.from([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]);
         const str = 'foobar';
 
         const testBuffer = utils
