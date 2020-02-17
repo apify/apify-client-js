@@ -5,11 +5,9 @@ import { expect } from 'chai';
 import _ from 'underscore';
 import ApifyClientError, {
     APIFY_ERROR_NAME,
-    REQUEST_FAILED_ERROR_TYPE_V1,
-    REQUEST_FAILED_ERROR_TYPE_V2,
+    REQUEST_FAILED_ERROR_TYPE,
     REQUEST_FAILED_ERROR_MESSAGE,
-    INVALID_PARAMETER_ERROR_TYPE_V1,
-    INVALID_PARAMETER_ERROR_TYPE_V2,
+    INVALID_PARAMETER_ERROR_TYPE,
     NOT_FOUND_STATUS_CODE,
 } from '../build/apify_error';
 import { newEmptyStats, DEFAULT_RATE_LIMIT_ERRORS } from './_helper';
@@ -28,7 +26,7 @@ describe('utils.safeJsonParse()', () => {
 describe('utils.newApifyClientErrorFromResponse()', () => {
     it('works with body as object', () => {
         const details = { statusCode: 404 };
-        const error = utils.newApifyClientErrorFromResponse({ type: 'SOME_TYPE', message: 'Some message.' }, false, details);
+        const error = utils.newApifyClientErrorFromResponse({ type: 'SOME_TYPE', message: 'Some message.' }, details);
         expect(error.details).to.be.eql(details);
         expect(error.type).to.be.eql('SOME_TYPE');
         expect(error.message).to.be.eql('Some message.');
@@ -36,50 +34,35 @@ describe('utils.newApifyClientErrorFromResponse()', () => {
 
     it('works with body as JSON string', () => {
         const error = utils.newApifyClientErrorFromResponse(
-            JSON.stringify({ type: 'SOME_TYPE', message: 'Some message.' }), false, { statusCode: 404 },
-        );
+            JSON.stringify({ type: 'SOME_TYPE', message: 'Some message.' }), { statusCode: 404 });
         expect(error.details.statusCode).to.be.eql(404);
         expect(error.type).to.be.eql('SOME_TYPE');
         expect(error.message).to.be.eql('Some message.');
     });
 
     it('works withhout type and message in body', () => {
-        const error = utils.newApifyClientErrorFromResponse({ foo: 'bar' }, false, { statusCode: 404 });
+        const error = utils.newApifyClientErrorFromResponse({ foo: 'bar' }, { statusCode: 404 });
         expect(error.details.statusCode).to.be.eql(404);
-        expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
+        expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE);
         expect(error.message).to.be.eql(REQUEST_FAILED_ERROR_MESSAGE);
     });
 
     it('works withhout type in body', () => {
-        const error = utils.newApifyClientErrorFromResponse({ foo: 'bar', message: 'Some message.' }, false, { statusCode: 404 });
+        const error = utils.newApifyClientErrorFromResponse({ foo: 'bar', message: 'Some message.' }, { statusCode: 404 });
         expect(error.details.statusCode).to.be.eql(404);
-        expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V2);
-        expect(error.message).to.be.eql('Some message.');
-    });
-
-    it('works withhout type and message in body for API V1', () => {
-        const error = utils.newApifyClientErrorFromResponse({ foo: 'bar' }, true, { statusCode: 404 });
-        expect(error.details.statusCode).to.be.eql(404);
-        expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V1);
-        expect(error.message).to.be.eql(REQUEST_FAILED_ERROR_MESSAGE);
-    });
-
-    it('works withhout type in body for API V1', () => {
-        const error = utils.newApifyClientErrorFromResponse({ foo: 'bar', message: 'Some message.' }, true, { statusCode: 404 });
-        expect(error.details.statusCode).to.be.eql(404);
-        expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE_V1);
+        expect(error.type).to.be.eql(REQUEST_FAILED_ERROR_TYPE);
         expect(error.message).to.be.eql('Some message.');
     });
 
     it('works withhout message in body', () => {
-        const error = utils.newApifyClientErrorFromResponse({ foo: 'bar', type: 'SOME_TYPE' }, false, { statusCode: 404 });
+        const error = utils.newApifyClientErrorFromResponse({ foo: 'bar', type: 'SOME_TYPE' }, { statusCode: 404 });
         expect(error.details.statusCode).to.be.eql(404);
         expect(error.type).to.be.eql('SOME_TYPE');
         expect(error.message).to.be.eql(REQUEST_FAILED_ERROR_MESSAGE);
     });
 
     it('works with error as subobject', () => {
-        const error = utils.newApifyClientErrorFromResponse({ error: { type: 'SOME_TYPE', message: 'Some message.' } }, false, { statusCode: 404 });
+        const error = utils.newApifyClientErrorFromResponse({ error: { type: 'SOME_TYPE', message: 'Some message.' } }, { statusCode: 404 });
         expect(error.details.statusCode).to.be.eql(404);
         expect(error.type).to.be.eql('SOME_TYPE');
         expect(error.message).to.be.eql('Some message.');

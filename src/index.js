@@ -52,8 +52,8 @@ const endpointClasses = {
  * @type package
  * @class ApifyClient
  * @param {Object} [options] - Global options for ApifyClient. You can globally configure here any method option from any namespace. For example
- *                             if you are working with just one crawler then you can preset it's crawlerId here instead of passing it to each
- *                             crawler's method.
+ *                             if you are working with just one actor then you can preset it's actId here instead of passing it to each
+ *                             actor's method.
  * @param {String} [options.userId] - Your user ID at apify.com
  * @param {String} [options.token] - Your API token at apify.com
  * @param {Number} [options.expBackoffMillis=500] - Wait time in milliseconds before repeating request to Apify API in a case of server

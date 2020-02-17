@@ -176,6 +176,45 @@ describe('Dataset methods', () => {
         });
 
         it('getItems() works', async () => {
+        it('updateDataset() works', () => {
+            const datasetId = 'some-id';
+            const token = 'my-token';
+            const dataset = { id: datasetId, name: 'my-name' };
+
+            requestExpectCall({
+                json: true,
+                method: 'PUT',
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
+                qs: { token },
+                body: _.omit(dataset, 'id'),
+            });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .datasets
+                .updateDataset({ datasetId, dataset, token });
+        });
+
+        it('deleteDataset() works', () => {
+            const datasetId = 'some-id';
+            const token = 'my-token';
+
+            requestExpectCall({
+                json: true,
+                method: 'DELETE',
+                url: `${BASE_URL}${BASE_PATH}/${datasetId}`,
+                qs: { token },
+            });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .datasets
+                .deleteDataset({ datasetId, token });
+        });
+
+        it('getItems() works', () => {
             const datasetId = 'some-id';
             const expected = {
                 total: 0,

@@ -162,6 +162,29 @@ describe('KeyValueStores methods', () => {
         it('getStore() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
             const storeId = '404';
 
+        it('updateStore() works', () => {
+            const storeId = 'some-id';
+            const token = 'my-token';
+            const store = { id: storeId, name: 'my-name' };
+
+            requestExpectCall({
+                json: true,
+                method: 'PUT',
+                url: `${BASE_URL}${BASE_PATH}/${storeId}`,
+                qs: { token },
+                body: _.omit(store, 'id'),
+            });
+
+            const apifyClient = new ApifyClient(OPTIONS);
+
+            return apifyClient
+                .keyValueStores
+                .updateStore({ storeId, store, token });
+        });
+
+        it('deleteStore() works', () => {
+            const storeId = 'some-id';
+            const token = 'my-token';
             const res = await client.keyValueStores.getStore({ storeId });
             expect(res).to.be.eql(null);
             validateRequest({}, { storeId });

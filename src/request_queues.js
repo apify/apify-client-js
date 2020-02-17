@@ -1,3 +1,4 @@
+import _ from 'underscore';
 import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseDateFields } from './utils';
 
 // 256s - we use more for queries pointing to DynamoDB as it may sometimes need more time to scale up.
@@ -201,6 +202,37 @@ export default class RequestQueues {
             return catchNotFoundOrThrow(err);
         }
     }
+
+    /**
+     * Updates request queue.
+     *
+     * @memberof ApifyClient.queues
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.queueId - Unique queue ID
+     * @param {Object} options.queue
+     * @param callback
+     * @returns {RequestQueue}
+     */
+    updateQueue: (requestPromise, options) => {
+        const { baseUrl, token, queueId, queue } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(queueId, 'queueId', 'String');
+        checkParamOrThrow(queue, 'queue', 'Object');
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${queueId}`,
+            json: true,
+            method: 'PUT',
+            qs: { token },
+            body: _.omit(queue, 'id'),
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
 
     /**
      * Deletes request queue.

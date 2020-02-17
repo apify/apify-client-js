@@ -178,6 +178,37 @@ export default class KeyValueStores {
     }
 
     /**
+     * Updates key-value store.
+     *
+     * @memberof ApifyClient.stores
+     * @instance
+     * @param {Object} options
+     * @param options.token
+     * @param {String} options.storeId - Unique store ID
+     * @param {Object} options.store
+     * @param callback
+     * @returns {KeyValueStore}
+     */
+    updateStore: (requestPromise, options) => {
+        const { baseUrl, token, storeId, store } = options;
+
+        checkParamOrThrow(baseUrl, 'baseUrl', 'String');
+        checkParamOrThrow(token, 'token', 'String');
+        checkParamOrThrow(storeId, 'storeId', 'String');
+        checkParamOrThrow(store, 'store', 'Object');
+
+        return requestPromise({
+            url: `${baseUrl}${BASE_PATH}/${storeId}`,
+            json: true,
+            method: 'PUT',
+            qs: { token },
+            body: _.omit(store, 'id'),
+        })
+            .then(pluckData)
+            .then(parseDateFields);
+    },
+
+    /**
      * Deletes key-value store.
      *
      * @memberof ApifyClient.keyValueStores
