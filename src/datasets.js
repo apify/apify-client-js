@@ -1,13 +1,10 @@
 import omit from 'lodash/omit';
 import pick from 'lodash/pick';
-import {
-    checkParamOrThrow,
-    pluckData,
-    catchNotFoundOrThrow,
-    wrapArray,
-    parseDateFields,
-} from './utils'; // eslint-disable-line import/no-duplicates
-import * as utils from './utils'; // eslint-disable-line import/no-duplicates
+
+import * as utils from './utils';
+import Endpoint from './endpoint';
+
+const { checkParamOrThrow, pluckData, catchNotFoundOrThrow, wrapArray, parseDateFields } = utils;
 
 export const RETRIES = 5;
 export const BACKOFF_MILLIS = 200;
@@ -77,27 +74,9 @@ export const BACKOFF_MILLIS = 200;
 
 export const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
 
-export default class Datasets {
+export default class Datasets extends Endpoint {
     constructor(httpClient) {
-        this.basePath = '/v2/datasets';
-        this.client = httpClient;
-    }
-
-    _call(userOptions, endpointOptions) {
-        const callOptions = this._getCallOptions(userOptions, endpointOptions);
-        return this.client.call(callOptions);
-    }
-
-    _getCallOptions(userOptions, endpointOptions) {
-        const { baseUrl, token } = userOptions;
-        const callOptions = {
-            basePath: this.basePath,
-            json: true,
-            ...endpointOptions,
-        };
-        if (baseUrl) callOptions.baseUrl = baseUrl;
-        if (token) callOptions.token = token;
-        return callOptions;
+        super(httpClient, '/v2/datasets');
     }
 
     /**

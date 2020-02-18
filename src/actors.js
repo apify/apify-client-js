@@ -8,6 +8,7 @@ import {
     stringifyWebhooksToBase64,
     replaceSlashWithTilde,
 } from './utils';
+import Endpoint from './endpoint';
 
 /**
  * Actors
@@ -32,27 +33,9 @@ import {
  * @namespace actors
  */
 
-export default class Actors {
+export default class Actors extends Endpoint {
     constructor(httpClient) {
-        this.basePath = '/v2/acts';
-        this.client = httpClient;
-    }
-
-    _call(userOptions, endpointOptions) {
-        const callOptions = this._getCallOptions(userOptions, endpointOptions);
-        return this.client.call(callOptions);
-    }
-
-    _getCallOptions(userOptions, endpointOptions) {
-        const { baseUrl, token } = userOptions;
-        const callOptions = {
-            basePath: this.basePath,
-            json: true,
-            ...endpointOptions,
-        };
-        if (baseUrl) callOptions.baseUrl = baseUrl;
-        if (token) callOptions.token = token;
-        return callOptions;
+        super(httpClient, '/v2/acts');
     }
 
     _logDeprecated(oldMethod, newMethod) {

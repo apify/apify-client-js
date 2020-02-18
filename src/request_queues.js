@@ -290,7 +290,6 @@ export default class RequestQueues {
             method: 'POST',
             body: request,
             qs: query,
-            expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
         };
 
         const response = await this._call(options, endpointOptions);
@@ -310,19 +309,15 @@ export default class RequestQueues {
      * @returns {Request}
      */
     async getRequest(options) {
-        const { queueId, requestId, token } = options;
+        const { queueId, requestId } = options;
 
         checkParamOrThrow(queueId, 'queueId', 'String');
         checkParamOrThrow(requestId, 'requestId', 'String');
 
-        const query = {};
-        if (token) query.token = token;
-
         const endpointOptions = {
             url: `/${queueId}/requests/${requestId}`,
             method: 'GET',
-            qs: query,
-            expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
+            qs: {},
 
         };
 
@@ -363,7 +358,6 @@ export default class RequestQueues {
             url: `/${queueId}/requests/${requestId}`,
             method: 'DELETE',
             qs: query,
-            expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
 
         };
         const response = await this._call(options, endpointOptions);
@@ -408,7 +402,6 @@ export default class RequestQueues {
             method: 'PUT',
             body: request,
             qs: query,
-            expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
         };
 
         const response = await this._call(options, endpointOptions);
@@ -445,7 +438,6 @@ export default class RequestQueues {
             url: `/${queueId}/head`,
             method: 'GET',
             qs: query,
-            expBackOffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
         };
 
         const response = await this._call(options, endpointOptions);

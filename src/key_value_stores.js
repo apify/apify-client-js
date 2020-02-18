@@ -1,5 +1,6 @@
 import omit from 'lodash/omit';
 import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseBody, parseDateFields, isomorphicBufferToString } from './utils';
+import Endpoint from './endpoint';
 
 /**
  * Key-value Stores
@@ -56,27 +57,9 @@ import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseBody, parseDat
 
 export const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
 
-export default class KeyValueStores {
+export default class KeyValueStores extends Endpoint {
     constructor(httpClient) {
-        this.basePath = '/v2/key-value-stores';
-        this.client = httpClient;
-    }
-
-    _call(userOptions, endpointOptions) {
-        const callOptions = this._getCallOptions(userOptions, endpointOptions);
-        return this.client.call(callOptions);
-    }
-
-    _getCallOptions(userOptions, endpointOptions) {
-        const { baseUrl, token } = userOptions;
-        const callOptions = {
-            basePath: this.basePath,
-            json: true,
-            ...endpointOptions,
-        };
-        if (baseUrl) callOptions.baseUrl = baseUrl;
-        if (token) callOptions.token = token;
-        return callOptions;
+        super(httpClient, '/v2/key-value-stores');
     }
 
     /**
@@ -272,12 +255,12 @@ export default class KeyValueStores {
 
             return {
                 contentType,
-                data: body,
+                body,
             };
         };
         try {
             const response = await this._call(options, endpointOptions);
-            return parseDateFields(pluckData(parseResponse(response)));
+            return parseResponse(response);
         } catch (err) {
             return catchNotFoundOrThrow(err);
         }
@@ -304,8 +287,6 @@ export default class KeyValueStores {
         checkParamOrThrow(contentType, 'contentType', 'String');
         checkParamOrThrow(body, 'body', 'Buffer | String');
 
-        const bufferForLengthCheck = Buffer.isBuffer(body) ? body : Buffer.from(body, 'utf-8');
-
         const endpointOptions = {
             url: `/${storeId}/records/${key}`,
             method: 'PUT',
@@ -317,7 +298,7 @@ export default class KeyValueStores {
         };
 
         // Uploading via our servers:
-        if (bufferForLengthCheck.byteLength < SIGNED_URL_UPLOAD_MIN_BYTESIZE) return this._call(options, endpointOptions);
+        if (Buffer.byteLength(body) < SIGNED_URL_UPLOAD_MIN_BYTESIZE) return this._call(options, endpointOptions);
 
         // ... or via signed url directly to S3:
         const directEndpointOptions = {

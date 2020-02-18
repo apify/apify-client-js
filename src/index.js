@@ -110,31 +110,6 @@ class ApifyClient {
     }
 
     /**
-     * Overrides options of ApifyClient instance.
-     * @memberof ApifyClient
-     * @function setOptions
-     * @instance
-     * @param {Object} newOptions - See {@link ApifyClient} options object
-     */
-    setOptions(newOptions) {
-        this.options = {
-            ...this.options,
-            ...newOptions,
-        };
-    }
-
-    /**
-     * Returns options of ApifyClient instance.
-     * @memberof ApifyClient
-     * @function getOptions
-     * @instance
-     * @return {Object} See {@link ApifyClient} constructor options
-     */
-    getOptions() {
-        return { ...this.options };
-    }
-
-    /**
      * This helper function is used in unit tests.
      * @ignore
      */
