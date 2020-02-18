@@ -1,5 +1,5 @@
 import omit from 'lodash/omit';
-import { checkParamOrThrow, gzipPromise, pluckData, catchNotFoundOrThrow, parseBody, parseDateFields, isomorphicBufferToString } from './utils';
+import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseBody, parseDateFields, isomorphicBufferToString } from './utils';
 
 /**
  * Key-value Stores
@@ -197,7 +197,6 @@ export default class KeyValueStores {
 
         const endpointOptions = {
             url: `/${storeId}`,
-            json: true,
             method: 'PUT',
             qs: {},
             body: omit(store, 'id'),
@@ -306,16 +305,14 @@ export default class KeyValueStores {
         checkParamOrThrow(body, 'body', 'Buffer | String');
 
         const bufferForLengthCheck = Buffer.isBuffer(body) ? body : Buffer.from(body, 'utf-8');
-        const gzipedBody = await gzipPromise(body);
 
         const endpointOptions = {
             url: `/${storeId}/records/${key}`,
             method: 'PUT',
-            body: gzipedBody,
+            body,
             json: false,
             headers: {
-                'Content-Type': contentType,
-                'Content-Encoding': 'gzip',
+                'content-type': contentType,
             },
         };
 

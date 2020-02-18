@@ -376,7 +376,7 @@ describe('Dataset methods', () => {
 
             const browserRes = await page.evaluate(options => client.datasets.putItems(options), { datasetId, data });
             expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId }, data, headers);
+            validateRequest({}, { datasetId }, data);
         });
 
         test('putItems() works with array', async () => {
@@ -394,7 +394,7 @@ describe('Dataset methods', () => {
 
             const browserRes = await page.evaluate(options => client.datasets.putItems(options), { datasetId, data });
             expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId }, data, headers);
+            validateRequest({}, { datasetId }, data);
         });
 
         test('putItems() works with string', async () => {
@@ -412,7 +412,7 @@ describe('Dataset methods', () => {
 
             const browserRes = await page.evaluate(options => client.datasets.putItems(options), { datasetId, data });
             expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId }, JSON.parse(data), headers);
+            validateRequest({}, { datasetId }, JSON.parse(data));
         });
     });
 });

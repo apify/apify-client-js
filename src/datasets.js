@@ -2,13 +2,12 @@ import omit from 'lodash/omit';
 import pick from 'lodash/pick';
 import {
     checkParamOrThrow,
-    gzipPromise,
     pluckData,
     catchNotFoundOrThrow,
     wrapArray,
     parseDateFields,
 } from './utils'; // eslint-disable-line import/no-duplicates
-import * as Utils from './utils'; // eslint-disable-line import/no-duplicates
+import * as utils from './utils'; // eslint-disable-line import/no-duplicates
 
 export const RETRIES = 5;
 export const BACKOFF_MILLIS = 200;
@@ -190,7 +189,7 @@ export default class Datasets {
      * @param callback
      * @returns {Dataset}
      */
-    async getDataset(options = {}) {
+    async getDataset(options) {
         const { datasetId } = options;
 
         checkParamOrThrow(datasetId, 'datasetId', 'String');
@@ -387,7 +386,7 @@ export default class Datasets {
             encoding: null,
         };
 
-        return Utils.retryWithExpBackoff(
+        return utils.retryWithExpBackoff(
             bail => getDatasetItems(() => this._call(options, endpointOptions), disableBodyParser, bail),
             {
                 retry: RETRIES,
@@ -414,19 +413,11 @@ export default class Datasets {
         checkParamOrThrow(datasetId, 'datasetId', 'String');
         checkParamOrThrow(data, 'data', 'Object | Array | String');
 
-        const payload = typeof data === 'string' ? data : JSON.stringify(data);
-        const gzipedBody = await gzipPromise(payload);
-
-
         const endpointOptions = {
             url: `/${datasetId}/items`,
             method: 'POST',
-            body: gzipedBody,
+            body: data,
             json: false,
-            headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-                'Content-Encoding': 'gzip',
-            },
         };
         const response = await this._call(options, endpointOptions);
         return parseDateFields(response);
@@ -437,7 +428,7 @@ export function parseDatasetItemsResponse(response, disableBodyParser, bail) {
     const contentType = response.headers['content-type'];
     const wrappedItems = wrapArray(response);
     try {
-        if (!disableBodyParser) wrappedItems.items = Utils.parseBody(wrappedItems.items, contentType);
+        if (!disableBodyParser) wrappedItems.items = utils.parseBody(wrappedItems.items, contentType);
     } catch (e) {
         if (!e.message.includes('Unexpected end of JSON input')) {
             // Getting invalid JSON error should be retried, because it is similar to getting 500 response code.

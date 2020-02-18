@@ -4,6 +4,7 @@ import isFunction from 'lodash/isFunction';
 import isUndefined from 'lodash/isUndefined';
 import isArray from 'lodash/isArray';
 import mapValues from 'lodash/mapValues';
+import isEmpty from 'lodash/isEmpty';
 import contentTypeParser from 'content-type';
 import { parseType, parsedTypeCheck } from 'type-check';
 import { gzip } from 'zlib';
@@ -218,4 +219,18 @@ export const isomorphicBufferToString = (buffer) => {
 
     // expect UTF-8
     return String.fromCharCode.apply(null, new Uint8Array(buffer));
+};
+export const isNode = () => !!(typeof process !== 'undefined' && process.versions && process.versions.node);
+
+export const gzipRequest = async (options) => {
+    if (!isNode()) return options;
+
+    if (isEmpty(options.data)) return options;
+
+    options.headers['content-encoding'] = 'gzip';
+    const data = typeof options.data === 'string' ? options.data : JSON.stringify(options.data);
+    options.data = await gzipPromise(data);
+
+
+    return options;
 };

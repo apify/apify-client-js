@@ -5,7 +5,12 @@ import ApifyClientError, {
     INVALID_PARAMETER_ERROR_TYPE,
     REQUEST_FAILED_ERROR_TYPE,
 } from './apify_error';
-import { checkParamOrThrow, CONTENT_TYPE_JSON, newApifyClientErrorFromResponse, retryWithExpBackoff } from './utils';
+import {
+    checkParamOrThrow,
+    newApifyClientErrorFromResponse,
+    retryWithExpBackoff,
+    gzipRequest,
+} from './utils';
 import { version } from '../package.json';
 
 export const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
@@ -13,8 +18,6 @@ export const EXP_BACKOFF_MILLIS = 500;
 export const EXP_BACKOFF_MAX_REPEATS = 8; // 128s
 
 export const ALLOWED_HTTP_METHODS = ['GET', 'DELETE', 'HEAD', 'POST', 'PUT', 'PATCH'];
-export const CONTENT_TYPE_HEADER_NAME = 'Content-Type';
-export const CONTENT_TYPE_JSON_HEADER = `${CONTENT_TYPE_JSON}; charset=utf-8`;
 export const CLIENT_USER_AGENT = `ApifyClient/${version} (${os.type()}; Node/${process.version})`;
 
 export class HttpClient {
@@ -28,6 +31,11 @@ export class HttpClient {
         // Axios will only use those in Node.js.
         this.httpAgent = new KeepAliveAgent();
         this.httpsAgent = new KeepAliveAgent.HttpsAgent();
+        this.axiosInstance = axios.create();
+
+        this.axiosInstance.interceptors.request.use(gzipRequest, (e) => {
+            return Promise.reject(e);
+        });
     }
 
     async call(callOptions) {
@@ -88,6 +96,7 @@ export class HttpClient {
             headers: {
                 'user-agent': CLIENT_USER_AGENT,
                 'accept-encoding': 'gzip',
+                'content-type': 'application/json; charset=utf-8',
                 ...options.headers,
             },
             params: {
@@ -145,7 +154,7 @@ export class HttpClient {
 
             try {
                 this.stats.requests++;
-                const axiosResponse = await axios.request(axiosConfig); // eslint-disable-line
+                const axiosResponse = await this.axiosInstance.request(axiosConfig); // eslint-disable-line
                 // TODO Emulate Request API for now
                 response = this._getResponseLike(axiosResponse);
                 statusCode = response ? response.statusCode : null;
@@ -176,7 +185,11 @@ export class HttpClient {
                 && statusCode < 500
                 && !retryOnStatusCodes.includes(statusCode)
             ) {
-                bail(newApifyClientErrorFromResponse(response.body, { statusCode, url: options.url, method: options.method }));
+                bail(newApifyClientErrorFromResponse(response.body, {
+                    statusCode,
+                    url: options.url,
+                    method: options.method,
+                }));
                 return;
             }
 

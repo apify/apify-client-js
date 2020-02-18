@@ -337,7 +337,7 @@ export default class Actors {
             json: false,
         };
 
-        if (contentType) endpointOptions.headers = { 'Content-Type': contentType };
+        if (contentType) endpointOptions.headers = { 'content-type': contentType };
 
         if (body) {
             checkParamOrThrow(body, 'body', 'Buffer | String');
@@ -460,7 +460,9 @@ export default class Actors {
             qs: query,
             json: false,
         };
-        if (contentType) endpointOptions.headers = { 'Content-Type': contentType };
+
+        if (contentType) endpointOptions.headers = { 'content-type': contentType };
+
         if (body) {
             checkParamOrThrow(body, 'body', 'Buffer | String');
             endpointOptions.body = body;
