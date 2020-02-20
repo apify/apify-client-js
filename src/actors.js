@@ -48,6 +48,15 @@ export default class Actors extends Resource {
      * therefore you can use pagination to incrementally fetch all actors while new ones are still being created.
      * To sort them in descending order, use desc: `true` parameter.
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
+     * For more information see the [API V2 blueprint](https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-actors).
+     *
+     * **Example**:
+     *
+     * ```javascript
+     *  const actorPaginationList = await client.actors.listActors();
+     *  // TODO: this particular endpoint is in the example but I would add some minimal working examples.
+     *
+     * ```
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
