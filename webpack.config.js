@@ -25,7 +25,7 @@ module.exports = {
         libraryExport: 'default',
         library: 'ApifyClient',
     },
-    mode: 'development',
+    mode: 'production',
     plugins: [
         new BrotliPlugin({
             asset: '[path].br[query]',
