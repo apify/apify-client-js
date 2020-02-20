@@ -54,7 +54,7 @@ export default class Webhooks extends Resource {
      * @param options.webhook - Webhook
      * @returns {Webhook}
      */
-    async createWebhook(options) {
+    async createWebhook(options = {}) {
         const { webhook } = options;
 
         checkParamOrThrow(webhook, 'webhook', 'Object');
@@ -82,7 +82,7 @@ export default class Webhooks extends Resource {
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @returns {PaginationList}
      */
-    async listWebhooks(options) {
+    async listWebhooks(options = {}) {
         const { offset, limit, desc } = options;
 
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
@@ -113,7 +113,7 @@ export default class Webhooks extends Resource {
      * @param options.webhookId - Webhook ID
      * @returns {Webhook}
      */
-    async getWebhook(options) {
+    async getWebhook(options = {}) {
         const { webhookId } = options;
 
         checkParamOrThrow(webhookId, 'webhookId', 'String');
@@ -141,7 +141,7 @@ export default class Webhooks extends Resource {
      * @param options.webhook - Webhook
      * @returns {Webhook}
      */
-    async updateWebhook(options) {
+    async updateWebhook(options = {}) {
         const { webhookId, webhook } = options;
 
         checkParamOrThrow(webhookId, 'webhookId', 'String');
@@ -165,7 +165,7 @@ export default class Webhooks extends Resource {
      * @param options.webhookId - Webhook ID
      * @returns {}
      */
-    async deleteWebhook(options) {
+    async deleteWebhook(options = {}) {
         const { webhookId } = options;
 
         checkParamOrThrow(webhookId, 'webhookId', 'String');
@@ -191,7 +191,7 @@ export default class Webhooks extends Resource {
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @returns {PaginationList}
      */
-    async listDispatches(options) {
+    async listDispatches(options = {}) {
         const { webhookId, limit, offset, desc } = options;
 
         checkParamOrThrow(webhookId, 'webhookId', 'String');

@@ -101,7 +101,7 @@ export default class RequestQueues extends Resource {
      * @param {String} options.queueName - Custom unique name to easily identify the queue in the future.
      * @returns {RequestQueue}
      */
-    async getOrCreateQueue(options) {
+    async getOrCreateQueue(options = {}) {
         const { queueName } = options;
 
 
@@ -138,7 +138,7 @@ export default class RequestQueues extends Resource {
      * @param {Boolean} [options.unnamed] - If `true` then also unnamed stores will be returned. By default only named stores are returned.
      * @returns {PaginationList}
      */
-    async listQueues(options) {
+    async listQueues(options = {}) {
         const { offset, limit, desc, unnamed } = options;
 
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
@@ -174,7 +174,7 @@ export default class RequestQueues extends Resource {
      *                                   only when using "username~queue-name" format for queueId.
      * @returns {RequestQueue}
      */
-    async getQueue(options) {
+    async getQueue(options = {}) {
         const { queueId } = options;
 
         checkParamOrThrow(queueId, 'queueId', 'String');
@@ -203,7 +203,7 @@ export default class RequestQueues extends Resource {
      * @param {Object} options.queue
      * @returns {RequestQueue}
      */
-    async updateQueue(options) {
+    async updateQueue(options = {}) {
         const { queueId, queue } = options;
 
         checkParamOrThrow(queueId, 'queueId', 'String');
@@ -231,7 +231,7 @@ export default class RequestQueues extends Resource {
      *                                   only when using "username~queue-name" format for queueId.
      * @returns {*}
      */
-    async deleteQueue(options) {
+    async deleteQueue(options = {}) {
         const { queueId } = options;
 
         checkParamOrThrow(queueId, 'queueId', 'String');
@@ -263,7 +263,7 @@ export default class RequestQueues extends Resource {
      *                                      This ID must be a string with length between 1 and 32 characters.
      * @returns {RequestOperationInfo}
      */
-    async addRequest(options) {
+    async addRequest(options = {}) {
         const { queueId, request, forefront = false, clientKey } = options;
 
         checkParamOrThrow(queueId, 'queueId', 'String');
@@ -297,7 +297,7 @@ export default class RequestQueues extends Resource {
      *                                   only when using "username~queue-name" format for queueId.
      * @returns {Request}
      */
-    async getRequest(options) {
+    async getRequest(options = {}) {
         const { queueId, requestId } = options;
 
         checkParamOrThrow(queueId, 'queueId', 'String');
@@ -333,7 +333,7 @@ export default class RequestQueues extends Resource {
      *                                      This ID must be a string with length between 1 and 32 characters.
      * @returns {*}
      */
-    async deleteRequest(options) {
+    async deleteRequest(options = {}) {
         const { queueId, requestId, clientKey } = options;
 
         checkParamOrThrow(queueId, 'queueId', 'String');
@@ -371,7 +371,7 @@ export default class RequestQueues extends Resource {
      *                                      This ID must be a string with length between 1 and 32 characters.
      * @returns {RequestOperationInfo}
      */
-    async updateRequest(options) {
+    async updateRequest(options = {}) {
         const { queueId, requestId, request, forefront = false, clientKey } = options;
 
         checkParamOrThrow(request, 'request', 'Object');
@@ -412,7 +412,7 @@ export default class RequestQueues extends Resource {
      *                                      This ID must be a string with length between 1 and 32 characters.
      * @returns {QueueHead}
      */
-    async getHead(options) {
+    async getHead(options = {}) {
         const { queueId, limit, clientKey } = options;
 
         checkParamOrThrow(queueId, 'queueId', 'String');

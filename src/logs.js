@@ -18,7 +18,7 @@ export default class Log extends Resource {
      * @param {String} options.logId - ID of the log which is either ID of the act build or ID of the act run.
      * @returns {Promise.<string>|null}
      */
-    async getLog(options) {
+    async getLog(options = {}) {
         const { logId } = options;
 
         checkParamOrThrow(logId, 'logId', 'String');

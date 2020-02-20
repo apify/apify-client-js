@@ -71,7 +71,7 @@ export default class KeyValueStores extends Resource {
      * @param {String} options.storeName - Custom unique name to easily identify the store in the future.
      * @returns {KeyValueStore}
      */
-    async getOrCreateStore(options) {
+    async getOrCreateStore(options = {}) {
         const { storeName } = options;
 
         checkParamOrThrow(storeName, 'storeName', 'String');
@@ -107,7 +107,7 @@ export default class KeyValueStores extends Resource {
      * @param {Boolean} [options.unnamed] - If `true` then also unnamed stores will be returned. By default only named stores are returned.
      * @returns {PaginationList}
      */
-    async listStores(options) {
+    async listStores(options = {}) {
         const { offset, limit, desc, unnamed } = options;
 
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
@@ -143,7 +143,7 @@ export default class KeyValueStores extends Resource {
      *                                   only when using "username~store-name" format for storeId.
      * @returns {KeyValueStore}
      */
-    async getStore(options) {
+    async getStore(options = {}) {
         const { storeId } = options;
 
         checkParamOrThrow(storeId, 'storeId', 'String');
@@ -172,7 +172,7 @@ export default class KeyValueStores extends Resource {
      * @param {Object} options.store
      * @returns {KeyValueStore}
      */
-    async updateStore(options) {
+    async updateStore(options = {}) {
         const { storeId, store } = options;
 
         checkParamOrThrow(storeId, 'storeId', 'String');
@@ -200,7 +200,7 @@ export default class KeyValueStores extends Resource {
      *                                   only when using "username~store-name" format for storeId.
      * @returns {*}
      */
-    async deleteStore(options) {
+    async deleteStore(options = {}) {
         const { storeId } = options;
 
         checkParamOrThrow(storeId, 'storeId', 'String');
@@ -229,7 +229,7 @@ export default class KeyValueStores extends Resource {
      *                                   only when using "username~store-name" format for storeId.
      * @returns {KeyValueStoreRecord}
      */
-    async getRecord(options) {
+    async getRecord(options = {}) {
         const { storeId, key, disableBodyParser, disableRedirect } = options;
 
         checkParamOrThrow(storeId, 'storeId', 'String');
@@ -280,7 +280,7 @@ export default class KeyValueStores extends Resource {
      *                                   only when using "username~store-name" format for storeId.
      * @returns {*}
      */
-    async putRecord(options) {
+    async putRecord(options = {}) {
         const { storeId, key, body, contentType = 'text/plain; charset=utf-8' } = options;
         checkParamOrThrow(storeId, 'storeId', 'String');
         checkParamOrThrow(key, 'key', 'String');
@@ -324,7 +324,7 @@ export default class KeyValueStores extends Resource {
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~store-name" format for storeId.
      */
-    async deleteRecord(options) {
+    async deleteRecord(options = {}) {
         const { storeId, key } = options;
 
         checkParamOrThrow(storeId, 'storeId', 'String');
@@ -354,7 +354,7 @@ export default class KeyValueStores extends Resource {
      *                                   only when using "username~store-name" format for storeId.
      * @returns {PaginationList}
      */
-    async listKeys(options) {
+    async listKeys(options = {}) {
         const { storeId, exclusiveStartKey, limit } = options;
 
         checkParamOrThrow(storeId, 'storeId', 'String');

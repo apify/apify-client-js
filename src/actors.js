@@ -24,7 +24,7 @@ import Resource from './resource';
  * });
  *
  * try {
- *      const crawler = await apifyClient.actors.listActors({});
+ *      const crawler = await apifyClient.actors.listActors();
  *      // Do something with actors list ...
  * } catch (err) {
  *      // Do something with error ...
@@ -56,7 +56,7 @@ export default class Actors extends Resource {
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @returns {Promise<PaginationList>}
      */
-    async listActors(options) {
+    async listActors(options = {}) {
         const { offset, limit, desc } = options;
 
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
@@ -97,7 +97,7 @@ export default class Actors extends Resource {
      * @param {Object} options.actor
      * @returns {Actor}
      */
-    async createActor(options) {
+    async createActor(options = {}) {
         const actor = options.actor || options.act;
 
         checkParamOrThrow(actor, 'actor', 'Object');
@@ -131,7 +131,7 @@ export default class Actors extends Resource {
      * @param {Object} options.actor
      * @returns {Actor}
      */
-    async updateActor(options) {
+    async updateActor(options = {}) {
         const actorId = options.actorId || options.actId;
         const actor = options.actor || options.act;
         checkParamOrThrow(actor, 'actor', 'Object');
@@ -166,7 +166,7 @@ export default class Actors extends Resource {
      * @param {Object} options
      * @param {String} options.actorId - Unique actor ID
      */
-    async deleteActor(options) {
+    async deleteActor(options = {}) {
         const actorId = options.actorId || options.actId;
 
         checkParamOrThrow(actorId, 'actorId', 'String');
@@ -200,7 +200,7 @@ export default class Actors extends Resource {
      * @param {String} options.actorId - Unique actor ID
      * @returns {Actor}
      */
-    async getActor(options) {
+    async getActor(options = {}) {
         const actorId = options.actorId || options.actId;
 
         checkParamOrThrow(actorId, 'actorId', 'String');
@@ -247,7 +247,7 @@ export default class Actors extends Resource {
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @returns {PaginationList}
      */
-    async listRuns(options) {
+    async listRuns(options = {}) {
         const actorId = options.actorId || options.actId;
         const { offset, limit, desc } = options;
 
@@ -292,7 +292,7 @@ export default class Actors extends Resource {
      *                                      see {@link https://apify.com/docs/webhooks#adhoc|adhoc webhooks documentation} for detailed description.
      * @returns {ActorRun}
      */
-    async runActor(options) {
+    async runActor(options = {}) {
         const actorId = options.actorId || options.actId;
         const { contentType, body, waitForFinish, timeout, memory, build, webhooks } = options;
 
@@ -353,7 +353,7 @@ export default class Actors extends Resource {
                                                  If actor doesn't finish in time then actor run in RUNNING state is returned.
      * @returns {ActorRun}
      */
-    async getRun(options) {
+    async getRun(options = {}) {
         const actorId = options.actorId || options.actId;
         const { runId, waitForFinish } = options;
 
@@ -387,7 +387,7 @@ export default class Actors extends Resource {
      * @param {String} options.runId - Unique run ID
      * @returns {ActorRun}
      */
-    async abortRun(options) {
+    async abortRun(options = {}) {
         const actorId = options.actorId || options.actId;
         const { runId } = options;
 
@@ -419,7 +419,7 @@ export default class Actors extends Resource {
      * @param {String} [options.build] - Tag or number of the build to run (e.g. <code>latest</code> or <code>1.2.34</code>).
      * @returns {ActorRun}
      */
-    async metamorphRun(options) {
+    async metamorphRun(options = {}) {
         const actorId = options.actorId || options.actId;
         const { runId, targetActorId, contentType, body, build } = options;
 
@@ -467,7 +467,7 @@ export default class Actors extends Resource {
      * @param {String} options.runId - Unique run ID
      * @returns {ActorRun}
      */
-    async resurrectRun(options) {
+    async resurrectRun(options = {}) {
         const actorId = options.actorId || options.actId;
         const { runId } = options;
 
@@ -503,7 +503,7 @@ export default class Actors extends Resource {
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @returns {PaginationList}
      */
-    async listBuilds(options) {
+    async listBuilds(options = {}) {
         const actorId = options.actorId || options.actId;
         const { offset, limit, desc } = options;
 
@@ -550,7 +550,7 @@ export default class Actors extends Resource {
                                                  If actor doesn't finish in time then actor run in RUNNING state is returned.
      * @returns {ActorBuild}
      */
-    async buildActor(options) {
+    async buildActor(options = {}) {
         const actorId = options.actorId || options.actId;
         const { waitForFinish, version, tag, betaPackages, useCache } = options;
 
@@ -600,7 +600,7 @@ export default class Actors extends Resource {
                                                  If actor doesn't finish in time then actor run in RUNNING state is returned.
      * @returns {ActorBuild}
      */
-    async getBuild(options) {
+    async getBuild(options = {}) {
         const actorId = options.actorId || options.actId;
         const { buildId, waitForFinish } = options;
 
@@ -637,7 +637,7 @@ export default class Actors extends Resource {
      * @param {String} options.buildId - Unique build ID
      * @returns {ActorBuild}
      */
-    async abortBuild(options) {
+    async abortBuild(options = {}) {
         const actorId = options.actorId || options.actId;
         const { buildId } = options;
 
@@ -664,7 +664,7 @@ export default class Actors extends Resource {
      * @param {String} options.actorId - Unique actor ID
      * @return {PaginationList}
      */
-    async listActorVersions(options) {
+    async listActorVersions(options = {}) {
         const actorId = options.actorId || options.actId;
 
         checkParamOrThrow(actorId, 'actorId', 'String');
@@ -699,7 +699,7 @@ export default class Actors extends Resource {
      * @param {Object} options.actVersion - Actor version
      * @return {ActorVersion}
      */
-    async createActorVersion(options) {
+    async createActorVersion(options = {}) {
         const actorId = options.actorId || options.actId;
         const { actVersion } = options;
 
@@ -737,7 +737,7 @@ export default class Actors extends Resource {
      * @param {String} options.versionNumber - Version number of actor version
      * @return {ActorVersion}
      */
-    async getActorVersion(options) {
+    async getActorVersion(options = {}) {
         const actorId = options.actorId || options.actId;
         const { versionNumber } = options;
 
@@ -780,7 +780,7 @@ export default class Actors extends Resource {
      * @param {Object} options.actVersion - Actor version
      * @return {ActorVersion}
      */
-    async updateActorVersion(options) {
+    async updateActorVersion(options = {}) {
         const actorId = options.actorId || options.actId;
         const { actVersion, versionNumber } = options;
 
@@ -820,7 +820,7 @@ export default class Actors extends Resource {
      * @param {String} options.versionNumber - Version number of actor version
      * @return {Object}
      */
-    async deleteActorVersion(options) {
+    async deleteActorVersion(options = {}) {
         const actorId = options.actorId || options.actId;
         const { versionNumber } = options;
 
@@ -859,7 +859,7 @@ export default class Actors extends Resource {
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @returns {PaginationList}
      */
-    async listWebhooks(options) {
+    async listWebhooks(options = {}) {
         const actorId = options.actorId || options.actId;
         const { offset, limit, desc } = options;
 

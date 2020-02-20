@@ -59,7 +59,7 @@ export default class WebhookDispatches extends Resource {
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the startedAd field in descending order.
      * @returns {PaginationList}
      */
-    async listDispatches(options) {
+    async listDispatches(options = {}) {
         const { offset, limit, desc } = options;
 
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
@@ -90,7 +90,7 @@ export default class WebhookDispatches extends Resource {
      * @param options.webhookDispatchId - Webhook dispatch ID
      * @returns {WebhookDispatch}
      */
-    async getDispatch(options) {
+    async getDispatch(options = {}) {
         const { webhookDispatchId } = options;
 
         checkParamOrThrow(webhookDispatchId, 'webhookDispatchId', 'String');

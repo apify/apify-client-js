@@ -67,7 +67,7 @@ export default class Tasks extends Resource {
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @returns {Promise<PaginationList>}
      */
-    async listTasks(options) {
+    async listTasks(options = {}) {
         const { offset, limit, desc } = options;
 
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
@@ -99,7 +99,7 @@ export default class Tasks extends Resource {
      * @param {Object} options.task Object containing configuration of the task
      * @returns {Task}
      */
-    async createTask(options) {
+    async createTask(options = {}) {
         const { task } = options;
 
         checkParamOrThrow(task, 'task', 'Object');
@@ -125,7 +125,7 @@ export default class Tasks extends Resource {
      * @param callback
      * @returns {Task}
      */
-    async updateTask(options) {
+    async updateTask(options = {}) {
         const { taskId, task } = options;
         checkParamOrThrow(task, 'task', 'Object');
 
@@ -152,7 +152,7 @@ export default class Tasks extends Resource {
      * @param {Object} options
      * @param {String} options.taskId - Unique task ID
      */
-    async deleteTask(options) {
+    async deleteTask(options = {}) {
         const { taskId } = options;
 
         checkParamOrThrow(taskId, 'taskId', 'String');
@@ -177,7 +177,7 @@ export default class Tasks extends Resource {
      * @param {String} options.taskId - Unique task ID
      * @returns {Task}
      */
-    async getTask(options) {
+    async getTask(options = {}) {
         const { taskId } = options;
 
         checkParamOrThrow(taskId, 'taskId', 'String');
@@ -215,7 +215,7 @@ export default class Tasks extends Resource {
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @returns {PaginationList}
      */
-    async listRuns(options) {
+    async listRuns(options = {}) {
         const { offset, limit, desc, taskId } = options;
 
         checkParamOrThrow(taskId, 'taskId', 'String');
@@ -258,7 +258,7 @@ export default class Tasks extends Resource {
      *                                      see {@link https://apify.com/docs/webhooks#adhoc|ad hook webhooks documentation} for detailed description.
      * @returns {ActRun}
      */
-    async runTask(options) {
+    async runTask(options = {}) {
         const { taskId, waitForFinish, timeout, memory, build, webhooks, input } = options;
 
         checkParamOrThrow(taskId, 'taskId', 'String');
@@ -305,7 +305,7 @@ export default class Tasks extends Resource {
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @returns {PaginationList}
      */
-    async listWebhooks(options) {
+    async listWebhooks(options = {}) {
         const { taskId } = options;
         const { offset, limit, desc } = options;
 
@@ -340,7 +340,7 @@ export default class Tasks extends Resource {
      * @param {String} options.taskId - Unique task ID
      * @returns {Object}
      */
-    async getInput(options) {
+    async getInput(options = {}) {
         const { taskId } = options;
 
         checkParamOrThrow(taskId, 'taskId', 'String');
@@ -366,7 +366,7 @@ export default class Tasks extends Resource {
      * @param {Object} options.input - Input object.
      * @returns {Object}
      */
-    async updateInput(options) {
+    async updateInput(options = {}) {
         const { taskId, input } = options;
 
         checkParamOrThrow(taskId, 'taskId', 'String');

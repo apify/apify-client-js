@@ -130,7 +130,7 @@ export default class Datasets extends Resource {
      * @param callback
      * @returns {PaginationList}
      */
-    async listDatasets(options) {
+    async listDatasets(options = {}) {
         const { offset, limit, desc, unnamed } = options;
 
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
@@ -167,7 +167,7 @@ export default class Datasets extends Resource {
      * @param callback
      * @returns {Dataset}
      */
-    async getDataset(options) {
+    async getDataset(options = {}) {
         const { datasetId } = options;
 
         checkParamOrThrow(datasetId, 'datasetId', 'String');
@@ -196,7 +196,7 @@ export default class Datasets extends Resource {
      * @param {Object} options.dataset
      * @returns {Dataset}
      */
-    async updateDataset(options) {
+    async updateDataset(options = {}) {
         const { datasetId, dataset } = options;
 
         checkParamOrThrow(datasetId, 'datasetId', 'String');
@@ -224,7 +224,7 @@ export default class Datasets extends Resource {
      * @param callback
      * @returns {*}
      */
-    async deleteDataset(options) {
+    async deleteDataset(options = {}) {
         const { datasetId } = options;
 
         checkParamOrThrow(datasetId, 'datasetId', 'String');
@@ -302,7 +302,7 @@ export default class Datasets extends Resource {
      * @param callback
      * @returns {PaginationList}
      */
-    async getItems(options) {
+    async getItems(options = {}) {
         const {
             datasetId,
             disableBodyParser,
@@ -386,7 +386,7 @@ export default class Datasets extends Resource {
      *                                   only when using "username~dataset-name" format for datasetId.
      * @returns {*}
      */
-    async putItems(options) {
+    async putItems(options = {}) {
         const { datasetId, data } = options;
         checkParamOrThrow(datasetId, 'datasetId', 'String');
         checkParamOrThrow(data, 'data', 'Object | Array | String');
