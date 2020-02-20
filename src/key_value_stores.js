@@ -1,6 +1,6 @@
 import omit from 'lodash/omit';
 import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseBody, parseDateFields, isomorphicBufferToString } from './utils';
-import Endpoint from './endpoint';
+import Resource from './resource';
 
 /**
  * Key-value Stores
@@ -57,7 +57,7 @@ import Endpoint from './endpoint';
 
 export const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
 
-export default class KeyValueStores extends Endpoint {
+export default class KeyValueStores extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/key-value-stores');
     }
@@ -301,11 +301,11 @@ export default class KeyValueStores extends Endpoint {
         if (Buffer.byteLength(body) < SIGNED_URL_UPLOAD_MIN_BYTESIZE) return this._call(options, endpointOptions);
 
         // ... or via signed url directly to S3:
-        const directEndpointOptions = {
+        const directResourceOptions = {
             url: `/${storeId}/records/${key}/direct-upload-url`,
             method: 'GET',
         };
-        const response = await this._call(options, directEndpointOptions);
+        const response = await this._call(options, directResourceOptions);
 
         const { signedUrl } = response.data;
         const s3RequestOpts = Object.assign({}, endpointOptions, { url: signedUrl, qs: null });

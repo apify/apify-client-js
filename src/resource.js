@@ -1,4 +1,4 @@
-export default class Endpoint {
+export default class Resource {
     constructor(httpClient, basePath, requestOptions) {
         this.basePath = basePath;
         this.client = httpClient;

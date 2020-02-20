@@ -1,6 +1,6 @@
 import { ME_USER_NAME_PLACEHOLDER } from 'apify-shared/consts';
 import { checkParamOrThrow, pluckData, parseDateFields } from './utils';
-import Endpoint from './endpoint';
+import Resource from './resource';
 
 /**
  * Users
@@ -8,7 +8,7 @@ import Endpoint from './endpoint';
  * @namespace users
  */
 
-export default class User extends Endpoint {
+export default class User extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/users');
     }

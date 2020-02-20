@@ -1,5 +1,5 @@
 import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } from './utils';
-import Endpoint from './endpoint';
+import Resource from './resource';
 
 /**
  * Webhooks
@@ -40,7 +40,7 @@ import Endpoint from './endpoint';
  * @namespace webhooks
  */
 
-export default class Webhooks extends Endpoint {
+export default class Webhooks extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/webhooks');
     }

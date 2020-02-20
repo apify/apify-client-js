@@ -1,12 +1,12 @@
 import { checkParamOrThrow, parseDateFields, pluckData } from './utils';
-import Endpoint from './endpoint';
+import Resource from './resource';
 
 /**
  * Logs
  * @memberOf ApifyClient
  * @namespace logs
  */
-export default class Log extends Endpoint {
+export default class Log extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/logs');
     }

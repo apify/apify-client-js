@@ -1,6 +1,6 @@
 import omit from 'lodash/omit';
 import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseDateFields } from './utils';
-import Endpoint from './endpoint';
+import Resource from './resource';
 
 // 256s - we use more for queries pointing to DynamoDB as it may sometimes need more time to scale up.
 export const REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS = 9;
@@ -79,7 +79,7 @@ export const REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS = 9;
  * @namespace requestQueues
  */
 
-export default class RequestQueues extends Endpoint {
+export default class RequestQueues extends Resource {
     constructor(httpClient) {
         super(
             httpClient,

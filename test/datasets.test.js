@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import * as utils from '../build/utils';
-import { parseDatasetItemsResponse, RETRIES, BACKOFF_MILLIS } from '../build/datasets';
+import { parseDatasetItemsResponse } from '../build/datasets';
 
 import ApifyClient from '../build';
 import mockServer from './mock_server/server';
@@ -169,11 +169,11 @@ describe('Dataset methods', () => {
                 'x-apify-pagination-count': '0',
                 'x-apify-pagination-limit': '100000',
             };
-            mockServer.setResponse({ body: {}, headers });
+            mockServer.setResponse({ body: [], headers });
 
 
             const res = await client.datasets.getItems({ datasetId });
-            expect(res.toString()).toEqual(expected.toString());
+            expect(res).toEqual(expected);
             validateRequest({}, { datasetId }, {});
 
             const browserRes = await page.evaluate(options => client.datasets.getItems(options), { datasetId });
@@ -197,7 +197,7 @@ describe('Dataset methods', () => {
                 'x-apify-pagination-count': '0',
                 'x-apify-pagination-limit': '100000',
             };
-            mockServer.setResponse({ body: {}, headers });
+            mockServer.setResponse({ body: [], headers });
             const qs = { bom: 0, format: 'csv', delimiter: ';', fields: 'a,b', omit: 'c,d' };
 
             const options = {
@@ -211,7 +211,7 @@ describe('Dataset methods', () => {
 
 
             const res = await client.datasets.getItems(options);
-            expect(res.toString()).toEqual(expected.toString());
+            expect(res).toEqual(expected);
             validateRequest(qs, { datasetId }, {});
 
             const browserRes = await page.evaluate(opts => client.datasets.getItems(opts), { datasetId });
@@ -237,7 +237,7 @@ describe('Dataset methods', () => {
                 });
                 let error;
                 try {
-                    parseDatasetItemsResponse(response, false, (e) => { throw e; });
+                    parseDatasetItemsResponse(response, false);
                 } catch (e) {
                     error = e;
                 }
@@ -245,22 +245,6 @@ describe('Dataset methods', () => {
                 expect(error.message).toEqual(message);
                 utils.parseBody.restore();
             });
-        });
-
-        test('getItems should retry with exponentialBackoff', async () => {
-            const datasetId = 'some-id';
-            const originalRetry = utils.retryWithExpBackoff;
-            const stub = sinon.stub(utils, 'retryWithExpBackoff');
-            let firstCall;
-            stub.callsFake((func, opts) => {
-                if (!firstCall) firstCall = { func, opts };
-                return originalRetry;
-            });
-            await client.datasets.getItems({ datasetId, limit: 1, offset: 1 });
-            expect(typeof firstCall.func).toEqual('function');
-            expect(firstCall.opts.retry).toEqual(RETRIES);
-            expect(firstCall.opts.minTimeout).toEqual(BACKOFF_MILLIS);
-            stub.restore();
         });
 
         test('getItems() limit and offset work', async () => {
@@ -313,7 +297,7 @@ describe('Dataset methods', () => {
             mockServer.setResponse({ body: expected.items, headers });
 
             const res = await client.datasets.getItems({ datasetId });
-            expect(res.toString()).toEqual(expected.toString());
+            expect(res).toEqual(expected);
             validateRequest({}, { datasetId });
 
             const browserRes = await page.evaluate(options => client.datasets.getItems(options), { datasetId });
@@ -344,7 +328,7 @@ describe('Dataset methods', () => {
                 mockServer.setResponse({ body: expected.items, headers });
 
                 const res = await client.datasets.getItems({ datasetId });
-                expect(res.toString()).toEqual(expected.toString());
+                expect(res).toEqual(expected);
                 validateRequest({}, { datasetId });
 
                 const browserRes = await page.evaluate(options => client.datasets.getItems(options), { datasetId });

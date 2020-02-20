@@ -7,7 +7,7 @@ import {
     stringifyWebhooksToBase64,
     replaceSlashWithTilde,
 } from './utils';
-import Endpoint from './endpoint';
+import Resource from './resource';
 
 /**
  * Tasks
@@ -48,7 +48,7 @@ import Endpoint from './endpoint';
  * @namespace tasks
  */
 
-export default class Tasks extends Endpoint {
+export default class Tasks extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/actor-tasks');
     }

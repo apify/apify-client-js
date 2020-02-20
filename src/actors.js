@@ -8,7 +8,7 @@ import {
     stringifyWebhooksToBase64,
     replaceSlashWithTilde,
 } from './utils';
-import Endpoint from './endpoint';
+import Resource from './resource';
 
 /**
  * Actors
@@ -33,7 +33,7 @@ import Endpoint from './endpoint';
  * @namespace actors
  */
 
-export default class Actors extends Endpoint {
+export default class Actors extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/acts');
     }

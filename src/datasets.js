@@ -2,7 +2,7 @@ import omit from 'lodash/omit';
 import pick from 'lodash/pick';
 
 import * as utils from './utils';
-import Endpoint from './endpoint';
+import Resource from './resource';
 
 const { checkParamOrThrow, pluckData, catchNotFoundOrThrow, wrapArray, parseDateFields } = utils;
 
@@ -74,7 +74,7 @@ export const BACKOFF_MILLIS = 200;
 
 export const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
 
-export default class Datasets extends Endpoint {
+export default class Datasets extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/datasets');
     }
@@ -138,7 +138,7 @@ export default class Datasets extends Endpoint {
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
         checkParamOrThrow(unnamed, 'unnamed', 'Maybe Boolean');
 
-        const query = { };
+        const query = {};
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
@@ -302,7 +302,7 @@ export default class Datasets extends Endpoint {
      * @param callback
      * @returns {PaginationList}
      */
-    getItems(options) {
+    async getItems(options) {
         const {
             datasetId,
             disableBodyParser,
@@ -361,17 +361,16 @@ export default class Datasets extends Endpoint {
             json: false,
             resolveWithFullResponse: true,
             encoding: null,
-            expBackoffMillis: 0,
-            expBackoffMaxRepeats: 0, // Turn off retries. We need to retry here because of bailing parse errors. //TODO: REFACTOR
+            expBackoffMillis: BACKOFF_MILLIS,
+            expBackoffMaxRepeats: RETRIES,
         };
 
-        return utils.retryWithExpBackoff(
-            bail => getDatasetItems(() => this._call(options, endpointOptions), disableBodyParser, bail),
-            {
-                retry: RETRIES,
-                minTimeout: BACKOFF_MILLIS,
-            },
-        );
+        try {
+            const response = await this._call(options, endpointOptions);
+            return parseDatasetItemsResponse(response, disableBodyParser);
+        } catch (err) {
+            catchNotFoundOrThrow(err);
+        }
     }
 
     /**
@@ -403,30 +402,11 @@ export default class Datasets extends Endpoint {
     }
 }
 
-export function parseDatasetItemsResponse(response, disableBodyParser, bail) {
+export function parseDatasetItemsResponse(response, disableBodyParser) {
     const contentType = response.headers['content-type'];
     const wrappedItems = wrapArray(response);
-    try {
-        if (!disableBodyParser) wrappedItems.items = utils.parseBody(wrappedItems.items, contentType);
-    } catch (e) {
-        if (e.message.includes('Unexpected end of JSON input')) {
-            // Getting invalid JSON error should be retried, because it is similar to getting 500 response code.
-            throw e;
-        }
-        bail(e);
-    }
-    return wrappedItems;
-}
 
-export async function getDatasetItems(call, disableBodyParser, bail) {
-    try {
-        const response = await call();
-        return parseDatasetItemsResponse(response, disableBodyParser, bail);
-    } catch (err) {
-        try {
-            return catchNotFoundOrThrow(err, bail);
-        } catch (e) {
-            bail(e);
-        }
-    }
+    if (!disableBodyParser) wrappedItems.items = utils.parseBody(wrappedItems.items, contentType);
+
+    return wrappedItems;
 }

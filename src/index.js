@@ -104,8 +104,8 @@ class ApifyClient {
         this.httpClient = new HttpClient({ ...this.options }, this.stats);
 
         // Create instances of individual endpoint groups
-        Object.entries(endpointClasses).forEach(([name, EndpointClass]) => {
-            this[name] = new EndpointClass(this.httpClient);
+        Object.entries(endpointClasses).forEach(([name, ResourceClass]) => {
+            this[name] = new ResourceClass(this.httpClient);
         });
     }
 
