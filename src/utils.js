@@ -216,7 +216,8 @@ export const isomorphicBufferToString = (buffer) => {
     }
 
     // expect UTF-8
-    return String.fromCharCode.apply(null, new Uint8Array(buffer));
+    const utf8decoder = new TextDecoder();
+    return utf8decoder.decode(new Uint8Array(buffer));
 };
 export const isNode = () => !!(typeof process !== 'undefined' && process.versions && process.versions.node);
 
