@@ -1,32 +1,14 @@
 import { checkParamOrThrow, parseDateFields, pluckData } from './utils';
+import Endpoint from './endpoint';
 
 /**
  * Logs
  * @memberOf ApifyClient
  * @namespace logs
  */
-export default class Log {
+export default class Log extends Endpoint {
     constructor(httpClient) {
-        this.basePath = '/v2/logs';
-        this.client = httpClient;
-    }
-
-    _call(userOptions, endpointOptions) {
-        const callOptions = this._getCallOptions(userOptions, endpointOptions);
-        return this.client.call(callOptions);
-    }
-
-    _getCallOptions(userOptions, endpointOptions) {
-        const { baseUrl, token } = userOptions;
-        const callOptions = {
-            basePath: this.basePath,
-            gzip: true,
-            json: true,
-            ...endpointOptions,
-        };
-        if (baseUrl) callOptions.baseUrl = baseUrl;
-        if (token) callOptions.token = token;
-        return callOptions;
+        super(httpClient, '/v2/logs');
     }
 
     /**

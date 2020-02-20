@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import * as utils from '../build/utils';
-import { getDatasetItems, parseDatasetItemsResponse, RETRIES, BACKOFF_MILLIS } from '../build/datasets';
-import ApifyClientError, { NOT_FOUND_STATUS_CODE } from '../src/apify_error';
+import { parseDatasetItemsResponse, RETRIES, BACKOFF_MILLIS } from '../build/datasets';
+
 import ApifyClient from '../build';
 import mockServer from './mock_server/server';
 import { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } from './_helper';
@@ -221,14 +221,6 @@ describe('Dataset methods', () => {
 
         describe('getDatasetItems()', () => {
             const message = 'CUSTOM ERROR';
-            test('getDatasetItems() should return null for 404', async () => {
-                const requestPromise = () => {
-                    throw new ApifyClientError('NOTFOUND', 'Not found', { statusCode: NOT_FOUND_STATUS_CODE });
-                };
-
-                const data = await getDatasetItems(requestPromise);
-                expect(data).toEqual(null);
-            });
 
             test('parseDatasetItemsResponse() should rethrow errors', async () => {
                 const response = {
@@ -245,7 +237,7 @@ describe('Dataset methods', () => {
                 });
                 let error;
                 try {
-                    parseDatasetItemsResponse(response, false);
+                    parseDatasetItemsResponse(response, false, (e) => { throw e; });
                 } catch (e) {
                     error = e;
                 }

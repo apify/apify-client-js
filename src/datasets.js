@@ -86,7 +86,6 @@ export default class Datasets extends Endpoint {
      * @instance
      * @param {Object} options
      * @param {String} options.datasetName - Custom unique name to easily identify the dataset in the future.
-     * @param callback
      * @returns {Dataset}
      */
     async getOrCreateDataset(options) {
@@ -360,9 +359,10 @@ export default class Datasets extends Endpoint {
             method: 'GET',
             qs: query,
             json: false,
-            gzip: true,
             resolveWithFullResponse: true,
             encoding: null,
+            expBackoffMillis: 0,
+            expBackoffMaxRepeats: 0, // Turn off retries. We need to retry here because of bailing parse errors. //TODO: REFACTOR
         };
 
         return utils.retryWithExpBackoff(
@@ -409,7 +409,7 @@ export function parseDatasetItemsResponse(response, disableBodyParser, bail) {
     try {
         if (!disableBodyParser) wrappedItems.items = utils.parseBody(wrappedItems.items, contentType);
     } catch (e) {
-        if (!e.message.includes('Unexpected end of JSON input')) {
+        if (e.message.includes('Unexpected end of JSON input')) {
             // Getting invalid JSON error should be retried, because it is similar to getting 500 response code.
             throw e;
         }

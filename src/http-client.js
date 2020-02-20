@@ -18,7 +18,7 @@ export const EXP_BACKOFF_MILLIS = 500;
 export const EXP_BACKOFF_MAX_REPEATS = 8; // 128s
 
 export const ALLOWED_HTTP_METHODS = ['GET', 'DELETE', 'HEAD', 'POST', 'PUT', 'PATCH'];
-export const CLIENT_USER_AGENT = `ApifyClient/${version} (${os.type()}; Node/${process.version})`;
+export const CLIENT_USER_AGENT = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${process.env.IS_AT_HOME}`;
 
 export class HttpClient {
     constructor(apifyClientOptions, apifyClientStats) {
@@ -113,15 +113,18 @@ export class HttpClient {
         };
     }
 
+    // Creates response like object in nodeJs and browser
     _getResponseLike(axiosResponse) {
         let response;
 
         if (axiosResponse.request.res) {
+            // Node JS
             // It is in node
             // return standard Node.Js response-like object;
             response = axiosResponse.request.res;
             response.body = axiosResponse.data;
         } else {
+            // Browser
             const { data, status, statusText, headers, config } = axiosResponse;
             response = {
                 body: data,

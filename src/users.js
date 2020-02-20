@@ -1,5 +1,6 @@
 import { ME_USER_NAME_PLACEHOLDER } from 'apify-shared/consts';
 import { checkParamOrThrow, pluckData, parseDateFields } from './utils';
+import Endpoint from './endpoint';
 
 /**
  * Users
@@ -7,27 +8,9 @@ import { checkParamOrThrow, pluckData, parseDateFields } from './utils';
  * @namespace users
  */
 
-export default class User {
+export default class User extends Endpoint {
     constructor(httpClient) {
-        this.basePath = '/v2/users';
-        this.client = httpClient;
-    }
-
-    _call(userOptions, endpointOptions) {
-        const callOptions = this._getCallOptions(userOptions, endpointOptions);
-        return this.client.call(callOptions);
-    }
-
-    _getCallOptions(userOptions, endpointOptions) {
-        const { baseUrl, token } = userOptions;
-        const callOptions = {
-            basePath: this.basePath,
-            json: true,
-            ...endpointOptions,
-        };
-        if (baseUrl) callOptions.baseUrl = baseUrl;
-        if (token) callOptions.token = token;
-        return callOptions;
+        super(httpClient, '/v2/users');
     }
 
     /**

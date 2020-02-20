@@ -1,4 +1,5 @@
 import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } from './utils';
+import Endpoint from './endpoint';
 
 /**
  * Webhook dispatches
@@ -39,27 +40,9 @@ import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } f
  * @namespace webhookDispatches
  */
 
-export default class WebhookDispatches {
+export default class WebhookDispatches extends Endpoint {
     constructor(httpClient) {
-        this.basePath = '/v2/webhook-dispatches';
-        this.client = httpClient;
-    }
-
-    _call(userOptions, endpointOptions) {
-        const callOptions = this._getCallOptions(userOptions, endpointOptions);
-        return this.client.call(callOptions);
-    }
-
-    _getCallOptions(userOptions, endpointOptions) {
-        const { baseUrl, token } = userOptions;
-        const callOptions = {
-            basePath: this.basePath,
-            json: true,
-            ...endpointOptions,
-        };
-        if (baseUrl) callOptions.baseUrl = baseUrl;
-        if (token) callOptions.token = token;
-        return callOptions;
+        super(httpClient, '/v2/webhook-dispatches');
     }
 
     /**

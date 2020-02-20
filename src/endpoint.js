@@ -1,7 +1,8 @@
 export default class Endpoint {
-    constructor(httpClient, basePath) {
+    constructor(httpClient, basePath, requestOptions) {
         this.basePath = basePath;
         this.client = httpClient;
+        this.requestOptions = requestOptions;
     }
 
     _call(userOptions, endpointOptions) {
@@ -14,6 +15,7 @@ export default class Endpoint {
         const callOptions = {
             basePath: this.basePath,
             json: true,
+            ...this.requestOptions,
             ...endpointOptions,
         };
         if (baseUrl) callOptions.baseUrl = baseUrl;

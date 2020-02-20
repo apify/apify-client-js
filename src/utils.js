@@ -183,13 +183,11 @@ export function stringifyWebhooksToBase64(webhooks) {
  * Replaces slash with tilde to url save string.
  * @param stringWithSlash {String}
  * @return {String}
- * TODO: TEST
  */
 export function replaceSlashWithTilde(stringWithSlash) {
     return stringWithSlash.replace('/', '~');
 }
 
-// TODO: Move to the apify-shared
 /**
  *
  * @param func

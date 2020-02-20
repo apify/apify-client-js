@@ -1,5 +1,6 @@
 import omit from 'lodash/omit';
 import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseDateFields } from './utils';
+import Endpoint from './endpoint';
 
 // 256s - we use more for queries pointing to DynamoDB as it may sometimes need more time to scale up.
 export const REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS = 9;
@@ -78,28 +79,16 @@ export const REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS = 9;
  * @namespace requestQueues
  */
 
-export default class RequestQueues {
+export default class RequestQueues extends Endpoint {
     constructor(httpClient) {
+        super(
+            httpClient,
+            '/v2/request-queues',
+            { expBackoffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
+            },
+        );
         this.basePath = '/v2/request-queues';
         this.client = httpClient;
-    }
-
-    _call(userOptions, endpointOptions) {
-        const callOptions = this._getCallOptions(userOptions, endpointOptions);
-        return this.client.call(callOptions);
-    }
-
-    _getCallOptions(userOptions, endpointOptions) {
-        const { baseUrl, token } = userOptions;
-        const callOptions = {
-            basePath: this.basePath,
-            json: true,
-            expBackoffMaxRepeats: REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
-            ...endpointOptions,
-        };
-        if (baseUrl) callOptions.baseUrl = baseUrl;
-        if (token) callOptions.token = token;
-        return callOptions;
     }
 
     /**

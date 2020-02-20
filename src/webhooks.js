@@ -1,4 +1,5 @@
 import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } from './utils';
+import Endpoint from './endpoint';
 
 /**
  * Webhooks
@@ -39,27 +40,9 @@ import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } f
  * @namespace webhooks
  */
 
-export default class Webhooks {
+export default class Webhooks extends Endpoint {
     constructor(httpClient) {
-        this.basePath = '/v2/webhooks';
-        this.client = httpClient;
-    }
-
-    _call(userOptions, endpointOptions) {
-        const callOptions = this._getCallOptions(userOptions, endpointOptions);
-        return this.client.call(callOptions);
-    }
-
-    _getCallOptions(userOptions, endpointOptions) {
-        const { baseUrl, token } = userOptions;
-        const callOptions = {
-            basePath: this.basePath,
-            json: true,
-            ...endpointOptions,
-        };
-        if (baseUrl) callOptions.baseUrl = baseUrl;
-        if (token) callOptions.token = token;
-        return callOptions;
+        super(httpClient, '/v2/webhooks');
     }
 
     /**

@@ -7,6 +7,7 @@ import {
     stringifyWebhooksToBase64,
     replaceSlashWithTilde,
 } from './utils';
+import Endpoint from './endpoint';
 
 /**
  * Tasks
@@ -47,27 +48,9 @@ import {
  * @namespace tasks
  */
 
-export default class Tasks {
+export default class Tasks extends Endpoint {
     constructor(httpClient) {
-        this.basePath = '/v2/actor-tasks';
-        this.client = httpClient;
-    }
-
-    _call(userOptions, endpointOptions) {
-        const callOptions = this._getCallOptions(userOptions, endpointOptions);
-        return this.client.call(callOptions);
-    }
-
-    _getCallOptions(userOptions, endpointOptions) {
-        const { baseUrl, token } = userOptions;
-        const callOptions = {
-            basePath: this.basePath,
-            json: true,
-            ...endpointOptions,
-        };
-        if (baseUrl) callOptions.baseUrl = baseUrl;
-        if (token) callOptions.token = token;
-        return callOptions;
+        super(httpClient, '/v2/actor-tasks');
     }
 
     /**

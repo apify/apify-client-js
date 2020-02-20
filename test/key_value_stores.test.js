@@ -164,7 +164,7 @@ describe('KeyValueStores methods', () => {
             mockServer.setResponse({ headers: { 'content-type': contentType }, body });
 
             const res = await client.keyValueStores.getRecord({ storeId, key });
-            expect(res).toEqual(body);
+            expect(res.body).toEqual(body);
 
             const browserRes = await page.evaluate(opts => client.keyValueStores.getRecord(opts), { storeId, key });
             expect(browserRes).toEqual(res);
@@ -181,7 +181,7 @@ describe('KeyValueStores methods', () => {
                 mockServer.setResponse({ headers: { 'content-type': contentType }, body });
 
                 const res = await client.keyValueStores.getRecord({ storeId, key, disableBodyParser: true });
-                expect(res).toEqual(JSON.stringify(body));
+                expect(res.body).toEqual(JSON.stringify(body));
 
                 const browserRes = await page.evaluate(opts => client.keyValueStores.getRecord(opts), {
                     storeId,
