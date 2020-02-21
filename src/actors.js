@@ -14,22 +14,12 @@ import Resource from './resource';
  * Actors
  * @memberOf ApifyClient
  * @description
- * ### Basic usage
- * ```javascript
- * const ApifyClient = require('apify-client');
+ * The API endpoints described in this section enable you to manage, build and run Apify actors.
+ * For more information, see the Actor documentation.
+ * Note that for all the API endpoints that accept the actorId parameter to specify an actor,
+ * you can pass either the actor ID (e.g. HG7ML7M8z78YcAPEB) or a slash-separated username of the actor owner and
+ * the actor name (e.g. apify/web-scraper).
  *
- * const apifyClient = new ApifyClient({
- *  userId: 'jklnDMNKLekk',
- *  token: 'SNjkeiuoeD443lpod68dk',
- * });
- *
- * try {
- *      const crawler = await apifyClient.actors.listActors();
- *      // Do something with actors list ...
- * } catch (err) {
- *      // Do something with error ...
- * }
- * ```
  * @namespace actors
  */
 
@@ -48,15 +38,9 @@ export default class Actors extends Resource {
      * therefore you can use pagination to incrementally fetch all actors while new ones are still being created.
      * To sort them in descending order, use desc: `true` parameter.
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
-     * For more information see the [API V2 blueprint](https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-actors).
      *
-     * **Example**:
+     * For more information see the [list actor endpoint](https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-actors).
      *
-     * ```javascript
-     *  const actorPaginationList = await client.actors.listActors();
-     *  // TODO: this particular endpoint is in the example but I would add some minimal working examples.
-     *
-     * ```
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
@@ -100,42 +84,8 @@ export default class Actors extends Resource {
     /**
      * Creates a new actor with settings specified in an Actor object (Maybe link instead of example) passed as `options.actor`.
      * The response is the full actor object as returned by the `client.actors.getActor()`.
-     * //TODO: We could possible add only link to the endpoint
-     * ***Example**:
      *
-     * ```javascript
-     * const actor = {
-     *    "name": "MyActor",
-     *    "description": "My favourite actor!",
-     *    "isPublic": false,
-     *    "title": "My Actor",
-     *    "restartOnError": false,
-     *    "versions": [
-     *     {
-     *        "versionNumber": "0.0",
-     *        "sourceType": "SOURCE_CODE",
-     *        "buildTag": "latest",
-     *        "envVars": [
-     *          {
-     *            "name": "DOMAIN",
-     *            "value": "http://example.com",
-     *            "isSecret": false
-     *          },
-     *          {
-     *            "key": "SECRET_PASSWORD",
-     *            "value": "MyTopSecretPassword123",
-     *            "isSecret": true
-     *          }
-     *        ],
-     *        "baseDockerImage": "apify/actor-node-basic",
-     *        "applyEnvVarsToBuild": false,
-     *        "sourceCode": "console.log('Hello world!');"
-     *      }
-     *    ]
-     *  }
-     *
-     *  await client.actors.listActors({actor});
-     * ```
+     * For more information see the [create actor endpoint](https://docs.apify.com/api/v2#/reference/actors/actor-collection/create-actor).
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
@@ -177,7 +127,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {Object} options.actor - Updated actor object.
      * @returns {Actor}
      */
@@ -216,7 +166,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      */
     async deleteActor(options = {}) {
         const actorId = options.actorId || options.actId;
@@ -250,7 +200,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @returns {Actor}
      */
     async getActor(options = {}) {
@@ -296,7 +246,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
@@ -336,7 +286,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String|Buffer} [options.body] - Actor input, passed as HTTP POST payload
      * @param {String} [options.contentType] - Content type of actor input e.g 'application/json'
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for actor to finish. Maximum value is 120s.
@@ -411,7 +361,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.runId - Unique run ID
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for actor to finish. Maximum value is 120s.
                                                  If actor doesn't finish in time then actor run in RUNNING state is returned.
@@ -450,7 +400,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.runId - Unique run ID
      * @returns {ActorRun}
      */
@@ -485,7 +435,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.runId - ID a an actor run to metamorph.
      * @param {String} options.targetActorId - ID of an actor to which run should metamorph.
      * @param {String|Buffer} [options.body] - Actor input, passed as HTTP POST payload
@@ -541,7 +491,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.runId - Unique run ID
      * @returns {ActorRun}
      */
@@ -577,7 +527,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
@@ -617,7 +567,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.version - Version of the actor to build.
      * @param {Boolean} [options.betaPackages] - If true, the Docker container will be rebuild using layer cache.
                                                  This is to enable quick rebuild during development.
@@ -680,7 +630,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.buildId - Unique build ID
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for actor to finish. Maximum value is 120s.
                                                  If actor doesn't finish in time then actor run in RUNNING state is returned.
@@ -723,7 +673,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.buildId - Unique build ID
      * @returns {ActorBuild}
      */
@@ -754,7 +704,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @return {PaginationList}
      */
     async listActorVersions(options = {}) {
@@ -791,7 +741,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {Object} options.actVersion - Actor version
      * @return {ActorVersion}
      */
@@ -831,7 +781,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.versionNumber - Version number of actor version
      * @return {ActorVersion}
      */
@@ -875,7 +825,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.versionNumber - Version number of actor version
      * @param {Object} options.actVersion - Actor version
      * @return {ActorVersion}
@@ -918,7 +868,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.versionNumber - Version number of actor version
      * @return {Object}
      */
@@ -960,7 +910,7 @@ export default class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
+     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
