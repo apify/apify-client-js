@@ -23,59 +23,16 @@ export const REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS = 9;
  * RequestQueues
  * @memberOf ApifyClient
  * @description
- * ### Basic usage
- * ```javascript
- * const ApifyClient = require('apify-client');
+ * This section describes API endpoints to manage request queues.
+ * Request queue is a storage for a queue of HTTP URLs to crawl,
+ * which is typically used for deep crawling of websites where you start with several URLs and then recursively follow links to other pages.
+ * The storage supports both breadth-first and depth-first crawling orders.
+ * For more information, see the (Request queue documentation)[https://docs.apify.com/storage/request-queue].
  *
- * const apifyClient = new ApifyClient({
- *        userId: 'RWnGtczasdwP63Mak',
- *        token: 'f5J7XsdaKDyRywwuGGo9',
- * });
- * const requestQueues = apifyClient.requestQueues;
+ * Note that some of the endpoints do not require the authentication token, the calls are authenticated using the hard-to-guess ID of the queue.
  *
- * // Get request queue with name 'my-queue' and set it as default
- * // to be used in following commands.
- * const queue = await requestQueues.getOrCreateQueue({
- *     queueName: 'my-queue',
- * });
- * apifyClient.setOptions({ queueId: queue.id });
+ * For more information see the [Request queues endpoint](https://docs.apify.com/api/v2#/reference/request-queues).
  *
- * // Add requests to queue.
- * await requestQueues.addRequest({ url: 'http://example.com', uniqueKey: 'http://example.com' });
- * await requestQueues.addRequest({ url: 'http://example.com/a/b', uniqueKey: 'http://example.com/a/b' });
- *
- * // Fetch unhandled requets from queue.
- * const [request1, request2] = await requestQueues.queryQueueHead();
- *
- * // Mark request as handled.
- * request1.handledAt = new Date();
- * await requestQueues.updateRequest(request1);
- * ```
- *
- * Every method can be used as either promise or with callback. If your Node version supports await/async then you can await promise result.
- * ```javascript
- * // Awaited promise
- * try {
- *      const queue = await requestQueues.getQueue(queueId);
- *      // Do something with the queue ...
- * } catch (err) {
- *      // Do something with error ...
- * }
- *
- * // Promise
- * requestQueues.getQueue(queueId)
- * .then((queue) => {
- *      // Do something with queue ...
- * })
- * .catch((err) => {
- *      // Do something with error ...
- * });
- *
- * // Callback
- * requestQueues.getQueue(queueId, (err, queue) => {
- *      // Do something with error or queue ...
- * });
- * ```
  * @namespace requestQueues
  */
 
@@ -93,6 +50,9 @@ export default class RequestQueues extends Resource {
 
     /**
      * Creates request queue of given name and returns it's object. If queue with given name already exists then returns it's object.
+     *
+     * For more information see
+     * [get request queues endpoint](https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/create-request-queue).
      *
      * @memberof ApifyClient.requestQueues
      * @instance
@@ -128,6 +88,8 @@ export default class RequestQueues extends Resource {
      * therefore you can use pagination to incrementally fetch all queues while new ones are still being created.
      * To sort them in descending order, use desc: `true` parameter.
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
+     * For more information see
+     * [get list of request queues endpoint](https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/get-list-of-request-queues).
      *
      * @memberof ApifyClient.requestQueues
      * @instance
@@ -164,12 +126,14 @@ export default class RequestQueues extends Resource {
     }
 
     /**
-     * Gets request queue.
+     * Returns queue object for given queue ID.
+     *
+     * For more information see [get request queue endpoint](https://docs.apify.com/api/v2#/reference/request-queues/queue/get-request-queue).
      *
      * @memberof ApifyClient.requestQueues
      * @instance
      * @param {Object} options
-     * @param {String} options.queueId - Unique queue ID
+     * @param {String} options.queueId - Queue ID or username~queue-name.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
      * @returns {RequestQueue}
@@ -199,7 +163,7 @@ export default class RequestQueues extends Resource {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {String} options.queueId - Unique queue ID
+     * @param {String} options.queueId - Queue ID or username~queue-name.
      * @param {Object} options.queue
      * @returns {RequestQueue}
      */
@@ -223,10 +187,12 @@ export default class RequestQueues extends Resource {
     /**
      * Deletes request queue.
      *
+     * For more information see [delete request queue endpoint](https://docs.apify.com/api/v2#/reference/request-queues/queue/delete-request-queue).
+     *
      * @memberof ApifyClient.requestQueues
      * @instance
      * @param {Object} options
-     * @param {String} options.queueId - Unique queue ID
+     * @param {String} options.queueId - Queue ID or username~queue-name.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
      * @returns {*}
@@ -247,12 +213,16 @@ export default class RequestQueues extends Resource {
 
     /**
      * Adds request to the queue.
-     * If request is already in the queue then returns info about existing request.
+     * Response contains ID of the request and info if request was already present in the queue or handled.
+     *
+     * If request with same uniqueKey was already present in the queue then returns an ID of existing request
+     *
+     * For more information see [add request endpoint](https://docs.apify.com/api/v2#/reference/request-queues/request-collection/add-request).
      *
      * @memberof ApifyClient.requestQueues
      * @instance
      * @param {Object} options
-     * @param {String} options.queueId - Unique queue ID
+     * @param {String} options.queueId - Queue ID or username~queue-name.
      * @param {Object} options.request - Request object
      * @param {Boolean} [options.forefront] - If yes then request will be enqueued to the begining of the queue
      *                                        and to the end of the queue otherwise.
@@ -288,10 +258,12 @@ export default class RequestQueues extends Resource {
     /**
      * Gets request from the queue.
      *
+     * For more information see [get request endpoint](https://docs.apify.com/api/v2#/reference/request-queues/request/get-request).
+     *
      * @memberof ApifyClient.requestQueues
      * @instance
      * @param {Object} options
-     * @param {String} options.queueId - Unique queue ID
+     * @param {String} options.queueId - Queue ID or username~queue-name.
      * @param {String} options.requestId - Unique request ID
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
@@ -321,10 +293,12 @@ export default class RequestQueues extends Resource {
     /**
      * Deletes request from queue.
      *
+     * For more information see [delete request endpoint](https://docs.apify.com/api/v2#/reference/request-queues/request/delete-request).
+     *
      * @memberof ApifyClient.requestQueues
      * @instance
      * @param {Object} options
-     * @param {String} options.queueId - Unique queue ID
+     * @param {String} options.queueId - Queue ID or username~queue-name.
      * @param {String} options.requestId - Unique request ID
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
@@ -354,12 +328,16 @@ export default class RequestQueues extends Resource {
     }
 
     /**
-     * Updates request in the queue.
+     * Updates request in queue.
+     * Mark request as handled by setting request.handledAt = new Date().
+     * If handledAt is set then request will be removed from head of the queue.
+     *
+     * For more information see [delete request endpoint](https://docs.apify.com/api/v2#/reference/request-queues/request/update-request).
      *
      * @memberof ApifyClient.requestQueues
      * @instance
      * @param {Object} options
-     * @param {String} options.queueId - Unique queue ID
+     * @param {String} options.queueId - Queue ID or username~queue-name.
      * @param {Object} options.request - Request object
      * @param {String} [options.requestId] - Unique request ID
      * @param {Boolean} [options.forefront] - If yes then request will be enqueued to the begining of the queue
@@ -399,11 +377,16 @@ export default class RequestQueues extends Resource {
 
     /**
      * Returns given number of the first unhandled requests in he queue.
+     * Returns given number of first requests from the queue.
+     * The response contains the hadMultipleClients boolean field which indicates that
+     * the queue was accessed by more than one client (with unique or empty clientKey).
+     *
+     * For more information see [get head](https://docs.apify.com/api/v2#/reference/request-queues/queue-head/get-head).
      *
      * @memberof ApifyClient.requestQueues
      * @instance
      * @param {Object} options
-     * @param {String} options.queueId - Unique queue ID
+     * @param {String} options.queueId - Queue ID or username~queue-name.
      * @param {Number} options.limit - Maximum number of the items to be returned.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~queue-name" format for queueId.
