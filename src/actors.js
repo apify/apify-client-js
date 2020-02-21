@@ -20,6 +20,8 @@ import Resource from './resource';
  * you can pass either the actor ID (e.g. HG7ML7M8z78YcAPEB) or a slash-separated username of the actor owner and
  * the actor name (e.g. apify/web-scraper).
  *
+ * For more information see the [Actor endpoint](https://docs.apify.com/api/v2#/reference/actors).
+ *
  * @namespace actors
  */
 

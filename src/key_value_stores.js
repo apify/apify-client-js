@@ -6,52 +6,16 @@ import Resource from './resource';
  * Key-value Stores
  * @memberOf ApifyClient
  * @description
- * ### Basic usage
- * ```javascript
- * const ApifyClient = require('apify-client');
+ * This section describes API endpoints to manage Key-value stores.
+ * Key-value store is a simple storage for saving and reading data records or files.
+ * Each data record is represented by a unique key and associated with a MIME content type.
+ * Key-value stores are ideal for saving screenshots, actor inputs and outputs, web pages, PDFs or to persist the state of crawlers.
+ * For more information, see the (Key-value store documentation)[https://docs.apify.com/storage/key-value-store].
+ * Note that some of the endpoints do not require the authentication token,
+ * the calls are authenticated using a hard-to-guess ID of the key-value store.
  *
- * const apifyClient = new ApifyClient({
- *        userId: 'RWnGtczasdwP63Mak',
- *        token: 'f5J7XsdaKDyRywwuGGo9',
- * });
- * const keyValueStores = apifyClient.keyValueStores;
+ * For more details see (Key-value store endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores]
  *
- * const store = await keyValueStores.getOrCreateStore({ storeName: 'my-store' });
- * apifyClient.setOptions({ storeId: store.id });
- * await keyValueStores.putRecord({
- *      key: 'foo',
- *      body: 'bar',
- *      contentType: 'text/plain; charset=utf-8',
- * });
- * const record = await keyValueStores.getRecord({ key: 'foo' });
- * const keys = await keyValueStores.getRecordsKeys();
- * await keyValueStores.deleteRecord({ key: 'foo' });
- * ```
- *
- * Every method can be used as either promise or with callback. If your Node version supports await/async then you can await promise result.
- * ```javascript
- * // Awaited promise
- * try {
- *      const record = await keyValueStores.getRecord({ key: 'foo' });
- *      // Do something record ...
- * } catch (err) {
- *      // Do something with error ...
- * }
- *
- * // Promise
- * keyValueStores.getRecord({ key: 'foo' })
- * .then((RECORD) => {
- *      // Do something record ...
- * })
- * .catch((err) => {
- *      // Do something with error ...
- * });
- *
- * // Callback
- * keyValueStores.getRecord({ key: 'foo' }, (err, record) => {
- *      // Do something with error or record ...
- * });
- * ```
  * @namespace keyValueStores
  */
 
@@ -63,7 +27,11 @@ export default class KeyValueStores extends Resource {
     }
 
     /**
-     * Creates store of given name and returns it's object. If store with given name already exists then returns it's object.
+     * Creates a key-value store with a specific name.
+     * If there is another store with the same name, the endpoint does not create a new one and returns the existing object instead.
+     *
+     * For more details see
+     * (create key-value store endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/create-key-value-store]
      *
      * @memberof ApifyClient.keyValueStores
      * @instance
@@ -97,6 +65,9 @@ export default class KeyValueStores extends Resource {
      * therefore you can use pagination to incrementally fetch all stores while new ones are still being created.
      * To sort them in descending order, use desc: `true` parameter.
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
+     *
+     * For more details see
+     *(get list of key-value stores endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/get-list-of-key-value-stores]
      *
      * @memberof ApifyClient.keyValueStores
      * @instance
@@ -133,12 +104,15 @@ export default class KeyValueStores extends Resource {
     }
 
     /**
-     * Gets key-value store.
+     * Gets an object that contains all the details about a specific key-value store.
+     *
+     * For more details see
+     * (get key-value store endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store]
      *
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Unique store ID
+     * @param {String} options.storeId - Key-value store ID or username~store-name.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~store-name" format for storeId.
      * @returns {KeyValueStore}
@@ -168,7 +142,7 @@ export default class KeyValueStores extends Resource {
      * @instance
      * @param {Object} options
      * @param options.token
-     * @param {String} options.storeId - Unique store ID
+     * @param {String} options.storeId - Key-value store ID or username~store-name.
      * @param {Object} options.store
      * @returns {KeyValueStore}
      */
@@ -192,10 +166,13 @@ export default class KeyValueStores extends Resource {
     /**
      * Deletes key-value store.
      *
+     * For more details see
+     * (delete key-value store endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store]
+     *
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Unique store ID
+     * @param {String} options.storeId - Key-value store ID or username~store-name.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~store-name" format for storeId.
      * @returns {*}
@@ -217,10 +194,12 @@ export default class KeyValueStores extends Resource {
     /**
      * Gets value stored in the key-value store under the given key.
      *
+     * For more details see (get record endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record]
+     *
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Unique store ID
+     * @param {String} options.storeId - Key-value store ID or username~store-name.
      * @param {String} options.key - Key of the record
      * @param {Boolean} [options.disableBodyParser] - It true, it doesn't parse record's body based on content type.
      * @param {Boolean} [options.disableRedirect] - API by default redirects user to signed record url for faster download.
@@ -268,11 +247,15 @@ export default class KeyValueStores extends Resource {
 
     /**
      * Saves the record into key-value store.
+     * Stores a value under a specific key to the key-value store.
+     * The value is passed as the `body` option and it is stored with a MIME content type defined by the `contentType` option.
+     *
+     * For more details see (put record endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/record/put-record]
      *
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Unique store ID
+     * @param {String} options.storeId - Key-value store ID or username~store-name.
      * @param {String} options.key - Key of the record
      * @param {String} options.contentType - Content type of body
      * @param {string|Buffer} options.body - Body in string or Buffer
@@ -314,12 +297,14 @@ export default class KeyValueStores extends Resource {
     }
 
     /**
-     * Deletes given record.
+     * Removes a record specified by a key from the key-value store.
+     *
+     * For more details see (delete record endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/record/delete-record]
      *
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Unique store ID
+     * @param {String} options.storeId - Key-value store ID or username~store-name.
      * @param {String} options.key - Key of the record
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~store-name" format for storeId.
@@ -340,14 +325,16 @@ export default class KeyValueStores extends Resource {
     }
 
     /**
-     * Returns an array containing objects representing keys in given store.
+     * Returns a list of objects describing keys of a given key-value store, as well as some information about the values (e.g. size).
+     * This endpoint is paginated using exclusiveStartKey and limit parameters -
+     * see [Pagination](https://docs.apify.com/api/v2#/introduction/response-structure) for more details.
      *
-     * You can paginated using exclusiveStartKey and limit parameters.
+     * For more details see (get list of keys endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/key-collection/get-list-of-keys]
      *
      * @memberof ApifyClient.keyValueStores
      * @instance
      * @param {Object} options
-     * @param {String} options.storeId - Unique store ID
+     * @param {String} options.storeId - Key-value store ID or username~store-name.
      * @param {String} [options.exclusiveStartKey] - All keys up to this one (including) are skipped from the result.
      * @param {Number} [options.limit] - Number of keys to be returned. Maximum value is 1000
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required

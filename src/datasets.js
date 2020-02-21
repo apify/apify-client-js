@@ -21,12 +21,10 @@ export const BACKOFF_MILLIS = 200;
  * Typically it is used to store crawling results. For more information, see the [Dataset documentation](https://docs.apify.com/storage#dataset).
  * Note that some of the endpoints do not require the authentication token, the calls are authenticated using the hard-to-guess ID of the dataset.
  *
- * For more details see (dataset endpoint)[https://docs.apify.com/api/v2#/reference/datasets]
+ * For more details see the (Dataset endpoint)[https://docs.apify.com/api/v2#/reference/datasets]
  *
  * @namespace datasets
  */
-
-export const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
 
 export default class Datasets extends Resource {
     constructor(httpClient) {
