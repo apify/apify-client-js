@@ -98,8 +98,44 @@ export default class Actors extends Resource {
     }
 
     /**
-     * Creates a new actor.
+     * Creates a new actor with settings specified in an Actor object (Maybe link instead of example) passed as `options.actor`.
+     * The response is the full actor object as returned by the `client.actors.getActor()`.
+     * //TODO: We could possible add only link to the endpoint
+     * ***Example**:
      *
+     * ```javascript
+     * const actor = {
+     *    "name": "MyActor",
+     *    "description": "My favourite actor!",
+     *    "isPublic": false,
+     *    "title": "My Actor",
+     *    "restartOnError": false,
+     *    "versions": [
+     *     {
+     *        "versionNumber": "0.0",
+     *        "sourceType": "SOURCE_CODE",
+     *        "buildTag": "latest",
+     *        "envVars": [
+     *          {
+     *            "name": "DOMAIN",
+     *            "value": "http://example.com",
+     *            "isSecret": false
+     *          },
+     *          {
+     *            "key": "SECRET_PASSWORD",
+     *            "value": "MyTopSecretPassword123",
+     *            "isSecret": true
+     *          }
+     *        ],
+     *        "baseDockerImage": "apify/actor-node-basic",
+     *        "applyEnvVarsToBuild": false,
+     *        "sourceCode": "console.log('Hello world!');"
+     *      }
+     *    ]
+     *  }
+     *
+     *  await client.actors.listActors({actor});
+     * ```
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
@@ -131,13 +167,18 @@ export default class Actors extends Resource {
     }
 
     /**
-     * Updates actor.
+     * Updates settings of an actor using values specified by an actor object passed as `options.actor`.
+     * If the object does not define a specific property, its value will not be updated.
+     * The response is the full actor object as returned by the `client.actors.getActor()`.
+     * You can pass the id of actor either separately in `options.actorId` or in the actor object itself under the `id` key.
+     *
+     * For more details see (update actor endpoint)[https://docs.apify.com/api/v2#/reference/actors/actor-object/update-actor]
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
-     * @param {Object} options.actor
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name
+     * @param {Object} options.actor - Updated actor object.
      * @returns {Actor}
      */
     async updateActor(options = {}) {
@@ -170,10 +211,12 @@ export default class Actors extends Resource {
     /**
      * Deletes actor.
      *
+     * For more details see (delete actor endpoint)[https://docs.apify.com/api/v2#/reference/actors/actor-object/delete-actor]
+     *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name
      */
     async deleteActor(options = {}) {
         const actorId = options.actorId || options.actId;
@@ -201,12 +244,13 @@ export default class Actors extends Resource {
     }
 
     /**
-     * Gets actor object.
+     * Gets an object that contains all the details about a specific actor.
      *
+     * For more details see (get actor endpoint)[https://docs.apify.com/api/v2#/reference/actors/actor-object/get-actor]
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @returns {Actor}
      */
     async getActor(options = {}) {
@@ -247,10 +291,12 @@ export default class Actors extends Resource {
      *
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      *
+     * For more details see (get list of runs endpoint)[https://docs.apify.com/api/v2#/reference/actors/run-collection/get-list-of-runs]
+
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
@@ -283,12 +329,14 @@ export default class Actors extends Resource {
     }
 
     /**
-     * Runs the latest build of given actor.
+     * Runs a specific actor and returns its output.
+     *
+     * For more details see (run actor endpoint)[https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor]
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @param {String|Buffer} [options.body] - Actor input, passed as HTTP POST payload
      * @param {String} [options.contentType] - Content type of actor input e.g 'application/json'
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for actor to finish. Maximum value is 120s.
@@ -352,11 +400,18 @@ export default class Actors extends Resource {
 
     /**
      * Gets actor run.
+     * Gets an object that contains all the details about a specific run of an actor.
+     * By passing the optional waitForFinish=1 parameter the API endpoint will synchronously wait for the build to finish.
+     * This is useful to avoid periodic polling when waiting for actor build to complete.
+     *
+     * This endpoints do not require the authentication token, the calls are authenticated using a hard-to-guess ID of the run.
+     *
+     * For more details see (get run endpoint)[https://docs.apify.com/api/v2#/reference/actors/run-object/get-run]
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @param {String} options.runId - Unique run ID
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for actor to finish. Maximum value is 120s.
                                                  If actor doesn't finish in time then actor run in RUNNING state is returned.
@@ -387,12 +442,15 @@ export default class Actors extends Resource {
     }
 
     /**
-     * Abort actor run.
+     * Aborts an actor run and returns an object that contains all the details about the run.
+     * Only runs that are starting or running are aborted. For runs with status FINISHED, FAILED, ABORTING and TIMED-OUT this call does nothing.
+     *
+     *  For more details see (abort run endpoint)[https://docs.apify.com/api/v2#/reference/actors/abort-run/abort-run]
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @param {String} options.runId - Unique run ID
      * @returns {ActorRun}
      */
@@ -415,12 +473,19 @@ export default class Actors extends Resource {
     }
 
     /**
-     * Transforms the actor run to an actor run of a given actor.
+     * Transforms an actor run into a run of another actor with a new input.
+     * This is useful if you want to use another actor to finish the work of your current actor run,
+     * without the need to create a completely new run and waiting for its finish. For the users of your actors,
+     * the metamorph operation is transparent, they will just see your actor got the work done.Internally,
+     * the system stops the Docker container corresponding to the actor run and starts a new container using a different Docker image.
+     * All the default storages are preserved and the new input is stored under the INPUT-METAMORPH-1 key in the same default key-value store.
+     *
+     * For more details see (metamorph run endpoint)[https://docs.apify.com/api/v2#/reference/actors/metamorph-run/metamorph-run]
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @param {String} options.runId - ID a an actor run to metamorph.
      * @param {String} options.targetActorId - ID of an actor to which run should metamorph.
      * @param {String|Buffer} [options.body] - Actor input, passed as HTTP POST payload
@@ -466,13 +531,17 @@ export default class Actors extends Resource {
     }
 
     /**
-     * Resurrects finished (even failed) actor run.
-     * Container gets restarted with original storages.
+     * Resurrects a finished actor run and returns an object that contains all the details about the resurrected run.
+     * Only finished runs, i.e. runs with status FINISHED, FAILED, ABORTED and TIMED-OUT can be resurrected.
+     * Run status will be updated to RUNNING and its container will be restarted with the same storages
+     * (the same behaviour as when the run gets migrated to the new server).
+     *
+     * For more details see (ressurect run endpoint)[https://docs.apify.com/api/v2#/reference/actors/resurrect-run/resurrect-run]
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @param {String} options.runId - Unique run ID
      * @returns {ActorRun}
      */
@@ -503,10 +572,12 @@ export default class Actors extends Resource {
      *
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      *
+     * For more details see (get list of builds endpoint)[https://docs.apify.com/api/v2#/reference/actors/build-collection/get-list-of-builds]
+     *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
@@ -541,10 +612,12 @@ export default class Actors extends Resource {
     /**
      * Builds given actor and returns object of that build.
      *
+     * For more details see (build actor endpoint)[https://docs.apify.com/api/v2#/reference/actors/build-collection/build-actor]
+     *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @param {String} options.version - Version of the actor to build.
      * @param {Boolean} [options.betaPackages] - If true, the Docker container will be rebuild using layer cache.
                                                  This is to enable quick rebuild during development.
@@ -598,12 +671,16 @@ export default class Actors extends Resource {
     }
 
     /**
-     * Gets actor build.
+     * Gets an object that contains all the details about a specific build of an actor.
+     * By passing the optional waitForFinish=1 parameter the API endpoint will synchronously wait for the build to finish.
+     * This is useful to avoid periodic polling when waiting for an actor build to finish.
+     *
+     * For more details see (get build endpoint)[https://docs.apify.com/api/v2#/reference/actors/build-object/get-build]
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @param {String} options.buildId - Unique build ID
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for actor to finish. Maximum value is 120s.
                                                  If actor doesn't finish in time then actor run in RUNNING state is returned.
@@ -637,12 +714,16 @@ export default class Actors extends Resource {
     }
 
     /**
-     * Abort actor build.
+     * Aborts an actor build and returns an object that contains all the details about the build.
+     * Only builds that are starting or running are aborted.
+     * For builds with status FINISHED, FAILED, ABORTING and TIMED-OUT this call does nothing.
+     *
+     * For more details see (abort build endpoint)[https://docs.apify.com/api/v2#/reference/actors/abort-build/abort-build]
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @param {String} options.buildId - Unique build ID
      * @returns {ActorBuild}
      */
@@ -666,11 +747,14 @@ export default class Actors extends Resource {
 
     /**
      * Gets the list of versions of a specific actor.
+     * The response is a JSON with the list of Version objects where each contains basic information about a single version.
+     *
+     * For more details see (get list of version endpoint)[https://docs.apify.com/api/v2#/reference/actors/version-collection/get-list-of-versions]
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @return {PaginationList}
      */
     async listActorVersions(options = {}) {
@@ -699,12 +783,15 @@ export default class Actors extends Resource {
     }
 
     /**
-     * Creates an actor version.
+     * Creates an actor version using values specified by a Version object.
+     * The response is the Version object as returned by the Get version endpoint.
+     *
+     * For more details see (create version endpoint)[https://docs.apify.com/api/v2#/reference/actors/version-collection/create-version]
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @param {Object} options.actVersion - Actor version
      * @return {ActorVersion}
      */
@@ -737,12 +824,14 @@ export default class Actors extends Resource {
     }
 
     /**
-     * Gets an actor version.
+     * Gets a Version object that contains all the details about a specific version of an actor.
+     *
+     * For more details see (get version endpoint)[https://docs.apify.com/api/v2#/reference/actors/version-object/get-version]
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @param {String} options.versionNumber - Version number of actor version
      * @return {ActorVersion}
      */
@@ -781,10 +870,12 @@ export default class Actors extends Resource {
     /**
      * Updates an actor version.
      *
+     * For more details see (update version endpoint)[https://docs.apify.com/api/v2#/reference/actors/version-object/update-version]
+     *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @param {String} options.versionNumber - Version number of actor version
      * @param {Object} options.actVersion - Actor version
      * @return {ActorVersion}
@@ -820,12 +911,14 @@ export default class Actors extends Resource {
     }
 
     /**
-     * Deletes an actor version.
+     * Deletes a specific version of actor's source code.
+     *
+     * For more details see (update version endpoint)[https://docs.apify.com/api/v2#/reference/actors/version-object/delete-version]
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @param {String} options.versionNumber - Version number of actor version
      * @return {Object}
      */
@@ -857,12 +950,17 @@ export default class Actors extends Resource {
     }
 
     /**
-     * Gets list of webhooks for given actor.
+     * Gets the list of webhooks of a specific actor.
+     * The response is a JSON with the list of objects where each object contains basic information about a single webhook.
+     * The endpoint supports pagination using the limit and offset parameters and it will not return more than 1000 records.By default,
+     * the records are sorted by the createdAt field in ascending order, to sort the records in descending order, use the desc=1 parameter.
+     *
+     * For more details see (get list of webhooks endpoint)[https://docs.apify.com/api/v2#/reference/actors/webhook-collection/get-list-of-webhooks]
      *
      * @memberof ApifyClient.actors
      * @instance
      * @param {Object} options
-     * @param {String} options.actorId - Unique actor ID
+     * @param {String} options.actorId - Actor ID or a tilde-separated owner's username and actor name.
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
