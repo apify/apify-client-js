@@ -12,63 +12,17 @@ export const BACKOFF_MILLIS = 200;
  * Datasets
  * @memberOf ApifyClient
  * @description
- * ### Basic usage
- * ```javascript
- * const ApifyClient = require('apify-client');
  *
- * const apifyClient = new ApifyClient({
- *        userId: 'RWnGtczasdwP63Mak',
- *        token: 'f5J7XsdaKDyRywwuGGo9',
- * });
- * const datasets = apifyClient.datasets;
+ * This section describes API endpoints to manage Datasets.
+ * Dataset is a storage for structured data where each record stored has the same attributes,
+ * such as online store products or real estate offers.
+ * You can imagine it as a table, where each object is a row and its attributes are columns.
+ * Dataset is an append-only storage - you can only add new records to it but you cannot modify or remove existing records.
+ * Typically it is used to store crawling results. For more information, see the [Dataset documentation](https://docs.apify.com/storage#dataset).
+ * Note that some of the endpoints do not require the authentication token, the calls are authenticated using the hard-to-guess ID of the dataset.
  *
- * // Get dataset with name 'my-dataset' and set it as default
- * // to be used in following commands.
- * const dataset = await datasets.getOrCreateDataset({
- *     datasetName: 'my-dataset',
- * });
- * apifyClient.setOptions({ datasetId: dataset.id });
+ * For more details see (dataset endpoint)[https://docs.apify.com/api/v2#/reference/datasets]
  *
- * // Save some object and array of objects to dataset.
- * await datasets.putItems({
- *      data: { foo: 'bar' }
- * });
- * await datasets.putItems({
- *      data: [{ foo: 'hotel' }, { foo: 'restaurant' }],
- * });
- *
- * // Get items from dataset and delete it.
- * const paginationList = await datasets.getItems();
- * const items = paginationList.items;
- * await datasets.deleteDataset();
- * ```
- *
- * Every method can be used as either promise or with callback. If your Node version supports await/async then you can await promise result.
- * ```javascript
- * // Awaited promise
- * try {
- *      const items = await datasets.getItems();
- *      // Do something with the items ...
- * } catch (err) {
- *      // Do something with error ...
- * }
- *
- * // Promise
- * datasets.getItems()
- * .then((paginationList) => {
- *      console.log(paginationList.items)
- *      // Do something with items ...
- * })
- * .catch((err) => {
- *      // Do something with error ...
- * });
- *
- * // Callback
- * datasets.getItems((err, paginationList) => {
- *      console.log(paginationList.items)
- *      // Do something with error or items ...
- * });
- * ```
  * @namespace datasets
  */
 
@@ -80,7 +34,9 @@ export default class Datasets extends Resource {
     }
 
     /**
-     * Creates dataset of given name and returns it's object. If data with given name already exists then returns it's object.
+     * Creates dataset of given name and returns its object. If dataset with given name already exists then returns its object.
+     *
+     * For more details see (create dataset endpoint)[https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/create-dataset]
      *
      * @memberof ApifyClient.datasets
      * @instance
@@ -116,6 +72,8 @@ export default class Datasets extends Resource {
      * To sort them in descending order, use `desc: true` option.
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      *
+     * For more details see (list datasets endpoint)[https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of-datasets]
+     *
      * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
@@ -127,7 +85,6 @@ export default class Datasets extends Resource {
      *   If `true` then the objects are sorted by the startedAt field in descending order.
      * @param {Boolean} [options.unnamed]
      *   If `true` then also unnamed stores will be returned. By default only named stores are returned.
-     * @param callback
      * @returns {PaginationList}
      */
     async listDatasets(options = {}) {
@@ -158,13 +115,15 @@ export default class Datasets extends Resource {
     /**
      * Returns given dataset.
      *
+     * For more details see (get dataset endpoint)[https://docs.apify.com/api/v2#/reference/datasets/dataset/get-dataset]
+     *
      * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
-     * @param {String} options.datasetId - Unique dataset ID
+     * @param {String} options.datasetId - Unique dataset ID Dataset ID or username~dataset-name;
+     * // TODO: Not sure about the token
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~dataset-name" format for datasetId.
-     * @param callback
      * @returns {Dataset}
      */
     async getDataset(options = {}) {
@@ -215,13 +174,14 @@ export default class Datasets extends Resource {
     /**
      * Deletes given dataset.
      *
+     * For more details see (delete dataset endpoint)[https://docs.apify.com/api/v2#/reference/datasets/dataset/delete-dataset]
+     *
      * @memberof ApifyClient.datasets
      * @instance
      * @param {Object} options
      * @param {String} options.datasetId - Unique dataset ID
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~dataset-name" format for datasetId.
-     * @param callback
      * @returns {*}
      */
     async deleteDataset(options = {}) {
@@ -239,7 +199,23 @@ export default class Datasets extends Resource {
     }
 
     /**
-     * Returns items in the dataset based on the provided parameters
+     * Returns data stored in the dataset in a desired format.
+     *
+     * The format of the response depends on format option.
+     *
+     * Note that CSV, XLSX and HTML tables are limited to 500 columns and the column names cannot be longer than 200 characters.
+     * JSON, XML and RSS formats do not have such restrictions.
+     *
+     * The top-level fields starting with the # character are considered hidden.
+     * These are useful to store debugging information and can be omitted from the output
+     * by providing the `skipHidden: true` or `clean: true` query parameters.
+     *
+     * The generated response supports pagination.
+     * The maximum number of items that will be returned in a single API call is limited to 250,000.
+     * If you specify `desc: true` query parameter,
+     * the results are returned in the reverse order than they were stored (i.e. from newest to oldest items)
+     *
+     * For more details see (get items endpoint)[https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items]
      *
      * @memberof ApifyClient.datasets
      * @instance
@@ -247,7 +223,7 @@ export default class Datasets extends Resource {
      * @param {String} options.datasetId
      *   Unique dataset ID
      * @param {String} [options.format='json']
-     *   Format of the `items` property, possible values are: `json`, `csv`, `xlsx`, `html`, `xml` and `rss`.
+     *   The format parameter can have one of the following values: json, jsonl, xml, html, csv, xlsx and rss.
      * @param {Number} [options.offset=0]
      *   Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=250000]
@@ -299,7 +275,7 @@ export default class Datasets extends Resource {
      * @param {String} [options.token]
      *   Your API token at apify.com. This parameter is required
      *   only when using "username~dataset-name" format for datasetId.
-     * @param callback
+     *   TODO: is really necessary?
      * @returns {PaginationList}
      */
     async getItems(options = {}) {
@@ -374,7 +350,13 @@ export default class Datasets extends Resource {
     }
 
     /**
-     * Saves the object or an array of objects into dataset.
+     * Appends an item or an array of items to the end of the dataset.
+     * The `data` option is a JSON object or a JSON array of objects to save into the dataset.
+     *
+     * **IMPORTANT**: The limit of request payload size for the dataset is 5 MB.
+     * If the array exceeds the size, you'll need to split it into a number of smaller arrays.
+     *
+     * For more details see (put items endpoint)[https://docs.apify.com/api/v2#/reference/datasets/item-collection/put-items]
      *
      * @memberof ApifyClient.datasets
      * @instance
@@ -384,6 +366,7 @@ export default class Datasets extends Resource {
      *                                                 Arrays and Objects must be JSON.stringifiable.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
      *                                   only when using "username~dataset-name" format for datasetId.
+     * TODO: is really necessary?
      * @returns {*}
      */
     async putItems(options = {}) {
