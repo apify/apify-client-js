@@ -13,39 +13,15 @@ import Resource from './resource';
  * Tasks
  * @memberOf ApifyClient
  * @description
- * ### Basic usage
- * Every method can be used as either promise or with callback. If your Node version supports await/async then you can await promise result.
- * ```javascript
- * const ApifyClient = require('apify-client');
+ * The API endpoints described in this section enables you to manage and run Apify actor tasks.
+ * For more information, see the (Actor tasks documentation) [https://docs.apify.com/tasks].
+ * Note that for all the API endpoints that accept the actorTaskId parameter to specify a task,
+ * you can pass either the task ID
+ * (e.g. HG7ML7M8z78YcAPEB) or a tilde-separated username of the task's owner and the task's name (e.g. johndoe~my-task).
  *
- * const apifyClient = new ApifyClient({
- *  userId: 'jklnDMNKLekk',
- *  token: 'SNjkeiuoeD443lpod68dk',
- * });
+ * For more information see the [Task endpoint](https://docs.apify.com/api/v2#/reference/actor-tasks).
  *
- * // Awaited promise
- * try {
- *      const tasksList = await apifyClient.tasks.listTasks({});
- *      // Do something with the tasksList ...
- * } catch (err) {
- *      // Do something with error ...
- * }
- *
- * // Promise
- * apifyClient.tasks.listTasks({})
- * .then((tasksList) => {
- *      // Do something tasksList ...
- * })
- * .catch((err) => {
- *      // Do something with error ...
- * });
- *
- * // Callback
- * apifyClient.tasks.listTasks({}, (err, tasksList) => {
- *      // Do something with error or tasksList ...
- * });
- * ```
- * @namespace tasks
+ @namespace tasks
  */
 
 export default class Tasks extends Resource {
@@ -59,6 +35,9 @@ export default class Tasks extends Resource {
      * therefore you can use pagination to incrementally fetch all tasks while new ones are still being created.
      * To sort them in descending order, use desc: `true` parameter.
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
+     *
+     * For more information see [get list of tasks endpoint](https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection/get-list-of-tasks).
+     *
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
@@ -91,7 +70,10 @@ export default class Tasks extends Resource {
     }
 
     /**
-     * Creates a new task.
+     * Create a new task with settings specified by the object passed as `options.task`.
+     * The response is the full task object as returned by the `client.tasks.createTask`.
+     *
+     * For more information see [create task endpoint](https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection/create-task).
      *
      * @memberof ApifyClient.tasks
      * @instance
@@ -115,12 +97,18 @@ export default class Tasks extends Resource {
     }
 
     /**
-     * Updates task.
+     * Update settings of a task using values specified by an object passed as `options.task`.
+     * If the object does not define a specific property, its value is not updated.
+     * Id of task to be updated can be passed as `options.taskId` or inside the `options.task` under the `id` key.
+     *
+     * The response is the full task object as returned by the`client.tasks.createTask`.
+     *
+     * For more information see [update task endpoint](https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/update-task).
      *
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Unique task ID
+     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
      * @param {Object} options.task
      * @param callback
      * @returns {Task}
@@ -145,12 +133,14 @@ export default class Tasks extends Resource {
     }
 
     /**
-     * Deletes task.
+     * Delete the task specified through the `options.taskId` parameter.
+     *
+     * For more information see [delete task endpoint](https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/delete-task).
      *
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Unique task ID
+     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
      */
     async deleteTask(options = {}) {
         const { taskId } = options;
@@ -169,12 +159,14 @@ export default class Tasks extends Resource {
     }
 
     /**
-     * Gets task object.
+     * Get an object that contains all the details about a task.
+     *
+     * For more information see [get task endpoint](https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/get-task).
      *
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Unique task ID
+     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
      * @returns {Task}
      */
     async getTask(options = {}) {
@@ -206,10 +198,13 @@ export default class Tasks extends Resource {
      *
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      *
+     * For more information see
+     * [get list of task runs endpoint](https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/get-list-of-task-runs).
+     *
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Unique task ID
+     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
@@ -241,14 +236,17 @@ export default class Tasks extends Resource {
     }
 
     /**
-     * Runs the given task.
+     * Runs an actor task and immediately returns without waiting for the run to finish.
+     *
+     * For more details see (run task endpoint)[https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task]
      *
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Unique task ID
+     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for task to finish. Maximum value is 120s.
                                                  If task doesn't finish in time then task run in RUNNING state is returned.
+     //TODO: In docs are 300s why the waitFor max value does respect same max
      * @param {Object} [options.input] - Actor task input object.
      * @param {Number} [options.timeout] - Timeout for the act run in seconds. Zero value means there is no timeout.
      * @param {Number} [options.memory] - Amount of memory allocated for the act run, in megabytes.
@@ -294,12 +292,19 @@ export default class Tasks extends Resource {
     }
 
     /**
-     * Gets list of webhooks for given actor task.
+     * Gets the list of webhooks of a specific actor task.
+     * The response is a JSON with the list of objects where each object contains basic information about a single webhook.
+     * The endpoint supports pagination using the limit and offset options and it will not return more than 1000 records.
+     * By default, the records are sorted by the createdAt field in ascending order,
+     * to sort the records in descending order, use the `desc: true` option.
+     *
+     *For more details see
+     *  (get list of webhooks endpoint)[https://docs.apify.com/api/v2#/reference/actor-tasks/webhook-collection/get-list-of-webhooks]
      *
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Unique task ID
+     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
@@ -332,12 +337,14 @@ export default class Tasks extends Resource {
     }
 
     /**
-     * Gets the actor task input.
+     * Returns the input of a given task.
+     *
+     * For more details see (get task input endpoint)[https://docs.apify.com/api/v2#/reference/actor-tasks/task-input-object/get-task-input]
      *
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Unique task ID
+     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
      * @returns {Object}
      */
     async getInput(options = {}) {
@@ -357,12 +364,16 @@ export default class Tasks extends Resource {
     }
 
     /**
-     * Updates the actor task input.
+     * Updates the input of a task using values specified by an object passed as `options.input`.
+     * If the object does not define a specific property, its value is not updated.
+     * The response is the full task input as returned by the `client.tasks.getTask`.
+     *
+     * For more details see (update task input endpoint)[https://docs.apify.com/api/v2#/reference/actor-tasks/task-input-object/update-task-input]
      *
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Unique task ID
+     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
      * @param {Object} options.input - Input object.
      * @returns {Object}
      */
