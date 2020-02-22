@@ -5,38 +5,11 @@ import Resource from './resource';
  * Webhook dispatches
  * @memberOf ApifyClient
  * @description
- * ### Basic usage
- * Every method can be used as either promise or with callback. If your Node version supports await/async then you can await promise result.
- * ```javascript
- * const ApifyClient = require('apify-client');
  *
- * const apifyClient = new ApifyClient({
- *  userId: 'jklnDMNKLekk',
- *  token: 'SNjkeiuoeD443lpod68dk',
- * });
+ * This class handles API endpoints to get webhook dispatches.
  *
- * // Awaited promise
- * try {
- *      const dispatchesList = await apifyClient.webhookDispatches.listWebhookDispatches({});
- *      // Do something with the list ...
- * } catch (err) {
- *      // Do something with error ...
- * }
+ * For more information see the [Webhook dispatches endpoint](https://docs.apify.com/api/v2#/reference/webhook-dispatches).
  *
- * // Promise
- * apifyClient.webhookDispatches.listWebhookDispatches({})
- * .then((webhooksList) => {
- *      // Do something with the list ...
- * })
- * .catch((err) => {
- *      // Do something with error ...
- * });
- *
- * // Callback
- * apifyClient.webhookDispatches.listWebhookDispatches({}, (err, webhooksList) => {
- *      // Do something with error or list ...
- * });
- * ```
  * @namespace webhookDispatches
  */
 
@@ -46,11 +19,17 @@ export default class WebhookDispatches extends Resource {
     }
 
     /**
-     * Gets list of webhook dispatches.
+     * Gets the list of webhook dispatches that the user have.
+     *
      * @description By default, the objects are sorted by the startedAt field in ascending order,
      * therefore you can use pagination to incrementally fetch all dispatches.
      * To sort them in descending order, use desc: `true` parameter.
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
+     *
+     * For more information see the
+     * [get list of webhook dispatches endpoint]
+     * (https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatches-collection/get-list-of-webhook-dispatches).
+     *
      * @memberof ApifyClient.webhookDispatches
      * @instance
      * @param {Object} options
@@ -83,7 +62,11 @@ export default class WebhookDispatches extends Resource {
     }
 
     /**
-     * Gets webhook dispatch.
+     * Gets webhook dispatch object with all details.
+     *
+     * For more information see the
+     * [get webhook dispatch endpoint](https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatch-object/get-webhook-dispatch).
+     *
      * @memberof ApifyClient.webhookDispatches
      * @instance
      * @param {Object} options
