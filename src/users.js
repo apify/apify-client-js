@@ -4,6 +4,10 @@ import Resource from './resource';
 
 /**
  * Users
+ * The API endpoints described in this section return information about user accounts.
+ *
+ * For more information see the [Users endpoint](https://docs.apify.com/api/v2#/reference/users).
+ *
  * @memberOf ApifyClient
  * @namespace users
  */
@@ -15,6 +19,8 @@ export default class User extends Resource {
 
     /**
      * Returns private and public information about user account.
+     *
+     * For more information see [get user endpoint](https://docs.apify.com/api/v2#/reference/users).
      *
      * @memberof ApifyClient.users
      * @instance
