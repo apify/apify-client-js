@@ -5,38 +5,11 @@ import Resource from './resource';
  * Webhooks
  * @memberOf ApifyClient
  * @description
- * ### Basic usage
- * Every method can be used as either promise or with callback. If your Node version supports await/async then you can await promise result.
- * ```javascript
- * const ApifyClient = require('apify-client');
+ * Webhooks provide an easy and reliable way to configure the Apify platform to carry out an action
+ * (e.g. a HTTP request to another service) when a certain system event occurs.
  *
- * const apifyClient = new ApifyClient({
- *  userId: 'jklnDMNKLekk',
- *  token: 'SNjkeiuoeD443lpod68dk',
- * });
+ * For more information see the [Webhooks endpoint](https://docs.apify.com/api/v2#/reference/webhooks).
  *
- * // Awaited promise
- * try {
- *      const webhooks = await apifyClient.webhooks.listWebhooks({});
- *      // Do something with list ...
- * } catch (err) {
- *      // Do something with error ...
- * }
- *
- * // Promise
- * apifyClient.webhooks.listWebhooks({})
- * .then((webhooksList) => {
- *      // Do something with list ...
- * })
- * .catch((err) => {
- *      // Do something with error ...
- * });
- *
- * // Callback
- * apifyClient.webhooks.listWebhooks({}, (err, webhooksList) => {
- *      // Do something with error or list ...
- * });
- * ```
  * @namespace webhooks
  */
 
@@ -46,7 +19,14 @@ export default class Webhooks extends Resource {
     }
 
     /**
-     * Creates new webhook.
+     * Creates a new webhook with settings provided by the webhook object passed as `options.webhook`.
+     * The response is the created webhook object.
+     * To make sure that the same webhook is not created twice, use the idempotencyKey parameter.
+     * Multiple calls to create webhook with the same idempotency key will only create the webhook with the first call a
+     * nd return the existing webhook on subsequent calls. Idempotency keys must be unique,
+     * so use a UUID or another random string with enough entropy.
+     *
+     * For more information see [create webhook endpoint](https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/create-webhook).
      *
      * @memberof ApifyClient.webhooks
      * @instance
@@ -74,6 +54,9 @@ export default class Webhooks extends Resource {
      * @description By default, the objects are sorted by the createdAt field in ascending order,
      * therefore you can use pagination to incrementally fetch all webhooks.
      * To sort them in descending order, use desc: `true` parameter.
+     *
+     * For more information see [get list of webhooks endpoint](https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/create-webhook).
+     *
      * @memberof ApifyClient.webhooks
      * @instance
      * @param {Object} options
@@ -106,7 +89,10 @@ export default class Webhooks extends Resource {
     }
 
     /**
-     * Gets webhook object.
+     * Gets webhook object with all details.
+     *
+     * For more information see the [get webhook endpoint](https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/get-webhook).
+     *
      * @memberof ApifyClient.webhooks
      * @instance
      * @param {Object} options
@@ -132,7 +118,12 @@ export default class Webhooks extends Resource {
     }
 
     /**
-     * Updates webhook.
+     * Updates a webhook using values specified by a webhook object passed as `options.webhook`.
+     * If the object does not define a specific property,
+     * its value will not be updated.The response is the full webhook object as returned by the Get webhook endpoint.
+     *
+     * For more information see the [update webhook endpoint](https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/update-webhook).
+     *
      * @memberof ApifyClient.webhooks
      * @instance
      * @param {Object} options
@@ -143,6 +134,7 @@ export default class Webhooks extends Resource {
      */
     async updateWebhook(options = {}) {
         const { webhookId, webhook } = options;
+        // TODO: Consistency with actor and task endpoint, they support the ID in the update body and also as a separate options
 
         checkParamOrThrow(webhookId, 'webhookId', 'String');
         checkParamOrThrow(webhook, 'webhook', 'Object');
@@ -158,6 +150,8 @@ export default class Webhooks extends Resource {
 
     /**
      * Deletes webhook.
+     *
+     * For more information see the [delete webhook endpoint](https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/delete-webhook).
      *
      * @memberof ApifyClient.webhooks
      * @instance
