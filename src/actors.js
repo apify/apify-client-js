@@ -1,4 +1,5 @@
 import omit from 'lodash/omit';
+import isUndefined from 'lodash/isUndefined';
 import log from 'apify-shared/log';
 import {
     checkParamOrThrow,
@@ -332,7 +333,8 @@ export default class Actors extends Resource {
             json: false,
         };
 
-        if (contentType) endpointOptions.headers = { 'content-type': contentType };
+        // To remove the content type with the null property to suite the integration tests needs.
+        if (!isUndefined(contentType)) endpointOptions.headers = { 'content-type': contentType };
 
         if (body) {
             checkParamOrThrow(body, 'body', 'Buffer | String');
