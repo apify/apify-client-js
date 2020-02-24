@@ -34,6 +34,7 @@ describe('Actor methods', () => {
             limit: 5,
             offset: 3,
             desc: true,
+            my: true,
         };
 
         const res = await client.acts.listActs(opts);

@@ -49,20 +49,23 @@ export default class Actors extends Resource {
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
+     * @param {Boolean} [options.my] - If `true` then the returned list only contains actors owned by the user.
      * @returns {Promise<PaginationList>}
      */
     async listActors(options = {}) {
-        const { offset, limit, desc } = options;
+        const { offset, limit, desc, my } = options;
 
         checkParamOrThrow(limit, 'limit', 'Maybe Number');
         checkParamOrThrow(offset, 'offset', 'Maybe Number');
         checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
+        checkParamOrThrow(my, 'my', 'Maybe Boolean');
 
         const query = {};
 
         if (limit) query.limit = limit;
         if (offset) query.offset = offset;
         if (desc) query.desc = 1;
+        if (my) query.my = 1;
 
         const endpointOptions = {
             url: '',
