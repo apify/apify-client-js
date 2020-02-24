@@ -16,8 +16,8 @@ jobs:
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v1
 
-            - uses: ./.github/actions/test.yml
-            - uses: ./.github/actions/build-docs.yml
+            - uses: ./.github/actions/test
+            - uses: ./.github/actions/build-docs
               with:
                   node-version: ${{ matrix.node-version }}
               env:
