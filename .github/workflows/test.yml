@@ -1,4 +1,7 @@
 name: Build&Test
+
+on: pull_request
+
 jobs:
     build:
 

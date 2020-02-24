@@ -1,4 +1,6 @@
 name: Build docs
+
+on: pull_request
 jobs:
     build:
 
