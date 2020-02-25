@@ -343,7 +343,7 @@ export default class Datasets extends Resource {
             const response = await this._call(options, endpointOptions);
             return parseDatasetItemsResponse(response, disableBodyParser);
         } catch (err) {
-            catchNotFoundOrThrow(err);
+            return catchNotFoundOrThrow(err);
         }
     }
 
