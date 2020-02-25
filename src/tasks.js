@@ -108,7 +108,7 @@ export default class Tasks extends Resource {
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
+     * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      * @param {Object} options.task
      * @param callback
      * @returns {Task}
@@ -140,7 +140,7 @@ export default class Tasks extends Resource {
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
+     * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      */
     async deleteTask(options = {}) {
         const { taskId } = options;
@@ -166,7 +166,7 @@ export default class Tasks extends Resource {
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
+     * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      * @returns {Task}
      */
     async getTask(options = {}) {
@@ -204,7 +204,7 @@ export default class Tasks extends Resource {
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
+     * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
@@ -243,7 +243,7 @@ export default class Tasks extends Resource {
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
+     * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for task to finish. Maximum value is 120s.
                                                  If task doesn't finish in time then task run in RUNNING state is returned.
      //TODO: In docs are 300s why the waitFor max value does respect same max
@@ -304,7 +304,7 @@ export default class Tasks extends Resource {
      * @memberof ApifyClient.acts
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
+     * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
@@ -344,7 +344,7 @@ export default class Tasks extends Resource {
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
+     * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      * @returns {Object}
      */
     async getInput(options = {}) {
@@ -373,7 +373,7 @@ export default class Tasks extends Resource {
      * @memberof ApifyClient.tasks
      * @instance
      * @param {Object} options
-     * @param {String} options.taskId - Task ID or a tilde-separated owner's username and task's name.
+     * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      * @param {Object} options.input - Input object.
      * @returns {Object}
      */
