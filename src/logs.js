@@ -8,7 +8,7 @@ import Resource from './resource';
  *
  * Note that the endpoints do not require the authentication token, the calls are authenticated using a hard-to-guess ID of the actor build or run.
  *
- * For more details see the (Logs endpoint)[https://docs.apify.com/api/v2#/reference/logs]
+ * For more details see the [Logs endpoint](https://docs.apify.com/api/v2#/reference/logs)
  *
  * @memberOf ApifyClient
  * @namespace logs
@@ -22,10 +22,9 @@ export default class Log extends Resource {
      * Returns the log text.
      * Note that it does not support streaming.
      *
-     * For more details see  (get log endpoint)[https://docs.apify.com/api/v2#/reference/logs/log/get-log]
+     * For more details see  [get log endpoint](https://docs.apify.com/api/v2#/reference/logs/log/get-log)
      *
      * @memberof ApifyClient.logs
-     * @instance
      * @param {Object} options
      * @param {String} options.logId - ID of the log which is either ID of the act build or ID of the act run.
      * @returns {Promise.<string>|null}

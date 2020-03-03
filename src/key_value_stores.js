@@ -14,7 +14,7 @@ import Resource from './resource';
  * Note that some of the endpoints do not require the authentication token,
  * the calls are authenticated using a hard-to-guess ID of the key-value store.
  *
- * For more details see (Key-value store endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores]
+ * For more details see [Key-value store endpoint](https://docs.apify.com/api/v2#/reference/key-value-stores)
  *
  * @namespace keyValueStores
  */
@@ -31,10 +31,9 @@ export default class KeyValueStores extends Resource {
      * If there is another store with the same name, the endpoint does not create a new one and returns the existing object instead.
      *
      * For more details see
-     * (create key-value store endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/create-key-value-store]
+     * [create key-value store endpoint](https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/create-key-value-store)
      *
      * @memberof ApifyClient.keyValueStores
-     * @instance
      * @param {Object} options
      * @param {String} options.storeName - Custom unique name to easily identify the store in the future.
      * @returns {KeyValueStore}
@@ -67,10 +66,9 @@ export default class KeyValueStores extends Resource {
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      *
      * For more details see
-     *(get list of key-value stores endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/get-list-of-key-value-stores]
+     *[get list of key-value stores endpoint](https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/get-list-of-key-value-stores)
      *
      * @memberof ApifyClient.keyValueStores
-     * @instance
      * @param {Object} options
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
@@ -107,10 +105,9 @@ export default class KeyValueStores extends Resource {
      * Gets an object that contains all the details about a specific key-value store.
      *
      * For more details see
-     * (get key-value store endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store]
+     * [get key-value store endpoint](https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store)
      *
      * @memberof ApifyClient.keyValueStores
-     * @instance
      * @param {Object} options
      * @param {String} options.storeId - Key-value store ID or username~store-name.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
@@ -137,9 +134,9 @@ export default class KeyValueStores extends Resource {
 
     /**
      * Updates key-value store.
-     *
+     * For more details see
+     * [update key-value store endpoint](https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/update-store)
      * @memberof ApifyClient.stores
-     * @instance
      * @param {Object} options
      * @param options.token
      * @param {String} options.storeId - Key-value store ID or username~store-name.
@@ -167,10 +164,9 @@ export default class KeyValueStores extends Resource {
      * Deletes key-value store.
      *
      * For more details see
-     * (delete key-value store endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store]
+     * [delete key-value store endpoint](https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store)
      *
      * @memberof ApifyClient.keyValueStores
-     * @instance
      * @param {Object} options
      * @param {String} options.storeId - Key-value store ID or username~store-name.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
@@ -194,10 +190,9 @@ export default class KeyValueStores extends Resource {
     /**
      * Gets value stored in the key-value store under the given key.
      *
-     * For more details see (get record endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record]
+     * For more details see [get record endpoint](https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record)
      *
      * @memberof ApifyClient.keyValueStores
-     * @instance
      * @param {Object} options
      * @param {String} options.storeId - Key-value store ID or username~store-name.
      * @param {String} options.key - Key of the record
@@ -250,10 +245,9 @@ export default class KeyValueStores extends Resource {
      * Stores a value under a specific key to the key-value store.
      * The value is passed as the `body` option and it is stored with a MIME content type defined by the `contentType` option.
      *
-     * For more details see (put record endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/record/put-record]
+     * For more details see [put record endpoint](https://docs.apify.com/api/v2#/reference/key-value-stores/record/put-record)
      *
      * @memberof ApifyClient.keyValueStores
-     * @instance
      * @param {Object} options
      * @param {String} options.storeId - Key-value store ID or username~store-name.
      * @param {String} options.key - Key of the record
@@ -299,10 +293,9 @@ export default class KeyValueStores extends Resource {
     /**
      * Removes a record specified by a key from the key-value store.
      *
-     * For more details see (delete record endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/record/delete-record]
+     * For more details see [delete record endpoint](https://docs.apify.com/api/v2#/reference/key-value-stores/record/delete-record)
      *
      * @memberof ApifyClient.keyValueStores
-     * @instance
      * @param {Object} options
      * @param {String} options.storeId - Key-value store ID or username~store-name.
      * @param {String} options.key - Key of the record
@@ -329,10 +322,9 @@ export default class KeyValueStores extends Resource {
      * This endpoint is paginated using exclusiveStartKey and limit parameters -
      * see [Pagination](https://docs.apify.com/api/v2#/introduction/response-structure) for more details.
      *
-     * For more details see (get list of keys endpoint)[https://docs.apify.com/api/v2#/reference/key-value-stores/key-collection/get-list-of-keys]
+     * For more details see [get list of keys endpoint](https://docs.apify.com/api/v2#/reference/key-value-stores/key-collection/get-list-of-keys)
      *
      * @memberof ApifyClient.keyValueStores
-     * @instance
      * @param {Object} options
      * @param {String} options.storeId - Key-value store ID or username~store-name.
      * @param {String} [options.exclusiveStartKey] - All keys up to this one (including) are skipped from the result.

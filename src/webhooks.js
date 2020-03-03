@@ -29,7 +29,6 @@ export default class Webhooks extends Resource {
      * For more information see [create webhook endpoint](https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/create-webhook).
      *
      * @memberof ApifyClient.webhooks
-     * @instance
      * @param {Object} options
      * @param options.webhook - Webhook
      * @returns {Webhook}
@@ -58,7 +57,6 @@ export default class Webhooks extends Resource {
      * For more information see [get list of webhooks endpoint](https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/create-webhook).
      *
      * @memberof ApifyClient.webhooks
-     * @instance
      * @param {Object} options
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
@@ -94,7 +92,6 @@ export default class Webhooks extends Resource {
      * For more information see the [get webhook endpoint](https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/get-webhook).
      *
      * @memberof ApifyClient.webhooks
-     * @instance
      * @param {Object} options
      * @param options.webhookId - Webhook ID
      * @returns {Webhook}
@@ -125,7 +122,6 @@ export default class Webhooks extends Resource {
      * For more information see the [update webhook endpoint](https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/update-webhook).
      *
      * @memberof ApifyClient.webhooks
-     * @instance
      * @param {Object} options
      * @param options.token
      * @param options.webhookId - Webhook ID
@@ -154,7 +150,6 @@ export default class Webhooks extends Resource {
      * For more information see the [delete webhook endpoint](https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/delete-webhook).
      *
      * @memberof ApifyClient.webhooks
-     * @instance
      * @param {Object} options
      * @param options.webhookId - Webhook ID
      * @returns {}
@@ -177,7 +172,6 @@ export default class Webhooks extends Resource {
      * Gets list dispatches for webhook.
      * @description By default, the objects are sorted by the createdAt.
      * @memberof ApifyClient.webhooks
-     * @instance
      * @param {Object} options
      * @param options.webhookId - Webhook ID
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.

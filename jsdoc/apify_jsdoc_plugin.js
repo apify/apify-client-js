@@ -12,13 +12,6 @@ const APIFY_GENERIC_PARAMS = {
             names: ['String'],
         },
     },
-    callback: {
-        optional: true,
-        description: '<p>Callback function</p>',
-        type: {
-            names: ['function'],
-        },
-    },
 };
 
 exports.handlers = {

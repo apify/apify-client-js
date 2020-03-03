@@ -39,7 +39,6 @@ export default class Tasks extends Resource {
      * For more information see [get list of tasks endpoint](https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection/get-list-of-tasks).
      *
      * @memberof ApifyClient.tasks
-     * @instance
      * @param {Object} options
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
@@ -76,7 +75,6 @@ export default class Tasks extends Resource {
      * For more information see [create task endpoint](https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection/create-task).
      *
      * @memberof ApifyClient.tasks
-     * @instance
      * @param {Object} options
      * @param {Object} options.task Object containing configuration of the task
      * @returns {Task}
@@ -106,7 +104,6 @@ export default class Tasks extends Resource {
      * For more information see [update task endpoint](https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/update-task).
      *
      * @memberof ApifyClient.tasks
-     * @instance
      * @param {Object} options
      * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      * @param {Object} options.task
@@ -138,7 +135,6 @@ export default class Tasks extends Resource {
      * For more information see [delete task endpoint](https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/delete-task).
      *
      * @memberof ApifyClient.tasks
-     * @instance
      * @param {Object} options
      * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      */
@@ -164,7 +160,6 @@ export default class Tasks extends Resource {
      * For more information see [get task endpoint](https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/get-task).
      *
      * @memberof ApifyClient.tasks
-     * @instance
      * @param {Object} options
      * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      * @returns {Task}
@@ -202,7 +197,6 @@ export default class Tasks extends Resource {
      * [get list of task runs endpoint](https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/get-list-of-task-runs).
      *
      * @memberof ApifyClient.tasks
-     * @instance
      * @param {Object} options
      * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
@@ -241,7 +235,6 @@ export default class Tasks extends Resource {
      * For more details see (run task endpoint)[https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task]
      *
      * @memberof ApifyClient.tasks
-     * @instance
      * @param {Object} options
      * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for task to finish. Maximum value is 120s.
@@ -302,7 +295,6 @@ export default class Tasks extends Resource {
      *  (get list of webhooks endpoint)[https://docs.apify.com/api/v2#/reference/actor-tasks/webhook-collection/get-list-of-webhooks]
      *
      * @memberof ApifyClient.acts
-     * @instance
      * @param {Object} options
      * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
@@ -342,7 +334,6 @@ export default class Tasks extends Resource {
      * For more details see (get task input endpoint)[https://docs.apify.com/api/v2#/reference/actor-tasks/task-input-object/get-task-input]
      *
      * @memberof ApifyClient.tasks
-     * @instance
      * @param {Object} options
      * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      * @returns {Object}
@@ -371,7 +362,6 @@ export default class Tasks extends Resource {
      * For more details see (update task input endpoint)[https://docs.apify.com/api/v2#/reference/actor-tasks/task-input-object/update-task-input]
      *
      * @memberof ApifyClient.tasks
-     * @instance
      * @param {Object} options
      * @param {String} options.taskId - Task ID or a slash-separated owner's username and task's name.
      * @param {Object} options.input - Input object.

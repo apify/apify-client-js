@@ -23,7 +23,6 @@ export default class User extends Resource {
      * For more information see [get user endpoint](https://docs.apify.com/api/v2#/reference/users).
      *
      * @memberof ApifyClient.users
-     * @instance
      * @param {Object} options
      * @param {String} [options.userId = 'me'] - Desired user ID or username. By default it is `'me'`,
      *                                           which causes the function to return information about the current user.

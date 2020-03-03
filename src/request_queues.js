@@ -27,7 +27,7 @@ export const REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS = 9;
  * Request queue is a storage for a queue of HTTP URLs to crawl,
  * which is typically used for deep crawling of websites where you start with several URLs and then recursively follow links to other pages.
  * The storage supports both breadth-first and depth-first crawling orders.
- * For more information, see the (Request queue documentation)[https://docs.apify.com/storage/request-queue].
+ * For more information, see the [Request queue documentation](https://docs.apify.com/storage/request-queue).
  *
  * Note that some of the endpoints do not require the authentication token, the calls are authenticated using the hard-to-guess ID of the queue.
  *
@@ -55,7 +55,6 @@ export default class RequestQueues extends Resource {
      * [get request queues endpoint](https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/create-request-queue).
      *
      * @memberof ApifyClient.requestQueues
-     * @instance
      * @param {Object} options
      * @param options.token
      * @param {String} options.queueName - Custom unique name to easily identify the queue in the future.
@@ -92,7 +91,6 @@ export default class RequestQueues extends Resource {
      * [get list of request queues endpoint](https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/get-list-of-request-queues).
      *
      * @memberof ApifyClient.requestQueues
-     * @instance
      * @param {Object} options
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
@@ -131,7 +129,6 @@ export default class RequestQueues extends Resource {
      * For more information see [get request queue endpoint](https://docs.apify.com/api/v2#/reference/request-queues/queue/get-request-queue).
      *
      * @memberof ApifyClient.requestQueues
-     * @instance
      * @param {Object} options
      * @param {String} options.queueId - Queue ID or username~queue-name.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
@@ -160,7 +157,6 @@ export default class RequestQueues extends Resource {
      * Updates request queue.
      *
      * @memberof ApifyClient.queues
-     * @instance
      * @param {Object} options
      * @param options.token
      * @param {String} options.queueId - Queue ID or username~queue-name.
@@ -190,7 +186,6 @@ export default class RequestQueues extends Resource {
      * For more information see [delete request queue endpoint](https://docs.apify.com/api/v2#/reference/request-queues/queue/delete-request-queue).
      *
      * @memberof ApifyClient.requestQueues
-     * @instance
      * @param {Object} options
      * @param {String} options.queueId - Queue ID or username~queue-name.
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
@@ -220,7 +215,6 @@ export default class RequestQueues extends Resource {
      * For more information see [add request endpoint](https://docs.apify.com/api/v2#/reference/request-queues/request-collection/add-request).
      *
      * @memberof ApifyClient.requestQueues
-     * @instance
      * @param {Object} options
      * @param {String} options.queueId - Queue ID or username~queue-name.
      * @param {Object} options.request - Request object
@@ -261,7 +255,6 @@ export default class RequestQueues extends Resource {
      * For more information see [get request endpoint](https://docs.apify.com/api/v2#/reference/request-queues/request/get-request).
      *
      * @memberof ApifyClient.requestQueues
-     * @instance
      * @param {Object} options
      * @param {String} options.queueId - Queue ID or username~queue-name.
      * @param {String} options.requestId - Unique request ID
@@ -296,7 +289,6 @@ export default class RequestQueues extends Resource {
      * For more information see [delete request endpoint](https://docs.apify.com/api/v2#/reference/request-queues/request/delete-request).
      *
      * @memberof ApifyClient.requestQueues
-     * @instance
      * @param {Object} options
      * @param {String} options.queueId - Queue ID or username~queue-name.
      * @param {String} options.requestId - Unique request ID
@@ -335,7 +327,6 @@ export default class RequestQueues extends Resource {
      * For more information see [delete request endpoint](https://docs.apify.com/api/v2#/reference/request-queues/request/update-request).
      *
      * @memberof ApifyClient.requestQueues
-     * @instance
      * @param {Object} options
      * @param {String} options.queueId - Queue ID or username~queue-name.
      * @param {Object} options.request - Request object
@@ -384,7 +375,6 @@ export default class RequestQueues extends Resource {
      * For more information see [get head](https://docs.apify.com/api/v2#/reference/request-queues/queue-head/get-head).
      *
      * @memberof ApifyClient.requestQueues
-     * @instance
      * @param {Object} options
      * @param {String} options.queueId - Queue ID or username~queue-name.
      * @param {Number} options.limit - Maximum number of the items to be returned.

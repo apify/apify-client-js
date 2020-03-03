@@ -45,7 +45,6 @@ export default class Actors extends Resource {
      * For more information see the [list actor endpoint](https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-actors).
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
@@ -93,7 +92,6 @@ export default class Actors extends Resource {
      *
      * For more information see the [create actor endpoint](https://docs.apify.com/api/v2#/reference/actors/actor-collection/create-actor).
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {Object} options.actor
      * @returns {Actor}
@@ -128,10 +126,9 @@ export default class Actors extends Resource {
      * The response is the full actor object as returned by the `client.actors.getActor()`.
      * You can pass the id of actor either separately in `options.actorId` or in the actor object itself under the `id` key.
      *
-     * For more details see (update actor endpoint)[https://docs.apify.com/api/v2#/reference/actors/actor-object/update-actor]
+     * For more details see [update actor endpoint](https://docs.apify.com/api/v2#/reference/actors/actor-object/update-actor)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {Object} options.actor - Updated actor object.
@@ -167,10 +164,9 @@ export default class Actors extends Resource {
     /**
      * Deletes actor.
      *
-     * For more details see (delete actor endpoint)[https://docs.apify.com/api/v2#/reference/actors/actor-object/delete-actor]
+     * For more details see [delete actor endpoint](https://docs.apify.com/api/v2#/reference/actors/actor-object/delete-actor)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      */
@@ -202,9 +198,8 @@ export default class Actors extends Resource {
     /**
      * Gets an object that contains all the details about a specific actor.
      *
-     * For more details see (get actor endpoint)[https://docs.apify.com/api/v2#/reference/actors/actor-object/get-actor]
+     * For more details see [get actor endpoint](https://docs.apify.com/api/v2#/reference/actors/actor-object/get-actor)
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @returns {Actor}
@@ -247,10 +242,9 @@ export default class Actors extends Resource {
      *
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      *
-     * For more details see (get list of runs endpoint)[https://docs.apify.com/api/v2#/reference/actors/run-collection/get-list-of-runs]
+     * For more details see [get list of runs endpoint](https://docs.apify.com/api/v2#/reference/actors/run-collection/get-list-of-runs)
 
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
@@ -287,10 +281,9 @@ export default class Actors extends Resource {
     /**
      * Runs a specific actor and returns its output.
      *
-     * For more details see (run actor endpoint)[https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor]
+     * For more details see [run actor endpoint](https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String|Buffer} [options.body] - Actor input, passed as HTTP POST payload
@@ -363,10 +356,9 @@ export default class Actors extends Resource {
      *
      * This endpoints do not require the authentication token, the calls are authenticated using a hard-to-guess ID of the run.
      *
-     * For more details see (get run endpoint)[https://docs.apify.com/api/v2#/reference/actors/run-object/get-run]
+     * For more details see [get run endpoint](https://docs.apify.com/api/v2#/reference/actors/run-object/get-run)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.runId - Unique run ID
@@ -402,10 +394,9 @@ export default class Actors extends Resource {
      * Aborts an actor run and returns an object that contains all the details about the run.
      * Only runs that are starting or running are aborted. For runs with status FINISHED, FAILED, ABORTING and TIMED-OUT this call does nothing.
      *
-     *  For more details see (abort run endpoint)[https://docs.apify.com/api/v2#/reference/actors/abort-run/abort-run]
+     *  For more details see [abort run endpoint](https://docs.apify.com/api/v2#/reference/actors/abort-run/abort-run)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.runId - Unique run ID
@@ -437,10 +428,9 @@ export default class Actors extends Resource {
      * the system stops the Docker container corresponding to the actor run and starts a new container using a different Docker image.
      * All the default storages are preserved and the new input is stored under the INPUT-METAMORPH-1 key in the same default key-value store.
      *
-     * For more details see (metamorph run endpoint)[https://docs.apify.com/api/v2#/reference/actors/metamorph-run/metamorph-run]
+     * For more details see [metamorph run endpoint](https://docs.apify.com/api/v2#/reference/actors/metamorph-run/metamorph-run)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.runId - ID a an actor run to metamorph.
@@ -493,10 +483,9 @@ export default class Actors extends Resource {
      * Run status will be updated to RUNNING and its container will be restarted with the same storages
      * (the same behaviour as when the run gets migrated to the new server).
      *
-     * For more details see (ressurect run endpoint)[https://docs.apify.com/api/v2#/reference/actors/resurrect-run/resurrect-run]
+     * For more details see [ressurect run endpoint](https://docs.apify.com/api/v2#/reference/actors/resurrect-run/resurrect-run)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.runId - Unique run ID
@@ -529,10 +518,9 @@ export default class Actors extends Resource {
      *
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      *
-     * For more details see (get list of builds endpoint)[https://docs.apify.com/api/v2#/reference/actors/build-collection/get-list-of-builds]
+     * For more details see [get list of builds endpoint](https://docs.apify.com/api/v2#/reference/actors/build-collection/get-list-of-builds)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
@@ -569,10 +557,9 @@ export default class Actors extends Resource {
     /**
      * Builds given actor and returns object of that build.
      *
-     * For more details see (build actor endpoint)[https://docs.apify.com/api/v2#/reference/actors/build-collection/build-actor]
+     * For more details see [build actor endpoint](https://docs.apify.com/api/v2#/reference/actors/build-collection/build-actor)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.version - Version of the actor to build.
@@ -632,10 +619,9 @@ export default class Actors extends Resource {
      * By passing the optional waitForFinish=1 parameter the API endpoint will synchronously wait for the build to finish.
      * This is useful to avoid periodic polling when waiting for an actor build to finish.
      *
-     * For more details see (get build endpoint)[https://docs.apify.com/api/v2#/reference/actors/build-object/get-build]
+     * For more details see [get build endpoint](https://docs.apify.com/api/v2#/reference/actors/build-object/get-build)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.buildId - Unique build ID
@@ -675,10 +661,9 @@ export default class Actors extends Resource {
      * Only builds that are starting or running are aborted.
      * For builds with status FINISHED, FAILED, ABORTING and TIMED-OUT this call does nothing.
      *
-     * For more details see (abort build endpoint)[https://docs.apify.com/api/v2#/reference/actors/abort-build/abort-build]
+     * For more details see [abort build endpoint](https://docs.apify.com/api/v2#/reference/actors/abort-build/abort-build)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.buildId - Unique build ID
@@ -706,10 +691,9 @@ export default class Actors extends Resource {
      * Gets the list of versions of a specific actor.
      * The response is a JSON with the list of Version objects where each contains basic information about a single version.
      *
-     * For more details see (get list of version endpoint)[https://docs.apify.com/api/v2#/reference/actors/version-collection/get-list-of-versions]
+     * For more details see [get list of version endpoint](https://docs.apify.com/api/v2#/reference/actors/version-collection/get-list-of-versions)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @return {PaginationList}
@@ -743,10 +727,9 @@ export default class Actors extends Resource {
      * Creates an actor version using values specified by a Version object.
      * The response is the Version object as returned by the Get version endpoint.
      *
-     * For more details see (create version endpoint)[https://docs.apify.com/api/v2#/reference/actors/version-collection/create-version]
+     * For more details see [create version endpoint](https://docs.apify.com/api/v2#/reference/actors/version-collection/create-version)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {Object} options.actVersion - Actor version
@@ -783,10 +766,9 @@ export default class Actors extends Resource {
     /**
      * Gets a Version object that contains all the details about a specific version of an actor.
      *
-     * For more details see (get version endpoint)[https://docs.apify.com/api/v2#/reference/actors/version-object/get-version]
+     * For more details see [get version endpoint](https://docs.apify.com/api/v2#/reference/actors/version-object/get-version)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.versionNumber - Version number of actor version
@@ -827,10 +809,9 @@ export default class Actors extends Resource {
     /**
      * Updates an actor version.
      *
-     * For more details see (update version endpoint)[https://docs.apify.com/api/v2#/reference/actors/version-object/update-version]
+     * For more details see [update version endpoint](https://docs.apify.com/api/v2#/reference/actors/version-object/update-version)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.versionNumber - Version number of actor version
@@ -870,10 +851,9 @@ export default class Actors extends Resource {
     /**
      * Deletes a specific version of actor's source code.
      *
-     * For more details see (update version endpoint)[https://docs.apify.com/api/v2#/reference/actors/version-object/delete-version]
+     * For more details see [update version endpoint](https://docs.apify.com/api/v2#/reference/actors/version-object/delete-version)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {String} options.versionNumber - Version number of actor version
@@ -912,10 +892,9 @@ export default class Actors extends Resource {
      * The endpoint supports pagination using the limit and offset parameters and it will not return more than 1000 records.By default,
      * the records are sorted by the createdAt field in ascending order, to sort the records in descending order, use the desc=1 parameter.
      *
-     * For more details see (get list of webhooks endpoint)[https://docs.apify.com/api/v2#/reference/actors/webhook-collection/get-list-of-webhooks]
+     * For more details see [get list of webhooks endpoint](https://docs.apify.com/api/v2#/reference/actors/webhook-collection/get-list-of-webhooks)
      *
      * @memberof ApifyClient.actors
-     * @instance
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.

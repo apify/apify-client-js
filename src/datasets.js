@@ -21,7 +21,7 @@ export const BACKOFF_MILLIS = 200;
  * Typically it is used to store crawling results. For more information, see the [Dataset documentation](https://docs.apify.com/storage#dataset).
  * Note that some of the endpoints do not require the authentication token, the calls are authenticated using the hard-to-guess ID of the dataset.
  *
- * For more details see the (Dataset endpoint)[https://docs.apify.com/api/v2#/reference/datasets]
+ * For more details see the [Dataset endpoint](https://docs.apify.com/api/v2#/reference/datasets)
  *
  * @namespace datasets
  */
@@ -34,10 +34,9 @@ export default class Datasets extends Resource {
     /**
      * Creates dataset of given name and returns its object. If dataset with given name already exists then returns its object.
      *
-     * For more details see (create dataset endpoint)[https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/create-dataset]
+     * For more details see [create dataset endpoint](https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/create-dataset)
      *
      * @memberof ApifyClient.datasets
-     * @instance
      * @param {Object} options
      * @param {String} options.datasetName - Custom unique name to easily identify the dataset in the future.
      * @returns {Dataset}
@@ -70,10 +69,9 @@ export default class Datasets extends Resource {
      * To sort them in descending order, use `desc: true` option.
      * The endpoint supports pagination using limit and offset parameters and it will not return more than 1000 array elements.
      *
-     * For more details see (list datasets endpoint)[https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of-datasets]
+     * For more details see [list datasets endpoint](https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of-datasets)
      *
      * @memberof ApifyClient.datasets
-     * @instance
      * @param {Object} options
      * @param {Number} [options.offset=0]
      *   Number of array elements that should be skipped at the start.
@@ -113,10 +111,9 @@ export default class Datasets extends Resource {
     /**
      * Returns given dataset.
      *
-     * For more details see (get dataset endpoint)[https://docs.apify.com/api/v2#/reference/datasets/dataset/get-dataset]
+     * For more details see [get dataset endpoint](https://docs.apify.com/api/v2#/reference/datasets/dataset/get-dataset)
      *
      * @memberof ApifyClient.datasets
-     * @instance
      * @param {Object} options
      * @param {String} options.datasetId - Unique dataset ID Dataset ID or username~dataset-name;
      * // TODO: Not sure about the token
@@ -145,8 +142,9 @@ export default class Datasets extends Resource {
     /**
      * Updates dataset.
      *
+     * For more details see [update dataset endpoint](https://docs.apify.com/api/v2#/reference/datasets/dataset/update-dataset)
+     *
      * @memberof ApifyClient.datasets
-     * @instance
      * @param {Object} options
      * @param options.token
      * @param {String} options.datasetId - Unique dataset ID
@@ -172,10 +170,9 @@ export default class Datasets extends Resource {
     /**
      * Deletes given dataset.
      *
-     * For more details see (delete dataset endpoint)[https://docs.apify.com/api/v2#/reference/datasets/dataset/delete-dataset]
+     * For more details see [delete dataset endpoint](https://docs.apify.com/api/v2#/reference/datasets/dataset/delete-dataset)
      *
      * @memberof ApifyClient.datasets
-     * @instance
      * @param {Object} options
      * @param {String} options.datasetId - Unique dataset ID
      * @param {String} [options.token] - Your API token at apify.com. This parameter is required
@@ -213,10 +210,9 @@ export default class Datasets extends Resource {
      * If you specify `desc: true` query parameter,
      * the results are returned in the reverse order than they were stored (i.e. from newest to oldest items)
      *
-     * For more details see (get items endpoint)[https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items]
+     * For more details see [get items endpoint](https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items)
      *
      * @memberof ApifyClient.datasets
-     * @instance
      * @param {Object} options
      * @param {String} options.datasetId
      *   Unique dataset ID
@@ -354,10 +350,9 @@ export default class Datasets extends Resource {
      * **IMPORTANT**: The limit of request payload size for the dataset is 5 MB.
      * If the array exceeds the size, you'll need to split it into a number of smaller arrays.
      *
-     * For more details see (put items endpoint)[https://docs.apify.com/api/v2#/reference/datasets/item-collection/put-items]
+     * For more details see [put items endpoint](https://docs.apify.com/api/v2#/reference/datasets/item-collection/put-items)
      *
      * @memberof ApifyClient.datasets
-     * @instance
      * @param {Object} options
      * @param {String} options.datasetId - Unique dataset ID
      * @param {Object | Array | String} options.data - Object, Array of objects or a String. String must be a valid JSON.

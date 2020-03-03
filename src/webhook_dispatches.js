@@ -31,7 +31,6 @@ export default class WebhookDispatches extends Resource {
      * (https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatches-collection/get-list-of-webhook-dispatches).
      *
      * @memberof ApifyClient.webhookDispatches
-     * @instance
      * @param {Object} options
      * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
@@ -68,7 +67,6 @@ export default class WebhookDispatches extends Resource {
      * [get webhook dispatch endpoint](https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatch-object/get-webhook-dispatch).
      *
      * @memberof ApifyClient.webhookDispatches
-     * @instance
      * @param {Object} options
      * @param options.webhookDispatchId - Webhook dispatch ID
      * @returns {WebhookDispatch}
