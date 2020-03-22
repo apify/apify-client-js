@@ -176,19 +176,26 @@ describe('KeyValueStores methods', () => {
                 const key = 'some-key';
                 const storeId = 'some-id';
                 const body = { a: 'foo', b: ['bar1', 'bar2'] };
-                const contentType = 'application/json';
+                const contentType = 'application/json; charset=utf-8';
 
                 mockServer.setResponse({ headers: { 'content-type': contentType }, body });
 
                 const res = await client.keyValueStores.getRecord({ storeId, key, disableBodyParser: true });
-                expect(res.body).toEqual(JSON.stringify(body));
+                expect(res.body.toString()).toEqual(JSON.stringify(body));
+                expect(res.contentType).toEqual(contentType);
 
-                const browserRes = await page.evaluate(opts => client.keyValueStores.getRecord(opts), {
+                const browserRes = await page.evaluate(async (opts) => {
+                    const response = await client.keyValueStores.getRecord(opts);
+                    const utf8decoder = new TextDecoder();
+                    const decodedBody =  utf8decoder.decode(new Uint8Array(response.body));
+                    return { ...response, body: decodedBody };
+                }, {
                     storeId,
                     key,
                     disableBodyParser: true,
                 });
-                expect(browserRes).toEqual(res);
+                expect(browserRes.body).toEqual(res.body.toString());
+                expect(browserRes.contentType).toEqual(res.contentType);
             },
         );
 

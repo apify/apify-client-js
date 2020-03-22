@@ -228,7 +228,7 @@ export default class KeyValueStores extends Resource {
         const parseResponse = (response) => {
             const responseBody = response.body;
             const contentType = response.headers['content-type'];
-            const body = disableBodyParser ? isomorphicBufferToString(responseBody) : parseBody(responseBody, contentType);
+            const body = disableBodyParser ? responseBody : parseBody(responseBody, contentType);
 
             return {
                 contentType,
