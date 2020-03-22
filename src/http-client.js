@@ -89,7 +89,7 @@ export class HttpClient {
     }
 
     _getAxiosConfig(options) {
-        return {
+        const config = {
             baseURL: `${options.baseUrl}${options.basePath}`,
             url: options.url,
             method: options.method,
@@ -111,6 +111,11 @@ export class HttpClient {
             validateStatus: null,
             responseType: options.encoding === null ? 'arraybuffer' : null,
         };
+
+        if (options.headers && options.headers['content-type'] === null) {
+            delete config.headers['content-type'];
+        }
+        return config;
     }
 
     // Creates response like object in nodeJs and browser

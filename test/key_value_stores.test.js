@@ -239,6 +239,23 @@ describe('KeyValueStores methods', () => {
             expect(browserRes).toEqual(res);
         });
 
+        test('putRecord() works with buffer', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const contentType = 'text/plain';
+            const body = Buffer.from('someValue');
+
+            mockServer.setResponse({
+                body,
+                headers: {
+                    'Content-Type': contentType,
+                },
+            });
+
+            const res = await client.keyValueStores.putRecord({ storeId, key, contentType, body });
+            expect(res).toEqual(body.toString());
+        });
+
         test.skip('putRecord() uploads via signed url when gzipped buffer.length > SIGNED_URL_UPLOAD_MIN_BYTESIZE', () => {
             // TODO: I have no idea how to test this using this mock flow :(
         });

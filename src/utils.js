@@ -227,7 +227,7 @@ export const gzipRequest = async (options) => {
     if (isEmpty(options.data)) return options;
 
     options.headers['content-encoding'] = 'gzip';
-    const data = typeof options.data === 'string' ? options.data : JSON.stringify(options.data);
+    const data = (typeof options.data === 'string') || Buffer.isBuffer(options.data) ? options.data : JSON.stringify(options.data);
     options.data = await gzipPromise(data);
 
 

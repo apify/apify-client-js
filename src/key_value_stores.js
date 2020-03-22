@@ -219,6 +219,9 @@ export default class KeyValueStores extends Resource {
             gzip: true,
             resolveWithFullResponse: true,
             encoding: null,
+            headers: {
+                'content-type': null,
+            },
         };
 
         if (disableRedirect) endpointOptions.qs.disableRedirect = 1;
