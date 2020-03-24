@@ -50,7 +50,8 @@ export default class Schedules extends Resource {
      * therefore you can use pagination to incrementally fetch all schedules.
      * To sort them in descending order, use desc: `true` parameter.
      *
-     * For more information see [get list of schedules endpoint](https://docs.apify.com/api/v2#/reference/schedules/schedule-collection/create-schedule).
+     * For more information see
+     * [get list of schedules endpoint](https://docs.apify.com/api/v2#/reference/schedules/schedule-collection/create-schedule).
      *
      * @memberof ApifyClient.schedules
      * @param {Object} options
