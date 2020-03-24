@@ -32,7 +32,6 @@ describe('Log methods', () => {
         const logId = 'some-id';
 
         const res = await client.logs.getLog({ logId });
-        expect(res.id).toEqual('get-log');
         validateRequest({}, { logId });
 
         const browserRes = await page.evaluate(options => client.logs.getLog(options), { logId });
