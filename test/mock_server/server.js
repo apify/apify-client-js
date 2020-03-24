@@ -13,6 +13,7 @@ const datasetRouter = require('./routes/datasets');
 const keyValueStores = require('./routes/key_value_stores');
 const requestQueues = require('./routes/request_queues');
 const webhooks = require('./routes/webhooks');
+const schedules = require('./routes/schedules');
 const webhookDispatches = require('./routes/webhook_dispatches');
 
 const app = express();
@@ -61,6 +62,7 @@ v2Router.use('/datasets', datasetRouter);
 v2Router.use('/key-value-stores', keyValueStores);
 v2Router.use('/request-queues', requestQueues);
 v2Router.use('/webhooks', webhooks);
+v2Router.use('/schedules', schedules);
 v2Router.use('/webhook-dispatches', webhookDispatches);
 
 module.exports = mockServer;
