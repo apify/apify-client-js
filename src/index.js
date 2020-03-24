@@ -4,6 +4,7 @@ import KeyValueStores from './key_value_stores';
 import Logs from './logs';
 import Users from './users';
 import Datasets from './datasets';
+import Schedules from './schedules';
 import Webhooks from './webhooks';
 import WebhookDispatches from './webhook_dispatches';
 import RequestQueues, { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from './request_queues';
@@ -44,6 +45,7 @@ const endpointClasses = {
     requestQueues: RequestQueues,
     logs: Logs,
     users: Users,
+    schedules: Schedules,
     webhooks: Webhooks,
     webhookDispatches: WebhookDispatches,
 };
