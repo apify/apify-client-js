@@ -114,6 +114,9 @@ export class HttpClient {
 
         if (options.headers && options.headers['content-type'] === null) {
             delete config.headers['content-type'];
+            delete this.axiosInstance.defaults.headers.post['Content-Type'];
+            delete this.axiosInstance.defaults.headers.put['Content-Type'];
+            delete this.axiosInstance.defaults.headers.patch['Content-Type'];
         }
         return config;
     }

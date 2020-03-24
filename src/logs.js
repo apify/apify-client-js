@@ -38,9 +38,12 @@ export default class Log extends Resource {
         const endpointOptions = {
             url: `/${logId}`,
             method: 'GET',
+            headers: {
+                'content-type': null,
+            },
+            json: false,
         };
 
-        const response = await this._call(options, endpointOptions);
-        return parseDateFields(pluckData(response));
+        return this._call(options, endpointOptions);
     }
 }
