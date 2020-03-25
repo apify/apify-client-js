@@ -1,5 +1,5 @@
 import omit from 'lodash/omit';
-import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseBody, parseDateFields, isomorphicBufferToString } from './utils';
+import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseBody, parseDateFields } from './utils';
 import Resource from './resource';
 
 /**

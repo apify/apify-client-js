@@ -1,4 +1,4 @@
-import { checkParamOrThrow, parseDateFields, pluckData } from './utils';
+import { checkParamOrThrow } from './utils';
 import Resource from './resource';
 
 /**
