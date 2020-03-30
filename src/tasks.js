@@ -350,8 +350,7 @@ export default class Tasks extends Resource {
             method: 'GET',
         };
 
-        const response = await this._call(options, endpointOptions);
-        return parseDateFields(pluckData(response));
+        return this._call(options, endpointOptions);
     }
 
     /**
@@ -381,7 +380,6 @@ export default class Tasks extends Resource {
             body: input,
         };
 
-        const response = await this._call(options, endpointOptions);
-        return parseDateFields(pluckData(response));
+        return this._call(options, endpointOptions);
     }
 }
