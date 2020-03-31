@@ -284,6 +284,9 @@ export default class KeyValueStores extends Resource {
         const directResourceOptions = {
             url: `/${storeId}/records/${key}/direct-upload-url`,
             method: 'GET',
+            headers: {
+                'content-type': contentType,
+            },
         };
         const response = await this._call(options, directResourceOptions);
 
@@ -312,12 +315,11 @@ export default class KeyValueStores extends Resource {
         checkParamOrThrow(key, 'key', 'String');
 
         const endpointOptions = {
-            url: `/${storeId}/record/${key}`,
+            url: `/${storeId}/records/${key}`,
             method: 'DELETE',
         };
 
-        const response = await this._call(options, endpointOptions);
-        return parseDateFields(response);
+        return this._call(options, endpointOptions);
     }
 
     /**

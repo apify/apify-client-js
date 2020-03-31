@@ -311,7 +311,7 @@ describe('Task methods', () => {
         const query = {};
 
         const res = await client.tasks.getInput({ taskId, ...query });
-        expect(res.id).toEqual('get-input');
+        expect(res.data.id).toEqual('get-input');
         validateRequest(query, { taskId });
 
         const browserRes = await page.evaluate(options => client.tasks.getInput(options), { taskId, ...query });
@@ -326,7 +326,7 @@ describe('Task methods', () => {
         const query = {};
 
         const res = await client.tasks.updateInput({ taskId, input, ...query });
-        expect(res.id).toEqual('update-input');
+        expect(res.data.id).toEqual('update-input');
         validateRequest(query, { taskId }, input);
 
         const browserRes = await page.evaluate(options => client.tasks.updateInput(options), { taskId, input, ...query });

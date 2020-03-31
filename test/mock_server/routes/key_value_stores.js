@@ -10,7 +10,7 @@ const ROUTES = [
     { id: 'update-store', method: 'PUT', path: '/:storeId' },
     { id: 'get-record', method: 'GET', path: '/:storeId/records/:key', type: 'responseJsonMock' },
     { id: 'put-record', method: 'PUT', path: '/:storeId/records/:key', type: 'responseJsonMock' },
-    { id: 'delete-record', method: 'DELETE', path: '/:storeId/record/:key' },
+    { id: 'delete-record', method: 'DELETE', path: '/:storeId/records/:key' },
     { id: 'list-keys', method: 'GET', path: '/:storeId/keys' },
 
 
