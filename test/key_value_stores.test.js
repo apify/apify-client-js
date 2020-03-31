@@ -187,7 +187,7 @@ describe('KeyValueStores methods', () => {
                 const browserRes = await page.evaluate(async (opts) => {
                     const response = await client.keyValueStores.getRecord(opts);
                     const utf8decoder = new TextDecoder();
-                    const decodedBody =  utf8decoder.decode(new Uint8Array(response.body));
+                    const decodedBody = utf8decoder.decode(new Uint8Array(response.body));
                     return { ...response, body: decodedBody };
                 }, {
                     storeId,
