@@ -11,6 +11,7 @@ const {
     newApifyClientErrorFromResponse,
     retryWithExpBackoff,
     gzipRequest,
+    isNode,
 } = require('./utils');
 const { version } = require('../package.json');
 
@@ -89,15 +90,24 @@ class HttpClient {
         };
     }
 
+    _getDefaultHeaders() {
+        if (!isNode()) {
+            return {
+                'content-type': 'application/json; charset=utf-8',
+            };
+        }
+        return { 'user-agent': CLIENT_USER_AGENT,
+            'accept-encoding': 'gzip',
+            'content-type': 'application/json; charset=utf-8' };
+    }
+
     _getAxiosConfig(options) {
         const config = {
             baseURL: `${options.baseUrl}${options.basePath}`,
             url: options.url,
             method: options.method,
             headers: {
-                'user-agent': CLIENT_USER_AGENT,
-                'accept-encoding': 'gzip',
-                'content-type': 'application/json; charset=utf-8',
+                ...this._getDefaultHeaders(),
                 ...options.headers,
             },
             params: {
