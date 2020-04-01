@@ -1,22 +1,22 @@
-import Apify from 'apify';
-import * as httpClient from '../build/http-client';
-import { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from '../build/request_queues';
-import mockServer from './mock_server/server';
+const Apify = require('apify');
+const httpClient = require('../src/http-client');
+const { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } = require('../src/request_queues');
+const mockServer = require('./mock_server/server');
 
 
-export const DEFAULT_RATE_LIMIT_ERRORS = new Array(
+const DEFAULT_RATE_LIMIT_ERRORS = new Array(
     Math.max(REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, httpClient.EXP_BACKOFF_MAX_REPEATS),
 ).fill(0);
 
 
-export const newEmptyStats = () => {
+const newEmptyStats = () => {
     return {
         calls: 0,
         requests: 0,
         rateLimitErrors: [...DEFAULT_RATE_LIMIT_ERRORS],
     };
 };
-export const getInjectedPage = async (baseUrl, DEFAULT_QUERY) => {
+const getInjectedPage = async (baseUrl, DEFAULT_QUERY) => {
     const browser = await Apify.launchPuppeteer({ headless: true, args: ['--disable-web-security'] });
     const page = await browser.newPage();
     await Apify.utils.puppeteer.injectFile(page, `${__dirname}/../dist/bundle.js`);
@@ -31,17 +31,17 @@ export const getInjectedPage = async (baseUrl, DEFAULT_QUERY) => {
     }, baseUrl, DEFAULT_QUERY);
     return page;
 };
-export const cleanUpBrowser = async (page) => {
+const cleanUpBrowser = async (page) => {
     const browser = await page.browser();
     await page.close();
     return browser.close();
 };
 
-export const DEFAULT_QUERY = {
+const DEFAULT_QUERY = {
     token: 'default-token',
 };
 
-export const getExpectedQuery = (callQuery = {}) => {
+const getExpectedQuery = (callQuery = {}) => {
     const query = optsToQuery(callQuery);
     return {
         ...DEFAULT_QUERY,
@@ -64,7 +64,7 @@ function optsToQuery(params) {
         }, {});
 }
 
-export const validateRequest = (query = {}, params = {}, body = {}, headers = {}) => {
+const validateRequest = (query = {}, params = {}, body = {}, headers = {}) => {
     const request = mockServer.getLastRequest();
     const expectedQuery = getExpectedQuery(query);
     expect(request.query).toEqual(expectedQuery);
@@ -73,4 +73,13 @@ export const validateRequest = (query = {}, params = {}, body = {}, headers = {}
     Object.entries(headers).forEach(([key, value]) => {
         expect(request.headers).toHaveProperty(key, value);
     });
+};
+
+module.exports = {
+    validateRequest,
+    DEFAULT_QUERY,
+    DEFAULT_RATE_LIMIT_ERRORS,
+    cleanUpBrowser,
+    getInjectedPage,
+    newEmptyStats,
 };

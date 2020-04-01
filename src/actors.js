@@ -1,15 +1,15 @@
-import omit from 'lodash/omit';
-import isUndefined from 'lodash/isUndefined';
-import log from 'apify-shared/log';
-import {
+const omit = require('lodash/omit');
+const isUndefined = require('lodash/isUndefined');
+const log = require('apify-shared/log');
+const {
     checkParamOrThrow,
     pluckData,
     parseDateFields,
     catchNotFoundOrThrow,
     stringifyWebhooksToBase64,
     replaceSlashWithTilde,
-} from './utils';
-import Resource from './resource';
+} = require('./utils');
+const Resource = require('./resource');
 
 /**
  * Actors
@@ -26,7 +26,7 @@ import Resource from './resource';
  * @namespace actors
  */
 
-export default class Actors extends Resource {
+module.exports = class Actors extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/acts');
     }
@@ -927,4 +927,4 @@ export default class Actors extends Resource {
         const response = await this._call(options, endpointOptions);
         return parseDateFields(pluckData(response));
     }
-}
+};

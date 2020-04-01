@@ -1,8 +1,8 @@
-import { ME_USER_NAME_PLACEHOLDER } from 'apify-shared/consts';
-import ApifyClient from '../build';
+const { ME_USER_NAME_PLACEHOLDER } = require('apify-shared/consts');
+const ApifyClient = require('../src');
 
-import mockServer from './mock_server/server';
-import { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } from './_helper';
+const mockServer = require('./mock_server/server');
+const { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } = require('./_helper');
 
 describe('User methods', () => {
     let baseUrl = null;

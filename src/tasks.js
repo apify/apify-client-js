@@ -1,13 +1,13 @@
-import omit from 'lodash/omit';
-import {
+const omit = require('lodash/omit');
+const {
     checkParamOrThrow,
     pluckData,
     parseDateFields,
     catchNotFoundOrThrow,
     stringifyWebhooksToBase64,
     replaceSlashWithTilde,
-} from './utils';
-import Resource from './resource';
+} = require('./utils');
+const Resource = require('./resource');
 
 /**
  * Tasks
@@ -24,7 +24,7 @@ import Resource from './resource';
  @namespace tasks
  */
 
-export default class Tasks extends Resource {
+class Tasks extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/actor-tasks');
     }
@@ -383,3 +383,5 @@ export default class Tasks extends Resource {
         return this._call(options, endpointOptions);
     }
 }
+
+module.exports = Tasks;

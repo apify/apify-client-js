@@ -1,5 +1,5 @@
-import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } from './utils';
-import Resource from './resource';
+const { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } = require('./utils');
+const Resource = require('./resource');
 
 /**
  * Webhook dispatches
@@ -13,7 +13,7 @@ import Resource from './resource';
  * @namespace webhookDispatches
  */
 
-export default class WebhookDispatches extends Resource {
+class WebhookDispatches extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/webhook-dispatches');
     }
@@ -89,3 +89,5 @@ export default class WebhookDispatches extends Resource {
         }
     }
 }
+
+module.exports = WebhookDispatches;

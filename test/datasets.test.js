@@ -1,10 +1,10 @@
-import sinon from 'sinon';
-import * as utils from '../build/utils';
-import { parseDatasetItemsResponse } from '../build/datasets';
+const sinon = require('sinon');
+const utils = require('../src/utils');
+const { parseDatasetItemsResponse } = require('../src/datasets');
 
-import ApifyClient from '../build';
-import mockServer from './mock_server/server';
-import { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } from './_helper';
+const ApifyClient = require('../src');
+const mockServer = require('./mock_server/server');
+const { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } = require('./_helper');
 
 describe('Dataset methods', () => {
     let baseUrl = null;

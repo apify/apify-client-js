@@ -1,6 +1,6 @@
-import { ME_USER_NAME_PLACEHOLDER } from 'apify-shared/consts';
-import { checkParamOrThrow, pluckData, parseDateFields } from './utils';
-import Resource from './resource';
+const { ME_USER_NAME_PLACEHOLDER } = require('apify-shared/consts');
+const { checkParamOrThrow, pluckData, parseDateFields } = require('./utils');
+const Resource = require('./resource');
 
 /**
  * Users
@@ -12,7 +12,7 @@ import Resource from './resource';
  * @namespace users
  */
 
-export default class User extends Resource {
+class Users extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/users');
     }
@@ -42,3 +42,5 @@ export default class User extends Resource {
         return parseDateFields(pluckData(response));
     }
 }
+
+module.exports = Users;

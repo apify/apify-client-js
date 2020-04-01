@@ -1,5 +1,5 @@
-import { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } from './utils';
-import Resource from './resource';
+const { catchNotFoundOrThrow, checkParamOrThrow, parseDateFields, pluckData } = require('./utils');
+const Resource = require('./resource');
 
 /**
  * Schedules
@@ -13,7 +13,7 @@ import Resource from './resource';
  * @namespace schedules
  */
 
-export default class Schedules extends Resource {
+class Schedules extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/schedules');
     }
@@ -193,3 +193,5 @@ export default class Schedules extends Resource {
         }
     }
 }
+
+module.exports = Schedules;

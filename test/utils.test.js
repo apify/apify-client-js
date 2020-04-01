@@ -1,13 +1,13 @@
-import { gunzipSync } from 'zlib';
-import _ from 'lodash';
-import ApifyClientError, {
-
+const { gunzipSync } = require('zlib');
+const _ = require('lodash');
+const {
+    ApifyClientError,
     REQUEST_FAILED_ERROR_TYPE,
     REQUEST_FAILED_ERROR_MESSAGE,
 
     NOT_FOUND_STATUS_CODE,
-} from '../build/apify_error';
-import * as utils from '../build/utils';
+} = require('../src/apify_error');
+const utils = require('../src/utils');
 
 describe('utils.safeJsonParse()', () => {
     test('works', () => {

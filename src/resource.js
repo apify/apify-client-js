@@ -1,4 +1,4 @@
-export default class Resource {
+class Resource {
     constructor(httpClient, basePath, requestOptions) {
         this.basePath = basePath;
         this.client = httpClient;
@@ -23,3 +23,5 @@ export default class Resource {
         return callOptions;
     }
 }
+
+module.exports = Resource;

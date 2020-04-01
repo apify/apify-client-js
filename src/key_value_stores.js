@@ -1,6 +1,6 @@
-import omit from 'lodash/omit';
-import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseBody, parseDateFields } from './utils';
-import Resource from './resource';
+const omit = require('lodash/omit');
+const { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseBody, parseDateFields } = require('./utils');
+const Resource = require('./resource');
 
 /**
  * Key-value Stores
@@ -18,10 +18,9 @@ import Resource from './resource';
  *
  * @namespace keyValueStores
  */
+const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
 
-export const SIGNED_URL_UPLOAD_MIN_BYTESIZE = 1024 * 256;
-
-export default class KeyValueStores extends Resource {
+class KeyValueStores extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/key-value-stores');
     }
@@ -360,3 +359,8 @@ export default class KeyValueStores extends Resource {
         return parseDateFields(pluckData(response));
     }
 }
+
+module.exports = {
+    KeyValueStores,
+    SIGNED_URL_UPLOAD_MIN_BYTESIZE,
+};

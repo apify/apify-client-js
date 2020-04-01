@@ -1,14 +1,14 @@
-import Actors from './actors';
-import Tasks from './tasks';
-import KeyValueStores from './key_value_stores';
-import Logs from './logs';
-import Users from './users';
-import Datasets from './datasets';
-import Schedules from './schedules';
-import Webhooks from './webhooks';
-import WebhookDispatches from './webhook_dispatches';
-import RequestQueues, { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from './request_queues';
-import { HttpClient, EXP_BACKOFF_MAX_REPEATS } from './http-client';
+const Actors = require('./actors');
+const Tasks = require('./tasks');
+const { KeyValueStores } = require('./key_value_stores');
+const Logs = require('./logs');
+const Users = require('./users');
+const { Datasets } = require('./datasets');
+const Schedules = require('./schedules');
+const Webhooks = require('./webhooks');
+const WebhookDispatches = require('./webhook_dispatches');
+const { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, RequestQueues } = require('./request_queues');
+const { HttpClient, EXP_BACKOFF_MAX_REPEATS } = require('./http-client');
 
 /** @ignore */
 const DEFAULT_CLIENT_OPTIONS = {
@@ -120,4 +120,4 @@ class ApifyClient {
     }
 }
 
-export default ApifyClient;
+module.exports = ApifyClient;

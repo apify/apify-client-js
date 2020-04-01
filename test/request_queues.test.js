@@ -1,6 +1,6 @@
-import ApifyClient from '../build';
-import mockServer from './mock_server/server';
-import { cleanUpBrowser, getInjectedPage } from './_helper';
+const ApifyClient = require('../src');
+const mockServer = require('./mock_server/server');
+const { cleanUpBrowser, getInjectedPage } = require('./_helper');
 
 const DEFAULT_QUERY = {
     token: 'default-token',

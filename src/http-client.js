@@ -1,26 +1,27 @@
-import axios from 'axios';
-import KeepAliveAgent from 'agentkeepalive';
-import os from 'os';
-import ApifyClientError, {
+const axios = require('axios');
+const KeepAliveAgent = require('agentkeepalive');
+const os = require('os');
+const {
+    ApifyClientError,
     INVALID_PARAMETER_ERROR_TYPE,
     REQUEST_FAILED_ERROR_TYPE,
-} from './apify_error';
-import {
+} = require('./apify_error');
+const {
     checkParamOrThrow,
     newApifyClientErrorFromResponse,
     retryWithExpBackoff,
     gzipRequest,
-} from './utils';
-import { version } from '../package.json';
+} = require('./utils');
+const { version } = require('../package.json');
 
-export const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
-export const EXP_BACKOFF_MILLIS = 500;
-export const EXP_BACKOFF_MAX_REPEATS = 8; // 128s
+const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
+const EXP_BACKOFF_MILLIS = 500;
+const EXP_BACKOFF_MAX_REPEATS = 8; // 128s
 
-export const ALLOWED_HTTP_METHODS = ['GET', 'DELETE', 'HEAD', 'POST', 'PUT', 'PATCH'];
-export const CLIENT_USER_AGENT = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${process.env.IS_AT_HOME}`;
+const ALLOWED_HTTP_METHODS = ['GET', 'DELETE', 'HEAD', 'POST', 'PUT', 'PATCH'];
+const CLIENT_USER_AGENT = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${process.env.IS_AT_HOME}`;
 
-export class HttpClient {
+class HttpClient {
     constructor(apifyClientOptions, apifyClientStats) {
         checkParamOrThrow(apifyClientOptions, 'apifyClientOptions', 'Object');
         checkParamOrThrow(apifyClientStats, 'apifyClientStats', 'Object');
@@ -227,3 +228,12 @@ export class HttpClient {
         return retryWithExpBackoff(makeRequest, { retries: expBackoffMaxRepeats, minTimeout: expBackoffMillis });
     }
 }
+
+module.exports = {
+    RATE_LIMIT_EXCEEDED_STATUS_CODE,
+    EXP_BACKOFF_MAX_REPEATS,
+    EXP_BACKOFF_MILLIS,
+    ALLOWED_HTTP_METHODS,
+    CLIENT_USER_AGENT,
+    HttpClient,
+};

@@ -1,5 +1,5 @@
-import { checkParamOrThrow } from './utils';
-import Resource from './resource';
+const { checkParamOrThrow } = require('./utils');
+const Resource = require('./resource');
 
 /**
  * Logs
@@ -13,7 +13,7 @@ import Resource from './resource';
  * @memberOf ApifyClient
  * @namespace logs
  */
-export default class Log extends Resource {
+class Log extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/logs');
     }
@@ -47,3 +47,4 @@ export default class Log extends Resource {
         return this._call(options, endpointOptions);
     }
 }
+module.exports = Log;

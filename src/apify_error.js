@@ -1,14 +1,15 @@
-import mapValues from 'lodash/mapValues';
-import { VError } from 'verror';
+const mapValues = require('lodash/mapValues');
+const { VError } = require('verror');
 
-export const APIFY_ERROR_NAME = 'ApifyClientError';
+const APIFY_ERROR_NAME = 'ApifyClientError';
 
-export const INVALID_PARAMETER_ERROR_TYPE = 'invalid-parameter';
-export const REQUEST_FAILED_ERROR_TYPE = 'request-failed';
-export const REQUEST_FAILED_ERROR_MESSAGE = 'Server request failed.';
-export const NOT_FOUND_STATUS_CODE = 404;
+exports.APIFY_ERROR_NAME = APIFY_ERROR_NAME;
+exports.INVALID_PARAMETER_ERROR_TYPE = 'invalid-parameter';
+exports.REQUEST_FAILED_ERROR_TYPE = 'request-failed';
+exports.REQUEST_FAILED_ERROR_MESSAGE = 'Server request failed.';
+exports.NOT_FOUND_STATUS_CODE = 404;
 
-export default class ApifyClientError extends VError {
+class ApifyClientError extends VError {
     constructor(type, message, details, cause) {
         if (cause) super(cause, message);
         else super(message);
@@ -32,3 +33,5 @@ export default class ApifyClientError extends VError {
         return `[${this.name}] ${APIFY_ERROR_NAME}: ${this.message} ${details}`;
     }
 }
+
+exports.ApifyClientError = ApifyClientError;

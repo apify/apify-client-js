@@ -22,7 +22,6 @@ module.exports = {
         path: `${__dirname}/dist`,
         filename: 'bundle.js',
         libraryTarget: 'umd',
-        libraryExport: 'default',
         library: 'ApifyClient',
     },
     mode: 'production',

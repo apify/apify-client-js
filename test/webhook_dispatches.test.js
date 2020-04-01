@@ -1,6 +1,6 @@
-import ApifyClient from '../build';
-import mockServer from './mock_server/server';
-import { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } from './_helper';
+const ApifyClient = require('../src');
+const mockServer = require('./mock_server/server');
+const { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } = require('./_helper');
 
 describe('Actor methods', () => {
     let baseUrl = null;

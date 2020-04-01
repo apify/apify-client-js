@@ -1,13 +1,14 @@
-import omit from 'lodash/omit';
-import pick from 'lodash/pick';
+const omit = require('lodash/omit');
+const pick = require('lodash/pick');
 
-import * as utils from './utils';
-import Resource from './resource';
+const utils = require('./utils');
+const Resource = require('./resource');
 
 const { checkParamOrThrow, pluckData, catchNotFoundOrThrow, wrapArray, parseDateFields } = utils;
 
-export const RETRIES = 5;
-export const BACKOFF_MILLIS = 200;
+const RETRIES = 5;
+const BACKOFF_MILLIS = 200;
+
 /**
  * Datasets
  * @memberOf ApifyClient
@@ -26,7 +27,7 @@ export const BACKOFF_MILLIS = 200;
  * @namespace datasets
  */
 
-export default class Datasets extends Resource {
+class Datasets extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/datasets');
     }
@@ -378,7 +379,7 @@ export default class Datasets extends Resource {
     }
 }
 
-export function parseDatasetItemsResponse(response, disableBodyParser) {
+function parseDatasetItemsResponse(response, disableBodyParser) {
     const contentType = response.headers['content-type'];
     const wrappedItems = wrapArray(response);
 
@@ -386,3 +387,10 @@ export function parseDatasetItemsResponse(response, disableBodyParser) {
 
     return wrappedItems;
 }
+
+module.exports = {
+    Datasets,
+    parseDatasetItemsResponse,
+    RETRIES,
+    BACKOFF_MILLIS,
+};

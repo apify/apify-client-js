@@ -1,4 +1,4 @@
-import ApifyClientError, { APIFY_ERROR_NAME } from '../build/apify_error';
+const { APIFY_ERROR_NAME, ApifyClientError } = require('../src/apify_error');
 
 describe('ApifyClientError', () => {
     test('should correctly handle all the information', () => {

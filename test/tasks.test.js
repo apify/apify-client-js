@@ -1,8 +1,8 @@
-import ApifyClient from '../build';
-import { stringifyWebhooksToBase64 } from '../build/utils';
+const ApifyClient = require('../src');
+const { stringifyWebhooksToBase64 } = require('../src/utils');
 
-import mockServer from './mock_server/server';
-import { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } from './_helper';
+const mockServer = require('./mock_server/server');
+const { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } = require('./_helper');
 
 describe('Task methods', () => {
     let baseUrl = null;

@@ -1,7 +1,7 @@
-import ApifyClient from '../build';
+const ApifyClient = require('../src');
 
-import mockServer from './mock_server/server';
-import { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } from './_helper';
+const mockServer = require('./mock_server/server');
+const { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } = require('./_helper');
 
 describe('Log methods', () => {
     let baseUrl = null;

@@ -1,23 +1,24 @@
-import isObject from 'lodash/isObject';
-import isString from 'lodash/isString';
-import isFunction from 'lodash/isFunction';
-import isUndefined from 'lodash/isUndefined';
-import isArray from 'lodash/isArray';
-import mapValues from 'lodash/mapValues';
-import isEmpty from 'lodash/isEmpty';
-import contentTypeParser from 'content-type';
-import { parseType, parsedTypeCheck } from 'type-check';
-import { gzip } from 'zlib';
-import log from 'apify-shared/log';
-import retry from 'async-retry';
-import ApifyClientError, {
+const isObject = require('lodash/isObject');
+const isString = require('lodash/isString');
+const isFunction = require('lodash/isFunction');
+const isUndefined = require('lodash/isUndefined');
+const isArray = require('lodash/isArray');
+const mapValues = require('lodash/mapValues');
+const isEmpty = require('lodash/isEmpty');
+const contentTypeParser = require('content-type');
+const { parseType, parsedTypeCheck } = require('type-check');
+const { gzip } = require('zlib');
+const log = require('apify-shared/log');
+const retry = require('async-retry');
+const {
+    ApifyClientError,
     INVALID_PARAMETER_ERROR_TYPE,
     REQUEST_FAILED_ERROR_TYPE,
     REQUEST_FAILED_ERROR_MESSAGE,
     NOT_FOUND_STATUS_CODE,
-} from './apify_error';
+} = require('./apify_error');
 
-export const CONTENT_TYPE_JSON = 'application/json';
+const CONTENT_TYPE_JSON = 'application/json';
 const CONTENT_TYPE_XML = 'application/xml';
 const CONTENT_TYPE_TEXT_PREFIX = 'text/';
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
@@ -26,7 +27,7 @@ const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
 /**
  * Parses a JSON string. If string is not JSON then catches an error and returns empty object.
  */
-export const safeJsonParse = (str) => {
+const safeJsonParse = (str) => {
     let parsed;
 
     try {
@@ -46,7 +47,7 @@ export const safeJsonParse = (str) => {
  *
  * then uses its error type or message or both.
  */
-export const newApifyClientErrorFromResponse = (body, details) => {
+const newApifyClientErrorFromResponse = (body, details) => {
     let parsedBody = {};
 
     if (isObject(body)) parsedBody = body;
@@ -69,7 +70,7 @@ export const newApifyClientErrorFromResponse = (body, details) => {
  * @param {String} [errorMessage] - optional error message
  * @param {Boolean} [isApiV1] - flag for legacy Crawler
  */
-export const checkParamOrThrow = (value, name, type, errorMessage) => {
+const checkParamOrThrow = (value, name, type, errorMessage) => {
     // TODO: move this into apify-shared along with an ApifyClientError,
     // actually it shouldn't be ApifyClientError but ApifyError in most cases!
 
@@ -93,13 +94,13 @@ export const checkParamOrThrow = (value, name, type, errorMessage) => {
 /**
  * Returns object's data property or null if parameter is not an object.
  */
-export const pluckData = obj => (isObject(obj) && !isUndefined(obj.data) ? obj.data : null);
+const pluckData = obj => (isObject(obj) && !isUndefined(obj.data) ? obj.data : null);
 
 /**
  * If given HTTP error has NOT_FOUND_STATUS_CODE status code then returns null.
  * Otherwise rethrows error.
  */
-export const catchNotFoundOrThrow = (err) => {
+const catchNotFoundOrThrow = (err) => {
     if (err.details && err.details.statusCode === NOT_FOUND_STATUS_CODE) return null;
 
     throw err;
@@ -108,7 +109,7 @@ export const catchNotFoundOrThrow = (err) => {
 /**
  * Promisified zlib.gzip().
  */
-export const gzipPromise = (buffer) => {
+const gzipPromise = (buffer) => {
     return new Promise((resolve, reject) => {
         gzip(buffer, (err, gzippedBuffer) => {
             if (err) return reject(err);
@@ -121,7 +122,7 @@ export const gzipPromise = (buffer) => {
 /**
  * Function for parsing key-value store record's body.
  */
-export const parseBody = (body, contentType) => {
+const parseBody = (body, contentType) => {
     const { type } = contentTypeParser.parse(contentType);
 
     if (type.startsWith(CONTENT_TYPE_TEXT_PREFIX)) return isomorphicBufferToString(body);
@@ -136,7 +137,7 @@ export const parseBody = (body, contentType) => {
 /**
  * Wrap results from response and parse attributes from apifier headers.
  */
-export function wrapArray(response) {
+function wrapArray(response) {
     const limit = response.headers['x-apifier-pagination-limit'] || response.headers['x-apify-pagination-limit'];
 
     /**
@@ -159,7 +160,7 @@ export function wrapArray(response) {
 /**
  * Helper function that traverses JSON structure and parses fields such as modifiedAt or createdAt to dates.
  */
-export function parseDateFields(obj, depth = 0) {
+function parseDateFields(obj, depth = 0) {
     if (depth > PARSE_DATE_FIELDS_MAX_DEPTH) return obj;
     if (isArray(obj)) return obj.map(child => parseDateFields(child, depth + 1));
     if (!isObject(obj)) return obj;
@@ -174,7 +175,7 @@ export function parseDateFields(obj, depth = 0) {
 /**
  * Helper function that converts array of webhooks to base64 string
  */
-export function stringifyWebhooksToBase64(webhooks) {
+function stringifyWebhooksToBase64(webhooks) {
     const webhooksJson = JSON.stringify(webhooks);
     return Buffer.from(webhooksJson, 'utf8').toString('base64');
 }
@@ -184,7 +185,7 @@ export function stringifyWebhooksToBase64(webhooks) {
  * @param stringWithSlash {String}
  * @return {String}
  */
-export function replaceSlashWithTilde(stringWithSlash) {
+function replaceSlashWithTilde(stringWithSlash) {
     return stringWithSlash.replace('/', '~');
 }
 
@@ -194,7 +195,7 @@ export function replaceSlashWithTilde(stringWithSlash) {
  * @param opts
  * @return {Promise | Promise<any>}
  */
-export const retryWithExpBackoff = (func, opts) => {
+const retryWithExpBackoff = (func, opts) => {
     let retryCount = 0;
     const onRetry = (error) => {
         retryCount += 1;
@@ -210,7 +211,7 @@ export const retryWithExpBackoff = (func, opts) => {
     return retry(func, options);
 };
 
-export const isomorphicBufferToString = (buffer) => {
+const isomorphicBufferToString = (buffer) => {
     if (buffer.constructor.name !== ArrayBuffer.name) {
         return buffer.toString();
     }
@@ -219,9 +220,9 @@ export const isomorphicBufferToString = (buffer) => {
     const utf8decoder = new TextDecoder();
     return utf8decoder.decode(new Uint8Array(buffer));
 };
-export const isNode = () => !!(typeof process !== 'undefined' && process.versions && process.versions.node);
+const isNode = () => !!(typeof process !== 'undefined' && process.versions && process.versions.node);
 
-export const gzipRequest = async (options) => {
+const gzipRequest = async (options) => {
     if (!isNode()) return options;
 
     if (isEmpty(options.data)) return options;
@@ -232,4 +233,24 @@ export const gzipRequest = async (options) => {
 
 
     return options;
+};
+
+module.exports = {
+    isNode,
+    gzipRequest,
+    isomorphicBufferToString,
+    retryWithExpBackoff,
+    replaceSlashWithTilde,
+    stringifyWebhooksToBase64,
+    parseDateFields,
+    wrapArray,
+    parseBody,
+    gzipPromise,
+    catchNotFoundOrThrow,
+    pluckData,
+    checkParamOrThrow,
+    newApifyClientErrorFromResponse,
+    safeJsonParse,
+    CONTENT_TYPE_JSON,
+
 };

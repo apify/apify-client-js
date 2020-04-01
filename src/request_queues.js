@@ -1,9 +1,9 @@
-import omit from 'lodash/omit';
-import { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseDateFields } from './utils';
-import Resource from './resource';
+const omit = require('lodash/omit');
+const { checkParamOrThrow, pluckData, catchNotFoundOrThrow, parseDateFields } = require('./utils');
+const Resource = require('./resource');
 
 // 256s - we use more for queries pointing to DynamoDB as it may sometimes need more time to scale up.
-export const REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS = 9;
+const REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS = 9;
 
 /**
  * @typedef {Object} RequestOperationInfo
@@ -36,7 +36,7 @@ export const REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS = 9;
  * @namespace requestQueues
  */
 
-export default class RequestQueues extends Resource {
+class RequestQueues extends Resource {
     constructor(httpClient) {
         super(
             httpClient,
@@ -406,3 +406,8 @@ export default class RequestQueues extends Resource {
         return parseDateFields(pluckData(response));
     }
 }
+
+module.exports = {
+    RequestQueues,
+    REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS,
+};
