@@ -26,7 +26,7 @@ const Resource = require('./resource');
  * @namespace actors
  */
 
-module.exports = class Actors extends Resource {
+class Actors extends Resource {
     constructor(httpClient) {
         super(httpClient, '/v2/acts');
     }
@@ -927,4 +927,6 @@ module.exports = class Actors extends Resource {
         const response = await this._call(options, endpointOptions);
         return parseDateFields(pluckData(response));
     }
-};
+}
+
+module.exports = Actors;
