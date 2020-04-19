@@ -1,10 +1,13 @@
+const log = require('apify-shared/log');
 const omit = require('lodash/omit');
 const pick = require('lodash/pick');
+const ow = require('ow');
 
-const utils = require('./utils');
 const Resource = require('./resource');
+const { paginationShape } = require('./shapes');
+const utils = require('./utils');
 
-const { checkParamOrThrow, pluckData, catchNotFoundOrThrow, wrapArray, parseDateFields } = utils;
+const { pluckData, catchNotFoundOrThrow, wrapArray, parseDateFields, replaceSlashWithTilde } = utils;
 
 const RETRIES = 5;
 const BACKOFF_MILLIS = 200;
@@ -43,9 +46,11 @@ class Datasets extends Resource {
      * @returns {Dataset}
      */
     async getOrCreateDataset(options) {
-        const { datasetName } = options;
+        ow(options, ow.object.partialShape({
+            datasetName: ow.string,
+        }));
 
-        checkParamOrThrow(datasetName, 'datasetName', 'String');
+        const { datasetName } = options;
 
         const qs = {
             name: datasetName,
@@ -73,7 +78,7 @@ class Datasets extends Resource {
      * For more details see [list datasets endpoint](https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of-datasets)
      *
      * @memberof ApifyClient.datasets
-     * @param {Object} options
+     * @param {Object} [options]
      * @param {Number} [options.offset=0]
      *   Number of array elements that should be skipped at the start.
      * @param {Number} [options.limit=1000]
@@ -84,13 +89,13 @@ class Datasets extends Resource {
      *   If `true` then also unnamed stores will be returned. By default only named stores are returned.
      * @returns {PaginationList}
      */
-    async listDatasets(options = {}) {
-        const { offset, limit, desc, unnamed } = options;
+    async listDatasets(options) {
+        ow(options, ow.optional.object.partialShape({
+            unnamed: ow.optional.boolean,
+            ...paginationShape,
+        }));
 
-        checkParamOrThrow(limit, 'limit', 'Maybe Number');
-        checkParamOrThrow(offset, 'offset', 'Maybe Number');
-        checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
-        checkParamOrThrow(unnamed, 'unnamed', 'Maybe Boolean');
+        const { offset, limit, desc, unnamed } = options;
 
         const query = {};
 
@@ -116,19 +121,20 @@ class Datasets extends Resource {
      *
      * @memberof ApifyClient.datasets
      * @param {Object} options
-     * @param {String} options.datasetId - Unique dataset ID Dataset ID or username~dataset-name;
-     * // TODO: Not sure about the token
-     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
-     *                                   only when using "username~dataset-name" format for datasetId.
+     * @param {String} options.datasetId
+     *  Dataset ID or a slash-separated owner's username and dataset name. (Example: john/amazon-products)
      * @returns {Dataset}
      */
-    async getDataset(options = {}) {
-        const { datasetId } = options;
+    async getDataset(options) {
+        ow(options, ow.object.partialShape({
+            datasetId: ow.string,
+        }));
 
-        checkParamOrThrow(datasetId, 'datasetId', 'String');
+        const { datasetId } = options;
+        const safeDatasetId = replaceSlashWithTilde(datasetId);
 
         const endpointOptions = {
-            url: `/${datasetId}`,
+            url: `/${safeDatasetId}`,
             method: 'GET',
         };
 
@@ -147,12 +153,19 @@ class Datasets extends Resource {
      *
      * @memberof ApifyClient.datasets
      * @param {Object} options
-     * @param options.token
-     * @param {String} options.datasetId - Unique dataset ID
      * @param {Object} options.dataset
+     * @param {String} options.dataset.id
+     *  Dataset ID or a slash-separated owner's username and dataset name. (Example: john/amazon-products)
      * @returns {Dataset}
      */
-    async updateDataset(options = {}) {
+    async updateDataset(options) {
+        log.deprecated('apifyClient.datasets.updateDataset: options.datasetId is deprecated! Use options.dataset.id instead!');
+        ow(options, ow.object.partialShape({
+            datasetId: ow.optional.string,
+            dataset: ow.object.partialShape({
+                id: ow.string,
+            }),
+        }));
         const { datasetId, dataset } = options;
 
         checkParamOrThrow(datasetId, 'datasetId', 'String');
@@ -176,8 +189,6 @@ class Datasets extends Resource {
      * @memberof ApifyClient.datasets
      * @param {Object} options
      * @param {String} options.datasetId - Unique dataset ID
-     * @param {String} [options.token] - Your API token at apify.com. This parameter is required
-     *                                   only when using "username~dataset-name" format for datasetId.
      * @returns {*}
      */
     async deleteDataset(options = {}) {

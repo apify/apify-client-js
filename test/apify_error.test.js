@@ -1,22 +1,31 @@
-const { APIFY_ERROR_NAME, ApifyClientError } = require('../src/apify_error');
+const { ApifyApiError } = require('../src/apify_error');
 
-describe('ApifyClientError', () => {
-    test('should correctly handle all the information', () => {
+describe('ApifyApiError', () => {
+    test('should carry all the information', () => {
+        // Partial Axios response
+        const response = {
+            data: {
+                error: {
+                    type: 'test',
+                    message: 'Test message',
+                },
+            },
+            status: 500,
+            config: {
+                url: '/hello',
+                method: 'post',
+            },
+        };
         try {
-            throw new ApifyClientError('SOME_CODE', 'Some message.', { foo: 'bar' });
+            throw new ApifyApiError(response, 2);
         } catch (err) {
-            expect(err.details).toEqual({ foo: 'bar' });
-            expect(err.message).toEqual('Some message.');
-            expect(err.type).toEqual('SOME_CODE');
-            expect(err.name).toEqual(APIFY_ERROR_NAME);
+            expect(err.name).toEqual('ApifyApiError');
+            expect(err.type).toEqual('test');
+            expect(err.message).toEqual('Test message');
+            expect(err.statusCode).toEqual(500);
+            expect(err.url).toEqual('/hello');
+            expect(err.method).toEqual('post');
+            expect(err.attempt).toEqual(2);
         }
-    });
-
-    test('should return all info in toString()', () => {
-        const err = new ApifyClientError('SOME_CODE', 'Some message.', { foo: 'bar', a: { b: 'c' } });
-
-        expect(String(err)).toEqual(
-            '[ApifyClientError] ApifyClientError: Some message. (foo="bar", a={"b":"c"})',
-        );
     });
 });

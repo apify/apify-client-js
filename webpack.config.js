@@ -18,6 +18,9 @@ module.exports = {
     resolve: {
         extensions: ['*', '.js'],
     },
+    node: {
+        fs: 'empty',
+    },
     output: {
         path: `${__dirname}/dist`,
         filename: 'bundle.js',

@@ -1,8 +1,8 @@
-const omit = require('lodash/omit');
 const isUndefined = require('lodash/isUndefined');
 const log = require('apify-shared/log');
+const omit = require('lodash/omit');
+const ow = require('ow');
 const {
-    checkParamOrThrow,
     pluckData,
     parseDateFields,
     catchNotFoundOrThrow,
@@ -10,6 +10,9 @@ const {
     replaceSlashWithTilde,
 } = require('./utils');
 const Resource = require('./resource');
+const { paginationShape } = require('./shapes');
+
+const DEPRECATED_OPTION_NAMES = ['act', 'actId', 'actVersion'];
 
 /**
  * Actors
@@ -17,7 +20,7 @@ const Resource = require('./resource');
  * @description
  * The API endpoints described in this section enable you to manage, build and run Apify actors.
  * For more information, see the Actor documentation.
- * Note that for all the API endpoints that accept the actorId parameter to specify an actor,
+ * Note that for all the API endpoints that accept the actor ID parameter to specify an actor,
  * you can pass either the actor ID (e.g. HG7ML7M8z78YcAPEB) or a slash-separated username of the actor owner and
  * the actor name (e.g. apify/web-scraper).
  *
@@ -32,7 +35,16 @@ class Actors extends Resource {
     }
 
     _logDeprecated(oldMethod, newMethod) {
-        log.deprecated(`apifyClient.acts.${oldMethod}() is deprecated. Use apifyClient.actors.${newMethod}() instead.`);
+        log.deprecated(`apifyClient.act(or)s.${oldMethod}() is deprecated. Use apifyClient.actors.${newMethod}() instead.`);
+    }
+
+    _logDeprecatedOptions(methodName, options) {
+        DEPRECATED_OPTION_NAMES.forEach((name) => {
+            if (name in options) {
+                log.deprecated(`apifyClient.act(or)s.${methodName}: options.${name} is deprecated!`
+                    + ` Use options.${name.replace('act', 'actor')} instead!`);
+            }
+        });
     }
 
     /**
@@ -45,20 +57,19 @@ class Actors extends Resource {
      * For more information see the [list actor endpoint](https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-actors).
      *
      * @memberof ApifyClient.actors
-     * @param {Object} options
-     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
-     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Object} [options]
+     * @param {Number} [options.offset] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @param {Boolean} [options.my] - If `true` then the returned list only contains actors owned by the user.
      * @returns {Promise<PaginationList>}
      */
     async listActors(options = {}) {
+        ow(options, ow.object.partialShape({
+            ...paginationShape,
+            my: ow.optional.boolean,
+        }));
         const { offset, limit, desc, my } = options;
-
-        checkParamOrThrow(limit, 'limit', 'Maybe Number');
-        checkParamOrThrow(offset, 'offset', 'Maybe Number');
-        checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
-        checkParamOrThrow(my, 'my', 'Maybe Boolean');
 
         const query = {};
 
@@ -87,7 +98,7 @@ class Actors extends Resource {
     }
 
     /**
-     * Creates a new actor with settings specified in an Actor object (Maybe link instead of example) passed as `options.actor`.
+     * Creates a new actor with settings specified in an Actor object passed as `options.actor`.
      * The response is the full actor object as returned by the `client.actors.getActor()`.
      *
      * For more information see the [create actor endpoint](https://docs.apify.com/api/v2#/reference/actors/actor-collection/create-actor).
@@ -96,10 +107,11 @@ class Actors extends Resource {
      * @param {Object} options.actor
      * @returns {Actor}
      */
-    async createActor(options = {}) {
+    async createActor(options) {
+        this._logDeprecatedOptions('createAct(or)', options);
         const actor = options.actor || options.act;
 
-        checkParamOrThrow(actor, 'actor', 'Object');
+        ow(actor, ow.object);
 
         const endpointOptions = {
             url: '',
@@ -124,23 +136,26 @@ class Actors extends Resource {
      * Updates settings of an actor using values specified by an actor object passed as `options.actor`.
      * If the object does not define a specific property, its value will not be updated.
      * The response is the full actor object as returned by the `client.actors.getActor()`.
-     * You can pass the id of actor either separately in `options.actorId` or in the actor object itself under the `id` key.
      *
      * For more details see [update actor endpoint](https://docs.apify.com/api/v2#/reference/actors/actor-object/update-actor)
      *
      * @memberof ApifyClient.actors
      * @param {Object} options
-     * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @param {Object} options.actor - Updated actor object.
+     * @param {Object} options.actor.id - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      * @returns {Actor}
      */
     async updateActor(options = {}) {
-        const actorId = options.actorId || options.actId;
+        log.deprecated('apifyClient.act(or)s.updateAct(or): options.act is deprecated! Use options.actor instead!');
+        log.deprecated('apifyClient.act(or)s.updateAct(or): options.actId is deprecated! Use options.actor.id instead!');
         const actor = options.actor || options.act;
-        checkParamOrThrow(actor, 'actor', 'Object');
 
-        const safeActorId = replaceSlashWithTilde(!actorId && actor.id ? actor.id : actorId);
-        checkParamOrThrow(safeActorId, 'actorId', 'String');
+        ow(actor, ow.object.partialShape({
+            id: ow.optional.string,
+        }));
+        ow(options.actId, ow.optional.string);
+
+        const safeActorId = replaceSlashWithTilde(!options.actId && actor.id ? actor.id : options.actId);
 
         const endpointOptions = {
             url: `/${safeActorId}`,
@@ -171,9 +186,10 @@ class Actors extends Resource {
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
      */
     async deleteActor(options = {}) {
+        this._logDeprecatedOptions('deleteAct(or)', options);
         const actorId = options.actorId || options.actId;
 
-        checkParamOrThrow(actorId, 'actorId', 'String');
+        ow(actorId, ow.string);
 
         const safeActorId = replaceSlashWithTilde(actorId);
 
@@ -205,9 +221,10 @@ class Actors extends Resource {
      * @returns {Actor}
      */
     async getActor(options = {}) {
+        this._logDeprecatedOptions('getAct(or)', options);
         const actorId = options.actorId || options.actId;
 
-        checkParamOrThrow(actorId, 'actorId', 'String');
+        ow(actorId, ow.string);
 
         const safeActorId = replaceSlashWithTilde(actorId);
 
@@ -247,19 +264,18 @@ class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
-     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
-     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Number} [options.offset] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @returns {PaginationList}
      */
     async listRuns(options = {}) {
+        this._logDeprecatedOptions('listRuns', options);
         const actorId = options.actorId || options.actId;
         const { offset, limit, desc } = options;
 
-        checkParamOrThrow(actorId, 'actorId', 'String');
-        checkParamOrThrow(limit, 'limit', 'Maybe Number');
-        checkParamOrThrow(offset, 'offset', 'Maybe Number');
-        checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
+        ow(actorId, ow.string);
+        ow(options, ow.object.partialShape(paginationShape));
 
         const safeActorId = replaceSlashWithTilde(actorId);
         const query = {};
@@ -286,7 +302,7 @@ class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
-     * @param {String|Buffer} [options.body] - Actor input, passed as HTTP POST payload
+     * @param {*} [options.body] - Actor input, passed as HTTP POST payload. Most imaginable types are supported.
      * @param {String} [options.contentType] - Content type of actor input e.g 'application/json'
      * @param {Number} [options.waitForFinish] - Number of seconds to wait for actor to finish. Maximum value is 120s.
                                                  If actor doesn't finish in time then actor run in RUNNING state is returned.
@@ -299,16 +315,19 @@ class Actors extends Resource {
      * @returns {ActorRun}
      */
     async runActor(options = {}) {
+        this._logDeprecatedOptions('runAct(or)', options);
         const actorId = options.actorId || options.actId;
-        const { contentType, body, waitForFinish, timeout, memory, build, webhooks } = options;
+        ow(actorId, ow.string);
+        ow(options, ow.object.partialShape({
+            contentType: ow.optional.string,
+            waitForFinish: ow.optional.number,
+            timeout: ow.optional.number,
+            memory: ow.optional.number,
+            build: ow.optional.string,
+            webhooks: ow.optional.array.ofType(ow.object),
+        }));
 
-        checkParamOrThrow(actorId, 'actorId', 'String');
-        checkParamOrThrow(contentType, 'contentType', 'Maybe String');
-        checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
-        checkParamOrThrow(timeout, 'timeout', 'Maybe Number');
-        checkParamOrThrow(memory, 'memory', 'Maybe Number');
-        checkParamOrThrow(build, 'build', 'Maybe String');
-        checkParamOrThrow(webhooks, 'webhooks', 'Maybe Array');
+        const { contentType, body, waitForFinish, timeout, memory, build, webhooks } = options;
 
         const safeActorId = replaceSlashWithTilde(actorId);
         const query = {};
@@ -325,14 +344,10 @@ class Actors extends Resource {
             qs: query,
             json: false,
         };
+        if (body) endpointOptions.body = body;
 
         // To remove the content type with the null property to suite the integration tests needs.
         if (!isUndefined(contentType)) endpointOptions.headers = { 'content-type': contentType };
-
-        if (body) {
-            checkParamOrThrow(body, 'body', 'Buffer | String');
-            endpointOptions.body = body;
-        }
 
         const rawResponse = await this._call(options, endpointOptions);
         const response = JSON.parse(rawResponse);
@@ -367,12 +382,15 @@ class Actors extends Resource {
      * @returns {ActorRun}
      */
     async getRun(options = {}) {
+        this._logDeprecatedOptions('getRun', options);
         const actorId = options.actorId || options.actId;
-        const { runId, waitForFinish } = options;
+        ow(actorId, ow.string);
+        ow(options, ow.object.partialShape({
+            runId: ow.string,
+            waitForFinish: ow.optional.number,
+        }));
 
-        checkParamOrThrow(actorId, 'actorId', 'String');
-        checkParamOrThrow(runId, 'runId', 'String');
-        checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
+        const { runId, waitForFinish } = options;
 
         const safeActorId = replaceSlashWithTilde(actorId);
 
@@ -403,11 +421,14 @@ class Actors extends Resource {
      * @returns {ActorRun}
      */
     async abortRun(options = {}) {
+        this._logDeprecatedOptions('abortRun', options);
         const actorId = options.actorId || options.actId;
-        const { runId } = options;
+        ow(actorId, ow.string);
+        ow(options, ow.object.partialShape({
+            runId: ow.string,
+        }));
 
-        checkParamOrThrow(actorId, 'actorId', 'String');
-        checkParamOrThrow(runId, 'runId', 'String');
+        const { runId } = options;
 
         const safeActorId = replaceSlashWithTilde(actorId);
 
@@ -441,14 +462,17 @@ class Actors extends Resource {
      * @returns {ActorRun}
      */
     async metamorphRun(options = {}) {
+        this._logDeprecatedOptions('metamorphRun', options);
         const actorId = options.actorId || options.actId;
-        const { runId, targetActorId, contentType, body, build } = options;
+        ow(actorId, ow.string);
+        ow(options, ow.object.partialShape({
+            runId: ow.string,
+            targetActorId: ow.string,
+            contentType: ow.optional.string,
+            build: ow.optional.string,
+        }));
 
-        checkParamOrThrow(actorId, 'actorId', 'String');
-        checkParamOrThrow(runId, 'runId', 'String');
-        checkParamOrThrow(targetActorId, 'targetActorId', 'String');
-        checkParamOrThrow(contentType, 'contentType', 'Maybe String');
-        checkParamOrThrow(build, 'build', 'Maybe String');
+        const { runId, targetActorId, contentType, body, build } = options;
 
         const safeActorId = replaceSlashWithTilde(actorId);
         const safeTargetActorId = replaceSlashWithTilde(targetActorId);
@@ -466,11 +490,7 @@ class Actors extends Resource {
         };
 
         if (contentType) endpointOptions.headers = { 'content-type': contentType };
-
-        if (body) {
-            checkParamOrThrow(body, 'body', 'Buffer | String');
-            endpointOptions.body = body;
-        }
+        if (body) endpointOptions.body = body;
 
         const rawResponse = await this._call(options, endpointOptions);
         const response = JSON.parse(rawResponse);
@@ -492,11 +512,14 @@ class Actors extends Resource {
      * @returns {ActorRun}
      */
     async resurrectRun(options = {}) {
+        this._logDeprecatedOptions('resurrectRun', options);
         const actorId = options.actorId || options.actId;
-        const { runId } = options;
+        ow(actorId, ow.string);
+        ow(options, ow.object.partialShape({
+            runId: ow.string,
+        }));
 
-        checkParamOrThrow(actorId, 'actorId', 'String');
-        checkParamOrThrow(runId, 'runId', 'String');
+        const { runId } = options;
 
         const safeActorId = replaceSlashWithTilde(actorId);
 
@@ -523,19 +546,18 @@ class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
-     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
-     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Number} [options.offset] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @returns {PaginationList}
      */
     async listBuilds(options = {}) {
+        this._logDeprecatedOptions('listBuilds', options);
         const actorId = options.actorId || options.actId;
-        const { offset, limit, desc } = options;
+        ow(actorId, ow.string);
+        ow(options, ow.object.partialShape(paginationShape));
 
-        checkParamOrThrow(actorId, 'actorId', 'String');
-        checkParamOrThrow(limit, 'limit', 'Maybe Number');
-        checkParamOrThrow(offset, 'offset', 'Maybe Number');
-        checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
+        const { offset, limit, desc } = options;
 
         const safeActorId = replaceSlashWithTilde(actorId);
         const query = {};
@@ -577,15 +599,18 @@ class Actors extends Resource {
      * @returns {ActorBuild}
      */
     async buildActor(options = {}) {
+        this._logDeprecatedOptions('buildAct(or)', options);
         const actorId = options.actorId || options.actId;
-        const { waitForFinish, version, tag, betaPackages, useCache } = options;
+        ow(actorId, ow.string);
+        ow(options, ow.object.partialShape({
+            version: ow.string,
+            waitForFinish: ow.optional.number,
+            tag: ow.optional.string,
+            betaPackages: ow.optional.boolean,
+            useCache: ow.optional.boolean,
+        }));
 
-        checkParamOrThrow(actorId, 'actorId', 'String');
-        checkParamOrThrow(version, 'version', 'String');
-        checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
-        checkParamOrThrow(tag, 'tag', 'Maybe String');
-        checkParamOrThrow(betaPackages, 'betaPackages', 'Maybe Boolean');
-        checkParamOrThrow(useCache, 'useCache', 'Maybe Boolean');
+        const { waitForFinish, version, tag, betaPackages, useCache } = options;
 
         const safeActorId = replaceSlashWithTilde(actorId);
         const query = { version };
@@ -630,12 +655,14 @@ class Actors extends Resource {
      * @returns {ActorBuild}
      */
     async getBuild(options = {}) {
+        this._logDeprecatedOptions('getBuild', options);
         const actorId = options.actorId || options.actId;
+        ow(actorId, ow.string);
+        ow(options, ow.object.partialShape({
+            buildId: ow.string,
+            waitForFinish: ow.optional.number,
+        }));
         const { buildId, waitForFinish } = options;
-
-        checkParamOrThrow(actorId, 'actorId', 'String');
-        checkParamOrThrow(buildId, 'buildId', 'String');
-        checkParamOrThrow(waitForFinish, 'waitForFinish', 'Maybe Number');
 
         const safeActorId = replaceSlashWithTilde(actorId);
         const query = {};
@@ -670,11 +697,13 @@ class Actors extends Resource {
      * @returns {ActorBuild}
      */
     async abortBuild(options = {}) {
+        this._logDeprecatedOptions('abortBuild', options);
         const actorId = options.actorId || options.actId;
+        ow(actorId, ow.string);
+        ow(options, ow.object.partialShape({
+            buildId: ow.string,
+        }));
         const { buildId } = options;
-
-        checkParamOrThrow(actorId, 'actorId', 'String');
-        checkParamOrThrow(buildId, 'buildId', 'String');
 
         const safeActorId = replaceSlashWithTilde(actorId);
 
@@ -699,9 +728,9 @@ class Actors extends Resource {
      * @return {PaginationList}
      */
     async listActorVersions(options = {}) {
+        this._logDeprecatedOptions('listAct(or)Versions', options);
         const actorId = options.actorId || options.actId;
-
-        checkParamOrThrow(actorId, 'actorId', 'String');
+        ow(actorId, ow.string);
 
         const safeActorId = replaceSlashWithTilde(actorId);
 
@@ -732,22 +761,22 @@ class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
-     * @param {Object} options.actVersion - Actor version
+     * @param {Object} options.actorVersion - Actor version object
      * @return {ActorVersion}
      */
     async createActorVersion(options = {}) {
+        this._logDeprecatedOptions('createAct(or)Versions', options);
         const actorId = options.actorId || options.actId;
-        const { actVersion } = options;
-
-        checkParamOrThrow(actorId, 'actorId', 'String');
-        checkParamOrThrow(actVersion, 'actVersion', 'Object');
+        const actorVersion = options.actorVersion || options.actVersion;
+        ow(actorId, ow.string);
+        ow(actorVersion, ow.object);
 
         const safeActorId = replaceSlashWithTilde(actorId);
 
         const endpointOptions = {
             url: `/${safeActorId}/versions`,
             method: 'POST',
-            body: actVersion,
+            body: actorVersion,
         };
 
         const response = await this._call(options, endpointOptions);
@@ -771,16 +800,18 @@ class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
-     * @param {String} options.versionNumber - Version number of actor version
+     * @param {String} options.versionNumber - Version of actor in major.minor string format. Example: `1.0`
      * @return {ActorVersion}
      */
     async getActorVersion(options = {}) {
+        this._logDeprecatedOptions('getAct(or)Versions', options);
         const actorId = options.actorId || options.actId;
+        ow(actorId, ow.string);
+        ow(options, ow.object.partialShape({
+            versionNumber: ow.string,
+        }));
+
         const { versionNumber } = options;
-
-
-        checkParamOrThrow(actorId, 'actorId', 'String');
-        checkParamOrThrow(versionNumber, 'versionNumber', 'String');
 
         const safeActorId = replaceSlashWithTilde(actorId);
 
@@ -814,25 +845,32 @@ class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
-     * @param {String} options.versionNumber - Version number of actor version
-     * @param {Object} options.actVersion - Actor version
+     * @param {Object} options.actorVersion - Actor version object
+     * @param {Object} options.actorVersion.versionNumber - Version of actor in major.minor string format. Example: `1.0`
      * @return {ActorVersion}
      */
     async updateActorVersion(options = {}) {
+        const methodName = 'updateAct(or)Versions';
+        this._logDeprecatedOptions(methodName, options);
+        if (options.versionNumber) {
+            log.deprecated(`apifyClient.act(or)s.${methodName}(): options.versionNumber is deprecated!`
+                + ' Use options.actorVersion.versionNumber instead!');
+        }
         const actorId = options.actorId || options.actId;
-        const { actVersion, versionNumber } = options;
+        const actorVersion = options.actorVersion || options.actVersion;
+        ow(actorId, ow.string);
+        ow(actorVersion, ow.object.partialShape({
+            versionNumber: ow.string,
+        }));
 
-
-        checkParamOrThrow(actorId, 'actorId', 'String');
-        checkParamOrThrow(actVersion, 'actVersion', 'Object');
-        checkParamOrThrow(versionNumber, 'versionNumber', 'String');
+        const { versionNumber } = actorVersion;
 
         const safeActorId = replaceSlashWithTilde(actorId);
 
         const endpointOptions = {
             url: `/${safeActorId}/versions/${versionNumber}`,
             method: 'PUT',
-            body: actVersion,
+            body: actorVersion,
         };
 
         const response = await this._call(options, endpointOptions);
@@ -856,15 +894,17 @@ class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
-     * @param {String} options.versionNumber - Version number of actor version
+     * @param {String} options.versionNumber - Version of actor in major.minor string format. Example: `1.0`
      * @return {Object}
      */
     async deleteActorVersion(options = {}) {
+        this._logDeprecatedOptions('deleteAct(or)Version', options);
         const actorId = options.actorId || options.actId;
+        ow(actorId, ow.string);
+        ow(options, ow.object.partialShape({
+            versionNumber: ow.string,
+        }));
         const { versionNumber } = options;
-
-        checkParamOrThrow(actorId, 'actorId', 'String');
-        checkParamOrThrow(versionNumber, 'versionNumber', 'String');
 
         const safeActorId = replaceSlashWithTilde(actorId);
 
@@ -897,19 +937,17 @@ class Actors extends Resource {
      * @memberof ApifyClient.actors
      * @param {Object} options
      * @param {String} options.actorId - Actor ID or a slash-separated owner's username and actor name. (Example: apify/web-scraper)
-     * @param {Number} [options.offset=0] - Number of array elements that should be skipped at the start.
-     * @param {Number} [options.limit=1000] - Maximum number of array elements to return.
+     * @param {Number} [options.offset] - Number of array elements that should be skipped at the start.
+     * @param {Number} [options.limit] - Maximum number of array elements to return.
      * @param {Boolean} [options.desc] - If `true` then the objects are sorted by the createdAt field in descending order.
      * @returns {PaginationList}
      */
     async listWebhooks(options = {}) {
+        this._logDeprecatedOptions('listWebhooks', options);
         const actorId = options.actorId || options.actId;
+        ow(actorId, ow.string);
+        ow(options, ow.object.partialShape(paginationShape));
         const { offset, limit, desc } = options;
-
-        checkParamOrThrow(actorId, 'actorId', 'String');
-        checkParamOrThrow(limit, 'limit', 'Maybe Number');
-        checkParamOrThrow(offset, 'offset', 'Maybe Number');
-        checkParamOrThrow(desc, 'desc', 'Maybe Boolean');
 
         const safeActorId = replaceSlashWithTilde(actorId);
         const query = {};

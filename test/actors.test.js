@@ -1,22 +1,27 @@
 const ApifyClient = require('../src');
 const { stringifyWebhooksToBase64 } = require('../src/utils');
 const mockServer = require('./mock_server/server');
-const { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } = require('./_helper');
+const { Browser, validateRequest, DEFAULT_QUERY } = require('./_helper');
 
 describe('Actor methods', () => {
-    let baseUrl = null;
-    let page;
+    let baseUrl;
+    const browser = new Browser();
 
     beforeAll(async () => {
         const server = await mockServer.start();
+        await browser.start();
         baseUrl = `http://localhost:${server.address().port}`;
     });
 
-    afterAll(() => mockServer.close());
+    afterAll(async () => {
+        await browser.cleanUpBrowser();
+        mockServer.close();
+    });
 
-    let client = null;
+    let client;
+    let page;
     beforeEach(async () => {
-        page = await getInjectedPage(baseUrl, DEFAULT_QUERY);
+        page = await browser.getInjectedPage(baseUrl, DEFAULT_QUERY);
         client = new ApifyClient({
             baseUrl,
             expBackoffMaxRepeats: 0,
@@ -26,7 +31,7 @@ describe('Actor methods', () => {
     });
     afterEach(async () => {
         client = null;
-        await cleanUpBrowser(page);
+        page.close();
     });
 
     test('listActs() works', async () => {
@@ -57,21 +62,18 @@ describe('Actor methods', () => {
         validateRequest({}, {}, act);
     });
 
-    test(
-        'updateAct() works with both actId parameter and actId in act object',
-        async () => {
-            const actId = 'some-user/some-id';
-            const act = { id: actId, foo: 'bar' };
+    test('updateAct() works with both actId parameter and actId in act object', async () => {
+        const actId = 'some-user/some-id';
+        const act = { id: actId, foo: 'bar' };
 
-            const res = await client.acts.updateAct({ actId, act });
-            expect(res.id).toEqual('update-actor');
-            validateRequest({}, { actorId: 'some-user~some-id' }, { foo: 'bar' });
+        const res = await client.acts.updateAct({ actId, act });
+        expect(res.id).toEqual('update-actor');
+        validateRequest({}, { actorId: 'some-user~some-id' }, { foo: 'bar' });
 
-            const browserRes = await page.evaluate(opts => client.acts.updateAct(opts), { actId, act });
-            expect(browserRes).toEqual(res);
-            validateRequest({}, { actorId: 'some-user~some-id' }, { foo: 'bar' });
-        },
-    );
+        const browserRes = await page.evaluate(opts => client.acts.updateAct(opts), { actId, act });
+        expect(browserRes).toEqual(res);
+        validateRequest({}, { actorId: 'some-user~some-id' }, { foo: 'bar' });
+    });
 
     test('updateAct() works with actId in act object', async () => {
         const actId = 'some-id';
@@ -111,20 +113,17 @@ describe('Actor methods', () => {
         validateRequest({}, { actorId: actId });
     });
 
-    test(
-        'getAct() returns null on 404 status code (RECORD_NOT_FOUND)',
-        async () => {
-            const actId = '404';
+    test('getAct() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
+        const actId = '404';
 
-            const res = await client.acts.getAct({ actId });
-            expect(res).toEqual(null);
-            validateRequest({}, { actorId: actId });
+        const res = await client.acts.getAct({ actId });
+        expect(res).toEqual(null);
+        validateRequest({}, { actorId: actId });
 
-            const browserRes = await page.evaluate(opts => client.acts.getAct(opts), { actId });
-            expect(browserRes).toEqual(res);
-            validateRequest({}, { actorId: actId });
-        },
-    );
+        const browserRes = await page.evaluate(opts => client.acts.getAct(opts), { actId });
+        expect(browserRes).toEqual(res);
+        validateRequest({}, { actorId: actId });
+    });
 
     test('deleteAct() works', async () => {
         const actId = '204';
@@ -261,23 +260,20 @@ describe('Actor methods', () => {
         validateRequest(query, { actorId: actId, runId }, { some: 'body' }, { 'content-type': contentType });
     });
 
-    test(
-        'getRun() returns null on 404 status code (RECORD_NOT_FOUND)',
-        async () => {
-            const actId = '404';
-            const runId = 'some-build-id';
+    test('getRun() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
+        const actId = '404';
+        const runId = 'some-build-id';
 
-            const query = {};
+        const query = {};
 
-            const res = await client.acts.getRun({ actId, runId, ...query });
-            expect(res).toEqual(null);
-            validateRequest(query, { actorId: actId, runId });
+        const res = await client.acts.getRun({ actId, runId, ...query });
+        expect(res).toEqual(null);
+        validateRequest(query, { actorId: actId, runId });
 
-            const browserRes = await page.evaluate(opts => client.acts.getRun(opts), { actId, runId, ...query });
-            expect(browserRes).toEqual(res);
-            validateRequest(query, { actorId: actId, runId });
-        },
-    );
+        const browserRes = await page.evaluate(opts => client.acts.getRun(opts), { actId, runId, ...query });
+        expect(browserRes).toEqual(res);
+        validateRequest(query, { actorId: actId, runId });
+    });
 
     test('listBuilds() works', async () => {
         const actId = 'some-id';
@@ -335,25 +331,22 @@ describe('Actor methods', () => {
         validateRequest(query, { actorId: actId, buildId });
     });
 
-    test(
-        'getBuild() returns null on 404 status code (RECORD_NOT_FOUND)',
-        async () => {
-            const actId = '404';
-            const buildId = 'some-build-id';
+    test('getBuild() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
+        const actId = '404';
+        const buildId = 'some-build-id';
 
-            const query = {
-                waitForFinish: 120,
-            };
+        const query = {
+            waitForFinish: 120,
+        };
 
-            const res = await client.acts.getBuild({ actId, buildId, ...query });
-            expect(res).toEqual(null);
-            validateRequest(query, { actorId: actId, buildId });
+        const res = await client.acts.getBuild({ actId, buildId, ...query });
+        expect(res).toEqual(null);
+        validateRequest(query, { actorId: actId, buildId });
 
-            const browserRes = await page.evaluate(opts => client.acts.getBuild(opts), { actId, buildId, ...query });
-            expect(browserRes).toEqual(res);
-            validateRequest(query, { actorId: actId, buildId });
-        },
-    );
+        const browserRes = await page.evaluate(opts => client.acts.getBuild(opts), { actId, buildId, ...query });
+        expect(browserRes).toEqual(res);
+        validateRequest(query, { actorId: actId, buildId });
+    });
 
     test('abortBuild() works', async () => {
         const actId = 'some-act-id';

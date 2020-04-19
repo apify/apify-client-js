@@ -1,28 +1,19 @@
 const isObject = require('lodash/isObject');
-const isString = require('lodash/isString');
-const isFunction = require('lodash/isFunction');
 const isUndefined = require('lodash/isUndefined');
 const isArray = require('lodash/isArray');
 const mapValues = require('lodash/mapValues');
 const isEmpty = require('lodash/isEmpty');
 const contentTypeParser = require('content-type');
-const { parseType, parsedTypeCheck } = require('type-check');
 const { gzip } = require('zlib');
 const log = require('apify-shared/log');
 const retry = require('async-retry');
-const {
-    ApifyClientError,
-    INVALID_PARAMETER_ERROR_TYPE,
-    REQUEST_FAILED_ERROR_TYPE,
-    REQUEST_FAILED_ERROR_MESSAGE,
-    NOT_FOUND_STATUS_CODE,
-} = require('./apify_error');
 
 const CONTENT_TYPE_JSON = 'application/json';
 const CONTENT_TYPE_XML = 'application/xml';
 const CONTENT_TYPE_TEXT_PREFIX = 'text/';
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
 const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
+const NOT_FOUND_STATUS_CODE = 404;
 
 /**
  * Parses a JSON string. If string is not JSON then catches an error and returns empty object.
@@ -40,58 +31,6 @@ const safeJsonParse = (str) => {
 };
 
 /**
- * Creates an error from API response body and statusCode.
- * If body is object or JSON string in form
- *
- * { type: 'ITEM_NOT_FOUND', message: 'Requested item was not found.' }
- *
- * then uses its error type or message or both.
- */
-const newApifyClientErrorFromResponse = (body, details) => {
-    let parsedBody = {};
-
-    if (isObject(body)) parsedBody = body;
-    else if (isString(body)) parsedBody = safeJsonParse(body);
-
-    const error = parsedBody.error || parsedBody;
-    const type = error.type || REQUEST_FAILED_ERROR_TYPE;
-    const message = error.message || REQUEST_FAILED_ERROR_MESSAGE;
-
-    return new ApifyClientError(type, message, details);
-};
-
-/**
- * Checks that given parameter is of given type and throws ApifyClientError.
- * If errorMessage is not provided then error message is created from name and type of param.
- *
- * @param {String} value - user entered value of that parameter
- * @param {String} name - parameter name (actId for options.actId)
- * @param {String} type - "String", "Number", ... (see ee: https://github.com/gkz/type-check)
- * @param {String} [errorMessage] - optional error message
- * @param {Boolean} [isApiV1] - flag for legacy Crawler
- */
-const checkParamOrThrow = (value, name, type, errorMessage) => {
-    // TODO: move this into apify-shared along with an ApifyClientError,
-    // actually it shouldn't be ApifyClientError but ApifyError in most cases!
-
-    if (!errorMessage) errorMessage = `Parameter "${name}" of type ${type} must be provided`;
-
-    const allowedTypes = parseType(type);
-
-    // This is workaround since Buffer doesn't seem to be possible to define using options.customTypes.
-    const allowsBuffer = allowedTypes.filter(item => item.type === 'Buffer').length;
-    const allowsFunction = allowedTypes.filter(item => item.type === 'Function').length;
-
-    if (allowsBuffer && Buffer.isBuffer(value)) return;
-    if (allowsFunction && isFunction(value)) return;
-
-    // This will ignore Buffer type.
-    if (!parsedTypeCheck(allowedTypes, value)) {
-        throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, errorMessage);
-    }
-};
-
-/**
  * Returns object's data property or null if parameter is not an object.
  */
 const pluckData = obj => (isObject(obj) && !isUndefined(obj.data) ? obj.data : null);
@@ -101,7 +40,7 @@ const pluckData = obj => (isObject(obj) && !isUndefined(obj.data) ? obj.data : n
  * Otherwise rethrows error.
  */
 const catchNotFoundOrThrow = (err) => {
-    if (err.details && err.details.statusCode === NOT_FOUND_STATUS_CODE) return null;
+    if (err.statusCode === NOT_FOUND_STATUS_CODE) return null;
 
     throw err;
 };
@@ -248,8 +187,6 @@ module.exports = {
     gzipPromise,
     catchNotFoundOrThrow,
     pluckData,
-    checkParamOrThrow,
-    newApifyClientErrorFromResponse,
     safeJsonParse,
     CONTENT_TYPE_JSON,
 

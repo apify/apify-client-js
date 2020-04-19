@@ -1,14 +1,11 @@
 const axios = require('axios');
 const KeepAliveAgent = require('agentkeepalive');
 const os = require('os');
+const ow = require('ow');
 const {
-    ApifyClientError,
-    INVALID_PARAMETER_ERROR_TYPE,
-    REQUEST_FAILED_ERROR_TYPE,
+    ApifyApiError,
 } = require('./apify_error');
 const {
-    checkParamOrThrow,
-    newApifyClientErrorFromResponse,
     retryWithExpBackoff,
     gzipRequest,
     isNode,
@@ -19,23 +16,29 @@ const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 const EXP_BACKOFF_MILLIS = 500;
 const EXP_BACKOFF_MAX_REPEATS = 8; // 128s
 
-const ALLOWED_HTTP_METHODS = ['GET', 'DELETE', 'HEAD', 'POST', 'PUT', 'PATCH'];
-const CLIENT_USER_AGENT = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${process.env.IS_AT_HOME}`;
+const ALLOWED_HTTP_METHODS = new RegExp(['GET', 'DELETE', 'HEAD', 'POST', 'PUT', 'PATCH'].join('|'), 'i');
+
+const apifyClientUserAgent = isNode()
+    ? `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${process.env.IS_AT_HOME}`
+    : `ApifyClient/${version} ${window.navigator.userAgent}`;
 
 class HttpClient {
     constructor(apifyClientOptions, apifyClientStats) {
-        checkParamOrThrow(apifyClientOptions, 'apifyClientOptions', 'Object');
-        checkParamOrThrow(apifyClientStats, 'apifyClientStats', 'Object');
+        ow(apifyClientOptions, ow.object);
+        ow(apifyClientStats, ow.object);
+
         this.defaultOptions = apifyClientOptions;
         this.stats = apifyClientStats;
 
-        // Add keep-alive agents that are preset with reasonable defaults.
-        // Axios will only use those in Node.js.
-        this.httpAgent = new KeepAliveAgent();
-        this.httpsAgent = new KeepAliveAgent.HttpsAgent();
-        this.axiosInstance = axios.create();
+        if (isNode()) {
+            // Add keep-alive agents that are preset with reasonable defaults.
+            // Axios will only use those in Node.js.
+            this.httpAgent = new KeepAliveAgent();
+            this.httpsAgent = new KeepAliveAgent.HttpsAgent();
+        }
+        this.axios = axios.create();
 
-        this.axiosInstance.interceptors.request.use(gzipRequest, (e) => {
+        this.axios.interceptors.request.use(gzipRequest, (e) => {
             return Promise.reject(e);
         });
     }
@@ -47,38 +50,25 @@ class HttpClient {
     }
 
     _validateAndNormalizeOptions(options) {
+        ow(options, ow.object.partialShape({
+            baseUrl: ow.string,
+            method: ow.string.matches(ALLOWED_HTTP_METHODS),
+            token: ow.optional.string,
+            expBackoffMillis: ow.optional.number,
+            expBackoffMaxRepeats: ow.optional.number,
+            retryOnStatusCodes: ow.optional.array.ofType(ow.number),
+        }));
         /* eslint-disable prefer-const */
         let {
             baseUrl,
             method,
-            token,
             expBackoffMillis = EXP_BACKOFF_MILLIS,
             expBackoffMaxRepeats = EXP_BACKOFF_MAX_REPEATS,
             retryOnStatusCodes = [RATE_LIMIT_EXCEEDED_STATUS_CODE],
         } = options;
 
-
-        if (typeof baseUrl !== 'string') {
-            throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, 'The "options.baseUrl" parameter of type string is required.');
-        }
         // Remove trailing forward slash from baseUrl.
         if (baseUrl.substr(-1) === '/') baseUrl = baseUrl.slice(0, -1);
-
-        if (typeof method !== 'string') {
-            throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, 'The "options.method" parameter of type string is required.');
-        }
-        method = method.toUpperCase();
-        if (!ALLOWED_HTTP_METHODS.includes(method)) {
-            throw new ApifyClientError(
-                INVALID_PARAMETER_ERROR_TYPE,
-                'The "options.method" parameter is invalid. '
-                + `Expected one of ${ALLOWED_HTTP_METHODS.join(', ')} but got: ${options.method}`,
-            );
-        }
-
-        if (token && typeof token !== 'string') {
-            throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, 'The "options.token" parameter must be a string.');
-        }
 
         return {
             ...options,
@@ -96,7 +86,7 @@ class HttpClient {
                 'content-type': 'application/json; charset=utf-8',
             };
         }
-        return { 'user-agent': CLIENT_USER_AGENT,
+        return { 'user-agent': apifyClientUserAgent,
             'accept-encoding': 'gzip',
             'content-type': 'application/json; charset=utf-8' };
     }
@@ -125,35 +115,11 @@ class HttpClient {
 
         if (options.headers && options.headers['content-type'] === null) {
             delete config.headers['content-type'];
-            delete this.axiosInstance.defaults.headers.post['Content-Type'];
-            delete this.axiosInstance.defaults.headers.put['Content-Type'];
-            delete this.axiosInstance.defaults.headers.patch['Content-Type'];
+            delete this.axios.defaults.headers.post['Content-Type'];
+            delete this.axios.defaults.headers.put['Content-Type'];
+            delete this.axios.defaults.headers.patch['Content-Type'];
         }
         return config;
-    }
-
-    // Creates response like object in nodeJs and browser
-    _getResponseLike(axiosResponse) {
-        let response;
-
-        if (axiosResponse.request.res) {
-            // Node JS
-            // It is in node
-            // return standard Node.Js response-like object;
-            response = axiosResponse.request.res;
-            response.body = axiosResponse.data;
-        } else {
-            // Browser
-            const { data, status, statusText, headers, config } = axiosResponse;
-            response = {
-                body: data,
-                statusCode: status,
-                statusText,
-                headers,
-                config,
-            };
-        }
-        return response;
     }
 
     async _call(options) {
@@ -170,28 +136,19 @@ class HttpClient {
 
         const makeRequest = async (bail) => {
             iteration += 1;
-            let statusCode;
-            let response;
-            let error;
 
-            try {
-                this.stats.requests++;
-                const axiosResponse = await this.axiosInstance.request(axiosConfig); // eslint-disable-line
-                // TODO Emulate Request API for now
-                response = this._getResponseLike(axiosResponse);
-                statusCode = response ? response.statusCode : null;
+            this.stats.requests++;
+            const response = await this.axios.request(axiosConfig); // eslint-disable-line
+            const statusCode = response.status;
 
-                // TODO Retest this with Axios
-                // It may happen that response is incomplete but request package silently returns original
-                // response as string instead of throwing an error. So we call JSON.parse() manually here.
-                // If parsing throws then the request gets retried with exponential backoff.
-                if (options.json && response.body) response.body = JSON.parse(response.body);
+            // TODO Retest this with Axios
+            // It may happen that response is incomplete but request package silently returns original
+            // response as string instead of throwing an error. So we call JSON.parse() manually here.
+            // If parsing throws then the request gets retried with exponential backoff.
+            if (options.json && response.data) response.data = JSON.parse(response.data);
 
-                if (!statusCode || statusCode < 300) {
-                    return options.resolveWithFullResponse ? response : response.body;
-                }
-            } catch (err) {
-                error = err;
+            if (!statusCode || statusCode < 300) {
+                return options.resolveWithFullResponse ? response : response.data;
             }
 
             if (statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE && this.stats) {
@@ -207,33 +164,16 @@ class HttpClient {
                 && statusCode < 500
                 && !retryOnStatusCodes.includes(statusCode)
             ) {
-                bail(newApifyClientErrorFromResponse(response.body, {
-                    statusCode,
-                    url: options.url,
-                    method: options.method,
-                }));
+                bail(new ApifyApiError(response));
                 return;
             }
-
-            const errorDetails = {
-                url: options.url,
-                method: options.method,
-                params: options.params,
-                hasBody: !!options.body,
-                error: error && error.message ? error.message : error,
-                statusCode,
-                iteration,
-            };
 
             // If one of these happened:
             // - error occurred
             // - status code is >= 500
             // - status code in one of retryOnStatusCodes (by default RATE_LIMIT_EXCEEDED_STATUS_CODE)
             // then we throw the retryable error that is repeated by the retryWithExpBackoff function up to `expBackoffMaxRepeats` repeats.
-            const errorMsg = iteration === 1
-                ? 'API request failed on the first try'
-                : `API request failed on retry number ${iteration - 1}`;
-            throw new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, errorMsg, errorDetails, error);
+            throw new ApifyApiError(response, iteration);
         };
         return retryWithExpBackoff(makeRequest, { retries: expBackoffMaxRepeats, minTimeout: expBackoffMillis });
     }
@@ -244,6 +184,5 @@ module.exports = {
     EXP_BACKOFF_MAX_REPEATS,
     EXP_BACKOFF_MILLIS,
     ALLOWED_HTTP_METHODS,
-    CLIENT_USER_AGENT,
     HttpClient,
 };

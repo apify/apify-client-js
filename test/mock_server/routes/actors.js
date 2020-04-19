@@ -30,9 +30,18 @@ const HANDLERS = {
     json(id) {
         return (req, res) => {
             const responseStatusCode = Number(req.params.actorId) || 200;
-            const payload = responseStatusCode === 204
-                ? null
-                : { data: { id } };
+            let payload;
+            if (responseStatusCode === 200) payload = { data: { id } };
+            else if (responseStatusCode === 204) payload = null;
+            else if (responseStatusCode === 404) {
+                payload = {
+                    error: {
+                        type: 'record-not-found',
+                        message: 'Record with this name was not found',
+                    },
+                };
+            }
+
             res
                 .status(responseStatusCode)
                 .json(payload);

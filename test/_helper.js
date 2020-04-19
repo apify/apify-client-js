@@ -3,6 +3,32 @@ const httpClient = require('../src/http-client');
 const { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } = require('../src/request_queues');
 const mockServer = require('./mock_server/server');
 
+class Browser {
+    async start() {
+        this.browser = await Apify.launchPuppeteer({ headless: true, args: ['--disable-web-security'] });
+        return this.browser;
+    }
+
+    async getInjectedPage(baseUrl, DEFAULT_QUERY) {
+        const page = await this.browser.newPage();
+        await Apify.utils.puppeteer.injectFile(page, `${__dirname}/../dist/bundle.js`);
+
+        await page.evaluate((url, defaultQuery) => {
+            window.client = new window.ApifyClient({
+                baseUrl: url,
+                expBackoffMaxRepeats: 0,
+                expBackoffMillis: 1,
+                ...defaultQuery,
+            });
+        }, baseUrl, DEFAULT_QUERY);
+        return page;
+    }
+
+    async cleanUpBrowser() {
+        return this.browser.close();
+    }
+}
+
 
 const DEFAULT_RATE_LIMIT_ERRORS = new Array(
     Math.max(REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, httpClient.EXP_BACKOFF_MAX_REPEATS),
@@ -15,26 +41,6 @@ const newEmptyStats = () => {
         requests: 0,
         rateLimitErrors: [...DEFAULT_RATE_LIMIT_ERRORS],
     };
-};
-const getInjectedPage = async (baseUrl, DEFAULT_QUERY) => {
-    const browser = await Apify.launchPuppeteer({ headless: true, args: ['--disable-web-security'] });
-    const page = await browser.newPage();
-    await Apify.utils.puppeteer.injectFile(page, `${__dirname}/../dist/bundle.js`);
-
-    await page.evaluate((url, defaultQuery) => {
-        window.client = new window.ApifyClient({
-            baseUrl: url,
-            expBackoffMaxRepeats: 0,
-            expBackoffMillis: 1,
-            ...defaultQuery,
-        });
-    }, baseUrl, DEFAULT_QUERY);
-    return page;
-};
-const cleanUpBrowser = async (page) => {
-    const browser = await page.browser();
-    await page.close();
-    return browser.close();
 };
 
 const DEFAULT_QUERY = {
@@ -79,7 +85,6 @@ module.exports = {
     validateRequest,
     DEFAULT_QUERY,
     DEFAULT_RATE_LIMIT_ERRORS,
-    cleanUpBrowser,
-    getInjectedPage,
     newEmptyStats,
+    Browser,
 };
