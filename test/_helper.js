@@ -16,8 +16,7 @@ class Browser {
         await page.evaluate((url, defaultQuery) => {
             window.client = new window.ApifyClient({
                 baseUrl: url,
-                expBackoffMaxRepeats: 0,
-                expBackoffMillis: 1,
+                maxRetries: 0,
                 ...defaultQuery,
             });
         }, baseUrl, DEFAULT_QUERY);

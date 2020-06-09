@@ -36,12 +36,11 @@ const safeJsonParse = (str) => {
 const pluckData = obj => (isObject(obj) && !isUndefined(obj.data) ? obj.data : null);
 
 /**
- * If given HTTP error has NOT_FOUND_STATUS_CODE status code then returns null.
+ * If given HTTP error has NOT_FOUND_STATUS_CODE status code then returns undefined.
  * Otherwise rethrows error.
  */
 const catchNotFoundOrThrow = (err) => {
-    if (err.statusCode === NOT_FOUND_STATUS_CODE) return null;
-
+    if (err.statusCode === NOT_FOUND_STATUS_CODE) return;
     throw err;
 };
 
@@ -115,6 +114,7 @@ function parseDateFields(obj, depth = 0) {
  * Helper function that converts array of webhooks to base64 string
  */
 function stringifyWebhooksToBase64(webhooks) {
+    if (!webhooks) return;
     const webhooksJson = JSON.stringify(webhooks);
     return Buffer.from(webhooksJson, 'utf8').toString('base64');
 }

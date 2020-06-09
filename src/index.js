@@ -1,54 +1,26 @@
-const Actors = require('./actors');
-const Tasks = require('./tasks');
-const { KeyValueStores } = require('./key_value_stores');
-const Logs = require('./logs');
-const Users = require('./users');
-const { Datasets } = require('./datasets');
-const Schedules = require('./schedules');
-const Webhooks = require('./webhooks');
-const WebhookDispatches = require('./webhook_dispatches');
+const ow = require('ow');
+const ActorClient = require('./resource_clients/actor');
+const ActorCollectionClient = require('./resource_clients/actor_collection');
+const BuildClient = require('./resource_clients/build');
+// const BuildCollectionClient = require('./resource_clients/build_collection');
+
+// const RunCollectionClient = require('./resource_clients/run_collection');
+const RunClient = require('./resource_clients/run');
+
+
 const { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, RequestQueues } = require('./request_queues');
 const { HttpClient, EXP_BACKOFF_MAX_REPEATS } = require('./http-client');
 
-/** @ignore */
-const DEFAULT_CLIENT_OPTIONS = {
-    baseUrl: 'https://api.apify.com',
-};
-
-/**
- * IMPORTANT:
- *
- * This file MUST contain only one export which is default export of Apify Client.
- * Otherwise it would not get exported under require('apify-client') but ugly
- * require('apify-client').default instead.
- *
- * See: https://github.com/59naga/babel-plugin-add-module-exports
- */
-
-/**
- * Each property is a plain object of methods.
- *
- * Method must have 2 parameters "options" and "requestPromise" where:
- * - requestPromise is utils.requestPromise with Promise parameter set based on
- *   user's choice of Promises dependency.
- * - options
- *
- * Method must return promise.
- * @ignore
- */
-const endpointClasses = {
-    actors: Actors,
-    acts: Actors,
-    tasks: Tasks,
-    keyValueStores: KeyValueStores,
-    datasets: Datasets,
-    requestQueues: RequestQueues,
-    logs: Logs,
-    users: Users,
-    schedules: Schedules,
-    webhooks: Webhooks,
-    webhookDispatches: WebhookDispatches,
-};
+class Statistics {
+    constructor() {
+        // Number of Apify client function calls
+        this.calls = 0;
+        // Number of Apify API requests
+        this.requests = 0;
+        // Number of times the API returned 429 error. Spread based on number of retries.
+        this.rateLimitErrors = new Array(Math.max(REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, EXP_BACKOFF_MAX_REPEATS)).fill(0);
+    }
+}
 
 /**
  * @type package
@@ -80,43 +52,118 @@ const endpointClasses = {
  */
 class ApifyClient {
     constructor(options = {}) {
-        this.options = {
-            ...this.getDefaultOptions(),
-            ...options,
-        };
+        ow(options, ow.object.exactShape({
+            baseUrl: ow.optional.string,
+            maxRetries: ow.optional.number,
+            token: ow.optional.string,
+        }));
+
+        const {
+            baseUrl = 'https://api.apify.com/v2',
+            maxRetries = 8,
+            token,
+        } = options;
 
         /**
          * An object that contains various statistics about the API operations.
          * @memberof ApifyClient
          * @instance
          */
-        this.stats = {
-            // Number of Apify client function calls
-            calls: 0,
+        this.baseUrl = baseUrl;
+        this.maxRetries = maxRetries;
+        this.token = token;
 
-            // Number of Apify API requests
-            requests: 0,
-
-            // Number of times the API returned 429 error. Spread based on number of retries.
-            rateLimitErrors: new Array(Math.max(REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, EXP_BACKOFF_MAX_REPEATS)).fill(0),
-
-            // TODO: We can add internalServerErrors and other stuff here...
-        };
-
-        this.httpClient = new HttpClient({ ...this.options }, this.stats);
-
-        // Create instances of individual endpoint groups
-        Object.entries(endpointClasses).forEach(([name, ResourceClass]) => {
-            this[name] = new ResourceClass(this.httpClient);
+        this.stats = new Statistics();
+        this.httpClient = new HttpClient({
+            apifyClientStats: this.stats,
+            expBackoffMaxRepeats: this.maxRetries,
         });
     }
 
-    /**
-     * This helper function is used in unit tests.
-     * @ignore
-     */
-    getDefaultOptions() {
-        return DEFAULT_CLIENT_OPTIONS;
+    _options() {
+        return {
+            baseUrl: this.baseUrl,
+            httpClient: this.httpClient,
+            params: {
+                token: this.token,
+            },
+        };
+    }
+
+    actors() {
+        return new ActorCollectionClient(this._options());
+    }
+
+    actor(id) {
+        ow(id, ow.string);
+        return new ActorClient({
+            id,
+            ...this._options(),
+        });
+    }
+
+    // TODO requires new endpoint
+    // builds() {
+    //     return new BuildCollectionClient(this._options());
+    // }
+
+    // TODO temporarily uses second parameter + nested client
+    build(id, actorId) {
+        ow(id, ow.string);
+        ow(actorId, ow.string);
+        const actorClient = new ActorClient({
+            id: actorId,
+            ...this._options(),
+        });
+
+        const nestedOpts = actorClient._subResourceOptions({ id }); // eslint-disable-line no-underscore-dangle
+        return new BuildClient(nestedOpts);
+    }
+
+    datasets() {
+
+    }
+
+    dataset() {
+
+    }
+
+    keyValueStores() {
+
+    }
+
+    keyValueStore() {
+
+    }
+
+    log() {
+
+    }
+
+    requestQueues() {
+
+    }
+
+    requestQueue() {
+
+    }
+
+    // TODO requires new endpoint
+    // runs() {
+    //
+    // }
+
+    // TODO temporarily uses second parameter + nested client
+    run(id, actorId) {
+        ow(id, ow.string);
+        ow(actorId, ow.string);
+        const actorClient = new ActorClient({
+            id: actorId,
+            ...this._options(),
+        });
+
+        const nestedOpts = actorClient._subResourceOptions({ id }); // eslint-disable-line no-underscore-dangle
+        return new RunClient(nestedOpts);
     }
 }
 

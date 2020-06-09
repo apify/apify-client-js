@@ -10,12 +10,14 @@ describe('Actor methods', () => {
     beforeAll(async () => {
         const server = await mockServer.start();
         await browser.start();
-        baseUrl = `http://localhost:${server.address().port}`;
+        baseUrl = `http://localhost:${server.address().port}/v2`;
     });
 
     afterAll(async () => {
-        await browser.cleanUpBrowser();
-        mockServer.close();
+        await Promise.all([
+            mockServer.close(),
+            browser.cleanUpBrowser(),
+        ]);
     });
 
     let client;
@@ -24,444 +26,326 @@ describe('Actor methods', () => {
         page = await browser.getInjectedPage(baseUrl, DEFAULT_QUERY);
         client = new ApifyClient({
             baseUrl,
-            expBackoffMaxRepeats: 0,
-            expBackoffMillis: 1,
+            maxRetries: 0,
             ...DEFAULT_QUERY,
         });
     });
     afterEach(async () => {
         client = null;
-        page.close();
+        page.close().catch(() => {});
     });
 
-    test('listActs() works', async () => {
-        const opts = {
-            limit: 5,
-            offset: 3,
-            desc: true,
-            my: true,
-        };
+    describe('actors()', () => {
+        test('list() works', async () => {
+            const opts = {
+                limit: 5,
+                offset: 3,
+                desc: true,
+                my: true,
+            };
 
-        const res = await client.acts.listActs(opts);
-        expect(res.id).toEqual('list-actors');
-        validateRequest(opts);
+            const res = await client.actors().list(opts);
+            expect(res.id).toEqual('list-actors');
+            validateRequest(opts);
 
-        const browserRes = await page.evaluate(options => client.acts.listActs(options), opts);
-        expect(browserRes).toEqual(res);
-        validateRequest(opts);
+            const browserRes = await page.evaluate(options => client.actors().list(options), opts);
+            expect(browserRes).toEqual(res);
+            validateRequest(opts);
+        });
+
+        test('create() works', async () => {
+            const actor = { foo: 'bar' };
+
+            const res = await client.actors().create(actor);
+            expect(res.id).toEqual('create-actor');
+            validateRequest({}, {}, actor);
+            const browserRes = await page.evaluate(opts => client.actors().create(opts), actor);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, {}, actor);
+        });
     });
 
-    test('createAct() works', async () => {
-        const act = { foo: 'bar' };
-
-        const res = await client.acts.createAct({ act });
-        expect(res.id).toEqual('create-actor');
-        validateRequest({}, {}, act);
-        const browserRes = await page.evaluate(opts => client.acts.createAct(opts), { act });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, {}, act);
-    });
-
-    test('updateAct() works with both actId parameter and actId in act object', async () => {
-        const actId = 'some-user/some-id';
-        const act = { id: actId, foo: 'bar' };
-
-        const res = await client.acts.updateAct({ actId, act });
-        expect(res.id).toEqual('update-actor');
-        validateRequest({}, { actorId: 'some-user~some-id' }, { foo: 'bar' });
-
-        const browserRes = await page.evaluate(opts => client.acts.updateAct(opts), { actId, act });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId: 'some-user~some-id' }, { foo: 'bar' });
-    });
-
-    test('updateAct() works with actId in act object', async () => {
-        const actId = 'some-id';
-        const act = { id: actId, foo: 'bar' };
-
-        const res = await client.acts.updateAct({ act });
-        expect(res.id).toEqual('update-actor');
-        validateRequest({}, { actorId: actId }, { foo: 'bar' });
-
-        const browserRes = await page.evaluate(opts => client.acts.updateAct(opts), { act });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId: actId }, { foo: 'bar' });
-    });
-
-    test('updateAct() works with actId parameter', async () => {
-        const actId = 'some-id';
-        const act = { foo: 'bar' };
-
-        const res = await client.acts.updateAct({ actId, act });
-        expect(res.id).toEqual('update-actor');
-        validateRequest({}, { actorId: actId }, act);
-
-        const browserRes = await page.evaluate(opts => client.acts.updateAct(opts), { actId, act });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId: actId }, act);
-    });
-
-    test('getAct() works', async () => {
-        const actId = 'some-id';
-
-        const res = await client.acts.getAct({ actId });
-        expect(res.id).toEqual('get-actor');
-        validateRequest({}, { actorId: actId });
-
-        const browserRes = await page.evaluate(opts => client.acts.getAct(opts), { actId });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId: actId });
-    });
-
-    test('getAct() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
-        const actId = '404';
-
-        const res = await client.acts.getAct({ actId });
-        expect(res).toEqual(null);
-        validateRequest({}, { actorId: actId });
-
-        const browserRes = await page.evaluate(opts => client.acts.getAct(opts), { actId });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId: actId });
-    });
-
-    test('deleteAct() works', async () => {
-        const actId = '204';
-        const res = await client.acts.deleteAct({ actId });
-        expect(res).toEqual('');
-        validateRequest({}, { actorId: actId });
-
-        await page.evaluate(opts => client.acts.getAct(opts), { actId });
-        validateRequest({}, { actorId: actId });
-    });
-
-    test('listRuns() works', async () => {
-        const actId = 'some-id';
-
-        const query = {
-            limit: 5,
-            offset: 3,
-            desc: true,
-        };
-
-        const res = await client.acts.listRuns({ actId, ...query });
-        expect(res.id).toEqual('list-runs');
-        validateRequest(query, { actorId: actId });
-
-        const browserRes = await page.evaluate(opts => client.acts.listRuns(opts), { actId, ...query });
-        expect(browserRes).toEqual(res);
-        validateRequest(query, { actorId: actId });
-    });
-
-    test('runAct() works', async () => {
-        const actId = 'some-id';
-        const contentType = 'application/x-www-form-urlencoded';
-        const body = 'some=body';
-
-        const query = {
-            waitForFinish: 100,
-            timeout: 120,
-            memory: 256,
-            build: '1.2.0',
-        };
-
-        const res = await client.acts.runAct({ actId, contentType, body, ...query });
-        expect(res.id).toEqual('run-actor');
-        validateRequest(query, { actorId: actId }, { some: 'body' }, { 'content-type': contentType });
-
-        const browserRes = await page.evaluate(opts => client.acts.runAct(opts), { actId, contentType, body, ...query });
-        expect(browserRes).toEqual(res);
-        validateRequest(query, { actorId: actId }, { some: 'body' }, { 'content-type': contentType });
-    });
-
-    test('runAct() with webhook works', async () => {
-        const actId = 'some-id';
-        const webhooks = [
-            {
-                eventTypes: ['ACTOR.RUN.CREATED'],
-                requestUrl: 'https://example.com/run-created',
-            },
-            {
-                eventTypes: ['ACTOR.RUN.SUCCEEDED'],
-                requestUrl: 'https://example.com/run-succeeded',
-            },
-        ];
-
-        const res = await client.acts.runAct({ actId, webhooks });
-        expect(res.id).toEqual('run-actor');
-        validateRequest({ webhooks: stringifyWebhooksToBase64(webhooks) }, { actorId: actId });
-
-        const browserRes = await page.evaluate(opts => client.acts.runAct(opts), { actId, webhooks });
-        expect(browserRes).toEqual(res);
-        validateRequest({ webhooks: stringifyWebhooksToBase64(webhooks) }, { actorId: actId });
-    });
-
-    test('getRun() works', async () => {
-        const actId = 'some-act-id';
-        const runId = 'some-run-id';
-
-        const query = {
-            waitForFinish: 100,
-        };
-
-        const res = await client.acts.getRun({ actId, runId, ...query });
-        expect(res.id).toEqual('get-run');
-        validateRequest(query, { actorId: actId, runId });
-
-        const browserRes = await page.evaluate(opts => client.acts.getRun(opts), { actId, runId, ...query });
-        expect(browserRes).toEqual(res);
-        validateRequest(query, { actorId: actId, runId });
-    });
-
-    test('abortRun() works', async () => {
-        const actId = 'some-act-id';
-        const runId = 'some-run-id';
-
-        const res = await client.acts.abortRun({ actId, runId });
-        expect(res.id).toEqual('abort-run');
-        validateRequest({}, { actorId: actId, runId });
-
-        const browserRes = await page.evaluate(opts => client.acts.abortRun(opts), { actId, runId });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId: actId, runId });
-    });
-
-    test('resurrectRun() works', async () => {
-        const actId = 'some-act-id';
-        const runId = 'some-run-id';
-
-        const res = await client.acts.resurrectRun({ actId, runId });
-        expect(res.id).toEqual('resurrect-run');
-        validateRequest({}, { actorId: actId, runId });
-
-        const browserRes = await page.evaluate(opts => client.acts.resurrectRun(opts), { actId, runId });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId: actId, runId });
-    });
-
-    test('metamorphRun() works', async () => {
-        const actId = 'some-id';
-        const runId = 'some-run-id';
-        const contentType = 'application/x-www-form-urlencoded';
-        const body = 'some=body';
-
-
-        const query = {
-            build: '1.2.0',
-            targetActorId: 'some-actor-id',
-        };
-
-        const res = await client.acts.metamorphRun({ actId, runId, contentType, body, ...query });
-        expect(res.id).toEqual('metamorph-run');
-        validateRequest(query, { actorId: actId, runId }, { some: 'body' }, { 'content-type': contentType });
-
-        const browserRes = await page.evaluate(opts => client.acts.metamorphRun(opts), { actId, runId, contentType, body, ...query });
-        expect(browserRes).toEqual(res);
-        validateRequest(query, { actorId: actId, runId }, { some: 'body' }, { 'content-type': contentType });
-    });
-
-    test('getRun() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
-        const actId = '404';
-        const runId = 'some-build-id';
-
-        const query = {};
-
-        const res = await client.acts.getRun({ actId, runId, ...query });
-        expect(res).toEqual(null);
-        validateRequest(query, { actorId: actId, runId });
-
-        const browserRes = await page.evaluate(opts => client.acts.getRun(opts), { actId, runId, ...query });
-        expect(browserRes).toEqual(res);
-        validateRequest(query, { actorId: actId, runId });
-    });
-
-    test('listBuilds() works', async () => {
-        const actId = 'some-id';
-
-        const query = {
-            limit: 5,
-            offset: 3,
-            desc: true,
-        };
-
-        const res = await client.acts.listBuilds({ actId, ...query });
-        expect(res.id).toEqual('list-builds');
-        validateRequest(query, { actorId: actId });
-
-        const browserRes = await page.evaluate(opts => client.acts.listBuilds(opts), { actId, ...query });
-        expect(browserRes).toEqual(res);
-        validateRequest(query, { actorId: actId });
-    });
-
-    test('buildAct() works', async () => {
-        const actId = 'some-id';
-
-        const query = {
-            betaPackages: true,
-            waitForFinish: 120,
-            version: '0.0',
-            tag: 'latest',
-            useCache: true,
-
-        };
-
-        const res = await client.acts.buildAct({ actId, ...query });
-        expect(res.id).toEqual('build-actor');
-        validateRequest(query, { actorId: actId });
-
-        const browserRes = await page.evaluate(opts => client.acts.buildAct(opts), { actId, ...query });
-        expect(browserRes).toEqual(res);
-        validateRequest(query, { actorId: actId });
-    });
-
-    test('getBuild() works', async () => {
-        const actId = 'some-act-id';
-        const buildId = 'some-build-id';
-
-        const query = {
-            waitForFinish: 120,
-        };
-
-        const res = await client.acts.getBuild({ actId, buildId, ...query });
-        expect(res.id).toEqual('get-build');
-        validateRequest(query, { actorId: actId, buildId });
-
-        const browserRes = await page.evaluate(opts => client.acts.getBuild(opts), { actId, buildId, ...query });
-        expect(browserRes).toEqual(res);
-        validateRequest(query, { actorId: actId, buildId });
-    });
-
-    test('getBuild() returns null on 404 status code (RECORD_NOT_FOUND)', async () => {
-        const actId = '404';
-        const buildId = 'some-build-id';
-
-        const query = {
-            waitForFinish: 120,
-        };
-
-        const res = await client.acts.getBuild({ actId, buildId, ...query });
-        expect(res).toEqual(null);
-        validateRequest(query, { actorId: actId, buildId });
-
-        const browserRes = await page.evaluate(opts => client.acts.getBuild(opts), { actId, buildId, ...query });
-        expect(browserRes).toEqual(res);
-        validateRequest(query, { actorId: actId, buildId });
-    });
-
-    test('abortBuild() works', async () => {
-        const actId = 'some-act-id';
-        const buildId = 'some-build-id';
-
-        const res = await client.acts.abortBuild({ actId, buildId });
-        expect(res.id).toEqual('abort-build');
-        validateRequest({}, { actorId: actId, buildId });
-
-        const browserRes = await page.evaluate(opts => client.acts.abortBuild(opts), { actId, buildId });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId: actId, buildId });
-    });
-
-    test('listActVersions() works', async () => {
-        const actId = 'some-id';
-
-        const query = {};
-
-        const res = await client.acts.listActVersions({ actId });
-        expect(res.id).toEqual('list-actor-versions');
-        validateRequest(query, { actorId: actId });
-
-        const browserRes = await page.evaluate(opts => client.acts.listActVersions(opts), { actId });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId: actId });
-    });
-
-    test('createActVersion() works', async () => {
-        const actId = 'some-id';
-        const actVersion = {
-            versionNumber: '0.0',
-            foo: 'bar',
-        };
-
-        const res = await client.acts.createActVersion({ actId, actVersion });
-        expect(res.id).toEqual('create-actor-version');
-        validateRequest({}, { actorId: actId }, actVersion);
-
-        const browserRes = await page.evaluate(opts => client.acts.createActVersion(opts), { actId, actVersion });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId: actId }, actVersion);
-    });
-
-    test('getActVersion() works', async () => {
-        const actId = 'some-id';
-        const versionNumber = '0.0';
-
-        const res = await client.acts.getActorVersion({ actId, versionNumber });
-        expect(res.id).toEqual('get-actor-version');
-        validateRequest({}, { actorId: actId, versionNumber });
-
-        const browserRes = await page.evaluate(opts => client.acts.getActorVersion(opts), { actId, versionNumber });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId: actId, versionNumber });
-    });
-
-    test('getActVersion() works if version did not exist', async () => {
-        const actId = '404';
-        const versionNumber = '0.0';
-
-        const res = await client.acts.getActorVersion({ actId, versionNumber });
-        expect(res).toEqual(null);
-        validateRequest({}, { actorId: actId, versionNumber });
-
-        const browserRes = await page.evaluate(opts => client.acts.getActorVersion(opts), { actId, versionNumber });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId: actId, versionNumber });
-    });
-
-    test('updateActVersion() works', async () => {
-        const actId = 'some-user/some-id';
-        const versionNumber = '0.0';
-        const actVersion = {
-            versionNumber: '0.0',
-            foo: 'bar',
-        };
-
-        const res = await client.acts.updateActVersion({ actId, versionNumber, actVersion });
-        expect(res.id).toEqual('update-actor-version');
-        validateRequest({}, { actorId: 'some-user~some-id', versionNumber }, actVersion);
-
-        const browserRes = await page.evaluate(opts => client.acts.updateActVersion(opts), { actId, versionNumber, actVersion });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId: 'some-user~some-id', versionNumber }, actVersion);
-    });
-
-    test('deleteActVersion() works', async () => {
-        const actId = '204';
-        const versionNumber = '0.0';
-
-        const res = await client.acts.deleteActVersion({ actId, versionNumber });
-        expect(res).toEqual(null);
-        validateRequest({}, { actorId: actId, versionNumber });
-
-        const browserRes = await page.evaluate(opts => client.acts.deleteActVersion(opts), { actId, versionNumber });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId: actId, versionNumber });
-    });
-
-    test('listWebhooks() works', async () => {
-        const actId = 'some-act-id';
-        const query = {
-            limit: 5,
-            offset: 3,
-            desc: true,
-        };
-
-
-        const res = await client.acts.listWebhooks({ actId, ...query });
-        expect(res.id).toEqual('list-webhooks');
-        validateRequest(query, { actorId: actId });
-
-        const browserRes = await page.evaluate(opts => client.acts.listWebhooks(opts), { actId, ...query });
-        expect(browserRes).toEqual(res);
-        validateRequest(query, { actorId: actId });
+    describe('actor(id)', () => {
+        test('update() works', async () => {
+            const actorId = 'some-user/some-id';
+            const newFields = { foo: 'bar' };
+
+            const res = await client.actor(actorId).update(newFields);
+            expect(res.id).toEqual('update-actor');
+            validateRequest({}, { actorId: 'some-user~some-id' }, newFields);
+
+            const browserRes = await page.evaluate((id, opts) => client.actor(id).update(opts), actorId, newFields);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { actorId: 'some-user~some-id' }, newFields);
+        });
+
+        test('get() works', async () => {
+            const actorId = 'some-id';
+
+            const res = await client.actor(actorId).get();
+            expect(res.id).toEqual('get-actor');
+            validateRequest({}, { actorId });
+
+            const browserRes = await page.evaluate(id => client.actor(id).get(), actorId);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { actorId });
+        });
+
+        test('get() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
+            const actorId = '404';
+
+            const res = await client.actor(actorId).get();
+            expect(res).toBeUndefined();
+            validateRequest({}, { actorId });
+
+            const browserRes = await page.evaluate(id => client.actor(id).get(), actorId);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { actorId });
+        });
+
+        test('delete() works', async () => {
+            const actorId = '204';
+            const res = await client.actor(actorId).delete();
+            expect(res).toBeUndefined();
+            validateRequest({}, { actorId });
+
+            await page.evaluate(id => client.actor(id).delete(), actorId);
+            validateRequest({}, { actorId });
+        });
+
+        test('start() works', async () => {
+            const actorId = 'some-id';
+            const contentType = 'application/x-www-form-urlencoded';
+            const input = 'some=body';
+
+            const query = {
+                timeout: 120,
+                memory: 256,
+                build: '1.2.0',
+            };
+
+            const res = await client.actor(actorId).start({ contentType, input, ...query });
+            expect(res.id).toEqual('run-actor');
+            validateRequest(query, { actorId }, { some: 'body' }, { 'content-type': contentType });
+
+            const browserRes = await page.evaluate((id, opts) => client.actor(id).start(opts), actorId, { contentType, input, ...query });
+            expect(browserRes).toEqual(res);
+            validateRequest(query, { actorId }, { some: 'body' }, { 'content-type': contentType });
+        });
+
+        test('start() with webhook works', async () => {
+            const actorId = 'some-id';
+            const webhooks = [
+                {
+                    eventTypes: ['ACTOR.RUN.CREATED'],
+                    requestUrl: 'https://example.com/run-created',
+                },
+                {
+                    eventTypes: ['ACTOR.RUN.SUCCEEDED'],
+                    requestUrl: 'https://example.com/run-succeeded',
+                },
+            ];
+
+            const res = await client.actor(actorId).start({ webhooks });
+            expect(res.id).toEqual('run-actor');
+            validateRequest({ webhooks: stringifyWebhooksToBase64(webhooks) }, { actorId });
+
+            const browserRes = await page.evaluate((id, opts) => client.actor(id).start(opts), actorId, { webhooks });
+            expect(browserRes).toEqual(res);
+            validateRequest({ webhooks: stringifyWebhooksToBase64(webhooks) }, { actorId });
+        });
+
+        test.skip('call() works', async () => {
+            // TODO
+        });
+
+        test('build() works', async () => {
+            const actorId = 'some-id';
+
+            const query = {
+                betaPackages: true,
+                waitForFinish: 120,
+                version: '0.0',
+                tag: 'latest',
+                useCache: true,
+
+            };
+
+            const res = await client.actor(actorId).build(query);
+            expect(res.id).toEqual('build-actor');
+            validateRequest(query, { actorId });
+
+            const browserRes = await page.evaluate((aId, opts) => client.actor(aId).build(opts), actorId, query);
+            expect(browserRes).toEqual(res);
+            validateRequest(query, { actorId });
+        });
+
+        describe('lastRun()', () => {
+            test.each([
+                'get',
+                'dataset',
+                'keyValueStore',
+                'requestQueue',
+                'log',
+            ])('%s() works', async (method) => {
+                const actorId = 'some-actor-id';
+
+                const lastRunClient = client.actor(actorId).lastRun();
+                const res = method === 'get'
+                    ? await lastRunClient.get()
+                    : await lastRunClient[method]().get();
+
+                expect(res.id).toEqual(`last-run-${method}`);
+                validateRequest({}, { actorId });
+
+                const browserRes = await page.evaluate((aId, mthd) => {
+                    const lrc = client.actor(aId).lastRun();
+                    if (mthd === 'get') return lrc.get();
+                    return lrc[mthd]().get();
+                }, actorId, method);
+                expect(browserRes).toEqual(res);
+                validateRequest({}, { actorId });
+            });
+        });
+
+        test('builds().list() works', async () => {
+            const actorId = 'some-id';
+
+            const query = {
+                limit: 5,
+                offset: 3,
+                desc: true,
+            };
+
+            const res = await client.actor(actorId).builds().list(query);
+            expect(res.id).toEqual('list-builds');
+            validateRequest(query, { actorId });
+
+            const browserRes = await page.evaluate((aId, opts) => client.actor(aId).builds().list(opts), actorId, query);
+            expect(browserRes).toEqual(res);
+            validateRequest(query, { actorId });
+        });
+
+        test('runs().list() works', async () => {
+            const actorId = 'some-id';
+
+            const query = {
+                limit: 5,
+                offset: 3,
+                desc: true,
+            };
+
+            const res = await client.actor(actorId).runs().list(query);
+            expect(res.id).toEqual('list-runs');
+            validateRequest(query, { actorId });
+
+            const browserRes = await page.evaluate((aId, opts) => client.actor(aId).runs().list(opts), actorId, query);
+            expect(browserRes).toEqual(res);
+            validateRequest(query, { actorId });
+        });
+
+        describe('versions()', () => {
+            test('list() works', async () => {
+                const actorId = 'some-id';
+
+                const res = await client.actor(actorId).versions().list();
+                expect(res.id).toEqual('list-actor-versions');
+                validateRequest({}, { actorId });
+
+                const browserRes = await page.evaluate(id => client.actor(id).versions().list(), actorId);
+                expect(browserRes).toEqual(res);
+                validateRequest({}, { actorId });
+            });
+
+            test('create() works', async () => {
+                const actorId = 'some-id';
+                const actorVersion = {
+                    versionNumber: '0.0',
+                    foo: 'bar',
+                };
+
+                const res = await client.actor(actorId).versions().create(actorVersion);
+                expect(res.id).toEqual('create-actor-version');
+                validateRequest({}, { actorId }, actorVersion);
+
+                const browserRes = await page.evaluate((id, opts) => client.actor(id).versions().create(opts), actorId, actorVersion);
+                expect(browserRes).toEqual(res);
+                validateRequest({}, { actorId }, actorVersion);
+            });
+        });
+
+        describe('version()', () => {
+            test('get() works', async () => {
+                const actorId = 'some-id';
+                const versionNumber = '0.0';
+
+                const res = await client.actor(actorId).version(versionNumber).get();
+                expect(res.id).toEqual('get-actor-version');
+                validateRequest({}, { actorId, versionNumber });
+
+                const browserRes = await page.evaluate((id, vn) => client.actor(id).version(vn).get(), actorId, versionNumber);
+                expect(browserRes).toEqual(res);
+                validateRequest({}, { actorId, versionNumber });
+            });
+
+            test('get() works if version did not exist', async () => {
+                const actorId = '404';
+                const versionNumber = '0.0';
+
+                const res = await client.actor(actorId).version(versionNumber).get();
+                expect(res).toBeUndefined();
+                validateRequest({}, { actorId, versionNumber });
+
+                const browserRes = await page.evaluate((id, vn) => client.actor(id).version(vn).get(), actorId, versionNumber);
+                expect(browserRes).toEqual(res);
+                validateRequest({}, { actorId, versionNumber });
+            });
+
+            test('update() works', async () => {
+                const actorId = 'some-user/some-id';
+                const versionNumber = '0.0';
+                const newFields = {
+                    foo: 'bar',
+                };
+
+                const res = await client.actor(actorId).version(versionNumber).update(newFields);
+                expect(res.id).toEqual('update-actor-version');
+                validateRequest({}, { actorId: 'some-user~some-id', versionNumber }, newFields);
+
+                const browserRes = await page.evaluate((id, vn, nf) => client.actor(id).version(vn).update(nf), actorId, versionNumber, newFields);
+                expect(browserRes).toEqual(res);
+                validateRequest({}, { actorId: 'some-user~some-id', versionNumber }, newFields);
+            });
+
+            test('delete() works', async () => {
+                const actorId = '204';
+                const versionNumber = '0.0';
+
+                const res = await client.actor(actorId).version(versionNumber).delete();
+                expect(res).toBeUndefined();
+                validateRequest({}, { actorId, versionNumber });
+
+                const browserRes = await page.evaluate((id, vn) => client.actor(id).version(vn).delete(), actorId, versionNumber);
+                expect(browserRes).toEqual(res);
+                validateRequest({}, { actorId, versionNumber });
+            });
+        });
+
+        test('webhooks().list() works', async () => {
+            const actorId = 'some-act-id';
+            const query = {
+                limit: 5,
+                offset: 3,
+                desc: true,
+            };
+
+            const res = await client.actor(actorId).webhooks().list(query);
+            expect(res.id).toEqual('list-webhooks');
+            validateRequest(query, { actorId });
+
+            const browserRes = await page.evaluate((id, opts) => client.actor(id).webhooks().list(opts), actorId, query);
+            expect(browserRes).toEqual(res);
+            validateRequest(query, { actorId });
+        });
     });
 });

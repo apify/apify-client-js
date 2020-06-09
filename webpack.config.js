@@ -27,13 +27,13 @@ module.exports = {
         libraryTarget: 'umd',
         library: 'ApifyClient',
     },
-    mode: 'production',
-    plugins: [
-        new BrotliPlugin({
-            asset: '[path].br[query]',
-            test: /\.(js)$/,
-            threshold: 10240,
-            minRatio: 0.8,
-        }),
-    ],
+    mode: 'development',
+    // plugins: [
+    //     new BrotliPlugin({
+    //         asset: '[path].br[query]',
+    //         test: /\.(js)$/,
+    //         threshold: 10240,
+    //         minRatio: 0.8,
+    //     }),
+    // ],
 };

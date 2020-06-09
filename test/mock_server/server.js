@@ -29,8 +29,15 @@ const mockServer = {
             this.server.listen(port);
         });
     },
-    close() {
-        if (this.server) this.server.close();
+    async close() {
+        return new Promise((resolve, reject) => {
+            if (this.server) {
+                this.server.close((err) => {
+                    if (err) reject(err);
+                    resolve();
+                });
+            }
+        });
     },
     getLastRequest() {
         return this.requests.pop();
