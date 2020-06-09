@@ -12,9 +12,15 @@ const RequestQueueClient = require('./resource_clients/request_queue');
 const RequestQueueCollectionClient = require('./resource_clients/request_queue_collection');
 const RunClient = require('./resource_clients/run');
 // const RunCollectionClient = require('./resource_clients/run_collection');
+const ScheduleClient = require('./resource_clients/schedule');
+const ScheduleCollectionClient = require('./resource_clients/schedule_collection');
 const TaskClient = require('./resource_clients/task');
 const TaskCollectionClient = require('./resource_clients/task_collection');
 const UserClient = require('./resource_clients/user');
+const WebhookClient = require('./resource_clients/webhook');
+const WebhookCollectionClient = require('./resource_clients/webhook_collection');
+const WebhookDispatchClient = require('./resource_clients/webhook_dispatch');
+const WebhookDispatchCollectionClient = require('./resource_clients/webhook_dispatch_collection');
 
 
 const { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, RequestQueues } = require('./request_queues');
@@ -130,31 +136,47 @@ class ApifyClient {
     }
 
     datasets() {
-
+        return new DatasetCollectionClient(this._options());
     }
 
-    dataset() {
-
+    dataset(id) {
+        ow(id, ow.string);
+        return new DatasetClient({
+            id,
+            ...this._options(),
+        });
     }
 
     keyValueStores() {
-
+        return new KeyValueStoreCollectionClient(this._options());
     }
 
-    keyValueStore() {
-
+    keyValueStore(id) {
+        ow(id, ow.string);
+        return new KeyValueStoreClient({
+            id,
+            ...this._options(),
+        });
     }
 
-    log() {
-
+    log(id) {
+        ow(id, ow.string);
+        return new LogClient({
+            id,
+            ...this._options(),
+        });
     }
 
     requestQueues() {
-
+        return new RequestQueueCollectionClient(this._options());
     }
 
-    requestQueue() {
-
+    requestQueue(id) {
+        ow(id, ow.string);
+        return new RequestQueueClient({
+            id,
+            ...this._options(),
+        });
     }
 
     // TODO requires new endpoint
@@ -173,6 +195,62 @@ class ApifyClient {
 
         const nestedOpts = actorClient._subResourceOptions({ id }); // eslint-disable-line no-underscore-dangle
         return new RunClient(nestedOpts);
+    }
+
+    tasks() {
+        return new TaskCollectionClient(this._options());
+    }
+
+    task(id) {
+        ow(id, ow.string);
+        return new TaskClient({
+            id,
+            ...this._options(),
+        });
+    }
+
+    schedules() {
+        return new ScheduleCollectionClient(this._options());
+    }
+
+    schedule(id) {
+        ow(id, ow.string);
+        return new ScheduleClient({
+            id,
+            ...this._options(),
+        });
+    }
+
+    user(id = 'my') {
+        ow(id, ow.string);
+        return new UserClient({
+            id,
+            ...this._options(),
+        });
+    }
+
+    webhooks() {
+        return new WebhookCollectionClient(this._options());
+    }
+
+    webhook(id) {
+        ow(id, ow.string);
+        return new WebhookClient({
+            id,
+            ...this._options(),
+        });
+    }
+
+    webhookDispatches() {
+        return new WebhookDispatchCollectionClient(this._options());
+    }
+
+    webhookDispatch(id) {
+        ow(id, ow.string);
+        return new WebhookDispatchClient({
+            id,
+            ...this._options(),
+        });
     }
 }
 
