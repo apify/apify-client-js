@@ -3,9 +3,18 @@ const ActorClient = require('./resource_clients/actor');
 const ActorCollectionClient = require('./resource_clients/actor_collection');
 const BuildClient = require('./resource_clients/build');
 // const BuildCollectionClient = require('./resource_clients/build_collection');
-
-// const RunCollectionClient = require('./resource_clients/run_collection');
+const DatasetClient = require('./resource_clients/dataset');
+const DatasetCollectionClient = require('./resource_clients/dataset_collection');
+const KeyValueStoreClient = require('./resource_clients/key_value_store');
+const KeyValueStoreCollectionClient = require('./resource_clients/key_value_store_collection');
+const LogClient = require('./resource_clients/log');
+const RequestQueueClient = require('./resource_clients/request_queue');
+const RequestQueueCollectionClient = require('./resource_clients/request_queue_collection');
 const RunClient = require('./resource_clients/run');
+// const RunCollectionClient = require('./resource_clients/run_collection');
+const TaskClient = require('./resource_clients/task');
+const TaskCollectionClient = require('./resource_clients/task_collection');
+const UserClient = require('./resource_clients/user');
 
 
 const { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, RequestQueues } = require('./request_queues');
