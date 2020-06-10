@@ -58,7 +58,7 @@ class HttpClient {
 
         if (isNode()) {
             // Works only in Node. Cannot be set in browser
-            const userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${process.env.IS_AT_HOME}`;
+            const userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${!!process.env.IS_AT_HOME}`;
             this.axios.defaults.headers.common['User-Agent'] = userAgent;
         }
 
@@ -68,9 +68,7 @@ class HttpClient {
             };
         });
 
-        // this.axios.interceptors.request.use(gzipRequest, (e) => {
-        //     return Promise.reject(e);
-        // });
+        this.axios.interceptors.request.use(gzipRequest);
     }
 
     async call(callOptions) {

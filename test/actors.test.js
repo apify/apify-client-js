@@ -48,7 +48,7 @@ describe('Actor methods', () => {
             expect(res.id).toEqual('list-actors');
             validateRequest(opts);
 
-            const browserRes = await page.evaluate(options => client.actors().list(options), opts);
+            const browserRes = await page.evaluate((options) => client.actors().list(options), opts);
             expect(browserRes).toEqual(res);
             validateRequest(opts);
         });
@@ -59,7 +59,7 @@ describe('Actor methods', () => {
             const res = await client.actors().create(actor);
             expect(res.id).toEqual('create-actor');
             validateRequest({}, {}, actor);
-            const browserRes = await page.evaluate(opts => client.actors().create(opts), actor);
+            const browserRes = await page.evaluate((opts) => client.actors().create(opts), actor);
             expect(browserRes).toEqual(res);
             validateRequest({}, {}, actor);
         });
@@ -86,7 +86,7 @@ describe('Actor methods', () => {
             expect(res.id).toEqual('get-actor');
             validateRequest({}, { actorId });
 
-            const browserRes = await page.evaluate(id => client.actor(id).get(), actorId);
+            const browserRes = await page.evaluate((id) => client.actor(id).get(), actorId);
             expect(browserRes).toEqual(res);
             validateRequest({}, { actorId });
         });
@@ -98,7 +98,7 @@ describe('Actor methods', () => {
             expect(res).toBeUndefined();
             validateRequest({}, { actorId });
 
-            const browserRes = await page.evaluate(id => client.actor(id).get(), actorId);
+            const browserRes = await page.evaluate((id) => client.actor(id).get(), actorId);
             expect(browserRes).toEqual(res);
             validateRequest({}, { actorId });
         });
@@ -109,7 +109,7 @@ describe('Actor methods', () => {
             expect(res).toBeUndefined();
             validateRequest({}, { actorId });
 
-            await page.evaluate(id => client.actor(id).delete(), actorId);
+            await page.evaluate((id) => client.actor(id).delete(), actorId);
             validateRequest({}, { actorId });
         });
 
@@ -252,7 +252,7 @@ describe('Actor methods', () => {
                 expect(res.id).toEqual('list-actor-versions');
                 validateRequest({}, { actorId });
 
-                const browserRes = await page.evaluate(id => client.actor(id).versions().list(), actorId);
+                const browserRes = await page.evaluate((id) => client.actor(id).versions().list(), actorId);
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { actorId });
             });

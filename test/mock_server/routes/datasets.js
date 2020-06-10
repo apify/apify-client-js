@@ -8,8 +8,8 @@ const ROUTES = [
     { id: 'get-dataset', method: 'GET', path: '/:datasetId' },
     { id: 'delete-dataset', method: 'DELETE', path: '/:datasetId' },
     { id: 'update-dataset', method: 'PUT', path: '/:datasetId' },
-    { id: 'get-items', method: 'GET', path: '/:datasetId/items', type: 'responseJsonMock' },
-    { id: 'put-items', method: 'POST', path: '/:datasetId/items' },
+    { id: 'list-items', method: 'GET', path: '/:datasetId/items', type: 'responseJsonMock' },
+    { id: 'push-items', method: 'POST', path: '/:datasetId/items' },
 ];
 
 const HANDLERS = {
@@ -17,16 +17,17 @@ const HANDLERS = {
         return (req, res) => {
             const responseStatusCode = Number(req.params.datasetId) || 200;
             let payload;
-            switch (responseStatusCode) {
-                case 204:
-                    payload = null;
-                    break;
-                case 201:
-                    payload = {};
-                    break;
-                default:
-                    payload = { data: { id } };
+            if (responseStatusCode === 200) payload = { data: { id } };
+            else if (responseStatusCode === 204) payload = null;
+            else if (responseStatusCode === 404) {
+                payload = {
+                    error: {
+                        type: 'record-not-found',
+                        message: 'Record with this name was not found',
+                    },
+                };
             }
+
             res
                 .status(responseStatusCode)
                 .json(payload);
