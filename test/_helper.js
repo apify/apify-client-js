@@ -76,7 +76,10 @@ const validateRequest = (query = {}, params = {}, body = {}, headers = {}) => {
     expect(request.params).toEqual(params);
     expect(request.body).toEqual(body);
     Object.entries(headers).forEach(([key, value]) => {
-        expect(request.headers).toHaveProperty(key, value);
+        // Browsers tend to send headers "a bit differently".
+        const expectedHeaderValue = value.toLowerCase().replace(/\s/g, '');
+        const actualHeaderValue = request.headers[key].toLowerCase().replace(/\s/g, '');
+        expect(actualHeaderValue).toBe(expectedHeaderValue);
     });
 };
 

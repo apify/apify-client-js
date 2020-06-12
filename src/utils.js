@@ -33,7 +33,7 @@ const safeJsonParse = (str) => {
 /**
  * Returns object's data property or null if parameter is not an object.
  */
-const pluckData = obj => (isObject(obj) && !isUndefined(obj.data) ? obj.data : null);
+const pluckData = (obj) => (isObject(obj) && !isUndefined(obj.data) ? obj.data : null);
 
 /**
  * If given HTTP error has NOT_FOUND_STATUS_CODE status code then returns undefined.
@@ -100,7 +100,7 @@ function wrapArray(response) {
  */
 function parseDateFields(obj, depth = 0) {
     if (depth > PARSE_DATE_FIELDS_MAX_DEPTH) return obj;
-    if (isArray(obj)) return obj.map(child => parseDateFields(child, depth + 1));
+    if (isArray(obj)) return obj.map((child) => parseDateFields(child, depth + 1));
     if (!isObject(obj)) return obj;
 
     return mapValues(obj, (val, key) => {
@@ -145,7 +145,7 @@ const retryWithExpBackoff = (func, opts) => {
             });
         }
     };
-    const options = Object.assign({}, { onRetry }, opts);
+    const options = { onRetry, ...opts };
 
     return retry(func, options);
 };
@@ -161,15 +161,22 @@ const isomorphicBufferToString = (buffer) => {
 };
 const isNode = () => !!(typeof process !== 'undefined' && process.versions && process.versions.node);
 
+const MIN_GZIP_BYTES = 1024;
+
 const gzipRequest = async (options) => {
     if (!isNode()) return options;
-
     if (isEmpty(options.data)) return options;
 
-    options.headers['content-encoding'] = 'gzip';
-    const data = (typeof options.data === 'string') || Buffer.isBuffer(options.data) ? options.data : JSON.stringify(options.data);
-    options.data = await gzipPromise(data);
+    const data = (typeof options.data === 'string') || Buffer.isBuffer(options.data)
+        ? options.data
+        : JSON.stringify(options.data);
 
+    if (Buffer.byteLength(data) < MIN_GZIP_BYTES) {
+        options.data = data;
+    } else {
+        options.headers['content-encoding'] = 'gzip';
+        options.data = await gzipPromise(data);
+    }
 
     return options;
 };

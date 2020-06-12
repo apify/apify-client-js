@@ -47,11 +47,19 @@ const mockServer = {
     },
 };
 
+// Debugging middleware
+app.use((req, res, next) => {
+    next();
+});
 app.use(logger('dev'));
-app.use(express.json());
+app.use(express.json({ limit: '9mb' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(compression());
+// Debugging middleware
+app.use((err, req, res, next) => {
+    next(err);
+});
 
 app.use('/', (req, res, next) => {
     mockServer.requests.push(req);

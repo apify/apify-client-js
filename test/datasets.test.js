@@ -271,16 +271,11 @@ describe('Dataset methods', () => {
 
         test('pushItems() works with object', async () => {
             const datasetId = '201';
-            const contentType = 'application/json; charset=utf-8';
             const data = { someData: 'someValue' };
-            const headers = {
-                'content-type': contentType,
-                'content-encoding': 'gzip',
-            };
 
             const res = await client.dataset(datasetId).pushItems(data);
             expect(res).toBeUndefined();
-            validateRequest({}, { datasetId }, data, headers);
+            validateRequest({}, { datasetId }, data);
 
             const browserRes = await page.evaluate((id, items) => client.dataset(id).pushItems(items), datasetId, data);
             expect(browserRes).toEqual(res);
@@ -289,16 +284,11 @@ describe('Dataset methods', () => {
 
         test('pushItems() works with array', async () => {
             const datasetId = '201';
-            const contentType = 'application/json; charset=utf-8';
             const data = [{ someData: 'someValue' }, { someData: 'someValue' }];
-            const headers = {
-                'content-type': contentType,
-                'content-encoding': 'gzip',
-            };
 
             const res = await client.dataset(datasetId).pushItems(data);
             expect(res).toBeUndefined();
-            validateRequest({}, { datasetId }, data, headers);
+            validateRequest({}, { datasetId }, data);
 
             const browserRes = await page.evaluate((id, items) => client.dataset(id).pushItems(items), datasetId, data);
             expect(browserRes).toEqual(res);
@@ -307,20 +297,30 @@ describe('Dataset methods', () => {
 
         test('pushItems() works with string', async () => {
             const datasetId = '201';
-            const contentType = 'application/json; charset=utf-8';
             const data = JSON.stringify([{ someData: 'someValue' }, { someData: 'someValue' }]);
-            const headers = {
-                'content-type': contentType,
+
+            const res = await client.dataset(datasetId).pushItems(data);
+            expect(res).toBeUndefined();
+            validateRequest({}, { datasetId }, JSON.parse(data));
+
+            const browserRes = await page.evaluate((id, options) => client.dataset(id).pushItems(options), datasetId, data);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { datasetId }, JSON.parse(data));
+        });
+
+        test('pushItems() compresses large request in Node.js', async () => {
+            const datasetId = '201';
+            const chunk = { someData: 'someValue' };
+            const data = Array(100).fill(chunk);
+
+            const expectedHeaders = {
+                'content-type': 'application/json; charset=utf-8',
                 'content-encoding': 'gzip',
             };
 
             const res = await client.dataset(datasetId).pushItems(data);
             expect(res).toBeUndefined();
-            validateRequest({}, { datasetId }, JSON.parse(data), headers);
-
-            const browserRes = await page.evaluate((id, options) => client.dataset(id).pushItems(options), datasetId, data);
-            expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId }, JSON.parse(data));
+            validateRequest({}, { datasetId }, data, expectedHeaders);
         });
     });
 });
