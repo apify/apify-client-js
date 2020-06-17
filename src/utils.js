@@ -2,7 +2,6 @@ const isObject = require('lodash/isObject');
 const isUndefined = require('lodash/isUndefined');
 const isArray = require('lodash/isArray');
 const mapValues = require('lodash/mapValues');
-const isEmpty = require('lodash/isEmpty');
 const contentTypeParser = require('content-type');
 const { gzip } = require('zlib');
 const log = require('apify-shared/log');
@@ -163,27 +162,27 @@ const isNode = () => !!(typeof process !== 'undefined' && process.versions && pr
 
 const MIN_GZIP_BYTES = 1024;
 
-const gzipRequest = async (options) => {
-    if (!isNode()) return options;
-    if (isEmpty(options.data)) return options;
+const maybeGzipRequest = async (config) => {
+    if (!isNode()) return config;
+    if (config.data == null) return config;
 
-    const data = (typeof options.data === 'string') || Buffer.isBuffer(options.data)
-        ? options.data
-        : JSON.stringify(options.data);
-
-    if (Buffer.byteLength(data) < MIN_GZIP_BYTES) {
-        options.data = data;
-    } else {
-        options.headers['content-encoding'] = 'gzip';
-        options.data = await gzipPromise(data);
+    // Request compression is not that important so let's
+    // skip it instead of throwing for unsupported types.
+    const areDataStringOrBuffer = (typeof config.data === 'string') || Buffer.isBuffer(config.data);
+    if (areDataStringOrBuffer) {
+        const areDataLargeEnough = Buffer.byteLength(config.data) >= MIN_GZIP_BYTES;
+        if (areDataLargeEnough) {
+            config.headers['Content-Encoding'] = 'gzip';
+            config.data = await gzipPromise(config.data);
+        }
     }
 
-    return options;
+    return config;
 };
 
 module.exports = {
     isNode,
-    gzipRequest,
+    maybeGzipRequest,
     isomorphicBufferToString,
     retryWithExpBackoff,
     replaceSlashWithTilde,
@@ -196,5 +195,4 @@ module.exports = {
     pluckData,
     safeJsonParse,
     CONTENT_TYPE_JSON,
-
 };

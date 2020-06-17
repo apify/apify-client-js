@@ -13,6 +13,7 @@ class Browser {
         const page = await this.browser.newPage();
         await Apify.utils.puppeteer.injectFile(page, `${__dirname}/../dist/bundle.js`);
 
+        page.on('console', (msg) => console.log(msg.text()));
         await page.evaluate((url, defaultQuery) => {
             window.client = new window.ApifyClient({
                 baseUrl: url,
@@ -60,6 +61,7 @@ function optsToQuery(params) {
         .filter(([k, v]) => v !== false) // eslint-disable-line no-unused-vars
         .map(([k, v]) => {
             if (v === true) v = '1';
+            else if (Array.isArray(v)) v = v.join(',');
             else if (typeof v === 'number') v = v.toString();
             return [k, v];
         })

@@ -1,3 +1,4 @@
+const bodyParser = require('body-parser');
 const express = require('express');
 const path = require('path');
 const http = require('http');
@@ -52,14 +53,12 @@ app.use((req, res, next) => {
     next();
 });
 app.use(logger('dev'));
+app.use(express.text());
 app.use(express.json({ limit: '9mb' }));
 app.use(express.urlencoded({ extended: false }));
+app.use(bodyParser.raw());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(compression());
-// Debugging middleware
-app.use((err, req, res, next) => {
-    next(err);
-});
 
 app.use('/', (req, res, next) => {
     mockServer.requests.push(req);
@@ -67,6 +66,7 @@ app.use('/', (req, res, next) => {
 });
 app.set('mockServer', mockServer);
 app.use('/v2', v2Router);
+
 
 // Attaching V2 routers
 v2Router.use('/acts', actorRouter);
@@ -79,5 +79,10 @@ v2Router.use('/request-queues', requestQueues);
 v2Router.use('/webhooks', webhooks);
 v2Router.use('/schedules', schedules);
 v2Router.use('/webhook-dispatches', webhookDispatches);
+
+// Debugging middleware
+app.use((err, req, res, next) => {
+    res.status(500).json({ error: { message: err.message } });
+});
 
 module.exports = mockServer;

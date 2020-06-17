@@ -15,14 +15,17 @@ class ResourceCollectionClient extends ApiClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    async create(actor) {
-        ow(actor, ow.optional.object);
+    async create(resource) {
+        ow(resource, ow.optional.object);
         this._throwIfDisabled('create');
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'POST',
             params: this._params(),
-            data: actor,
+            data: resource,
+            headers: {
+                'x-header': 'foo',
+            },
         });
         return parseDateFields(pluckData(response.data));
     }

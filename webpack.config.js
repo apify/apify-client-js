@@ -20,6 +20,10 @@ module.exports = {
     },
     node: {
         fs: 'empty',
+        os: false,
+        Buffer: false,
+        global: false,
+        process: 'mock',
     },
     output: {
         path: `${__dirname}/dist`,

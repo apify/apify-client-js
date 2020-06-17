@@ -8,7 +8,15 @@ class ApifyClientError extends Error {
 
 class ApifyApiError extends Error {
     constructor(response, attempt) {
-        const { type, message } = response.data.error;
+        let message;
+        let type;
+        if (response.data && response.data.error) {
+            const { error } = response.data;
+            message = error.message;
+            type = error.type;
+        } else {
+            message = `Unexpected error: ${response.data}`;
+        }
         super(message);
         delete this.stack;
 

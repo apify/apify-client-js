@@ -1,4 +1,5 @@
 const express = require('express');
+const { addRoutes } = require('./add_routes');
 
 const actors = express.Router();
 
@@ -30,38 +31,6 @@ const ROUTES = [
     { id: 'delete-actor-version', method: 'DELETE', path: '/:actorId/versions/:versionNumber' },
     { id: 'list-webhooks', method: 'GET', path: '/:actorId/webhooks' },
 ];
-
-const HANDLERS = {
-    json(id) {
-        return (req, res) => {
-            const responseStatusCode = Number(req.params.actorId) || 200;
-            let payload;
-            if (responseStatusCode === 200) payload = { data: { id } };
-            else if (responseStatusCode === 204) payload = null;
-            else if (responseStatusCode === 404) {
-                payload = {
-                    error: {
-                        type: 'record-not-found',
-                        message: 'Record with this name was not found',
-                    },
-                };
-            }
-
-            res
-                .status(responseStatusCode)
-                .json(payload);
-        };
-    },
-};
-
-function addRoutes(router, routes) {
-    routes.forEach((route) => {
-        const type = route.type ? route.type : 'json';
-        const handler = HANDLERS[type];
-        const method = route.method.toLowerCase();
-        router[method](route.path, handler(route.id));
-    });
-}
 
 addRoutes(actors, ROUTES);
 

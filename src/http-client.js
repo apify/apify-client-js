@@ -6,7 +6,7 @@ const {
 } = require('./apify_error');
 const {
     retryWithExpBackoff,
-    gzipRequest,
+    maybeGzipRequest,
     isNode,
 } = require('./utils');
 const { version } = require('../package.json');
@@ -35,11 +35,14 @@ class HttpClient {
             this.httpAgent = new KeepAliveAgent();
             this.httpsAgent = new KeepAliveAgent.HttpsAgent();
         }
+
+        // Clean all default headers because they only make a mess
+        // and their merging is difficult to understand and buggy.
+        axios.defaults.headers = {};
+
         this.axios = axios.create({
             headers: {
-                common: {
-                    Accept: 'application/json, */*',
-                },
+                Accept: 'application/json, */*',
             },
             httpAgent: this.httpAgent,
             httpsAgent: this.httpsAgent,
@@ -54,47 +57,43 @@ class HttpClient {
                 return new URLSearchParams(formattedParams);
             },
             validateStatus: null,
+            // Using interceptors for this functionality.
+            transformRequest: null,
+            transformResponse: null,
         });
 
         if (isNode()) {
             // Works only in Node. Cannot be set in browser
             const userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${!!process.env.IS_AT_HOME}`;
-            this.axios.defaults.headers.common['User-Agent'] = userAgent;
+            this.axios.defaults.headers['User-Agent'] = userAgent;
         }
 
-        ['post', 'put', 'patch'].forEach((method) => {
-            this.axios.defaults.headers[method] = {
-                'Content-Type': 'application/json; charset=utf-8',
-            };
+        // Interceptors are executed in reverse order.
+        this.axios.interceptors.request.use(maybeGzipRequest);
+        this.axios.interceptors.request.use((config) => {
+            const [defaultTransform] = axios.defaults.transformRequest;
+            config.data = defaultTransform(config.data, config.headers);
+            const hasBody = config.data != null;
+            const isContentTypeMissing = !config.headers['Content-Type'];
+            if (hasBody && isContentTypeMissing) {
+                config.headers['Content-Type'] = 'application/json; charset=utf-8';
+            }
+            return config;
         });
 
-        this.axios.interceptors.request.use(gzipRequest);
+        this.axios.interceptors.response.use((response) => {
+            if (typeof response.data === 'string' && response.data.length) {
+                const contentType = response.headers['content-type'];
+                const isJson = /^application\/json/.test(contentType);
+                if (isJson) response.data = JSON.parse(response.data);
+            }
+            return response;
+        });
     }
 
     async call(callOptions) {
         const mergedOptions = { ...this.defaultOptions, ...callOptions };
         return this._call(mergedOptions);
-    }
-
-    _getDefaultHeaders() {
-        if (!isNode()) {
-            return {
-                'content-type': 'application/json; charset=utf-8',
-            };
-        }
-        return { 'user-agent': apifyClientUserAgent,
-            'accept-encoding': 'gzip',
-            'content-type': 'application/json; charset=utf-8' };
-    }
-
-    _getAxiosConfig(endpointConfig) {
-        // if (endpointConfig.headers && endpointConfig.headers['content-type'] === null) {
-        //     delete endpointConfig.headers['content-type'];
-        //     delete this.axios.defaults.headers.post['Content-Type'];
-        //     delete this.axios.defaults.headers.put['Content-Type'];
-        //     delete this.axios.defaults.headers.patch['Content-Type'];
-        // }
-        return endpointConfig;
     }
 
     async _call(options) {
@@ -107,13 +106,11 @@ class HttpClient {
         this.stats.calls++;
         let iteration = 0;
 
-        // const axiosConfig = this._getAxiosConfig(options);
-
         const makeRequest = async (bail) => {
             iteration += 1;
 
             this.stats.requests++;
-            const response = await this.axios.request(options); // eslint-disable-line
+            const response = await this.axios.request(options);
             const statusCode = response.status;
 
             if (statusCode < 300) return response;

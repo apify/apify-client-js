@@ -1,3 +1,4 @@
+
 class ApiClient {
     /**
      * @param {object} options
@@ -27,7 +28,7 @@ class ApiClient {
             : `${baseUrl}/${resourcePath}`;
         this.httpClient = httpClient;
         this.params = params;
-        this.disabledMethods = disableMethods.map(m => m.toLowerCase());
+        this.disabledMethods = disableMethods.map((m) => m.toLowerCase());
     }
 
     /**

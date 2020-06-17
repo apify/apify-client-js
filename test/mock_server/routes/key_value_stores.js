@@ -1,4 +1,5 @@
 const express = require('express');
+const { addRoutes } = require('./add_routes');
 
 const keyValueStores = express.Router();
 
@@ -9,46 +10,11 @@ const ROUTES = [
     { id: 'delete-store', method: 'DELETE', path: '/:storeId' },
     { id: 'update-store', method: 'PUT', path: '/:storeId' },
     { id: 'get-record', method: 'GET', path: '/:storeId/records/:key', type: 'responseJsonMock' },
-    { id: 'put-record', method: 'PUT', path: '/:storeId/records/:key', type: 'responseJsonMock' },
+    { id: 'put-record', method: 'PUT', path: '/:storeId/records/:key' },
+    { id: 'direct-upload-url', method: 'GET', path: '/:storeId/records/:key/direct-upload-url', type: 'responseJsonMock' },
     { id: 'delete-record', method: 'DELETE', path: '/:storeId/records/:key' },
     { id: 'list-keys', method: 'GET', path: '/:storeId/keys' },
-
-
 ];
-
-const HANDLERS = {
-    json(id) {
-        return (req, res) => {
-            const responseStatusCode = Number(req.params.storeId) || 200;
-            const payload = responseStatusCode === 204
-                ? null
-                : { data: { id } };
-            res
-                .status(responseStatusCode)
-                .json(payload);
-        };
-    },
-    responseJsonMock() {
-        return (req, res) => {
-            const mockServer = req.app.get('mockServer');
-            const { body, headers = {}, statusCode = 200 } = mockServer.response;
-            const payload = statusCode === 200 ? body : null;
-            res
-                .status(statusCode)
-                .set(headers)
-                .send(payload);
-        };
-    },
-};
-
-function addRoutes(router, routes) {
-    routes.forEach((route) => {
-        const type = route.type ? route.type : 'json';
-        const handler = HANDLERS[type];
-        const method = route.method.toLowerCase();
-        router[method](route.path, handler(route.id));
-    });
-}
 
 addRoutes(keyValueStores, ROUTES);
 

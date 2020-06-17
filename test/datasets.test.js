@@ -123,22 +123,27 @@ describe('Dataset methods', () => {
                 limit: 100000,
                 items: [],
             };
-            const headers = {
+            const query = {
+                fields: ['one', 'two'],
+                omit: ['x'],
+                desc: true,
+            };
+            const responseHeaders = {
                 'content-type': 'application/json; chartset=utf-8',
                 'x-apify-pagination-total': '0',
                 'x-apify-pagination-offset': '0',
                 'x-apify-pagination-count': '1', // wrong on purpose to check that it's not used
                 'x-apify-pagination-limit': '100000',
             };
-            mockServer.setResponse({ body: [], headers });
+            mockServer.setResponse({ body: [], headers: responseHeaders });
 
-            const res = await client.dataset(datasetId).listItems();
+            const res = await client.dataset(datasetId).listItems(query);
             expect(res).toEqual(expected);
-            validateRequest({}, { datasetId }, {});
+            validateRequest(query, { datasetId });
 
-            const browserRes = await page.evaluate((id) => client.dataset(id).listItems(), datasetId);
+            const browserRes = await page.evaluate((id, opts) => client.dataset(id).listItems(opts), datasetId, query);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId }, {});
+            validateRequest(query, { datasetId });
         });
 
         // TODO maybe use for .export()?

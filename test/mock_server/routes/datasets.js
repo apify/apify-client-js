@@ -1,4 +1,5 @@
 const express = require('express');
+const { addRoutes } = require('./add_routes');
 
 const datasets = express.Router();
 
@@ -11,48 +12,6 @@ const ROUTES = [
     { id: 'list-items', method: 'GET', path: '/:datasetId/items', type: 'responseJsonMock' },
     { id: 'push-items', method: 'POST', path: '/:datasetId/items' },
 ];
-
-const HANDLERS = {
-    json(id) {
-        return (req, res) => {
-            const responseStatusCode = Number(req.params.datasetId) || 200;
-            let payload;
-            if (responseStatusCode === 200) payload = { data: { id } };
-            else if (responseStatusCode === 204) payload = null;
-            else if (responseStatusCode === 404) {
-                payload = {
-                    error: {
-                        type: 'record-not-found',
-                        message: 'Record with this name was not found',
-                    },
-                };
-            }
-
-            res
-                .status(responseStatusCode)
-                .json(payload);
-        };
-    },
-    responseJsonMock() {
-        return (req, res) => {
-            const mockServer = req.app.get('mockServer');
-            const { body, headers = {} } = mockServer.response;
-            res
-                .status(200)
-                .set(headers)
-                .json(body);
-        };
-    },
-};
-
-function addRoutes(router, routes) {
-    routes.forEach((route) => {
-        const type = route.type ? route.type : 'json';
-        const handler = HANDLERS[type];
-        const method = route.method.toLowerCase();
-        router[method](route.path, handler(route.id));
-    });
-}
 
 addRoutes(datasets, ROUTES);
 
