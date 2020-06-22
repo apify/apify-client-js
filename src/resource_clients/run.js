@@ -7,8 +7,6 @@ const RequestQueueClient = require('./request_queue');
 const {
     pluckData,
     parseDateFields,
-    catchNotFoundOrThrow,
-    stringifyWebhooksToBase64,
 } = require('../utils');
 
 class RunClient extends ResourceClient {
