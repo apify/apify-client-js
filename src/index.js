@@ -171,12 +171,16 @@ class ApifyClient {
         return new RequestQueueCollectionClient(this._options());
     }
 
-    requestQueue(id) {
+    requestQueue(id, options = {}) {
         ow(id, ow.string);
-        return new RequestQueueClient({
+        ow(options, ow.object.exactShape({
+            clientKey: ow.optional.string,
+        }));
+        const apiClientOptions = {
             id,
             ...this._options(),
-        });
+        };
+        return new RequestQueueClient(apiClientOptions, options);
     }
 
     // TODO requires new endpoint

@@ -7,10 +7,18 @@ const {
 
 /**
  * Resource collection client.
- *
- * @param {ApiClientOptions} options
  */
 class ResourceCollectionClient extends ApiClient {
+    /**
+     * @param {ApiClientOptions} options
+     */
+    constructor(options = {}) {
+        if (options.id) {
+            throw new Error('"id" is not an allowed option for ResourceCollectionClient.');
+        }
+        super(options);
+    }
+
     async list(options = {}) {
         const response = await this.httpClient.call({
             url: this._url(),
@@ -28,9 +36,6 @@ class ResourceCollectionClient extends ApiClient {
             method: 'POST',
             params: this._params(),
             data: resource,
-            headers: {
-                'x-header': 'foo',
-            },
         });
         return parseDateFields(pluckData(response.data));
     }

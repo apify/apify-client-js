@@ -5,7 +5,7 @@
  * @property {string} options.resourcePath
  * @property {HttpClient} options.httpClient
  * @property {string[]} [options.disableMethods]
- * @property {object} [options.id]
+ * @property {string} [options.id]
  * @property {object} [options.params]
  */
 

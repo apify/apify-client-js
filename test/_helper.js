@@ -74,9 +74,9 @@ function optsToQuery(params) {
 const validateRequest = (query = {}, params = {}, body = {}, headers = {}) => {
     const request = mockServer.getLastRequest();
     const expectedQuery = getExpectedQuery(query);
-    expect(request.query).toEqual(expectedQuery);
-    expect(request.params).toEqual(params);
-    expect(request.body).toEqual(body);
+    if (query !== false) expect(request.query).toEqual(expectedQuery);
+    if (params !== false) expect(request.params).toEqual(params);
+    if (body !== false) expect(request.body).toEqual(body);
     Object.entries(headers).forEach(([key, value]) => {
         // Browsers tend to send headers "a bit differently".
         const expectedHeaderValue = value.toLowerCase().replace(/\s/g, '');

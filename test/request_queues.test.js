@@ -1,233 +1,157 @@
 const ApifyClient = require('../src');
 const mockServer = require('./mock_server/server');
-const { cleanUpBrowser, getInjectedPage } = require('./_helper');
+const { Browser, validateRequest, DEFAULT_QUERY } = require('./_helper');
 
-const DEFAULT_QUERY = {
-    token: 'default-token',
-};
+describe('Request Queue methods', () => {
+    let baseUrl;
+    const browser = new Browser();
 
-function validateRequest(query = {}, params = {}, body = {}, headers = {}) {
-    const request = mockServer.getLastRequest();
-    const expectedQuery = getExpectedQuery(query);
-    expect(request.query).toEqual(expectedQuery);
-    expect(request.params).toEqual(params);
-    expect(request.body).toEqual(body);
-    Object.entries(headers).forEach(([key, value]) => {
-        expect(request.headers).toHaveProperty(key, value);
-    });
-}
-
-function getExpectedQuery(callQuery = {}) {
-    const query = optsToQuery(callQuery);
-    return {
-        ...DEFAULT_QUERY,
-        ...query,
-    };
-}
-
-function optsToQuery(params) {
-    return Object
-        .entries(params)
-        .filter(([k, v]) => { // eslint-disable-line
-            if (typeof v === 'boolean') {
-                return true;
-            }
-
-            return v !== false;
-        }) // eslint-disable-line no-unused-vars
-        .map(([k, v]) => {
-            if (typeof v === 'number') v = v.toString();
-            else if (typeof v === 'boolean') v = v.toString();
-            return [k, v];
-        })
-        .reduce((newObj, [k, v]) => {
-            newObj[k] = v;
-            return newObj;
-        }, {});
-}
-
-describe('RequestQueues methods', () => {
-    let baseUrl = null;
-    let page;
     beforeAll(async () => {
         const server = await mockServer.start();
-        baseUrl = `http://localhost:${server.address().port}`;
+        await browser.start();
+        baseUrl = `http://localhost:${server.address().port}/v2`;
     });
-    afterAll(() => mockServer.close());
 
-    let client = null;
+    afterAll(async () => {
+        await Promise.all([
+            mockServer.close(),
+            browser.cleanUpBrowser(),
+        ]);
+    });
+
+    let client;
+    let page;
     beforeEach(async () => {
-        page = await getInjectedPage(baseUrl, DEFAULT_QUERY);
+        page = await browser.getInjectedPage(baseUrl, DEFAULT_QUERY);
         client = new ApifyClient({
             baseUrl,
-            expBackoffMaxRepeats: 0,
-            expBackoffMillis: 1,
+            maxRetries: 0,
             ...DEFAULT_QUERY,
         });
     });
     afterEach(async () => {
         client = null;
-        await cleanUpBrowser(page);
+        page.close().catch(() => {});
     });
 
-    describe('indentification', () => {
-        test.skip('should work with queueId in default params', () => {
-            // TODO: Do we want to support it?
-        });
-
-        test('should work with queueId in method call params', async () => {
-            const queueId = 'someId';
-
-            const res = await client.requestQueues.getQueue({ queueId });
-            expect(res.id).toEqual('get-queue');
-            validateRequest({}, { queueId });
-
-            const browserRes = await page.evaluate(options => client.requestQueues.getQueue(options), { queueId });
-            expect(browserRes).toEqual(res);
-            validateRequest({}, { queueId });
-        });
-
-        test('should work with token and queueName', async () => {
-            const queueOptions = {
-                token: 'sometoken',
-                queueName: 'somename',
-            };
-
-            const res = await client.requestQueues.getOrCreateQueue(queueOptions);
-            expect(res.id).toEqual('get-or-create-request-queue');
-            validateRequest({ name: queueOptions.queueName, token: queueOptions.token }, { });
-
-            const browserRes = await page.evaluate(options => client.requestQueues.getOrCreateQueue(options), queueOptions);
-            expect(browserRes).toEqual(res);
-            validateRequest({ name: queueOptions.queueName, token: queueOptions.token }, { });
-        });
-    });
-
-    describe('REST method', () => {
-        test('listQueues() works', async () => {
-            const callOptions = {
+    describe('requestQueues()', () => {
+        test('list() works', async () => {
+            const opts = {
                 limit: 5,
                 offset: 3,
                 desc: true,
                 unnamed: true,
             };
 
-            const queryString = {
-                limit: 5,
-                offset: 3,
-                desc: 1,
-                unnamed: 1,
-            };
-
-            const res = await client.requestQueues.listQueues(callOptions);
+            const res = await client.requestQueues().list(opts);
             expect(res.id).toEqual('list-queues');
-            validateRequest(queryString, {});
+            validateRequest(opts);
 
-            const browserRes = await page.evaluate(options => client.requestQueues.listQueues(options), callOptions);
+            const browserRes = await page.evaluate((options) => client.requestQueues().list(options), opts);
             expect(browserRes).toEqual(res);
-            validateRequest(queryString, {});
+            validateRequest(opts);
         });
 
-        test('getQueue() works', async () => {
+        test('getOrCreate() works', async () => {
+            const name = 'some-id-2';
+
+            const res = await client.requestQueues().getOrCreate(name);
+            expect(res.id).toEqual('get-or-create-queue');
+            validateRequest({ name });
+
+            const browserRes = await page.evaluate((n) => client.requestQueues().getOrCreate(n), name);
+            expect(browserRes).toEqual(res);
+            validateRequest({ name });
+        });
+    });
+
+    describe('requestQueue(id)', () => {
+        test('get() works', async () => {
             const queueId = 'some-id';
 
-            const res = await client.requestQueues.getQueue({ queueId });
+            const res = await client.requestQueue(queueId).get();
             expect(res.id).toEqual('get-queue');
             validateRequest({}, { queueId });
 
-            const browserRes = await page.evaluate(options => client.requestQueues.getQueue(options), { queueId });
+            const browserRes = await page.evaluate((id) => client.requestQueue(id).get(), queueId);
             expect(browserRes).toEqual(res);
             validateRequest({}, { queueId });
         });
 
-        test(
-            'getQueue() returns null on 404 status code (RECORD_NOT_FOUND)',
-            async () => {
-                const queueId = '404';
+        test('get() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
+            const queueId = '404';
 
+            const res = await client.requestQueue(queueId).get();
+            expect(res).toBeUndefined();
+            validateRequest({}, { queueId });
 
-                const res = await client.requestQueues.getQueue({ queueId });
-                expect(res).toEqual(null);
-                validateRequest({}, { queueId });
+            const browserRes = await page.evaluate((id) => client.requestQueue(id).get(), queueId);
+            expect(browserRes).toBeUndefined();
+            validateRequest({}, { queueId });
+        });
 
-                const browserRes = await page.evaluate(options => client.requestQueues.getQueue(options), { queueId });
-                expect(browserRes).toEqual(res);
-                validateRequest({}, { queueId });
-            },
-        );
-
-        test('deleteQueue() works', async () => {
+        test('delete() works', async () => {
             const queueId = '204';
 
-            const res = await client.requestQueues.deleteQueue({ queueId });
-            expect(res).toEqual('');
+            const res = await client.requestQueue(queueId).delete();
+            expect(res).toBeUndefined();
             validateRequest({}, { queueId });
 
-            const browserRes = await page.evaluate(options => client.requestQueues.deleteQueue(options), { queueId });
-            expect(browserRes).toEqual(res);
-            validateRequest({}, { queueId });
+            const browserRes = await page.evaluate((id) => client.requestQueue(id).delete(), queueId);
+            expect(browserRes).toBeUndefined();
         });
 
-        test('updateQueue() works', async () => {
+        test('update() works', async () => {
             const queueId = 'some-id';
-            const queue = { id: queueId, name: 'my-name' };
+            const queue = { name: 'my-name' };
 
-            const res = await client.requestQueues.updateQueue({ queueId, queue });
+            const res = await client.requestQueue(queueId).update(queue);
             expect(res.id).toEqual('update-queue');
             validateRequest({}, { queueId }, { name: queue.name });
 
-            const browserRes = await page.evaluate(opts => client.requestQueues.updateQueue(opts), { queueId, queue });
+            const browserRes = await page.evaluate((id, opts) => client.requestQueue(id).update(opts), queueId, queue);
             expect(browserRes).toEqual(res);
             validateRequest({}, { queueId }, { name: queue.name });
         });
-
 
         test('addRequest() works without forefront param', async () => {
             const queueId = 'some-id';
             const request = { url: 'http://example.com' };
 
-            const endpointOptions = {
-                request,
-                clientKey: 'my-client-id',
-            };
-
-            const res = await client.requestQueues.addRequest({ queueId, ...endpointOptions });
+            const res = await client.requestQueue(queueId).addRequest(request);
             expect(res.id).toEqual('add-request');
-            validateRequest({ forefront: false, clientKey: endpointOptions.clientKey }, { queueId }, request);
+            validateRequest({}, { queueId }, request);
 
-            const browserRes = await page.evaluate(options => client.requestQueues.addRequest(options), { queueId, ...endpointOptions });
+            const browserRes = await page.evaluate((id, r) => client.requestQueue(id).addRequest(r), queueId, request);
             expect(browserRes).toEqual(res);
-            validateRequest({ forefront: false, clientKey: endpointOptions.clientKey }, { queueId }, request);
+            validateRequest({}, { queueId }, request);
         });
 
         test('addRequest() works with forefront param', async () => {
             const queueId = 'some-id';
             const request = { url: 'http://example.com' };
+            const forefront = true;
 
-            const endpointOptions = {
-                request,
-                clientKey: 'my-client-id',
-                forefront: true,
-            };
-
-            const res = await client.requestQueues.addRequest({ queueId, ...endpointOptions });
+            const res = await client.requestQueue(queueId).addRequest(request, { forefront });
             expect(res.id).toEqual('add-request');
-            validateRequest({ forefront: true, clientKey: endpointOptions.clientKey }, { queueId }, request);
+            validateRequest({ forefront }, { queueId }, request);
 
-            const browserRes = await page.evaluate(options => client.requestQueues.addRequest(options), { queueId, ...endpointOptions });
+            const browserRes = await page.evaluate((qId, r) => {
+                return client.requestQueue(qId).addRequest(r, { forefront: true });
+            }, queueId, request);
             expect(browserRes).toEqual(res);
-            validateRequest({ forefront: true, clientKey: endpointOptions.clientKey }, { queueId }, request);
+            validateRequest({ forefront }, { queueId }, request);
         });
 
         test('getRequest() works', async () => {
             const queueId = 'some-id';
             const requestId = 'xxx';
 
-            const res = await client.requestQueues.getRequest({ queueId, requestId });
+            const res = await client.requestQueue(queueId).getRequest(requestId);
             expect(res.id).toEqual('get-request');
             validateRequest({}, { queueId, requestId });
 
-            const browserRes = await page.evaluate(options => client.requestQueues.getRequest(options), { queueId, requestId });
+            const browserRes = await page.evaluate((qId, rId) => client.requestQueue(qId).getRequest(rId), queueId, requestId);
             expect(browserRes).toEqual(res);
             validateRequest({}, { queueId, requestId });
         });
@@ -236,54 +160,83 @@ describe('RequestQueues methods', () => {
             const requestId = 'xxx';
             const queueId = '204';
 
-            const res = await client.requestQueues.deleteRequest({ queueId, requestId });
-            expect(res).toEqual('');
+            const res = await client.requestQueue(queueId).deleteRequest(requestId);
+            expect(res).toBeUndefined();
             validateRequest({}, { queueId, requestId });
 
-            const browserRes = await page.evaluate(options => client.requestQueues.deleteRequest(options), { queueId, requestId });
+            const browserRes = await page.evaluate((qId, rId) => client.requestQueue(qId).deleteRequest(rId), queueId, requestId);
             expect(browserRes).toEqual(res);
             validateRequest({}, { queueId, requestId });
         });
 
-        test('updateRequest() works with requestId param', async () => {
+        test('updateRequest() works with forefront', async () => {
             const queueId = 'some-id';
             const requestId = 'xxx';
-            const request = { url: 'http://example.com' };
+            const request = { id: requestId, url: 'http://example.com' };
+            const forefront = true;
 
-            const res = await client.requestQueues.updateRequest({ queueId, requestId, request });
+            const res = await client.requestQueue(queueId).updateRequest(request, { forefront });
             expect(res.id).toEqual('update-request');
-            validateRequest({ forefront: false }, { queueId, requestId }, request);
+            validateRequest({ forefront }, { queueId, requestId }, request);
 
-            const browserRes = await page.evaluate(options => client.requestQueues.updateRequest(options), { queueId, requestId, request });
+            const browserRes = await page.evaluate((id, r) => {
+                return client.requestQueue(id).updateRequest(r, { forefront: true });
+            }, queueId, request);
             expect(browserRes).toEqual(res);
-            validateRequest({ forefront: false }, { queueId, requestId }, request);
+            validateRequest({ forefront }, { queueId, requestId }, request);
         });
 
-        test('updateRequest() works without requestId param', async () => {
+        test('updateRequest() works without forefront', async () => {
             const queueId = 'some-id';
             const requestId = 'xxx';
-            const request = { url: 'http://example.com', id: requestId };
+            const request = { id: requestId, url: 'http://example.com' };
 
-            const res = await client.requestQueues.updateRequest({ queueId, request });
+            const res = await client.requestQueue(queueId).updateRequest(request);
             expect(res.id).toEqual('update-request');
-            validateRequest({ forefront: false }, { queueId, requestId }, request);
+            validateRequest({}, { queueId, requestId }, request);
 
-            const browserRes = await page.evaluate(options => client.requestQueues.updateRequest(options), { queueId, request });
+            const browserRes = await page.evaluate((id, r) => {
+                return client.requestQueue(id).updateRequest(r);
+            }, queueId, request);
             expect(browserRes).toEqual(res);
-            validateRequest({ forefront: false }, { queueId, requestId }, request);
+            validateRequest({}, { queueId, requestId }, request);
         });
 
-        test('getHead() works', async () => {
+        test('listHead() works', async () => {
             const queueId = 'some-id';
-            const qs = { limit: 5, clientKey: 'some-id' };
+            const options = { limit: 5 };
 
-            const res = await client.requestQueues.getHead({ queueId, ...qs });
+            const res = await client.requestQueue(queueId).listHead(options);
             expect(res.id).toEqual('get-head');
-            validateRequest(qs, { queueId });
+            validateRequest(options, { queueId });
 
-            const browserRes = await page.evaluate(options => client.requestQueues.getHead(options), { queueId, ...qs });
+            const browserRes = await page.evaluate((id, opts) => client.requestQueue(id).listHead(opts), queueId, options);
             expect(browserRes).toEqual(res);
-            validateRequest(qs, { queueId });
+            validateRequest(options, { queueId });
+        });
+
+        test.each([
+            'addRequest',
+            'updateRequest',
+            'deleteRequest',
+        ])('clientKey param propagates to %s()', async (method) => {
+            const queueId = 'some-id';
+            const requestId = 'xxx';
+            const request = { id: requestId, url: 'http://example.com' };
+            const clientKey = 'my-client-key';
+
+            const param = method.startsWith('delete') ? request.id : request;
+
+            const queue = client.requestQueue(queueId, { clientKey });
+            const res = await queue[method](param);
+            validateRequest({ clientKey }, false, false);
+
+            const browserRes = await page.evaluate((id, k, p, m) => {
+                const rq = client.requestQueue(id, { clientKey: k });
+                return rq[m](p);
+            }, queueId, clientKey, param, method);
+            expect(browserRes).toEqual(res);
+            validateRequest({ clientKey }, false, false);
         });
     });
 });
