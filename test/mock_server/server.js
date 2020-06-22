@@ -16,6 +16,7 @@ const requestQueues = require('./routes/request_queues');
 const webhooks = require('./routes/webhooks');
 const schedules = require('./routes/schedules');
 const webhookDispatches = require('./routes/webhook_dispatches');
+const external = require('./routes/external');
 
 const app = express();
 const v2Router = express.Router();
@@ -79,6 +80,7 @@ v2Router.use('/request-queues', requestQueues);
 v2Router.use('/webhooks', webhooks);
 v2Router.use('/schedules', schedules);
 v2Router.use('/webhook-dispatches', webhookDispatches);
+v2Router.use('/external', external);
 
 // Debugging middleware
 app.use((err, req, res, next) => {

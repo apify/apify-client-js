@@ -1,4 +1,3 @@
-const { gzipSync } = require('zlib');
 const ApifyClient = require('../src');
 const mockServer = require('./mock_server/server');
 const { Browser, validateRequest, DEFAULT_QUERY } = require('./_helper');
@@ -276,8 +275,28 @@ describe('Key-Value Store methods', () => {
             validateRequest({}, { storeId, key }, buf, expectedHeaders);
         });
 
-        test.skip('setValue() uploads via signed url when gzipped buffer.length > SIGNED_URL_UPLOAD_MIN_BYTESIZE', () => {
-            // TODO: I have no idea how to test this using this mock flow :(
+        test('setValue() uploads via signed url when gzipped buffer.length > SIGNED_URL_UPLOAD_MIN_BYTESIZE', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const value = Array(10000).fill({ hello: 'world' });
+            const expectedHeaders = {
+                'content-type': 'application/json; charset=utf-8',
+            };
+            const code = '12345';
+
+            mockServer.setResponse({
+                body: {
+                    signedUrl: `${baseUrl}/external/signed-url/${code}`,
+                },
+            });
+
+            const res = await client.keyValueStore(storeId).setValue(key, value);
+            expect(res).toBeUndefined();
+            validateRequest({}, { code }, value, expectedHeaders);
+
+            const browserRes = await page.evaluate((id, k, v) => client.keyValueStore(id).setValue(k, v), storeId, key, value);
+            expect(browserRes).toBeUndefined();
+            validateRequest({}, { code }, value, expectedHeaders);
         });
 
         test('deleteValue() works', async () => {
