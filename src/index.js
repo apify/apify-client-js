@@ -159,10 +159,10 @@ class ApifyClient {
         });
     }
 
-    log(id) {
-        ow(id, ow.string);
+    log(buildOrRunId) {
+        ow(buildOrRunId, ow.string);
         return new LogClient({
-            id,
+            id: buildOrRunId,
             ...this._options(),
         });
     }

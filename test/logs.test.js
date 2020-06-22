@@ -1,41 +1,63 @@
 const ApifyClient = require('../src');
-
 const mockServer = require('./mock_server/server');
-const { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } = require('./_helper');
+const { Browser, validateRequest, DEFAULT_QUERY } = require('./_helper');
 
 describe('Log methods', () => {
-    let baseUrl = null;
-    let page;
+    let baseUrl;
+    const browser = new Browser();
+
     beforeAll(async () => {
         const server = await mockServer.start();
-        baseUrl = `http://localhost:${server.address().port}`;
+        await browser.start();
+        baseUrl = `http://localhost:${server.address().port}/v2`;
     });
-    afterAll(() => mockServer.close());
 
-    let client = null;
+    afterAll(async () => {
+        await Promise.all([
+            mockServer.close(),
+            browser.cleanUpBrowser(),
+        ]);
+    });
+
+    let client;
+    let page;
     beforeEach(async () => {
-        page = await getInjectedPage(baseUrl, DEFAULT_QUERY);
+        page = await browser.getInjectedPage(baseUrl, DEFAULT_QUERY);
         client = new ApifyClient({
             baseUrl,
-            expBackoffMaxRepeats: 0,
-            expBackoffMillis: 1,
+            maxRetries: 0,
             ...DEFAULT_QUERY,
         });
     });
     afterEach(async () => {
         client = null;
-        await cleanUpBrowser(page);
+        page.close().catch(() => {});
     });
 
+    describe('log(buildOrRunId)', () => {
+        test('get() works', async () => {
+            const logId = 'some-id';
 
-    test('getLog() works', async () => {
-        const logId = 'some-id';
+            const res = await client.log(logId).get();
+            expect(res).toBe('get-log');
+            validateRequest({}, { logId });
 
-        const res = await client.logs.getLog({ logId });
-        validateRequest({}, { logId });
+            const browserRes = await page.evaluate((id) => client.log(id).get(), logId);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { logId });
+        });
 
-        const browserRes = await page.evaluate(options => client.logs.getLog(options), { logId });
-        expect(browserRes).toEqual(res);
-        validateRequest({}, { logId });
+        test('stream() works', async () => {
+            const logId = 'some-id';
+
+            const res = await client.log(logId).stream();
+            const chunks = [];
+            for await (const chunk of res) {
+                chunks.push(chunk);
+            }
+            const id = Buffer.concat(chunks).toString();
+            expect(id).toBe('get-log');
+            validateRequest({ stream: true }, { logId });
+        });
     });
 });

@@ -5,6 +5,11 @@ const {
     parseDateFields,
 } = require('../utils');
 
+/**
+ * Resource collection client.
+ *
+ * @param {ApiClientOptions} options
+ */
 class ResourceCollectionClient extends ApiClient {
     async list(options = {}) {
         const response = await this.httpClient.call({

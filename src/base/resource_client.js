@@ -5,6 +5,11 @@ const {
     catchNotFoundOrThrow,
 } = require('../utils');
 
+/**
+ * Resource client.
+ *
+ * @param {ApiClientOptions} options
+ */
 class ResourceClient extends ApiClient {
     async get() {
         const requestOpts = {

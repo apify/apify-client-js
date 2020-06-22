@@ -1,13 +1,20 @@
+/**
+ * @typedef ApiClientOptions
+ * @property {object} options
+ * @property {string} options.baseUrl
+ * @property {string} options.resourcePath
+ * @property {HttpClient} options.httpClient
+ * @property {string[]} [options.disableMethods]
+ * @property {object} [options.id]
+ * @property {object} [options.params]
+ */
 
+/**
+ * API client.
+ */
 class ApiClient {
     /**
-     * @param {object} options
-     * @param {string} options.baseUrl
-     * @param {string} options.resourcePath
-     * @param {HttpClient} options.httpClient
-     * @param {string[]} [options.disableMethods]
-     * @param {object} [options.id]
-     * @param {object} [options.params]
+     * @param {ApiClientOptions} options
      */
     constructor(options) {
         const {
@@ -32,7 +39,7 @@ class ApiClient {
     }
 
     /**
-     * @param {object} [moreOptions]
+     * @property {object} [moreOptions]
      * @return object
      */
     _subResourceOptions(moreOptions) {
@@ -45,7 +52,7 @@ class ApiClient {
     }
 
     /**
-     * @param {string} methodName
+     * @property {string} methodName
      */
     _throwIfDisabled(methodName) {
         if (this.disabledMethods.includes(methodName.toLowerCase())) {
@@ -54,7 +61,7 @@ class ApiClient {
     }
 
     /**
-     * @param {string} [path]
+     * @property {string} [path]
      * @returns {string}
      */
     _url(path) {
@@ -62,7 +69,7 @@ class ApiClient {
     }
 
     /**
-     * @param {object} [endpointParams]
+     * @property {object} [endpointParams]
      * @returns {object}
      */
     _params(endpointParams) {
