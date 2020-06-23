@@ -1,29 +1,37 @@
 const ApifyClient = require('../src');
 const mockServer = require('./mock_server/server');
-const { cleanUpBrowser, getInjectedPage, validateRequest, DEFAULT_QUERY } = require('./_helper');
+const { Browser, validateRequest, DEFAULT_QUERY } = require('./_helper');
 
-describe('Actor methods', () => {
-    let baseUrl = null;
-    let page;
+describe('User methods', () => {
+    let baseUrl;
+    const browser = new Browser();
+
     beforeAll(async () => {
         const server = await mockServer.start();
-        baseUrl = `http://localhost:${server.address().port}`;
+        await browser.start();
+        baseUrl = `http://localhost:${server.address().port}/v2`;
     });
-    afterAll(() => mockServer.close());
 
-    let client = null;
+    afterAll(async () => {
+        await Promise.all([
+            mockServer.close(),
+            browser.cleanUpBrowser(),
+        ]);
+    });
+
+    let client;
+    let page;
     beforeEach(async () => {
-        page = await getInjectedPage(baseUrl, DEFAULT_QUERY);
+        page = await browser.getInjectedPage(baseUrl, DEFAULT_QUERY);
         client = new ApifyClient({
             baseUrl,
-            expBackoffMaxRepeats: 0,
-            expBackoffMillis: 1,
+            maxRetries: 0,
             ...DEFAULT_QUERY,
         });
     });
     afterEach(async () => {
         client = null;
-        await cleanUpBrowser(page);
+        page.close().catch(() => {});
     });
 
     test('listDispatches() works', async () => {

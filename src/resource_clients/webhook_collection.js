@@ -1,11 +1,9 @@
+const ow = require('ow');
 const ResourceCollectionClient = require('../base/resource_collection_client');
 
 class WebhookCollectionClient extends ResourceCollectionClient {
     /**
-     * @param {object} options
-     * @param {string} options.baseUrl
-     * @param {HttpClient} options.httpClient
-     * @param {object} [options.params]
+     * @param {ApiClientOptions} options
      */
     constructor(options) {
         super({
@@ -13,6 +11,15 @@ class WebhookCollectionClient extends ResourceCollectionClient {
             disableMethods: ['getOrCreate'],
             ...options,
         });
+    }
+
+    async list(options = {}) {
+        ow(options, ow.object.exactShape({
+            limit: ow.optional.number,
+            offset: ow.optional.number,
+            desc: ow.optional.boolean,
+        }));
+        return super.list(options);
     }
 }
 

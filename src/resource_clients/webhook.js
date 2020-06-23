@@ -1,26 +1,21 @@
-const ow = require('ow');
-const { URL } = require('url');
 const ResourceClient = require('../base/resource_client');
-const {
-    pluckData,
-    parseDateFields,
-    catchNotFoundOrThrow,
-    stringifyWebhooksToBase64,
-} = require('../utils');
+const WebhookDispatchCollectionClient = require('./webhook_dispatch_collection');
 
 class WebhookClient extends ResourceClient {
     /**
-     * @param {object} options
-     * @param {string} options.id
-     * @param {string} options.baseUrl
-     * @param {HttpClient} options.httpClient
-     * @param {object} [options.params]
+     * @param {ApiClientOptions} options
      */
     constructor(options) {
         super({
             resourcePath: 'webhooks',
             ...options,
         });
+    }
+
+    dispatches() {
+        return new WebhookDispatchCollectionClient(this._subResourceOptions({
+            resourcePath: 'dispatches',
+        }));
     }
 }
 
