@@ -1,4 +1,5 @@
 const express = require('express');
+const { addRoutes } = require('./add_routes');
 
 const tasks = express.Router();
 
@@ -13,32 +14,7 @@ const ROUTES = [
     { id: 'list-webhooks', method: 'GET', path: '/:taskId/webhooks' },
     { id: 'get-input', method: 'GET', path: '/:taskId/input' },
     { id: 'update-input', method: 'PUT', path: '/:taskId/input' },
-
-
 ];
-
-const HANDLERS = {
-    json(id) {
-        return (req, res) => {
-            const responseStatusCode = Number(req.params.taskId) || 200;
-            const payload = responseStatusCode === 204
-                ? null
-                : { data: { id } };
-            res
-                .status(responseStatusCode)
-                .json(payload);
-        };
-    },
-};
-
-function addRoutes(router, routes) {
-    routes.forEach((route) => {
-        const type = route.type ? route.type : 'json';
-        const handler = HANDLERS[type];
-        const method = route.method.toLowerCase();
-        router[method](route.path, handler(route.id));
-    });
-}
 
 addRoutes(tasks, ROUTES);
 

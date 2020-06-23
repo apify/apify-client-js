@@ -195,7 +195,11 @@ describe('Actor methods', () => {
                     ? await lastRunClient.get()
                     : await lastRunClient[method]().get();
 
-                expect(res.id).toEqual(`last-run-${method}`);
+                if (method === 'log') {
+                    expect(res).toEqual('last-run-log');
+                } else {
+                    expect(res.id).toEqual(`last-run-${method}`);
+                }
                 validateRequest({}, { actorId });
 
                 const browserRes = await page.evaluate((aId, mthd) => {

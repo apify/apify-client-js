@@ -15,7 +15,7 @@ const ROUTES = [
     { id: 'last-run-dataset', method: 'GET', path: '/:actorId/runs/last/dataset' },
     { id: 'last-run-keyValueStore', method: 'GET', path: '/:actorId/runs/last/key-value-store' },
     { id: 'last-run-requestQueue', method: 'GET', path: '/:actorId/runs/last/request-queue' },
-    { id: 'last-run-log', method: 'GET', path: '/:actorId/runs/last/log' },
+    { id: 'last-run-log', method: 'GET', path: '/:actorId/runs/last/log', type: 'text' },
     { id: 'get-run', method: 'GET', path: '/:actorId/runs/:runId' },
     { id: 'abort-run', method: 'POST', path: '/:actorId/runs/:runId/abort' },
     { id: 'metamorph-run', method: 'POST', path: '/:actorId/runs/:runId/metamorph' },

@@ -115,7 +115,12 @@ function parseDateFields(obj, depth = 0) {
 function stringifyWebhooksToBase64(webhooks) {
     if (!webhooks) return;
     const webhooksJson = JSON.stringify(webhooks);
-    return Buffer.from(webhooksJson, 'utf8').toString('base64');
+    if (isNode()) {
+        return Buffer.from(webhooksJson, 'utf8').toString('base64');
+    }
+    const encoder = new TextEncoder();
+    const uint8Array = encoder.encode(webhooksJson);
+    return btoa(String.fromCharCode(...uint8Array));
 }
 
 /**
