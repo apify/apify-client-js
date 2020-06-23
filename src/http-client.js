@@ -1,12 +1,13 @@
 const axios = require('axios').default;
 const KeepAliveAgent = require('agentkeepalive');
 const os = require('os');
+const ApifyApiError = require('./apify_api_error');
 const {
-    ApifyApiError,
-} = require('./apify_error');
+    requestInterceptors,
+    responseInterceptors,
+} = require('./interceptors');
 const {
     retryWithExpBackoff,
-    maybeGzipRequest,
     isNode,
 } = require('./utils');
 const { version } = require('../package.json');
@@ -14,8 +15,6 @@ const { version } = require('../package.json');
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 const EXP_BACKOFF_MILLIS = 500;
 const EXP_BACKOFF_MAX_REPEATS = 8; // 128s
-
-const ALLOWED_HTTP_METHODS = new RegExp(['GET', 'DELETE', 'HEAD', 'POST', 'PUT', 'PATCH'].join('|'), 'i');
 
 class HttpClient {
     /**
@@ -68,27 +67,8 @@ class HttpClient {
             this.axios.defaults.headers['User-Agent'] = userAgent;
         }
 
-        // Interceptors are executed in reverse order.
-        this.axios.interceptors.request.use(maybeGzipRequest);
-        this.axios.interceptors.request.use((config) => {
-            const [defaultTransform] = axios.defaults.transformRequest;
-            config.data = defaultTransform(config.data, config.headers);
-            const hasBody = config.data != null;
-            const isContentTypeMissing = !config.headers['Content-Type'];
-            if (hasBody && isContentTypeMissing) {
-                config.headers['Content-Type'] = 'application/json; charset=utf-8';
-            }
-            return config;
-        });
-
-        this.axios.interceptors.response.use((response) => {
-            if (typeof response.data === 'string' && response.data.length) {
-                const contentType = response.headers['content-type'];
-                const isJson = /^application\/json/.test(contentType);
-                if (isJson) response.data = JSON.parse(response.data);
-            }
-            return response;
-        });
+        requestInterceptors.forEach((i) => this.axios.interceptors.request.use(i));
+        responseInterceptors.forEach((i) => this.axios.interceptors.response.use(i));
     }
 
     async call(callOptions) {
@@ -104,10 +84,10 @@ class HttpClient {
         } = options;
 
         this.stats.calls++;
-        let iteration = 0;
+        let attempt = 0;
 
         const makeRequest = async (bail) => {
-            iteration += 1;
+            attempt += 1;
 
             this.stats.requests++;
             const response = await this.axios.request(options);
@@ -115,10 +95,8 @@ class HttpClient {
 
             if (statusCode < 300) return response;
 
-            if (statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE && this.stats) {
-                // Make sure this doesn't fail when someone increases number of retries on anything.
-                if (typeof this.stats.rateLimitErrors[iteration - 1] === 'number') this.stats.rateLimitErrors[iteration - 1]++;
-                else this.stats.rateLimitErrors[iteration - 1] = 1;
+            if (statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE) {
+                this.stats.addRateLimitError(attempt);
             }
 
             // For status codes 300-499 except options.retryOnStatusCodes we immediately rejects the promise
@@ -128,7 +106,7 @@ class HttpClient {
                 && statusCode < 500
                 && !retryOnStatusCodes.includes(statusCode)
             ) {
-                bail(new ApifyApiError(response));
+                bail(new ApifyApiError(response, attempt));
                 return;
             }
 
@@ -137,7 +115,7 @@ class HttpClient {
             // - status code is >= 500
             // - status code in one of retryOnStatusCodes (by default RATE_LIMIT_EXCEEDED_STATUS_CODE)
             // then we throw the retryable error that is repeated by the retryWithExpBackoff function up to `expBackoffMaxRepeats` repeats.
-            throw new ApifyApiError(response, iteration);
+            throw new ApifyApiError(response, attempt);
         };
         return retryWithExpBackoff(makeRequest, { retries: expBackoffMaxRepeats, minTimeout: expBackoffMillis });
     }
@@ -147,6 +125,5 @@ module.exports = {
     RATE_LIMIT_EXCEEDED_STATUS_CODE,
     EXP_BACKOFF_MAX_REPEATS,
     EXP_BACKOFF_MILLIS,
-    ALLOWED_HTTP_METHODS,
     HttpClient,
 };

@@ -1,6 +1,5 @@
 const BrotliPlugin = require('brotli-webpack-plugin');
 
-
 module.exports = {
     entry: './src/index.js',
     target: 'web',
@@ -20,6 +19,8 @@ module.exports = {
     },
     node: {
         fs: 'empty',
+        zlib: false,
+        util: false,
         os: false,
         Buffer: false,
         global: false,

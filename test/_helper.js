@@ -1,6 +1,4 @@
 const Apify = require('apify');
-const httpClient = require('../src/http-client');
-const { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } = require('../src/request_queues');
 const mockServer = require('./mock_server/server');
 
 class Browser {
@@ -28,20 +26,6 @@ class Browser {
         return this.browser.close();
     }
 }
-
-
-const DEFAULT_RATE_LIMIT_ERRORS = new Array(
-    Math.max(REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, httpClient.EXP_BACKOFF_MAX_REPEATS),
-).fill(0);
-
-
-const newEmptyStats = () => {
-    return {
-        calls: 0,
-        requests: 0,
-        rateLimitErrors: [...DEFAULT_RATE_LIMIT_ERRORS],
-    };
-};
 
 const DEFAULT_QUERY = {
     token: 'default-token',
@@ -79,6 +63,7 @@ const validateRequest = (query = {}, params = {}, body = {}, headers = {}) => {
     if (body !== false) expect(request.body).toEqual(body);
     Object.entries(headers).forEach(([key, value]) => {
         // Browsers tend to send headers "a bit differently".
+        expect(request.headers).toHaveProperty(key);
         const expectedHeaderValue = value.toLowerCase().replace(/\s/g, '');
         const actualHeaderValue = request.headers[key].toLowerCase().replace(/\s/g, '');
         expect(actualHeaderValue).toBe(expectedHeaderValue);
@@ -88,7 +73,5 @@ const validateRequest = (query = {}, params = {}, body = {}, headers = {}) => {
 module.exports = {
     validateRequest,
     DEFAULT_QUERY,
-    DEFAULT_RATE_LIMIT_ERRORS,
-    newEmptyStats,
     Browser,
 };

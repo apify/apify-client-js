@@ -46,7 +46,7 @@ describe('Build methods', () => {
             expect(res.id).toEqual('list-builds');
             validateRequest(query);
 
-            const browserRes = await page.evaluate(opts => client.builds().list(opts), query);
+            const browserRes = await page.evaluate((opts) => client.builds().list(opts), query);
             expect(browserRes).toEqual(res);
             validateRequest(query);
         });

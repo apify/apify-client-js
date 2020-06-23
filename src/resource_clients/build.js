@@ -1,4 +1,3 @@
-const ow = require('ow');
 const ResourceClient = require('../base/resource_client');
 const {
     pluckData,
@@ -7,11 +6,7 @@ const {
 
 class BuildClient extends ResourceClient {
     /**
-     * @param {object} options
-     * @param {string} options.id
-     * @param {string} options.baseUrl
-     * @param {HttpClient} options.httpClient
-     * @param {object} [options.params]
+     * @param {ApiClientOptions} options
      */
     constructor(options) {
         super({
@@ -30,7 +25,7 @@ class BuildClient extends ResourceClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    async waitForFinish(timeoutSecs) {
+    async waitForFinish() {
         // TODO
     }
 }

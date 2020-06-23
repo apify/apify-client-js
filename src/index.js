@@ -1,5 +1,6 @@
 const ow = require('ow');
 const { ME_USER_NAME_PLACEHOLDER } = require('apify-shared/consts');
+
 const ActorClient = require('./resource_clients/actor');
 const ActorCollectionClient = require('./resource_clients/actor_collection');
 const BuildClient = require('./resource_clients/build');
@@ -23,20 +24,8 @@ const WebhookCollectionClient = require('./resource_clients/webhook_collection')
 const WebhookDispatchClient = require('./resource_clients/webhook_dispatch');
 const WebhookDispatchCollectionClient = require('./resource_clients/webhook_dispatch_collection');
 
-
-const { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, RequestQueues } = require('./request_queues');
-const { HttpClient, EXP_BACKOFF_MAX_REPEATS } = require('./http-client');
-
-class Statistics {
-    constructor() {
-        // Number of Apify client function calls
-        this.calls = 0;
-        // Number of Apify API requests
-        this.requests = 0;
-        // Number of times the API returned 429 error. Spread based on number of retries.
-        this.rateLimitErrors = new Array(Math.max(REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, EXP_BACKOFF_MAX_REPEATS)).fill(0);
-    }
-}
+const { HttpClient } = require('./http-client');
+const Statistics = require('./statistics');
 
 /**
  * @type package

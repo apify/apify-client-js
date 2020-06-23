@@ -83,7 +83,7 @@ v2Router.use('/webhook-dispatches', webhookDispatches);
 v2Router.use('/external', external);
 
 // Debugging middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res, next) => { // eslint-disable-line
     res.status(500).json({ error: { message: err.message } });
 });
 

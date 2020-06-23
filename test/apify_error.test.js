@@ -1,4 +1,4 @@
-const { ApifyApiError } = require('../src/apify_error');
+const ApifyApiError = require('../src/apify_api_error');
 
 describe('ApifyApiError', () => {
     test('should carry all the information', () => {

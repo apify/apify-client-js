@@ -11,11 +11,7 @@ const {
 
 class RunClient extends ResourceClient {
     /**
-     * @param {object} options
-     * @param {string} options.id
-     * @param {string} options.baseUrl
-     * @param {HttpClient} options.httpClient
-     * @param {object} [options.params]
+     * @param {ApiClientOptions} options
      */
     constructor(options) {
         super({
@@ -76,7 +72,7 @@ class RunClient extends ResourceClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    async waitForFinish(timeoutSecs) {
+    async waitForFinish() {
         // TODO
     }
 

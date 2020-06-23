@@ -17,11 +17,7 @@ const {
 
 class ActorClient extends ResourceClient {
     /**
-     * @param {object} options
-     * @param {string} options.id
-     * @param {string} options.baseUrl
-     * @param {HttpClient} options.httpClient
-     * @param {object} [options.params]
+     * @param {ApiClientOptions} options
      */
     constructor(options) {
         super({

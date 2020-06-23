@@ -316,7 +316,7 @@ describe('Dataset methods', () => {
         test('pushItems() compresses large request in Node.js', async () => {
             const datasetId = '201';
             const chunk = { someData: 'someValue' };
-            const data = Array(100).fill(chunk);
+            const data = Array(200).fill(chunk);
 
             const expectedHeaders = {
                 'content-type': 'application/json; charset=utf-8',
