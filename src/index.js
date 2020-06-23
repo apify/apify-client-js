@@ -1,4 +1,5 @@
 const ow = require('ow');
+const { ME_USER_NAME_PLACEHOLDER } = require('apify-shared/consts');
 const ActorClient = require('./resource_clients/actor');
 const ActorCollectionClient = require('./resource_clients/actor_collection');
 const BuildClient = require('./resource_clients/build');
@@ -225,7 +226,7 @@ class ApifyClient {
         });
     }
 
-    user(id = 'my') {
+    user(id = ME_USER_NAME_PLACEHOLDER) {
         ow(id, ow.string);
         return new UserClient({
             id,

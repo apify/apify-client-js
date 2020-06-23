@@ -1,12 +1,4 @@
-const ow = require('ow');
-const { URL } = require('url');
 const ResourceClient = require('../base/resource_client');
-const {
-    pluckData,
-    parseDateFields,
-    catchNotFoundOrThrow,
-    stringifyWebhooksToBase64,
-} = require('../utils');
 
 class UserClient extends ResourceClient {
     /**
