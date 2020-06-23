@@ -1,3 +1,5 @@
+const ow = require('ow');
+
 class Statistics {
     constructor() {
         /**
@@ -19,6 +21,7 @@ class Statistics {
     }
 
     addRateLimitError(attempt) {
+        ow(attempt, ow.number.greaterThan(0));
         // attempt is never 0,
         // but we don't want index 0 empty
         const index = attempt - 1;
