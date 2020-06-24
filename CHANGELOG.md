@@ -1,9 +1,7 @@
-xxxxxxxxxxxxxxxxxxx
+1.0.0 / NEXT
 ===================
+- TODO
 - Added support for schedules API
-
-0.10.1-beta0 / 2020/03/03
-===================
 - Replaced `request` with `axios`.
 - Added browser compatibility.
 - Removed `setOptions` and `getOptions` client methods.
