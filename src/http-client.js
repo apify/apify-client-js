@@ -1,5 +1,6 @@
 const axios = require('axios');
 const KeepAliveAgent = require('agentkeepalive');
+const deepmerge = require('deepmerge');
 const os = require('os');
 const {
     ApifyClientError,
@@ -41,7 +42,7 @@ class HttpClient {
     }
 
     async call(callOptions) {
-        const mergedOptions = { ...this.defaultOptions, ...callOptions };
+        const mergedOptions = deepmerge(this.defaultOptions, callOptions);
         const normalizedOptions = this._validateAndNormalizeOptions(mergedOptions);
         return this._call(normalizedOptions);
     }
