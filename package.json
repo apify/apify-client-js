@@ -1,6 +1,6 @@
 {
     "name": "apify-client",
-    "version": "0.10.1-beta.2",
+    "version": "0.10.1-beta.3",
     "description": "Apify API client for JavaScript",
     "main": "src/index.js",
     "keywords": [
@@ -32,7 +32,7 @@
     },
     "homepage": "https://apify.com/docs/sdk/apify-client-js/latest",
     "files": [
-        "build"
+        "src"
     ],
     "scripts": {
         "build": "npm run clean && npm run build-browser",
