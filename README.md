@@ -1,6 +1,6 @@
 # Apify API client for JavaScript
 
-[![Build Status](https://travis-ci.org/apifytech/apify-client-js.svg)](https://travis-ci.org/apifytech/apify-client-js)
+[![Build Status](https://travis-ci.org/apify/apify-client-js.svg?branch=master)](https://travis-ci.org/apify/apify-client-js)
 [![npm version](https://badge.fury.io/js/apify-client.svg?branch=master)](http://badge.fury.io/js/apify-client)
 
 This library implements a JavaScript / Node.js client for the <a href="https://docs.apify.com/api/v2">Apify API</a>.
