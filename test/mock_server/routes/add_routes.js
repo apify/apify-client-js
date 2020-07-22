@@ -22,7 +22,7 @@ const HANDLERS = {
         return (req, res) => {
             const [resourceId] = Object.values(req.params);
             const responseStatusCode = Number(resourceId) || 200;
-            let payload;
+            let payload = {};
             if (responseStatusCode === 200) payload = { data: { id } };
             else if (responseStatusCode === 204) payload = null;
             else if (responseStatusCode === 404) {

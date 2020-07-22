@@ -1,3 +1,4 @@
+const { Readable } = require('stream');
 const ApifyClient = require('../src');
 const mockServer = require('./mock_server/server');
 const { Browser, validateRequest, DEFAULT_QUERY } = require('./_helper');
@@ -180,7 +181,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({}, { storeId, key });
         });
 
-        test('getValue() correctly returns buffer', async () => {
+        test('getValue() returns buffer when selected', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const options = {
@@ -201,6 +202,7 @@ describe('Key-Value Store methods', () => {
             };
 
             const res = await client.keyValueStore(storeId).getValue(key, options);
+            expect(res.body).toBeInstanceOf(Buffer);
             res.body = res.body.toString();
             expect(res).toEqual(expectedResult);
             validateRequest({}, { storeId, key });
@@ -214,6 +216,83 @@ describe('Key-Value Store methods', () => {
             }, storeId, key, options);
             expect(browserRes).toEqual(res);
             validateRequest({}, { storeId, key });
+        });
+
+        test('getValue() returns buffer for non-text content-types', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const options = {
+                buffer: true,
+            };
+
+            const body = 'abcxyz';
+            const expectedContentType = 'image/png; charset=utf-8';
+            const expectedHeaders = {
+                'content-type': expectedContentType,
+            };
+
+            mockServer.setResponse({ headers: expectedHeaders, body });
+            const expectedResult = {
+                contentType: expectedContentType,
+                body,
+            };
+
+            const res = await client.keyValueStore(storeId).getValue(key, options);
+            expect(res.body).toBeInstanceOf(Buffer);
+            res.body = res.body.toString();
+            expect(res).toEqual(expectedResult);
+            validateRequest({}, { storeId, key });
+
+            const browserRes = await page.evaluate(async (id, k, opts) => {
+                /* eslint-disable no-shadow */
+                const res = await client.keyValueStore(id).getValue(k, opts);
+                const decoder = new TextDecoder();
+                res.body = decoder.decode(res.body);
+                return res;
+            }, storeId, key, options);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { storeId, key });
+        });
+
+        test('getValue() correctly returns stream', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const options = {
+                stream: true,
+            };
+
+            const body = { foo: 'bar', baz: [1, 2] };
+            const expectedBody = JSON.stringify(body);
+            const expectedContentType = 'application/json; charset=utf-8';
+            const expectedHeaders = {
+                'content-type': expectedContentType,
+            };
+
+            mockServer.setResponse({ headers: expectedHeaders, body });
+            const expectedResult = {
+                contentType: expectedContentType,
+                body: expectedBody,
+            };
+
+            const res = await client.keyValueStore(storeId).getValue(key, options);
+            expect(res.body).toBeInstanceOf(Readable);
+            const chunks = [];
+            for await (const chunk of res.body) {
+                chunks.push(chunk);
+            }
+            res.body = Buffer.concat(chunks).toString();
+            expect(res).toEqual(expectedResult);
+            validateRequest({}, { storeId, key });
+
+            try {
+                await page.evaluate(async (id, k, opts) => {
+                    /* eslint-disable no-shadow */
+                    return client.keyValueStore(id).getValue(k, opts);
+                }, storeId, key, options);
+                throw new Error('wrong error');
+            } catch (err) {
+                expect(err.message).toMatch('The stream option can only be used in Node.js environment.');
+            }
         });
 
         test('getValue() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {

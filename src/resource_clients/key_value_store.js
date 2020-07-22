@@ -5,6 +5,7 @@ const {
     pluckData,
     parseDateFields,
     catchNotFoundOrThrow,
+    isNode,
 } = require('../utils');
 
 const SIGNED_URL_UPLOAD_MIN_BYTES = 1024 * 256;
@@ -41,6 +42,9 @@ class KeyValueStoreClient extends ResourceClient {
             stream: ow.optional.boolean,
             disableRedirect: ow.optional.boolean,
         }));
+        if (options.stream && !isNode()) {
+            throw new Error('The stream option can only be used in Node.js environment.');
+        }
 
         const params = {
             disableRedirect: options.disableRedirect,
@@ -52,7 +56,7 @@ class KeyValueStoreClient extends ResourceClient {
             params: this._params(params),
         };
 
-        if (options.buffer) requestOpts.responseType = 'arraybuffer';
+        if (options.buffer) requestOpts.forceBuffer = true;
         if (options.stream) requestOpts.responseType = 'stream';
 
         try {

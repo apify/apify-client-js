@@ -1,6 +1,7 @@
 const axios = require('axios');
 const util = require('util');
 const zlib = require('zlib');
+const { maybeParseBody } = require('./body_parser');
 const { isNode } = require('./utils');
 
 const MIN_GZIP_BYTES = 1024;
@@ -35,17 +36,29 @@ async function maybeGzipRequest(config) {
     return config;
 }
 
-function parseJsonResponse(response) {
-    if (typeof response.data === 'string' && response.data.length) {
-        const contentType = response.headers['content-type'];
-        const isJson = /^application\/json/.test(contentType);
-        if (isJson) response.data = JSON.parse(response.data);
+function parseResponseData(response) {
+    if (
+        !response.data // Nothing to do here.
+        || response.config.responseType !== 'arraybuffer' // We don't want to parse custom response types.
+        || response.config.forceBuffer // Apify custom property to prevent parsing of buffer.
+    ) {
+        return response;
     }
+
+    const isBufferEmpty = isNode() ? !response.data.length : !response.data.byteLength;
+    if (isBufferEmpty) {
+        // undefined is better than an empty buffer
+        response.data = undefined;
+        return response;
+    }
+
+    const contentTypeHeader = response.headers['content-type'];
+    response.data = maybeParseBody(response.data, contentTypeHeader);
     return response;
 }
 
 const requestInterceptors = [inferRequestHeaders];
-const responseInterceptors = [parseJsonResponse];
+const responseInterceptors = [parseResponseData];
 
 if (isNode()) {
     gzipPromise = util.promisify(zlib.gzip);

@@ -59,6 +59,7 @@ class HttpClient {
             // Using interceptors for this functionality.
             transformRequest: null,
             transformResponse: null,
+            responseType: 'arraybuffer',
         });
 
         if (isNode()) {
