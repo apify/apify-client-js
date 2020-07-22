@@ -1,3 +1,4 @@
+const ow = require('ow');
 const ApiClient = require('./api_client');
 const {
     pluckData,
@@ -26,6 +27,7 @@ class ResourceClient extends ApiClient {
     }
 
     async update(newFields) {
+        ow(newFields, ow.object);
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'PUT',

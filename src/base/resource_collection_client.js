@@ -40,8 +40,12 @@ class ResourceCollectionClient extends ApiClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    async getOrCreate(name) {
-        ow(name, ow.optional.string);
+    async getOrCreate(name = '') {
+        // The default value of '' allows creating unnamed
+        // resources by passing the name= parameter with
+        // no value. It's useful and later will be supported
+        // in API properly by omitting the name= param entirely.
+        ow(name, ow.string);
         this._throwIfDisabled('getOrCreate');
         const response = await this.httpClient.call({
             url: this._url(),
