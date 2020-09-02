@@ -77,6 +77,7 @@ class KeyValueStoreClient extends ResourceClient {
             contentType: ow.optional.string,
         }));
 
+        // todo default json sucks
         const isJson = !options.contentType || /^application\/json/.test(options.contentType);
         if (isJson) value = JSON.stringify(value, null, 2); // for readability
 

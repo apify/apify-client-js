@@ -49,7 +49,11 @@ class DatasetClient extends ResourceClient {
     }
 
     async pushItems(items) {
-        ow(items, ow.any(ow.object, ow.array, ow.string));
+        ow(items, ow.any(
+            ow.object,
+            ow.string,
+            ow.array.ofType(ow.any(ow.object, ow.string)),
+        ));
 
         await this.httpClient.call({
             url: this._url('items'),
@@ -70,7 +74,7 @@ class DatasetClient extends ResourceClient {
             total: Number(response.headers['x-apify-pagination-total']),
             offset: Number(response.headers['x-apify-pagination-offset']),
             count: response.data.length, // because x-apify-pagination-count returns invalid values when hidden/empty items are skipped
-            limit: Number(response.headers['x-apify-pagination-limit']),
+            limit: Number(response.headers['x-apify-pagination-limit']), // API returns 999999999999 when no limit is used
         };
     }
 }

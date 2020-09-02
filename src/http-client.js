@@ -35,10 +35,6 @@ class HttpClient {
             this.httpsAgent = new KeepAliveAgent.HttpsAgent();
         }
 
-        // Clean all default headers because they only make a mess
-        // and their merging is difficult to understand and buggy.
-        axios.defaults.headers = {};
-
         this.axios = axios.create({
             headers: {
                 Accept: 'application/json, */*',
@@ -61,6 +57,10 @@ class HttpClient {
             transformResponse: null,
             responseType: 'arraybuffer',
         });
+
+        // Clean all default headers because they only make a mess
+        // and their merging is difficult to understand and buggy.
+        this.axios.defaults.headers = {};
 
         if (isNode()) {
             // Works only in Node. Cannot be set in browser
