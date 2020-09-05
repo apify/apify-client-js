@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const ow = require('ow');
 const ResourceClient = require('../base/resource_client');
 const {
@@ -35,7 +34,15 @@ class KeyValueStoreClient extends ResourceClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    async getValue(key, options = {}) {
+    /**
+     * @param {string} key
+     * @param {object} [options]
+     * @param {boolean} [options.buffer]
+     * @param {boolean} [options.stream]
+     * @param {boolean} [options.disableRedirect]
+     * @return KeyValueStoreRecord
+     */
+    async getRecord(key, options = {}) {
         ow(key, ow.string);
         ow(options, ow.object.exactShape({
             buffer: ow.optional.boolean,
@@ -70,16 +77,38 @@ class KeyValueStoreClient extends ResourceClient {
         }
     }
 
-    async setValue(key, value, options = {}) {
-        ow(key, ow.string);
-        // value can be anything
-        ow(options, ow.object.exactShape({
-            contentType: ow.optional.string,
+    /**
+     * @param {KeyValueStoreRecord} record
+     * @return {Promise<void>}
+     */
+    async setRecord(record) {
+        ow(record, ow.object.exactShape({
+            key: ow.string,
+            value: ow.any(ow.null, ow.string, ow.number, ow.object),
+            contentType: ow.optional.string.nonEmpty,
         }));
 
-        // todo default json sucks
-        const isJson = !options.contentType || /^application\/json/.test(options.contentType);
-        if (isJson) value = JSON.stringify(value, null, 2); // for readability
+        const { key } = record;
+        let { value, contentType } = record;
+
+        // To allow saving Objects to JSON without providing content type
+        const isValueStreamOrBuffer = ow.isValid(value, ow.any(ow.buffer, ow.object.hasKeys('on', 'pipe')));
+        if (!contentType) {
+            contentType = isValueStreamOrBuffer
+                ? 'application/octet-stream'
+                : 'application/json; charset=utf-8';
+        }
+
+        const isContentTypeJson = /^application\/json/.test(contentType);
+
+        if (isContentTypeJson && !isValueStreamOrBuffer) {
+            try {
+                value = JSON.stringify(value, null, 2);
+            } catch (err) {
+                const msg = `The record value cannot be stringified to JSON. Please provide other content type.\nCause: ${err.message}`;
+                throw new Error(msg);
+            }
+        }
 
         let uploadUrl = this._url(`records/${key}`);
         if (this._shouldUseDirectUpload(value)) {
@@ -96,9 +125,9 @@ class KeyValueStoreClient extends ResourceClient {
             params: this._params(),
             data: value,
         };
-        if (options.contentType) {
+        if (contentType) {
             uploadOpts.headers = {
-                'Content-Type': options.contentType,
+                'Content-Type': contentType,
             };
         }
 
@@ -122,11 +151,7 @@ class KeyValueStoreClient extends ResourceClient {
             // but it's not worth the extra computation.
             bytes = value.length;
         }
-        if (
-            _.isBuffer(value)
-            || _.isArrayBuffer(value)
-            || _.isTypedArray(value)
-        ) {
+        if (ow.isValid(value, ow.any(ow.buffer, ow.arrayBuffer, ow.typedArray))) {
             bytes = value.byteLength;
         }
         return bytes >= SIGNED_URL_UPLOAD_MIN_BYTES;
@@ -134,3 +159,10 @@ class KeyValueStoreClient extends ResourceClient {
 }
 
 module.exports = KeyValueStoreClient;
+
+/**
+ * @typedef {object} KeyValueStoreRecord
+ * @property {string} key
+ * @property {*} value
+ * @property {string} [contentType]
+ */

@@ -19,9 +19,10 @@ module.exports = {
     },
     node: {
         fs: 'empty',
-        zlib: false,
-        util: false,
         os: false,
+        stream: false,
+        util: false,
+        zlib: false,
         Buffer: false,
         global: false,
         process: 'mock',

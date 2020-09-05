@@ -132,7 +132,7 @@ describe('Key-Value Store methods', () => {
             validateRequest(query, { storeId });
         });
 
-        test('getValue() works', async () => {
+        test('getRecord() works', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const options = {
@@ -147,7 +147,7 @@ describe('Key-Value Store methods', () => {
 
             mockServer.setResponse({ headers: expectedHeaders, body: expectedBody });
 
-            const res = await client.keyValueStore(storeId).getValue(key, options);
+            const res = await client.keyValueStore(storeId).getRecord(key, options);
             const expectedResult = {
                 contentType: expectedContentType,
                 body: expectedBody,
@@ -155,12 +155,12 @@ describe('Key-Value Store methods', () => {
             expect(res).toEqual(expectedResult);
             validateRequest(options, { storeId, key });
 
-            const browserRes = await page.evaluate((id, k, opts) => client.keyValueStore(id).getValue(k, opts), storeId, key, options);
+            const browserRes = await page.evaluate((id, k, opts) => client.keyValueStore(id).getRecord(k, opts), storeId, key, options);
             expect(browserRes).toEqual(res);
             validateRequest(options, { storeId, key });
         });
 
-        test('getValue() parses JSON', async () => {
+        test('getRecord() parses JSON', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
 
@@ -172,16 +172,16 @@ describe('Key-Value Store methods', () => {
 
             mockServer.setResponse({ headers: expectedHeaders, body: expectedBody });
 
-            const res = await client.keyValueStore(storeId).getValue(key);
+            const res = await client.keyValueStore(storeId).getRecord(key);
             expect(res.body).toEqual(expectedBody);
             validateRequest({}, { storeId, key });
 
-            const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getValue(k), storeId, key);
+            const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getRecord(k), storeId, key);
             expect(browserRes).toEqual(res);
             validateRequest({}, { storeId, key });
         });
 
-        test('getValue() returns buffer when selected', async () => {
+        test('getRecord() returns buffer when selected', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const options = {
@@ -201,7 +201,7 @@ describe('Key-Value Store methods', () => {
                 body: expectedBody,
             };
 
-            const res = await client.keyValueStore(storeId).getValue(key, options);
+            const res = await client.keyValueStore(storeId).getRecord(key, options);
             expect(res.body).toBeInstanceOf(Buffer);
             res.body = res.body.toString();
             expect(res).toEqual(expectedResult);
@@ -209,7 +209,7 @@ describe('Key-Value Store methods', () => {
 
             const browserRes = await page.evaluate(async (id, k, opts) => {
                 /* eslint-disable no-shadow */
-                const res = await client.keyValueStore(id).getValue(k, opts);
+                const res = await client.keyValueStore(id).getRecord(k, opts);
                 const decoder = new TextDecoder();
                 res.body = decoder.decode(res.body);
                 return res;
@@ -218,7 +218,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({}, { storeId, key });
         });
 
-        test('getValue() returns buffer for non-text content-types', async () => {
+        test('getRecord() returns buffer for non-text content-types', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const options = {
@@ -237,7 +237,7 @@ describe('Key-Value Store methods', () => {
                 body,
             };
 
-            const res = await client.keyValueStore(storeId).getValue(key, options);
+            const res = await client.keyValueStore(storeId).getRecord(key, options);
             expect(res.body).toBeInstanceOf(Buffer);
             res.body = res.body.toString();
             expect(res).toEqual(expectedResult);
@@ -245,7 +245,7 @@ describe('Key-Value Store methods', () => {
 
             const browserRes = await page.evaluate(async (id, k, opts) => {
                 /* eslint-disable no-shadow */
-                const res = await client.keyValueStore(id).getValue(k, opts);
+                const res = await client.keyValueStore(id).getRecord(k, opts);
                 const decoder = new TextDecoder();
                 res.body = decoder.decode(res.body);
                 return res;
@@ -254,7 +254,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({}, { storeId, key });
         });
 
-        test('getValue() correctly returns stream', async () => {
+        test('getRecord() correctly returns stream', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const options = {
@@ -274,7 +274,7 @@ describe('Key-Value Store methods', () => {
                 body: expectedBody,
             };
 
-            const res = await client.keyValueStore(storeId).getValue(key, options);
+            const res = await client.keyValueStore(storeId).getRecord(key, options);
             expect(res.body).toBeInstanceOf(Readable);
             const chunks = [];
             for await (const chunk of res.body) {
@@ -287,7 +287,7 @@ describe('Key-Value Store methods', () => {
             try {
                 await page.evaluate(async (id, k, opts) => {
                     /* eslint-disable no-shadow */
-                    return client.keyValueStore(id).getValue(k, opts);
+                    return client.keyValueStore(id).getRecord(k, opts);
                 }, storeId, key, options);
                 throw new Error('wrong error');
             } catch (err) {
@@ -295,66 +295,67 @@ describe('Key-Value Store methods', () => {
             }
         });
 
-        test('getValue() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
+        test('getRecord() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const body = { a: 'foo', b: ['bar1', 'bar2'] };
 
             mockServer.setResponse({ body, statusCode: 404 });
 
-            const res = await client.keyValueStore(storeId).getValue(key);
+            const res = await client.keyValueStore(storeId).getRecord(key);
             expect(res).toBeUndefined();
             validateRequest({}, { storeId, key });
 
-            const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getValue(k), storeId, key);
+            const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getRecord(k), storeId, key);
             expect(browserRes).toEqual(res);
             validateRequest({}, { storeId, key });
         });
 
-        test('setValue() works', async () => {
+        test('setRecord() works', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const contentType = 'text/plain';
             const value = 'someValue';
-            const options = { contentType };
             const expectedHeaders = {
                 'content-type': contentType,
             };
 
-            const res = await client.keyValueStore(storeId).setValue(key, value, options);
+            const res = await client.keyValueStore(storeId).setRecord({ key, value, contentType });
             expect(res).toBeUndefined();
             validateRequest({}, { storeId, key }, value, expectedHeaders);
 
-            const browserRes = await page.evaluate((id, k, v, opts) => client.keyValueStore(id).setValue(k, v, opts), storeId, key, value, options);
+            const browserRes = await page.evaluate(
+                (id, key, value, contentType) => client.keyValueStore(id).setRecord({ key, value, contentType }),
+                storeId, key, value, contentType,
+            );
             expect(browserRes).toBeUndefined();
             validateRequest({}, { storeId, key }, value, expectedHeaders);
         });
 
-        test('setValue() works with buffer', async () => {
+        test('setRecord() works with buffer', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const contentType = 'application/octet-stream; charset=utf-8';
-            const value = 'special chars 🤖✅';
-            const buf = Buffer.from(value);
-            const options = { contentType };
+            const string = 'special chars 🤖✅';
+            const value = Buffer.from(string);
             const expectedHeaders = {
                 'content-type': contentType,
             };
 
-            const res = await client.keyValueStore(storeId).setValue(key, buf, options);
+            const res = await client.keyValueStore(storeId).setRecord({ key, value, contentType });
             expect(res).toBeUndefined();
-            validateRequest({}, { storeId, key }, buf, expectedHeaders);
+            validateRequest({}, { storeId, key }, value, expectedHeaders);
 
-            const browserRes = await page.evaluate(async (id, k, v, opts) => {
+            const browserRes = await page.evaluate(async (id, key, s, contentType) => {
                 const encoder = new TextEncoder();
-                const typedArray = encoder.encode(v);
-                return client.keyValueStore(id).setValue(k, typedArray, opts);
-            }, storeId, key, value, options);
+                const value = encoder.encode(s);
+                return client.keyValueStore(id).setRecord({ key, value, contentType });
+            }, storeId, key, string, contentType);
             expect(browserRes).toBeUndefined();
-            validateRequest({}, { storeId, key }, buf, expectedHeaders);
+            validateRequest({}, { storeId, key }, value, expectedHeaders);
         });
 
-        test('setValue() uploads via signed url when gzipped buffer.length > SIGNED_URL_UPLOAD_MIN_BYTESIZE', async () => {
+        test('setRecord() uploads via signed url when gzipped buffer.length > SIGNED_URL_UPLOAD_MIN_BYTESIZE', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const value = Array(10000).fill({ hello: 'world' });
@@ -369,11 +370,14 @@ describe('Key-Value Store methods', () => {
                 },
             });
 
-            const res = await client.keyValueStore(storeId).setValue(key, value);
+            const res = await client.keyValueStore(storeId).setRecord({ key, value });
             expect(res).toBeUndefined();
             validateRequest({}, { code }, value, expectedHeaders);
 
-            const browserRes = await page.evaluate((id, k, v) => client.keyValueStore(id).setValue(k, v), storeId, key, value);
+            const browserRes = await page.evaluate(
+                (id, key, value) => client.keyValueStore(id).setRecord({ key, value }),
+                storeId, key, value,
+            );
             expect(browserRes).toBeUndefined();
             validateRequest({}, { code }, value, expectedHeaders);
         });
