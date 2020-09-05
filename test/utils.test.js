@@ -69,7 +69,6 @@ describe('utils.parseDateFields()', () => {
     });
 });
 
-
 describe('utils.stringifyWebhooksToBase64()', () => {
     test('works', () => {
         const webhooks = [

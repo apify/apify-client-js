@@ -197,7 +197,6 @@ describe('Task methods', () => {
                 desc: true,
             };
 
-
             const res = await client.task(taskId).webhooks().list(query);
             expect(res.id).toEqual('list-webhooks');
             validateRequest(query, { taskId });

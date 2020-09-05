@@ -21,5 +21,4 @@ class ApifyApiError extends Error {
     }
 }
 
-
 module.exports = ApifyApiError;

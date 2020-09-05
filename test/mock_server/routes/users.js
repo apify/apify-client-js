@@ -5,7 +5,6 @@ const users = express.Router();
 const ROUTES = [
     { id: 'get-user', method: 'GET', path: '/:userId' },
 
-
 ];
 
 const HANDLERS = {

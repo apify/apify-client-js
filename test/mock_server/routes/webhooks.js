@@ -10,7 +10,6 @@ const ROUTES = [
     { id: 'delete-webhook', method: 'DELETE', path: '/:webhookId' },
     { id: 'list-dispatches', method: 'GET', path: '/:webhookId/dispatches' },
 
-
 ];
 
 const HANDLERS = {

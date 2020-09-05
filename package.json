@@ -52,6 +52,7 @@
         "prepublishOnly": "(test $RUNNING_FROM_SCRIPT || (echo \"You must use publish.sh instead of 'npm publish' directly!\"; exit 1)) && npm test && npm run lint",
         "clean": "rm -rf dist && rm -rf docs",
         "lint": "eslint src test",
+        "lint:fix": "eslint --fix src test",
         "build-browser": "webpack"
     },
     "dependencies": {

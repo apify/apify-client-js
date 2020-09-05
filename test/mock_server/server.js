@@ -68,7 +68,6 @@ app.use('/', (req, res, next) => {
 app.set('mockServer', mockServer);
 app.use('/v2', v2Router);
 
-
 // Attaching V2 routers
 v2Router.use('/acts', actorRouter);
 v2Router.use('/actor-tasks', taskRouter);

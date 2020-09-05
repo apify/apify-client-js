@@ -48,7 +48,6 @@ describe('User methods', () => {
             validateRequest({}, { userId });
         });
 
-
         test('get() with no userId', async () => {
             const res = await client.user().get();
             expect(res.id).toEqual('get-user');

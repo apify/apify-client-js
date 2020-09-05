@@ -175,7 +175,6 @@ describe('Dataset methods', () => {
                 delimiter: ';',
             };
 
-
             const res = await client.dataset(datasetId).getItems(options);
             expect(res).toEqual(expected);
             validateRequest(qs, { datasetId }, {});
