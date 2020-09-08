@@ -382,15 +382,15 @@ describe('Key-Value Store methods', () => {
             validateRequest({}, { code }, value, expectedHeaders);
         });
 
-        test('deleteValue() works', async () => {
+        test('deleteRecord() works', async () => {
             const key = 'some-key';
             const storeId = '204';
 
-            const res = await client.keyValueStore(storeId).deleteValue(key);
+            const res = await client.keyValueStore(storeId).deleteRecord(key);
             expect(res).toBeUndefined();
             validateRequest({}, { storeId, key });
 
-            const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).deleteValue(k), storeId, key);
+            const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).deleteRecord(k), storeId, key);
             expect(browserRes).toBeUndefined();
             validateRequest({}, { storeId, key });
         });

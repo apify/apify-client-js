@@ -28,60 +28,47 @@ const { HttpClient } = require('./http-client');
 const Statistics = require('./statistics');
 
 /**
- * @type package
- * @class ApifyClient
- * @param {Object} [options] - Global options for ApifyClient. You can globally configure here any method option from any namespace. For example
- *                             if you are working with just one actor then you can preset it's actId here instead of passing it to each
- *                             actor's method.
- * @param {String} [options.userId] - Your user ID at apify.com
- * @param {String} [options.token] - Your API token at apify.com
- * @param {Number} [options.expBackoffMillis=500] - Wait time in milliseconds before repeating request to Apify API in a case of server
- or rate limit error
- * @param {Number} [options.expBackoffMaxRepeats=8] - Maximum number of repeats in a case of error
- * @param {Array<Number>} [options.retryOnStatusCodes=[429]] - An array of status codes on which request gets retried. By default requests are retried
- *                                                             only in a case of limit error (status code 429).
- * @description Basic usage of ApifyClient:
- * ```javascript
- * const ApifyClient = require('apify-client');
- *
- * const apifyClient = new ApifyClient({
- *   userId: 'jklnDMNKLekk',
- *   token: 'SNjkeiuoeD443lpod68dk',
- * });
- * ```
- *
+ * @typedef ApifyClientOptions
+ * @property {string} [baseUrl='https://api.apify.com/v2']
+ * @property {number} [maxRetries=8]
+ * @property {number} [minDelayBetweenRetriesMillis=500]
+ * @property {string} [token]
+ */
+
+/**
  * All API calls done through this client are made with exponential backoff.
  * What this means, is that if the API call fails, this client will attempt the call again with a small delay.
  * If it fails again, it will do another attempt after twice as long and so on, until one attempt succeeds
  * or 8th attempt fails.
  */
 class ApifyClient {
+    /**
+     * @param {ApifyClientOptions} options
+     */
     constructor(options = {}) {
         ow(options, ow.object.exactShape({
             baseUrl: ow.optional.string,
             maxRetries: ow.optional.number,
+            minDelayBetweenRetriesMillis: ow.optional.number,
             token: ow.optional.string,
         }));
 
         const {
             baseUrl = 'https://api.apify.com/v2',
             maxRetries = 8,
+            minDelayBetweenRetriesMillis = 500,
             token,
         } = options;
 
-        /**
-         * An object that contains various statistics about the API operations.
-         * @memberof ApifyClient
-         * @instance
-         */
         this.baseUrl = baseUrl;
         this.maxRetries = maxRetries;
+        this.minDelayBetweenRetriesMillis = minDelayBetweenRetriesMillis;
         this.token = token;
-
         this.stats = new Statistics();
         this.httpClient = new HttpClient({
             apifyClientStats: this.stats,
             expBackoffMaxRepeats: this.maxRetries,
+            expBackoffMillis: this.minDelayBetweenRetriesMillis,
         });
     }
 

@@ -19,12 +19,14 @@ const EXP_BACKOFF_MAX_REPEATS = 8; // 128s
 class HttpClient {
     /**
      * @param {object} options
-     * @param {object} options.maxRetries
      * @param {object} options.apifyClientStats
+     * @param {number} options.expBackoffMillis
+     * @param {number} options.expBackoffMaxRepeats
      */
     constructor(options) {
         this.defaultOptions = {
             expBackoffMaxRepeats: options.expBackoffMaxRepeats,
+            expBackoffMillis: options.expBackoffMillis,
         };
         this.stats = options.apifyClientStats;
 

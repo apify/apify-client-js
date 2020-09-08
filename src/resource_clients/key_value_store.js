@@ -134,7 +134,7 @@ class KeyValueStoreClient extends ResourceClient {
         await this.httpClient.call(uploadOpts);
     }
 
-    async deleteValue(key) {
+    async deleteRecord(key) {
         ow(key, ow.string);
 
         await this.httpClient.call({
