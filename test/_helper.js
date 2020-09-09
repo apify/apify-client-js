@@ -1,58 +1,77 @@
-import _ from 'underscore';
-import sinon from 'sinon';
-import * as utils from '../build/utils';
-import * as requestQueues from '../build/request_queues';
-import ApifyClientError, { REQUEST_FAILED_ERROR_TYPE, REQUEST_FAILED_ERROR_MESSAGE } from '../build/apify_error';
+const Apify = require('apify');
+const mockServer = require('./mock_server/server');
 
-let requestMock;
+class Browser {
+    async start() {
+        this.browser = await Apify.launchPuppeteer({ headless: true, args: ['--disable-web-security'] });
+        return this.browser;
+    }
 
-export const DEFAULT_RATE_LIMIT_ERRORS = new Array(
-    Math.max(requestQueues.REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, utils.EXP_BACKOFF_MAX_REPEATS),
-).fill(0);
+    async getInjectedPage(baseUrl, DEFAULT_QUERY) {
+        const page = await this.browser.newPage();
+        await Apify.utils.puppeteer.injectFile(page, `${__dirname}/../dist/bundle.js`);
 
-export const mockRequest = () => {
-    requestMock = sinon.mock(utils, 'requestPromise');
+        page.on('console', (msg) => console.log(msg.text()));
+        await page.evaluate((url, defaultQuery) => {
+            window.client = new window.ApifyClient({
+                baseUrl: url,
+                maxRetries: 0,
+                ...defaultQuery,
+            });
+        }, baseUrl, DEFAULT_QUERY);
+        return page;
+    }
+
+    async cleanUpBrowser() {
+        return this.browser.close();
+    }
+}
+
+const DEFAULT_QUERY = {
+    token: 'default-token',
 };
 
-export const newEmptyStats = () => {
+const getExpectedQuery = (callQuery = {}) => {
+    const query = optsToQuery(callQuery);
     return {
-        calls: 0,
-        requests: 0,
-        rateLimitErrors: [...DEFAULT_RATE_LIMIT_ERRORS],
+        ...DEFAULT_QUERY,
+        ...query,
     };
 };
 
-export const requestExpectCall = (requestOpts, body, response) => {
-    if (!_.isObject(requestOpts)) throw new Error('"requestOpts" parameter must be an object!');
-    if (!requestOpts.method) throw new Error('"requestOpts.method" parameter is not set!');
+function optsToQuery(params) {
+    return Object
+        .entries(params)
+        .filter(([k, v]) => v !== false) // eslint-disable-line no-unused-vars
+        .map(([k, v]) => {
+            if (v === true) v = '1';
+            else if (Array.isArray(v)) v = v.join(',');
+            else if (typeof v === 'number') v = v.toString();
+            return [k, v];
+        })
+        .reduce((newObj, [k, v]) => {
+            newObj[k] = v;
+            return newObj;
+        }, {});
+}
 
-    const expectedRequestOpts = Object.assign({}, requestOpts);
-    if (response) expectedRequestOpts.resolveWithFullResponse = true;
-    const output = response ? Object.assign({}, response, { body }) : body;
-
-    requestMock
-        .expects('requestPromise')
-        .once()
-        .withArgs(expectedRequestOpts, newEmptyStats())
-        .returns(Promise.resolve(output));
+const validateRequest = (query = {}, params = {}, body = {}, headers = {}) => {
+    const request = mockServer.getLastRequest();
+    const expectedQuery = getExpectedQuery(query);
+    if (query !== false) expect(request.query).toEqual(expectedQuery);
+    if (params !== false) expect(request.params).toEqual(params);
+    if (body !== false) expect(request.body).toEqual(body);
+    Object.entries(headers).forEach(([key, value]) => {
+        // Browsers tend to send headers "a bit differently".
+        expect(request.headers).toHaveProperty(key);
+        const expectedHeaderValue = value.toLowerCase().replace(/\s/g, '');
+        const actualHeaderValue = request.headers[key].toLowerCase().replace(/\s/g, '');
+        expect(actualHeaderValue).toBe(expectedHeaderValue);
+    });
 };
 
-export const requestExpectErrorCall = (requestOpts, resolveWithFullResponse, statusCode) => {
-    if (!_.isObject(requestOpts)) throw new Error('"requestOpts" parameter must be an object!');
-    if (!requestOpts.method) throw new Error('"requestOpts.method" parameter is not set!');
-
-    const expectedRequestOpts = Object.assign({}, requestOpts);
-    if (resolveWithFullResponse) expectedRequestOpts.resolveWithFullResponse = true;
-
-    const error = new ApifyClientError(REQUEST_FAILED_ERROR_TYPE, REQUEST_FAILED_ERROR_MESSAGE, { statusCode });
-
-    requestMock
-        .expects('requestPromise')
-        .once()
-        .withArgs(expectedRequestOpts, newEmptyStats())
-        .returns(Promise.reject(error));
-};
-
-export const restoreRequest = () => {
-    requestMock.restore();
+module.exports = {
+    validateRequest,
+    DEFAULT_QUERY,
+    Browser,
 };

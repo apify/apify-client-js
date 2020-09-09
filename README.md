@@ -45,21 +45,20 @@ const apifyClient = new ApifyClient({
 
 // Storage
 const store = await apifyClient.keyValueStores.getOrCreateStore({ storeName: 'my-store' });
-apifyClient.setOptions({ storeId: store._id });
 await apifyClient.keyValueStores.putRecord({
     key: 'foo',
     body: 'bar',
     contentType: 'text/plain',
+    storeId: store.id
 });
-const record = await apifyClient.keyValueStores.getRecord({ key: 'foo' });
-const keys = await apifyClient.keyValueStores.getRecordsKeys();
-await apifyClient.keyValueStores.deleteRecord({ key: 'foo' });
+const record = await apifyClient.keyValueStores.getRecord({ key: 'foo', storeId: store.id });
+const keys = await apifyClient.keyValueStores.listKeys({storeId: store.id});
+await apifyClient.keyValueStores.deleteRecord({ key: 'foo', storeId: store.id });
 
 // Actors
 const act = await apifyClient.acts.getAct({ actId: 'kjnjknDDNkl' });
-apifyClient.setOptions({ actId: 'kjnjknDDNkl' });
-const build = await apifyClient.acts.buildAct();
-const run = await apifyClient.acts.runAct();
+const build = await apifyClient.acts.buildAct({ actId: 'kjnjknDDNkl'});
+const run = await apifyClient.acts.runAct({ actId: 'kjnjknDDNkl'});
 
 ```
 
@@ -71,7 +70,6 @@ You can set global parameters when you are creating instance of ApifyClient:
 const apifyClient = new ApifyClient({
     userId: 'jklnDMNKLekk', // Your Apify user ID
     token: 'SNjkeiuoeD443lpod68dk', // Your API token
-    promise: Promise, // Promises dependency to use (default is native Promise)
     expBackOffMillis: 500, // Wait time in milliseconds before making a new request in a case of error
     expBackOffMaxRepeats: 8, // Maximum number of repeats in a case of error
 });
@@ -104,10 +102,6 @@ apifyClient.acts.getAct(options)
         // Do something with error ...
     });
 
-// Callback
-apifyClient.acts.getAct(options, (err, actor) => {
-    // Do something with error and actor ...
-});
 ```
 
 ## Parsing of date fields
