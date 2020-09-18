@@ -27,13 +27,24 @@ class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('head'),
             method: 'GET',
-            params: this._params(options),
+            params: this._params({
+                limit: options.limit,
+                clientKey: this.clientKey,
+            }),
         });
         return parseDateFields(pluckData(response.data));
     }
 
+    /**
+     * @param {object} request
+     * @param {object} [options]
+     * @param {boolean} [options.forefront]
+     * @return {Promise<*>}
+     */
     async addRequest(request, options = {}) {
-        ow(request, ow.object);
+        ow(request, ow.object.partialShape({
+            id: ow.undefined,
+        }));
         ow(options, ow.object.exactShape({
             forefront: ow.optional.boolean,
         }));
@@ -65,6 +76,11 @@ class RequestQueueClient extends ResourceClient {
         }
     }
 
+    /**
+     * @param request
+     * @param options
+     * @return {Promise<*>}
+     */
     async updateRequest(request, options = {}) {
         ow(request, ow.object.partialShape({
             id: ow.string,

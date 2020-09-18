@@ -80,6 +80,9 @@ const retryWithExpBackoff = (func, opts) => {
     return retry(func, options);
 };
 
+/**
+ * @return {boolean}
+ */
 const isNode = () => !!(typeof process !== 'undefined' && process.versions && process.versions.node);
 
 module.exports = {
