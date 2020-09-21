@@ -72,6 +72,10 @@ class ApifyClient {
         });
     }
 
+    /**
+     * @return {{httpClient: HttpClient, baseUrl: string, params: {token: string}}}
+     * @private
+     */
     _options() {
         return {
             baseUrl: this.baseUrl,
@@ -82,10 +86,17 @@ class ApifyClient {
         };
     }
 
+    /**
+     * @return {ActorCollectionClient}
+     */
     actors() {
         return new ActorCollectionClient(this._options());
     }
 
+    /**
+     * @param {string} id
+     * @return {ActorClient}
+     */
     actor(id) {
         ow(id, ow.string);
         return new ActorClient({
@@ -100,6 +111,11 @@ class ApifyClient {
     // }
 
     // TODO temporarily uses second parameter + nested client
+    /**
+     * @param {string} id
+     * @param {string} actorId
+     * @return {BuildClient}
+     */
     build(id, actorId) {
         ow(id, ow.string);
         ow(actorId, ow.string);
@@ -112,10 +128,17 @@ class ApifyClient {
         return new BuildClient(nestedOpts);
     }
 
+    /**
+     * @return {DatasetCollectionClient}
+     */
     datasets() {
         return new DatasetCollectionClient(this._options());
     }
 
+    /**
+     * @param {string} id
+     * @return {DatasetClient}
+     */
     dataset(id) {
         ow(id, ow.string);
         return new DatasetClient({
@@ -124,10 +147,17 @@ class ApifyClient {
         });
     }
 
+    /**
+     * @return {KeyValueStoreCollectionClient}
+     */
     keyValueStores() {
         return new KeyValueStoreCollectionClient(this._options());
     }
 
+    /**
+     * @param {string} id
+     * @return {KeyValueStoreClient}
+     */
     keyValueStore(id) {
         ow(id, ow.string);
         return new KeyValueStoreClient({
@@ -136,6 +166,10 @@ class ApifyClient {
         });
     }
 
+    /**
+     * @param {string} buildOrRunId
+     * @return {LogClient}
+     */
     log(buildOrRunId) {
         ow(buildOrRunId, ow.string);
         return new LogClient({
@@ -144,10 +178,19 @@ class ApifyClient {
         });
     }
 
+    /**
+     * @return {RequestQueueCollection}
+     */
     requestQueues() {
         return new RequestQueueCollectionClient(this._options());
     }
 
+    /**
+     * @param {string} id
+     * @param {object} [options]
+     * @param {object} [options.clientKey]
+     * @return {RequestQueueClient}
+     */
     requestQueue(id, options = {}) {
         ow(id, ow.string);
         ow(options, ow.object.exactShape({
@@ -166,6 +209,11 @@ class ApifyClient {
     // }
 
     // TODO temporarily uses second parameter + nested client
+    /**
+     * @param {string} id
+     * @param {string} actorId
+     * @return {RunClient}
+     */
     run(id, actorId) {
         ow(id, ow.string);
         ow(actorId, ow.string);
@@ -178,10 +226,17 @@ class ApifyClient {
         return new RunClient(nestedOpts);
     }
 
+    /**
+     * @return {TaskCollectionClient}
+     */
     tasks() {
         return new TaskCollectionClient(this._options());
     }
 
+    /**
+     * @param {string} id
+     * @return {TaskClient}
+     */
     task(id) {
         ow(id, ow.string);
         return new TaskClient({
@@ -190,10 +245,17 @@ class ApifyClient {
         });
     }
 
+    /**
+     * @return {ScheduleCollectionClient}
+     */
     schedules() {
         return new ScheduleCollectionClient(this._options());
     }
 
+    /**
+     * @param {string} id
+     * @return {ScheduleClient}
+     */
     schedule(id) {
         ow(id, ow.string);
         return new ScheduleClient({
@@ -202,6 +264,10 @@ class ApifyClient {
         });
     }
 
+    /**
+     * @param {string} id
+     * @return {UserClient}
+     */
     user(id = ME_USER_NAME_PLACEHOLDER) {
         ow(id, ow.string);
         return new UserClient({
@@ -210,10 +276,17 @@ class ApifyClient {
         });
     }
 
+    /**
+     * @return {WebhookCollectionClient}
+     */
     webhooks() {
         return new WebhookCollectionClient(this._options());
     }
 
+    /**
+     * @param {string} id
+     * @return {WebhookClient}
+     */
     webhook(id) {
         ow(id, ow.string);
         return new WebhookClient({
@@ -222,10 +295,17 @@ class ApifyClient {
         });
     }
 
+    /**
+     * @return {WebhookDispatchCollectionClient}
+     */
     webhookDispatches() {
         return new WebhookDispatchCollectionClient(this._options());
     }
 
+    /**
+     * @param {string} id
+     * @return {WebhookDispatchClient}
+     */
     webhookDispatch(id) {
         ow(id, ow.string);
         return new WebhookDispatchClient({
