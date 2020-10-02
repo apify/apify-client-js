@@ -39,10 +39,22 @@ const HANDLERS = {
                 .json(payload);
         };
     },
-    responseJsonMock() {
+    responseJsonMock(id) {
         return (req, res) => {
+            const [resourceId] = Object.values(req.params);
+            const responseStatusCode = Number(resourceId) || 200;
+
             const mockServer = req.app.get('mockServer');
-            const { body, headers = {}, statusCode = 200 } = mockServer.response;
+            let body = { data: { id } };
+            let headers;
+            let statusCode = responseStatusCode;
+
+            if (mockServer.response) {
+                body = mockServer.response.body;
+                headers = mockServer.response.headers;
+                statusCode = mockServer.response.statusCode || 200;
+            }
+
             let payload;
             if (statusCode === 200) payload = body;
             else if (statusCode === 204) payload = null;

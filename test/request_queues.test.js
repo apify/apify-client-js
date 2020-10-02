@@ -226,6 +226,7 @@ describe('Request Queue methods', () => {
             const clientKey = 'my-client-key';
 
             const param = method.startsWith('delete') ? request.id : request;
+            if (method.startsWith('add')) delete request.id;
 
             const queue = client.requestQueue(queueId, { clientKey });
             const res = await queue[method](param);
