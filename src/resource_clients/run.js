@@ -72,8 +72,23 @@ class RunClient extends ResourceClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    async waitForFinish() {
-        // TODO
+    /**
+     * Returns a promise that resolves with the finished Run object when the provided actor run finishes
+     * or with the unfinished Run object when the `waitSecs` timeout lapses. The promise is NOT rejected
+     * based on run status. You can inspect the `status` property of the Run object to find out its status.
+     *
+     * This is useful when you need to chain actor executions. Similar effect can be achieved
+     * by using webhooks, so be sure to review which technique fits your use-case better.
+     *
+     * @param {object} [options]
+     * @param {string} [options.waitSecs]
+     *  Maximum time to wait for the run to finish, in seconds.
+     *  If the limit is reached, the returned promise is resolved to a run object that will have
+     *  status `READY` or `RUNNING`. If `waitSecs` omitted, the function waits indefinitely.
+     * @returns {Promise<Object>}
+     */
+    async waitForFinish(options = {}) {
+        return this._waitForFinish(options);
     }
 
     dataset() {
