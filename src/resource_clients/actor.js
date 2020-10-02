@@ -63,8 +63,42 @@ class ActorClient extends ResourceClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    async call() {
-        // TODO
+    async call(options = {}) {
+        ow(options, ow.object.exactShape({
+            contentType: ow.optional.string,
+            memoryMbytes: ow.optional.number,
+            timeoutSecs: ow.optional.number,
+            build: ow.optional.string,
+            waitSecs: ow.optional.number,
+            webhooks: ow.optional.array.ofType(ow.object),
+        }));
+
+        const {
+            contentType,
+            memoryMbytes,
+            timeoutSecs,
+            build,
+            waitSecs,
+            input,
+            webhooks,
+        } = options;
+
+        const startOptions = {
+            contentType,
+            timeOut: timeoutSecs, // TODO: how much is default? (timeoutSecs >= 0)
+            memory: memoryMbytes,
+            build,
+            webhooks,
+            input,
+        };
+
+        const response = await this.start(startOptions);
+
+        if (waitSecs) {
+            await this._waitForFinish({ waitSecs });
+        }
+
+        return response;
     }
 
     async build(options = {}) {
