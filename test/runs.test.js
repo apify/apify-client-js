@@ -35,7 +35,7 @@ describe('Run methods', () => {
     });
 
     test('get() works', async () => {
-        const actorId = 'some-act-id';
+        const actorId = 'some-actor-id';
         const runId = 'some-run-id';
 
         const res = await client.run(runId, actorId).get();
@@ -61,7 +61,7 @@ describe('Run methods', () => {
     });
 
     test('abort() works', async () => {
-        const actorId = 'some-act-id';
+        const actorId = 'some-actor-id';
         const runId = 'some-run-id';
 
         const res = await client.run(runId, actorId).abort();
@@ -74,7 +74,7 @@ describe('Run methods', () => {
     });
 
     test('resurrect() works', async () => {
-        const actorId = 'some-act-id';
+        const actorId = 'some-actor-id';
         const runId = 'some-run-id';
 
         const res = await client.run(runId, actorId).resurrect();
@@ -114,6 +114,23 @@ describe('Run methods', () => {
         }, runId, actorId, targetActorId, options);
         expect(browserRes).toEqual(res);
         validateRequest(actualQuery, { actorId, runId }, { some: 'body' }, { 'content-type': contentType });
+    });
+
+    test('waitForFinish() works', async () => {
+        const actorId = 'some-actor-id';
+        const runId = 'some-run-id';
+        const waitSecs = 0.1;
+        const data = { status: 'SUCCEEDED' };
+        const body = { data };
+
+        setTimeout(() => mockServer.setResponse({ body }), (waitSecs * 1000) / 2);
+        const res = await client.run(runId, actorId).waitForFinish({ waitSecs });
+        expect(res).toEqual(data);
+        validateRequest({ waitForFinish: 0 }, { actorId, runId });
+
+        const browserRes = await page.evaluate((rId, aId, ws) => client.run(rId, aId).waitForFinish({ waitSecs: ws }), runId, actorId, waitSecs);
+        expect(browserRes).toEqual(res);
+        validateRequest({ waitForFinish: 0 }, { actorId, runId });
     });
 
     test('dataset().get() works', async () => {

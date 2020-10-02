@@ -92,8 +92,21 @@ describe('Build methods', () => {
             validateRequest({}, { actorId, buildId });
         });
 
-        test.skip('waitForFinish() works', async () => {
-            // TODO
+        test('waitForFinish() works', async () => {
+            const actorId = 'some-actor-id';
+            const buildId = 'some-build-id';
+            const waitSecs = 0.1;
+            const data = { status: 'SUCCEEDED' };
+            const body = { data };
+
+            setTimeout(() => mockServer.setResponse({ body }), (waitSecs * 1000) / 2);
+            const res = await client.build(buildId, actorId).waitForFinish({ waitSecs });
+            expect(res).toEqual(data);
+            validateRequest({ waitForFinish: 0 }, { actorId, buildId });
+
+            const browserRes = await page.evaluate((bId, aId, ws) => client.build(bId, aId).waitForFinish({ waitSecs: ws }), buildId, actorId, waitSecs);
+            expect(browserRes).toEqual(res);
+            validateRequest({ waitForFinish: 0 }, { actorId, buildId });
         });
     });
 });

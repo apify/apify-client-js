@@ -67,7 +67,7 @@ class ResourceClient extends ApiClient {
 
         while (shouldRepeat()) {
             const waitForFinish = waitSecs
-                ? Math.round(waitSecs - (Date.now() - startedAt) / 1000)
+                ? Math.round(waitSecs - ((Date.now() - startedAt) / 1000))
                 : 999999;
 
             const requestOpts = {
