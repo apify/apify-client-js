@@ -69,8 +69,9 @@ class KeyValueStoreClient extends ResourceClient {
         try {
             const response = await this.httpClient.call(requestOpts);
             return {
+                key,
+                value: response.data,
                 contentType: response.headers['content-type'],
-                body: response.data,
             };
         } catch (err) {
             return catchNotFoundOrThrow(err);
