@@ -149,8 +149,9 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).getRecord(key, options);
             const expectedResult = {
+                key,
+                value: expectedBody,
                 contentType: expectedContentType,
-                body: expectedBody,
             };
             expect(res).toEqual(expectedResult);
             validateRequest(options, { storeId, key });
@@ -173,7 +174,7 @@ describe('Key-Value Store methods', () => {
             mockServer.setResponse({ headers: expectedHeaders, body: expectedBody });
 
             const res = await client.keyValueStore(storeId).getRecord(key);
-            expect(res.body).toEqual(expectedBody);
+            expect(res.value).toEqual(expectedBody);
             validateRequest({}, { storeId, key });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getRecord(k), storeId, key);
@@ -197,13 +198,14 @@ describe('Key-Value Store methods', () => {
 
             mockServer.setResponse({ headers: expectedHeaders, body });
             const expectedResult = {
+                key,
+                value: expectedBody,
                 contentType: expectedContentType,
-                body: expectedBody,
             };
 
             const res = await client.keyValueStore(storeId).getRecord(key, options);
-            expect(res.body).toBeInstanceOf(Buffer);
-            res.body = res.body.toString();
+            expect(res.value).toBeInstanceOf(Buffer);
+            res.value = res.value.toString();
             expect(res).toEqual(expectedResult);
             validateRequest({}, { storeId, key });
 
@@ -211,7 +213,7 @@ describe('Key-Value Store methods', () => {
                 /* eslint-disable no-shadow */
                 const res = await client.keyValueStore(id).getRecord(k, opts);
                 const decoder = new TextDecoder();
-                res.body = decoder.decode(res.body);
+                res.value = decoder.decode(res.value);
                 return res;
             }, storeId, key, options);
             expect(browserRes).toEqual(res);
@@ -221,9 +223,6 @@ describe('Key-Value Store methods', () => {
         test('getRecord() returns buffer for non-text content-types', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
-            const options = {
-                buffer: true,
-            };
 
             const body = 'abcxyz';
             const expectedContentType = 'image/png; charset=utf-8';
@@ -233,13 +232,14 @@ describe('Key-Value Store methods', () => {
 
             mockServer.setResponse({ headers: expectedHeaders, body });
             const expectedResult = {
+                key,
+                value: body,
                 contentType: expectedContentType,
-                body,
             };
 
-            const res = await client.keyValueStore(storeId).getRecord(key, options);
-            expect(res.body).toBeInstanceOf(Buffer);
-            res.body = res.body.toString();
+            const res = await client.keyValueStore(storeId).getRecord(key);
+            expect(res.value).toBeInstanceOf(Buffer);
+            res.value = res.value.toString();
             expect(res).toEqual(expectedResult);
             validateRequest({}, { storeId, key });
 
@@ -247,9 +247,9 @@ describe('Key-Value Store methods', () => {
                 /* eslint-disable no-shadow */
                 const res = await client.keyValueStore(id).getRecord(k, opts);
                 const decoder = new TextDecoder();
-                res.body = decoder.decode(res.body);
+                res.value = decoder.decode(res.value);
                 return res;
-            }, storeId, key, options);
+            }, storeId, key);
             expect(browserRes).toEqual(res);
             validateRequest({}, { storeId, key });
         });
@@ -270,17 +270,18 @@ describe('Key-Value Store methods', () => {
 
             mockServer.setResponse({ headers: expectedHeaders, body });
             const expectedResult = {
+                key,
+                value: expectedBody,
                 contentType: expectedContentType,
-                body: expectedBody,
             };
 
             const res = await client.keyValueStore(storeId).getRecord(key, options);
-            expect(res.body).toBeInstanceOf(Readable);
+            expect(res.value).toBeInstanceOf(Readable);
             const chunks = [];
-            for await (const chunk of res.body) {
+            for await (const chunk of res.value) {
                 chunks.push(chunk);
             }
-            res.body = Buffer.concat(chunks).toString();
+            res.value = Buffer.concat(chunks).toString();
             expect(res).toEqual(expectedResult);
             validateRequest({}, { storeId, key });
 
