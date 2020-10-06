@@ -50,11 +50,19 @@ class ResourceClient extends ApiClient {
         }
     }
 
-    async _waitForFinish(options = {}) {
-        ow(options, ow.object.exactShape({
-            waitSecs: ow.optional.number,
-        }));
+    async _call(options = {}) {
+        const { waitForFinish: waitSecs } = options;
 
+        let response = await this.start(options);
+
+        if (waitSecs) {
+            response = await this._waitForFinish({ waitSecs });
+        }
+
+        return response;
+    }
+
+    async _waitForFinish(options = {}) {
         const { waitSecs } = options;
         let job;
 
