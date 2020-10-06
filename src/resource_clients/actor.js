@@ -93,7 +93,7 @@ class ActorClient extends ResourceClient {
             input,
         };
 
-        if (timeoutSecs > 0) startOptions.timeout = timeoutSecs;
+        if (timeoutSecs >= 0) startOptions.timeout = timeoutSecs;
 
         const response = await this._call(startOptions);
 
