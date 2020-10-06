@@ -155,8 +155,71 @@ describe('Actor methods', () => {
             validateRequest({ webhooks: stringifyWebhooksToBase64(webhooks) }, { actorId });
         });
 
-        test.skip('call() works', async () => {
-            // TODO
+        test('call() works', async () => {
+            const actorId = 'some-id';
+            const contentType = 'application/x-www-form-urlencoded';
+            const input = 'some=body';
+            const timeout = 120;
+            const memory = 256;
+            const build = '1.2.0';
+
+            const query = {
+                timeout,
+                memory,
+                build,
+            };
+
+            const res = await client.actor(actorId).call({
+                contentType,
+                memoryMbytes: memory,
+                timeoutSecs: timeout,
+                build,
+                input,
+            });
+
+            await page.evaluate((id, opts) => client.actor(id).start(opts), actorId, { contentType, input, ...query });
+            validateRequest(query, { actorId }, { some: 'body' }, { 'content-type': contentType });
+
+            expect(res.id).toEqual('run-actor');
+            validateRequest(query, { actorId }, { some: 'body' }, { 'content-type': contentType });
+
+            const browserRes = await page.evaluate((id, opts) => client.actor(id).start(opts), actorId, { contentType, input, ...query });
+            expect(browserRes).toEqual(res);
+            validateRequest(query, { actorId }, { some: 'body' }, { 'content-type': contentType });
+        });
+
+        test('call() with wait for finish works', async () => {
+            const actorId = 'some-id';
+            const contentType = 'application/x-www-form-urlencoded';
+            const input = 'some=body';
+            const timeout = 120;
+            const memory = 256;
+            const build = '1.2.0';
+
+            const query = {
+                timeout,
+                memory,
+                build,
+            };
+
+            const res = await client.actor(actorId).call({
+                contentType,
+                memoryMbytes: memory,
+                timeoutSecs: timeout,
+                build,
+                waitSecs: 2,
+                input,
+            });
+
+            await page.evaluate((id, opts) => client.actor(id).start(opts), actorId, { contentType, input, ...query });
+            validateRequest(query, { actorId }, { some: 'body' }, { 'content-type': contentType });
+
+            expect(res.id).toEqual('get-actor');
+            validateRequest({ waitForFinish: 0 }, { actorId });
+
+            const browserRes = await page.evaluate((id) => client.actor(id).get(), actorId);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { actorId });
         });
 
         test('build() works', async () => {
