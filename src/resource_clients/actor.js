@@ -71,6 +71,7 @@ class ActorClient extends ResourceClient {
             build: ow.optional.string,
             waitSecs: ow.optional.number,
             webhooks: ow.optional.array.ofType(ow.object),
+            input: ow.any,
         }));
 
         const {
@@ -85,18 +86,16 @@ class ActorClient extends ResourceClient {
 
         const startOptions = {
             contentType,
-            timeOut: timeoutSecs, // TODO: how much is default? (timeoutSecs >= 0)
+            waitForFinish: waitSecs,
             memory: memoryMbytes,
             build,
             webhooks,
             input,
         };
 
-        const response = await this.start(startOptions);
+        if (timeoutSecs > 0) startOptions.timeout = timeoutSecs;
 
-        if (waitSecs) {
-            await this._waitForFinish({ waitSecs });
-        }
+        const response = await this._call(startOptions);
 
         return response;
     }

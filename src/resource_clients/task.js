@@ -51,8 +51,38 @@ class TaskClient extends ResourceClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    async call() {
-        // TODO
+    async call(options = {}) {
+        ow(options, ow.object.exactShape({
+            memoryMbytes: ow.optional.number,
+            timeoutSecs: ow.optional.number,
+            build: ow.optional.string,
+            waitSecs: ow.optional.number,
+            webhooks: ow.optional.array.ofType(ow.object),
+            input: ow.optional.object,
+        }));
+
+        const {
+            memoryMbytes,
+            timeoutSecs,
+            build,
+            waitSecs,
+            input,
+            webhooks,
+        } = options;
+
+        const startOptions = {
+            waitForFinish: waitSecs,
+            memory: memoryMbytes,
+            build,
+            webhooks,
+            input,
+        };
+
+        if (timeoutSecs > 0) startOptions.timeout = timeoutSecs;
+
+        const response = await this._call(startOptions);
+
+        return response;
     }
 
     async getInput() {
