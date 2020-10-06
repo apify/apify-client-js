@@ -1,9 +1,6 @@
-const isObject = require('lodash/isObject');
-const isUndefined = require('lodash/isUndefined');
-const isArray = require('lodash/isArray');
-const mapValues = require('lodash/mapValues');
 const log = require('apify-shared/log');
 const retry = require('async-retry');
+const ow = require('ow');
 
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
 const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
@@ -14,7 +11,8 @@ const NOT_FOUND_STATUS_CODE = 404;
  * or an object without a 'data' property.
  */
 const pluckData = (obj) => {
-    if (isObject(obj) && !isUndefined(obj.data)) {
+    const isObject = !!obj && typeof obj === 'object';
+    if (isObject && typeof obj.data !== 'undefined') {
         return obj.data;
     }
     throw new Error(`Expected response object with a "data" property, but received: ${obj}`);
@@ -32,16 +30,23 @@ const catchNotFoundOrThrow = (err) => {
 /**
  * Helper function that traverses JSON structure and parses fields such as modifiedAt or createdAt to dates.
  */
-function parseDateFields(obj, depth = 0) {
-    if (depth > PARSE_DATE_FIELDS_MAX_DEPTH) return obj;
-    if (isArray(obj)) return obj.map((child) => parseDateFields(child, depth + 1));
-    if (!isObject(obj)) return obj;
+function parseDateFields(input, depth = 0) {
+    if (depth > PARSE_DATE_FIELDS_MAX_DEPTH) return input;
+    if (Array.isArray(input)) return input.map((child) => parseDateFields(child, depth + 1));
+    if (!input || typeof input !== 'object') return input;
 
-    return mapValues(obj, (val, key) => {
-        if (key.endsWith(PARSE_DATE_FIELDS_KEY_SUFFIX)) return val ? new Date(val) : val;
-        if (isArray(val) || isObject(val)) return parseDateFields(val, depth + 1);
-        return val;
-    });
+    const o = Object.entries(input).reduce((output, [k, v]) => {
+        const isValObject = !!v && typeof v === 'object';
+        if (k.endsWith(PARSE_DATE_FIELDS_KEY_SUFFIX)) {
+            output[k] = v ? new Date(v) : v;
+        } else if (isValObject || Array.isArray(v)) {
+            output[k] = parseDateFields(v, depth + 1);
+        } else {
+            output[k] = v;
+        }
+        return output;
+    }, {});
+    return o;
 }
 
 /**
@@ -85,8 +90,22 @@ const retryWithExpBackoff = (func, opts) => {
  */
 const isNode = () => !!(typeof process !== 'undefined' && process.versions && process.versions.node);
 
+/**
+ * @param {*} value
+ * @return {boolean}
+ */
+const isBuffer = (value) => ow.isValid(value, ow.any(ow.buffer, ow.arrayBuffer, ow.typedArray));
+
+/**
+ * @param {*} value
+ * @return {boolean}
+ */
+const isStream = (value) => ow.isValid(value, ow.object.hasKeys('on', 'pipe'));
+
 module.exports = {
     isNode,
+    isBuffer,
+    isStream,
     retryWithExpBackoff,
     stringifyWebhooksToBase64,
     parseDateFields,

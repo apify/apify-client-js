@@ -1,5 +1,6 @@
 const ow = require('ow');
 const ResourceClient = require('../base/resource_client');
+const { isBuffer, isStream } = require('../utils');
 const {
     pluckData,
     parseDateFields,
@@ -92,17 +93,16 @@ class KeyValueStoreClient extends ResourceClient {
         const { key } = record;
         let { value, contentType } = record;
 
+        const isValueStreamOrBuffer = isStream(value) || isBuffer(value);
         // To allow saving Objects to JSON without providing content type
-        const isValueStreamOrBuffer = ow.isValid(value, ow.any(ow.buffer, ow.object.hasKeys('on', 'pipe')));
         if (!contentType) {
-            contentType = isValueStreamOrBuffer
-                ? 'application/octet-stream'
-                : 'application/json; charset=utf-8';
+            if (isValueStreamOrBuffer) contentType = 'application/octet-stream';
+            else if (typeof value === 'string') contentType = 'text/plain; charset=utf-8';
+            else contentType = 'application/json; charset=utf-8';
         }
 
         const isContentTypeJson = /^application\/json/.test(contentType);
-
-        if (isContentTypeJson && !isValueStreamOrBuffer) {
+        if (isContentTypeJson && !isValueStreamOrBuffer && typeof value !== 'string') {
             try {
                 value = JSON.stringify(value, null, 2);
             } catch (err) {
@@ -135,6 +135,10 @@ class KeyValueStoreClient extends ResourceClient {
         await this.httpClient.call(uploadOpts);
     }
 
+    /**
+     * @param {string} key
+     * @return {Promise<void>}
+     */
     async deleteRecord(key) {
         ow(key, ow.string);
 
@@ -145,15 +149,24 @@ class KeyValueStoreClient extends ResourceClient {
         });
     }
 
+    /**
+     * @param {string|Buffer|stream.Readable} value
+     * @return {boolean}
+     * @private
+     */
     _shouldUseDirectUpload(value) {
-        let bytes = Infinity;
+        let bytes = -1;
         if (typeof value === 'string') {
             // We could encode this to measure precisely,
             // but it's not worth the extra computation.
             bytes = value.length;
         }
-        if (ow.isValid(value, ow.any(ow.buffer, ow.arrayBuffer, ow.typedArray))) {
+        if (isBuffer(value)) {
             bytes = value.byteLength;
+        }
+        if (isStream(value)) {
+            // Streams can't be counted but let's assume it's big.
+            bytes = Infinity;
         }
         return bytes >= SIGNED_URL_UPLOAD_MIN_BYTES;
     }
@@ -164,6 +177,6 @@ module.exports = KeyValueStoreClient;
 /**
  * @typedef {object} KeyValueStoreRecord
  * @property {string} key
- * @property {*} value
+ * @property {null|string|number|object} value
  * @property {string} [contentType]
  */
