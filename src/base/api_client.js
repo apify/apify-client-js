@@ -3,6 +3,7 @@
  * @property {object} options
  * @property {string} options.baseUrl
  * @property {string} options.resourcePath
+ * @property {ApifyClient} options.apifyClient
  * @property {HttpClient} options.httpClient
  * @property {string[]} [options.disableMethods]
  * @property {string} [options.id]
@@ -19,6 +20,7 @@ class ApiClient {
     constructor(options) {
         const {
             baseUrl,
+            apifyClient,
             httpClient,
             resourcePath,
             disableMethods = [],
@@ -33,6 +35,7 @@ class ApiClient {
         this.url = id
             ? `${baseUrl}/${resourcePath}/${this.safeId}`
             : `${baseUrl}/${resourcePath}`;
+        this.apifyClient = apifyClient;
         this.httpClient = httpClient;
         this.params = params;
         this.disabledMethods = disableMethods.map((m) => m.toLowerCase());

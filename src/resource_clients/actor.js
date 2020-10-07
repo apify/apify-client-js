@@ -66,36 +66,23 @@ class ActorClient extends ResourceClient {
     async call(options = {}) {
         ow(options, ow.object.exactShape({
             contentType: ow.optional.string,
-            memoryMbytes: ow.optional.number,
-            timeoutSecs: ow.optional.number,
+            memory: ow.optional.number,
+            timeout: ow.optional.number,
             build: ow.optional.string,
             waitSecs: ow.optional.number,
             webhooks: ow.optional.array.ofType(ow.object),
             input: ow.any,
         }));
 
-        const {
-            contentType,
-            memoryMbytes,
-            timeoutSecs,
-            build,
-            waitSecs,
-            input,
-            webhooks,
-        } = options;
+        const { timeout, ...callOptions } = options;
 
-        const startOptions = {
-            contentType,
-            waitForFinish: waitSecs,
-            memory: memoryMbytes,
-            build,
-            webhooks,
-            input,
-        };
+        if (timeout >= 0) callOptions.timeout = timeout;
 
-        if (timeoutSecs >= 0) startOptions.timeout = timeoutSecs;
+        const { waitSecs, ...startOptions } = callOptions;
 
-        const response = await this._call(startOptions);
+        const { id, actId } = await this.start(startOptions);
+
+        const response = this.apifyClient.run(id, actId).waitForFinish({ waitSecs });
 
         return response;
     }

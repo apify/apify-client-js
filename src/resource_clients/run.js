@@ -8,6 +8,9 @@ const {
     pluckData,
     parseDateFields,
 } = require('../utils');
+const {
+    waitForFinish,
+} = require('./shared_methods/wait_for_finish');
 
 class RunClient extends ResourceClient {
     /**
@@ -19,6 +22,7 @@ class RunClient extends ResourceClient {
             disableMethods: ['update', 'delete'],
             ...options,
         });
+        this._waitForFinish = waitForFinish;
     }
 
     async abort() {
@@ -81,7 +85,7 @@ class RunClient extends ResourceClient {
      * by using webhooks, so be sure to review which technique fits your use-case better.
      *
      * @param {object} [options]
-     * @param {string} [options.waitSecs]
+     * @param {number} [options.waitSecs]
      *  Maximum time to wait for the run to finish, in seconds.
      *  If the limit is reached, the returned promise is resolved to a run object that will have
      *  status `READY` or `RUNNING`. If `waitSecs` omitted, the function waits indefinitely.

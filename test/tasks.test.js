@@ -190,11 +190,16 @@ describe('Task methods', () => {
         });
 
         test('call() works', async () => {
-            const taskId = 'some-id';
+            const taskId = 'some-task-id';
             const input = { some: 'body' };
             const timeout = 120;
             const memory = 256;
             const build = '1.2.0';
+            const actId = 'started-actor-id';
+            const runId = 'started-run-id';
+            const data = { id: runId, actId, status: 'SUCCEEDED' };
+            const body = { data };
+            const waitSecs = 1;
 
             const query = {
                 timeout,
@@ -202,54 +207,36 @@ describe('Task methods', () => {
                 build,
             };
 
+            mockServer.setResponse({ body }); // this is not used for the task.start()
             const res = await client.task(taskId).call({
-                memoryMbytes: memory,
-                timeoutSecs: timeout,
+                memory,
+                timeout,
                 build,
                 input,
+                waitSecs,
             });
+            expect(res).toEqual(data);
 
-            await page.evaluate((id, opts) => client.task(id).start(opts), taskId, { input, ...query });
+            expect(res).toEqual(data);
+            validateRequest({ waitForFinish: waitSecs }, { runId, actorId: actId });
             validateRequest(query, { taskId }, { some: 'body' });
 
-            expect(res.id).toEqual('run-task');
-            validateRequest(query, { taskId }, { some: 'body' });
-
-            const browserRes = await page.evaluate((id, opts) => client.task(id).start(opts), taskId, { input, ...query });
-            expect(browserRes).toEqual(res);
-            validateRequest(query, { taskId }, { some: 'body' });
-        });
-
-        test('call() with wait for finish works', async () => {
-            const taskId = 'some-id';
-            const input = { some: 'body' };
-            const timeout = 120;
-            const memory = 256;
-            const build = '1.2.0';
-
-            const query = {
+            const callBrowserRes = await page.evaluate(
+                (id, opts) => client.task(id).call(opts), taskId, {
+                    memory,
+                    timeout,
+                    build,
+                    input,
+                    waitSecs,
+                },
+            );
+            expect(callBrowserRes).toEqual(res);
+            validateRequest({ waitForFinish: waitSecs }, { runId, actorId: actId });
+            validateRequest({
                 timeout,
                 memory,
                 build,
-            };
-
-            const res = await client.task(taskId).call({
-                memoryMbytes: memory,
-                timeoutSecs: timeout,
-                build,
-                waitSecs: 2,
-                input,
-            });
-
-            await page.evaluate((id, opts) => client.task(id).start(opts), taskId, { input, ...query });
-            validateRequest(query, { taskId }, { some: 'body' });
-
-            expect(res.id).toEqual('get-task');
-            validateRequest({ waitForFinish: 0 }, { taskId });
-
-            const browserRes = await page.evaluate((id) => client.task(id).get(), taskId);
-            expect(browserRes).toEqual(res);
-            validateRequest({}, { taskId });
+            }, { taskId }, { some: 'body' });
         });
 
         test('webhooks().list() works', async () => {
