@@ -10,7 +10,7 @@ const ROUTES = [
     { id: 'delete-actor', method: 'DELETE', path: '/:actorId' },
     { id: 'get-actor', method: 'GET', path: '/:actorId' },
     { id: 'list-runs', method: 'GET', path: '/:actorId/runs' },
-    { id: 'run-actor', method: 'POST', path: '/:actorId/runs' },
+    { id: 'run-actor', method: 'POST', path: '/:actorId/runs', type: 'responseJsonMock' },
     { id: 'last-run-get', method: 'GET', path: '/:actorId/runs/last' },
     { id: 'last-run-dataset', method: 'GET', path: '/:actorId/runs/last/dataset' },
     { id: 'last-run-keyValueStore', method: 'GET', path: '/:actorId/runs/last/key-value-store' },

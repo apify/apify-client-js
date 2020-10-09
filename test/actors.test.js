@@ -162,11 +162,12 @@ describe('Actor methods', () => {
             const timeout = 120;
             const memory = 256;
             const build = '1.2.0';
-            const data = { status: 'SUCCEEDED' };
+            const runId = 'started-run-id';
+            const data = { id: runId, actId: actorId, status: 'SUCCEEDED' };
             const body = { data };
             const waitSecs = 1;
 
-            mockServer.setResponse({ body }); // this is not used for the actor.start()
+            mockServer.setResponse({ body });
             const res = await client.actor(actorId).call({
                 contentType,
                 memory,
@@ -177,7 +178,7 @@ describe('Actor methods', () => {
             });
 
             expect(res).toEqual(data);
-            validateRequest({ waitForFinish: waitSecs }, { actorId, runId: 'run-actor' });
+            validateRequest({ waitForFinish: waitSecs }, { actorId, runId });
             validateRequest({
                 timeout,
                 memory,
@@ -195,7 +196,7 @@ describe('Actor methods', () => {
                 },
             );
             expect(callBrowserRes).toEqual(res);
-            validateRequest({ waitForFinish: waitSecs }, { actorId, runId: 'run-actor' });
+            validateRequest({ waitForFinish: waitSecs }, { actorId, runId });
             validateRequest({
                 timeout,
                 memory,

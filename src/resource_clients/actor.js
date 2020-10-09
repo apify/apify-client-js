@@ -67,18 +67,14 @@ class ActorClient extends ResourceClient {
         ow(options, ow.object.exactShape({
             contentType: ow.optional.string,
             memory: ow.optional.number,
-            timeout: ow.optional.number,
+            timeout: ow.optional.number.not.negative,
             build: ow.optional.string,
-            waitSecs: ow.optional.number,
+            waitSecs: ow.optional.number.not.negative,
             webhooks: ow.optional.array.ofType(ow.object),
             input: ow.any,
         }));
 
-        const { timeout, ...callOptions } = options;
-
-        if (timeout >= 0) callOptions.timeout = timeout;
-
-        const { waitSecs, ...startOptions } = callOptions;
+        const { waitSecs, ...startOptions } = options;
 
         const { id, actId } = await this.start(startOptions);
 

@@ -3,6 +3,9 @@ const {
     pluckData,
     parseDateFields,
 } = require('../utils');
+const {
+    waitForFinish,
+} = require('./shared_methods/wait_for_finish');
 
 class BuildClient extends ResourceClient {
     /**
@@ -13,6 +16,7 @@ class BuildClient extends ResourceClient {
             resourcePath: 'builds',
             ...options,
         });
+        this._waitForFinish = waitForFinish;
     }
 
     async abort() {

@@ -207,7 +207,7 @@ describe('Task methods', () => {
                 build,
             };
 
-            mockServer.setResponse({ body }); // this is not used for the task.start()
+            mockServer.setResponse({ body });
             const res = await client.task(taskId).call({
                 memory,
                 timeout,
