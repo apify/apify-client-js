@@ -73,12 +73,13 @@ class ApifyClient {
     }
 
     /**
-     * @return {{httpClient: HttpClient, baseUrl: string, params: {token: string}}}
+     * @return {{httpClient: HttpClient, apifyClient: ApifyClient, baseUrl: string, params: {token: string}}}
      * @private
      */
     _options() {
         return {
             baseUrl: this.baseUrl,
+            apifyClient: this,
             httpClient: this.httpClient,
             params: {
                 token: this.token,

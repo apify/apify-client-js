@@ -189,6 +189,56 @@ describe('Task methods', () => {
             validateRequest(query, { taskId });
         });
 
+        test('call() works', async () => {
+            const taskId = 'some-task-id';
+            const input = { some: 'body' };
+            const timeout = 120;
+            const memory = 256;
+            const build = '1.2.0';
+            const actId = 'started-actor-id';
+            const runId = 'started-run-id';
+            const data = { id: runId, actId, status: 'SUCCEEDED' };
+            const body = { data };
+            const waitSecs = 1;
+
+            const query = {
+                timeout,
+                memory,
+                build,
+            };
+
+            mockServer.setResponse({ body });
+            const res = await client.task(taskId).call({
+                memory,
+                timeout,
+                build,
+                input,
+                waitSecs,
+            });
+            expect(res).toEqual(data);
+
+            expect(res).toEqual(data);
+            validateRequest({ waitForFinish: waitSecs }, { runId, actorId: actId });
+            validateRequest(query, { taskId }, { some: 'body' });
+
+            const callBrowserRes = await page.evaluate(
+                (id, opts) => client.task(id).call(opts), taskId, {
+                    memory,
+                    timeout,
+                    build,
+                    input,
+                    waitSecs,
+                },
+            );
+            expect(callBrowserRes).toEqual(res);
+            validateRequest({ waitForFinish: waitSecs }, { runId, actorId: actId });
+            validateRequest({
+                timeout,
+                memory,
+                build,
+            }, { taskId }, { some: 'body' });
+        });
+
         test('webhooks().list() works', async () => {
             const taskId = 'some-task-id';
             const query = {

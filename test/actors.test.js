@@ -155,8 +155,53 @@ describe('Actor methods', () => {
             validateRequest({ webhooks: stringifyWebhooksToBase64(webhooks) }, { actorId });
         });
 
-        test.skip('call() works', async () => {
-            // TODO
+        test('call() works', async () => {
+            const actorId = 'some-id';
+            const contentType = 'application/x-www-form-urlencoded';
+            const input = 'some=body';
+            const timeout = 120;
+            const memory = 256;
+            const build = '1.2.0';
+            const runId = 'started-run-id';
+            const data = { id: runId, actId: actorId, status: 'SUCCEEDED' };
+            const body = { data };
+            const waitSecs = 1;
+
+            mockServer.setResponse({ body });
+            const res = await client.actor(actorId).call({
+                contentType,
+                memory,
+                timeout,
+                build,
+                input,
+                waitSecs,
+            });
+
+            expect(res).toEqual(data);
+            validateRequest({ waitForFinish: waitSecs }, { actorId, runId });
+            validateRequest({
+                timeout,
+                memory,
+                build,
+            }, { actorId }, { some: 'body' }, { 'content-type': contentType });
+
+            const callBrowserRes = await page.evaluate(
+                (id, opts) => client.actor(id).call(opts), actorId, {
+                    contentType,
+                    memory,
+                    timeout,
+                    build,
+                    input,
+                    waitSecs,
+                },
+            );
+            expect(callBrowserRes).toEqual(res);
+            validateRequest({ waitForFinish: waitSecs }, { actorId, runId });
+            validateRequest({
+                timeout,
+                memory,
+                build,
+            }, { actorId }, { some: 'body' }, { 'content-type': contentType });
         });
 
         test('build() works', async () => {
