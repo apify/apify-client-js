@@ -35,12 +35,20 @@ class RunClient extends ResourceClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    async metamorph(targetActorId, options = {}) {
+    /**
+     * @param {string} targetActorId
+     * @param {*} [input]
+     * @param {object} [options]
+     * @param {object} [options.contentType]
+     * @param {object} [options.build]
+     * @return {Promise<Run>}
+     */
+    async metamorph(targetActorId, input, options = {}) {
         ow(targetActorId, ow.string);
+        // input can be anything, pointless to validate
         ow(options, ow.object.exactShape({
             contentType: ow.optional.string,
             build: ow.optional.string,
-            input: ow.any,
         }));
 
         const safeTargetActorId = this._toSafeId(targetActorId);
@@ -53,7 +61,7 @@ class RunClient extends ResourceClient {
         const request = {
             url: this._url('metamorph'),
             method: 'POST',
-            data: options.input,
+            data: input,
             params: this._params(params),
         };
         if (options.contentType) {

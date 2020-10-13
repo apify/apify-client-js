@@ -97,7 +97,6 @@ describe('Run methods', () => {
         const options = {
             build,
             contentType,
-            input,
         };
 
         const actualQuery = {
@@ -105,13 +104,13 @@ describe('Run methods', () => {
             build,
         };
 
-        const res = await client.run(runId, actorId).metamorph(targetActorId, options);
+        const res = await client.run(runId, actorId).metamorph(targetActorId, input, options);
         expect(res.id).toEqual('metamorph-run');
         validateRequest(actualQuery, { actorId, runId }, { some: 'body' }, { 'content-type': contentType });
 
-        const browserRes = await page.evaluate((rId, aId, targetId, opts) => {
-            return client.run(rId, aId).metamorph(targetId, opts);
-        }, runId, actorId, targetActorId, options);
+        const browserRes = await page.evaluate((rId, aId, targetId, i, opts) => {
+            return client.run(rId, aId).metamorph(targetId, i, opts);
+        }, runId, actorId, targetActorId, input, options);
         expect(browserRes).toEqual(res);
         validateRequest(actualQuery, { actorId, runId }, { some: 'body' }, { 'content-type': contentType });
     });
