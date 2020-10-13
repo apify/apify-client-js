@@ -26,15 +26,25 @@ class ActorClient extends ResourceClient {
         });
     }
 
-    async start(options = {}) {
+    /**
+     * @param {*} [input]
+     * @param {object} [options]
+     * @param {string} [options.build]
+     * @param {string} [options.contentType]
+     * @param {number} [options.memory]
+     * @param {number} [options.timeout]
+     * @param {array} [options.webhooks]
+     * @return {Promise<Run>}
+     */
+    async start(input, options = {}) {
+        // input can be anything, pointless to validate
         ow(options, ow.object.exactShape({
-            contentType: ow.optional.string,
-            waitForFinish: ow.optional.number,
-            timeout: ow.optional.number,
-            memory: ow.optional.number,
             build: ow.optional.string,
+            contentType: ow.optional.string,
+            memory: ow.optional.number,
+            timeout: ow.optional.number,
+            waitForFinish: ow.optional.number,
             webhooks: ow.optional.array.ofType(ow.object),
-            input: ow.any,
         }));
 
         const { waitForFinish, timeout, memory, build } = options;
@@ -50,7 +60,7 @@ class ActorClient extends ResourceClient {
         const request = {
             url: this._url('runs'),
             method: 'POST',
-            data: options.input,
+            data: input,
             params: this._params(params),
         };
         if (options.contentType) {
@@ -63,24 +73,33 @@ class ActorClient extends ResourceClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    async call(options = {}) {
+    /**
+     * @param {*} [input]
+     * @param {object} [options]
+     * @param {string} [options.build]
+     * @param {string} [options.contentType]
+     * @param {number} [options.memory]
+     * @param {number} [options.timeout]
+     * @param {number} [options.waitSecs]
+     * @param {array} [options.webhooks]
+     * @return {Promise<Run>}
+     */
+    async call(input, options = {}) {
+        // input can be anything, pointless to validate
         ow(options, ow.object.exactShape({
+            build: ow.optional.string,
             contentType: ow.optional.string,
             memory: ow.optional.number,
             timeout: ow.optional.number.not.negative,
-            build: ow.optional.string,
             waitSecs: ow.optional.number.not.negative,
             webhooks: ow.optional.array.ofType(ow.object),
-            input: ow.any,
         }));
 
         const { waitSecs, ...startOptions } = options;
 
-        const { id, actId } = await this.start(startOptions);
+        const { id, actId } = await this.start(input, startOptions);
 
-        const response = this.apifyClient.run(id, actId).waitForFinish({ waitSecs });
-
-        return response;
+        return this.apifyClient.run(id, actId).waitForFinish({ waitSecs });
     }
 
     async build(options = {}) {

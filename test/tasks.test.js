@@ -135,17 +135,14 @@ describe('Task methods', () => {
 
         test('start() works', async () => {
             const taskId = 'some-id';
-            const query = {
-                waitForFinish: 100,
-            };
 
-            const res = await client.task(taskId).start(query);
+            const res = await client.task(taskId).start();
             expect(res.id).toEqual('run-task');
-            validateRequest(query, { taskId });
+            validateRequest({}, { taskId });
 
-            const browserRes = await page.evaluate((id, q) => client.task(id).start(q), taskId, query);
+            const browserRes = await page.evaluate((id) => client.task(id).start(), taskId);
             expect(browserRes).toEqual(res);
-            validateRequest(query, { taskId });
+            validateRequest({}, { taskId });
         });
 
         test('start() works with input and options overrides', async () => {
@@ -157,11 +154,11 @@ describe('Task methods', () => {
                 memory: 512,
             };
 
-            const res = await client.task(taskId).start({ input, ...query });
+            const res = await client.task(taskId).start(input, query);
             expect(res.id).toEqual('run-task');
             validateRequest(query, { taskId }, input);
 
-            const browserRes = await page.evaluate((id, opts) => client.task(id).start(opts), taskId, { input, ...query });
+            const browserRes = await page.evaluate((id, i, opts) => client.task(id).start(i, opts), taskId, input, query);
             expect(browserRes).toEqual(res);
             validateRequest(query, { taskId }, input);
         });
@@ -180,11 +177,11 @@ describe('Task methods', () => {
             ];
 
             const query = { webhooks: stringifyWebhooksToBase64(webhooks) };
-            const res = await client.task(taskId).start({ webhooks });
+            const res = await client.task(taskId).start(undefined, { webhooks });
             expect(res.id).toEqual('run-task');
             validateRequest(query, { taskId });
 
-            const browserRes = await page.evaluate((id, opts) => client.task(id).start(opts), taskId, { webhooks });
+            const browserRes = await page.evaluate((id, opts) => client.task(id).start(undefined, opts), taskId, { webhooks });
             expect(browserRes).toEqual(res);
             validateRequest(query, { taskId });
         });
@@ -208,11 +205,10 @@ describe('Task methods', () => {
             };
 
             mockServer.setResponse({ body });
-            const res = await client.task(taskId).call({
+            const res = await client.task(taskId).call(input, {
                 memory,
                 timeout,
                 build,
-                input,
                 waitSecs,
             });
             expect(res).toEqual(data);
@@ -222,11 +218,10 @@ describe('Task methods', () => {
             validateRequest(query, { taskId }, { some: 'body' });
 
             const callBrowserRes = await page.evaluate(
-                (id, opts) => client.task(id).call(opts), taskId, {
+                (id, i, opts) => client.task(id).call(i, opts), taskId, input, {
                     memory,
                     timeout,
                     build,
-                    input,
                     waitSecs,
                 },
             );

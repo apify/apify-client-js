@@ -124,11 +124,11 @@ describe('Actor methods', () => {
                 build: '1.2.0',
             };
 
-            const res = await client.actor(actorId).start({ contentType, input, ...query });
+            const res = await client.actor(actorId).start(input, { contentType, ...query });
             expect(res.id).toEqual('run-actor');
             validateRequest(query, { actorId }, { some: 'body' }, { 'content-type': contentType });
 
-            const browserRes = await page.evaluate((id, opts) => client.actor(id).start(opts), actorId, { contentType, input, ...query });
+            const browserRes = await page.evaluate((id, i, opts) => client.actor(id).start(i, opts), actorId, input, { contentType, ...query });
             expect(browserRes).toEqual(res);
             validateRequest(query, { actorId }, { some: 'body' }, { 'content-type': contentType });
         });
@@ -146,11 +146,11 @@ describe('Actor methods', () => {
                 },
             ];
 
-            const res = await client.actor(actorId).start({ webhooks });
+            const res = await client.actor(actorId).start(undefined, { webhooks });
             expect(res.id).toEqual('run-actor');
             validateRequest({ webhooks: stringifyWebhooksToBase64(webhooks) }, { actorId });
 
-            const browserRes = await page.evaluate((id, opts) => client.actor(id).start(opts), actorId, { webhooks });
+            const browserRes = await page.evaluate((id, opts) => client.actor(id).start(undefined, opts), actorId, { webhooks });
             expect(browserRes).toEqual(res);
             validateRequest({ webhooks: stringifyWebhooksToBase64(webhooks) }, { actorId });
         });
@@ -168,12 +168,11 @@ describe('Actor methods', () => {
             const waitSecs = 1;
 
             mockServer.setResponse({ body });
-            const res = await client.actor(actorId).call({
+            const res = await client.actor(actorId).call(input, {
                 contentType,
                 memory,
                 timeout,
                 build,
-                input,
                 waitSecs,
             });
 
@@ -186,12 +185,11 @@ describe('Actor methods', () => {
             }, { actorId }, { some: 'body' }, { 'content-type': contentType });
 
             const callBrowserRes = await page.evaluate(
-                (id, opts) => client.actor(id).call(opts), actorId, {
+                (id, i, opts) => client.actor(id).call(i, opts), actorId, input, {
                     contentType,
                     memory,
                     timeout,
                     build,
-                    input,
                     waitSecs,
                 },
             );

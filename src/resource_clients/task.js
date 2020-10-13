@@ -20,14 +20,23 @@ class TaskClient extends ResourceClient {
         });
     }
 
-    async start(options = {}) {
+    /**
+     * @param {object} [input]
+     * @param {object} [options]
+     * @param {string} [options.build]
+     * @param {number} [options.memory]
+     * @param {number} [options.timeout]
+     * @param {array} [options.webhooks]
+     * @return {Promise<Run>}
+     */
+    async start(input, options = {}) {
+        ow(input, ow.optional.object);
         ow(options, ow.object.exactShape({
-            waitForFinish: ow.optional.number,
-            timeout: ow.optional.number,
-            memory: ow.optional.number,
             build: ow.optional.string,
+            memory: ow.optional.number,
+            timeout: ow.optional.number,
+            waitForFinish: ow.optional.number,
             webhooks: ow.optional.array.ofType(ow.object),
-            input: ow.optional.object,
         }));
 
         const { waitForFinish, timeout, memory, build } = options;
@@ -43,7 +52,7 @@ class TaskClient extends ResourceClient {
         const request = {
             url: this._url('runs'),
             method: 'POST',
-            data: options.input,
+            data: input,
             params: this._params(params),
         };
 
@@ -51,23 +60,31 @@ class TaskClient extends ResourceClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    async call(options = {}) {
+    /**
+     * @param {object} [input]
+     * @param {object} [options]
+     * @param {string} [options.build]
+     * @param {number} [options.memory]
+     * @param {number} [options.timeout]
+     * @param {number} [options.waitSecs]
+     * @param {array} [options.webhooks]
+     * @return {Promise<Run>}
+     */
+    async call(input, options = {}) {
+        ow(input, ow.optional.object);
         ow(options, ow.object.exactShape({
+            build: ow.optional.string,
             memory: ow.optional.number,
             timeout: ow.optional.number.not.negative,
-            build: ow.optional.string,
-            waitSecs: ow.optional.number,
+            waitSecs: ow.optional.number.not.negative,
             webhooks: ow.optional.array.ofType(ow.object),
-            input: ow.optional.object,
         }));
 
         const { waitSecs, ...startOptions } = options;
 
-        const { id, actId } = await this.start(startOptions);
+        const { id, actId } = await this.start(input, startOptions);
 
-        const response = this.apifyClient.run(id, actId).waitForFinish({ waitSecs });
-
-        return response;
+        return this.apifyClient.run(id, actId).waitForFinish({ waitSecs });
     }
 
     async getInput() {
