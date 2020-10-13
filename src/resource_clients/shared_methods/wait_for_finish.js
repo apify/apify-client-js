@@ -1,10 +1,16 @@
 const { ACT_JOB_TERMINAL_STATUSES } = require('apify-shared/consts');
 const { parseDateFields, pluckData, catchNotFoundOrThrow } = require('../../utils');
 /**
- * Waits for run to be finished according to the provided waitSecs option.
+ * This function is used in Build and Run endpoints so it's kept
+ * here to stay DRY.
+ *
+ * Note: The function relies on 'this' being bound correctly once
+ * attached to the respective clients.
+ *
  * @param {object} [options]
  * @param {number} [options.waitSecs]
- * @returns {Promise<*>}
+ * @returns {Promise<Run>}
+ * @private
  */
 exports.waitForFinish = async function (options = {}) {
     const { waitSecs } = options;
