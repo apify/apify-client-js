@@ -1,4 +1,5 @@
 const express = require('express');
+const { addRoutes } = require('./add_routes');
 
 const schedules = express.Router();
 
@@ -10,29 +11,6 @@ const ROUTES = [
     { id: 'delete-schedule', method: 'DELETE', path: '/:scheduleId' },
     { id: 'get-log', method: 'GET', path: '/:scheduleId/log' },
 ];
-
-const HANDLERS = {
-    json(id) {
-        return (req, res) => {
-            const responseStatusCode = Number(req.params.scheduleId) || 200;
-            const payload = responseStatusCode === 204
-                ? null
-                : { data: { id } };
-            res
-                .status(responseStatusCode)
-                .json(payload);
-        };
-    },
-};
-
-function addRoutes(router, routes) {
-    routes.forEach((route) => {
-        const type = route.type ? route.type : 'json';
-        const handler = HANDLERS[type];
-        const method = route.method.toLowerCase();
-        router[method](route.path, handler(route.id));
-    });
-}
 
 addRoutes(schedules, ROUTES);
 

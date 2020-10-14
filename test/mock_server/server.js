@@ -86,4 +86,13 @@ app.use((err, req, res, next) => { // eslint-disable-line
     res.status(500).json({ error: { message: err.message } });
 });
 
+app.use((req, res) => {
+    res.status(404).json({
+        error: {
+            type: 'page-not-found',
+            message: 'Nothing to do here.',
+        },
+    });
+});
+
 module.exports = mockServer;

@@ -1,31 +1,21 @@
-const ApifyApiError = require('../src/apify_api_error');
+const ApifyClient = require('../src/index');
 
 describe('ApifyApiError', () => {
-    test('should carry all the information', () => {
-        // Partial Axios response
-        const response = {
-            data: {
-                error: {
-                    type: 'test',
-                    message: 'Test message',
-                },
-            },
-            status: 500,
-            config: {
-                url: '/hello',
-                method: 'post',
-            },
-        };
+    test('should carry all the information', async () => {
+        const client = new ApifyClient();
+        const actorCollectionClient = client.actors();
+        const method = 'list';
         try {
-            throw new ApifyApiError(response, 2);
+            await actorCollectionClient[method]();
         } catch (err) {
             expect(err.name).toEqual('ApifyApiError');
-            expect(err.type).toEqual('test');
-            expect(err.message).toEqual('Test message');
-            expect(err.statusCode).toEqual(500);
-            expect(err.url).toEqual('/hello');
-            expect(err.method).toEqual('post');
-            expect(err.attempt).toEqual(2);
+            expect(err.clientMethod).toBe(`${actorCollectionClient.constructor.name}.${method}`);
+            expect(err.type).toEqual('token-not-provided');
+            expect(err.message).toEqual('Authentication token was not provided');
+            expect(err.statusCode).toEqual(401);
+            expect(err.path).toMatch(`/v2/${actorCollectionClient.resourcePath}`);
+            expect(err.httpMethod).toEqual('get');
+            expect(err.attempt).toEqual(1);
         }
     });
 });

@@ -5,6 +5,7 @@ const ow = require('ow');
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
 const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
 const NOT_FOUND_STATUS_CODE = 404;
+const NOT_FOUND_TYPE = 'record-not-found';
 
 /**
  * Returns object's 'data' property or throws if parameter is not an object,
@@ -23,8 +24,8 @@ const pluckData = (obj) => {
  * Otherwise rethrows error.
  */
 const catchNotFoundOrThrow = (err) => {
-    if (err.statusCode === NOT_FOUND_STATUS_CODE) return;
-    throw err;
+    const isNotFound = err.statusCode === NOT_FOUND_STATUS_CODE && err.type === NOT_FOUND_TYPE;
+    if (!isNotFound) throw err;
 };
 
 /**
