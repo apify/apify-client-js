@@ -9,7 +9,7 @@ describe('Request Queue methods', () => {
     beforeAll(async () => {
         const server = await mockServer.start();
         await browser.start();
-        baseUrl = `http://localhost:${server.address().port}/v2`;
+        baseUrl = `http://localhost:${server.address().port}`;
     });
 
     afterAll(async () => {

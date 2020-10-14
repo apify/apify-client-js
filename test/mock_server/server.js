@@ -67,6 +67,7 @@ app.use('/', (req, res, next) => {
 });
 app.set('mockServer', mockServer);
 app.use('/v2', v2Router);
+app.use('/external', external);
 
 // Attaching V2 routers
 v2Router.use('/acts', actorRouter);
@@ -79,7 +80,6 @@ v2Router.use('/request-queues', requestQueues);
 v2Router.use('/webhooks', webhooks);
 v2Router.use('/schedules', schedules);
 v2Router.use('/webhook-dispatches', webhookDispatches);
-v2Router.use('/external', external);
 
 // Debugging middleware
 app.use((err, req, res, next) => { // eslint-disable-line

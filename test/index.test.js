@@ -8,8 +8,8 @@ describe('ApifyClient', () => {
     test('baseUrl correctly strips trailing slash', () => {
         const exampleUrl = 'https://example.com';
         let client = new ApifyClient({ baseUrl: exampleUrl });
-        expect(client.baseUrl).toBe(exampleUrl);
+        expect(client.baseUrl).toBe(`${exampleUrl}/v2`);
         client = new ApifyClient({ baseUrl: `${exampleUrl}/` });
-        expect(client.baseUrl).toBe(exampleUrl);
+        expect(client.baseUrl).toBe(`${exampleUrl}/v2`);
     });
 });

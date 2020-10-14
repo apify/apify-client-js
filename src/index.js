@@ -29,7 +29,7 @@ const Statistics = require('./statistics');
 
 /**
  * @typedef ApifyClientOptions
- * @property {string} [baseUrl='https://api.apify.com/v2']
+ * @property {string} [baseUrl='https://api.apify.com']
  * @property {number} [maxRetries=8]
  * @property {number} [minDelayBetweenRetriesMillis=500]
  * @property {string} [token]
@@ -54,13 +54,14 @@ class ApifyClient {
         }));
 
         const {
-            baseUrl = 'https://api.apify.com/v2',
+            baseUrl = 'https://api.apify.com',
             maxRetries = 8,
             minDelayBetweenRetriesMillis = 500,
             token,
         } = options;
 
-        this.baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, baseUrl.length - 1) : baseUrl;
+        const tempBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, baseUrl.length - 1) : baseUrl;
+        this.baseUrl = `${tempBaseUrl}/v2`;
         this.maxRetries = maxRetries;
         this.minDelayBetweenRetriesMillis = minDelayBetweenRetriesMillis;
         this.token = token;
