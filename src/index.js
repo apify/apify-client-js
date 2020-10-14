@@ -60,7 +60,7 @@ class ApifyClient {
             token,
         } = options;
 
-        this.baseUrl = baseUrl;
+        this.baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, baseUrl.length - 1) : baseUrl;
         this.maxRetries = maxRetries;
         this.minDelayBetweenRetriesMillis = minDelayBetweenRetriesMillis;
         this.token = token;

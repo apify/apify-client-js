@@ -124,13 +124,12 @@ class ActorClient extends ResourceClient {
         ow(options, ow.object.exactShape({
             status: ow.optional.string.oneOf(Object.values(ACT_JOB_STATUSES)),
         }));
-        return new RunClient({
+
+        return new RunClient(this._subResourceOptions({
             id: 'last',
-            baseUrl: this._url(),
-            httpClient: this.httpClient,
             params: this._params(options),
             disableMethods: ['delete', 'update', 'abort', 'resurrect', 'metamorph'],
-        });
+        }));
     }
 
     builds() {

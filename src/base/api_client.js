@@ -38,7 +38,8 @@ class ApiClient {
         this.apifyClient = apifyClient;
         this.httpClient = httpClient;
         this.params = params;
-        this.disabledMethods = disableMethods.map((m) => m.toLowerCase());
+
+        this._disableMethods(disableMethods);
     }
 
     /**
@@ -48,6 +49,7 @@ class ApiClient {
     _subResourceOptions(moreOptions) {
         const baseOptions = {
             baseUrl: this._url(),
+            apifyClient: this.apifyClient,
             httpClient: this.httpClient,
             params: this._params(),
         };
@@ -57,10 +59,14 @@ class ApiClient {
     /**
      * @property {string} methodName
      */
-    _throwIfDisabled(methodName) {
-        if (this.disabledMethods.includes(methodName.toLowerCase())) {
-            throw new Error(`${this.constructor.name} does not support method: ${methodName}`);
-        }
+    _disableMethods(methodNames) {
+        methodNames
+            .map((m) => m.toLowerCase())
+            .map((methodName) => {
+                this[methodName] = async () => {
+                    throw new Error(`This endpoint cannot be called with this function: ${methodName}`);
+                };
+            });
     }
 
     /**
