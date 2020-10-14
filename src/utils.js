@@ -6,6 +6,7 @@ const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
 const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
 const NOT_FOUND_STATUS_CODE = 404;
 const NOT_FOUND_TYPE = 'record-not-found';
+const NOT_FOUND_ON_S3 = '<Code>NoSuchKey</Code>';
 
 /**
  * Returns object's 'data' property or throws if parameter is not an object,
@@ -24,8 +25,10 @@ const pluckData = (obj) => {
  * Otherwise rethrows error.
  */
 const catchNotFoundOrThrow = (err) => {
-    const isNotFound = err.statusCode === NOT_FOUND_STATUS_CODE && err.type === NOT_FOUND_TYPE;
-    if (!isNotFound) throw err;
+    const isNotFoundStatus = err.statusCode === NOT_FOUND_STATUS_CODE;
+    const isNotFoundMessage = err.type === NOT_FOUND_TYPE || err.message.includes(NOT_FOUND_ON_S3);
+    const isNotFoundError = isNotFoundStatus && isNotFoundMessage;
+    if (!isNotFoundError) throw err;
 };
 
 /**
@@ -36,7 +39,7 @@ function parseDateFields(input, depth = 0) {
     if (Array.isArray(input)) return input.map((child) => parseDateFields(child, depth + 1));
     if (!input || typeof input !== 'object') return input;
 
-    const o = Object.entries(input).reduce((output, [k, v]) => {
+    return Object.entries(input).reduce((output, [k, v]) => {
         const isValObject = !!v && typeof v === 'object';
         if (k.endsWith(PARSE_DATE_FIELDS_KEY_SUFFIX)) {
             output[k] = v ? new Date(v) : v;
@@ -47,7 +50,6 @@ function parseDateFields(input, depth = 0) {
         }
         return output;
     }, {});
-    return o;
 }
 
 /**

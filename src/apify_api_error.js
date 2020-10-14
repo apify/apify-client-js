@@ -1,4 +1,4 @@
-const CLIENT_METHOD_REGEX = /at ([A-Z][a-z]+(Collection)?Client\.[A-z]+) \(/;
+const CLIENT_METHOD_REGEX = /at( async)? ([A-z]+(Collection)?Client\.[A-z]+) \(/;
 
 class ApifyApiError extends Error {
     constructor(response, attempt) {
@@ -29,6 +29,7 @@ class ApifyApiError extends Error {
 
         // Overwrite stack. For API errors, the line numbers
         // are not as important as showing the API call details.
+        this.callStack = this.stack.slice(this.stack.indexOf('\n'));
         this.stack = this._createApiStack();
     }
 
@@ -45,9 +46,8 @@ class ApifyApiError extends Error {
 
     _extractClientAndMethodFromStack() {
         const match = this.stack.match(CLIENT_METHOD_REGEX);
-        // Client and method are in the first
-        // and second capturing group
-        if (match) return match[1];
+        // Client and method are in the second capturing group.
+        if (match) return match[2];
     }
 
     _createApiStack() {
@@ -59,7 +59,7 @@ class ApifyApiError extends Error {
             .map(([k, v]) => `  ${k}: ${v}`)
             .join('\n');
 
-        return `${name}: ${this.message}${stack}`;
+        return `${name}: ${this.message}\n${stack}`;
     }
 }
 
