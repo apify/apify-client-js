@@ -1,175 +1,320 @@
-import _ from 'underscore';
-import { requestPromise, REQUEST_PROMISE_OPTIONS, EXP_BACKOFF_MAX_REPEATS } from './utils';
-import acts from './acts';
-import tasks from './tasks';
-import keyValueStores from './key_value_stores';
-import datasets from './datasets';
-import logs from './logs';
-import users from './users';
-import webhooks from './webhooks';
-import webhookDispatches from './webhook_dispatches';
-import requestQueues, { REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS } from './request_queues';
-import ApifyClientError, { INVALID_PARAMETER_ERROR_TYPE } from './apify_error';
+const ow = require('ow');
+const { ME_USER_NAME_PLACEHOLDER } = require('apify-shared/consts');
 
-/** @ignore */
-const getDefaultOptions = () => ({
-    baseUrl: 'https://api.apify.com',
-});
+const ActorClient = require('./resource_clients/actor');
+const ActorCollectionClient = require('./resource_clients/actor_collection');
+const BuildClient = require('./resource_clients/build');
+// const BuildCollectionClient = require('./resource_clients/build_collection');
+const DatasetClient = require('./resource_clients/dataset');
+const DatasetCollectionClient = require('./resource_clients/dataset_collection');
+const KeyValueStoreClient = require('./resource_clients/key_value_store');
+const KeyValueStoreCollectionClient = require('./resource_clients/key_value_store_collection');
+const LogClient = require('./resource_clients/log');
+const RequestQueueClient = require('./resource_clients/request_queue');
+const RequestQueueCollectionClient = require('./resource_clients/request_queue_collection');
+const RunClient = require('./resource_clients/run');
+// const RunCollectionClient = require('./resource_clients/run_collection');
+const ScheduleClient = require('./resource_clients/schedule');
+const ScheduleCollectionClient = require('./resource_clients/schedule_collection');
+const TaskClient = require('./resource_clients/task');
+const TaskCollectionClient = require('./resource_clients/task_collection');
+const UserClient = require('./resource_clients/user');
+const WebhookClient = require('./resource_clients/webhook');
+const WebhookCollectionClient = require('./resource_clients/webhook_collection');
+const WebhookDispatchClient = require('./resource_clients/webhook_dispatch');
+const WebhookDispatchCollectionClient = require('./resource_clients/webhook_dispatch_collection');
+
+const { HttpClient } = require('./http-client');
+const Statistics = require('./statistics');
 
 /**
- * IMPORTANT:
- *
- * This file MUST contain only one export which is default export of Apify Client.
- * Otherwise it would not get exported under require('apify-client') but ugly
- * require('apify-client').default instead.
- *
- * See: https://github.com/59naga/babel-plugin-add-module-exports
+ * @typedef ApifyClientOptions
+ * @property {string} [baseUrl='https://api.apify.com']
+ * @property {number} [maxRetries=8]
+ * @property {number} [minDelayBetweenRetriesMillis=500]
+ * @property {string} [token]
  */
 
 /**
- * Each property is a plain object of methods.
- *
- * Method must have 2 parameters "options" and "requestPromise" where:
- * - requestPromise is utils.requestPromise with Promise parameter set based on
- *   user's choice of Promises dependency.
- * - options
- *
- * Method must return promise.
- * @ignore
- */
-const methodGroups = {
-    acts,
-    tasks,
-    keyValueStores,
-    datasets,
-    requestQueues,
-    logs,
-    users,
-    webhooks,
-    webhookDispatches,
-};
-
-/**
- * @type package
- * @class ApifyClient
- * @param {Object} [options] - Global options for ApifyClient. You can globally configure here any method option from any namespace. For example
- *                             if you are working with just one actor then you can preset it's actId here instead of passing it to each
- *                             actor's method.
- * @param {String} [options.userId] - Your user ID at apify.com
- * @param {String} [options.token] - Your API token at apify.com
- * @param {Number} [options.expBackOffMillis=500] - Wait time in milliseconds before repeating request to Apify API in a case of server
-                                                    or rate limit error
- * @param {Number} [options.expBackOffMaxRepeats=8] - Maximum number of repeats in a case of error
- * @param {Array<Number>} [options.retryOnStatusCodes=[429]] - An array of status codes on which request gets retried. By default requests are retried
- *                                                             only in a case of limit error (status code 429).
- * @description Basic usage of ApifyClient:
- * ```javascript
- * const ApifyClient = require('apify-client');
- *
- * const apifyClient = new ApifyClient({
- *   userId: 'jklnDMNKLekk',
- *   token: 'SNjkeiuoeD443lpod68dk',
- * });
- * ```
- *
  * All API calls done through this client are made with exponential backoff.
  * What this means, is that if the API call fails, this client will attempt the call again with a small delay.
  * If it fails again, it will do another attempt after twice as long and so on, until one attempt succeeds
  * or 8th attempt fails.
  */
-const ApifyClient = function (options = {}) {
-    // This allows to initiate ApifyClient both ways - with and without "new".
-    if (!this || this.constructor !== ApifyClient) return new ApifyClient(options);
-
-    // This is used only internally for unit testing of ApifyClient.
-    const undecoratedMethodGroups = options._overrideMethodGroups || methodGroups;
-    delete options._overrideMethodGroups;
-
-    const instanceOpts = Object.assign({}, getDefaultOptions(), options);
-
+class ApifyClient {
     /**
-     * This decorator does:
-     * - extends "options" parameter with values from default options and from ApifyClient instance options
-     * - adds options.baseUrl
-     * - passes preconfigured utils.requestPromise
-     * - allows to use method with both callbacks and promises
-     * @ignore
+     * @param {ApifyClientOptions} options
      */
-    const methodDecorator = (method) => {
-        return (callOpts, callback) => {
-            const mergedOpts = Object.assign({}, instanceOpts, callOpts);
+    constructor(options = {}) {
+        ow(options, ow.object.exactShape({
+            baseUrl: ow.optional.string,
+            maxRetries: ow.optional.number,
+            minDelayBetweenRetriesMillis: ow.optional.number,
+            token: ow.optional.string,
+        }));
 
-            // Check that all required parameters are set.
-            if (!instanceOpts.baseUrl) throw new ApifyClientError(INVALID_PARAMETER_ERROR_TYPE, 'The "options.baseUrl" parameter is required');
+        const {
+            baseUrl = 'https://api.apify.com',
+            maxRetries = 8,
+            minDelayBetweenRetriesMillis = 500,
+            token,
+        } = options;
 
-            // Remove traling forward slash from baseUrl.
-            if (mergedOpts.baseUrl.substr(-1) === '/') mergedOpts.baseUrl = mergedOpts.baseUrl.slice(0, -1);
-
-            const preconfiguredRequestPromise = (requestPromiseOptions) => {
-                return requestPromise(Object.assign({}, _.pick(mergedOpts, REQUEST_PROMISE_OPTIONS), requestPromiseOptions), this.stats);
-            };
-
-            const promise = method(preconfiguredRequestPromise, mergedOpts);
-            if (!callback) return promise;
-
-            promise.then(
-                result => callback(null, result),
-                error => callback(error),
-            );
-        };
-    };
-
-    // Decorate methods and bind them to this object.
-    _.forEach(undecoratedMethodGroups, (methodGroup, name) => {
-        this[name] = _.mapObject(methodGroup, methodDecorator);
-    });
-    /**
-     * Overrides options of ApifyClient instance.
-     * @memberof ApifyClient
-     * @function setOptions
-     * @instance
-     * @param {Object} options - See {@link ApifyClient} options object
-     */
-    this.setOptions = (newOptions) => {
-        _.forEach(newOptions, (val, key) => {
-            instanceOpts[key] = val;
+        const tempBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, baseUrl.length - 1) : baseUrl;
+        this.baseUrl = `${tempBaseUrl}/v2`;
+        this.maxRetries = maxRetries;
+        this.minDelayBetweenRetriesMillis = minDelayBetweenRetriesMillis;
+        this.token = token;
+        this.stats = new Statistics();
+        this.httpClient = new HttpClient({
+            apifyClientStats: this.stats,
+            expBackoffMaxRepeats: this.maxRetries,
+            expBackoffMillis: this.minDelayBetweenRetriesMillis,
         });
-    };
+    }
 
     /**
-     * Returns options of ApifyClient instance.
-     * @memberof ApifyClient
-     * @function getOptions
-     * @instance
-     * @return {Object} See {@link ApifyClient} constructor options
+     * @return {{httpClient: HttpClient, apifyClient: ApifyClient, baseUrl: string, params: {token: string}}}
+     * @private
      */
-    this.getOptions = () => {
-        return _.clone(instanceOpts);
-    };
+    _options() {
+        return {
+            baseUrl: this.baseUrl,
+            apifyClient: this,
+            httpClient: this.httpClient,
+            params: {
+                token: this.token,
+            },
+        };
+    }
 
     /**
-     * This helper function is used in unit tests.
-     * @ignore
+     * @return {ActorCollectionClient}
      */
-    this.getDefaultOptions = getDefaultOptions;
+    actors() {
+        return new ActorCollectionClient(this._options());
+    }
 
     /**
-     * An object that contains various statistics about the API operations.
-     * @memberof ApifyClient
-     * @instance
+     * @param {string} id
+     * @return {ActorClient}
      */
-    this.stats = {
-        // Number of Apify client function calls
-        calls: 0,
+    actor(id) {
+        ow(id, ow.string);
+        return new ActorClient({
+            id,
+            ...this._options(),
+        });
+    }
 
-        // Number of Apify API requests
-        requests: 0,
+    // TODO requires new endpoint
+    // builds() {
+    //     return new BuildCollectionClient(this._options());
+    // }
 
-        // Number of times the API returned 429 error. Spread based on number of retries.
-        rateLimitErrors: new Array(Math.max(REQUEST_ENDPOINTS_EXP_BACKOFF_MAX_REPEATS, EXP_BACKOFF_MAX_REPEATS)).fill(0),
+    // TODO temporarily uses second parameter + nested client
+    /**
+     * @param {string} id
+     * @param {string} actorId
+     * @return {BuildClient}
+     */
+    build(id, actorId) {
+        ow(id, ow.string);
+        ow(actorId, ow.string);
+        const actorClient = new ActorClient({
+            id: actorId,
+            ...this._options(),
+        });
 
-        // TODO: We can add internalServerErrors and other stuff here...
-    };
-};
+        const nestedOpts = actorClient._subResourceOptions({ id }); // eslint-disable-line no-underscore-dangle
+        return new BuildClient(nestedOpts);
+    }
 
-export default ApifyClient;
+    /**
+     * @return {DatasetCollectionClient}
+     */
+    datasets() {
+        return new DatasetCollectionClient(this._options());
+    }
+
+    /**
+     * @param {string} id
+     * @return {DatasetClient}
+     */
+    dataset(id) {
+        ow(id, ow.string);
+        return new DatasetClient({
+            id,
+            ...this._options(),
+        });
+    }
+
+    /**
+     * @return {KeyValueStoreCollectionClient}
+     */
+    keyValueStores() {
+        return new KeyValueStoreCollectionClient(this._options());
+    }
+
+    /**
+     * @param {string} id
+     * @return {KeyValueStoreClient}
+     */
+    keyValueStore(id) {
+        ow(id, ow.string);
+        return new KeyValueStoreClient({
+            id,
+            ...this._options(),
+        });
+    }
+
+    /**
+     * @param {string} buildOrRunId
+     * @return {LogClient}
+     */
+    log(buildOrRunId) {
+        ow(buildOrRunId, ow.string);
+        return new LogClient({
+            id: buildOrRunId,
+            ...this._options(),
+        });
+    }
+
+    /**
+     * @return {RequestQueueCollection}
+     */
+    requestQueues() {
+        return new RequestQueueCollectionClient(this._options());
+    }
+
+    /**
+     * @param {string} id
+     * @param {object} [options]
+     * @param {object} [options.clientKey]
+     * @return {RequestQueueClient}
+     */
+    requestQueue(id, options = {}) {
+        ow(id, ow.string);
+        ow(options, ow.object.exactShape({
+            clientKey: ow.optional.string,
+        }));
+        const apiClientOptions = {
+            id,
+            ...this._options(),
+        };
+        return new RequestQueueClient(apiClientOptions, options);
+    }
+
+    // TODO requires new endpoint
+    // runs() {
+    //
+    // }
+
+    // TODO temporarily uses second parameter + nested client
+    /**
+     * @param {string} id
+     * @param {string} actorId
+     * @return {RunClient}
+     */
+    run(id, actorId) {
+        ow(id, ow.string);
+        ow(actorId, ow.string);
+        const actorClient = new ActorClient({
+            id: actorId,
+            ...this._options(),
+        });
+
+        const nestedOpts = actorClient._subResourceOptions({ id }); // eslint-disable-line no-underscore-dangle
+        return new RunClient(nestedOpts);
+    }
+
+    /**
+     * @return {TaskCollectionClient}
+     */
+    tasks() {
+        return new TaskCollectionClient(this._options());
+    }
+
+    /**
+     * @param {string} id
+     * @return {TaskClient}
+     */
+    task(id) {
+        ow(id, ow.string);
+        return new TaskClient({
+            id,
+            ...this._options(),
+        });
+    }
+
+    /**
+     * @return {ScheduleCollectionClient}
+     */
+    schedules() {
+        return new ScheduleCollectionClient(this._options());
+    }
+
+    /**
+     * @param {string} id
+     * @return {ScheduleClient}
+     */
+    schedule(id) {
+        ow(id, ow.string);
+        return new ScheduleClient({
+            id,
+            ...this._options(),
+        });
+    }
+
+    /**
+     * @param {string} id
+     * @return {UserClient}
+     */
+    user(id = ME_USER_NAME_PLACEHOLDER) {
+        ow(id, ow.string);
+        return new UserClient({
+            id,
+            ...this._options(),
+        });
+    }
+
+    /**
+     * @return {WebhookCollectionClient}
+     */
+    webhooks() {
+        return new WebhookCollectionClient(this._options());
+    }
+
+    /**
+     * @param {string} id
+     * @return {WebhookClient}
+     */
+    webhook(id) {
+        ow(id, ow.string);
+        return new WebhookClient({
+            id,
+            ...this._options(),
+        });
+    }
+
+    /**
+     * @return {WebhookDispatchCollectionClient}
+     */
+    webhookDispatches() {
+        return new WebhookDispatchCollectionClient(this._options());
+    }
+
+    /**
+     * @param {string} id
+     * @return {WebhookDispatchClient}
+     */
+    webhookDispatch(id) {
+        ow(id, ow.string);
+        return new WebhookDispatchClient({
+            id,
+            ...this._options(),
+        });
+    }
+}
+
+module.exports = ApifyClient;

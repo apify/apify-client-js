@@ -1,3 +1,13 @@
+1.0.0 / NEXT
+===================
+- TODO
+- Added support for schedules API
+- Replaced `request` with `axios`.
+- Added browser compatibility.
+- Removed `setOptions` and `getOptions` client methods.
+- Removed callbacks support.
+- Removed API v1 deprecated stuff.
+
 0.6.0 / 2019/12/05
 ===================
 - Removed legacy Apify Crawler methods that are no longer supported by Apify API.
