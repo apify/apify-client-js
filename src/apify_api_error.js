@@ -1,6 +1,10 @@
 const CLIENT_METHOD_REGEX = /at( async)? ([A-z]+(Collection)?Client\.[A-z]+) \(/;
 
 class ApifyApiError extends Error {
+    /**
+     * @param {AxiosResponse} response
+     * @param {number} attempt
+     */
     constructor(response, attempt) {
         let message;
         let type;
@@ -33,6 +37,11 @@ class ApifyApiError extends Error {
         this.stack = this._createApiStack();
     }
 
+    /**
+     * @param {AxiosResponse} response
+     * @return {string}
+     * @private
+     */
     _safelyParsePathFromResponse(response) {
         const urlString = response.config && response.config.url;
         let url;
@@ -44,12 +53,20 @@ class ApifyApiError extends Error {
         return url.pathname + url.search;
     }
 
+    /**
+     * @return {string}
+     * @private
+     */
     _extractClientAndMethodFromStack() {
         const match = this.stack.match(CLIENT_METHOD_REGEX);
         // Client and method are in the second capturing group.
         if (match) return match[2];
     }
 
+    /**
+     * @return {string}
+     * @private
+     */
     _createApiStack() {
         const {
             name,
