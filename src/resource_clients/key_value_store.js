@@ -21,6 +21,40 @@ class KeyValueStoreClient extends ResourceClient {
         });
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store
+     * @return {Promise<KeyValueStore>}
+     */
+    async get() {
+        return this._get();
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/update-store
+     * @param {object} newFields
+     * @return {Promise<KeyValueStore>}
+     */
+    async update(newFields) {
+        ow(newFields, ow.object);
+        return this._update(newFields);
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/delete-store
+     * @return {Promise<void>}
+     */
+    async delete() {
+        return this._delete();
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/key-value-stores/key-collection/get-list-of-keys
+     * @param {object} [options]
+     * @param {object} [options.limit]
+     * @param {string} [options.exclusiveStartKey]
+     * @param {boolean} [options.desc]
+     * @return {Promise<object>}
+     */
     async listKeys(options = {}) {
         ow(options, ow.object.exactShape({
             limit: ow.optional.number,
@@ -36,6 +70,10 @@ class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
+     * You can use the `buffer` option to get the value in a Buffer (Node.js)
+     * or ArrayBuffer (browser) format. In Node.js (not in browser) you can also
+     * use the `stream` option to get a Readable stream.
+     * https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record
      * @param {string} key
      * @param {object} [options]
      * @param {boolean} [options.buffer]
@@ -80,6 +118,7 @@ class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/key-value-stores/record/put-record
      * @param {KeyValueStoreRecord} record
      * @return {Promise<void>}
      */
@@ -136,6 +175,7 @@ class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/key-value-stores/record/delete-record
      * @param {string} key
      * @return {Promise<void>}
      */

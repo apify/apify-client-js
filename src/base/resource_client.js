@@ -12,7 +12,11 @@ const {
  * @param {ApiClientOptions} options
  */
 class ResourceClient extends ApiClient {
-    async get() {
+    /**
+     * @return {Promise<?object>}
+     * @private
+     */
+    async _get() {
         const requestOpts = {
             url: this._url(),
             method: 'GET',
@@ -26,8 +30,11 @@ class ResourceClient extends ApiClient {
         }
     }
 
-    async update(newFields) {
-        ow(newFields, ow.object);
+    /**
+     * @return {Promise<object>}
+     * @private
+     */
+    async _update(newFields) {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'PUT',
@@ -37,7 +44,11 @@ class ResourceClient extends ApiClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    async delete() {
+    /**
+     * @return {Promise<void>}
+     * @private
+     */
+    async _delete() {
         try {
             await this.httpClient.call({
                 url: this._url(),

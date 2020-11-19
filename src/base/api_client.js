@@ -5,7 +5,6 @@
  * @property {string} options.resourcePath
  * @property {ApifyClient} options.apifyClient
  * @property {HttpClient} options.httpClient
- * @property {string[]} [options.disableMethods]
  * @property {string} [options.id]
  * @property {object} [options.params]
  */
@@ -23,7 +22,6 @@ class ApiClient {
             apifyClient,
             httpClient,
             resourcePath,
-            disableMethods = [],
             id,
             params = {},
         } = options;
@@ -38,13 +36,12 @@ class ApiClient {
         this.apifyClient = apifyClient;
         this.httpClient = httpClient;
         this.params = params;
-
-        this._disableMethods(disableMethods);
     }
 
     /**
-     * @property {object} [moreOptions]
+     * @param {object} [moreOptions]
      * @return object
+     * @private
      */
     _subResourceOptions(moreOptions) {
         const baseOptions = {
@@ -57,34 +54,28 @@ class ApiClient {
     }
 
     /**
-     * @property {string} methodName
-     */
-    _disableMethods(methodNames) {
-        methodNames
-            .map((m) => m.toLowerCase())
-            .map((methodName) => {
-                this[methodName] = async () => {
-                    throw new Error(`This endpoint cannot be called with this function: ${methodName}`);
-                };
-            });
-    }
-
-    /**
-     * @property {string} [path]
+     * @param {string} [path]
      * @returns {string}
+     * @private
      */
     _url(path) {
         return path ? `${this.url}/${path}` : this.url;
     }
 
     /**
-     * @property {object} [endpointParams]
+     * @param {object} [endpointParams]
      * @returns {object}
+     * @private
      */
     _params(endpointParams) {
         return { ...this.params, ...endpointParams };
     }
 
+    /**
+     * @param {string} id
+     * @return {string}
+     * @private
+     */
     _toSafeId(id) {
         return id.replace('/', '~');
     }

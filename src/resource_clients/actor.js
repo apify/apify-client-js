@@ -27,13 +27,41 @@ class ActorClient extends ResourceClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/actors/actor-object/get-actor
+     * @return {Promise<?Actor>}
+     */
+    async get() {
+        return this._get();
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/actors/actor-object/update-actor
+     * @param {object} newFields
+     * @return {Promise<Actor>}
+     */
+    async update(newFields) {
+        ow(newFields, ow.object);
+        return this._update(newFields);
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/actors/actor-object/delete-actor
+     * @return {Promise<void>}
+     */
+    async delete() {
+        return this._delete();
+    }
+
+    /**
+     * Starts an actor and immediately returns the Run object.
+     * https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
      * @param {*} [input]
      * @param {object} [options]
      * @param {string} [options.build]
      * @param {string} [options.contentType]
      * @param {number} [options.memory]
      * @param {number} [options.timeout]
-     * @param {array} [options.webhooks]
+     * @param {object[]} [options.webhooks]
      * @return {Promise<Run>}
      */
     async start(input, options = {}) {
@@ -74,6 +102,9 @@ class ActorClient extends ResourceClient {
     }
 
     /**
+     * Starts an actor and waits for it to finish before returning the Run object.
+     * It waits indefinitely, unless the `waitSecs` option is provided.
+     * https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
      * @param {*} [input]
      * @param {object} [options]
      * @param {string} [options.build]
@@ -81,7 +112,7 @@ class ActorClient extends ResourceClient {
      * @param {number} [options.memory]
      * @param {number} [options.timeout]
      * @param {number} [options.waitSecs]
-     * @param {array} [options.webhooks]
+     * @param {object[]} [options.webhooks]
      * @return {Promise<Run>}
      */
     async call(input, options = {}) {
@@ -102,24 +133,42 @@ class ActorClient extends ResourceClient {
         return this.apifyClient.run(id, actId).waitForFinish({ waitSecs });
     }
 
-    async build(options = {}) {
+    /**
+     * https://docs.apify.com/api/v2#/reference/actors/build-collection/build-actor
+     * @param {string} versionNumber
+     * @param {object} [options]
+     * @param {boolean} [options.betaPackages]
+     * @param {string} [options.tag]
+     * @param {boolean} [options.useCache]
+     * @return {Promise<Build>}
+     */
+    async build(versionNumber, options = {}) {
+        ow(versionNumber, ow.string);
         ow(options, ow.object.exactShape({
-            version: ow.string,
-            waitForFinish: ow.optional.number,
-            tag: ow.optional.string,
             betaPackages: ow.optional.boolean,
+            tag: ow.optional.string,
             useCache: ow.optional.boolean,
+            waitForFinish: ow.optional.number,
         }));
 
         const response = await this.httpClient.call({
             url: this._url('builds'),
             method: 'POST',
-            params: this._params(options),
+            params: this._params({
+                version: versionNumber,
+                ...options,
+            }),
         });
 
         return parseDateFields(pluckData(response.data));
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
+     * @param {object} options
+     * @param {string} options.status
+     * @return {RunClient}
+     */
     lastRun(options = {}) {
         ow(options, ow.object.exactShape({
             status: ow.optional.string.oneOf(Object.values(ACT_JOB_STATUSES)),
@@ -128,14 +177,21 @@ class ActorClient extends ResourceClient {
         return new RunClient(this._subResourceOptions({
             id: 'last',
             params: this._params(options),
-            disableMethods: ['delete', 'update', 'abort', 'resurrect', 'metamorph'],
         }));
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/actors/build-collection
+     * @return {BuildCollectionClient}
+     */
     builds() {
         return new BuildCollectionClient(this._subResourceOptions());
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/actors/run-collection
+     * @return {RunCollectionClient}
+     */
     runs() {
         return new RunCollectionClient(this._subResourceOptions());
     }
@@ -149,6 +205,11 @@ class ActorClient extends ResourceClient {
     //     });
     // }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/actors/version-object
+     * @param {string} versionNumber
+     * @return {ActorVersionClient}
+     */
     version(versionNumber) {
         ow(versionNumber, ow.string);
         return new ActorVersionClient(this._subResourceOptions({
@@ -156,10 +217,18 @@ class ActorClient extends ResourceClient {
         }));
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/actors/version-collection
+     * @return {ActorVersionCollectionClient}
+     */
     versions() {
         return new ActorVersionCollectionClient(this._subResourceOptions());
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/actors/webhook-collection
+     * @return {WebhookCollectionClient}
+     */
     webhooks() {
         return new WebhookCollectionClient(this._subResourceOptions());
     }

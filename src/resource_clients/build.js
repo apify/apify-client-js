@@ -19,6 +19,18 @@ class BuildClient extends ResourceClient {
         this._waitForFinish = waitForFinish;
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/actors/build-object/get-build
+     * @return {Promise<Actor>}
+     */
+    async get() {
+        return this._get();
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/actors/abort-build/abort-build
+     * @return {Promise<Build>}
+     */
     async abort() {
         const response = await this.httpClient.call({
             url: this._url('abort'),

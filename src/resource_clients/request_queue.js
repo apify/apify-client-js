@@ -20,6 +20,38 @@ class RequestQueueClient extends ResourceClient {
         this.clientKey = userOptions.clientKey;
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/request-queues/queue/get-request-queue
+     * @return {Promise<RequestQueue>}
+     */
+    async get() {
+        return this._get();
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/request-queues/queue/update-request-queue
+     * @param {object} newFields
+     * @return {Promise<RequestQueue>}
+     */
+    async update(newFields) {
+        ow(newFields, ow.object);
+        return this._update(newFields);
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/request-queues/queue/delete-request-queue
+     * @return {Promise<void>}
+     */
+    async delete() {
+        return this._delete();
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/request-queues/queue-head/get-head
+     * @param {object} [options]
+     * @param {number} [options.limit]
+     * @return {Promise<object>}
+     */
     async listHead(options = {}) {
         ow(options, ow.object.exactShape({
             limit: ow.optional.number,
@@ -36,10 +68,11 @@ class RequestQueueClient extends ResourceClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/request-queues/request-collection/add-request
      * @param {object} request
      * @param {object} [options]
      * @param {boolean} [options.forefront]
-     * @return {Promise<*>}
+     * @return {Promise<object>}
      */
     async addRequest(request, options = {}) {
         ow(request, ow.object.partialShape({
@@ -61,6 +94,11 @@ class RequestQueueClient extends ResourceClient {
         return parseDateFields(pluckData(response.data));
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/request-queues/request/get-request
+     * @param {string} id
+     * @return {Promise<?object>}
+     */
     async getRequest(id) {
         ow(id, ow.string);
         const requestOpts = {
@@ -77,8 +115,10 @@ class RequestQueueClient extends ResourceClient {
     }
 
     /**
-     * @param request
-     * @param options
+     * https://docs.apify.com/api/v2#/reference/request-queues/request/update-request
+     * @param {object} request
+     * @param {object} [options]
+     * @param {boolean} [options.forefront]
      * @return {Promise<*>}
      */
     async updateRequest(request, options = {}) {
@@ -101,6 +141,10 @@ class RequestQueueClient extends ResourceClient {
         return parseDateFields(pluckData(response.data));
     }
 
+    /**
+     * @param {string} id
+     * @return {Promise<void>}
+     */
     async deleteRequest(id) {
         ow(id, ow.string);
         await this.httpClient.call({

@@ -7,9 +7,18 @@ class UserClient extends ResourceClient {
     constructor(options) {
         super({
             resourcePath: 'users',
-            disableMethods: ['update', 'delete'],
             ...options,
         });
+    }
+
+    /**
+     * Depending on whether ApifyClient was created with a token,
+     * the method will either return public or private user data.
+     * https://docs.apify.com/api/v2#/reference/users
+     * @return {Promise<?User>}
+     */
+    async get() {
+        return this._get();
     }
 }
 

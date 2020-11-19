@@ -19,12 +19,23 @@ class RunClient extends ResourceClient {
     constructor(options) {
         super({
             resourcePath: 'runs',
-            disableMethods: ['update', 'delete'],
             ...options,
         });
         this._waitForFinish = waitForFinish;
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/actors/run-object/get-run
+     * @return {Promise<Run>}
+     */
+    async get() {
+        return this._get();
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/actors/abort-run/abort-run
+     * @return {Promise<Run>}
+     */
     async abort() {
         const response = await this.httpClient.call({
             url: this._url('abort'),
@@ -36,6 +47,7 @@ class RunClient extends ResourceClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/actors/metamorph-run/metamorph-run
      * @param {string} targetActorId
      * @param {*} [input]
      * @param {object} [options]
@@ -74,6 +86,10 @@ class RunClient extends ResourceClient {
         return parseDateFields(pluckData(response.data));
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/actors/resurrect-run/resurrect-run
+     * @return {Promise<Run>}
+     */
     async resurrect() {
         const response = await this.httpClient.call({
             url: this._url('resurrect'),
@@ -97,30 +113,54 @@ class RunClient extends ResourceClient {
      *  Maximum time to wait for the run to finish, in seconds.
      *  If the limit is reached, the returned promise is resolved to a run object that will have
      *  status `READY` or `RUNNING`. If `waitSecs` omitted, the function waits indefinitely.
-     * @returns {Promise<Object>}
+     * @returns {Promise<Run>}
      */
     async waitForFinish(options = {}) {
         return this._waitForFinish(options);
     }
 
+    /**
+     * Currently this works only through `actor.lastRun().dataset()`. It will become
+     * available for all runs once API supports it.
+     * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
+     * @return {DatasetClient}
+     */
     dataset() {
         return new DatasetClient(this._subResourceOptions({
             resourcePath: 'dataset',
         }));
     }
 
+    /**
+     * Currently this works only through `actorClient.lastRun().dataset()`. It will become
+     * available for all runs once API supports it.
+     * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
+     * @return {KeyValueStoreClient}
+     */
     keyValueStore() {
         return new KeyValueStoreClient(this._subResourceOptions({
             resourcePath: 'key-value-store',
         }));
     }
 
+    /**
+     * Currently this works only through `actorClient.lastRun().dataset()`. It will become
+     * available for all runs once API supports it.
+     * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
+     * @return {RequestQueueClient}
+     */
     requestQueue() {
         return new RequestQueueClient(this._subResourceOptions({
             resourcePath: 'request-queue',
         }));
     }
 
+    /**
+     * Currently this works only through `actorClient.lastRun().dataset()`. It will become
+     * available for all runs once API supports it.
+     * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
+     * @return {LogClient}
+     */
     log() {
         return new LogClient(this._subResourceOptions({
             resourcePath: 'log',

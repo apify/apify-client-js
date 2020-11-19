@@ -205,22 +205,21 @@ describe('Actor methods', () => {
         test('build() works', async () => {
             const actorId = 'some-id';
 
-            const query = {
+            const version = '0.0';
+            const options = {
                 betaPackages: true,
                 waitForFinish: 120,
-                version: '0.0',
                 tag: 'latest',
                 useCache: true,
-
             };
 
-            const res = await client.actor(actorId).build(query);
+            const res = await client.actor(actorId).build(version, options);
             expect(res.id).toEqual('build-actor');
-            validateRequest(query, { actorId });
+            validateRequest({ version, ...options }, { actorId });
 
-            const browserRes = await page.evaluate((aId, opts) => client.actor(aId).build(opts), actorId, query);
+            const browserRes = await page.evaluate((aId, v, opts) => client.actor(aId).build(v, opts), actorId, version, options);
             expect(browserRes).toEqual(res);
-            validateRequest(query, { actorId });
+            validateRequest({ version, ...options }, { actorId });
         });
 
         describe('lastRun()', () => {

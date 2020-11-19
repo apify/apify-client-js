@@ -10,7 +10,12 @@ const {
  * @param {ApiClientOptions} options
  */
 class ResourceCollectionClient extends ApiClient {
-    async list(options = {}) {
+    /**
+     * @param {object} [options]
+     * @return {Promise<object>}
+     * @private
+     */
+    async _list(options = {}) {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'GET',
@@ -19,8 +24,12 @@ class ResourceCollectionClient extends ApiClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    async create(resource) {
-        ow(resource, ow.optional.object);
+    /**
+     * @param {object} resource
+     * @return {Promise<object>}
+     * @private
+     */
+    async _create(resource) {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'POST',
@@ -30,12 +39,16 @@ class ResourceCollectionClient extends ApiClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    async getOrCreate(name = '') {
+    /**
+     * @param {string} [name]
+     * @return {Promise<object>}
+     * @private
+     */
+    async _getOrCreate(name = '') {
         // The default value of '' allows creating unnamed
         // resources by passing the name= parameter with
         // no value. It's useful and later will be supported
         // in API properly by omitting the name= param entirely.
-        ow(name, ow.string);
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'POST',

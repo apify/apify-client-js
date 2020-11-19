@@ -12,21 +12,61 @@ class DatasetClient extends ResourceClient {
         });
     }
 
-    async export() {
-        // TODO
-        // checkParamOrThrow(options.delimiter, 'delimiter', 'Maybe String');
-        // checkParamOrThrow(options.xmlRoot, 'xmlRoot', 'Maybe String');
-        // checkParamOrThrow(options.xmlRow, 'xmlRow', 'Maybe String');
-        // checkParamOrThrow(options.format, 'format', 'Maybe String');
-        // checkParamOrThrow(options.bom, 'bom', 'Maybe Boolean');
-        // checkParamOrThrow(options.attachment, 'attachment', 'Maybe Boolean');
-        // checkParamOrThrow(options.skipHeaderRow, 'skipHeaderRow', 'Maybe Boolean');
-        // Bom is handled special way because its default value for certain formats (CSV) is true which means that we need to make sure
-        // that falsy value is passed in a query string as a zero.
-        // if (options.bom) query.bom = 1;
-        // else if (options.bom === false) query.bom = 0;
+    /**
+     * https://docs.apify.com/api/v2#/reference/datasets/dataset/get-dataset
+     * @return {Promise<Dataset>}
+     */
+    async get() {
+        return this._get();
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/datasets/dataset/update-dataset
+     * @param {object} newFields
+     * @return {Promise<Dataset>}
+     */
+    async update(newFields) {
+        ow(newFields, ow.object);
+        return this._update(newFields);
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/datasets/dataset/delete-dataset
+     * @return {Promise<void>}
+     */
+    async delete() {
+        return this._delete();
+    }
+
+    // TODO - Export to file
+    // async export() {
+    //     checkParamOrThrow(options.delimiter, 'delimiter', 'Maybe String');
+    //     checkParamOrThrow(options.xmlRoot, 'xmlRoot', 'Maybe String');
+    //     checkParamOrThrow(options.xmlRow, 'xmlRow', 'Maybe String');
+    //     checkParamOrThrow(options.format, 'format', 'Maybe String');
+    //     checkParamOrThrow(options.bom, 'bom', 'Maybe Boolean');
+    //     checkParamOrThrow(options.attachment, 'attachment', 'Maybe Boolean');
+    //     checkParamOrThrow(options.skipHeaderRow, 'skipHeaderRow', 'Maybe Boolean');
+    //     Bom is handled special way because its default value for certain formats (CSV) is true which means that we need to make sure
+    //     that falsy value is passed in a query string as a zero.
+    //     if (options.bom) query.bom = 1;
+    //     else if (options.bom === false) query.bom = 0;
+    // }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
+     * @param {object} [options]
+     * @param {boolean} [options.clean]
+     * @param {boolean} [options.desc]
+     * @param {string[]} [options.fields]
+     * @param {string[]} [options.omit]
+     * @param {number} [options.limit]
+     * @param {number} [options.offset]
+     * @param {boolean} [options.skipEmpty]
+     * @param {boolean} [options.skipHidden]
+     * @param {string} [options.unwind]
+     * @return {Promise<object>}
+     */
     async listItems(options = {}) {
         ow(options, ow.object.exactShape({
             clean: ow.optional.boolean,
@@ -48,6 +88,11 @@ class DatasetClient extends ResourceClient {
         return this._createPaginationList(response);
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/datasets/item-collection/put-items
+     * @param {object|string|Array<object|string>} items
+     * @return {Promise<void>}
+     */
     async pushItems(items) {
         ow(items, ow.any(
             ow.object,

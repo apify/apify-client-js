@@ -11,10 +11,13 @@ class LogClient extends ResourceClient {
         super({
             resourcePath: 'logs',
             ...options,
-            disableMethods: ['update', 'delete'],
         });
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/logs/log/get-log
+     * @return {Promise<?string>}
+     */
     async get() {
         const requestOpts = {
             url: this._url(),
@@ -29,6 +32,11 @@ class LogClient extends ResourceClient {
         }
     }
 
+    /**
+     * Gets the log in a Readable stream format. Only works in Node.js.
+     * https://docs.apify.com/api/v2#/reference/logs/log/get-log
+     * @return {Promise<?Readable>}
+     */
     async stream() {
         const params = {
             stream: true,
