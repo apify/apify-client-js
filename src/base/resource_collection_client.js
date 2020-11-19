@@ -1,4 +1,3 @@
-const ow = require('ow');
 const ApiClient = require('./api_client');
 const {
     pluckData,

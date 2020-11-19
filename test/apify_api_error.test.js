@@ -18,9 +18,14 @@ describe('ApifyApiError', () => {
         const method = 'list';
         try {
             await actorCollectionClient[method]();
+            throw new Error('wrong error');
         } catch (err) {
             expect(err.name).toEqual('ApifyApiError');
-            expect(err.clientMethod).toBe(`${actorCollectionClient.constructor.name}.${method}`);
+            // This does not work in v10 and lower, but we want to be able to run tests for v10,
+            // because some people might still use it. They will just see clientMethod: undefined.
+            if (!process.version.startsWith('v10')) {
+                expect(err.clientMethod).toBe(`${actorCollectionClient.constructor.name}.${method}`);
+            }
             expect(err.type).toEqual('token-not-provided');
             expect(err.message).toEqual('Authentication token was not provided');
             expect(err.statusCode).toEqual(401);
@@ -38,6 +43,7 @@ describe('ApifyApiError', () => {
             const actorCollectionClient = client.actors();
             try {
                 await actorCollectionClient[m]();
+                throw new Error('wrong error');
             } catch (err) {
                 const serializableErr = {};
                 Object.getOwnPropertyNames(err).forEach((prop) => {
