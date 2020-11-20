@@ -3,9 +3,6 @@ const {
     pluckData,
     parseDateFields,
 } = require('../utils');
-const {
-    waitForFinish,
-} = require('./shared_methods/wait_for_finish');
 
 class BuildClient extends ResourceClient {
     /**
@@ -13,14 +10,13 @@ class BuildClient extends ResourceClient {
      */
     constructor(options) {
         super({
-            resourcePath: 'builds',
+            resourcePath: 'actor-builds',
             ...options,
         });
-        this._waitForFinish = waitForFinish;
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/build-object/get-build
+     * https://docs.apify.com/api/v2#/reference/actor-builds/build-object/get-build
      * @return {Promise<Actor>}
      */
     async get() {
@@ -28,7 +24,7 @@ class BuildClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/abort-build/abort-build
+     * https://docs.apify.com/api/v2#/reference/actor-builds/abort-build/abort-build
      * @return {Promise<Build>}
      */
     async abort() {

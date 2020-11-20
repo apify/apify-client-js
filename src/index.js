@@ -1,10 +1,14 @@
 const ow = require('ow');
 const { ME_USER_NAME_PLACEHOLDER } = require('apify-shared/consts');
+const logger = require('apify-shared/log');
+
+const HttpClient = require('./http_client');
+const Statistics = require('./statistics');
 
 const ActorClient = require('./resource_clients/actor');
 const ActorCollectionClient = require('./resource_clients/actor_collection');
 const BuildClient = require('./resource_clients/build');
-const BuildCollectionClient = require('./resource_clients/build_collection');
+// const BuildCollectionClient = require('./resource_clients/build_collection');
 const DatasetClient = require('./resource_clients/dataset');
 const DatasetCollectionClient = require('./resource_clients/dataset_collection');
 const KeyValueStoreClient = require('./resource_clients/key_value_store');
@@ -13,7 +17,7 @@ const LogClient = require('./resource_clients/log');
 const RequestQueueClient = require('./resource_clients/request_queue');
 const RequestQueueCollectionClient = require('./resource_clients/request_queue_collection');
 const RunClient = require('./resource_clients/run');
-const RunCollectionClient = require('./resource_clients/run_collection');
+// const RunCollectionClient = require('./resource_clients/run_collection');
 const ScheduleClient = require('./resource_clients/schedule');
 const ScheduleCollectionClient = require('./resource_clients/schedule_collection');
 const TaskClient = require('./resource_clients/task');
@@ -24,8 +28,7 @@ const WebhookCollectionClient = require('./resource_clients/webhook_collection')
 const WebhookDispatchClient = require('./resource_clients/webhook_dispatch');
 const WebhookDispatchCollectionClient = require('./resource_clients/webhook_dispatch_collection');
 
-const { HttpClient } = require('./http-client');
-const Statistics = require('./statistics');
+
 
 /**
  * @typedef ApifyClientOptions
@@ -67,11 +70,13 @@ class ApifyClient {
         this.baseUrl = `${tempBaseUrl}/v2`;
         this.token = token;
         this.stats = new Statistics();
+        this.logger = logger.child({ prefix: 'ApifyClient' });
         this.httpClient = new HttpClient({
             apifyClientStats: this.stats,
             maxRetries,
             minDelayBetweenRetriesMillis,
             requestInterceptors,
+            logger: this.logger,
         });
     }
 
@@ -111,16 +116,16 @@ class ApifyClient {
         });
     }
 
-    /**
-     * https://docs.apify.com/api/v2#/reference/actors/build-collection
-     * @return {BuildCollectionClient}
-     */
-    builds() {
-        return new BuildCollectionClient(this._options());
-    }
+    // TODO we don't have this endpoint yet
+    // /**
+    //  * @return {BuildCollectionClient}
+    //  */
+    // builds() {
+    //     return new BuildCollectionClient(this._options());
+    // }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/build-object
+     * https://docs.apify.com/api/v2#/reference/actor-builds/build-object
      * @param {string} id
      * @return {BuildClient}
      */
@@ -214,16 +219,16 @@ class ApifyClient {
         return new RequestQueueClient(apiClientOptions, options);
     }
 
-    /**
-     * https://docs.apify.com/api/v2#/reference/actors/run-collection
-     * @return {RunCollectionClient}
-     */
-    runs() {
-        return new RunCollectionClient(this._options());
-    }
+    // TODO we don't have this endpoint yet
+    // /**
+    //  * @return {RunCollectionClient}
+    //  */
+    // runs() {
+    //     return new RunCollectionClient(this._options());
+    // }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/run-object
+     * https://docs.apify.com/api/v2#/reference/actor-runs/run-object
      * @param {string} id
      * @return {RunClient}
      */

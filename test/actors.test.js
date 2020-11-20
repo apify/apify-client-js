@@ -177,7 +177,7 @@ describe('Actor methods', () => {
             });
 
             expect(res).toEqual(data);
-            validateRequest({ waitForFinish: waitSecs }, { actorId, runId });
+            validateRequest({ waitForFinish: waitSecs }, { runId });
             validateRequest({
                 timeout,
                 memory,
@@ -194,7 +194,7 @@ describe('Actor methods', () => {
                 },
             );
             expect(callBrowserRes).toEqual(res);
-            validateRequest({ waitForFinish: waitSecs }, { actorId, runId });
+            validateRequest({ waitForFinish: waitSecs }, { runId });
             validateRequest({
                 timeout,
                 memory,

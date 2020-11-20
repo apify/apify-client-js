@@ -21,7 +21,7 @@ class ApifyApiError extends Error {
             const { error } = response.data;
             message = error.message;
             type = error.type;
-        } else {
+        } else if (response.data) {
             let dataString;
             try {
                 dataString = JSON.stringify(response.data, null, 2);
@@ -81,14 +81,8 @@ class ApifyApiError extends Error {
      *   type: record-not-found
      *   attempt: 1
      *   httpMethod: post
-     *   path: /v2/actor-tasks/mnmkng~my-task-3333/runs
-     *   stack:
-     *     at makeRequest (/usr/src/app/node_modules/apify-client/src/http-client.js:112:22)
-     *     at processTicksAndRejections (internal/process/task_queues.js:97:5)
-     *     at async TaskClient.start (/usr/src/app/node_modules/apify-client/src/resource_clients/task.js:59:26)
-     *     at async TaskClient.call (/usr/src/app/node_modules/apify-client/src/resource_clients/task.js:85:31)
-     *     at async /usr/src/app/main.js:5:17
-     *     at async run (/usr/src/app/node_modules/apify/build/actor.js:181:13)
+     *   path: /v2/actor-tasks/user~my-task/runs
+     *
      * @return {string}
      * @private
      */
@@ -99,9 +93,9 @@ class ApifyApiError extends Error {
         } = this;
         const stack = Object.entries(props)
             .map(([k, v]) => {
-                // Rename internal callStack to stack in the stack itself.
-                // This is for better readability.
-                if (k === 'originalStack') k = 'stack';
+                // Keep function call stack only as a property.
+                // It's not useful for users.
+                if (k === 'originalStack') return '';
                 return `  ${k}: ${v}`;
             })
             .join('\n');

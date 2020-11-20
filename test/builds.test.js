@@ -54,62 +54,58 @@ describe('Build methods', () => {
 
     describe('build()', () => {
         test('get() works', async () => {
-            const actorId = 'some-act-id';
             const buildId = 'some-build-id';
 
-            const res = await client.build(buildId, actorId).get();
+            const res = await client.build(buildId).get();
             expect(res.id).toEqual('get-build');
-            validateRequest({}, { actorId, buildId });
+            validateRequest({}, { buildId });
 
-            const browserRes = await page.evaluate((bId, aId) => client.build(bId, aId).get(), buildId, actorId);
+            const browserRes = await page.evaluate((bId) => client.build(bId).get(), buildId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { actorId, buildId });
+            validateRequest({}, { buildId });
         });
 
         test('get() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
-            const actorId = '404';
-            const buildId = 'some-build-id';
+            const buildId = '404';
 
-            const res = await client.build(buildId, actorId).get();
+            const res = await client.build(buildId).get();
             expect(res).toBeUndefined();
-            validateRequest({}, { actorId, buildId });
+            validateRequest({}, { buildId });
 
-            const browserRes = await page.evaluate((bId, aId) => client.build(bId, aId).get(), buildId, actorId);
+            const browserRes = await page.evaluate((bId) => client.build(bId).get(), buildId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { actorId, buildId });
+            validateRequest({}, { buildId });
         });
 
         test('abort() works', async () => {
-            const actorId = 'some-act-id';
             const buildId = 'some-build-id';
 
-            const res = await client.build(buildId, actorId).abort();
+            const res = await client.build(buildId).abort();
             expect(res.id).toEqual('abort-build');
-            validateRequest({}, { actorId, buildId });
+            validateRequest({}, { buildId });
 
-            const browserRes = await page.evaluate((bId, aId) => client.build(bId, aId).abort(), buildId, actorId);
+            const browserRes = await page.evaluate((bId) => client.build(bId).abort(), buildId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { actorId, buildId });
+            validateRequest({}, { buildId });
         });
 
         test('waitForFinish() works', async () => {
-            const actorId = 'some-actor-id';
             const buildId = 'some-build-id';
             const waitSecs = 0.1;
             const data = { status: 'SUCCEEDED' };
             const body = { data };
 
             setTimeout(() => mockServer.setResponse({ body }), (waitSecs * 1000) / 2);
-            const res = await client.build(buildId, actorId).waitForFinish({ waitSecs });
+            const res = await client.build(buildId).waitForFinish({ waitSecs });
             expect(res).toEqual(data);
-            validateRequest({ waitForFinish: 0 }, { actorId, buildId });
+            validateRequest({ waitForFinish: 0 }, { buildId });
 
             const browserRes = await page.evaluate(
-                (bId, aId, ws) => client.build(bId, aId).waitForFinish({ waitSecs: ws }),
-                buildId, actorId, waitSecs,
+                (bId, ws) => client.build(bId).waitForFinish({ waitSecs: ws }),
+                buildId, waitSecs,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({ waitForFinish: 0 }, { actorId, buildId });
+            validateRequest({ waitForFinish: 0 }, { buildId });
         });
     });
 });

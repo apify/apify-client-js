@@ -8,6 +8,27 @@ const MIN_GZIP_BYTES = 1024;
 
 let gzipPromise;
 
+/**
+ * This error exists for the quite common situation, where only a partial JSON response is received and
+ * an attempt to parse the JSON throws an error. In most cases this can be resolved by retrying the
+ * request. We do that by identifying this error in HttpClient.
+ *
+ * The properties mimic AxiosError for easier integration in HttpClient error handling.
+ */
+class InvalidResponseBodyError extends Error {
+    constructor(response, cause) {
+        super(`Response body could not be parsed.\nCause:${cause.message}`);
+        this.name = this.constructor.name;
+        this.code = 'invalid-response-body';
+        this.response = response;
+        this.cause = cause;
+    }
+}
+
+/**
+ * @param {object} config
+ * @return {object}
+ */
 function inferRequestHeaders(config) {
     const [defaultTransform] = axios.defaults.transformRequest;
     config.data = defaultTransform(config.data, config.headers);
@@ -19,6 +40,10 @@ function inferRequestHeaders(config) {
     return config;
 }
 
+/**
+ * @param {object} config
+ * @return {Promise<object>}
+ */
 async function maybeGzipRequest(config) {
     if (config.data == null) return config;
 
@@ -36,6 +61,10 @@ async function maybeGzipRequest(config) {
     return config;
 }
 
+/**
+ * @param {AxiosResponse} response
+ * @return {AxiosResponse}
+ */
 function parseResponseData(response) {
     if (
         !response.data // Nothing to do here.
@@ -53,7 +82,12 @@ function parseResponseData(response) {
     }
 
     const contentTypeHeader = response.headers['content-type'];
-    response.data = maybeParseBody(response.data, contentTypeHeader);
+    try {
+        response.data = maybeParseBody(response.data, contentTypeHeader);
+    } catch (err) {
+        throw new InvalidResponseBodyError(response, err);
+    }
+
     return response;
 }
 
@@ -67,6 +101,7 @@ if (isNode()) {
 }
 
 module.exports = {
+    InvalidResponseBodyError,
     requestInterceptors,
     responseInterceptors,
 };

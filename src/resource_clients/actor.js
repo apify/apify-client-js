@@ -127,10 +127,12 @@ class ActorClient extends ResourceClient {
         }));
 
         const { waitSecs, ...startOptions } = options;
+        const { id } = await this.start(input, startOptions);
 
-        const { id, actId } = await this.start(input, startOptions);
-
-        return this.apifyClient.run(id, actId).waitForFinish({ waitSecs });
+        // Calling root client because we need access to top level API.
+        // Creating a new instance of RunClient here would only allow
+        // setting it up as a nested route under actor API.
+        return this.apifyClient.run(id).waitForFinish({ waitSecs });
     }
 
     /**
@@ -177,6 +179,7 @@ class ActorClient extends ResourceClient {
         return new RunClient(this._subResourceOptions({
             id: 'last',
             params: this._params(options),
+            resourcePath: 'runs',
         }));
     }
 
@@ -185,7 +188,9 @@ class ActorClient extends ResourceClient {
      * @return {BuildCollectionClient}
      */
     builds() {
-        return new BuildCollectionClient(this._subResourceOptions());
+        return new BuildCollectionClient(this._subResourceOptions({
+            resourcePath: 'builds',
+        }));
     }
 
     /**
@@ -193,17 +198,10 @@ class ActorClient extends ResourceClient {
      * @return {RunCollectionClient}
      */
     runs() {
-        return new RunCollectionClient(this._subResourceOptions());
+        return new RunCollectionClient(this._subResourceOptions({
+            resourcePath: 'runs',
+        }));
     }
-
-    // Tasks don't have an endpoint nested
-    // under actors
-    // tasks() {
-    //     return new TaskCollectionClient({
-    //         baseUrl: this._url(),
-    //         httpClient: this.httpClient,
-    //     });
-    // }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/version-object

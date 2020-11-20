@@ -7,6 +7,8 @@ const compression = require('compression');
 
 // Routers
 const actorRouter = require('./routes/actors');
+const buildRouter = require('./routes/builds');
+const runRouter = require('./routes/runs');
 const taskRouter = require('./routes/tasks');
 const userRouter = require('./routes/users');
 const logRouter = require('./routes/logs');
@@ -71,6 +73,8 @@ app.use('/external', external);
 
 // Attaching V2 routers
 v2Router.use('/acts', actorRouter);
+v2Router.use('/actor-builds', buildRouter);
+v2Router.use('/actor-runs', runRouter);
 v2Router.use('/actor-tasks', taskRouter);
 v2Router.use('/users', userRouter);
 v2Router.use('/logs', logRouter);

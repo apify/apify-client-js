@@ -115,9 +115,12 @@ class TaskClient extends ResourceClient {
 
         const { waitSecs, ...startOptions } = options;
 
-        const { id, actId } = await this.start(input, startOptions);
+        const { id } = await this.start(input, startOptions);
 
-        return this.apifyClient.run(id, actId).waitForFinish({ waitSecs });
+        // Calling root client because we need access to top level API.
+        // Creating a new instance of RunClient here would only allow
+        // setting it up as a nested route under task API.
+        return this.apifyClient.run(id).waitForFinish({ waitSecs });
     }
 
     /**
@@ -166,6 +169,7 @@ class TaskClient extends ResourceClient {
         return new RunClient(this._subResourceOptions({
             id: 'last',
             params: this._params(options),
+            resourcePath: 'runs',
         }));
     }
 
@@ -174,7 +178,9 @@ class TaskClient extends ResourceClient {
      * @return {RunCollectionClient}
      */
     runs() {
-        return new RunCollectionClient(this._subResourceOptions());
+        return new RunCollectionClient(this._subResourceOptions({
+            resourcePath: 'runs',
+        }));
     }
 
     /**

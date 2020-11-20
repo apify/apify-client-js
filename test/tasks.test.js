@@ -214,7 +214,7 @@ describe('Task methods', () => {
             expect(res).toEqual(data);
 
             expect(res).toEqual(data);
-            validateRequest({ waitForFinish: waitSecs }, { runId, actorId: actId });
+            validateRequest({ waitForFinish: waitSecs }, { runId });
             validateRequest(query, { taskId }, { some: 'body' });
 
             const callBrowserRes = await page.evaluate(
@@ -226,7 +226,7 @@ describe('Task methods', () => {
                 },
             );
             expect(callBrowserRes).toEqual(res);
-            validateRequest({ waitForFinish: waitSecs }, { runId, actorId: actId });
+            validateRequest({ waitForFinish: waitSecs }, { runId });
             validateRequest({
                 timeout,
                 memory,

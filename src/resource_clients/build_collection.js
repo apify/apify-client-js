@@ -7,7 +7,7 @@ class BuildCollectionClient extends ResourceCollectionClient {
      */
     constructor(options) {
         super({
-            resourcePath: 'builds',
+            resourcePath: options.resourcePath || 'actor-builds',
             ...options,
         });
     }

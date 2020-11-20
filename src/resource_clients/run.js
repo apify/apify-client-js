@@ -8,9 +8,6 @@ const {
     pluckData,
     parseDateFields,
 } = require('../utils');
-const {
-    waitForFinish,
-} = require('./shared_methods/wait_for_finish');
 
 class RunClient extends ResourceClient {
     /**
@@ -18,14 +15,13 @@ class RunClient extends ResourceClient {
      */
     constructor(options) {
         super({
-            resourcePath: 'runs',
+            resourcePath: options.resourcePath || 'actor-runs',
             ...options,
         });
-        this._waitForFinish = waitForFinish;
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/run-object/get-run
+     * https://docs.apify.com/api/v2#/reference/actor-runs/run-object/get-run
      * @return {Promise<Run>}
      */
     async get() {
@@ -33,7 +29,7 @@ class RunClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/abort-run/abort-run
+     * https://docs.apify.com/api/v2#/reference/actor-runs/abort-run/abort-run
      * @return {Promise<Run>}
      */
     async abort() {
@@ -47,7 +43,7 @@ class RunClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/metamorph-run/metamorph-run
+     * https://docs.apify.com/api/v2#/reference/actor-runs/metamorph-run/metamorph-run
      * @param {string} targetActorId
      * @param {*} [input]
      * @param {object} [options]
@@ -87,7 +83,7 @@ class RunClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/resurrect-run/resurrect-run
+     * https://docs.apify.com/api/v2#/reference/actor-runs/resurrect-run/resurrect-run
      * @return {Promise<Run>}
      */
     async resurrect() {

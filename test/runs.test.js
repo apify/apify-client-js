@@ -35,59 +35,54 @@ describe('Run methods', () => {
     });
 
     test('get() works', async () => {
-        const actorId = 'some-actor-id';
         const runId = 'some-run-id';
 
-        const res = await client.run(runId, actorId).get();
+        const res = await client.run(runId).get();
         expect(res.id).toEqual('get-run');
-        validateRequest({}, { actorId, runId });
+        validateRequest({}, { runId });
 
-        const browserRes = await page.evaluate((rId, aId) => client.run(rId, aId).get(), runId, actorId);
+        const browserRes = await page.evaluate((rId) => client.run(rId).get(), runId);
         expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId, runId });
+        validateRequest({}, { runId });
     });
 
     test('get() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
-        const actorId = '404';
-        const runId = 'some-run-id';
+        const runId = '404';
 
-        const res = await client.run(runId, actorId).get();
+        const res = await client.run(runId).get();
         expect(res).toBeUndefined();
-        validateRequest({}, { actorId, runId });
+        validateRequest({}, { runId });
 
-        const browserRes = await page.evaluate((rId, aId) => client.run(rId, aId).get(), runId, actorId);
+        const browserRes = await page.evaluate((rId) => client.run(rId).get(), runId);
         expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId, runId });
+        validateRequest({}, { runId });
     });
 
     test('abort() works', async () => {
-        const actorId = 'some-actor-id';
         const runId = 'some-run-id';
 
-        const res = await client.run(runId, actorId).abort();
+        const res = await client.run(runId).abort();
         expect(res.id).toEqual('abort-run');
-        validateRequest({}, { actorId, runId });
+        validateRequest({}, { runId });
 
-        const browserRes = await page.evaluate((rId, aId) => client.run(rId, aId).abort(), runId, actorId);
+        const browserRes = await page.evaluate((rId) => client.run(rId).abort(), runId);
         expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId, runId });
+        validateRequest({}, { runId });
     });
 
     test('resurrect() works', async () => {
-        const actorId = 'some-actor-id';
         const runId = 'some-run-id';
 
-        const res = await client.run(runId, actorId).resurrect();
+        const res = await client.run(runId).resurrect();
         expect(res.id).toEqual('resurrect-run');
-        validateRequest({}, { actorId, runId });
+        validateRequest({}, { runId });
 
-        const browserRes = await page.evaluate((rId, aId) => client.run(rId, aId).resurrect(), runId, actorId);
+        const browserRes = await page.evaluate((rId) => client.run(rId).resurrect(), runId);
         expect(browserRes).toEqual(res);
-        validateRequest({}, { actorId, runId });
+        validateRequest({}, { runId });
     });
 
     test('metamorph() works', async () => {
-        const actorId = 'some-id';
         const runId = 'some-run-id';
         const targetActorId = 'some-target-id';
         const contentType = 'application/x-www-form-urlencoded';
@@ -104,47 +99,46 @@ describe('Run methods', () => {
             build,
         };
 
-        const res = await client.run(runId, actorId).metamorph(targetActorId, input, options);
+        const res = await client.run(runId).metamorph(targetActorId, input, options);
         expect(res.id).toEqual('metamorph-run');
-        validateRequest(actualQuery, { actorId, runId }, { some: 'body' }, { 'content-type': contentType });
+        validateRequest(actualQuery, { runId }, { some: 'body' }, { 'content-type': contentType });
 
-        const browserRes = await page.evaluate((rId, aId, targetId, i, opts) => {
-            return client.run(rId, aId).metamorph(targetId, i, opts);
-        }, runId, actorId, targetActorId, input, options);
+        const browserRes = await page.evaluate((rId, targetId, i, opts) => {
+            return client.run(rId).metamorph(targetId, i, opts);
+        }, runId, targetActorId, input, options);
         expect(browserRes).toEqual(res);
-        validateRequest(actualQuery, { actorId, runId }, { some: 'body' }, { 'content-type': contentType });
+        validateRequest(actualQuery, { runId }, { some: 'body' }, { 'content-type': contentType });
     });
 
     test('waitForFinish() works', async () => {
-        const actorId = 'some-actor-id';
         const runId = 'some-run-id';
         const waitSecs = 0.1;
         const data = { status: 'SUCCEEDED' };
         const body = { data };
 
         setTimeout(() => mockServer.setResponse({ body }), (waitSecs * 1000) / 2);
-        const res = await client.run(runId, actorId).waitForFinish({ waitSecs });
+        const res = await client.run(runId).waitForFinish({ waitSecs });
         expect(res).toEqual(data);
-        validateRequest({ waitForFinish: 0 }, { actorId, runId });
+        validateRequest({ waitForFinish: 0 }, { runId });
 
-        const browserRes = await page.evaluate((rId, aId, ws) => client.run(rId, aId).waitForFinish({ waitSecs: ws }), runId, actorId, waitSecs);
+        const browserRes = await page.evaluate((rId, ws) => client.run(rId).waitForFinish({ waitSecs: ws }), runId, waitSecs);
         expect(browserRes).toEqual(res);
-        validateRequest({ waitForFinish: 0 }, { actorId, runId });
+        validateRequest({ waitForFinish: 0 }, { runId });
     });
 
-    test('dataset().get() works', async () => {
-
-    });
-
-    test('keyValueStore().get() works', async () => {
+    test.skip('dataset().get() works', async () => {
 
     });
 
-    test('requestQueue().get() works', async () => {
+    test.skip('keyValueStore().get() works', async () => {
 
     });
 
-    test('log().get() works', async () => {
+    test.skip('requestQueue().get() works', async () => {
+
+    });
+
+    test.skip('log().get() works', async () => {
 
     });
 });
