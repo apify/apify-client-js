@@ -4,7 +4,7 @@ const { ME_USER_NAME_PLACEHOLDER } = require('apify-shared/consts');
 const ActorClient = require('./resource_clients/actor');
 const ActorCollectionClient = require('./resource_clients/actor_collection');
 const BuildClient = require('./resource_clients/build');
-// const BuildCollectionClient = require('./resource_clients/build_collection');
+const BuildCollectionClient = require('./resource_clients/build_collection');
 const DatasetClient = require('./resource_clients/dataset');
 const DatasetCollectionClient = require('./resource_clients/dataset_collection');
 const KeyValueStoreClient = require('./resource_clients/key_value_store');
@@ -13,7 +13,7 @@ const LogClient = require('./resource_clients/log');
 const RequestQueueClient = require('./resource_clients/request_queue');
 const RequestQueueCollectionClient = require('./resource_clients/request_queue_collection');
 const RunClient = require('./resource_clients/run');
-// const RunCollectionClient = require('./resource_clients/run_collection');
+const RunCollectionClient = require('./resource_clients/run_collection');
 const ScheduleClient = require('./resource_clients/schedule');
 const ScheduleCollectionClient = require('./resource_clients/schedule_collection');
 const TaskClient = require('./resource_clients/task');
@@ -32,6 +32,7 @@ const Statistics = require('./statistics');
  * @property {string} [baseUrl='https://api.apify.com']
  * @property {number} [maxRetries=8]
  * @property {number} [minDelayBetweenRetriesMillis=500]
+ * @property {function[]} [requestInterceptors]
  * @property {string} [token]
  */
 
@@ -50,6 +51,7 @@ class ApifyClient {
             baseUrl: ow.optional.string,
             maxRetries: ow.optional.number,
             minDelayBetweenRetriesMillis: ow.optional.number,
+            requestInterceptors: ow.optional.array,
             token: ow.optional.string,
         }));
 
@@ -57,19 +59,19 @@ class ApifyClient {
             baseUrl = 'https://api.apify.com',
             maxRetries = 8,
             minDelayBetweenRetriesMillis = 500,
+            requestInterceptors = [],
             token,
         } = options;
 
         const tempBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, baseUrl.length - 1) : baseUrl;
         this.baseUrl = `${tempBaseUrl}/v2`;
-        this.maxRetries = maxRetries;
-        this.minDelayBetweenRetriesMillis = minDelayBetweenRetriesMillis;
         this.token = token;
         this.stats = new Statistics();
         this.httpClient = new HttpClient({
             apifyClientStats: this.stats,
-            expBackoffMaxRepeats: this.maxRetries,
-            expBackoffMillis: this.minDelayBetweenRetriesMillis,
+            maxRetries,
+            minDelayBetweenRetriesMillis,
+            requestInterceptors,
         });
     }
 
@@ -89,6 +91,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/actors/actor-collection
      * @return {ActorCollectionClient}
      */
     actors() {
@@ -96,6 +99,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/actors/actor-object
      * @param {string} id
      * @return {ActorClient}
      */
@@ -107,30 +111,29 @@ class ApifyClient {
         });
     }
 
-    // TODO requires new endpoint
-    // builds() {
-    //     return new BuildCollectionClient(this._options());
-    // }
-
-    // TODO temporarily uses second parameter + nested client
     /**
-     * @param {string} id
-     * @param {string} actorId
-     * @return {BuildClient}
+     * https://docs.apify.com/api/v2#/reference/actors/build-collection
+     * @return {BuildCollectionClient}
      */
-    build(id, actorId) {
-        ow(id, ow.string);
-        ow(actorId, ow.string);
-        const actorClient = new ActorClient({
-            id: actorId,
-            ...this._options(),
-        });
-
-        const nestedOpts = actorClient._subResourceOptions({ id }); // eslint-disable-line no-underscore-dangle
-        return new BuildClient(nestedOpts);
+    builds() {
+        return new BuildCollectionClient(this._options());
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/actors/build-object
+     * @param {string} id
+     * @return {BuildClient}
+     */
+    build(id) {
+        ow(id, ow.string);
+        return new BuildClient({
+            id,
+            ...this._options(),
+        });
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/datasets/dataset-collection
      * @return {DatasetCollectionClient}
      */
     datasets() {
@@ -138,6 +141,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/datasets/dataset
      * @param {string} id
      * @return {DatasetClient}
      */
@@ -150,6 +154,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection
      * @return {KeyValueStoreCollectionClient}
      */
     keyValueStores() {
@@ -157,6 +162,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/key-value-stores/store-object
      * @param {string} id
      * @return {KeyValueStoreClient}
      */
@@ -169,6 +175,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/logs
      * @param {string} buildOrRunId
      * @return {LogClient}
      */
@@ -181,6 +188,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/request-queues/queue-collection
      * @return {RequestQueueCollection}
      */
     requestQueues() {
@@ -188,6 +196,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/request-queues/queue
      * @param {string} id
      * @param {object} [options]
      * @param {object} [options.clientKey]
@@ -205,30 +214,29 @@ class ApifyClient {
         return new RequestQueueClient(apiClientOptions, options);
     }
 
-    // TODO requires new endpoint
-    // runs() {
-    //
-    // }
-
-    // TODO temporarily uses second parameter + nested client
     /**
-     * @param {string} id
-     * @param {string} actorId
-     * @return {RunClient}
+     * https://docs.apify.com/api/v2#/reference/actors/run-collection
+     * @return {RunCollectionClient}
      */
-    run(id, actorId) {
-        ow(id, ow.string);
-        ow(actorId, ow.string);
-        const actorClient = new ActorClient({
-            id: actorId,
-            ...this._options(),
-        });
-
-        const nestedOpts = actorClient._subResourceOptions({ id }); // eslint-disable-line no-underscore-dangle
-        return new RunClient(nestedOpts);
+    runs() {
+        return new RunCollectionClient(this._options());
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/actors/run-object
+     * @param {string} id
+     * @return {RunClient}
+     */
+    run(id) {
+        ow(id, ow.string);
+        return new RunClient({
+            id,
+            ...this._options(),
+        });
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection
      * @return {TaskCollectionClient}
      */
     tasks() {
@@ -236,6 +244,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/actor-tasks/task-object
      * @param {string} id
      * @return {TaskClient}
      */
@@ -248,6 +257,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/schedules/schedules-collection
      * @return {ScheduleCollectionClient}
      */
     schedules() {
@@ -255,6 +265,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/schedules/schedule-object
      * @param {string} id
      * @return {ScheduleClient}
      */
@@ -267,6 +278,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/users
      * @param {string} id
      * @return {UserClient}
      */
@@ -279,6 +291,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection
      * @return {WebhookCollectionClient}
      */
     webhooks() {
@@ -286,6 +299,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/webhooks/webhook-object
      * @param {string} id
      * @return {WebhookClient}
      */
@@ -298,6 +312,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/webhook-dispatches
      * @return {WebhookDispatchCollectionClient}
      */
     webhookDispatches() {
@@ -305,6 +320,7 @@ class ApifyClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatch-object
      * @param {string} id
      * @return {WebhookDispatchClient}
      */
