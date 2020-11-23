@@ -16,11 +16,12 @@ const {
 } = require('../utils');
 
 /**
- * Actor Client
- * @param {ApiClientOptions} options
  * @hideconstructor
  */
 class ActorClient extends ResourceClient {
+    /**
+     * @param {ApiClientOptions} options
+     */
     constructor(options) {
         super({
             resourcePath: 'acts',
