@@ -1,4 +1,4 @@
-# `apify-client`
+# ApifyClient
 `apify-client` is the official library to access [Apify API](https://docs.apify.com/api/v2) from your
 JavaScript applications. It runs both in Node.js and browser and provides useful features like
 automatic retries and convenience functions that improve the experience of using the Apify API.
@@ -14,7 +14,7 @@ const client = new ApifyClient({
 // Starts an actor and waits for it to finish.
 const { defaultDatasetId } = await client.actor('john-doe/my-cool-actor').call();
 // Fetches results from the actor's dataset.
-const { items } = client.dataset(defaultDatasetId).listItems();
+const { items } = await client.dataset(defaultDatasetId).listItems();
 ```
 
 ## Features
@@ -50,24 +50,30 @@ const ApifyClient = require('apify-client');
 const apifyClient = new ApifyClient({ token: 'my-token' });
 
 // Collection clients do not require a parameter.
-const actorsClient = apifyClient.actors();
+const actorCollectionClient = apifyClient.actors();
 // Creates an actor with the name: my-actor.
-await actorsClient.create({ name: 'my-actor' });
+const myActor = await actorsClient.create({ name: 'my-actor' });
 // Lists all of your actors.
-await actorsClient.list();
+const { items } = await actorsClient.list();
+```
+```js
+// Collection clients do not require a parameter.
+const datasetCollectionClient = apifyClient.datasets();
+// Gets (or creates, if it doesn't exist) a dataset with the name of my-dataset.
+const myDataset = await datasetClient.getOrCreate('my-dataset');
+```
 
-const datasetClient = apifyClient.datasets();
-// Gets (or creates, if it doesn't exist) a dataset with
-// the name of my-dataset.
-await datasetClient.getOrCreate('my-dataset');
-
-// Resource clients accept an ID of the resource
+```js
+// Resource clients accept an ID of the resource.
 const actorClient = apifyClient.actor('john-doe/my-actor');
 // Fetches the john-doe/my-actor object from the API.
 const myActor = await actorClient.get();
 // Starts the run of john-doe/my-actor and returns the Run object.
-await actorClient.start();
+const myActorRun = await actorClient.start();
+```
 
+```js
+// Resource clients accept an ID of the resource.
 const datasetClient = apifyClient.dataset('john-doe/my-dataset');
 // Appends items to the end of john-doe/my-dataset.
 await datasetClient.pushItems([{ foo: 1 }, { bar: 2 }]);
