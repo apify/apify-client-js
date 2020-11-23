@@ -135,5 +135,5 @@ module.exports = DatasetClient;
  * @property {number} total - Total number of objects
  * @property {number} offset - Number of objects that were skipped
  * @property {number} count - Number of returned objects
- * @property {number} [limit] - Requested limit
+ * @property {number} limit - Requested limit
  */
