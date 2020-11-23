@@ -11,6 +11,9 @@ const {
     stringifyWebhooksToBase64,
 } = require('../utils');
 
+/**
+ * @hideconstructor
+ */
 class TaskClient extends ResourceClient {
     /**
      * @param {ApiClientOptions} options

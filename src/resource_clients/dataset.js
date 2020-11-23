@@ -1,6 +1,9 @@
 const ow = require('ow');
 const ResourceClient = require('../base/resource_client');
 
+/**
+ * @hideconstructor
+ */
 class DatasetClient extends ResourceClient {
     /**
      * @param {ApiClientOptions} options
@@ -65,7 +68,7 @@ class DatasetClient extends ResourceClient {
      * @param {boolean} [options.skipEmpty]
      * @param {boolean} [options.skipHidden]
      * @param {string} [options.unwind]
-     * @return {Promise<object>}
+     * @return {Promise<PaginationList>}
      */
     async listItems(options = {}) {
         ow(options, ow.object.exactShape({

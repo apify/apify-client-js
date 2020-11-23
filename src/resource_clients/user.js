@@ -1,5 +1,8 @@
 const ResourceClient = require('../base/resource_client');
 
+/**
+ * @hideconstructor
+ */
 class UserClient extends ResourceClient {
     /**
      * @param {ApiClientOptions} options

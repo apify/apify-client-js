@@ -10,6 +10,9 @@ const {
 
 const SIGNED_URL_UPLOAD_MIN_BYTES = 1024 * 256;
 
+/**
+ * @hideconstructor
+ */
 class KeyValueStoreClient extends ResourceClient {
     /**
      * @param {ApiClientOptions} options
