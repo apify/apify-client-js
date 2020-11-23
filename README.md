@@ -122,7 +122,7 @@ JavaScript applications. It runs both in Node.js and browser.
 
 
 * [ApifyClient](#ApifyClient)
-    * [`new ApifyClient([baseUrl], [maxRetries], [minDelayBetweenRetriesMillis], [requestInterceptors], [token])`](#new_ApifyClient_new)
+    * [`new ApifyClient([options])`](#new_ApifyClient_new)
     * [`.actors()`](#ApifyClient+actors) ⇒ [<code>ActorCollectionClient</code>](#ActorCollectionClient)
     * [`.actor(id)`](#ApifyClient+actor) ⇒ [<code>ActorClient</code>](#ActorClient)
     * [`.build(id)`](#ApifyClient+build) ⇒ [<code>BuildClient</code>](#BuildClient)
@@ -149,15 +149,16 @@ JavaScript applications. It runs both in Node.js and browser.
 
 <a name="new_ApifyClient_new"></a>
 
-### `new ApifyClient([baseUrl], [maxRetries], [minDelayBetweenRetriesMillis], [requestInterceptors], [token])`
+### `new ApifyClient([options])`
 
 | Param | Type | Default |
 | --- | --- | --- |
-| [baseUrl] | <code>string</code> | <code>&quot;https://api.apify.com&quot;</code> | 
-| [maxRetries] | <code>number</code> | <code>8</code> | 
-| [minDelayBetweenRetriesMillis] | <code>number</code> | <code>500</code> | 
-| [requestInterceptors] | <code>Array.&lt;function()&gt;</code> |  | 
-| [token] | <code>string</code> |  | 
+| [options] | <code>object</code> |  | 
+| [options.baseUrl] | <code>string</code> | <code>&quot;https://api.apify.com&quot;</code> | 
+| [options.maxRetries] | <code>number</code> | <code>8</code> | 
+| [options.minDelayBetweenRetriesMillis] | <code>number</code> | <code>500</code> | 
+| [options.requestInterceptors] | <code>Array.&lt;function()&gt;</code> |  | 
+| [options.token] | <code>string</code> |  | 
 
 
 * * *
@@ -1077,7 +1078,7 @@ https://docs.apify.com/api/v2#/reference/logs/log/get-log
 | total | <code>number</code> | Total number of objects |
 | offset | <code>number</code> | Number of objects that were skipped |
 | count | <code>number</code> | Number of returned objects |
-| [limit] | <code>number</code> | Requested limit |
+| limit | <code>number</code> | Requested limit |
 
 
 * * *
