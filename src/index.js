@@ -32,11 +32,12 @@ const WebhookDispatchCollectionClient = require('./resource_clients/webhook_disp
  * ApifyClient is the official library to access [Apify API](https://docs.apify.com/api/v2) from your
  * JavaScript applications. It runs both in Node.js and browser.
  *
- * @param {string} [baseUrl=https://api.apify.com]
- * @param {number} [maxRetries=8]
- * @param {number} [minDelayBetweenRetriesMillis=500]
- * @param {function[]} [requestInterceptors]
- * @param {string} [token]
+ * @param {object} [options]
+ * @param {string} [options.baseUrl=https://api.apify.com]
+ * @param {number} [options.maxRetries=8]
+ * @param {number} [options.minDelayBetweenRetriesMillis=500]
+ * @param {function[]} [options.requestInterceptors]
+ * @param {string} [options.token]
  */
 class ApifyClient {
     constructor(options = {}) {
