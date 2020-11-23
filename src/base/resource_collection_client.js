@@ -7,6 +7,7 @@ const {
 /**
  * Resource collection client.
  * @param {ApiClientOptions} options
+ * @private
  */
 class ResourceCollectionClient extends ApiClient {
     /**

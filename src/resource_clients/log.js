@@ -3,6 +3,9 @@ const {
     catchNotFoundOrThrow,
 } = require('../utils');
 
+/**
+ * @hideconstructor
+ */
 class LogClient extends ResourceClient {
     /**
      * @param {ApiClientOptions} options

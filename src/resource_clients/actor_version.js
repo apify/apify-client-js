@@ -1,6 +1,9 @@
 const ow = require('ow');
 const ResourceClient = require('../base/resource_client');
 
+/**
+ * @hideconstructor
+ */
 class ActorVersionClient extends ResourceClient {
     /**
      * @param {ApiClientOptions} options

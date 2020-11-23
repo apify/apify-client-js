@@ -7,10 +7,11 @@
  * @property {HttpClient} options.httpClient
  * @property {string} [options.id]
  * @property {object} [options.params]
+ * @private
  */
 
 /**
- * API client.
+ * @private
  */
 class ApiClient {
     /**

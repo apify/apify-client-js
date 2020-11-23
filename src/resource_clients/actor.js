@@ -15,6 +15,9 @@ const {
     stringifyWebhooksToBase64,
 } = require('../utils');
 
+/**
+ * @hideconstructor
+ */
 class ActorClient extends ResourceClient {
     /**
      * @param {ApiClientOptions} options

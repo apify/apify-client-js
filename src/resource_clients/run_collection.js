@@ -4,6 +4,9 @@ const {
 const ow = require('ow');
 const ResourceCollectionClient = require('../base/resource_collection_client');
 
+/**
+ * @hideconstructor
+ */
 class RunCollectionClient extends ResourceCollectionClient {
     /**
      * @param {ApiClientOptions} options
@@ -22,7 +25,7 @@ class RunCollectionClient extends ResourceCollectionClient {
      * @param {number} [options.offset]
      * @param {boolean} [options.desc]
      * @param {boolean} [options.status]
-     * @return {Promise<object>}
+     * @return {Promise<PaginationList>}
      */
     async list(options = {}) {
         ow(options, ow.object.exactShape({

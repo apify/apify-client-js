@@ -6,9 +6,15 @@
  * 3: undefined
  * 4: "list"
  * @type {RegExp}
+ * @private
  */
 const CLIENT_METHOD_REGEX = /at( async)? ([A-Za-z]+(Collection)?Client)\._?([A-Za-z]+) \(/;
 
+/**
+ * Apify API error
+ * @property {string} message
+ * @hideconstructor
+ */
 class ApifyApiError extends Error {
     /**
      * @param {AxiosResponse} response

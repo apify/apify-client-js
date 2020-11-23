@@ -6,6 +6,9 @@ const {
     catchNotFoundOrThrow,
 } = require('../utils');
 
+/**
+ * @hideconstructor
+ */
 class RequestQueueClient extends ResourceClient {
     /**
      * @param {ApiClientOptions} options

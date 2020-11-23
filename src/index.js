@@ -28,27 +28,17 @@ const WebhookCollectionClient = require('./resource_clients/webhook_collection')
 const WebhookDispatchClient = require('./resource_clients/webhook_dispatch');
 const WebhookDispatchCollectionClient = require('./resource_clients/webhook_dispatch_collection');
 
-
-
 /**
- * @typedef ApifyClientOptions
- * @property {string} [baseUrl='https://api.apify.com']
- * @property {number} [maxRetries=8]
- * @property {number} [minDelayBetweenRetriesMillis=500]
- * @property {function[]} [requestInterceptors]
- * @property {string} [token]
- */
-
-/**
- * All API calls done through this client are made with exponential backoff.
- * What this means, is that if the API call fails, this client will attempt the call again with a small delay.
- * If it fails again, it will do another attempt after twice as long and so on, until one attempt succeeds
- * or 8th attempt fails.
+ * ApifyClient is the official library to access [Apify API](https://docs.apify.com/api/v2) from your
+ * JavaScript applications. It runs both in Node.js and browser.
+ *
+ * @param {string} [baseUrl=https://api.apify.com]
+ * @param {number} [maxRetries=8]
+ * @param {number} [minDelayBetweenRetriesMillis=500]
+ * @param {function[]} [requestInterceptors]
+ * @param {string} [token]
  */
 class ApifyClient {
-    /**
-     * @param {ApifyClientOptions} options
-     */
     constructor(options = {}) {
         ow(options, ow.object.exactShape({
             baseUrl: ow.optional.string,

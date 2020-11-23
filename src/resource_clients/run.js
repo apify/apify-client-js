@@ -9,6 +9,9 @@ const {
     parseDateFields,
 } = require('../utils');
 
+/**
+ * @hideconstructor
+ */
 class RunClient extends ResourceClient {
     /**
      * @param {ApiClientOptions} options

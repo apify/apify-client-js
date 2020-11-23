@@ -6,6 +6,9 @@ const {
     catchNotFoundOrThrow,
 } = require('../utils');
 
+/**
+ * @hideconstructor
+ */
 class ScheduleClient extends ResourceClient {
     /**
      * @param {ApiClientOptions} options

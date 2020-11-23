@@ -1,5 +1,8 @@
 const ResourceClient = require('../base/resource_client');
 
+/**
+ * @hideconstructor
+ */
 class WebhookDispatchClient extends ResourceClient {
     /**
      * @param {ApiClientOptions} options

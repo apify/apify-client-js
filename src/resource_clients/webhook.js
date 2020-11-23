@@ -2,6 +2,9 @@ const ow = require('ow');
 const ResourceClient = require('../base/resource_client');
 const WebhookDispatchCollectionClient = require('./webhook_dispatch_collection');
 
+/**
+ * @hideconstructor
+ */
 class WebhookClient extends ResourceClient {
     /**
      * @param {ApiClientOptions} options
