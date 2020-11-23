@@ -14,7 +14,7 @@ const client = new ApifyClient({
 // Starts an actor and waits for it to finish.
 const { defaultDatasetId } = await client.actor('john-doe/my-cool-actor').call();
 // Fetches results from the actor's dataset.
-const { items } = client.dataset(defaultDatasetId).listItems();
+const { items } = await client.dataset(defaultDatasetId).listItems();
 ```
 
 ## Features
@@ -52,21 +52,20 @@ const apifyClient = new ApifyClient({ token: 'my-token' });
 // Collection clients do not require a parameter.
 const actorsClient = apifyClient.actors();
 // Creates an actor with the name: my-actor.
-await actorsClient.create({ name: 'my-actor' });
+const myActor = await actorsClient.create({ name: 'my-actor' });
 // Lists all of your actors.
-await actorsClient.list();
+const { items } = await actorsClient.list();
 
 const datasetClient = apifyClient.datasets();
-// Gets (or creates, if it doesn't exist) a dataset with
-// the name of my-dataset.
-await datasetClient.getOrCreate('my-dataset');
+// Gets (or creates, if it doesn't exist) a dataset with the name of my-dataset.
+const myDataset = await datasetClient.getOrCreate('my-dataset');
 
 // Resource clients accept an ID of the resource
 const actorClient = apifyClient.actor('john-doe/my-actor');
 // Fetches the john-doe/my-actor object from the API.
 const myActor = await actorClient.get();
 // Starts the run of john-doe/my-actor and returns the Run object.
-await actorClient.start();
+const myActorRun = await actorClient.start();
 
 const datasetClient = apifyClient.dataset('john-doe/my-dataset');
 // Appends items to the end of john-doe/my-dataset.
