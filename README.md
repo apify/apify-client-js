@@ -52,15 +52,15 @@ const apifyClient = new ApifyClient({ token: 'my-token' });
 // Collection clients do not require a parameter.
 const actorCollectionClient = apifyClient.actors();
 // Creates an actor with the name: my-actor.
-const myActor = await actorsClient.create({ name: 'my-actor' });
+const myActor = await actorCollectionClient.create({ name: 'my-actor' });
 // Lists all of your actors.
-const { items } = await actorsClient.list();
+const { items } = await actorCollectionClient.list();
 ```
 ```js
 // Collection clients do not require a parameter.
 const datasetCollectionClient = apifyClient.datasets();
 // Gets (or creates, if it doesn't exist) a dataset with the name of my-dataset.
-const myDataset = await datasetClient.getOrCreate('my-dataset');
+const myDataset = await datasetCollectionClient.getOrCreate('my-dataset');
 ```
 
 ```js
