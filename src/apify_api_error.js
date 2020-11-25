@@ -26,7 +26,7 @@ const CLIENT_METHOD_REGEX = /at( async)? ([A-Za-z]+(Collection)?Client)\._?([A-Z
  *  HTTP status code of the error.
  * @property {string} type
  *  The type of the error, as returned by the API.
- * @property {string} attempt
+ * @property {number} attempt
  *  Number of the API call attempt.
  * @property {string} httpMethod
  *  HTTP method of the API call.
