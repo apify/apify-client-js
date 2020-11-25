@@ -11,7 +11,12 @@
 const CLIENT_METHOD_REGEX = /at( async)? ([A-Za-z]+(Collection)?Client)\._?([A-Za-z]+) \(/;
 
 /**
- * Apify API error
+ * An `ApifyApiError` is thrown for successful HTTP requests that reach the API,
+ * but the API responds with an error response. Typically, those are rate limit
+ * errors and internal errors, which are automatically retried, or validation
+ * errors, which are thrown immediately, because a correction by the user is
+ * needed.
+ *
  * @property {string} message
  *  Error message returned by the API.
  * @property {string} clientMethod

@@ -388,7 +388,11 @@ https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatch-obj
 <a name="ApifyApiError"></a>
 
 ## ApifyApiError
-Apify API error
+An `ApifyApiError` is thrown for successful HTTP requests that reach the API,
+but the API responds with an error response. Typically, those are rate limit
+errors and internal errors, which are automatically retried, or validation
+errors, which are thrown immediately, because a correction by the user is
+needed.
 
 **Properties**
 
