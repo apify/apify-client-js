@@ -13,6 +13,20 @@ const CLIENT_METHOD_REGEX = /at( async)? ([A-Za-z]+(Collection)?Client)\._?([A-Z
 /**
  * Apify API error
  * @property {string} message
+ *  Error message returned by the API.
+ * @property {string} clientMethod
+ *  The invoked resource client and the method. Known issue: Sometimes it displays
+ *  as undefined because it can't be parsed from a stack trace.
+ * @property {number} statusCode
+ *  HTTP status code of the error.
+ * @property {string} type
+ *  The type of the error, as returned by the API.
+ * @property {string} attempt
+ *  Number of the API call attempt.
+ * @property {string} httpMethod
+ *  HTTP method of the API call.
+ * @property {string} path
+ *  Full path of the API endpoint (URL excluding origin).
  * @hideconstructor
  */
 class ApifyApiError extends Error {

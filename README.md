@@ -392,9 +392,15 @@ Apify API error
 
 **Properties**
 
-| Name | Type |
-| --- | --- |
-| message | <code>string</code> | 
+| Name | Type | Description |
+| --- | --- | --- |
+| message | <code>string</code> | Error message returned by the API. |
+| clientMethod | <code>string</code> | The invoked resource client and the method. Known issue: Sometimes it displays  as undefined because it can't be parsed from a stack trace. |
+| statusCode | <code>number</code> | HTTP status code of the error. |
+| type | <code>string</code> | The type of the error, as returned by the API. |
+| attempt | <code>string</code> | Number of the API call attempt. |
+| httpMethod | <code>string</code> | HTTP method of the API call. |
+| path | <code>string</code> | Full path of the API endpoint (URL excluding origin). |
 
 
 * * *
