@@ -26,12 +26,12 @@ class RunClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/actor-runs/run-object/get-run
      * @param {object} [options]
-     * @param {boolean} [options.waitForFinish]
+     * @param {number} [options.waitForFinish]
      * @return {Promise<Run>}
      */
     async get(options = {}) {
         ow(options, ow.object.exactShape({
-            waitForFinish: ow.optional.boolean,
+            waitForFinish: ow.optional.number,
         }));
         return this._get(options);
     }

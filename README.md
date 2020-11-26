@@ -731,7 +731,7 @@ https://docs.apify.com/api/v2#/reference/actor-builds/build-object/get-build
 | Param | Type |
 | --- | --- |
 | [options] | <code>object</code> | 
-| [options.waitForFinish] | <code>boolean</code> | 
+| [options.waitForFinish] | <code>number</code> | 
 
 
 * * *
@@ -1306,7 +1306,7 @@ https://docs.apify.com/api/v2#/reference/actor-runs/run-object/get-run
 | Param | Type |
 | --- | --- |
 | [options] | <code>object</code> | 
-| [options.waitForFinish] | <code>boolean</code> | 
+| [options.waitForFinish] | <code>number</code> | 
 
 
 * * *

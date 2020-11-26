@@ -22,12 +22,12 @@ class BuildClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/actor-builds/build-object/get-build
      * @param {object} [options]
-     * @param {boolean} [options.waitForFinish]
+     * @param {number} [options.waitForFinish]
      * @return {Promise<Run>}
      */
     async get(options = {}) {
         ow(options, ow.object.exactShape({
-            waitForFinish: ow.optional.boolean,
+            waitForFinish: ow.optional.number,
         }));
         return this._get(options);
     }
