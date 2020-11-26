@@ -32,6 +32,9 @@ const CLIENT_METHOD_REGEX = /at( async)? ([A-Za-z]+(Collection)?Client)\._?([A-Z
  *  HTTP method of the API call.
  * @property {string} path
  *  Full path of the API endpoint (URL excluding origin).
+ * @property {string} originalStack
+ *  Original stack trace of the exception. It is replaced
+ *  by a more informative stack with API call information.
  * @hideconstructor
  */
 class ApifyApiError extends Error {
@@ -118,9 +121,9 @@ class ApifyApiError extends Error {
         } = this;
         const stack = Object.entries(props)
             .map(([k, v]) => {
-                // Keep function call stack only as a property.
-                // It's not useful for users.
-                if (k === 'originalStack') return '';
+                // Rename originalStack to stack in the stack itself.
+                // This is for better readability of errors in log.
+                if (k === 'originalStack') k = 'stack';
                 return `  ${k}: ${v}`;
             })
             .join('\n');

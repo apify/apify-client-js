@@ -405,6 +405,7 @@ needed.
 | attempt | <code>number</code> | Number of the API call attempt. |
 | httpMethod | <code>string</code> | HTTP method of the API call. |
 | path | <code>string</code> | Full path of the API endpoint (URL excluding origin). |
+| originalStack | <code>string</code> | Original stack trace of the exception. It is replaced  by a more informative stack with API call information. |
 
 
 * * *
