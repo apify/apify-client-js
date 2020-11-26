@@ -49,7 +49,7 @@
         "test": "npm run build && jest",
         "prepare": "npm run build",
         "prepublishOnly": "(test $CI || (echo \"Publishing is reserved to CI!\"; exit 1))",
-        "clean": "rm -rf dist && rm -rf docs",
+        "clean": "rm -rf dist",
         "lint": "eslint src test",
         "lint:fix": "eslint --fix src test",
         "build-browser": "webpack"

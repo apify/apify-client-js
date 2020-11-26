@@ -106,6 +106,9 @@ class DatasetClient extends ResourceClient {
         await this.httpClient.call({
             url: this._url('items'),
             method: 'POST',
+            headers: {
+                'content-type': 'application/json; charset=utf-8',
+            },
             data: items,
             params: this._params(),
         });

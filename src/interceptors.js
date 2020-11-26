@@ -29,14 +29,9 @@ class InvalidResponseBodyError extends Error {
  * @param {object} config
  * @return {object}
  */
-function inferRequestHeaders(config) {
+function serializeRequest(config) {
     const [defaultTransform] = axios.defaults.transformRequest;
     config.data = defaultTransform(config.data, config.headers);
-    const hasBody = config.data != null;
-    const isContentTypeMissing = !config.headers['Content-Type'];
-    if (hasBody && isContentTypeMissing) {
-        config.headers['Content-Type'] = 'application/json; charset=utf-8';
-    }
     return config;
 }
 
@@ -91,7 +86,7 @@ function parseResponseData(response) {
     return response;
 }
 
-const requestInterceptors = [inferRequestHeaders];
+const requestInterceptors = [serializeRequest];
 const responseInterceptors = [parseResponseData];
 
 if (isNode()) {
