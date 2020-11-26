@@ -25,10 +25,15 @@ class RunClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-runs/run-object/get-run
+     * @param {object} [options]
+     * @param {boolean} [options.waitForFinish]
      * @return {Promise<Run>}
      */
-    async get() {
-        return this._get();
+    async get(options = {}) {
+        ow(options, ow.object.exactShape({
+            waitForFinish: ow.optional.boolean,
+        }));
+        return this._get(options);
     }
 
     /**
@@ -104,6 +109,10 @@ class RunClient extends ResourceClient {
      * or with the unfinished Run object when the `waitSecs` timeout lapses. The promise is NOT rejected
      * based on run status. You can inspect the `status` property of the Run object to find out its status.
      *
+     * The difference between this function and the `waitForFinish` parameter of the `get` method
+     * is the fact that this function can wait indefinitely. Its use is preferable to the
+     * `waitForFinish` parameter alone, which it uses internally.
+     *
      * This is useful when you need to chain actor executions. Similar effect can be achieved
      * by using webhooks, so be sure to review which technique fits your use-case better.
      *
@@ -115,6 +124,9 @@ class RunClient extends ResourceClient {
      * @returns {Promise<Run>}
      */
     async waitForFinish(options = {}) {
+        ow(options, ow.object.exactShape({
+            waitSecs: ow.optional.number,
+        }));
         return this._waitForFinish(options);
     }
 

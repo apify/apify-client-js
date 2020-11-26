@@ -59,6 +59,7 @@ class TaskClient extends ResourceClient {
      * @param {string} [options.build]
      * @param {number} [options.memory]
      * @param {number} [options.timeout]
+     * @param {number} [options.waitForFinish]
      * @param {object[]} [options.webhooks]
      * @return {Promise<Run>}
      */

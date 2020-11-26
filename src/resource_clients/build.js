@@ -1,3 +1,4 @@
+const ow = require('ow');
 const ResourceClient = require('../base/resource_client');
 const {
     pluckData,
@@ -20,10 +21,15 @@ class BuildClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-builds/build-object/get-build
-     * @return {Promise<Actor>}
+     * @param {object} [options]
+     * @param {boolean} [options.waitForFinish]
+     * @return {Promise<Run>}
      */
-    async get() {
-        return this._get();
+    async get(options = {}) {
+        ow(options, ow.object.exactShape({
+            waitForFinish: ow.optional.boolean,
+        }));
+        return this._get(options);
     }
 
     /**
@@ -45,16 +51,23 @@ class BuildClient extends ResourceClient {
      * or with the unfinished Build object when the `waitSecs` timeout lapses. The promise is NOT rejected
      * based on run status. You can inspect the `status` property of the Build object to find out its status.
      *
+     * The difference between this function and the `waitForFinish` parameter of the `get` method
+     * is the fact that this function can wait indefinitely. Its use is preferable to the
+     * `waitForFinish` parameter alone, which it uses internally.
+     *
      * This is useful when you need to immediately start a run after a build finishes.
      *
      * @param {object} [options]
-     * @param {string} [options.waitSecs]
+     * @param {number} [options.waitSecs]
      *  Maximum time to wait for the build to finish, in seconds.
      *  If the limit is reached, the returned promise is resolved to a build object that will have
      *  status `READY` or `RUNNING`. If `waitSecs` omitted, the function waits indefinitely.
-     * @returns {Promise<Object>}
+     * @returns {Promise<Build>}
      */
     async waitForFinish(options = {}) {
+        ow(options, ow.object.exactShape({
+            waitSecs: ow.optional.number,
+        }));
         return this._waitForFinish(options);
     }
 }

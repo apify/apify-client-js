@@ -420,7 +420,7 @@ needed.
     * [`.call([input], [options])`](#ActorClient+call) ⇒ <code>Promise.&lt;Run&gt;</code>
     * [`.delete()`](#ActorClient+delete) ⇒ <code>Promise.&lt;void&gt;</code>
     * [`.get()`](#ActorClient+get) ⇒ <code>Promise.&lt;?Actor&gt;</code>
-    * [`.lastRun(options)`](#ActorClient+lastRun) ⇒ [<code>RunClient</code>](#RunClient)
+    * [`.lastRun([options])`](#ActorClient+lastRun) ⇒ [<code>RunClient</code>](#RunClient)
     * [`.runs()`](#ActorClient+runs) ⇒ [<code>RunCollectionClient</code>](#RunCollectionClient)
     * [`.start([input], [options])`](#ActorClient+start) ⇒ <code>Promise.&lt;Run&gt;</code>
     * [`.update(newFields)`](#ActorClient+update) ⇒ <code>Promise.&lt;Actor&gt;</code>
@@ -444,6 +444,7 @@ https://docs.apify.com/api/v2#/reference/actors/build-collection/build-actor
 | [options.betaPackages] | <code>boolean</code> | 
 | [options.tag] | <code>string</code> | 
 | [options.useCache] | <code>boolean</code> | 
+| [options.waitForFinish] | <code>number</code> | 
 
 
 * * *
@@ -496,14 +497,14 @@ https://docs.apify.com/api/v2#/reference/actors/actor-object/get-actor
 
 <a name="ActorClient+lastRun"></a>
 
-### `actorClient.lastRun(options)` ⇒ [<code>RunClient</code>](#RunClient)
+### `actorClient.lastRun([options])` ⇒ [<code>RunClient</code>](#RunClient)
 https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 
 
 | Param | Type |
 | --- | --- |
-| options | <code>object</code> | 
-| options.status | <code>string</code> | 
+| [options] | <code>object</code> | 
+| [options.status] | <code>string</code> | 
 
 
 * * *
@@ -531,6 +532,7 @@ https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
 | [options.contentType] | <code>string</code> | 
 | [options.memory] | <code>number</code> | 
 | [options.timeout] | <code>number</code> | 
+| [options.waitForFinish] | <code>number</code> | 
 | [options.webhooks] | <code>Array.&lt;object&gt;</code> | 
 
 
@@ -706,8 +708,8 @@ https://docs.apify.com/api/v2#/reference/actors/version-collection/get-list-of-v
 
 * [BuildClient](#BuildClient)
     * [`.abort()`](#BuildClient+abort) ⇒ <code>Promise.&lt;Build&gt;</code>
-    * [`.get()`](#BuildClient+get) ⇒ <code>Promise.&lt;Actor&gt;</code>
-    * [`.waitForFinish([options])`](#BuildClient+waitForFinish) ⇒ <code>Promise.&lt;Object&gt;</code>
+    * [`.get([options])`](#BuildClient+get) ⇒ <code>Promise.&lt;Run&gt;</code>
+    * [`.waitForFinish([options])`](#BuildClient+waitForFinish) ⇒ <code>Promise.&lt;Build&gt;</code>
 
 
 * * *
@@ -722,18 +724,28 @@ https://docs.apify.com/api/v2#/reference/actor-builds/abort-build/abort-build
 
 <a name="BuildClient+get"></a>
 
-### `buildClient.get()` ⇒ <code>Promise.&lt;Actor&gt;</code>
+### `buildClient.get([options])` ⇒ <code>Promise.&lt;Run&gt;</code>
 https://docs.apify.com/api/v2#/reference/actor-builds/build-object/get-build
+
+
+| Param | Type |
+| --- | --- |
+| [options] | <code>object</code> | 
+| [options.waitForFinish] | <code>boolean</code> | 
 
 
 * * *
 
 <a name="BuildClient+waitForFinish"></a>
 
-### `buildClient.waitForFinish([options])` ⇒ <code>Promise.&lt;Object&gt;</code>
+### `buildClient.waitForFinish([options])` ⇒ <code>Promise.&lt;Build&gt;</code>
 Returns a promise that resolves with the finished Build object when the provided actor build finishes
 or with the unfinished Build object when the `waitSecs` timeout lapses. The promise is NOT rejected
 based on run status. You can inspect the `status` property of the Build object to find out its status.
+
+The difference between this function and the `waitForFinish` parameter of the `get` method
+is the fact that this function can wait indefinitely. Its use is preferable to the
+`waitForFinish` parameter alone, which it uses internally.
 
 This is useful when you need to immediately start a run after a build finishes.
 
@@ -741,7 +753,7 @@ This is useful when you need to immediately start a run after a build finishes.
 | Param | Type | Description |
 | --- | --- | --- |
 | [options] | <code>object</code> |  |
-| [options.waitSecs] | <code>string</code> | Maximum time to wait for the build to finish, in seconds.  If the limit is reached, the returned promise is resolved to a build object that will have  status `READY` or `RUNNING`. If `waitSecs` omitted, the function waits indefinitely. |
+| [options.waitSecs] | <code>number</code> | Maximum time to wait for the build to finish, in seconds.  If the limit is reached, the returned promise is resolved to a build object that will have  status `READY` or `RUNNING`. If `waitSecs` omitted, the function waits indefinitely. |
 
 
 * * *
@@ -1256,7 +1268,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/get-lis
 * [RunClient](#RunClient)
     * [`.abort()`](#RunClient+abort) ⇒ <code>Promise.&lt;Run&gt;</code>
     * [`.dataset()`](#RunClient+dataset) ⇒ [<code>DatasetClient</code>](#DatasetClient)
-    * [`.get()`](#RunClient+get) ⇒ <code>Promise.&lt;Run&gt;</code>
+    * [`.get([options])`](#RunClient+get) ⇒ <code>Promise.&lt;Run&gt;</code>
     * [`.keyValueStore()`](#RunClient+keyValueStore) ⇒ [<code>KeyValueStoreClient</code>](#KeyValueStoreClient)
     * [`.log()`](#RunClient+log) ⇒ [<code>LogClient</code>](#LogClient)
     * [`.metamorph(targetActorId, [input], [options])`](#RunClient+metamorph) ⇒ <code>Promise.&lt;Run&gt;</code>
@@ -1287,8 +1299,14 @@ https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 
 <a name="RunClient+get"></a>
 
-### `runClient.get()` ⇒ <code>Promise.&lt;Run&gt;</code>
+### `runClient.get([options])` ⇒ <code>Promise.&lt;Run&gt;</code>
 https://docs.apify.com/api/v2#/reference/actor-runs/run-object/get-run
+
+
+| Param | Type |
+| --- | --- |
+| [options] | <code>object</code> | 
+| [options.waitForFinish] | <code>boolean</code> | 
 
 
 * * *
@@ -1354,6 +1372,10 @@ https://docs.apify.com/api/v2#/reference/actor-runs/resurrect-run/resurrect-run
 Returns a promise that resolves with the finished Run object when the provided actor run finishes
 or with the unfinished Run object when the `waitSecs` timeout lapses. The promise is NOT rejected
 based on run status. You can inspect the `status` property of the Run object to find out its status.
+
+The difference between this function and the `waitForFinish` parameter of the `get` method
+is the fact that this function can wait indefinitely. Its use is preferable to the
+`waitForFinish` parameter alone, which it uses internally.
 
 This is useful when you need to chain actor executions. Similar effect can be achieved
 by using webhooks, so be sure to review which technique fits your use-case better.
@@ -1580,6 +1602,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task
 | [options.build] | <code>string</code> | 
 | [options.memory] | <code>number</code> | 
 | [options.timeout] | <code>number</code> | 
+| [options.waitForFinish] | <code>number</code> | 
 | [options.webhooks] | <code>Array.&lt;object&gt;</code> | 
 
 

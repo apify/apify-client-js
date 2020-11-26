@@ -14,14 +14,15 @@ const {
  */
 class ResourceClient extends ApiClient {
     /**
+     * @param {object} [options]
      * @return {Promise<?object>}
      * @private
      */
-    async _get() {
+    async _get(options = {}) {
         const requestOpts = {
             url: this._url(),
             method: 'GET',
-            params: this._params(),
+            params: this._params(options),
         };
         try {
             const response = await this.httpClient.call(requestOpts);

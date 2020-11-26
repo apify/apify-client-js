@@ -64,6 +64,7 @@ class ActorClient extends ResourceClient {
      * @param {string} [options.contentType]
      * @param {number} [options.memory]
      * @param {number} [options.timeout]
+     * @param {number} [options.waitForFinish]
      * @param {object[]} [options.webhooks]
      * @return {Promise<Run>}
      */
@@ -145,6 +146,7 @@ class ActorClient extends ResourceClient {
      * @param {boolean} [options.betaPackages]
      * @param {string} [options.tag]
      * @param {boolean} [options.useCache]
+     * @param {number} [options.waitForFinish]
      * @return {Promise<Build>}
      */
     async build(versionNumber, options = {}) {
@@ -170,8 +172,8 @@ class ActorClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
-     * @param {object} options
-     * @param {string} options.status
+     * @param {object} [options]
+     * @param {string} [options.status]
      * @return {RunClient}
      */
     lastRun(options = {}) {
