@@ -157,6 +157,7 @@ class KeyValueStoreClient extends ResourceClient {
         if (this._shouldUseDirectUpload(value)) {
             const response = await this.httpClient.call({
                 url: this._url(`records/${key}/direct-upload-url`),
+                params: this._params(),
                 method: 'GET',
             });
             uploadUrl = response.data.signedUrl;

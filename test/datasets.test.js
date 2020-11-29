@@ -146,42 +146,38 @@ describe('Dataset methods', () => {
             validateRequest(query, { datasetId });
         });
 
-        // TODO maybe use for .export()?
-        test.skip('getItems() works with bom=false', async () => {
+        test('downloadItems() works with bom=false', async () => {
             const datasetId = 'some-id';
-            const expected = {
-                total: 0,
-                offset: 0,
-                count: 0,
-                limit: 100000,
-                items: [],
-            };
+            const body = 'abc';
             const headers = {
-                'content-type': 'application/json; chartset=utf-8',
-                'x-apify-pagination-total': '0',
-                'x-apify-pagination-offset': '0',
-                'x-apify-pagination-count': '0',
-                'x-apify-pagination-limit': '100000',
+                'content-type': 'application/csv; charset=utf-8',
             };
-            mockServer.setResponse({ body: [], headers });
+            mockServer.setResponse({ body, headers });
             const qs = { bom: 0, format: 'csv', delimiter: ';', fields: 'a,b', omit: 'c,d' };
 
+            const format = 'csv';
             const options = {
-                datasetId,
                 bom: false,
                 fields: ['a', 'b'],
                 omit: ['c', 'd'],
-                format: 'csv',
                 delimiter: ';',
             };
 
-            const res = await client.dataset(datasetId).getItems(options);
-            expect(res).toEqual(expected);
-            validateRequest(qs, { datasetId }, {});
+            const res = await client.dataset(datasetId).downloadItems(format, options);
+            const resString = res.toString();
+            expect(resString).toEqual(body);
+            validateRequest(qs, { datasetId });
 
-            const browserRes = await page.evaluate((opts) => client.dataset(datasetId).getItems(opts), { datasetId });
-            expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId }, {});
+            const browserRes = await page.evaluate(
+                async (dId, f, opts) => {
+                    const response = await client.dataset(dId).downloadItems(f, opts);
+                    const decoder = new TextDecoder();
+                    return decoder.decode(response);
+                },
+                datasetId, format, options,
+            );
+            expect(browserRes).toEqual(resString);
+            validateRequest(qs, { datasetId });
         });
 
         test('listItems() limit and offset work', async () => {
@@ -211,36 +207,6 @@ describe('Dataset methods', () => {
             const browserRes = await page.evaluate((id, opts) => client.dataset(id).listItems(opts), datasetId, qs);
             expect(browserRes).toEqual(res);
             validateRequest(qs, { datasetId });
-        });
-
-        // TODO maybe use for .export()?
-        test.skip('getItems() parses JSON', async () => {
-            const datasetId = 'some-id';
-            const body = JSON.stringify([{ a: 'foo', b: ['bar1', 'bar2'] }]);
-            const contentType = 'application/json';
-            const expected = {
-                total: 1,
-                offset: 0,
-                count: 1,
-                limit: 100000,
-                items: JSON.parse(body),
-            };
-            const headers = {
-                'content-type': contentType,
-                'x-apify-pagination-total': '1',
-                'x-apify-pagination-offset': '0',
-                'x-apify-pagination-count': '1',
-                'x-apify-pagination-limit': '100000',
-            };
-            mockServer.setResponse({ body: expected.items, headers });
-
-            const res = await client.dataset(datasetId).getItems({ datasetId });
-            expect(res).toEqual(expected);
-            validateRequest({}, { datasetId });
-
-            const browserRes = await page.evaluate((options) => client.dataset(datasetId).getItems(options), { datasetId });
-            expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId });
         });
 
         test('downloadItems() doesn\'t parse application/json', async () => {
