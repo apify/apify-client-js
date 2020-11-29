@@ -1,12 +1,9 @@
 const axios = require('axios');
-const util = require('util');
-const zlib = require('zlib');
 const { maybeParseBody } = require('./body_parser');
-const { isNode } = require('./utils');
-
-const MIN_GZIP_BYTES = 1024;
-
-let gzipPromise;
+const {
+    isNode,
+    maybeGzipValue,
+} = require('./utils');
 
 /**
  * This error exists for the quite common situation, where only a partial JSON response is received and
@@ -40,19 +37,12 @@ function serializeRequest(config) {
  * @return {Promise<object>}
  */
 async function maybeGzipRequest(config) {
-    if (config.data == null) return config;
-
-    // Request compression is not that important so let's
-    // skip it instead of throwing for unsupported types.
-    const areDataStringOrBuffer = (typeof config.data === 'string') || Buffer.isBuffer(config.data);
-    if (areDataStringOrBuffer) {
-        const areDataLargeEnough = Buffer.byteLength(config.data) >= MIN_GZIP_BYTES;
-        if (areDataLargeEnough) {
-            config.headers['Content-Encoding'] = 'gzip';
-            config.data = await gzipPromise(config.data);
-        }
+    if (config.headers['content-encoding']) return config;
+    const maybeZippedData = await maybeGzipValue(config.data);
+    if (config.data !== maybeZippedData) {
+        config.headers['content-encoding'] = 'gzip';
+        config.data = maybeZippedData;
     }
-
     return config;
 }
 
@@ -86,14 +76,8 @@ function parseResponseData(response) {
     return response;
 }
 
-const requestInterceptors = [serializeRequest];
+const requestInterceptors = [maybeGzipRequest, serializeRequest];
 const responseInterceptors = [parseResponseData];
-
-if (isNode()) {
-    gzipPromise = util.promisify(zlib.gzip);
-    // Interceptors are executed in reverse order.
-    requestInterceptors.unshift(maybeGzipRequest);
-}
 
 module.exports = {
     InvalidResponseBodyError,

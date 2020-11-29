@@ -6,6 +6,7 @@ const {
     parseDateFields,
     catchNotFoundOrThrow,
     isNode,
+    maybeGzipValue,
 } = require('../utils');
 
 const SIGNED_URL_UPLOAD_MIN_BYTES = 1024 * 256;
@@ -153,29 +154,32 @@ class KeyValueStoreClient extends ResourceClient {
             }
         }
 
-        let uploadUrl = this._url(`records/${key}`);
-        if (this._shouldUseDirectUpload(value)) {
-            const response = await this.httpClient.call({
-                url: this._url(`records/${key}/direct-upload-url`),
-                params: this._params(),
-                method: 'GET',
-            });
-            // The response looks like this: { data: { signedUrl: "url" }}
-            // The double 'data' is NOT a typo! First data are from AxiosResponse
-            uploadUrl = response.data.data.signedUrl;
+        // All this mess is because of signed upload URL. It needs to:
+        // 1) have the same CType and CEncoding headers as the upload request itself.
+        // 2) we measure the upload size after GZIP, so we have to GZIP here, not in interceptor
+        // 3) we have to tell the interceptor to not GZIP again by setting the CEncoding
+        const headers = {};
+        if (contentType) headers['content-type'] = contentType;
+
+        const maybeZippedValue = await maybeGzipValue(value);
+        if (maybeZippedValue !== value) {
+            // This means we zipped the value and we need to add encoding
+            headers['content-encoding'] = 'gzip';
         }
+        // No need to keep original large value in memory
+        value = maybeZippedValue;
+
+        const uploadUrl = this._shouldUseDirectUpload(value)
+            ? await this._getSignedUploadUrl(key, headers)
+            : this._url(`records/${key}`);
 
         const uploadOpts = {
             url: uploadUrl,
             method: 'PUT',
             params: this._params(),
             data: value,
+            headers,
         };
-        if (contentType) {
-            uploadOpts.headers = {
-                'Content-Type': contentType,
-            };
-        }
 
         await this.httpClient.call(uploadOpts);
     }
@@ -215,6 +219,24 @@ class KeyValueStoreClient extends ResourceClient {
             bytes = Infinity;
         }
         return bytes >= SIGNED_URL_UPLOAD_MIN_BYTES;
+    }
+
+    /**
+     * @param {string} key
+     * @param {object} headers
+     * @return {Promise<string>}
+     * @private
+     */
+    async _getSignedUploadUrl(key, headers) {
+        const response = await this.httpClient.call({
+            url: this._url(`records/${key}/direct-upload-url`),
+            params: this._params(),
+            method: 'GET',
+            headers,
+        });
+        // The response looks like this: { data: { signedUrl: "url" }}
+        // The double 'data' is NOT a typo! First data are from AxiosResponse
+        return response.data.data.signedUrl;
     }
 }
 

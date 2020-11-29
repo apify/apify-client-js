@@ -398,10 +398,11 @@ describe('Key-Value Store methods', () => {
         test('setRecord() uploads via signed url when gzipped buffer.length > SIGNED_URL_UPLOAD_MIN_BYTESIZE', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
-            const value = Array(10000).fill({ hello: 'world' });
-            const expectedHeaders = {
-                'content-type': 'application/json; charset=utf-8',
-            };
+            const value = [];
+            for (let i = 0; i < 100000; i++) {
+                value.push(Math.random().toString(36).substring(7));
+            }
+            const contentType = 'application/json; charset=utf-8';
             const code = '12345';
 
             mockServer.setResponse({
@@ -414,14 +415,19 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).setRecord({ key, value });
             expect(res).toBeUndefined();
-            validateRequest({}, { code }, value, expectedHeaders);
+            validateRequest({}, { code }, value, {
+                'content-type': contentType,
+                'content-encoding': 'gzip',
+            });
 
             const browserRes = await page.evaluate(
                 (id, key, value) => client.keyValueStore(id).setRecord({ key, value }),
                 storeId, key, value,
             );
             expect(browserRes).toBeUndefined();
-            validateRequest({}, { code }, value, expectedHeaders);
+            validateRequest({}, { code }, value, {
+                'content-type': contentType,
+            });
         });
 
         test('deleteRecord() works', async () => {

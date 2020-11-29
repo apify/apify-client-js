@@ -7,7 +7,7 @@ module.exports = {
     rootDir: path.join(__dirname, './'),
     testMatch: [path.join(__dirname, '**/test/?(*.)+(spec|test).[tj]s?(x)')],
     testEnvironment: 'node',
-    testTimeout: 5000,
+    testTimeout: 10000,
     collectCoverage: true,
     collectCoverageFrom: [
         '**/src/**/*.js',

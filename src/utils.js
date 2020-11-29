@@ -1,35 +1,36 @@
-const log = require('apify-shared/log');
-const retry = require('async-retry');
 const ow = require('ow');
+const util = require('util');
+const zlib = require('zlib');
 
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
 const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
 const NOT_FOUND_STATUS_CODE = 404;
 const NOT_FOUND_TYPE = 'record-not-found';
 const NOT_FOUND_ON_S3 = '<Code>NoSuchKey</Code>';
+const MIN_GZIP_BYTES = 1024;
 
 /**
  * Returns object's 'data' property or throws if parameter is not an object,
  * or an object without a 'data' property.
  */
-const pluckData = (obj) => {
+function pluckData(obj) {
     const isObject = !!obj && typeof obj === 'object';
     if (isObject && typeof obj.data !== 'undefined') {
         return obj.data;
     }
     throw new Error(`Expected response object with a "data" property, but received: ${obj}`);
-};
+}
 
 /**
  * If given HTTP error has NOT_FOUND_STATUS_CODE status code then returns undefined.
  * Otherwise rethrows error.
  */
-const catchNotFoundOrThrow = (err) => {
+function catchNotFoundOrThrow(err) {
     const isNotFoundStatus = err.statusCode === NOT_FOUND_STATUS_CODE;
     const isNotFoundMessage = err.type === NOT_FOUND_TYPE || err.message.includes(NOT_FOUND_ON_S3);
     const isNotFoundError = isNotFoundStatus && isNotFoundMessage;
     if (!isNotFoundError) throw err;
-};
+}
 
 /**
  * Helper function that traverses JSON structure and parses fields such as modifiedAt or createdAt to dates.
@@ -66,50 +67,53 @@ function stringifyWebhooksToBase64(webhooks) {
     return btoa(String.fromCharCode(...uint8Array));
 }
 
+let gzipPromise;
+if (isNode()) gzipPromise = util.promisify(zlib.gzip);
 /**
- *
- * @param func
- * @param opts
- * @return {Promise | Promise<any>}
+ * @param {*} value
  */
-const retryWithExpBackoff = (func, opts) => {
-    let retryCount = 0;
-    const onRetry = (error) => {
-        retryCount += 1;
-        if (retryCount === Math.round(opts.retries / 2)) {
-            log.warning(`Retry failed ${retryCount} times and will be repeated later`, {
-                originalError: error.error ? error.error.message : error,
-                errorDetails: error.error ? error.error.details : error,
-            });
-        }
-    };
-    const options = { onRetry, ...opts };
+async function maybeGzipValue(value) {
+    if (!isNode()) return value;
+    if (value == null) return value;
 
-    return retry(func, options);
-};
+    // Request compression is not that important so let's
+    // skip it instead of throwing for unsupported types.
+    const areDataStringOrBuffer = (typeof value === 'string') || Buffer.isBuffer(value);
+    const areDataLargeEnough = Buffer.byteLength(value) >= MIN_GZIP_BYTES;
+    if (areDataStringOrBuffer && areDataLargeEnough) {
+        return gzipPromise(value);
+    }
+    return value;
+}
 
 /**
  * @return {boolean}
  */
-const isNode = () => !!(typeof process !== 'undefined' && process.versions && process.versions.node);
+function isNode() {
+    return !!(typeof process !== 'undefined' && process.versions && process.versions.node);
+}
 
 /**
  * @param {*} value
  * @return {boolean}
  */
-const isBuffer = (value) => ow.isValid(value, ow.any(ow.buffer, ow.arrayBuffer, ow.typedArray));
+function isBuffer(value) {
+    return ow.isValid(value, ow.any(ow.buffer, ow.arrayBuffer, ow.typedArray));
+}
 
 /**
  * @param {*} value
  * @return {boolean}
  */
-const isStream = (value) => ow.isValid(value, ow.object.hasKeys('on', 'pipe'));
+function isStream(value) {
+    return ow.isValid(value, ow.object.hasKeys('on', 'pipe'));
+}
 
 module.exports = {
     isNode,
     isBuffer,
     isStream,
-    retryWithExpBackoff,
+    maybeGzipValue,
     stringifyWebhooksToBase64,
     parseDateFields,
     catchNotFoundOrThrow,
