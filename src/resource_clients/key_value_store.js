@@ -160,7 +160,9 @@ class KeyValueStoreClient extends ResourceClient {
                 params: this._params(),
                 method: 'GET',
             });
-            uploadUrl = response.data.signedUrl;
+            // The response looks like this: { data: { signedUrl: "url" }}
+            // The double 'data' is NOT a typo! First data are from AxiosResponse
+            uploadUrl = response.data.data.signedUrl;
         }
 
         const uploadOpts = {

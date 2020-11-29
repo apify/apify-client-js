@@ -406,7 +406,9 @@ describe('Key-Value Store methods', () => {
 
             mockServer.setResponse({
                 body: {
-                    signedUrl: `${baseUrl}/external/signed-url/${code}`,
+                    data: {
+                        signedUrl: `${baseUrl}/external/signed-url/${code}`,
+                    },
                 },
             });
 
