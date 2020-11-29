@@ -33,11 +33,11 @@ By default, it will retry up to 8 times. First retry will be attempted after ~50
 and so on. You can configure those parameters using the `maxRetries` and `minDelayBetweenRetriesMillis`
 options of the `ApifyClient` constructor.
 
-### Convenience functions
-Some actions can't be performed by the API itself, such as indefinite waiting for an acto run to finish
+### Convenience functions and options
+Some actions can't be performed by the API itself, such as indefinite waiting for an actor run to finish
 (because of network timeouts). The client provides convenient `call()` and `waitForFinish()` functions that do that.
-Other functions, such as an `export()` function, that will allow direct download of dataset to a file,
-or async iterators will be added soon.
+Key-value store records can be retrieved as objects, buffers or streams via the respective options, dataset items
+can be fetched as individual objects or serialized data and we plan to add better stream support and async iterators.
 
 ## Usage concepts
 The `ApifyClient` interface follows a generic pattern that is applicable to all of its components.

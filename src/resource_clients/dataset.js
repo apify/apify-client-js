@@ -41,21 +41,6 @@ class DatasetClient extends ResourceClient {
         return this._delete();
     }
 
-    // TODO - Export to file
-    // async export() {
-    //     checkParamOrThrow(options.delimiter, 'delimiter', 'Maybe String');
-    //     checkParamOrThrow(options.xmlRoot, 'xmlRoot', 'Maybe String');
-    //     checkParamOrThrow(options.xmlRow, 'xmlRow', 'Maybe String');
-    //     checkParamOrThrow(options.format, 'format', 'Maybe String');
-    //     checkParamOrThrow(options.bom, 'bom', 'Maybe Boolean');
-    //     checkParamOrThrow(options.attachment, 'attachment', 'Maybe Boolean');
-    //     checkParamOrThrow(options.skipHeaderRow, 'skipHeaderRow', 'Maybe Boolean');
-    //     Bom is handled special way because its default value for certain formats (CSV) is true which means that we need to make sure
-    //     that falsy value is passed in a query string as a zero.
-    //     if (options.bom) query.bom = 1;
-    //     else if (options.bom === false) query.bom = 0;
-    // }
-
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
      * @param {object} [options]
@@ -89,6 +74,62 @@ class DatasetClient extends ResourceClient {
             params: this._params(options),
         });
         return this._createPaginationList(response);
+    }
+
+    /**
+     * Unlike `listItems` which returns a {@link PaginationList} with an array of individual
+     * dataset items, `exportItems` returns the items serialized to the provided format.
+     * https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
+     * @param {string} format
+     *  One of json, jsonl, xml, html, csv, xlsx, rss
+     * @param {object} [options]
+     * @param {boolean} [options.attachment]
+     * @param {boolean} [options.bom]
+     * @param {boolean} [options.clean]
+     * @param {string} [options.delimiter]
+     * @param {boolean} [options.desc]
+     * @param {string[]} [options.fields]
+     * @param {string[]} [options.omit]
+     * @param {number} [options.limit]
+     * @param {number} [options.offset]
+     * @param {boolean} [options.skipEmpty]
+     * @param {boolean} [options.skipHeaderRow]
+     * @param {boolean} [options.skipHidden]
+     * @param {string} [options.unwind]
+     * @param {string} [options.xmlRoot]
+     * @param {string} [options.xmlRow]
+     * @return {Promise<Buffer>}
+     */
+    async downloadItems(format, options = {}) {
+        ow(format, ow.string.oneOf(['json', 'jsonl', 'xml', 'html', 'csv', 'xlsx', 'rss']));
+        ow(options, ow.object.exactShape({
+            attachment: ow.optional.boolean,
+            bom: ow.optional.boolean,
+            clean: ow.optional.boolean,
+            delimiter: ow.optional.string,
+            desc: ow.optional.boolean,
+            fields: ow.optional.array.ofType(ow.string),
+            omit: ow.optional.array.ofType(ow.string),
+            limit: ow.optional.number,
+            offset: ow.optional.number,
+            skipEmpty: ow.optional.boolean,
+            skipHeaderRow: ow.optional.boolean,
+            skipHidden: ow.optional.boolean,
+            unwind: ow.optional.string,
+            xmlRoot: ow.optional.string,
+            xmlRow: ow.optional.string,
+        }));
+
+        const { data } = await this.httpClient.call({
+            url: this._url('items'),
+            method: 'GET',
+            params: this._params({
+                format,
+                ...options,
+            }),
+            forceBuffer: true,
+        });
+        return data;
     }
 
     /**

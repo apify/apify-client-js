@@ -243,34 +243,33 @@ describe('Dataset methods', () => {
             validateRequest({}, { datasetId });
         });
 
-        // TODO maybe use for .export()?
-        test.skip('getItems() doesn\'t parse application/json when disableBodyParser = true', async () => {
+        test('downloadItems() doesn\'t parse application/json', async () => {
             const datasetId = 'some-id';
             const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });
-            const contentType = 'application/json';
-            const expected = {
-                total: 1,
-                offset: 0,
-                count: 1,
-                limit: 100000,
-                items: body,
+            const format = 'json';
+            const options = {
+                bom: true,
             };
             const headers = {
-                'content-type': contentType,
-                'x-apify-pagination-total': '1',
-                'x-apify-pagination-offset': '0',
-                'x-apify-pagination-count': '1',
-                'x-apify-pagination-limit': '100000',
+                contentType: 'application/json; charset=utf-8',
             };
-            mockServer.setResponse({ body: expected.items, headers });
 
-            const res = await client.dataset(datasetId).getItems({ datasetId });
-            expect(res).toEqual(expected);
-            validateRequest({}, { datasetId });
+            mockServer.setResponse({ body, headers });
 
-            const browserRes = await page.evaluate((options) => client.dataset(datasetId).getItems(options), { datasetId });
-            expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId });
+            const res = await client.dataset(datasetId).downloadItems(format, options);
+            expect(res).toBeInstanceOf(Buffer);
+            const resString = res.toString('utf-8');
+            expect(resString).toBe(body);
+            validateRequest({ format, ...options }, { datasetId });
+
+            const browserRes = await page.evaluate(async (id, f, opts) => {
+                /* eslint-disable no-shadow */
+                const res = await client.dataset(id).downloadItems(f, opts);
+                const decoder = new TextDecoder();
+                return decoder.decode(res);
+            }, datasetId, format, options);
+            expect(browserRes).toEqual(resString);
+            validateRequest({ format, ...options }, { datasetId });
         });
 
         test('pushItems() works with object', async () => {

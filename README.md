@@ -33,11 +33,11 @@ By default, it will retry up to 8 times. First retry will be attempted after ~50
 and so on. You can configure those parameters using the `maxRetries` and `minDelayBetweenRetriesMillis`
 options of the `ApifyClient` constructor.
 
-### Convenience functions
-Some actions can't be performed by the API itself, such as indefinite waiting for an acto run to finish
+### Convenience functions and options
+Some actions can't be performed by the API itself, such as indefinite waiting for an actor run to finish
 (because of network timeouts). The client provides convenient `call()` and `waitForFinish()` functions that do that.
-Other functions, such as an `export()` function, that will allow direct download of dataset to a file,
-or async iterators will be added soon.
+Key-value store records can be retrieved as objects, buffers or streams via the respective options, dataset items
+can be fetched as individual objects or serialized data and we plan to add better stream support and async iterators.
 
 ## Usage concepts
 The `ApifyClient` interface follows a generic pattern that is applicable to all of its components.
@@ -786,6 +786,7 @@ https://docs.apify.com/api/v2#/reference/actors/build-collection/get-list-of-bui
 
 * [DatasetClient](#DatasetClient)
     * [`.delete()`](#DatasetClient+delete) ⇒ <code>Promise.&lt;void&gt;</code>
+    * [`.downloadItems(format, [options])`](#DatasetClient+downloadItems) ⇒ <code>Promise.&lt;Buffer&gt;</code>
     * [`.get()`](#DatasetClient+get) ⇒ <code>Promise.&lt;Dataset&gt;</code>
     * [`.listItems([options])`](#DatasetClient+listItems) ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
     * [`.pushItems(items)`](#DatasetClient+pushItems) ⇒ <code>Promise.&lt;void&gt;</code>
@@ -798,6 +799,37 @@ https://docs.apify.com/api/v2#/reference/actors/build-collection/get-list-of-bui
 
 ### `datasetClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
 https://docs.apify.com/api/v2#/reference/datasets/dataset/delete-dataset
+
+
+* * *
+
+<a name="DatasetClient+downloadItems"></a>
+
+### `datasetClient.downloadItems(format, [options])` ⇒ <code>Promise.&lt;Buffer&gt;</code>
+Unlike `listItems` which returns a [PaginationList](#PaginationList) with an array of individual
+dataset items, `exportItems` returns the items serialized to the provided format.
+https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| format | <code>string</code> | One of json, jsonl, xml, html, csv, xlsx, rss |
+| [options] | <code>object</code> |  |
+| [options.attachment] | <code>boolean</code> |  |
+| [options.bom] | <code>boolean</code> |  |
+| [options.clean] | <code>boolean</code> |  |
+| [options.delimiter] | <code>string</code> |  |
+| [options.desc] | <code>boolean</code> |  |
+| [options.fields] | <code>Array.&lt;string&gt;</code> |  |
+| [options.omit] | <code>Array.&lt;string&gt;</code> |  |
+| [options.limit] | <code>number</code> |  |
+| [options.offset] | <code>number</code> |  |
+| [options.skipEmpty] | <code>boolean</code> |  |
+| [options.skipHeaderRow] | <code>boolean</code> |  |
+| [options.skipHidden] | <code>boolean</code> |  |
+| [options.unwind] | <code>string</code> |  |
+| [options.xmlRoot] | <code>string</code> |  |
+| [options.xmlRow] | <code>string</code> |  |
 
 
 * * *
