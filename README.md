@@ -107,9 +107,10 @@ const { items } = await lastSucceededRunClient.dataset().listItems();
 > will be available to all runs in the future.
 
 ### Pagination
-All methods named `list` or `listSomething` return a [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList).
+Most methods named `list` or `listSomething` return a [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList).
+There are some exceptions though, like `listKeys` or `listHead` which paginate differently.
 The results you're looking for are always stored under `items` and you can use the `limit`
-and `offset` properties to iterate over large collections of resources and data.
+property to get only a subset of results. Other props are also available, depending on the method.
 
 # API Reference
 All public classes, methods and their parameters can be inspected in this API reference.
@@ -807,7 +808,7 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset/delete-dataset
 
 ### `datasetClient.downloadItems(format, [options])` ⇒ <code>Promise.&lt;Buffer&gt;</code>
 Unlike `listItems` which returns a [PaginationList](#PaginationList) with an array of individual
-dataset items, `exportItems` returns the items serialized to the provided format.
+dataset items, `downloadItems` returns the items serialized to the provided format.
 https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
 
 

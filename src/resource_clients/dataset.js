@@ -78,7 +78,7 @@ class DatasetClient extends ResourceClient {
 
     /**
      * Unlike `listItems` which returns a {@link PaginationList} with an array of individual
-     * dataset items, `exportItems` returns the items serialized to the provided format.
+     * dataset items, `downloadItems` returns the items serialized to the provided format.
      * https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
      * @param {string} format
      *  One of json, jsonl, xml, html, csv, xlsx, rss
