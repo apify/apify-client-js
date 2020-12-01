@@ -3,6 +3,20 @@
 JavaScript applications. It runs both in Node.js and browser and provides useful features like
 automatic retries and convenience functions that improve the experience of using the Apify API.
 
+<!-- toc -->
+
+  * [Quick Start](#quick-start)
+  * [Features](#features)
+    + [Automatic parsing and error handling](#automatic-parsing-and-error-handling)
+    + [Retries with exponential backoff](#retries-with-exponential-backoff)
+    + [Convenience functions and options](#convenience-functions-and-options)
+  * [Usage concepts](#usage-concepts)
+    + [Nested clients](#nested-clients)
+    + [Pagination](#pagination)
+- [API Reference](#api-reference)
+
+<!-- tocstop -->
+
 ## Quick Start
 ```js
 const ApifyClient = require('apify-client');

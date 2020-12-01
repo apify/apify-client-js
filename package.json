@@ -44,8 +44,8 @@
     },
     "scripts": {
         "build": "npm run clean && npm run build-browser",
-        "build-docs": "node docs/build_docs.js",
-        "build-toc": "./node_modules/.bin/markdown-toc README.md -i",
+        "build-docs": "npm run build-toc && node docs/build_docs.js",
+        "build-toc": "markdown-toc docs/README.hbs -i",
         "test": "npm run build && jest",
         "prepare": "npm run build",
         "prepublishOnly": "(test $CI || (echo \"Publishing is reserved to CI!\"; exit 1))",
