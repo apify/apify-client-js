@@ -5,14 +5,14 @@ automatic retries and convenience functions that improve the experience of using
 
 <!-- toc -->
 
-  * [Quick Start](#quick-start)
-  * [Features](#features)
-    + [Automatic parsing and error handling](#automatic-parsing-and-error-handling)
-    + [Retries with exponential backoff](#retries-with-exponential-backoff)
-    + [Convenience functions and options](#convenience-functions-and-options)
-  * [Usage concepts](#usage-concepts)
-    + [Nested clients](#nested-clients)
-    + [Pagination](#pagination)
+- [Quick Start](#quick-start)
+- [Features](#features)
+  * [Automatic parsing and error handling](#automatic-parsing-and-error-handling)
+  * [Retries with exponential backoff](#retries-with-exponential-backoff)
+  * [Convenience functions and options](#convenience-functions-and-options)
+- [Usage concepts](#usage-concepts)
+  * [Nested clients](#nested-clients)
+  * [Pagination](#pagination)
 - [API Reference](#api-reference)
 
 <!-- tocstop -->
@@ -70,6 +70,7 @@ const myActor = await actorCollectionClient.create({ name: 'my-actor' });
 // Lists all of your actors.
 const { items } = await actorCollectionClient.list();
 ```
+
 ```js
 // Collection clients do not require a parameter.
 const datasetCollectionClient = apifyClient.datasets();
@@ -126,7 +127,7 @@ There are some exceptions though, like `listKeys` or `listHead` which paginate d
 The results you're looking for are always stored under `items` and you can use the `limit`
 property to get only a subset of results. Other props are also available, depending on the method.
 
-# API Reference
+## API Reference
 All public classes, methods and their parameters can be inspected in this API reference.
 
 {{>all-docs~}}

@@ -13,7 +13,7 @@ const getRenderOptions = (template, data) => ({
     separators: true,
     'param-list-format': 'table',
     'property-list-format': 'table',
-    'heading-depth': 2,
+    'heading-depth': 3,
 });
 
 const generateFinalMarkdown = (text) => {
