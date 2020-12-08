@@ -22,6 +22,7 @@ class HttpClient {
      * @param {number} options.maxRetries
      * @param {number} options.minDelayBetweenRetriesMillis
      * @param {function[]} options.requestInterceptors
+     * @param {number} options.timeoutSecs
      * @param {object} options.logger
      */
     constructor(options) {
@@ -60,6 +61,7 @@ class HttpClient {
             transformRequest: null,
             transformResponse: null,
             responseType: 'arraybuffer',
+            timeout: options.timeoutSecs * 1000,
         });
 
         // Clean all default headers because they only make a mess

@@ -1,3 +1,14 @@
+function maybeParseContextFromResourceId(resourceId) {
+    if (typeof resourceId !== 'string') return;
+    const hexBuffer = Buffer.from(resourceId, 'hex');
+    const json = hexBuffer.toString('utf-8');
+    try {
+        return JSON.parse(json);
+    } catch (err) {
+        return undefined;
+    }
+}
+
 const HANDLERS = {
     text(id) {
         return (req, res) => {
@@ -15,7 +26,11 @@ const HANDLERS = {
                 };
             }
 
-            res.send(payload);
+            const context = maybeParseContextFromResourceId(resourceId);
+            const delayMillis = context && context.delayMillis;
+            setTimeout(() => {
+                res.send(payload);
+            }, delayMillis || 0);
         };
     },
     json(id) {
@@ -34,9 +49,13 @@ const HANDLERS = {
                 };
             }
 
-            res
-                .status(responseStatusCode)
-                .json(payload);
+            const context = maybeParseContextFromResourceId(resourceId);
+            const delayMillis = context && context.delayMillis;
+            setTimeout(() => {
+                res
+                    .status(responseStatusCode)
+                    .json(payload);
+            }, delayMillis || 0);
         };
     },
     responseJsonMock(id) {
@@ -66,10 +85,15 @@ const HANDLERS = {
                     },
                 };
             }
-            res
-                .status(statusCode)
-                .set(headers)
-                .send(payload);
+
+            const context = maybeParseContextFromResourceId(resourceId);
+            const delayMillis = context && context.delayMillis;
+            setTimeout(() => {
+                res
+                    .status(statusCode)
+                    .set(headers)
+                    .send(payload);
+            }, delayMillis || 0);
         };
     },
 };

@@ -37,6 +37,7 @@ const WebhookDispatchCollectionClient = require('./resource_clients/webhook_disp
  * @param {number} [options.maxRetries=8]
  * @param {number} [options.minDelayBetweenRetriesMillis=500]
  * @param {function[]} [options.requestInterceptors]
+ * @param {number} [options.timeoutSecs]
  * @param {string} [options.token]
  */
 class ApifyClient {
@@ -46,6 +47,7 @@ class ApifyClient {
             maxRetries: ow.optional.number,
             minDelayBetweenRetriesMillis: ow.optional.number,
             requestInterceptors: ow.optional.array,
+            timeoutSecs: ow.optional.number,
             token: ow.optional.string,
         }));
 
@@ -54,6 +56,7 @@ class ApifyClient {
             maxRetries = 8,
             minDelayBetweenRetriesMillis = 500,
             requestInterceptors = [],
+            timeoutSecs = 360,
             token,
         } = options;
 
@@ -67,6 +70,7 @@ class ApifyClient {
             maxRetries,
             minDelayBetweenRetriesMillis,
             requestInterceptors,
+            timeoutSecs,
             logger: this.logger,
         });
     }
