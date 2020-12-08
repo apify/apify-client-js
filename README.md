@@ -174,6 +174,7 @@ JavaScript applications. It runs both in Node.js and browser.
 | [options.maxRetries] | <code>number</code> | <code>8</code> | 
 | [options.minDelayBetweenRetriesMillis] | <code>number</code> | <code>500</code> | 
 | [options.requestInterceptors] | <code>Array.&lt;function()&gt;</code> |  | 
+| [options.timeoutSecs] | <code>number</code> |  | 
 | [options.token] | <code>string</code> |  | 
 
 
