@@ -56,14 +56,12 @@ class KeyValueStoreClient extends ResourceClient {
      * @param {object} [options]
      * @param {object} [options.limit]
      * @param {string} [options.exclusiveStartKey]
-     * @param {boolean} [options.desc]
      * @return {Promise<object>}
      */
     async listKeys(options = {}) {
         ow(options, ow.object.exactShape({
             limit: ow.optional.number,
             exclusiveStartKey: ow.optional.string,
-            desc: ow.optional.boolean,
         }));
         const response = await this.httpClient.call({
             url: this._url('keys'),

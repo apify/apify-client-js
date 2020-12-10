@@ -1025,7 +1025,6 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/key-collection/get-lis
 | [options] | <code>object</code> | 
 | [options.limit] | <code>object</code> | 
 | [options.exclusiveStartKey] | <code>string</code> | 
-| [options.desc] | <code>boolean</code> | 
 
 
 * * *
