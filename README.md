@@ -184,7 +184,7 @@ JavaScript applications. It runs both in Node.js and browser.
 
 <a name="ApifyClient+actors"></a>
 
-#### [](#ApifyClient+actors) `ApifyClient.actors()` ⇒ [<code>ActorCollectionClient</code>](#ActorCollectionClient)
+#### [](#apifyclient-actors) `apifyClient.actors()` ⇒ [<code>ActorCollectionClient</code>](#ActorCollectionClient)
 
 https://docs.apify.com/api/v2#/reference/actors/actor-collection
 
@@ -193,7 +193,7 @@ https://docs.apify.com/api/v2#/reference/actors/actor-collection
 
 <a name="ApifyClient+actor"></a>
 
-#### [](#ApifyClient+actor) `ApifyClient.actor(id)` ⇒ [<code>ActorClient</code>](#ActorClient)
+#### [](#apifyclient-actor) `apifyClient.actor(id)` ⇒ [<code>ActorClient</code>](#ActorClient)
 
 https://docs.apify.com/api/v2#/reference/actors/actor-object
 
@@ -207,7 +207,7 @@ https://docs.apify.com/api/v2#/reference/actors/actor-object
 
 <a name="ApifyClient+build"></a>
 
-#### [](#ApifyClient+build) `ApifyClient.build(id)` ⇒ [<code>BuildClient</code>](#BuildClient)
+#### [](#apifyclient-build) `apifyClient.build(id)` ⇒ [<code>BuildClient</code>](#BuildClient)
 
 https://docs.apify.com/api/v2#/reference/actor-builds/build-object
 
@@ -221,7 +221,7 @@ https://docs.apify.com/api/v2#/reference/actor-builds/build-object
 
 <a name="ApifyClient+datasets"></a>
 
-#### [](#ApifyClient+datasets) `ApifyClient.datasets()` ⇒ [<code>DatasetCollectionClient</code>](#DatasetCollectionClient)
+#### [](#apifyclient-datasets) `apifyClient.datasets()` ⇒ [<code>DatasetCollectionClient</code>](#DatasetCollectionClient)
 
 https://docs.apify.com/api/v2#/reference/datasets/dataset-collection
 
@@ -230,7 +230,7 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset-collection
 
 <a name="ApifyClient+dataset"></a>
 
-#### [](#ApifyClient+dataset) `ApifyClient.dataset(id)` ⇒ [<code>DatasetClient</code>](#DatasetClient)
+#### [](#apifyclient-dataset) `apifyClient.dataset(id)` ⇒ [<code>DatasetClient</code>](#DatasetClient)
 
 https://docs.apify.com/api/v2#/reference/datasets/dataset
 
@@ -244,7 +244,7 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset
 
 <a name="ApifyClient+keyValueStores"></a>
 
-#### [](#ApifyClient+keyValueStores) `ApifyClient.keyValueStores()` ⇒ [<code>KeyValueStoreCollectionClient</code>](#KeyValueStoreCollectionClient)
+#### [](#apifyclient-keyValueStores) `apifyClient.keyValueStores()` ⇒ [<code>KeyValueStoreCollectionClient</code>](#KeyValueStoreCollectionClient)
 
 https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection
 
@@ -253,7 +253,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection
 
 <a name="ApifyClient+keyValueStore"></a>
 
-#### [](#ApifyClient+keyValueStore) `ApifyClient.keyValueStore(id)` ⇒ [<code>KeyValueStoreClient</code>](#KeyValueStoreClient)
+#### [](#apifyclient-keyValueStore) `apifyClient.keyValueStore(id)` ⇒ [<code>KeyValueStoreClient</code>](#KeyValueStoreClient)
 
 https://docs.apify.com/api/v2#/reference/key-value-stores/store-object
 
@@ -267,7 +267,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-object
 
 <a name="ApifyClient+log"></a>
 
-#### [](#ApifyClient+log) `ApifyClient.log(buildOrRunId)` ⇒ [<code>LogClient</code>](#LogClient)
+#### [](#apifyclient-log) `apifyClient.log(buildOrRunId)` ⇒ [<code>LogClient</code>](#LogClient)
 
 https://docs.apify.com/api/v2#/reference/logs
 
@@ -281,7 +281,7 @@ https://docs.apify.com/api/v2#/reference/logs
 
 <a name="ApifyClient+requestQueues"></a>
 
-#### [](#ApifyClient+requestQueues) `ApifyClient.requestQueues()` ⇒ [<code>RequestQueueCollection</code>](#RequestQueueCollection)
+#### [](#apifyclient-requestQueues) `apifyClient.requestQueues()` ⇒ [<code>RequestQueueCollection</code>](#RequestQueueCollection)
 
 https://docs.apify.com/api/v2#/reference/request-queues/queue-collection
 
@@ -290,7 +290,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue-collection
 
 <a name="ApifyClient+requestQueue"></a>
 
-#### [](#ApifyClient+requestQueue) `ApifyClient.requestQueue(id, [options])` ⇒ [<code>RequestQueueClient</code>](#RequestQueueClient)
+#### [](#apifyclient-requestQueue) `apifyClient.requestQueue(id, [options])` ⇒ [<code>RequestQueueClient</code>](#RequestQueueClient)
 
 https://docs.apify.com/api/v2#/reference/request-queues/queue
 
@@ -306,7 +306,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue
 
 <a name="ApifyClient+run"></a>
 
-#### [](#ApifyClient+run) `ApifyClient.run(id)` ⇒ [<code>RunClient</code>](#RunClient)
+#### [](#apifyclient-run) `apifyClient.run(id)` ⇒ [<code>RunClient</code>](#RunClient)
 
 https://docs.apify.com/api/v2#/reference/actor-runs/run-object
 
@@ -320,7 +320,7 @@ https://docs.apify.com/api/v2#/reference/actor-runs/run-object
 
 <a name="ApifyClient+tasks"></a>
 
-#### [](#ApifyClient+tasks) `ApifyClient.tasks()` ⇒ [<code>TaskCollectionClient</code>](#TaskCollectionClient)
+#### [](#apifyclient-tasks) `apifyClient.tasks()` ⇒ [<code>TaskCollectionClient</code>](#TaskCollectionClient)
 
 https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection
 
@@ -329,7 +329,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection
 
 <a name="ApifyClient+task"></a>
 
-#### [](#ApifyClient+task) `ApifyClient.task(id)` ⇒ [<code>TaskClient</code>](#TaskClient)
+#### [](#apifyclient-task) `apifyClient.task(id)` ⇒ [<code>TaskClient</code>](#TaskClient)
 
 https://docs.apify.com/api/v2#/reference/actor-tasks/task-object
 
@@ -343,7 +343,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/task-object
 
 <a name="ApifyClient+schedules"></a>
 
-#### [](#ApifyClient+schedules) `ApifyClient.schedules()` ⇒ [<code>ScheduleCollectionClient</code>](#ScheduleCollectionClient)
+#### [](#apifyclient-schedules) `apifyClient.schedules()` ⇒ [<code>ScheduleCollectionClient</code>](#ScheduleCollectionClient)
 
 https://docs.apify.com/api/v2#/reference/schedules/schedules-collection
 
@@ -352,7 +352,7 @@ https://docs.apify.com/api/v2#/reference/schedules/schedules-collection
 
 <a name="ApifyClient+schedule"></a>
 
-#### [](#ApifyClient+schedule) `ApifyClient.schedule(id)` ⇒ [<code>ScheduleClient</code>](#ScheduleClient)
+#### [](#apifyclient-schedule) `apifyClient.schedule(id)` ⇒ [<code>ScheduleClient</code>](#ScheduleClient)
 
 https://docs.apify.com/api/v2#/reference/schedules/schedule-object
 
@@ -366,7 +366,7 @@ https://docs.apify.com/api/v2#/reference/schedules/schedule-object
 
 <a name="ApifyClient+user"></a>
 
-#### [](#ApifyClient+user) `ApifyClient.user(id)` ⇒ [<code>UserClient</code>](#UserClient)
+#### [](#apifyclient-user) `apifyClient.user(id)` ⇒ [<code>UserClient</code>](#UserClient)
 
 https://docs.apify.com/api/v2#/reference/users
 
@@ -380,7 +380,7 @@ https://docs.apify.com/api/v2#/reference/users
 
 <a name="ApifyClient+webhooks"></a>
 
-#### [](#ApifyClient+webhooks) `ApifyClient.webhooks()` ⇒ [<code>WebhookCollectionClient</code>](#WebhookCollectionClient)
+#### [](#apifyclient-webhooks) `apifyClient.webhooks()` ⇒ [<code>WebhookCollectionClient</code>](#WebhookCollectionClient)
 
 https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection
 
@@ -389,7 +389,7 @@ https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection
 
 <a name="ApifyClient+webhook"></a>
 
-#### [](#ApifyClient+webhook) `ApifyClient.webhook(id)` ⇒ [<code>WebhookClient</code>](#WebhookClient)
+#### [](#apifyclient-webhook) `apifyClient.webhook(id)` ⇒ [<code>WebhookClient</code>](#WebhookClient)
 
 https://docs.apify.com/api/v2#/reference/webhooks/webhook-object
 
@@ -403,7 +403,7 @@ https://docs.apify.com/api/v2#/reference/webhooks/webhook-object
 
 <a name="ApifyClient+webhookDispatches"></a>
 
-#### [](#ApifyClient+webhookDispatches) `ApifyClient.webhookDispatches()` ⇒ [<code>WebhookDispatchCollectionClient</code>](#WebhookDispatchCollectionClient)
+#### [](#apifyclient-webhookDispatches) `apifyClient.webhookDispatches()` ⇒ [<code>WebhookDispatchCollectionClient</code>](#WebhookDispatchCollectionClient)
 
 https://docs.apify.com/api/v2#/reference/webhook-dispatches
 
@@ -412,7 +412,7 @@ https://docs.apify.com/api/v2#/reference/webhook-dispatches
 
 <a name="ApifyClient+webhookDispatch"></a>
 
-#### [](#ApifyClient+webhookDispatch) `ApifyClient.webhookDispatch(id)` ⇒ [<code>WebhookDispatchClient</code>](#WebhookDispatchClient)
+#### [](#apifyclient-webhookDispatch) `apifyClient.webhookDispatch(id)` ⇒ [<code>WebhookDispatchClient</code>](#WebhookDispatchClient)
 
 https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatch-object
 
@@ -474,7 +474,7 @@ needed.
 
 <a name="ActorClient+build"></a>
 
-#### [](#ActorClient+build) `ActorClient.build(versionNumber, [options])` ⇒ <code>Promise.&lt;Build&gt;</code>
+#### [](#actorclient-build) `actorClient.build(versionNumber, [options])` ⇒ <code>Promise.&lt;Build&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actors/build-collection/build-actor
 
@@ -493,7 +493,7 @@ https://docs.apify.com/api/v2#/reference/actors/build-collection/build-actor
 
 <a name="ActorClient+builds"></a>
 
-#### [](#ActorClient+builds) `ActorClient.builds()` ⇒ [<code>BuildCollectionClient</code>](#BuildCollectionClient)
+#### [](#actorclient-builds) `actorClient.builds()` ⇒ [<code>BuildCollectionClient</code>](#BuildCollectionClient)
 
 https://docs.apify.com/api/v2#/reference/actors/build-collection
 
@@ -502,7 +502,7 @@ https://docs.apify.com/api/v2#/reference/actors/build-collection
 
 <a name="ActorClient+call"></a>
 
-#### [](#ActorClient+call) `ActorClient.call([input], [options])` ⇒ <code>Promise.&lt;Run&gt;</code>
+#### [](#actorclient-call) `actorClient.call([input], [options])` ⇒ <code>Promise.&lt;Run&gt;</code>
 
 Starts an actor and waits for it to finish before returning the Run object.
 It waits indefinitely, unless the `waitSecs` option is provided.
@@ -525,7 +525,7 @@ https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
 
 <a name="ActorClient+delete"></a>
 
-#### [](#ActorClient+delete) `ActorClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
+#### [](#actorclient-delete) `actorClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actors/actor-object/delete-actor
 
@@ -534,7 +534,7 @@ https://docs.apify.com/api/v2#/reference/actors/actor-object/delete-actor
 
 <a name="ActorClient+get"></a>
 
-#### [](#ActorClient+get) `ActorClient.get()` ⇒ <code>Promise.&lt;?Actor&gt;</code>
+#### [](#actorclient-get) `actorClient.get()` ⇒ <code>Promise.&lt;?Actor&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actors/actor-object/get-actor
 
@@ -543,7 +543,7 @@ https://docs.apify.com/api/v2#/reference/actors/actor-object/get-actor
 
 <a name="ActorClient+lastRun"></a>
 
-#### [](#ActorClient+lastRun) `ActorClient.lastRun([options])` ⇒ [<code>RunClient</code>](#RunClient)
+#### [](#actorclient-lastRun) `actorClient.lastRun([options])` ⇒ [<code>RunClient</code>](#RunClient)
 
 https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 
@@ -558,7 +558,7 @@ https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 
 <a name="ActorClient+runs"></a>
 
-#### [](#ActorClient+runs) `ActorClient.runs()` ⇒ [<code>RunCollectionClient</code>](#RunCollectionClient)
+#### [](#actorclient-runs) `actorClient.runs()` ⇒ [<code>RunCollectionClient</code>](#RunCollectionClient)
 
 https://docs.apify.com/api/v2#/reference/actors/run-collection
 
@@ -567,7 +567,7 @@ https://docs.apify.com/api/v2#/reference/actors/run-collection
 
 <a name="ActorClient+start"></a>
 
-#### [](#ActorClient+start) `ActorClient.start([input], [options])` ⇒ <code>Promise.&lt;Run&gt;</code>
+#### [](#actorclient-start) `actorClient.start([input], [options])` ⇒ <code>Promise.&lt;Run&gt;</code>
 
 Starts an actor and immediately returns the Run object.
 https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
@@ -589,7 +589,7 @@ https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
 
 <a name="ActorClient+update"></a>
 
-#### [](#ActorClient+update) `ActorClient.update(newFields)` ⇒ <code>Promise.&lt;Actor&gt;</code>
+#### [](#actorclient-update) `actorClient.update(newFields)` ⇒ <code>Promise.&lt;Actor&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actors/actor-object/update-actor
 
@@ -603,7 +603,7 @@ https://docs.apify.com/api/v2#/reference/actors/actor-object/update-actor
 
 <a name="ActorClient+version"></a>
 
-#### [](#ActorClient+version) `ActorClient.version(versionNumber)` ⇒ [<code>ActorVersionClient</code>](#ActorVersionClient)
+#### [](#actorclient-version) `actorClient.version(versionNumber)` ⇒ [<code>ActorVersionClient</code>](#ActorVersionClient)
 
 https://docs.apify.com/api/v2#/reference/actors/version-object
 
@@ -617,7 +617,7 @@ https://docs.apify.com/api/v2#/reference/actors/version-object
 
 <a name="ActorClient+versions"></a>
 
-#### [](#ActorClient+versions) `ActorClient.versions()` ⇒ [<code>ActorVersionCollectionClient</code>](#ActorVersionCollectionClient)
+#### [](#actorclient-versions) `actorClient.versions()` ⇒ [<code>ActorVersionCollectionClient</code>](#ActorVersionCollectionClient)
 
 https://docs.apify.com/api/v2#/reference/actors/version-collection
 
@@ -626,7 +626,7 @@ https://docs.apify.com/api/v2#/reference/actors/version-collection
 
 <a name="ActorClient+webhooks"></a>
 
-#### [](#ActorClient+webhooks) `ActorClient.webhooks()` ⇒ [<code>WebhookCollectionClient</code>](#WebhookCollectionClient)
+#### [](#actorclient-webhooks) `actorClient.webhooks()` ⇒ [<code>WebhookCollectionClient</code>](#WebhookCollectionClient)
 
 https://docs.apify.com/api/v2#/reference/actors/webhook-collection
 
@@ -647,7 +647,7 @@ https://docs.apify.com/api/v2#/reference/actors/webhook-collection
 
 <a name="ActorCollectionClient+create"></a>
 
-#### [](#ActorCollectionClient+create) `ActorCollectionClient.create([actor])` ⇒ <code>Promise.&lt;Actor&gt;</code>
+#### [](#actorcollectionclient-create) `actorCollectionClient.create([actor])` ⇒ <code>Promise.&lt;Actor&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actors/actor-collection/create-actor
 
@@ -661,7 +661,7 @@ https://docs.apify.com/api/v2#/reference/actors/actor-collection/create-actor
 
 <a name="ActorCollectionClient+list"></a>
 
-#### [](#ActorCollectionClient+list) `ActorCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
+#### [](#actorcollectionclient-list) `actorCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
 
 https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-actors
 
@@ -692,7 +692,7 @@ https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-act
 
 <a name="ActorVersionClient+delete"></a>
 
-#### [](#ActorVersionClient+delete) `ActorVersionClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
+#### [](#actorversionclient-delete) `actorVersionClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actors/version-object/delete-version
 
@@ -701,7 +701,7 @@ https://docs.apify.com/api/v2#/reference/actors/version-object/delete-version
 
 <a name="ActorVersionClient+get"></a>
 
-#### [](#ActorVersionClient+get) `ActorVersionClient.get()` ⇒ <code>Promise.&lt;ActorVersion&gt;</code>
+#### [](#actorversionclient-get) `actorVersionClient.get()` ⇒ <code>Promise.&lt;ActorVersion&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actors/version-object/get-version
 
@@ -710,7 +710,7 @@ https://docs.apify.com/api/v2#/reference/actors/version-object/get-version
 
 <a name="ActorVersionClient+update"></a>
 
-#### [](#ActorVersionClient+update) `ActorVersionClient.update(newFields)` ⇒ <code>Promise.&lt;ActorVersion&gt;</code>
+#### [](#actorversionclient-update) `actorVersionClient.update(newFields)` ⇒ <code>Promise.&lt;ActorVersion&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actors/version-object/update-version
 
@@ -736,7 +736,7 @@ https://docs.apify.com/api/v2#/reference/actors/version-object/update-version
 
 <a name="ActorVersionCollectionClient+create"></a>
 
-#### [](#ActorVersionCollectionClient+create) `ActorVersionCollectionClient.create([actorVersion])` ⇒ <code>Promise.&lt;object&gt;</code>
+#### [](#actorversioncollectionclient-create) `actorVersionCollectionClient.create([actorVersion])` ⇒ <code>Promise.&lt;object&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actors/version-collection/create-version
 
@@ -750,7 +750,7 @@ https://docs.apify.com/api/v2#/reference/actors/version-collection/create-versio
 
 <a name="ActorVersionCollectionClient+list"></a>
 
-#### [](#ActorVersionCollectionClient+list) `ActorVersionCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
+#### [](#actorversioncollectionclient-list) `actorVersionCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
 
 https://docs.apify.com/api/v2#/reference/actors/version-collection/get-list-of-versions
 
@@ -780,7 +780,7 @@ https://docs.apify.com/api/v2#/reference/actors/version-collection/get-list-of-v
 
 <a name="BuildClient+abort"></a>
 
-#### [](#BuildClient+abort) `BuildClient.abort()` ⇒ <code>Promise.&lt;Build&gt;</code>
+#### [](#buildclient-abort) `buildClient.abort()` ⇒ <code>Promise.&lt;Build&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actor-builds/abort-build/abort-build
 
@@ -789,7 +789,7 @@ https://docs.apify.com/api/v2#/reference/actor-builds/abort-build/abort-build
 
 <a name="BuildClient+get"></a>
 
-#### [](#BuildClient+get) `BuildClient.get([options])` ⇒ <code>Promise.&lt;Run&gt;</code>
+#### [](#buildclient-get) `buildClient.get([options])` ⇒ <code>Promise.&lt;Run&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actor-builds/build-object/get-build
 
@@ -804,7 +804,7 @@ https://docs.apify.com/api/v2#/reference/actor-builds/build-object/get-build
 
 <a name="BuildClient+waitForFinish"></a>
 
-#### [](#BuildClient+waitForFinish) `BuildClient.waitForFinish([options])` ⇒ <code>Promise.&lt;Build&gt;</code>
+#### [](#buildclient-waitForFinish) `buildClient.waitForFinish([options])` ⇒ <code>Promise.&lt;Build&gt;</code>
 
 Returns a promise that resolves with the finished Build object when the provided actor build finishes
 or with the unfinished Build object when the `waitSecs` timeout lapses. The promise is NOT rejected
@@ -834,7 +834,7 @@ This is useful when you need to immediately start a run after a build finishes.
 
 <a name="BuildCollectionClient+list"></a>
 
-#### [](#BuildCollectionClient+list) `BuildCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
+#### [](#buildcollectionclient-list) `buildCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
 
 https://docs.apify.com/api/v2#/reference/actors/build-collection/get-list-of-builds
 
@@ -867,7 +867,7 @@ https://docs.apify.com/api/v2#/reference/actors/build-collection/get-list-of-bui
 
 <a name="DatasetClient+delete"></a>
 
-#### [](#DatasetClient+delete) `DatasetClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
+#### [](#datasetclient-delete) `datasetClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/datasets/dataset/delete-dataset
 
@@ -876,7 +876,7 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset/delete-dataset
 
 <a name="DatasetClient+downloadItems"></a>
 
-#### [](#DatasetClient+downloadItems) `DatasetClient.downloadItems(format, [options])` ⇒ <code>Promise.&lt;Buffer&gt;</code>
+#### [](#datasetclient-downloadItems) `datasetClient.downloadItems(format, [options])` ⇒ <code>Promise.&lt;Buffer&gt;</code>
 
 Unlike `listItems` which returns a [PaginationList](#PaginationList) with an array of individual
 dataset items, `downloadItems` returns the items serialized to the provided format.
@@ -908,7 +908,7 @@ https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
 
 <a name="DatasetClient+get"></a>
 
-#### [](#DatasetClient+get) `DatasetClient.get()` ⇒ <code>Promise.&lt;Dataset&gt;</code>
+#### [](#datasetclient-get) `datasetClient.get()` ⇒ <code>Promise.&lt;Dataset&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/datasets/dataset/get-dataset
 
@@ -917,7 +917,7 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset/get-dataset
 
 <a name="DatasetClient+listItems"></a>
 
-#### [](#DatasetClient+listItems) `DatasetClient.listItems([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
+#### [](#datasetclient-listItems) `datasetClient.listItems([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
 
 https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
 
@@ -940,7 +940,7 @@ https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
 
 <a name="DatasetClient+pushItems"></a>
 
-#### [](#DatasetClient+pushItems) `DatasetClient.pushItems(items)` ⇒ <code>Promise.&lt;void&gt;</code>
+#### [](#datasetclient-pushItems) `datasetClient.pushItems(items)` ⇒ <code>Promise.&lt;void&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/datasets/item-collection/put-items
 
@@ -954,7 +954,7 @@ https://docs.apify.com/api/v2#/reference/datasets/item-collection/put-items
 
 <a name="DatasetClient+update"></a>
 
-#### [](#DatasetClient+update) `DatasetClient.update(newFields)` ⇒ <code>Promise.&lt;Dataset&gt;</code>
+#### [](#datasetclient-update) `datasetClient.update(newFields)` ⇒ <code>Promise.&lt;Dataset&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/datasets/dataset/update-dataset
 
@@ -980,7 +980,7 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset/update-dataset
 
 <a name="DatasetCollectionClient+getOrCreate"></a>
 
-#### [](#DatasetCollectionClient+getOrCreate) `DatasetCollectionClient.getOrCreate([name])` ⇒ <code>Promise.&lt;object&gt;</code>
+#### [](#datasetcollectionclient-getOrCreate) `datasetCollectionClient.getOrCreate([name])` ⇒ <code>Promise.&lt;object&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/create-dataset
 
@@ -994,7 +994,7 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/create-data
 
 <a name="DatasetCollectionClient+list"></a>
 
-#### [](#DatasetCollectionClient+list) `DatasetCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
+#### [](#datasetcollectionclient-list) `datasetCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
 
 https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of-datasets
 
@@ -1029,7 +1029,7 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of
 
 <a name="KeyValueStoreClient+delete"></a>
 
-#### [](#KeyValueStoreClient+delete) `KeyValueStoreClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
+#### [](#keyvaluestoreclient-delete) `keyValueStoreClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/delete-store
 
@@ -1038,7 +1038,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/delete-st
 
 <a name="KeyValueStoreClient+deleteRecord"></a>
 
-#### [](#KeyValueStoreClient+deleteRecord) `KeyValueStoreClient.deleteRecord(key)` ⇒ <code>Promise.&lt;void&gt;</code>
+#### [](#keyvaluestoreclient-deleteRecord) `keyValueStoreClient.deleteRecord(key)` ⇒ <code>Promise.&lt;void&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/key-value-stores/record/delete-record
 
@@ -1052,7 +1052,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/record/delete-record
 
 <a name="KeyValueStoreClient+get"></a>
 
-#### [](#KeyValueStoreClient+get) `KeyValueStoreClient.get()` ⇒ <code>Promise.&lt;KeyValueStore&gt;</code>
+#### [](#keyvaluestoreclient-get) `keyValueStoreClient.get()` ⇒ <code>Promise.&lt;KeyValueStore&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store
 
@@ -1079,7 +1079,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record
 
 <a name="KeyValueStoreClient+listKeys"></a>
 
-#### [](#KeyValueStoreClient+listKeys) `KeyValueStoreClient.listKeys([options])` ⇒ <code>Promise.&lt;object&gt;</code>
+#### [](#keyvaluestoreclient-listKeys) `keyValueStoreClient.listKeys([options])` ⇒ <code>Promise.&lt;object&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/key-value-stores/key-collection/get-list-of-keys
 
@@ -1095,7 +1095,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/key-collection/get-lis
 
 <a name="KeyValueStoreClient+setRecord"></a>
 
-#### [](#KeyValueStoreClient+setRecord) `KeyValueStoreClient.setRecord(record)` ⇒ <code>Promise.&lt;void&gt;</code>
+#### [](#keyvaluestoreclient-setRecord) `keyValueStoreClient.setRecord(record)` ⇒ <code>Promise.&lt;void&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/key-value-stores/record/put-record
 
@@ -1109,7 +1109,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/record/put-record
 
 <a name="KeyValueStoreClient+update"></a>
 
-#### [](#KeyValueStoreClient+update) `KeyValueStoreClient.update(newFields)` ⇒ <code>Promise.&lt;KeyValueStore&gt;</code>
+#### [](#keyvaluestoreclient-update) `keyValueStoreClient.update(newFields)` ⇒ <code>Promise.&lt;KeyValueStore&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/update-store
 
@@ -1135,7 +1135,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/update-st
 
 <a name="KeyValueStoreCollectionClient+getOrCreate"></a>
 
-#### [](#KeyValueStoreCollectionClient+getOrCreate) `KeyValueStoreCollectionClient.getOrCreate([name])` ⇒ <code>Promise.&lt;object&gt;</code>
+#### [](#keyvaluestorecollectionclient-getOrCreate) `keyValueStoreCollectionClient.getOrCreate([name])` ⇒ <code>Promise.&lt;object&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/create-key-value-store
 
@@ -1149,7 +1149,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/creat
 
 <a name="KeyValueStoreCollectionClient+list"></a>
 
-#### [](#KeyValueStoreCollectionClient+list) `KeyValueStoreCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
+#### [](#keyvaluestorecollectionclient-list) `keyValueStoreCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
 
 https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/get-list-of-key-value-stores
 
@@ -1194,7 +1194,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/get-l
 
 <a name="LogClient+get"></a>
 
-#### [](#LogClient+get) `LogClient.get()` ⇒ <code>Promise.&lt;?string&gt;</code>
+#### [](#logclient-get) `logClient.get()` ⇒ <code>Promise.&lt;?string&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/logs/log/get-log
 
@@ -1203,7 +1203,7 @@ https://docs.apify.com/api/v2#/reference/logs/log/get-log
 
 <a name="LogClient+stream"></a>
 
-#### [](#LogClient+stream) `LogClient.stream()` ⇒ <code>Promise.&lt;?Readable&gt;</code>
+#### [](#logclient-stream) `logClient.stream()` ⇒ <code>Promise.&lt;?Readable&gt;</code>
 
 Gets the log in a Readable stream format. Only works in Node.js.
 https://docs.apify.com/api/v2#/reference/logs/log/get-log
@@ -1248,7 +1248,7 @@ https://docs.apify.com/api/v2#/reference/logs/log/get-log
 
 <a name="RequestQueueClient+addRequest"></a>
 
-#### [](#RequestQueueClient+addRequest) `RequestQueueClient.addRequest(request, [options])` ⇒ <code>Promise.&lt;object&gt;</code>
+#### [](#requestqueueclient-addRequest) `requestQueueClient.addRequest(request, [options])` ⇒ <code>Promise.&lt;object&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/request-queues/request-collection/add-request
 
@@ -1264,7 +1264,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/request-collection/add-r
 
 <a name="RequestQueueClient+delete"></a>
 
-#### [](#RequestQueueClient+delete) `RequestQueueClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
+#### [](#requestqueueclient-delete) `requestQueueClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/request-queues/queue/delete-request-queue
 
@@ -1273,7 +1273,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue/delete-request-que
 
 <a name="RequestQueueClient+deleteRequest"></a>
 
-#### [](#RequestQueueClient+deleteRequest) `RequestQueueClient.deleteRequest(id)` ⇒ <code>Promise.&lt;void&gt;</code>
+#### [](#requestqueueclient-deleteRequest) `requestQueueClient.deleteRequest(id)` ⇒ <code>Promise.&lt;void&gt;</code>
 
 
 | Param | Type |
@@ -1285,7 +1285,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue/delete-request-que
 
 <a name="RequestQueueClient+get"></a>
 
-#### [](#RequestQueueClient+get) `RequestQueueClient.get()` ⇒ <code>Promise.&lt;RequestQueue&gt;</code>
+#### [](#requestqueueclient-get) `requestQueueClient.get()` ⇒ <code>Promise.&lt;RequestQueue&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/request-queues/queue/get-request-queue
 
@@ -1294,7 +1294,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue/get-request-queue
 
 <a name="RequestQueueClient+getRequest"></a>
 
-#### [](#RequestQueueClient+getRequest) `RequestQueueClient.getRequest(id)` ⇒ <code>Promise.&lt;?object&gt;</code>
+#### [](#requestqueueclient-getRequest) `requestQueueClient.getRequest(id)` ⇒ <code>Promise.&lt;?object&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/request-queues/request/get-request
 
@@ -1308,7 +1308,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/request/get-request
 
 <a name="RequestQueueClient+listHead"></a>
 
-#### [](#RequestQueueClient+listHead) `RequestQueueClient.listHead([options])` ⇒ <code>Promise.&lt;object&gt;</code>
+#### [](#requestqueueclient-listHead) `requestQueueClient.listHead([options])` ⇒ <code>Promise.&lt;object&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/request-queues/queue-head/get-head
 
@@ -1323,7 +1323,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue-head/get-head
 
 <a name="RequestQueueClient+update"></a>
 
-#### [](#RequestQueueClient+update) `RequestQueueClient.update(newFields)` ⇒ <code>Promise.&lt;RequestQueue&gt;</code>
+#### [](#requestqueueclient-update) `requestQueueClient.update(newFields)` ⇒ <code>Promise.&lt;RequestQueue&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/request-queues/queue/update-request-queue
 
@@ -1337,7 +1337,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue/update-request-que
 
 <a name="RequestQueueClient+updateRequest"></a>
 
-#### [](#RequestQueueClient+updateRequest) `RequestQueueClient.updateRequest(request, [options])` ⇒ <code>Promise.&lt;\*&gt;</code>
+#### [](#requestqueueclient-updateRequest) `requestQueueClient.updateRequest(request, [options])` ⇒ <code>Promise.&lt;\*&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/request-queues/request/update-request
 
@@ -1365,7 +1365,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/request/update-request
 
 <a name="RequestQueueCollection+getOrCreate"></a>
 
-#### [](#RequestQueueCollection+getOrCreate) `RequestQueueCollection.getOrCreate([name])` ⇒ <code>Promise.&lt;RequestQueue&gt;</code>
+#### [](#requestqueuecollection-getOrCreate) `requestQueueCollection.getOrCreate([name])` ⇒ <code>Promise.&lt;RequestQueue&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/create-request-queue
 
@@ -1379,7 +1379,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/create-
 
 <a name="RequestQueueCollection+list"></a>
 
-#### [](#RequestQueueCollection+list) `RequestQueueCollection.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
+#### [](#requestqueuecollection-list) `requestQueueCollection.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
 
 https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/get-list-of-request-queues
 
@@ -1416,7 +1416,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/get-lis
 
 <a name="RunClient+abort"></a>
 
-#### [](#RunClient+abort) `RunClient.abort()` ⇒ <code>Promise.&lt;Run&gt;</code>
+#### [](#runclient-abort) `runClient.abort()` ⇒ <code>Promise.&lt;Run&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actor-runs/abort-run/abort-run
 
@@ -1425,7 +1425,7 @@ https://docs.apify.com/api/v2#/reference/actor-runs/abort-run/abort-run
 
 <a name="RunClient+dataset"></a>
 
-#### [](#RunClient+dataset) `RunClient.dataset()` ⇒ [<code>DatasetClient</code>](#DatasetClient)
+#### [](#runclient-dataset) `runClient.dataset()` ⇒ [<code>DatasetClient</code>](#DatasetClient)
 
 Currently this works only through `actor.lastRun().dataset()`. It will become
 available for all runs once API supports it.
@@ -1436,7 +1436,7 @@ https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 
 <a name="RunClient+get"></a>
 
-#### [](#RunClient+get) `RunClient.get([options])` ⇒ <code>Promise.&lt;Run&gt;</code>
+#### [](#runclient-get) `runClient.get([options])` ⇒ <code>Promise.&lt;Run&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actor-runs/run-object/get-run
 
@@ -1451,7 +1451,7 @@ https://docs.apify.com/api/v2#/reference/actor-runs/run-object/get-run
 
 <a name="RunClient+keyValueStore"></a>
 
-#### [](#RunClient+keyValueStore) `RunClient.keyValueStore()` ⇒ [<code>KeyValueStoreClient</code>](#KeyValueStoreClient)
+#### [](#runclient-keyValueStore) `runClient.keyValueStore()` ⇒ [<code>KeyValueStoreClient</code>](#KeyValueStoreClient)
 
 Currently this works only through `actorClient.lastRun().dataset()`. It will become
 available for all runs once API supports it.
@@ -1462,7 +1462,7 @@ https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 
 <a name="RunClient+log"></a>
 
-#### [](#RunClient+log) `RunClient.log()` ⇒ [<code>LogClient</code>](#LogClient)
+#### [](#runclient-log) `runClient.log()` ⇒ [<code>LogClient</code>](#LogClient)
 
 Currently this works only through `actorClient.lastRun().dataset()`. It will become
 available for all runs once API supports it.
@@ -1473,7 +1473,7 @@ https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 
 <a name="RunClient+metamorph"></a>
 
-#### [](#RunClient+metamorph) `RunClient.metamorph(targetActorId, [input], [options])` ⇒ <code>Promise.&lt;Run&gt;</code>
+#### [](#runclient-metamorph) `runClient.metamorph(targetActorId, [input], [options])` ⇒ <code>Promise.&lt;Run&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actor-runs/metamorph-run/metamorph-run
 
@@ -1491,7 +1491,7 @@ https://docs.apify.com/api/v2#/reference/actor-runs/metamorph-run/metamorph-run
 
 <a name="RunClient+requestQueue"></a>
 
-#### [](#RunClient+requestQueue) `RunClient.requestQueue()` ⇒ [<code>RequestQueueClient</code>](#RequestQueueClient)
+#### [](#runclient-requestQueue) `runClient.requestQueue()` ⇒ [<code>RequestQueueClient</code>](#RequestQueueClient)
 
 Currently this works only through `actorClient.lastRun().dataset()`. It will become
 available for all runs once API supports it.
@@ -1502,7 +1502,7 @@ https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 
 <a name="RunClient+resurrect"></a>
 
-#### [](#RunClient+resurrect) `RunClient.resurrect()` ⇒ <code>Promise.&lt;Run&gt;</code>
+#### [](#runclient-resurrect) `runClient.resurrect()` ⇒ <code>Promise.&lt;Run&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actor-runs/resurrect-run/resurrect-run
 
@@ -1511,7 +1511,7 @@ https://docs.apify.com/api/v2#/reference/actor-runs/resurrect-run/resurrect-run
 
 <a name="RunClient+waitForFinish"></a>
 
-#### [](#RunClient+waitForFinish) `RunClient.waitForFinish([options])` ⇒ <code>Promise.&lt;Run&gt;</code>
+#### [](#runclient-waitForFinish) `runClient.waitForFinish([options])` ⇒ <code>Promise.&lt;Run&gt;</code>
 
 Returns a promise that resolves with the finished Run object when the provided actor run finishes
 or with the unfinished Run object when the `waitSecs` timeout lapses. The promise is NOT rejected
@@ -1542,7 +1542,7 @@ by using webhooks, so be sure to review which technique fits your use-case bette
 
 <a name="RunCollectionClient+list"></a>
 
-#### [](#RunCollectionClient+list) `RunCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
+#### [](#runcollectionclient-list) `runCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
 
 https://docs.apify.com/api/v2#/reference/actors/run-collection/get-list-of-runs
 
@@ -1574,7 +1574,7 @@ https://docs.apify.com/api/v2#/reference/actors/run-collection/get-list-of-runs
 
 <a name="ScheduleClient+delete"></a>
 
-#### [](#ScheduleClient+delete) `ScheduleClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
+#### [](#scheduleclient-delete) `scheduleClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/schedules/schedule-object/delete-schedule
 
@@ -1583,7 +1583,7 @@ https://docs.apify.com/api/v2#/reference/schedules/schedule-object/delete-schedu
 
 <a name="ScheduleClient+get"></a>
 
-#### [](#ScheduleClient+get) `ScheduleClient.get()` ⇒ <code>Promise.&lt;?Schedule&gt;</code>
+#### [](#scheduleclient-get) `scheduleClient.get()` ⇒ <code>Promise.&lt;?Schedule&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/schedules/schedule-object/get-schedule
 
@@ -1592,7 +1592,7 @@ https://docs.apify.com/api/v2#/reference/schedules/schedule-object/get-schedule
 
 <a name="ScheduleClient+getLog"></a>
 
-#### [](#ScheduleClient+getLog) `ScheduleClient.getLog()` ⇒ <code>Promise.&lt;?string&gt;</code>
+#### [](#scheduleclient-getLog) `scheduleClient.getLog()` ⇒ <code>Promise.&lt;?string&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/logs/log/get-log
 
@@ -1601,7 +1601,7 @@ https://docs.apify.com/api/v2#/reference/logs/log/get-log
 
 <a name="ScheduleClient+update"></a>
 
-#### [](#ScheduleClient+update) `ScheduleClient.update(newFields)` ⇒ <code>Promise.&lt;Schedule&gt;</code>
+#### [](#scheduleclient-update) `scheduleClient.update(newFields)` ⇒ <code>Promise.&lt;Schedule&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/schedules/schedule-object/update-schedule
 
@@ -1627,7 +1627,7 @@ https://docs.apify.com/api/v2#/reference/schedules/schedule-object/update-schedu
 
 <a name="ScheduleCollectionClient+create"></a>
 
-#### [](#ScheduleCollectionClient+create) `ScheduleCollectionClient.create([schedule])` ⇒ <code>Promise.&lt;Schedule&gt;</code>
+#### [](#schedulecollectionclient-create) `scheduleCollectionClient.create([schedule])` ⇒ <code>Promise.&lt;Schedule&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/schedules/schedules-collection/create-schedule
 
@@ -1641,7 +1641,7 @@ https://docs.apify.com/api/v2#/reference/schedules/schedules-collection/create-s
 
 <a name="ScheduleCollectionClient+list"></a>
 
-#### [](#ScheduleCollectionClient+list) `ScheduleCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
+#### [](#schedulecollectionclient-list) `scheduleCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
 
 https://docs.apify.com/api/v2#/reference/schedules/schedules-collection/get-list-of-schedules
 
@@ -1678,7 +1678,7 @@ https://docs.apify.com/api/v2#/reference/schedules/schedules-collection/get-list
 
 <a name="TaskClient+call"></a>
 
-#### [](#TaskClient+call) `TaskClient.call([input], [options])` ⇒ <code>Promise.&lt;Run&gt;</code>
+#### [](#taskclient-call) `taskClient.call([input], [options])` ⇒ <code>Promise.&lt;Run&gt;</code>
 
 Starts a task and waits for it to finish before returning the Run object.
 It waits indefinitely, unless the `waitSecs` option is provided.
@@ -1700,7 +1700,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task
 
 <a name="TaskClient+delete"></a>
 
-#### [](#TaskClient+delete) `TaskClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
+#### [](#taskclient-delete) `taskClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/delete-task
 
@@ -1709,7 +1709,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/delete-task
 
 <a name="TaskClient+get"></a>
 
-#### [](#TaskClient+get) `TaskClient.get()` ⇒ <code>Promise.&lt;?Task&gt;</code>
+#### [](#taskclient-get) `taskClient.get()` ⇒ <code>Promise.&lt;?Task&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/get-task
 
@@ -1718,7 +1718,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/get-task
 
 <a name="TaskClient+getInput"></a>
 
-#### [](#TaskClient+getInput) `TaskClient.getInput()` ⇒ <code>Promise.&lt;?object&gt;</code>
+#### [](#taskclient-getInput) `taskClient.getInput()` ⇒ <code>Promise.&lt;?object&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actor-tasks/task-input-object/get-task-input
 
@@ -1727,7 +1727,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/task-input-object/get-task-
 
 <a name="TaskClient+lastRun"></a>
 
-#### [](#TaskClient+lastRun) `TaskClient.lastRun(options)` ⇒ [<code>RunClient</code>](#RunClient)
+#### [](#taskclient-lastRun) `taskClient.lastRun(options)` ⇒ [<code>RunClient</code>](#RunClient)
 
 https://docs.apify.com/api/v2#/reference/actor-tasks/last-run-object-and-its-storages
 
@@ -1742,7 +1742,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/last-run-object-and-its-sto
 
 <a name="TaskClient+runs"></a>
 
-#### [](#TaskClient+runs) `TaskClient.runs()` ⇒ [<code>RunCollectionClient</code>](#RunCollectionClient)
+#### [](#taskclient-runs) `taskClient.runs()` ⇒ [<code>RunCollectionClient</code>](#RunCollectionClient)
 
 https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection
 
@@ -1751,7 +1751,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection
 
 <a name="TaskClient+start"></a>
 
-#### [](#TaskClient+start) `TaskClient.start([input], [options])` ⇒ <code>Promise.&lt;Run&gt;</code>
+#### [](#taskclient-start) `taskClient.start([input], [options])` ⇒ <code>Promise.&lt;Run&gt;</code>
 
 Starts a task and immediately returns the Run object.
 https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task
@@ -1772,7 +1772,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task
 
 <a name="TaskClient+update"></a>
 
-#### [](#TaskClient+update) `TaskClient.update(newFields)` ⇒ <code>Promise.&lt;Task&gt;</code>
+#### [](#taskclient-update) `taskClient.update(newFields)` ⇒ <code>Promise.&lt;Task&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/update-task
 
@@ -1786,7 +1786,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/update-task
 
 <a name="TaskClient+updateInput"></a>
 
-#### [](#TaskClient+updateInput) `TaskClient.updateInput()` ⇒ <code>Promise.&lt;object&gt;</code>
+#### [](#taskclient-updateInput) `taskClient.updateInput()` ⇒ <code>Promise.&lt;object&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actor-tasks/task-input-object/update-task-input
 
@@ -1795,7 +1795,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/task-input-object/update-ta
 
 <a name="TaskClient+webhooks"></a>
 
-#### [](#TaskClient+webhooks) `TaskClient.webhooks()` ⇒ [<code>WebhookCollectionClient</code>](#WebhookCollectionClient)
+#### [](#taskclient-webhooks) `taskClient.webhooks()` ⇒ [<code>WebhookCollectionClient</code>](#WebhookCollectionClient)
 
 https://docs.apify.com/api/v2#/reference/actor-tasks/webhook-collection
 
@@ -1816,7 +1816,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/webhook-collection
 
 <a name="TaskCollectionClient+create"></a>
 
-#### [](#TaskCollectionClient+create) `TaskCollectionClient.create([task])` ⇒ <code>Promise.&lt;Task&gt;</code>
+#### [](#taskcollectionclient-create) `taskCollectionClient.create([task])` ⇒ <code>Promise.&lt;Task&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection/create-task
 
@@ -1830,7 +1830,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection/create-task
 
 <a name="TaskCollectionClient+list"></a>
 
-#### [](#TaskCollectionClient+list) `TaskCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
+#### [](#taskcollectionclient-list) `taskCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
 
 https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection/get-list-of-tasks
 
@@ -1854,7 +1854,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection/get-list-of
 
 <a name="UserClient+get"></a>
 
-#### [](#UserClient+get) `UserClient.get()` ⇒ <code>Promise.&lt;?User&gt;</code>
+#### [](#userclient-get) `userClient.get()` ⇒ <code>Promise.&lt;?User&gt;</code>
 
 Depending on whether ApifyClient was created with a token,
 the method will either return public or private user data.
@@ -1879,7 +1879,7 @@ https://docs.apify.com/api/v2#/reference/users
 
 <a name="WebhookClient+delete"></a>
 
-#### [](#WebhookClient+delete) `WebhookClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
+#### [](#webhookclient-delete) `webhookClient.delete()` ⇒ <code>Promise.&lt;void&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/delete-webhook
 
@@ -1888,7 +1888,7 @@ https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/delete-webhook
 
 <a name="WebhookClient+dispatches"></a>
 
-#### [](#WebhookClient+dispatches) `WebhookClient.dispatches()` ⇒ [<code>WebhookDispatchCollectionClient</code>](#WebhookDispatchCollectionClient)
+#### [](#webhookclient-dispatches) `webhookClient.dispatches()` ⇒ [<code>WebhookDispatchCollectionClient</code>](#WebhookDispatchCollectionClient)
 
 https://docs.apify.com/api/v2#/reference/webhooks/dispatches-collection
 
@@ -1897,7 +1897,7 @@ https://docs.apify.com/api/v2#/reference/webhooks/dispatches-collection
 
 <a name="WebhookClient+get"></a>
 
-#### [](#WebhookClient+get) `WebhookClient.get()` ⇒ <code>Promise.&lt;?Webhook&gt;</code>
+#### [](#webhookclient-get) `webhookClient.get()` ⇒ <code>Promise.&lt;?Webhook&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/get-webhook
 
@@ -1906,7 +1906,7 @@ https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/get-webhook
 
 <a name="WebhookClient+update"></a>
 
-#### [](#WebhookClient+update) `WebhookClient.update(newFields)` ⇒ <code>Promise.&lt;Webhook&gt;</code>
+#### [](#webhookclient-update) `webhookClient.update(newFields)` ⇒ <code>Promise.&lt;Webhook&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/update-webhook
 
@@ -1932,7 +1932,7 @@ https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/update-webhook
 
 <a name="WebhookCollectionClient+create"></a>
 
-#### [](#WebhookCollectionClient+create) `WebhookCollectionClient.create([webhook])` ⇒ <code>Promise.&lt;Webhook&gt;</code>
+#### [](#webhookcollectionclient-create) `webhookCollectionClient.create([webhook])` ⇒ <code>Promise.&lt;Webhook&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/create-webhook
 
@@ -1946,7 +1946,7 @@ https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/create-webh
 
 <a name="WebhookCollectionClient+list"></a>
 
-#### [](#WebhookCollectionClient+list) `WebhookCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
+#### [](#webhookcollectionclient-list) `webhookCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
 
 https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/get-list-of-webhooks
 
@@ -1970,7 +1970,7 @@ https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/get-list-of
 
 <a name="WebhookDispatchClient+get"></a>
 
-#### [](#WebhookDispatchClient+get) `WebhookDispatchClient.get()` ⇒ <code>Promise.&lt;?WebhookDispatch&gt;</code>
+#### [](#webhookdispatchclient-get) `webhookDispatchClient.get()` ⇒ <code>Promise.&lt;?WebhookDispatch&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatch-object/get-webhook-dispatch
 
@@ -1986,7 +1986,7 @@ https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatch-obj
 
 <a name="WebhookDispatchCollectionClient+list"></a>
 
-#### [](#WebhookDispatchCollectionClient+list) `WebhookDispatchCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
+#### [](#webhookdispatchcollectionclient-list) `webhookDispatchCollectionClient.list([options])` ⇒ [<code>Promise.&lt;PaginationList&gt;</code>](#PaginationList)
 
 https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatches-collection/get-list-of-webhook-dispatches
 

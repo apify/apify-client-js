@@ -1,5 +1,10 @@
 exports.lowerCase = (text) => text.toLowerCase();
 
+exports.firstLetterLowerCase = (text) => {
+    const lowerCaseLetter = text[0].toLowerCase();
+    return lowerCaseLetter + text.substr(1);
+};
+
 exports.parseParams = (options) => {
     if (!options) {
         return;
