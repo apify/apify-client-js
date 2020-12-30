@@ -1,3 +1,17 @@
-<a name="{{> name}}"></a>
+{{#if returns~}}
+{{#each returns~}}{{log ../this}}
+{{#if type~}}
+{{#if type.names~}}
+<a name="{{../memberof}}+{{../name}}"></a>
 
-{{>heading-indent}}[](#{{>name}}) {{>header}}
+{{>heading-indent}}[](#{{../memberof}}+{{../name~}}) `{{../memberof}}.{{../name}}({{params ../params}})` ⇒ {{~>linked-type-list types=type.names delimiter=" \| "}}
+
+{{/if~}}
+{{/if}}
+{{/each}}
+{{else~}}
+<a name="{{name}}"></a>
+
+{{>heading-indent}}[](#{{name}}) {{name}}
+
+{{/if}}
