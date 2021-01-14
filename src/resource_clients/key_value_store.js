@@ -81,7 +81,7 @@ class KeyValueStoreClient extends ResourceClient {
      * @param {boolean} [options.buffer]
      * @param {boolean} [options.stream]
      * @param {boolean} [options.disableRedirect]
-     * @return KeyValueStoreRecord
+     * @return {KeyValueStoreRecord}
      */
     async getRecord(key, options = {}) {
         ow(key, ow.string);
