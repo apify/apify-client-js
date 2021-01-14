@@ -132,7 +132,7 @@ All public classes, methods and their parameters can be inspected in this API re
 
 <a name="ApifyClient"></a>
 
-### [](#ApifyClient) ApifyClient
+### [](#apifyclient) ApifyClient
 
 ApifyClient is the official library to access [Apify API](https://docs.apify.com/api/v2) from your
 JavaScript applications. It runs both in Node.js and browser.
@@ -164,9 +164,9 @@ JavaScript applications. It runs both in Node.js and browser.
 
 * * *
 
-<a name="ApifyClient"></a>
+<a name="new_ApifyClient_new"></a>
 
-#### [](#ApifyClient) ApifyClient
+#### [](#apifyclient) `new ApifyClient([options])`
 
 
 | Param | Type | Default |
@@ -426,7 +426,7 @@ https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatch-obj
 
 <a name="ApifyApiError"></a>
 
-### [](#ApifyApiError) ApifyApiError
+### [](#apifyapierror) ApifyApiError
 
 An `ApifyApiError` is thrown for successful HTTP requests that reach the API,
 but the API responds with an error response. Typically, those are rate limit
@@ -452,7 +452,7 @@ needed.
 
 <a name="ActorClient"></a>
 
-### [](#ActorClient) ActorClient
+### [](#actorclient) ActorClient
 
 
 * [ActorClient](#ActorClient)
@@ -635,7 +635,7 @@ https://docs.apify.com/api/v2#/reference/actors/webhook-collection
 
 <a name="ActorCollectionClient"></a>
 
-### [](#ActorCollectionClient) ActorCollectionClient
+### [](#actorcollectionclient) ActorCollectionClient
 
 
 * [ActorCollectionClient](#ActorCollectionClient)
@@ -679,7 +679,7 @@ https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-act
 
 <a name="ActorVersionClient"></a>
 
-### [](#ActorVersionClient) ActorVersionClient
+### [](#actorversionclient) ActorVersionClient
 
 
 * [ActorVersionClient](#ActorVersionClient)
@@ -724,7 +724,7 @@ https://docs.apify.com/api/v2#/reference/actors/version-object/update-version
 
 <a name="ActorVersionCollectionClient"></a>
 
-### [](#ActorVersionCollectionClient) ActorVersionCollectionClient
+### [](#actorversioncollectionclient) ActorVersionCollectionClient
 
 
 * [ActorVersionCollectionClient](#ActorVersionCollectionClient)
@@ -767,7 +767,7 @@ https://docs.apify.com/api/v2#/reference/actors/version-collection/get-list-of-v
 
 <a name="BuildClient"></a>
 
-### [](#BuildClient) BuildClient
+### [](#buildclient) BuildClient
 
 
 * [BuildClient](#BuildClient)
@@ -827,7 +827,7 @@ This is useful when you need to immediately start a run after a build finishes.
 
 <a name="BuildCollectionClient"></a>
 
-### [](#BuildCollectionClient) BuildCollectionClient
+### [](#buildcollectionclient) BuildCollectionClient
 
 
 * * *
@@ -851,7 +851,7 @@ https://docs.apify.com/api/v2#/reference/actors/build-collection/get-list-of-bui
 
 <a name="DatasetClient"></a>
 
-### [](#DatasetClient) DatasetClient
+### [](#datasetclient) DatasetClient
 
 
 * [DatasetClient](#DatasetClient)
@@ -968,7 +968,7 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset/update-dataset
 
 <a name="DatasetCollectionClient"></a>
 
-### [](#DatasetCollectionClient) DatasetCollectionClient
+### [](#datasetcollectionclient) DatasetCollectionClient
 
 
 * [DatasetCollectionClient](#DatasetCollectionClient)
@@ -1012,7 +1012,7 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of
 
 <a name="KeyValueStoreClient"></a>
 
-### [](#KeyValueStoreClient) KeyValueStoreClient
+### [](#keyvaluestoreclient) KeyValueStoreClient
 
 
 * [KeyValueStoreClient](#KeyValueStoreClient)
@@ -1123,7 +1123,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/update-st
 
 <a name="KeyValueStoreCollectionClient"></a>
 
-### [](#KeyValueStoreCollectionClient) KeyValueStoreCollectionClient
+### [](#keyvaluestorecollectionclient) KeyValueStoreCollectionClient
 
 
 * [KeyValueStoreCollectionClient](#KeyValueStoreCollectionClient)
@@ -1167,7 +1167,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/get-l
 
 <a name="KeyValueStoreRecord"></a>
 
-### [](#KeyValueStoreRecord) KeyValueStoreRecord
+### [](#keyvaluestorerecord) `KeyValueStoreRecord` : <code>object</code>
 
 **Properties**
 
@@ -1182,7 +1182,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/get-l
 
 <a name="LogClient"></a>
 
-### [](#LogClient) LogClient
+### [](#logclient) LogClient
 
 
 * [LogClient](#LogClient)
@@ -1213,7 +1213,7 @@ https://docs.apify.com/api/v2#/reference/logs/log/get-log
 
 <a name="PaginationList"></a>
 
-### [](#PaginationList) PaginationList
+### [](#paginationlist) `PaginationList` : <code>object</code>
 
 **Properties**
 
@@ -1230,7 +1230,7 @@ https://docs.apify.com/api/v2#/reference/logs/log/get-log
 
 <a name="RequestQueueClient"></a>
 
-### [](#RequestQueueClient) RequestQueueClient
+### [](#requestqueueclient) RequestQueueClient
 
 
 * [RequestQueueClient](#RequestQueueClient)
@@ -1353,7 +1353,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/request/update-request
 
 <a name="RequestQueueCollection"></a>
 
-### [](#RequestQueueCollection) RequestQueueCollection
+### [](#requestqueuecollection) RequestQueueCollection
 
 
 * [RequestQueueCollection](#RequestQueueCollection)
@@ -1397,7 +1397,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/get-lis
 
 <a name="RunClient"></a>
 
-### [](#RunClient) RunClient
+### [](#runclient) RunClient
 
 
 * [RunClient](#RunClient)
@@ -1535,7 +1535,7 @@ by using webhooks, so be sure to review which technique fits your use-case bette
 
 <a name="RunCollectionClient"></a>
 
-### [](#RunCollectionClient) RunCollectionClient
+### [](#runcollectionclient) RunCollectionClient
 
 
 * * *
@@ -1560,7 +1560,7 @@ https://docs.apify.com/api/v2#/reference/actors/run-collection/get-list-of-runs
 
 <a name="ScheduleClient"></a>
 
-### [](#ScheduleClient) ScheduleClient
+### [](#scheduleclient) ScheduleClient
 
 
 * [ScheduleClient](#ScheduleClient)
@@ -1615,7 +1615,7 @@ https://docs.apify.com/api/v2#/reference/schedules/schedule-object/update-schedu
 
 <a name="ScheduleCollectionClient"></a>
 
-### [](#ScheduleCollectionClient) ScheduleCollectionClient
+### [](#schedulecollectionclient) ScheduleCollectionClient
 
 
 * [ScheduleCollectionClient](#ScheduleCollectionClient)
@@ -1658,7 +1658,7 @@ https://docs.apify.com/api/v2#/reference/schedules/schedules-collection/get-list
 
 <a name="TaskClient"></a>
 
-### [](#TaskClient) TaskClient
+### [](#taskclient) TaskClient
 
 
 * [TaskClient](#TaskClient)
@@ -1804,7 +1804,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/webhook-collection
 
 <a name="TaskCollectionClient"></a>
 
-### [](#TaskCollectionClient) TaskCollectionClient
+### [](#taskcollectionclient) TaskCollectionClient
 
 
 * [TaskCollectionClient](#TaskCollectionClient)
@@ -1847,7 +1847,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection/get-list-of
 
 <a name="UserClient"></a>
 
-### [](#UserClient) UserClient
+### [](#userclient) UserClient
 
 
 * * *
@@ -1865,7 +1865,7 @@ https://docs.apify.com/api/v2#/reference/users
 
 <a name="WebhookClient"></a>
 
-### [](#WebhookClient) WebhookClient
+### [](#webhookclient) WebhookClient
 
 
 * [WebhookClient](#WebhookClient)
@@ -1920,7 +1920,7 @@ https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/update-webhook
 
 <a name="WebhookCollectionClient"></a>
 
-### [](#WebhookCollectionClient) WebhookCollectionClient
+### [](#webhookcollectionclient) WebhookCollectionClient
 
 
 * [WebhookCollectionClient](#WebhookCollectionClient)
@@ -1963,7 +1963,7 @@ https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/get-list-of
 
 <a name="WebhookDispatchClient"></a>
 
-### [](#WebhookDispatchClient) WebhookDispatchClient
+### [](#webhookdispatchclient) WebhookDispatchClient
 
 
 * * *
@@ -1979,7 +1979,7 @@ https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatch-obj
 
 <a name="WebhookDispatchCollectionClient"></a>
 
-### [](#WebhookDispatchCollectionClient) WebhookDispatchCollectionClient
+### [](#webhookdispatchcollectionclient) WebhookDispatchCollectionClient
 
 
 * * *
