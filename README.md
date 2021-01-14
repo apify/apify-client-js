@@ -1019,7 +1019,7 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of
     * [`.delete()`](#KeyValueStoreClient+delete) ⇒ <code>Promise.&lt;void&gt;</code>
     * [`.deleteRecord(key)`](#KeyValueStoreClient+deleteRecord) ⇒ <code>Promise.&lt;void&gt;</code>
     * [`.get()`](#KeyValueStoreClient+get) ⇒ <code>Promise.&lt;KeyValueStore&gt;</code>
-    * [`.getRecord(key, [options])`](#KeyValueStoreClient+getRecord) ⇒
+    * [`.getRecord(key, [options])`](#KeyValueStoreClient+getRecord) ⇒ [<code>KeyValueStoreRecord</code>](#KeyValueStoreRecord)
     * [`.listKeys([options])`](#KeyValueStoreClient+listKeys) ⇒ <code>Promise.&lt;object&gt;</code>
     * [`.setRecord(record)`](#KeyValueStoreClient+setRecord) ⇒ <code>Promise.&lt;void&gt;</code>
     * [`.update(newFields)`](#KeyValueStoreClient+update) ⇒ <code>Promise.&lt;KeyValueStore&gt;</code>
@@ -1059,12 +1059,15 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store
 
 * * *
 
+<a name="KeyValueStoreClient+getRecord"></a>
+
+#### [](#keyvaluestoreclient-getrecord) `keyValueStoreClient.getRecord(key, [options])` ⇒ [<code>KeyValueStoreRecord</code>](#KeyValueStoreRecord)
+
 You can use the `buffer` option to get the value in a Buffer (Node.js)
 or ArrayBuffer (browser) format. In Node.js (not in browser) you can also
 use the `stream` option to get a Readable stream.
 https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record
 
-**Returns**: KeyValueStoreRecord  
 
 | Param | Type |
 | --- | --- |
