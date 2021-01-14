@@ -1,0 +1,34 @@
+{{#if returns~}}
+{{#each returns~}}
+{{#if type~}}
+{{#if type.names~}}
+<a name="{{~../memberof}}+{{../name}}"></a>
+
+{{>heading-indent}}[](#{{../memberof}}+{{../name~}}) `{{firstLetterLowerCase
+../memberof}}.{{../name}}({{parseParams ../params}})` ⇒ {{>linked-type-list types=type.names delimiter=" \| "}}
+
+{{/if~}}
+{{/if~}}
+{{/each~}}
+{{/if~}}
+
+{{#unless returns~}}
+
+<a name="{{~anchorName}}"></a>
+
+{{#if kind~}}
+
+{{#ifEquals kind "constructor"~}}
+{{>heading-indent}}[](#{{../name}}) `new {{../name}}({{parseParams ../params}})`
+{{/ifEquals~}}
+
+{{#ifEquals kind "class"~}}
+{{>heading-indent}}[](#{{../name}}) {{../name}}
+{{/ifEquals~}}
+
+{{#ifEquals kind "typedef"~}}
+{{>heading-indent}}[](#{{../name}}) `{{../name}}` : {{>linked-type-list types=../type.names delimiter=" \| "}}
+{{/ifEquals}}
+
+{{/if~}}
+{{/unless~}}

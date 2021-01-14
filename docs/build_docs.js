@@ -14,6 +14,10 @@ const getRenderOptions = (template, data) => ({
     'param-list-format': 'table',
     'property-list-format': 'table',
     'heading-depth': 3,
+    helper: [path.join(__dirname, 'helpers.js')],
+    partial: [
+        path.join(__dirname, 'partials', 'header.hbs'),
+    ],
 });
 
 const generateFinalMarkdown = (text) => {
