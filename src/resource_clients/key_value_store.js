@@ -1,4 +1,4 @@
-const ow = require('ow');
+const ow = require('ow').default;
 const ResourceClient = require('../base/resource_client');
 const { isBuffer, isStream } = require('../utils');
 const {

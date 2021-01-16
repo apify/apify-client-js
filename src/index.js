@@ -1,4 +1,4 @@
-const ow = require('ow');
+const ow = require('ow').default;
 const { ME_USER_NAME_PLACEHOLDER } = require('apify-shared/consts');
 const logger = require('apify-shared/log');
 

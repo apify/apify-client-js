@@ -1,4 +1,4 @@
-const ow = require('ow');
+const ow = require('ow').default;
 const { ACT_JOB_STATUSES } = require('apify-shared/consts');
 const ResourceClient = require('../base/resource_client');
 const RunCollectionClient = require('./run_collection');

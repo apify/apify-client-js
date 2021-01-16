@@ -1,4 +1,4 @@
-const ow = require('ow');
+const ow = require('ow').default;
 const ResourceCollectionClient = require('../base/resource_collection_client');
 
 /**

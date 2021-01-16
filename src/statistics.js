@@ -1,4 +1,4 @@
-const ow = require('ow');
+const ow = require('ow').default;
 
 class Statistics {
     constructor() {
