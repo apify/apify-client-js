@@ -1,4 +1,4 @@
-const ow = require('ow');
+const ow = require('ow').default;
 const util = require('util');
 const zlib = require('zlib');
 

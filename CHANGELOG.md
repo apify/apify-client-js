@@ -1,12 +1,16 @@
-1.0.0 / NEXT
+1.0.2 / 2021/01/16
 ===================
-- TODO
-- Added support for schedules API
-- Replaced `request` with `axios`.
-- Added browser compatibility.
-- Removed `setOptions` and `getOptions` client methods.
-- Removed callbacks support.
-- Removed API v1 deprecated stuff.
+- Fix `axios` security vulnerability by updating version.
+- Update `ow` to `0.22.0`.
+- Improve docs.
+
+1.0.1 / 2020/12/10
+===================
+- Removed the `desc` option from `keyValueStoreClient.listKeys()` because Apify API does not support it.
+
+1.0.0 / 2020/12/09
+===================
+- A complete rewrite of the client. See README.
 
 0.6.0 / 2019/12/05
 ===================

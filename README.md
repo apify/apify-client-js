@@ -772,7 +772,7 @@ https://docs.apify.com/api/v2#/reference/actors/version-collection/get-list-of-v
 
 * [BuildClient](#BuildClient)
     * [`.abort()`](#BuildClient+abort) ⇒ <code>Promise.&lt;Build&gt;</code>
-    * [`.get([options])`](#BuildClient+get) ⇒ <code>Promise.&lt;Run&gt;</code>
+    * [`.get([options])`](#BuildClient+get) ⇒ <code>Promise.&lt;Build&gt;</code>
     * [`.waitForFinish([options])`](#BuildClient+waitForFinish) ⇒ <code>Promise.&lt;Build&gt;</code>
 
 
@@ -789,7 +789,7 @@ https://docs.apify.com/api/v2#/reference/actor-builds/abort-build/abort-build
 
 <a name="BuildClient+get"></a>
 
-#### [](#BuildClient+get) `buildClient.get([options])` ⇒ <code>Promise.&lt;Run&gt;</code>
+#### [](#BuildClient+get) `buildClient.get([options])` ⇒ <code>Promise.&lt;Build&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actor-builds/build-object/get-build
 
@@ -1019,7 +1019,7 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of
     * [`.delete()`](#KeyValueStoreClient+delete) ⇒ <code>Promise.&lt;void&gt;</code>
     * [`.deleteRecord(key)`](#KeyValueStoreClient+deleteRecord) ⇒ <code>Promise.&lt;void&gt;</code>
     * [`.get()`](#KeyValueStoreClient+get) ⇒ <code>Promise.&lt;KeyValueStore&gt;</code>
-    * [`.getRecord(key, [options])`](#KeyValueStoreClient+getRecord) ⇒ [<code>KeyValueStoreRecord</code>](#KeyValueStoreRecord)
+    * [`.getRecord(key, [options])`](#KeyValueStoreClient+getRecord) ⇒ [<code>Promise.&lt;KeyValueStoreRecord&gt;</code>](#KeyValueStoreRecord)
     * [`.listKeys([options])`](#KeyValueStoreClient+listKeys) ⇒ <code>Promise.&lt;object&gt;</code>
     * [`.setRecord(record)`](#KeyValueStoreClient+setRecord) ⇒ <code>Promise.&lt;void&gt;</code>
     * [`.update(newFields)`](#KeyValueStoreClient+update) ⇒ <code>Promise.&lt;KeyValueStore&gt;</code>
@@ -1061,7 +1061,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store
 
 <a name="KeyValueStoreClient+getRecord"></a>
 
-#### [](#KeyValueStoreClient+getRecord) `keyValueStoreClient.getRecord(key, [options])` ⇒ [<code>KeyValueStoreRecord</code>](#KeyValueStoreRecord)
+#### [](#KeyValueStoreClient+getRecord) `keyValueStoreClient.getRecord(key, [options])` ⇒ [<code>Promise.&lt;KeyValueStoreRecord&gt;</code>](#KeyValueStoreRecord)
 
 You can use the `buffer` option to get the value in a Buffer (Node.js)
 or ArrayBuffer (browser) format. In Node.js (not in browser) you can also

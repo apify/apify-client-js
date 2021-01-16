@@ -1,7 +1,7 @@
 const {
     ACT_JOB_STATUSES,
 } = require('apify-shared/consts');
-const ow = require('ow');
+const ow = require('ow').default;
 const ActorVersionClient = require('./actor_version');
 const ActorVersionCollectionClient = require('./actor_version_collection');
 const BuildCollectionClient = require('./build_collection');

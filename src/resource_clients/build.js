@@ -1,4 +1,4 @@
-const ow = require('ow');
+const ow = require('ow').default;
 const ResourceClient = require('../base/resource_client');
 const {
     pluckData,
@@ -23,7 +23,7 @@ class BuildClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actor-builds/build-object/get-build
      * @param {object} [options]
      * @param {number} [options.waitForFinish]
-     * @return {Promise<Run>}
+     * @return {Promise<Build>}
      */
     async get(options = {}) {
         ow(options, ow.object.exactShape({
