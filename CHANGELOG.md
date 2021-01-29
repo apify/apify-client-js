@@ -1,3 +1,7 @@
+1.0.3 / 2021/01/29
+===================
+- Removed limits on max content/body length.
+
 1.0.2 / 2021/01/16
 ===================
 - Fix `axios` security vulnerability by updating version.
