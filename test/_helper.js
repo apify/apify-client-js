@@ -3,7 +3,9 @@ const mockServer = require('./mock_server/server');
 
 class Browser {
     async start() {
-        this.browser = await Apify.launchPuppeteer({ headless: true, args: ['--disable-web-security'] });
+        this.browser = await Apify.launchPuppeteer({
+            launchOptions: { headless: true, args: ['--disable-web-security'] },
+        });
         return this.browser;
     }
 
