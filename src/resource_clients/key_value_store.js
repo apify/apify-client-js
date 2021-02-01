@@ -167,14 +167,14 @@ class KeyValueStoreClient extends ResourceClient {
         // No need to keep original large value in memory
         value = maybeZippedValue;
 
-        const uploadUrl = this._shouldUseDirectUpload(value)
-            ? await this._getSignedUploadUrl(key, headers)
-            : this._url(`records/${key}`);
+        const shouldUseDirectUpload = this._shouldUseDirectUpload(value);
 
         const uploadOpts = {
-            url: uploadUrl,
+            url: shouldUseDirectUpload
+                ? await this._getSignedUploadUrl(key, headers)
+                : this._url(`records/${key}`),
             method: 'PUT',
-            params: this._params(),
+            params: shouldUseDirectUpload ? null : this._params(),
             data: value,
             headers,
         };
