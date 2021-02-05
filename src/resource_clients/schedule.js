@@ -47,7 +47,7 @@ class ScheduleClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/logs/log/get-log
+     * https://docs.apify.com/api/v2#/reference/schedules/schedule-log/get-schedule-log
      * @return {Promise<?string>}
      */
     async getLog() {
