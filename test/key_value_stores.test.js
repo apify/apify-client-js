@@ -415,7 +415,7 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).setRecord({ key, value });
             expect(res).toBeUndefined();
-            validateRequest({}, { code }, value, {
+            validateRequest(false, { code }, value, {
                 'content-type': contentType,
                 'content-encoding': 'gzip',
             });
@@ -425,7 +425,7 @@ describe('Key-Value Store methods', () => {
                 storeId, key, value,
             );
             expect(browserRes).toBeUndefined();
-            validateRequest({}, { code }, value, {
+            validateRequest(false, { code }, value, {
                 'content-type': contentType,
             });
         });
