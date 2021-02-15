@@ -70,11 +70,13 @@ function stringifyWebhooksToBase64(webhooks) {
 let gzipPromise;
 if (isNode()) gzipPromise = util.promisify(zlib.gzip);
 /**
- * @param {*} value
+ * Gzip provided value, otherwise returns null.
+ * @param value
+ * @return {Promise<null|Buffer>}
  */
 async function maybeGzipValue(value) {
-    if (!isNode()) return value;
-    if (value == null) return value;
+    if (!isNode()) return null;
+    if (value == null) return null;
 
     // Request compression is not that important so let's
     // skip it instead of throwing for unsupported types.
@@ -83,7 +85,7 @@ async function maybeGzipValue(value) {
     if (areDataStringOrBuffer && areDataLargeEnough) {
         return gzipPromise(value);
     }
-    return value;
+    return null;
 }
 
 /**

@@ -6,10 +6,7 @@ const {
     parseDateFields,
     catchNotFoundOrThrow,
     isNode,
-    maybeGzipValue,
 } = require('../utils');
-
-const SIGNED_URL_UPLOAD_MIN_BYTES = 1024 * 256;
 
 /**
  * @hideconstructor
@@ -152,31 +149,12 @@ class KeyValueStoreClient extends ResourceClient {
             }
         }
 
-        // All this mess is because of signed upload URL. It needs to:
-        // 1) have the same CType and CEncoding headers as the upload request itself.
-        // 2) we measure the upload size after GZIP, so we have to GZIP here, not in interceptor
-        // 3) we have to tell the interceptor to not GZIP again by setting the CEncoding
-        const headers = {};
-        if (contentType) headers['content-type'] = contentType;
-
-        const maybeZippedValue = await maybeGzipValue(value);
-        if (maybeZippedValue !== value) {
-            // This means we zipped the value and we need to add encoding
-            headers['content-encoding'] = 'gzip';
-        }
-        // No need to keep original large value in memory
-        value = maybeZippedValue;
-
-        const shouldUseDirectUpload = this._shouldUseDirectUpload(value);
-
         const uploadOpts = {
-            url: shouldUseDirectUpload
-                ? await this._getSignedUploadUrl(key, headers)
-                : this._url(`records/${key}`),
+            url: this._url(`records/${key}`),
             method: 'PUT',
-            params: shouldUseDirectUpload ? null : this._params(),
+            params: this._params(),
             data: value,
-            headers,
+            headers: contentType && { 'content-type': contentType },
         };
 
         await this.httpClient.call(uploadOpts);
@@ -195,46 +173,6 @@ class KeyValueStoreClient extends ResourceClient {
             method: 'DELETE',
             params: this._params(),
         });
-    }
-
-    /**
-     * @param {string|Buffer|stream.Readable} value
-     * @return {boolean}
-     * @private
-     */
-    _shouldUseDirectUpload(value) {
-        let bytes = -1;
-        if (typeof value === 'string') {
-            // We could encode this to measure precisely,
-            // but it's not worth the extra computation.
-            bytes = value.length;
-        }
-        if (isBuffer(value)) {
-            bytes = value.byteLength;
-        }
-        if (isStream(value)) {
-            // Streams can't be counted but let's assume it's big.
-            bytes = Infinity;
-        }
-        return bytes >= SIGNED_URL_UPLOAD_MIN_BYTES;
-    }
-
-    /**
-     * @param {string} key
-     * @param {object} headers
-     * @return {Promise<string>}
-     * @private
-     */
-    async _getSignedUploadUrl(key, headers) {
-        const response = await this.httpClient.call({
-            url: this._url(`records/${key}/direct-upload-url`),
-            params: this._params(),
-            method: 'GET',
-            headers,
-        });
-        // The response looks like this: { data: { signedUrl: "url" }}
-        // The double 'data' is NOT a typo! First data are from AxiosResponse
-        return response.data.data.signedUrl;
     }
 }
 
