@@ -30,14 +30,22 @@ class HttpClient {
         this.maxRetries = options.maxRetries;
         this.minDelayBetwenRetriesMillis = options.minDelayBetweenRetriesMillis;
         this.userProvidedRequestInterceptors = options.requestInterceptors;
+        this.timeoutMillis = options.timeoutSecs * 1000;
         this.logger = options.logger;
         this._onRequestRetry = this._onRequestRetry.bind(this);
 
         if (isNode()) {
-            // Add keep-alive agents that are preset with reasonable defaults.
-            // Axios will only use those in Node.js.
-            this.httpAgent = new KeepAliveAgent();
-            this.httpsAgent = new KeepAliveAgent.HttpsAgent();
+            // We want to keep sockets alive for better performance.
+            // It's important to set the user's timeout also here and not only
+            // on the axios instance, because even though this timeout
+            // is for inactive sockets, sometimes the platform would take
+            // long to process requests and the socket would time-out
+            // while waiting for the response.
+            const agentOpts = {
+                timeout: this.timeoutMillis,
+            };
+            this.httpAgent = new KeepAliveAgent(agentOpts);
+            this.httpsAgent = new KeepAliveAgent.HttpsAgent(agentOpts);
         }
 
         this.axios = axios.create({
@@ -61,7 +69,7 @@ class HttpClient {
             transformRequest: null,
             transformResponse: null,
             responseType: 'arraybuffer',
-            timeout: options.timeoutSecs * 1000,
+            timeout: this.timeoutMillis,
             maxContentLength: Infinity,
             maxBodyLength: Infinity,
         });
@@ -100,7 +108,7 @@ class HttpClient {
      * Successful responses are returned, errors and unsuccessful
      * status codes are retried. See the following functions for the
      * retrying logic.
-     * @param config
+     * @param {object} config
      * @return {function}
      * @private
      */
@@ -118,11 +126,7 @@ class HttpClient {
                 response = await this.axios.request(config);
                 if (this._isStatusOk(response.status)) return response;
             } catch (err) {
-                if (this._isRetryableError(err)) {
-                    throw err;
-                } else {
-                    return stopTrying(err);
-                }
+                return this._handleRequestError(err, config, stopTrying);
             }
 
             if (response.status === RATE_LIMIT_EXCEEDED_STATUS_CODE) {
@@ -146,6 +150,36 @@ class HttpClient {
      */
     _isStatusOk(statusCode) {
         return statusCode < 300;
+    }
+
+    /**
+     * Handles all unexpected errors that can happen, but are not
+     * Apify API typed errors. E.g. network errors, timeouts and so on.
+     * @param {Error} err
+     * @param {object} config
+     * @param {function} stopTrying
+     * @private
+     */
+    _handleRequestError(err, config, stopTrying) {
+        if (this._isTimeoutError(err) && config.doNotRetryTimeouts) {
+            return stopTrying(err);
+        }
+
+        if (this._isRetryableError(err)) {
+            throw err;
+        } else {
+            return stopTrying(err);
+        }
+    }
+
+    /**
+     * Axios calls req.abort() on timeouts so timeout errors will
+     * have a code ECONNABORTED.
+     * @param {Error} err
+     * @private
+     */
+    _isTimeoutError(err) {
+        return err.code === 'ECONNABORTED';
     }
 
     /**
