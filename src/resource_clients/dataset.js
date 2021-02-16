@@ -152,6 +152,7 @@ class DatasetClient extends ResourceClient {
             },
             data: items,
             params: this._params(),
+            doNotRetryTimeouts: true, // see timeout handling in http-client
         });
     }
 

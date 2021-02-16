@@ -1,3 +1,8 @@
+1.0.5 / 2021/02/16
+===================
+- Fix requests timing out too early due to socket timeouts.
+- Add missing validations to `getOrCreate` methods.
+
 1.0.4 / 2021/02/10
 ===================
 - Omit query params for direct upload URL calls

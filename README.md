@@ -1597,7 +1597,7 @@ https://docs.apify.com/api/v2#/reference/schedules/schedule-object/get-schedule
 
 #### [](#ScheduleClient+getLog) `scheduleClient.getLog()` ⇒ <code>Promise.&lt;?string&gt;</code>
 
-https://docs.apify.com/api/v2#/reference/logs/log/get-log
+https://docs.apify.com/api/v2#/reference/schedules/schedule-log/get-schedule-log
 
 
 * * *
