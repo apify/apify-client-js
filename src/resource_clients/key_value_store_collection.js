@@ -40,6 +40,7 @@ class KeyValueStoreCollectionClient extends ResourceCollectionClient {
      * @return {Promise<object>}
      */
     async getOrCreate(name) {
+        ow(name, ow.optional.string);
         return this._getOrCreate(name);
     }
 }
