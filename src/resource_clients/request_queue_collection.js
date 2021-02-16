@@ -40,6 +40,7 @@ class RequestQueueCollection extends ResourceCollectionClient {
      * @return {Promise<RequestQueue>}
      */
     async getOrCreate(name) {
+        ow(name, ow.optional.string);
         return this._getOrCreate(name);
     }
 }
