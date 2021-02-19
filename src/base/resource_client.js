@@ -6,6 +6,8 @@ const {
     catchNotFoundOrThrow,
 } = require('../utils');
 
+const MAX_WAIT_FOR_FINISH = 999999;
+
 /**
  * Resource client.
  *
@@ -83,9 +85,9 @@ class ResourceClient extends ApiClient {
         };
 
         while (shouldRepeat()) {
-            const waitForFinish = waitSecs
-                ? Math.round(waitSecs - ((Date.now() - startedAt) / 1000))
-                : 999999;
+            const waitForFinish = waitSecs === undefined
+                ? MAX_WAIT_FOR_FINISH
+                : Math.round(waitSecs - ((Date.now() - startedAt) / 1000));
 
             const requestOpts = {
                 url: this._url(),

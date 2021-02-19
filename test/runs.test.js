@@ -126,6 +126,22 @@ describe('Run methods', () => {
         validateRequest({ waitForFinish: 0 }, { runId });
     });
 
+    test('waitForFinish() resolves immediately with waitSecs: 0', async () => {
+        const runId = 'some-run-id';
+        const waitSecs = 0;
+        const data = { status: 'SUCCEEDED' };
+        const body = { data };
+
+        setTimeout(() => mockServer.setResponse({ body }), 10);
+        const res = await client.run(runId).waitForFinish({ waitSecs });
+        expect(res).toEqual(data);
+        validateRequest({ waitForFinish: 0 }, { runId });
+
+        const browserRes = await page.evaluate((rId, ws) => client.run(rId).waitForFinish({ waitSecs: ws }), runId, waitSecs);
+        expect(browserRes).toEqual(res);
+        validateRequest({ waitForFinish: 0 }, { runId });
+    });
+
     test.skip('dataset().get() works', async () => {
 
     });

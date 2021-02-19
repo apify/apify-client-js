@@ -1,7 +1,9 @@
 1.0.5 / 2021/02/16
 ===================
 - Fix requests timing out too early due to socket timeouts.
+- Fix `.call` and `.waitForFinish` waiting infinitely with `waitSecs: 0`.
 - Add missing validations to `getOrCreate` methods.
+- Remove signed URL uploads from `kvs.setRecord()`
 
 1.0.4 / 2021/02/10
 ===================
