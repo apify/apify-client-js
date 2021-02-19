@@ -395,7 +395,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({}, { storeId, key }, JSON.parse(value), expectedHeaders);
         });
 
-        test('setRecord() uploads via signed url when gzipped buffer.length > SIGNED_URL_UPLOAD_MIN_BYTESIZE', async () => {
+        test('setRecord() uploads gzipped buffer in node context', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const value = [];
@@ -403,19 +403,10 @@ describe('Key-Value Store methods', () => {
                 value.push(Math.random().toString(36).substring(7));
             }
             const contentType = 'application/json; charset=utf-8';
-            const code = '12345';
-
-            mockServer.setResponse({
-                body: {
-                    data: {
-                        signedUrl: `${baseUrl}/external/signed-url/${code}`,
-                    },
-                },
-            });
 
             const res = await client.keyValueStore(storeId).setRecord({ key, value });
             expect(res).toBeUndefined();
-            validateRequest(false, { code }, value, {
+            validateRequest({}, { storeId, key }, value, {
                 'content-type': contentType,
                 'content-encoding': 'gzip',
             });
@@ -425,7 +416,7 @@ describe('Key-Value Store methods', () => {
                 storeId, key, value,
             );
             expect(browserRes).toBeUndefined();
-            validateRequest(false, { code }, value, {
+            validateRequest({}, { storeId, key }, value, {
                 'content-type': contentType,
             });
         });

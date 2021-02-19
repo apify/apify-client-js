@@ -39,7 +39,7 @@ function serializeRequest(config) {
 async function maybeGzipRequest(config) {
     if (config.headers['content-encoding']) return config;
     const maybeZippedData = await maybeGzipValue(config.data);
-    if (config.data !== maybeZippedData) {
+    if (maybeZippedData) {
         config.headers['content-encoding'] = 'gzip';
         config.data = maybeZippedData;
     }
