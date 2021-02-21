@@ -6,6 +6,12 @@ const {
     catchNotFoundOrThrow,
 } = require('../utils');
 
+/**
+ * We need to supply some number for the API,
+ * because it would not accept "Infinity".
+ * 999999 seconds is more than 10 days.
+ * @type {number}
+ */
 const MAX_WAIT_FOR_FINISH = 999999;
 
 /**
@@ -74,20 +80,24 @@ class ResourceClient extends ApiClient {
      * @private
      */
     async _waitForFinish(options = {}) {
-        const { waitSecs } = options;
+        const {
+            waitSecs = MAX_WAIT_FOR_FINISH,
+        } = options;
+        const waitMillis = waitSecs * 1000;
         let job;
 
         const startedAt = Date.now();
         const shouldRepeat = () => {
-            if (waitSecs && (Date.now() - startedAt) / 1000 >= waitSecs) return false;
-            if (job && ACT_JOB_TERMINAL_STATUSES.includes(job.status)) return false;
-            return true;
+            const millisSinceStart = Date.now() - startedAt;
+            if (millisSinceStart >= waitMillis) return false;
+            const hasJobEnded = job && ACT_JOB_TERMINAL_STATUSES.includes(job.status);
+            return !hasJobEnded;
         };
 
-        while (shouldRepeat()) {
-            const waitForFinish = waitSecs === undefined
-                ? MAX_WAIT_FOR_FINISH
-                : Math.round(waitSecs - ((Date.now() - startedAt) / 1000));
+        do {
+            const millisSinceStart = Date.now() - startedAt;
+            const remainingWaitSeconds = Math.round((waitMillis - millisSinceStart) / 1000);
+            const waitForFinish = Math.max(0, remainingWaitSeconds);
 
             const requestOpts = {
                 url: this._url(),
@@ -104,7 +114,7 @@ class ResourceClient extends ApiClient {
             // It might take some time for database replicas to get up-to-date,
             // so getRun() might return null. Wait a little bit and try it again.
             if (!job) await new Promise((resolve) => setTimeout(resolve, 250));
-        }
+        } while ((shouldRepeat()));
 
         if (!job) {
             const jobName = this.constructor.name.match(/(\w+)Client/)[1].toLowerCase();
