@@ -1,3 +1,7 @@
+1.0.6 / NEXT
+===================
+- Deprecated disableRedirect option for `kvs.setRecord()`
+
 1.0.5 / 2021/02/16
 ===================
 - Fix requests timing out too early due to socket timeouts.
