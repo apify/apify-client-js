@@ -1,4 +1,5 @@
 const ow = require('ow').default;
+const log = require('apify-shared/log');
 const ResourceClient = require('../base/resource_client');
 const { isBuffer, isStream } = require('../utils');
 const {
@@ -77,7 +78,6 @@ class KeyValueStoreClient extends ResourceClient {
      * @param {object} [options]
      * @param {boolean} [options.buffer]
      * @param {boolean} [options.stream]
-     * @param {boolean} [options.disableRedirect]
      * @return {Promise<KeyValueStoreRecord>}
      */
     async getRecord(key, options = {}) {
@@ -91,14 +91,15 @@ class KeyValueStoreClient extends ResourceClient {
             throw new Error('The stream option can only be used in Node.js environment.');
         }
 
-        const params = {
-            disableRedirect: options.disableRedirect,
-        };
+        if ('disableRedirect' in options) {
+            log.deprecated('The disableRedirect option for getRecord() is deprecated. '
+                + 'It has no effect and will be removed in the following major release.');
+        }
 
         const requestOpts = {
             url: this._url(`records/${key}`),
             method: 'GET',
-            params: this._params(params),
+            params: this._params(),
         };
 
         if (options.buffer) requestOpts.forceBuffer = true;

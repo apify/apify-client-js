@@ -135,9 +135,6 @@ describe('Key-Value Store methods', () => {
         test('getRecord() works', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
-            const options = {
-                disableRedirect: true,
-            };
 
             const expectedBody = 'hello-world';
             const expectedContentType = 'text/plain; charset=utf-8';
@@ -147,18 +144,18 @@ describe('Key-Value Store methods', () => {
 
             mockServer.setResponse({ headers: expectedHeaders, body: expectedBody });
 
-            const res = await client.keyValueStore(storeId).getRecord(key, options);
+            const res = await client.keyValueStore(storeId).getRecord(key);
             const expectedResult = {
                 key,
                 value: expectedBody,
                 contentType: expectedContentType,
             };
             expect(res).toEqual(expectedResult);
-            validateRequest(options, { storeId, key });
+            validateRequest({}, { storeId, key });
 
-            const browserRes = await page.evaluate((id, k, opts) => client.keyValueStore(id).getRecord(k, opts), storeId, key, options);
+            const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getRecord(k), storeId, key);
             expect(browserRes).toEqual(res);
-            validateRequest(options, { storeId, key });
+            validateRequest({}, { storeId, key });
         });
 
         test('getRecord() parses JSON', async () => {
