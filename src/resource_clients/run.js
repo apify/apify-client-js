@@ -92,6 +92,12 @@ class RunClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-runs/resurrect-run/resurrect-run
+     * @param {object} [options]
+     * @param {object} [options.contentType]
+     * @param {string} [options.build]
+     * @param {number} [options.memory]
+     * @param {number} [options.timeout]
+     * @param {boolean} [options.resendRunCreatedWebhook]
      * @return {Promise<Run>}
      */
     async resurrect(options = {}) {
