@@ -94,11 +94,18 @@ class RunClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actor-runs/resurrect-run/resurrect-run
      * @return {Promise<Run>}
      */
-    async resurrect() {
+    async resurrect(options = {}) {
+        ow(options, ow.object.exactShape({
+            build: ow.optional.string,
+            memory: ow.optional.number,
+            timeout: ow.optional.number,
+            resendRunCreatedWebhook: ow.optional.boolean,
+        }));
+
         const response = await this.httpClient.call({
             url: this._url('resurrect'),
             method: 'POST',
-            params: this._params(),
+            params: this._params(options),
         });
 
         return parseDateFields(pluckData(response.data));
