@@ -171,13 +171,13 @@ JavaScript applications. It runs both in Node.js and browser.
 
 | Param | Type | Default |
 | --- | --- | --- |
-| [options] | <code>object</code> |  |
-| [options.baseUrl] | <code>string</code> | <code>&quot;https://api.apify.com&quot;</code> |
-| [options.maxRetries] | <code>number</code> | <code>8</code> |
-| [options.minDelayBetweenRetriesMillis] | <code>number</code> | <code>500</code> |
-| [options.requestInterceptors] | <code>Array.&lt;function()&gt;</code> |  |
-| [options.timeoutSecs] | <code>number</code> |  |
-| [options.token] | <code>string</code> |  |
+| [options] | <code>object</code> |  | 
+| [options.baseUrl] | <code>string</code> | <code>&quot;https://api.apify.com&quot;</code> | 
+| [options.maxRetries] | <code>number</code> | <code>8</code> | 
+| [options.minDelayBetweenRetriesMillis] | <code>number</code> | <code>500</code> | 
+| [options.requestInterceptors] | <code>Array.&lt;function()&gt;</code> |  | 
+| [options.timeoutSecs] | <code>number</code> |  | 
+| [options.token] | <code>string</code> |  | 
 
 
 * * *
@@ -200,7 +200,7 @@ https://docs.apify.com/api/v2#/reference/actors/actor-object
 
 | Param | Type |
 | --- | --- |
-| id | <code>string</code> |
+| id | <code>string</code> | 
 
 
 * * *
@@ -214,7 +214,7 @@ https://docs.apify.com/api/v2#/reference/actor-builds/build-object
 
 | Param | Type |
 | --- | --- |
-| id | <code>string</code> |
+| id | <code>string</code> | 
 
 
 * * *
@@ -237,7 +237,7 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset
 
 | Param | Type |
 | --- | --- |
-| id | <code>string</code> |
+| id | <code>string</code> | 
 
 
 * * *
@@ -260,7 +260,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-object
 
 | Param | Type |
 | --- | --- |
-| id | <code>string</code> |
+| id | <code>string</code> | 
 
 
 * * *
@@ -274,7 +274,7 @@ https://docs.apify.com/api/v2#/reference/logs
 
 | Param | Type |
 | --- | --- |
-| buildOrRunId | <code>string</code> |
+| buildOrRunId | <code>string</code> | 
 
 
 * * *
@@ -297,9 +297,9 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue
 
 | Param | Type |
 | --- | --- |
-| id | <code>string</code> |
-| [options] | <code>object</code> |
-| [options.clientKey] | <code>object</code> |
+| id | <code>string</code> | 
+| [options] | <code>object</code> | 
+| [options.clientKey] | <code>object</code> | 
 
 
 * * *
@@ -313,7 +313,7 @@ https://docs.apify.com/api/v2#/reference/actor-runs/run-object
 
 | Param | Type |
 | --- | --- |
-| id | <code>string</code> |
+| id | <code>string</code> | 
 
 
 * * *
@@ -336,7 +336,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/task-object
 
 | Param | Type |
 | --- | --- |
-| id | <code>string</code> |
+| id | <code>string</code> | 
 
 
 * * *
@@ -359,7 +359,7 @@ https://docs.apify.com/api/v2#/reference/schedules/schedule-object
 
 | Param | Type |
 | --- | --- |
-| id | <code>string</code> |
+| id | <code>string</code> | 
 
 
 * * *
@@ -373,7 +373,7 @@ https://docs.apify.com/api/v2#/reference/users
 
 | Param | Type |
 | --- | --- |
-| id | <code>string</code> |
+| id | <code>string</code> | 
 
 
 * * *
@@ -396,7 +396,7 @@ https://docs.apify.com/api/v2#/reference/webhooks/webhook-object
 
 | Param | Type |
 | --- | --- |
-| id | <code>string</code> |
+| id | <code>string</code> | 
 
 
 * * *
@@ -419,7 +419,7 @@ https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatch-obj
 
 | Param | Type |
 | --- | --- |
-| id | <code>string</code> |
+| id | <code>string</code> | 
 
 
 * * *
@@ -481,12 +481,12 @@ https://docs.apify.com/api/v2#/reference/actors/build-collection/build-actor
 
 | Param | Type |
 | --- | --- |
-| versionNumber | <code>string</code> |
-| [options] | <code>object</code> |
-| [options.betaPackages] | <code>boolean</code> |
-| [options.tag] | <code>string</code> |
-| [options.useCache] | <code>boolean</code> |
-| [options.waitForFinish] | <code>number</code> |
+| versionNumber | <code>string</code> | 
+| [options] | <code>object</code> | 
+| [options.betaPackages] | <code>boolean</code> | 
+| [options.tag] | <code>string</code> | 
+| [options.useCache] | <code>boolean</code> | 
+| [options.waitForFinish] | <code>number</code> | 
 
 
 * * *
@@ -511,14 +511,14 @@ https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
 
 | Param | Type |
 | --- | --- |
-| [input] | <code>\*</code> |
-| [options] | <code>object</code> |
-| [options.build] | <code>string</code> |
-| [options.contentType] | <code>string</code> |
-| [options.memory] | <code>number</code> |
-| [options.timeout] | <code>number</code> |
-| [options.waitSecs] | <code>number</code> |
-| [options.webhooks] | <code>Array.&lt;object&gt;</code> |
+| [input] | <code>\*</code> | 
+| [options] | <code>object</code> | 
+| [options.build] | <code>string</code> | 
+| [options.contentType] | <code>string</code> | 
+| [options.memory] | <code>number</code> | 
+| [options.timeout] | <code>number</code> | 
+| [options.waitSecs] | <code>number</code> | 
+| [options.webhooks] | <code>Array.&lt;object&gt;</code> | 
 
 
 * * *
@@ -550,8 +550,8 @@ https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.status] | <code>string</code> |
+| [options] | <code>object</code> | 
+| [options.status] | <code>string</code> | 
 
 
 * * *
@@ -575,14 +575,14 @@ https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
 
 | Param | Type |
 | --- | --- |
-| [input] | <code>\*</code> |
-| [options] | <code>object</code> |
-| [options.build] | <code>string</code> |
-| [options.contentType] | <code>string</code> |
-| [options.memory] | <code>number</code> |
-| [options.timeout] | <code>number</code> |
-| [options.waitForFinish] | <code>number</code> |
-| [options.webhooks] | <code>Array.&lt;object&gt;</code> |
+| [input] | <code>\*</code> | 
+| [options] | <code>object</code> | 
+| [options.build] | <code>string</code> | 
+| [options.contentType] | <code>string</code> | 
+| [options.memory] | <code>number</code> | 
+| [options.timeout] | <code>number</code> | 
+| [options.waitForFinish] | <code>number</code> | 
+| [options.webhooks] | <code>Array.&lt;object&gt;</code> | 
 
 
 * * *
@@ -596,7 +596,7 @@ https://docs.apify.com/api/v2#/reference/actors/actor-object/update-actor
 
 | Param | Type |
 | --- | --- |
-| newFields | <code>object</code> |
+| newFields | <code>object</code> | 
 
 
 * * *
@@ -610,7 +610,7 @@ https://docs.apify.com/api/v2#/reference/actors/version-object
 
 | Param | Type |
 | --- | --- |
-| versionNumber | <code>string</code> |
+| versionNumber | <code>string</code> | 
 
 
 * * *
@@ -654,7 +654,7 @@ https://docs.apify.com/api/v2#/reference/actors/actor-collection/create-actor
 
 | Param | Type |
 | --- | --- |
-| [actor] | <code>object</code> |
+| [actor] | <code>object</code> | 
 
 
 * * *
@@ -668,11 +668,11 @@ https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-act
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.my] | <code>boolean</code> |
-| [options.limit] | <code>number</code> |
-| [options.offset] | <code>number</code> |
-| [options.desc] | <code>boolean</code> |
+| [options] | <code>object</code> | 
+| [options.my] | <code>boolean</code> | 
+| [options.limit] | <code>number</code> | 
+| [options.offset] | <code>number</code> | 
+| [options.desc] | <code>boolean</code> | 
 
 
 * * *
@@ -717,7 +717,7 @@ https://docs.apify.com/api/v2#/reference/actors/version-object/update-version
 
 | Param | Type |
 | --- | --- |
-| newFields | <code>object</code> |
+| newFields | <code>object</code> | 
 
 
 * * *
@@ -743,7 +743,7 @@ https://docs.apify.com/api/v2#/reference/actors/version-collection/create-versio
 
 | Param | Type |
 | --- | --- |
-| [actorVersion] | <code>object</code> |
+| [actorVersion] | <code>object</code> | 
 
 
 * * *
@@ -757,10 +757,10 @@ https://docs.apify.com/api/v2#/reference/actors/version-collection/get-list-of-v
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.limit] | <code>number</code> |
-| [options.offset] | <code>number</code> |
-| [options.desc] | <code>boolean</code> |
+| [options] | <code>object</code> | 
+| [options.limit] | <code>number</code> | 
+| [options.offset] | <code>number</code> | 
+| [options.desc] | <code>boolean</code> | 
 
 
 * * *
@@ -796,8 +796,8 @@ https://docs.apify.com/api/v2#/reference/actor-builds/build-object/get-build
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.waitForFinish] | <code>number</code> |
+| [options] | <code>object</code> | 
+| [options.waitForFinish] | <code>number</code> | 
 
 
 * * *
@@ -841,10 +841,10 @@ https://docs.apify.com/api/v2#/reference/actors/build-collection/get-list-of-bui
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.limit] | <code>number</code> |
-| [options.offset] | <code>number</code> |
-| [options.desc] | <code>boolean</code> |
+| [options] | <code>object</code> | 
+| [options.limit] | <code>number</code> | 
+| [options.offset] | <code>number</code> | 
+| [options.desc] | <code>boolean</code> | 
 
 
 * * *
@@ -924,16 +924,16 @@ https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.clean] | <code>boolean</code> |
-| [options.desc] | <code>boolean</code> |
-| [options.fields] | <code>Array.&lt;string&gt;</code> |
-| [options.omit] | <code>Array.&lt;string&gt;</code> |
-| [options.limit] | <code>number</code> |
-| [options.offset] | <code>number</code> |
-| [options.skipEmpty] | <code>boolean</code> |
-| [options.skipHidden] | <code>boolean</code> |
-| [options.unwind] | <code>string</code> |
+| [options] | <code>object</code> | 
+| [options.clean] | <code>boolean</code> | 
+| [options.desc] | <code>boolean</code> | 
+| [options.fields] | <code>Array.&lt;string&gt;</code> | 
+| [options.omit] | <code>Array.&lt;string&gt;</code> | 
+| [options.limit] | <code>number</code> | 
+| [options.offset] | <code>number</code> | 
+| [options.skipEmpty] | <code>boolean</code> | 
+| [options.skipHidden] | <code>boolean</code> | 
+| [options.unwind] | <code>string</code> | 
 
 
 * * *
@@ -947,7 +947,7 @@ https://docs.apify.com/api/v2#/reference/datasets/item-collection/put-items
 
 | Param | Type |
 | --- | --- |
-| items | <code>object</code> \| <code>string</code> \| <code>Array.&lt;(object\|string)&gt;</code> |
+| items | <code>object</code> \| <code>string</code> \| <code>Array.&lt;(object\|string)&gt;</code> | 
 
 
 * * *
@@ -961,7 +961,7 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset/update-dataset
 
 | Param | Type |
 | --- | --- |
-| newFields | <code>object</code> |
+| newFields | <code>object</code> | 
 
 
 * * *
@@ -987,7 +987,7 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/create-data
 
 | Param | Type |
 | --- | --- |
-| [name] | <code>string</code> |
+| [name] | <code>string</code> | 
 
 
 * * *
@@ -1001,11 +1001,11 @@ https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.unnamed] | <code>boolean</code> |
-| [options.limit] | <code>number</code> |
-| [options.offset] | <code>number</code> |
-| [options.desc] | <code>boolean</code> |
+| [options] | <code>object</code> | 
+| [options.unnamed] | <code>boolean</code> | 
+| [options.limit] | <code>number</code> | 
+| [options.offset] | <code>number</code> | 
+| [options.desc] | <code>boolean</code> | 
 
 
 * * *
@@ -1045,7 +1045,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/record/delete-record
 
 | Param | Type |
 | --- | --- |
-| key | <code>string</code> |
+| key | <code>string</code> | 
 
 
 * * *
@@ -1071,11 +1071,10 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record
 
 | Param | Type |
 | --- | --- |
-| key | <code>string</code> |
-| [options] | <code>object</code> |
-| [options.buffer] | <code>boolean</code> |
-| [options.stream] | <code>boolean</code> |
-| [options.disableRedirect] | <code>boolean</code> |
+| key | <code>string</code> | 
+| [options] | <code>object</code> | 
+| [options.buffer] | <code>boolean</code> | 
+| [options.stream] | <code>boolean</code> | 
 
 
 * * *
@@ -1089,9 +1088,9 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/key-collection/get-lis
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.limit] | <code>object</code> |
-| [options.exclusiveStartKey] | <code>string</code> |
+| [options] | <code>object</code> | 
+| [options.limit] | <code>object</code> | 
+| [options.exclusiveStartKey] | <code>string</code> | 
 
 
 * * *
@@ -1105,7 +1104,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/record/put-record
 
 | Param | Type |
 | --- | --- |
-| record | [<code>KeyValueStoreRecord</code>](#KeyValueStoreRecord) |
+| record | [<code>KeyValueStoreRecord</code>](#KeyValueStoreRecord) | 
 
 
 * * *
@@ -1119,7 +1118,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/update-st
 
 | Param | Type |
 | --- | --- |
-| newFields | <code>object</code> |
+| newFields | <code>object</code> | 
 
 
 * * *
@@ -1145,7 +1144,7 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/creat
 
 | Param | Type |
 | --- | --- |
-| [name] | <code>string</code> |
+| [name] | <code>string</code> | 
 
 
 * * *
@@ -1159,11 +1158,11 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/get-l
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.unnamed] | <code>boolean</code> |
-| [options.limit] | <code>number</code> |
-| [options.offset] | <code>number</code> |
-| [options.desc] | <code>boolean</code> |
+| [options] | <code>object</code> | 
+| [options.unnamed] | <code>boolean</code> | 
+| [options.limit] | <code>number</code> | 
+| [options.offset] | <code>number</code> | 
+| [options.desc] | <code>boolean</code> | 
 
 
 * * *
@@ -1176,9 +1175,9 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/get-l
 
 | Name | Type |
 | --- | --- |
-| key | <code>string</code> |
-| value | <code>null</code> \| <code>string</code> \| <code>number</code> \| <code>object</code> |
-| [contentType] | <code>string</code> |
+| key | <code>string</code> | 
+| value | <code>null</code> \| <code>string</code> \| <code>number</code> \| <code>object</code> | 
+| [contentType] | <code>string</code> | 
 
 
 * * *
@@ -1258,9 +1257,9 @@ https://docs.apify.com/api/v2#/reference/request-queues/request-collection/add-r
 
 | Param | Type |
 | --- | --- |
-| request | <code>object</code> |
-| [options] | <code>object</code> |
-| [options.forefront] | <code>boolean</code> |
+| request | <code>object</code> | 
+| [options] | <code>object</code> | 
+| [options.forefront] | <code>boolean</code> | 
 
 
 * * *
@@ -1281,7 +1280,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue/delete-request-que
 
 | Param | Type |
 | --- | --- |
-| id | <code>string</code> |
+| id | <code>string</code> | 
 
 
 * * *
@@ -1304,7 +1303,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/request/get-request
 
 | Param | Type |
 | --- | --- |
-| id | <code>string</code> |
+| id | <code>string</code> | 
 
 
 * * *
@@ -1318,8 +1317,8 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue-head/get-head
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.limit] | <code>number</code> |
+| [options] | <code>object</code> | 
+| [options.limit] | <code>number</code> | 
 
 
 * * *
@@ -1333,7 +1332,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue/update-request-que
 
 | Param | Type |
 | --- | --- |
-| newFields | <code>object</code> |
+| newFields | <code>object</code> | 
 
 
 * * *
@@ -1347,9 +1346,9 @@ https://docs.apify.com/api/v2#/reference/request-queues/request/update-request
 
 | Param | Type |
 | --- | --- |
-| request | <code>object</code> |
-| [options] | <code>object</code> |
-| [options.forefront] | <code>boolean</code> |
+| request | <code>object</code> | 
+| [options] | <code>object</code> | 
+| [options.forefront] | <code>boolean</code> | 
 
 
 * * *
@@ -1375,7 +1374,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/create-
 
 | Param | Type |
 | --- | --- |
-| [name] | <code>string</code> |
+| [name] | <code>string</code> | 
 
 
 * * *
@@ -1389,11 +1388,11 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/get-lis
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.unnamed] | <code>boolean</code> |
-| [options.limit] | <code>number</code> |
-| [options.offset] | <code>number</code> |
-| [options.desc] | <code>boolean</code> |
+| [options] | <code>object</code> | 
+| [options.unnamed] | <code>boolean</code> | 
+| [options.limit] | <code>number</code> | 
+| [options.offset] | <code>number</code> | 
+| [options.desc] | <code>boolean</code> | 
 
 
 * * *
@@ -1411,7 +1410,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/get-lis
     * [`.log()`](#RunClient+log) ⇒ [<code>LogClient</code>](#LogClient)
     * [`.metamorph(targetActorId, [input], [options])`](#RunClient+metamorph) ⇒ <code>Promise.&lt;Run&gt;</code>
     * [`.requestQueue()`](#RunClient+requestQueue) ⇒ [<code>RequestQueueClient</code>](#RequestQueueClient)
-    * [`.resurrect()`](#RunClient+resurrect) ⇒ <code>Promise.&lt;Run&gt;</code>
+    * [`.resurrect([options])`](#RunClient+resurrect) ⇒ <code>Promise.&lt;Run&gt;</code>
     * [`.waitForFinish([options])`](#RunClient+waitForFinish) ⇒ <code>Promise.&lt;Run&gt;</code>
 
 
@@ -1446,8 +1445,8 @@ https://docs.apify.com/api/v2#/reference/actor-runs/run-object/get-run
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.waitForFinish] | <code>number</code> |
+| [options] | <code>object</code> | 
+| [options.waitForFinish] | <code>number</code> | 
 
 
 * * *
@@ -1483,11 +1482,11 @@ https://docs.apify.com/api/v2#/reference/actor-runs/metamorph-run/metamorph-run
 
 | Param | Type |
 | --- | --- |
-| targetActorId | <code>string</code> |
-| [input] | <code>\*</code> |
-| [options] | <code>object</code> |
-| [options.contentType] | <code>object</code> |
-| [options.build] | <code>object</code> |
+| targetActorId | <code>string</code> | 
+| [input] | <code>\*</code> | 
+| [options] | <code>object</code> | 
+| [options.contentType] | <code>object</code> | 
+| [options.build] | <code>object</code> | 
 
 
 * * *
@@ -1508,6 +1507,16 @@ https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 #### [](#RunClient+resurrect) `runClient.resurrect([options])` ⇒ <code>Promise.&lt;Run&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actor-runs/resurrect-run/resurrect-run
+
+
+| Param | Type |
+| --- | --- |
+| [options] | <code>object</code> | 
+| [options.contentType] | <code>object</code> | 
+| [options.build] | <code>string</code> | 
+| [options.memory] | <code>number</code> | 
+| [options.timeout] | <code>number</code> | 
+| [options.resendRunCreatedWebhook] | <code>boolean</code> | 
 
 
 * * *
@@ -1552,11 +1561,11 @@ https://docs.apify.com/api/v2#/reference/actors/run-collection/get-list-of-runs
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.limit] | <code>number</code> |
-| [options.offset] | <code>number</code> |
-| [options.desc] | <code>boolean</code> |
-| [options.status] | <code>boolean</code> |
+| [options] | <code>object</code> | 
+| [options.limit] | <code>number</code> | 
+| [options.offset] | <code>number</code> | 
+| [options.desc] | <code>boolean</code> | 
+| [options.status] | <code>boolean</code> | 
 
 
 * * *
@@ -1611,7 +1620,7 @@ https://docs.apify.com/api/v2#/reference/schedules/schedule-object/update-schedu
 
 | Param | Type |
 | --- | --- |
-| newFields | <code>object</code> |
+| newFields | <code>object</code> | 
 
 
 * * *
@@ -1637,7 +1646,7 @@ https://docs.apify.com/api/v2#/reference/schedules/schedules-collection/create-s
 
 | Param | Type |
 | --- | --- |
-| [schedule] | <code>object</code> |
+| [schedule] | <code>object</code> | 
 
 
 * * *
@@ -1651,10 +1660,10 @@ https://docs.apify.com/api/v2#/reference/schedules/schedules-collection/get-list
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.limit] | <code>number</code> |
-| [options.offset] | <code>number</code> |
-| [options.desc] | <code>boolean</code> |
+| [options] | <code>object</code> | 
+| [options.limit] | <code>number</code> | 
+| [options.offset] | <code>number</code> | 
+| [options.desc] | <code>boolean</code> | 
 
 
 * * *
@@ -1690,13 +1699,13 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task
 
 | Param | Type |
 | --- | --- |
-| [input] | <code>object</code> |
-| [options] | <code>object</code> |
-| [options.build] | <code>string</code> |
-| [options.memory] | <code>number</code> |
-| [options.timeout] | <code>number</code> |
-| [options.waitSecs] | <code>number</code> |
-| [options.webhooks] | <code>Array.&lt;object&gt;</code> |
+| [input] | <code>object</code> | 
+| [options] | <code>object</code> | 
+| [options.build] | <code>string</code> | 
+| [options.memory] | <code>number</code> | 
+| [options.timeout] | <code>number</code> | 
+| [options.waitSecs] | <code>number</code> | 
+| [options.webhooks] | <code>Array.&lt;object&gt;</code> | 
 
 
 * * *
@@ -1737,8 +1746,8 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/last-run-object-and-its-sto
 
 | Param | Type |
 | --- | --- |
-| options | <code>object</code> |
-| options.status | <code>string</code> |
+| options | <code>object</code> | 
+| options.status | <code>string</code> | 
 
 
 * * *
@@ -1762,13 +1771,13 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task
 
 | Param | Type |
 | --- | --- |
-| [input] | <code>object</code> |
-| [options] | <code>object</code> |
-| [options.build] | <code>string</code> |
-| [options.memory] | <code>number</code> |
-| [options.timeout] | <code>number</code> |
-| [options.waitForFinish] | <code>number</code> |
-| [options.webhooks] | <code>Array.&lt;object&gt;</code> |
+| [input] | <code>object</code> | 
+| [options] | <code>object</code> | 
+| [options.build] | <code>string</code> | 
+| [options.memory] | <code>number</code> | 
+| [options.timeout] | <code>number</code> | 
+| [options.waitForFinish] | <code>number</code> | 
+| [options.webhooks] | <code>Array.&lt;object&gt;</code> | 
 
 
 * * *
@@ -1782,7 +1791,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/update-task
 
 | Param | Type |
 | --- | --- |
-| newFields | <code>object</code> |
+| newFields | <code>object</code> | 
 
 
 * * *
@@ -1826,7 +1835,7 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection/create-task
 
 | Param | Type |
 | --- | --- |
-| [task] | <code>object</code> |
+| [task] | <code>object</code> | 
 
 
 * * *
@@ -1840,10 +1849,10 @@ https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection/get-list-of
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.limit] | <code>number</code> |
-| [options.offset] | <code>number</code> |
-| [options.desc] | <code>boolean</code> |
+| [options] | <code>object</code> | 
+| [options.limit] | <code>number</code> | 
+| [options.offset] | <code>number</code> | 
+| [options.desc] | <code>boolean</code> | 
 
 
 * * *
@@ -1916,7 +1925,7 @@ https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/update-webhook
 
 | Param | Type |
 | --- | --- |
-| newFields | <code>object</code> |
+| newFields | <code>object</code> | 
 
 
 * * *
@@ -1942,7 +1951,7 @@ https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/create-webh
 
 | Param | Type |
 | --- | --- |
-| [webhook] | <code>object</code> |
+| [webhook] | <code>object</code> | 
 
 
 * * *
@@ -1956,10 +1965,10 @@ https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/get-list-of
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.limit] | <code>number</code> |
-| [options.offset] | <code>number</code> |
-| [options.desc] | <code>boolean</code> |
+| [options] | <code>object</code> | 
+| [options.limit] | <code>number</code> | 
+| [options.offset] | <code>number</code> | 
+| [options.desc] | <code>boolean</code> | 
 
 
 * * *
@@ -1996,10 +2005,10 @@ https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatches-c
 
 | Param | Type |
 | --- | --- |
-| [options] | <code>object</code> |
-| [options.limit] | <code>number</code> |
-| [options.offset] | <code>number</code> |
-| [options.desc] | <code>boolean</code> |
+| [options] | <code>object</code> | 
+| [options.limit] | <code>number</code> | 
+| [options.offset] | <code>number</code> | 
+| [options.desc] | <code>boolean</code> | 
 
 
 * * *
