@@ -77,21 +77,15 @@ describe('Run methods', () => {
             build: 'some-build',
             memory: 1024,
             timeout: 400,
-            resendRunCreatedWebhook: false,
-        };
-
-        const actualQuery = {
-            ...options,
-            resendRunCreatedWebhook: 0,
         };
 
         const res = await client.run(runId).resurrect(options);
         expect(res.id).toEqual('resurrect-run');
-        validateRequest(actualQuery, { runId });
+        validateRequest(options, { runId });
 
         const browserRes = await page.evaluate((rId, opts) => client.run(rId).resurrect(opts), runId, options);
         expect(browserRes).toEqual(res);
-        validateRequest(actualQuery, { runId });
+        validateRequest(options, { runId });
     });
 
     test('metamorph() works', async () => {
