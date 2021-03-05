@@ -1512,7 +1512,6 @@ https://docs.apify.com/api/v2#/reference/actor-runs/resurrect-run/resurrect-run
 | Param | Type |
 | --- | --- |
 | [options] | <code>object</code> | 
-| [options.contentType] | <code>object</code> | 
 | [options.build] | <code>string</code> | 
 | [options.memory] | <code>number</code> | 
 | [options.timeout] | <code>number</code> | 
