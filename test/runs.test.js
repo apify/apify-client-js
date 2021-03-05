@@ -73,13 +73,19 @@ describe('Run methods', () => {
     test('resurrect() works', async () => {
         const runId = 'some-run-id';
 
-        const res = await client.run(runId).resurrect();
-        expect(res.id).toEqual('resurrect-run');
-        validateRequest({}, { runId });
+        const options = {
+            build: 'some-build',
+            memory: 1024,
+            timeout: 400,
+        };
 
-        const browserRes = await page.evaluate((rId) => client.run(rId).resurrect(), runId);
+        const res = await client.run(runId).resurrect(options);
+        expect(res.id).toEqual('resurrect-run');
+        validateRequest(options, { runId });
+
+        const browserRes = await page.evaluate((rId, opts) => client.run(rId).resurrect(opts), runId, options);
         expect(browserRes).toEqual(res);
-        validateRequest({}, { runId });
+        validateRequest(options, { runId });
     });
 
     test('metamorph() works', async () => {

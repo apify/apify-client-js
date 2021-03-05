@@ -1075,7 +1075,6 @@ https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record
 | [options] | <code>object</code> | 
 | [options.buffer] | <code>boolean</code> | 
 | [options.stream] | <code>boolean</code> | 
-| [options.disableRedirect] | <code>boolean</code> | 
 
 
 * * *
@@ -1411,7 +1410,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/get-lis
     * [`.log()`](#RunClient+log) ⇒ [<code>LogClient</code>](#LogClient)
     * [`.metamorph(targetActorId, [input], [options])`](#RunClient+metamorph) ⇒ <code>Promise.&lt;Run&gt;</code>
     * [`.requestQueue()`](#RunClient+requestQueue) ⇒ [<code>RequestQueueClient</code>](#RequestQueueClient)
-    * [`.resurrect()`](#RunClient+resurrect) ⇒ <code>Promise.&lt;Run&gt;</code>
+    * [`.resurrect([options])`](#RunClient+resurrect) ⇒ <code>Promise.&lt;Run&gt;</code>
     * [`.waitForFinish([options])`](#RunClient+waitForFinish) ⇒ <code>Promise.&lt;Run&gt;</code>
 
 
@@ -1505,9 +1504,17 @@ https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 
 <a name="RunClient+resurrect"></a>
 
-#### [](#RunClient+resurrect) `runClient.resurrect()` ⇒ <code>Promise.&lt;Run&gt;</code>
+#### [](#RunClient+resurrect) `runClient.resurrect([options])` ⇒ <code>Promise.&lt;Run&gt;</code>
 
 https://docs.apify.com/api/v2#/reference/actor-runs/resurrect-run/resurrect-run
+
+
+| Param | Type |
+| --- | --- |
+| [options] | <code>object</code> | 
+| [options.build] | <code>string</code> | 
+| [options.memory] | <code>number</code> | 
+| [options.timeout] | <code>number</code> | 
 
 
 * * *
