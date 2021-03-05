@@ -1,9 +1,6 @@
 1.1.0 / NEXT
 ===================
 - Added timeout, memory, and build parameters to `client.run.resurrect()`
-
-1.0.6 / 2021/03/05
-===================
 - Deprecated disableRedirect option for `kvs.setRecord()`
 
 1.0.5 / 2021/02/16
