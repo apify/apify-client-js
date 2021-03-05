@@ -97,7 +97,6 @@ class RunClient extends ResourceClient {
      * @param {string} [options.build]
      * @param {number} [options.memory]
      * @param {number} [options.timeout]
-     * @param {boolean} [options.resendRunCreatedWebhook]
      * @return {Promise<Run>}
      */
     async resurrect(options = {}) {
@@ -105,7 +104,6 @@ class RunClient extends ResourceClient {
             build: ow.optional.string,
             memory: ow.optional.number,
             timeout: ow.optional.number,
-            resendRunCreatedWebhook: ow.optional.boolean,
         }));
 
         const response = await this.httpClient.call({

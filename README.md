@@ -1516,7 +1516,6 @@ https://docs.apify.com/api/v2#/reference/actor-runs/resurrect-run/resurrect-run
 | [options.build] | <code>string</code> | 
 | [options.memory] | <code>number</code> | 
 | [options.timeout] | <code>number</code> | 
-| [options.resendRunCreatedWebhook] | <code>boolean</code> | 
 
 
 * * *
