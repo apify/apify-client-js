@@ -1,7 +1,8 @@
-1.1.0 / NEXT
+1.1.0 / 2021/04/10
 ===================
 - Added timeout, memory, and build parameters to `client.run.resurrect()`
-- Deprecated disableRedirect option for `kvs.setRecord()`
+- Deprecated `disableRedirect` option for `kvs.setRecord()`
+- Updated `apify-shared` version to resolve a sub-dependency vulnerability.
 
 1.0.5 / 2021/02/16
 ===================
