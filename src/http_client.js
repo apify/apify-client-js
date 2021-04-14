@@ -70,8 +70,8 @@ class HttpClient {
             transformResponse: null,
             responseType: 'arraybuffer',
             timeout: this.timeoutMillis,
-            maxContentLength: Infinity,
-            maxBodyLength: Infinity,
+            maxContentLength: -1,
+            maxBodyLength: -1,
         });
 
         // Clean all default headers because they only make a mess
