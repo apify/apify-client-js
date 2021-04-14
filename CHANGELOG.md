@@ -1,3 +1,7 @@
+1.1.1 / 2021/04/14
+===================
+- Fixed slow parsing of large responses due to a [bug in `axios`](https://github.com/axios/axios/issues/2829).
+
 1.1.0 / 2021/04/10
 ===================
 - Added timeout, memory, and build parameters to `client.run.resurrect()`
