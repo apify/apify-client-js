@@ -73,12 +73,15 @@ class KeyValueStoreClient extends ResourceClient {
      * You can use the `buffer` option to get the value in a Buffer (Node.js)
      * or ArrayBuffer (browser) format. In Node.js (not in browser) you can also
      * use the `stream` option to get a Readable stream.
+     *
+     * When the record does not exist, the function resolves to `undefined`. It does
+     * NOT resolve to a `KeyValueStore` record with an `undefined` value.
      * https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record
      * @param {string} key
      * @param {object} [options]
      * @param {boolean} [options.buffer]
      * @param {boolean} [options.stream]
-     * @return {Promise<KeyValueStoreRecord>}
+     * @return {Promise<KeyValueStoreRecord | undefined>}
      */
     async getRecord(key, options = {}) {
         ow(key, ow.string);
