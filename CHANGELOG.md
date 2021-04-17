@@ -1,3 +1,7 @@
+1.2.0 / NEXT
+===================
+- Added validation for resource IDs to be non-empty. This is non-breaking and prevents cryptic errors like `We have bad news: there is no API endpoint at this URL.`
+
 1.1.1 / 2021/04/14
 ===================
 - Fixed slow parsing of large responses due to a [bug in `axios`](https://github.com/axios/axios/issues/2829).
