@@ -1,4 +1,5 @@
 const axios = require('axios');
+const contentTypeParser = require('content-type');
 const { maybeParseBody } = require('./body_parser');
 const {
     isNode,
@@ -28,8 +29,44 @@ class InvalidResponseBodyError extends Error {
  */
 function serializeRequest(config) {
     const [defaultTransform] = axios.defaults.transformRequest;
-    config.data = defaultTransform(config.data, config.headers);
+
+    // The function not only serializes data, but it also adds correct headers.
+    const data = defaultTransform(config.data, config.headers);
+
+    // Actor inputs can include functions and we don't want to omit those,
+    // because it's convenient for users. JSON.stringify removes them.
+    // It's a bit inefficient that we serialize the JSON twice, but I feel
+    // it's a small price to pay. The axios default transform does a lot
+    // of body type checks and we would have to copy all of them to the resource clients.
+    if (config.stringifyFunctions) {
+        const contentTypeHeader = config.headers['Content-Type'] || config.headers['content-type'];
+        try {
+            const { type } = contentTypeParser.parse(contentTypeHeader);
+            if (type === 'application/json') {
+                config.data = stringifyWithFunctions(config.data);
+            } else {
+                config.data = data;
+            }
+        } catch (err) {
+            config.data = data;
+        }
+    } else {
+        config.data = data;
+    }
+
     return config;
+}
+
+/**
+ * JSON.stringify() that serializes functions to string instead
+ * of replacing them with null or removing them.
+ * @param {object} obj
+ * @return {string}
+ */
+function stringifyWithFunctions(obj) {
+    return JSON.stringify(obj, (key, value) => {
+        return typeof value === 'function' ? value.toString() : value;
+    });
 }
 
 /**
