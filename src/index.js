@@ -104,7 +104,7 @@ class ApifyClient {
      * @return {ActorClient}
      */
     actor(id) {
-        ow(id, ow.string);
+        ow(id, ow.string.nonEmpty);
         return new ActorClient({
             id,
             ...this._options(),
@@ -125,7 +125,7 @@ class ApifyClient {
      * @return {BuildClient}
      */
     build(id) {
-        ow(id, ow.string);
+        ow(id, ow.string.nonEmpty);
         return new BuildClient({
             id,
             ...this._options(),
@@ -146,7 +146,7 @@ class ApifyClient {
      * @return {DatasetClient}
      */
     dataset(id) {
-        ow(id, ow.string);
+        ow(id, ow.string.nonEmpty);
         return new DatasetClient({
             id,
             ...this._options(),
@@ -167,7 +167,7 @@ class ApifyClient {
      * @return {KeyValueStoreClient}
      */
     keyValueStore(id) {
-        ow(id, ow.string);
+        ow(id, ow.string.nonEmpty);
         return new KeyValueStoreClient({
             id,
             ...this._options(),
@@ -180,7 +180,7 @@ class ApifyClient {
      * @return {LogClient}
      */
     log(buildOrRunId) {
-        ow(buildOrRunId, ow.string);
+        ow(buildOrRunId, ow.string.nonEmpty);
         return new LogClient({
             id: buildOrRunId,
             ...this._options(),
@@ -203,9 +203,9 @@ class ApifyClient {
      * @return {RequestQueueClient}
      */
     requestQueue(id, options = {}) {
-        ow(id, ow.string);
+        ow(id, ow.string.nonEmpty);
         ow(options, ow.object.exactShape({
-            clientKey: ow.optional.string,
+            clientKey: ow.optional.string.nonEmpty,
         }));
         const apiClientOptions = {
             id,
@@ -228,7 +228,7 @@ class ApifyClient {
      * @return {RunClient}
      */
     run(id) {
-        ow(id, ow.string);
+        ow(id, ow.string.nonEmpty);
         return new RunClient({
             id,
             ...this._options(),
@@ -249,7 +249,7 @@ class ApifyClient {
      * @return {TaskClient}
      */
     task(id) {
-        ow(id, ow.string);
+        ow(id, ow.string.nonEmpty);
         return new TaskClient({
             id,
             ...this._options(),
@@ -270,7 +270,7 @@ class ApifyClient {
      * @return {ScheduleClient}
      */
     schedule(id) {
-        ow(id, ow.string);
+        ow(id, ow.string.nonEmpty);
         return new ScheduleClient({
             id,
             ...this._options(),
@@ -283,7 +283,7 @@ class ApifyClient {
      * @return {UserClient}
      */
     user(id = ME_USER_NAME_PLACEHOLDER) {
-        ow(id, ow.string);
+        ow(id, ow.string.nonEmpty);
         return new UserClient({
             id,
             ...this._options(),
@@ -304,7 +304,7 @@ class ApifyClient {
      * @return {WebhookClient}
      */
     webhook(id) {
-        ow(id, ow.string);
+        ow(id, ow.string.nonEmpty);
         return new WebhookClient({
             id,
             ...this._options(),
@@ -325,7 +325,7 @@ class ApifyClient {
      * @return {WebhookDispatchClient}
      */
     webhookDispatch(id) {
-        ow(id, ow.string);
+        ow(id, ow.string.nonEmpty);
         return new WebhookDispatchClient({
             id,
             ...this._options(),
