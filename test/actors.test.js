@@ -133,6 +133,34 @@ describe('Actor methods', () => {
             validateRequest(query, { actorId }, { some: 'body' }, { 'content-type': contentType });
         });
 
+        test('start() works with functions in input', async () => {
+            const actorId = 'some-id';
+            const input = {
+                foo: 'bar',
+                fn: async (a, b) => a + b,
+            };
+
+            const expectedRequestProps = [
+                {},
+                { actorId },
+                { foo: 'bar', fn: input.fn.toString() },
+                { 'content-type': 'application/json;charset=utf-8' },
+            ];
+
+            const res = await client.actor(actorId).start(input);
+            expect(res.id).toEqual('run-actor');
+            validateRequest(...expectedRequestProps);
+
+            const browserRes = await page.evaluate((id) => {
+                return client.actor(id).start({
+                    foo: 'bar',
+                    fn: async (a, b) => a + b,
+                });
+            }, actorId);
+            expect(browserRes).toEqual(res);
+            validateRequest(...expectedRequestProps);
+        });
+
         test('start() with webhook works', async () => {
             const actorId = 'some-id';
             const webhooks = [

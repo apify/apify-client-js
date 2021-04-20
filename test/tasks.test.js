@@ -163,6 +163,34 @@ describe('Task methods', () => {
             validateRequest(query, { taskId }, input);
         });
 
+        test('start() works with functions in input', async () => {
+            const taskId = 'some-id';
+            const input = {
+                foo: 'bar',
+                fn: async (a, b) => a + b,
+            };
+
+            const expectedRequestProps = [
+                {},
+                { taskId },
+                { foo: 'bar', fn: input.fn.toString() },
+                { 'content-type': 'application/json;charset=utf-8' },
+            ];
+
+            const res = await client.task(taskId).start(input);
+            expect(res.id).toEqual('run-task');
+            validateRequest(...expectedRequestProps);
+
+            const browserRes = await page.evaluate((id) => {
+                return client.task(id).start({
+                    foo: 'bar',
+                    fn: async (a, b) => a + b,
+                });
+            }, taskId);
+            expect(browserRes).toEqual(res);
+            validateRequest(...expectedRequestProps);
+        });
+
         test('start() works with webhooks', async () => {
             const taskId = 'some-id';
             const webhooks = [
