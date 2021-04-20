@@ -1,5 +1,6 @@
-1.2.0 / NEXT
+1.2.0 / 2021/04/20
 ===================
+- Added function serialization to `.start()` and `.call()` function inputs. You can now define input functions as JS functions instead of having to type them out as a string.
 - Added validation for resource IDs to be non-empty. This is non-breaking and prevents cryptic errors like `We have bad news: there is no API endpoint at this URL.`
 
 1.1.1 / 2021/04/14
