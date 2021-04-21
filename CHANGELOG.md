@@ -1,3 +1,7 @@
+1.2.1 / 2021/04/20
+===================
+- Added missing function serialization to `.metamorph()`. See 1.2.0 release.
+
 1.2.0 / 2021/04/20
 ===================
 - Added function serialization to `.start()` and `.call()` function inputs. You can now define input functions as JS functions instead of having to type them out as a string.
