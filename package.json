@@ -1,6 +1,6 @@
 {
     "name": "apify-client",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Apify API client for JavaScript",
     "main": "src/index.js",
     "keywords": [

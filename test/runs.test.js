@@ -116,6 +116,35 @@ describe('Run methods', () => {
         validateRequest(actualQuery, { runId }, { some: 'body' }, { 'content-type': contentType });
     });
 
+    test('metamorph() works with functions in input', async () => {
+        const runId = 'some-run-id';
+        const targetActorId = 'some-target-id';
+        const input = {
+            foo: 'bar',
+            fn: async (a, b) => a + b,
+        };
+
+        const expectedRequest = [
+            { targetActorId },
+            { runId },
+            { foo: 'bar', fn: input.fn.toString() },
+            { 'content-type': 'application/json;charset=utf-8' },
+        ];
+
+        const res = await client.run(runId).metamorph(targetActorId, input);
+        expect(res.id).toEqual('metamorph-run');
+        validateRequest(...expectedRequest);
+
+        const browserRes = await page.evaluate((rId, tId) => {
+            return client.run(rId).metamorph(tId, {
+                foo: 'bar',
+                fn: async (a, b) => a + b,
+            });
+        }, runId, targetActorId);
+        expect(browserRes).toEqual(res);
+        validateRequest(...expectedRequest);
+    });
+
     test('waitForFinish() works', async () => {
         const runId = 'some-run-id';
         const waitSecs = 0.1;
