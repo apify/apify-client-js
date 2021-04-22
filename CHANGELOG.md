@@ -1,3 +1,7 @@
+1.2.2 / 2021/04/20
+===================
+- Fixed double stringification of JSON inputs in `.start()`, `.call()` and `.metamorph()` functions.
+
 1.2.1 / 2021/04/20
 ===================
 - Added missing function serialization to `.metamorph()`. See 1.2.0 release.

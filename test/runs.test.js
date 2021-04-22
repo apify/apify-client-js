@@ -116,6 +116,30 @@ describe('Run methods', () => {
         validateRequest(actualQuery, { runId }, { some: 'body' }, { 'content-type': contentType });
     });
 
+    test('metamorph() works with pre-stringified JSON input', async () => {
+        const runId = 'some-run-id';
+        const targetActorId = 'some-target-id';
+        const contentType = 'application/json; charset=utf-8';
+        const input = JSON.stringify({ foo: 'bar' });
+
+        const expectedRequest = [
+            { targetActorId },
+            { runId },
+            { foo: 'bar' },
+            { 'content-type': contentType },
+        ];
+
+        const res = await client.run(runId).metamorph(targetActorId, input, { contentType });
+        expect(res.id).toEqual('metamorph-run');
+        validateRequest(...expectedRequest);
+
+        const browserRes = await page.evaluate((rId, tId, i, cType) => {
+            return client.run(rId).metamorph(tId, i, { contentType: cType });
+        }, runId, targetActorId, input, contentType);
+        expect(browserRes).toEqual(res);
+        validateRequest(...expectedRequest);
+    });
+
     test('metamorph() works with functions in input', async () => {
         const runId = 'some-run-id';
         const targetActorId = 'some-target-id';
