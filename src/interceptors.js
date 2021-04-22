@@ -42,7 +42,7 @@ function serializeRequest(config) {
         const contentTypeHeader = config.headers['Content-Type'] || config.headers['content-type'];
         try {
             const { type } = contentTypeParser.parse(contentTypeHeader);
-            if (type === 'application/json') {
+            if (type === 'application/json' && typeof config.data === 'object') {
                 config.data = stringifyWithFunctions(config.data);
             } else {
                 config.data = data;

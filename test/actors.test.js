@@ -133,6 +133,20 @@ describe('Actor methods', () => {
             validateRequest(query, { actorId }, { some: 'body' }, { 'content-type': contentType });
         });
 
+        test('start() works with pre-stringified JSON', async () => {
+            const actorId = 'some-id';
+            const contentType = 'application/json; charset=utf-8';
+            const input = JSON.stringify({ some: 'body' });
+
+            const res = await client.actor(actorId).start(input, { contentType });
+            expect(res.id).toEqual('run-actor');
+            validateRequest({}, { actorId }, { some: 'body' }, { 'content-type': contentType });
+
+            const browserRes = await page.evaluate((id, i, opts) => client.actor(id).start(i, opts), actorId, input, { contentType });
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { actorId }, { some: 'body' }, { 'content-type': contentType });
+        });
+
         test('start() works with functions in input', async () => {
             const actorId = 'some-id';
             const input = {
