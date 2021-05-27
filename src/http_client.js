@@ -70,8 +70,12 @@ class HttpClient {
             transformResponse: null,
             responseType: 'arraybuffer',
             timeout: this.timeoutMillis,
+            // maxBodyLength needs to be Infinity, because -1 falls back to a 10 MB default
+            // from an axios subdependency - 'follow-redirects'
+            maxBodyLength: Infinity,
+            // maxContentLength must be -1, because Infinity will cause axios to run super slow
+            // thanks to a bug that's now fixed, but not released yet https://github.com/axios/axios/pull/3738
             maxContentLength: -1,
-            maxBodyLength: -1,
         });
 
         // Clean all default headers because they only make a mess
