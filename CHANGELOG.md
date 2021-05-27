@@ -1,3 +1,7 @@
+1.2.3 / 2021/05/27
+===================
+- Fixed invalid max body length setting thanks to a transitive default in `axios`.
+
 1.2.2 / 2021/04/20
 ===================
 - Fixed double stringification of JSON inputs in `.start()`, `.call()` and `.metamorph()` functions.
