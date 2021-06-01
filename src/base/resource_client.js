@@ -1,4 +1,4 @@
-const { ACT_JOB_TERMINAL_STATUSES } = require('apify-shared/consts');
+const { ACT_JOB_TERMINAL_STATUSES } = require('@apify/consts');
 const ApiClient = require('./api_client');
 const {
     pluckData,

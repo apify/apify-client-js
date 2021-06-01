@@ -1,6 +1,6 @@
 const ow = require('ow').default;
-const { ME_USER_NAME_PLACEHOLDER } = require('apify-shared/consts');
-const logger = require('apify-shared/log');
+const { ME_USER_NAME_PLACEHOLDER } = require('@apify/consts');
+const { default: logger } = require('@apify/log');
 
 const HttpClient = require('./http_client');
 const Statistics = require('./statistics');
