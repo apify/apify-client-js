@@ -15,6 +15,7 @@ module.exports = {
         ],
     },
     resolve: {
+        mainFields: ['browser', 'main', 'module'],
         extensions: ['*', '.js'],
     },
     node: {

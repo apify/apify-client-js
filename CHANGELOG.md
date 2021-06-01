@@ -1,3 +1,7 @@
+1.2.4 / 2021/06/01
+===================
+- use new `apify-shared` packages to reduce bundle size
+
 1.2.3 / 2021/05/27
 ===================
 - Fixed invalid max body length setting thanks to a transitive default in `axios`.

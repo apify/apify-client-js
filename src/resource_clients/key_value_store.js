@@ -1,5 +1,5 @@
 const ow = require('ow').default;
-const log = require('apify-shared/log');
+const { default: log } = require('@apify/log');
 const ResourceClient = require('../base/resource_client');
 const { isBuffer, isStream } = require('../utils');
 const {

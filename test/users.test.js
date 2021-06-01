@@ -1,4 +1,4 @@
-const { ME_USER_NAME_PLACEHOLDER } = require('apify-shared/consts');
+const { ME_USER_NAME_PLACEHOLDER } = require('@apify/consts');
 const ApifyClient = require('../src');
 const mockServer = require('./mock_server/server');
 const { Browser, validateRequest, DEFAULT_QUERY } = require('./_helper');
