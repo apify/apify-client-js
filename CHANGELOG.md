@@ -1,3 +1,7 @@
+1.2.5 / 2021/06/15
+===================
+- Enabled access to actor run storages via `RunClient`
+
 1.2.4 / 2021/06/01
 ===================
 - use new `apify-shared` packages to reduce bundle size
