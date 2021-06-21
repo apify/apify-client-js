@@ -223,7 +223,7 @@ class ApifyClient {
     // }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-runs/run-object
+     * https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
      * @param {string} id
      * @return {RunClient}
      */

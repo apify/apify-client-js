@@ -149,8 +149,9 @@ class RunClient extends ResourceClient {
     }
 
     /**
-     * Currently this works only through `actor.lastRun().dataset()`. It will become
-     * available for all runs once API supports it.
+     * https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
+     *
+     * This also works through `actorClient.lastRun().dataset()`.
      * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
      * @return {DatasetClient}
      */
@@ -161,8 +162,9 @@ class RunClient extends ResourceClient {
     }
 
     /**
-     * Currently this works only through `actorClient.lastRun().dataset()`. It will become
-     * available for all runs once API supports it.
+     * https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
+     *
+     * This also works through `actorClient.lastRun().keyValueStore()`.
      * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
      * @return {KeyValueStoreClient}
      */
@@ -173,8 +175,9 @@ class RunClient extends ResourceClient {
     }
 
     /**
-     * Currently this works only through `actorClient.lastRun().dataset()`. It will become
-     * available for all runs once API supports it.
+     * https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
+     *
+     * This also works through `actorClient.lastRun().requestQueue()`.
      * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
      * @return {RequestQueueClient}
      */
@@ -185,8 +188,9 @@ class RunClient extends ResourceClient {
     }
 
     /**
-     * Currently this works only through `actorClient.lastRun().dataset()`. It will become
-     * available for all runs once API supports it.
+     * https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
+     *
+     * This also works through `actorClient.lastRun().log()`.
      * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
      * @return {LogClient}
      */

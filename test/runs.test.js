@@ -201,19 +201,55 @@ describe('Run methods', () => {
         validateRequest({ waitForFinish: 0 }, { runId });
     });
 
-    test.skip('dataset().get() works', async () => {
+    test('dataset().get() works', async () => {
+        const runId = 'some-run-id';
 
+        const res = await client.run(runId).dataset().get();
+        expect(res.id).toEqual('run-dataset');
+
+        validateRequest({}, { runId });
+
+        const browserRes = await page.evaluate((rId) => client.run(rId).dataset().get(), runId);
+        expect(browserRes).toEqual(res);
+        validateRequest({}, { runId });
     });
 
-    test.skip('keyValueStore().get() works', async () => {
+    test('keyValueStore().get() works', async () => {
+        const runId = 'some-run-id';
 
+        const res = await client.run(runId).keyValueStore().get();
+        expect(res.id).toEqual('run-keyValueStore');
+
+        validateRequest({}, { runId });
+
+        const browserRes = await page.evaluate((rId) => client.run(rId).keyValueStore().get(), runId);
+        expect(browserRes).toEqual(res);
+        validateRequest({}, { runId });
     });
 
-    test.skip('requestQueue().get() works', async () => {
+    test('requestQueue().get() works', async () => {
+        const runId = 'some-run-id';
 
+        const res = await client.run(runId).requestQueue().get();
+        expect(res.id).toEqual('run-requestQueue');
+
+        validateRequest({}, { runId });
+
+        const browserRes = await page.evaluate((rId) => client.run(rId).requestQueue().get(), runId);
+        expect(browserRes).toEqual(res);
+        validateRequest({}, { runId });
     });
 
-    test.skip('log().get() works', async () => {
+    test('log().get() works', async () => {
+        const runId = 'some-run-id';
 
+        const res = await client.run(runId).log().get();
+        expect(res).toEqual('run-log');
+
+        validateRequest({}, { runId });
+
+        const browserRes = await page.evaluate((rId) => client.run(rId).log().get(), runId);
+        expect(browserRes).toEqual(res);
+        validateRequest({}, { runId });
     });
 });
