@@ -308,7 +308,7 @@ https://docs.apify.com/api/v2#/reference/request-queues/queue
 
 #### [](#ApifyClient+run) `apifyClient.run(id)` ⇒ [<code>RunClient</code>](#RunClient)
 
-https://docs.apify.com/api/v2#/reference/actor-runs/run-object
+https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
 
 
 | Param | Type |
@@ -1432,8 +1432,9 @@ https://docs.apify.com/api/v2#/reference/actor-runs/abort-run/abort-run
 
 #### [](#RunClient+dataset) `runClient.dataset()` ⇒ [<code>DatasetClient</code>](#DatasetClient)
 
-Currently this works only through `actor.lastRun().dataset()`. It will become
-available for all runs once API supports it.
+https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
+
+This also works through `actorClient.lastRun().dataset()`.
 https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 
 
@@ -1458,8 +1459,9 @@ https://docs.apify.com/api/v2#/reference/actor-runs/run-object/get-run
 
 #### [](#RunClient+keyValueStore) `runClient.keyValueStore()` ⇒ [<code>KeyValueStoreClient</code>](#KeyValueStoreClient)
 
-Currently this works only through `actorClient.lastRun().dataset()`. It will become
-available for all runs once API supports it.
+https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
+
+This also works through `actorClient.lastRun().keyValueStore()`.
 https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 
 
@@ -1469,8 +1471,9 @@ https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 
 #### [](#RunClient+log) `runClient.log()` ⇒ [<code>LogClient</code>](#LogClient)
 
-Currently this works only through `actorClient.lastRun().dataset()`. It will become
-available for all runs once API supports it.
+https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
+
+This also works through `actorClient.lastRun().log()`.
 https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 
 
@@ -1498,8 +1501,9 @@ https://docs.apify.com/api/v2#/reference/actor-runs/metamorph-run/metamorph-run
 
 #### [](#RunClient+requestQueue) `runClient.requestQueue()` ⇒ [<code>RequestQueueClient</code>](#RequestQueueClient)
 
-Currently this works only through `actorClient.lastRun().dataset()`. It will become
-available for all runs once API supports it.
+https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
+
+This also works through `actorClient.lastRun().requestQueue()`.
 https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
 
 
