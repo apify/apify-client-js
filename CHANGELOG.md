@@ -1,3 +1,7 @@
+1.2.6 / 2021/06/21
+===================
+- Added gracefully parameter for abort run function
+
 1.2.4 / 2021/06/01
 ===================
 - use new `apify-shared` packages to reduce bundle size
