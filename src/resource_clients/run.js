@@ -38,13 +38,18 @@ class RunClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-runs/abort-run/abort-run
+     * @param {object} [options]
+     * @param {object} [options.gracefully]
      * @return {Promise<Run>}
      */
-    async abort() {
+    async abort(options = {}) {
+        ow(options, ow.object.exactShape({
+            gracefully: ow.optional.boolean,
+        }));
         const response = await this.httpClient.call({
             url: this._url('abort'),
             method: 'POST',
-            params: this._params(),
+            params: this._params(options),
         });
 
         return parseDateFields(pluckData(response.data));

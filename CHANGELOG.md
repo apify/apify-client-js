@@ -1,3 +1,7 @@
+1.2.6 / 2021/06/21
+===================
+- Added gracefully parameter for abort run function
+
 1.2.5 / 2021/06/15
 ===================
 - Enabled access to actor run storages via `RunClient`
