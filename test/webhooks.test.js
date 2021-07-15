@@ -117,6 +117,18 @@ describe('Webhook methods', () => {
             validateRequest({}, { webhookId });
         });
 
+        test('test() works', async () => {
+            const webhookId = 'webhook_test_id';
+
+            const res = await client.webhook(webhookId).test();
+            expect(res.id).toEqual('test-webhook');
+            validateRequest({}, { webhookId });
+
+            const browserRes = await page.evaluate((id) => client.webhook(id).test(), webhookId);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { webhookId });
+        });
+
         test('listDispatches() works', async () => {
             const webhookId = 'webhook_id';
             const opts = {
