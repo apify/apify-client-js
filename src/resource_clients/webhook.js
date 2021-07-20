@@ -1,6 +1,11 @@
 const ow = require('ow').default;
 const ResourceClient = require('../base/resource_client');
 const WebhookDispatchCollectionClient = require('./webhook_dispatch_collection');
+const {
+    pluckData,
+    parseDateFields,
+    catchNotFoundOrThrow,
+} = require('../utils');
 
 /**
  * @hideconstructor
@@ -40,6 +45,25 @@ class WebhookClient extends ResourceClient {
      */
     async delete() {
         return this._delete();
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/webhooks/webhook-test/test-webhook
+     * @return {Promise<WebhookDispatch>}
+     */
+    async test() {
+        const request = {
+            url: this._url('test'),
+            method: 'POST',
+            params: this._params(),
+        };
+
+        try {
+            const response = await this.httpClient.call(request);
+            return parseDateFields(pluckData(response.data));
+        } catch (err) {
+            return catchNotFoundOrThrow(err);
+        }
     }
 
     /**

@@ -1,3 +1,7 @@
+1.3.0 / 2021/07/15
+===================
+- Added new method `.test()` to the `WebhookClient` class
+
 1.2.6 / 2021/06/21
 ===================
 - Added gracefully parameter for abort run function
