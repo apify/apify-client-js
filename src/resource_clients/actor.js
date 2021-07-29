@@ -91,7 +91,7 @@ class ActorClient extends ResourceClient {
             url: this._url('runs'),
             method: 'POST',
             data: input,
-            params: this._params(params),
+            params,
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
@@ -162,10 +162,10 @@ class ActorClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('builds'),
             method: 'POST',
-            params: this._params({
+            params: {
                 version: versionNumber,
                 ...options,
-            }),
+            },
         });
 
         return parseDateFields(pluckData(response.data));
@@ -184,7 +184,7 @@ class ActorClient extends ResourceClient {
 
         return new RunClient(this._subResourceOptions({
             id: 'last',
-            params: this._params(options),
+            params: options,
             resourcePath: 'runs',
         }));
     }

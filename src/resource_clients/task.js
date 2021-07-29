@@ -87,7 +87,7 @@ class TaskClient extends ResourceClient {
             url: this._url('runs'),
             method: 'POST',
             data: input,
-            params: this._params(params),
+            params,
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
@@ -138,7 +138,6 @@ class TaskClient extends ResourceClient {
         const requestOpts = {
             url: this._url('input'),
             method: 'GET',
-            params: this._params(),
         };
         try {
             const response = await this.httpClient.call(requestOpts);
@@ -156,7 +155,6 @@ class TaskClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('input'),
             method: 'PUT',
-            params: this._params(),
             data: newFields,
         });
         return response.data;
@@ -175,7 +173,7 @@ class TaskClient extends ResourceClient {
 
         return new RunClient(this._subResourceOptions({
             id: 'last',
-            params: this._params(options),
+            params: options,
             resourcePath: 'runs',
         }));
     }

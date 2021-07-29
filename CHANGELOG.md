@@ -1,4 +1,4 @@
-1.3.1 / 2021/07/29
+1.4.0 / 2021/07/29
 ===================
 - Changed passing token using request HTTP header instead of the request parameter for every API calls
 
