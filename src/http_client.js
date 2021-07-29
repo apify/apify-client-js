@@ -92,7 +92,7 @@ class HttpClient {
 
         // Attach Authorization header for all requests if token was provided
         if (token) {
-            this.axios.defaults.headers['Authorization'] = `Bearer ${token}`;
+            this.axios.defaults.headers.Authorization = `Bearer ${token}`;
         }
 
         requestInterceptors.forEach((i) => this.axios.interceptors.request.use(i));

@@ -60,7 +60,7 @@ const validateRequest = (query = {}, params = {}, body = {}, additionalHeaders =
     const headers = {
         authorization: `Bearer ${DEFAULT_OPTIONS.token}`,
         ...additionalHeaders,
-    }
+    };
     const request = mockServer.getLastRequest();
     const expectedQuery = getExpectedQuery(query);
     if (query !== false) expect(request.query).toEqual(expectedQuery);
