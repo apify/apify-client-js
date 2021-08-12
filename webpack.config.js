@@ -1,5 +1,6 @@
-const BrotliPlugin = require('brotli-webpack-plugin');
+const { ProvidePlugin } = require('webpack');
 
+/** @type {import('webpack').Configuration} */
 module.exports = {
     entry: './src/index.js',
     target: 'web',
@@ -17,16 +18,16 @@ module.exports = {
     resolve: {
         mainFields: ['browser', 'main', 'module'],
         extensions: ['*', '.js'],
+        fallback: {
+            fs: false,
+            os: false,
+            stream: false,
+            util: false,
+            zlib: false,
+        },
     },
     node: {
-        fs: 'empty',
-        os: false,
-        stream: false,
-        util: false,
-        zlib: false,
-        Buffer: false,
         global: false,
-        process: 'mock',
     },
     output: {
         path: `${__dirname}/dist`,
@@ -35,12 +36,9 @@ module.exports = {
         library: 'ApifyClient',
     },
     mode: 'development',
-    // plugins: [
-    //     new BrotliPlugin({
-    //         asset: '[path].br[query]',
-    //         test: /\.(js)$/,
-    //         threshold: 10240,
-    //         minRatio: 0.8,
-    //     }),
-    // ],
+    plugins: [
+        new ProvidePlugin({
+            process: require.resolve('process/browser'),
+        }),
+    ],
 };

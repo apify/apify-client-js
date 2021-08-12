@@ -11,7 +11,9 @@ const {
 const {
     isNode,
 } = require('./utils');
-const { version } = require('../package.json');
+
+// eslint-disable-next-line no-eval
+const { version } = eval(`require('../package.json')`);
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 
