@@ -3,6 +3,16 @@
 	"version": "1.3.0",
 	"description": "Apify API client for JavaScript",
 	"main": "dist/index.js",
+	"module": "dist/index.mjs",
+	"types": "dist/index.d.ts",
+	"browser": "dist/bundle.js",
+	"unpkg": "dist/bundle.js",
+	"exports": {
+		".": {
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.js"
+		}
+	},
 	"keywords": [
 		"apify",
 		"api",
@@ -31,17 +41,9 @@
 	},
 	"homepage": "https://apify.com/docs/sdk/apify-client-js/latest",
 	"files": [
-		"src",
-		"dist"
+		"dist",
+		"!dist/*.tsbuildinfo"
 	],
-	"browser": {
-		"agentkeepalive": false,
-		"fs": false,
-		"os": false,
-		"stream": false,
-		"util": false,
-		"zlib": false
-	},
 	"scripts": {
 		"build": "run-s clean build:node build:browser",
 		"postbuild": "gen-esm-wrapper dist/index.js dist/index.mjs",
