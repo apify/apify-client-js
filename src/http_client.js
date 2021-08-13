@@ -10,8 +10,10 @@ const {
 } = require('./interceptors');
 const {
     isNode,
+    dynamicRequire,
 } = require('./utils');
-const { version } = require('../package.json');
+
+const { version } = dynamicRequire('../package.json');
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 

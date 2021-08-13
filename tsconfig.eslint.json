@@ -1,0 +1,12 @@
+{
+	"extends": "./tsconfig.json",
+	"include": [
+		"src/**/*",
+		"test",
+		"jest.config.ts",
+		"webpack.config.js"
+	],
+	"compilerOptions": {
+		"allowJs": true
+	}
+}

@@ -1,3 +1,7 @@
+2.0.0 / TBD
+===================
+- Laid out base for migration to TypeScript
+
 1.3.0 / 2021/07/15
 ===================
 - Added new method `.test()` to the `WebhookClient` class

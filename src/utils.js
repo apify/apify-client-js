@@ -110,6 +110,20 @@ function isStream(value) {
     return ow.isValid(value, ow.object.hasKeys('on', 'pipe'));
 }
 
+/**
+ * @param {string} path
+ * @returns {*}
+ */
+function dynamicRequire(path) {
+    if (typeof BROWSER_BUILD !== 'undefined') {
+        // eslint-disable-next-line no-undef -- defined by webpack
+        return { version: VERSION };
+    }
+
+    // eslint-disable-next-line
+    return require(path);
+}
+
 module.exports = {
     isNode,
     isBuffer,
@@ -119,4 +133,5 @@ module.exports = {
     parseDateFields,
     catchNotFoundOrThrow,
     pluckData,
+    dynamicRequire,
 };
