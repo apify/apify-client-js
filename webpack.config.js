@@ -1,4 +1,5 @@
 const { ProvidePlugin, DefinePlugin } = require('webpack');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const Package = require('./package.json');
 
@@ -37,7 +38,7 @@ module.exports = {
         libraryTarget: 'umd',
         library: 'ApifyClient',
     },
-    mode: 'development',
+    mode: 'production',
     plugins: [
         new ProvidePlugin({
             process: require.resolve('process/browser'),
@@ -47,4 +48,13 @@ module.exports = {
             BROWSER_BUILD: true,
         }),
     ],
+    optimization: {
+        minimizer: [
+            new TerserPlugin({
+                terserOptions: {
+                    keep_classnames: true,
+                },
+            }),
+        ],
+    },
 };
