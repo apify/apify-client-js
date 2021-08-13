@@ -101,6 +101,9 @@ jobs:
         if: env.RELEASE_TAG == 'beta'
         run: node ./.github/scripts/before-beta-release.js
       -
+        name: Build module
+        run: npm run build
+      -
         name: Publish to NPM
         run: NODE_AUTH_TOKEN=${{secrets.NPM_TOKEN}} npm publish --tag ${{ env.RELEASE_TAG }}
       -
