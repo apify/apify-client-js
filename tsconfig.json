@@ -1,0 +1,11 @@
+{
+	"extends": "@apify/tsconfig",
+	"compilerOptions": {
+		"allowJs": true,
+		"sourceRoot": "/",
+		"outDir": "dist"
+	},
+	"include": [
+		"./src/**/*"
+	]
+}

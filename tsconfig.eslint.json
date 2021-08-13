@@ -1,10 +1,10 @@
 {
-	"extends": "./tsconfig.base.json",
+	"extends": "./tsconfig.json",
 	"include": [
-		"src",
+		"src/**/*",
 		"test",
 		"jest.config.ts",
-		"src/**/*.d.ts"
+		"webpack.config.js"
 	],
 	"compilerOptions": {
 		"allowJs": true

@@ -1,4 +1,6 @@
-const { ProvidePlugin } = require('webpack');
+const { ProvidePlugin, DefinePlugin } = require('webpack');
+
+const Package = require('./package.json');
 
 /** @type {import('webpack').Configuration} */
 module.exports = {
@@ -39,6 +41,10 @@ module.exports = {
     plugins: [
         new ProvidePlugin({
             process: require.resolve('process/browser'),
+        }),
+        new DefinePlugin({
+            VERSION: JSON.stringify(Package.version),
+            BROWSER_BUILD: true,
         }),
     ],
 };
