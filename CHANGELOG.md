@@ -1,4 +1,4 @@
-2.0.0-alpha0 / TBD
+2.0.0 / TBD
 ===================
 - Laid out base for migration to TypeScript
 
