@@ -1,5 +1,5 @@
 const ow = require('ow').default;
-const ResourceClient = require('../base/resource_client');
+const { ResourceClient } = require('../base/resource_client');
 const {
     pluckData,
     parseDateFields,

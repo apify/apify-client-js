@@ -1,4 +1,4 @@
-const ResourceClient = require('../base/resource_client');
+const { ResourceClient } = require('../base/resource_client');
 
 /**
  * @hideconstructor
