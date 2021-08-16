@@ -70,7 +70,7 @@ export abstract class ApiClient {
     }
 
     protected _toSafeId(id: string): string {
-        return id.replace(/\//g, '~');
+        return id.replace('/', '~');
     }
 }
 
