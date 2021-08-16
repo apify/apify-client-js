@@ -130,3 +130,12 @@ declare global {
     export const BROWSER_BUILD: boolean | undefined;
     export const VERSION: string | undefined;
 }
+
+export interface PaginatedList<Data extends unknown> {
+    total: number;
+    count: number;
+    offset: number;
+    limit: number;
+    desc: boolean;
+    items: Data[];
+}
