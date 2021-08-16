@@ -3,7 +3,7 @@ const { ME_USER_NAME_PLACEHOLDER } = require('@apify/consts');
 const { default: logger } = require('@apify/log');
 
 const HttpClient = require('./http_client');
-const Statistics = require('./statistics');
+const { Statistics } = require('./statistics');
 
 const ActorClient = require('./resource_clients/actor');
 const ActorCollectionClient = require('./resource_clients/actor_collection');

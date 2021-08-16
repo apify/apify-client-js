@@ -1,4 +1,4 @@
-const Statistics = require('../src/statistics');
+const { Statistics } = require('../src/statistics');
 
 describe('Statistics', () => {
     test.each([
