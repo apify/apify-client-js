@@ -12,7 +12,7 @@ export class ResourceCollectionClient extends ApiClient {
     /**
      * @private
      */
-    protected async _list<T extends Record<string, unknown>, R extends unknown>(options: T = {} as T): Promise<R> {
+    protected async _list<T extends Record<string, unknown>, R>(options: T = {} as T): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'GET',
@@ -21,7 +21,7 @@ export class ResourceCollectionClient extends ApiClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    protected async _create<T extends Record<string, unknown>, R extends unknown>(resource: T): Promise<R> {
+    protected async _create<T extends Record<string, unknown>, R>(resource: T): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'POST',
@@ -31,7 +31,7 @@ export class ResourceCollectionClient extends ApiClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    protected async _getOrCreate<R extends unknown>(name = ''): Promise<R> {
+    protected async _getOrCreate<R>(name = ''): Promise<R> {
         // The default value of '' allows creating unnamed
         // resources by passing the name= parameter with
         // no value. It's useful and later will be supported
