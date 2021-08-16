@@ -16,11 +16,18 @@ module.exports = {
                     loader: 'babel-loader',
                 },
             },
+            {
+                test: /\.(ts)$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: 'ts-loader',
+                },
+            },
         ],
     },
     resolve: {
         mainFields: ['browser', 'main', 'module'],
-        extensions: ['*', '.js'],
+        extensions: ['*', '.js', '.ts'],
         fallback: {
             fs: false,
             os: false,
