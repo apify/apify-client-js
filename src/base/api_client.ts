@@ -70,6 +70,7 @@ export abstract class ApiClient {
     }
 
     protected _toSafeId(id: string): string {
+        // The id has the format `username/actor-name`, so we only need to replace the first `/`.
         return id.replace('/', '~');
     }
 }
