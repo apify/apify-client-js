@@ -1,6 +1,6 @@
 const { ACT_JOB_STATUSES } = require('@apify/consts');
 const ow = require('ow').default;
-const ResourceCollectionClient = require('../base/resource_collection_client');
+const { ResourceCollectionClient } = require('../base/resource_collection_client');
 
 /**
  * @hideconstructor

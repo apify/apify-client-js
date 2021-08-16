@@ -1,5 +1,5 @@
 const ow = require('ow').default;
-const ResourceCollectionClient = require('../base/resource_collection_client');
+const { ResourceCollectionClient } = require('../base/resource_collection_client');
 
 /**
  * @hideconstructor

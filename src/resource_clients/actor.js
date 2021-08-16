@@ -6,7 +6,7 @@ const BuildCollectionClient = require('./build_collection');
 const RunClient = require('./run');
 const RunCollectionClient = require('./run_collection');
 const WebhookCollectionClient = require('./webhook_collection');
-const ResourceClient = require('../base/resource_client');
+const { ResourceClient } = require('../base/resource_client');
 const {
     pluckData,
     parseDateFields,

@@ -1,21 +1,18 @@
-const ApiClient = require('./api_client');
-const {
+import { ApiClient } from './api_client';
+import {
     pluckData,
     parseDateFields,
-} = require('../utils');
+} from '../utils';
 
 /**
  * Resource collection client.
- * @param {ApiClientOptions} options
  * @private
  */
-class ResourceCollectionClient extends ApiClient {
+export class ResourceCollectionClient extends ApiClient {
     /**
-     * @param {object} [options]
-     * @return {Promise<object>}
      * @private
      */
-    async _list(options = {}) {
+    protected async _list<T extends Record<string, unknown>, R>(options: T = {} as T): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'GET',
@@ -24,12 +21,7 @@ class ResourceCollectionClient extends ApiClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    /**
-     * @param {object} resource
-     * @return {Promise<object>}
-     * @private
-     */
-    async _create(resource) {
+    protected async _create<T extends Record<string, unknown>, R>(resource: T): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'POST',
@@ -39,12 +31,7 @@ class ResourceCollectionClient extends ApiClient {
         return parseDateFields(pluckData(response.data));
     }
 
-    /**
-     * @param {string} [name]
-     * @return {Promise<object>}
-     * @private
-     */
-    async _getOrCreate(name = '') {
+    protected async _getOrCreate<R>(name = ''): Promise<R> {
         // The default value of '' allows creating unnamed
         // resources by passing the name= parameter with
         // no value. It's useful and later will be supported
@@ -57,5 +44,3 @@ class ResourceCollectionClient extends ApiClient {
         return parseDateFields(pluckData(response.data));
     }
 }
-
-module.exports = ResourceCollectionClient;
