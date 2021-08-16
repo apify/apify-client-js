@@ -1,4 +1,4 @@
-const { Statistics } = require('../src/statistics');
+import { Statistics } from '../src/statistics';
 
 describe('Statistics', () => {
     test.each([
