@@ -92,12 +92,12 @@ if (isNode()) gzipPromise = util.promisify(zlib.gzip);
 export async function maybeGzipValue(value: unknown): Promise<Buffer | undefined> {
     if (!isNode()) return;
     if (value == null) return;
+    if (typeof value !== 'string' && !Buffer.isBuffer(value)) return;
 
     // Request compression is not that important so let's
     // skip it instead of throwing for unsupported types.
-    const areDataStringOrBuffer = (typeof value === 'string') || Buffer.isBuffer(value);
     const areDataLargeEnough = Buffer.byteLength(value as string) >= MIN_GZIP_BYTES;
-    if (areDataStringOrBuffer && areDataLargeEnough) {
+    if (areDataLargeEnough) {
         return gzipPromise(value);
     }
 
