@@ -51,7 +51,7 @@ export function parseDateFields(input: JsonValue, depth = 0): ReturnJsonValue {
         if (k.endsWith(PARSE_DATE_FIELDS_KEY_SUFFIX)) {
             output[k] = v ? new Date(v as string) : v;
         } else if (isValObject || Array.isArray(v)) {
-            output[k] = parseDateFields(v, depth + 1);
+            output[k] = parseDateFields(v!, depth + 1);
         } else {
             output[k] = v;
         }

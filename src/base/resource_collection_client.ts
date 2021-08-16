@@ -18,7 +18,7 @@ export class ResourceCollectionClient extends ApiClient {
             method: 'GET',
             params: this._params(options),
         });
-        return parseDateFields(pluckData(response.data));
+        return parseDateFields(pluckData(response.data)) as R;
     }
 
     protected async _create<T extends Record<string, unknown>, R>(resource: T): Promise<R> {
@@ -28,7 +28,7 @@ export class ResourceCollectionClient extends ApiClient {
             params: this._params(),
             data: resource,
         });
-        return parseDateFields(pluckData(response.data));
+        return parseDateFields(pluckData(response.data)) as R;
     }
 
     protected async _getOrCreate<R>(name = ''): Promise<R> {
@@ -41,6 +41,6 @@ export class ResourceCollectionClient extends ApiClient {
             method: 'POST',
             params: this._params({ name }),
         });
-        return parseDateFields(pluckData(response.data));
+        return parseDateFields(pluckData(response.data)) as R;
     }
 }
