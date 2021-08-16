@@ -51,7 +51,7 @@ export abstract class ApiClient {
         this.params = params;
     }
 
-    protected _subResourceOptions<T extends Record<PropertyKey, unknown>>(moreOptions: T): BaseOptions & T {
+    protected _subResourceOptions<T extends Record<string, unknown>>(moreOptions: T): BaseOptions & T {
         const baseOptions = {
             baseUrl: this._url(),
             apifyClient: this.apifyClient,
