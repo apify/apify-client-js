@@ -2,7 +2,7 @@ import ow from 'ow';
 import { ApiClientOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
-import { ActorVersion } from './actor';
+import { ActorVersion, FinalActorVersion } from './actor_version';
 
 /**
  * @hideconstructor
@@ -30,7 +30,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/actors/version-collection/create-version
      */
-    async create(actorVersion: ActorVersion): Promise<ActorVersionCollectionListVersion> {
+    async create(actorVersion: ActorVersion): Promise<FinalActorVersion> {
         ow(actorVersion, ow.optional.object);
         return this._create(actorVersion);
     }
@@ -42,6 +42,4 @@ export interface ActorVersionCollectionListOptions {
     desc?: boolean;
 }
 
-export type ActorVersionCollectionListVersion = ActorVersion & Required<Pick<ActorVersion, 'versionNumber' | 'sourceType' | 'buildTag'>>
-
-export type ActorVersionListResult = Pick<PaginatedList<ActorVersionCollectionListVersion>, 'total' | 'items'>
+export type ActorVersionListResult = Pick<PaginatedList<FinalActorVersion>, 'total' | 'items'>

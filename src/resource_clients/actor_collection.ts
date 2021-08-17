@@ -2,7 +2,8 @@ import ow from 'ow';
 import { ApiClientOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
-import { Actor, ActorVersion } from './actor';
+import { Actor } from './actor';
+import { ActorVersion } from './actor_version';
 
 /**
  * @hideconstructor

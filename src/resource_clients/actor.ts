@@ -1,6 +1,8 @@
+import { ActorVersion } from './actor_version';
+
 const { ACT_JOB_STATUSES } = require('@apify/consts');
 const ow = require('ow').default;
-const ActorVersionClient = require('./actor_version');
+const { ActorVersionClient } = require('./actor_version');
 const { ActorVersionCollectionClient } = require('./actor_version_collection');
 const BuildCollectionClient = require('./build_collection');
 const RunClient = require('./run');
@@ -270,62 +272,6 @@ export interface ActorStats {
     totalUsers90Days: number;
     totalMetamorphs: number;
     lastRunStartedAt: string;
-}
-
-export interface BaseActorVersion<SourceType extends ActorSourceType> {
-    versionNumber?: string;
-    sourceType: SourceType;
-    envVars?: ActorEnvironmentVariable[];
-    baseDockerImage?: string;
-    applyEnvVarsToBuild?: boolean;
-    buildTag?: string;
-}
-
-export interface ActorVersionSourceCode extends BaseActorVersion<ActorSourceType.SourceCode> {
-    sourceCode: string;
-}
-
-export interface ActorVersionSourceFiles extends BaseActorVersion<ActorSourceType.SourceFiles> {
-    sourceFiles: ActorVersionSourceFile[];
-}
-
-export interface ActorVersionSourceFile {
-    name: string;
-    format: 'TEXT' | 'BASE64';
-    content: string;
-}
-
-export interface ActorVersionGitRepo extends BaseActorVersion<ActorSourceType.GitRepo> {
-    gitRepoUrl: string;
-}
-
-export interface ActorVersionTarball extends BaseActorVersion<ActorSourceType.Tarball> {
-    tarballUrl: string;
-}
-
-export interface ActorVersionGitHubGist extends BaseActorVersion<ActorSourceType.GitHubGist> {
-    gitHubGistUrl: string;
-}
-
-export type ActorVersion =
-    | ActorVersionSourceCode
-    | ActorVersionSourceFiles
-    | ActorVersionGitRepo
-    | ActorVersionTarball
-    | ActorVersionGitHubGist;
-
-export enum ActorSourceType {
-    SourceCode = 'SOURCE_CODE',
-    SourceFiles = 'SOURCE_FILES',
-    GitRepo = 'GIT_REPO',
-    Tarball = 'TARBALL',
-    GitHubGist = 'GITHUB_GIST',
-}
-
-export interface ActorEnvironmentVariable {
-    name?: string;
-    value?: string;
-    isSecret?: boolean;
 }
 
 export interface ActorDefaultRunOptions {
