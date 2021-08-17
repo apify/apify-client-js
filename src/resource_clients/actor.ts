@@ -208,6 +208,11 @@ export class ActorClient extends ResourceClient {
     }
 }
 
+<<<<<<< HEAD:src/resource_clients/actor.ts
+=======
+module.exports = ActorClient;
+
+>>>>>>> f00f227 (refactor: convert ActorCollectionClient to TS):src/resource_clients/actor.js
 export interface Actor {
     id: string;
     userId: string;
@@ -240,6 +245,33 @@ export interface ActorStats {
     lastRunStartedAt: string;
 }
 
+<<<<<<< HEAD:src/resource_clients/actor.ts
+=======
+export interface ActorVersion {
+    versionNumber?: string;
+    sourceType: ActorSourceType;
+    envVars?: ActorEnvironmentVariable[];
+    baseDockerImage?: string;
+    applyEnvVarsToBuild?: boolean;
+    buildTag?: string;
+    sourceCode?: string;
+}
+
+export enum ActorSourceType {
+    SourceCode = 'SOURCE_CODE',
+    SourceFiles = 'SOURCE_FILES',
+    GitRepo = 'GIT_REPO',
+    Tarball = 'TARBALL',
+    GitHubGist = 'GITHUB_GIST',
+}
+
+export interface ActorEnvironmentVariable {
+    name?: string;
+    value?: string;
+    isSecret?: boolean;
+}
+
+>>>>>>> f00f227 (refactor: convert ActorCollectionClient to TS):src/resource_clients/actor.js
 export interface ActorDefaultRunOptions {
     build: string;
     timeoutSecs: number;
@@ -260,6 +292,7 @@ export interface ActorTaggedBuild {
     buildNumber?: string;
     finishedAt?: string;
 }
+<<<<<<< HEAD:src/resource_clients/actor.ts
 
 export type ActorUpdateOptions = Pick<Actor, 'name' | 'isPublic' | 'versions' | 'description' | 'title' | 'restartOnError'>
 
@@ -361,3 +394,5 @@ export interface BuildOptions {
     memoryMbytes?: number;
     diskMbytes?: number;
 }
+=======
+>>>>>>> f00f227 (refactor: convert ActorCollectionClient to TS):src/resource_clients/actor.js
