@@ -208,11 +208,6 @@ export class ActorClient extends ResourceClient {
     }
 }
 
-<<<<<<< HEAD:src/resource_clients/actor.ts
-=======
-module.exports = ActorClient;
-
->>>>>>> f00f227 (refactor: convert ActorCollectionClient to TS):src/resource_clients/actor.js
 export interface Actor {
     id: string;
     userId: string;
@@ -245,17 +240,47 @@ export interface ActorStats {
     lastRunStartedAt: string;
 }
 
-<<<<<<< HEAD:src/resource_clients/actor.ts
-=======
-export interface ActorVersion {
+export interface BaseActorVersion<SourceType extends ActorSourceType> {
     versionNumber?: string;
-    sourceType: ActorSourceType;
+    sourceType: SourceType;
     envVars?: ActorEnvironmentVariable[];
     baseDockerImage?: string;
     applyEnvVarsToBuild?: boolean;
     buildTag?: string;
-    sourceCode?: string;
 }
+
+export interface ActorVersionSourceCode extends BaseActorVersion<ActorSourceType.SourceCode> {
+    sourceCode: string;
+}
+
+export interface ActorVersionSourceFiles extends BaseActorVersion<ActorSourceType.SourceFiles> {
+    sourceFiles: ActorVersionSourceFile[];
+}
+
+export interface ActorVersionSourceFile {
+    name: string;
+    format: 'TEXT' | 'BASE64';
+    content: string;
+}
+
+export interface ActorVersionGitRepo extends BaseActorVersion<ActorSourceType.GitRepo> {
+    gitRepoUrl: string;
+}
+
+export interface ActorVersionTarball extends BaseActorVersion<ActorSourceType.Tarball> {
+    tarballUrl: string;
+}
+
+export interface ActorVersionGitHubGist extends BaseActorVersion<ActorSourceType.GitHubGist> {
+    gitHubGistUrl: string;
+}
+
+export type ActorVersion =
+    | ActorVersionSourceCode
+    | ActorVersionSourceFiles
+    | ActorVersionGitRepo
+    | ActorVersionTarball
+    | ActorVersionGitHubGist;
 
 export enum ActorSourceType {
     SourceCode = 'SOURCE_CODE',
@@ -271,7 +296,6 @@ export interface ActorEnvironmentVariable {
     isSecret?: boolean;
 }
 
->>>>>>> f00f227 (refactor: convert ActorCollectionClient to TS):src/resource_clients/actor.js
 export interface ActorDefaultRunOptions {
     build: string;
     timeoutSecs: number;
@@ -292,7 +316,6 @@ export interface ActorTaggedBuild {
     buildNumber?: string;
     finishedAt?: string;
 }
-<<<<<<< HEAD:src/resource_clients/actor.ts
 
 export type ActorUpdateOptions = Pick<Actor, 'name' | 'isPublic' | 'versions' | 'description' | 'title' | 'restartOnError'>
 
@@ -394,5 +417,3 @@ export interface BuildOptions {
     memoryMbytes?: number;
     diskMbytes?: number;
 }
-=======
->>>>>>> f00f227 (refactor: convert ActorCollectionClient to TS):src/resource_clients/actor.js
