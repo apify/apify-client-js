@@ -24,7 +24,7 @@ export class ResourceClient extends ApiClient {
         const requestOpts = {
             url: this._url(),
             method: 'GET',
-            params: this._params(options as Record<string, unknown>),
+            params: this._params(options),
         };
         try {
             const response = await this.httpClient.call(requestOpts);

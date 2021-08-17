@@ -12,7 +12,7 @@ export class ResourceCollectionClient extends ApiClient {
     /**
      * @private
      */
-    protected async _list<T extends Record<string, unknown>, R>(options: T = {} as T): Promise<R> {
+    protected async _list<T, R>(options: T = {} as T): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'GET',
