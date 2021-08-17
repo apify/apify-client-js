@@ -11,7 +11,7 @@ export interface ApiClientOptions {
     params?: Record<string, unknown>;
 }
 
-export type ApiClientSubresourceOptions = Omit<ApiClientOptions, 'resourcePath'>;
+export type ApiClientSubResourceOptions = Omit<ApiClientOptions, 'resourcePath'>;
 
 /** @private */
 export abstract class ApiClient {

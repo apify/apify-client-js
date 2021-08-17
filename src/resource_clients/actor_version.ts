@@ -1,12 +1,12 @@
 import ow from 'ow';
-import { ApiClientSubresourceOptions } from '../base/api_client';
+import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 
 /**
  * @hideconstructor
  */
 export class ActorVersionClient extends ResourceClient {
-    constructor(options: ApiClientSubresourceOptions) {
+    constructor(options: ApiClientSubResourceOptions) {
         super({
             ...options,
             resourcePath: 'versions',
