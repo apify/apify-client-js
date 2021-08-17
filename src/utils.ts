@@ -115,10 +115,9 @@ export function isStream(value: unknown): value is ReadableStream {
     return ow.isValid(value, ow.object.hasKeys('on', 'pipe'));
 }
 
-export function dynamicRequire(path: string): any {
+export function dynamicRequire(path: string): { version: string; } {
     if (typeof BROWSER_BUILD !== 'undefined') {
-        // eslint-disable-next-line no-undef -- defined by webpack
-        return { version: VERSION };
+        return { version: VERSION! };
     }
 
     // eslint-disable-next-line
