@@ -4,6 +4,7 @@ import ow from 'ow';
 import { ApiClientOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import {
+    cast,
     parseDateFields,
     pluckData,
     RunWebhook,
@@ -94,7 +95,7 @@ export class ActorClient extends ResourceClient {
         }
 
         const response = await this.httpClient.call(request);
-        return parseDateFields(pluckData(response.data)) as unknown as ActorRun;
+        return cast(parseDateFields(pluckData(response.data)));
     }
 
     /**
@@ -144,7 +145,7 @@ export class ActorClient extends ResourceClient {
             }),
         });
 
-        return parseDateFields(pluckData(response.data)) as unknown as Build;
+        return cast(parseDateFields(pluckData(response.data)));
     }
 
     /**
