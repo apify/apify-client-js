@@ -17,9 +17,8 @@ export class ActorCollectionClient extends ResourceCollectionClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-actors
-     * @return {Promise<PaginationList>}
      */
-    async list(options: ActorCollectionListOptions = {}): Promise<PaginatedList<ActorCollectionListResult>> {
+    async list(options: ActorCollectionListOptions = {}): Promise<ActorCollectionListResult> {
         ow(options, ow.object.exactShape({
             my: ow.optional.boolean,
             limit: ow.optional.number,
@@ -31,8 +30,6 @@ export class ActorCollectionClient extends ResourceCollectionClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/actor-collection/create-actor
-     * @param {object} [actor]
-     * @return {Promise<Actor>}
      */
     async create(actor: ActorCollectionCreateOptions): Promise<Actor> {
         ow(actor, ow.optional.object);
@@ -47,13 +44,15 @@ export interface ActorCollectionListOptions {
     desc?: boolean;
 }
 
-export interface ActorCollectionListResult {
+export interface ActorCollectionListItem {
     id: string;
     createdAt: string;
     modifiedAt: string;
     name: string;
     username: string;
 }
+
+export type ActorCollectionListResult = PaginatedList<ActorCollectionListItem>;
 
 export interface ActorCollectionCreateOptions {
     name?: string;
