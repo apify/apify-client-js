@@ -5,6 +5,7 @@ import {
     parseDateFields,
     catchNotFoundOrThrow,
 } from '../utils';
+import ApifyApiError from '../apify_api_error';
 
 /**
  * We need to supply some number for the API,
@@ -27,9 +28,9 @@ export class ResourceClient extends ApiClient {
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return parseDateFields(pluckData(response.data));
+            return parseDateFields(pluckData(response.data)) as R;
         } catch (err) {
-            catchNotFoundOrThrow(err);
+            catchNotFoundOrThrow(err as ApifyApiError);
         }
         return undefined;
     }
@@ -41,7 +42,7 @@ export class ResourceClient extends ApiClient {
             params: this._params(),
             data: newFields,
         });
-        return parseDateFields(pluckData(response.data));
+        return parseDateFields(pluckData(response.data)) as R;
     }
 
     protected async _delete(): Promise<void> {
@@ -52,7 +53,7 @@ export class ResourceClient extends ApiClient {
                 params: this._params(),
             });
         } catch (err) {
-            catchNotFoundOrThrow(err);
+            catchNotFoundOrThrow(err as ApifyApiError);
         }
     }
 
@@ -87,9 +88,9 @@ export class ResourceClient extends ApiClient {
             };
             try {
                 const response = await this.httpClient.call(requestOpts);
-                job = parseDateFields(pluckData(response.data));
+                job = parseDateFields(pluckData(response.data)) as R;
             } catch (err) {
-                catchNotFoundOrThrow(err);
+                catchNotFoundOrThrow(err as ApifyApiError);
                 job = undefined;
             }
 

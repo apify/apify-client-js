@@ -1,6 +1,8 @@
-const ow = require('ow').default;
-const util = require('util');
-const zlib = require('zlib');
+import ow from 'ow';
+import util from 'util';
+import zlib from 'zlib';
+import type { TypedArray, JsonValue } from 'type-fest';
+import ApifyApiError from './apify_api_error';
 
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
 const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
@@ -13,10 +15,10 @@ const MIN_GZIP_BYTES = 1024;
  * Returns object's 'data' property or throws if parameter is not an object,
  * or an object without a 'data' property.
  */
-function pluckData(obj) {
+export function pluckData<R>(obj: Record<string, unknown>): R {
     const isObject = !!obj && typeof obj === 'object';
     if (isObject && typeof obj.data !== 'undefined') {
-        return obj.data;
+        return obj.data as R;
     }
     throw new Error(`Expected response object with a "data" property, but received: ${obj}`);
 }
@@ -25,17 +27,21 @@ function pluckData(obj) {
  * If given HTTP error has NOT_FOUND_STATUS_CODE status code then returns undefined.
  * Otherwise rethrows error.
  */
-function catchNotFoundOrThrow(err) {
+export function catchNotFoundOrThrow(err: ApifyApiError): void {
     const isNotFoundStatus = err.statusCode === NOT_FOUND_STATUS_CODE;
     const isNotFoundMessage = err.type === NOT_FOUND_TYPE || err.message.includes(NOT_FOUND_ON_S3);
     const isNotFoundError = isNotFoundStatus && isNotFoundMessage;
     if (!isNotFoundError) throw err;
 }
 
+type ReturnJsonValue = string | number | boolean | null | Date | ReturnJsonObject | ReturnJsonArray;
+type ReturnJsonObject = { [Key in string]?: ReturnJsonValue; };
+type ReturnJsonArray = Array<ReturnJsonValue>;
+
 /**
  * Helper function that traverses JSON structure and parses fields such as modifiedAt or createdAt to dates.
  */
-function parseDateFields(input, depth = 0) {
+export function parseDateFields(input: JsonValue, depth = 0): ReturnJsonValue {
     if (depth > PARSE_DATE_FIELDS_MAX_DEPTH) return input;
     if (Array.isArray(input)) return input.map((child) => parseDateFields(child, depth + 1));
     if (!input || typeof input !== 'object') return input;
@@ -43,20 +49,30 @@ function parseDateFields(input, depth = 0) {
     return Object.entries(input).reduce((output, [k, v]) => {
         const isValObject = !!v && typeof v === 'object';
         if (k.endsWith(PARSE_DATE_FIELDS_KEY_SUFFIX)) {
-            output[k] = v ? new Date(v) : v;
+            output[k] = v ? new Date(v as string) : v;
         } else if (isValObject || Array.isArray(v)) {
-            output[k] = parseDateFields(v, depth + 1);
+            output[k] = parseDateFields(v!, depth + 1);
         } else {
             output[k] = v;
         }
         return output;
-    }, {});
+    }, {} as ReturnJsonObject);
+}
+
+// TODO: Move this interface to webhooks collection and strictly type everything
+export interface RunWebhook {
+    eventTypes: string[];
+    idempotencyKey?: string;
+    ignoreSslErrors?: boolean;
+    doNotRetry?: boolean;
+    requestUrl: string;
+    payloadTemplate?: string;
 }
 
 /**
  * Helper function that converts array of webhooks to base64 string
  */
-function stringifyWebhooksToBase64(webhooks) {
+export function stringifyWebhooksToBase64(webhooks: RunWebhook[]): string | undefined {
     if (!webhooks) return;
     const webhooksJson = JSON.stringify(webhooks);
     if (isNode()) {
@@ -67,71 +83,57 @@ function stringifyWebhooksToBase64(webhooks) {
     return btoa(String.fromCharCode(...uint8Array));
 }
 
-let gzipPromise;
+let gzipPromise: ReturnType<typeof util['promisify']>;
 if (isNode()) gzipPromise = util.promisify(zlib.gzip);
+
 /**
  * Gzip provided value, otherwise returns undefined.
- * @param value
- * @return {Promise<undefined|Buffer>}
  */
-async function maybeGzipValue(value) {
+export async function maybeGzipValue(value: unknown): Promise<Buffer | undefined> {
     if (!isNode()) return;
-    if (value == null) return;
+    if (typeof value !== 'string' && !Buffer.isBuffer(value)) return;
 
     // Request compression is not that important so let's
     // skip it instead of throwing for unsupported types.
-    const areDataStringOrBuffer = (typeof value === 'string') || Buffer.isBuffer(value);
-    const areDataLargeEnough = Buffer.byteLength(value) >= MIN_GZIP_BYTES;
-    if (areDataStringOrBuffer && areDataLargeEnough) {
+    const areDataLargeEnough = Buffer.byteLength(value as string) >= MIN_GZIP_BYTES;
+    if (areDataLargeEnough) {
         return gzipPromise(value);
     }
+
+    return undefined;
 }
 
-/**
- * @return {boolean}
- */
-function isNode() {
+export function isNode(): boolean {
     return !!(typeof process !== 'undefined' && process.versions && process.versions.node);
 }
 
-/**
- * @param {*} value
- * @return {boolean}
- */
-function isBuffer(value) {
+export function isBuffer(value: unknown): value is Buffer | ArrayBuffer | TypedArray {
     return ow.isValid(value, ow.any(ow.buffer, ow.arrayBuffer, ow.typedArray));
 }
 
-/**
- * @param {*} value
- * @return {boolean}
- */
-function isStream(value) {
+export function isStream(value: unknown): value is ReadableStream {
     return ow.isValid(value, ow.object.hasKeys('on', 'pipe'));
 }
 
-/**
- * @param {string} path
- * @returns {*}
- */
-function dynamicRequire(path) {
+export function dynamicRequire(path: string): { version: string; } {
     if (typeof BROWSER_BUILD !== 'undefined') {
-        // eslint-disable-next-line no-undef -- defined by webpack
-        return { version: VERSION };
+        return { version: VERSION! };
     }
 
     // eslint-disable-next-line
     return require(path);
 }
 
-module.exports = {
-    isNode,
-    isBuffer,
-    isStream,
-    maybeGzipValue,
-    stringifyWebhooksToBase64,
-    parseDateFields,
-    catchNotFoundOrThrow,
-    pluckData,
-    dynamicRequire,
-};
+declare global {
+    export const BROWSER_BUILD: boolean | undefined;
+    export const VERSION: string | undefined;
+}
+
+export interface PaginatedList<Data extends unknown> {
+    total: number;
+    count: number;
+    offset: number;
+    limit: number;
+    desc: boolean;
+    items: Data[];
+}
