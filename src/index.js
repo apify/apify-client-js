@@ -6,7 +6,7 @@ const HttpClient = require('./http_client');
 const { Statistics } = require('./statistics');
 
 const ActorClient = require('./resource_clients/actor');
-const ActorCollectionClient = require('./resource_clients/actor_collection');
+const { ActorCollectionClient } = require('./resource_clients/actor_collection');
 const BuildClient = require('./resource_clients/build');
 // const BuildCollectionClient = require('./resource_clients/build_collection');
 const DatasetClient = require('./resource_clients/dataset');

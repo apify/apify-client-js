@@ -239,3 +239,80 @@ class ActorClient extends ResourceClient {
 }
 
 module.exports = ActorClient;
+
+export interface Actor {
+    id: string;
+    userId: string;
+    name: string;
+    username: string;
+    description?: string;
+    restartOnError?: boolean;
+    isPublic: boolean;
+    isAnonymouslyRunnable?: boolean;
+    createdAt: string;
+    modifiedAt: string;
+    stats: ActorStats;
+    versions: ActorVersion[];
+    defaultRunOptions: ActorDefaultRunOptions;
+    exampleRunInput?: ActorExampleRunInput;
+    isDeprecated?: boolean;
+    deploymentKey: string;
+    title?: string;
+    taggedBuilds?: ActorTaggedBuilds;
+}
+
+export interface ActorStats {
+    totalBuilds: number;
+    totalRuns: number;
+    totalUsers: number;
+    totalUsers7Days: number;
+    totalUsers30Days: number;
+    totalUsers90Days: number;
+    totalMetamorphs: number;
+    lastRunStartedAt: string;
+}
+
+export interface ActorVersion {
+    versionNumber?: string;
+    sourceType: ActorSourceType;
+    envVars?: ActorEnvironmentVariable[];
+    baseDockerImage?: string;
+    applyEnvVarsToBuild?: boolean;
+    buildTag?: string;
+    sourceCode?: string;
+}
+
+export enum ActorSourceType {
+    SourceCode = 'SOURCE_CODE',
+    SourceFiles = 'SOURCE_FILES',
+    GitRepo = 'GIT_REPO',
+    Tarball = 'TARBALL',
+    GitHubGist = 'GITHUB_GIST',
+}
+
+export interface ActorEnvironmentVariable {
+    name?: string;
+    value?: string;
+    isSecret?: boolean;
+}
+
+export interface ActorDefaultRunOptions {
+    build: string;
+    timeoutSecs: number;
+    memoryMbytes: number;
+}
+
+export interface ActorExampleRunInput {
+    body: string;
+    contentType: string;
+}
+
+export interface ActorTaggedBuilds {
+    latest: ActorTaggedBuild;
+}
+
+export interface ActorTaggedBuild {
+    buildId?: string;
+    buildNumber?: string;
+    finishedAt?: string;
+}
