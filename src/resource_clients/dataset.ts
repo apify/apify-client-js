@@ -1,14 +1,14 @@
-const ow = require('ow').default;
-const { ResourceClient } = require('../base/resource_client');
+import { AxiosResponse } from 'axios';
+import ow from 'ow';
+import { ApiClientSubResourceOptions } from '../base/api_client';
+import { ResourceClient } from '../base/resource_client';
+import { PaginatedList } from '../utils';
 
 /**
  * @hideconstructor
  */
-class DatasetClient extends ResourceClient {
-    /**
-     * @param {ApiClientOptions} options
-     */
-    constructor(options) {
+export class DatasetClient extends ResourceClient {
+    constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'datasets',
             ...options,
@@ -17,45 +17,31 @@ class DatasetClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/dataset/get-dataset
-     * @return {Promise<Dataset>}
      */
-    async get() {
+    async get(): Promise<Dataset> {
         return this._get();
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/dataset/update-dataset
-     * @param {object} newFields
-     * @return {Promise<Dataset>}
      */
-    async update(newFields) {
+    async update(newFields: DatasetClientUpdateOptions): Promise<Dataset> {
         ow(newFields, ow.object);
+
         return this._update(newFields);
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/dataset/delete-dataset
-     * @return {Promise<void>}
      */
-    async delete() {
+    async delete(): Promise<void> {
         return this._delete();
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
-     * @param {object} [options]
-     * @param {boolean} [options.clean]
-     * @param {boolean} [options.desc]
-     * @param {string[]} [options.fields]
-     * @param {string[]} [options.omit]
-     * @param {number} [options.limit]
-     * @param {number} [options.offset]
-     * @param {boolean} [options.skipEmpty]
-     * @param {boolean} [options.skipHidden]
-     * @param {string} [options.unwind]
-     * @return {Promise<PaginationList>}
      */
-    async listItems(options = {}) {
+    async listItems(options: DatasetClientListItemOptions = {}): Promise<PaginatedList<MaybeArray<string | Record<string, unknown>>>> {
         ow(options, ow.object.exactShape({
             clean: ow.optional.boolean,
             desc: ow.optional.boolean,
@@ -73,6 +59,7 @@ class DatasetClient extends ResourceClient {
             method: 'GET',
             params: this._params(options),
         });
+
         return this._createPaginationList(response);
     }
 
@@ -156,29 +143,57 @@ class DatasetClient extends ResourceClient {
         });
     }
 
-    /**
-     * @param response
-     * @return {PaginationList}
-     * @private
-     */
-    _createPaginationList(response) {
+    private _createPaginationList<D>(response: AxiosResponse<D[]>): PaginatedList<D> {
         return {
             items: response.data,
             total: Number(response.headers['x-apify-pagination-total']),
             offset: Number(response.headers['x-apify-pagination-offset']),
             count: response.data.length, // because x-apify-pagination-count returns invalid values when hidden/empty items are skipped
             limit: Number(response.headers['x-apify-pagination-limit']), // API returns 999999999999 when no limit is used
+            // TODO: will the API return this
+            desc: false,
         };
     }
 }
 
-module.exports = DatasetClient;
+type MaybeArray<T> = T | T[];
 
-/**
- * @typedef {object} PaginationList
- * @property {object[]} items - List of returned objects
- * @property {number} total - Total number of objects
- * @property {number} offset - Number of objects that were skipped
- * @property {number} count - Number of returned objects
- * @property {number} limit - Requested limit
- */
+export interface Dataset {
+    id: string;
+    name: string;
+    userId: string;
+    createdAt: string;
+    modifiedAt: string;
+    accessedAt: string;
+    itemCount: number;
+    cleanItemCount: number;
+    // TODO: Are these actually always just empty objects?
+    actId?: Record<string, unknown> | null;
+    actRunId?: Record<string, unknown> | null;
+    fields?: string[];
+}
+
+export interface DatasetClientUpdateOptions {
+    name: string;
+}
+
+export interface DatasetClientListItemOptions {
+    clean?: boolean;
+    desc?: boolean;
+    fields?: string[];
+    omit?: string[];
+    limit?: number;
+    offset?: number;
+    skipEmpty?: boolean;
+    skipHidden?: boolean;
+    unwind?: string;
+}
+
+export enum DownloadItemsFormat {
+    JSON = 'json',
+    JSONL = 'jsonl',
+    Xml = 'xml',
+    Html = 'html',
+    Csv = 'csv',
+    Xlsx = 'xlsx',
+}
