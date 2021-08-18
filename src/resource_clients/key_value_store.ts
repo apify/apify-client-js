@@ -179,14 +179,13 @@ export class KeyValueStoreClient extends ResourceClient {
 
 export interface KeyValueStore {
     id: string;
-    name: string;
+    name?: string;
     userId: string;
     createdAt: string;
     modifiedAt: string;
     accessedAt: string;
-    // TODO: https://github.com/apify/apify-client-js/pull/193/files#r691178040
-    actId?: Record<string, unknown> | null;
-    actRunId?: Record<string, unknown> | null;
+    actId?: string;
+    actRunId?: string;
 }
 
 export interface KeyValueClientUpdateOptions {
