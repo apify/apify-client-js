@@ -32,7 +32,7 @@ export class ActorClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/actors/actor-object/get-actor
      */
-    async get(): Promise<Actor> {
+    async get(): Promise<Actor | undefined> {
         return this._get();
     }
 

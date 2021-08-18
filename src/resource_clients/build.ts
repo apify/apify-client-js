@@ -21,7 +21,7 @@ export class BuildClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/actor-builds/build-object/get-build
      */
-    async get(options: BuildClientGetOptions = {}): Promise<Build> {
+    async get(options: BuildClientGetOptions = {}): Promise<Build | undefined> {
         ow(options, ow.object.exactShape({
             waitForFinish: ow.optional.number,
         }));
