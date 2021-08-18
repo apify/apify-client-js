@@ -147,9 +147,8 @@ export interface Dataset {
     accessedAt: string;
     itemCount: number;
     cleanItemCount: number;
-    // TODO: Are these actually always just empty objects?
-    actId?: Record<string, unknown> | null;
-    actRunId?: Record<string, unknown> | null;
+    actId?: string;
+    actRunId?: string;
     fields?: string[];
     // TODO: the api seems to return a stats field, that isn't documented
 }
