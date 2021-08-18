@@ -8,8 +8,10 @@ export interface ApiClientOptions {
     apifyClient: ApifyClient;
     httpClient: HttpClient;
     id?: string;
-    params?: Record<string, string>;
+    params?: Record<string, unknown>;
 }
+
+export type ApiClientSubResourceOptions = Omit<ApiClientOptions, 'resourcePath'>;
 
 /** @private */
 export abstract class ApiClient {
@@ -27,7 +29,7 @@ export abstract class ApiClient {
 
     httpClient: HttpClient;
 
-    params?: Record<string, string>;
+    params?: Record<string, unknown>;
 
     constructor(options: ApiClientOptions) {
         const {
@@ -51,21 +53,21 @@ export abstract class ApiClient {
         this.params = params;
     }
 
-    protected _subResourceOptions<T extends Record<string, unknown>>(moreOptions: T): BaseOptions & T {
-        const baseOptions = {
+    protected _subResourceOptions<T>(moreOptions?: T): BaseOptions & T {
+        const baseOptions: BaseOptions = {
             baseUrl: this._url(),
             apifyClient: this.apifyClient,
             httpClient: this.httpClient,
             params: this._params(),
         };
-        return { ...baseOptions, ...moreOptions };
+        return { ...baseOptions, ...moreOptions } as BaseOptions & T;
     }
 
     protected _url(path?: string): string {
         return path ? `${this.url}/${path}` : this.url;
     }
 
-    protected _params(endpointParams?: Record<string, unknown>): Record<string, unknown> {
+    protected _params<T>(endpointParams?: T): Record<string, unknown> {
         return { ...this.params, ...endpointParams };
     }
 

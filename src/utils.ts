@@ -137,3 +137,7 @@ export interface PaginatedList<Data extends unknown> {
     desc: boolean;
     items: Data[];
 }
+
+export function cast<T>(input: unknown): T {
+    return input as T;
+}

@@ -20,7 +20,7 @@ const MAX_WAIT_FOR_FINISH = 999999;
  * @private
  */
 export class ResourceClient extends ApiClient {
-    protected async _get<T extends Record<string, unknown>, R>(options: T = {} as T): Promise<R | undefined> {
+    protected async _get<T, R>(options: T = {} as T): Promise<R> {
         const requestOpts = {
             url: this._url(),
             method: 'GET',
@@ -32,10 +32,11 @@ export class ResourceClient extends ApiClient {
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }
-        return undefined;
+
+        return undefined!;
     }
 
-    protected async _update<T extends Record<string, unknown>, R>(newFields: T): Promise<R> {
+    protected async _update<T, R>(newFields: T): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'PUT',

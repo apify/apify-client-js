@@ -1,72 +1,61 @@
-const { ACT_JOB_STATUSES } = require('@apify/consts');
-const ow = require('ow').default;
-const ActorVersionClient = require('./actor_version');
-const ActorVersionCollectionClient = require('./actor_version_collection');
-const BuildCollectionClient = require('./build_collection');
-const RunClient = require('./run');
-const RunCollectionClient = require('./run_collection');
-const WebhookCollectionClient = require('./webhook_collection');
-const { ResourceClient } = require('../base/resource_client');
-const {
-    pluckData,
+import { ACT_JOB_STATUSES } from '@apify/consts';
+import { AxiosRequestConfig } from 'axios';
+import ow from 'ow';
+import { ApiClientOptions } from '../base/api_client';
+import { ResourceClient } from '../base/resource_client';
+import {
+    cast,
     parseDateFields,
+    pluckData,
+    RunWebhook,
     stringifyWebhooksToBase64,
-} = require('../utils');
+} from '../utils';
+import { ActorVersion, ActorVersionClient } from './actor_version';
+import { ActorVersionCollectionClient } from './actor_version_collection';
+import BuildCollectionClient from './build_collection';
+import RunClient from './run';
+import RunCollectionClient from './run_collection';
+import WebhookCollectionClient from './webhook_collection';
 
 /**
  * @hideconstructor
  */
-class ActorClient extends ResourceClient {
-    /**
-     * @param {ApiClientOptions} options
-     */
-    constructor(options) {
+export class ActorClient extends ResourceClient {
+    constructor(options: ApiClientOptions) {
         super({
-            resourcePath: 'acts',
             ...options,
+            resourcePath: 'acts',
         });
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/actor-object/get-actor
-     * @return {Promise<?Actor>}
      */
-    async get() {
+    async get(): Promise<Actor> {
         return this._get();
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/actor-object/update-actor
-     * @param {object} newFields
-     * @return {Promise<Actor>}
      */
-    async update(newFields) {
+    async update(newFields: ActorUpdateOptions): Promise<Actor> {
         ow(newFields, ow.object);
         return this._update(newFields);
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/actor-object/delete-actor
-     * @return {Promise<void>}
      */
-    async delete() {
+    async delete(): Promise<void> {
         return this._delete();
     }
 
     /**
      * Starts an actor and immediately returns the Run object.
      * https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
-     * @param {*} [input]
-     * @param {object} [options]
-     * @param {string} [options.build]
-     * @param {string} [options.contentType]
-     * @param {number} [options.memory]
-     * @param {number} [options.timeout]
-     * @param {number} [options.waitForFinish]
-     * @param {object[]} [options.webhooks]
      * @return {Promise<Run>}
      */
-    async start(input, options = {}) {
+    async start(input: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
         // input can be anything, pointless to validate
         ow(options, ow.object.exactShape({
             build: ow.optional.string,
@@ -87,13 +76,16 @@ class ActorClient extends ResourceClient {
             webhooks: stringifyWebhooksToBase64(options.webhooks),
         };
 
-        const request = {
+        const request: AxiosRequestConfig = {
             url: this._url('runs'),
             method: 'POST',
             data: input,
             params: this._params(params),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
+            // TODO: remove this ts-expect-error once we migrate HttpClient to TS and define Apify
+            // extension of Axios configs
+            // @ts-expect-error Apify extension
             stringifyFunctions: true,
         };
         if (options.contentType) {
@@ -103,24 +95,15 @@ class ActorClient extends ResourceClient {
         }
 
         const response = await this.httpClient.call(request);
-        return parseDateFields(pluckData(response.data));
+        return cast(parseDateFields(pluckData(response.data)));
     }
 
     /**
      * Starts an actor and waits for it to finish before returning the Run object.
      * It waits indefinitely, unless the `waitSecs` option is provided.
      * https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
-     * @param {*} [input]
-     * @param {object} [options]
-     * @param {string} [options.build]
-     * @param {string} [options.contentType]
-     * @param {number} [options.memory]
-     * @param {number} [options.timeout]
-     * @param {number} [options.waitSecs]
-     * @param {object[]} [options.webhooks]
-     * @return {Promise<Run>}
      */
-    async call(input, options = {}) {
+    async call(input: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
         // input can be anything, pointless to validate
         ow(options, ow.object.exactShape({
             build: ow.optional.string,
@@ -142,15 +125,9 @@ class ActorClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/build-collection/build-actor
-     * @param {string} versionNumber
-     * @param {object} [options]
-     * @param {boolean} [options.betaPackages]
-     * @param {string} [options.tag]
-     * @param {boolean} [options.useCache]
-     * @param {number} [options.waitForFinish]
      * @return {Promise<Build>}
      */
-    async build(versionNumber, options = {}) {
+    async build(versionNumber: string, options: ActorBuildOptions = {}): Promise<Build> {
         ow(versionNumber, ow.string);
         ow(options, ow.object.exactShape({
             betaPackages: ow.optional.boolean,
@@ -168,16 +145,13 @@ class ActorClient extends ResourceClient {
             }),
         });
 
-        return parseDateFields(pluckData(response.data));
+        return cast(parseDateFields(pluckData(response.data)));
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
-     * @param {object} [options]
-     * @param {string} [options.status]
-     * @return {RunClient}
      */
-    lastRun(options = {}) {
+    lastRun(options: ActorLastRunOptions = {}): RunClient {
         ow(options, ow.object.exactShape({
             status: ow.optional.string.oneOf(Object.values(ACT_JOB_STATUSES)),
         }));
@@ -191,9 +165,8 @@ class ActorClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/build-collection
-     * @return {BuildCollectionClient}
      */
-    builds() {
+    builds(): BuildCollectionClient {
         return new BuildCollectionClient(this._subResourceOptions({
             resourcePath: 'builds',
         }));
@@ -201,9 +174,8 @@ class ActorClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/run-collection
-     * @return {RunCollectionClient}
      */
-    runs() {
+    runs(): RunCollectionClient {
         return new RunCollectionClient(this._subResourceOptions({
             resourcePath: 'runs',
         }));
@@ -211,10 +183,8 @@ class ActorClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/version-object
-     * @param {string} versionNumber
-     * @return {ActorVersionClient}
      */
-    version(versionNumber) {
+    version(versionNumber: string): ActorVersionClient {
         ow(versionNumber, ow.string);
         return new ActorVersionClient(this._subResourceOptions({
             id: versionNumber,
@@ -225,7 +195,7 @@ class ActorClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actors/version-collection
      * @return {ActorVersionCollectionClient}
      */
-    versions() {
+    versions(): ActorVersionCollectionClient {
         return new ActorVersionCollectionClient(this._subResourceOptions());
     }
 
@@ -233,9 +203,161 @@ class ActorClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actors/webhook-collection
      * @return {WebhookCollectionClient}
      */
-    webhooks() {
+    webhooks(): WebhookCollectionClient {
         return new WebhookCollectionClient(this._subResourceOptions());
     }
 }
 
-module.exports = ActorClient;
+export interface Actor {
+    id: string;
+    userId: string;
+    name: string;
+    username: string;
+    description?: string;
+    restartOnError?: boolean;
+    isPublic: boolean;
+    isAnonymouslyRunnable?: boolean;
+    createdAt: string;
+    modifiedAt: string;
+    stats: ActorStats;
+    versions: ActorVersion[];
+    defaultRunOptions: ActorDefaultRunOptions;
+    exampleRunInput?: ActorExampleRunInput;
+    isDeprecated?: boolean;
+    deploymentKey: string;
+    title?: string;
+    taggedBuilds?: ActorTaggedBuilds;
+}
+
+export interface ActorStats {
+    totalBuilds: number;
+    totalRuns: number;
+    totalUsers: number;
+    totalUsers7Days: number;
+    totalUsers30Days: number;
+    totalUsers90Days: number;
+    totalMetamorphs: number;
+    lastRunStartedAt: string;
+}
+
+export interface ActorDefaultRunOptions {
+    build: string;
+    timeoutSecs: number;
+    memoryMbytes: number;
+}
+
+export interface ActorExampleRunInput {
+    body: string;
+    contentType: string;
+}
+
+export interface ActorTaggedBuilds {
+    latest: ActorTaggedBuild;
+}
+
+export interface ActorTaggedBuild {
+    buildId?: string;
+    buildNumber?: string;
+    finishedAt?: string;
+}
+
+export type ActorUpdateOptions = Pick<Actor, 'name' | 'isPublic' | 'versions' | 'description' | 'title' | 'restartOnError'>
+
+export interface ActorStartOptions {
+    build?: string;
+    contentType?: string;
+    memory?: number;
+    timeout?: number;
+    waitForFinish?: number;
+    webhooks?: RunWebhook[];
+}
+
+export interface ActorRun {
+    id: string;
+    actId: string;
+    userId: string;
+    actorTaskId?: string;
+    startedAt: string;
+    finishedAt: string;
+    status: string;
+    meta: ActorRunMeta;
+    stats: ActorRunStats;
+    options: ActorRunOptions;
+    buildId: string;
+    exitCode?: number;
+    defaultKeyValueStoreId: string;
+    defaultDatasetId: string;
+    buildNumber: string;
+    containerUrl: string;
+}
+
+export interface ActorRunMeta {
+    origin: string;
+    clientIp: string;
+    userAgent: string;
+}
+
+export interface ActorRunStats {
+    inputBodyLen: number;
+    restartCount: number;
+    resurrectCount: number;
+    memAvgBytes: number;
+    memMaxBytes: number;
+    memCurrentBytes: number;
+    cpuAvgUsage: number;
+    cpuMaxUsage: number;
+    cpuCurrentUsage: number;
+    netRxBytes: number;
+    netTxBytes: number;
+    durationMillis: number;
+    runTimeSecs: number;
+    metamorph: number;
+    computeUnits: number;
+}
+
+export interface ActorRunOptions {
+    build: string;
+    timeoutSecs: number;
+    memoryMbytes: number;
+    diskMbytes: number;
+}
+
+export interface ActorBuildOptions {
+    betaPackages?: boolean;
+    tag?: string;
+    useCache?: boolean;
+    waitForFinish?: number;
+}
+
+export interface ActorLastRunOptions {
+    status?: keyof typeof ACT_JOB_STATUSES;
+}
+
+// TODO: move these interface to build.ts
+export interface Build {
+    id: string;
+    actId: string;
+    userId: string;
+    startedAt: string;
+    finishedAt?: string;
+    status: string;
+    meta: ActorRunMeta;
+    stats?: BuildStats;
+    options?: BuildOptions;
+    inputSchema?: string;
+    readme?: string;
+    buildNumber: string
+}
+
+export interface BuildStats {
+    durationMillis: number;
+    runTimeSecs: number;
+    computeUnits: number;
+}
+
+export interface BuildOptions {
+    useCache?: boolean;
+    betaPackages?: boolean;
+    memoryMbytes?: number;
+    diskMbytes?: number;
+}

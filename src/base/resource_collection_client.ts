@@ -12,7 +12,7 @@ export class ResourceCollectionClient extends ApiClient {
     /**
      * @private
      */
-    protected async _list<T extends Record<string, unknown>, R>(options: T = {} as T): Promise<R> {
+    protected async _list<T, R>(options: T = {} as T): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'GET',
@@ -21,7 +21,7 @@ export class ResourceCollectionClient extends ApiClient {
         return parseDateFields(pluckData(response.data)) as R;
     }
 
-    protected async _create<T extends Record<string, unknown>, R>(resource: T): Promise<R> {
+    protected async _create<D, R>(resource: D): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'POST',
