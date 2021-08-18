@@ -1,7 +1,7 @@
 import { ACT_JOB_STATUSES } from '@apify/consts';
 import { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
-import { ApiClientOptions } from '../base/api_client';
+import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import {
     cast,
@@ -22,10 +22,10 @@ import WebhookCollectionClient from './webhook_collection';
  * @hideconstructor
  */
 export class ActorClient extends ResourceClient {
-    constructor(options: ApiClientOptions) {
+    constructor(options: ApiClientSubResourceOptions) {
         super({
-            ...options,
             resourcePath: 'acts',
+            ...options,
         });
     }
 

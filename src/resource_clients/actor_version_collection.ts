@@ -10,8 +10,8 @@ import { ActorVersion, FinalActorVersion } from './actor_version';
 export class ActorVersionCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions) {
         super({
-            ...options,
             resourcePath: 'versions',
+            ...options,
         });
     }
 
