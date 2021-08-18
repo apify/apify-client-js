@@ -18,7 +18,7 @@ export class DatasetClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/dataset/get-dataset
      */
-    async get(): Promise<Dataset> {
+    async get(): Promise<Dataset | undefined> {
         return this._get();
     }
 
