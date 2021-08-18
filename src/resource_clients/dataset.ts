@@ -140,7 +140,7 @@ type MaybeArray<T> = T | T[];
 
 export interface Dataset {
     id: string;
-    name: string;
+    name?: string;
     userId: string;
     createdAt: string;
     modifiedAt: string;
