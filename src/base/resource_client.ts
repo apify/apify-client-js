@@ -11,7 +11,6 @@ import ApifyApiError from '../apify_api_error';
  * We need to supply some number for the API,
  * because it would not accept "Infinity".
  * 999999 seconds is more than 10 days.
- * @type {number}
  */
 const MAX_WAIT_FOR_FINISH = 999999;
 
@@ -20,7 +19,7 @@ const MAX_WAIT_FOR_FINISH = 999999;
  * @private
  */
 export class ResourceClient extends ApiClient {
-    protected async _get<T, R>(options: T = {} as T): Promise<R> {
+    protected async _get<T, R>(options: T = {} as T): Promise<R | undefined> {
         const requestOpts = {
             url: this._url(),
             method: 'GET',
@@ -33,7 +32,7 @@ export class ResourceClient extends ApiClient {
             catchNotFoundOrThrow(err as ApifyApiError);
         }
 
-        return undefined!;
+        return undefined;
     }
 
     protected async _update<T, R>(newFields: T): Promise<R> {
