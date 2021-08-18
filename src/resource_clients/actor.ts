@@ -12,7 +12,8 @@ import {
 } from '../utils';
 import { ActorVersion, ActorVersionClient } from './actor_version';
 import { ActorVersionCollectionClient } from './actor_version_collection';
-import BuildCollectionClient from './build_collection';
+import { Build } from './build';
+import { BuildCollectionClient } from './build_collection';
 import RunClient from './run';
 import RunCollectionClient from './run_collection';
 import WebhookCollectionClient from './webhook_collection';
@@ -331,33 +332,4 @@ export interface ActorBuildOptions {
 
 export interface ActorLastRunOptions {
     status?: keyof typeof ACT_JOB_STATUSES;
-}
-
-// TODO: move these interface to build.ts
-export interface Build {
-    id: string;
-    actId: string;
-    userId: string;
-    startedAt: string;
-    finishedAt?: string;
-    status: string;
-    meta: ActorRunMeta;
-    stats?: BuildStats;
-    options?: BuildOptions;
-    inputSchema?: string;
-    readme?: string;
-    buildNumber: string
-}
-
-export interface BuildStats {
-    durationMillis: number;
-    runTimeSecs: number;
-    computeUnits: number;
-}
-
-export interface BuildOptions {
-    useCache?: boolean;
-    betaPackages?: boolean;
-    memoryMbytes?: number;
-    diskMbytes?: number;
 }
