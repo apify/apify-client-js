@@ -67,28 +67,9 @@ export class DatasetClient extends ResourceClient {
      * Unlike `listItems` which returns a {@link PaginationList} with an array of individual
      * dataset items, `downloadItems` returns the items serialized to the provided format.
      * https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
-     * @param {string} format
-     *  One of json, jsonl, xml, html, csv, xlsx, rss
-     * @param {object} [options]
-     * @param {boolean} [options.attachment]
-     * @param {boolean} [options.bom]
-     * @param {boolean} [options.clean]
-     * @param {string} [options.delimiter]
-     * @param {boolean} [options.desc]
-     * @param {string[]} [options.fields]
-     * @param {string[]} [options.omit]
-     * @param {number} [options.limit]
-     * @param {number} [options.offset]
-     * @param {boolean} [options.skipEmpty]
-     * @param {boolean} [options.skipHeaderRow]
-     * @param {boolean} [options.skipHidden]
-     * @param {string} [options.unwind]
-     * @param {string} [options.xmlRoot]
-     * @param {string} [options.xmlRow]
-     * @return {Promise<Buffer>}
      */
-    async downloadItems(format, options = {}) {
-        ow(format, ow.string.oneOf(['json', 'jsonl', 'xml', 'html', 'csv', 'xlsx', 'rss']));
+    async downloadItems(format: DownloadItemsFormat, options: DatasetClientDownloadItemsOptions = {}): Promise<Buffer> {
+        ow(format, ow.string.oneOf(validItemFormats));
         ow(options, ow.object.exactShape({
             attachment: ow.optional.boolean,
             bom: ow.optional.boolean,
@@ -116,15 +97,14 @@ export class DatasetClient extends ResourceClient {
             }),
             forceBuffer: true,
         });
+
         return data;
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/item-collection/put-items
-     * @param {object|string|Array<object|string>} items
-     * @return {Promise<void>}
      */
-    async pushItems(items) {
+    async pushItems(items: MaybeArray<string | Record<string, unknown>>): Promise<void> {
         ow(items, ow.any(
             ow.object,
             ow.string,
@@ -171,6 +151,7 @@ export interface Dataset {
     actId?: Record<string, unknown> | null;
     actRunId?: Record<string, unknown> | null;
     fields?: string[];
+    // TODO: the api seems to return a stats field, that isn't documented
 }
 
 export interface DatasetClientUpdateOptions {
@@ -192,8 +173,25 @@ export interface DatasetClientListItemOptions {
 export enum DownloadItemsFormat {
     JSON = 'json',
     JSONL = 'jsonl',
-    Xml = 'xml',
-    Html = 'html',
-    Csv = 'csv',
-    Xlsx = 'xlsx',
+    XML = 'xml',
+    HTML = 'html',
+    CSV = 'csv',
+    XLSX = 'xlsx',
+    RSS = 'rss',
+}
+
+const validItemFormats = [
+    ...new Set(
+        Object.values(DownloadItemsFormat)
+            .map((item) => item.toLowerCase()),
+    ),
+];
+
+export interface DatasetClientDownloadItemsOptions extends DatasetClientListItemOptions {
+    attachment?: boolean;
+    bom?: boolean;
+    delimiter?: string;
+    skipHeaderRow?: boolean;
+    xmlRoot?: string;
+    xmlRow?: string;
 }
