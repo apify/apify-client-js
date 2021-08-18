@@ -8,8 +8,8 @@ import { ResourceClient } from '../base/resource_client';
 export class ActorVersionClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions) {
         super({
-            ...options,
             resourcePath: 'versions',
+            ...options,
         });
     }
 

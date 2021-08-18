@@ -1,5 +1,5 @@
 import ow from 'ow';
-import { ApiClientOptions } from '../base/api_client';
+import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
 import { Actor } from './actor';
@@ -9,10 +9,10 @@ import { ActorVersion } from './actor_version';
  * @hideconstructor
  */
 export class ActorCollectionClient extends ResourceCollectionClient {
-    constructor(options: ApiClientOptions) {
+    constructor(options: ApiClientSubResourceOptions) {
         super({
-            ...options,
             resourcePath: 'acts',
+            ...options,
         });
     }
 
