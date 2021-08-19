@@ -127,7 +127,7 @@ export class KeyValueStoreClient extends ResourceClient {
     async setRecord(record: KeyValueStoreRecord<JsonValue>): Promise<void> {
         ow(record, ow.object.exactShape({
             key: ow.string,
-            value: ow.any(ow.null, ow.string, ow.number, ow.object),
+            value: ow.any(ow.null, ow.string, ow.number, ow.object, ow.boolean),
             contentType: ow.optional.string.nonEmpty,
         }));
 
