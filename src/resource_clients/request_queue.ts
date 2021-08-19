@@ -1,61 +1,55 @@
-const ow = require('ow').default;
-const { ResourceClient } = require('../base/resource_client');
-const {
+import ow from 'ow';
+import ApifyApiError from '../apify_api_error';
+import { ApiClientSubResourceOptions } from '../base/api_client';
+import { ResourceClient } from '../base/resource_client';
+import {
     pluckData,
     parseDateFields,
     catchNotFoundOrThrow,
-} = require('../utils');
+    cast,
+} from '../utils';
 
 /**
  * @hideconstructor
  */
-class RequestQueueClient extends ResourceClient {
-    /**
-     * @param {ApiClientOptions} options
-     * @param {object} [userOptions]
-     * @param {string} [userOptions.clientKey]
-     */
-    constructor(options, userOptions = {}) {
+export class RequestQueueClient extends ResourceClient {
+    private clientKey?: string;
+
+    constructor(options: ApiClientSubResourceOptions, userOptions: RequestQueueUserOptions = {}) {
         super({
             resourcePath: 'request-queues',
             ...options,
         });
+
         this.clientKey = userOptions.clientKey;
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/queue/get-request-queue
-     * @return {Promise<RequestQueue>}
      */
-    async get() {
+    async get(): Promise<RequestQueue | undefined> {
         return this._get();
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/queue/update-request-queue
-     * @param {object} newFields
-     * @return {Promise<RequestQueue>}
      */
-    async update(newFields) {
+    async update(newFields: RequestQueueClientUpdateOptions): Promise<RequestQueue> {
         ow(newFields, ow.object);
         return this._update(newFields);
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/queue/delete-request-queue
-     * @return {Promise<void>}
      */
-    async delete() {
+    async delete(): Promise<void> {
         return this._delete();
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/queue-head/get-head
-     * @param {object} [options]
-     * @param {number} [options.limit]
-     * @return {Promise<object>}
      */
-    async listHead(options = {}) {
+    async listHead(options: RequestQueueClientListHeadOptions = {}): Promise<RequestQueueClientListHeadResult> {
         ow(options, ow.object.exactShape({
             limit: ow.optional.number,
         }));
@@ -67,20 +61,20 @@ class RequestQueueClient extends ResourceClient {
                 clientKey: this.clientKey,
             }),
         });
-        return parseDateFields(pluckData(response.data));
+        return cast(parseDateFields(pluckData(response.data)));
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/request-collection/add-request
-     * @param {object} request
-     * @param {object} [options]
-     * @param {boolean} [options.forefront]
-     * @return {Promise<object>}
      */
-    async addRequest(request, options = {}) {
+    async addRequest(
+        request: RequestQueueClientAddRequestData,
+        options: RequestQueueClientAddRequestOptions = {},
+    ): Promise<RequestQueueClientAddRequestResult> {
         ow(request, ow.object.partialShape({
             id: ow.undefined,
         }));
+
         ow(options, ow.object.exactShape({
             forefront: ow.optional.boolean,
         }));
@@ -94,15 +88,15 @@ class RequestQueueClient extends ResourceClient {
                 clientKey: this.clientKey,
             }),
         });
-        return parseDateFields(pluckData(response.data));
+
+        return cast(parseDateFields(pluckData(response.data)));
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/request/get-request
-     * @param {string} id
      * @return {Promise<?object>}
      */
-    async getRequest(id) {
+    async getRequest(id: string): Promise<RequestQueueClientGetRequestResult | undefined> {
         ow(id, ow.string);
         const requestOpts = {
             url: this._url(`requests/${id}`),
@@ -111,20 +105,18 @@ class RequestQueueClient extends ResourceClient {
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return parseDateFields(pluckData(response.data));
+            return cast(parseDateFields(pluckData(response.data)));
         } catch (err) {
-            return catchNotFoundOrThrow(err);
+            catchNotFoundOrThrow(err as ApifyApiError);
         }
+
+        return undefined;
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/request/update-request
-     * @param {object} request
-     * @param {object} [options]
-     * @param {boolean} [options.forefront]
-     * @return {Promise<*>}
      */
-    async updateRequest(request, options = {}) {
+    async updateRequest(request, options: RequestQueueClientAddRequestOptions = {}): Promise<RequestQueueClientAddRequestResult> {
         ow(request, ow.object.partialShape({
             id: ow.string,
         }));
@@ -141,15 +133,13 @@ class RequestQueueClient extends ResourceClient {
                 clientKey: this.clientKey,
             }),
         });
-        return parseDateFields(pluckData(response.data));
+
+        return cast(parseDateFields(pluckData(response.data)));
     }
 
-    /**
-     * @param {string} id
-     * @return {Promise<void>}
-     */
-    async deleteRequest(id) {
+    async deleteRequest(id: string): Promise<void> {
         ow(id, ow.string);
+
         await this.httpClient.call({
             url: this._url(`requests/${id}`),
             method: 'DELETE',
@@ -160,4 +150,62 @@ class RequestQueueClient extends ResourceClient {
     }
 }
 
-module.exports = RequestQueueClient;
+export interface RequestQueueUserOptions {
+    clientKey?: string;
+}
+
+export interface RequestQueue {
+    id: string;
+    name?: string;
+    userId: string;
+    createdAt: string;
+    modifiedAt: string;
+    accessedAt: string;
+    // TODO: expiresAt: string;
+    totalRequestCount: number;
+    handledRequestCount: number;
+    pendingRequestCount: number;
+    hadMultipleClients: boolean;
+    // TODO: actId, actRunId, stats are also present in the API, not the docs
+}
+
+export interface RequestQueueClientUpdateOptions {
+    name: string;
+}
+
+export interface RequestQueueClientListHeadOptions {
+    limit?: number;
+}
+
+export interface RequestQueueClientListHeadResult {
+    limit: number;
+    queueModifiedAt: string;
+    hadMultipleClients: boolean;
+    items: RequestQueueClientListItem[];
+}
+
+export interface RequestQueueClientListItem {
+    id: string;
+    retryCount: number;
+    uniqueKey: string;
+    url: string;
+    method: string;
+}
+
+export interface RequestQueueClientAddRequestOptions {
+    forefront?: boolean;
+}
+
+export interface RequestQueueClientAddRequestData {
+    method?: string;
+    uniqueKey?: string;
+    url: string;
+}
+
+export interface RequestQueueClientAddRequestResult {
+    requestId: string;
+    wasAlreadyPresent: boolean;
+    wasAlreadyHandled: boolean;
+}
+
+export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem, 'retryCount'>
