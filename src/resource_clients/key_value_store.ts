@@ -147,7 +147,7 @@ export class KeyValueStoreClient extends ResourceClient {
             try {
                 value = JSON.stringify(value, null, 2);
             } catch (err) {
-                const msg = `The record value cannot be stringified to JSON. Please provide other content type.\nCause: ${err.message}`;
+                const msg = `The record value cannot be stringified to JSON. Please provide other content type.\nCause: ${(err as Error).message}`;
                 throw new Error(msg);
             }
         }
