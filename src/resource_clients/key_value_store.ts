@@ -1,22 +1,24 @@
-const ow = require('ow').default;
-const { default: log } = require('@apify/log');
-const { ResourceClient } = require('../base/resource_client');
-const { isBuffer, isStream } = require('../utils');
-const {
-    pluckData,
-    parseDateFields,
+import log from '@apify/log';
+import ow from 'ow';
+import { JsonValue } from 'type-fest';
+import ApifyApiError from '../apify_api_error';
+import { ApiClientSubResourceOptions } from '../base/api_client';
+import { ResourceClient } from '../base/resource_client';
+import {
+    cast,
     catchNotFoundOrThrow,
+    isBuffer,
     isNode,
-} = require('../utils');
+    isStream,
+    parseDateFields,
+    pluckData,
+} from '../utils';
 
 /**
  * @hideconstructor
  */
-class KeyValueStoreClient extends ResourceClient {
-    /**
-     * @param {ApiClientOptions} options
-     */
-    constructor(options) {
+export class KeyValueStoreClient extends ResourceClient {
+    constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'key-value-stores',
             ...options,
@@ -25,48 +27,43 @@ class KeyValueStoreClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store
-     * @return {Promise<KeyValueStore>}
      */
-    async get() {
+    async get(): Promise<KeyValueStore | undefined> {
         return this._get();
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/update-store
-     * @param {object} newFields
-     * @return {Promise<KeyValueStore>}
      */
-    async update(newFields) {
+    async update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore> {
         ow(newFields, ow.object);
+
         return this._update(newFields);
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/delete-store
-     * @return {Promise<void>}
      */
-    async delete() {
+    async delete(): Promise<void> {
         return this._delete();
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/key-collection/get-list-of-keys
-     * @param {object} [options]
-     * @param {object} [options.limit]
-     * @param {string} [options.exclusiveStartKey]
-     * @return {Promise<object>}
      */
-    async listKeys(options = {}) {
+    async listKeys(options: KeyValueClientListKeysOptions = {}): Promise<KeyValueClientListKeysResult> {
         ow(options, ow.object.exactShape({
             limit: ow.optional.number,
             exclusiveStartKey: ow.optional.string,
         }));
+
         const response = await this.httpClient.call({
             url: this._url('keys'),
             method: 'GET',
             params: this._params(options),
         });
-        return parseDateFields(pluckData(response.data));
+
+        return cast(parseDateFields(pluckData(response.data)));
     }
 
     /**
@@ -77,19 +74,21 @@ class KeyValueStoreClient extends ResourceClient {
      * When the record does not exist, the function resolves to `undefined`. It does
      * NOT resolve to a `KeyValueStore` record with an `undefined` value.
      * https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record
-     * @param {string} key
-     * @param {object} [options]
-     * @param {boolean} [options.buffer]
-     * @param {boolean} [options.stream]
-     * @return {Promise<KeyValueStoreRecord | undefined>}
      */
-    async getRecord(key, options = {}) {
+    async getRecord(key: string): Promise<KeyValueStoreRecord<JsonValue> | undefined>;
+
+    async getRecord(key: string, options: { buffer: true }): Promise<KeyValueStoreRecord<Buffer> | undefined>;
+
+    async getRecord(key: string, options: { stream: true }): Promise<KeyValueStoreRecord<ReadableStream> | undefined>;
+
+    async getRecord(key: string, options: KeyValueClientGetRecordOptions = {}): Promise<KeyValueStoreRecord<unknown> | undefined> {
         ow(key, ow.string);
         ow(options, ow.object.exactShape({
             buffer: ow.optional.boolean,
             stream: ow.optional.boolean,
             disableRedirect: ow.optional.boolean,
         }));
+
         if (options.stream && !isNode()) {
             throw new Error('The stream option can only be used in Node.js environment.');
         }
@@ -99,7 +98,7 @@ class KeyValueStoreClient extends ResourceClient {
                 + 'It has no effect and will be removed in the following major release.');
         }
 
-        const requestOpts = {
+        const requestOpts: Record<string, unknown> = {
             url: this._url(`records/${key}`),
             method: 'GET',
             params: this._params(),
@@ -116,19 +115,19 @@ class KeyValueStoreClient extends ResourceClient {
                 contentType: response.headers['content-type'],
             };
         } catch (err) {
-            return catchNotFoundOrThrow(err);
+            catchNotFoundOrThrow(err as ApifyApiError);
         }
+
+        return undefined;
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/record/put-record
-     * @param {KeyValueStoreRecord} record
-     * @return {Promise<void>}
      */
-    async setRecord(record) {
+    async setRecord(record: KeyValueStoreRecord<JsonValue>): Promise<void> {
         ow(record, ow.object.exactShape({
             key: ow.string,
-            value: ow.any(ow.null, ow.string, ow.number, ow.object),
+            value: ow.any(ow.null, ow.string, ow.number, ow.object, ow.boolean),
             contentType: ow.optional.string.nonEmpty,
         }));
 
@@ -148,7 +147,7 @@ class KeyValueStoreClient extends ResourceClient {
             try {
                 value = JSON.stringify(value, null, 2);
             } catch (err) {
-                const msg = `The record value cannot be stringified to JSON. Please provide other content type.\nCause: ${err.message}`;
+                const msg = `The record value cannot be stringified to JSON. Please provide other content type.\nCause: ${(err as Error).message}`;
                 throw new Error(msg);
             }
         }
@@ -166,10 +165,8 @@ class KeyValueStoreClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/record/delete-record
-     * @param {string} key
-     * @return {Promise<void>}
      */
-    async deleteRecord(key) {
+    async deleteRecord(key: string): Promise<void> {
         ow(key, ow.string);
 
         await this.httpClient.call({
@@ -180,11 +177,56 @@ class KeyValueStoreClient extends ResourceClient {
     }
 }
 
-module.exports = KeyValueStoreClient;
+export interface KeyValueStore {
+    id: string;
+    name?: string;
+    userId: string;
+    createdAt: string;
+    modifiedAt: string;
+    accessedAt: string;
+    actId?: string;
+    actRunId?: string;
+    stats?: KeyValueStoreStats;
+}
 
-/**
- * @typedef {object} KeyValueStoreRecord
- * @property {string} key
- * @property {null|string|number|object} value
- * @property {string} [contentType]
- */
+export interface KeyValueStoreStats {
+    readCount?: number;
+    writeCount?: number;
+    deleteCount?: number;
+    listCount?: number;
+    storageBytes?: number;
+}
+
+export interface KeyValueClientUpdateOptions {
+    name: string;
+}
+
+export interface KeyValueClientListKeysOptions {
+    limit?: number;
+    exclusiveStartKey?: string;
+}
+
+export interface KeyValueClientListKeysResult {
+    count: number;
+    limit: number;
+    exclusiveStartKey: string;
+    isTruncated: boolean;
+    nextExclusiveStartKey: string;
+    items: KeyValueListItem[];
+}
+
+export interface KeyValueListItem {
+    key: string;
+    size: number;
+}
+
+export interface KeyValueClientGetRecordOptions {
+    buffer?: boolean;
+    stream?: boolean;
+}
+
+export interface KeyValueStoreRecord<T> {
+    key: string;
+    value: T;
+    contentType?: string;
+}
