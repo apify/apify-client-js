@@ -1,16 +1,15 @@
-const { ResourceClient } = require('../base/resource_client');
-const {
+import ApifyApiError from '../apify_api_error';
+import { ApiClientSubResourceOptions } from '../base/api_client';
+import { ResourceClient } from '../base/resource_client';
+import {
     catchNotFoundOrThrow,
-} = require('../utils');
+} from '../utils';
 
 /**
  * @hideconstructor
  */
-class LogClient extends ResourceClient {
-    /**
-     * @param {ApiClientOptions} options
-     */
-    constructor(options) {
+export class LogClient extends ResourceClient {
+    constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'logs',
             ...options,
@@ -19,28 +18,29 @@ class LogClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/logs/log/get-log
-     * @return {Promise<?string>}
      */
-    async get() {
+    async get(): Promise<string | undefined> {
         const requestOpts = {
             url: this._url(),
             method: 'GET',
             params: this._params(),
         };
+
         try {
             const response = await this.httpClient.call(requestOpts);
             return response.data;
         } catch (err) {
-            return catchNotFoundOrThrow(err);
+            catchNotFoundOrThrow(err as ApifyApiError);
         }
+
+        return undefined;
     }
 
     /**
      * Gets the log in a Readable stream format. Only works in Node.js.
      * https://docs.apify.com/api/v2#/reference/logs/log/get-log
-     * @return {Promise<?Readable>}
      */
-    async stream() {
+    async stream(): Promise<ReadableStream | undefined> {
         const params = {
             stream: true,
         };
@@ -56,9 +56,9 @@ class LogClient extends ResourceClient {
             const response = await this.httpClient.call(requestOpts);
             return response.data;
         } catch (err) {
-            return catchNotFoundOrThrow(err);
+            catchNotFoundOrThrow(err as ApifyApiError);
         }
+
+        return undefined;
     }
 }
-
-module.exports = LogClient;
