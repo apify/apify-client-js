@@ -18,7 +18,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/get-list-of-key-value-stores
      */
-    async list(options: KeyValueStoreCollectionClientListOptions = {}): Promise<PaginatedList<KeyValueStore>> {
+    async list(options: KeyValueStoreCollectionClientListOptions = {}): Promise<PaginatedList<KeyValueStoreCollectionListResult>> {
         ow(options, ow.object.exactShape({
             unnamed: ow.optional.boolean,
             limit: ow.optional.number,
@@ -45,3 +45,5 @@ export interface KeyValueStoreCollectionClientListOptions {
     offset?: number;
     desc?: boolean;
 }
+
+export type KeyValueStoreCollectionListResult = Omit<KeyValueStore, 'stats'> & { username?: string; };

@@ -186,6 +186,15 @@ export interface KeyValueStore {
     accessedAt: string;
     actId?: string;
     actRunId?: string;
+    stats?: KeyValueStoreStats;
+}
+
+export interface KeyValueStoreStats {
+    readCount?: number;
+    writeCount?: number;
+    deleteCount?: number;
+    listCount?: number;
+    storageBytes?: number;
 }
 
 export interface KeyValueClientUpdateOptions {
