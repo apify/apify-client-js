@@ -16,7 +16,7 @@ export class ActorVersionClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/actors/version-object/get-version
      */
-    async get(): Promise<FinalActorVersion> {
+    async get(): Promise<FinalActorVersion | undefined> {
         return this._get();
     }
 
