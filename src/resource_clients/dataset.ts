@@ -149,8 +149,15 @@ export interface Dataset {
     cleanItemCount: number;
     actId?: string;
     actRunId?: string;
-    fields?: string[];
-    // TODO: the api seems to return a stats field, that isn't documented
+    stats: DatasetStats;
+    fields: string[];
+}
+
+export interface DatasetStats {
+    readCount?: number;
+    writeCount?: number;
+    deleteCount?: number;
+    storageBytes?: number;
 }
 
 export interface DatasetClientUpdateOptions {
