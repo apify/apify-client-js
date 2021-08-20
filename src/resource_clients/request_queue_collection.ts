@@ -7,7 +7,7 @@ import { RequestQueue } from './request_queue';
 /**
  * @hideconstructor
  */
-export class RequestQueueCollection extends ResourceCollectionClient {
+export class RequestQueueCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'request-queues',
