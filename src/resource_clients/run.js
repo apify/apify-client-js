@@ -1,8 +1,8 @@
 const ow = require('ow').default;
 const { ResourceClient } = require('../base/resource_client');
 const { DatasetClient } = require('./dataset');
-const KeyValueStoreClient = require('./key_value_store');
-const LogClient = require('./log');
+const { KeyValueStoreClient } = require('./key_value_store');
+const { LogClient } = require('./log');
 const RequestQueueClient = require('./request_queue');
 const {
     pluckData,

@@ -45,11 +45,8 @@ export interface BaseActorVersion<SourceType extends ActorSourceType> {
     buildTag?: string;
 }
 
-export interface ActorVersionSourceCode extends BaseActorVersion<ActorSourceType.SourceCode> {
+export interface ActorVersionSourceCode extends BaseActorVersion<ActorSourceType.SourceCode | ActorSourceType.SourceFiles> {
     sourceCode: string;
-}
-
-export interface ActorVersionSourceFiles extends BaseActorVersion<ActorSourceType.SourceFiles> {
     sourceFiles: ActorVersionSourceFile[];
 }
 
@@ -87,7 +84,6 @@ export interface ActorEnvironmentVariable {
 
 export type ActorVersion =
     | ActorVersionSourceCode
-    | ActorVersionSourceFiles
     | ActorVersionGitRepo
     | ActorVersionTarball
     | ActorVersionGitHubGist;
