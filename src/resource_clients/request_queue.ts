@@ -53,6 +53,7 @@ export class RequestQueueClient extends ResourceClient {
         ow(options, ow.object.exactShape({
             limit: ow.optional.number,
         }));
+
         const response = await this.httpClient.call({
             url: this._url('head'),
             method: 'GET',
@@ -61,6 +62,7 @@ export class RequestQueueClient extends ResourceClient {
                 clientKey: this.clientKey,
             }),
         });
+
         return cast(parseDateFields(pluckData(response.data)));
     }
 
@@ -68,7 +70,7 @@ export class RequestQueueClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/request-queues/request-collection/add-request
      */
     async addRequest(
-        request: RequestQueueClientAddRequestData,
+        request: Omit<RequestQueueClientRequestSchema, 'id'>,
         options: RequestQueueClientAddRequestOptions = {},
     ): Promise<RequestQueueClientAddRequestResult> {
         ow(request, ow.object.partialShape({
@@ -94,7 +96,6 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/request/get-request
-     * @return {Promise<?object>}
      */
     async getRequest(id: string): Promise<RequestQueueClientGetRequestResult | undefined> {
         ow(id, ow.string);
@@ -116,10 +117,14 @@ export class RequestQueueClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/request/update-request
      */
-    async updateRequest(request, options: RequestQueueClientAddRequestOptions = {}): Promise<RequestQueueClientAddRequestResult> {
+    async updateRequest(
+        request: RequestQueueClientRequestSchema,
+        options: RequestQueueClientAddRequestOptions = {},
+    ): Promise<RequestQueueClientAddRequestResult> {
         ow(request, ow.object.partialShape({
             id: ow.string,
         }));
+
         ow(options, ow.object.exactShape({
             forefront: ow.optional.boolean,
         }));
@@ -161,12 +166,22 @@ export interface RequestQueue {
     createdAt: string;
     modifiedAt: string;
     accessedAt: string;
-    // TODO: expiresAt: string;
+    expireAt?: string;
     totalRequestCount: number;
     handledRequestCount: number;
     pendingRequestCount: number;
+    actId?: string;
+    actRunId?: string;
     hadMultipleClients: boolean;
-    // TODO: actId, actRunId, stats are also present in the API, not the docs
+    stats: RequestQueueStats;
+}
+
+export interface RequestQueueStats {
+    readCount?: number;
+    writeCount?: number;
+    deleteCount?: number;
+    headItemReadCount?: number;
+    storageBytes?: number;
 }
 
 export interface RequestQueueClientUpdateOptions {
@@ -196,10 +211,19 @@ export interface RequestQueueClientAddRequestOptions {
     forefront?: boolean;
 }
 
-export interface RequestQueueClientAddRequestData {
-    method?: string;
-    uniqueKey?: string;
+export interface RequestQueueClientRequestSchema {
+    id: string;
+    uniqueKey: string;
     url: string;
+    method?: AllowedHttpMethods;
+    payload?: string;
+    retryCount?: number;
+    errorMessages?: string[];
+    headers?: Record<string, string>;
+    userData?: Record<string, unknown>;
+    handledAt?: string;
+    noRetry?: boolean;
+    loadedUrl?: string;
 }
 
 export interface RequestQueueClientAddRequestResult {
@@ -209,3 +233,5 @@ export interface RequestQueueClientAddRequestResult {
 }
 
 export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem, 'retryCount'>
+
+export type AllowedHttpMethods = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'TRACE' | 'OPTIONS' | 'CONNECT' | 'PATCH'
