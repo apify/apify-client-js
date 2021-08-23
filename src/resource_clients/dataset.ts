@@ -60,7 +60,7 @@ export class DatasetClient extends ResourceClient {
             params: this._params(options),
         });
 
-        return this._createPaginationList(response);
+        return this._createPaginationList(response, options.desc ?? false);
     }
 
     /**
@@ -123,15 +123,15 @@ export class DatasetClient extends ResourceClient {
         });
     }
 
-    private _createPaginationList<D>(response: AxiosResponse<D[]>): PaginatedList<D> {
+    private _createPaginationList<D>(response: AxiosResponse<D[]>, userProvidedDesc: boolean): PaginatedList<D> {
         return {
             items: response.data,
             total: Number(response.headers['x-apify-pagination-total']),
             offset: Number(response.headers['x-apify-pagination-offset']),
             count: response.data.length, // because x-apify-pagination-count returns invalid values when hidden/empty items are skipped
             limit: Number(response.headers['x-apify-pagination-limit']), // API returns 999999999999 when no limit is used
-            // TODO: will the API return this
-            desc: false,
+            // TODO: Replace this once https://github.com/apify/apify-core/issues/3503 is solved
+            desc: JSON.parse(response.headers['x-apify-pagination-desc'] ?? userProvidedDesc),
         };
     }
 }
