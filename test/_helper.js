@@ -9,7 +9,7 @@ class Browser {
         return this.browser;
     }
 
-    async getInjectedPage(baseUrl, DEFAULT_QUERY) {
+    async getInjectedPage(baseUrl, DEFAULT_OPTIONS) {
         const page = await this.browser.newPage();
         await Apify.utils.puppeteer.injectFile(page, `${__dirname}/../dist/bundle.js`);
 
@@ -20,7 +20,7 @@ class Browser {
                 maxRetries: 0,
                 ...defaultQuery,
             });
-        }, baseUrl, DEFAULT_QUERY);
+        }, baseUrl, DEFAULT_OPTIONS);
         return page;
     }
 
@@ -29,14 +29,13 @@ class Browser {
     }
 }
 
-const DEFAULT_QUERY = {
+const DEFAULT_OPTIONS = {
     token: 'default-token',
 };
 
 const getExpectedQuery = (callQuery = {}) => {
     const query = optsToQuery(callQuery);
     return {
-        ...DEFAULT_QUERY,
         ...query,
     };
 };
@@ -57,7 +56,11 @@ function optsToQuery(params) {
         }, {});
 }
 
-const validateRequest = (query = {}, params = {}, body = {}, headers = {}) => {
+const validateRequest = (query = {}, params = {}, body = {}, additionalHeaders = {}) => {
+    const headers = {
+        authorization: `Bearer ${DEFAULT_OPTIONS.token}`,
+        ...additionalHeaders,
+    };
     const request = mockServer.getLastRequest();
     const expectedQuery = getExpectedQuery(query);
     if (query !== false) expect(request.query).toEqual(expectedQuery);
@@ -74,6 +77,6 @@ const validateRequest = (query = {}, params = {}, body = {}, headers = {}) => {
 
 module.exports = {
     validateRequest,
-    DEFAULT_QUERY,
+    DEFAULT_OPTIONS,
     Browser,
 };

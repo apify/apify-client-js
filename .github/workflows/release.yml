@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - master
+      # This will allow releasing beta versions from non-master releases.
+      # TODO: We need to release this version with other tags than beta. It can mess up the beta version as it will override it with older code.
+      - version/**
   # A release via GitHub releases will deploy a latest version
   release:
     types: [ published ]

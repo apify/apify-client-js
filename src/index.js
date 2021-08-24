@@ -62,7 +62,6 @@ class ApifyClient {
 
         const tempBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, baseUrl.length - 1) : baseUrl;
         this.baseUrl = `${tempBaseUrl}/v2`;
-        this.token = token;
         this.stats = new Statistics();
         this.logger = logger.child({ prefix: 'ApifyClient' });
         this.httpClient = new HttpClient({
@@ -72,11 +71,12 @@ class ApifyClient {
             requestInterceptors,
             timeoutSecs,
             logger: this.logger,
+            token,
         });
     }
 
     /**
-     * @return {{httpClient: HttpClient, apifyClient: ApifyClient, baseUrl: string, params: {token: string}}}
+     * @return {{httpClient: HttpClient, apifyClient: ApifyClient, baseUrl: string}}
      * @private
      */
     _options() {
@@ -84,9 +84,6 @@ class ApifyClient {
             baseUrl: this.baseUrl,
             apifyClient: this,
             httpClient: this.httpClient,
-            params: {
-                token: this.token,
-            },
         };
     }
 
