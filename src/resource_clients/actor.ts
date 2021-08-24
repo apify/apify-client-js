@@ -13,8 +13,8 @@ import { ActorVersion, ActorVersionClient } from './actor_version';
 import { ActorVersionCollectionClient } from './actor_version_collection';
 import { Build } from './build';
 import { BuildCollectionClient } from './build_collection';
-import RunClient from './run';
-import RunCollectionClient from './run_collection';
+import { RunClient } from './run';
+import { RunCollectionClient } from './run_collection';
 import { WebhookUpdateData } from './webhook';
 import { WebhookCollectionClient } from './webhook_collection';
 
@@ -294,7 +294,7 @@ export interface ActorRun {
 
 export interface ActorRunMeta {
     origin: string;
-    clientIp: string;
+    clientIp?: string;
     userAgent: string;
 }
 
