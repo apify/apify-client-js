@@ -121,6 +121,7 @@ describe('Dataset methods', () => {
                 offset: 0,
                 count: 0,
                 limit: 100000,
+                desc: false,
                 items: [],
             };
             const query = {
@@ -134,6 +135,8 @@ describe('Dataset methods', () => {
                 'x-apify-pagination-offset': '0',
                 'x-apify-pagination-count': '1', // wrong on purpose to check that it's not used
                 'x-apify-pagination-limit': '100000',
+                // TODO: https://github.com/apify/apify-core/issues/3503
+                'x-apify-pagination-desc': false,
             };
             mockServer.setResponse({ body: [], headers: responseHeaders });
 
@@ -188,6 +191,7 @@ describe('Dataset methods', () => {
                 offset: 1,
                 count: 1,
                 limit: 1,
+                desc: false,
                 items: body,
             };
             const headers = {
@@ -196,6 +200,8 @@ describe('Dataset methods', () => {
                 'x-apify-pagination-offset': '1',
                 'x-apify-pagination-count': '0',
                 'x-apify-pagination-limit': '1',
+                // TODO: https://github.com/apify/apify-core/issues/3503
+                'x-apify-pagination-desc': false,
             };
             const qs = { limit: 1, offset: 1 };
             mockServer.setResponse({ body, headers });
