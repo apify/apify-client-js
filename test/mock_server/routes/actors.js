@@ -29,6 +29,11 @@ const ROUTES = [
     { id: 'get-actor-version', method: 'GET', path: '/:actorId/versions/:versionNumber' },
     { id: 'update-actor-version', method: 'PUT', path: '/:actorId/versions/:versionNumber' },
     { id: 'delete-actor-version', method: 'DELETE', path: '/:actorId/versions/:versionNumber' },
+    { id: 'list-actor-env-vars', method: 'GET', path: '/:actorId/versions/:versionNumber/env-vars' },
+    { id: 'create-actor-env-var', method: 'POST', path: '/:actorId/versions/:versionNumber/env-vars' },
+    { id: 'get-actor-env-var', method: 'GET', path: '/:actorId/versions/:versionNumber/env-vars/:envVarName' },
+    { id: 'update-actor-env-var', method: 'PUT', path: '/:actorId/versions/:versionNumber/env-vars/:envVarName' },
+    { id: 'delete-actor-env-var', method: 'DELETE', path: '/:actorId/versions/:versionNumber/env-vars/:envVarName' },
     { id: 'list-webhooks', method: 'GET', path: '/:actorId/webhooks' },
 ];
 

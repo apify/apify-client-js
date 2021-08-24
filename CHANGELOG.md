@@ -1,3 +1,7 @@
+2.1.0 / TBD
+===================
+- Added `ActorEnvVarCollectionClient` and `ActorEnvVarClient`
+
 2.0.0 / TBD
 ===================
 - Laid out base for migration to TypeScript
