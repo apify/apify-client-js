@@ -2,7 +2,7 @@ const ow = require('ow').default;
 const { ACT_JOB_STATUSES } = require('@apify/consts');
 const { ResourceClient } = require('../base/resource_client');
 const RunCollectionClient = require('./run_collection');
-const WebhookCollectionClient = require('./webhook_collection');
+const { WebhookCollectionClient } = require('./webhook_collection');
 const RunClient = require('./run');
 const {
     pluckData,

@@ -7,7 +7,6 @@ import {
     cast,
     parseDateFields,
     pluckData,
-    RunWebhook,
     stringifyWebhooksToBase64,
 } from '../utils';
 import { ActorVersion, ActorVersionClient } from './actor_version';
@@ -16,7 +15,8 @@ import { Build } from './build';
 import { BuildCollectionClient } from './build_collection';
 import RunClient from './run';
 import RunCollectionClient from './run_collection';
-import WebhookCollectionClient from './webhook_collection';
+import { WebhookUpdateData } from './webhook';
+import { WebhookCollectionClient } from './webhook_collection';
 
 /**
  * @hideconstructor
@@ -41,6 +41,7 @@ export class ActorClient extends ResourceClient {
      */
     async update(newFields: ActorUpdateOptions): Promise<Actor> {
         ow(newFields, ow.object);
+
         return this._update(newFields);
     }
 
@@ -269,7 +270,7 @@ export interface ActorStartOptions {
     memory?: number;
     timeout?: number;
     waitForFinish?: number;
-    webhooks?: RunWebhook[];
+    webhooks?: WebhookUpdateData[];
 }
 
 export interface ActorRun {

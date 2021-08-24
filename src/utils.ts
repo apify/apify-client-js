@@ -3,6 +3,7 @@ import util from 'util';
 import zlib from 'zlib';
 import type { TypedArray, JsonValue } from 'type-fest';
 import ApifyApiError from './apify_api_error';
+import { WebhookUpdateData } from './resource_clients/webhook';
 
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
 const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
@@ -59,20 +60,10 @@ export function parseDateFields(input: JsonValue, depth = 0): ReturnJsonValue {
     }, {} as ReturnJsonObject);
 }
 
-// TODO: Move this interface to webhooks collection and strictly type everything
-export interface RunWebhook {
-    eventTypes: string[];
-    idempotencyKey?: string;
-    ignoreSslErrors?: boolean;
-    doNotRetry?: boolean;
-    requestUrl: string;
-    payloadTemplate?: string;
-}
-
 /**
  * Helper function that converts array of webhooks to base64 string
  */
-export function stringifyWebhooksToBase64(webhooks: RunWebhook[]): string | undefined {
+export function stringifyWebhooksToBase64(webhooks: WebhookUpdateData[]): string | undefined {
     if (!webhooks) return;
     const webhooksJson = JSON.stringify(webhooks);
     if (isNode()) {

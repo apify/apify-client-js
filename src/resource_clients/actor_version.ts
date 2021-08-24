@@ -25,6 +25,7 @@ export class ActorVersionClient extends ResourceClient {
      */
     async update(newFields: ActorVersion): Promise<FinalActorVersion> {
         ow(newFields, ow.object);
+
         return this._update(newFields);
     }
 

@@ -26,6 +26,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
             offset: ow.optional.number,
             desc: ow.optional.boolean,
         }));
+
         return this._list(options);
     }
 
@@ -34,6 +35,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      */
     async create(actor: ActorCollectionCreateOptions): Promise<Actor> {
         ow(actor, ow.optional.object);
+
         return this._create(actor);
     }
 }

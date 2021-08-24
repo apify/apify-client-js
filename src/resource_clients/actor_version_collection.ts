@@ -24,6 +24,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
             offset: ow.optional.number,
             desc: ow.optional.boolean,
         }));
+
         return this._list(options);
     }
 
@@ -32,6 +33,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      */
     async create(actorVersion: ActorVersion): Promise<FinalActorVersion> {
         ow(actorVersion, ow.optional.object);
+
         return this._create(actorVersion);
     }
 }

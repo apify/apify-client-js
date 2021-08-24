@@ -23,10 +23,10 @@ const { ScheduleCollectionClient } = require('./resource_clients/schedule_collec
 const TaskClient = require('./resource_clients/task');
 const TaskCollectionClient = require('./resource_clients/task_collection');
 const { UserClient } = require('./resource_clients/user');
-const WebhookClient = require('./resource_clients/webhook');
-const WebhookCollectionClient = require('./resource_clients/webhook_collection');
-const WebhookDispatchClient = require('./resource_clients/webhook_dispatch');
-const WebhookDispatchCollectionClient = require('./resource_clients/webhook_dispatch_collection');
+const { WebhookClient } = require('./resource_clients/webhook');
+const { WebhookCollectionClient } = require('./resource_clients/webhook_collection');
+const { WebhookDispatchClient } = require('./resource_clients/webhook_dispatch');
+const { WebhookDispatchCollectionClient } = require('./resource_clients/webhook_dispatch_collection');
 
 /**
  * ApifyClient is the official library to access [Apify API](https://docs.apify.com/api/v2) from your

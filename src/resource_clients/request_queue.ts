@@ -36,6 +36,7 @@ export class RequestQueueClient extends ResourceClient {
      */
     async update(newFields: RequestQueueClientUpdateOptions): Promise<RequestQueue> {
         ow(newFields, ow.object);
+
         return this._update(newFields);
     }
 
