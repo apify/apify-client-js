@@ -54,9 +54,8 @@ export class ActorClient extends ResourceClient {
     /**
      * Starts an actor and immediately returns the Run object.
      * https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
-     * @return {Promise<Run>}
      */
-    async start(input: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
+    async start(input?: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
         // input can be anything, pointless to validate
         ow(options, ow.object.exactShape({
             build: ow.optional.string,
@@ -104,7 +103,7 @@ export class ActorClient extends ResourceClient {
      * It waits indefinitely, unless the `waitSecs` option is provided.
      * https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
      */
-    async call(input: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
+    async call(input?: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
         // input can be anything, pointless to validate
         ow(options, ow.object.exactShape({
             build: ow.optional.string,
