@@ -25,7 +25,6 @@ class LogClient extends ResourceClient {
         const requestOpts = {
             url: this._url(),
             method: 'GET',
-            params: this._params(),
         };
         try {
             const response = await this.httpClient.call(requestOpts);
@@ -48,7 +47,7 @@ class LogClient extends ResourceClient {
         const requestOpts = {
             url: this._url(),
             method: 'GET',
-            params: this._params(params),
+            params,
             responseType: 'stream',
         };
 

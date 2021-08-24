@@ -24,8 +24,10 @@ class HttpClient {
      * @param {function[]} options.requestInterceptors
      * @param {number} options.timeoutSecs
      * @param {object} options.logger
+     * @param {string} [options.token]
      */
     constructor(options) {
+        const { token } = options;
         this.stats = options.apifyClientStats;
         this.maxRetries = options.maxRetries;
         this.minDelayBetwenRetriesMillis = options.minDelayBetweenRetriesMillis;
@@ -86,6 +88,11 @@ class HttpClient {
             // Works only in Node. Cannot be set in browser
             const userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${!!process.env.IS_AT_HOME}`;
             this.axios.defaults.headers['User-Agent'] = userAgent;
+        }
+
+        // Attach Authorization header for all requests if token was provided
+        if (token) {
+            this.axios.defaults.headers.Authorization = `Bearer ${token}`;
         }
 
         requestInterceptors.forEach((i) => this.axios.interceptors.request.use(i));

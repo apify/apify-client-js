@@ -62,10 +62,10 @@ class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('head'),
             method: 'GET',
-            params: this._params({
+            params: {
                 limit: options.limit,
                 clientKey: this.clientKey,
-            }),
+            },
         });
         return parseDateFields(pluckData(response.data));
     }
@@ -89,10 +89,10 @@ class RequestQueueClient extends ResourceClient {
             url: this._url('requests'),
             method: 'POST',
             data: request,
-            params: this._params({
+            params: {
                 forefront: options.forefront,
                 clientKey: this.clientKey,
-            }),
+            },
         });
         return parseDateFields(pluckData(response.data));
     }
@@ -107,7 +107,6 @@ class RequestQueueClient extends ResourceClient {
         const requestOpts = {
             url: this._url(`requests/${id}`),
             method: 'GET',
-            params: this._params(),
         };
         try {
             const response = await this.httpClient.call(requestOpts);
@@ -136,10 +135,10 @@ class RequestQueueClient extends ResourceClient {
             url: this._url(`requests/${request.id}`),
             method: 'PUT',
             data: request,
-            params: this._params({
+            params: {
                 forefront: options.forefront,
                 clientKey: this.clientKey,
-            }),
+            },
         });
         return parseDateFields(pluckData(response.data));
     }
@@ -153,9 +152,9 @@ class RequestQueueClient extends ResourceClient {
         await this.httpClient.call({
             url: this._url(`requests/${id}`),
             method: 'DELETE',
-            params: this._params({
+            params: {
                 clientKey: this.clientKey,
-            }),
+            },
         });
     }
 }

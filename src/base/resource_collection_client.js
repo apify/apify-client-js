@@ -19,7 +19,7 @@ class ResourceCollectionClient extends ApiClient {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'GET',
-            params: this._params(options),
+            params: options,
         });
         return parseDateFields(pluckData(response.data));
     }
@@ -33,7 +33,6 @@ class ResourceCollectionClient extends ApiClient {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'POST',
-            params: this._params(),
             data: resource,
         });
         return parseDateFields(pluckData(response.data));
@@ -52,7 +51,7 @@ class ResourceCollectionClient extends ApiClient {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'POST',
-            params: this._params({ name }),
+            params: { name },
         });
         return parseDateFields(pluckData(response.data));
     }

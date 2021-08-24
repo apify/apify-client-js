@@ -1,7 +1,7 @@
 const { Readable } = require('stream');
 const ApifyClient = require('../src');
 const mockServer = require('./mock_server/server');
-const { Browser, validateRequest, DEFAULT_QUERY } = require('./_helper');
+const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
 
 describe('Key-Value Store methods', () => {
     let baseUrl;
@@ -23,11 +23,11 @@ describe('Key-Value Store methods', () => {
     let client;
     let page;
     beforeEach(async () => {
-        page = await browser.getInjectedPage(baseUrl, DEFAULT_QUERY);
+        page = await browser.getInjectedPage(baseUrl, DEFAULT_OPTIONS);
         client = new ApifyClient({
             baseUrl,
             maxRetries: 0,
-            ...DEFAULT_QUERY,
+            ...DEFAULT_OPTIONS,
         });
     });
     afterEach(async () => {

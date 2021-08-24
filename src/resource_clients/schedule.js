@@ -54,7 +54,6 @@ class ScheduleClient extends ResourceClient {
         const requestOpts = {
             url: this._url('log'),
             method: 'GET',
-            params: this._params(),
         };
         try {
             const response = await this.httpClient.call(requestOpts);

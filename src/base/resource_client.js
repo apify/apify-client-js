@@ -30,7 +30,7 @@ class ResourceClient extends ApiClient {
         const requestOpts = {
             url: this._url(),
             method: 'GET',
-            params: this._params(options),
+            params: { ...options },
         };
         try {
             const response = await this.httpClient.call(requestOpts);
@@ -48,7 +48,6 @@ class ResourceClient extends ApiClient {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'PUT',
-            params: this._params(),
             data: newFields,
         });
         return parseDateFields(pluckData(response.data));
@@ -63,7 +62,6 @@ class ResourceClient extends ApiClient {
             await this.httpClient.call({
                 url: this._url(),
                 method: 'DELETE',
-                params: this._params(),
             });
         } catch (err) {
             return catchNotFoundOrThrow(err);
@@ -102,7 +100,7 @@ class ResourceClient extends ApiClient {
             const requestOpts = {
                 url: this._url(),
                 method: 'GET',
-                params: this._params({ waitForFinish }),
+                params: { waitForFinish },
             };
             try {
                 const response = await this.httpClient.call(requestOpts);

@@ -1,3 +1,7 @@
+1.4.0 / 2021/08/24
+===================
+- Changed passing token using request HTTP header instead of the request parameter for every API calls
+
 1.3.0 / 2021/07/15
 ===================
 - Added new method `.test()` to the `WebhookClient` class
