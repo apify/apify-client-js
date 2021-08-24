@@ -6,6 +6,7 @@
  * @property {ApifyClient} options.apifyClient
  * @property {HttpClient} options.httpClient
  * @property {string} [options.id]
+ * @property {object} [options.params]
  * @private
  */
 
@@ -23,6 +24,7 @@ class ApiClient {
             httpClient,
             resourcePath,
             id,
+            params = {},
         } = options;
 
         this.id = id;
@@ -34,6 +36,7 @@ class ApiClient {
             : `${baseUrl}/${resourcePath}`;
         this.apifyClient = apifyClient;
         this.httpClient = httpClient;
+        this.params = params;
     }
 
     /**
@@ -46,6 +49,7 @@ class ApiClient {
             baseUrl: this._url(),
             apifyClient: this.apifyClient,
             httpClient: this.httpClient,
+            params: this._params(),
         };
         return { ...baseOptions, ...moreOptions };
     }
@@ -57,6 +61,15 @@ class ApiClient {
      */
     _url(path) {
         return path ? `${this.url}/${path}` : this.url;
+    }
+
+    /**
+     * @param {object} [endpointParams]
+     * @returns {object}
+     * @private
+     */
+    _params(endpointParams) {
+        return { ...this.params, ...endpointParams };
     }
 
     /**

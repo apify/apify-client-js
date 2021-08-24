@@ -71,7 +71,7 @@ class DatasetClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('items'),
             method: 'GET',
-            params: options,
+            params: this._params(options),
         });
         return this._createPaginationList(response);
     }
@@ -123,10 +123,10 @@ class DatasetClient extends ResourceClient {
         const { data } = await this.httpClient.call({
             url: this._url('items'),
             method: 'GET',
-            params: {
+            params: this._params({
                 format,
                 ...options,
-            },
+            }),
             forceBuffer: true,
         });
         return data;
@@ -151,6 +151,7 @@ class DatasetClient extends ResourceClient {
                 'content-type': 'application/json; charset=utf-8',
             },
             data: items,
+            params: this._params(),
             doNotRetryTimeouts: true, // see timeout handling in http-client
         });
     }

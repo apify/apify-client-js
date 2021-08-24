@@ -55,6 +55,7 @@ class WebhookClient extends ResourceClient {
         const request = {
             url: this._url('test'),
             method: 'POST',
+            params: this._params(),
         };
 
         try {
