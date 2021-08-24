@@ -30,7 +30,7 @@ class ResourceClient extends ApiClient {
         const requestOpts = {
             url: this._url(),
             method: 'GET',
-            params: options,
+            params: { ...options },
         };
         try {
             const response = await this.httpClient.call(requestOpts);
