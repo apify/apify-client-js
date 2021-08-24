@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - master
+      - version/**
   # A release via GitHub releases will deploy a latest version
   release:
     types: [ published ]
