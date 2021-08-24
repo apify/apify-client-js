@@ -40,6 +40,7 @@ class BuildClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('abort'),
             method: 'POST',
+            params: this._params(),
         });
 
         return parseDateFields(pluckData(response.data));

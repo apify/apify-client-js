@@ -273,8 +273,9 @@ describe('Actor methods', () => {
                 'log',
             ])('%s() works', async (method) => {
                 const actorId = 'some-actor-id';
+                const requestedStatus = 'SUCCEEDED';
 
-                const lastRunClient = client.actor(actorId).lastRun();
+                const lastRunClient = client.actor(actorId).lastRun({ status: requestedStatus });
                 const res = method === 'get'
                     ? await lastRunClient.get()
                     : await lastRunClient[method]().get();
@@ -284,7 +285,7 @@ describe('Actor methods', () => {
                 } else {
                     expect(res.id).toEqual(`last-run-${method}`);
                 }
-                validateRequest({}, { actorId });
+                validateRequest({ status: requestedStatus }, { actorId });
 
                 const browserRes = await page.evaluate((aId, mthd) => {
                     const lrc = client.actor(aId).lastRun();

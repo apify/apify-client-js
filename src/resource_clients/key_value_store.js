@@ -64,7 +64,7 @@ class KeyValueStoreClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('keys'),
             method: 'GET',
-            params: options,
+            params: this._params(options),
         });
         return parseDateFields(pluckData(response.data));
     }
@@ -102,6 +102,7 @@ class KeyValueStoreClient extends ResourceClient {
         const requestOpts = {
             url: this._url(`records/${key}`),
             method: 'GET',
+            params: this._params(),
         };
 
         if (options.buffer) requestOpts.forceBuffer = true;
@@ -155,6 +156,7 @@ class KeyValueStoreClient extends ResourceClient {
         const uploadOpts = {
             url: this._url(`records/${key}`),
             method: 'PUT',
+            params: this._params(),
             data: value,
             headers: contentType && { 'content-type': contentType },
         };
@@ -173,6 +175,7 @@ class KeyValueStoreClient extends ResourceClient {
         await this.httpClient.call({
             url: this._url(`records/${key}`),
             method: 'DELETE',
+            params: this._params(),
         });
     }
 }

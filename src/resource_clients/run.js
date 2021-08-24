@@ -49,7 +49,7 @@ class RunClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('abort'),
             method: 'POST',
-            params: options,
+            params: this._params(options),
         });
 
         return parseDateFields(pluckData(response.data));
@@ -83,7 +83,7 @@ class RunClient extends ResourceClient {
             url: this._url('metamorph'),
             method: 'POST',
             data: input,
-            params,
+            params: this._params(params),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
@@ -116,7 +116,7 @@ class RunClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('resurrect'),
             method: 'POST',
-            params: options,
+            params: this._params(options),
         });
 
         return parseDateFields(pluckData(response.data));
