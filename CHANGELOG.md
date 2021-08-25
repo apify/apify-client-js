@@ -1,3 +1,7 @@
+1.4.2 / 2021/08/25
+===================
+- Fix: Exposing token on ApifyClient instance
+
 1.4.1 / 2021/08/24
 ===================
 - Changed passing token using request HTTP header instead of the request parameter for every API calls
