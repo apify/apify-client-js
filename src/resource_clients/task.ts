@@ -1,24 +1,26 @@
-const ow = require('ow').default;
-const { ACT_JOB_STATUSES } = require('@apify/consts');
-const { ResourceClient } = require('../base/resource_client');
-const { RunCollectionClient } = require('./run_collection');
-const { WebhookCollectionClient } = require('./webhook_collection');
-const RunClient = require('./run');
-const {
-    pluckData,
-    parseDateFields,
+import { ACT_JOB_STATUSES } from '@apify/consts';
+import ow from 'ow';
+import { JsonObject, JsonArray } from 'type-fest';
+import ApifyApiError from '../apify_api_error';
+import { ApiClientSubResourceOptions } from '../base/api_client';
+import { ResourceClient } from '../base/resource_client';
+import {
+    cast,
     catchNotFoundOrThrow,
+    parseDateFields,
+    pluckData,
     stringifyWebhooksToBase64,
-} = require('../utils');
+} from '../utils';
+import { ActorRun, ActorStartOptions } from './actor';
+import { RunClient } from './run';
+import { RunCollectionClient } from './run_collection';
+import { WebhookCollectionClient } from './webhook_collection';
 
 /**
  * @hideconstructor
  */
-class TaskClient extends ResourceClient {
-    /**
-     * @param {ApiClientOptions} options
-     */
-    constructor(options) {
+export class TaskClient extends ResourceClient {
+    constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'actor-tasks',
             ...options,
@@ -27,43 +29,32 @@ class TaskClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/get-task
-     * @return {Promise<?Task>}
      */
-    async get() {
+    async get(): Promise<Task | undefined> {
         return this._get();
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/update-task
-     * @param {object} newFields
-     * @return {Promise<Task>}
      */
-    async update(newFields) {
+    async update(newFields: TaskUpdateData): Promise<Task> {
         ow(newFields, ow.object);
+
         return this._update(newFields);
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/delete-task
-     * @return {Promise<void>}
      */
-    async delete() {
+    async delete(): Promise<void> {
         return this._delete();
     }
 
     /**
      * Starts a task and immediately returns the Run object.
      * https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task
-     * @param {object} [input]
-     * @param {object} [options]
-     * @param {string} [options.build]
-     * @param {number} [options.memory]
-     * @param {number} [options.timeout]
-     * @param {number} [options.waitForFinish]
-     * @param {object[]} [options.webhooks]
-     * @return {Promise<Run>}
      */
-    async start(input, options = {}) {
+    async start(input: JsonObject | JsonArray, options: Omit<ActorStartOptions, 'contentType'> = {}): Promise<ActorRun> {
         ow(input, ow.optional.object);
         ow(options, ow.object.exactShape({
             build: ow.optional.string,
@@ -94,23 +85,15 @@ class TaskClient extends ResourceClient {
         };
 
         const response = await this.httpClient.call(request);
-        return parseDateFields(pluckData(response.data));
+        return cast(parseDateFields(pluckData(response.data)));
     }
 
     /**
      * Starts a task and waits for it to finish before returning the Run object.
      * It waits indefinitely, unless the `waitSecs` option is provided.
      * https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task
-     * @param {object} [input]
-     * @param {object} [options]
-     * @param {string} [options.build]
-     * @param {number} [options.memory]
-     * @param {number} [options.timeout]
-     * @param {number} [options.waitSecs]
-     * @param {object[]} [options.webhooks]
-     * @return {Promise<Run>}
      */
-    async call(input, options = {}) {
+    async call(input: JsonObject | JsonArray, options: Omit<ActorStartOptions, 'contentType'> = {}): Promise<ActorRun> {
         ow(input, ow.optional.object);
         ow(options, ow.object.exactShape({
             build: ow.optional.string,
@@ -132,9 +115,8 @@ class TaskClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-tasks/task-input-object/get-task-input
-     * @return {Promise<?object>}
      */
-    async getInput() {
+    async getInput(): Promise<JsonObject | JsonArray | undefined> {
         const requestOpts = {
             url: this._url('input'),
             method: 'GET',
@@ -144,31 +126,30 @@ class TaskClient extends ResourceClient {
             const response = await this.httpClient.call(requestOpts);
             return response.data;
         } catch (err) {
-            return catchNotFoundOrThrow(err);
+            catchNotFoundOrThrow(err as ApifyApiError);
         }
+
+        return undefined;
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-tasks/task-input-object/update-task-input
-     * @return {Promise<object>}
      */
-    async updateInput(newFields) {
+    async updateInput(newFields: JsonObject | JsonArray): Promise<JsonObject | JsonArray> {
         const response = await this.httpClient.call({
             url: this._url('input'),
             method: 'PUT',
             params: this._params(),
             data: newFields,
         });
+
         return response.data;
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-tasks/last-run-object-and-its-storages
-     * @param {object} options
-     * @param {string} options.status
-     * @return {RunClient}
      */
-    lastRun(options = {}) {
+    lastRun(options: TaskLastRunOptions = {}): RunClient {
         ow(options, ow.object.exactShape({
             status: ow.optional.string.oneOf(Object.values(ACT_JOB_STATUSES)),
         }));
@@ -182,9 +163,8 @@ class TaskClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection
-     * @return {RunCollectionClient}
      */
-    runs() {
+    runs(): RunCollectionClient {
         return new RunCollectionClient(this._subResourceOptions({
             resourcePath: 'runs',
         }));
@@ -192,11 +172,46 @@ class TaskClient extends ResourceClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-tasks/webhook-collection
-     * @return {WebhookCollectionClient}
      */
-    webhooks() {
+    webhooks(): WebhookCollectionClient {
         return new WebhookCollectionClient(this._subResourceOptions());
     }
 }
 
-module.exports = TaskClient;
+export interface Task {
+    id: string;
+    userId: string;
+    actId: string;
+    name: string;
+    description?: string;
+    username?: string;
+    createdAt: string;
+    modifiedAt: string;
+    stats: TaskStats;
+    options?: TaskOptions;
+    input?: JsonObject | JsonArray;
+}
+
+export interface TaskStats {
+    totalRuns: number;
+}
+
+export interface TaskOptions {
+    build?: string;
+    timeoutSecs?: number;
+    memoryMbytes?: number;
+}
+
+export type TaskUpdateData = Partial<
+    Pick<
+        Task,
+        | 'name'
+        | 'description'
+        | 'options'
+        | 'input'
+    >
+>;
+
+export interface TaskLastRunOptions {
+    status?: keyof typeof ACT_JOB_STATUSES;
+}
