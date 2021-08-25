@@ -12,4 +12,9 @@ describe('ApifyClient', () => {
         client = new ApifyClient({ baseUrl: `${exampleUrl}/` });
         expect(client.baseUrl).toBe(`${exampleUrl}/v2`);
     });
+    test('token correctly set', () => {
+        const token = 'myToken';
+        const client = new ApifyClient({ token });
+        expect(client.token).toBe(token);
+    });
 });
