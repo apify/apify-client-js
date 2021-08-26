@@ -1,4 +1,4 @@
-const ApifyClient = require('../src/index');
+const { ApifyClient } = require('../src/index');
 
 describe('ApifyClient', () => {
     test('default baseUrl is correctly set', () => {

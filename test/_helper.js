@@ -15,7 +15,7 @@ class Browser {
 
         page.on('console', (msg) => console.log(msg.text()));
         await page.evaluate((url, defaultQuery) => {
-            window.client = new window.ApifyClient({
+            window.client = new window.Apify.ApifyClient({
                 baseUrl: url,
                 maxRetries: 0,
                 ...defaultQuery,

@@ -29,11 +29,34 @@ import { WebhookCollectionClient } from './resource_clients/webhook_collection';
 import { WebhookDispatchClient } from './resource_clients/webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './resource_clients/webhook_dispatch_collection';
 
+export * from './resource_clients/actor';
+export * from './resource_clients/actor_collection';
+export * from './resource_clients/build';
+export * from './resource_clients/build_collection';
+export * from './resource_clients/dataset';
+export * from './resource_clients/dataset_collection';
+export * from './resource_clients/key_value_store';
+export * from './resource_clients/key_value_store_collection';
+export * from './resource_clients/log';
+export * from './resource_clients/request_queue';
+export * from './resource_clients/request_queue_collection';
+export * from './resource_clients/run';
+export * from './resource_clients/run_collection';
+export * from './resource_clients/schedule';
+export * from './resource_clients/schedule_collection';
+export * from './resource_clients/task';
+export * from './resource_clients/task_collection';
+export * from './resource_clients/user';
+export * from './resource_clients/webhook';
+export * from './resource_clients/webhook_collection';
+export * from './resource_clients/webhook_dispatch';
+export * from './resource_clients/webhook_dispatch_collection';
+
 /**
  * ApifyClient is the official library to access [Apify API](https://docs.apify.com/api/v2) from your
  * JavaScript applications. It runs both in Node.js and browser.
  */
-class ApifyClient {
+export class ApifyClient {
     baseUrl: string;
 
     token?: string;
@@ -308,9 +331,7 @@ class ApifyClient {
     }
 }
 
-export = ApifyClient;
-
-interface ApifyClientOptions {
+export interface ApifyClientOptions {
     /** @default https://api.apify.com */
     baseUrl?: string;
     /** @default 8 */

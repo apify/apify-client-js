@@ -1,4 +1,4 @@
-const ApifyClient = require('../src/index');
+const { ApifyClient } = require('../src/index');
 const mockServer = require('./mock_server/server');
 const { Browser } = require('./_helper');
 

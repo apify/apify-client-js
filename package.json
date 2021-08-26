@@ -5,8 +5,6 @@
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",
 	"types": "dist/index.d.ts",
-	"browser": "dist/bundle.js",
-	"unpkg": "dist/bundle.js",
 	"exports": {
 		".": {
 			"import": "./dist/index.mjs",
@@ -42,7 +40,8 @@
 	"homepage": "https://apify.com/docs/sdk/apify-client-js/latest",
 	"files": [
 		"dist",
-		"!dist/*.tsbuildinfo"
+		"!dist/*.tsbuildinfo",
+		"!dist/bundle.js"
 	],
 	"scripts": {
 		"build": "run-s clean build:node build:browser",
