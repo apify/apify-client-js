@@ -1,17 +1,17 @@
-const retry = require('async-retry');
-const axios = require('axios').default;
-const KeepAliveAgent = require('agentkeepalive');
-const os = require('os');
-const { ApifyApiError } = require('./apify_api_error');
-const {
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import retry from 'async-retry';
+import KeepAliveAgent from 'agentkeepalive';
+import os from 'os';
+import { ApifyApiError } from './apify_api_error';
+import {
     InvalidResponseBodyError,
     requestInterceptors,
     responseInterceptors,
-} = require('./interceptors');
-const {
+} from './interceptors';
+import {
     isNode,
     dynamicRequire,
-} = require('./utils');
+} from './utils';
 
 const { version } = dynamicRequire('../package.json');
 
@@ -258,3 +258,12 @@ class HttpClient {
 }
 
 module.exports = HttpClient;
+
+export interface ApifyRequestConfig extends AxiosRequestConfig {
+    stringifyFunctions?: boolean;
+    forceBuffer?: boolean;
+}
+
+export interface ApifyResponse<T = any> extends AxiosResponse<T> {
+    config: ApifyRequestConfig;
+}
