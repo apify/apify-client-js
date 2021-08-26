@@ -1,3 +1,5 @@
+import { AxiosResponse } from 'axios';
+
 /**
  * Examples of capturing groups for "...at ActorCollectionClient._list (/Users/..."
  * 0: "at ActorCollectionClient._list ("
@@ -5,7 +7,6 @@
  * 2: "ActorCollectionClient"
  * 3: undefined
  * 4: "list"
- * @type {RegExp}
  * @private
  */
 const CLIENT_METHOD_REGEX = /at( async)? ([A-Za-z]+(Collection)?Client)\._?([A-Za-z]+) \(/;
@@ -16,35 +17,51 @@ const CLIENT_METHOD_REGEX = /at( async)? ([A-Za-z]+(Collection)?Client)\._?([A-Z
  * errors and internal errors, which are automatically retried, or validation
  * errors, which are thrown immediately, because a correction by the user is
  * needed.
- *
- * @property {string} message
- *  Error message returned by the API.
- * @property {string} clientMethod
- *  The invoked resource client and the method. Known issue: Sometimes it displays
- *  as undefined because it can't be parsed from a stack trace.
- * @property {number} statusCode
- *  HTTP status code of the error.
- * @property {string} type
- *  The type of the error, as returned by the API.
- * @property {number} attempt
- *  Number of the API call attempt.
- * @property {string} httpMethod
- *  HTTP method of the API call.
- * @property {string} path
- *  Full path of the API endpoint (URL excluding origin).
- * @property {string} originalStack
- *  Original stack trace of the exception. It is replaced
- *  by a more informative stack with API call information.
  * @hideconstructor
  */
-class ApifyApiError extends Error {
+export class ApifyApiError extends Error {
+    override name: string;
+
     /**
-     * @param {AxiosResponse} response
-     * @param {number} attempt
+     * The invoked resource client and the method. Known issue: Sometimes it displays
+     * as `unknown` because it can't be parsed from a stack trace.
      */
-    constructor(response, attempt) {
-        let message;
-        let type;
+    clientMethod: string;
+
+    /**
+     * HTTP status code of the error.
+     */
+    statusCode: number;
+
+    /**
+     * The type of the error, as returned by the API.
+     */
+    type?: string;
+
+    /**
+     * Number of the API call attempt.
+     */
+    attempt: number;
+
+    /**
+     * HTTP method of the API call.
+     */
+    httpMethod?: string;
+
+    /**
+     * Full path of the API endpoint (URL excluding origin).
+     */
+    path?: string;
+
+    /**
+     * Original stack trace of the exception. It is replaced
+     * by a more informative stack with API call information.
+     */
+    originalStack: string;
+
+    constructor(response: AxiosResponse, attempt: number) {
+        let message!: string;
+        let type: string | undefined;
         if (response.data && response.data.error) {
             const { error } = response.data;
             message = error.message;
@@ -65,36 +82,30 @@ class ApifyApiError extends Error {
         this.statusCode = response.status;
         this.type = type;
         this.attempt = attempt;
-        this.httpMethod = response.config && response.config.method;
+        this.httpMethod = response.config?.method;
         this.path = this._safelyParsePathFromResponse(response);
 
-        this.originalStack = this.stack.slice(this.stack.indexOf('\n'));
+        const stack = this.stack!;
+
+        this.originalStack = stack.slice(stack.indexOf('\n'));
         this.stack = this._createApiStack();
     }
 
-    /**
-     * @param {AxiosResponse} response
-     * @return {string}
-     * @private
-     */
-    _safelyParsePathFromResponse(response) {
-        const urlString = response.config && response.config.url;
+    private _safelyParsePathFromResponse(response: AxiosResponse) {
+        const urlString = response.config?.url;
         let url;
         try {
-            url = new URL(urlString);
-        } catch (err) {
+            url = new URL(urlString!);
+        } catch {
             return urlString;
         }
         return url.pathname + url.search;
     }
 
-    /**
-     * @return {string}
-     * @private
-     */
-    _extractClientAndMethodFromStack() {
-        const match = this.stack.match(CLIENT_METHOD_REGEX);
+    private _extractClientAndMethodFromStack() {
+        const match = this.stack!.match(CLIENT_METHOD_REGEX);
         if (match) return `${match[2]}.${match[4]}`;
+        return 'unknown';
     }
 
     /**
@@ -110,15 +121,13 @@ class ApifyApiError extends Error {
      *   attempt: 1
      *   httpMethod: post
      *   path: /v2/actor-tasks/user~my-task/runs
-     *
-     * @return {string}
-     * @private
      */
-    _createApiStack() {
+    private _createApiStack() {
         const {
             name,
             ...props
         } = this;
+
         const stack = Object.entries(props)
             .map(([k, v]) => {
                 // Rename originalStack to stack in the stack itself.
@@ -131,5 +140,3 @@ class ApifyApiError extends Error {
         return `${name}: ${this.message}\n${stack}`;
     }
 }
-
-module.exports = ApifyApiError;

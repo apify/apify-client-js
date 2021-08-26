@@ -1,4 +1,4 @@
-const ApifyApiError = require('../src/apify_api_error');
+const { ApifyApiError } = require('../src/apify_api_error');
 const utils = require('../src/utils');
 
 describe('utils.pluckData()', () => {

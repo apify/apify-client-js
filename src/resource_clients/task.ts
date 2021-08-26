@@ -1,7 +1,7 @@
 import { ACT_JOB_STATUSES } from '@apify/consts';
 import ow from 'ow';
 import { JsonObject, JsonArray } from 'type-fest';
-import ApifyApiError from '../apify_api_error';
+import { ApifyApiError } from '../apify_api_error';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import {

@@ -5,7 +5,7 @@ import {
     parseDateFields,
     catchNotFoundOrThrow,
 } from '../utils';
-import ApifyApiError from '../apify_api_error';
+import { ApifyApiError } from '../apify_api_error';
 
 /**
  * We need to supply some number for the API,
