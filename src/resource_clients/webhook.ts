@@ -9,7 +9,7 @@ import {
     cast,
 } from '../utils';
 import { ApiClientSubResourceOptions } from '../base/api_client';
-import ApifyApiError from '../apify_api_error';
+import { ApifyApiError } from '../apify_api_error';
 import { WebhookDispatch } from './webhook_dispatch';
 
 /**

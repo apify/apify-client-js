@@ -2,7 +2,7 @@ import ow from 'ow';
 import util from 'util';
 import zlib from 'zlib';
 import type { TypedArray, JsonValue } from 'type-fest';
-import ApifyApiError from './apify_api_error';
+import { ApifyApiError } from './apify_api_error';
 import { WebhookUpdateData } from './resource_clients/webhook';
 
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field

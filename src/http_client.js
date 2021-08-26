@@ -2,7 +2,7 @@ const retry = require('async-retry');
 const axios = require('axios').default;
 const KeepAliveAgent = require('agentkeepalive');
 const os = require('os');
-const ApifyApiError = require('./apify_api_error');
+const { ApifyApiError } = require('./apify_api_error');
 const {
     InvalidResponseBodyError,
     requestInterceptors,
