@@ -16,11 +16,12 @@ const MIN_GZIP_BYTES = 1024;
  * Returns object's 'data' property or throws if parameter is not an object,
  * or an object without a 'data' property.
  */
-export function pluckData<R>(obj: Record<string, unknown>): R {
-    const isObject = !!obj && typeof obj === 'object';
-    if (isObject && typeof obj.data !== 'undefined') {
-        return obj.data as R;
+export function pluckData<R>(obj: unknown): R {
+    if (typeof obj === 'object' && obj) {
+        const data = Reflect.get(obj, 'data') as R | undefined;
+        if (typeof data !== 'undefined') return data;
     }
+
     throw new Error(`Expected response object with a "data" property, but received: ${obj}`);
 }
 

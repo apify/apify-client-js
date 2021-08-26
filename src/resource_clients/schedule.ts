@@ -2,6 +2,7 @@ import ow from 'ow';
 import { ApifyApiError } from '../apify_api_error';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import { ApifyRequestConfig } from '../http_client';
 import { Timezone } from '../timezones';
 import {
     pluckData,
@@ -47,7 +48,7 @@ export class ScheduleClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/schedules/schedule-log/get-schedule-log
      */
     async getLog(): Promise<string | undefined> {
-        const requestOpts = {
+        const requestOpts: ApifyRequestConfig = {
             url: this._url('log'),
             method: 'GET',
             params: this._params(),

@@ -109,8 +109,8 @@ function parseResponseData(response: ApifyResponse): ApifyResponse {
     return response;
 }
 
-type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyRequestConfig>['use']>[0];
-type ResponseInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyResponse>['use']>[0];
+export type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyRequestConfig>['use']>[0];
+export type ResponseInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyResponse>['use']>[0];
 
 export const requestInterceptors: RequestInterceptorFunction[] = [maybeGzipRequest, serializeRequest];
 export const responseInterceptors: ResponseInterceptorFunction[] = [parseResponseData];

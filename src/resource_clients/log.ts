@@ -1,7 +1,9 @@
 import { ApifyApiError } from '../apify_api_error';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import { ApifyRequestConfig } from '../http_client';
 import {
+    cast,
     catchNotFoundOrThrow,
 } from '../utils';
 
@@ -20,7 +22,7 @@ export class LogClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/logs/log/get-log
      */
     async get(): Promise<string | undefined> {
-        const requestOpts = {
+        const requestOpts: ApifyRequestConfig = {
             url: this._url(),
             method: 'GET',
             params: this._params(),
@@ -28,7 +30,7 @@ export class LogClient extends ResourceClient {
 
         try {
             const response = await this.httpClient.call(requestOpts);
-            return response.data;
+            return cast(response.data);
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }
@@ -45,7 +47,7 @@ export class LogClient extends ResourceClient {
             stream: true,
         };
 
-        const requestOpts = {
+        const requestOpts: ApifyRequestConfig = {
             url: this._url(),
             method: 'GET',
             params: this._params(params),
@@ -54,7 +56,7 @@ export class LogClient extends ResourceClient {
 
         try {
             const response = await this.httpClient.call(requestOpts);
-            return response.data;
+            return cast(response.data);
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }

@@ -6,6 +6,7 @@ import {
     catchNotFoundOrThrow,
 } from '../utils';
 import { ApifyApiError } from '../apify_api_error';
+import { ApifyRequestConfig } from '../http_client';
 
 /**
  * We need to supply some number for the API,
@@ -20,7 +21,7 @@ const MAX_WAIT_FOR_FINISH = 999999;
  */
 export class ResourceClient extends ApiClient {
     protected async _get<T, R>(options: T = {} as T): Promise<R | undefined> {
-        const requestOpts = {
+        const requestOpts: ApifyRequestConfig = {
             url: this._url(),
             method: 'GET',
             params: this._params(options),
@@ -81,7 +82,7 @@ export class ResourceClient extends ApiClient {
             const remainingWaitSeconds = Math.round((waitMillis - millisSinceStart) / 1000);
             const waitForFinish = Math.max(0, remainingWaitSeconds);
 
-            const requestOpts = {
+            const requestOpts: ApifyRequestConfig = {
                 url: this._url(),
                 method: 'GET',
                 params: this._params({ waitForFinish }),

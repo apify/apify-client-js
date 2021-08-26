@@ -1,8 +1,8 @@
-import { AxiosResponse } from 'axios';
 import ow from 'ow';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
-import { PaginatedList } from '../utils';
+import { ApifyResponse } from '../http_client';
+import { cast, PaginatedList } from '../utils';
 
 /**
  * @hideconstructor
@@ -98,7 +98,7 @@ export class DatasetClient extends ResourceClient {
             forceBuffer: true,
         });
 
-        return data;
+        return cast(data);
     }
 
     /**
@@ -123,7 +123,7 @@ export class DatasetClient extends ResourceClient {
         });
     }
 
-    private _createPaginationList<D>(response: AxiosResponse<D[]>, userProvidedDesc: boolean): PaginatedList<D> {
+    private _createPaginationList<D>(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<D> {
         return {
             items: response.data,
             total: Number(response.headers['x-apify-pagination-total']),

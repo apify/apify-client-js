@@ -2,6 +2,7 @@ import ow from 'ow';
 import { ApifyApiError } from '../apify_api_error';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import { ApifyRequestConfig } from '../http_client';
 import {
     pluckData,
     parseDateFields,
@@ -100,7 +101,7 @@ export class RequestQueueClient extends ResourceClient {
      */
     async getRequest(id: string): Promise<RequestQueueClientGetRequestResult | undefined> {
         ow(id, ow.string);
-        const requestOpts = {
+        const requestOpts: ApifyRequestConfig = {
             url: this._url(`requests/${id}`),
             method: 'GET',
             params: this._params(),
