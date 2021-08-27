@@ -114,7 +114,7 @@ export class HttpClient {
         responseInterceptors.forEach((i) => this.axios.interceptors.response.use(i));
     }
 
-    async call<T>(config: ApifyRequestConfig): Promise<ApifyResponse<T>> {
+    async call<T = any>(config: ApifyRequestConfig): Promise<ApifyResponse<T>> {
         this.stats.calls++;
         const makeRequest = this._createRequestHandler(config);
 
