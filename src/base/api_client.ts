@@ -1,4 +1,4 @@
-import { ApifyClient } from '../index';
+import { ApifyClient } from '../apify_client';
 import { HttpClient } from '../http_client';
 
 /** @private */
