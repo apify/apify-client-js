@@ -12,15 +12,19 @@ const NOT_FOUND_TYPE = 'record-not-found';
 const NOT_FOUND_ON_S3 = '<Code>NoSuchKey</Code>';
 const MIN_GZIP_BYTES = 1024;
 
+export interface MaybeData<R> {
+    data?: R;
+}
+
 /**
  * Returns object's 'data' property or throws if parameter is not an object,
  * or an object without a 'data' property.
  */
-export function pluckData<R>(obj: Record<string, unknown>): R {
-    const isObject = !!obj && typeof obj === 'object';
-    if (isObject && typeof obj.data !== 'undefined') {
-        return obj.data as R;
+export function pluckData<R>(obj: MaybeData<R>): R {
+    if (typeof obj === 'object' && obj) {
+        if (typeof obj.data !== 'undefined') return obj.data;
     }
+
     throw new Error(`Expected response object with a "data" property, but received: ${obj}`);
 }
 

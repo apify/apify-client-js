@@ -11,6 +11,7 @@ import {
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ApifyApiError } from '../apify_api_error';
 import { WebhookDispatch } from './webhook_dispatch';
+import { ApifyRequestConfig } from '../http_client';
 
 /**
  * @hideconstructor
@@ -50,7 +51,7 @@ export class WebhookClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/webhooks/webhook-test/test-webhook
      */
     async test(): Promise<WebhookDispatch | undefined> {
-        const request = {
+        const request: ApifyRequestConfig = {
             url: this._url('test'),
             method: 'POST',
             params: this._params(),

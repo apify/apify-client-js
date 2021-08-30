@@ -4,6 +4,7 @@ import { JsonObject, JsonArray } from 'type-fest';
 import { ApifyApiError } from '../apify_api_error';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import { ApifyRequestConfig } from '../http_client';
 import {
     cast,
     catchNotFoundOrThrow,
@@ -74,7 +75,7 @@ export class TaskClient extends ResourceClient {
             webhooks: stringifyWebhooksToBase64(options.webhooks),
         };
 
-        const request = {
+        const request: ApifyRequestConfig = {
             url: this._url('runs'),
             method: 'POST',
             data: input,
@@ -117,14 +118,14 @@ export class TaskClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actor-tasks/task-input-object/get-task-input
      */
     async getInput(): Promise<JsonObject | JsonArray | undefined> {
-        const requestOpts = {
+        const requestOpts: ApifyRequestConfig = {
             url: this._url('input'),
             method: 'GET',
             params: this._params(),
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return response.data;
+            return cast(response.data);
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }
@@ -143,7 +144,7 @@ export class TaskClient extends ResourceClient {
             data: newFields,
         });
 
-        return response.data;
+        return cast(response.data);
     }
 
     /**

@@ -4,6 +4,7 @@ import { JsonValue } from 'type-fest';
 import { ApifyApiError } from '../apify_api_error';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import { ApifyRequestConfig } from '../http_client';
 import {
     cast,
     catchNotFoundOrThrow,
@@ -152,7 +153,7 @@ export class KeyValueStoreClient extends ResourceClient {
             }
         }
 
-        const uploadOpts = {
+        const uploadOpts: ApifyRequestConfig = {
             url: this._url(`records/${key}`),
             method: 'PUT',
             params: this._params(),

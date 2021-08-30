@@ -10,14 +10,14 @@ import {
     parseDateFields,
     cast,
 } from '../utils';
-import { ApiClientOptions } from '../base/api_client';
+import { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ActorRun } from './actor';
 
 /**
  * @hideconstructor
  */
 export class RunClient extends ResourceClient {
-    constructor(options: ApiClientOptions) {
+    constructor(options: ApiClientOptionsWithOptionalResourcePath) {
         super({
             ...options,
             resourcePath: options.resourcePath || 'actor-runs',

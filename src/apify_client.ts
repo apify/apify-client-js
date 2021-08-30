@@ -1,47 +1,50 @@
-const ow = require('ow').default;
-const { ME_USER_NAME_PLACEHOLDER } = require('@apify/consts');
-const { default: logger } = require('@apify/log');
+import ow from 'ow';
+import { ME_USER_NAME_PLACEHOLDER } from '@apify/consts';
+import logger, { Log } from '@apify/log';
 
-const HttpClient = require('./http_client');
-const { Statistics } = require('./statistics');
+import { HttpClient } from './http_client';
+import { Statistics } from './statistics';
+import { RequestInterceptorFunction } from './interceptors';
 
-const { ActorClient } = require('./resource_clients/actor');
-const { ActorCollectionClient } = require('./resource_clients/actor_collection');
-const { BuildClient } = require('./resource_clients/build');
-// const { BuildCollectionClient } = require('./resource_clients/build_collection');
-const { DatasetClient } = require('./resource_clients/dataset');
-const { DatasetCollectionClient } = require('./resource_clients/dataset_collection');
-const { KeyValueStoreClient } = require('./resource_clients/key_value_store');
-const { KeyValueStoreCollectionClient } = require('./resource_clients/key_value_store_collection');
-const { LogClient } = require('./resource_clients/log');
-const { RequestQueueClient } = require('./resource_clients/request_queue');
-const { RequestQueueCollectionClient } = require('./resource_clients/request_queue_collection');
-const { RunClient } = require('./resource_clients/run');
-// const { RunCollectionClient } = require('./resource_clients/run_collection');
-const { ScheduleClient } = require('./resource_clients/schedule');
-const { ScheduleCollectionClient } = require('./resource_clients/schedule_collection');
-const { TaskClient } = require('./resource_clients/task');
-const { TaskCollectionClient } = require('./resource_clients/task_collection');
-const { UserClient } = require('./resource_clients/user');
-const { WebhookClient } = require('./resource_clients/webhook');
-const { WebhookCollectionClient } = require('./resource_clients/webhook_collection');
-const { WebhookDispatchClient } = require('./resource_clients/webhook_dispatch');
-const { WebhookDispatchCollectionClient } = require('./resource_clients/webhook_dispatch_collection');
+import { ActorClient } from './resource_clients/actor';
+import { ActorCollectionClient } from './resource_clients/actor_collection';
+import { BuildClient } from './resource_clients/build';
+// import { BuildCollectionClient } from './resource_clients/build_collection';
+import { DatasetClient } from './resource_clients/dataset';
+import { DatasetCollectionClient } from './resource_clients/dataset_collection';
+import { KeyValueStoreClient } from './resource_clients/key_value_store';
+import { KeyValueStoreCollectionClient } from './resource_clients/key_value_store_collection';
+import { LogClient } from './resource_clients/log';
+import { RequestQueueClient, RequestQueueUserOptions } from './resource_clients/request_queue';
+import { RequestQueueCollectionClient } from './resource_clients/request_queue_collection';
+import { RunClient } from './resource_clients/run';
+// import { RunCollectionClient } from './resource_clients/run_collection';
+import { ScheduleClient } from './resource_clients/schedule';
+import { ScheduleCollectionClient } from './resource_clients/schedule_collection';
+import { TaskClient } from './resource_clients/task';
+import { TaskCollectionClient } from './resource_clients/task_collection';
+import { UserClient } from './resource_clients/user';
+import { WebhookClient } from './resource_clients/webhook';
+import { WebhookCollectionClient } from './resource_clients/webhook_collection';
+import { WebhookDispatchClient } from './resource_clients/webhook_dispatch';
+import { WebhookDispatchCollectionClient } from './resource_clients/webhook_dispatch_collection';
 
 /**
  * ApifyClient is the official library to access [Apify API](https://docs.apify.com/api/v2) from your
  * JavaScript applications. It runs both in Node.js and browser.
- *
- * @param {object} [options]
- * @param {string} [options.baseUrl=https://api.apify.com]
- * @param {number} [options.maxRetries=8]
- * @param {number} [options.minDelayBetweenRetriesMillis=500]
- * @param {function[]} [options.requestInterceptors]
- * @param {number} [options.timeoutSecs]
- * @param {string} [options.token]
  */
-class ApifyClient {
-    constructor(options = {}) {
+export class ApifyClient {
+    baseUrl: string;
+
+    token?: string;
+
+    stats: Statistics;
+
+    logger: Log;
+
+    httpClient: HttpClient;
+
+    constructor(options: ApifyClientOptions = {}) {
         ow(options, ow.object.exactShape({
             baseUrl: ow.optional.string,
             maxRetries: ow.optional.number,
@@ -76,11 +79,7 @@ class ApifyClient {
         });
     }
 
-    /**
-     * @return {{httpClient: HttpClient, apifyClient: ApifyClient, baseUrl: string}}
-     * @private
-     */
-    _options() {
+    private _options() {
         return {
             baseUrl: this.baseUrl,
             apifyClient: this,
@@ -90,19 +89,17 @@ class ApifyClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/actor-collection
-     * @return {ActorCollectionClient}
      */
-    actors() {
+    actors(): ActorCollectionClient {
         return new ActorCollectionClient(this._options());
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/actor-object
-     * @param {string} id
-     * @return {ActorClient}
      */
-    actor(id) {
+    actor(id: string): ActorClient {
         ow(id, ow.string.nonEmpty);
+
         return new ActorClient({
             id,
             ...this._options(),
@@ -119,11 +116,10 @@ class ApifyClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-builds/build-object
-     * @param {string} id
-     * @return {BuildClient}
      */
-    build(id) {
+    build(id: string): BuildClient {
         ow(id, ow.string.nonEmpty);
+
         return new BuildClient({
             id,
             ...this._options(),
@@ -132,19 +128,17 @@ class ApifyClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/dataset-collection
-     * @return {DatasetCollectionClient}
      */
-    datasets() {
+    datasets(): DatasetCollectionClient {
         return new DatasetCollectionClient(this._options());
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/dataset
-     * @param {string} id
-     * @return {DatasetClient}
      */
-    dataset(id) {
+    dataset(id: string): DatasetClient {
         ow(id, ow.string.nonEmpty);
+
         return new DatasetClient({
             id,
             ...this._options(),
@@ -153,19 +147,17 @@ class ApifyClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection
-     * @return {KeyValueStoreCollectionClient}
      */
-    keyValueStores() {
+    keyValueStores(): KeyValueStoreCollectionClient {
         return new KeyValueStoreCollectionClient(this._options());
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/store-object
-     * @param {string} id
-     * @return {KeyValueStoreClient}
      */
-    keyValueStore(id) {
+    keyValueStore(id: string): KeyValueStoreClient {
         ow(id, ow.string.nonEmpty);
+
         return new KeyValueStoreClient({
             id,
             ...this._options(),
@@ -174,11 +166,10 @@ class ApifyClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/logs
-     * @param {string} buildOrRunId
-     * @return {LogClient}
      */
-    log(buildOrRunId) {
+    log(buildOrRunId: string): LogClient {
         ow(buildOrRunId, ow.string.nonEmpty);
+
         return new LogClient({
             id: buildOrRunId,
             ...this._options(),
@@ -187,24 +178,20 @@ class ApifyClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/queue-collection
-     * @return {RequestQueueCollection}
      */
-    requestQueues() {
+    requestQueues(): RequestQueueCollectionClient {
         return new RequestQueueCollectionClient(this._options());
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/queue
-     * @param {string} id
-     * @param {object} [options]
-     * @param {object} [options.clientKey]
-     * @return {RequestQueueClient}
      */
-    requestQueue(id, options = {}) {
+    requestQueue(id: string, options: RequestQueueUserOptions = {}): RequestQueueClient {
         ow(id, ow.string.nonEmpty);
         ow(options, ow.object.exactShape({
             clientKey: ow.optional.string.nonEmpty,
         }));
+
         const apiClientOptions = {
             id,
             ...this._options(),
@@ -222,11 +209,10 @@ class ApifyClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
-     * @param {string} id
-     * @return {RunClient}
      */
-    run(id) {
+    run(id: string): RunClient {
         ow(id, ow.string.nonEmpty);
+
         return new RunClient({
             id,
             ...this._options(),
@@ -235,19 +221,17 @@ class ApifyClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection
-     * @return {TaskCollectionClient}
      */
-    tasks() {
+    tasks(): TaskCollectionClient {
         return new TaskCollectionClient(this._options());
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-tasks/task-object
-     * @param {string} id
-     * @return {TaskClient}
      */
-    task(id) {
+    task(id: string): TaskClient {
         ow(id, ow.string.nonEmpty);
+
         return new TaskClient({
             id,
             ...this._options(),
@@ -256,19 +240,17 @@ class ApifyClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/schedules/schedules-collection
-     * @return {ScheduleCollectionClient}
      */
-    schedules() {
+    schedules(): ScheduleCollectionClient {
         return new ScheduleCollectionClient(this._options());
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/schedules/schedule-object
-     * @param {string} id
-     * @return {ScheduleClient}
      */
-    schedule(id) {
+    schedule(id: string): ScheduleClient {
         ow(id, ow.string.nonEmpty);
+
         return new ScheduleClient({
             id,
             ...this._options(),
@@ -277,11 +259,10 @@ class ApifyClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/users
-     * @param {string} id
-     * @return {UserClient}
      */
-    user(id = ME_USER_NAME_PLACEHOLDER) {
+    user(id = ME_USER_NAME_PLACEHOLDER): UserClient {
         ow(id, ow.string.nonEmpty);
+
         return new UserClient({
             id,
             ...this._options(),
@@ -290,19 +271,17 @@ class ApifyClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection
-     * @return {WebhookCollectionClient}
      */
-    webhooks() {
+    webhooks(): WebhookCollectionClient {
         return new WebhookCollectionClient(this._options());
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/webhooks/webhook-object
-     * @param {string} id
-     * @return {WebhookClient}
      */
-    webhook(id) {
+    webhook(id: string): WebhookClient {
         ow(id, ow.string.nonEmpty);
+
         return new WebhookClient({
             id,
             ...this._options(),
@@ -311,19 +290,17 @@ class ApifyClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/webhook-dispatches
-     * @return {WebhookDispatchCollectionClient}
      */
-    webhookDispatches() {
+    webhookDispatches(): WebhookDispatchCollectionClient {
         return new WebhookDispatchCollectionClient(this._options());
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatch-object
-     * @param {string} id
-     * @return {WebhookDispatchClient}
      */
-    webhookDispatch(id) {
+    webhookDispatch(id: string): WebhookDispatchClient {
         ow(id, ow.string.nonEmpty);
+
         return new WebhookDispatchClient({
             id,
             ...this._options(),
@@ -331,4 +308,16 @@ class ApifyClient {
     }
 }
 
-module.exports = ApifyClient;
+export interface ApifyClientOptions {
+    /** @default https://api.apify.com */
+    baseUrl?: string;
+    /** @default 8 */
+    maxRetries?: number;
+    /** @default 500 */
+    minDelayBetweenRetriesMillis?: number;
+    /** @default [] */
+    requestInterceptors?: RequestInterceptorFunction[];
+    /** @default 360 */
+    timeoutSecs?: number;
+    token?: string;
+}

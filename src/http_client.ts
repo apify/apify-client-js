@@ -1,38 +1,50 @@
-const retry = require('async-retry');
-const axios = require('axios').default;
-const KeepAliveAgent = require('agentkeepalive');
-const os = require('os');
-const { ApifyApiError } = require('./apify_api_error');
-const {
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import retry, { RetryFunction } from 'async-retry';
+import KeepAliveAgent from 'agentkeepalive';
+import os from 'os';
+import { Log } from '@apify/log';
+import { ApifyApiError } from './apify_api_error';
+import {
     InvalidResponseBodyError,
+    RequestInterceptorFunction,
     requestInterceptors,
     responseInterceptors,
-} = require('./interceptors');
-const {
+} from './interceptors';
+import {
     isNode,
     dynamicRequire,
-} = require('./utils');
+    cast,
+} from './utils';
+import { Statistics } from './statistics';
 
 const { version } = dynamicRequire('../package.json');
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 
-class HttpClient {
-    /**
-     * @param {object} options
-     * @param {object} options.apifyClientStats
-     * @param {number} options.maxRetries
-     * @param {number} options.minDelayBetweenRetriesMillis
-     * @param {function[]} options.requestInterceptors
-     * @param {number} options.timeoutSecs
-     * @param {object} options.logger
-     * @param {string} [options.token]
-     */
-    constructor(options) {
+export class HttpClient {
+    stats: Statistics;
+
+    maxRetries: number;
+
+    minDelayBetweenRetriesMillis: number
+
+    userProvidedRequestInterceptors: RequestInterceptorFunction[];
+
+    logger: Log;
+
+    timeoutMillis: number;
+
+    httpAgent?: KeepAliveAgent;
+
+    httpsAgent?: KeepAliveAgent.HttpsAgent;
+
+    axios: AxiosInstance;
+
+    constructor(options: HttpClientOptions) {
         const { token } = options;
         this.stats = options.apifyClientStats;
         this.maxRetries = options.maxRetries;
-        this.minDelayBetwenRetriesMillis = options.minDelayBetweenRetriesMillis;
+        this.minDelayBetweenRetriesMillis = options.minDelayBetweenRetriesMillis;
         this.userProvidedRequestInterceptors = options.requestInterceptors;
         this.timeoutMillis = options.timeoutSecs * 1000;
         this.logger = options.logger;
@@ -59,19 +71,19 @@ class HttpClient {
             httpAgent: this.httpAgent,
             httpsAgent: this.httpsAgent,
             paramsSerializer: (params) => {
-                const formattedParams = Object.entries(params)
+                const formattedParams = Object.entries<string>(params)
                     .filter(([, value]) => value !== undefined)
                     .map(([key, value]) => {
                         const updatedValue = typeof value === 'boolean' ? Number(value) : value;
-                        return [key, updatedValue];
+                        return [key, String(updatedValue)];
                     });
 
-                return new URLSearchParams(formattedParams);
+                return new URLSearchParams(formattedParams).toString();
             },
             validateStatus: null,
             // Using interceptors for this functionality.
-            transformRequest: null,
-            transformResponse: null,
+            transformRequest: undefined,
+            transformResponse: undefined,
             responseType: 'arraybuffer',
             timeout: this.timeoutMillis,
             // maxBodyLength needs to be Infinity, because -1 falls back to a 10 MB default
@@ -102,17 +114,13 @@ class HttpClient {
         responseInterceptors.forEach((i) => this.axios.interceptors.response.use(i));
     }
 
-    /**
-     * @param {object} config
-     * @return {Promise<*>}
-     */
-    async call(config) {
+    async call<T = any>(config: ApifyRequestConfig): Promise<ApifyResponse<T>> {
         this.stats.calls++;
         const makeRequest = this._createRequestHandler(config);
 
         return retry(makeRequest, {
             retries: this.maxRetries,
-            minTimeout: this.minDelayBetwenRetriesMillis,
+            minTimeout: this.minDelayBetweenRetriesMillis,
             onRetry: this._onRequestRetry,
         });
     }
@@ -121,25 +129,16 @@ class HttpClient {
      * Successful responses are returned, errors and unsuccessful
      * status codes are retried. See the following functions for the
      * retrying logic.
-     * @param {object} config
-     * @return {function}
-     * @private
      */
-    _createRequestHandler(config) {
-        /**
-         * @param {function} stopTrying
-         * @param {number} attempt
-         * @return {?Promise<AxiosResponse<any>>}
-         * @private
-         */
-        const makeRequest = async (stopTrying, attempt) => {
+    private _createRequestHandler(config: ApifyRequestConfig) {
+        const makeRequest: RetryFunction<ApifyResponse> = async (stopTrying, attempt) => {
             this.stats.requests++;
-            let response;
+            let response: ApifyResponse;
             try {
                 response = await this.axios.request(config);
                 if (this._isStatusOk(response.status)) return response;
             } catch (err) {
-                return this._handleRequestError(err, config, stopTrying);
+                return cast(this._handleRequestError(err as AxiosError, config, stopTrying));
             }
 
             if (response.status === RATE_LIMIT_EXCEEDED_STATUS_CODE) {
@@ -150,30 +149,24 @@ class HttpClient {
             if (this._isStatusCodeRetryable(response.status)) {
                 throw apiError;
             } else {
-                return stopTrying(apiError);
+                stopTrying(apiError);
             }
+
+            return response;
         };
+
         return makeRequest;
     }
 
-    /**
-     * @param {number} statusCode
-     * @return {boolean}
-     * @private
-     */
-    _isStatusOk(statusCode) {
+    private _isStatusOk(statusCode: number) {
         return statusCode < 300;
     }
 
     /**
      * Handles all unexpected errors that can happen, but are not
      * Apify API typed errors. E.g. network errors, timeouts and so on.
-     * @param {Error} err
-     * @param {object} config
-     * @param {function} stopTrying
-     * @private
      */
-    _handleRequestError(err, config, stopTrying) {
+    private _handleRequestError(err: AxiosError, config: ApifyRequestConfig, stopTrying: (e: Error) => void) {
         if (this._isTimeoutError(err) && config.doNotRetryTimeouts) {
             return stopTrying(err);
         }
@@ -188,10 +181,8 @@ class HttpClient {
     /**
      * Axios calls req.abort() on timeouts so timeout errors will
      * have a code ECONNABORTED.
-     * @param {Error} err
-     * @private
      */
-    _isTimeoutError(err) {
+    private _isTimeoutError(err: AxiosError) {
         return err.code === 'ECONNABORTED';
     }
 
@@ -201,7 +192,7 @@ class HttpClient {
      * @param {Error} err
      * @private
      */
-    _isRetryableError(err) {
+    private _isRetryableError(err: AxiosError) {
         return this._isNetworkError(err) || this._isResponseBodyInvalid(err);
     }
 
@@ -209,11 +200,8 @@ class HttpClient {
      * When a network connection to our API is interrupted in the middle of streaming
      * a response, the request often does not fail, but simply contains
      * an incomplete response. This can often be fixed by retrying.
-     * @param {Error} err
-     * @return {boolean}
-     * @private
      */
-    _isResponseBodyInvalid(err) {
+    private _isResponseBodyInvalid(err: Error): err is InvalidResponseBodyError {
         return err instanceof InvalidResponseBodyError;
     }
 
@@ -221,11 +209,8 @@ class HttpClient {
      * When a network request is attempted by axios and fails,
      * it throws an AxiosError, which will have the request
      * and config (and other) properties.
-     * @param {Error} err
-     * @return {boolean}
-     * @private
      */
-    _isNetworkError(err) {
+    private _isNetworkError(err: AxiosError) {
         const hasRequest = err.request && typeof err.request === 'object';
         const hasConfig = err.config && typeof err.config === 'object';
         return hasRequest && hasConfig;
@@ -235,26 +220,36 @@ class HttpClient {
      * We retry 429 (rate limit) and 500+.
      * For status codes 300-499 (except 429) we do not retry the request,
      * because it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
-     * @param {number} statusCode
-     * @return {boolean}
-     * @private
      */
-    _isStatusCodeRetryable(statusCode) {
+    private _isStatusCodeRetryable(statusCode: number) {
         const isRateLimitError = statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE;
         const isInternalError = statusCode >= 500;
         return isRateLimitError || isInternalError;
     }
 
-    /**
-     * @param {ApifyApiError} error
-     * @param {number} attempt
-     * @private
-     */
-    _onRequestRetry(error, attempt) {
+    private _onRequestRetry(error: Error, attempt: number) {
         if (attempt === Math.round(this.maxRetries / 2)) {
             this.logger.warning(`API request failed ${attempt} times. Max attempts: ${this.maxRetries + 1}.\nCause:${error.stack}`);
         }
     }
 }
 
-module.exports = HttpClient;
+export interface ApifyRequestConfig extends AxiosRequestConfig {
+    stringifyFunctions?: boolean;
+    forceBuffer?: boolean;
+    doNotRetryTimeouts?: boolean;
+}
+
+export interface ApifyResponse<T = any> extends AxiosResponse<T> {
+    config: ApifyRequestConfig;
+}
+
+export interface HttpClientOptions {
+    apifyClientStats: Statistics;
+    maxRetries: number;
+    minDelayBetweenRetriesMillis: number;
+    requestInterceptors: RequestInterceptorFunction[];
+    timeoutSecs: number;
+    logger: Log;
+    token?: string;
+}

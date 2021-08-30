@@ -1,5 +1,5 @@
-import ApifyClient from '../index';
-import HttpClient from '../http_client';
+import { ApifyClient } from '../apify_client';
+import { HttpClient } from '../http_client';
 
 /** @private */
 export interface ApiClientOptions {
@@ -9,6 +9,10 @@ export interface ApiClientOptions {
     httpClient: HttpClient;
     id?: string;
     params?: Record<string, unknown>;
+}
+
+export interface ApiClientOptionsWithOptionalResourcePath extends Omit<ApiClientOptions, 'resourcePath'> {
+    resourcePath?: string;
 }
 
 export type ApiClientSubResourceOptions = Omit<ApiClientOptions, 'resourcePath'>;

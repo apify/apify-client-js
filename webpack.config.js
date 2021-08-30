@@ -5,7 +5,7 @@ const Package = require('./package.json');
 
 /** @type {import('webpack').Configuration} */
 module.exports = {
-    entry: './src/index.js',
+    entry: './src/index.ts',
     target: 'web',
     module: {
         rules: [
@@ -43,7 +43,7 @@ module.exports = {
         path: `${__dirname}/dist`,
         filename: 'bundle.js',
         libraryTarget: 'umd',
-        library: 'ApifyClient',
+        library: 'Apify',
     },
     mode: 'production',
     plugins: [

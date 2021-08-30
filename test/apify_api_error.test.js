@@ -1,4 +1,4 @@
-const ApifyClient = require('../src/index');
+const { ApifyClient } = require('../src/index');
 const { Browser } = require('./_helper');
 
 describe('ApifyApiError', () => {
@@ -39,7 +39,7 @@ describe('ApifyApiError', () => {
         const page = await browser.getInjectedPage();
         const method = 'list';
         const error = await page.evaluate(async (m) => {
-            const client = new window.ApifyClient();
+            const client = new window.Apify.ApifyClient();
             const actorCollectionClient = client.actors();
             try {
                 await actorCollectionClient[m]();
