@@ -11,5 +11,6 @@ coverage
 logs
 pids
 .idea
+.vscode
 yarn.lock
 package-lock.json

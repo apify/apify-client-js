@@ -10,6 +10,7 @@ const ROUTES = [
     { id: 'delete-queue', method: 'DELETE', path: '/:queueId' },
     { id: 'update-queue', method: 'PUT', path: '/:queueId' },
     { id: 'add-request', method: 'POST', path: '/:queueId/requests/' },
+    { id: 'batch-add-request', method: 'POST', path: '/:queueId/requests/batch' },
     { id: 'get-request', method: 'GET', path: '/:queueId/requests/:requestId' },
     { id: 'delete-request', method: 'DELETE', path: '/:queueId/requests/:requestId' },
     { id: 'update-request', method: 'PUT', path: '/:queueId/requests/:requestId' },

@@ -143,6 +143,22 @@ describe('Request Queue methods', () => {
             validateRequest({ forefront }, { queueId }, request);
         });
 
+        test('batchAddRequest() works', async () => {
+            const queueId = 'some-id';
+            const requests = [{ url: 'http://example.com' }];
+            const forefront = true;
+
+            const res = await client.requestQueue(queueId).batchAddRequests(requests, { forefront });
+            expect(res.id).toEqual('batch-add-request');
+            validateRequest({ forefront }, { queueId }, requests);
+
+            const browserRes = await page.evaluate((qId, r) => {
+                return client.requestQueue(qId).batchAddRequests(r, { forefront: true });
+            }, queueId, requests);
+            expect(browserRes).toEqual(res);
+            validateRequest({ forefront }, { queueId }, requests);
+        });
+
         test('getRequest() works', async () => {
             const queueId = 'some-id';
             const requestId = 'xxx';
