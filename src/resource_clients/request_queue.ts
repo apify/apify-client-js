@@ -97,31 +97,6 @@ export class RequestQueueClient extends ResourceClient {
         return cast(parseDateFields(pluckData(response.data)));
     }
 
-    async batchAddRequests(
-        requests: Array<Omit<RequestQueueClientRequestSchema, 'id'>>,
-        options: RequestQueueClientAddRequestOptions = {},
-    ): Promise<RequestQueueClientBatchAddRequestsResult> {
-        ow(requests, ow.array.ofType(ow.object.partialShape({
-            id: ow.undefined,
-        })).minLength(1).maxLength(25));
-
-        ow(options, ow.object.exactShape({
-            forefront: ow.optional.boolean,
-        }));
-
-        const response = await this.httpClient.call({
-            url: this._url('requests/batch'),
-            method: 'POST',
-            data: requests,
-            params: this._params({
-                forefront: options.forefront,
-                clientKey: this.clientKey,
-            }),
-        });
-
-        return cast(parseDateFields(pluckData(response.data)));
-    }
-
     protected async _batchAddRequestsWithRetries(
         requests: Array<Omit<RequestQueueClientRequestSchema, 'id'>>,
         options: RequestQueueClientBatchAddRequestOptions = {},
@@ -148,7 +123,7 @@ export class RequestQueueClient extends ResourceClient {
         // The requests we have not been able to process in the last call
         // ie. those we have not been able to process at all
         let unprocessedRequests: Array<UnprocessedRequest> = [];
-        for (let i = 0; i < maxRetries; i++) {
+        for (let i = 0; i < 1 + maxRetries; i++) {
             const response = await this.httpClient.call({
                 url: this._url('requests/batch'),
                 method: 'POST',
@@ -183,7 +158,7 @@ export class RequestQueueClient extends ResourceClient {
         return cast(parseDateFields(result));
     }
 
-    async batchAddRequestsConcurrently(
+    async batchAddRequests(
         requests: Array<Omit<RequestQueueClientRequestSchema, 'id'>>,
         options: RequestQueueClientBatchAddRequestOptions = {},
     ): Promise<RequestQueueClientBatchAddRequestsResult> {
@@ -195,7 +170,7 @@ export class RequestQueueClient extends ResourceClient {
             forefront: ow.optional.boolean,
             maxRetries: ow.optional.number.greaterThan(0),
             delayBetweenRetriesMillis: ow.optional.number.greaterThan(0),
-            concurrency: ow.optional.number.greaterThan(0),
+            concurrency: ow.optional.number.greaterThan(0).lessThanOrEqual(50),
         }));
 
         const {
