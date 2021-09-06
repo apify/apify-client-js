@@ -1,4 +1,4 @@
-const ApifyClient = require('../src/index');
+const { ApifyClient } = require('../src/index');
 
 describe('ApifyClient', () => {
     test('default baseUrl is correctly set', () => {
@@ -11,5 +11,10 @@ describe('ApifyClient', () => {
         expect(client.baseUrl).toBe(`${exampleUrl}/v2`);
         client = new ApifyClient({ baseUrl: `${exampleUrl}/` });
         expect(client.baseUrl).toBe(`${exampleUrl}/v2`);
+    });
+    test('token correctly set', () => {
+        const token = 'myToken';
+        const client = new ApifyClient({ token });
+        expect(client.token).toBe(token);
     });
 });

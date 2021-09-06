@@ -2,7 +2,8 @@ import ow from 'ow';
 import util from 'util';
 import zlib from 'zlib';
 import type { TypedArray, JsonValue } from 'type-fest';
-import ApifyApiError from './apify_api_error';
+import { ApifyApiError } from './apify_api_error';
+import { WebhookUpdateData } from './resource_clients/webhook';
 
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
 const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
@@ -11,15 +12,19 @@ const NOT_FOUND_TYPE = 'record-not-found';
 const NOT_FOUND_ON_S3 = '<Code>NoSuchKey</Code>';
 const MIN_GZIP_BYTES = 1024;
 
+export interface MaybeData<R> {
+    data?: R;
+}
+
 /**
  * Returns object's 'data' property or throws if parameter is not an object,
  * or an object without a 'data' property.
  */
-export function pluckData<R>(obj: Record<string, unknown>): R {
-    const isObject = !!obj && typeof obj === 'object';
-    if (isObject && typeof obj.data !== 'undefined') {
-        return obj.data as R;
+export function pluckData<R>(obj: MaybeData<R>): R {
+    if (typeof obj === 'object' && obj) {
+        if (typeof obj.data !== 'undefined') return obj.data;
     }
+
     throw new Error(`Expected response object with a "data" property, but received: ${obj}`);
 }
 
@@ -59,20 +64,10 @@ export function parseDateFields(input: JsonValue, depth = 0): ReturnJsonValue {
     }, {} as ReturnJsonObject);
 }
 
-// TODO: Move this interface to webhooks collection and strictly type everything
-export interface RunWebhook {
-    eventTypes: string[];
-    idempotencyKey?: string;
-    ignoreSslErrors?: boolean;
-    doNotRetry?: boolean;
-    requestUrl: string;
-    payloadTemplate?: string;
-}
-
 /**
  * Helper function that converts array of webhooks to base64 string
  */
-export function stringifyWebhooksToBase64(webhooks: RunWebhook[]): string | undefined {
+export function stringifyWebhooksToBase64(webhooks: WebhookUpdateData[]): string | undefined {
     if (!webhooks) return;
     const webhooksJson = JSON.stringify(webhooks);
     if (isNode()) {

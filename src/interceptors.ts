@@ -1,10 +1,12 @@
-const axios = require('axios');
-const contentTypeParser = require('content-type');
-const { maybeParseBody } = require('./body_parser');
-const {
+import axios, { AxiosInterceptorManager, AxiosResponse, AxiosTransformer } from 'axios';
+import contentTypeParser from 'content-type';
+import { JsonObject } from 'type-fest';
+import { maybeParseBody } from './body_parser';
+import { ApifyRequestConfig, ApifyResponse } from './http_client';
+import {
     isNode,
     maybeGzipValue,
-} = require('./utils');
+} from './utils';
 
 /**
  * This error exists for the quite common situation, where only a partial JSON response is received and
@@ -13,8 +15,14 @@ const {
  *
  * The properties mimic AxiosError for easier integration in HttpClient error handling.
  */
-class InvalidResponseBodyError extends Error {
-    constructor(response, cause) {
+export class InvalidResponseBodyError extends Error {
+    code: string;
+
+    response: AxiosResponse;
+
+    cause: Error;
+
+    constructor(response: AxiosResponse, cause: Error) {
         super(`Response body could not be parsed.\nCause:${cause.message}`);
         this.name = this.constructor.name;
         this.code = 'invalid-response-body';
@@ -23,12 +31,8 @@ class InvalidResponseBodyError extends Error {
     }
 }
 
-/**
- * @param {object} config
- * @return {object}
- */
-function serializeRequest(config) {
-    const [defaultTransform] = axios.defaults.transformRequest;
+function serializeRequest(config: ApifyRequestConfig): ApifyRequestConfig {
+    const [defaultTransform] = axios.defaults.transformRequest as AxiosTransformer[];
 
     // The function not only serializes data, but it also adds correct headers.
     const data = defaultTransform(config.data, config.headers);
@@ -47,7 +51,7 @@ function serializeRequest(config) {
             } else {
                 config.data = data;
             }
-        } catch (err) {
+        } catch {
             config.data = data;
         }
     } else {
@@ -60,34 +64,26 @@ function serializeRequest(config) {
 /**
  * JSON.stringify() that serializes functions to string instead
  * of replacing them with null or removing them.
- * @param {object} obj
- * @return {string}
  */
-function stringifyWithFunctions(obj) {
-    return JSON.stringify(obj, (key, value) => {
+function stringifyWithFunctions(obj: JsonObject) {
+    return JSON.stringify(obj, (_key, value) => {
         return typeof value === 'function' ? value.toString() : value;
     });
 }
 
-/**
- * @param {object} config
- * @return {Promise<object>}
- */
-async function maybeGzipRequest(config) {
+async function maybeGzipRequest(config: ApifyRequestConfig): Promise<ApifyRequestConfig> {
     if (config.headers['content-encoding']) return config;
+
     const maybeZippedData = await maybeGzipValue(config.data);
     if (maybeZippedData) {
         config.headers['content-encoding'] = 'gzip';
         config.data = maybeZippedData;
     }
+
     return config;
 }
 
-/**
- * @param {AxiosResponse} response
- * @return {AxiosResponse}
- */
-function parseResponseData(response) {
+function parseResponseData(response: ApifyResponse): ApifyResponse {
     if (
         !response.data // Nothing to do here.
         || response.config.responseType !== 'arraybuffer' // We don't want to parse custom response types.
@@ -107,17 +103,14 @@ function parseResponseData(response) {
     try {
         response.data = maybeParseBody(response.data, contentTypeHeader);
     } catch (err) {
-        throw new InvalidResponseBodyError(response, err);
+        throw new InvalidResponseBodyError(response, err as Error);
     }
 
     return response;
 }
 
-const requestInterceptors = [maybeGzipRequest, serializeRequest];
-const responseInterceptors = [parseResponseData];
+export type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyRequestConfig>['use']>[0];
+export type ResponseInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyResponse>['use']>[0];
 
-module.exports = {
-    InvalidResponseBodyError,
-    requestInterceptors,
-    responseInterceptors,
-};
+export const requestInterceptors: RequestInterceptorFunction[] = [maybeGzipRequest, serializeRequest];
+export const responseInterceptors: ResponseInterceptorFunction[] = [parseResponseData];
