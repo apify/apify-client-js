@@ -107,14 +107,7 @@ export class RequestQueueClient extends ResourceClient {
 
         ow(options, ow.object.partialShape({
             forefront: ow.optional.boolean,
-            maxRetries: ow.optional.number.greaterThan(0),
-            delayBetweenRetriesMillis: ow.optional.number.greaterThan(0),
         }));
-
-        const {
-            maxRetries = 9,
-            delayBetweenRetriesMillis = 500,
-        } = options;
 
         // Keep track of the requests that remain to be processed (in parameter format)
         let remainingRequests = requests;
@@ -123,7 +116,7 @@ export class RequestQueueClient extends ResourceClient {
         // The requests we have not been able to process in the last call
         // ie. those we have not been able to process at all
         let unprocessedRequests: Array<UnprocessedRequest> = [];
-        for (let i = 0; i < 1 + maxRetries; i++) {
+        for (let i = 0; i < 1 + this.httpClient.maxRetries; i++) {
             const response = await this.httpClient.call({
                 url: this._url('requests/batch'),
                 method: 'POST',
@@ -149,7 +142,7 @@ export class RequestQueueClient extends ResourceClient {
             }
 
             // Sleep for some time before trying again
-            await new Promise((resolve) => setTimeout(resolve, delayBetweenRetriesMillis));
+            await new Promise((resolve) => setTimeout(resolve, this.httpClient.minDelayBetweenRetriesMillis));
         }
 
         // TODO: Not sure how to do this properly in ts-friendly way
@@ -168,23 +161,19 @@ export class RequestQueueClient extends ResourceClient {
 
         ow(options, ow.object.exactShape({
             forefront: ow.optional.boolean,
-            maxRetries: ow.optional.number.greaterThan(0),
-            delayBetweenRetriesMillis: ow.optional.number.greaterThan(0),
-            concurrency: ow.optional.number.greaterThan(0).lessThanOrEqual(50),
         }));
 
-        const {
-            concurrency = 5,
-        } = options;
+        // The number of 50 parallel requests seemed optimal, if it was higher it did not seem to bring any extra value.
+        const maxParallelRequests = 50;
 
         const operationsInProgress = [];
         const individualResults = [];
 
-        // Send up to `concurrency` requests at once, wait for all of them to finish and repeat
+        // Send up to `maxParallelRequests` requests at once, wait for all of them to finish and repeat
         for (let i = 0; i < requests.length; i += 25) {
             const requestsInBatch = requests.slice(i, i + 25);
             operationsInProgress.push(this._batchAddRequestsWithRetries(requestsInBatch, options));
-            if (operationsInProgress.length === concurrency) {
+            if (operationsInProgress.length === maxParallelRequests) {
                 individualResults.push(...(await Promise.all(operationsInProgress)));
                 operationsInProgress.splice(0, operationsInProgress.length);
             }
@@ -323,9 +312,6 @@ export interface RequestQueueClientAddRequestOptions {
 
 export interface RequestQueueClientBatchAddRequestOptions {
     forefront?: boolean;
-    maxRetries?: number;
-    delayBetweenRetriesMillis?: number;
-    concurrency?: number;
 }
 
 export interface RequestQueueClientRequestSchema {
