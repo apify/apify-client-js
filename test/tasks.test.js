@@ -174,7 +174,7 @@ describe('Task methods', () => {
                 {},
                 { taskId },
                 { foo: 'bar', fn: input.fn.toString() },
-                { 'content-type': 'application/json;charset=utf-8' },
+                { 'content-type': 'application/json' },
             ];
 
             const res = await client.task(taskId).start(input);

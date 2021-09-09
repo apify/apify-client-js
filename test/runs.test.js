@@ -152,7 +152,7 @@ describe('Run methods', () => {
             { targetActorId },
             { runId },
             { foo: 'bar', fn: input.fn.toString() },
-            { 'content-type': 'application/json;charset=utf-8' },
+            { 'content-type': 'application/json' },
         ];
 
         const res = await client.run(runId).metamorph(targetActorId, input);
