@@ -158,7 +158,7 @@ describe('Actor methods', () => {
                 {},
                 { actorId },
                 { foo: 'bar', fn: input.fn.toString() },
-                { 'content-type': 'application/json;charset=utf-8' },
+                { 'content-type': 'application/json' },
             ];
 
             const res = await client.actor(actorId).start(input);
