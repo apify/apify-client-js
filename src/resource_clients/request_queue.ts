@@ -101,14 +101,6 @@ export class RequestQueueClient extends ResourceClient {
         requests: Array<Omit<RequestQueueClientRequestSchema, 'id'>>,
         options: RequestQueueClientBatchAddRequestOptions = {},
     ): Promise<RequestQueueClientBatchAddRequestsResult> {
-        ow(requests, ow.array.ofType(ow.object.partialShape({
-            id: ow.undefined,
-        })).minLength(1).maxLength(25));
-
-        ow(options, ow.object.partialShape({
-            forefront: ow.optional.boolean,
-        }));
-
         // Keep track of the requests that remain to be processed (in parameter format)
         let remainingRequests = requests;
         // Keep track of the requests that have been processed (in api format)
@@ -133,7 +125,6 @@ export class RequestQueueClient extends ResourceClient {
             // Get unique keys of all requests processed so far
             const processedRequestsUniqueKeys = processedRequests.map(({ uniqueKey }) => uniqueKey);
             // Requests remaining to be processed are the all that remain
-            // @ts-expect-error Undefined id - it seems to be added by ow validation
             remainingRequests = requests.filter(({ uniqueKey }) => !processedRequestsUniqueKeys.includes(uniqueKey));
 
             // Stop if all requests have been processed
