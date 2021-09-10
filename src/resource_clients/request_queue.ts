@@ -1,5 +1,5 @@
 import ow from 'ow';
-import type { JsonValue } from 'type-fest';
+import type { JsonObject } from 'type-fest';
 import { ApifyApiError } from '../apify_api_error';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
@@ -145,8 +145,7 @@ export class RequestQueueClient extends ResourceClient {
             await new Promise((resolve) => setTimeout(resolve, this.httpClient.minDelayBetweenRetriesMillis));
         }
 
-        // TODO: Not sure how to do this properly in ts-friendly way
-        const result = <unknown> { processedRequests, unprocessedRequests } as JsonValue;
+        const result = { processedRequests, unprocessedRequests } as unknown as JsonObject;
 
         return cast(parseDateFields(result));
     }
