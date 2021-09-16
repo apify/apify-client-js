@@ -98,7 +98,7 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     protected async _batchAddRequestsWithRetries(
-        requests: Array<Omit<RequestQueueClientRequestSchema, 'id'>>,
+        requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
         options: RequestQueueClientBatchAddRequestOptions = {},
     ): Promise<RequestQueueClientBatchAddRequestsResult> {
         // Keep track of the requests that remain to be processed (in parameter format)
@@ -142,7 +142,7 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     async batchAddRequests(
-        requests: Array<Omit<RequestQueueClientRequestSchema, 'id'>>,
+        requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
         options: RequestQueueClientBatchAddRequestOptions = {},
     ): Promise<RequestQueueClientBatchAddRequestsResult> {
         ow(requests, ow.array.ofType(ow.object.partialShape({
@@ -339,8 +339,8 @@ interface UnprocessedRequest {
 }
 
 export interface RequestQueueClientBatchAddRequestsResult {
-    processedRequests: Array<ProcessedRequest>,
-    unprocessedRequests: Array<UnprocessedRequest>,
+    processedRequests: ProcessedRequest[],
+    unprocessedRequests: UnprocessedRequest[],
 }
 
 export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem, 'retryCount'>
