@@ -154,6 +154,10 @@ export class RequestQueueClient extends ResourceClient {
         return cast(parseDateFields(result));
     }
 
+    /**
+     * Writes multiple requests to request queue concurrently in batches.
+     * THIS METHOD IS EXPERIMENTAL AND NOT YET INTENDED FOR USE.
+     */
     async batchAddRequests(
         requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
         options: RequestQueueClientBatchAddRequestOptions = {},
