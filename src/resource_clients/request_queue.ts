@@ -1,3 +1,4 @@
+import log from '@apify/log';
 import ow from 'ow';
 import type { JsonObject } from 'type-fest';
 import { ApifyApiError } from '../apify_api_error';
@@ -104,31 +105,43 @@ export class RequestQueueClient extends ResourceClient {
         // Keep track of the requests that remain to be processed (in parameter format)
         let remainingRequests = requests;
         // Keep track of the requests that have been processed (in api format)
-        let processedRequests: Array<ProcessedRequest> = [];
+        let processedRequests: ProcessedRequest[] = [];
         // The requests we have not been able to process in the last call
         // ie. those we have not been able to process at all
-        let unprocessedRequests: Array<UnprocessedRequest> = [];
+        let unprocessedRequests: UnprocessedRequest[] = [];
         for (let i = 0; i < 1 + this.httpClient.maxRetries; i++) {
-            const response = await this.httpClient.call({
-                url: this._url('requests/batch'),
-                method: 'POST',
-                data: remainingRequests,
-                params: this._params({
-                    forefront: options.forefront,
-                    clientKey: this.clientKey,
-                }),
-            });
-            const data = response.data.data as RequestQueueClientBatchAddRequestsResult;
-            processedRequests = [...processedRequests, ...data.processedRequests];
-            unprocessedRequests = data.unprocessedRequests;
+            try {
+                const response = await this.httpClient.call({
+                    url: this._url('requests/batch'),
+                    method: 'POST',
+                    data: remainingRequests,
+                    params: this._params({
+                        forefront: options.forefront,
+                        clientKey: this.clientKey,
+                    }),
+                });
+                const data = response.data.data as RequestQueueClientBatchAddRequestsResult;
+                processedRequests = [...processedRequests, ...data.processedRequests];
+                unprocessedRequests = data.unprocessedRequests;
 
-            // Get unique keys of all requests processed so far
-            const processedRequestsUniqueKeys = processedRequests.map(({ uniqueKey }) => uniqueKey);
-            // Requests remaining to be processed are the all that remain
-            remainingRequests = requests.filter(({ uniqueKey }) => !processedRequestsUniqueKeys.includes(uniqueKey));
+                // Get unique keys of all requests processed so far
+                const processedRequestsUniqueKeys = processedRequests.map(({ uniqueKey }) => uniqueKey);
+                // Requests remaining to be processed are the all that remain
+                remainingRequests = requests.filter(({ uniqueKey }) => !processedRequestsUniqueKeys.includes(uniqueKey));
 
-            // Stop if all requests have been processed
-            if (remainingRequests.length === 0) {
+                // Stop if all requests have been processed
+                if (remainingRequests.length === 0) {
+                    break;
+                }
+            } catch (err) {
+                log.exception(err, 'Request batch insert failed');
+                // When something fails and http client does not retry, the remaining requests are treated as unprocessed.
+                // This ensures that this method does not throw and keeps the signature.
+                const processedRequestsUniqueKeys = processedRequests.map(({ uniqueKey }) => uniqueKey);
+                unprocessedRequests = requests
+                    .filter(({ uniqueKey }) => !processedRequestsUniqueKeys.includes(uniqueKey))
+                    .map(({ method, uniqueKey, url }) => ({ method, uniqueKey, url }));
+
                 break;
             }
 
