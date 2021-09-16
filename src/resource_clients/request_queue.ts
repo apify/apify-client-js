@@ -134,7 +134,7 @@ export class RequestQueueClient extends ResourceClient {
                     break;
                 }
             } catch (err) {
-                log.exception(err, 'Request batch insert failed');
+                log.exception(err as Error, 'Request batch insert failed');
                 // When something fails and http client does not retry, the remaining requests are treated as unprocessed.
                 // This ensures that this method does not throw and keeps the signature.
                 const processedRequestsUniqueKeys = processedRequests.map(({ uniqueKey }) => uniqueKey);
