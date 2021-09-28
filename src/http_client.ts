@@ -40,6 +40,8 @@ export class HttpClient {
 
     axios: AxiosInstance;
 
+    workflowKey?: string;
+
     constructor(options: HttpClientOptions) {
         const { token } = options;
         this.stats = options.apifyClientStats;
@@ -48,6 +50,7 @@ export class HttpClient {
         this.userProvidedRequestInterceptors = options.requestInterceptors;
         this.timeoutMillis = options.timeoutSecs * 1000;
         this.logger = options.logger;
+        this.workflowKey = options.workflowKey || process.env.APIFY_WORKFLOW_KEY;
         this._onRequestRetry = this._onRequestRetry.bind(this);
 
         if (isNode()) {
@@ -67,6 +70,7 @@ export class HttpClient {
         this.axios = axios.create({
             headers: {
                 Accept: 'application/json, */*',
+                'X-Apify-Workflow-Key': this.workflowKey,
             },
             httpAgent: this.httpAgent,
             httpsAgent: this.httpsAgent,
@@ -252,4 +256,5 @@ export interface HttpClientOptions {
     timeoutSecs: number;
     logger: Log;
     token?: string;
+    workflowKey?: string;
 }
