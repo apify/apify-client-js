@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } f
 import retry, { RetryFunction } from 'async-retry';
 import KeepAliveAgent from 'agentkeepalive';
 import os from 'os';
+import { ENV_VARS } from '@apify/consts';
 import { Log } from '@apify/log';
 import { ApifyApiError } from './apify_api_error';
 import {
@@ -50,7 +51,7 @@ export class HttpClient {
         this.userProvidedRequestInterceptors = options.requestInterceptors;
         this.timeoutMillis = options.timeoutSecs * 1000;
         this.logger = options.logger;
-        this.workflowKey = options.workflowKey || process.env.APIFY_WORKFLOW_KEY;
+        this.workflowKey = options.workflowKey || process.env[ENV_VARS.WORKFLOW_KEY];
         this._onRequestRetry = this._onRequestRetry.bind(this);
 
         if (isNode()) {
