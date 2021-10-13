@@ -1,10 +1,12 @@
-2.1.0 / TBD
+2.1.0 / 2021/10/13
 ===================
 - Added `ActorEnvVarCollectionClient` and `ActorEnvVarClient`
 
-2.0.0 / TBD
+2.0.1 / 2021/10/07
 ===================
-- Laid out base for migration to TypeScript
+- TypeScript rewrite
+- Fix: Exposing token on ApifyClient instance
+- Changed passing token using request HTTP header instead of the request parameter for every API calls
 
 1.4.2 / 2021/08/25
 ===================
