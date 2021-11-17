@@ -7,7 +7,9 @@ import { cast, PaginatedList } from '../utils';
 /**
  * @hideconstructor
  */
-export class DatasetClient extends ResourceClient {
+export class DatasetClient<
+    Data extends Record<string | number, unknown> = Record<string | number, unknown>
+> extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'datasets',
@@ -41,7 +43,7 @@ export class DatasetClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
      */
-    async listItems(options: DatasetClientListItemOptions = {}): Promise<PaginatedList<MaybeArray<string | Record<string, unknown>>>> {
+    async listItems(options: DatasetClientListItemOptions = {}): Promise<PaginatedList<Data>> {
         ow(options, ow.object.exactShape({
             clean: ow.optional.boolean,
             desc: ow.optional.boolean,
@@ -104,7 +106,7 @@ export class DatasetClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/item-collection/put-items
      */
-    async pushItems(items: MaybeArray<string | Record<string, unknown>>): Promise<void> {
+    async pushItems(items: Data | Data[] | string | string[]): Promise<void> {
         ow(items, ow.any(
             ow.object,
             ow.string,
@@ -123,7 +125,7 @@ export class DatasetClient extends ResourceClient {
         });
     }
 
-    private _createPaginationList<D>(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<D> {
+    private _createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
         return {
             items: response.data,
             total: Number(response.headers['x-apify-pagination-total']),
@@ -135,8 +137,6 @@ export class DatasetClient extends ResourceClient {
         };
     }
 }
-
-type MaybeArray<T> = T | T[];
 
 export interface Dataset {
     id: string;
