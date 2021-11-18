@@ -1,12 +1,12 @@
 {
 	"name": "apify-client",
-	"version": "2.0.2",
+	"version": "2.0.3",
 	"description": "Apify API client for JavaScript",
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",
 	"types": "dist/index.d.ts",
 	"exports": {
-        "./package.json": "./package.json",
+		"./package.json": "./package.json",
 		".": {
 			"import": "./dist/index.mjs",
 			"require": "./dist/index.js"
