@@ -62,7 +62,7 @@ export class ResourceClient extends ApiClient {
      * This function is used in Build and Run endpoints so it's kept
      * here to stay DRY.
      */
-    protected async _waitForFinish<R extends { status: string; }>(options: WaitForFinishOptions = {}): Promise<R> {
+    protected async _waitForFinish<R extends { status: typeof ACT_JOB_TERMINAL_STATUSES[number]; }>(options: WaitForFinishOptions = {}): Promise<R> {
         const {
             waitSecs = MAX_WAIT_FOR_FINISH,
         } = options;
