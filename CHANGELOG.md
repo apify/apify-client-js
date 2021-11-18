@@ -1,3 +1,7 @@
+2.0.3 / 2021/11/18
+===================
+- For TypeScript users, DatasetClients can now take in a generic type parameter that defines the data present in a dataset.
+
 2.0.1 / 2021/10/07
 ===================
 - TypeScript rewrite
