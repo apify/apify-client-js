@@ -265,12 +265,45 @@ export interface ActorTaggedBuild {
 export type ActorUpdateOptions = Pick<Actor, 'name' | 'isPublic' | 'versions' | 'description' | 'title' | 'restartOnError'>
 
 export interface ActorStartOptions {
+    /**
+     * Tag or number of the actor build to run (e.g. `beta` or `1.2.345`).
+     * If not provided, the run uses build tag or number from the default actor run configuration (typically `latest`).
+     */
     build?: string;
+
+    /**
+     * Content type for the `input`. If not specified,
+     * `input` is expected to be an object that will be stringified to JSON and content type set to
+     * `application/json; charset=utf-8`. If `options.contentType` is specified, then `input` must be a
+     * `String` or `Buffer`.
+     */
     contentType?: string;
+
+    /**
+     * Memory in megabytes which will be allocated for the new actor run.
+     * If not provided, the run uses memory of the default actor run configuration.
+     */
     memory?: number;
+    /**
+     * Timeout for the actor run in seconds. Zero value means there is no timeout.
+     * If not provided, the run uses timeout of the default actor run configuration.
+     */
     timeout?: number;
+
+    /**
+     * Maximum time to wait for the actor run to finish, in seconds.
+     * If the limit is reached, the returned promise is resolved to a run object that will have
+     * status `READY` or `RUNNING` and it will not contain the actor run output.
+     * If `waitSecs` is null or undefined, the function waits for the actor to finish (default behavior).
+     */
     waitForFinish?: number;
-    webhooks?: WebhookUpdateData[];
+
+    /**
+     * Specifies optional webhooks associated with the actor run, which can be used
+     * to receive a notification e.g. when the actor finished or failed, see
+     * [ad hook webhooks documentation](https://docs.apify.com/webhooks/ad-hoc-webhooks) for detailed description.
+     */
+    webhooks?: readonly WebhookUpdateData[];
 }
 
 export interface ActorRun {
