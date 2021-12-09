@@ -1,6 +1,5 @@
 import { ACT_JOB_STATUSES } from '@apify/consts';
 import ow from 'ow';
-import { JsonObject, JsonArray } from 'type-fest';
 import { ApifyApiError } from '../apify_api_error';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
@@ -8,6 +7,7 @@ import { ApifyRequestConfig } from '../http_client';
 import {
     cast,
     catchNotFoundOrThrow,
+    Dictionary,
     parseDateFields,
     pluckData,
     stringifyWebhooksToBase64,
@@ -55,7 +55,7 @@ export class TaskClient extends ResourceClient {
      * Starts a task and immediately returns the Run object.
      * https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task
      */
-    async start(input: JsonObject | JsonArray, options: Omit<ActorStartOptions, 'contentType'> = {}): Promise<ActorRun> {
+    async start(input: Dictionary | Dictionary[], options: TaskStartOptions = {}): Promise<ActorRun> {
         ow(input, ow.optional.object);
         ow(options, ow.object.exactShape({
             build: ow.optional.string,
@@ -94,7 +94,7 @@ export class TaskClient extends ResourceClient {
      * It waits indefinitely, unless the `waitSecs` option is provided.
      * https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task
      */
-    async call(input: JsonObject | JsonArray, options: Omit<ActorStartOptions, 'contentType'> = {}): Promise<ActorRun> {
+    async call(input: Dictionary | Dictionary[], options: TaskStartOptions = {}): Promise<ActorRun> {
         ow(input, ow.optional.object);
         ow(options, ow.object.exactShape({
             build: ow.optional.string,
@@ -117,7 +117,7 @@ export class TaskClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/actor-tasks/task-input-object/get-task-input
      */
-    async getInput(): Promise<JsonObject | JsonArray | undefined> {
+    async getInput(): Promise<Dictionary | Dictionary[] | undefined> {
         const requestOpts: ApifyRequestConfig = {
             url: this._url('input'),
             method: 'GET',
@@ -136,7 +136,7 @@ export class TaskClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/actor-tasks/task-input-object/update-task-input
      */
-    async updateInput(newFields: JsonObject | JsonArray): Promise<JsonObject | JsonArray> {
+    async updateInput(newFields: Dictionary | Dictionary[]): Promise<Dictionary | Dictionary[]> {
         const response = await this.httpClient.call({
             url: this._url('input'),
             method: 'PUT',
@@ -190,7 +190,7 @@ export interface Task {
     modifiedAt: string;
     stats: TaskStats;
     options?: TaskOptions;
-    input?: JsonObject | JsonArray;
+    input?: Dictionary | Dictionary[];
 }
 
 export interface TaskStats {
@@ -216,3 +216,5 @@ export type TaskUpdateData = Partial<
 export interface TaskLastRunOptions {
     status?: keyof typeof ACT_JOB_STATUSES;
 }
+
+export type TaskStartOptions = Omit<ActorStartOptions, 'contentType'>;

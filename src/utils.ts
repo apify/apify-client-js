@@ -136,3 +136,5 @@ export interface PaginatedList<Data extends unknown> {
 export function cast<T>(input: unknown): T {
     return input as T;
 }
+
+export type Dictionary<T = unknown> = Record<PropertyKey, T>;
