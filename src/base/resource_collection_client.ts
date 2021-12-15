@@ -31,11 +31,7 @@ export class ResourceCollectionClient extends ApiClient {
         return parseDateFields(pluckData(response.data)) as R;
     }
 
-    protected async _getOrCreate<R>(name = ''): Promise<R> {
-        // The default value of '' allows creating unnamed
-        // resources by passing the name= parameter with
-        // no value. It's useful and later will be supported
-        // in API properly by omitting the name= param entirely.
+    protected async _getOrCreate<R>(name?: string): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'POST',

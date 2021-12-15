@@ -52,7 +52,17 @@ describe('Dataset methods', () => {
             validateRequest(opts);
         });
 
-        test('getOrCreate() works', async () => {
+        test('getOrCreate() works without name', async () => {
+            const res = await client.datasets().getOrCreate();
+            expect(res.id).toEqual('get-or-create-dataset');
+            validateRequest();
+
+            const browserRes = await page.evaluate((n) => client.datasets().getOrCreate(n));
+            expect(browserRes).toEqual(res);
+            validateRequest();
+        });
+
+        test('getOrCreate() works with name', async () => {
             const name = 'some-id-2';
 
             const res = await client.datasets().getOrCreate(name);
