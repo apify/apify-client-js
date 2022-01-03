@@ -78,9 +78,15 @@ export class KeyValueStoreClient extends ResourceClient {
      */
     async getRecord(key: string): Promise<KeyValueStoreRecord<JsonValue> | undefined>;
 
-    async getRecord(key: string, options: { buffer: true }): Promise<KeyValueStoreRecord<Buffer> | undefined>;
+    async getRecord<Options extends KeyValueClientGetRecordOptions>(
+        key: string,
+        options: Options
+    ): Promise<KeyValueStoreRecord<Options['stream'] extends true ? ReadableStream : JsonValue> | undefined>;
 
-    async getRecord(key: string, options: { stream: true }): Promise<KeyValueStoreRecord<ReadableStream> | undefined>;
+    async getRecord<Options extends KeyValueClientGetRecordOptions>(
+        key: string,
+        options: Options
+    ): Promise<KeyValueStoreRecord<Options['buffer'] extends true ? Buffer : JsonValue> | undefined>;
 
     async getRecord(key: string, options: KeyValueClientGetRecordOptions = {}): Promise<KeyValueStoreRecord<unknown> | undefined> {
         ow(key, ow.string);
