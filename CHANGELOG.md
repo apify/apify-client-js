@@ -1,4 +1,8 @@
-2.0.4/ 2021/12/XX
+2.0.5 / 2022/01/03
+===================
+- For TypeScript users, the `WebhookEventType` type was corrected to represent its correct value.
+
+2.0.4 / 2021/12/XX
 ===================
 - Fix: Unnamed storages can now be created again.
 
