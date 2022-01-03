@@ -1,4 +1,4 @@
-?.?.? / 2022/01/03
+2.0.6 / 2022/01/03
 ===================
 - For TypeScript users, the input type for Actor#start, Actor#call, Task#start and Task#call have been corrected
 (these methods expect an optional input of a string or an object, not an object or an array of objects)
