@@ -83,6 +83,9 @@ export class TaskClient extends ResourceClient {
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
+            headers: {
+                'Content-Type': 'application/json',
+            },
         };
 
         const response = await this.httpClient.call(request);
