@@ -5,7 +5,6 @@ import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import {
     cast,
-    Dictionary,
     parseDateFields,
     pluckData,
     stringifyWebhooksToBase64,
@@ -57,8 +56,7 @@ export class ActorClient extends ResourceClient {
      * Starts an actor and immediately returns the Run object.
      * https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
      */
-    async start(input?: string | Dictionary, options: ActorStartOptions = {}): Promise<ActorRun> {
-        ow(input, ow.optional.any(ow.object, ow.string));
+    async start(input?: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
         ow(options, ow.object.exactShape({
             build: ow.optional.string,
             contentType: ow.optional.string,
@@ -105,8 +103,7 @@ export class ActorClient extends ResourceClient {
      * It waits indefinitely, unless the `waitSecs` option is provided.
      * https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
      */
-    async call(input?: string | Dictionary, options: ActorStartOptions = {}): Promise<ActorRun> {
-        ow(input, ow.optional.any(ow.object, ow.string));
+    async call(input?: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
         ow(options, ow.object.exactShape({
             build: ow.optional.string,
             contentType: ow.optional.string,
