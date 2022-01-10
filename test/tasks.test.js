@@ -161,7 +161,7 @@ describe('Task methods', () => {
             validateRequest(query, { taskId });
         });
 
-        test('start() works with pre-stringified JSON', async () => {
+        test.skip('start() works with pre-stringified JSON', async () => {
             const taskId = 'some-id2';
             const input = { foo: 'bar' };
             const body = JSON.stringify(input);
