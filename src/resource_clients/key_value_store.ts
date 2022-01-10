@@ -83,11 +83,6 @@ export class KeyValueStoreClient extends ResourceClient {
         options: Options
     ): Promise<KeyValueStoreRecord<ReturnTypeFromOptions<Options>> | undefined>;
 
-    async getRecord<Options extends KeyValueClientGetRecordOptions = KeyValueClientGetRecordOptions>(
-        key: string,
-        options: Options
-    ): Promise<KeyValueStoreRecord<ReturnTypeFromOptions<Options>> | undefined>;
-
     async getRecord(key: string, options: KeyValueClientGetRecordOptions = {}): Promise<KeyValueStoreRecord<unknown> | undefined> {
         ow(key, ow.string);
         ow(options, ow.object.exactShape({
