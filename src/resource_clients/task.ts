@@ -55,7 +55,7 @@ export class TaskClient extends ResourceClient {
      * Starts a task and immediately returns the Run object.
      * https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task
      */
-    async start(input: Dictionary | Dictionary[], options: TaskStartOptions = {}): Promise<ActorRun> {
+    async start(input: Dictionary, options: TaskStartOptions = {}): Promise<ActorRun> {
         ow(input, ow.optional.object);
         ow(options, ow.object.exactShape({
             build: ow.optional.string,
@@ -83,6 +83,9 @@ export class TaskClient extends ResourceClient {
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
+            headers: {
+                'Content-Type': 'application/json',
+            },
         };
 
         const response = await this.httpClient.call(request);
@@ -94,7 +97,7 @@ export class TaskClient extends ResourceClient {
      * It waits indefinitely, unless the `waitSecs` option is provided.
      * https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task
      */
-    async call(input: Dictionary | Dictionary[], options: TaskStartOptions = {}): Promise<ActorRun> {
+    async call(input: Dictionary, options: TaskStartOptions = {}): Promise<ActorRun> {
         ow(input, ow.optional.object);
         ow(options, ow.object.exactShape({
             build: ow.optional.string,

@@ -57,7 +57,8 @@ export class ActorClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
      */
     async start(input?: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
-        // input can be anything, pointless to validate
+        // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
+        // then it will process input as a buffer.
         ow(options, ow.object.exactShape({
             build: ow.optional.string,
             contentType: ow.optional.string,
@@ -105,7 +106,8 @@ export class ActorClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
      */
     async call(input?: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
-        // input can be anything, pointless to validate
+        // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
+        // then it will process input as a buffer.
         ow(options, ow.object.exactShape({
             build: ow.optional.string,
             contentType: ow.optional.string,

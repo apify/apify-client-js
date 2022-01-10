@@ -1,3 +1,9 @@
+2.0.6 / 2022/01/03
+===================
+- For TypeScript users, the input type for Task#start and Task#call have been corrected
+(these methods expect an optional input of an object, not an object or an array of objects)
+- For TypeScript users, the overloads for KeyValueStore#getRecord have been relaxed and their order has been corrected
+
 2.0.5 / 2022/01/03
 ===================
 - For TypeScript users, the `WebhookEventType` type was corrected to represent its correct value.
