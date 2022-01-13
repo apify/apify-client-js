@@ -1,3 +1,7 @@
+2.0.8 / 2022/01/13
+===================
+- Add export for `PaginatedList` interface.
+
 2.0.7 / 2022/01/10
 ===================
 - For TypeScript users, the input type for Task#start and Task#call is now correctly marked as optional
