@@ -420,6 +420,110 @@ describe('Actor methods', () => {
             });
         });
 
+        describe('envVars()', () => {
+            test('list() works', async () => {
+                const actorId = 'some-id';
+                const versionNumber = '0.1';
+
+                const res = await client.actor(actorId).version(versionNumber).envVars().list();
+                expect(res.id).toEqual('list-actor-env-vars');
+                validateRequest({}, { actorId, versionNumber });
+
+                const browserRes = await page.evaluate((aId, vn) => client.actor(aId).version(vn).envVars().list(), actorId, versionNumber);
+                expect(browserRes).toEqual(res);
+                validateRequest({}, { actorId, versionNumber });
+            });
+
+            test('create() works', async () => {
+                const actorId = 'some-id';
+                const versionNumber = '0.1';
+                const actorEnvVar = {
+                    name: 'TEST_ENV_VAR',
+                    value: 123,
+                };
+
+                const res = await client.actor(actorId).version(versionNumber).envVars().create(actorEnvVar);
+                expect(res.id).toEqual('create-actor-env-var');
+                validateRequest({}, { actorId, versionNumber }, actorEnvVar);
+
+                const browserRes = await page.evaluate(
+                    (aId, vn, ev) => client.actor(aId).version(vn).envVars().create(ev), actorId, versionNumber, actorEnvVar,
+                );
+                expect(browserRes).toEqual(res);
+                validateRequest({}, { actorId, versionNumber }, actorEnvVar);
+            });
+        });
+
+        describe('envVar()', () => {
+            test('get() works', async () => {
+                const actorId = 'some-id';
+                const versionNumber = '0.0';
+                const envVarName = 'TEST_ENV_VAR';
+
+                const res = await client.actor(actorId).version(versionNumber).envVar(envVarName).get();
+                expect(res.id).toEqual('get-actor-env-var');
+                validateRequest({}, { actorId, versionNumber, envVarName });
+
+                const browserRes = await page.evaluate(
+                    (aId, vn, evn) => client.actor(aId).version(vn).envVar(evn).get(), actorId, versionNumber, envVarName,
+                );
+                expect(browserRes).toEqual(res);
+                validateRequest({}, { actorId, versionNumber, envVarName });
+            });
+
+            test('get() works if envVar did not exist', async () => {
+                const actorId = '404'; // this will make the mock API return 404. Must be the first param.
+                const versionNumber = '0.0';
+                const envVarName = 'TEST_ENV_VAR';
+
+                const res = await client.actor(actorId).version(versionNumber).envVar(envVarName).get();
+                expect(res).toBeUndefined();
+                validateRequest({}, { actorId, versionNumber, envVarName });
+
+                const browserRes = await page.evaluate(
+                    (aId, vn, evn) => client.actor(aId).version(vn).envVar(evn).get(), actorId, versionNumber, envVarName,
+                );
+                expect(browserRes).toEqual(res);
+                validateRequest({}, { actorId, versionNumber, envVarName });
+            });
+
+            test('update() works', async () => {
+                const actorId = 'some-user/some-id';
+                const versionNumber = '0.0';
+                const envVarName = 'TEST_UPDATE_ENV_VAR';
+                const envVar = {
+                    name: 'TEST_UPDATE_ENV_VAR',
+                    value: 123,
+                };
+
+                const res = await client.actor(actorId).version(versionNumber).envVar(envVarName).update(envVar);
+                expect(res.id).toEqual('update-actor-env-var');
+                validateRequest({}, { actorId: 'some-user~some-id', versionNumber, envVarName }, envVar);
+
+                const browserRes = await page.evaluate(
+                    (id, vn, evn, uev) => client.actor(id).version(vn).envVar(evn).update(uev), actorId, versionNumber, envVarName, envVar,
+                );
+                expect(browserRes).toEqual(res);
+                validateRequest({}, { actorId: 'some-user~some-id', versionNumber, envVarName }, envVar);
+            });
+
+            test('delete() works', async () => {
+                const actorId = '204';
+                const versionNumber = '0.0';
+                const envVarName = 'TEST_ENV_VAR_TO_DELETE';
+
+                const res = await client.actor(actorId).version(versionNumber).envVar(envVarName).delete();
+                expect(res).toBeUndefined();
+                validateRequest({}, { actorId, versionNumber, envVarName });
+
+                const browserRes = await page.evaluate(
+                    (id, vn, evn) => client.actor(id).version(vn).envVar(evn).delete(), actorId, versionNumber, envVarName,
+                );
+                expect(browserRes).toEqual(res);
+                validateRequest({}, { actorId, versionNumber, envVarName });
+            });
+        });
+
         test('webhooks().list() works', async () => {
             const actorId = 'some-act-id';
             const query = {
