@@ -136,7 +136,9 @@ export class ApifyClient {
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/dataset
      */
-    dataset(id: string): DatasetClient {
+    dataset<
+        Data extends Record<string | number, unknown> = Record<string | number, unknown>
+    >(id: string): DatasetClient<Data> {
         ow(id, ow.string.nonEmpty);
 
         return new DatasetClient({
