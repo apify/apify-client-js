@@ -105,7 +105,7 @@ export class RequestQueueClient extends ResourceClient {
         // Keep track of the requests that remain to be processed (in parameter format)
         let remainingRequests = requests;
         // Keep track of the requests that have been processed (in api format)
-        let processedRequests: ProcessedRequest[] = [];
+        const processedRequests: ProcessedRequest[] = [];
         // The requests we have not been able to process in the last call
         // ie. those we have not been able to process at all
         let unprocessedRequests: UnprocessedRequest[] = [];
@@ -121,7 +121,7 @@ export class RequestQueueClient extends ResourceClient {
                     }),
                 });
                 const data = response.data.data as RequestQueueClientBatchAddRequestsResult;
-                processedRequests = [...processedRequests, ...data.processedRequests];
+                processedRequests.push(...data.processedRequests);
                 unprocessedRequests = data.unprocessedRequests;
 
                 // Get unique keys of all requests processed so far
