@@ -1,6 +1,8 @@
 import ow from 'ow';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import { ActorEnvVarClient } from './actor_env_var';
+import { ActorEnvVarCollectionClient } from './actor_env_var_collection';
 
 /**
  * @hideconstructor
@@ -34,6 +36,24 @@ export class ActorVersionClient extends ResourceClient {
      */
     async delete(): Promise<void> {
         return this._delete();
+    }
+
+    /**
+     * TODO: https://docs.apify.com/api/v2#/reference/actors/env-var-object
+     */
+    envVar(envVarName: string): ActorEnvVarClient {
+        ow(envVarName, ow.string);
+        return new ActorEnvVarClient(this._subResourceOptions({
+            id: envVarName,
+        }));
+    }
+
+    /**
+     * TODO: https://docs.apify.com/api/v2#/reference/actors/env-var-collection
+     * @return {ActorVersionCollectionClient}
+     */
+    envVars(): ActorEnvVarCollectionClient {
+        return new ActorEnvVarCollectionClient(this._subResourceOptions());
     }
 }
 

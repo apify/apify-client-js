@@ -1,6 +1,38 @@
-2.0.0 / TBD
+2.1.0 / 2022/01/24
 ===================
-- Laid out base for migration to TypeScript
+- Added `ActorEnvVarCollectionClient` and `ActorEnvVarClient`
+
+2.0.8 / 2022/01/13
+===================
+- Add export for `PaginatedList` interface.
+
+2.0.7 / 2022/01/10
+===================
+- For TypeScript users, the input type for Task#start and Task#call is now correctly marked as optional
+
+2.0.6 / 2022/01/03
+===================
+- For TypeScript users, the input type for Task#start and Task#call have been corrected
+(these methods expect an optional input of an object, not an object or an array of objects)
+- For TypeScript users, the overloads for KeyValueStore#getRecord have been relaxed and their order has been corrected
+
+2.0.5 / 2022/01/03
+===================
+- For TypeScript users, the `WebhookEventType` type was corrected to represent its correct value.
+
+2.0.4 / 2021/12/XX
+===================
+- Fix: Unnamed storages can now be created again.
+
+2.0.3 / 2021/11/18
+===================
+- For TypeScript users, DatasetClients can now take in a generic type parameter that defines the data present in a dataset.
+
+2.0.1 / 2021/10/07
+===================
+- TypeScript rewrite
+- Fix: Exposing token on ApifyClient instance
+- Changed passing token using request HTTP header instead of the request parameter for every API calls
 
 1.4.2 / 2021/08/25
 ===================

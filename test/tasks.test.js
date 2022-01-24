@@ -145,6 +145,41 @@ describe('Task methods', () => {
             validateRequest({}, { taskId });
         });
 
+        test('start() with query parameters works', async () => {
+            const taskId = 'some-id';
+            const query = {
+                waitForFinish: 100,
+                memory: 512,
+            };
+
+            const res = await client.task(taskId).start(undefined, query);
+            expect(res.id).toEqual('run-task');
+            validateRequest(query, { taskId });
+
+            const browserRes = await page.evaluate((id, q) => client.task(id).start(undefined, q), taskId, query);
+            expect(browserRes).toEqual(res);
+            validateRequest(query, { taskId });
+        });
+
+        test.skip('start() works with pre-stringified JSON', async () => {
+            const taskId = 'some-id2';
+            const input = { foo: 'bar' };
+            const body = JSON.stringify(input);
+
+            const query = {
+                waitForFinish: 100,
+                memory: 512,
+            };
+
+            const res = await client.task(taskId).start(body, query);
+            expect(res.id).toEqual('run-task');
+            validateRequest(query, { taskId }, input);
+
+            const browserRes = await page.evaluate((id, i, opts) => client.task(id).start(i, opts), taskId, input, query);
+            expect(browserRes).toEqual(res);
+            validateRequest(query, { taskId }, input);
+        });
+
         test('start() works with input and options overrides', async () => {
             const taskId = 'some-id';
             const input = { foo: 'bar' };
@@ -174,7 +209,7 @@ describe('Task methods', () => {
                 {},
                 { taskId },
                 { foo: 'bar', fn: input.fn.toString() },
-                { 'content-type': 'application/json;charset=utf-8' },
+                { 'content-type': 'application/json' },
             ];
 
             const res = await client.task(taskId).start(input);

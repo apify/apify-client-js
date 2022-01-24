@@ -1,3 +1,4 @@
+import { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 import ow from 'ow';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
@@ -87,7 +88,7 @@ export interface Build {
     userId: string;
     startedAt: string;
     finishedAt?: string;
-    status: string;
+    status: typeof ACT_JOB_TERMINAL_STATUSES[number];
     meta: BuildMeta;
     stats?: BuildStats;
     options?: BuildOptions;

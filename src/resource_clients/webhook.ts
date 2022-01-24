@@ -114,7 +114,7 @@ export interface WebhookStats {
     totalDispatches: number;
 }
 
-export type WebhookEventType = keyof typeof WEBHOOK_EVENT_TYPES;
+export type WebhookEventType = typeof WEBHOOK_EVENT_TYPES[keyof typeof WEBHOOK_EVENT_TYPES];
 
 export type WebhookCondition = WebhookAnyRunOfActorCondition | WebhookAnyRunOfActorTaskCondition | WebhookCertainRunCondition;
 
