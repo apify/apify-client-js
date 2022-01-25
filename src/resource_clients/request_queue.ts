@@ -156,7 +156,10 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Writes multiple requests to request queue concurrently in batches.
-     * THIS METHOD IS EXPERIMENTAL AND NOT YET INTENDED FOR USE.
+     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
+     *
+     * @private
+     * @experimental
      */
     async batchAddRequests(
         requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
