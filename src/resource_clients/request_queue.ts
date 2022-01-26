@@ -1,4 +1,6 @@
+import log from '@apify/log';
 import ow from 'ow';
+import type { JsonObject } from 'type-fest';
 import { ApifyApiError } from '../apify_api_error';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
@@ -94,6 +96,113 @@ export class RequestQueueClient extends ResourceClient {
         });
 
         return cast(parseDateFields(pluckData(response.data)));
+    }
+
+    protected async _batchAddRequestsWithRetries(
+        requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
+        options: RequestQueueClientBatchAddRequestOptions = {},
+    ): Promise<RequestQueueClientBatchAddRequestsResult> {
+        // Keep track of the requests that remain to be processed (in parameter format)
+        let remainingRequests = requests;
+        // Keep track of the requests that have been processed (in api format)
+        const processedRequests: ProcessedRequest[] = [];
+        // The requests we have not been able to process in the last call
+        // ie. those we have not been able to process at all
+        let unprocessedRequests: UnprocessedRequest[] = [];
+        // TODO: Do not use `maxRetries` from http client, but rather a separate value
+        for (let i = 0; i < 1 + this.httpClient.maxRetries; i++) {
+            try {
+                const response = await this.httpClient.call({
+                    url: this._url('requests/batch'),
+                    method: 'POST',
+                    data: remainingRequests,
+                    params: this._params({
+                        forefront: options.forefront,
+                        clientKey: this.clientKey,
+                    }),
+                });
+                const data = response.data.data as RequestQueueClientBatchAddRequestsResult;
+                processedRequests.push(...data.processedRequests);
+                unprocessedRequests = data.unprocessedRequests;
+
+                // Get unique keys of all requests processed so far
+                const processedRequestsUniqueKeys = processedRequests.map(({ uniqueKey }) => uniqueKey);
+                // Requests remaining to be processed are the all that remain
+                remainingRequests = requests.filter(({ uniqueKey }) => !processedRequestsUniqueKeys.includes(uniqueKey));
+
+                // Stop if all requests have been processed
+                if (remainingRequests.length === 0) {
+                    break;
+                }
+            } catch (err) {
+                log.exception(err as Error, 'Request batch insert failed');
+                // When something fails and http client does not retry, the remaining requests are treated as unprocessed.
+                // This ensures that this method does not throw and keeps the signature.
+                const processedRequestsUniqueKeys = processedRequests.map(({ uniqueKey }) => uniqueKey);
+                unprocessedRequests = requests
+                    .filter(({ uniqueKey }) => !processedRequestsUniqueKeys.includes(uniqueKey))
+                    .map(({ method, uniqueKey, url }) => ({ method, uniqueKey, url }));
+
+                break;
+            }
+
+            // Sleep for some time before trying again
+            // TODO: Do not use delay from client, but rather a separate value
+            await new Promise((resolve) => setTimeout(resolve, this.httpClient.minDelayBetweenRetriesMillis));
+        }
+
+        const result = { processedRequests, unprocessedRequests } as unknown as JsonObject;
+
+        return cast(parseDateFields(result));
+    }
+
+    /**
+     * Writes multiple requests to request queue concurrently in batches.
+     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
+     *
+     * @private
+     * @experimental
+     */
+    async batchAddRequests(
+        requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
+        options: RequestQueueClientBatchAddRequestOptions = {},
+    ): Promise<RequestQueueClientBatchAddRequestsResult> {
+        ow(requests, ow.array.ofType(ow.object.partialShape({
+            id: ow.undefined,
+        })).minLength(1));
+
+        ow(options, ow.object.exactShape({
+            forefront: ow.optional.boolean,
+        }));
+
+        // The number of 50 parallel requests seemed optimal, if it was higher it did not seem to bring any extra value.
+        const maxParallelRequests = 50;
+
+        const operationsInProgress = [];
+        const individualResults = [];
+
+        // Send up to `maxParallelRequests` requests at once, wait for all of them to finish and repeat
+        for (let i = 0; i < requests.length; i += 25) {
+            const requestsInBatch = requests.slice(i, i + 25);
+            operationsInProgress.push(this._batchAddRequestsWithRetries(requestsInBatch, options));
+            if (operationsInProgress.length === maxParallelRequests) {
+                individualResults.push(...(await Promise.all(operationsInProgress)));
+                operationsInProgress.splice(0, operationsInProgress.length);
+            }
+        }
+        // Get results from remaining operations
+        individualResults.push(...(await Promise.all(operationsInProgress)));
+
+        // Combine individual results together
+        const result: RequestQueueClientBatchAddRequestsResult = {
+            processedRequests: [],
+            unprocessedRequests: [],
+        };
+        individualResults.forEach(({ processedRequests, unprocessedRequests }) => {
+            result.processedRequests.push(...processedRequests);
+            result.unprocessedRequests.push(...unprocessedRequests);
+        });
+        return result;
     }
 
     /**
@@ -213,6 +322,10 @@ export interface RequestQueueClientAddRequestOptions {
     forefront?: boolean;
 }
 
+export interface RequestQueueClientBatchAddRequestOptions {
+    forefront?: boolean;
+}
+
 export interface RequestQueueClientRequestSchema {
     id: string;
     uniqueKey: string;
@@ -232,6 +345,24 @@ export interface RequestQueueClientAddRequestResult {
     requestId: string;
     wasAlreadyPresent: boolean;
     wasAlreadyHandled: boolean;
+}
+
+interface ProcessedRequest {
+    uniqueKey: string;
+    requestId: string;
+    wasAlreadyPresent: boolean;
+    wasAlreadyHandled: boolean;
+}
+
+interface UnprocessedRequest {
+    uniqueKey: string;
+    url: string;
+    method?: AllowedHttpMethods;
+}
+
+export interface RequestQueueClientBatchAddRequestsResult {
+    processedRequests: ProcessedRequest[];
+    unprocessedRequests: UnprocessedRequest[];
 }
 
 export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem, 'retryCount'>
