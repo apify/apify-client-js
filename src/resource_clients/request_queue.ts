@@ -109,6 +109,7 @@ export class RequestQueueClient extends ResourceClient {
         // The requests we have not been able to process in the last call
         // ie. those we have not been able to process at all
         let unprocessedRequests: UnprocessedRequest[] = [];
+        // TODO: Do not use `maxRetries` from http client, but rather a separate value
         for (let i = 0; i < 1 + this.httpClient.maxRetries; i++) {
             try {
                 const response = await this.httpClient.call({
@@ -146,6 +147,7 @@ export class RequestQueueClient extends ResourceClient {
             }
 
             // Sleep for some time before trying again
+            // TODO: Do not use delay from client, but rather a separate value
             await new Promise((resolve) => setTimeout(resolve, this.httpClient.minDelayBetweenRetriesMillis));
         }
 
@@ -359,8 +361,8 @@ interface UnprocessedRequest {
 }
 
 export interface RequestQueueClientBatchAddRequestsResult {
-    processedRequests: ProcessedRequest[],
-    unprocessedRequests: UnprocessedRequest[],
+    processedRequests: ProcessedRequest[];
+    unprocessedRequests: UnprocessedRequest[];
 }
 
 export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem, 'retryCount'>
