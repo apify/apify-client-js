@@ -1,10 +1,8 @@
-2.1.0 / 2022/01/24
+2.1.0 / 2022/01/26
 ===================
 - Added `ActorEnvVarCollectionClient` and `ActorEnvVarClient`
-
-2.0.8 / 2022/01/13
-===================
 - Add export for `PaginatedList` interface.
+- Experimental: Add method for request queue batch requests insert endpoint
 
 2.0.7 / 2022/01/10
 ===================
