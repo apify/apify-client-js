@@ -28,6 +28,16 @@
 
 2.0.1 / 2021/10/07
 ===================
+- BREAKING CHANGE: Remove default export for ApifyClient.
+Migration from v1.x.x to v2.x.x:
+```javascript
+// v2.x.x
+const { ApifyClient } = require('apify-client');
+
+// v1.x.x
+const ApifyClient = require('apify-client');
+
+```
 - TypeScript rewrite
 - Fix: Exposing token on ApifyClient instance
 - Changed passing token using request HTTP header instead of the request parameter for every API calls
