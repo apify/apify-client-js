@@ -1,3 +1,7 @@
+2.2.0 / 2022/02/XX
+===================
+- Added support for the (for now experimental) `view` parameter to the dataset items endpoints
+
 2.1.0 / 2022/01/26
 ===================
 - Added `ActorEnvVarCollectionClient` and `ActorEnvVarClient`
