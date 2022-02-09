@@ -220,8 +220,8 @@ export interface Actor {
     restartOnError?: boolean;
     isPublic: boolean;
     isAnonymouslyRunnable?: boolean;
-    createdAt: string;
-    modifiedAt: string;
+    createdAt: Date;
+    modifiedAt: Date;
     stats: ActorStats;
     versions: ActorVersion[];
     defaultRunOptions: ActorDefaultRunOptions;
@@ -240,7 +240,7 @@ export interface ActorStats {
     totalUsers30Days: number;
     totalUsers90Days: number;
     totalMetamorphs: number;
-    lastRunStartedAt: string;
+    lastRunStartedAt: Date;
 }
 
 export interface ActorDefaultRunOptions {
@@ -261,7 +261,7 @@ export interface ActorTaggedBuilds {
 export interface ActorTaggedBuild {
     buildId?: string;
     buildNumber?: string;
-    finishedAt?: string;
+    finishedAt?: Date;
 }
 
 export type ActorUpdateOptions = Pick<Actor, 'name' | 'isPublic' | 'versions' | 'description' | 'title' | 'restartOnError'>
@@ -313,8 +313,8 @@ export interface ActorRun {
     actId: string;
     userId: string;
     actorTaskId?: string;
-    startedAt: string;
-    finishedAt: string;
+    startedAt: Date;
+    finishedAt: Date;
     status: typeof ACT_JOB_TERMINAL_STATUSES[number];
     meta: ActorRunMeta;
     stats: ActorRunStats;

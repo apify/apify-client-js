@@ -49,8 +49,8 @@ export interface ActorCollectionListOptions {
 
 export interface ActorCollectionListItem {
     id: string;
-    createdAt: string;
-    modifiedAt: string;
+    createdAt: Date;
+    modifiedAt: Date;
     name: string;
     username: string;
 }

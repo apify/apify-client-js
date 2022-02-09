@@ -25,7 +25,7 @@ export interface WebhookDispatch {
     id: string;
     userId: string;
     webhookId: string;
-    createdAt: string;
+    createdAt: Date;
     status: WebhookDispatchStatus;
     eventType: WebhookEventType;
     calls: WebhookDispatchCall[];
@@ -39,8 +39,8 @@ export enum WebhookDispatchStatus {
 }
 
 export interface WebhookDispatchCall {
-    startedAt: string;
-    finishedAt: string;
+    startedAt: Date;
+    finishedAt: Date;
     errorMessage: string | null;
     responseStatus: number | null;
     responseBody: string | null;

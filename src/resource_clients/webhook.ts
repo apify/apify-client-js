@@ -80,8 +80,8 @@ export class WebhookClient extends ResourceClient {
 export interface Webhook {
     id: string;
     userId: string;
-    createdAt: string;
-    modifiedAt: string;
+    createdAt: Date;
+    modifiedAt: Date;
     isAdHoc: boolean;
     eventTypes: WebhookEventType[];
     condition: WebhookCondition;

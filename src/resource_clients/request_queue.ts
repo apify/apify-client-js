@@ -274,9 +274,9 @@ export interface RequestQueue {
     id: string;
     name?: string;
     userId: string;
-    createdAt: string;
-    modifiedAt: string;
-    accessedAt: string;
+    createdAt: Date;
+    modifiedAt: Date;
+    accessedAt: Date;
     expireAt?: string;
     totalRequestCount: number;
     handledRequestCount: number;
@@ -305,7 +305,7 @@ export interface RequestQueueClientListHeadOptions {
 
 export interface RequestQueueClientListHeadResult {
     limit: number;
-    queueModifiedAt: string;
+    queueModifiedAt: Date;
     hadMultipleClients: boolean;
     items: RequestQueueClientListItem[];
 }
