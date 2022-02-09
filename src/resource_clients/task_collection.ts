@@ -36,8 +36,8 @@ export class TaskCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection/create-task
      */
-    async create(task?: TaskUpdateData): Promise<Task> {
-        ow(task, ow.optional.object);
+    async create(task: TaskCreateData): Promise<Task> {
+        ow(task, ow.object);
 
         return this._create(task);
     }
@@ -50,3 +50,7 @@ export interface TaskCollectionListOptions {
 }
 
 export type TaskList = Omit<Task, 'options' | 'input'>;
+
+export interface TaskCreateData extends TaskUpdateData {
+    actId: string;
+}
