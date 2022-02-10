@@ -86,8 +86,8 @@ export interface Build {
     id: string;
     actId: string;
     userId: string;
-    startedAt: string;
-    finishedAt?: string;
+    startedAt: Date;
+    finishedAt?: Date;
     status: typeof ACT_JOB_TERMINAL_STATUSES[number];
     meta: BuildMeta;
     stats?: BuildStats;

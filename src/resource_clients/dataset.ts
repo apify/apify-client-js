@@ -54,6 +54,7 @@ export class DatasetClient<
             skipEmpty: ow.optional.boolean,
             skipHidden: ow.optional.boolean,
             unwind: ow.optional.string,
+            view: ow.optional.string,
         }));
 
         const response = await this.httpClient.call({
@@ -86,6 +87,7 @@ export class DatasetClient<
             skipHeaderRow: ow.optional.boolean,
             skipHidden: ow.optional.boolean,
             unwind: ow.optional.string,
+            view: ow.optional.string,
             xmlRoot: ow.optional.string,
             xmlRow: ow.optional.string,
         }));
@@ -142,9 +144,9 @@ export interface Dataset {
     id: string;
     name?: string;
     userId: string;
-    createdAt: string;
-    modifiedAt: string;
-    accessedAt: string;
+    createdAt: Date;
+    modifiedAt: Date;
+    accessedAt: Date;
     itemCount: number;
     cleanItemCount: number;
     actId?: string;
@@ -174,6 +176,7 @@ export interface DatasetClientListItemOptions {
     skipEmpty?: boolean;
     skipHidden?: boolean;
     unwind?: string;
+    view?: string,
 }
 
 export enum DownloadItemsFormat {

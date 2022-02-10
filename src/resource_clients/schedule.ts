@@ -73,8 +73,8 @@ export interface Schedule {
     isEnabled: boolean;
     isExclusive: boolean;
     description?: string;
-    createdAt: string;
-    modifiedAt: string;
+    createdAt: Date;
+    modifiedAt: Date;
     nextRunAt: string;
     lastRunAt: string;
     actions: ScheduleAction[];

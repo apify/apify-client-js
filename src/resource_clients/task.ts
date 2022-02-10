@@ -189,8 +189,8 @@ export interface Task {
     name: string;
     description?: string;
     username?: string;
-    createdAt: string;
-    modifiedAt: string;
+    createdAt: Date;
+    modifiedAt: Date;
     stats: TaskStats;
     options?: TaskOptions;
     input?: Dictionary | Dictionary[];
