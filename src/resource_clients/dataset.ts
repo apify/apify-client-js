@@ -144,9 +144,9 @@ export interface Dataset {
     id: string;
     name?: string;
     userId: string;
-    createdAt: string;
-    modifiedAt: string;
-    accessedAt: string;
+    createdAt: Date;
+    modifiedAt: Date;
+    accessedAt: Date;
     itemCount: number;
     cleanItemCount: number;
     actId?: string;
