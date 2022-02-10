@@ -192,6 +192,7 @@ export class ApifyClient {
         ow(id, ow.string.nonEmpty);
         ow(options, ow.object.exactShape({
             clientKey: ow.optional.string.nonEmpty,
+            timeoutSecs: ow.optional.number,
         }));
 
         const apiClientOptions = {

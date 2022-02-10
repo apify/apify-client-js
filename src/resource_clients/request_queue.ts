@@ -18,6 +18,8 @@ import {
 export class RequestQueueClient extends ResourceClient {
     private clientKey?: string;
 
+    private timeoutMillis?: number;
+
     constructor(options: ApiClientSubResourceOptions, userOptions: RequestQueueUserOptions = {}) {
         super({
             resourcePath: 'request-queues',
@@ -25,6 +27,7 @@ export class RequestQueueClient extends ResourceClient {
         });
 
         this.clientKey = userOptions.clientKey;
+        this.timeoutMillis = userOptions.timeoutSecs ? userOptions.timeoutSecs * 1e3 : undefined;
     }
 
     /**
@@ -61,6 +64,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('head'),
             method: 'GET',
+            timeout: this.timeoutMillis,
             params: this._params({
                 limit: options.limit,
                 clientKey: this.clientKey,
@@ -88,6 +92,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('requests'),
             method: 'POST',
+            timeout: this.timeoutMillis,
             data: request,
             params: this._params({
                 forefront: options.forefront,
@@ -115,6 +120,7 @@ export class RequestQueueClient extends ResourceClient {
                 const response = await this.httpClient.call({
                     url: this._url('requests/batch'),
                     method: 'POST',
+                    timeout: this.timeoutMillis,
                     data: remainingRequests,
                     params: this._params({
                         forefront: options.forefront,
@@ -213,6 +219,7 @@ export class RequestQueueClient extends ResourceClient {
         const requestOpts: ApifyRequestConfig = {
             url: this._url(`requests/${id}`),
             method: 'GET',
+            timeout: this.timeoutMillis,
             params: this._params(),
         };
         try {
@@ -243,6 +250,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url(`requests/${request.id}`),
             method: 'PUT',
+            timeout: this.timeoutMillis,
             data: request,
             params: this._params({
                 forefront: options.forefront,
@@ -259,6 +267,7 @@ export class RequestQueueClient extends ResourceClient {
         await this.httpClient.call({
             url: this._url(`requests/${id}`),
             method: 'DELETE',
+            timeout: this.timeoutMillis,
             params: this._params({
                 clientKey: this.clientKey,
             }),
@@ -268,6 +277,7 @@ export class RequestQueueClient extends ResourceClient {
 
 export interface RequestQueueUserOptions {
     clientKey?: string;
+    timeoutSecs?: number;
 }
 
 export interface RequestQueue {
