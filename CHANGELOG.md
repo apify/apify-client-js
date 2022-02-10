@@ -2,6 +2,7 @@
 ===================
 - Added support for the (for now experimental) `view` parameter to the dataset items endpoints
 - For TypeScript users, the type for the fields that end in `At` (ex.: `createdAt`) have been correctly typed as a Date object instead of a string
+- Add option to set custom timeout for RequestQueue client calls.
 
 2.1.0 / 2022/01/26
 ===================
