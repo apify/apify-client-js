@@ -137,6 +137,18 @@ describe('Request Queue methods', () => {
             validateRequest({}, { queueId }, request);
         });
 
+        test('addRequest() respects over-ridden timeout', async () => {
+            const queueId = 'some-id';
+            const request = { url: 'http://example.com' };
+            let errorMessage;
+            try {
+                await client.requestQueue(queueId, { timeoutSecs: 0.001 }).addRequest(request);
+            } catch (e) {
+                errorMessage = e.toString();
+            }
+            expect(errorMessage).toEqual('Error: timeout of 1ms exceeded');
+        });
+
         test('addRequest() works with forefront param', async () => {
             const queueId = 'some-id';
             const request = { url: 'http://example.com' };
@@ -166,6 +178,18 @@ describe('Request Queue methods', () => {
             validateRequest({}, { queueId, requestId });
         });
 
+        test('getRequest() respects over-ridden timeout', async () => {
+            const queueId = 'some-id';
+            const requestId = 'xxx';
+            let errorMessage;
+            try {
+                await client.requestQueue(queueId, { timeoutSecs: 0.001 }).getRequest(requestId);
+            } catch (e) {
+                errorMessage = e.toString();
+            }
+            expect(errorMessage).toEqual('Error: timeout of 1ms exceeded');
+        });
+
         test('deleteRequest() works', async () => {
             const requestId = 'xxx';
             const queueId = '204';
@@ -177,6 +201,18 @@ describe('Request Queue methods', () => {
             const browserRes = await page.evaluate((qId, rId) => client.requestQueue(qId).deleteRequest(rId), queueId, requestId);
             expect(browserRes).toEqual(res);
             validateRequest({}, { queueId, requestId });
+        });
+
+        test('deleteRequest() respects over-ridden timeout', async () => {
+            const requestId = 'xxx';
+            const queueId = '204';
+            let errorMessage;
+            try {
+                await client.requestQueue(queueId, { timeoutSecs: 0.001 }).deleteRequest(requestId);
+            } catch (e) {
+                errorMessage = e.toString();
+            }
+            expect(errorMessage).toEqual('Error: timeout of 1ms exceeded');
         });
 
         test('updateRequest() works with forefront', async () => {
@@ -212,6 +248,19 @@ describe('Request Queue methods', () => {
             validateRequest({}, { queueId, requestId }, request);
         });
 
+        test('updateRequest() respects over-ridden timeout', async () => {
+            const queueId = 'some-id';
+            const requestId = 'xxx';
+            const request = { id: requestId, url: 'http://example.com' };
+            let errorMessage;
+            try {
+                await client.requestQueue(queueId, { timeoutSecs: 0.001 }).updateRequest(request);
+            } catch (e) {
+                errorMessage = e.toString();
+            }
+            expect(errorMessage).toEqual('Error: timeout of 1ms exceeded');
+        });
+
         test('listHead() works', async () => {
             const queueId = 'some-id';
             const options = { limit: 5 };
@@ -223,6 +272,18 @@ describe('Request Queue methods', () => {
             const browserRes = await page.evaluate((id, opts) => client.requestQueue(id).listHead(opts), queueId, options);
             expect(browserRes).toEqual(res);
             validateRequest(options, { queueId });
+        });
+
+        test('listHead() respects over-ridden timeout', async () => {
+            const queueId = 'some-id';
+            const options = { limit: 5 };
+            let errorMessage;
+            try {
+                await client.requestQueue(queueId, { timeoutSecs: 0.001 }).listHead(options);
+            } catch (e) {
+                errorMessage = e.toString();
+            }
+            expect(errorMessage).toEqual('Error: timeout of 1ms exceeded');
         });
 
         test.each([

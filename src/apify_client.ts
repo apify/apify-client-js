@@ -192,12 +192,11 @@ export class ApifyClient {
         ow(id, ow.string.nonEmpty);
         ow(options, ow.object.exactShape({
             clientKey: ow.optional.string.nonEmpty,
-            timeout: ow.optional.number,
+            timeoutSecs: ow.optional.number,
         }));
 
         const apiClientOptions = {
             id,
-            timeout: options.timeout,
             ...this._options(),
         };
         return new RequestQueueClient(apiClientOptions, options);
