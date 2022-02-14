@@ -32,10 +32,11 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/create-key-value-store
      */
-    async getOrCreate(name?: string): Promise<KeyValueStore> {
+    async getOrCreate(name?: string, schema?: Record<string, unknown>): Promise<KeyValueStore> {
         ow(name, ow.optional.string);
+        ow(schema, ow.optional.object); // TODO: Add schema validatioon
 
-        return this._getOrCreate(name);
+        return this._getOrCreate(name, { schema });
     }
 }
 

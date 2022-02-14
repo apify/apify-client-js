@@ -32,9 +32,11 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/create-dataset
      */
-    async getOrCreate(name?: string): Promise<Dataset> {
+    async getOrCreate(name?: string, schema?: Record<string, unknown>): Promise<Dataset> {
         ow(name, ow.optional.string);
-        return this._getOrCreate(name);
+        ow(schema, ow.optional.object); // TODO: Add schema validatioon
+
+        return this._getOrCreate(name, { schema });
     }
 }
 
