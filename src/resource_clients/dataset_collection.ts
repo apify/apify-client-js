@@ -32,9 +32,11 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/create-dataset
      */
-    async getOrCreate(name?: string): Promise<Dataset> {
+    async getOrCreate(name?: string, options?: DatasetCollectionClientGetOrCreateOptions): Promise<Dataset> {
         ow(name, ow.optional.string);
-        return this._getOrCreate(name);
+        ow(options?.schema, ow.optional.object); // TODO: Add schema validatioon
+
+        return this._getOrCreate(name, { schema: options?.schema });
     }
 }
 
@@ -43,6 +45,10 @@ export interface DatasetCollectionClientListOptions {
     limit?: number;
     offset?: number;
     desc?: boolean;
+}
+
+export interface DatasetCollectionClientGetOrCreateOptions {
+    schema?: Record<string, unknown>;
 }
 
 export type DatasetCollectionClientListResult = PaginatedList<Dataset>

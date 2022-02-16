@@ -31,11 +31,12 @@ export class ResourceCollectionClient extends ApiClient {
         return parseDateFields(pluckData(response.data)) as R;
     }
 
-    protected async _getOrCreate<R>(name?: string): Promise<R> {
+    protected async _getOrCreate<D, R>(name?: string, resource?: D): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'POST',
             params: this._params({ name }),
+            data: resource,
         });
         return parseDateFields(pluckData(response.data)) as R;
     }

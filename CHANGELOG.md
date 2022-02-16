@@ -1,3 +1,7 @@
+2.2.1 / 2022/02/XX
+===================
+- Added support for `schema` parameter in key-value store and dataset `getOrCreate` function
+
 2.2.0 / 2022/02/XX
 ===================
 - Added support for the (for now experimental) `view` parameter to the dataset items endpoints
