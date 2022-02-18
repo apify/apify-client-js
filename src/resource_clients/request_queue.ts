@@ -325,7 +325,7 @@ export interface RequestQueueClientListItem {
     retryCount: number;
     uniqueKey: string;
     url: string;
-    method: string;
+    method: AllowedHttpMethods;
 }
 
 export interface RequestQueueClientAddRequestOptions {
