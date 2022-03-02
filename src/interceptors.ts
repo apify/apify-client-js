@@ -20,7 +20,7 @@ export class InvalidResponseBodyError extends Error {
 
     response: AxiosResponse;
 
-    override cause: Error;
+    declare cause: Error;
 
     constructor(response: AxiosResponse, cause: Error) {
         super(`Response body could not be parsed.\nCause:${cause.message}`);

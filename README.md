@@ -1570,7 +1570,7 @@ https://docs.apify.com/api/v2#/reference/actors/run-collection/get-list-of-runs
 | [options.limit] | <code>number</code> |
 | [options.offset] | <code>number</code> |
 | [options.desc] | <code>boolean</code> |
-| [options.status] | <code>boolean</code> |
+| [options.status] | <code>string</code> |
 
 
 * * *
