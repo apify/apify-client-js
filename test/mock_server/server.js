@@ -46,6 +46,9 @@ const mockServer = {
     getLastRequest() {
         return this.requests.pop();
     },
+    getLastRequests(length = 1) {
+        return this.requests.slice(-length);
+    },
     setResponse(response) {
         this.response = response;
     },

@@ -310,5 +310,25 @@ describe('Request Queue methods', () => {
             expect(browserRes).toEqual(res);
             validateRequest({ clientKey }, false, false);
         });
+
+        test('batchAddRequests() works', async () => {
+            const queueId = 'some-id';
+            const requestsLength = 1000;
+            const requests = new Array(requestsLength).fill(0).map((_, i) => ({ url: `http://example.com/${i}` }));
+
+            await client.requestQueue(queueId).batchAddRequests(requests);
+            const firedRequests = mockServer.getLastRequests(requestsLength / 25);
+            const processedRequestUrls = [];
+            firedRequests.map((req) => {
+                expect(req.url).toEqual(`/${queueId}/requests/batch`);
+                req.body.forEach(({ url }) => {
+                    processedRequestUrls.push(url);
+                });
+            });
+            expect(processedRequestUrls.length).toEqual(requestsLength);
+            expect(processedRequestUrls).toEqual(
+                expect.arrayContaining(requests.map((req) => req.url)),
+            );
+        });
     });
 });

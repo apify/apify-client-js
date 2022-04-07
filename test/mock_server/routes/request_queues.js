@@ -13,6 +13,7 @@ const ROUTES = [
     { id: 'get-request', method: 'GET', path: '/:queueId/requests/:requestId' },
     { id: 'delete-request', method: 'DELETE', path: '/:queueId/requests/:requestId' },
     { id: 'update-request', method: 'PUT', path: '/:queueId/requests/:requestId' },
+    { id: 'batch-insert', method: 'POST', path: '/:queueId/requests/batch', type: 'dummyBatchImport' },
     { id: 'get-head', method: 'GET', path: '/:queueId/head' },
 ];
 
