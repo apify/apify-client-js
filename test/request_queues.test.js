@@ -311,12 +311,12 @@ describe('Request Queue methods', () => {
             validateRequest({ clientKey }, false, false);
         });
 
-        test('batchAddRequests() works', async () => {
+        test('batchAddRequestsWithRetries() works', async () => {
             const queueId = 'some-id';
             const requestsLength = 1000;
             const requests = new Array(requestsLength).fill(0).map((_, i) => ({ url: `http://example.com/${i}` }));
 
-            await client.requestQueue(queueId).batchAddRequests(requests);
+            await client.requestQueue(queueId).batchAddRequestsWithRetries(requests);
             const firedRequests = mockServer.getLastRequests(requestsLength / 25);
             const processedRequestUrls = [];
             firedRequests.map((req) => {
