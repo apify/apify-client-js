@@ -126,7 +126,7 @@ export class RequestQueueClient extends ResourceClient {
             forefront: ow.optional.boolean,
         }));
 
-        const response = await this.httpClient.call({
+        const { data } = await this.httpClient.call({
             url: this._url('requests/batch'),
             method: 'POST',
             timeout: this.timeoutMillis,
@@ -137,7 +137,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return cast(parseDateFields(pluckData(data)));
     }
 
     protected async _batchAddRequestsWithRetries(
@@ -247,6 +247,34 @@ export class RequestQueueClient extends ResourceClient {
             result.unprocessedRequests.push(...unprocessedRequests);
         });
         return result;
+    }
+
+    /**
+     * Deletes requests from request queue in batch.
+     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
+     *
+     * @private
+     * @experimental
+     */
+    async batchDeleteRequests(
+        requests: RequestQueueClientRequestToDelete[],
+    ): Promise<RequestQueueClientBatchRequestsOperationResult> {
+        ow(requests, ow.array.ofType(ow.any(
+            ow.object.partialShape({ id: ow.string }),
+            ow.object.partialShape({ uniqueKey: ow.string }),
+        )).minLength(1).maxLength(MAX_REQUESTS_PER_BATCH_OPERATION));
+
+        const { data } = await this.httpClient.call({
+            url: this._url('requests/batch'),
+            method: 'DELETE',
+            timeout: this.timeoutMillis,
+            data: requests,
+            params: this._params({
+                clientKey: this.clientKey,
+            }),
+        });
+
+        return cast(parseDateFields(pluckData(data)));
     }
 
     /**
@@ -414,6 +442,8 @@ export interface RequestQueueClientBatchRequestsOperationResult {
     processedRequests: ProcessedRequest[];
     unprocessedRequests: UnprocessedRequest[];
 }
+
+export type RequestQueueClientRequestToDelete = Pick<RequestQueueClientRequestSchema, 'id'> | Pick<RequestQueueClientRequestSchema, 'uniqueKey'>
 
 export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem, 'retryCount'>
 

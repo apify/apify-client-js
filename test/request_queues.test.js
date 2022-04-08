@@ -330,5 +330,34 @@ describe('Request Queue methods', () => {
                 expect.arrayContaining(requests.map((req) => req.url)),
             );
         });
+
+        test('batchAddRequests() works', async () => {
+            const queueId = 'some-id';
+            const options = { forefront: true };
+            const requests = new Array(10).fill(0).map((_, i) => ({ url: `http://example.com/${i}` }));
+
+            const res = await client.requestQueue(queueId).batchAddRequests(requests, options);
+            validateRequest(options, { queueId }, requests);
+
+            const browserRes = await page.evaluate((id, req, opts) => {
+                return client.requestQueue(id).batchAddRequests(req, opts);
+            }, queueId, requests, options);
+            expect(browserRes).toEqual(res);
+            validateRequest(options, { queueId }, requests);
+        });
+
+        test('batchDeleteRequests() works', async () => {
+            const queueId = 'some-id';
+            const requests = new Array(10).fill(0).map((_, i) => ({ uniqueKey: `http://example.com/${i}` }));
+
+            const res = await client.requestQueue(queueId).batchDeleteRequests(requests);
+            validateRequest(false, { queueId }, requests);
+
+            const browserRes = await page.evaluate((id, req) => {
+                return client.requestQueue(id).batchDeleteRequests(req);
+            }, queueId, requests);
+            expect(browserRes).toEqual(res);
+            validateRequest(false, { queueId }, requests);
+        });
     });
 });

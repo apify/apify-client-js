@@ -58,7 +58,7 @@ const HANDLERS = {
             }, delayMillis || 0);
         };
     },
-    dummyBatchImport() {
+    dummyBatchOperation() {
         return (req, res) => {
             res.status(200).json({ data: { unprocessedRequests: [], processedRequests: req.body } });
         };
