@@ -115,7 +115,7 @@ export class RequestQueueClient extends ResourceClient {
      * @private
      * @experimental
      */
-    async batchAddRequests(
+    protected async _batchAddRequests(
         requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
         options: RequestQueueClientAddRequestOptions = {},
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
@@ -157,7 +157,7 @@ export class RequestQueueClient extends ResourceClient {
         let unprocessedRequests: UnprocessedRequest[] = [];
         for (let attempt = 0; attempt < 1 + maxUnprocessedRequestsRetries; attempt++) {
             try {
-                const response = await this.batchAddRequests(remainingRequests, {
+                const response = await this._batchAddRequests(remainingRequests, {
                     forefront,
                 });
                 processedRequests.push(...response.processedRequests);
@@ -206,7 +206,7 @@ export class RequestQueueClient extends ResourceClient {
      * @private
      * @experimental
      */
-    async batchAddRequestsWithRetries(
+    async batchAddRequests(
         requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
         options: RequestQueueClientBatchAddRequestWithRetriesOptions = {},
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
@@ -252,7 +252,7 @@ export class RequestQueueClient extends ResourceClient {
     /**
      * Deletes requests from request queue in batch.
      * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
-     *
+     * TODO: Make retryable and parallelize
      * @private
      * @experimental
      */
