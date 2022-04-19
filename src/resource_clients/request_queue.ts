@@ -164,6 +164,7 @@ export class RequestQueueClient extends ResourceClient {
                 unprocessedRequests = response.unprocessedRequests;
 
                 // Consider request with unprocessed requests as rate limited.
+                // NOTE: This is important for SDK, the rate limit errors are read by AutoScalePool and used to potentially downscale.
                 if (unprocessedRequests.length !== 0) {
                     this.httpClient.stats.addRateLimitError(attempt);
                 }
