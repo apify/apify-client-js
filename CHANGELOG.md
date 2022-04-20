@@ -1,8 +1,13 @@
-2.2.1 / 2022/02/XX
+2.3.0 / 2022/04/20
 ===================
-- Added support for `schema` parameter in key-value store and dataset `getOrCreate` function
+- Add batch delete requests method for request queue (for now experimental)
+- Add support for `schema` parameter in key-value store and dataset `getOrCreate` function
+- Make `RequestQueueClientListItem.method` strictly typed
+- Fix: Correct types and validation for `tasks().create`
+- Fix: Add missing override modifier for error cause
+- Fix: Updated incorrect RunCollectionClient list status type
 
-2.2.0 / 2022/02/XX
+2.2.0 / 2022/02/14
 ===================
 - Added support for the (for now experimental) `view` parameter to the dataset items endpoints
 - For TypeScript users, the type for the fields that end in `At` (ex.: `createdAt`) have been correctly typed as a Date object instead of a string
