@@ -12,6 +12,11 @@ import {
     cast,
 } from '../utils';
 
+// TODO: Move to apify shared consts, when all batch requests operations will implemented.
+const MAX_REQUESTS_PER_BATCH_OPERATION = 25;
+// The number of 50 parallel requests seemed optimal, if it was higher it did not seem to bring any extra value.
+const DEFAULT_PARALLEL_BATCH_ADD_REQUESTS = 50;
+
 /**
  * @hideconstructor
  */
@@ -103,10 +108,46 @@ export class RequestQueueClient extends ResourceClient {
         return cast(parseDateFields(pluckData(response.data)));
     }
 
+    /**
+     * Writes requests to request queue in batch.
+     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
+     *
+     * @private
+     * @experimental
+     */
+    protected async _batchAddRequests(
+        requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
+        options: RequestQueueClientAddRequestOptions = {},
+    ): Promise<RequestQueueClientBatchRequestsOperationResult> {
+        ow(requests, ow.array.ofType(ow.object.partialShape({
+            id: ow.undefined,
+        })).minLength(1).maxLength(MAX_REQUESTS_PER_BATCH_OPERATION));
+        ow(options, ow.object.exactShape({
+            forefront: ow.optional.boolean,
+        }));
+
+        const { data } = await this.httpClient.call({
+            url: this._url('requests/batch'),
+            method: 'POST',
+            timeout: this.timeoutMillis,
+            data: requests,
+            params: this._params({
+                forefront: options.forefront,
+                clientKey: this.clientKey,
+            }),
+        });
+
+        return cast(parseDateFields(pluckData(data)));
+    }
+
     protected async _batchAddRequestsWithRetries(
         requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
-        options: RequestQueueClientBatchAddRequestOptions = {},
-    ): Promise<RequestQueueClientBatchAddRequestsResult> {
+        options: RequestQueueClientBatchAddRequestWithRetriesOptions = {},
+    ): Promise<RequestQueueClientBatchRequestsOperationResult> {
+        const {
+            maxUnprocessedRequestsRetries = this.httpClient.maxRetries,
+            forefront,
+        } = options;
         // Keep track of the requests that remain to be processed (in parameter format)
         let remainingRequests = requests;
         // Keep track of the requests that have been processed (in api format)
@@ -114,22 +155,19 @@ export class RequestQueueClient extends ResourceClient {
         // The requests we have not been able to process in the last call
         // ie. those we have not been able to process at all
         let unprocessedRequests: UnprocessedRequest[] = [];
-        // TODO: Do not use `maxRetries` from http client, but rather a separate value
-        for (let i = 0; i < 1 + this.httpClient.maxRetries; i++) {
+        for (let attempt = 0; attempt < 1 + maxUnprocessedRequestsRetries; attempt++) {
             try {
-                const response = await this.httpClient.call({
-                    url: this._url('requests/batch'),
-                    method: 'POST',
-                    timeout: this.timeoutMillis,
-                    data: remainingRequests,
-                    params: this._params({
-                        forefront: options.forefront,
-                        clientKey: this.clientKey,
-                    }),
+                const response = await this._batchAddRequests(remainingRequests, {
+                    forefront,
                 });
-                const data = response.data.data as RequestQueueClientBatchAddRequestsResult;
-                processedRequests.push(...data.processedRequests);
-                unprocessedRequests = data.unprocessedRequests;
+                processedRequests.push(...response.processedRequests);
+                unprocessedRequests = response.unprocessedRequests;
+
+                // Consider request with unprocessed requests as rate limited.
+                // NOTE: This is important for SDK, the rate limit errors are read by AutoScalePool and used to potentially downscale.
+                if (unprocessedRequests.length !== 0) {
+                    this.httpClient.stats.addRateLimitError(attempt);
+                }
 
                 // Get unique keys of all requests processed so far
                 const processedRequestsUniqueKeys = processedRequests.map(({ uniqueKey }) => uniqueKey);
@@ -163,7 +201,7 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     /**
-     * Writes multiple requests to request queue concurrently in batches.
+     * Writes multiple requests to request queue concurrently in batch with retries.
      * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
      *
      * @private
@@ -171,18 +209,19 @@ export class RequestQueueClient extends ResourceClient {
      */
     async batchAddRequests(
         requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
-        options: RequestQueueClientBatchAddRequestOptions = {},
-    ): Promise<RequestQueueClientBatchAddRequestsResult> {
+        options: RequestQueueClientBatchAddRequestWithRetriesOptions = {},
+    ): Promise<RequestQueueClientBatchRequestsOperationResult> {
+        const {
+            forefront,
+            maxUnprocessedRequestsRetries = this.httpClient.maxRetries,
+            maxParallel = DEFAULT_PARALLEL_BATCH_ADD_REQUESTS,
+        } = options;
         ow(requests, ow.array.ofType(ow.object.partialShape({
             id: ow.undefined,
         })).minLength(1));
-
-        ow(options, ow.object.exactShape({
-            forefront: ow.optional.boolean,
-        }));
-
-        // The number of 50 parallel requests seemed optimal, if it was higher it did not seem to bring any extra value.
-        const maxParallelRequests = 50;
+        ow(forefront, ow.optional.boolean);
+        ow(maxUnprocessedRequestsRetries, ow.optional.number);
+        ow(maxParallel, ow.optional.number);
 
         const operationsInProgress = [];
         const individualResults = [];
@@ -191,7 +230,7 @@ export class RequestQueueClient extends ResourceClient {
         for (let i = 0; i < requests.length; i += 25) {
             const requestsInBatch = requests.slice(i, i + 25);
             operationsInProgress.push(this._batchAddRequestsWithRetries(requestsInBatch, options));
-            if (operationsInProgress.length === maxParallelRequests) {
+            if (operationsInProgress.length === maxParallel) {
                 individualResults.push(...(await Promise.all(operationsInProgress)));
                 operationsInProgress.splice(0, operationsInProgress.length);
             }
@@ -200,7 +239,7 @@ export class RequestQueueClient extends ResourceClient {
         individualResults.push(...(await Promise.all(operationsInProgress)));
 
         // Combine individual results together
-        const result: RequestQueueClientBatchAddRequestsResult = {
+        const result: RequestQueueClientBatchRequestsOperationResult = {
             processedRequests: [],
             unprocessedRequests: [],
         };
@@ -209,6 +248,34 @@ export class RequestQueueClient extends ResourceClient {
             result.unprocessedRequests.push(...unprocessedRequests);
         });
         return result;
+    }
+
+    /**
+     * Deletes requests from request queue in batch.
+     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
+     * TODO: Make retryable and parallelize
+     * @private
+     * @experimental
+     */
+    async batchDeleteRequests(
+        requests: RequestQueueClientRequestToDelete[],
+    ): Promise<RequestQueueClientBatchRequestsOperationResult> {
+        ow(requests, ow.array.ofType(ow.any(
+            ow.object.partialShape({ id: ow.string }),
+            ow.object.partialShape({ uniqueKey: ow.string }),
+        )).minLength(1).maxLength(MAX_REQUESTS_PER_BATCH_OPERATION));
+
+        const { data } = await this.httpClient.call({
+            url: this._url('requests/batch'),
+            method: 'DELETE',
+            timeout: this.timeoutMillis,
+            data: requests,
+            params: this._params({
+                clientKey: this.clientKey,
+            }),
+        });
+
+        return cast(parseDateFields(pluckData(data)));
     }
 
     /**
@@ -332,8 +399,10 @@ export interface RequestQueueClientAddRequestOptions {
     forefront?: boolean;
 }
 
-export interface RequestQueueClientBatchAddRequestOptions {
+export interface RequestQueueClientBatchAddRequestWithRetriesOptions {
     forefront?: boolean;
+    maxUnprocessedRequestsRetries?: number;
+    maxParallel?: number;
 }
 
 export interface RequestQueueClientRequestSchema {
@@ -370,10 +439,12 @@ interface UnprocessedRequest {
     method?: AllowedHttpMethods;
 }
 
-export interface RequestQueueClientBatchAddRequestsResult {
+export interface RequestQueueClientBatchRequestsOperationResult {
     processedRequests: ProcessedRequest[];
     unprocessedRequests: UnprocessedRequest[];
 }
+
+export type RequestQueueClientRequestToDelete = Pick<RequestQueueClientRequestSchema, 'id'> | Pick<RequestQueueClientRequestSchema, 'uniqueKey'>
 
 export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem, 'retryCount'>
 

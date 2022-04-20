@@ -58,6 +58,11 @@ const HANDLERS = {
             }, delayMillis || 0);
         };
     },
+    dummyBatchOperation() {
+        return (req, res) => {
+            res.status(200).json({ data: { unprocessedRequests: [], processedRequests: req.body } });
+        };
+    },
     responseJsonMock(id) {
         return (req, res) => {
             const [resourceId] = Object.values(req.params);
