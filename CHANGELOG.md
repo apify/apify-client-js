@@ -1,3 +1,7 @@
+2.3.1 / 2022/04/28
+===================
+- Fix: Retries in batch requests insert endpoint
+
 2.3.0 / 2022/04/20
 ===================
 - Add batch delete requests method for request queue (for now experimental)
