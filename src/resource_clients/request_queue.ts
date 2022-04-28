@@ -155,7 +155,7 @@ export class RequestQueueClient extends ResourceClient {
         // The requests we have not been able to process in the last call
         // ie. those we have not been able to process at all
         let unprocessedRequests: UnprocessedRequest[] = [];
-        for (let attempt = 0; attempt < 1 + maxUnprocessedRequestsRetries; attempt++) {
+        for (let i = 0; i < 1 + maxUnprocessedRequestsRetries; i++) {
             try {
                 const response = await this._batchAddRequests(remainingRequests, {
                     forefront,
@@ -166,7 +166,7 @@ export class RequestQueueClient extends ResourceClient {
                 // Consider request with unprocessed requests as rate limited.
                 // NOTE: This is important for SDK, the rate limit errors are read by AutoScalePool and used to potentially downscale.
                 if (unprocessedRequests.length !== 0) {
-                    this.httpClient.stats.addRateLimitError(attempt);
+                    this.httpClient.stats.addRateLimitError(i + 1);
                 }
 
                 // Get unique keys of all requests processed so far
