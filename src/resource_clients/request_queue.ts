@@ -231,7 +231,7 @@ export class RequestQueueClient extends ResourceClient {
         const operationsInProgress = [];
         const individualResults = [];
 
-        // Send up to `maxParallelRequests` requests at once, wait for all of them to finish and repeat
+        // Send up to `maxParallel` requests at once, wait for all of them to finish and repeat
         for (let i = 0; i < requests.length; i += MAX_REQUESTS_PER_BATCH_OPERATION) {
             const requestsInBatch = requests.slice(i, i + MAX_REQUESTS_PER_BATCH_OPERATION);
             operationsInProgress.push(this._batchAddRequestsWithRetries(requestsInBatch, options));
