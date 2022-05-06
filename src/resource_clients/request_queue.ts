@@ -232,11 +232,11 @@ export class RequestQueueClient extends ResourceClient {
         for (let i = 0; i < requests.length; i += MAX_REQUESTS_PER_BATCH_OPERATION) {
             const requestsInBatch = requests.slice(i, i + MAX_REQUESTS_PER_BATCH_OPERATION);
             const requestPromise = this._batchAddRequestsWithRetries(requestsInBatch, options);
+            executingRequests.add(requestPromise);
             requestPromise.then((batchAddResult) => {
                 executingRequests.delete(requestPromise);
                 individualResults.push(batchAddResult);
             });
-            executingRequests.add(requestPromise);
             if (executingRequests.size >= maxParallel) {
                 await Promise.race(executingRequests);
             }
