@@ -228,20 +228,24 @@ export class RequestQueueClient extends ResourceClient {
         ow(maxUnprocessedRequestsRetries, ow.optional.number);
         ow(maxParallel, ow.optional.number);
 
-        const operationsInProgress = [];
-        const individualResults = [];
+        const executingRequests = new Set();
+        const individualResults: RequestQueueClientBatchRequestsOperationResult[] = [];
 
-        // Send up to `maxParallel` requests at once, wait for all of them to finish and repeat
+        // Keep a pool of up to `maxParallel` requests running at once
         for (let i = 0; i < requests.length; i += MAX_REQUESTS_PER_BATCH_OPERATION) {
             const requestsInBatch = requests.slice(i, i + MAX_REQUESTS_PER_BATCH_OPERATION);
-            operationsInProgress.push(this._batchAddRequestsWithRetries(requestsInBatch, options));
-            if (operationsInProgress.length === maxParallel) {
-                individualResults.push(...(await Promise.all(operationsInProgress)));
-                operationsInProgress.splice(0, operationsInProgress.length);
+            const requestPromise = this._batchAddRequestsWithRetries(requestsInBatch, options);
+            requestPromise.then((batchAddResult) => {
+                executingRequests.delete(requestPromise);
+                individualResults.push(batchAddResult);
+            });
+            executingRequests.add(requestPromise);
+            if (executingRequests.size >= maxParallel) {
+                await Promise.race(executingRequests);
             }
         }
         // Get results from remaining operations
-        individualResults.push(...(await Promise.all(operationsInProgress)));
+        await Promise.all(executingRequests);
 
         // Combine individual results together
         const result: RequestQueueClientBatchRequestsOperationResult = {
