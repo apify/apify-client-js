@@ -146,9 +146,9 @@ export class RequestQueueClient extends ResourceClient {
         options: RequestQueueClientBatchAddRequestWithRetriesOptions = {},
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
         const {
+            forefront,
             maxUnprocessedRequestsRetries = 0,
             minDelayBetweenUnprocessedRequestsRetriesMillis = DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS,
-            forefront,
         } = options;
         // Keep track of the requests that remain to be processed (in parameter format)
         let remainingRequests = requests;
@@ -215,8 +215,9 @@ export class RequestQueueClient extends ResourceClient {
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
         const {
             forefront,
-            maxUnprocessedRequestsRetries = this.httpClient.maxRetries,
+            maxUnprocessedRequestsRetries = 0,
             maxParallel = DEFAULT_PARALLEL_BATCH_ADD_REQUESTS,
+            minDelayBetweenUnprocessedRequestsRetriesMillis = DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS,
         } = options;
         ow(requests, ow.array.ofType(ow.object.partialShape({
             id: ow.undefined,
@@ -224,6 +225,7 @@ export class RequestQueueClient extends ResourceClient {
         ow(forefront, ow.optional.boolean);
         ow(maxUnprocessedRequestsRetries, ow.optional.number);
         ow(maxParallel, ow.optional.number);
+        ow(minDelayBetweenUnprocessedRequestsRetriesMillis, ow.optional.number);
 
         const executingRequests = new Set();
         const individualResults: RequestQueueClientBatchRequestsOperationResult[] = [];
