@@ -16,6 +16,7 @@ import {
 const MAX_REQUESTS_PER_BATCH_OPERATION = 25;
 // The number of 50 parallel requests seemed optimal, if it was higher it did not seem to bring any extra value.
 const DEFAULT_PARALLEL_BATCH_ADD_REQUESTS = 50;
+const DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS = 500;
 
 /**
  * @hideconstructor
@@ -145,8 +146,9 @@ export class RequestQueueClient extends ResourceClient {
         options: RequestQueueClientBatchAddRequestWithRetriesOptions = {},
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
         const {
-            maxUnprocessedRequestsRetries = this.httpClient.maxRetries,
             forefront,
+            maxUnprocessedRequestsRetries = 0,
+            minDelayBetweenUnprocessedRequestsRetriesMillis = DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS,
         } = options;
         // Keep track of the requests that remain to be processed (in parameter format)
         let remainingRequests = requests;
@@ -190,9 +192,9 @@ export class RequestQueueClient extends ResourceClient {
                 break;
             }
 
-            // Sleep for some time before trying again
-            // TODO: Do not use delay from client, but rather a separate value
-            await new Promise((resolve) => setTimeout(resolve, this.httpClient.minDelayBetweenRetriesMillis));
+            // Exponential backoff
+            const delayMillis = Math.floor((1 + Math.random()) * (2 ** i) * minDelayBetweenUnprocessedRequestsRetriesMillis);
+            await new Promise((resolve) => setTimeout(resolve, delayMillis));
         }
 
         const result = { processedRequests, unprocessedRequests } as unknown as JsonObject;
@@ -213,8 +215,9 @@ export class RequestQueueClient extends ResourceClient {
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
         const {
             forefront,
-            maxUnprocessedRequestsRetries = this.httpClient.maxRetries,
+            maxUnprocessedRequestsRetries = 0,
             maxParallel = DEFAULT_PARALLEL_BATCH_ADD_REQUESTS,
+            minDelayBetweenUnprocessedRequestsRetriesMillis = DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS,
         } = options;
         ow(requests, ow.array.ofType(ow.object.partialShape({
             id: ow.undefined,
@@ -222,21 +225,26 @@ export class RequestQueueClient extends ResourceClient {
         ow(forefront, ow.optional.boolean);
         ow(maxUnprocessedRequestsRetries, ow.optional.number);
         ow(maxParallel, ow.optional.number);
+        ow(minDelayBetweenUnprocessedRequestsRetriesMillis, ow.optional.number);
 
-        const operationsInProgress = [];
-        const individualResults = [];
+        const executingRequests = new Set();
+        const individualResults: RequestQueueClientBatchRequestsOperationResult[] = [];
 
-        // Send up to `maxParallelRequests` requests at once, wait for all of them to finish and repeat
-        for (let i = 0; i < requests.length; i += 25) {
-            const requestsInBatch = requests.slice(i, i + 25);
-            operationsInProgress.push(this._batchAddRequestsWithRetries(requestsInBatch, options));
-            if (operationsInProgress.length === maxParallel) {
-                individualResults.push(...(await Promise.all(operationsInProgress)));
-                operationsInProgress.splice(0, operationsInProgress.length);
+        // Keep a pool of up to `maxParallel` requests running at once
+        for (let i = 0; i < requests.length; i += MAX_REQUESTS_PER_BATCH_OPERATION) {
+            const requestsInBatch = requests.slice(i, i + MAX_REQUESTS_PER_BATCH_OPERATION);
+            const requestPromise = this._batchAddRequestsWithRetries(requestsInBatch, options);
+            executingRequests.add(requestPromise);
+            requestPromise.then((batchAddResult) => {
+                executingRequests.delete(requestPromise);
+                individualResults.push(batchAddResult);
+            });
+            if (executingRequests.size >= maxParallel) {
+                await Promise.race(executingRequests);
             }
         }
         // Get results from remaining operations
-        individualResults.push(...(await Promise.all(operationsInProgress)));
+        await Promise.all(executingRequests);
 
         // Combine individual results together
         const result: RequestQueueClientBatchRequestsOperationResult = {
@@ -403,6 +411,7 @@ export interface RequestQueueClientBatchAddRequestWithRetriesOptions {
     forefront?: boolean;
     maxUnprocessedRequestsRetries?: number;
     maxParallel?: number;
+    minDelayBetweenUnprocessedRequestsRetriesMillis?: number;
 }
 
 export interface RequestQueueClientRequestSchema {
