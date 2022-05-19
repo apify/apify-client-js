@@ -382,7 +382,7 @@ export class RequestQueueClient extends ResourceClient {
      * @private
      * @experimental
      */
-    async prolongRequestLock(id: string, options: RequestQueueClientProlongRequestOptions): Promise<RequestQueueClientProlongRequestResult> {
+    async prolongRequestLock(id: string, options: RequestQueueClientProlongRequestLockOptions): Promise<RequestQueueClientProlongRequestLockResult> {
         ow(id, ow.string);
         ow(options, ow.object.exactShape({
             lockSecs: ow.number,
@@ -409,7 +409,7 @@ export class RequestQueueClient extends ResourceClient {
      * @private
      * @experimental
      */
-    async deleteRequestLock(id: string, options: RequestQueueClientDeleteRequestOptions = {}): Promise<void> {
+    async deleteRequestLock(id: string, options: RequestQueueClientDeleteRequestLockOptions = {}): Promise<void> {
         ow(id, ow.string);
         ow(options, ow.object.exactShape({
             forefront: ow.optional.boolean,
@@ -494,16 +494,16 @@ export interface RequestQueueClientAddRequestOptions {
     forefront?: boolean;
 }
 
-export interface RequestQueueClientProlongRequestOptions {
+export interface RequestQueueClientProlongRequestLockOptions {
     forefront?: boolean;
     lockSecs: number;
 }
 
-export interface RequestQueueClientDeleteRequestOptions {
+export interface RequestQueueClientDeleteRequestLockOptions {
     forefront?: boolean;
 }
 
-export interface RequestQueueClientProlongRequestResult {
+export interface RequestQueueClientProlongRequestLockResult {
     lockExpiresAt: Date;
 }
 
