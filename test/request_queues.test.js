@@ -359,5 +359,53 @@ describe('Request Queue methods', () => {
             expect(browserRes).toEqual(res);
             validateRequest(false, { queueId }, requests);
         });
+
+        test('listAndLockHead() works', async () => {
+            const queueId = 'some-id';
+            const options = { limit: 5, lockSecs: 10 };
+
+            // Throw if lockSecs is missing or is not a number
+            await expect(client.requestQueue(queueId).listAndLockHead({ limit: 10 })).rejects.toThrow();
+            await expect(client.requestQueue(queueId).listAndLockHead({ lockSecs: 'bla' })).rejects.toThrow();
+
+            const res = await client.requestQueue(queueId).listAndLockHead(options);
+            expect(res.id).toEqual('post-lock-head');
+            validateRequest(options, { queueId });
+
+            const browserRes = await page.evaluate((id, opts) => client.requestQueue(id).listAndLockHead(opts), queueId, options);
+            expect(browserRes).toEqual(res);
+            validateRequest(options, { queueId });
+        });
+
+        test('prolongRequestLock() works', async () => {
+            const queueId = 'some-id';
+            const requestId = '123';
+            const options = { forefront: true, lockSecs: 10 };
+
+            const res = await client.requestQueue(queueId).prolongRequestLock(requestId, options);
+            expect(res.id).toEqual('put-lock-request');
+            validateRequest(options, { queueId, requestId });
+
+            const browserRes = await page.evaluate((qId, rId, opts) => {
+                return client.requestQueue(qId).prolongRequestLock(rId, opts);
+            }, queueId, requestId, options);
+            expect(browserRes).toEqual(res);
+            validateRequest(options, { queueId, requestId });
+        });
+
+        test('deleteRequestLock() works', async () => {
+            const queueId = 'some-id';
+            const requestId = '123';
+
+            const res = await client.requestQueue(queueId).deleteRequestLock(requestId);
+            expect(res).toBeUndefined();
+            validateRequest({}, { queueId, requestId });
+
+            const browserRes = await page.evaluate((qId, rId) => {
+                return client.requestQueue(qId).deleteRequestLock(rId);
+            }, queueId, requestId);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { queueId, requestId });
+        });
     });
 });

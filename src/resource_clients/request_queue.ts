@@ -81,6 +81,33 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     /**
+     * Get requests from queue head and lock them.
+     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
+     *
+     * @private
+     * @experimental
+     */
+    async listAndLockHead(options: RequestQueueClientListAndLockHeadOptions): Promise<RequestQueueClientListAndLockHeadResult> {
+        ow(options, ow.object.exactShape({
+            lockSecs: ow.number,
+            limit: ow.optional.number,
+        }));
+
+        const response = await this.httpClient.call({
+            url: this._url('head/lock'),
+            method: 'POST',
+            timeout: this.timeoutMillis,
+            params: this._params({
+                limit: options.limit,
+                lockSecs: options.lockSecs,
+                clientKey: this.clientKey,
+            }),
+        });
+
+        return cast(parseDateFields(pluckData(response.data)));
+    }
+
+    /**
      * https://docs.apify.com/api/v2#/reference/request-queues/request-collection/add-request
      */
     async addRequest(
@@ -348,6 +375,56 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
     }
+
+    /**
+     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
+     *
+     * @private
+     * @experimental
+     */
+    async prolongRequestLock(id: string, options: RequestQueueClientProlongRequestLockOptions): Promise<RequestQueueClientProlongRequestLockResult> {
+        ow(id, ow.string);
+        ow(options, ow.object.exactShape({
+            lockSecs: ow.number,
+            forefront: ow.optional.boolean,
+        }));
+
+        const response = await this.httpClient.call({
+            url: this._url(`requests/${id}/lock`),
+            method: 'PUT',
+            timeout: this.timeoutMillis,
+            params: this._params({
+                forefront: options.forefront,
+                lockSecs: options.lockSecs,
+                clientKey: this.clientKey,
+            }),
+        });
+
+        return cast(parseDateFields(pluckData(response.data)));
+    }
+
+    /**
+     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
+     *
+     * @private
+     * @experimental
+     */
+    async deleteRequestLock(id: string, options: RequestQueueClientDeleteRequestLockOptions = {}): Promise<void> {
+        ow(id, ow.string);
+        ow(options, ow.object.exactShape({
+            forefront: ow.optional.boolean,
+        }));
+
+        await this.httpClient.call({
+            url: this._url(`requests/${id}/lock`),
+            method: 'DELETE',
+            timeout: this.timeoutMillis,
+            params: this._params({
+                forefront: options.forefront,
+                clientKey: this.clientKey,
+            }),
+        });
+    }
 }
 
 export interface RequestQueueUserOptions {
@@ -395,16 +472,39 @@ export interface RequestQueueClientListHeadResult {
     items: RequestQueueClientListItem[];
 }
 
+export interface RequestQueueClientListAndLockHeadOptions {
+    lockSecs: number;
+    limit?: number;
+}
+
+export interface RequestQueueClientListAndLockHeadResult extends RequestQueueClientListHeadResult {
+    lockSecs: number;
+}
+
 export interface RequestQueueClientListItem {
     id: string;
     retryCount: number;
     uniqueKey: string;
     url: string;
     method: AllowedHttpMethods;
+    lockExpiresAt?: Date;
 }
 
 export interface RequestQueueClientAddRequestOptions {
     forefront?: boolean;
+}
+
+export interface RequestQueueClientProlongRequestLockOptions {
+    forefront?: boolean;
+    lockSecs: number;
+}
+
+export interface RequestQueueClientDeleteRequestLockOptions {
+    forefront?: boolean;
+}
+
+export interface RequestQueueClientProlongRequestLockResult {
+    lockExpiresAt: Date;
 }
 
 export interface RequestQueueClientBatchAddRequestWithRetriesOptions {
