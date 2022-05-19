@@ -1,6 +1,12 @@
+2.4.1 / 2022/05/11
+===================
+- Add request queue methods `listAndLockHead()`, `prolongRequestLock()`, `deleteRequestLock()`
+
 2.4.0 / 2022/05/11
+===================
 - Add exponential backoff to `batchAddRequests`
 - Add option `minDelayBetweenUnprocessedRequestsRetriesMillis` to `batchAddRequests`
+
 2.3.1 / 2022/04/28
 ===================
 - Fix: Retries in batch requests insert endpoint
