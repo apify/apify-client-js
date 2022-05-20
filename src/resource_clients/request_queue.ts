@@ -425,6 +425,75 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
     }
+
+    /**
+     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
+     *
+     * @private
+     * @experimental
+     */
+    async listRequests(options: RequestQueueClientListRequestsOptions = {}): Promise<RequestQueueClientListRequestsResult> {
+        ow(options, ow.object.exactShape({
+            limit: ow.optional.number,
+            exclusiveStartId: ow.optional.string,
+        }));
+
+        const response = await this.httpClient.call({
+            url: this._url('requests'),
+            method: 'GET',
+            timeout: this.timeoutMillis,
+            params: this._params({
+                limit: options.limit,
+                exclusiveStartId: options.exclusiveStartId,
+                clientKey: this.clientKey,
+            }),
+        });
+
+        return cast(parseDateFields(pluckData(response.data)));
+    }
+
+    /**
+     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
+     *
+     * Usage:
+     * for await (const request of client.listRequests({ limit: 10 })) {
+     *   console.log(request);
+     * }
+     * @private
+     * @experimental
+     */
+    requests(options: RequestQueueClientListRequestsOptions = {}): RequestQueueRequestsAsyncIterable<RequestQueueClientListItem> {
+        ow(options, ow.object.exactShape({
+            limit: ow.optional.number,
+            exclusiveStartId: ow.optional.string,
+        }));
+        const { limit, exclusiveStartId } = options;
+        const maxPageLimit = 100;
+        const getPage = this.listRequests;
+        return {
+            async* [Symbol.asyncIterator]() {
+                let nextPageExclusiveStartId;
+                let iterateItemCount = 0;
+                while (true) {
+                    const pageLimit = limit ? Math.min(maxPageLimit, limit - iterateItemCount) : maxPageLimit;
+                    const pageExclusiveStartId: string|undefined = nextPageExclusiveStartId && exclusiveStartId;
+                    const pagination: RequestQueueClientListRequestsResult = await getPage({
+                        limit: pageLimit,
+                        exclusiveStartId: pageExclusiveStartId,
+                    });
+                    // There are no more items to iterate
+                    if (!pagination.items.length) return;
+                    for await (const item of pagination.items) {
+                        yield item;
+                        iterateItemCount++;
+                    }
+                    // Limit reached stopping to iterate
+                    if (limit && iterateItemCount >= limit) return;
+                    nextPageExclusiveStartId = pagination.items[pagination.items.length - 1].id;
+                }
+            },
+        };
+    }
 }
 
 export interface RequestQueueUserOptions {
@@ -469,6 +538,17 @@ export interface RequestQueueClientListHeadResult {
     limit: number;
     queueModifiedAt: Date;
     hadMultipleClients: boolean;
+    items: RequestQueueClientListItem[];
+}
+
+export interface RequestQueueClientListRequestsOptions {
+    limit?: number;
+    exclusiveStartId?: string;
+}
+
+export interface RequestQueueClientListRequestsResult {
+    limit: number;
+    exclusiveStartId?: string;
     items: RequestQueueClientListItem[];
 }
 
@@ -558,3 +638,5 @@ export type RequestQueueClientRequestToDelete = Pick<RequestQueueClientRequestSc
 export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem, 'retryCount'>
 
 export type AllowedHttpMethods = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'TRACE' | 'OPTIONS' | 'CONNECT' | 'PATCH'
+
+export type RequestQueueRequestsAsyncIterable<T> = AsyncIterable<T>;
