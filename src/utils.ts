@@ -157,7 +157,7 @@ export class PaginationIterator {
     private readonly exclusiveStartId?: string;
 
     constructor(options: any = {}) {
-        this.maxPageLimit = 100;
+        this.maxPageLimit = options.maxPageLimit;
         this.limit = options.limit;
         this.exclusiveStartId = options.exclusiveStartId;
         this.getPage = options.getPage;
