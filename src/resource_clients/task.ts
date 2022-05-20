@@ -1,4 +1,4 @@
-import { ACT_JOB_STATUSES } from '@apify/consts';
+import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
 import ow from 'ow';
 import { ApifyApiError } from '../apify_api_error';
 import { ApiClientSubResourceOptions } from '../base/api_client';
@@ -156,6 +156,7 @@ export class TaskClient extends ResourceClient {
     lastRun(options: TaskLastRunOptions = {}): RunClient {
         ow(options, ow.object.exactShape({
             status: ow.optional.string.oneOf(Object.values(ACT_JOB_STATUSES)),
+            origin: ow.optional.string.oneOf(Object.values(META_ORIGINS)),
         }));
 
         return new RunClient(this._subResourceOptions({
