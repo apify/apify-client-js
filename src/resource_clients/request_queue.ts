@@ -639,4 +639,4 @@ export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem
 
 export type AllowedHttpMethods = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'TRACE' | 'OPTIONS' | 'CONNECT' | 'PATCH'
 
-export type RequestQueueRequestsAsyncIterable<T> = AsyncIterable<T>;
+export type RequestQueueRequestsAsyncIterable<T> = AsyncIterable<T>
