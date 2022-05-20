@@ -4,6 +4,7 @@ import zlib from 'zlib';
 import type { TypedArray, JsonValue } from 'type-fest';
 import { ApifyApiError } from './apify_api_error';
 import { WebhookUpdateData } from './resource_clients/webhook';
+import { RequestQueueClientListRequestsResult } from './resource_clients/request_queue';
 
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
 const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
@@ -144,3 +145,43 @@ export function cast<T>(input: unknown): T {
 }
 
 export type Dictionary<T = unknown> = Record<PropertyKey, T>;
+
+// TODO: Types, comments, tests and stuff
+export class PaginationIterator {
+    private readonly maxPageLimit: number;
+
+    private readonly getPage: any;
+
+    private readonly limit?: number;
+
+    private readonly exclusiveStartId?: string;
+
+    constructor(options: any = {}) {
+        this.maxPageLimit = 100;
+        this.limit = options.limit;
+        this.exclusiveStartId = options.exclusiveStartId;
+        this.getPage = options.getPage;
+    }
+
+    async* [Symbol.asyncIterator]() {
+        let nextPageExclusiveStartId;
+        let iterateItemCount = 0;
+        while (true) {
+            const pageLimit = this.limit ? Math.min(this.maxPageLimit, this.limit - iterateItemCount) : this.maxPageLimit;
+            const pageExclusiveStartId: string|undefined = nextPageExclusiveStartId && this.exclusiveStartId;
+            const pagination: RequestQueueClientListRequestsResult = await this.getPage({
+                limit: pageLimit,
+                exclusiveStartId: pageExclusiveStartId,
+            });
+            // There are no more items to iterate
+            if (!pagination.items.length) return;
+            for await (const item of pagination.items) {
+                yield item;
+                iterateItemCount++;
+            }
+            // Limit reached stopping to iterate
+            if (this.limit && iterateItemCount >= this.limit) return;
+            nextPageExclusiveStartId = pagination.items[pagination.items.length - 1].id;
+        }
+    }
+}

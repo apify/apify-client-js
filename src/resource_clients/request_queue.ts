@@ -10,6 +10,7 @@ import {
     parseDateFields,
     catchNotFoundOrThrow,
     cast,
+    PaginationIterator,
 } from '../utils';
 
 // TODO: Move to apify shared consts, when all batch requests operations will implemented.
@@ -469,30 +470,8 @@ export class RequestQueueClient extends ResourceClient {
         }));
         const { limit, exclusiveStartId } = options;
         const maxPageLimit = 100;
-        const getPage = this.listRequests;
-        return {
-            async* [Symbol.asyncIterator]() {
-                let nextPageExclusiveStartId;
-                let iterateItemCount = 0;
-                while (true) {
-                    const pageLimit = limit ? Math.min(maxPageLimit, limit - iterateItemCount) : maxPageLimit;
-                    const pageExclusiveStartId: string|undefined = nextPageExclusiveStartId && exclusiveStartId;
-                    const pagination: RequestQueueClientListRequestsResult = await getPage({
-                        limit: pageLimit,
-                        exclusiveStartId: pageExclusiveStartId,
-                    });
-                    // There are no more items to iterate
-                    if (!pagination.items.length) return;
-                    for await (const item of pagination.items) {
-                        yield item;
-                        iterateItemCount++;
-                    }
-                    // Limit reached stopping to iterate
-                    if (limit && iterateItemCount >= limit) return;
-                    nextPageExclusiveStartId = pagination.items[pagination.items.length - 1].id;
-                }
-            },
-        };
+        const getPage = this.listRequests.bind(this);
+        return new PaginationIterator({ getPage, limit, exclusiveStartId, maxPageLimit });
     }
 }
 
