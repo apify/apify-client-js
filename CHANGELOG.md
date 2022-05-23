@@ -1,3 +1,7 @@
+2.5.0 / 2022/05/23
+===================
+- Add `origin` param to the last actor/task run endpoints
+
 2.4.1 / 2022/05/11
 ===================
 - Add request queue methods `listAndLockHead()`, `prolongRequestLock()`, `deleteRequestLock()`
