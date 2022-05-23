@@ -1,4 +1,4 @@
-import { ACT_JOB_STATUSES, ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
+import { ACT_JOB_STATUSES, ACT_JOB_TERMINAL_STATUSES, META_ORIGINS } from '@apify/consts';
 import { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
 import { ApiClientSubResourceOptions } from '../base/api_client';
@@ -157,6 +157,7 @@ export class ActorClient extends ResourceClient {
     lastRun(options: ActorLastRunOptions = {}): RunClient {
         ow(options, ow.object.exactShape({
             status: ow.optional.string.oneOf(Object.values(ACT_JOB_STATUSES)),
+            origin: ow.optional.string.oneOf(Object.values(META_ORIGINS)),
         }));
 
         return new RunClient(this._subResourceOptions({
