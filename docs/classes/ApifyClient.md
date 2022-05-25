@@ -19,7 +19,6 @@ JavaScript applications. It runs both in Node.js and browser.
 
 ### Methods
 
-- [\_options](ApifyClient.md#_options)
 - [actor](ApifyClient.md#actor)
 - [actors](ApifyClient.md#actors)
 - [build](ApifyClient.md#build)
@@ -84,22 +83,6 @@ ___
 • `Optional` **token**: `string`
 
 ## Methods
-
-### <a id="_options" name="_options"></a> \_options
-
-▸ `Private` **_options**(): `Object`
-
-#### Returns
-
-`Object`
-
-| Name | Type |
-| :------ | :------ |
-| `apifyClient` | [`ApifyClient`](ApifyClient.md) |
-| `baseUrl` | `string` |
-| `httpClient` | `HttpClient` |
-
-___
 
 ### <a id="actor" name="actor"></a> actor
 

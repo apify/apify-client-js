@@ -32,9 +32,6 @@ needed.
 
 ### Methods
 
-- [\_createApiStack](ApifyApiError.md#_createapistack)
-- [\_extractClientAndMethodFromStack](ApifyApiError.md#_extractclientandmethodfromstack)
-- [\_safelyParsePathFromResponse](ApifyApiError.md#_safelyparsepathfromresponse)
 - [captureStackTrace](ApifyApiError.md#capturestacktrace)
 
 ## Properties
@@ -175,55 +172,6 @@ ___
 Error.stackTraceLimit
 
 ## Methods
-
-### <a id="_createapistack" name="_createapistack"></a> \_createApiStack
-
-▸ `Private` **_createApiStack**(): `string`
-
-Creates a better looking and more informative stack that will be printed
-out when API errors are thrown.
-
-Example:
-
-ApifyApiError: Actor task was not found
-  clientMethod: TaskClient.start
-  statusCode: 404
-  type: record-not-found
-  attempt: 1
-  httpMethod: post
-  path: /v2/actor-tasks/user~my-task/runs
-
-#### Returns
-
-`string`
-
-___
-
-### <a id="_extractclientandmethodfromstack" name="_extractclientandmethodfromstack"></a> \_extractClientAndMethodFromStack
-
-▸ `Private` **_extractClientAndMethodFromStack**(): `string`
-
-#### Returns
-
-`string`
-
-___
-
-### <a id="_safelyparsepathfromresponse" name="_safelyparsepathfromresponse"></a> \_safelyParsePathFromResponse
-
-▸ `Private` **_safelyParsePathFromResponse**(`response`): `undefined` \| `string`
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `response` | `AxiosResponse`<`any`\> |
-
-#### Returns
-
-`undefined` \| `string`
-
-___
 
 ### <a id="capturestacktrace" name="capturestacktrace"></a> captureStackTrace
 
