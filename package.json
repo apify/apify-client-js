@@ -54,7 +54,7 @@
 		"lint:fix": "eslint src test --ext js,jsx,mjs,ts --fix",
 		"build:node": "tsc",
 		"build:browser": "webpack",
-		"build-docs": "npm run build-toc && typedoc --disableSources --excludeProtected --excludePrivate --entryDocument README.md --hideBreadcrumbs true --namedAnchors true --out docs src/index.ts src/apify_api_error.ts",
+		"build-docs": "typedoc --disableSources --excludeProtected --excludePrivate --hideBreadcrumbs true --namedAnchors true --out docs src/index.ts src/apify_api_error.ts",
 		"build-toc": "markdown-toc README.md -i"
 	},
 	"dependencies": {
