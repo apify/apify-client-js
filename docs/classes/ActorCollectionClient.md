@@ -1,7 +1,5 @@
 # Class: ActorCollectionClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceCollectionClient`
@@ -9,10 +7,6 @@
   ↳ **`ActorCollectionClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](ActorCollectionClient.md#constructor)
 
 ### Properties
 
@@ -36,22 +30,6 @@
 - [\_url](ActorCollectionClient.md#_url)
 - [create](ActorCollectionClient.md#create)
 - [list](ActorCollectionClient.md#list)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new ActorCollectionClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceCollectionClient.constructor
 
 ## Properties
 

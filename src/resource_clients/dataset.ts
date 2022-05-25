@@ -4,12 +4,12 @@ import { ResourceClient } from '../base/resource_client';
 import { ApifyResponse } from '../http_client';
 import { cast, PaginatedList } from '../utils';
 
-/**
- * @hideconstructor
- */
 export class DatasetClient<
     Data extends Record<string | number, unknown> = Record<string | number, unknown>
 > extends ResourceClient {
+    /**
+     * @ignore
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'datasets',

@@ -1,7 +1,5 @@
 # Class: WebhookDispatchClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceClient`
@@ -9,10 +7,6 @@
   ↳ **`WebhookDispatchClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](WebhookDispatchClient.md#constructor)
 
 ### Properties
 
@@ -36,22 +30,6 @@
 - [\_url](WebhookDispatchClient.md#_url)
 - [\_waitForFinish](WebhookDispatchClient.md#_waitforfinish)
 - [get](WebhookDispatchClient.md#get)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new WebhookDispatchClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceClient.constructor
 
 ## Properties
 

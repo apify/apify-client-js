@@ -1,7 +1,5 @@
 # Class: BuildCollectionClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceCollectionClient`
@@ -9,10 +7,6 @@
   ↳ **`BuildCollectionClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](BuildCollectionClient.md#constructor)
 
 ### Properties
 
@@ -35,22 +29,6 @@
 - [\_toSafeId](BuildCollectionClient.md#_tosafeid)
 - [\_url](BuildCollectionClient.md#_url)
 - [list](BuildCollectionClient.md#list)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new BuildCollectionClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientOptions` |
-
-#### Overrides
-
-ResourceCollectionClient.constructor
 
 ## Properties
 

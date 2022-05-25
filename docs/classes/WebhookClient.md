@@ -1,7 +1,5 @@
 # Class: WebhookClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceClient`
@@ -9,10 +7,6 @@
   ↳ **`WebhookClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](WebhookClient.md#constructor)
 
 ### Properties
 
@@ -40,22 +34,6 @@
 - [get](WebhookClient.md#get)
 - [test](WebhookClient.md#test)
 - [update](WebhookClient.md#update)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new WebhookClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceClient.constructor
 
 ## Properties
 

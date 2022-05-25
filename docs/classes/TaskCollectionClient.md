@@ -1,7 +1,5 @@
 # Class: TaskCollectionClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceCollectionClient`
@@ -9,10 +7,6 @@
   ↳ **`TaskCollectionClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](TaskCollectionClient.md#constructor)
 
 ### Properties
 
@@ -36,22 +30,6 @@
 - [\_url](TaskCollectionClient.md#_url)
 - [create](TaskCollectionClient.md#create)
 - [list](TaskCollectionClient.md#list)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new TaskCollectionClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceCollectionClient.constructor
 
 ## Properties
 

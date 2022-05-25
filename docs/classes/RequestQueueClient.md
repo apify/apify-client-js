@@ -1,7 +1,5 @@
 # Class: RequestQueueClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceClient`
@@ -9,10 +7,6 @@
   ↳ **`RequestQueueClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](RequestQueueClient.md#constructor)
 
 ### Properties
 
@@ -52,23 +46,6 @@
 - [prolongRequestLock](RequestQueueClient.md#prolongrequestlock)
 - [update](RequestQueueClient.md#update)
 - [updateRequest](RequestQueueClient.md#updaterequest)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new RequestQueueClient**(`options`, `userOptions?`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-| `userOptions` | [`RequestQueueUserOptions`](../interfaces/RequestQueueUserOptions.md) |
-
-#### Overrides
-
-ResourceClient.constructor
 
 ## Properties
 

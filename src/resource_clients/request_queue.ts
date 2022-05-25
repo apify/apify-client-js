@@ -18,14 +18,14 @@ const MAX_REQUESTS_PER_BATCH_OPERATION = 25;
 const DEFAULT_PARALLEL_BATCH_ADD_REQUESTS = 50;
 const DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS = 500;
 
-/**
- * @hideconstructor
- */
 export class RequestQueueClient extends ResourceClient {
     private clientKey?: string;
 
     private timeoutMillis?: number;
 
+    /**
+     * @ignore
+     */
     constructor(options: ApiClientSubResourceOptions, userOptions: RequestQueueUserOptions = {}) {
         super({
             resourcePath: 'request-queues',

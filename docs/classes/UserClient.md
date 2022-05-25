@@ -1,7 +1,5 @@
 # Class: UserClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceClient`
@@ -9,10 +7,6 @@
   ↳ **`UserClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](UserClient.md#constructor)
 
 ### Properties
 
@@ -36,22 +30,6 @@
 - [\_url](UserClient.md#_url)
 - [\_waitForFinish](UserClient.md#_waitforfinish)
 - [get](UserClient.md#get)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new UserClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceClient.constructor
 
 ## Properties
 

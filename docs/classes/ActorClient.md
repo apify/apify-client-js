@@ -1,7 +1,5 @@
 # Class: ActorClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceClient`
@@ -9,10 +7,6 @@
   ↳ **`ActorClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](ActorClient.md#constructor)
 
 ### Properties
 
@@ -47,22 +41,6 @@
 - [version](ActorClient.md#version)
 - [versions](ActorClient.md#versions)
 - [webhooks](ActorClient.md#webhooks)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new ActorClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceClient.constructor
 
 ## Properties
 

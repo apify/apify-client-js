@@ -1,7 +1,5 @@
 # Class: RunCollectionClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceCollectionClient`
@@ -9,10 +7,6 @@
   ↳ **`RunCollectionClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](RunCollectionClient.md#constructor)
 
 ### Properties
 
@@ -35,22 +29,6 @@
 - [\_toSafeId](RunCollectionClient.md#_tosafeid)
 - [\_url](RunCollectionClient.md#_url)
 - [list](RunCollectionClient.md#list)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new RunCollectionClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceCollectionClient.constructor
 
 ## Properties
 

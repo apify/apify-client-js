@@ -17,7 +17,6 @@ const CLIENT_METHOD_REGEX = /at( async)? ([A-Za-z]+(Collection)?Client)\._?([A-Z
  * errors and internal errors, which are automatically retried, or validation
  * errors, which are thrown immediately, because a correction by the user is
  * needed.
- * @hideconstructor
  */
 export class ApifyApiError extends Error {
     override name: string;
@@ -59,6 +58,9 @@ export class ApifyApiError extends Error {
      */
     originalStack: string;
 
+    /**
+     * @ignore
+     */
     constructor(response: AxiosResponse, attempt: number) {
         let message!: string;
         let type: string | undefined;

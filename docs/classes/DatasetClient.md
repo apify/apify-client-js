@@ -1,7 +1,5 @@
 # Class: DatasetClient<Data\>
 
-**`hideconstructor`**
-
 ## Type parameters
 
 | Name | Type |
@@ -15,10 +13,6 @@
   ↳ **`DatasetClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](DatasetClient.md#constructor)
 
 ### Properties
 
@@ -48,28 +42,6 @@
 - [listItems](DatasetClient.md#listitems)
 - [pushItems](DatasetClient.md#pushitems)
 - [update](DatasetClient.md#update)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new DatasetClient**<`Data`\>(`options`)
-
-#### Type parameters
-
-| Name | Type |
-| :------ | :------ |
-| `Data` | extends `Record`<`string` \| `number`, `unknown`\> = `Record`<`string` \| `number`, `unknown`\> |
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceClient.constructor
 
 ## Properties
 

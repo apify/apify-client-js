@@ -1,7 +1,5 @@
 # Class: ScheduleClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceClient`
@@ -9,10 +7,6 @@
   ↳ **`ScheduleClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](ScheduleClient.md#constructor)
 
 ### Properties
 
@@ -39,22 +33,6 @@
 - [get](ScheduleClient.md#get)
 - [getLog](ScheduleClient.md#getlog)
 - [update](ScheduleClient.md#update)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new ScheduleClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceClient.constructor
 
 ## Properties
 

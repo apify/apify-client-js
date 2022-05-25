@@ -1,10 +1,10 @@
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 
-/**
- * @hideconstructor
- */
 export class UserClient extends ResourceClient {
+    /**
+     * @ignore
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'users',

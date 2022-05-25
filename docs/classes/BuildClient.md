@@ -1,7 +1,5 @@
 # Class: BuildClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceClient`
@@ -9,10 +7,6 @@
   ↳ **`BuildClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](BuildClient.md#constructor)
 
 ### Properties
 
@@ -38,22 +32,6 @@
 - [abort](BuildClient.md#abort)
 - [get](BuildClient.md#get)
 - [waitForFinish](BuildClient.md#waitforfinish)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new BuildClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceClient.constructor
 
 ## Properties
 

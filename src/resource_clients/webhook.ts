@@ -13,10 +13,10 @@ import { ApifyApiError } from '../apify_api_error';
 import { WebhookDispatch } from './webhook_dispatch';
 import { ApifyRequestConfig } from '../http_client';
 
-/**
- * @hideconstructor
- */
 export class WebhookClient extends ResourceClient {
+    /**
+     * @ignore
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'webhooks',

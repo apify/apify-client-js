@@ -1,7 +1,5 @@
 # Class: ScheduleCollectionClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceCollectionClient`
@@ -9,10 +7,6 @@
   ↳ **`ScheduleCollectionClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](ScheduleCollectionClient.md#constructor)
 
 ### Properties
 
@@ -36,22 +30,6 @@
 - [\_url](ScheduleCollectionClient.md#_url)
 - [create](ScheduleCollectionClient.md#create)
 - [list](ScheduleCollectionClient.md#list)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new ScheduleCollectionClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceCollectionClient.constructor
 
 ## Properties
 

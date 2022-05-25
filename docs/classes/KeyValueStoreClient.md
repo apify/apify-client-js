@@ -1,7 +1,5 @@
 # Class: KeyValueStoreClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceClient`
@@ -9,10 +7,6 @@
   ↳ **`KeyValueStoreClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](KeyValueStoreClient.md#constructor)
 
 ### Properties
 
@@ -42,22 +36,6 @@
 - [listKeys](KeyValueStoreClient.md#listkeys)
 - [setRecord](KeyValueStoreClient.md#setrecord)
 - [update](KeyValueStoreClient.md#update)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new KeyValueStoreClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceClient.constructor
 
 ## Properties
 

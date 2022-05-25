@@ -1,7 +1,5 @@
 # Class: KeyValueStoreCollectionClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceCollectionClient`
@@ -9,10 +7,6 @@
   ↳ **`KeyValueStoreCollectionClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](KeyValueStoreCollectionClient.md#constructor)
 
 ### Properties
 
@@ -36,22 +30,6 @@
 - [\_url](KeyValueStoreCollectionClient.md#_url)
 - [getOrCreate](KeyValueStoreCollectionClient.md#getorcreate)
 - [list](KeyValueStoreCollectionClient.md#list)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new KeyValueStoreCollectionClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceCollectionClient.constructor
 
 ## Properties
 

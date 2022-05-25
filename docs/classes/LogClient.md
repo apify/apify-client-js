@@ -1,7 +1,5 @@
 # Class: LogClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceClient`
@@ -9,10 +7,6 @@
   ↳ **`LogClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](LogClient.md#constructor)
 
 ### Properties
 
@@ -37,22 +31,6 @@
 - [\_waitForFinish](LogClient.md#_waitforfinish)
 - [get](LogClient.md#get)
 - [stream](LogClient.md#stream)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new LogClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceClient.constructor
 
 ## Properties
 

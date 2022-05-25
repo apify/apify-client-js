@@ -5,10 +5,10 @@ import { PaginatedList } from '../utils';
 import { Actor } from './actor';
 import { ActorVersion } from './actor_version';
 
-/**
- * @hideconstructor
- */
 export class ActorCollectionClient extends ResourceCollectionClient {
+    /**
+     * @ignore
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'acts',

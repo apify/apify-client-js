@@ -1,7 +1,5 @@
 # Class: RequestQueueCollectionClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceCollectionClient`
@@ -9,10 +7,6 @@
   ↳ **`RequestQueueCollectionClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](RequestQueueCollectionClient.md#constructor)
 
 ### Properties
 
@@ -36,22 +30,6 @@
 - [\_url](RequestQueueCollectionClient.md#_url)
 - [getOrCreate](RequestQueueCollectionClient.md#getorcreate)
 - [list](RequestQueueCollectionClient.md#list)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new RequestQueueCollectionClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceCollectionClient.constructor
 
 ## Properties
 

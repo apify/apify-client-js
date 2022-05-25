@@ -1,7 +1,5 @@
 # Class: TaskClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceClient`
@@ -9,10 +7,6 @@
   ↳ **`TaskClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](TaskClient.md#constructor)
 
 ### Properties
 
@@ -45,22 +39,6 @@
 - [update](TaskClient.md#update)
 - [updateInput](TaskClient.md#updateinput)
 - [webhooks](TaskClient.md#webhooks)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new TaskClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientSubResourceOptions` |
-
-#### Overrides
-
-ResourceClient.constructor
 
 ## Properties
 

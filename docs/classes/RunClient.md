@@ -1,7 +1,5 @@
 # Class: RunClient
 
-**`hideconstructor`**
-
 ## Hierarchy
 
 - `ResourceClient`
@@ -9,10 +7,6 @@
   ↳ **`RunClient`**
 
 ## Table of contents
-
-### Constructors
-
-- [constructor](RunClient.md#constructor)
 
 ### Properties
 
@@ -44,22 +38,6 @@
 - [requestQueue](RunClient.md#requestqueue)
 - [resurrect](RunClient.md#resurrect)
 - [waitForFinish](RunClient.md#waitforfinish)
-
-## Constructors
-
-### <a id="constructor" name="constructor"></a> constructor
-
-• **new RunClient**(`options`)
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `options` | `ApiClientOptionsWithOptionalResourcePath` |
-
-#### Overrides
-
-ResourceClient.constructor
 
 ## Properties
 

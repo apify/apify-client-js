@@ -4,10 +4,10 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
 import { Schedule, ScheduleUpdateData } from './schedule';
 
-/**
- * @hideconstructor
- */
 export class ScheduleCollectionClient extends ResourceCollectionClient {
+    /**
+     * @ignore
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'schedules',
