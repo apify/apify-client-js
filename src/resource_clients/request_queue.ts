@@ -18,6 +18,7 @@ const MAX_REQUESTS_PER_BATCH_OPERATION = 25;
 // The number of 50 parallel requests seemed optimal, if it was higher it did not seem to bring any extra value.
 const DEFAULT_PARALLEL_BATCH_ADD_REQUESTS = 50;
 const DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS = 500;
+const DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT = 1000;
 
 /**
  * @hideconstructor
@@ -457,21 +458,25 @@ export class RequestQueueClient extends ResourceClient {
      * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
      *
      * Usage:
-     * for await (const request of client.listRequests({ limit: 10 })) {
-     *   console.log(request);
+     * for await (const { items } of client.paginateRequests({ limit: 10 })) {
+     *   items.forEach((request) => console.log(request));
      * }
      * @private
      * @experimental
      */
-    requests(options: RequestQueueClientListRequestsOptions = {}): RequestQueueRequestsAsyncIterable<RequestQueueClientListItem> {
+    paginateRequests(options: RequestQueueClientRequestsOptions = {}): RequestQueueRequestsAsyncIterable<RequestQueueClientListRequestsResult> {
         ow(options, ow.object.exactShape({
             limit: ow.optional.number,
+            maxPageLimit: ow.optional.number,
             exclusiveStartId: ow.optional.string,
         }));
-        const { limit, exclusiveStartId } = options;
-        const maxPageLimit = 100;
-        const getPage = this.listRequests.bind(this);
-        return new PaginationIterator({ getPage, limit, exclusiveStartId, maxPageLimit });
+        const { limit, exclusiveStartId, maxPageLimit = DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT } = options;
+        return new PaginationIterator({
+            getPage: this.listRequests.bind(this),
+            limit,
+            exclusiveStartId,
+            maxPageLimit,
+        });
     }
 }
 
@@ -522,6 +527,12 @@ export interface RequestQueueClientListHeadResult {
 
 export interface RequestQueueClientListRequestsOptions {
     limit?: number;
+    exclusiveStartId?: string;
+}
+
+export interface RequestQueueClientRequestsOptions {
+    limit?: number;
+    maxPageLimit?: number;
     exclusiveStartId?: string;
 }
 

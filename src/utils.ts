@@ -120,9 +120,56 @@ export function dynamicRequire(path: string): { version: string; } {
     return require(path);
 }
 
+/**
+ * Helper class to create async iterators from paginated list endpoints with exclusive start key.
+ */
+export class PaginationIterator {
+    private readonly maxPageLimit: number;
+
+    private readonly getPage: any;
+
+    private readonly limit?: number;
+
+    private readonly exclusiveStartId?: string;
+
+    constructor(options: PaginationIteratorOptions) {
+        this.maxPageLimit = options.maxPageLimit;
+        this.limit = options.limit;
+        this.exclusiveStartId = options.exclusiveStartId;
+        this.getPage = options.getPage;
+    }
+
+    async* [Symbol.asyncIterator]() {
+        let nextPageExclusiveStartId;
+        let iterateItemCount = 0;
+        while (true) {
+            const pageLimit = this.limit ? Math.min(this.maxPageLimit, this.limit - iterateItemCount) : this.maxPageLimit;
+            const pageExclusiveStartId: string|undefined = nextPageExclusiveStartId || this.exclusiveStartId;
+            const page: RequestQueueClientListRequestsResult = await this.getPage({
+                limit: pageLimit,
+                exclusiveStartId: pageExclusiveStartId,
+            });
+            // There are no more pages to iterate
+            if (page.items.length === 0) return;
+            yield page;
+            iterateItemCount += page.items.length;
+            // Limit reached stopping to iterate
+            if (this.limit && iterateItemCount >= this.limit) return;
+            nextPageExclusiveStartId = page.items[page.items.length - 1].id;
+        }
+    }
+}
+
 declare global {
     export const BROWSER_BUILD: boolean | undefined;
     export const VERSION: string | undefined;
+}
+
+export interface PaginationIteratorOptions {
+    maxPageLimit: number;
+    getPage: any;
+    limit?: number;
+    exclusiveStartId?: string;
 }
 
 export interface PaginatedList<Data extends unknown> {
@@ -145,43 +192,3 @@ export function cast<T>(input: unknown): T {
 }
 
 export type Dictionary<T = unknown> = Record<PropertyKey, T>;
-
-// TODO: Types, comments, tests and stuff
-export class PaginationIterator {
-    private readonly maxPageLimit: number;
-
-    private readonly getPage: any;
-
-    private readonly limit?: number;
-
-    private readonly exclusiveStartId?: string;
-
-    constructor(options: any = {}) {
-        this.maxPageLimit = options.maxPageLimit;
-        this.limit = options.limit;
-        this.exclusiveStartId = options.exclusiveStartId;
-        this.getPage = options.getPage;
-    }
-
-    async* [Symbol.asyncIterator]() {
-        let nextPageExclusiveStartId;
-        let iterateItemCount = 0;
-        while (true) {
-            const pageLimit = this.limit ? Math.min(this.maxPageLimit, this.limit - iterateItemCount) : this.maxPageLimit;
-            const pageExclusiveStartId: string|undefined = nextPageExclusiveStartId && this.exclusiveStartId;
-            const pagination: RequestQueueClientListRequestsResult = await this.getPage({
-                limit: pageLimit,
-                exclusiveStartId: pageExclusiveStartId,
-            });
-            // There are no more items to iterate
-            if (!pagination.items.length) return;
-            for await (const item of pagination.items) {
-                yield item;
-                iterateItemCount++;
-            }
-            // Limit reached stopping to iterate
-            if (this.limit && iterateItemCount >= this.limit) return;
-            nextPageExclusiveStartId = pagination.items[pagination.items.length - 1].id;
-        }
-    }
-}
