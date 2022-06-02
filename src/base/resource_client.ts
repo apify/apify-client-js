@@ -1,4 +1,4 @@
-import { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
+import { ACT_JOB_STATUSES, ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 import { ApiClient } from './api_client';
 import {
     pluckData,
@@ -62,7 +62,9 @@ export class ResourceClient extends ApiClient {
      * This function is used in Build and Run endpoints so it's kept
      * here to stay DRY.
      */
-    protected async _waitForFinish<R extends { status: typeof ACT_JOB_TERMINAL_STATUSES[number]; }>(options: WaitForFinishOptions = {}): Promise<R> {
+    protected async _waitForFinish<
+        R extends { status: typeof ACT_JOB_STATUSES[keyof typeof ACT_JOB_STATUSES]; }
+    >(options: WaitForFinishOptions = {}): Promise<R> {
         const {
             waitSecs = MAX_WAIT_FOR_FINISH,
         } = options;
@@ -73,7 +75,7 @@ export class ResourceClient extends ApiClient {
         const shouldRepeat = () => {
             const millisSinceStart = Date.now() - startedAt;
             if (millisSinceStart >= waitMillis) return false;
-            const hasJobEnded = job && ACT_JOB_TERMINAL_STATUSES.includes(job.status);
+            const hasJobEnded = job && ACT_JOB_TERMINAL_STATUSES.includes(job.status as typeof ACT_JOB_TERMINAL_STATUSES[number]);
             return !hasJobEnded;
         };
 
