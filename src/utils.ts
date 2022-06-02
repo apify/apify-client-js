@@ -4,7 +4,10 @@ import zlib from 'zlib';
 import type { TypedArray, JsonValue } from 'type-fest';
 import { ApifyApiError } from './apify_api_error';
 import { WebhookUpdateData } from './resource_clients/webhook';
-import { RequestQueueClientListRequestsResult } from './resource_clients/request_queue';
+import {
+    RequestQueueClientListRequestsOptions,
+    RequestQueueClientListRequestsResult,
+} from './resource_clients/request_queue';
 
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
 const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
@@ -126,7 +129,7 @@ export function dynamicRequire(path: string): { version: string; } {
 export class PaginationIterator {
     private readonly maxPageLimit: number;
 
-    private readonly getPage: any;
+    private readonly getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<RequestQueueClientListRequestsResult>;
 
     private readonly limit?: number;
 
@@ -139,12 +142,12 @@ export class PaginationIterator {
         this.getPage = options.getPage;
     }
 
-    async* [Symbol.asyncIterator]() {
+    async* [Symbol.asyncIterator](): AsyncIterator<RequestQueueClientListRequestsResult> {
         let nextPageExclusiveStartId;
         let iterateItemCount = 0;
         while (true) {
             const pageLimit = this.limit ? Math.min(this.maxPageLimit, this.limit - iterateItemCount) : this.maxPageLimit;
-            const pageExclusiveStartId: string|undefined = nextPageExclusiveStartId || this.exclusiveStartId;
+            const pageExclusiveStartId = nextPageExclusiveStartId || this.exclusiveStartId;
             const page: RequestQueueClientListRequestsResult = await this.getPage({
                 limit: pageLimit,
                 exclusiveStartId: pageExclusiveStartId,
@@ -167,7 +170,7 @@ declare global {
 
 export interface PaginationIteratorOptions {
     maxPageLimit: number;
-    getPage: any;
+    getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<RequestQueueClientListRequestsResult>;
     limit?: number;
     exclusiveStartId?: string;
 }
