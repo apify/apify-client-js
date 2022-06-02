@@ -1,4 +1,4 @@
-import { ACT_JOB_STATUSES, ACT_JOB_TERMINAL_STATUSES, META_ORIGINS } from '@apify/consts';
+import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
 import { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
 import { ApiClientSubResourceOptions } from '../base/api_client';
@@ -316,7 +316,7 @@ export interface ActorRun {
     actorTaskId?: string;
     startedAt: Date;
     finishedAt: Date;
-    status: typeof ACT_JOB_TERMINAL_STATUSES[number];
+    status: typeof ACT_JOB_STATUSES[keyof typeof ACT_JOB_STATUSES];
     meta: ActorRunMeta;
     stats: ActorRunStats;
     options: ActorRunOptions;
