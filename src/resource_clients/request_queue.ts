@@ -464,7 +464,9 @@ export class RequestQueueClient extends ResourceClient {
      * @private
      * @experimental
      */
-    paginateRequests(options: RequestQueueClientPaginateRequestsOptions = {}): RequestQueueRequestsAsyncIterable<RequestQueueClientListRequestsResult> {
+    paginateRequests(
+        options: RequestQueueClientPaginateRequestsOptions = {},
+    ): RequestQueueRequestsAsyncIterable<RequestQueueClientListRequestsResult> {
         ow(options, ow.object.exactShape({
             limit: ow.optional.number,
             maxPageLimit: ow.optional.number,
@@ -530,7 +532,7 @@ export interface RequestQueueClientListRequestsOptions {
     exclusiveStartId?: string;
 }
 
-export interface RequestQueueClientRequestsOptions {
+export interface RequestQueueClientPaginateRequestsOptions {
     limit?: number;
     maxPageLimit?: number;
     exclusiveStartId?: string;
@@ -539,7 +541,7 @@ export interface RequestQueueClientRequestsOptions {
 export interface RequestQueueClientListRequestsResult {
     limit: number;
     exclusiveStartId?: string;
-    items: RequestQueueClientListItem[];
+    items: RequestQueueClientRequestSchema[];
 }
 
 export interface RequestQueueClientListAndLockHeadOptions {
