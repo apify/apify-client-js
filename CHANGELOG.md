@@ -1,3 +1,14 @@
+2.5.1 / 2022/06/06
+===================
+- Add methods to list all requests in queue, `requestQueueClient.listRequests()` and `requestQueueClient.paginateRequests()`.
+  The paginate requests returns async iterator, you can use it:
+```
+for await (const page of rqClient.paginateRequests()) {
+  // Do something with page.items
+}
+```
+- Fix ActorRun - correct type for `status`
+
 2.5.0 / 2022/05/23
 ===================
 - Add `origin` param to the last actor/task run endpoints
