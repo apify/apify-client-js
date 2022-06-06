@@ -407,5 +407,60 @@ describe('Request Queue methods', () => {
             expect(browserRes).toEqual(res);
             validateRequest({}, { queueId, requestId });
         });
+
+        test('listRequests() works', async () => {
+            const queueId = 'some-id';
+            const options = { limit: 5, exclusiveStartId: '123' };
+
+            const res = await client.requestQueue(queueId).listRequests(options);
+            expect(res.id).toEqual('list-requests');
+            validateRequest(options, { queueId });
+
+            const browserRes = await page.evaluate((id, opts) => client.requestQueue(id).listRequests(opts), queueId, options);
+            expect(browserRes).toEqual(res);
+            validateRequest(options, { queueId });
+        });
+
+        test('paginateRequests() works', async () => {
+            const queueId = 'some-id';
+            const maxPageLimit = 90;
+            const requests = new Array(1000).fill(0).map((_, i) => ({ id: i.toString() }));
+            const mockResponse = (items) => {
+                mockServer.setResponse({
+                    statusCode: 200,
+                    body: {
+                        data: {
+                            items,
+                        },
+                    },
+                });
+            };
+
+            const pagination = client.requestQueue(queueId).paginateRequests({ maxPageLimit });
+            // Mock API call for the first page
+            let expectedItemsInPage = requests.splice(0, maxPageLimit);
+            let expectedExclusiveStartId;
+            mockResponse(expectedItemsInPage);
+            for await (const { items } of pagination) {
+                expect(items).toEqual(expectedItemsInPage);
+                // Validate the request for the current iteration page
+                validateRequest({ exclusiveStartId: expectedExclusiveStartId, limit: maxPageLimit }, { queueId });
+                // Prepare expectations and mock request for the next iteration page
+                expectedExclusiveStartId = items[items.length - 1].id;
+                expectedItemsInPage = requests.splice(0, maxPageLimit);
+                mockResponse(expectedItemsInPage);
+            }
+
+            const browserRequests = [{ id: 'aaa' }];
+            mockResponse(browserRequests);
+            const browserRes = await page.evaluate(async (id, mpl) => {
+                const pgn = client.requestQueue(id).paginateRequests({ maxPageLimit: mpl });
+                for await (const browserPage of pgn) {
+                    return browserPage;
+                }
+            }, queueId, maxPageLimit);
+            expect(browserRes.items).toEqual(browserRequests);
+            validateRequest({ limit: maxPageLimit }, { queueId });
+        });
     });
 });

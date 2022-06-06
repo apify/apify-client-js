@@ -10,6 +10,7 @@ import {
     parseDateFields,
     catchNotFoundOrThrow,
     cast,
+    PaginationIterator,
 } from '../utils';
 
 // TODO: Move to apify shared consts, when all batch requests operations will implemented.
@@ -17,6 +18,7 @@ const MAX_REQUESTS_PER_BATCH_OPERATION = 25;
 // The number of 50 parallel requests seemed optimal, if it was higher it did not seem to bring any extra value.
 const DEFAULT_PARALLEL_BATCH_ADD_REQUESTS = 50;
 const DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS = 500;
+const DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT = 1000;
 
 /**
  * @hideconstructor
@@ -425,6 +427,59 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
     }
+
+    /**
+     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
+     *
+     * @private
+     * @experimental
+     */
+    async listRequests(options: RequestQueueClientListRequestsOptions = {}): Promise<RequestQueueClientListRequestsResult> {
+        ow(options, ow.object.exactShape({
+            limit: ow.optional.number,
+            exclusiveStartId: ow.optional.string,
+        }));
+
+        const response = await this.httpClient.call({
+            url: this._url('requests'),
+            method: 'GET',
+            timeout: this.timeoutMillis,
+            params: this._params({
+                limit: options.limit,
+                exclusiveStartId: options.exclusiveStartId,
+                clientKey: this.clientKey,
+            }),
+        });
+
+        return cast(parseDateFields(pluckData(response.data)));
+    }
+
+    /**
+     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
+     *
+     * Usage:
+     * for await (const { items } of client.paginateRequests({ limit: 10 })) {
+     *   items.forEach((request) => console.log(request));
+     * }
+     * @private
+     * @experimental
+     */
+    paginateRequests(
+        options: RequestQueueClientPaginateRequestsOptions = {},
+    ): RequestQueueRequestsAsyncIterable<RequestQueueClientListRequestsResult> {
+        ow(options, ow.object.exactShape({
+            limit: ow.optional.number,
+            maxPageLimit: ow.optional.number,
+            exclusiveStartId: ow.optional.string,
+        }));
+        const { limit, exclusiveStartId, maxPageLimit = DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT } = options;
+        return new PaginationIterator({
+            getPage: this.listRequests.bind(this),
+            limit,
+            exclusiveStartId,
+            maxPageLimit,
+        });
+    }
 }
 
 export interface RequestQueueUserOptions {
@@ -470,6 +525,23 @@ export interface RequestQueueClientListHeadResult {
     queueModifiedAt: Date;
     hadMultipleClients: boolean;
     items: RequestQueueClientListItem[];
+}
+
+export interface RequestQueueClientListRequestsOptions {
+    limit?: number;
+    exclusiveStartId?: string;
+}
+
+export interface RequestQueueClientPaginateRequestsOptions {
+    limit?: number;
+    maxPageLimit?: number;
+    exclusiveStartId?: string;
+}
+
+export interface RequestQueueClientListRequestsResult {
+    limit: number;
+    exclusiveStartId?: string;
+    items: RequestQueueClientRequestSchema[];
 }
 
 export interface RequestQueueClientListAndLockHeadOptions {
@@ -558,3 +630,5 @@ export type RequestQueueClientRequestToDelete = Pick<RequestQueueClientRequestSc
 export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem, 'retryCount'>
 
 export type AllowedHttpMethods = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'TRACE' | 'OPTIONS' | 'CONNECT' | 'PATCH'
+
+export type RequestQueueRequestsAsyncIterable<T> = AsyncIterable<T>

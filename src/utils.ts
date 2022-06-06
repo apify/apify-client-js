@@ -4,6 +4,10 @@ import zlib from 'zlib';
 import type { TypedArray, JsonValue } from 'type-fest';
 import { ApifyApiError } from './apify_api_error';
 import { WebhookUpdateData } from './resource_clients/webhook';
+import {
+    RequestQueueClientListRequestsOptions,
+    RequestQueueClientListRequestsResult,
+} from './resource_clients/request_queue';
 
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
 const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
@@ -119,9 +123,56 @@ export function dynamicRequire(path: string): { version: string; } {
     return require(path);
 }
 
+/**
+ * Helper class to create async iterators from paginated list endpoints with exclusive start key.
+ */
+export class PaginationIterator {
+    private readonly maxPageLimit: number;
+
+    private readonly getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<RequestQueueClientListRequestsResult>;
+
+    private readonly limit?: number;
+
+    private readonly exclusiveStartId?: string;
+
+    constructor(options: PaginationIteratorOptions) {
+        this.maxPageLimit = options.maxPageLimit;
+        this.limit = options.limit;
+        this.exclusiveStartId = options.exclusiveStartId;
+        this.getPage = options.getPage;
+    }
+
+    async* [Symbol.asyncIterator](): AsyncIterator<RequestQueueClientListRequestsResult> {
+        let nextPageExclusiveStartId;
+        let iterateItemCount = 0;
+        while (true) {
+            const pageLimit = this.limit ? Math.min(this.maxPageLimit, this.limit - iterateItemCount) : this.maxPageLimit;
+            const pageExclusiveStartId = nextPageExclusiveStartId || this.exclusiveStartId;
+            const page: RequestQueueClientListRequestsResult = await this.getPage({
+                limit: pageLimit,
+                exclusiveStartId: pageExclusiveStartId,
+            });
+            // There are no more pages to iterate
+            if (page.items.length === 0) return;
+            yield page;
+            iterateItemCount += page.items.length;
+            // Limit reached stopping to iterate
+            if (this.limit && iterateItemCount >= this.limit) return;
+            nextPageExclusiveStartId = page.items[page.items.length - 1].id;
+        }
+    }
+}
+
 declare global {
     export const BROWSER_BUILD: boolean | undefined;
     export const VERSION: string | undefined;
+}
+
+export interface PaginationIteratorOptions {
+    maxPageLimit: number;
+    getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<RequestQueueClientListRequestsResult>;
+    limit?: number;
+    exclusiveStartId?: string;
 }
 
 export interface PaginatedList<Data extends unknown> {
