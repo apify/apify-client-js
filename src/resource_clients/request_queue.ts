@@ -15,8 +15,8 @@ import {
 
 // TODO: Move to apify shared consts, when all batch requests operations will implemented.
 const MAX_REQUESTS_PER_BATCH_OPERATION = 25;
-// The number of 50 parallel requests seemed optimal, if it was higher it did not seem to bring any extra value.
-const DEFAULT_PARALLEL_BATCH_ADD_REQUESTS = 50;
+const DEFAULT_PARALLEL_BATCH_ADD_REQUESTS = 5;
+const DEFAULT_UNPROCESSED_RETRIES_BATCH_ADD_REQUESTS = 3;
 const DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS = 500;
 const DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT = 1000;
 
@@ -176,7 +176,7 @@ export class RequestQueueClient extends ResourceClient {
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
         const {
             forefront,
-            maxUnprocessedRequestsRetries = 0,
+            maxUnprocessedRequestsRetries = DEFAULT_UNPROCESSED_RETRIES_BATCH_ADD_REQUESTS,
             minDelayBetweenUnprocessedRequestsRetriesMillis = DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS,
         } = options;
         // Keep track of the requests that remain to be processed (in parameter format)
@@ -244,7 +244,7 @@ export class RequestQueueClient extends ResourceClient {
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
         const {
             forefront,
-            maxUnprocessedRequestsRetries = 0,
+            maxUnprocessedRequestsRetries = DEFAULT_UNPROCESSED_RETRIES_BATCH_ADD_REQUESTS,
             maxParallel = DEFAULT_PARALLEL_BATCH_ADD_REQUESTS,
             minDelayBetweenUnprocessedRequestsRetriesMillis = DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS,
         } = options;
