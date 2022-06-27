@@ -15,6 +15,7 @@ import {
     isNode,
     dynamicRequire,
     cast,
+    isStream,
 } from './utils';
 import { Statistics } from './statistics';
 
@@ -140,6 +141,9 @@ export class HttpClient {
             this.stats.requests++;
             let response: ApifyResponse;
             try {
+                if (isStream(config.data)) {
+                    config = { ...config, maxRedirects: 0 };
+                }
                 response = await this.axios.request(config);
                 if (this._isStatusOk(response.status)) return response;
             } catch (err) {
@@ -151,7 +155,7 @@ export class HttpClient {
             }
 
             const apiError = new ApifyApiError(response, attempt);
-            if (this._isStatusCodeRetryable(response.status)) {
+            if (this._isStatusCodeRetryable(response.status) && config.maxRedirects !== 0) {
                 throw apiError;
             } else {
                 stopTrying(apiError);
@@ -172,7 +176,8 @@ export class HttpClient {
      * Apify API typed errors. E.g. network errors, timeouts and so on.
      */
     private _handleRequestError(err: AxiosError, config: ApifyRequestConfig, stopTrying: (e: Error) => void) {
-        if (this._isTimeoutError(err) && config.doNotRetryTimeouts) {
+        // maxRedirects = 0 means that the body can only be consumed once, and therefore no retries are possible
+        if ((this._isTimeoutError(err) && config.doNotRetryTimeouts) || config.maxRedirects === 0) {
             return stopTrying(err);
         }
 
