@@ -124,6 +124,14 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
+     * The value in the record can be a stream object (detected by having the `.pipe`
+     * and `.on` methods). However, note that in that case following redirects or
+     * retrying the request if it fails (for example due to rate limiting) isn't
+     * possible. If you want to keep that behavior, you need to collect the whole
+     * stream contents into a Buffer and then send the full buffer. See [this
+     * StackOverflow answer](https://stackoverflow.com/a/14269536/7292139) for
+     * an example how to do that.
+     *
      * https://docs.apify.com/api/v2#/reference/key-value-stores/record/put-record
      */
     async setRecord(record: KeyValueStoreRecord<JsonValue>): Promise<void> {
