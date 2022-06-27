@@ -1,3 +1,7 @@
+2.5.2 / 2022/06/27
+===================
+- Adjust default parallels and retries for batch add requests
+
 2.5.1 / 2022/06/06
 ===================
 - Add methods to list all requests in queue, `requestQueueClient.listRequests()` and `requestQueueClient.paginateRequests()`.
