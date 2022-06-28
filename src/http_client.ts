@@ -140,8 +140,9 @@ export class HttpClient {
         const makeRequest: RetryFunction<ApifyResponse> = async (stopTrying, attempt) => {
             this.stats.requests++;
             let response: ApifyResponse;
+            const requestIsStream = isStream(config.data);
             try {
-                if (isStream(config.data)) {
+                if (requestIsStream) {
                     config = { ...config, maxRedirects: 0 };
                 }
                 response = await this.axios.request(config);
@@ -155,7 +156,8 @@ export class HttpClient {
             }
 
             const apiError = new ApifyApiError(response, attempt);
-            if (this._isStatusCodeRetryable(response.status) && config.maxRedirects !== 0) {
+            if (!requestIsStream && this._isStatusCodeRetryable(response.status)) {
+                // allow a retry
                 throw apiError;
             } else {
                 stopTrying(apiError);
@@ -176,8 +178,7 @@ export class HttpClient {
      * Apify API typed errors. E.g. network errors, timeouts and so on.
      */
     private _handleRequestError(err: AxiosError, config: ApifyRequestConfig, stopTrying: (e: Error) => void) {
-        // maxRedirects = 0 means that the body can only be consumed once, and therefore no retries are possible
-        if ((this._isTimeoutError(err) && config.doNotRetryTimeouts) || config.maxRedirects === 0) {
+        if ((this._isTimeoutError(err) && config.doNotRetryTimeouts) || isStream(config.data)) {
             return stopTrying(err);
         }
 
