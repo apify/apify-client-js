@@ -167,15 +167,15 @@ export class HttpClient {
             }
 
             const apiError = new ApifyApiError(response, attempt);
-            if (!requestIsStream && this._isStatusCodeRetryable(response.status)) {
-                // allow a retry
-                throw apiError;
-            } else {
+            if (this._isStatusCodeRetryable(response.status)) {
                 if (requestIsStream) {
                     this._informAboutStreamNoRetry();
+                } else {
+                    // allow a retry
+                    throw apiError;
                 }
-                stopTrying(apiError);
             }
+            stopTrying(apiError);
 
             return response;
         };
@@ -192,19 +192,18 @@ export class HttpClient {
      * Apify API typed errors. E.g. network errors, timeouts and so on.
      */
     private _handleRequestError(err: AxiosError, config: ApifyRequestConfig, stopTrying: (e: Error) => void) {
-        if (isStream(config.data)) {
-            this._informAboutStreamNoRetry();
-            return stopTrying(err);
-        }
         if (this._isTimeoutError(err) && config.doNotRetryTimeouts) {
             return stopTrying(err);
         }
 
         if (this._isRetryableError(err)) {
-            throw err;
-        } else {
-            return stopTrying(err);
+            if (isStream(config.data)) {
+                this._informAboutStreamNoRetry();
+            } else {
+                throw err;
+            }
         }
+        return stopTrying(err);
     }
 
     /**
