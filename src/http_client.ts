@@ -23,6 +23,8 @@ const { version } = dynamicRequire('../package.json');
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 
+let warnedAboutStreamNoRetry = false;
+
 export class HttpClient {
     stats: Statistics;
 
@@ -131,6 +133,15 @@ export class HttpClient {
         });
     }
 
+    private _informAboutStreamNoRetry() {
+        // using a module-global variable to only warn once per whole process
+        if (!warnedAboutStreamNoRetry) {
+            warnedAboutStreamNoRetry = true;
+            this.logger.warning('Request body was a stream - retrying will not work, as part of it was already consumed.');
+            this.logger.info('If you want the SDK to handle retries, collect the stream into a buffer before sending it.');
+        }
+    }
+
     /**
      * Successful responses are returned, errors and unsuccessful
      * status codes are retried. See the following functions for the
@@ -160,6 +171,9 @@ export class HttpClient {
                 // allow a retry
                 throw apiError;
             } else {
+                if (requestIsStream) {
+                    this._informAboutStreamNoRetry();
+                }
                 stopTrying(apiError);
             }
 
@@ -178,7 +192,11 @@ export class HttpClient {
      * Apify API typed errors. E.g. network errors, timeouts and so on.
      */
     private _handleRequestError(err: AxiosError, config: ApifyRequestConfig, stopTrying: (e: Error) => void) {
-        if ((this._isTimeoutError(err) && config.doNotRetryTimeouts) || isStream(config.data)) {
+        if (isStream(config.data)) {
+            this._informAboutStreamNoRetry();
+            return stopTrying(err);
+        }
+        if (this._isTimeoutError(err) && config.doNotRetryTimeouts) {
             return stopTrying(err);
         }
 
