@@ -23,8 +23,6 @@ const { version } = dynamicRequire('../package.json');
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 
-let warnedAboutStreamNoRetry = false;
-
 export class HttpClient {
     stats: Statistics;
 
@@ -134,12 +132,8 @@ export class HttpClient {
     }
 
     private _informAboutStreamNoRetry() {
-        // using a module-global variable to only warn once per whole process
-        if (!warnedAboutStreamNoRetry) {
-            warnedAboutStreamNoRetry = true;
-            this.logger.warning('Request body was a stream - retrying will not work, as part of it was already consumed.');
-            this.logger.info('If you want the SDK to handle retries, collect the stream into a buffer before sending it.');
-        }
+        this.logger.warning('Request body was a stream - retrying will not work, as part of it was already consumed.');
+        this.logger.info('If you want the SDK to handle retries, collect the stream into a buffer before sending it.');
     }
 
     /**
