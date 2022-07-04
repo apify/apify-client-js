@@ -1,3 +1,7 @@
+2.6.0 / 2022/07/XX
+==================
+- Add `setStatusMessage` method for setting custom status messages on runs.
+
 2.5.2 / 2022/06/27
 ===================
 - Adjust default parallels and retries for batch add requests

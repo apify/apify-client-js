@@ -317,6 +317,7 @@ export interface ActorRun {
     startedAt: Date;
     finishedAt: Date;
     status: typeof ACT_JOB_STATUSES[keyof typeof ACT_JOB_STATUSES];
+    statusMessage?: string;
     meta: ActorRunMeta;
     stats: ActorRunStats;
     options: ActorRunOptions;

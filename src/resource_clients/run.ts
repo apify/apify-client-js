@@ -92,6 +92,12 @@ export class RunClient extends ResourceClient {
         return cast(parseDateFields(pluckData(response.data)));
     }
 
+    async setStatusMessage(message: string) : Promise<ActorRun> {
+        return this._update({
+            statusMessage: message,
+        });
+    }
+
     /**
      * https://docs.apify.com/api/v2#/reference/actor-runs/resurrect-run/resurrect-run
      */
