@@ -92,7 +92,7 @@ export class RunClient extends ResourceClient {
         return cast(parseDateFields(pluckData(response.data)));
     }
 
-    async setStatusMessage(message?: string) : Promise<ActorRun> {
+    async setStatusMessage(message: string) : Promise<ActorRun> {
         return this._update({
             statusMessage: message,
         });
