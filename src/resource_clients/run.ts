@@ -92,10 +92,10 @@ export class RunClient extends ResourceClient {
         return cast(parseDateFields(pluckData(response.data)));
     }
 
-    async setStatusMessage(message: string) : Promise<ActorRun> {
-        return this._update({
-            statusMessage: message,
-        });
+    async update(newFields: RunUpdateOptions) : Promise<ActorRun> {
+        ow(newFields, ow.object);
+
+        return this._update(newFields);
     }
 
     /**
@@ -197,6 +197,9 @@ export interface RunAbortOptions {
 export interface RunMetamorphOptions {
     contentType?: string;
     build?: string;
+}
+export interface RunUpdateOptions {
+    statusMessage?: string;
 }
 
 export interface RunResurrectOptions {

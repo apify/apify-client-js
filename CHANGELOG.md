@@ -1,6 +1,6 @@
 2.6.0 / 2022/07/XX
 ==================
-- Add `setStatusMessage` method for setting custom status messages on runs.
+- Add `run.update()` method for setting fields on runs.
 
 2.5.2 / 2022/06/27
 ===================
