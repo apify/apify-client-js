@@ -132,8 +132,8 @@ export class HttpClient {
     }
 
     private _informAboutStreamNoRetry() {
-        this.logger.warning('Request body was a stream - retrying will not work, as part of it was already consumed.');
-        this.logger.info('If you want the SDK to handle retries, collect the stream into a buffer before sending it.');
+        this.logger.warningOnce('Request body was a stream - retrying will not work, as part of it was already consumed.');
+        this.logger.warningOnce('If you want the SDK to handle retries, collect the stream into a buffer before sending it.');
     }
 
     /**
