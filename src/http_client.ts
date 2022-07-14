@@ -148,6 +148,9 @@ export class HttpClient {
             const requestIsStream = isStream(config.data);
             try {
                 if (requestIsStream) {
+                    // Handling redirects is not possible without buffering - part of the stream has already been sent and can't be recovered
+                    // when server sends the redirect. Therefore we need to override this in Axios config to prevent it from buffering the body.
+                    // see also axios/axios#1045
                     config = { ...config, maxRedirects: 0 };
                 }
                 response = await this.axios.request(config);
