@@ -39,9 +39,9 @@ export function maybeParseBody(body: Buffer | ArrayBuffer, contentTypeHeader: st
     return contentType === CONTENT_TYPE_JSON
         ? JSON.parse(dataString)
         : dataString;
-};
+}
 
-function isomorphicBufferToString(buffer: Buffer | ArrayBuffer, encoding: BufferEncoding): string {
+export function isomorphicBufferToString(buffer: Buffer | ArrayBuffer, encoding: BufferEncoding): string {
     if (buffer.constructor.name !== ArrayBuffer.name) {
         return buffer.toString(encoding);
     }
