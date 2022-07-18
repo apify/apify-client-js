@@ -1,6 +1,8 @@
-2.6.0 / 2022/07/XX
+2.6.0 / 2022/07/18
 ==================
-- Add `run.update()` method for setting fields on runs.
+- Add `run.update()` method for setting fields on runs. You can update statusMessage of run using this method.
+- Fix parsing ApifyError for method called with `forceBuffer` param to `true`.
+- Fix stream support, related with axios/axios#1045
 
 2.5.2 / 2022/06/27
 ===================
