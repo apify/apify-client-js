@@ -15,6 +15,7 @@ import {
     isNode,
     dynamicRequire,
     cast,
+    isStream,
 } from './utils';
 import { Statistics } from './statistics';
 
@@ -130,6 +131,11 @@ export class HttpClient {
         });
     }
 
+    private _informAboutStreamNoRetry() {
+        this.logger.warningOnce('Request body was a stream - retrying will not work, as part of it was already consumed.');
+        this.logger.warningOnce('If you want Apify client to handle retries for you, collect the stream into a buffer before sending it.');
+    }
+
     /**
      * Successful responses are returned, errors and unsuccessful
      * status codes are retried. See the following functions for the
@@ -139,7 +145,14 @@ export class HttpClient {
         const makeRequest: RetryFunction<ApifyResponse> = async (stopTrying, attempt) => {
             this.stats.requests++;
             let response: ApifyResponse;
+            const requestIsStream = isStream(config.data);
             try {
+                if (requestIsStream) {
+                    // Handling redirects is not possible without buffering - part of the stream has already been sent and can't be recovered
+                    // when server sends the redirect. Therefore we need to override this in Axios config to prevent it from buffering the body.
+                    // see also axios/axios#1045
+                    config = { ...config, maxRedirects: 0 };
+                }
                 response = await this.axios.request(config);
                 if (this._isStatusOk(response.status)) return response;
             } catch (err) {
@@ -152,10 +165,14 @@ export class HttpClient {
 
             const apiError = new ApifyApiError(response, attempt);
             if (this._isStatusCodeRetryable(response.status)) {
-                throw apiError;
-            } else {
-                stopTrying(apiError);
+                if (requestIsStream) {
+                    this._informAboutStreamNoRetry();
+                } else {
+                    // allow a retry
+                    throw apiError;
+                }
             }
+            stopTrying(apiError);
 
             return response;
         };
@@ -177,10 +194,13 @@ export class HttpClient {
         }
 
         if (this._isRetryableError(err)) {
-            throw err;
-        } else {
-            return stopTrying(err);
+            if (isStream(config.data)) {
+                this._informAboutStreamNoRetry();
+            } else {
+                throw err;
+            }
         }
+        return stopTrying(err);
     }
 
     /**
