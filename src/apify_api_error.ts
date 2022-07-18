@@ -1,4 +1,6 @@
 import { AxiosResponse } from 'axios';
+import { isomorphicBufferToString } from './body_parser';
+import { isBuffer } from './utils';
 
 /**
  * Examples of capturing groups for "...at ActorCollectionClient._list (/Users/..."
@@ -62,16 +64,28 @@ export class ApifyApiError extends Error {
     constructor(response: AxiosResponse, attempt: number) {
         let message!: string;
         let type: string | undefined;
-        if (response.data && response.data.error) {
-            const { error } = response.data;
+        let responseData = response.data;
+
+        // Some methods (e.g. downloadItems) set up forceBuffer on request response. If this request failed
+        // the body buffer needs to parse to get the correct error.
+        if (isBuffer(responseData)) {
+            try {
+                responseData = JSON.parse(isomorphicBufferToString(response.data, 'utf-8'));
+            } catch (e) {
+                // This can happen. The data in the response body are malformed.
+            }
+        }
+
+        if (responseData && responseData.error) {
+            const { error } = responseData;
             message = error.message;
             type = error.type;
-        } else if (response.data) {
+        } else if (responseData) {
             let dataString;
             try {
-                dataString = JSON.stringify(response.data, null, 2);
+                dataString = JSON.stringify(responseData, null, 2);
             } catch (err) {
-                dataString = `${response.data}`;
+                dataString = `${responseData}`;
             }
             message = `Unexpected error: ${dataString}`;
         }
