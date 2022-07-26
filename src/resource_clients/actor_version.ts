@@ -61,13 +61,11 @@ export interface BaseActorVersion<SourceType extends ActorSourceType> {
     versionNumber?: string;
     sourceType: SourceType;
     envVars?: ActorEnvironmentVariable[];
-    baseDockerImage?: string;
     applyEnvVarsToBuild?: boolean;
     buildTag?: string;
 }
 
-export interface ActorVersionSourceCode extends BaseActorVersion<ActorSourceType.SourceCode | ActorSourceType.SourceFiles> {
-    sourceCode: string;
+export interface ActorVersionSourceFiles extends BaseActorVersion<ActorSourceType.SourceFiles> {
     sourceFiles: ActorVersionSourceFile[];
 }
 
@@ -90,7 +88,6 @@ export interface ActorVersionGitHubGist extends BaseActorVersion<ActorSourceType
 }
 
 export enum ActorSourceType {
-    SourceCode = 'SOURCE_CODE',
     SourceFiles = 'SOURCE_FILES',
     GitRepo = 'GIT_REPO',
     Tarball = 'TARBALL',
@@ -104,7 +101,7 @@ export interface ActorEnvironmentVariable {
 }
 
 export type ActorVersion =
-    | ActorVersionSourceCode
+    | ActorVersionSourceFiles
     | ActorVersionGitRepo
     | ActorVersionTarball
     | ActorVersionGitHubGist;
