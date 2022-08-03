@@ -231,6 +231,10 @@ export interface Actor {
     deploymentKey: string;
     title?: string;
     taggedBuilds?: ActorTaggedBuilds;
+    issuesEnabled?: boolean;
+    seoTitle?: string;
+    seoDescription?: string;
+    categories?: string[];
 }
 
 export interface ActorStats {
@@ -265,7 +269,20 @@ export interface ActorTaggedBuild {
     finishedAt?: Date;
 }
 
-export type ActorUpdateOptions = Pick<Actor, 'name' | 'isPublic' | 'versions' | 'description' | 'title' | 'restartOnError'>
+export type ActorUpdateOptions = Pick<
+    Actor,
+    | 'name'
+    | 'description'
+    | 'isPublic'
+    | 'seoTitle'
+    | 'seoDescription'
+    | 'issuesEnabled'
+    | 'title'
+    | 'restartOnError'
+    | 'versions'
+    | 'categories'
+    | 'defaultRunOptions'
+    >
 
 export interface ActorStartOptions {
     /**
