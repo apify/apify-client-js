@@ -47,6 +47,7 @@ export class DatasetClient<
         ow(options, ow.object.exactShape({
             clean: ow.optional.boolean,
             desc: ow.optional.boolean,
+            flatten: ow.optional.array.ofType(ow.string),
             fields: ow.optional.array.ofType(ow.string),
             omit: ow.optional.array.ofType(ow.string),
             limit: ow.optional.number,
@@ -79,6 +80,7 @@ export class DatasetClient<
             clean: ow.optional.boolean,
             delimiter: ow.optional.string,
             desc: ow.optional.boolean,
+            flatten: ow.optional.array.ofType(ow.string),
             fields: ow.optional.array.ofType(ow.string),
             omit: ow.optional.array.ofType(ow.string),
             limit: ow.optional.number,
@@ -169,6 +171,7 @@ export interface DatasetClientUpdateOptions {
 export interface DatasetClientListItemOptions {
     clean?: boolean;
     desc?: boolean;
+    flatten?: string[];
     fields?: string[];
     omit?: string[];
     limit?: number;
