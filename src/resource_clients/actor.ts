@@ -342,6 +342,7 @@ export interface ActorRun {
     exitCode?: number;
     defaultKeyValueStoreId: string;
     defaultDatasetId: string;
+    defaultRequestQueueId: string;
     buildNumber: string;
     containerUrl: string;
 }
