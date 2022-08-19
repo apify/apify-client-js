@@ -14,12 +14,14 @@ describe('utils.pluckData()', () => {
 
 describe('utils.catchNotFoundOrThrow()', () => {
     test('works', () => {
-        const notFoundError = new ApifyApiError({ status: 404, data: { error: { type: 'record-not-found' } } });
+        const recordNotFoundError = new ApifyApiError({ status: 404, data: { error: { type: 'record-not-found' } } });
+        const recordOrTokenNotFoundError = new ApifyApiError({ status: 404, data: { error: { type: 'record-or-token-not-found' } } });
         const otherError = new ApifyApiError({ status: 404, data: { error: { type: 'page-not-found' } } });
         const internalError = new ApifyApiError({ status: 500, data: { error: { type: 'internal-error' } } });
         const otherGenericError = new Error('blabla');
 
-        expect(utils.catchNotFoundOrThrow(notFoundError)).toBeUndefined();
+        expect(utils.catchNotFoundOrThrow(recordNotFoundError)).toBeUndefined();
+        expect(utils.catchNotFoundOrThrow(recordOrTokenNotFoundError)).toBeUndefined();
         expect(() => utils.catchNotFoundOrThrow(otherError)).toThrowError(otherError);
         expect(() => utils.catchNotFoundOrThrow(internalError)).toThrowError(internalError);
         expect(() => utils.catchNotFoundOrThrow(otherGenericError)).toThrowError(otherGenericError);
