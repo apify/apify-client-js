@@ -145,6 +145,7 @@ export class DatasetClient<
 export interface Dataset {
     id: string;
     name?: string;
+    title?: string;
     userId: string;
     createdAt: Date;
     modifiedAt: Date;
@@ -166,6 +167,7 @@ export interface DatasetStats {
 
 export interface DatasetClientUpdateOptions {
     name: string;
+    title?: string;
 }
 
 export interface DatasetClientListItemOptions {

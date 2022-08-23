@@ -490,6 +490,7 @@ export interface RequestQueueUserOptions {
 export interface RequestQueue {
     id: string;
     name?: string;
+    title?: string;
     userId: string;
     createdAt: Date;
     modifiedAt: Date;
@@ -514,6 +515,7 @@ export interface RequestQueueStats {
 
 export interface RequestQueueClientUpdateOptions {
     name: string;
+    title?: string;
 }
 
 export interface RequestQueueClientListHeadOptions {

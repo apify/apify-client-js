@@ -68,6 +68,7 @@ export interface Schedule {
     id: string;
     userId: string;
     name: string;
+    title?: string;
     cronExpression: string;
     timezone: Timezone;
     isEnabled: boolean;
@@ -84,6 +85,7 @@ export type ScheduleUpdateData = Partial<
     Pick<
         Schedule,
         | 'name'
+        | 'title'
         | 'cronExpression'
         | 'timezone'
         | 'isEnabled'
