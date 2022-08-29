@@ -190,6 +190,7 @@ export class KeyValueStoreClient extends ResourceClient {
 export interface KeyValueStore {
     id: string;
     name?: string;
+    title?: string;
     userId: string;
     createdAt: Date;
     modifiedAt: Date;
@@ -209,6 +210,7 @@ export interface KeyValueStoreStats {
 
 export interface KeyValueClientUpdateOptions {
     name: string;
+    title?: string;
 }
 
 export interface KeyValueClientListKeysOptions {

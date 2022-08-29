@@ -188,6 +188,7 @@ export interface Task {
     userId: string;
     actId: string;
     name: string;
+    title?: string;
     description?: string;
     username?: string;
     createdAt: Date;
@@ -211,6 +212,7 @@ export type TaskUpdateData = Partial<
     Pick<
         Task,
         | 'name'
+        | 'title'
         | 'description'
         | 'options'
         | 'input'
