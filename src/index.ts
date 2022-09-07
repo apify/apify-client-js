@@ -21,4 +21,4 @@ export * from './resource_clients/webhook';
 export * from './resource_clients/webhook_collection';
 export * from './resource_clients/webhook_dispatch';
 export * from './resource_clients/webhook_dispatch_collection';
-export { PaginatedList } from './utils';
+export { PaginatedList, PaginationIterator } from './utils';
