@@ -130,5 +130,16 @@ property to get only a subset of results. Other props are also available, depend
 ## API Reference
 All public classes, methods and their parameters can be inspected in this API reference.
 
+## Referring to resources
+
+There are three main ways to refer to a resource you're accessing via API.
+
+- the resource ID (e.g. `iKkPcIgVvwmztduf8`)
+- `username~resourcename` - when using this access method, you will need to use your API token, and access will only
+work
+if you have the correct permissions.
+- `~resourcename` - for this, you need to use an API token, and the `resourcename` refers to a resource in the API token
+owner's account.
+
 {{>all-docs~}}
 
