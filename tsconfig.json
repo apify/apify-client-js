@@ -3,7 +3,9 @@
 	"compilerOptions": {
 		"allowJs": true,
 		"lib": ["ESNext", "DOM"],
-		"outDir": "dist"
+		"outDir": "dist",
+		// Unfortunately have to enable this while we stick to ow
+		"skipLibCheck": true
 	},
 	"include": [
 		"./src/**/*"
