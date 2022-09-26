@@ -1,3 +1,4 @@
+import JSON5 from 'json5';
 import contentTypeParser from 'content-type';
 import { JsonArray, JsonObject } from 'type-fest';
 import { isNode } from './utils';
@@ -37,7 +38,7 @@ export function maybeParseBody(body: Buffer | ArrayBuffer, contentTypeHeader: st
     const dataString = isomorphicBufferToString(body, charset);
 
     return contentType === CONTENT_TYPE_JSON
-        ? JSON.parse(dataString)
+        ? JSON5.parse(dataString)
         : dataString;
 }
 

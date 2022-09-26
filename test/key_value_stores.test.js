@@ -189,6 +189,28 @@ describe('Key-Value Store methods', () => {
             validateRequest({}, { storeId, key });
         });
 
+        test('getRecord() parses JSON5', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+
+            const body = `{ foo: 'bar', baz: [1, 2] }`;
+            const expectedBody = { foo: 'bar', baz: [1, 2] };
+            const expectedContentType = 'application/json; charset=utf-8';
+            const expectedHeaders = {
+                'content-type': expectedContentType,
+            };
+
+            mockServer.setResponse({ headers: expectedHeaders, body });
+
+            const res = await client.keyValueStore(storeId).getRecord(key);
+            expect(res.value).toEqual(expectedBody);
+            validateRequest({}, { storeId, key });
+
+            const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getRecord(k), storeId, key);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { storeId, key });
+        });
+
         test('getRecord() returns buffer when selected', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
