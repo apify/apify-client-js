@@ -28,7 +28,7 @@ export class HttpClient {
 
     maxRetries: number;
 
-    minDelayBetweenRetriesMillis: number
+    minDelayBetweenRetriesMillis: number;
 
     userProvidedRequestInterceptors: RequestInterceptorFunction[];
 
