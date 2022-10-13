@@ -455,6 +455,7 @@ describe('Request Queue methods', () => {
             mockResponse(browserRequests);
             const browserRes = await page.evaluate(async (id, mpl) => {
                 const pgn = client.requestQueue(id).paginateRequests({ maxPageLimit: mpl });
+                // eslint-disable-next-line no-unreachable-loop
                 for await (const browserPage of pgn) {
                     return browserPage;
                 }

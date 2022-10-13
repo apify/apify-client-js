@@ -46,6 +46,7 @@ describe('HttpClient', () => {
 
         try {
             const r = await page.evaluate((rId) => client.task(rId).get(), resourceId);
+            // eslint-disable-next-line no-console
             console.log(r);
         } catch (err) {
             expect(err.message).toMatch('timeout of 1000ms exceeded');
