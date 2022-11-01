@@ -105,7 +105,7 @@ export class ActorClient extends ResourceClient {
      * It waits indefinitely, unless the `waitSecs` option is provided.
      * https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
      */
-    async call(input?: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
+    async call(input?: unknown, options: ActorCallOptions = {}): Promise<ActorRun> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
         // then it will process input as a buffer.
         ow(options, ow.object.exactShape({
@@ -314,7 +314,7 @@ export interface ActorStartOptions {
      * Maximum time to wait for the actor run to finish, in seconds.
      * If the limit is reached, the returned promise is resolved to a run object that will have
      * status `READY` or `RUNNING` and it will not contain the actor run output.
-     * If `waitSecs` is null or undefined, the function waits for the actor to finish (default behavior).
+     * If `waitForFinish` is null or undefined, the function waits for the actor to finish (default behavior).
      */
     waitForFinish?: number;
 
@@ -324,6 +324,10 @@ export interface ActorStartOptions {
      * [ad hook webhooks documentation](https://docs.apify.com/webhooks/ad-hoc-webhooks) for detailed description.
      */
     webhooks?: readonly WebhookUpdateData[];
+}
+
+export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
+    waitSecs?: number;
 }
 
 export interface ActorRun {

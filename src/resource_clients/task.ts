@@ -97,7 +97,7 @@ export class TaskClient extends ResourceClient {
      * It waits indefinitely, unless the `waitSecs` option is provided.
      * https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task
      */
-    async call(input?: Dictionary, options: TaskStartOptions = {}): Promise<ActorRun> {
+    async call(input?: Dictionary, options: TaskCallOptions = {}): Promise<ActorRun> {
         ow(input, ow.optional.object);
         ow(options, ow.object.exactShape({
             build: ow.optional.string,
@@ -224,3 +224,7 @@ export interface TaskLastRunOptions {
 }
 
 export type TaskStartOptions = Omit<ActorStartOptions, 'contentType'>;
+
+export interface TaskCallOptions extends Omit<TaskStartOptions, 'waitForFinish'> {
+    waitSecs?: number;
+}
