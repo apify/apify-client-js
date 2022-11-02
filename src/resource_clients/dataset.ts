@@ -8,7 +8,7 @@ import { cast, PaginatedList } from '../utils';
  * @hideconstructor
  */
 export class DatasetClient<
-    Data extends Record<string | number, unknown> = Record<string | number, unknown>
+    Data extends Record<string | number, any> = Record<string | number, unknown>
 > extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions) {
         super({
