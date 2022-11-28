@@ -32,7 +32,7 @@ export class ScheduleClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/schedules/schedule-object/update-schedule
      */
-    async update(newFields: ScheduleUpdateData): Promise<Schedule> {
+    async update(newFields: ScheduleCreateOrUpdateData): Promise<Schedule> {
         ow(newFields, ow.object);
         return this._update(newFields);
     }
@@ -81,7 +81,7 @@ export interface Schedule {
     actions: ScheduleAction[];
 }
 
-export type ScheduleUpdateData = Partial<
+export type ScheduleCreateOrUpdateData = Partial<
     Pick<
         Schedule,
         | 'name'
