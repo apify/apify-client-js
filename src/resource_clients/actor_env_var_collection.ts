@@ -16,7 +16,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * TODO: https://docs.apify.com/api/v2#/reference/actors/env-var-collection/get-list-of-env-vars
+     * https://docs.apify.com/api/v2#/reference/actors/environment-variable-collection/get-list-of-environment-variables
      */
     async list(options: ActorEnvVarCollectionListOptions = {}): Promise<ActorEnvVarListResult> {
         ow(options, ow.object.exactShape({
@@ -28,7 +28,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * TODO: https://docs.apify.com/api/v2#/reference/actors/env-var-collection/create-env-var
+     * https://docs.apify.com/api/v2#/reference/actors/environment-variable-collection/create-environment-variable
      */
     async create(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
         ow(actorEnvVar, ow.optional.object);

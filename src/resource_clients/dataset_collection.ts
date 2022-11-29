@@ -36,7 +36,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
         ow(name, ow.optional.string);
         ow(options?.schema, ow.optional.object); // TODO: Add schema validatioon
 
-        return this._getOrCreate(name, { schema: options?.schema });
+        return this._getOrCreate(name, options);
     }
 }
 
