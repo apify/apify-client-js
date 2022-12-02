@@ -269,7 +269,7 @@ export interface ActorTaggedBuild {
     finishedAt?: Date;
 }
 
-export type ActorUpdateOptions = Pick<
+export type ActorUpdateOptions = Partial<Pick<
     Actor,
     | 'name'
     | 'description'
@@ -282,7 +282,7 @@ export type ActorUpdateOptions = Pick<
     | 'versions'
     | 'categories'
     | 'defaultRunOptions'
-    >
+    >>
 
 export interface ActorStartOptions {
     /**
