@@ -1,5 +1,6 @@
 build
 dist
+build-docs
 node_modules
 *.log
 *.pid
@@ -13,4 +14,15 @@ pids
 .idea
 .vscode
 yarn.lock
-package-lock.json
+tmp
+jsconfig.json
+types
+docs/api
+docs/typedefs
+.history
+.docusaurus
+tsconfig.tsbuildinfo
+apify_storage
+crawlee_storage
+storage
+.turbo
