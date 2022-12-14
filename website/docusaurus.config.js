@@ -38,9 +38,8 @@ module.exports = {
             'docusaurus-plugin-typedoc-api',
             {
                 projectRoot: `${__dirname}/..`,
-                // TODO: waiting for https://github.com/milesj/docusaurus-plugin-typedoc-api/pull/83
-                // changelogs: true,
-                // readmes: true,
+                changelogs: true,
+                readmes: true,
                 packages: [{ path: '.' }],
                 typedocOptions: {
                     excludeExternals: false,
