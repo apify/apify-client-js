@@ -4,7 +4,7 @@ const { externalLinkProcessor } = require('./tools/utils/externalLink');
 const absoluteUrl = 'http://docs-v2.apify.com';
 /** @type {Partial<import('@docusaurus/types').DocusaurusConfig>} */
 module.exports = {
-    title: 'Apify Docs v2',
+    title: 'Apify JS Client',
     tagline: 'Apify Documentation',
     url: absoluteUrl,
     baseUrl: '/client-js',
@@ -17,6 +17,32 @@ module.exports = {
     /** @type {import('@docusaurus/types').ReportingSeverity} */ ('warn'),
     onBrokenMarkdownLinks:
     /** @type {import('@docusaurus/types').ReportingSeverity} */ ('warn'),
+    themes: [
+        [
+            '@apify/docs-theme',
+            {
+                subNavbar: [
+                    {
+                        to: 'api',
+                        label: 'API',
+                        activeBaseRegex: 'client-js/api(?!.*/changelog)',
+                    },
+                    {
+                        to: 'api/changelog',
+                        label: 'Changelog',
+                        activeBaseRegex: 'changelog',
+                    },
+                    {
+                        type: 'docsVersionDropdown',
+                        position: 'left',
+                        className: 'navbar__item', // fixes margin around dropdown - hackish, should be fixed in theme
+                        dropdownItemsBefore: [],
+                        dropdownItemsAfter: [],
+                    },
+                ],
+            },
+        ],
+    ],
     presets: /** @type {import('@docusaurus/types').PresetConfig[]} */ ([
         [
             '@docusaurus/preset-classic',
@@ -163,30 +189,6 @@ module.exports = {
                             href: 'https://github.com/apify',
                         },
                     ],
-                },
-                {
-                    // type: 'custom-api',
-                    to: 'api',
-                    label: '(API)',
-                    position: 'left',
-                    activeBaseRegex: 'client-js/api(?!.*/changelog)',
-                    className: 'subnav',
-                    // subnav: 'true',
-                },
-                {
-                    // type: 'custom-api',
-                    to: 'api/changelog',
-                    label: '(Changelog)',
-                    position: 'left',
-                    activeBaseRegex: 'changelog',
-                    className: 'subnav changelog',
-                    // subnav: 'true',
-                },
-                {
-                    type: 'docsVersionDropdown',
-                    position: 'left',
-                    className: 'subnav',
-                    // subnav: 'true',
                 },
                 {
                     href: 'https://github.com/apify',
