@@ -97,10 +97,12 @@ export class HttpClient {
         });
 
         // Clean all default headers because they only make a mess and their merging is difficult to understand and buggy.
-        // And set our own default headers.
-        this.axios.defaults.headers = {
-            'X-Apify-Workflow-Key': this.workflowKey,
-        };
+        this.axios.defaults.headers = {};
+
+        // If workflow key is available, pass it as a header
+        if (this.workflowKey) {
+            this.axios.defaults.headers['X-Apify-Workflow-Key'] = this.workflowKey;
+        }
 
         if (isNode()) {
             // Works only in Node. Cannot be set in browser
