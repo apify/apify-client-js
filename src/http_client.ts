@@ -99,7 +99,6 @@ export class HttpClient {
         // Clean all default headers because they only make a mess and their merging is difficult to understand and buggy.
         // And set our own default headers.
         this.axios.defaults.headers = {
-            Accept: 'application/json, */*',
             'X-Apify-Workflow-Key': this.workflowKey,
         };
 
