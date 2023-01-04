@@ -70,10 +70,6 @@ export class HttpClient {
         }
 
         this.axios = axios.create({
-            headers: {
-                Accept: 'application/json, */*',
-                'X-Apify-Workflow-Key': this.workflowKey,
-            },
             httpAgent: this.httpAgent,
             httpsAgent: this.httpsAgent,
             paramsSerializer: (params) => {
@@ -100,9 +96,13 @@ export class HttpClient {
             maxContentLength: -1,
         });
 
-        // Clean all default headers because they only make a mess
-        // and their merging is difficult to understand and buggy.
+        // Clean all default headers because they only make a mess and their merging is difficult to understand and buggy.
         this.axios.defaults.headers = {};
+
+        // If workflow key is available, pass it as a header
+        if (this.workflowKey) {
+            this.axios.defaults.headers['X-Apify-Workflow-Key'] = this.workflowKey;
+        }
 
         if (isNode()) {
             // Works only in Node. Cannot be set in browser
