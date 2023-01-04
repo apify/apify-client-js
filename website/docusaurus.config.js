@@ -58,9 +58,6 @@ module.exports = {
                     sidebarPath: './sidebars.js',
                     rehypePlugins: [externalLinkProcessor],
                 },
-                theme: {
-                    customCss: '/src/css/custom.css',
-                },
             }),
         ],
     ]),
