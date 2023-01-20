@@ -32,7 +32,7 @@ module.exports = {
                             activeBaseRegex: 'client-js/api(?!.*/changelog)',
                         },
                         {
-                            to: 'api/changelog',
+                            to: '/changelog',
                             label: 'Changelog',
                             activeBaseRegex: 'changelog',
                         },
