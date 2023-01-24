@@ -27,12 +27,17 @@ module.exports = {
                     title: 'Apify Client JS',
                     items: [
                         {
-                            to: 'api',
-                            label: 'API',
-                            activeBaseRegex: 'client-js/api(?!.*/changelog)',
+                            to: 'docs',
+                            label: 'Docs',
+                            activeBaseRegex: 'client-js/docs(?!.*/changelog)',
                         },
                         {
-                            to: '/changelog',
+                            to: 'api',
+                            label: 'API',
+                            activeBaseRegex: 'client-js/api',
+                        },
+                        {
+                            to: 'docs/changelog',
                             label: 'Changelog',
                             activeBaseRegex: 'changelog',
                         },
@@ -70,8 +75,8 @@ module.exports = {
             'docusaurus-plugin-typedoc-api',
             {
                 projectRoot: `${__dirname}/..`,
-                changelogs: true,
-                readmes: true,
+                changelogs: false,
+                readmes: false,
                 packages: [{ path: '.' }],
                 typedocOptions: {
                     excludeExternals: false,
