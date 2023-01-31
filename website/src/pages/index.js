@@ -14,11 +14,11 @@ function Hero() {
                     <div className={clsx(styles.relative, 'row')}>
                         <div className="col">
                             <h1 className={styles.tagline}>
-                                ApifyClient.js is the official library to access Apify API from your JavaScript applications.
+                                Apify API client for JavaScript.
                             </h1>
                             <h1 className={styles.tagline}>
                                 {/* eslint-disable-next-line max-len */}
-                                <span>ApifyClient.js</span> is the <span>official</span> library to access <span>Apify</span> API from your <span>JavaScript</span> applications.
+                                <span>Apify API client</span> for JavaScript.
                             </h1>
                         </div>
                     </div>
@@ -26,8 +26,9 @@ function Hero() {
                         <div className="col">
                             <h2></h2>
                             <h2>
-                                It runs both in Node.js and browser and provides useful features like automatic retries and convenience functions
-                                that improve the experience of using the Apify API.
+                            Apify API Client for JavaScript is the official library to access Apify API from your browser, Node.js,
+                            and TypeScript applications. It provides useful features like automatic retries and convenience functions
+                            that improve the Apify API experience.
                             </h2>
                         </div>
                     </div>
@@ -56,17 +57,34 @@ function Hero() {
 }
 
 export default function Home() {
-    const SvgLogo = require('/img/apify_logo.svg').default;
     const { siteConfig } = useDocusaurusContext();
     return (
         <Layout
             title={`${siteConfig.title} · ${siteConfig.tagline}`}
             description={siteConfig.description}>
             <Hero />
-            <div className="container">
-                <div className="row">
-                    <div className="col text--center padding-top--lg padding-bottom--xl">
-                        <SvgLogo className={styles.bottomLogo} />
+            <div>
+                <div className="container">
+                    <div className="row padding-horiz--md" >
+                        <div className="col col--4">
+                            <p style={{ lineHeight: '200%' }}>
+                            Using Apify Client for JavaScript, you can easily run your own actors or actors from Apify Store
+                            and await them to finish using the convenient .call() method and retrieve results from the resulting dataset.
+                            </p>
+                        </div>
+                        <div className="col col--8">
+                            <CodeBlock language='javascript'>{`const { ApifyClient } = require('apify-client');
+
+const client = new ApifyClient({
+    token: 'MY-APIFY-TOKEN',
+});
+
+// Starts an actor and waits for it to finish.
+const { defaultDatasetId } = await client.actor('john-doe/my-cool-actor').call();
+
+// Fetches results from the actor's dataset.
+const { items } = await client.dataset(defaultDatasetId).listItems();`}</CodeBlock>
+                        </div>
                     </div>
                 </div>
             </div>

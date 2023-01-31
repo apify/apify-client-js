@@ -33,7 +33,7 @@ module.exports = {
                         },
                         {
                             to: 'api',
-                            label: 'API',
+                            label: 'Reference',
                             activeBaseRegex: 'client-js/api',
                         },
                         {
