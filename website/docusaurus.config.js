@@ -37,9 +37,9 @@ module.exports = {
                             activeBaseRegex: '/docs/examples',
                         },
                         {
-                            to: 'api',
+                            to: 'reference',
                             label: 'Reference',
-                            activeBaseRegex: '/api',
+                            activeBaseRegex: '/reference',
                         },
                         {
                             to: 'docs/changelog',
@@ -90,6 +90,7 @@ module.exports = {
                 typedocOptions: {
                     excludeExternals: false,
                 },
+                routeBasePath: '/reference',
             },
         ],
         // [
