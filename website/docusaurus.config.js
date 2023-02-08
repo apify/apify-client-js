@@ -9,7 +9,7 @@ module.exports = {
     title: 'Apify Docs v2',
     tagline: 'Apify Documentation',
     url: absoluteUrl,
-    baseUrl: '/client-js',
+    baseUrl: '/api/client/js',
     trailingSlash: false,
     organizationName: 'apify',
     projectName: 'apify-client-js',
