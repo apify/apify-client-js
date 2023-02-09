@@ -6,7 +6,7 @@ const versions = require('./versions.json');
 const { absoluteUrl } = config;
 /** @type {Partial<import('@docusaurus/types').DocusaurusConfig>} */
 module.exports = {
-    title: 'Apify Docs v2',
+    title: 'Apify Documentation',
     tagline: 'Apify Documentation',
     url: absoluteUrl,
     baseUrl: '/api/client/js',
@@ -55,8 +55,8 @@ module.exports = {
                             'position': 'left',
                             'className': 'navbar__item', // fixes margin around dropdown - hackish, should be fixed in theme
                             'data-api-links': JSON.stringify([
-                                'api/next',
-                                ...versions.map((version, i) => (i === 0 ? 'api' : `api/${version}`)),
+                                'reference/next',
+                                ...versions.map((version, i) => (i === 0 ? 'reference' : `reference/${version}`)),
                             ]),
                             'dropdownItemsBefore': [],
                             'dropdownItemsAfter': [],
