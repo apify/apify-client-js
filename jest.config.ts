@@ -11,6 +11,7 @@ export default async (): Promise<Config.InitialOptions> => ({
         '**/src/**/*.ts',
         '**/src/**/*.js',
         '!**/node_modules/**',
+        '!**/website/**',
     ],
     maxWorkers: 3,
     globals: {
