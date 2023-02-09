@@ -333,9 +333,7 @@ describe('Key-Value Store methods', () => {
 
             const browserRes = await page.evaluate(
                 (id, key, value) => client.keyValueStore(id).setRecord({ key, value }),
-                storeId,
-                key,
-                value,
+                storeId, key, value,
             );
             expect(browserRes).toBeUndefined();
             validateRequest({}, { storeId, key }, value, expectedHeaders);
@@ -355,9 +353,7 @@ describe('Key-Value Store methods', () => {
 
             const browserRes = await page.evaluate(
                 (id, key, value) => client.keyValueStore(id).setRecord({ key, value }),
-                storeId,
-                key,
-                value,
+                storeId, key, value,
             );
             expect(browserRes).toBeUndefined();
             validateRequest({}, { storeId, key }, value, expectedHeaders);
@@ -400,10 +396,7 @@ describe('Key-Value Store methods', () => {
 
             const browserRes = await page.evaluate(
                 (id, key, value, contentType) => client.keyValueStore(id).setRecord({ key, value, contentType }),
-                storeId,
-                key,
-                value,
-                contentType,
+                storeId, key, value, contentType,
             );
             expect(browserRes).toBeUndefined();
             validateRequest({}, { storeId, key }, JSON.parse(value), expectedHeaders);
@@ -427,9 +420,7 @@ describe('Key-Value Store methods', () => {
 
             const browserRes = await page.evaluate(
                 (id, key, value) => client.keyValueStore(id).setRecord({ key, value }),
-                storeId,
-                key,
-                value,
+                storeId, key, value,
             );
             expect(browserRes).toBeUndefined();
             validateRequest({}, { storeId, key }, value, {

@@ -187,9 +187,7 @@ describe('Dataset methods', () => {
                     const decoder = new TextDecoder();
                     return decoder.decode(response);
                 },
-                datasetId,
-                format,
-                options,
+                datasetId, format, options,
             );
             expect(browserRes).toEqual(resString);
             validateRequest(qs, { datasetId });
