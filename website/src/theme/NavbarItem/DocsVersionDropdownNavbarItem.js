@@ -13,7 +13,7 @@ import DropdownNavbarItem from '@theme/NavbarItem/DropdownNavbarItem';
 const getVersionMainDoc = (version) => version.docs.find((doc) => doc.id === version.mainDocId);
 
 function getApiLinks(props, pathname) {
-    if (!pathname.startsWith('/client-js/api')) {
+    if (!pathname.startsWith('/api/client/js/reference')) {
         return [];
     }
 
@@ -75,7 +75,7 @@ export default function DocsVersionDropdownNavbarItem({
         ? undefined
         : getVersionMainDoc(dropdownVersion).path;
 
-    if (dropdownTo && pathname.startsWith('/client-js/api')) {
+    if (dropdownTo && pathname.startsWith('/api/client/js/reference')) {
         dropdownTo = versionLinks.find((v) => v.label === dropdownVersion.label)?.to;
     }
 
