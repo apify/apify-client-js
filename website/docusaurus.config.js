@@ -29,13 +29,13 @@ module.exports = {
                         {
                             to: 'docs',
                             label: 'Docs',
-                            activeBaseRegex: '/docs(?!/changelog|/examples)',
+                            activeBaseRegex: '/docs(?!(/[^/]*)?/changelog)',
                         },
-                        {
-                            to: 'docs/examples',
-                            label: 'Examples',
-                            activeBaseRegex: '/docs/examples',
-                        },
+                        // {
+                        //     to: 'docs/examples',
+                        //     label: 'Examples',
+                        //     activeBaseRegex: '/docs/examples',
+                        // },
                         {
                             to: 'reference',
                             label: 'Reference',
@@ -44,7 +44,7 @@ module.exports = {
                         {
                             to: 'docs/changelog',
                             label: 'Changelog',
-                            activeBaseRegex: 'changelog',
+                            activeBaseRegex: '/changelog',
                         },
                         {
                             href: 'https://github.com/apify/apify-client-js',
