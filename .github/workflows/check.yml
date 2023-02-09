@@ -63,3 +63,25 @@ jobs:
                     key: cache-${{ github.run_id }}-v14
             -
                 run: npm run lint
+
+    docs:
+        name: Docs build
+        if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout Source code
+                uses: actions/checkout@v3
+
+            -   name: Use Node.js 16
+                uses: actions/setup-node@v3
+                with:
+                    node-version: 16
+                    cache: 'npm'
+                    cache-dependency-path: 'package-lock.json'
+
+            -   name: Install & build & deploy docs
+                run: |
+                    npm ci --force
+                    cd website
+                    npm ci --force
+                    npm run build
