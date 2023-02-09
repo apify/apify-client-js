@@ -122,10 +122,10 @@ const { items } = await lastSucceededRunClient.dataset().listItems();
 > will be available to all runs in the future.
 
 ### Pagination
-Most methods named `list` or `listSomething` return a [<code>Promise.&lt;PaginationList&gt;</code>](/api/interface/PaginatedList).
+Most methods named `list` or `listSomething` return a [<code>Promise.&lt;PaginationList&gt;</code>](https://docs.apify.com/api/client/js/reference/interface/PaginatedList).
 There are some exceptions though, like `listKeys` or `listHead` which paginate differently.
 The results you're looking for are always stored under `items` and you can use the `limit`
 property to get only a subset of results. Other props are also available, depending on the method.
 
 ## API Reference
-All public classes, methods and their parameters can be inspected in the [API reference](/api).
+All public classes, methods and their parameters can be inspected in the [API reference](https://docs.apify.com/api/client/js/reference/).

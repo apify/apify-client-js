@@ -6,7 +6,7 @@ const versions = require('./versions.json');
 const { absoluteUrl } = config;
 /** @type {Partial<import('@docusaurus/types').DocusaurusConfig>} */
 module.exports = {
-    title: 'Apify Docs v2',
+    title: 'Apify Documentation',
     tagline: 'Apify Documentation',
     url: absoluteUrl,
     baseUrl: '/api/client/js',

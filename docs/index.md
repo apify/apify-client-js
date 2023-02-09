@@ -9,7 +9,7 @@ automatic retries and convenience functions that improve the experience of using
 
 ## Quick Start
 ```js
-const { ApifyClient } = require('apify-client');
+import { ApifyClient  } from 'apify-client';
 
 const client = new ApifyClient({
     token: 'MY-APIFY-TOKEN',

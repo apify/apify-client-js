@@ -4,7 +4,7 @@ sidebar_label: 'Quick Start'
 
 # Quick Start
 ```js
-const { ApifyClient } = require('apify-client');
+import { ApifyClient  } from 'apify-client';
 
 const client = new ApifyClient({
     token: 'MY-APIFY-TOKEN',

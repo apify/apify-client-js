@@ -9,7 +9,7 @@ resources are created. There are two types of those clients. A client for manage
 resource and a client for a collection of resources.
 
 ```js
-const { ApifyClient } = require('apify-client');
+import { ApifyClient  } from 'apify-client';
 const apifyClient = new ApifyClient({ token: 'my-token' });
 
 // Collection clients do not require a parameter.
@@ -71,7 +71,7 @@ const { items } = await lastSucceededRunClient.dataset().listItems();
 > will be available to all runs in the future.
 
 ## Pagination
-Most methods named `list` or `listSomething` return a [<code>Promise.&lt;PaginationList&gt;</code>](/api/interface/PaginatedList).
+Most methods named `list` or `listSomething` return a [<code>Promise.&lt;PaginationList&gt;</code>](/reference/interface/PaginatedList).
 There are some exceptions though, like `listKeys` or `listHead` which paginate differently.
 The results you're looking for are always stored under `items` and you can use the `limit`
 property to get only a subset of results. Other props are also available, depending on the method.
