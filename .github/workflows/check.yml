@@ -84,4 +84,5 @@ jobs:
                     npm ci --force
                     cd website
                     npm ci --force
+                    npm run lint
                     npm run build

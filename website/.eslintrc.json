@@ -5,6 +5,7 @@
         "plugin:react-hooks/recommended"
     ],
     "parserOptions": {
+        "files": ["*.js", "*.jsx", "*.ts", "*.tsx"],
         "project": "./tsconfig.eslint.json",
         "ecmaFeatures": {
             "jsx": true
@@ -21,6 +22,7 @@
     },
     "root": true,
     "rules": {
-        "quote-props": ["error", "consistent"]
+        "quote-props": ["error", "consistent"],
+        "react/prop-types": ["off"]
     }
 }
