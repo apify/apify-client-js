@@ -106,7 +106,8 @@ export class HttpClient {
 
         if (isNode()) {
             // Works only in Node. Cannot be set in browser
-            const userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${!!process.env.IS_AT_HOME}`;
+            const isAtHome = !!process.env[ENV_VARS.IS_AT_HOME];
+            const userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${isAtHome}`;
             this.axios.defaults.headers['User-Agent'] = userAgent;
         }
 
