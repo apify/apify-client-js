@@ -50,7 +50,7 @@ jobs:
                     git add website/package-lock.json
                     git diff-index --quiet HEAD || git commit -m 'chore: Automatic theme updating workflow [skip ci]'
                     git push
-                with:
+                env:
                     GIT_USER: "noreply@apify.com:${{ secrets.GH_TOKEN }}"
                     GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
