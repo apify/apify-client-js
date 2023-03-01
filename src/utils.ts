@@ -175,7 +175,7 @@ export interface PaginationIteratorOptions {
     exclusiveStartId?: string;
 }
 
-export interface PaginatedList<Data extends unknown> {
+export interface PaginatedList<Data> {
     /** Total count of entries in the dataset. */
     total: number;
     /** Count of dataset entries returned in this set. */

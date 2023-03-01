@@ -46,7 +46,7 @@ describe('HttpClient', () => {
 
         try {
             const r = await page.evaluate((rId) => client.task(rId).get(), resourceId);
-            console.log(r);
+            expect(r).toBeDefined();
         } catch (err) {
             expect(err.message).toMatch('timeout of 1000ms exceeded');
         }

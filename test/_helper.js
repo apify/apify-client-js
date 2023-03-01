@@ -13,6 +13,7 @@ class Browser {
         const page = await this.browser.newPage();
         await Apify.utils.puppeteer.injectFile(page, `${__dirname}/../dist/bundle.js`);
 
+        // eslint-disable-next-line no-console
         page.on('console', (msg) => console.log(msg.text()));
         await page.evaluate((url, defaultQuery) => {
             window.client = new window.Apify.ApifyClient({

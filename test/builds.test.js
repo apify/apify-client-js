@@ -102,7 +102,8 @@ describe('Build methods', () => {
 
             const browserRes = await page.evaluate(
                 (bId, ws) => client.build(bId).waitForFinish({ waitSecs: ws }),
-                buildId, waitSecs,
+                buildId,
+                waitSecs,
             );
             expect(browserRes).toEqual(res);
             validateRequest({ waitForFinish: 0 }, { buildId });
