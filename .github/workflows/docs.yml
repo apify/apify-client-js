@@ -48,11 +48,8 @@ jobs:
                     git config user.email 'github-actions[bot]@users.noreply.github.com'
                     git add website/package.json
                     git add website/package-lock.json
-                    git diff-index --quiet HEAD || git commit -m 'chore: Automatic theme updating workflow [skip ci]'
+                    git diff-index --quiet HEAD || git commit -m 'chore: Automatic theme updating workflow [skip ci]' || true
                     git push
-                env:
-                    GIT_USER: "noreply@apify.com:${{ secrets.GH_TOKEN }}"
-                    GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
             -   name: Build Docusaurus docs
                 run: npm run build
