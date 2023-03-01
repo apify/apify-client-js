@@ -36,8 +36,9 @@ jobs:
             -   name: Install Node.js dependencies
                 run: |
                     npm install
+                    cd website
+                    npm install
                     npm update @apify/docs-theme
-                working-directory: ./website
 
             # We do this as early as possible to prevent conflicts if someone else would push something in the meantime
             -   name: Commit the updated package.json and lockfile
