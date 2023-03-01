@@ -58,7 +58,7 @@
 		"build-toc": "markdown-toc docs/README.hbs -i"
 	},
 	"dependencies": {
-		"@apify/consts": "^1.4.0",
+		"@apify/consts": "^2.0.0",
 		"@apify/log": "^2.1.0",
 		"agentkeepalive": "^4.1.4",
 		"async-retry": "^1.3.1",
