@@ -3,6 +3,7 @@ sidebar_label: 'Quick Start'
 ---
 
 # Quick Start
+
 ```js
 const { ApifyClient } = require('apify-client');
 
