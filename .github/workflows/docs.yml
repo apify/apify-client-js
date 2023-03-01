@@ -20,7 +20,7 @@ jobs:
         steps:
             -   uses: actions/checkout@v3
                 with:
-                    token: ${{ secrets.DOCS_WORKFLOW_GITHUB_TOKEN }}
+                    token: ${{ secrets.GH_TOKEN }}
 
             -   name: Use Node.js 16
                 uses: actions/setup-node@v2-beta
@@ -50,6 +50,9 @@ jobs:
                     git add website/package-lock.json
                     git diff-index --quiet HEAD || git commit -m 'chore: Automatic theme updating workflow [skip ci]'
                     git push
+                with:
+                    GIT_USER: "noreply@apify.com:${{ secrets.GH_TOKEN }}"
+                    GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
             -   name: Build Docusaurus docs
                 run: npm run build
