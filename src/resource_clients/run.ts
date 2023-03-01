@@ -200,6 +200,7 @@ export interface RunMetamorphOptions {
 }
 export interface RunUpdateOptions {
     statusMessage?: string;
+    isStatusMessageTerminal? : boolean;
 }
 
 export interface RunResurrectOptions {

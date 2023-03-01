@@ -2,7 +2,7 @@ import ow from 'ow';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
-import { Schedule, ScheduleUpdateData } from './schedule';
+import { Schedule, ScheduleCreateOrUpdateData } from './schedule';
 
 /**
  * @hideconstructor
@@ -31,7 +31,7 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/schedules/schedules-collection/create-schedule
      */
-    async create(schedule?: ScheduleUpdateData): Promise<Schedule> {
+    async create(schedule?: ScheduleCreateOrUpdateData): Promise<Schedule> {
         ow(schedule, ow.optional.object);
 
         return this._create(schedule);
