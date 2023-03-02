@@ -1,6 +1,4 @@
-import type { Config } from '@jest/types';
-
-export default async (): Promise<Config.InitialOptions> => ({
+module.exports = {
     verbose: true,
     preset: 'ts-jest',
     testEnvironment: 'node',
@@ -13,9 +11,7 @@ export default async (): Promise<Config.InitialOptions> => ({
     testTimeout: 20_000,
     collectCoverage: true,
     collectCoverageFrom: [
-        'src/**/*.ts',
-        'src/**/*.js',
-        '!**/node_modules/**',
+        '<rootDir>/src/**/*.[jt]s',
     ],
     maxWorkers: 3,
-});
+};
