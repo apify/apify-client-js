@@ -82,7 +82,7 @@
 		"@types/node": "^16.6.1",
 		"@typescript-eslint/eslint-plugin": "^5.54.0",
 		"@typescript-eslint/parser": "^5.54.0",
-		"apify": "^2.0.2",
+		"apify": "^3.0.0",
 		"babel-loader": "^8.2.2",
 		"body-parser": "^1.19.0",
 		"compression": "^1.7.4",
