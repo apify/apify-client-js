@@ -197,6 +197,18 @@ describe('Actor methods', () => {
             validateRequest({ webhooks: stringifyWebhooksToBase64(webhooks) }, { actorId });
         });
 
+        test('start() with max items works', async () => {
+            const actorId = 'some-id';
+
+            const res = await client.actor(actorId).start(undefined, { maxItems: 100 });
+            expect(res.id).toEqual('run-actor');
+            validateRequest({ maxItems: 100 }, { actorId });
+
+            const browserRes = await page.evaluate((id, opts) => client.actor(id).start(undefined, opts), actorId, { maxItems: 100 });
+            expect(browserRes).toEqual(res);
+            validateRequest({ maxItems: 100 }, { actorId });
+        });
+
         test('call() works', async () => {
             const actorId = 'some-id';
             const contentType = 'application/x-www-form-urlencoded';

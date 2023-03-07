@@ -66,9 +66,10 @@ export class ActorClient extends ResourceClient {
             timeout: ow.optional.number,
             waitForFinish: ow.optional.number,
             webhooks: ow.optional.array.ofType(ow.object),
+            maxItems: ow.optional.number,
         }));
 
-        const { waitForFinish, timeout, memory, build } = options;
+        const { waitForFinish, timeout, memory, build, maxItems } = options;
 
         const params = {
             waitForFinish,
@@ -76,6 +77,7 @@ export class ActorClient extends ResourceClient {
             memory,
             build,
             webhooks: stringifyWebhooksToBase64(options.webhooks),
+            maxItems,
         };
 
         const request: AxiosRequestConfig = {
@@ -324,6 +326,13 @@ export interface ActorStartOptions {
      * [ad hook webhooks documentation](https://docs.apify.com/webhooks/ad-hoc-webhooks) for detailed description.
      */
     webhooks?: readonly WebhookUpdateData[];
+
+    /**
+     * Specifies maximum number of items that the actor run should process.
+     * This is used by pay per result actors to limit the maximum number of results that will be charged to customer.
+     * Value can be accessed in actor run using `APIFY_ACTOR_MAX_ITEMS` environment variable.
+     */
+    maxItems?: number;
 }
 
 export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
