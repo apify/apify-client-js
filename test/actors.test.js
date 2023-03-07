@@ -220,6 +220,7 @@ describe('Actor methods', () => {
             const data = { id: runId, actId: actorId, status: 'SUCCEEDED' };
             const body = { data };
             const waitSecs = 1;
+            const maxItems = 100;
 
             mockServer.setResponse({ body });
             const res = await client.actor(actorId).call(input, {
@@ -228,6 +229,7 @@ describe('Actor methods', () => {
                 timeout,
                 build,
                 waitSecs,
+                maxItems,
             });
 
             expect(res).toEqual(data);
@@ -236,6 +238,7 @@ describe('Actor methods', () => {
                 timeout,
                 memory,
                 build,
+                maxItems,
             }, { actorId }, { some: 'body' }, { 'content-type': contentType });
 
             const callBrowserRes = await page.evaluate(
@@ -245,6 +248,7 @@ describe('Actor methods', () => {
                     timeout,
                     build,
                     waitSecs,
+                    maxItems,
                 },
             );
             expect(callBrowserRes).toEqual(res);
@@ -253,6 +257,7 @@ describe('Actor methods', () => {
                 timeout,
                 memory,
                 build,
+                maxItems,
             }, { actorId }, { some: 'body' }, { 'content-type': contentType });
         });
 

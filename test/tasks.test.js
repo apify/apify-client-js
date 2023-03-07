@@ -271,11 +271,13 @@ describe('Task methods', () => {
             const data = { id: runId, actId, status: 'SUCCEEDED' };
             const body = { data };
             const waitSecs = 1;
+            const maxItems = 100;
 
             const query = {
                 timeout,
                 memory,
                 build,
+                maxItems,
             };
 
             mockServer.setResponse({ body });
@@ -284,6 +286,7 @@ describe('Task methods', () => {
                 timeout,
                 build,
                 waitSecs,
+                maxItems,
             });
             expect(res).toEqual(data);
 
@@ -297,6 +300,7 @@ describe('Task methods', () => {
                     timeout,
                     build,
                     waitSecs,
+                    maxItems,
                 },
             );
             expect(callBrowserRes).toEqual(res);
@@ -305,6 +309,7 @@ describe('Task methods', () => {
                 timeout,
                 memory,
                 build,
+                maxItems,
             }, { taskId }, { some: 'body' });
         });
 
