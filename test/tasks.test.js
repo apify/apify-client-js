@@ -249,6 +249,17 @@ describe('Task methods', () => {
             validateRequest(query, { taskId });
         });
 
+        test('start() works with maxItems', async() => {
+            const taskId = 'some-id';
+            const res = await client.task(taskId).start(undefined, { maxItems: 100 });
+            expect(res.id).toEqual('run-task');
+            validateRequest({ maxItems: 100 }, { taskId });
+
+            const browserRes = await page.evaluate((id, opts) => client.task(id).start(undefined, opts), taskId, { maxItems: 100 });
+            expect(browserRes).toEqual(res);
+            validateRequest({ maxItems: 100 }, { taskId });
+        });
+
         test('call() works', async () => {
             const taskId = 'some-task-id';
             const input = { some: 'body' };
