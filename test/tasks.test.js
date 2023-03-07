@@ -249,7 +249,7 @@ describe('Task methods', () => {
             validateRequest(query, { taskId });
         });
 
-        test('start() works with maxItems', async() => {
+        test('start() works with maxItems', async () => {
             const taskId = 'some-id';
             const res = await client.task(taskId).start(undefined, { maxItems: 100 });
             expect(res.id).toEqual('run-task');
