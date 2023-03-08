@@ -330,7 +330,7 @@ export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish
     waitSecs?: number;
 }
 
-export interface ActorRunList {
+export interface ActorRunListItem {
     id: string;
     actId: string;
     actorTaskId?: string;
@@ -345,7 +345,7 @@ export interface ActorRunList {
     defaultRequestQueueId: string;
 }
 
-export interface ActorRun extends ActorRunList {
+export interface ActorRun extends ActorRunListItem {
     userId: string;
     statusMessage?: string;
     stats: ActorRunStats;
