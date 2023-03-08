@@ -220,7 +220,6 @@ describe('Actor methods', () => {
             const data = { id: runId, actId: actorId, status: 'SUCCEEDED' };
             const body = { data };
             const waitSecs = 1;
-            const maxItems = 100;
 
             mockServer.setResponse({ body });
             const res = await client.actor(actorId).call(input, {
@@ -229,7 +228,6 @@ describe('Actor methods', () => {
                 timeout,
                 build,
                 waitSecs,
-                maxItems,
             });
 
             expect(res).toEqual(data);
@@ -238,7 +236,6 @@ describe('Actor methods', () => {
                 timeout,
                 memory,
                 build,
-                maxItems,
             }, { actorId }, { some: 'body' }, { 'content-type': contentType });
 
             const callBrowserRes = await page.evaluate(
@@ -248,7 +245,6 @@ describe('Actor methods', () => {
                     timeout,
                     build,
                     waitSecs,
-                    maxItems,
                 },
             );
             expect(callBrowserRes).toEqual(res);
@@ -257,8 +253,33 @@ describe('Actor methods', () => {
                 timeout,
                 memory,
                 build,
-                maxItems,
             }, { actorId }, { some: 'body' }, { 'content-type': contentType });
+        });
+
+        test('call() works with maxItems', async () => {
+            const actorId = 'some-id';
+            const runId = 'started-run-id';
+            const data = { id: runId, actId: actorId, status: 'SUCCEEDED' };
+            const body = { data };
+            const waitSecs = 1;
+            const maxItems = 100;
+
+            mockServer.setResponse({ body });
+            const res = await client.actor(actorId).call(undefined, { waitSecs, maxItems });
+
+            expect(res).toEqual(data);
+            validateRequest({ waitForFinish: waitSecs }, { runId });
+            validateRequest({ maxItems }, { actorId });
+
+            const callBrowserRes = await page.evaluate(
+                (id, i, opts) => client.actor(id).call(i, opts), actorId, undefined, {
+                    waitSecs,
+                    maxItems,
+                },
+            );
+            expect(callBrowserRes).toEqual(res);
+            validateRequest({ waitForFinish: waitSecs }, { runId });
+            validateRequest({ maxItems }, { actorId });
         });
 
         test('build() works', async () => {

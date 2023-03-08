@@ -271,13 +271,11 @@ describe('Task methods', () => {
             const data = { id: runId, actId, status: 'SUCCEEDED' };
             const body = { data };
             const waitSecs = 1;
-            const maxItems = 100;
 
             const query = {
                 timeout,
                 memory,
                 build,
-                maxItems,
             };
 
             mockServer.setResponse({ body });
@@ -286,7 +284,6 @@ describe('Task methods', () => {
                 timeout,
                 build,
                 waitSecs,
-                maxItems,
             });
             expect(res).toEqual(data);
 
@@ -300,7 +297,6 @@ describe('Task methods', () => {
                     timeout,
                     build,
                     waitSecs,
-                    maxItems,
                 },
             );
             expect(callBrowserRes).toEqual(res);
@@ -309,8 +305,40 @@ describe('Task methods', () => {
                 timeout,
                 memory,
                 build,
-                maxItems,
             }, { taskId }, { some: 'body' });
+        });
+
+        test('call() works with maxItems', async () => {
+            const taskId = 'some-task-id';
+            const actId = 'started-actor-id';
+            const runId = 'started-run-id';
+            const data = { id: runId, actId, status: 'SUCCEEDED' };
+            const body = { data };
+            const waitSecs = 1;
+            const maxItems = 100;
+
+            const query = { maxItems };
+
+            mockServer.setResponse({ body });
+            const res = await client.task(taskId).call(undefined, {
+                waitSecs,
+                maxItems,
+            });
+            expect(res).toEqual(data);
+
+            expect(res).toEqual(data);
+            validateRequest({ waitForFinish: waitSecs }, { runId });
+            validateRequest(query, { taskId });
+
+            const callBrowserRes = await page.evaluate(
+                (id, i, opts) => client.task(id).call(i, opts), taskId, undefined, {
+                    waitSecs,
+                    maxItems,
+                },
+            );
+            expect(callBrowserRes).toEqual(res);
+            validateRequest({ waitForFinish: waitSecs }, { runId });
+            validateRequest({ maxItems }, { taskId });
         });
 
         test('webhooks().list() works', async () => {
