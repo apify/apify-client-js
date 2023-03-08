@@ -330,25 +330,46 @@ export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish
     waitSecs?: number;
 }
 
-export interface ActorRun {
+export interface ActorRunListItem {
     id: string;
     actId: string;
-    userId: string;
     actorTaskId?: string;
     startedAt: Date;
     finishedAt: Date;
     status: typeof ACT_JOB_STATUSES[keyof typeof ACT_JOB_STATUSES];
-    statusMessage?: string;
     meta: ActorRunMeta;
-    stats: ActorRunStats;
-    options: ActorRunOptions;
     buildId: string;
-    exitCode?: number;
+    buildNumber: string;
     defaultKeyValueStoreId: string;
     defaultDatasetId: string;
     defaultRequestQueueId: string;
-    buildNumber: string;
+}
+
+export interface ActorRun extends ActorRunListItem {
+    userId: string;
+    statusMessage?: string;
+    stats: ActorRunStats;
+    options: ActorRunOptions;
+    exitCode?: number;
     containerUrl: string;
+    isContainerServerReady?: boolean;
+    gitBranchName?: string;
+    usage?: ActorRunUsage
+}
+
+export interface ActorRunUsage {
+    ACTOR_COMPUTE_UNITS?: number;
+    DATASET_READS?: number,
+    DATASET_WRITES?: number;
+    KEY_VALUE_STORE_READS?: number;
+    KEY_VALUE_STORE_WRITES?: number;
+    KEY_VALUE_STORE_LISTS?: number;
+    REQUEST_QUEUE_READS?: number;
+    REQUEST_QUEUE_WRITES?: number;
+    DATA_TRANSFER_INTERNAL_GBYTES?: number;
+    DATA_TRANSFER_EXTERNAL_GBYTES?: number;
+    PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number;
+    PROXY_SERPS?: number;
 }
 
 export interface ActorRunMeta {
