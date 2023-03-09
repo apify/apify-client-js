@@ -114,13 +114,13 @@ export function isStream(value: unknown): value is ReadableStream {
     return ow.isValid(value, ow.object.hasKeys('on', 'pipe'));
 }
 
-export function dynamicRequire(path: string): { version: string; } {
+export function getVersionData(): { version: string; } {
     if (typeof BROWSER_BUILD !== 'undefined') {
         return { version: VERSION! };
     }
 
     // eslint-disable-next-line
-    return require(path);
+    return require('../package.json');
 }
 
 /**
