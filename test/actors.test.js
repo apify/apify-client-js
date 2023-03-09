@@ -197,6 +197,18 @@ describe('Actor methods', () => {
             validateRequest({ webhooks: stringifyWebhooksToBase64(webhooks) }, { actorId });
         });
 
+        test('start() with max items works', async () => {
+            const actorId = 'some-id';
+
+            const res = await client.actor(actorId).start(undefined, { maxItems: 100 });
+            expect(res.id).toEqual('run-actor');
+            validateRequest({ maxItems: 100 }, { actorId });
+
+            const browserRes = await page.evaluate((id, opts) => client.actor(id).start(undefined, opts), actorId, { maxItems: 100 });
+            expect(browserRes).toEqual(res);
+            validateRequest({ maxItems: 100 }, { actorId });
+        });
+
         test('call() works', async () => {
             const actorId = 'some-id';
             const contentType = 'application/x-www-form-urlencoded';
@@ -242,6 +254,32 @@ describe('Actor methods', () => {
                 memory,
                 build,
             }, { actorId }, { some: 'body' }, { 'content-type': contentType });
+        });
+
+        test('call() works with maxItems', async () => {
+            const actorId = 'some-id';
+            const runId = 'started-run-id';
+            const data = { id: runId, actId: actorId, status: 'SUCCEEDED' };
+            const body = { data };
+            const waitSecs = 1;
+            const maxItems = 100;
+
+            mockServer.setResponse({ body });
+            const res = await client.actor(actorId).call(undefined, { waitSecs, maxItems });
+
+            expect(res).toEqual(data);
+            validateRequest({ waitForFinish: waitSecs }, { runId });
+            validateRequest({ maxItems }, { actorId });
+
+            const callBrowserRes = await page.evaluate(
+                (id, i, opts) => client.actor(id).call(i, opts), actorId, undefined, {
+                    waitSecs,
+                    maxItems,
+                },
+            );
+            expect(callBrowserRes).toEqual(res);
+            validateRequest({ waitForFinish: waitSecs }, { runId });
+            validateRequest({ maxItems }, { actorId });
         });
 
         test('build() works', async () => {
