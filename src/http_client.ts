@@ -13,13 +13,13 @@ import {
 } from './interceptors';
 import {
     isNode,
-    dynamicRequire,
+    getVersionData,
     cast,
     isStream,
 } from './utils';
 import { Statistics } from './statistics';
 
-const { version } = dynamicRequire('../package.json');
+const { version } = getVersionData();
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 
