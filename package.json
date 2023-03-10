@@ -33,12 +33,12 @@
 	"license": "Apache-2.0",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/apifytech/apify-client-js"
+		"url": "git+https://github.com/apify/apify-client-js"
 	},
 	"bugs": {
-		"url": "https://github.com/apifytech/apify-client-js/issues"
+		"url": "https://github.com/apify/apify-client-js/issues"
 	},
-	"homepage": "https://apify.com/docs/sdk/apify-client-js/latest",
+	"homepage": "https://docs.apify.com/api/client/js/",
 	"files": [
 		"dist",
 		"!dist/*.tsbuildinfo",
