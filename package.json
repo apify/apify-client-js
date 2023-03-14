@@ -58,6 +58,7 @@
 	"dependencies": {
 		"@apify/consts": "^2.9.0",
 		"@apify/log": "^2.2.6",
+		"@crawlee/types": "^3.3.0",
 		"agentkeepalive": "^4.2.1",
 		"async-retry": "^1.3.3",
 		"axios": "^0.21.1",

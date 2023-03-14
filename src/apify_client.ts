@@ -1,7 +1,8 @@
 import ow from 'ow';
-import { ME_USER_NAME_PLACEHOLDER } from '@apify/consts';
+import { ME_USER_NAME_PLACEHOLDER, ENV_VARS } from '@apify/consts';
 import logger, { Log } from '@apify/log';
 
+import { SetStatusMessageOptions } from '@crawlee/types';
 import { HttpClient } from './http_client';
 import { Statistics } from './statistics';
 import { RequestInterceptorFunction } from './interceptors';
@@ -307,6 +308,15 @@ export class ApifyClient {
         return new WebhookDispatchClient({
             id,
             ...this._options(),
+        });
+    }
+
+    async setStatusMessage(message: string, options?: SetStatusMessageOptions): Promise<void> {
+        const runId = process.env[ENV_VARS.ACTOR_RUN_ID];
+        if (!runId) { throw new Error(`Environment variable ${ENV_VARS.ACTOR_RUN_ID} is not set!`); }
+        await this.run(runId).update({
+            statusMessage: message,
+            ...options,
         });
     }
 }
