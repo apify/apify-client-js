@@ -93,12 +93,7 @@ module.exports = {
                 routeBasePath: '/reference',
             },
         ],
-        // [
-        //     'docusaurus-gtm-plugin',
-        //     {
-        //         id: 'GTM-TKBX678',
-        //     },
-        // ],
+        ...config.plugins,
     ],
     themeConfig: { ...config.themeConfig, versions },
     staticDirectories: ['node_modules/@apify/docs-theme/static', 'static'],
