@@ -51,7 +51,7 @@ type ReturnJsonArray = Array<ReturnJsonValue>;
  * Helper function that traverses JSON structure and parses fields such as modifiedAt or createdAt to dates.
  */
 export function parseDateFields(input: JsonValue, depth = 0): ReturnJsonValue {
-    if (depth > PARSE_DATE_FIELDS_MAX_DEPTH) return input;
+    if (depth > PARSE_DATE_FIELDS_MAX_DEPTH) return input as ReturnJsonValue;
     if (Array.isArray(input)) return input.map((child) => parseDateFields(child, depth + 1));
     if (!input || typeof input !== 'object') return input;
 
