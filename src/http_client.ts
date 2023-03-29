@@ -13,13 +13,13 @@ import {
 } from './interceptors';
 import {
     isNode,
-    dynamicRequire,
+    getVersionData,
     cast,
     isStream,
 } from './utils';
 import { Statistics } from './statistics';
 
-const { version } = dynamicRequire('../package.json');
+const { version } = getVersionData();
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 
@@ -28,7 +28,7 @@ export class HttpClient {
 
     maxRetries: number;
 
-    minDelayBetweenRetriesMillis: number
+    minDelayBetweenRetriesMillis: number;
 
     userProvidedRequestInterceptors: RequestInterceptorFunction[];
 
@@ -70,10 +70,6 @@ export class HttpClient {
         }
 
         this.axios = axios.create({
-            headers: {
-                Accept: 'application/json, */*',
-                'X-Apify-Workflow-Key': this.workflowKey,
-            },
             httpAgent: this.httpAgent,
             httpsAgent: this.httpsAgent,
             paramsSerializer: (params) => {
@@ -100,13 +96,18 @@ export class HttpClient {
             maxContentLength: -1,
         });
 
-        // Clean all default headers because they only make a mess
-        // and their merging is difficult to understand and buggy.
+        // Clean all default headers because they only make a mess and their merging is difficult to understand and buggy.
         this.axios.defaults.headers = {};
+
+        // If workflow key is available, pass it as a header
+        if (this.workflowKey) {
+            this.axios.defaults.headers['X-Apify-Workflow-Key'] = this.workflowKey;
+        }
 
         if (isNode()) {
             // Works only in Node. Cannot be set in browser
-            const userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${!!process.env.IS_AT_HOME}`;
+            const isAtHome = !!process.env[ENV_VARS.IS_AT_HOME];
+            const userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${isAtHome}`;
             this.axios.defaults.headers['User-Agent'] = userAgent;
         }
 

@@ -3,7 +3,7 @@ import ow from 'ow';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
-import { ActorRun } from './actor';
+import { ActorRunListItem } from './actor';
 
 /**
  * @hideconstructor
@@ -19,7 +19,7 @@ export class RunCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/actors/run-collection/get-list-of-runs
      */
-    async list(options: RunCollectionListOptions = {}): Promise<PaginatedList<ActorRun>> {
+    async list(options: RunCollectionListOptions = {}): Promise<PaginatedList<ActorRunListItem>> {
         ow(options, ow.object.exactShape({
             limit: ow.optional.number,
             offset: ow.optional.number,

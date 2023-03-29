@@ -83,11 +83,7 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     /**
-     * Get requests from queue head and lock them.
-     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
-     *
-     * @private
-     * @experimental
+     * https://docs.apify.com/api/v2#/reference/request-queues/queue-head-with-locks/get-head-and-lock
      */
     async listAndLockHead(options: RequestQueueClientListAndLockHeadOptions): Promise<RequestQueueClientListAndLockHeadResult> {
         ow(options, ow.object.exactShape({
@@ -140,10 +136,8 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Writes requests to request queue in batch.
-     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
      *
      * @private
-     * @experimental
      */
     protected async _batchAddRequests(
         requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
@@ -232,11 +226,7 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     /**
-     * Writes multiple requests to request queue concurrently in batch with retries.
-     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
-     *
-     * @private
-     * @experimental
+     * https://docs.apify.com/api/v2#/reference/request-queues/batch-request-operations/add-requests
      */
     async batchAddRequests(
         requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
@@ -288,11 +278,7 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     /**
-     * Deletes requests from request queue in batch.
-     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
-     * TODO: Make retryable and parallelize
-     * @private
-     * @experimental
+     * https://docs.apify.com/api/v2#/reference/request-queues/batch-request-operations/delete-requests
      */
     async batchDeleteRequests(
         requests: RequestQueueClientRequestToDelete[],
@@ -379,10 +365,7 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     /**
-     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
-     *
-     * @private
-     * @experimental
+     * https://docs.apify.com/api/v2#/reference/request-queues/request-lock/prolong-request-lock
      */
     async prolongRequestLock(id: string, options: RequestQueueClientProlongRequestLockOptions): Promise<RequestQueueClientProlongRequestLockResult> {
         ow(id, ow.string);
@@ -406,10 +389,7 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     /**
-     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
-     *
-     * @private
-     * @experimental
+     * https://docs.apify.com/api/v2#/reference/request-queues/request-lock/delete-request-lock
      */
     async deleteRequestLock(id: string, options: RequestQueueClientDeleteRequestLockOptions = {}): Promise<void> {
         ow(id, ow.string);
@@ -429,10 +409,7 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     /**
-     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
-     *
-     * @private
-     * @experimental
+     * https://docs.apify.com/api/v2#/reference/request-queues/request-collection/list-requests
      */
     async listRequests(options: RequestQueueClientListRequestsOptions = {}): Promise<RequestQueueClientListRequestsResult> {
         ow(options, ow.object.exactShape({
@@ -455,14 +432,12 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     /**
-     * THIS METHOD IS EXPERIMENTAL AND NOT INTENDED FOR PRODUCTION USE.
+     * https://docs.apify.com/api/v2#/reference/request-queues/request-collection/list-requests
      *
      * Usage:
      * for await (const { items } of client.paginateRequests({ limit: 10 })) {
      *   items.forEach((request) => console.log(request));
      * }
-     * @private
-     * @experimental
      */
     paginateRequests(
         options: RequestQueueClientPaginateRequestsOptions = {},

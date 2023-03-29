@@ -66,9 +66,10 @@ export class ActorClient extends ResourceClient {
             timeout: ow.optional.number,
             waitForFinish: ow.optional.number,
             webhooks: ow.optional.array.ofType(ow.object),
+            maxItems: ow.optional.number.not.negative,
         }));
 
-        const { waitForFinish, timeout, memory, build } = options;
+        const { waitForFinish, timeout, memory, build, maxItems } = options;
 
         const params = {
             waitForFinish,
@@ -76,6 +77,7 @@ export class ActorClient extends ResourceClient {
             memory,
             build,
             webhooks: stringifyWebhooksToBase64(options.webhooks),
+            maxItems,
         };
 
         const request: AxiosRequestConfig = {
@@ -115,6 +117,7 @@ export class ActorClient extends ResourceClient {
             timeout: ow.optional.number.not.negative,
             waitSecs: ow.optional.number.not.negative,
             webhooks: ow.optional.array.ofType(ow.object),
+            maxItems: ow.optional.number.not.negative,
         }));
 
         const { waitSecs, ...startOptions } = options;
@@ -269,7 +272,7 @@ export interface ActorTaggedBuild {
     finishedAt?: Date;
 }
 
-export type ActorUpdateOptions = Pick<
+export type ActorUpdateOptions = Partial<Pick<
     Actor,
     | 'name'
     | 'description'
@@ -282,7 +285,7 @@ export type ActorUpdateOptions = Pick<
     | 'versions'
     | 'categories'
     | 'defaultRunOptions'
-    >
+    >>
 
 export interface ActorStartOptions {
     /**
@@ -324,31 +327,59 @@ export interface ActorStartOptions {
      * [ad hook webhooks documentation](https://docs.apify.com/webhooks/ad-hoc-webhooks) for detailed description.
      */
     webhooks?: readonly WebhookUpdateData[];
+
+    /**
+     * Specifies maximum number of items that the actor run should return.
+     * This is used by pay per result actors to limit the maximum number of results that will be charged to customer.
+     * Value can be accessed in actor run using `APIFY_ACTOR_MAX_ITEMS` environment variable.
+     */
+    maxItems?: number;
 }
 
 export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
     waitSecs?: number;
 }
 
-export interface ActorRun {
+export interface ActorRunListItem {
     id: string;
     actId: string;
-    userId: string;
     actorTaskId?: string;
     startedAt: Date;
     finishedAt: Date;
     status: typeof ACT_JOB_STATUSES[keyof typeof ACT_JOB_STATUSES];
-    statusMessage?: string;
     meta: ActorRunMeta;
-    stats: ActorRunStats;
-    options: ActorRunOptions;
     buildId: string;
-    exitCode?: number;
+    buildNumber: string;
     defaultKeyValueStoreId: string;
     defaultDatasetId: string;
     defaultRequestQueueId: string;
-    buildNumber: string;
+}
+
+export interface ActorRun extends ActorRunListItem {
+    userId: string;
+    statusMessage?: string;
+    stats: ActorRunStats;
+    options: ActorRunOptions;
+    exitCode?: number;
     containerUrl: string;
+    isContainerServerReady?: boolean;
+    gitBranchName?: string;
+    usage?: ActorRunUsage
+}
+
+export interface ActorRunUsage {
+    ACTOR_COMPUTE_UNITS?: number;
+    DATASET_READS?: number,
+    DATASET_WRITES?: number;
+    KEY_VALUE_STORE_READS?: number;
+    KEY_VALUE_STORE_WRITES?: number;
+    KEY_VALUE_STORE_LISTS?: number;
+    REQUEST_QUEUE_READS?: number;
+    REQUEST_QUEUE_WRITES?: number;
+    DATA_TRANSFER_INTERNAL_GBYTES?: number;
+    DATA_TRANSFER_EXTERNAL_GBYTES?: number;
+    PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number;
+    PROXY_SERPS?: number;
 }
 
 export interface ActorRunMeta {

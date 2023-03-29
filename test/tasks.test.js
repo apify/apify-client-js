@@ -249,6 +249,17 @@ describe('Task methods', () => {
             validateRequest(query, { taskId });
         });
 
+        test('start() works with maxItems', async () => {
+            const taskId = 'some-id';
+            const res = await client.task(taskId).start(undefined, { maxItems: 100 });
+            expect(res.id).toEqual('run-task');
+            validateRequest({ maxItems: 100 }, { taskId });
+
+            const browserRes = await page.evaluate((id, opts) => client.task(id).start(undefined, opts), taskId, { maxItems: 100 });
+            expect(browserRes).toEqual(res);
+            validateRequest({ maxItems: 100 }, { taskId });
+        });
+
         test('call() works', async () => {
             const taskId = 'some-task-id';
             const input = { some: 'body' };
@@ -295,6 +306,39 @@ describe('Task methods', () => {
                 memory,
                 build,
             }, { taskId }, { some: 'body' });
+        });
+
+        test('call() works with maxItems', async () => {
+            const taskId = 'some-task-id';
+            const actId = 'started-actor-id';
+            const runId = 'started-run-id';
+            const data = { id: runId, actId, status: 'SUCCEEDED' };
+            const body = { data };
+            const waitSecs = 1;
+            const maxItems = 100;
+
+            const query = { maxItems };
+
+            mockServer.setResponse({ body });
+            const res = await client.task(taskId).call(undefined, {
+                waitSecs,
+                maxItems,
+            });
+            expect(res).toEqual(data);
+
+            expect(res).toEqual(data);
+            validateRequest({ waitForFinish: waitSecs }, { runId });
+            validateRequest(query, { taskId });
+
+            const callBrowserRes = await page.evaluate(
+                (id, i, opts) => client.task(id).call(i, opts), taskId, undefined, {
+                    waitSecs,
+                    maxItems,
+                },
+            );
+            expect(callBrowserRes).toEqual(res);
+            validateRequest({ waitForFinish: waitSecs }, { runId });
+            validateRequest({ maxItems }, { taskId });
         });
 
         test('webhooks().list() works', async () => {

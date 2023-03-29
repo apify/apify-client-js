@@ -1,0 +1,16 @@
+{
+    "single-title": false,
+    "line-length": false,
+    "code-block-style": {
+        "style": "fenced"
+    },
+    "no-inline-html": false,
+    "no-trailing-punctuation": {
+        "punctuation": ".,;:。，；:"
+    },
+    "no-multiple-blanks": {
+        "maximum": 2
+    },
+    "no-space-in-emphasis": false,
+    "link-fragments": false
+}

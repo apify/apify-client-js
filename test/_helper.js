@@ -1,9 +1,9 @@
-const Apify = require('apify');
+const { launchPuppeteer, puppeteerUtils } = require('@crawlee/puppeteer');
 const mockServer = require('./mock_server/server');
 
 class Browser {
     async start() {
-        this.browser = await Apify.launchPuppeteer({
+        this.browser = await launchPuppeteer({
             launchOptions: { headless: true, args: ['--disable-web-security'] },
         });
         return this.browser;
@@ -11,8 +11,9 @@ class Browser {
 
     async getInjectedPage(baseUrl, DEFAULT_OPTIONS) {
         const page = await this.browser.newPage();
-        await Apify.utils.puppeteer.injectFile(page, `${__dirname}/../dist/bundle.js`);
+        await puppeteerUtils.injectFile(page, `${__dirname}/../dist/bundle.js`);
 
+        // eslint-disable-next-line no-console
         page.on('console', (msg) => console.log(msg.text()));
         await page.evaluate((url, defaultQuery) => {
             window.client = new window.Apify.ApifyClient({
@@ -25,7 +26,7 @@ class Browser {
     }
 
     async cleanUpBrowser() {
-        return this.browser.close();
+        return this.browser.close.call(this.browser);
     }
 }
 

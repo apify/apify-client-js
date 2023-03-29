@@ -14,25 +14,25 @@ jobs:
 
         strategy:
             matrix:
-                node-version: [14, 16]
+                node-version: [16, 18]
 
         steps:
             -
-                uses: actions/checkout@v2
+                uses: actions/checkout@v3
             -
                 name: Use Node.js ${{ matrix.node-version }}
-                uses: actions/setup-node@v1
+                uses: actions/setup-node@v3
                 with:
                     node-version: ${{ matrix.node-version }}
             -
                 name: Cache Node Modules
-                if: ${{ matrix.node-version == 14 }}
-                uses: actions/cache@v2
+                if: ${{ matrix.node-version == 16 }}
+                uses: actions/cache@v3
                 with:
                     path: |
                         node_modules
                         build
-                    key: cache-${{ github.run_id }}-v14
+                    key: cache-${{ github.run_id }}-v16
             -
                 name: Install Dependencies
                 run: npm install
@@ -47,19 +47,42 @@ jobs:
 
         steps:
             -
-                uses: actions/checkout@v2
+                uses: actions/checkout@v3
             -
-                name: Use Node.js 14
-                uses: actions/setup-node@v1
+                name: Use Node.js 16
+                uses: actions/setup-node@v3
                 with:
-                    node-version: 14
+                    node-version: 16
             -
                 name: Load Cache
-                uses: actions/cache@v2
+                uses: actions/cache@v3
                 with:
                     path: |
                         node_modules
                         build
-                    key: cache-${{ github.run_id }}-v14
+                    key: cache-${{ github.run_id }}-v16
             -
                 run: npm run lint
+
+    docs:
+        name: Docs build
+        if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout Source code
+                uses: actions/checkout@v3
+
+            -   name: Use Node.js 16
+                uses: actions/setup-node@v3
+                with:
+                    node-version: 16
+                    cache: 'npm'
+                    cache-dependency-path: 'package-lock.json'
+
+            -   name: Install & build & deploy docs
+                run: |
+                    npm ci --force
+                    cd website
+                    npm ci --force
+                    npm run lint
+                    npm run build

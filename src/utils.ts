@@ -51,7 +51,7 @@ type ReturnJsonArray = Array<ReturnJsonValue>;
  * Helper function that traverses JSON structure and parses fields such as modifiedAt or createdAt to dates.
  */
 export function parseDateFields(input: JsonValue, depth = 0): ReturnJsonValue {
-    if (depth > PARSE_DATE_FIELDS_MAX_DEPTH) return input;
+    if (depth > PARSE_DATE_FIELDS_MAX_DEPTH) return input as ReturnJsonValue;
     if (Array.isArray(input)) return input.map((child) => parseDateFields(child, depth + 1));
     if (!input || typeof input !== 'object') return input;
 
@@ -114,13 +114,13 @@ export function isStream(value: unknown): value is ReadableStream {
     return ow.isValid(value, ow.object.hasKeys('on', 'pipe'));
 }
 
-export function dynamicRequire(path: string): { version: string; } {
+export function getVersionData(): { version: string; } {
     if (typeof BROWSER_BUILD !== 'undefined') {
         return { version: VERSION! };
     }
 
     // eslint-disable-next-line
-    return require(path);
+    return require('../package.json');
 }
 
 /**
@@ -175,7 +175,7 @@ export interface PaginationIteratorOptions {
     exclusiveStartId?: string;
 }
 
-export interface PaginatedList<Data extends unknown> {
+export interface PaginatedList<Data> {
     /** Total count of entries in the dataset. */
     total: number;
     /** Count of dataset entries returned in this set. */
