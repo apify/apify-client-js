@@ -331,7 +331,7 @@ export interface ActorStartOptions {
     /**
      * Specifies maximum number of items that the actor run should return.
      * This is used by pay per result actors to limit the maximum number of results that will be charged to customer.
-     * Value can be accessed in actor run using `APIFY_ACTOR_MAX_ITEMS` environment variable.
+     * Value can be accessed in actor run using `ACTOR_MAX_PAID_DATASET_ITEMS` environment variable.
      */
     maxItems?: number;
 }
