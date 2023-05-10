@@ -96,7 +96,7 @@ export interface Build {
     readme?: string;
     buildNumber: string;
     usage?: BuildUsage;
-    usageUsdTotal?: number;
+    usageTotalUsd?: number;
     usageUsd?: BuildUsage;
 }
 

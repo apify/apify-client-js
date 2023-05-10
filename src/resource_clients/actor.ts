@@ -353,7 +353,7 @@ export interface ActorRunListItem {
     defaultKeyValueStoreId: string;
     defaultDatasetId: string;
     defaultRequestQueueId: string;
-    usageUsdTotal?: number;
+    usageTotalUsd?: number;
 }
 
 export interface ActorRun extends ActorRunListItem {
