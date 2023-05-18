@@ -94,7 +94,14 @@ export interface Build {
     options?: BuildOptions;
     inputSchema?: string;
     readme?: string;
-    buildNumber: string
+    buildNumber: string;
+    usage?: BuildUsage;
+    usageTotalUsd?: number;
+    usageUsd?: BuildUsage;
+}
+
+export interface BuildUsage {
+    ACTOR_COMPUTE_UNITS?: number;
 }
 
 export interface BuildStats {

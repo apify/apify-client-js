@@ -353,6 +353,7 @@ export interface ActorRunListItem {
     defaultKeyValueStoreId: string;
     defaultDatasetId: string;
     defaultRequestQueueId: string;
+    usageTotalUsd?: number;
 }
 
 export interface ActorRun extends ActorRunListItem {
@@ -364,7 +365,8 @@ export interface ActorRun extends ActorRunListItem {
     containerUrl: string;
     isContainerServerReady?: boolean;
     gitBranchName?: string;
-    usage?: ActorRunUsage
+    usage?: ActorRunUsage;
+    usageUsd?: ActorRunUsage;
 }
 
 export interface ActorRunUsage {
