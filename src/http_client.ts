@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } f
 import retry, { RetryFunction } from 'async-retry';
 import KeepAliveAgent from 'agentkeepalive';
 import os from 'os';
-import { ENV_VARS } from '@apify/consts';
+import { APIFY_ENV_VARS } from '@apify/consts';
 import { Log } from '@apify/log';
 import { ApifyApiError } from './apify_api_error';
 import {
@@ -52,7 +52,7 @@ export class HttpClient {
         this.userProvidedRequestInterceptors = options.requestInterceptors;
         this.timeoutMillis = options.timeoutSecs * 1000;
         this.logger = options.logger;
-        this.workflowKey = options.workflowKey || process.env[ENV_VARS.WORKFLOW_KEY];
+        this.workflowKey = options.workflowKey || process.env[APIFY_ENV_VARS.WORKFLOW_KEY];
         this._onRequestRetry = this._onRequestRetry.bind(this);
 
         if (isNode()) {
@@ -106,7 +106,7 @@ export class HttpClient {
 
         if (isNode()) {
             // Works only in Node. Cannot be set in browser
-            const isAtHome = !!process.env[ENV_VARS.IS_AT_HOME];
+            const isAtHome = !!process.env[APIFY_ENV_VARS.IS_AT_HOME];
             const userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${isAtHome}`;
             this.axios.defaults.headers['User-Agent'] = userAgent;
         }
