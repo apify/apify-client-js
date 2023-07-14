@@ -1,5 +1,5 @@
 import ow from 'ow';
-import { ME_USER_NAME_PLACEHOLDER, ACTOR_ENV_VARS, APIFY_ENV_VARS } from '@apify/consts';
+import { ME_USER_NAME_PLACEHOLDER, ACTOR_ENV_VARS } from '@apify/consts';
 import logger, { Log } from '@apify/log';
 
 import { SetStatusMessageOptions } from '@crawlee/types';
@@ -312,8 +312,7 @@ export class ApifyClient {
     }
 
     async setStatusMessage(message: string, options?: SetStatusMessageOptions): Promise<void> {
-        // TODO: Keep backwards compatibility or just do a breaking change?
-        const runId = process.env[ACTOR_ENV_VARS.RUN_ID] || process.env[APIFY_ENV_VARS.ACTOR_RUN_ID];
+        const runId = process.env[ACTOR_ENV_VARS.RUN_ID];
         if (!runId) { throw new Error(`Environment variable ${ACTOR_ENV_VARS.RUN_ID} is not set!`); }
         await this.run(runId).update({
             statusMessage: message,
