@@ -35,6 +35,6 @@ export interface BuildCollectionClientListOptions {
     desc?: boolean;
 }
 
-export type BuildCollectionClientListItem = Required<Pick<Build, 'id' | 'status' | 'startedAt' | 'finishedAt'>> & Partial<Pick<Build, 'meta'>>
+export type BuildCollectionClientListItem = Required<Pick<Build, 'id' | 'status' | 'startedAt' | 'finishedAt'>> & Partial<Pick<Build, 'meta' | 'usageTotalUsd'>>
 
 export type BuildCollectionClientListResult = PaginatedList<BuildCollectionClientListItem>;
