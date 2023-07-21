@@ -14,11 +14,11 @@ function Hero() {
                     <div className={clsx(styles.relative, 'row')}>
                         <div className="col">
                             <h1 className={styles.tagline}>
-                                Apify API client for JavaScript.
+                                Apify API client for JavaScript
                             </h1>
                             <h1 className={styles.tagline}>
                                 {/* eslint-disable-next-line max-len */}
-                                <span>Apify API client</span> for JavaScript.
+                                <span>Apify API client</span> for JavaScript
                             </h1>
                         </div>
                     </div>
@@ -26,9 +26,8 @@ function Hero() {
                         <div className="col">
                             <h2></h2>
                             <h2>
-                            Apify API Client for JavaScript is the official library to access Apify API from your browser, Node.js,
-                            and TypeScript applications. It provides useful features like automatic retries and convenience functions
-                            that improve the Apify API experience.
+                            The official library to interact with Apify API from a web browser, Node.js, JavaScript,
+                            or TypeScript applications, providing convenience functions and automatic retries on errors.
                             </h2>
                         </div>
                     </div>
@@ -68,8 +67,8 @@ export default function Home() {
                     <div className="row padding-horiz--md" >
                         <div className="col col--4">
                             <p style={{ lineHeight: '200%' }}>
-                            Using Apify Client for JavaScript, you can easily run your own actors or actors from Apify Store
-                            and await them to finish using the convenient .call() method and retrieve results from the resulting dataset.
+                            Easily run Actors, await them to finish using the convenient <code>.call()</code> method,
+                            and retrieve results from the resulting dataset.
                             </p>
                         </div>
                         <div className="col col--8">
