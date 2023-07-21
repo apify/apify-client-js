@@ -1,5 +1,6 @@
 ---
 sidebar_label: 'Quick start'
+title: 'Quick start'
 ---
 
 # Apify API client for JavaScript
