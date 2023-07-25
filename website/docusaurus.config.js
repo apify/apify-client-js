@@ -23,7 +23,7 @@ module.exports = {
             /** @type { import('@apify/docs-theme/types').ThemeOptions } */
             {
                 subNavbar: {
-                    title: 'Apify Client JS',
+                    title: 'API client for JavaScript',
                     items: [
                         {
                             to: 'docs',
