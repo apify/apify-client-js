@@ -254,7 +254,7 @@ export class RequestQueueClient extends ResourceClient {
             const requestsInBatch = requests.slice(i, i + MAX_REQUESTS_PER_BATCH_OPERATION);
             const requestPromise = this._batchAddRequestsWithRetries(requestsInBatch, options);
             executingRequests.add(requestPromise);
-            requestPromise.then((batchAddResult) => {
+            void requestPromise.then((batchAddResult) => {
                 executingRequests.delete(requestPromise);
                 individualResults.push(batchAddResult);
             });

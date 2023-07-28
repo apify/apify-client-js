@@ -1,6 +1,6 @@
-import ow from 'ow';
 import util from 'util';
 import zlib from 'zlib';
+import ow from 'ow';
 import type { TypedArray, JsonValue } from 'type-fest';
 import { ApifyApiError } from './apify_api_error';
 import { WebhookUpdateData } from './resource_clients/webhook';

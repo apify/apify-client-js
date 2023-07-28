@@ -1,7 +1,7 @@
-const bodyParser = require('body-parser');
-const express = require('express');
 const path = require('path');
 const http = require('http');
+const bodyParser = require('body-parser');
+const express = require('express');
 const compression = require('compression');
 
 // Routers
