@@ -18,6 +18,7 @@ const webhooks = require('./routes/webhooks');
 const schedules = require('./routes/schedules');
 const webhookDispatches = require('./routes/webhook_dispatches');
 const external = require('./routes/external');
+const store = require('./routes/store');
 
 const app = express();
 const v2Router = express.Router();
@@ -85,6 +86,7 @@ v2Router.use('/request-queues', requestQueues);
 v2Router.use('/webhooks', webhooks);
 v2Router.use('/schedules', schedules);
 v2Router.use('/webhook-dispatches', webhookDispatches);
+v2Router.use('/store', store);
 
 // Debugging middleware
 app.use((err, req, res, next) => { // eslint-disable-line

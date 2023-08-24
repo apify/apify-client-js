@@ -29,6 +29,7 @@ import { WebhookClient } from './resource_clients/webhook';
 import { WebhookCollectionClient } from './resource_clients/webhook_collection';
 import { WebhookDispatchClient } from './resource_clients/webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './resource_clients/webhook_dispatch_collection';
+import { StoreCollectionClient } from './resource_clients/store_collection';
 
 /**
  * ApifyClient is the official library to access [Apify API](https://docs.apify.com/api/v2) from your
@@ -309,6 +310,13 @@ export class ApifyClient {
             id,
             ...this._options(),
         });
+    }
+
+    /**
+     * https://docs.apify.com/api/v2/#/reference/store
+     */
+    store(): StoreCollectionClient {
+        return new StoreCollectionClient(this._options());
     }
 
     async setStatusMessage(message: string, options?: SetStatusMessageOptions): Promise<void> {
