@@ -3,10 +3,10 @@ import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import { ActorEnvironmentVariable } from './actor_version';
 
-/**
- * @hideconstructor
- */
 export class ActorEnvVarClient extends ResourceClient {
+    /**
+     * @hidden
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'env-vars',

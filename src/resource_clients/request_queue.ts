@@ -20,14 +20,14 @@ const DEFAULT_UNPROCESSED_RETRIES_BATCH_ADD_REQUESTS = 3;
 const DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS = 500;
 const DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT = 1000;
 
-/**
- * @hideconstructor
- */
 export class RequestQueueClient extends ResourceClient {
     private clientKey?: string;
 
     private timeoutMillis?: number;
 
+    /**
+     * @hidden
+     */
     constructor(options: ApiClientSubResourceOptions, userOptions: RequestQueueUserOptions = {}) {
         super({
             resourcePath: 'request-queues',

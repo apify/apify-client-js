@@ -15,10 +15,10 @@ import {
     pluckData,
 } from '../utils';
 
-/**
- * @hideconstructor
- */
 export class KeyValueStoreClient extends ResourceClient {
+    /**
+     * @hidden
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'key-value-stores',

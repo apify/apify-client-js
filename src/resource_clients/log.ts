@@ -7,10 +7,10 @@ import {
     catchNotFoundOrThrow,
 } from '../utils';
 
-/**
- * @hideconstructor
- */
 export class LogClient extends ResourceClient {
+    /**
+     * @hidden
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'logs',
