@@ -4,10 +4,10 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
 import { ActorStats } from './actor';
 
-/**
- * @hidden
- */
 export class StoreCollectionClient extends ResourceCollectionClient {
+    /**
+     * @hidden
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'store',
