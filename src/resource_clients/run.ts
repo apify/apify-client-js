@@ -13,10 +13,10 @@ import {
 import { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ActorRun } from './actor';
 
-/**
- * @hideconstructor
- */
 export class RunClient extends ResourceClient {
+    /**
+     * @hidden
+     */
     constructor(options: ApiClientOptionsWithOptionalResourcePath) {
         super({
             ...options,

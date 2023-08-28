@@ -4,10 +4,10 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
 import { ActorVersion, FinalActorVersion } from './actor_version';
 
-/**
- * @hideconstructor
- */
 export class ActorVersionCollectionClient extends ResourceCollectionClient {
+    /**
+     * @hidden
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'versions',

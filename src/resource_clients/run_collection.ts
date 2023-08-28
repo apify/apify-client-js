@@ -5,10 +5,10 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
 import { ActorRunListItem } from './actor';
 
-/**
- * @hideconstructor
- */
 export class RunCollectionClient extends ResourceCollectionClient {
+    /**
+     * @hidden
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'runs',

@@ -4,10 +4,10 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
 import { RequestQueue } from './request_queue';
 
-/**
- * @hideconstructor
- */
 export class RequestQueueCollectionClient extends ResourceCollectionClient {
+    /**
+     * @hidden
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'request-queues',

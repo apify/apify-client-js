@@ -11,10 +11,10 @@ import {
     cast,
 } from '../utils';
 
-/**
- * @hideconstructor
- */
 export class ScheduleClient extends ResourceClient {
+    /**
+     * @hidden
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'schedules',

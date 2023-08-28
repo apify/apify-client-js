@@ -4,10 +4,10 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
 import { Dataset } from './dataset';
 
-/**
- * @hideconstructor
- */
 export class DatasetCollectionClient extends ResourceCollectionClient {
+    /**
+     * @hidden
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'datasets',

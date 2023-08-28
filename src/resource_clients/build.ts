@@ -8,10 +8,10 @@ import {
     pluckData,
 } from '../utils';
 
-/**
- * @hideconstructor
- */
 export class BuildClient extends ResourceClient {
+    /**
+     * @hidden
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'actor-builds',

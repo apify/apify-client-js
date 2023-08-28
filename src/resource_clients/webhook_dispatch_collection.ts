@@ -4,10 +4,10 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
 import { WebhookDispatch } from './webhook_dispatch';
 
-/**
- * @hideconstructor
- */
 export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
+    /**
+     * @hidden
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'webhook-dispatches',

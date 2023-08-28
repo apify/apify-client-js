@@ -4,10 +4,10 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
 import { Build } from './build';
 
-/**
- * @hideconstructor
- */
 export class BuildCollectionClient extends ResourceCollectionClient {
+    /**
+     * @hidden
+     */
     constructor(options: ApiClientOptions) {
         super({
             ...options,

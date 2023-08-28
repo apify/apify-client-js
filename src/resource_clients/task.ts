@@ -17,10 +17,10 @@ import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
 import { WebhookCollectionClient } from './webhook_collection';
 
-/**
- * @hideconstructor
- */
 export class TaskClient extends ResourceClient {
+    /**
+     * @hidden
+     */
     constructor(options: ApiClientSubResourceOptions) {
         super({
             resourcePath: 'actor-tasks',
