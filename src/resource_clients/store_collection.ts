@@ -5,7 +5,7 @@ import { PaginatedList } from '../utils';
 import { ActorStats } from './actor';
 
 /**
- * @hideconstructor
+ * @hidden
  */
 export class StoreCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions) {
@@ -17,15 +17,6 @@ export class StoreCollectionClient extends ResourceCollectionClient {
 
     /**
      * https://docs.apify.com/api/v2/#/reference/store/store-actors-collection/get-list-of-actors-in-store
-     * @param {object} [options]
-     * @param {number} [options.limit]
-     * @param {number} [options.offset]
-     * @param {string} [options.search]
-     * @param {string} [options.sortBy]
-     * @param {string} [options.category]
-     * @param {string} [options.username]
-     * @param {string} [options.pricingModel]
-     * @return {Promise<PaginationList>}
      */
     async list(options: StoreCollectionListOptions = {}): Promise<PaginatedList<ActorStoreList>> {
         ow(options, ow.object.exactShape({
