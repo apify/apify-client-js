@@ -1,7 +1,7 @@
 import os from 'os';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import retry, { RetryFunction } from 'async-retry';
-import KeepAliveAgent = require('agentkeepalive');
+import * as KeepAliveAgent from 'agentkeepalive';
 import { APIFY_ENV_VARS } from '@apify/consts';
 import { Log } from '@apify/log';
 import { ApifyApiError } from './apify_api_error';
