@@ -1,6 +1,6 @@
 {
 	"name": "apify-client",
-	"version": "2.7.2",
+	"version": "2.7.3",
 	"description": "Apify API client for JavaScript",
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",
