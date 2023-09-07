@@ -18,7 +18,7 @@ jobs:
 
         steps:
             -
-                uses: actions/checkout@v3
+                uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4
             -
                 name: Use Node.js ${{ matrix.node-version }}
                 uses: actions/setup-node@v3
@@ -47,7 +47,7 @@ jobs:
 
         steps:
             -
-                uses: actions/checkout@v3
+                uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4
             -
                 name: Use Node.js 16
                 uses: actions/setup-node@v3
@@ -70,7 +70,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   name: Checkout Source code
-                uses: actions/checkout@v3
+                uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4
 
             -   name: Use Node.js 16
                 uses: actions/setup-node@v3
