@@ -7,6 +7,7 @@ const ROUTES = [
     { id: 'get-run', method: 'GET', path: '/:runId', type: 'responseJsonMock' },
     { id: 'abort-run', method: 'POST', path: '/:runId/abort' },
     { id: 'metamorph-run', method: 'POST', path: '/:runId/metamorph' },
+    { id: 'reboot-run', method: 'POST', path: '/:runId/reboot' },
     { id: 'resurrect-run', method: 'POST', path: '/:runId/resurrect' },
     { id: 'run-dataset', method: 'GET', path: '/:runId/dataset' },
     { id: 'run-keyValueStore', method: 'GET', path: '/:runId/key-value-store' },

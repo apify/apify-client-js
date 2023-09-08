@@ -92,6 +92,19 @@ export class RunClient extends ResourceClient {
         return cast(parseDateFields(pluckData(response.data)));
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/actor-runs/reboot-run/reboot-run
+     */
+    async reboot(): Promise<ActorRun> {
+        const request: AxiosRequestConfig = {
+            url: this._url('reboot'),
+            method: 'POST',
+        };
+
+        const response = await this.httpClient.call(request);
+        return cast(parseDateFields(pluckData(response.data)));
+    }
+
     async update(newFields: RunUpdateOptions) : Promise<ActorRun> {
         ow(newFields, ow.object);
 

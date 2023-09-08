@@ -169,6 +169,18 @@ describe('Run methods', () => {
         validateRequest(...expectedRequest);
     });
 
+    test('reboot() works', async () => {
+        const runId = 'some-run-id';
+
+        const res = await client.run(runId).reboot();
+        expect(res.id).toEqual('reboot-run');
+        validateRequest({}, { runId });
+
+        const browserRes = await page.evaluate((rId) => client.run(rId).reboot(), runId);
+        expect(browserRes).toEqual(res);
+        validateRequest({}, { runId });
+    });
+
     test('waitForFinish() works', async () => {
         const runId = 'some-run-id';
         const waitSecs = 0.1;
