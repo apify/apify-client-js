@@ -71,6 +71,14 @@ describe('utils.parseDateFields()', () => {
         expect(parsed.fooAt).toEqual(null);
         expect(parsed.barAt).toEqual('');
     });
+
+    test('doesn\'t mangle non-date strings', () => {
+        const original = { fooAt: 'three days ago', barAt: '30+ days' };
+        const parsed = utils.parseDateFields(original);
+
+        expect(parsed.fooAt).toEqual('three days ago');
+        expect(parsed.barAt).toEqual('30+ days');
+    });
 });
 
 describe('utils.stringifyWebhooksToBase64()', () => {
