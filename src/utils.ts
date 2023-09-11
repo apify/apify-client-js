@@ -60,7 +60,7 @@ export function parseDateFields(input: JsonValue, depth = 0): ReturnJsonValue {
         if (k.endsWith(PARSE_DATE_FIELDS_KEY_SUFFIX)) {
             if (v) {
                 const d = new Date(v as string);
-                output[k] = isNaN(d.getTime()) ? v as string : d;
+                output[k] = Number.isNaN(d.getTime()) ? v as string : d;
             } else {
                 output[k] = v;
             }
