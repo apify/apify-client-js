@@ -60,8 +60,7 @@ export function parseDateFields(input: JsonValue, depth = 0): ReturnJsonValue {
         if (k.endsWith(PARSE_DATE_FIELDS_KEY_SUFFIX)) {
             if (v) {
                 const d = new Date(v as string);
-                // eslint-disable-next-line no-self-compare
-                output[k] = d.getTime() === d.getTime() ? d : v as string;
+                output[k] = isNaN(d.getTime()) ? v as string : d;
             } else {
                 output[k] = v;
             }
