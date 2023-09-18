@@ -1219,10 +1219,6 @@
                                                             },
                                                             {
                                                                 "type": "literal",
-                                                                "value": "issuesEnabled"
-                                                            },
-                                                            {
-                                                                "type": "literal",
                                                                 "value": "title"
                                                             },
                                                             {
@@ -14924,27 +14920,6 @@
                             "line": 225,
                             "character": 4,
                             "url": "https://github.com/apify/apify-client-js/blob/bffb2a2/src/resource_clients/actor.ts#L225"
-                        }
-                    ],
-                    "type": {
-                        "type": "intrinsic",
-                        "name": "boolean"
-                    }
-                },
-                {
-                    "id": 246,
-                    "name": "issuesEnabled",
-                    "kind": 1024,
-                    "kindString": "Property",
-                    "flags": {
-                        "isOptional": true
-                    },
-                    "sources": [
-                        {
-                            "fileName": "src/resource_clients/actor.ts",
-                            "line": 237,
-                            "character": 4,
-                            "url": "https://github.com/apify/apify-client-js/blob/bffb2a2/src/resource_clients/actor.ts#L237"
                         }
                     ],
                     "type": {
@@ -32189,10 +32164,6 @@
                                     {
                                         "type": "literal",
                                         "value": "seoDescription"
-                                    },
-                                    {
-                                        "type": "literal",
-                                        "value": "issuesEnabled"
                                     },
                                     {
                                         "type": "literal",
