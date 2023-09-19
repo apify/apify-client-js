@@ -1278,6 +1278,10 @@
 															},
 															{
 																"type": "literal",
+																"value": "issuesEnabled"
+															},
+															{
+																"type": "literal",
 																"value": "title"
 															},
 															{
@@ -15654,6 +15658,27 @@
 							"line": 222,
 							"character": 4,
 							"url": "https://github.com/apify/apify-client-js/blob/3ccb802/src/resource_clients/actor.ts#L222"
+						}
+					],
+					"type": {
+						"type": "intrinsic",
+						"name": "boolean"
+					}
+				},
+				{
+					"id": 240,
+					"name": "issuesEnabled",
+					"kind": 1024,
+					"kindString": "Property",
+					"flags": {
+						"isOptional": true
+					},
+					"sources": [
+						{
+							"fileName": "src/resource_clients/actor.ts",
+							"line": 234,
+							"character": 4,
+							"url": "https://github.com/apify/apify-client-js/blob/3ccb802/src/resource_clients/actor.ts#L234"
 						}
 					],
 					"type": {
@@ -31403,6 +31428,10 @@
 									{
 										"type": "literal",
 										"value": "seoDescription"
+									},
+									{
+										"type": "literal",
+										"value": "issuesEnabled"
 									},
 									{
 										"type": "literal",
