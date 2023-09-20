@@ -234,7 +234,6 @@ export interface Actor {
     deploymentKey: string;
     title?: string;
     taggedBuilds?: ActorTaggedBuilds;
-    issuesEnabled?: boolean;
     seoTitle?: string;
     seoDescription?: string;
     categories?: string[];
@@ -279,7 +278,6 @@ export type ActorUpdateOptions = Partial<Pick<
     | 'isPublic'
     | 'seoTitle'
     | 'seoDescription'
-    | 'issuesEnabled'
     | 'title'
     | 'restartOnError'
     | 'versions'
