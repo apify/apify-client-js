@@ -92,6 +92,8 @@ export interface Webhook {
     lastDispatch: string;
     stats: WebhookStats;
     shouldInterpolateStrings: boolean;
+    headersTemplate?: string;
+    description?: string;
 }
 
 export interface WebhookIdempotencyKey {
@@ -109,6 +111,8 @@ export type WebhookUpdateData = Partial<
         | 'requestUrl'
         | 'payloadTemplate'
         | 'shouldInterpolateStrings'
+        | 'headersTemplate'
+        | 'description'
     >
 > & WebhookIdempotencyKey;
 

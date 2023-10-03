@@ -18,7 +18,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/get-list-of-webhooks
      */
-    async list(options: WebhookCollectionListOptions = {}): Promise<PaginatedList<Omit<Webhook, 'payloadTemplate'>>> {
+    async list(options: WebhookCollectionListOptions = {}): Promise<PaginatedList<Omit<Webhook, 'payloadTemplate' | 'headersTemplate'>>> {
         ow(options, ow.object.exactShape({
             limit: ow.optional.number,
             offset: ow.optional.number,
