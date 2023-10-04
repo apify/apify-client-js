@@ -44,6 +44,13 @@ export class BuildClient extends ResourceClient {
     }
 
     /**
+     * TODO: docs
+     */
+    async delete(): Promise<void> {
+        return this._delete();
+    }
+
+    /**
      * Returns a promise that resolves with the finished Build object when the provided actor build finishes
      * or with the unfinished Build object when the `waitSecs` timeout lapses. The promise is NOT rejected
      * based on run status. You can inspect the `status` property of the Build object to find out its status.
