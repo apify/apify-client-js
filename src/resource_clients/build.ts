@@ -44,7 +44,7 @@ export class BuildClient extends ResourceClient {
     }
 
     /**
-     * TODO: docs
+     * https://docs.apify.com/api/v2#/reference/actor-builds/delete-build/delete-build
      */
     async delete(): Promise<void> {
         return this._delete();

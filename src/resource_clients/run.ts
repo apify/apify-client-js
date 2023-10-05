@@ -53,7 +53,7 @@ export class RunClient extends ResourceClient {
     }
 
     /**
-     * TODO: docs
+     * https://docs.apify.com/api/v2#/reference/actor-runs/delete-run/delete-run
      */
     async delete(): Promise<void> {
         return this._delete();
