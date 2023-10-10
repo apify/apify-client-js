@@ -53,6 +53,13 @@ export class RunClient extends ResourceClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2#/reference/actor-runs/delete-run/delete-run
+     */
+    async delete(): Promise<void> {
+        return this._delete();
+    }
+
+    /**
      * https://docs.apify.com/api/v2#/reference/actor-runs/metamorph-run/metamorph-run
      */
     async metamorph(targetActorId: string, input: unknown, options: RunMetamorphOptions = {}): Promise<ActorRun> {
