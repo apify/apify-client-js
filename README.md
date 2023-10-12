@@ -128,4 +128,4 @@ The results you're looking for are always stored under `items` and you can use t
 property to get only a subset of results. Other props are also available, depending on the method.
 
 ## API Reference
-All public classes, methods and their parameters can be inspected in the [API reference](/api).
+All public classes, methods and their parameters can be inspected in the [API reference](https://docs.apify.com/api/client/js/reference).
