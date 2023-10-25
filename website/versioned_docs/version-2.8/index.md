@@ -21,9 +21,7 @@ const client = new ApifyClient({
 });
 
 // Starts an actor and waits for it to finish.
-const { defaultDatasetId } = await client
-    .actor('john-doe/my-cool-actor')
-    .call();
+const { defaultDatasetId } = await client.actor('john-doe/my-cool-actor').call();
 // Fetches results from the actor's dataset.
 const { items } = await client.dataset(defaultDatasetId).listItems();
 ```
