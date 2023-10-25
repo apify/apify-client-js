@@ -9,8 +9,7 @@ title: 'Quick start'
 JavaScript applications. It runs both in Node.js and browser and provides useful features like
 automatic retries and convenience functions that improve the experience of using the Apify API.
 
-You can install the client via the [npm package](https://www.npmjs.com/package/apify-client).
-To do that, simply run `npm i apify-client`.
+You can install the client via the [npm package](https://www.npmjs.com/package/apify-client). To do that, simply run `npm i apify-client`.
 
 ## Quick Start
 
@@ -22,7 +21,9 @@ const client = new ApifyClient({
 });
 
 // Starts an actor and waits for it to finish.
-const { defaultDatasetId } = await client.actor('john-doe/my-cool-actor').call();
+const { defaultDatasetId } = await client
+    .actor('john-doe/my-cool-actor')
+    .call();
 // Fetches results from the actor's dataset.
 const { items } = await client.dataset(defaultDatasetId).listItems();
 ```
