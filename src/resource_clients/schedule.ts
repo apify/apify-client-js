@@ -9,7 +9,7 @@ import {
     parseDateFields,
     catchNotFoundOrThrow,
     cast,
-    MakeOptional,
+    DistributiveOmit,
 } from '../utils';
 
 export class ScheduleClient extends ResourceClient {
@@ -93,7 +93,7 @@ export type ScheduleCreateOrUpdateData = Partial<
         | 'isExclusive'
         | 'description'
     > & {
-        actions: MakeOptional<ScheduleAction, 'id'>[]
+        actions: DistributiveOmit<ScheduleAction, 'id'>[]
     }
 >;
 
