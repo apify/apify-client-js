@@ -201,4 +201,4 @@ export function cast<T>(input: unknown): T {
 
 export type Dictionary<T = unknown> = Record<PropertyKey, T>;
 
-export type DistributiveOmit<T, K extends keyof any> = T extends any ? Omit<T, K> : never;
+export type DistributiveOptional<T, K extends keyof T> = T extends any ? Omit<T, K> & Partial<Pick<T, K>> : never;
