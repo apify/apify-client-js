@@ -7607,8 +7607,8 @@
 														"name": "any"
 													}
 												],
-												"name": "ReadableStream",
-												"qualifiedName": "ReadableStream",
+												"name": "Readable",
+												"qualifiedName": "Readable",
 												"package": "typescript"
 											}
 										]
@@ -33029,8 +33029,8 @@
 				},
 				"trueType": {
 					"type": "reference",
-					"name": "ReadableStream",
-					"qualifiedName": "ReadableStream",
+					"name": "Readable",
+					"qualifiedName": "Readable",
 					"package": "typescript"
 				},
 				"falseType": {
