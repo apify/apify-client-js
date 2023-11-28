@@ -1,3 +1,4 @@
+import type { Readable } from 'node:stream';
 import { ApifyApiError } from '../apify_api_error';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
@@ -42,7 +43,7 @@ export class LogClient extends ResourceClient {
      * Gets the log in a Readable stream format. Only works in Node.js.
      * https://docs.apify.com/api/v2#/reference/logs/log/get-log
      */
-    async stream(): Promise<ReadableStream | undefined> {
+    async stream(): Promise<Readable | undefined> {
         const params = {
             stream: true,
         };

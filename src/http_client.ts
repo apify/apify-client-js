@@ -73,7 +73,7 @@ export class HttpClient {
             httpAgent: this.httpAgent,
             httpsAgent: this.httpsAgent,
             paramsSerializer: (params) => {
-                const formattedParams = Object.entries<string>(params)
+                const formattedParams: [string, string][] = Object.entries<string>(params)
                     .filter(([, value]) => value !== undefined)
                     .map(([key, value]) => {
                         const updatedValue = typeof value === 'boolean' ? Number(value) : value;

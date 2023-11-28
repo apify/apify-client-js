@@ -1,6 +1,7 @@
 import log from '@apify/log';
 import ow from 'ow';
 import { JsonValue } from 'type-fest';
+import type { Readable } from 'node:stream';
 import { ApifyApiError } from '../apify_api_error';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
@@ -244,5 +245,5 @@ export interface KeyValueStoreRecord<T> {
 }
 
 export type ReturnTypeFromOptions<Options extends KeyValueClientGetRecordOptions> = Options['stream'] extends true
-    ? ReadableStream
+    ? Readable
     : Options['buffer'] extends true ? Buffer : JsonValue;

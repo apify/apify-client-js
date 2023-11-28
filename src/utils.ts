@@ -2,6 +2,7 @@ import util from 'util';
 import zlib from 'zlib';
 import ow from 'ow';
 import type { TypedArray, JsonValue } from 'type-fest';
+import type { Readable } from 'node:stream';
 import { ApifyApiError } from './apify_api_error';
 import { WebhookUpdateData } from './resource_clients/webhook';
 import {
@@ -115,7 +116,7 @@ export function isBuffer(value: unknown): value is Buffer | ArrayBuffer | TypedA
     return ow.isValid(value, ow.any(ow.buffer, ow.arrayBuffer, ow.typedArray));
 }
 
-export function isStream(value: unknown): value is ReadableStream {
+export function isStream(value: unknown): value is Readable {
     return ow.isValid(value, ow.object.hasKeys('on', 'pipe'));
 }
 
