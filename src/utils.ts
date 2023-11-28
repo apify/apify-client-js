@@ -2,7 +2,7 @@ import util from 'util';
 import zlib from 'zlib';
 import ow from 'ow';
 import type { TypedArray, JsonValue } from 'type-fest';
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 import { ApifyApiError } from './apify_api_error';
 import { WebhookUpdateData } from './resource_clients/webhook';
 import {
