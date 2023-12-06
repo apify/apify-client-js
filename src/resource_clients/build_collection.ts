@@ -1,7 +1,7 @@
 import ow from 'ow';
 
 import { Build } from './build';
-import { ApiClientOptions } from '../base/api_client';
+import { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
 
@@ -9,7 +9,7 @@ export class BuildCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden
      */
-    constructor(options: ApiClientOptions) {
+    constructor(options: ApiClientOptionsWithOptionalResourcePath) {
         super({
             ...options,
             resourcePath: options.resourcePath || 'actor-builds',

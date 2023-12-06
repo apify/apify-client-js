@@ -29,6 +29,8 @@ import { WebhookCollectionClient } from './resource_clients/webhook_collection';
 import { WebhookDispatchClient } from './resource_clients/webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './resource_clients/webhook_dispatch_collection';
 import { Statistics } from './statistics';
+import { BuildCollectionClient } from './resource_clients/build_collection';
+import { RunCollectionClient } from './resource_clients/run_collection';
 
 /**
  * ApifyClient is the official library to access [Apify API](https://docs.apify.com/api/v2) from your
@@ -107,13 +109,9 @@ export class ApifyClient {
         });
     }
 
-    // TODO we don't have this endpoint yet
-    // /**
-    //  * @return {BuildCollectionClient}
-    //  */
-    // builds() {
-    //     return new BuildCollectionClient(this._options());
-    // }
+    builds(): BuildCollectionClient {
+        return new BuildCollectionClient(this._options());
+    }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-builds/build-object
@@ -203,13 +201,12 @@ export class ApifyClient {
         return new RequestQueueClient(apiClientOptions, options);
     }
 
-    // TODO we don't have this endpoint yet
-    // /**
-    //  * @return {RunCollectionClient}
-    //  */
-    // runs() {
-    //     return new RunCollectionClient(this._options());
-    // }
+    runs(): RunCollectionClient {
+        return new RunCollectionClient({
+            ...this._options(),
+            resourcePath: 'actor-runs',
+        });
+    }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
