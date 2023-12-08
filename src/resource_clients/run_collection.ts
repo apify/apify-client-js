@@ -2,7 +2,7 @@ import { ACT_JOB_STATUSES } from '@apify/consts';
 import ow from 'ow';
 
 import { ActorRunListItem } from './actor';
-import { ApiClientSubResourceOptions } from '../base/api_client';
+import { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
 
@@ -10,7 +10,7 @@ export class RunCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden
      */
-    constructor(options: ApiClientSubResourceOptions) {
+    constructor(options: ApiClientOptionsWithOptionalResourcePath) {
         super({
             resourcePath: 'runs',
             ...options,
