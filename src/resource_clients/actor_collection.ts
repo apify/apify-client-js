@@ -2,7 +2,7 @@ import ow from 'ow';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
-import { Actor } from './actor';
+import { Actor, ActorDefaultRunOptions, ActorExampleRunInput } from './actor';
 import { ActorVersion } from './actor_version';
 
 export class ActorCollectionClient extends ResourceCollectionClient {
@@ -58,10 +58,16 @@ export interface ActorCollectionListItem {
 export type ActorCollectionListResult = PaginatedList<ActorCollectionListItem>;
 
 export interface ActorCollectionCreateOptions {
-    name?: string;
+    categories?: string[];
+    defaultRunOptions?: ActorDefaultRunOptions;
     description?: string;
+    exampleRunInput?: ActorExampleRunInput;
+    isDeprecated?: boolean;
     isPublic?: boolean;
-    title?: string;
+    name?: string;
     restartOnError?: boolean;
+    seoTitle?: string;
+    seoDescription?: string;
+    title?: string;
     versions?: ActorVersion[];
 }
