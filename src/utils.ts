@@ -121,7 +121,7 @@ export function sliceArrayByByteLength<T>(array: T[], maxByteLength: number): T[
     for (const item of array) {
         const itemByteSize = stringByteLength(JSON.stringify(item));
         if (itemByteSize > maxByteLength) {
-            throw new Error('RequestQueueClient.batchAddRequests: TODO single request cannot exceed 9mb');
+            throw new Error(`RequestQueueClient.batchAddRequests: The size of the single request exceeds the maximum allowed size (${maxByteLength} bytes).`);
         }
         if (byteLength + itemByteSize >= maxByteLength) break;
         byteLength += itemByteSize;
