@@ -108,6 +108,29 @@ export async function maybeGzipValue(value: unknown): Promise<Buffer | undefined
     return undefined;
 }
 
+/**
+ * Helper function slice the items from array to fit the max byte length.
+ */
+export function sliceArrayByByteLength<T>(array: T[], maxByteLength: number): T[] {
+    const stringByteLength = (str: string) => (isNode() ? Buffer.byteLength(str) : new Blob([str]).size);
+    const arrayByteLength = stringByteLength(JSON.stringify(array));
+    if (arrayByteLength < maxByteLength) return array;
+
+    const slicedArray: T[] = [];
+    let byteLength = 2; // 2 bytes for the empty array []
+    for (const item of array) {
+        const itemByteSize = stringByteLength(JSON.stringify(item));
+        if (itemByteSize > maxByteLength) {
+            throw new Error('RequestQueueClient.batchAddRequests: TODO single request cannot exceed 9mb');
+        }
+        if (byteLength + itemByteSize >= maxByteLength) break;
+        byteLength += itemByteSize;
+        slicedArray.push(item);
+    }
+
+    return slicedArray;
+}
+
 export function isNode(): boolean {
     return !!(typeof process !== 'undefined' && process.versions && process.versions.node);
 }
