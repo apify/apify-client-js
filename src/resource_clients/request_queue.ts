@@ -1,5 +1,5 @@
 import log from '@apify/log';
-import { MAX_PAYLOAD_SIZE_BYTES } from '@apify/consts';
+import { MAX_PAYLOAD_SIZE_BYTES, REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION } from '@apify/consts';
 import ow from 'ow';
 import type { JsonObject } from 'type-fest';
 import { ApifyApiError } from '../apify_api_error';
@@ -15,7 +15,6 @@ import {
     sliceArrayByByteLength,
 } from '../utils';
 
-const REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION = 25; // TODO: Use from apify shared consts
 const DEFAULT_PARALLEL_BATCH_ADD_REQUESTS = 5;
 const DEFAULT_UNPROCESSED_RETRIES_BATCH_ADD_REQUESTS = 3;
 const DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS = 500;
