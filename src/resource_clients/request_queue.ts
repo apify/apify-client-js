@@ -1,4 +1,5 @@
 import log from '@apify/log';
+import { MAX_PAYLOAD_SIZE_BYTES } from '@apify/consts';
 import ow from 'ow';
 import type { JsonObject } from 'type-fest';
 import { ApifyApiError } from '../apify_api_error';
@@ -11,14 +12,15 @@ import {
     catchNotFoundOrThrow,
     cast,
     PaginationIterator,
+    sliceArrayByByteLength,
 } from '../utils';
 
-// TODO: Move to apify shared consts, when all batch requests operations will implemented.
-const MAX_REQUESTS_PER_BATCH_OPERATION = 25;
+const REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION = 25; // TODO: Use from apify shared consts
 const DEFAULT_PARALLEL_BATCH_ADD_REQUESTS = 5;
 const DEFAULT_UNPROCESSED_RETRIES_BATCH_ADD_REQUESTS = 3;
 const DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS = 500;
 const DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT = 1000;
+const SAFETY_BUFFER_PERCENT = 0.01 / 100; // 0.01%
 
 export class RequestQueueClient extends ResourceClient {
     private clientKey?: string;
@@ -145,7 +147,7 @@ export class RequestQueueClient extends ResourceClient {
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
         ow(requests, ow.array.ofType(ow.object.partialShape({
             id: ow.undefined,
-        })).minLength(1).maxLength(MAX_REQUESTS_PER_BATCH_OPERATION));
+        })).minLength(1).maxLength(REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION));
         ow(options, ow.object.exactShape({
             forefront: ow.optional.boolean,
         }));
@@ -248,10 +250,13 @@ export class RequestQueueClient extends ResourceClient {
 
         const executingRequests = new Set();
         const individualResults: RequestQueueClientBatchRequestsOperationResult[] = [];
+        const payloadSizeLimitBytes = MAX_PAYLOAD_SIZE_BYTES - Math.ceil(MAX_PAYLOAD_SIZE_BYTES * SAFETY_BUFFER_PERCENT);
 
         // Keep a pool of up to `maxParallel` requests running at once
-        for (let i = 0; i < requests.length; i += MAX_REQUESTS_PER_BATCH_OPERATION) {
-            const requestsInBatch = requests.slice(i, i + MAX_REQUESTS_PER_BATCH_OPERATION);
+        let i = 0;
+        while (i < requests.length) {
+            const slicedRequests = requests.slice(i, i + REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION);
+            const requestsInBatch = sliceArrayByByteLength(slicedRequests, payloadSizeLimitBytes, i);
             const requestPromise = this._batchAddRequestsWithRetries(requestsInBatch, options);
             executingRequests.add(requestPromise);
             void requestPromise.then((batchAddResult) => {
@@ -261,6 +266,7 @@ export class RequestQueueClient extends ResourceClient {
             if (executingRequests.size >= maxParallel) {
                 await Promise.race(executingRequests);
             }
+            i += requestsInBatch.length;
         }
         // Get results from remaining operations
         await Promise.all(executingRequests);
@@ -286,7 +292,7 @@ export class RequestQueueClient extends ResourceClient {
         ow(requests, ow.array.ofType(ow.any(
             ow.object.partialShape({ id: ow.string }),
             ow.object.partialShape({ uniqueKey: ow.string }),
-        )).minLength(1).maxLength(MAX_REQUESTS_PER_BATCH_OPERATION));
+        )).minLength(1).maxLength(REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION));
 
         const { data } = await this.httpClient.call({
             url: this._url('requests/batch'),
