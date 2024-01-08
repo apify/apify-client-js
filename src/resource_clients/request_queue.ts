@@ -255,7 +255,8 @@ export class RequestQueueClient extends ResourceClient {
         // Keep a pool of up to `maxParallel` requests running at once
         let i = 0;
         while (i < requests.length) {
-            const requestsInBatch = sliceArrayByByteLength(requests.slice(i, i + REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION), payloadSizeLimitBytes);
+            const slicedRequests = requests.slice(i, i + REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION);
+            const requestsInBatch = sliceArrayByByteLength(slicedRequests, payloadSizeLimitBytes, i);
             const requestPromise = this._batchAddRequestsWithRetries(requestsInBatch, options);
             executingRequests.add(requestPromise);
             void requestPromise.then((batchAddResult) => {

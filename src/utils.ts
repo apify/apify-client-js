@@ -111,17 +111,19 @@ export async function maybeGzipValue(value: unknown): Promise<Buffer | undefined
 /**
  * Helper function slice the items from array to fit the max byte length.
  */
-export function sliceArrayByByteLength<T>(array: T[], maxByteLength: number): T[] {
+export function sliceArrayByByteLength<T>(array: T[], maxByteLength: number, startIndex: number): T[] {
     const stringByteLength = (str: string) => (isNode() ? Buffer.byteLength(str) : new Blob([str]).size);
     const arrayByteLength = stringByteLength(JSON.stringify(array));
     if (arrayByteLength < maxByteLength) return array;
 
     const slicedArray: T[] = [];
     let byteLength = 2; // 2 bytes for the empty array []
-    for (const item of array) {
+    for (let i = 0; i < array.length; i++) {
+        const item = array[i];
         const itemByteSize = stringByteLength(JSON.stringify(item));
         if (itemByteSize > maxByteLength) {
-            throw new Error(`RequestQueueClient.batchAddRequests: The size of the single request exceeds the maximum allowed size (${maxByteLength} bytes).`);
+            throw new Error(`RequestQueueClient.batchAddRequests: The size of the request with index: ${startIndex + i} `
+                + `exceeds the maximum allowed size (${maxByteLength} bytes).`);
         }
         if (byteLength + itemByteSize >= maxByteLength) break;
         byteLength += itemByteSize;

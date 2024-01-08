@@ -334,7 +334,7 @@ describe('Request Queue methods', () => {
         test('batchAddRequests() chunks large payload', async () => {
             const queueId = 'some-id';
             const requestsLength = 30;
-            const longString = new Array(940000).fill('a').join('');
+            const longString = 'a'.repeat(940_000);
             const requests = new Array(requestsLength).fill(0).map((_, i) => ({ url: `http://example.com/${i}`, userData: { longString } }));
 
             await client.requestQueue(queueId).batchAddRequests(requests);
@@ -351,6 +351,12 @@ describe('Request Queue methods', () => {
             expect(processedRequestUrls).toEqual(
                 expect.arrayContaining(requests.map((req) => req.url)),
             );
+
+            // It throws error when single request is too big
+            const bigRequest = { url: `http://example.com/x`, userData: { longString: 'a'.repeat(9_500_000) } };
+            const requestsWithBigRequest = [...requests, bigRequest];
+            await expect(client.requestQueue(queueId).batchAddRequests(requestsWithBigRequest))
+                .rejects.toThrow(`RequestQueueClient.batchAddRequests: The size of the request with index: ${requestsWithBigRequest.length - 1}`);
         });
 
         test('_batchAddRequests() works', async () => {
