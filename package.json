@@ -57,7 +57,7 @@
 		"build:browser": "webpack"
 	},
 	"dependencies": {
-		"@apify/consts": "^2.19.0",
+		"@apify/consts": "^2.25.0",
 		"@apify/log": "^2.2.6",
 		"@crawlee/types": "^3.3.0",
 		"agentkeepalive": "^4.2.1",
