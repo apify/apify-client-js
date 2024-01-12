@@ -47,6 +47,7 @@ export interface ActorStoreList {
     currentPricingInfo: PricingInfo;
     pictureUrl?: string;
     userPictureUrl?: string;
+    url: string;
 }
 
 export interface StoreCollectionListOptions {
