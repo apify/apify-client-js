@@ -146,7 +146,7 @@ describe('Request Queue methods', () => {
             } catch (e) {
                 errorMessage = e.toString();
             }
-            expect(errorMessage).toEqual('Error: timeout of 1ms exceeded');
+            expect(errorMessage).toEqual('AxiosError: timeout of 1ms exceeded');
         });
 
         test('addRequest() works with forefront param', async () => {
@@ -187,7 +187,7 @@ describe('Request Queue methods', () => {
             } catch (e) {
                 errorMessage = e.toString();
             }
-            expect(errorMessage).toEqual('Error: timeout of 1ms exceeded');
+            expect(errorMessage).toEqual('AxiosError: timeout of 1ms exceeded');
         });
 
         test('deleteRequest() works', async () => {
@@ -212,7 +212,7 @@ describe('Request Queue methods', () => {
             } catch (e) {
                 errorMessage = e.toString();
             }
-            expect(errorMessage).toEqual('Error: timeout of 1ms exceeded');
+            expect(errorMessage).toEqual('AxiosError: timeout of 1ms exceeded');
         });
 
         test('updateRequest() works with forefront', async () => {
@@ -258,7 +258,7 @@ describe('Request Queue methods', () => {
             } catch (e) {
                 errorMessage = e.toString();
             }
-            expect(errorMessage).toEqual('Error: timeout of 1ms exceeded');
+            expect(errorMessage).toEqual('AxiosError: timeout of 1ms exceeded');
         });
 
         test('listHead() works', async () => {
@@ -283,7 +283,7 @@ describe('Request Queue methods', () => {
             } catch (e) {
                 errorMessage = e.toString();
             }
-            expect(errorMessage).toEqual('Error: timeout of 1ms exceeded');
+            expect(errorMessage).toEqual('AxiosError: timeout of 1ms exceeded');
         });
 
         test.each([

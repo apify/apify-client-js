@@ -1,4 +1,4 @@
-import axios, { AxiosInterceptorManager, AxiosResponse, AxiosTransformer } from 'axios';
+import axios, { AxiosInterceptorManager, AxiosResponse, AxiosRequestTransformer } from 'axios';
 import contentTypeParser from 'content-type';
 import { JsonObject } from 'type-fest';
 
@@ -33,10 +33,10 @@ export class InvalidResponseBodyError extends Error {
 }
 
 function serializeRequest(config: ApifyRequestConfig): ApifyRequestConfig {
-    const [defaultTransform] = axios.defaults.transformRequest as AxiosTransformer[];
+    const [defaultTransform] = axios.defaults.transformRequest as AxiosRequestTransformer[];
 
     // The function not only serializes data, but it also adds correct headers.
-    const data = defaultTransform(config.data, config.headers);
+    const data = (defaultTransform as any)(config.data, config.headers);
 
     // Actor inputs can include functions and we don't want to omit those,
     // because it's convenient for users. JSON.stringify removes them.
@@ -44,7 +44,7 @@ function serializeRequest(config: ApifyRequestConfig): ApifyRequestConfig {
     // it's a small price to pay. The axios default transform does a lot
     // of body type checks and we would have to copy all of them to the resource clients.
     if (config.stringifyFunctions) {
-        const contentTypeHeader = config.headers['Content-Type'] || config.headers['content-type'];
+        const contentTypeHeader = config.headers?.['Content-Type'] || config.headers?.['content-type'];
         try {
             const { type } = contentTypeParser.parse(contentTypeHeader);
             if (type === 'application/json' && typeof config.data === 'object') {
@@ -73,10 +73,11 @@ function stringifyWithFunctions(obj: JsonObject) {
 }
 
 async function maybeGzipRequest(config: ApifyRequestConfig): Promise<ApifyRequestConfig> {
-    if (config.headers['content-encoding']) return config;
+    if (config.headers?.['content-encoding']) return config;
 
     const maybeZippedData = await maybeGzipValue(config.data);
     if (maybeZippedData) {
+        config.headers ??= {};
         config.headers['content-encoding'] = 'gzip';
         config.data = maybeZippedData;
     }
