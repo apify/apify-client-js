@@ -109,6 +109,9 @@ export class ApifyClient {
         });
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/actor-builds/build-collection
+     */
     builds(): BuildCollectionClient {
         return new BuildCollectionClient(this._options());
     }
@@ -201,6 +204,9 @@ export class ApifyClient {
         return new RequestQueueClient(apiClientOptions, options);
     }
 
+    /**
+     * https://docs.apify.com/api/v2#/reference/actor-runs/run-collection
+     */
     runs(): RunCollectionClient {
         return new RunCollectionClient({
             ...this._options(),
