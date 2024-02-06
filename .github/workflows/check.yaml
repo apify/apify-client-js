@@ -24,7 +24,7 @@ jobs:
                     access_token: ${{ github.token }}
 
             -   name: Checkout repository
-                uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+                uses: actions/checkout@v4
             -   name: Use Node.js ${{ matrix.node-version }}
                 uses: actions/setup-node@v4
                 with:
@@ -42,7 +42,7 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            -   uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+            -   uses: actions/checkout@v4
             -   name: Use Node.js 18
                 uses: actions/setup-node@v4
                 with:
@@ -59,7 +59,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   name: Checkout Source code
-                uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+                uses: actions/checkout@v4
 
             -   name: Use Node.js 18
                 uses: actions/setup-node@v4
