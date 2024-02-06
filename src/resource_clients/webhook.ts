@@ -1,17 +1,18 @@
 import { WEBHOOK_EVENT_TYPES } from '@apify/consts';
 import ow from 'ow';
-import { ResourceClient } from '../base/resource_client';
+
+import { WebhookDispatch } from './webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection';
+import { ApifyApiError } from '../apify_api_error';
+import { ApiClientSubResourceOptions } from '../base/api_client';
+import { ResourceClient } from '../base/resource_client';
+import { ApifyRequestConfig } from '../http_client';
 import {
     pluckData,
     parseDateFields,
     catchNotFoundOrThrow,
     cast,
 } from '../utils';
-import { ApiClientSubResourceOptions } from '../base/api_client';
-import { ApifyApiError } from '../apify_api_error';
-import { WebhookDispatch } from './webhook_dispatch';
-import { ApifyRequestConfig } from '../http_client';
 
 export class WebhookClient extends ResourceClient {
     /**

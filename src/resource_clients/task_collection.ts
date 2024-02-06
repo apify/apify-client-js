@@ -1,8 +1,9 @@
 import ow from 'ow';
+
+import { Task, TaskUpdateData } from './task';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
-import { Task, TaskUpdateData } from './task';
 
 export class TaskCollectionClient extends ResourceCollectionClient {
     /**

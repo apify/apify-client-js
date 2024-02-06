@@ -1,6 +1,7 @@
 import axios, { AxiosInterceptorManager, AxiosResponse, AxiosTransformer } from 'axios';
 import contentTypeParser from 'content-type';
 import { JsonObject } from 'type-fest';
+
 import { maybeParseBody } from './body_parser';
 import { ApifyRequestConfig, ApifyResponse } from './http_client';
 import {

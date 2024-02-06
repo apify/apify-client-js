@@ -1,7 +1,8 @@
 const { ME_USER_NAME_PLACEHOLDER } = require('@apify/consts');
-const { ApifyClient } = require('../src');
-const mockServer = require('./mock_server/server');
+
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
+const mockServer = require('./mock_server/server');
+const { ApifyClient } = require('../src');
 
 describe('User methods', () => {
     let baseUrl;

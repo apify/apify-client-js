@@ -1,11 +1,12 @@
 import ow from 'ow';
+
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import { ApifyResponse } from '../http_client';
 import { cast, PaginatedList } from '../utils';
 
 export class DatasetClient<
-    Data extends Record<string | number, any> = Record<string | number, unknown>
+    Data extends Record<string | number, any> = Record<string | number, unknown>,
 > extends ResourceClient {
     /**
      * @hidden

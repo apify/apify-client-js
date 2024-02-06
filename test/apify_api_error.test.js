@@ -1,5 +1,5 @@
-const { ApifyClient } = require('../src/index');
 const { Browser } = require('./_helper');
+const { ApifyClient } = require('../src/index');
 
 describe('ApifyApiError', () => {
     const browser = new Browser();

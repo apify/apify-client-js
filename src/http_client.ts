@@ -1,9 +1,11 @@
 import os from 'os';
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import retry, { RetryFunction } from 'async-retry';
-import KeepAliveAgent from 'agentkeepalive';
+
 import { APIFY_ENV_VARS } from '@apify/consts';
 import { Log } from '@apify/log';
+import KeepAliveAgent from 'agentkeepalive';
+import retry, { RetryFunction } from 'async-retry';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+
 import { ApifyApiError } from './apify_api_error';
 import {
     InvalidResponseBodyError,
@@ -11,13 +13,13 @@ import {
     requestInterceptors,
     responseInterceptors,
 } from './interceptors';
+import { Statistics } from './statistics';
 import {
     isNode,
     getVersionData,
     cast,
     isStream,
 } from './utils';
-import { Statistics } from './statistics';
 
 const { version } = getVersionData();
 

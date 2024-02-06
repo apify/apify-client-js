@@ -1,6 +1,6 @@
-const { ApifyClient } = require('../src/index');
-const mockServer = require('./mock_server/server');
 const { Browser } = require('./_helper');
+const mockServer = require('./mock_server/server');
+const { ApifyClient } = require('../src/index');
 
 describe('HttpClient', () => {
     let baseUrl;

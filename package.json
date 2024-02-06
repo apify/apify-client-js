@@ -69,7 +69,7 @@
 		"type-fest": "^4.0.0"
 	},
 	"devDependencies": {
-		"@apify/eslint-config-ts": "^0.3.0",
+		"@apify/eslint-config-ts": "^0.4.0",
 		"@apify/tsconfig": "^0.1.0",
 		"@babel/cli": "^7.21.0",
 		"@babel/core": "^7.21.0",

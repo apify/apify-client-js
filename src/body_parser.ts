@@ -1,5 +1,6 @@
 import contentTypeParser from 'content-type';
 import { JsonArray, JsonObject } from 'type-fest';
+
 import { isNode } from './utils';
 
 const CONTENT_TYPE_JSON = 'application/json';

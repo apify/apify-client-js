@@ -1,8 +1,9 @@
 import ow from 'ow';
+
+import { RequestQueue } from './request_queue';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
-import { RequestQueue } from './request_queue';
 
 export class RequestQueueCollectionClient extends ResourceCollectionClient {
     /**

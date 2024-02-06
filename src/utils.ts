@@ -1,14 +1,16 @@
+import type { Readable } from 'node:stream';
 import util from 'util';
 import zlib from 'zlib';
+
 import ow from 'ow';
 import type { TypedArray, JsonValue } from 'type-fest';
-import type { Readable } from 'node:stream';
+
 import { ApifyApiError } from './apify_api_error';
-import { WebhookUpdateData } from './resource_clients/webhook';
 import {
     RequestQueueClientListRequestsOptions,
     RequestQueueClientListRequestsResult,
 } from './resource_clients/request_queue';
+import { WebhookUpdateData } from './resource_clients/webhook';
 
 const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
 const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';

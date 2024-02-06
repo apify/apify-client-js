@@ -49,7 +49,7 @@ describe('Store', () => {
         expect(res.id).toEqual('store-list');
         validateRequest(opts);
 
-        const browserRes: any = await page.evaluate((options: StoreCollectionListOptions) => client && client.store().list(options), opts);
+        const browserRes: any = await page.evaluate(async (options: StoreCollectionListOptions) => client && client.store().list(options), opts);
         expect(browserRes.id).toEqual('store-list');
         expect(browserRes).toEqual(res);
         validateRequest(opts);

@@ -1,8 +1,9 @@
 import ow from 'ow';
+
+import { Build } from './build';
 import { ApiClientOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import { PaginatedList } from '../utils';
-import { Build } from './build';
 
 export class BuildCollectionClient extends ResourceCollectionClient {
     /**

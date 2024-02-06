@@ -1,12 +1,10 @@
-import ow from 'ow';
 import { ME_USER_NAME_PLACEHOLDER, ACTOR_ENV_VARS } from '@apify/consts';
 import logger, { Log } from '@apify/log';
-
 import { SetStatusMessageOptions } from '@crawlee/types';
-import { HttpClient } from './http_client';
-import { Statistics } from './statistics';
-import { RequestInterceptorFunction } from './interceptors';
+import ow from 'ow';
 
+import { HttpClient } from './http_client';
+import { RequestInterceptorFunction } from './interceptors';
 import { ActorClient } from './resource_clients/actor';
 import { ActorCollectionClient } from './resource_clients/actor_collection';
 import { BuildClient } from './resource_clients/build';
@@ -22,6 +20,7 @@ import { RunClient } from './resource_clients/run';
 // import { RunCollectionClient } from './resource_clients/run_collection';
 import { ScheduleClient } from './resource_clients/schedule';
 import { ScheduleCollectionClient } from './resource_clients/schedule_collection';
+import { StoreCollectionClient } from './resource_clients/store_collection';
 import { TaskClient } from './resource_clients/task';
 import { TaskCollectionClient } from './resource_clients/task_collection';
 import { UserClient } from './resource_clients/user';
@@ -29,7 +28,7 @@ import { WebhookClient } from './resource_clients/webhook';
 import { WebhookCollectionClient } from './resource_clients/webhook_collection';
 import { WebhookDispatchClient } from './resource_clients/webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './resource_clients/webhook_dispatch_collection';
-import { StoreCollectionClient } from './resource_clients/store_collection';
+import { Statistics } from './statistics';
 
 /**
  * ApifyClient is the official library to access [Apify API](https://docs.apify.com/api/v2) from your
@@ -139,7 +138,7 @@ export class ApifyClient {
      * https://docs.apify.com/api/v2#/reference/datasets/dataset
      */
     dataset<
-        Data extends Record<string | number, any> = Record<string | number, unknown>
+        Data extends Record<string | number, any> = Record<string | number, unknown>,
     >(id: string): DatasetClient<Data> {
         ow(id, ow.string.nonEmpty);
 
