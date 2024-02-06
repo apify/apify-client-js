@@ -46,7 +46,6 @@ jobs:
 
     lint:
         name: Lint
-        needs: [ build_and_test ]
         runs-on: ubuntu-latest
 
         steps:
