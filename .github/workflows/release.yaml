@@ -57,6 +57,7 @@ jobs:
                     node-version: ${{ matrix.node-version }}
                     cache: 'npm'
                     cache-dependency-path: 'package-lock.json'
+            -   run: npm ci
             -   run: npm run lint
 
 
@@ -74,6 +75,7 @@ jobs:
                     node-version: ${{ matrix.node-version }}
                     cache: 'npm'
                     cache-dependency-path: 'package-lock.json'
+            -   run: npm ci
             - # Determine if this is a beta or latest release
                 name: Set Release Tag
                 run: echo "RELEASE_TAG=$(if [ ${{ github.event_name }} = release ]; then echo latest; else echo beta; fi)" >> $GITHUB_ENV
