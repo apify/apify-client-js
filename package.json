@@ -5,12 +5,15 @@
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",
 	"types": "dist/index.d.ts",
+    "browser": "dist/bundle.js",
+    "unpkg": "dist/bundle.js",
 	"exports": {
 		"./package.json": "./package.json",
 		".": {
 			"import": "./dist/index.mjs",
 			"require": "./dist/index.js",
-			"types": "./dist/index.d.ts"
+			"types": "./dist/index.d.ts",
+			"browser": "./dist/bundle.js"
 		}
 	},
 	"keywords": [
@@ -42,8 +45,7 @@
 	"homepage": "https://docs.apify.com/api/client/js/",
 	"files": [
 		"dist",
-		"!dist/*.tsbuildinfo",
-		"!dist/bundle.js"
+		"!dist/*.tsbuildinfo"
 	],
 	"scripts": {
 		"build": "npm run clean && npm run build:node && npm run build:browser",
