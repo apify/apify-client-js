@@ -13,7 +13,6 @@ on:
         types: [ published ]
 
 jobs:
-    # NPM install is done in a separate job and cached to speed up the following jobs.
     build_and_test:
         name: Build & Test
         if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
@@ -21,24 +20,27 @@ jobs:
 
         strategy:
             matrix:
-                node-version: [ 16, 16 ]
+                node-version: [ 16, 18, 20 ]
 
         steps:
-            -   uses: actions/checkout@v4
+            -   name: Cancel Workflow Action
+                uses: styfle/cancel-workflow-action@0.12.1
+                with:
+                    access_token: ${{ github.token }}
+
+            -   name: Checkout repository
+                uses: actions/checkout@v4
+
             -   name: Use Node.js ${{ matrix.node-version }}
                 uses: actions/setup-node@v4
                 with:
                     node-version: ${{ matrix.node-version }}
-            -   name: Cache Node Modules
-                if: ${{ matrix.node-version == 16 }}
-                uses: actions/cache@v4
-                with:
-                    path: |
-                        node_modules
-                        build
-                    key: cache-${{ github.run_id }}-v14
+                    cache: 'npm'
+                    cache-dependency-path: 'package-lock.json'
+
             -   name: Install Dependencies
-                run: npm install
+                run: npm ci
+
             -   name: Run Tests
                 run: npm test
 
@@ -49,17 +51,12 @@ jobs:
 
         steps:
             -   uses: actions/checkout@v4
-            -   name: Use Node.js 16
+            -   name: Use Node.js 20
                 uses: actions/setup-node@v4
                 with:
-                    node-version: 16
-            -   name: Load Cache
-                uses: actions/cache@v4
-                with:
-                    path: |
-                        node_modules
-                        build
-                    key: cache-${{ github.run_id }}-v14
+                    node-version: ${{ matrix.node-version }}
+                    cache: 'npm'
+                    cache-dependency-path: 'package-lock.json'
             -   run: npm run lint
 
 
@@ -71,17 +68,12 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v4
-            -   uses: actions/setup-node@v4
+            -   name: Use Node.js 20
+                uses: actions/setup-node@v4
                 with:
-                    node-version: 16
-                    registry-url: https://registry.npmjs.org/
-            -   name: Load Cache
-                uses: actions/cache@v4
-                with:
-                    path: |
-                        node_modules
-                        build
-                    key: cache-${{ github.run_id }}-v14
+                    node-version: ${{ matrix.node-version }}
+                    cache: 'npm'
+                    cache-dependency-path: 'package-lock.json'
             - # Determine if this is a beta or latest release
                 name: Set Release Tag
                 run: echo "RELEASE_TAG=$(if [ ${{ github.event_name }} = release ]; then echo latest; else echo beta; fi)" >> $GITHUB_ENV

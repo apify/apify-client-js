@@ -6,7 +6,6 @@ on:
     pull_request:
 
 jobs:
-    # NPM install is done in a separate job and cached to speed up the following jobs.
     build_and_test:
         name: Build & Test
         if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
@@ -25,14 +24,17 @@ jobs:
 
             -   name: Checkout repository
                 uses: actions/checkout@v4
+
             -   name: Use Node.js ${{ matrix.node-version }}
                 uses: actions/setup-node@v4
                 with:
                     node-version: ${{ matrix.node-version }}
                     cache: 'npm'
                     cache-dependency-path: 'package-lock.json'
+
             -   name: Install Dependencies
                 run: npm ci
+
             -   name: Run Tests
                 run: npm test
 
