@@ -75,7 +75,11 @@ jobs:
                     node-version: ${{ matrix.node-version }}
                     cache: 'npm'
                     cache-dependency-path: 'package-lock.json'
-            -   run: npm ci
+            -   name: Install dependencies
+                run: |
+                    echo "access=public" >> .npmrc
+                    echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+                    npm ci
             - # Determine if this is a beta or latest release
                 name: Set Release Tag
                 run: echo "RELEASE_TAG=$(if [ ${{ github.event_name }} = release ]; then echo latest; else echo beta; fi)" >> $GITHUB_ENV
@@ -86,7 +90,7 @@ jobs:
             -   name: Build module
                 run: npm run build
             -   name: Publish to NPM
-                run: NODE_AUTH_TOKEN=${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }} npm publish --tag ${{ env.RELEASE_TAG }}
+                run: npm publish --tag ${{ env.RELEASE_TAG }}
             - # Latest version is tagged by the release process so we only tag beta here.
                 name: Tag Version
                 if: env.RELEASE_TAG == 'beta'
@@ -94,3 +98,7 @@ jobs:
                     git_tag=v`node -p "require('./package.json').version"`
                     git tag $git_tag
                     git push origin $git_tag
+
+env:
+    NODE_AUTH_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}
+    NPM_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}
