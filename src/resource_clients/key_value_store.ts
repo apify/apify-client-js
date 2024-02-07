@@ -170,7 +170,7 @@ export class KeyValueStoreClient extends ResourceClient {
             method: 'PUT',
             params: this._params(),
             data: value,
-            headers: contentType && { 'content-type': contentType },
+            headers: contentType ? { 'content-type': contentType } : undefined,
         };
 
         await this.httpClient.call(uploadOpts);

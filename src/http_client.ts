@@ -4,7 +4,7 @@ import { APIFY_ENV_VARS } from '@apify/consts';
 import { Log } from '@apify/log';
 import KeepAliveAgent from 'agentkeepalive';
 import retry, { RetryFunction } from 'async-retry';
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 
 import { ApifyApiError } from './apify_api_error';
 import {
@@ -99,7 +99,7 @@ export class HttpClient {
         });
 
         // Clean all default headers because they only make a mess and their merging is difficult to understand and buggy.
-        this.axios.defaults.headers = {};
+        this.axios.defaults.headers = {} as any;
 
         // If workflow key is available, pass it as a header
         if (this.workflowKey) {
@@ -118,9 +118,9 @@ export class HttpClient {
             this.axios.defaults.headers.Authorization = `Bearer ${token}`;
         }
 
-        requestInterceptors.forEach((i) => this.axios.interceptors.request.use(i));
-        this.userProvidedRequestInterceptors.forEach((i) => this.axios.interceptors.request.use(i));
-        responseInterceptors.forEach((i) => this.axios.interceptors.response.use(i));
+        requestInterceptors.forEach((i) => this.axios.interceptors.request.use(i as any));
+        this.userProvidedRequestInterceptors.forEach((i) => this.axios.interceptors.request.use(i as any));
+        responseInterceptors.forEach((i) => this.axios.interceptors.response.use(i as any));
     }
 
     async call<T = any>(config: ApifyRequestConfig): Promise<ApifyResponse<T>> {
@@ -269,7 +269,7 @@ export interface ApifyRequestConfig extends AxiosRequestConfig {
 }
 
 export interface ApifyResponse<T = any> extends AxiosResponse<T> {
-    config: ApifyRequestConfig;
+    config: ApifyRequestConfig & InternalAxiosRequestConfig;
 }
 
 export interface HttpClientOptions {
