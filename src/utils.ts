@@ -41,7 +41,7 @@ export function pluckData<R>(obj: MaybeData<R>): R {
  */
 export function catchNotFoundOrThrow(err: ApifyApiError): void {
     const isNotFoundStatus = err.statusCode === NOT_FOUND_STATUS_CODE;
-    const isNotFoundMessage = err.type === RECORD_NOT_FOUND_TYPE || err.type === RECORD_OR_TOKEN_NOT_FOUND_TYPE;
+    const isNotFoundMessage = err.type === RECORD_NOT_FOUND_TYPE || err.type === RECORD_OR_TOKEN_NOT_FOUND_TYPE || err.httpMethod === 'head';
     const isNotFoundError = isNotFoundStatus && isNotFoundMessage;
     if (!isNotFoundError) throw err;
 }

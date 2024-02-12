@@ -143,6 +143,52 @@ describe('Key-Value Store methods', () => {
             validateRequest(query, { storeId });
         });
 
+        test('recordExists() works', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+
+            const expectedBody = null;
+            const expectedContentType = 'application/json; charset=utf-8';
+            const expectedHeaders = {
+                'content-type': expectedContentType,
+            };
+
+            mockServer.setResponse({ headers: expectedHeaders, body: expectedBody, status: 200 });
+
+            const res = await client.keyValueStore(storeId).recordExists(key);
+            const expectedResult = true;
+
+            expect(res).toEqual(expectedResult);
+            validateRequest({}, { storeId, key });
+
+            const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).recordExists(k), storeId, key);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { storeId, key });
+        });
+
+        test('recordExists() works with a missing record', async () => {
+            const key = 'missing-key';
+            const storeId = 'some-id';
+
+            const expectedBody = null;
+            const expectedContentType = 'application/json; charset=utf-8';
+            const expectedHeaders = {
+                'content-type': expectedContentType,
+            };
+
+            mockServer.setResponse({ headers: expectedHeaders, body: expectedBody, statusCode: 404 });
+
+            const res = await client.keyValueStore(storeId).recordExists(key);
+            const expectedResult = false;
+
+            expect(res).toEqual(expectedResult);
+            validateRequest({}, { storeId, key });
+
+            const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).recordExists(k), storeId, key);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { storeId, key });
+        });
+
         test('getRecord() works', async () => {
             const key = 'some-key';
             const storeId = 'some-id';

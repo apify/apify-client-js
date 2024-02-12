@@ -70,6 +70,23 @@ export class KeyValueStoreClient extends ResourceClient {
         return cast(parseDateFields(pluckData(response.data)));
     }
 
+    async recordExists(key: string): Promise<boolean> {
+        const requestOpts: Record<string, unknown> = {
+            url: this._url(`records/${key}`),
+            method: 'HEAD',
+            params: this._params(),
+        };
+
+        try {
+            await this.httpClient.call(requestOpts);
+            return true;
+        } catch (err) {
+            catchNotFoundOrThrow(err as ApifyApiError);
+        }
+
+        return false;
+    }
+
     /**
      * You can use the `buffer` option to get the value in a Buffer (Node.js)
      * or ArrayBuffer (browser) format. In Node.js (not in browser) you can also
