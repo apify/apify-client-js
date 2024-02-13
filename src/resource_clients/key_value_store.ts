@@ -71,6 +71,30 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
+     * Tests whether a record with the given key exists in the key-value store without retrieving its value.
+     *
+     * https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record
+     * @param key The queried record key.
+     * @returns `true` if the record exists, `false` if it does not.
+     */
+    async recordExists(key: string): Promise<boolean> {
+        const requestOpts: Record<string, unknown> = {
+            url: this._url(`records/${key}`),
+            method: 'HEAD',
+            params: this._params(),
+        };
+
+        try {
+            await this.httpClient.call(requestOpts);
+            return true;
+        } catch (err) {
+            catchNotFoundOrThrow(err as ApifyApiError);
+        }
+
+        return false;
+    }
+
+    /**
      * You can use the `buffer` option to get the value in a Buffer (Node.js)
      * or ArrayBuffer (browser) format. In Node.js (not in browser) you can also
      * use the `stream` option to get a Readable stream.
