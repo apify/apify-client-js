@@ -70,6 +70,13 @@ export class KeyValueStoreClient extends ResourceClient {
         return cast(parseDateFields(pluckData(response.data)));
     }
 
+    /**
+     * Tests whether a record with the given key exists in the key-value store without retrieving its value.
+     *
+     * https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record
+     * @param key The queried record key.
+     * @returns `true` if the record exists, `false` if it does not.
+     */
     async recordExists(key: string): Promise<boolean> {
         const requestOpts: Record<string, unknown> = {
             url: this._url(`records/${key}`),
