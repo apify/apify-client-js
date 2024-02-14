@@ -1,6 +1,7 @@
 import { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 import ow from 'ow';
 
+import { LogClient } from './log';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import {
@@ -68,6 +69,15 @@ export class BuildClient extends ResourceClient {
         }));
 
         return this._waitForFinish(options);
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/actor-builds/build-log
+     */
+    log(): LogClient {
+        return new LogClient(this._subResourceOptions({
+            resourcePath: 'log',
+        }));
     }
 }
 

@@ -108,5 +108,17 @@ describe('Build methods', () => {
             expect(browserRes).toEqual(res);
             validateRequest({ waitForFinish: 0 }, { buildId });
         });
+
+        test('log().get() works', async () => {
+            const buildId = 'some-build-id';
+
+            const resource = await client.build(buildId).log().get();
+            expect(resource).toEqual('build-log');
+            validateRequest({}, { buildId });
+
+            const browserRes = await page.evaluate((id) => client.build(id).log().get(), buildId);
+            expect(browserRes).toEqual('build-log');
+            validateRequest({}, { buildId });
+        });
     });
 });
