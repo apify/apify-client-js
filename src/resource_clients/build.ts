@@ -71,7 +71,9 @@ export class BuildClient extends ResourceClient {
         return this._waitForFinish(options);
     }
 
-    // TODO: Add documentation link when it's available
+    /**
+     * https://docs.apify.com/api/v2#/reference/actor-builds/build-log
+     */
     log(): LogClient {
         return new LogClient(this._subResourceOptions({
             resourcePath: 'log',
