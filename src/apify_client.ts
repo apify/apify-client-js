@@ -8,7 +8,7 @@ import { RequestInterceptorFunction } from './interceptors';
 import { ActorClient } from './resource_clients/actor';
 import { ActorCollectionClient } from './resource_clients/actor_collection';
 import { BuildClient } from './resource_clients/build';
-// import { BuildCollectionClient } from './resource_clients/build_collection';
+import { BuildCollectionClient } from './resource_clients/build_collection';
 import { DatasetClient } from './resource_clients/dataset';
 import { DatasetCollectionClient } from './resource_clients/dataset_collection';
 import { KeyValueStoreClient } from './resource_clients/key_value_store';
@@ -17,7 +17,7 @@ import { LogClient } from './resource_clients/log';
 import { RequestQueueClient, RequestQueueUserOptions } from './resource_clients/request_queue';
 import { RequestQueueCollectionClient } from './resource_clients/request_queue_collection';
 import { RunClient } from './resource_clients/run';
-// import { RunCollectionClient } from './resource_clients/run_collection';
+import { RunCollectionClient } from './resource_clients/run_collection';
 import { ScheduleClient } from './resource_clients/schedule';
 import { ScheduleCollectionClient } from './resource_clients/schedule_collection';
 import { StoreCollectionClient } from './resource_clients/store_collection';
@@ -107,13 +107,12 @@ export class ApifyClient {
         });
     }
 
-    // TODO we don't have this endpoint yet
-    // /**
-    //  * @return {BuildCollectionClient}
-    //  */
-    // builds() {
-    //     return new BuildCollectionClient(this._options());
-    // }
+    /**
+     * https://docs.apify.com/api/v2#/reference/actor-builds/build-collection
+     */
+    builds(): BuildCollectionClient {
+        return new BuildCollectionClient(this._options());
+    }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-builds/build-object
@@ -203,13 +202,15 @@ export class ApifyClient {
         return new RequestQueueClient(apiClientOptions, options);
     }
 
-    // TODO we don't have this endpoint yet
-    // /**
-    //  * @return {RunCollectionClient}
-    //  */
-    // runs() {
-    //     return new RunCollectionClient(this._options());
-    // }
+    /**
+     * https://docs.apify.com/api/v2#/reference/actor-runs/run-collection
+     */
+    runs(): RunCollectionClient {
+        return new RunCollectionClient({
+            ...this._options(),
+            resourcePath: 'actor-runs',
+        });
+    }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages

@@ -35,7 +35,7 @@ describe('Build methods', () => {
     });
 
     describe('builds()', () => {
-        test.skip('list() works', async () => {
+        test('list() works', async () => {
             const query = {
                 limit: 5,
                 offset: 3,

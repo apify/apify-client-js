@@ -5,6 +5,7 @@ const { addRoutes } = require('./add_routes');
 const runs = express.Router();
 
 const ROUTES = [
+    { id: 'list-runs', method: 'GET', path: '/' },
     { id: 'get-run', method: 'GET', path: '/:runId', type: 'responseJsonMock' },
     { id: 'abort-run', method: 'POST', path: '/:runId/abort' },
     { id: 'metamorph-run', method: 'POST', path: '/:runId/metamorph' },
