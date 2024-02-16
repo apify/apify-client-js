@@ -8,7 +8,7 @@ import { RequestInterceptorFunction } from './interceptors';
 import { ActorClient } from './resource_clients/actor';
 import { ActorCollectionClient } from './resource_clients/actor_collection';
 import { BuildClient } from './resource_clients/build';
-// import { BuildCollectionClient } from './resource_clients/build_collection';
+import { BuildCollectionClient } from './resource_clients/build_collection';
 import { DatasetClient } from './resource_clients/dataset';
 import { DatasetCollectionClient } from './resource_clients/dataset_collection';
 import { KeyValueStoreClient } from './resource_clients/key_value_store';
@@ -17,7 +17,7 @@ import { LogClient } from './resource_clients/log';
 import { RequestQueueClient, RequestQueueUserOptions } from './resource_clients/request_queue';
 import { RequestQueueCollectionClient } from './resource_clients/request_queue_collection';
 import { RunClient } from './resource_clients/run';
-// import { RunCollectionClient } from './resource_clients/run_collection';
+import { RunCollectionClient } from './resource_clients/run_collection';
 import { ScheduleClient } from './resource_clients/schedule';
 import { ScheduleCollectionClient } from './resource_clients/schedule_collection';
 import { StoreCollectionClient } from './resource_clients/store_collection';
@@ -29,8 +29,6 @@ import { WebhookCollectionClient } from './resource_clients/webhook_collection';
 import { WebhookDispatchClient } from './resource_clients/webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './resource_clients/webhook_dispatch_collection';
 import { Statistics } from './statistics';
-import { BuildCollectionClient } from './resource_clients/build_collection';
-import { RunCollectionClient } from './resource_clients/run_collection';
 
 /**
  * ApifyClient is the official library to access [Apify API](https://docs.apify.com/api/v2) from your
