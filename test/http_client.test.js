@@ -27,6 +27,10 @@ describe('HttpClient', () => {
             baseUrl,
             timeoutSecs: 1,
             maxRetries: 0,
+            requestInterceptors: [(config) => {
+                config.headers = {};
+                return config;
+            }],
         });
     });
     afterEach(async () => {

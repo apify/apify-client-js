@@ -1,4 +1,4 @@
-import axios, { AxiosInterceptorManager, AxiosResponse, AxiosRequestTransformer } from 'axios';
+import axios, { AxiosInterceptorManager, AxiosResponse, AxiosRequestTransformer, AxiosHeaders } from 'axios';
 import contentTypeParser from 'content-type';
 import { JsonObject } from 'type-fest';
 
@@ -62,6 +62,14 @@ function serializeRequest(config: ApifyRequestConfig): ApifyRequestConfig {
     return config;
 }
 
+function ensureHeadersPrototype(config: ApifyRequestConfig): ApifyRequestConfig {
+    if (config.headers && !(config.headers instanceof AxiosHeaders)) {
+        Object.setPrototypeOf(config.headers, AxiosHeaders.prototype);
+    }
+
+    return config;
+}
+
 /**
  * JSON.stringify() that serializes functions to string instead
  * of replacing them with null or removing them.
@@ -114,5 +122,5 @@ function parseResponseData(response: ApifyResponse): ApifyResponse {
 export type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyRequestConfig>['use']>[0];
 export type ResponseInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyResponse>['use']>[0];
 
-export const requestInterceptors: RequestInterceptorFunction[] = [maybeGzipRequest, serializeRequest];
+export const requestInterceptors: RequestInterceptorFunction[] = [maybeGzipRequest, serializeRequest, ensureHeadersPrototype];
 export const responseInterceptors: ResponseInterceptorFunction[] = [parseResponseData];

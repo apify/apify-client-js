@@ -4,7 +4,14 @@ import { APIFY_ENV_VARS } from '@apify/consts';
 import { Log } from '@apify/log';
 import KeepAliveAgent from 'agentkeepalive';
 import retry, { RetryFunction } from 'async-retry';
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, {
+    AxiosError,
+    AxiosInstance,
+    AxiosRequestConfig,
+    InternalAxiosRequestConfig,
+    AxiosResponse,
+    AxiosHeaders,
+} from 'axios';
 
 import { ApifyApiError } from './apify_api_error';
 import {
@@ -99,7 +106,7 @@ export class HttpClient {
         });
 
         // Clean all default headers because they only make a mess and their merging is difficult to understand and buggy.
-        this.axios.defaults.headers = {} as any;
+        this.axios.defaults.headers = new AxiosHeaders() as any;
 
         // If workflow key is available, pass it as a header
         if (this.workflowKey) {
