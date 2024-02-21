@@ -58,5 +58,29 @@ describe('User methods', () => {
             expect(browserRes).toEqual(res);
             validateRequest({}, { userId: ME_USER_NAME_PLACEHOLDER });
         });
+
+        test('monthlyUsage() works', async () => {
+            const userId = 'some-id';
+
+            const res = await client.user(userId).monthlyUsage();
+            expect(res.id).toEqual('get-monthly-usage');
+            validateRequest({}, { userId });
+
+            const browserRes = await page.evaluate((id) => client.user(id).monthlyUsage(), userId);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { userId });
+        });
+
+        test('limits() works', async () => {
+            const userId = 'some-id';
+
+            const res = await client.user(userId).limits();
+            expect(res.id).toEqual('get-limits');
+            validateRequest({}, { userId });
+
+            const browserRes = await page.evaluate((id) => client.user(id).limits(), userId);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { userId });
+        });
     });
 });
