@@ -12,8 +12,6 @@ import {
 } from './resource_clients/request_queue';
 import { WebhookUpdateData } from './resource_clients/webhook';
 
-const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
-const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
 const NOT_FOUND_STATUS_CODE = 404;
 const RECORD_NOT_FOUND_TYPE = 'record-not-found';
 const RECORD_OR_TOKEN_NOT_FOUND_TYPE = 'record-or-token-not-found';
@@ -51,16 +49,26 @@ type ReturnJsonObject = { [Key in string]?: ReturnJsonValue; };
 type ReturnJsonArray = Array<ReturnJsonValue>;
 
 /**
- * Helper function that traverses JSON structure and parses fields such as modifiedAt or createdAt to dates.
+ * Traverses JSON structure and converts fields that end with "At" to a Date object (fields such as "modifiedAt" or
+ * "createdAt").
+ *
+ * If you want parse other fields as well, you can provide a custom matcher function shouldParseField(). This
+ * admittedly awkward approach allows this function to be reused for various purposes without introducing potential
+ * breaking changes.
+ *
+ * If the field cannot be converted to Date, it is left as is.
  */
-export function parseDateFields(input: JsonValue, depth = 0): ReturnJsonValue {
+export function parseDateFields(input: JsonValue, shouldParseField: ((key: string) => boolean) | null = null, depth = 0): ReturnJsonValue {
+    const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
+    const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
+
     if (depth > PARSE_DATE_FIELDS_MAX_DEPTH) return input as ReturnJsonValue;
-    if (Array.isArray(input)) return input.map((child) => parseDateFields(child, depth + 1));
+    if (Array.isArray(input)) return input.map((child) => parseDateFields(child, shouldParseField, depth + 1));
     if (!input || typeof input !== 'object') return input;
 
     return Object.entries(input).reduce((output, [k, v]) => {
         const isValObject = !!v && typeof v === 'object';
-        if (k.endsWith(PARSE_DATE_FIELDS_KEY_SUFFIX)) {
+        if (k.endsWith(PARSE_DATE_FIELDS_KEY_SUFFIX) || (shouldParseField && shouldParseField(k))) {
             if (v) {
                 const d = new Date(v as string);
                 output[k] = Number.isNaN(d.getTime()) ? v as string : d;
@@ -68,7 +76,7 @@ export function parseDateFields(input: JsonValue, depth = 0): ReturnJsonValue {
                 output[k] = v;
             }
         } else if (isValObject || Array.isArray(v)) {
-            output[k] = parseDateFields(v!, depth + 1);
+            output[k] = parseDateFields(v!, shouldParseField, depth + 1);
         } else {
             output[k] = v;
         }
