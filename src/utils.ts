@@ -2,6 +2,7 @@ import type { Readable } from 'node:stream';
 import util from 'util';
 import zlib from 'zlib';
 
+import log from '@apify/log';
 import ow from 'ow';
 import type { TypedArray, JsonValue } from 'type-fest';
 
@@ -59,16 +60,19 @@ type ReturnJsonArray = Array<ReturnJsonValue>;
  * If the field cannot be converted to Date, it is left as is.
  */
 export function parseDateFields(input: JsonValue, shouldParseField: ((key: string) => boolean) | null = null, depth = 0): ReturnJsonValue {
-    const dateKeySuffix = 'At';
-    const maxTraverseDepth = 3; // obj.data.someArrayField.[x].field
+    // Don't go too deep to avoid stack overflows (especially if there is a circular reference). The depth of 3
+    // corresponds to obj.data.someArrayField.[x].field and should be generally enough.
+    if (depth > 3) {
+        log.warning('parseDateFields: Maximum depth reached, not parsing further');
+        return input as ReturnJsonValue;
+    }
 
-    if (depth > maxTraverseDepth) return input as ReturnJsonValue;
     if (Array.isArray(input)) return input.map((child) => parseDateFields(child, shouldParseField, depth + 1));
     if (!input || typeof input !== 'object') return input;
 
     return Object.entries(input).reduce((output, [k, v]) => {
         const isValObject = !!v && typeof v === 'object';
-        if (k.endsWith(dateKeySuffix) || (shouldParseField && shouldParseField(k))) {
+        if (k.endsWith('At') || (shouldParseField && shouldParseField(k))) {
             if (v) {
                 const d = new Date(v as string);
                 output[k] = Number.isNaN(d.getTime()) ? v as string : d;
