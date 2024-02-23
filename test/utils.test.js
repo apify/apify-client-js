@@ -64,7 +64,7 @@ describe('utils.parseDateFields()', () => {
         expectDatesDame(parsed.data.foo[1].fooAt, date);
     });
 
-    test('doesn\'t parse falsy values', () => {
+    test('does not parse falsy values', () => {
         const original = { fooAt: null, barAt: '' };
         const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(original)));
 
@@ -72,12 +72,45 @@ describe('utils.parseDateFields()', () => {
         expect(parsed.barAt).toEqual('');
     });
 
-    test('doesn\'t mangle non-date strings', () => {
+    test('does not mangle non-date strings', () => {
         const original = { fooAt: 'three days ago', barAt: '30+ days' };
         const parsed = utils.parseDateFields(original);
 
         expect(parsed.fooAt).toEqual('three days ago');
         expect(parsed.barAt).toEqual('30+ days');
+    });
+
+    test('ignores perfectly fine RFC 3339 date', () => {
+        const original = { fooAt: 'three days ago', date: '2024-02-18T00:00:00.000Z' };
+        const parsed = utils.parseDateFields(original);
+
+        expect(parsed.fooAt).toEqual('three days ago');
+        expect(parsed.date).toEqual('2024-02-18T00:00:00.000Z');
+    });
+
+    test('parses custom date field detected by matcher', () => {
+        const original = { fooAt: 'three days ago', date: '2024-02-18T00:00:00.000Z' };
+
+        const parsed = utils.parseDateFields(original, (key) => key === 'date');
+
+        expect(parsed.fooAt).toEqual('three days ago');
+        expect(parsed.date).toBeInstanceOf(Date);
+    });
+
+    test('parses custom nested date field detected by matcher', () => {
+        const original = { fooAt: 'three days ago', foo: { date: '2024-02-18T00:00:00.000Z' } };
+
+        const parsed = utils.parseDateFields(original, (key) => key === 'date');
+
+        expect(parsed.foo.date).toBeInstanceOf(Date);
+    });
+
+    test('does not mangle non-date strings even when detected by matcher', () => {
+        const original = { fooAt: 'three days ago', date: '30+ days' };
+        const parsed = utils.parseDateFields(original, (key) => key === 'date');
+
+        expect(parsed.fooAt).toEqual('three days ago');
+        expect(parsed.date).toEqual('30+ days');
     });
 });
 
