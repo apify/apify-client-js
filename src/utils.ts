@@ -59,16 +59,16 @@ type ReturnJsonArray = Array<ReturnJsonValue>;
  * If the field cannot be converted to Date, it is left as is.
  */
 export function parseDateFields(input: JsonValue, shouldParseField: ((key: string) => boolean) | null = null, depth = 0): ReturnJsonValue {
-    const PARSE_DATE_FIELDS_KEY_SUFFIX = 'At';
-    const PARSE_DATE_FIELDS_MAX_DEPTH = 3; // obj.data.someArrayField.[x].field
+    const dateKeySuffix = 'At';
+    const maxTraverseDepth = 3; // obj.data.someArrayField.[x].field
 
-    if (depth > PARSE_DATE_FIELDS_MAX_DEPTH) return input as ReturnJsonValue;
+    if (depth > maxTraverseDepth) return input as ReturnJsonValue;
     if (Array.isArray(input)) return input.map((child) => parseDateFields(child, shouldParseField, depth + 1));
     if (!input || typeof input !== 'object') return input;
 
     return Object.entries(input).reduce((output, [k, v]) => {
         const isValObject = !!v && typeof v === 'object';
-        if (k.endsWith(PARSE_DATE_FIELDS_KEY_SUFFIX) || (shouldParseField && shouldParseField(k))) {
+        if (k.endsWith(dateKeySuffix) || (shouldParseField && shouldParseField(k))) {
             if (v) {
                 const d = new Date(v as string);
                 output[k] = Number.isNaN(d.getTime()) ? v as string : d;
