@@ -2,7 +2,6 @@ import type { Readable } from 'node:stream';
 import util from 'util';
 import zlib from 'zlib';
 
-import log from '@apify/log';
 import ow from 'ow';
 import type { TypedArray, JsonValue } from 'type-fest';
 
@@ -62,8 +61,8 @@ type ReturnJsonArray = Array<ReturnJsonValue>;
 export function parseDateFields(input: JsonValue, shouldParseField: ((key: string) => boolean) | null = null, depth = 0): ReturnJsonValue {
     // Don't go too deep to avoid stack overflows (especially if there is a circular reference). The depth of 3
     // corresponds to obj.data.someArrayField.[x].field and should be generally enough.
+    // TODO: Consider removing this limitation. It might came across as an annoying surprise as it's not communicated.
     if (depth > 3) {
-        log.warning('parseDateFields: Maximum depth reached, not parsing further');
         return input as ReturnJsonValue;
     }
 
