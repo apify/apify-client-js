@@ -93,7 +93,7 @@ export interface Webhook {
     lastDispatch: string;
     stats: WebhookStats;
     shouldInterpolateStrings: boolean;
-    isApifyIntegration: boolean;
+    isApifyIntegration?: boolean;
     headersTemplate?: string;
     description?: string;
 }
