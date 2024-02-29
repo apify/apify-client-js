@@ -93,6 +93,7 @@ export interface Webhook {
     lastDispatch: string;
     stats: WebhookStats;
     shouldInterpolateStrings: boolean;
+    isApifyIntegration?: boolean;
     headersTemplate?: string;
     description?: string;
 }
@@ -112,6 +113,7 @@ export type WebhookUpdateData = Partial<
         | 'requestUrl'
         | 'payloadTemplate'
         | 'shouldInterpolateStrings'
+        | 'isApifyIntegration'
         | 'headersTemplate'
         | 'description'
     >
