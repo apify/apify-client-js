@@ -4,14 +4,8 @@
       "type": "category",
       "label": "API Client",
       "items": [
-        "index",
-        "features",
-        "usage_concepts"
+        "index"
       ]
-    },
-    {
-      "type": "doc",
-      "id": "changelog"
     }
   ]
 ]
