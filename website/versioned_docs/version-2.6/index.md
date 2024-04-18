@@ -15,7 +15,10 @@ automatic retries and convenience functions that improve the experience of using
 
 ## Installation
 
-You can install the client via the [npm package](https://www.npmjs.com/package/apify-client). To do that, simply run `npm i apify-client`.
+You can install the client via the [npm package](https://www.npmjs.com/package/apify-client). To do that, simply run.
+
+```bash
+npm i apify-client
 
 ## Authentication
 
@@ -130,7 +133,11 @@ const { items } = await lastSucceededRunClient.dataset()
     .listItems();
 ```
 
-> The quick access to `dataset` and other storages directly from the run client can now only be used with the `lastRun()` method, but the feature will be available to all runs in the future.
+:::note Storage quick access
+
+The quick access to `dataset` and other storages directly from the run client can now only be used with the `lastRun()` method, but the feature will be available to all runs in the future.
+
+:::
 
 ## Pagination
 
