@@ -39,6 +39,7 @@ To use the client, you need an [API token](https://docs.apify.com/platform/integ
 // ES5 example import
 const { ApifyClient } = require('apify-client');
 ```
+
 ```js
 // ES6+ example import
 import { ApifyClient } from 'apify';
@@ -77,7 +78,8 @@ To start the Actor, you can use the [ActorClient](https://docs.apify.com/api/cli
 
 
 #### Passing input to the Actor
-To define the Actor's input, you can pass an object to the [`call()`](https://docs.apify.com/api/client/js/reference/class/ActorClient#call) method. The input object can be any JSON object that the Actor expects (respects the Actor's [input schema](https://docs.apify.com/platform/actors/development/actor-definition/input-schema)). The input object is used to pass configuration to the Actor, such as URLs to scrape, search terms, or any other data. 
+
+To define the Actor's input, you can pass an object to the [`call()`](https://docs.apify.com/api/client/js/reference/class/ActorClient#call) method. The input object can be any JSON object that the Actor expects (respects the Actor's [input schema](https://docs.apify.com/platform/actors/development/actor-definition/input-schema)). The input object is used to pass configuration to the Actor, such as URLs to scrape, search terms, or any other data.
 
 ```js
 const { ApifyClient } = require('apify-client');
@@ -92,7 +94,7 @@ const { defaultDatasetId } = await client.actor('username/actor-name').call({
 
 ### Getting results from the dataset
 
-To get the results from the dataset, you can use the [DatasetClient](https://docs.apify.com/api/client/js/reference/class/DatasetClient) (`client.dataset()`) and [`listItems()`](https://docs.apify.com/api/client/js/reference/class/DatasetClient#listItems) method. You need to pass the dataset ID to define which dataset you want to access. You can get the dataset ID from the Actor's run object (represented by `defaultDatasetId`). 
+To get the results from the dataset, you can use the [DatasetClient](https://docs.apify.com/api/client/js/reference/class/DatasetClient) (`client.dataset()`) and [`listItems()`](https://docs.apify.com/api/client/js/reference/class/DatasetClient#listItems) method. You need to pass the dataset ID to define which dataset you want to access. You can get the dataset ID from the Actor's run object (represented by `defaultDatasetId`).
 
 ```js
 
@@ -181,9 +183,9 @@ const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 try {
     const { items } = await client.dataset("non-existing-dataset-id").listItems();
 } catch (error) {
-		// The error is an instance of ApifyApiError
+  // The error is an instance of ApifyApiError
     const { message, type, statusCode, clientMethod, path } = error;
-		// Log error for easier debugging 
+  // Log error for easier debugging 
     console.log({ message, statusCode, clientMethod, type });
 }
 ```
@@ -196,10 +198,10 @@ Network communication sometimes fails, that's a given. The client will automatic
 const { ApifyClient } = require('apify-client');
 
 const apifyClient = new ApifyClient({ 
-		token: 'MY-APIFY-TOKEN',
-		maxRetries: 8,
-		minDelayBetweenRetriesMillis: 500, // 0.5s
-		timeoutSecs: 360 // 6 mins
+  token: 'MY-APIFY-TOKEN',
+  maxRetries: 8,
+  minDelayBetweenRetriesMillis: 500, // 0.5s
+  timeoutSecs: 360 // 6 mins
 });
 ```
 
@@ -219,7 +221,7 @@ const finishedActorRun = await client.actor('username/actor-name').call();
 
 // Starts an Actor and waits maximum 60s for the finish 
 const { status } = await client.actor('username/actor-name').start({
-		waitForFinish: 60, // 1 minute
+  waitForFinish: 60, // 1 minute
 });
 ```
 
@@ -249,8 +251,8 @@ while (true) {
     
     // Merge new items with other already loaded items
     allItems.push(...items);
-		
-		// If there are no more items to fetch, exit the loading
+  
+  // If there are no more items to fetch, exit the loading
     if (offset + limit >= total) {
         break;
     }
