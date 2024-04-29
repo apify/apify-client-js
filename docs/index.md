@@ -5,7 +5,7 @@ title: 'Getting started'
 
 # Apify API client for JavaScript
 
-`apify-client` is the official library to access [Apify REST API](https://docs.apify.com/api/v2) from your
+`apify-client` is the official library to access the [Apify REST API](https://docs.apify.com/api/v2) from your
 JavaScript/TypeScript applications. It runs both in Node.js and browser and provides useful features like
 automatic retries and convenience functions that improve the experience of using the Apify API. All requests and responses (including errors) are encoded in JSON format with UTF-8 encoding.
 
@@ -33,7 +33,7 @@ bun add apify-client
 
 ## Authentication and Initialization
 
-To use the client, you need an [API token](https://docs.apify.com/platform/integrations/api#api-token). You can find your token in under integrations in [Apify Console](https://console.apify.com/account/integrations). Copy the token add initialize the client by providing the token (`MY-APIFY-TOKEN`) as a parameter to the `ApifyClient` constructor.
+To use the client, you need an [API token](https://docs.apify.com/platform/integrations/api#api-token). You can find your token under integrations in [Apify Console](https://console.apify.com/account/integrations). Copy the token and initialize the client by providing the token (`MY-APIFY-TOKEN`) as a parameter to the `ApifyClient` constructor.
 
 ```js
 // ES5 example import
@@ -53,12 +53,12 @@ const client = new ApifyClient({
 ```
 
 
-> ❗ The API token is used to authorize your requests to Apify API. You can be charged for the usage of the underlying services so do not share your API token with untrusted parties or expose it on the client side of your applications
+> ❗ The API token is used to authorize your requests to the Apify API. You can be charged for the usage of the underlying services, so do not share your API token with untrusted parties or expose it on the client side of your applications
 
 
 ## Quick start
 
-One of the most common use cases is starting [Actors](https://docs.apify.com/platform/actors) (serverless program running in the [Apify cloud](https://docs.apify.com/platform)) and getting results from their [datasets](https://docs.apify.com/platform/storage/dataset) (storage) after they finish the job (usually scraping, automation processes or data processing).
+One of the most common use cases is starting [Actors](https://docs.apify.com/platform/actors) (serverless programs running in the [Apify cloud](https://docs.apify.com/platform)) and getting results from their [datasets](https://docs.apify.com/platform/storage/dataset) (storage) after they finish the job (usually scraping, automation processes or data processing).
 
 ```js
 const { ApifyClient } = require('apify-client');
@@ -74,7 +74,7 @@ const { items } = await client.dataset(defaultDatasetId).listItems();
 
 ### Running Actors
 
-To start the Actor, you can use the [ActorClient](https://docs.apify.com/api/client/js/reference/class/ActorClient) (`client.actor()`) and pass the Actor's ID (e.g. `john-doe/my-cool-actor`) to define which Actor you want to run. The Actor's ID is a combination of the username and the Actor owner’s username. You can run both your own Actors and [Actors from Apify Store](https://docs.apify.com/platform/actors/running/actors-in-store).
+To start an Actor, you can use the [ActorClient](https://docs.apify.com/api/client/js/reference/class/ActorClient) (`client.actor()`) and pass the Actor's ID (e.g. `john-doe/my-cool-actor`) to define which Actor you want to run. The Actor's ID is a combination of the username and the Actor owner’s username. You can run both your own Actors and [Actors from Apify Store](https://docs.apify.com/platform/actors/running/actors-in-store).
 
 
 #### Passing input to the Actor
@@ -106,7 +106,7 @@ const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 const { items } = await client.dataset('dataset-id').listItems();
 ```
 
-> 💡 **Good to know**: Running an Actor might take time depending on the Actor's complexity and the amount of data it processes. If you want only to get data and have an immediate response you should access the existing dataset of the finished [Actor run](https://docs.apify.com/platform/actors/running/runs-and-builds#runs).
+> 💡 **Good to know**: Running an Actor might take time, depending on the Actor's complexity and the amount of data it processes. If you want only to get data and have an immediate response you should access the existing dataset of the finished [Actor run](https://docs.apify.com/platform/actors/running/runs-and-builds#runs).
 
 
 ## Usage concepts
@@ -192,7 +192,7 @@ try {
 
 ### Retries with [exponential backoff](https://docs.apify.com/api/client/js/docs/features#retries-with-exponential-backoff)
 
-Network communication sometimes fails, that's a given. The client will automatically retry requests that failed due to a network error, an internal error of the Apify API (HTTP 500+), or a rate limit error (HTTP 429). By default, it will retry up to 8 times. The first retry will be attempted after ~500ms, the second after ~1000ms, and so on. You can configure those parameters using the `maxRetries` and `minDelayBetweenRetriesMillis` options of the `ApifyClient` constructor.
+Network communication sometimes fails. That's a given. The client will automatically retry requests that failed due to a network error, an internal error of the Apify API (HTTP 500+), or a rate limit error (HTTP 429). By default, it will retry up to 8 times. The first retry will be attempted after ~500ms, the second after ~1000ms, and so on. You can configure those parameters using the `maxRetries` and `minDelayBetweenRetriesMillis` options of the `ApifyClient` constructor.
 
 ```js
 const { ApifyClient } = require('apify-client');
