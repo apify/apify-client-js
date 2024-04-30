@@ -5,7 +5,7 @@ title: 'Getting started'
 
 # Apify API client for JavaScript
 
-`apify-client` is the official library to access [Apify REST API](https://docs.apify.com/api/v2) from your
+`apify-client` is the official library to access the [Apify REST API](https://docs.apify.com/api/v2) from your
 JavaScript/TypeScript applications. It runs both in Node.js and browser and provides useful features like
 automatic retries and convenience functions that improve the experience of using the Apify API. All requests and responses (including errors) are encoded in JSON format with UTF-8 encoding.
 

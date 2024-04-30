@@ -33,7 +33,7 @@ bun add apify-client
 
 ## Authentication and Initialization
 
-To use the client, you need an [API token](https://docs.apify.com/platform/integrations/api#api-token). You can find your token under integrations in [Apify Console](https://console.apify.com/account/integrations). Copy the token and initialize the client by providing the token (`MY-APIFY-TOKEN`) as a parameter to the `ApifyClient` constructor.
+To use the client, you need an [API token](https://docs.apify.com/platform/integrations/api#api-token). You can find your token under [Integrations](https://console.apify.com/account/integrations) tab in Apify Console. Copy the token and initialize the client by providing the token (`MY-APIFY-TOKEN`) as a parameter to the `ApifyClient` constructor.
 
 ```js
 // ES5 example import
@@ -53,7 +53,13 @@ const client = new ApifyClient({
 ```
 
 
-> ❗ The API token is used to authorize your requests to the Apify API. You can be charged for the usage of the underlying services, so do not share your API token with untrusted parties or expose it on the client side of your applications
+
+:::warning Secure access
+
+The API token is used to authorize your requests to the Apify API. You can be charged for the usage of the underlying services, so do not share your API token with untrusted parties or expose it on the client side of your applications
+
+:::
+
 
 
 ## Quick start
@@ -106,7 +112,13 @@ const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 const { items } = await client.dataset('dataset-id').listItems();
 ```
 
-> 💡 **Good to know**: Running an Actor might take time, depending on the Actor's complexity and the amount of data it processes. If you want only to get data and have an immediate response you should access the existing dataset of the finished [Actor run](https://docs.apify.com/platform/actors/running/runs-and-builds#runs).
+
+:::note Dataset access
+
+Running an Actor might take time, depending on the Actor's complexity and the amount of data it processes. If you want only to get data and have an immediate response you should access the existing dataset of the finished [Actor run](https://docs.apify.com/platform/actors/running/runs-and-builds#runs).
+
+:::
+
 
 
 ## Usage concepts
@@ -129,7 +141,13 @@ const myActor = await actorCollectionClient.create({ name: 'my-actor-name' });
 const { items } = await actorCollectionClient.list();
 ```
 
-> The resource ID can be either the `id` of the said resource, or a combination of your `username/resource-name`.
+
+:::note Resource identification
+
+The resource ID can be either the `id` of the said resource, or a combination of your `username/resource-name`.
+
+:::
+
 
 ```js
 const { ApifyClient } = require('apify-client');
@@ -209,7 +227,7 @@ const apifyClient = new ApifyClient({
 
 Some actions can't be performed by the API itself, such as indefinite waiting for an Actor run to finish (because of network timeouts). The client provides convenient `call()` and `waitForFinish()` functions that do that. If the limit is reached, the returned promise is resolved to a run object that will have status `READY` or `RUNNING` and it will not contain the Actor run output.
 
-[Key-value store](https://docs.apify.com/platform/storage/key-value-store) records can be retrieved as objects, buffers, or streams via the respective options, dataset items can be fetched as individual objects or serialized data and we plan to add better stream support and async iterators.
+[Key-value store](https://docs.apify.com/platform/storage/key-value-store) records can be retrieved as objects, buffers, or streams via the respective options, dataset items can be fetched as individual objects or serialized data.
 
 ```js
 const { ApifyClient } = require('apify-client');
