@@ -53,13 +53,11 @@ const client = new ApifyClient({
 ```
 
 
-
 :::warning Secure access
 
 The API token is used to authorize your requests to the Apify API. You can be charged for the usage of the underlying services, so do not share your API token with untrusted parties or expose it on the client side of your applications
 
 :::
-
 
 
 ## Quick start
@@ -118,7 +116,6 @@ const { items } = await client.dataset('dataset-id').listItems();
 Running an Actor might take time, depending on the Actor's complexity and the amount of data it processes. If you want only to get data and have an immediate response you should access the existing dataset of the finished [Actor run](https://docs.apify.com/platform/actors/running/runs-and-builds#runs).
 
 :::
-
 
 
 ## Usage concepts
