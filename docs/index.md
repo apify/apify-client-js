@@ -91,11 +91,11 @@ const { items } = await client.dataset(defaultDatasetId).listItems();
 
 ### Running Actors
 
-To start an Actor, you can use the [ActorClient](/api/client/js/reference/class/ActorClient) (`client.actor()`) and pass the Actor's ID (e.g. `john-doe/my-cool-actor`) to define which Actor you want to run. The Actor's ID is a combination of the username and the Actor owner’s username. You can run both your own Actors and [Actors from Apify Store](/platform/actors/running/actors-in-store).
+To start an Actor, you can use the [ActorClient](https://docs.apify.com/api/client/js/reference/class/ActorClient) (`client.actor()`) and pass the Actor's ID (e.g. `john-doe/my-cool-actor`) to define which Actor you want to run. The Actor's ID is a combination of the username and the Actor owner’s username. You can run both your own Actors and [Actors from Apify Store](/platform/actors/running/actors-in-store).
 
 #### Passing input to the Actor
 
-To define the Actor's input, you can pass an object to the [`call()`](/api/client/js/reference/class/ActorClient#call) method. The input object can be any JSON object that the Actor expects (respects the Actor's [input schema](/platform/actors/development/actor-definition/input-schema)). The input object is used to pass configuration to the Actor, such as URLs to scrape, search terms, or any other data.
+To define the Actor's input, you can pass an object to the [`call()`](https://docs.apify.com/api/client/js/reference/class/ActorClient#call) method. The input object can be any JSON object that the Actor expects (respects the Actor's [input schema](/platform/actors/development/actor-definition/input-schema)). The input object is used to pass configuration to the Actor, such as URLs to scrape, search terms, or any other data.
 
 ```js
 import { ApifyClient } from 'apify';
@@ -110,7 +110,7 @@ const { defaultDatasetId } = await client.actor('username/actor-name').call({
 
 ### Getting results from the dataset
 
-To get the results from the dataset, you can use the [DatasetClient](/api/client/js/reference/class/DatasetClient) (`client.dataset()`) and [`listItems()`](/api/client/js/reference/class/DatasetClient#listItems) method. You need to pass the dataset ID to define which dataset you want to access. You can get the dataset ID from the Actor's run object (represented by `defaultDatasetId`).
+To get the results from the dataset, you can use the [DatasetClient](https://docs.apify.com/api/client/js/reference/class/DatasetClient) (`client.dataset()`) and [`listItems()`](https://docs.apify.com/api/client/js/reference/class/DatasetClient#listItems) method. You need to pass the dataset ID to define which dataset you want to access. You can get the dataset ID from the Actor's run object (represented by `defaultDatasetId`).
 
 ```js
 import { ApifyClient } from 'apify';
@@ -131,8 +131,8 @@ Running an Actor might take time, depending on the Actor's complexity and the am
 
 The `ApifyClient` interface follows a generic pattern that applies to all of its components. By calling individual methods of `ApifyClient`, specific clients that target individual API resources are created. There are two types of those clients:
 
-- [`actorClient`](/api/client/js/reference/class/ActorClient): a client for the management of a single resource
-- [`actorCollectionClient`](/api/client/js/reference/class/ActorCollectionClient): a client for the collection of resources
+- [`actorClient`](https://docs.apify.com/api/client/js/reference/class/ActorClient): a client for the management of a single resource
+- [`actorCollectionClient`](https://docs.apify.com/api/client/js/reference/class/ActorCollectionClient): a client for the collection of resources
 
 ```js
 import { ApifyClient } from 'apify';
@@ -191,11 +191,11 @@ const { items } = await lastSucceededRunClient.dataset()
     .listItems();
 ```
 
-The quick access to `dataset` and other storage directly from the run client can be used with the [`lastRun()`](/api/client/js/reference/class/ActorClient#lastRun) method.
+The quick access to `dataset` and other storage directly from the run client can be used with the [`lastRun()`](https://docs.apify.com/api/client/js/reference/class/ActorClient#lastRun) method.
 
 ## Features
 
-Based on the endpoint, the client automatically extracts the relevant data and returns it in the expected format. Date strings are automatically converted to `Date` objects. For exceptions, the client throws an [`ApifyApiError`](/api/client/js/reference/class/ApifyApiError), which wraps the plain JSON errors returned by API and enriches them with other contexts for easier debugging.
+Based on the endpoint, the client automatically extracts the relevant data and returns it in the expected format. Date strings are automatically converted to `Date` objects. For exceptions, the client throws an [`ApifyApiError`](https://docs.apify.com/api/client/js/reference/class/ApifyApiError), which wraps the plain JSON errors returned by API and enriches them with other contexts for easier debugging.
 
 ```js
 import { ApifyClient } from 'apify';
@@ -249,7 +249,7 @@ const { status } = await client.actor('username/actor-name').start({
 
 ### Pagination
 
-Most methods named `list` or `listSomething` return a [`Promise<PaginatedList>`](/api/client/js/reference/interface/PaginatedList). There are some exceptions though, like `listKeys` or `listHead` which paginate differently. The results you're looking for are always stored under `items` and you can use the `limit` property to get only a subset of results. Other props are also available, depending on the method.
+Most methods named `list` or `listSomething` return a [`Promise<PaginatedList>`](https://docs.apify.com/api/client/js/reference/interface/PaginatedList). There are some exceptions though, like `listKeys` or `listHead` which paginate differently. The results you're looking for are always stored under `items` and you can use the `limit` property to get only a subset of results. Other props are also available, depending on the method.
 
 ```js
 import { ApifyClient } from 'apify';
