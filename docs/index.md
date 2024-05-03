@@ -203,12 +203,12 @@ import { ApifyClient } from 'apify';
 const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
 try {
-   const { items } = await client.dataset("non-existing-dataset-id").listItems();
+    const { items } = await client.dataset("non-existing-dataset-id").listItems();
 } catch (error) {
-   // The error is an instance of ApifyApiError
-   const { message, type, statusCode, clientMethod, path } = error;
-   // Log error for easier debugging 
-   console.log({ message, statusCode, clientMethod, type });
+    // The error is an instance of ApifyApiError
+    const { message, type, statusCode, clientMethod, path } = error;
+    // Log error for easier debugging 
+    console.log({ message, statusCode, clientMethod, type });
 }
 ```
 
