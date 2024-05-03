@@ -1,9 +1,9 @@
 module.exports = [
     [
         {
-            'type': 'category',
-            'label': 'API Client',
-            'items': [
+            type: 'category',
+            label: 'API Client',
+            items: [
                 'index',
             ],
         },

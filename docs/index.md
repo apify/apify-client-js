@@ -3,11 +3,12 @@ sidebar_label: 'Getting started'
 title: 'Getting started'
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Apify API client for JavaScript
 
-`apify-client` is the official library to access the [Apify REST API](https://docs.apify.com/api/v2) from your
-JavaScript/TypeScript applications. It runs both in Node.js and browser and provides useful features like
-automatic retries and convenience functions that improve the experience of using the Apify API. All requests and responses (including errors) are encoded in JSON format with UTF-8 encoding.
+`apify-client` is the official library to access the [Apify REST API](/api/v2) from your JavaScript/TypeScript applications. It runs both in Node.js and browser and provides useful features like automatic retries and convenience functions that improve the experience of using the Apify API. All requests and responses (including errors) are encoded in JSON format with UTF-8 encoding.
 
 ## Pre-requisites
 
@@ -21,37 +22,50 @@ node -v
 
 You can install the client via [NPM](https://www.npmjs.com/) or use any other package manager of your choice.
 
+<Tabs groupId="main">
+<TabItem value="npm" label="NPM">
+
 ```bash
 npm i apify-client
-# or
-pnpm add apify-client
-# or
+```
+
+</TabItem>
+<TabItem value="yarn" label="Yarn">
+
+```bash
 yarn add apify-client
-# or
+```
+
+</TabItem>
+<TabItem value="pnpm" label="PNPM">
+
+```bash
+pnpm add apify-client
+```
+
+</TabItem>
+<TabItem value="bun" label="Bun">
+
+```bash
 bun add apify-client
 ```
 
+</TabItem>
+</Tabs>
+
 ## Authentication and Initialization
 
-To use the client, you need an [API token](https://docs.apify.com/platform/integrations/api#api-token). You can find your token under [Integrations](https://console.apify.com/account/integrations) tab in Apify Console. Copy the token and initialize the client by providing the token (`MY-APIFY-TOKEN`) as a parameter to the `ApifyClient` constructor.
+To use the client, you need an [API token](/platform/integrations/api#api-token). You can find your token under [Integrations](https://console.apify.com/account/integrations) tab in Apify Console. Copy the token and initialize the client by providing the token (`MY-APIFY-TOKEN`) as a parameter to the `ApifyClient` constructor.
 
 ```js
-// ES5 example import
-const { ApifyClient } = require('apify-client');
-```
-
-```js
-// ES6+ example import
+// import Apify client
 import { ApifyClient } from 'apify';
-```
 
-```js
 // Client initialization with the API token
 const client = new ApifyClient({
     token: 'MY-APIFY-TOKEN',
 });
 ```
-
 
 :::warning Secure access
 
@@ -59,13 +73,12 @@ The API token is used to authorize your requests to the Apify API. You can be ch
 
 :::
 
-
 ## Quick start
 
-One of the most common use cases is starting [Actors](https://docs.apify.com/platform/actors) (serverless programs running in the [Apify cloud](https://docs.apify.com/platform)) and getting results from their [datasets](https://docs.apify.com/platform/storage/dataset) (storage) after they finish the job (usually scraping, automation processes or data processing).
+One of the most common use cases is starting [Actors](/platform/actors) (serverless programs running in the [Apify cloud](/platform)) and getting results from their [datasets](/platform/storage/dataset) (storage) after they finish the job (usually scraping, automation processes or data processing).
 
 ```js
-const { ApifyClient } = require('apify-client');
+import { ApifyClient } from 'apify';
 
 const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
@@ -78,15 +91,14 @@ const { items } = await client.dataset(defaultDatasetId).listItems();
 
 ### Running Actors
 
-To start an Actor, you can use the [ActorClient](https://docs.apify.com/api/client/js/reference/class/ActorClient) (`client.actor()`) and pass the Actor's ID (e.g. `john-doe/my-cool-actor`) to define which Actor you want to run. The Actor's ID is a combination of the username and the Actor owner’s username. You can run both your own Actors and [Actors from Apify Store](https://docs.apify.com/platform/actors/running/actors-in-store).
-
+To start an Actor, you can use the [ActorClient](/api/client/js/reference/class/ActorClient) (`client.actor()`) and pass the Actor's ID (e.g. `john-doe/my-cool-actor`) to define which Actor you want to run. The Actor's ID is a combination of the username and the Actor owner’s username. You can run both your own Actors and [Actors from Apify Store](/platform/actors/running/actors-in-store).
 
 #### Passing input to the Actor
 
-To define the Actor's input, you can pass an object to the [`call()`](https://docs.apify.com/api/client/js/reference/class/ActorClient#call) method. The input object can be any JSON object that the Actor expects (respects the Actor's [input schema](https://docs.apify.com/platform/actors/development/actor-definition/input-schema)). The input object is used to pass configuration to the Actor, such as URLs to scrape, search terms, or any other data.
+To define the Actor's input, you can pass an object to the [`call()`](/api/client/js/reference/class/ActorClient#call) method. The input object can be any JSON object that the Actor expects (respects the Actor's [input schema](/platform/actors/development/actor-definition/input-schema)). The input object is used to pass configuration to the Actor, such as URLs to scrape, search terms, or any other data.
 
 ```js
-const { ApifyClient } = require('apify-client');
+import { ApifyClient } from 'apify';
 
 const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
@@ -98,11 +110,10 @@ const { defaultDatasetId } = await client.actor('username/actor-name').call({
 
 ### Getting results from the dataset
 
-To get the results from the dataset, you can use the [DatasetClient](https://docs.apify.com/api/client/js/reference/class/DatasetClient) (`client.dataset()`) and [`listItems()`](https://docs.apify.com/api/client/js/reference/class/DatasetClient#listItems) method. You need to pass the dataset ID to define which dataset you want to access. You can get the dataset ID from the Actor's run object (represented by `defaultDatasetId`).
+To get the results from the dataset, you can use the [DatasetClient](/api/client/js/reference/class/DatasetClient) (`client.dataset()`) and [`listItems()`](/api/client/js/reference/class/DatasetClient#listItems) method. You need to pass the dataset ID to define which dataset you want to access. You can get the dataset ID from the Actor's run object (represented by `defaultDatasetId`).
 
 ```js
-
-const { ApifyClient } = require('apify-client');
+import { ApifyClient } from 'apify';
 
 const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
@@ -110,23 +121,21 @@ const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 const { items } = await client.dataset('dataset-id').listItems();
 ```
 
-
 :::note Dataset access
 
-Running an Actor might take time, depending on the Actor's complexity and the amount of data it processes. If you want only to get data and have an immediate response you should access the existing dataset of the finished [Actor run](https://docs.apify.com/platform/actors/running/runs-and-builds#runs).
+Running an Actor might take time, depending on the Actor's complexity and the amount of data it processes. If you want only to get data and have an immediate response you should access the existing dataset of the finished [Actor run](/platform/actors/running/runs-and-builds#runs).
 
 :::
-
 
 ## Usage concepts
 
 The `ApifyClient` interface follows a generic pattern that applies to all of its components. By calling individual methods of `ApifyClient`, specific clients that target individual API resources are created. There are two types of those clients:
 
-- [`actorClient`](https://docs.apify.com/api/client/js/reference/class/ActorClient): a client for the management of a single resource
-- [`actorCollectionClient`](https://docs.apify.com/api/client/js/reference/class/ActorCollectionClient): a client for the collection of resources
+- [`actorClient`](/api/client/js/reference/class/ActorClient): a client for the management of a single resource
+- [`actorCollectionClient`](/api/client/js/reference/class/ActorCollectionClient): a client for the collection of resources
 
 ```js
-const { ApifyClient } = require('apify-client');
+import { ApifyClient } from 'apify';
 
 const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
@@ -138,16 +147,14 @@ const myActor = await actorCollectionClient.create({ name: 'my-actor-name' });
 const { items } = await actorCollectionClient.list();
 ```
 
-
 :::note Resource identification
 
 The resource ID can be either the `id` of the said resource, or a combination of your `username/resource-name`.
 
 :::
 
-
 ```js
-const { ApifyClient } = require('apify-client');
+import { ApifyClient } from 'apify';
 
 const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
@@ -164,7 +171,7 @@ const myActorRun = await actorClient.start();
 Sometimes clients return other clients. That's to simplify working with nested collections, such as runs of a given Actor.
 
 ```js
-const { ApifyClient } = require('apify-client');
+import { ApifyClient } from 'apify';
 
 const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
@@ -184,14 +191,14 @@ const { items } = await lastSucceededRunClient.dataset()
     .listItems();
 ```
 
-The quick access to `dataset` and other storage directly from the run client can be used with the [`lastRun()`](https://docs.apify.com/api/client/js/reference/class/ActorClient#lastRun) method.
+The quick access to `dataset` and other storage directly from the run client can be used with the [`lastRun()`](/api/client/js/reference/class/ActorClient#lastRun) method.
 
 ## Features
 
-Based on the endpoint, the client automatically extracts the relevant data and returns it in the expected format. Date strings are automatically converted to `Date` objects. For exceptions, the client throws an [`ApifyApiError`](https://docs.apify.com/api/client/js/reference/class/ApifyApiError), which wraps the plain JSON errors returned by API and enriches them with other contexts for easier debugging.
+Based on the endpoint, the client automatically extracts the relevant data and returns it in the expected format. Date strings are automatically converted to `Date` objects. For exceptions, the client throws an [`ApifyApiError`](/api/client/js/reference/class/ApifyApiError), which wraps the plain JSON errors returned by API and enriches them with other contexts for easier debugging.
 
 ```js
-const { ApifyClient } = require('apify-client');
+import { ApifyClient } from 'apify';
 
 const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
@@ -205,12 +212,12 @@ try {
 }
 ```
 
-### Retries with [exponential backoff](https://docs.apify.com/api/client/js/docs/features#retries-with-exponential-backoff)
+### Retries with exponential backoff
 
 Network communication sometimes fails. That's a given. The client will automatically retry requests that failed due to a network error, an internal error of the Apify API (HTTP 500+), or a rate limit error (HTTP 429). By default, it will retry up to 8 times. The first retry will be attempted after ~500ms, the second after ~1000ms, and so on. You can configure those parameters using the `maxRetries` and `minDelayBetweenRetriesMillis` options of the `ApifyClient` constructor.
 
 ```js
-const { ApifyClient } = require('apify-client');
+import { ApifyClient } from 'apify';
 
 const apifyClient = new ApifyClient({ 
   token: 'MY-APIFY-TOKEN',
@@ -224,10 +231,10 @@ const apifyClient = new ApifyClient({
 
 Some actions can't be performed by the API itself, such as indefinite waiting for an Actor run to finish (because of network timeouts). The client provides convenient `call()` and `waitForFinish()` functions that do that. If the limit is reached, the returned promise is resolved to a run object that will have status `READY` or `RUNNING` and it will not contain the Actor run output.
 
-[Key-value store](https://docs.apify.com/platform/storage/key-value-store) records can be retrieved as objects, buffers, or streams via the respective options, dataset items can be fetched as individual objects or serialized data.
+[Key-value store](/platform/storage/key-value-store) records can be retrieved as objects, buffers, or streams via the respective options, dataset items can be fetched as individual objects or serialized data.
 
 ```js
-const { ApifyClient } = require('apify-client');
+import { ApifyClient } from 'apify';
 
 const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
@@ -242,10 +249,10 @@ const { status } = await client.actor('username/actor-name').start({
 
 ### Pagination
 
-Most methods named `list` or `listSomething` return a [`Promise<PaginatedList>`](https://docs.apify.com/api/client/js/reference/interface/PaginatedList). There are some exceptions though, like `listKeys` or `listHead` which paginate differently. The results you're looking for are always stored under `items` and you can use the `limit` property to get only a subset of results. Other props are also available, depending on the method.
+Most methods named `list` or `listSomething` return a [`Promise<PaginatedList>`](/api/client/js/reference/interface/PaginatedList). There are some exceptions though, like `listKeys` or `listHead` which paginate differently. The results you're looking for are always stored under `items` and you can use the `limit` property to get only a subset of results. Other props are also available, depending on the method.
 
 ```js
-const { ApifyClient } = require('apify-client');
+import { ApifyClient } from 'apify';
 
 const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
