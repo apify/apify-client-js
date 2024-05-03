@@ -220,10 +220,10 @@ Network communication sometimes fails. That's a given. The client will automatic
 import { ApifyClient } from 'apify';
 
 const apifyClient = new ApifyClient({ 
-  token: 'MY-APIFY-TOKEN',
-  maxRetries: 8,
-  minDelayBetweenRetriesMillis: 500, // 0.5s
-  timeoutSecs: 360 // 6 mins
+    token: 'MY-APIFY-TOKEN',
+    maxRetries: 8,
+    minDelayBetweenRetriesMillis: 500, // 0.5s
+    timeoutSecs: 360 // 6 mins
 });
 ```
 
@@ -243,7 +243,7 @@ const finishedActorRun = await client.actor('username/actor-name').call();
 
 // Starts an Actor and waits maximum 60s for the finish 
 const { status } = await client.actor('username/actor-name').start({
-  waitForFinish: 60, // 1 minute
+    waitForFinish: 60, // 1 minute
 });
 ```
 
@@ -259,7 +259,7 @@ const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 // Resource clients accept an ID of the resource.
 const datasetClient = apifyClient.dataset('dataset-id');
 
- // Number of items per page
+// Number of items per page
 const limit = 1000;
 // Initial offset
 let offset = 0; 
@@ -274,7 +274,7 @@ while (true) {
     // Merge new items with other already loaded items
     allItems.push(...items);
   
-  // If there are no more items to fetch, exit the loading
+    // If there are no more items to fetch, exit the loading
     if (offset + limit >= total) {
         break;
     }
