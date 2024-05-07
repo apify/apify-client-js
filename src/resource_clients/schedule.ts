@@ -83,7 +83,7 @@ export interface Schedule {
     actions: ScheduleAction[];
     notifications: {
         email: boolean;
-    }
+    };
 }
 
 export type ScheduleCreateOrUpdateData = Partial<
