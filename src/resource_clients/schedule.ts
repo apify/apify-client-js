@@ -81,6 +81,9 @@ export interface Schedule {
     nextRunAt: string;
     lastRunAt: string;
     actions: ScheduleAction[];
+    notifications: {
+        email: boolean;
+    }
 }
 
 export type ScheduleCreateOrUpdateData = Partial<
@@ -93,6 +96,7 @@ export type ScheduleCreateOrUpdateData = Partial<
         | 'isEnabled'
         | 'isExclusive'
         | 'description'
+        | 'notifications'
     > & {
         actions: DistributiveOptional<ScheduleAction, 'id'>[]
     }
