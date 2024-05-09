@@ -3,7 +3,7 @@ title: Basic usage
 sidebar_label: Basic usage
 ---
 
-This section contains examples of how to use Apify Client for JavaScript.
+# Code examples
 
 ## Different ways how to pass an input
 
@@ -22,8 +22,8 @@ const runData = await actorClient.call({ hashtags: ['twitter'], resultsLimit: 20
 
 ```
 
-To run multiple inputs with the same Actor, most convenient way is to create multiple tasks with different inputs.
-Task input is persisted on Apify platform when created.
+To run multiple inputs with the same Actor, most convenient way is to create multiple [tasks](https://docs.apify.com/platform/actors/running/tasks) with different inputs.
+Task input is persisted on Apify platform when task is created.
 
 ```javascript
 import { ApifyClient } from 'apify-client';
@@ -51,7 +51,7 @@ await Promise.all(createdTasks.map((task) => client.task(task.id).call()));
 
 ## Getting latest data from an Actor
 
-Actor data are stored to datasets. Datasets can be retrieved from Actor runs. Dataset items can be listed with pagination
+Actor data are stored to [datasets](https://docs.apify.com/platform/storage/dataset). Datasets can be retrieved from Actor runs. Dataset items can be listed with pagination
 
 ```javascript
 import { ApifyClient } from 'apify-client';
@@ -77,7 +77,7 @@ actorDatasets.items.forEach(async (datasetItem) => {
 
 ## Handling webhooks
 
-Webhooks can be used to get notifications about Actor runs. Simple webhook listener can be set with `express` library:
+[Webhooks](https://docs.apify.com/platform/integrations/webhooks) can be used to get notifications about Actor runs. Simple webhook listener can be built on `express` library:
 
 ```javascript
 import express from 'express';
