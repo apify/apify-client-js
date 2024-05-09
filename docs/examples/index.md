@@ -19,7 +19,6 @@ const actorClient = client.actor('apify/instagram-hashtag-scraper');
 
 // Run the actor and wait for it to finish up to 60 seconds. Input is not persisted for next runs.
 const runData = await actorClient.call({ hashtags: ['twitter'], resultsLimit: 20 }, { waitSecs: 60 });
-
 ```
 
 To run multiple inputs with the same Actor, most convenient way is to create multiple [tasks](https://docs.apify.com/platform/actors/running/tasks) with different inputs.
@@ -46,7 +45,6 @@ const createdTasks = await Promise.all(socialsTasks);
 
 // Run all tasks in parallel
 await Promise.all(createdTasks.map((task) => client.task(task.id).call()));
-
 ```
 
 ## Getting latest data from an Actor
@@ -72,7 +70,6 @@ actorDatasets.items.forEach(async (datasetItem) => {
 
     // ...
 });
-
 ```
 
 ## Handling webhooks
@@ -107,5 +104,4 @@ app.post('apify-webhook', async (req, res) => {
 
 // Start express on the defined port
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
 ```
