@@ -5,6 +5,7 @@ module.exports = [
             label: 'API Client',
             items: [
                 'index',
+                'examples/index',
             ],
         },
     ],

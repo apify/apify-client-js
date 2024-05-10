@@ -1,6 +1,6 @@
 ---
-title: Basic usage
-sidebar_label: Basic usage
+sidebar_label: Examples
+title: Examples
 ---
 
 # Code examples
