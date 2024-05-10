@@ -47,9 +47,10 @@ const createdTasks = await Promise.all(socialsTasks);
 await Promise.all(createdTasks.map((task) => client.task(task.id).call()));
 ```
 
-## Getting latest data from an Actor
+## Getting latest data from an Actor, joining datasets
 
-Actor data are stored to [datasets](https://docs.apify.com/platform/storage/dataset). Datasets can be retrieved from Actor runs. Dataset items can be listed with pagination
+Actor data are stored to [datasets](https://docs.apify.com/platform/storage/dataset). Datasets can be retrieved from Actor runs. Dataset items can be listed with pagination.
+Also, datasets can be merged together.
 
 ```javascript
 import { ApifyClient } from 'apify-client';
@@ -64,9 +65,14 @@ const actorRuns = actorClient.runs();
 // See pagination to understand how to get more datasets
 const actorDatasets = await actorRuns.list({ limit: 20 });
 
+const mergingDataset = await client.datasets().getOrCreate('merge-dataset');
+
 actorDatasets.items.forEach(async (datasetItem) => {
     // Dataset items can be handled here. Dataset items can be paginated
     const datasetItems = await client.dataset(datasetItem.defaultDatasetId).listItems({ limit: 1000 });
+
+    // Items can be pushed to single dataset
+    await client.dataset(mergingDataset.id).pushItems(datasetItems.items);
 
     // ...
 });
