@@ -17,8 +17,10 @@ const client = new ApifyClient({ token: 'MY_APIFY_TOKEN' });
 
 const actorClient = client.actor('apify/instagram-hashtag-scraper');
 
+const input = { hashtags: ['twitter'], resultsLimit: 20 };
+
 // Run the actor and wait for it to finish up to 60 seconds. Input is not persisted for next runs.
-const runData = await actorClient.call({ hashtags: ['twitter'], resultsLimit: 20 }, { waitSecs: 60 });
+const runData = await actorClient.call(input, { waitSecs: 60 });
 ```
 
 To run multiple inputs with the same Actor, most convenient way is to create multiple [tasks](https://docs.apify.com/platform/actors/running/tasks) with different inputs.
@@ -50,7 +52,8 @@ await Promise.all(createdTasks.map((task) => client.task(task.id).call()));
 ## Getting latest data from an Actor, joining datasets
 
 Actor data are stored to [datasets](https://docs.apify.com/platform/storage/dataset). Datasets can be retrieved from Actor runs. Dataset items can be listed with pagination.
-Also, datasets can be merged together.
+Also, datasets can be merged together to make analysis further on with single file as dataset can be exported to various data format (CSV, JSON, XSLX, XML).
+[Integrations](https://docs.apify.com/platform/integrations) can do the trick as well.
 
 ```javascript
 import { ApifyClient } from 'apify-client';
@@ -80,7 +83,29 @@ actorDatasets.items.forEach(async (datasetItem) => {
 
 ## Handling webhooks
 
-[Webhooks](https://docs.apify.com/platform/integrations/webhooks) can be used to get notifications about Actor runs. Simple webhook listener can be built on `express` library:
+[Webhooks](https://docs.apify.com/platform/integrations/webhooks) can be used to get notifications about Actor runs.
+For example, webhook can be triggered when Actor run finishes successfully. Webhook can receive dataset ID for further processing.
+
+Initialization of webhook:
+
+```javascript
+import { ApifyClient } from 'apify-client';
+
+// Client initialization with the API token
+const client = new ApifyClient({ token: 'MY_APIFY_TOKEN' });
+
+const webhooksClient = client.webhooks();
+
+await webhooksClient.create({
+    description: 'Instagram hashtag actor succeeded',
+    condition: { actorId: 'reGe1ST3OBgYZSsZJ' }, // Actor ID of apify/instagram-hashtag-scraper
+    // Request URL can be generated using https://webhook.site. Any REST server can be used
+    requestUrl: 'https://webhook.site/CUSTOM_WEBHOOK_ID',
+    eventTypes: ['ACTOR.RUN.SUCCEEDED']
+});
+```
+
+Simple webhook listener can be built on `express` library:
 
 ```javascript
 import express from 'express';
