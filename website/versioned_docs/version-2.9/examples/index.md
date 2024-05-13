@@ -79,8 +79,7 @@ for (const datasetItem of actorDatasets.items) {
 
 ## Handling webhooks
 
-[Webhooks](https://docs.apify.com/platform/integrations/webhooks) can be used to get notifications about Actor runs.
-For example, webhook can be triggered when Actor run finishes successfully. Webhook can receive dataset ID for further processing.
+[Webhooks](https://docs.apify.com/platform/integrations/webhooks) can be used to get notifications about Actor runs. For example, a webhook can be triggered when an Actor run finishes successfully. Webhook can receive dataset ID for further processing.
 
 Initialization of webhook:
 

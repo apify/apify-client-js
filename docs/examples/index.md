@@ -17,7 +17,8 @@ const actorClient = client.actor('apify/instagram-hashtag-scraper');
 
 const input = { hashtags: ['twitter'], resultsLimit: 20 };
 
-// Run the actor and wait for it to finish up to 60 seconds. Input is not persisted for next runs.
+// Run the actor and wait for it to finish up to 60 seconds.
+// Input is not persisted for next runs.
 const runData = await actorClient.call(input, { waitSecs: 60 });
 ```
 
@@ -79,8 +80,7 @@ for (const datasetItem of actorDatasets.items) {
 
 ## Handling webhooks
 
-[Webhooks](https://docs.apify.com/platform/integrations/webhooks) can be used to get notifications about Actor runs.
-For example, webhook can be triggered when Actor run finishes successfully. Webhook can receive dataset ID for further processing.
+[Webhooks](https://docs.apify.com/platform/integrations/webhooks) can be used to get notifications about Actor runs. For example, a webhook can be triggered when an Actor run finishes successfully. Webhook can receive dataset ID for further processing.
 
 Initialization of webhook:
 
