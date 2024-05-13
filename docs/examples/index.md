@@ -3,8 +3,6 @@ sidebar_label: Examples
 title: 'Code examples'
 ---
 
-# Code examples
-
 ## Different ways how to pass an input
 
 The fastest way to get results from an Actor is to pass input directly to the `call` function.
@@ -35,7 +33,7 @@ const socialsHashtags = ['facebook', 'twitter', 'instagram'];
 
 // Multiple input schemas for one Actor can be persisted in tasks.
 // Tasks are saved in the Apify platform and can be run multiple times.
-const socialsTasks = socialsHashtags.map((hashtag) => client.tasks().create({
+const socialsTasksPromises = socialsHashtags.map((hashtag) => client.tasks().create({
     actId: 'apify/instagram-hashtag-scraper',
     name: `hashtags-${hashtag}`,
     input: { hashtags: [hashtag], resultsLimit: 20 },
@@ -43,7 +41,7 @@ const socialsTasks = socialsHashtags.map((hashtag) => client.tasks().create({
 }));
 
 // Create all tasks in parallel
-const createdTasks = await Promise.all(socialsTasks);
+const createdTasks = await Promise.all(socialsTasksPromises);
 
 // Run all tasks in parallel
 await Promise.all(createdTasks.map((task) => client.task(task.id).call()));
@@ -68,7 +66,7 @@ const actorDatasets = await actorRuns.list({ limit: 20 });
 
 const mergingDataset = await client.datasets().getOrCreate('merge-dataset');
 
-actorDatasets.items.forEach(async (datasetItem) => {
+for (const datasetItem of actorDatasets.items) {
     // Dataset items can be handled here. Dataset items can be paginated
     const datasetItems = await client.dataset(datasetItem.defaultDatasetId).listItems({ limit: 1000 });
 
@@ -76,7 +74,7 @@ actorDatasets.items.forEach(async (datasetItem) => {
     await client.dataset(mergingDataset.id).pushItems(datasetItems.items);
 
     // ...
-});
+}
 ```
 
 ## Handling webhooks

@@ -1,9 +1,7 @@
 ---
 sidebar_label: Examples
-title: Examples
+title: 'Code examples'
 ---
-
-# Code examples
 
 ## Different ways how to pass an input
 
@@ -17,12 +15,13 @@ const client = new ApifyClient({ token: 'MY_APIFY_TOKEN' });
 
 const actorClient = client.actor('apify/instagram-hashtag-scraper');
 
+const input = { hashtags: ['twitter'], resultsLimit: 20 };
+
 // Run the actor and wait for it to finish up to 60 seconds. Input is not persisted for next runs.
-const runData = await actorClient.call({ hashtags: ['twitter'], resultsLimit: 20 }, { waitSecs: 60 });
+const runData = await actorClient.call(input, { waitSecs: 60 });
 ```
 
-To run multiple inputs with the same Actor, most convenient way is to create multiple [tasks](https://docs.apify.com/platform/actors/running/tasks) with different inputs.
-Task input is persisted on Apify platform when task is created.
+To run multiple inputs with the same Actor, most convenient way is to create multiple [tasks](https://docs.apify.com/platform/actors/running/tasks) with different inputs. Task input is persisted on Apify platform when task is created.
 
 ```javascript
 import { ApifyClient } from 'apify-client';
@@ -32,8 +31,9 @@ const client = new ApifyClient({ token: 'MY_APIFY_TOKEN' });
 
 const socialsHashtags = ['facebook', 'twitter', 'instagram'];
 
-// Multiple input schemas for one Actor can be persisted in tasks. Tasks are saved in the Apify platform and can be run multiple times.
-const socialsTasks = socialsHashtags.map((hashtag) => client.tasks().create({
+// Multiple input schemas for one Actor can be persisted in tasks.
+// Tasks are saved in the Apify platform and can be run multiple times.
+const socialsTasksPromises = socialsHashtags.map((hashtag) => client.tasks().create({
     actId: 'apify/instagram-hashtag-scraper',
     name: `hashtags-${hashtag}`,
     input: { hashtags: [hashtag], resultsLimit: 20 },
@@ -41,7 +41,7 @@ const socialsTasks = socialsHashtags.map((hashtag) => client.tasks().create({
 }));
 
 // Create all tasks in parallel
-const createdTasks = await Promise.all(socialsTasks);
+const createdTasks = await Promise.all(socialsTasksPromises);
 
 // Run all tasks in parallel
 await Promise.all(createdTasks.map((task) => client.task(task.id).call()));
@@ -49,8 +49,7 @@ await Promise.all(createdTasks.map((task) => client.task(task.id).call()));
 
 ## Getting latest data from an Actor, joining datasets
 
-Actor data are stored to [datasets](https://docs.apify.com/platform/storage/dataset). Datasets can be retrieved from Actor runs. Dataset items can be listed with pagination.
-Also, datasets can be merged together.
+Actor data are stored to [datasets](https://docs.apify.com/platform/storage/dataset). Datasets can be retrieved from Actor runs. Dataset items can be listed with pagination. Also, datasets can be merged together to make analysis further on with single file as dataset can be exported to various data format (CSV, JSON, XSLX, XML). [Integrations](https://docs.apify.com/platform/integrations) can do the trick as well.
 
 ```javascript
 import { ApifyClient } from 'apify-client';
@@ -67,7 +66,7 @@ const actorDatasets = await actorRuns.list({ limit: 20 });
 
 const mergingDataset = await client.datasets().getOrCreate('merge-dataset');
 
-actorDatasets.items.forEach(async (datasetItem) => {
+for (const datasetItem of actorDatasets.items) {
     // Dataset items can be handled here. Dataset items can be paginated
     const datasetItems = await client.dataset(datasetItem.defaultDatasetId).listItems({ limit: 1000 });
 
@@ -75,12 +74,34 @@ actorDatasets.items.forEach(async (datasetItem) => {
     await client.dataset(mergingDataset.id).pushItems(datasetItems.items);
 
     // ...
-});
+}
 ```
 
 ## Handling webhooks
 
-[Webhooks](https://docs.apify.com/platform/integrations/webhooks) can be used to get notifications about Actor runs. Simple webhook listener can be built on `express` library:
+[Webhooks](https://docs.apify.com/platform/integrations/webhooks) can be used to get notifications about Actor runs.
+For example, webhook can be triggered when Actor run finishes successfully. Webhook can receive dataset ID for further processing.
+
+Initialization of webhook:
+
+```javascript
+import { ApifyClient } from 'apify-client';
+
+// Client initialization with the API token
+const client = new ApifyClient({ token: 'MY_APIFY_TOKEN' });
+
+const webhooksClient = client.webhooks();
+
+await webhooksClient.create({
+    description: 'Instagram hashtag actor succeeded',
+    condition: { actorId: 'reGe1ST3OBgYZSsZJ' }, // Actor ID of apify/instagram-hashtag-scraper
+    // Request URL can be generated using https://webhook.site. Any REST server can be used
+    requestUrl: 'https://webhook.site/CUSTOM_WEBHOOK_ID',
+    eventTypes: ['ACTOR.RUN.SUCCEEDED'],
+});
+```
+
+Simple webhook listener can be built on `express` library:
 
 ```javascript
 import express from 'express';
