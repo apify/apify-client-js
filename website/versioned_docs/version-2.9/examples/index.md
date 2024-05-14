@@ -17,7 +17,8 @@ const actorClient = client.actor('apify/instagram-hashtag-scraper');
 
 const input = { hashtags: ['twitter'], resultsLimit: 20 };
 
-// Run the actor and wait for it to finish up to 60 seconds. Input is not persisted for next runs.
+// Run the actor and wait for it to finish up to 60 seconds.
+// Input is not persisted for next runs.
 const runData = await actorClient.call(input, { waitSecs: 60 });
 ```
 
