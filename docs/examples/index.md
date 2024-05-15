@@ -3,7 +3,7 @@ sidebar_label: Examples
 title: 'Code examples'
 ---
 
-## Different ways how to pass an input
+## Passing an input to the Actor
 
 The fastest way to get results from an Actor is to pass input directly to the `call` function.
 
@@ -17,7 +17,7 @@ const actorClient = client.actor('apify/instagram-hashtag-scraper');
 
 const input = { hashtags: ['twitter'], resultsLimit: 20 };
 
-// Run the actor and wait for it to finish up to 60 seconds.
+// Run the Actor and wait for it to finish up to 60 seconds.
 // Input is not persisted for next runs.
 const runData = await actorClient.call(input, { waitSecs: 60 });
 ```
