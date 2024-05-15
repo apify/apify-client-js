@@ -6,6 +6,7 @@ title: 'Code examples'
 ## Passing an input to the Actor
 
 The fastest way to get results from an Actor is to pass input directly to the `call` function.
+We can set up the input, pass it to `call` function and get the reference of running Actor (or wait for finish).
 
 ```javascript
 import { ApifyClient } from 'apify-client';
@@ -15,7 +16,7 @@ const client = new ApifyClient({ token: 'MY_APIFY_TOKEN' });
 
 const actorClient = client.actor('apify/instagram-hashtag-scraper');
 
-const input = { hashtags: ['twitter'], resultsLimit: 20 };
+const input = { hashtags: ['rainbow'], resultsLimit: 20 };
 
 // Run the Actor and wait for it to finish up to 60 seconds.
 // Input is not persisted for next runs.
@@ -30,11 +31,11 @@ import { ApifyClient } from 'apify-client';
 // Client initialization with the API token
 const client = new ApifyClient({ token: 'MY_APIFY_TOKEN' });
 
-const socialsHashtags = ['facebook', 'twitter', 'instagram'];
+const animalsHashtags = ['zebra', 'lion', 'hippo'];
 
 // Multiple input schemas for one Actor can be persisted in tasks.
 // Tasks are saved in the Apify platform and can be run multiple times.
-const socialsTasksPromises = socialsHashtags.map((hashtag) => client.tasks().create({
+const socialsTasksPromises = animalsHashtags.map((hashtag) => client.tasks().create({
     actId: 'apify/instagram-hashtag-scraper',
     name: `hashtags-${hashtag}`,
     input: { hashtags: [hashtag], resultsLimit: 20 },
@@ -80,7 +81,9 @@ for (const datasetItem of actorDatasets.items) {
 
 ## Handling webhooks
 
-[Webhooks](https://docs.apify.com/platform/integrations/webhooks) can be used to get notifications about Actor runs. For example, a webhook can be triggered when an Actor run finishes successfully. Webhook can receive dataset ID for further processing.
+[Webhooks](https://docs.apify.com/platform/integrations/webhooks) can be used to get notifications about Actor runs.
+For example, a webhook can be triggered when an Actor run finishes successfully.
+Webhook can receive dataset ID for further processing.
 
 Initialization of webhook:
 
@@ -101,7 +104,7 @@ await webhooksClient.create({
 });
 ```
 
-Simple webhook listener can be built on `express` library:
+Simple webhook listener can be built on `express` library, which can helps to create a REST server for handling webhooks:
 
 ```javascript
 import express from 'express';
