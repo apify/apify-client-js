@@ -6,7 +6,7 @@ title: 'Code examples'
 ## Passing an input to the Actor
 
 The fastest way to get results from an Actor is to pass input directly to the `call` function.
-We can set up the input, pass it to `call` function and get the reference of running Actor (or wait for finish).
+Input can be set up, can be passed to `call` function and the reference of running Actor (or wait for finish) is available in `runData` variable.
 
 ```javascript
 import { ApifyClient } from 'apify-client';
