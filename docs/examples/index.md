@@ -6,7 +6,7 @@ title: 'Code examples'
 ## Passing an input to the Actor
 
 The fastest way to get results from an Actor is to pass input directly to the `call` function.
-Input can be set up, can be passed to `call` function and the reference of running Actor (or wait for finish) is available in `runData` variable.
+Input can be passed to `call` function and the reference of running Actor (or wait for finish) is available in `runData` variable.
 
 ```javascript
 import { ApifyClient } from 'apify-client';
@@ -21,6 +21,9 @@ const input = { hashtags: ['rainbow'], resultsLimit: 20 };
 // Run the Actor and wait for it to finish up to 60 seconds.
 // Input is not persisted for next runs.
 const runData = await actorClient.call(input, { waitSecs: 60 });
+
+console.log("Run data:");
+console.log(runData);
 ```
 
 To run multiple inputs with the same Actor, most convenient way is to create multiple [tasks](https://docs.apify.com/platform/actors/running/tasks) with different inputs. Task input is persisted on Apify platform when task is created.
@@ -45,6 +48,9 @@ const socialsTasksPromises = animalsHashtags.map((hashtag) => client.tasks().cre
 // Create all tasks in parallel
 const createdTasks = await Promise.all(socialsTasksPromises);
 
+console.log("Created tasks:");
+console.log(createdTasks);
+
 // Run all tasks in parallel
 await Promise.all(createdTasks.map((task) => client.task(task.id).call()));
 ```
@@ -65,6 +71,9 @@ const actorRuns = actorClient.runs();
 
 // See pagination to understand how to get more datasets
 const actorDatasets = await actorRuns.list({ limit: 20 });
+
+console.log("Actor datasets:");
+console.log(actorDatasets);
 
 const mergingDataset = await client.datasets().getOrCreate('merge-dataset');
 
@@ -104,7 +113,7 @@ await webhooksClient.create({
 });
 ```
 
-Simple webhook listener can be built on `express` library, which can helps to create a REST server for handling webhooks:
+Simple webhook listener can be built on [`express`](https://expressjs.com/) library, which can helps to create a REST server for handling webhooks:
 
 ```javascript
 import express from 'express';
