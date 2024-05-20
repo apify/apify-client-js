@@ -8,6 +8,8 @@ title: 'Code examples'
 The fastest way to get results from an Actor is to pass input directly to the `call` function.
 Input can be passed to `call` function and the reference of running Actor (or wait for finish) is available in `runData` variable.
 
+This example starts an Actor that scrapes 20 posts from the Instagram website based on the hashtag.
+
 ```javascript
 import { ApifyClient } from 'apify-client';
 
