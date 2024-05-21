@@ -4,7 +4,8 @@
       "type": "category",
       "label": "API Client",
       "items": [
-        "index"
+        "index",
+        "examples/index"
       ]
     }
   ]
