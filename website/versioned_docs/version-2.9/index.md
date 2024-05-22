@@ -80,7 +80,7 @@ One of the most common use cases is starting [Actors](https://docs.apify.com/pla
 ```js
 import { ApifyClient } from 'apify-client';
 
-const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
 // Starts an Actor and waits for it to finish
 const { defaultDatasetId } = await client.actor('username/actor-name').call();
@@ -100,7 +100,7 @@ To define the Actor's input, you can pass an object to the [`call()`](/reference
 ```js
 import { ApifyClient } from 'apify-client';
 
-const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
 // Runs an Actor with an input and waits for it to finish.
 const { defaultDatasetId } = await client.actor('username/actor-name').call({
@@ -115,7 +115,7 @@ To get the results from the dataset, you can use the [DatasetClient](/reference/
 ```js
 import { ApifyClient } from 'apify-client';
 
-const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
 // Lists items from the Actor's dataset.
 const { items } = await client.dataset('dataset-id').listItems();
@@ -137,10 +137,10 @@ The `ApifyClient` interface follows a generic pattern that applies to all of i
 ```js
 import { ApifyClient } from 'apify-client';
 
-const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
 // Collection clients do not require a parameter.
-const actorCollectionClient = apifyClient.actors();
+const actorCollectionClient = client.actors();
 // Creates an actor with the name: my-actor.
 const myActor = await actorCollectionClient.create({ name: 'my-actor-name' });
 // List all your used Actors (both own and from Apify Store)
@@ -156,10 +156,10 @@ The resource ID can be either the `id` of the said resource, or a combination 
 ```js
 import { ApifyClient } from 'apify-client';
 
-const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
 // Resource clients accept an ID of the resource.
-const actorClient = apifyClient.actor('username/actor-name');
+const actorClient = client.actor('username/actor-name');
 // Fetches the john-doe/my-actor object from the API.
 const myActor = await actorClient.get();
 // Starts the run of john-doe/my-actor and returns the Run object.
@@ -173,9 +173,9 @@ Sometimes clients return other clients. That's to simplify working with nested c
 ```js
 import { ApifyClient } from 'apify-client';
 
-const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
-const actorClient = apifyClient.actor('username/actor-name');
+const actorClient = client.actor('username/actor-name');
 const runsClient = actorClient.runs();
 // Lists the last 10 runs of your Actor.
 const { items } = await runsClient.list({
@@ -200,7 +200,7 @@ Based on the endpoint, the client automatically extracts the relevant data and r
 ```js
 import { ApifyClient } from 'apify-client';
 
-const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
 try {
     const { items } = await client.dataset("non-existing-dataset-id").listItems();
@@ -219,7 +219,7 @@ Network communication sometimes fails. That's a given. The client will automatic
 ```js
 import { ApifyClient } from 'apify-client';
 
-const apifyClient = new ApifyClient({ 
+const client = new ApifyClient({ 
     token: 'MY-APIFY-TOKEN',
     maxRetries: 8,
     minDelayBetweenRetriesMillis: 500, // 0.5s
@@ -236,7 +236,7 @@ Some actions can't be performed by the API itself, such as indefinite waiting fo
 ```js
 import { ApifyClient } from 'apify-client';
 
-const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
 // Starts an Actor and waits for it to finish.
 const finishedActorRun = await client.actor('username/actor-name').call();
@@ -254,10 +254,10 @@ Most methods named `list` or `listSomething` return a [`Promise<PaginatedLi
 ```js
 import { ApifyClient } from 'apify-client';
 
-const apifyClient = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
 // Resource clients accept an ID of the resource.
-const datasetClient = apifyClient.dataset('dataset-id');
+const datasetClient = client.dataset('dataset-id');
 
 // Number of items per page
 const limit = 1000;
