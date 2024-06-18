@@ -62,12 +62,18 @@ export class ApifyApiError extends Error {
     originalStack: string;
 
     /**
+     * Additional data provided by the API about the error
+     */
+    data?: Record<string, unknown>;
+
+    /**
      * @hidden
      */
     constructor(response: AxiosResponse, attempt: number) {
         let message!: string;
         let type: string | undefined;
         let responseData = response.data;
+        let errorData: Record<string, unknown> | undefined;
 
         // Some methods (e.g. downloadItems) set up forceBuffer on request response. If this request failed
         // the body buffer needs to parse to get the correct error.
@@ -83,6 +89,7 @@ export class ApifyApiError extends Error {
             const { error } = responseData;
             message = error.message;
             type = error.type;
+            errorData = error.data;
         } else if (responseData) {
             let dataString;
             try {
@@ -106,6 +113,8 @@ export class ApifyApiError extends Error {
 
         this.originalStack = stack.slice(stack.indexOf('\n'));
         this.stack = this._createApiStack();
+
+        this.data = errorData;
     }
 
     private _safelyParsePathFromResponse(response: AxiosResponse) {

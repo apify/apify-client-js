@@ -40,7 +40,20 @@ const HANDLERS = {
             let payload = {};
             if (responseStatusCode === 200) payload = { data: { id } };
             else if (responseStatusCode === 204) payload = null;
-            else if (responseStatusCode === 404) {
+            else if (responseStatusCode === 400) {
+                // This is not ideal, what if we have more endpoints which can return 400?
+                payload = {
+                    error: {
+                        type: 'schema-validation-error',
+                        message: 'Schema validation failed',
+                        data: {
+                            invalidItems: {
+                                0: [`should have required property 'name'`],
+                            },
+                        },
+                    },
+                };
+            } else if (responseStatusCode === 404) {
                 payload = {
                     error: {
                         type: 'record-not-found',
