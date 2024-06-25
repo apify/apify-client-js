@@ -3,17 +3,20 @@ const mockServer = require('./mock_server/server');
 const { ApifyClient } = require('../src/index');
 
 describe('ApifyApiError', () => {
+    let baseUrl;
     const browser = new Browser();
-    let server;
 
     beforeAll(async () => {
         await browser.start();
-        server = await mockServer.start();
+        const server = await mockServer.start();
+        baseUrl = `http://localhost:${server.address().port}`;
     });
 
     afterAll(async () => {
-        await browser.cleanUpBrowser();
-        await mockServer.close();
+        await Promise.all([
+            mockServer.close(),
+            browser.cleanUpBrowser(),
+        ]);
     });
 
     test('should carry all the information', async () => {
@@ -71,7 +74,7 @@ describe('ApifyApiError', () => {
         const datasetId = '400'; // check add_routes.js to see details of this mock
         const data = JSON.stringify([{ someData: 'someValue' }, { someData: 'someValue' }]);
         const clientConfig = {
-            baseUrl: `http://localhost:${server.address().port}`,
+            baseUrl,
             maxRetries: 0,
             ...DEFAULT_OPTIONS,
         };
