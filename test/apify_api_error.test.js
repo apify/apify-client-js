@@ -1,15 +1,22 @@
-const { Browser } = require('./_helper');
+const { Browser, DEFAULT_OPTIONS } = require('./_helper');
+const mockServer = require('./mock_server/server');
 const { ApifyClient } = require('../src/index');
 
 describe('ApifyApiError', () => {
+    let baseUrl;
     const browser = new Browser();
 
     beforeAll(async () => {
         await browser.start();
+        const server = await mockServer.start();
+        baseUrl = `http://localhost:${server.address().port}`;
     });
 
     afterAll(async () => {
-        await browser.cleanUpBrowser();
+        await Promise.all([
+            mockServer.close(),
+            browser.cleanUpBrowser(),
+        ]);
     });
 
     test('should carry all the information', async () => {
@@ -61,5 +68,55 @@ describe('ApifyApiError', () => {
         expect(error.path).toMatch(`/v2/${error.resourcePath}`);
         expect(error.httpMethod).toEqual('get');
         expect(error.attempt).toEqual(1);
+    });
+
+    test('should carry additional error data if provided', async () => {
+        const datasetId = '400'; // check add_routes.js to see details of this mock
+        const data = JSON.stringify([{ someData: 'someValue' }, { someData: 'someValue' }]);
+        const clientConfig = {
+            baseUrl,
+            maxRetries: 0,
+            ...DEFAULT_OPTIONS,
+        };
+
+        // Works in node
+        try {
+            const client = new ApifyClient(clientConfig);
+            await client.dataset(datasetId).pushItems(data);
+            throw new Error('wrong error');
+        } catch (err) {
+            expect(err.name).toEqual('ApifyApiError');
+            expect(err.type).toEqual('schema-validation-error');
+            expect(err.data).toEqual({
+                invalidItems: {
+                    0: [`should have required property 'name'`],
+                },
+            });
+        }
+
+        // Works in browser
+        const page = await browser.getInjectedPage();
+        const error = await page.evaluate(async (cConfig, dId, d) => {
+            const client = new window.Apify.ApifyClient(cConfig);
+            const datasetClient = client.dataset(dId);
+            try {
+                await datasetClient.pushItems(d);
+                throw new Error('wrong error');
+            } catch (err) {
+                const serializableErr = {};
+                Object.getOwnPropertyNames(err).forEach((prop) => {
+                    serializableErr[prop] = err[prop];
+                });
+                serializableErr.resourcePath = datasetClient.resourcePath;
+                return serializableErr;
+            }
+        }, clientConfig, datasetId, data);
+        expect(error.name).toEqual('ApifyApiError');
+        expect(error.type).toEqual('schema-validation-error');
+        expect(error.data).toEqual({
+            invalidItems: {
+                0: [`should have required property 'name'`],
+            },
+        });
     });
 });
