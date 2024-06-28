@@ -1,12 +1,12 @@
 {
 	"name": "apify-client",
-	"version": "2.9.4",
+	"version": "2.9.5",
 	"description": "Apify API client for JavaScript",
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",
 	"types": "dist/index.d.ts",
-    "browser": "dist/bundle.js",
-    "unpkg": "dist/bundle.js",
+	"browser": "dist/bundle.js",
+	"unpkg": "dist/bundle.js",
 	"exports": {
 		"./package.json": "./package.json",
 		".": {
