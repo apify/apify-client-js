@@ -277,6 +277,7 @@ export type ActorUpdateOptions = Partial<Pick<
     | 'name'
     | 'description'
     | 'isPublic'
+    | 'isDeprecated'
     | 'seoTitle'
     | 'seoDescription'
     | 'title'
