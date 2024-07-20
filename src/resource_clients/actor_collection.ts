@@ -1,6 +1,6 @@
 import ow from 'ow';
 
-import { Actor, ActorDefaultRunOptions, ActorExampleRunInput } from './actor';
+import { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor';
 import { ActorVersion } from './actor_version';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
@@ -71,4 +71,7 @@ export interface ActorCollectionCreateOptions {
     seoDescription?: string;
     title?: string;
     versions?: ActorVersion[];
+    actorStandby?: ActorStandby & {
+        isEnabled: boolean
+    },
 }
