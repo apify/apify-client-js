@@ -1,7 +1,7 @@
 import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
 import ow from 'ow';
 
-import { ActorRun, ActorStartOptions } from './actor';
+import { ActorRun, ActorStandby, ActorStartOptions } from './actor';
 import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
 import { WebhookCollectionClient } from './webhook_collection';
@@ -200,6 +200,7 @@ export interface Task {
     stats: TaskStats;
     options?: TaskOptions;
     input?: Dictionary | Dictionary[];
+    actorStandby?: Partial<ActorStandby>,
 }
 
 export interface TaskStats {
@@ -220,6 +221,7 @@ export type TaskUpdateData = Partial<
         | 'description'
         | 'options'
         | 'input'
+        | 'actorStandby'
     >
 >;
 

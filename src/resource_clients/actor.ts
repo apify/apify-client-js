@@ -238,6 +238,9 @@ export interface Actor {
     seoTitle?: string;
     seoDescription?: string;
     categories?: string[];
+    actorStandby?: ActorStandby & {
+        isEnabled: boolean
+    },
 }
 
 export interface ActorStats {
@@ -285,7 +288,16 @@ export type ActorUpdateOptions = Partial<Pick<
     | 'versions'
     | 'categories'
     | 'defaultRunOptions'
+    | 'actorStandby'
     >>
+
+export interface ActorStandby {
+    desiredRequestsPerActorRun: number,
+    maxRequestsPerActorRun: number,
+    idleTimeoutSecs: number,
+    build: string,
+    memoryMbytes: number,
+}
 
 export interface ActorStartOptions {
     /**
