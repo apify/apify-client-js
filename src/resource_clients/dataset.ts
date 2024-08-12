@@ -181,7 +181,7 @@ export interface DatasetClientListItemOptions {
     offset?: number;
     skipEmpty?: boolean;
     skipHidden?: boolean;
-    unwind?: string | string[];
+    unwind?: string | string[]; // TODO: when doing a breaking change release, change to string[] only
     view?: string,
 }
 
