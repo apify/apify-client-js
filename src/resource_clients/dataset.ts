@@ -55,7 +55,7 @@ export class DatasetClient<
             offset: ow.optional.number,
             skipEmpty: ow.optional.boolean,
             skipHidden: ow.optional.boolean,
-            unwind: ow.optional.string,
+            unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
             view: ow.optional.string,
         }));
 
@@ -89,7 +89,7 @@ export class DatasetClient<
             skipEmpty: ow.optional.boolean,
             skipHeaderRow: ow.optional.boolean,
             skipHidden: ow.optional.boolean,
-            unwind: ow.optional.string,
+            unwind: ow.any(ow.optional.string, ow.optional.array.ofType(ow.string)),
             view: ow.optional.string,
             xmlRoot: ow.optional.string,
             xmlRow: ow.optional.string,
@@ -181,7 +181,7 @@ export interface DatasetClientListItemOptions {
     offset?: number;
     skipEmpty?: boolean;
     skipHidden?: boolean;
-    unwind?: string;
+    unwind?: string | string[]; // TODO: when doing a breaking change release, change to string[] only
     view?: string,
 }
 
