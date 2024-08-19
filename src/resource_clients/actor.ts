@@ -336,11 +336,6 @@ export interface ActorStartOptions {
      * Value can be accessed in actor run using `ACTOR_MAX_PAID_DATASET_ITEMS` environment variable.
      */
     maxItems?: number;
-    /**
-     * [ALFA] - Not yet implemented, does nothing now.
-     * Specifies maximum cost that the actor run should reach.
-     */
-    maxCostPerRun?: number;
 }
 
 export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
