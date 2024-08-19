@@ -65,9 +65,10 @@ export class TaskClient extends ResourceClient {
             waitForFinish: ow.optional.number,
             webhooks: ow.optional.array.ofType(ow.object),
             maxItems: ow.optional.number.not.negative,
+            maxCostPerRun: ow.optional.number.not.negative,
         }));
 
-        const { waitForFinish, timeout, memory, build, maxItems } = options;
+        const { waitForFinish, timeout, memory, build, maxItems, maxCostPerRun } = options;
 
         const params = {
             waitForFinish,
@@ -76,6 +77,7 @@ export class TaskClient extends ResourceClient {
             build,
             webhooks: stringifyWebhooksToBase64(options.webhooks),
             maxItems,
+            maxCostPerRun,
         };
 
         const request: ApifyRequestConfig = {
@@ -109,6 +111,7 @@ export class TaskClient extends ResourceClient {
             waitSecs: ow.optional.number.not.negative,
             webhooks: ow.optional.array.ofType(ow.object),
             maxItems: ow.optional.number.not.negative,
+            maxCostPerRun: ow.optional.number.not.negative,
         }));
 
         const { waitSecs, ...startOptions } = options;

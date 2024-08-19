@@ -68,9 +68,10 @@ export class ActorClient extends ResourceClient {
             waitForFinish: ow.optional.number,
             webhooks: ow.optional.array.ofType(ow.object),
             maxItems: ow.optional.number.not.negative,
+            maxCostPerRun: ow.optional.number.not.negative,
         }));
 
-        const { waitForFinish, timeout, memory, build, maxItems } = options;
+        const { waitForFinish, timeout, memory, build, maxItems, maxCostPerRun } = options;
 
         const params = {
             waitForFinish,
@@ -79,6 +80,7 @@ export class ActorClient extends ResourceClient {
             build,
             webhooks: stringifyWebhooksToBase64(options.webhooks),
             maxItems,
+            maxCostPerRun,
         };
 
         const request: AxiosRequestConfig = {
@@ -119,6 +121,7 @@ export class ActorClient extends ResourceClient {
             waitSecs: ow.optional.number.not.negative,
             webhooks: ow.optional.array.ofType(ow.object),
             maxItems: ow.optional.number.not.negative,
+            maxCostPerRun: ow.optional.number.not.negative,
         }));
 
         const { waitSecs, ...startOptions } = options;
@@ -346,6 +349,8 @@ export interface ActorStartOptions {
      * Value can be accessed in actor run using `ACTOR_MAX_PAID_DATASET_ITEMS` environment variable.
      */
     maxItems?: number;
+
+    // TODO(PPE): add maxCostPerRun after finished
 }
 
 export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
