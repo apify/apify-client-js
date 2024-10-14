@@ -152,7 +152,7 @@ export class HttpClient {
      * retrying logic.
      */
     private _createRequestHandler(config: ApifyRequestConfig) {
-        const makeRequest: RetryFunction<ApifyResponse> = async (stopTrying, attempt) => {
+        const makeRequest: RetryFunction<ApifyResponse, Error> = async (stopTrying, attempt) => {
             this.stats.requests++;
             let response: ApifyResponse;
             const requestIsStream = isStream(config.data);
