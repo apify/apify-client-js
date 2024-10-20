@@ -82,5 +82,17 @@ describe('User methods', () => {
             expect(browserRes).toEqual(res);
             validateRequest({}, { userId });
         });
+
+        test('updateLimits() works', async () => {
+            const userId = 'me';
+
+            const res = await client.user(userId).updateLimits({ maxMonthlyUsageUsd: 1000 });
+            expect(res).toBeUndefined();
+            validateRequest({}, { userId }, { maxMonthlyUsageUsd: 1000 });
+
+            const browserRes = await page.evaluate((id) => client.user(id).updateLimits({ maxMonthlyUsageUsd: 1000 }), userId);
+            expect(browserRes).toBeUndefined();
+            validateRequest({}, { userId }, { maxMonthlyUsageUsd: 1000 });
+        });
     });
 });

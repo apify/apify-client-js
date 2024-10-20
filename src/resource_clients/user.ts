@@ -64,6 +64,19 @@ export class UserClient extends ResourceClient {
 
         return undefined;
     }
+
+    /**
+     * https://docs.apify.com/api/v2/#/reference/users/account-and-usage-limits
+     */
+    async updateLimits(limits: AccountLimitsUpdateOptions): Promise<void> {
+        const requestOpts: ApifyRequestConfig = {
+            url: this._url('limits'),
+            method: 'PUT',
+            params: this._params(),
+            data: limits,
+        };
+        await this.httpClient.call(requestOpts);
+    }
 }
 
 //
@@ -187,6 +200,8 @@ export interface AccountAndUsageLimits {
     limits: Limits;
     current: Current;
 }
+
+export type AccountLimitsUpdateOptions = Pick<Limits, 'maxMonthlyUsageUsd' | 'dataRetentionDays'>
 
 export interface MonthlyUsageCycle {
     startAt: Date;
