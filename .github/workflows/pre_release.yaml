@@ -1,28 +1,17 @@
-name: Create a release
+name: Create a pre-release
 
 on:
-    # Trigger a stable version release via GitHub's UI, with the ability to specify the type of release.
-    workflow_dispatch:
-        inputs:
-            release_type:
-                description: Release type
-                required: true
-                type: choice
-                default: auto
-                options:
-                    - auto
-                    - custom
-                    - patch
-                    - minor
-                    - major
-            custom_version:
-                description: The custom version to bump to (only for "custom" type)
-                required: false
-                type: string
-                default: ""
+    # Push to master will deploy a beta version
+    push:
+        branches:
+            - master
+            # This will allow releasing beta versions from non-master releases.
+            # TODO: We need to release this version with other tags than beta. It can mess up the beta version as it will override it with older code.
+            - version/**
 
 jobs:
     release_metadata:
+        if: "!startsWith(github.event.head_commit.message, 'docs') && !startsWith(github.event.head_commit.message, 'ci')"
         name: Prepare release metadata
         runs-on: ubuntu-latest
         outputs:
@@ -37,7 +26,6 @@ jobs:
                 with:
                     release_type: ${{ inputs.release_type }}
                     custom_version: ${{ inputs.custom_version }}
-
 
     wait_for_checks:
         name: Wait for code checks to pass
@@ -86,24 +74,9 @@ jobs:
                     author_email: noreply@apify.com
                     message: "chore(release): Update changelog and package version [skip ci]"
 
-    create_github_release:
-        name: Create github release
-        needs: [release_metadata, update_changelog]
-        runs-on: ubuntu-latest
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        steps:
-            -   name: Create release
-                uses: softprops/action-gh-release@v2
-                with:
-                    tag_name: ${{ needs.release_metadata.outputs.tag_name }}
-                    name: ${{ needs.release_metadata.outputs.version_number }}
-                    target_commitish: ${{ needs.update_changelog.outputs.changelog_commitish }}
-                    body: ${{ needs.release_metadata.outputs.release_notes }}
-
     publish_to_npm:
         name: Publish to NPM
-        needs: [ update_changelog ]
+        needs: [ release_metadata, wait_for_checks ]
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v4
@@ -120,11 +93,16 @@ jobs:
                     echo "access=public" >> .npmrc
                     echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
                     npm ci
+            - # Check version consistency and increment pre-release version number for beta only.
+                name: Bump pre-release version
+                run: node ./.github/scripts/before-beta-release.js
             -   name: Build module
                 run: npm run build
             -   name: Publish to NPM
-                run: npm publish --tag latest
-
-env:
-    NODE_AUTH_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}
-    NPM_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}
+                run: npm publish --tag beta
+            - # Latest version is tagged by the release process so we only tag beta here.
+                name: Tag Version
+                run: |
+                    git_tag=v`node -p "require('./package.json').version"`
+                    git tag $git_tag
+                    git push origin $git_tag
