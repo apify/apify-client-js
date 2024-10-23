@@ -17,16 +17,13 @@ jobs:
         runs-on: ubuntu-latest
         outputs:
             version_number: ${{ steps.release_metadata.outputs.version_number }}
-            tag_name: ${{ steps.release_metadata.outputs.tag_name }}
             changelog: ${{ steps.release_metadata.outputs.changelog }}
-            release_notes: ${{ steps.release_metadata.outputs.release_notes }}
         steps:
             -   uses: apify/workflows/git-cliff-release@main
                 name: Prepare release metadata
                 id: release_metadata
                 with:
-                    release_type: ${{ inputs.release_type }}
-                    custom_version: ${{ inputs.custom_version }}
+                    release_type: prerelease
 
     wait_for_checks:
         name: Wait for code checks to pass
