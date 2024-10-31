@@ -238,6 +238,14 @@ export function cast<T>(input: unknown): T {
     return input as T;
 }
 
+export function asArray<T>(value: T | T[]): T[] {
+    if (Array.isArray(value)) {
+        return value;
+    }
+
+    return [value];
+}
+
 export type Dictionary<T = unknown> = Record<PropertyKey, T>;
 
 export type DistributiveOptional<T, K extends keyof T> = T extends any ? Omit<T, K> & Partial<Pick<T, K>> : never;

@@ -6,11 +6,11 @@ import KeepAliveAgent from 'agentkeepalive';
 import retry, { RetryFunction } from 'async-retry';
 import axios, {
     AxiosError,
+    AxiosHeaders,
     AxiosInstance,
     AxiosRequestConfig,
-    InternalAxiosRequestConfig,
     AxiosResponse,
-    AxiosHeaders,
+    InternalAxiosRequestConfig,
 } from 'axios';
 
 import { ApifyApiError } from './apify_api_error';
@@ -21,12 +21,7 @@ import {
     responseInterceptors,
 } from './interceptors';
 import { Statistics } from './statistics';
-import {
-    isNode,
-    getVersionData,
-    cast,
-    isStream,
-} from './utils';
+import { asArray, cast, getVersionData, isNode, isStream } from './utils';
 
 const { version } = getVersionData();
 
@@ -116,7 +111,12 @@ export class HttpClient {
         if (isNode()) {
             // Works only in Node. Cannot be set in browser
             const isAtHome = !!process.env[APIFY_ENV_VARS.IS_AT_HOME];
-            const userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${isAtHome}`;
+            let userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${isAtHome}`;
+
+            if (options.userAgentSuffix) {
+                userAgent += `; ${asArray(options.userAgentSuffix).join('; ')}`;
+            }
+
             this.axios.defaults.headers['User-Agent'] = userAgent;
         }
 
@@ -288,4 +288,6 @@ export interface HttpClientOptions {
     logger: Log;
     token?: string;
     workflowKey?: string;
+    /** @internal */
+    userAgentSuffix?: string | string[];
 }
