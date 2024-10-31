@@ -53,7 +53,7 @@ export class ApifyClient {
             requestInterceptors: ow.optional.array,
             timeoutSecs: ow.optional.number,
             token: ow.optional.string,
-            userAgentSuffix: ow.any(ow.optional.string, ow.optional.array.ofType(ow.string)),
+            userAgentSuffix: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
         }));
 
         const {
@@ -343,5 +343,5 @@ export interface ApifyClientOptions {
     /** @default 360 */
     timeoutSecs?: number;
     token?: string;
-    userAgentSuffix?: string;
+    userAgentSuffix?: string | string[];
 }
