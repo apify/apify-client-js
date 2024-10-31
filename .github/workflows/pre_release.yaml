@@ -26,6 +26,7 @@ jobs:
                 id: release_metadata
                 with:
                     release_type: prerelease
+                    existing_changelog_path: CHANGELOG.md
 
     wait_for_checks:
         name: Wait for code checks to pass
