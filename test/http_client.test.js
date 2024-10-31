@@ -27,10 +27,7 @@ describe('HttpClient', () => {
             baseUrl,
             timeoutSecs: 1,
             maxRetries: 0,
-            requestInterceptors: [(config) => {
-                config.headers = {};
-                return config;
-            }],
+            userAgentSuffix: ['SDK/3.1.1', 'Crawlee/3.11.5'],
         });
     });
     afterEach(async () => {
@@ -41,20 +38,13 @@ describe('HttpClient', () => {
         const context = { delayMillis: 3000 };
         const resourceId = Buffer.from(JSON.stringify(context)).toString('hex');
 
-        expect.assertions(2);
-        try {
-            await client.actor(resourceId).get();
-        } catch (err) {
-            expect(err.message).toMatch('timeout of 1000ms exceeded');
-        }
+        await expect(client.actor(resourceId).get()).rejects.toThrow('timeout of 1000ms exceeded');
+        const ua = mockServer.getLastRequest().headers['user-agent'];
+        expect(ua).toMatch(/ApifyClient\/\d+\.\d+\.\d+/);
+        expect(ua).toMatch('isAtHome/false; SDK/3.1.1; Crawlee/3.11.5');
 
-        try {
-            const r = await page.evaluate((rId) => client.task(rId).get(), resourceId);
-            expect(r).toBeDefined();
-        } catch (err) {
-            expect(err).toBeInstanceOf(Error);
-            // this is failing after axios upgrade, the error is returned with a wrong name and message
-            // expect(err.message).toMatch('timeout of 1000ms exceeded');
-        }
+        await expect(page.evaluate((rId) => client.task(rId).get(), resourceId)).rejects.toThrow();
+        // this is failing after axios upgrade, the error is returned with a wrong name and message
+        // expect(err.message).toMatch('timeout of 1000ms exceeded');
     });
 });
