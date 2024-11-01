@@ -101,9 +101,3 @@ jobs:
                 run: npm run build
             -   name: Publish to NPM
                 run: npm publish --tag beta
-            - # Latest version is tagged by the release process so we only tag beta here.
-                name: Tag Version
-                run: |
-                    git_tag=v`node -p "require('./package.json').version"`
-                    git tag $git_tag
-                    git push origin $git_tag
