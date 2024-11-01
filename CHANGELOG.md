@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+<!-- git-cliff-unreleased-start -->
+## 2.10.0 - **not yet released**
+
+### 🚀 Features
+
+- Add user.updateLimits ([#595](https://github.com/apify/apify-client-js/pull/595)) ([bf97c0f](https://github.com/apify/apify-client-js/commit/bf97c0f5bf8d0cbd8decb60382f0605243b00dd5)) by [@MFori](https://github.com/MFori), closes [#329](https://github.com/apify/apify-client-js/issues/329)
+- Allow appending custom parts to the user agent ([#602](https://github.com/apify/apify-client-js/pull/602)) ([d07452b](https://github.com/apify/apify-client-js/commit/d07452b7bff83d16b48bf3cfba5b88aa564ffe2b)) by [@B4nan](https://github.com/B4nan)
+
+### 🐛 Bug Fixes
+
+- Allow `null` when updating dataset/kvs/rq `name` ([#604](https://github.com/apify/apify-client-js/pull/604)) ([0034c2e](https://github.com/apify/apify-client-js/commit/0034c2ee63d6d1c6856c4e7786da43d86a3d63ce)) by [@B4nan](https://github.com/B4nan)
+
+
+<!-- git-cliff-unreleased-end -->
 ## [2.9.7](https://github.com/apify/apify-client-js/releases/tags/v2.9.7) (2024-10-14)
 
 ### 🚀 Features
