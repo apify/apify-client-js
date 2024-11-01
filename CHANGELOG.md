@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.10.0 - **not yet released**
+## [2.10.0](https://github.com/apify/apify-client-js/releases/tag/v2.10.0) (2024-11-01)
 
 ### 🚀 Features
 
@@ -15,7 +14,6 @@ All notable changes to this project will be documented in this file.
 - Allow `null` when updating dataset/kvs/rq `name` ([#604](https://github.com/apify/apify-client-js/pull/604)) ([0034c2e](https://github.com/apify/apify-client-js/commit/0034c2ee63d6d1c6856c4e7786da43d86a3d63ce)) by [@B4nan](https://github.com/B4nan)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.9.7](https://github.com/apify/apify-client-js/releases/tags/v2.9.7) (2024-10-14)
 
 ### 🚀 Features
