@@ -101,3 +101,7 @@ jobs:
                 run: npm run build
             -   name: Publish to NPM
                 run: npm publish --tag beta
+
+env:
+    NODE_AUTH_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}
+    NPM_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}
