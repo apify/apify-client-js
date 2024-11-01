@@ -167,7 +167,7 @@ export interface DatasetStats {
 }
 
 export interface DatasetClientUpdateOptions {
-    name: string;
+    name?: string | null;
     title?: string;
 }
 

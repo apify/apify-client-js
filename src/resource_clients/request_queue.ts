@@ -495,7 +495,7 @@ export interface RequestQueueStats {
 }
 
 export interface RequestQueueClientUpdateOptions {
-    name: string;
+    name?: string | null;
     title?: string;
 }
 
