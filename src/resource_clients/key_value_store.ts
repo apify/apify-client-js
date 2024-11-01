@@ -236,7 +236,7 @@ export interface KeyValueStoreStats {
 }
 
 export interface KeyValueClientUpdateOptions {
-    name: string;
+    name?: string | null;
     title?: string;
 }
 
