@@ -112,11 +112,11 @@ export interface Build {
     stats?: BuildStats;
     options?: BuildOptions;
     /**
-     * @deprecated This property is deprecated in favor of actorDefinition.
+     * @deprecated This property is deprecated in favor of `actorDefinition.input`.
      */
     inputSchema?: string;
     /**
-     * @deprecated This property is deprecated in favor of actorDefinition.
+     * @deprecated This property is deprecated in favor of `actorDefinition.readme`.
      */
     readme?: string;
     buildNumber: string;
