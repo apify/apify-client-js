@@ -442,3 +442,22 @@ export interface ActorBuildOptions {
 export interface ActorLastRunOptions {
     status?: keyof typeof ACT_JOB_STATUSES;
 }
+
+export interface ActorDefinition {
+    actorSpecification: number;
+    name: string;
+    version: string;
+    buildTag?: string;
+    environmentVariables?: Record<string, string>;
+    dockerfile?: string;
+    dockerContextDir?: string;
+    readme?: string | null;
+    input?: object | null;
+    changelog?: string | null;
+    storages?: {
+        dataset?: object;
+    };
+    minMemoryMbytes?: number;
+    maxMemoryMbytes?: number;
+    usesStandbyMode?: boolean;
+}

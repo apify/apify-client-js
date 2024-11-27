@@ -9,6 +9,7 @@ import {
     parseDateFields,
     pluckData,
 } from '../utils';
+import { ActorDefinition } from './actor';
 
 export class BuildClient extends ResourceClient {
     /**
@@ -110,12 +111,19 @@ export interface Build {
     meta: BuildMeta;
     stats?: BuildStats;
     options?: BuildOptions;
+    /**
+     * @deprecated This property is deprecated in favor of `actorDefinition.input`.
+     */
     inputSchema?: string;
+    /**
+     * @deprecated This property is deprecated in favor of `actorDefinition.readme`.
+     */
     readme?: string;
     buildNumber: string;
     usage?: BuildUsage;
     usageTotalUsd?: number;
     usageUsd?: BuildUsage;
+    actorDefinitions?: ActorDefinition;
 }
 
 export interface BuildUsage {
