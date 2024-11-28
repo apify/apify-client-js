@@ -268,9 +268,7 @@ export interface ActorExampleRunInput {
     contentType: string;
 }
 
-export interface ActorTaggedBuilds {
-    latest: ActorTaggedBuild;
-}
+export type ActorTaggedBuilds = Record<string, ActorTaggedBuild>
 
 export interface ActorTaggedBuild {
     buildId?: string;
