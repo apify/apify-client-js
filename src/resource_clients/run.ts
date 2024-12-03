@@ -142,13 +142,14 @@ export class RunClient extends ResourceClient {
     }
 
     /**
-     * TODO: docs
+     * TODO: docs url
+     * https://github.com/apify/apify-client-js/issues/614
      */
     async charge(options: RunChargeOptions): Promise<ApifyResponse<Record<string, never>>> {
         ow(options, ow.object.exactShape({
             eventName: ow.string,
             count: ow.optional.number,
-            idempotencyKey: ow.optional.number,
+            idempotencyKey: ow.optional.string,
         }));
 
         const count = options.count ?? 1;
