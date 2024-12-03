@@ -8,12 +8,12 @@ import { LogClient } from './log';
 import { RequestQueueClient } from './request_queue';
 import { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import type { ApifyResponse } from '../http_client';
 import {
     pluckData,
     parseDateFields,
     cast,
 } from '../utils';
-import { ApifyResponse } from '../http_client';
 
 const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
 
