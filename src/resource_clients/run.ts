@@ -14,6 +14,8 @@ import {
     cast,
 } from '../utils';
 
+const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
+
 export class RunClient extends ResourceClient {
     /**
      * @hidden
@@ -113,7 +115,7 @@ export class RunClient extends ResourceClient {
         return cast(parseDateFields(pluckData(response.data)));
     }
 
-    async update(newFields: RunUpdateOptions) : Promise<ActorRun> {
+    async update(newFields: RunUpdateOptions): Promise<ActorRun> {
         ow(newFields, ow.object);
 
         return this._update(newFields);
@@ -136,6 +138,34 @@ export class RunClient extends ResourceClient {
         });
 
         return cast(parseDateFields(pluckData(response.data)));
+    }
+
+    /**
+     * TODO: docs
+     */
+    async charge(options: RunChargeOptions): Promise<number> {
+        ow(options, ow.object.exactShape({
+            eventName: ow.string,
+            count: ow.optional.number,
+            idempotencyKey: ow.optional.number,
+        }));
+
+        const count = options.count ?? 1;
+        const idempotencyKey = options.idempotencyKey ?? `${this.id}-${options.eventName}-${Date.now()}`;
+
+        const request: AxiosRequestConfig = {
+            url: this._url('charge'),
+            method: 'POST',
+            data: {
+                eventName: options.eventName,
+                count,
+            },
+            headers: {
+                [RUN_CHARGE_IDEMPOTENCY_HEADER]: idempotencyKey,
+            },
+        };
+        const response = await this.httpClient.call(request);
+        return response.status;
     }
 
     /**
@@ -221,7 +251,7 @@ export interface RunMetamorphOptions {
 }
 export interface RunUpdateOptions {
     statusMessage?: string;
-    isStatusMessageTerminal? : boolean;
+    isStatusMessageTerminal?: boolean;
 }
 
 export interface RunResurrectOptions {
@@ -229,6 +259,14 @@ export interface RunResurrectOptions {
     memory?: number;
     timeout?: number;
 }
+
+export type RunChargeOptions = {
+    eventName: string;
+    /** Defaults to 1 */
+    count?: number;
+    /** Defaults to runId-eventName-timestamp */
+    idempotencyKey?: string;
+};
 
 export interface RunWaitForFinishOptions {
     /**
