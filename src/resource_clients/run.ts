@@ -13,6 +13,7 @@ import {
     parseDateFields,
     cast,
 } from '../utils';
+import { ApifyResponse } from '../http_client';
 
 const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
 
@@ -143,7 +144,7 @@ export class RunClient extends ResourceClient {
     /**
      * TODO: docs
      */
-    async charge(options: RunChargeOptions): Promise<number> {
+    async charge(options: RunChargeOptions): Promise<ApifyResponse<Record<string, never>>> {
         ow(options, ow.object.exactShape({
             eventName: ow.string,
             count: ow.optional.number,
@@ -165,7 +166,7 @@ export class RunClient extends ResourceClient {
             },
         };
         const response = await this.httpClient.call(request);
-        return response.status;
+        return response;
     }
 
     /**

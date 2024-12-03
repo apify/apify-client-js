@@ -288,7 +288,7 @@ describe('Run methods', () => {
             const runId = 'some-run-id';
 
             const res = await client.run(runId).charge({ eventName: 'some-event' });
-            expect(res).toEqual(200);
+            expect(res.status).toEqual(200);
 
             await expect(client.run(runId).charge()).rejects.toThrow('Expected argument to be of type `object` but received type `undefined`');
         });
