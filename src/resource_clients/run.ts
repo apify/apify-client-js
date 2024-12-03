@@ -261,6 +261,7 @@ export interface RunResurrectOptions {
 }
 
 export type RunChargeOptions = {
+    /** Name of the event to charge. Must be defined in the Actor's pricing info else the API will throw. */
     eventName: string;
     /** Defaults to 1 */
     count?: number;
