@@ -8,11 +8,14 @@ import { LogClient } from './log';
 import { RequestQueueClient } from './request_queue';
 import { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import type { ApifyResponse } from '../http_client';
 import {
     pluckData,
     parseDateFields,
     cast,
 } from '../utils';
+
+const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
 
 export class RunClient extends ResourceClient {
     /**
@@ -113,7 +116,7 @@ export class RunClient extends ResourceClient {
         return cast(parseDateFields(pluckData(response.data)));
     }
 
-    async update(newFields: RunUpdateOptions) : Promise<ActorRun> {
+    async update(newFields: RunUpdateOptions): Promise<ActorRun> {
         ow(newFields, ow.object);
 
         return this._update(newFields);
@@ -136,6 +139,36 @@ export class RunClient extends ResourceClient {
         });
 
         return cast(parseDateFields(pluckData(response.data)));
+    }
+
+    /**
+     * https://docs.apify.com/api/v2#/reference/actor-runs/charge-run/charge-run
+     */
+    async charge(options: RunChargeOptions): Promise<ApifyResponse<Record<string, never>>> {
+        ow(options, ow.object.exactShape({
+            eventName: ow.string,
+            count: ow.optional.number,
+            idempotencyKey: ow.optional.string,
+        }));
+
+        const count = options.count ?? 1;
+        /** To avoid duplicates during the same milisecond, doesn't need to by crypto-secure. */
+        const randomSuffix = (Math.random() + 1).toString(36).slice(3, 8);
+        const idempotencyKey = options.idempotencyKey ?? `${this.id}-${options.eventName}-${Date.now()}-${randomSuffix}`;
+
+        const request: AxiosRequestConfig = {
+            url: this._url('charge'),
+            method: 'POST',
+            data: {
+                eventName: options.eventName,
+                count,
+            },
+            headers: {
+                [RUN_CHARGE_IDEMPOTENCY_HEADER]: idempotencyKey,
+            },
+        };
+        const response = await this.httpClient.call(request);
+        return response;
     }
 
     /**
@@ -221,7 +254,7 @@ export interface RunMetamorphOptions {
 }
 export interface RunUpdateOptions {
     statusMessage?: string;
-    isStatusMessageTerminal? : boolean;
+    isStatusMessageTerminal?: boolean;
 }
 
 export interface RunResurrectOptions {
@@ -229,6 +262,15 @@ export interface RunResurrectOptions {
     memory?: number;
     timeout?: number;
 }
+
+export type RunChargeOptions = {
+    /** Name of the event to charge. Must be defined in the Actor's pricing info else the API will throw. */
+    eventName: string;
+    /** Defaults to 1 */
+    count?: number;
+    /** Defaults to runId-eventName-timestamp */
+    idempotencyKey?: string;
+};
 
 export interface RunWaitForFinishOptions {
     /**

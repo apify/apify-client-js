@@ -15,6 +15,7 @@ const ROUTES = [
     { id: 'run-keyValueStore', method: 'GET', path: '/:runId/key-value-store' },
     { id: 'run-requestQueue', method: 'GET', path: '/:runId/request-queue' },
     { id: 'run-log', method: 'GET', path: '/:runId/log', type: 'text' },
+    { id: 'run-charge', method: 'POST', path: '/:runId/charge' },
 ];
 
 addRoutes(runs, ROUTES);
