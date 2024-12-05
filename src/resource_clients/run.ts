@@ -154,7 +154,7 @@ export class RunClient extends ResourceClient {
         const count = options.count ?? 1;
         /** To avoid duplicates during the same milisecond, doesn't need to by crypto-secure. */
         const randomSuffix = (Math.random() + 1).toString(36).slice(3, 8);
-        const idempotencyKey = options.idempotencyKey ?? `${this.id}-${options.eventName}-${randomSuffix}`;
+        const idempotencyKey = options.idempotencyKey ?? `${this.id}-${options.eventName}-${Date.now()}-${randomSuffix}`;
 
         const request: AxiosRequestConfig = {
             url: this._url('charge'),
