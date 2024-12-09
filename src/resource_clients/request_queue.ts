@@ -534,6 +534,8 @@ export interface RequestQueueClientListAndLockHeadOptions {
 
 export interface RequestQueueClientListAndLockHeadResult extends RequestQueueClientListHeadResult {
     lockSecs: number;
+    queueHasLockedRequests: boolean;
+    clientKey: string;
 }
 
 export interface RequestQueueClientListItem {
