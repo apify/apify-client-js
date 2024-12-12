@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+<!-- git-cliff-unreleased-start -->
+## 2.11.0 - **not yet released**
+
+### 🚀 Features
+
+- **actor-build:** Add actorDefinition type for actor build detail, deprecate inputSchema and readme. ([#611](https://github.com/apify/apify-client-js/pull/611)) ([123c2b8](https://github.com/apify/apify-client-js/commit/123c2b81c945a0ca6922221598aa73c42cc298d6)) by [@drobnikj](https://github.com/drobnikj)
+- Add `charge` method to the run client for &quot;pay per event&quot; ([#613](https://github.com/apify/apify-client-js/pull/613)) ([3d9c64d](https://github.com/apify/apify-client-js/commit/3d9c64d5442b4f8f27c2b19dd98dd3b758944287)) by [@Jkuzz](https://github.com/Jkuzz)
+- **request-queue:** Add queueHasLockedRequests and clientKey into RequestQueueClientListAndLockHeadResult ([#617](https://github.com/apify/apify-client-js/pull/617)) ([f58ce98](https://github.com/apify/apify-client-js/commit/f58ce989e431de54eb673e561e407a7066ea2b64)) by [@drobnikj](https://github.com/drobnikj)
+
+### 🐛 Bug Fixes
+
+- **actor:** Correctly set type for ActorTaggedBuilds ([#612](https://github.com/apify/apify-client-js/pull/612)) ([3bda7ee](https://github.com/apify/apify-client-js/commit/3bda7ee741caf2ccfea249a42ed7512cda36bf0b)) by [@metalwarrior665](https://github.com/metalwarrior665)
+
+
+<!-- git-cliff-unreleased-end -->
 ## [2.10.0](https://github.com/apify/apify-client-js/releases/tag/v2.10.0) (2024-11-01)
 
 ### 🚀 Features
