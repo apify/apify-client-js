@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.11.0 - **not yet released**
+## [2.11.0](https://github.com/apify/apify-client-js/releases/tag/v2.11.0) (2024-12-16)
 
 ### 🚀 Features
 
@@ -16,7 +15,6 @@ All notable changes to this project will be documented in this file.
 - **actor:** Correctly set type for ActorTaggedBuilds ([#612](https://github.com/apify/apify-client-js/pull/612)) ([3bda7ee](https://github.com/apify/apify-client-js/commit/3bda7ee741caf2ccfea249a42ed7512cda36bf0b)) by [@metalwarrior665](https://github.com/metalwarrior665)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.10.0](https://github.com/apify/apify-client-js/releases/tag/v2.10.0) (2024-11-01)
 
 ### 🚀 Features
