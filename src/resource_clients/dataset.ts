@@ -4,7 +4,7 @@ import { ApifyApiError } from '../apify_api_error';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import { ApifyRequestConfig, ApifyResponse } from '../http_client';
-import {cast, catchNotFoundOrThrow, PaginatedList, pluckData} from '../utils';
+import { cast, catchNotFoundOrThrow, PaginatedList, pluckData } from '../utils';
 
 export class DatasetClient<
     Data extends Record<string | number, any> = Record<string | number, unknown>,
