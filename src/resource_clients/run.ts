@@ -142,7 +142,7 @@ export class RunClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-runs/charge-run/charge-run
+     * https://docs.apify.com/api/v2#/reference/actor-runs/charge-events-in-run
      */
     async charge(options: RunChargeOptions): Promise<ApifyResponse<Record<string, never>>> {
         ow(options, ow.object.exactShape({
