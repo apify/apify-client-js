@@ -383,6 +383,7 @@ export interface ActorRun extends ActorRunListItem {
     usage?: ActorRunUsage;
     usageUsd?: ActorRunUsage;
     pricingInfo?: ActorRunPricingInfo;
+    chargedEventCounts?: Record<string, number>;
 }
 
 export interface ActorRunUsage {
@@ -429,6 +430,7 @@ export interface ActorRunOptions {
     timeoutSecs: number;
     memoryMbytes: number;
     diskMbytes: number;
+    maxTotalChargeUsd?: number;
 }
 
 export interface ActorBuildOptions {
