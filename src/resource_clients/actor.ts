@@ -464,11 +464,11 @@ export interface ActorDefinition {
 }
 
 type CommonActorPricingInfo = {
-    /** in [0, 1], fraction of pricePerUnitUsd that goes to Apify */
+    /** In [0, 1], fraction of pricePerUnitUsd that goes to Apify */
     apifyMarginPercentage: number;
-    /** when this pricing info record has been created */
+    /** When this pricing info record has been created */
     createdAt: Date;
-    /** since when is this pricing info record effective for a given Actor */
+    /** Since when is this pricing info record effective for a given Actor */
     startedAt: Date;
     notifiedAboutFutureChangeAt?: Date;
     notifiedAboutChangeAt?: Date;
@@ -481,15 +481,15 @@ export type FreeActorPricingInfo = CommonActorPricingInfo & {
 
 export type FlatPricePerMonthActorPricingInfo = CommonActorPricingInfo & {
     pricingModel: 'FLAT_PRICE_PER_MONTH';
-    /** for how many days this Actor can be used for free in trial period */
+    /** For how long this Actor can be used for free in trial period */
     trialMinutes?: number;
-    /** monthly flat price in USD */
+    /** Monthly flat price in USD */
     pricePerUnitUsd: number;
 }
 
 export type PricePerDatasetItemActorPricingInfo = CommonActorPricingInfo & {
     pricingModel: 'PRICE_PER_DATASET_ITEM';
-    /** name of the unit that is being charged */
+    /** Name of the unit that is being charged */
     unitName?: string;
     pricePerUnitUsd: number;
 }
