@@ -1,8 +1,8 @@
 const { Readable } = require('stream');
 
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
-const { ApifyClient } = require('../src');
 const mockServer = require('./mock_server/server');
+const { ApifyClient } = require('../src');
 
 describe('Key-Value Store methods', () => {
     let baseUrl;

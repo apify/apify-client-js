@@ -463,7 +463,7 @@ export interface ActorDefinition {
     usesStandbyMode?: boolean;
 }
 
-type CommonActorPricingInfo = {
+interface CommonActorPricingInfo {
     /** In [0, 1], fraction of pricePerUnitUsd that goes to Apify */
     apifyMarginPercentage: number;
     /** When this pricing info record has been created */
@@ -475,11 +475,11 @@ type CommonActorPricingInfo = {
     reasonForChange?: string;
 }
 
-export type FreeActorPricingInfo = CommonActorPricingInfo & {
+export interface FreeActorPricingInfo extends CommonActorPricingInfo {
     pricingModel: 'FREE';
 }
 
-export type FlatPricePerMonthActorPricingInfo = CommonActorPricingInfo & {
+export interface FlatPricePerMonthActorPricingInfo extends CommonActorPricingInfo {
     pricingModel: 'FLAT_PRICE_PER_MONTH';
     /** For how long this Actor can be used for free in trial period */
     trialMinutes?: number;
@@ -487,20 +487,22 @@ export type FlatPricePerMonthActorPricingInfo = CommonActorPricingInfo & {
     pricePerUnitUsd: number;
 }
 
-export type PricePerDatasetItemActorPricingInfo = CommonActorPricingInfo & {
+export interface PricePerDatasetItemActorPricingInfo extends CommonActorPricingInfo {
     pricingModel: 'PRICE_PER_DATASET_ITEM';
     /** Name of the unit that is being charged */
     unitName?: string;
     pricePerUnitUsd: number;
 }
 
-export type ActorChargeEvents = Record<string, {
+export interface ActorChargeEvent {
     eventPriceUsd: number;
     eventTitle: string;
     eventDescription?: string;
-}>
+}
 
-export type PricePerEventActorPricingInfo = CommonActorPricingInfo & {
+export type ActorChargeEvents = Record<string, ActorChargeEvent>
+
+export interface PricePerEventActorPricingInfo extends CommonActorPricingInfo {
     pricingModel: 'PAY_PER_EVENT';
     pricingPerEvent: {
         actorChargeEvents: ActorChargeEvents

@@ -1,6 +1,7 @@
 import { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 import ow from 'ow';
 
+import { ActorDefinition } from './actor';
 import { LogClient } from './log';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
@@ -9,7 +10,6 @@ import {
     parseDateFields,
     pluckData,
 } from '../utils';
-import { ActorDefinition } from './actor';
 
 export class BuildClient extends ResourceClient {
     /**

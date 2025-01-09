@@ -1,6 +1,6 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
-const { ApifyClient } = require('../src');
 const mockServer = require('./mock_server/server');
+const { ApifyClient } = require('../src');
 const { stringifyWebhooksToBase64 } = require('../src/utils');
 
 describe('Actor methods', () => {
