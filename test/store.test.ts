@@ -1,6 +1,6 @@
 import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
-import mockServer from './mock_server/server';
 import { ApifyClient, StoreCollectionListOptions } from '../src';
+import mockServer from './mock_server/server';
 
 describe('Store', () => {
     let baseUrl: string | undefined;
