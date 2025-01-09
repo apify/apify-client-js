@@ -123,7 +123,7 @@ export interface Build {
     usage?: BuildUsage;
     usageTotalUsd?: number;
     usageUsd?: BuildUsage;
-    actorDefinitions?: ActorDefinition;
+    actorDefinition?: ActorDefinition;
 }
 
 export interface BuildUsage {
