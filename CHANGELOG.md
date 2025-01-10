@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.11.1 - **not yet released**
+## [2.11.1](https://github.com/apify/apify-client-js/releases/tag/v2.11.1) (2025-01-10)
 
 ### 🐛 Bug Fixes
 
@@ -11,7 +10,6 @@ All notable changes to this project will be documented in this file.
 - Add ActorRunPricingInfo type ([#623](https://github.com/apify/apify-client-js/pull/623)) ([8880295](https://github.com/apify/apify-client-js/commit/8880295f13c1664ab6ae0b8b3f171025317ea011)) by [@janbuchar](https://github.com/janbuchar)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.11.0](https://github.com/apify/apify-client-js/releases/tag/v2.11.0) (2024-12-16)
 
 ### 🚀 Features
