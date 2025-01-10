@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+<!-- git-cliff-unreleased-start -->
+## 2.11.1 - **not yet released**
+
+### 🐛 Bug Fixes
+
+- Change type `Build.actorDefinitions` to `Build.actorDefinition` ([#624](https://github.com/apify/apify-client-js/pull/624)) ([611f313](https://github.com/apify/apify-client-js/commit/611f31365727e70f58d899009ff5a05c6b888253)) by [@jirispilka](https://github.com/jirispilka)
+
+
+<!-- git-cliff-unreleased-end -->
 ## [2.11.0](https://github.com/apify/apify-client-js/releases/tag/v2.11.0) (2024-12-16)
 
 ### 🚀 Features
