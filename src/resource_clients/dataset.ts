@@ -1,9 +1,10 @@
 import ow from 'ow';
 
+import { ApifyApiError } from '../apify_api_error';
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
-import { ApifyResponse } from '../http_client';
-import { cast, PaginatedList } from '../utils';
+import { ApifyRequestConfig, ApifyResponse } from '../http_client';
+import { cast, catchNotFoundOrThrow, PaginatedList, pluckData } from '../utils';
 
 export class DatasetClient<
     Data extends Record<string | number, any> = Record<string | number, unknown>,
@@ -130,6 +131,24 @@ export class DatasetClient<
         });
     }
 
+    /**
+     * https://docs.apify.com/api/v2#tag/DatasetsStatistics/operation/dataset_statistics_get
+     */
+    async getStatistics(): Promise<DatasetStatistics | undefined> {
+        const requestOpts: ApifyRequestConfig = {
+            url: this._url('statistics'),
+            method: 'GET',
+            params: this._params(),
+        };
+        try {
+            const response = await this.httpClient.call(requestOpts);
+            return cast(pluckData(response.data));
+        } catch (err) {
+            catchNotFoundOrThrow(err as ApifyApiError);
+        }
+        return undefined;
+    }
+
     private _createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
         return {
             items: response.data,
@@ -209,4 +228,15 @@ export interface DatasetClientDownloadItemsOptions extends DatasetClientListItem
     skipHeaderRow?: boolean;
     xmlRoot?: string;
     xmlRow?: string;
+}
+
+export interface DatasetStatistics {
+    fieldStatistics: Record<string, FieldStatistics>;
+}
+
+export interface FieldStatistics {
+    min?: number;
+    max?: number;
+    nullCount?: number;
+    emptyCount?: number;
 }

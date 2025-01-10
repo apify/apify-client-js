@@ -309,5 +309,17 @@ describe('Dataset methods', () => {
             expect(res).toBeUndefined();
             validateRequest({}, { datasetId }, data, expectedHeaders);
         });
+
+        test('statistics() works', async () => {
+            const datasetId = 'some-id';
+
+            const res = await client.dataset(datasetId).getStatistics();
+            expect(res.id).toEqual('get-statistics');
+            validateRequest({}, { datasetId });
+
+            const browserRes = await page.evaluate((id) => client.dataset(id).getStatistics(), datasetId);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { datasetId });
+        });
     });
 });
