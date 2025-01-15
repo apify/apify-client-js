@@ -12,6 +12,7 @@ const ROUTES = [
     { id: 'update-dataset', method: 'PUT', path: '/:datasetId' },
     { id: 'list-items', method: 'GET', path: '/:datasetId/items', type: 'responseJsonMock' },
     { id: 'push-items', method: 'POST', path: '/:datasetId/items' },
+    { id: 'get-statistics', method: 'GET', path: '/:datasetId/statistics' },
 ];
 
 addRoutes(datasets, ROUTES);
