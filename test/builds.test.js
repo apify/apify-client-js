@@ -89,6 +89,18 @@ describe('Build methods', () => {
             validateRequest({}, { buildId });
         });
 
+        test('getOpenApiSpecification() works', async () => {
+            const buildId = 'some-build-id';
+
+            const res = await client.build(buildId).getOpenApiSpecification();
+            expect(res.id).toEqual('build-openapi-specification');
+            validateRequest({}, { buildId });
+
+            const browserRes = await page.evaluate((bId) => client.build(bId).getOpenApiSpecification(), buildId);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { buildId });
+        });
+
         test('waitForFinish() works', async () => {
             const buildId = 'some-build-id';
             const waitSecs = 0.1;
