@@ -93,7 +93,7 @@ describe('Build methods', () => {
             const buildId = 'some-build-id';
 
             const res = await client.build(buildId).getOpenApiSpecification();
-            expect(res.id).toEqual('build-openapi-specification');
+            expect(res.data.id).toEqual('build-openapi-specification');
             validateRequest({}, { buildId });
 
             const browserRes = await page.evaluate((bId) => client.build(bId).getOpenApiSpecification(), buildId);
