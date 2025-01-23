@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+<!-- git-cliff-unreleased-start -->
+## 2.12.0 - **not yet released**
+
+### 🚀 Features
+
+- Add dataset.statistics ([#621](https://github.com/apify/apify-client-js/pull/621)) ([6aeb2b7](https://github.com/apify/apify-client-js/commit/6aeb2b7fae041468d125a0c8bbb00804e290143a)) by [@MFori](https://github.com/MFori)
+
+
+<!-- git-cliff-unreleased-end -->
 ## [2.11.1](https://github.com/apify/apify-client-js/releases/tag/v2.11.1) (2025-01-10)
 
 ### 🐛 Bug Fixes

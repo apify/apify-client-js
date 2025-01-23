@@ -5,7 +5,7 @@ const mockServer = require('./mock_server/server');
 class Browser {
     async start() {
         this.browser = await launchPuppeteer({
-            launchOptions: { headless: true, args: ['--disable-web-security'] },
+            launchOptions: { headless: true, args: ['--disable-web-security', '--no-sandbox'] },
         });
         return this.browser;
     }
