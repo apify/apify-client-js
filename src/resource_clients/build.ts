@@ -56,7 +56,7 @@ export class BuildClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2/actor-build-openapi-specification-get
      */
-    async getOpenApiSpecification() {
+    async getOpenApiSpecification(): Promise<OpenApiSpecification> {
         const response = await this.httpClient.call({
             url: this._url('openapi-specification'),
             method: 'GET',
@@ -154,4 +154,59 @@ export interface BuildOptions {
     betaPackages?: boolean;
     memoryMbytes?: number;
     diskMbytes?: number;
+}
+
+export interface OpenApiSpecification {
+    openapi: string;
+    info: {
+        title: string
+        description?: string;
+        version?: string
+        'x-build-id': string
+    };
+    servers: { url: string }[]
+    paths: { [key: string]: { post: OpenApiOperation } };
+    components: {
+        schemas: {
+            [key: string]: object
+        }
+    }
+}
+
+interface OpenApiOperation {
+    operationId: string
+    'x-openai-isConsequential': boolean
+    summary: string
+    tags: string[]
+    requestBody: {
+        required: boolean;
+        content: {
+            'application/json': {
+                schema: {
+                    '$ref': string
+                }
+            }
+        }
+    }
+    parameters: {
+        name: string
+        in: string
+        required: boolean
+        schema: {
+            type: string;
+        }
+        description: string
+    }[]
+    responses: {
+        '200': {
+            description: string
+            content?: {
+                'application/json': {
+                    schema: {
+                        '$ref': string
+                    }
+                }
+            }
+        }
+    }
 }
