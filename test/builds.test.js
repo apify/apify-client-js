@@ -89,14 +89,14 @@ describe('Build methods', () => {
             validateRequest({}, { buildId });
         });
 
-        test('getOpenApiSpecification() works', async () => {
+        test('getOpenApiDefinition() works', async () => {
             const buildId = 'some-build-id';
 
-            const res = await client.build(buildId).getOpenApiSpecification();
-            expect(res.data.id).toEqual('build-openapi-specification');
+            const res = await client.build(buildId).getOpenApiDefinition();
+            expect(res.data.id).toEqual('build-openapi');
             validateRequest({}, { buildId });
 
-            const browserRes = await page.evaluate((bId) => client.build(bId).getOpenApiSpecification(), buildId);
+            const browserRes = await page.evaluate((bId) => client.build(bId).getOpenApiDefinition(), buildId);
             expect(browserRes).toEqual(res);
             validateRequest({}, { buildId });
         });
