@@ -331,6 +331,21 @@ describe('Request Queue methods', () => {
             );
         });
 
+        test('batchAddRequests() propagates forefront', async () => {
+            const queueId = 'some-id';
+            const options = { forefront: true };
+            const requests = new Array(10).fill(0).map((_, i) => ({ url: `http://example.com/${i}` }));
+
+            const res = await client.requestQueue(queueId).batchAddRequests(requests, options);
+            validateRequest(options, { queueId }, requests);
+
+            const browserRes = await page.evaluate((id, req, opts) => {
+                return client.requestQueue(id).batchAddRequests(req, opts);
+            }, queueId, requests, options);
+            expect(browserRes).toEqual(res);
+            validateRequest(options, { queueId }, requests);
+        });
+
         test('batchAddRequests() chunks large payload', async () => {
             const queueId = 'some-id';
             const requestsLength = 30;
@@ -353,25 +368,11 @@ describe('Request Queue methods', () => {
             );
 
             // It throws error when single request is too big
-            const bigRequest = { url: `http://example.com/x`, userData: { longString: 'a'.repeat(9_500_000) } };
+            const bigRequest = { url: `http://example.com/x`, userData: { longString: 'b'.repeat(9_500_000) } };
             const requestsWithBigRequest = [...requests, bigRequest];
             await expect(client.requestQueue(queueId).batchAddRequests(requestsWithBigRequest))
                 .rejects.toThrow(`RequestQueueClient.batchAddRequests: The size of the request with index: ${requestsWithBigRequest.length - 1}`);
-        });
-
-        test('_batchAddRequests() works', async () => {
-            const queueId = 'some-id';
-            const options = { forefront: true };
-            const requests = new Array(10).fill(0).map((_, i) => ({ url: `http://example.com/${i}` }));
-
-            const res = await client.requestQueue(queueId).batchAddRequests(requests, options);
-            validateRequest(options, { queueId }, requests);
-
-            const browserRes = await page.evaluate((id, req, opts) => {
-                return client.requestQueue(id).batchAddRequests(req, opts);
-            }, queueId, requests, options);
-            expect(browserRes).toEqual(res);
-            validateRequest(options, { queueId }, requests);
+            validateRequest({}, { queueId }, false);
         });
 
         test('batchDeleteRequests() works', async () => {
