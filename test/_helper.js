@@ -5,7 +5,7 @@ const mockServer = require('./mock_server/server');
 class Browser {
     async start() {
         this.browser = await launchPuppeteer({
-            launchOptions: { headless: true, args: ['--disable-web-security'] },
+            launchOptions: { headless: true, args: ['--disable-web-security', '--no-sandbox'] },
         });
         return this.browser;
     }
@@ -65,7 +65,17 @@ const validateRequest = (query = {}, params = {}, body = {}, additionalHeaders =
     };
     const request = mockServer.getLastRequest();
     const expectedQuery = getExpectedQuery(query);
-    if (query !== false) expect(request.query).toEqual(expectedQuery);
+    if (query !== false) {
+        try {
+            expect(request.query).toEqual(expectedQuery);
+        } catch (err) {
+            // Debug log to check what was actually in request.
+            // It is happening that the "_batchAddRequests() works" randomly fails on CI, it can be caused by tests concurrency.
+            // If so we need to update how mockServer.getLastRequest() works.
+            console.log('Request:', request.route.path, request.route.methods, request.query);
+            throw err;
+        }
+    }
     if (params !== false) expect(request.params).toEqual(params);
     if (body !== false) expect(request.body).toEqual(body);
     Object.entries(headers).forEach(([key, value]) => {

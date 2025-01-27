@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+<!-- git-cliff-unreleased-start -->
+## 2.12.0 - **not yet released**
+
+### 🚀 Features
+
+- Add dataset.statistics ([#621](https://github.com/apify/apify-client-js/pull/621)) ([6aeb2b7](https://github.com/apify/apify-client-js/commit/6aeb2b7fae041468d125a0c8bbb00804e290143a)) by [@MFori](https://github.com/MFori)
+- Added getOpenApiSpecification() to BuildClient ([#626](https://github.com/apify/apify-client-js/pull/626)) ([6248b28](https://github.com/apify/apify-client-js/commit/6248b2844796f93e22404ddea85ee77c1a5b7d50)) by [@danpoletaev](https://github.com/danpoletaev)
+
+
+<!-- git-cliff-unreleased-end -->
+## [2.11.1](https://github.com/apify/apify-client-js/releases/tag/v2.11.1) (2025-01-10)
+
+### 🐛 Bug Fixes
+
+- Change type `Build.actorDefinitions` to `Build.actorDefinition` ([#624](https://github.com/apify/apify-client-js/pull/624)) ([611f313](https://github.com/apify/apify-client-js/commit/611f31365727e70f58d899009ff5a05c6b888253)) by [@jirispilka](https://github.com/jirispilka)
+- Add ActorRunPricingInfo type ([#623](https://github.com/apify/apify-client-js/pull/623)) ([8880295](https://github.com/apify/apify-client-js/commit/8880295f13c1664ab6ae0b8b3f171025317ea011)) by [@janbuchar](https://github.com/janbuchar)
+
+
 ## [2.11.0](https://github.com/apify/apify-client-js/releases/tag/v2.11.0) (2024-12-16)
 
 ### 🚀 Features

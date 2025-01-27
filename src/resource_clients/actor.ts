@@ -382,6 +382,8 @@ export interface ActorRun extends ActorRunListItem {
     gitBranchName?: string;
     usage?: ActorRunUsage;
     usageUsd?: ActorRunUsage;
+    pricingInfo?: ActorRunPricingInfo;
+    chargedEventCounts?: Record<string, number>;
 }
 
 export interface ActorRunUsage {
@@ -428,6 +430,7 @@ export interface ActorRunOptions {
     timeoutSecs: number;
     memoryMbytes: number;
     diskMbytes: number;
+    maxTotalChargeUsd?: number;
 }
 
 export interface ActorBuildOptions {
@@ -459,3 +462,52 @@ export interface ActorDefinition {
     maxMemoryMbytes?: number;
     usesStandbyMode?: boolean;
 }
+
+interface CommonActorPricingInfo {
+    /** In [0, 1], fraction of pricePerUnitUsd that goes to Apify */
+    apifyMarginPercentage: number;
+    /** When this pricing info record has been created */
+    createdAt: Date;
+    /** Since when is this pricing info record effective for a given Actor */
+    startedAt: Date;
+    notifiedAboutFutureChangeAt?: Date;
+    notifiedAboutChangeAt?: Date;
+    reasonForChange?: string;
+}
+
+export interface FreeActorPricingInfo extends CommonActorPricingInfo {
+    pricingModel: 'FREE';
+}
+
+export interface FlatPricePerMonthActorPricingInfo extends CommonActorPricingInfo {
+    pricingModel: 'FLAT_PRICE_PER_MONTH';
+    /** For how long this Actor can be used for free in trial period */
+    trialMinutes?: number;
+    /** Monthly flat price in USD */
+    pricePerUnitUsd: number;
+}
+
+export interface PricePerDatasetItemActorPricingInfo extends CommonActorPricingInfo {
+    pricingModel: 'PRICE_PER_DATASET_ITEM';
+    /** Name of the unit that is being charged */
+    unitName?: string;
+    pricePerUnitUsd: number;
+}
+
+export interface ActorChargeEvent {
+    eventPriceUsd: number;
+    eventTitle: string;
+    eventDescription?: string;
+}
+
+export type ActorChargeEvents = Record<string, ActorChargeEvent>
+
+export interface PricePerEventActorPricingInfo extends CommonActorPricingInfo {
+    pricingModel: 'PAY_PER_EVENT';
+    pricingPerEvent: {
+        actorChargeEvents: ActorChargeEvents
+    };
+    minimalMaxTotalChargeUsd?: number;
+}
+
+export type ActorRunPricingInfo = PricePerEventActorPricingInfo | PricePerDatasetItemActorPricingInfo | FlatPricePerMonthActorPricingInfo | FreeActorPricingInfo
