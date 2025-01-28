@@ -56,9 +56,9 @@ export class BuildClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2/actor-build-openapi-specification-get
      */
-    async getOpenApiSpecification(): Promise<OpenApiSpecification> {
+    async getOpenApiDefinition(): Promise<OpenApiDefinition> {
         const response = await this.httpClient.call({
-            url: this._url('openapi-specification'),
+            url: this._url('openapi.json'),
             method: 'GET',
             params: this._params(),
         });
@@ -156,7 +156,7 @@ export interface BuildOptions {
     diskMbytes?: number;
 }
 
-export interface OpenApiSpecification {
+export interface OpenApiDefinition {
     openapi: string;
     info: {
         title: string
