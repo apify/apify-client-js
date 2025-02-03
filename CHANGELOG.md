@@ -47,102 +47,102 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
-- Rename maxCostPerRunUsd to maxTotalChargeUsd ([#592](https://github.com/apify/apify-client-js/pulls/592)) ([4ffd1c6](https://github.com/apify/apify-client-js/commit/4ffd1c620a6fdb0660d6a49a667e67a4840c8e6b)) by [@novotnyj](https://github.com/novotnyj)
+- Rename maxCostPerRunUsd to maxTotalChargeUsd ([#592](https://github.com/apify/apify-client-js/pull/592)) ([4ffd1c6](https://github.com/apify/apify-client-js/commit/4ffd1c620a6fdb0660d6a49a667e67a4840c8e6b)) by [@novotnyj](https://github.com/novotnyj)
 
 ## [2.9.5](https://github.com/apify/apify-client-js/releases/tags/v2.9.5) (2024-08-19)
 
 ### 🚀 Features
 
-- Add Actor Standby types ([#569](https://github.com/apify/apify-client-js/pulls/569)) ([d3ba82b](https://github.com/apify/apify-client-js/commit/d3ba82b5cb700e0a38e8565308ab795ccf39b32f)) by [@jirimoravcik](https://github.com/jirimoravcik)
-- Allow `unwind` param to `DatasetClient.listItems()` to be an array ([#576](https://github.com/apify/apify-client-js/pulls/576)) ([7ef3b14](https://github.com/apify/apify-client-js/commit/7ef3b146cc8d4bbd0fedaf32da37726420def800)) by [@fnesveda](https://github.com/fnesveda)
-- *(client)* Add maxCostPerRun param ([#578](https://github.com/apify/apify-client-js/pulls/578)) ([854e776](https://github.com/apify/apify-client-js/commit/854e776e67519ebf9582dd8eecd990f7de402b24)) by [@stetizu1](https://github.com/stetizu1)
+- Add Actor Standby types ([#569](https://github.com/apify/apify-client-js/pull/569)) ([d3ba82b](https://github.com/apify/apify-client-js/commit/d3ba82b5cb700e0a38e8565308ab795ccf39b32f)) by [@jirimoravcik](https://github.com/jirimoravcik)
+- Allow `unwind` param to `DatasetClient.listItems()` to be an array ([#576](https://github.com/apify/apify-client-js/pull/576)) ([7ef3b14](https://github.com/apify/apify-client-js/commit/7ef3b146cc8d4bbd0fedaf32da37726420def800)) by [@fnesveda](https://github.com/fnesveda)
+- *(client)* Add maxCostPerRun param ([#578](https://github.com/apify/apify-client-js/pull/578)) ([854e776](https://github.com/apify/apify-client-js/commit/854e776e67519ebf9582dd8eecd990f7de402b24)) by [@stetizu1](https://github.com/stetizu1)
 
 ### Fix
 
-- Add `isDeprecated` to actor update type ([#566](https://github.com/apify/apify-client-js/pulls/566)) ([d6aba08](https://github.com/apify/apify-client-js/commit/d6aba085a04d3a00a495d856490bce46f519b39d)) by [@Jkuzz](https://github.com/Jkuzz)
+- Add `isDeprecated` to actor update type ([#566](https://github.com/apify/apify-client-js/pull/566)) ([d6aba08](https://github.com/apify/apify-client-js/commit/d6aba085a04d3a00a495d856490bce46f519b39d)) by [@Jkuzz](https://github.com/Jkuzz)
 
 ## [2.9.4](https://github.com/apify/apify-client-js/releases/tags/v2.9.4) (2024-06-26)
 
 ### 🚀 Features
 
-- Add smartlook token to docs build [internal] ([#540](https://github.com/apify/apify-client-js/pulls/540)) ([4b408bd](https://github.com/apify/apify-client-js/commit/4b408bd0ad90ffa0f05b5d63c2472f1cced0d57f)) by [@HonzaTuron](https://github.com/HonzaTuron)
-- Add notifications field to Schedule ([#545](https://github.com/apify/apify-client-js/pulls/545)) ([c6f9429](https://github.com/apify/apify-client-js/commit/c6f9429b5bac317da8cdf143343379b1755cf426)) by [@m-murasovs](https://github.com/m-murasovs)
-- JavaScript client code examples for platform ([#548](https://github.com/apify/apify-client-js/pulls/548)) ([bac3692](https://github.com/apify/apify-client-js/commit/bac36922722ccf89da5ac2f7e47dccb065291e1a)) by [@HonzaTuron](https://github.com/HonzaTuron)
-- Added data property to API error object ([#559](https://github.com/apify/apify-client-js/pulls/559)) ([3b7c4b7](https://github.com/apify/apify-client-js/commit/3b7c4b73607f40a74f31f39491025c63bc92e40e)) by [@gippy](https://github.com/gippy)
+- Add smartlook token to docs build [internal] ([#540](https://github.com/apify/apify-client-js/pull/540)) ([4b408bd](https://github.com/apify/apify-client-js/commit/4b408bd0ad90ffa0f05b5d63c2472f1cced0d57f)) by [@HonzaTuron](https://github.com/HonzaTuron)
+- Add notifications field to Schedule ([#545](https://github.com/apify/apify-client-js/pull/545)) ([c6f9429](https://github.com/apify/apify-client-js/commit/c6f9429b5bac317da8cdf143343379b1755cf426)) by [@m-murasovs](https://github.com/m-murasovs)
+- JavaScript client code examples for platform ([#548](https://github.com/apify/apify-client-js/pull/548)) ([bac3692](https://github.com/apify/apify-client-js/commit/bac36922722ccf89da5ac2f7e47dccb065291e1a)) by [@HonzaTuron](https://github.com/HonzaTuron)
+- Added data property to API error object ([#559](https://github.com/apify/apify-client-js/pull/559)) ([3b7c4b7](https://github.com/apify/apify-client-js/commit/3b7c4b73607f40a74f31f39491025c63bc92e40e)) by [@gippy](https://github.com/gippy)
 
 ### 🐛 Bug Fixes
 
-- Add missing `isApifyIntegration` field to `Webhook` type ([#523](https://github.com/apify/apify-client-js/pulls/523)) ([0af85fc](https://github.com/apify/apify-client-js/commit/0af85fc07939b8418dd867bb69492e742625b568)) by [@omikader](https://github.com/omikader)
+- Add missing `isApifyIntegration` field to `Webhook` type ([#523](https://github.com/apify/apify-client-js/pull/523)) ([0af85fc](https://github.com/apify/apify-client-js/commit/0af85fc07939b8418dd867bb69492e742625b568)) by [@omikader](https://github.com/omikader)
 
 ## [2.9.2](https://github.com/apify/apify-client-js/releases/tags/v2.9.2) (2024-02-23)
 
 ### 🚀 Features
 
-- Add monthlyUsage() and limits() endpoints to UserClients ([#517](https://github.com/apify/apify-client-js/pulls/517)) ([2767c8d](https://github.com/apify/apify-client-js/commit/2767c8d18fcffe4ddb0d77105e3ac4acc2394a9b)) by [@tobice](https://github.com/tobice)
-- Parse monthlyUsage.dailyServiceUsages[].date as Date ([#519](https://github.com/apify/apify-client-js/pulls/519)) ([980d958](https://github.com/apify/apify-client-js/commit/980d958ee5e6bf8610f7ce08fb282e126c68fa82)) by [@tobice](https://github.com/tobice)
+- Add monthlyUsage() and limits() endpoints to UserClients ([#517](https://github.com/apify/apify-client-js/pull/517)) ([2767c8d](https://github.com/apify/apify-client-js/commit/2767c8d18fcffe4ddb0d77105e3ac4acc2394a9b)) by [@tobice](https://github.com/tobice)
+- Parse monthlyUsage.dailyServiceUsages[].date as Date ([#519](https://github.com/apify/apify-client-js/pull/519)) ([980d958](https://github.com/apify/apify-client-js/commit/980d958ee5e6bf8610f7ce08fb282e126c68fa82)) by [@tobice](https://github.com/tobice)
 
 ## [2.9.1](https://github.com/apify/apify-client-js/releases/tags/v2.9.1) (2024-02-20)
 
 ### 🐛 Bug Fixes
 
-- Ensure axios headers are instance of AxiosHeaders via interceptor ([#515](https://github.com/apify/apify-client-js/pulls/515)) ([1f4633f](https://github.com/apify/apify-client-js/commit/1f4633f00fd318eab20d0c66dad4be484d46a4ef)) by [@B4nan](https://github.com/B4nan)
+- Ensure axios headers are instance of AxiosHeaders via interceptor ([#515](https://github.com/apify/apify-client-js/pull/515)) ([1f4633f](https://github.com/apify/apify-client-js/commit/1f4633f00fd318eab20d0c66dad4be484d46a4ef)) by [@B4nan](https://github.com/B4nan)
 
 ## [2.9.0](https://github.com/apify/apify-client-js/releases/tags/v2.9.0) (2024-02-16)
 
 ### 🚀 Features
 
-- Add `KeyValueStore.recordExists()` method ([#510](https://github.com/apify/apify-client-js/pulls/510), closes [#507](https://github.com/apify/apify-client-js/issues/507)) ([069d620](https://github.com/apify/apify-client-js/commit/069d620e37035fca5f6cb8a1a1b7d0fa1644bbca)) by [@barjin](https://github.com/barjin)
-- Add log() method to BuildClient ([#509](https://github.com/apify/apify-client-js/pulls/509)) ([8821df6](https://github.com/apify/apify-client-js/commit/8821df65d79c59e9284786cafec63e1ab87e05d3)) by [@tobice](https://github.com/tobice)
-- Add `runs()` and `builds()` top level endpoints ([#468](https://github.com/apify/apify-client-js/pulls/468), closes [#296](https://github.com/apify/apify-client-js/issues/296)) ([252d2ac](https://github.com/apify/apify-client-js/commit/252d2ac4e1c1bbb801c5ec570cbd207d30901b7c)) by [@foxt451](https://github.com/foxt451)
+- Add `KeyValueStore.recordExists()` method ([#510](https://github.com/apify/apify-client-js/pull/510), closes [#507](https://github.com/apify/apify-client-js/issues/507)) ([069d620](https://github.com/apify/apify-client-js/commit/069d620e37035fca5f6cb8a1a1b7d0fa1644bbca)) by [@barjin](https://github.com/barjin)
+- Add log() method to BuildClient ([#509](https://github.com/apify/apify-client-js/pull/509)) ([8821df6](https://github.com/apify/apify-client-js/commit/8821df65d79c59e9284786cafec63e1ab87e05d3)) by [@tobice](https://github.com/tobice)
+- Add `runs()` and `builds()` top level endpoints ([#468](https://github.com/apify/apify-client-js/pull/468), closes [#296](https://github.com/apify/apify-client-js/issues/296)) ([252d2ac](https://github.com/apify/apify-client-js/commit/252d2ac4e1c1bbb801c5ec570cbd207d30901b7c)) by [@foxt451](https://github.com/foxt451)
 
 ### 🐛 Bug Fixes
 
-- Publish browser bundle ([#506](https://github.com/apify/apify-client-js/pulls/506)) ([01f9fe1](https://github.com/apify/apify-client-js/commit/01f9fe18cd5572bfa9716019c704d331ef170634)) by [@B4nan](https://github.com/B4nan)
-- Update axios to v1.6 ([#505](https://github.com/apify/apify-client-js/pulls/505), closes [#501](https://github.com/apify/apify-client-js/issues/501)) ([6567e0c](https://github.com/apify/apify-client-js/commit/6567e0c1ff510628ddec906b064c20e5a4e8c258)) by [@B4nan](https://github.com/B4nan)
+- Publish browser bundle ([#506](https://github.com/apify/apify-client-js/pull/506)) ([01f9fe1](https://github.com/apify/apify-client-js/commit/01f9fe18cd5572bfa9716019c704d331ef170634)) by [@B4nan](https://github.com/B4nan)
+- Update axios to v1.6 ([#505](https://github.com/apify/apify-client-js/pull/505), closes [#501](https://github.com/apify/apify-client-js/issues/501)) ([6567e0c](https://github.com/apify/apify-client-js/commit/6567e0c1ff510628ddec906b064c20e5a4e8c258)) by [@B4nan](https://github.com/B4nan)
 
 ## [2.8.6](https://github.com/apify/apify-client-js/releases/tags/v2.8.6) (2024-02-02)
 
 ### 🚀 Features
 
-- *(request-queue)* Limit payload size for batchAddRequests() ([#489](https://github.com/apify/apify-client-js/pulls/489), closes [#446](https://github.com/apify/apify-client-js/issues/446)) ([164c9c7](https://github.com/apify/apify-client-js/commit/164c9c71ab6a0232f58ff76360c2b0d73fc38775)) by [@drobnikj](https://github.com/drobnikj)
+- *(request-queue)* Limit payload size for batchAddRequests() ([#489](https://github.com/apify/apify-client-js/pull/489), closes [#446](https://github.com/apify/apify-client-js/issues/446)) ([164c9c7](https://github.com/apify/apify-client-js/commit/164c9c71ab6a0232f58ff76360c2b0d73fc38775)) by [@drobnikj](https://github.com/drobnikj)
 
 ### 🐛 Bug Fixes
 
-- Replace ReadableStream with Readable ([#463](https://github.com/apify/apify-client-js/pulls/463), closes [#240](https://github.com/apify/apify-client-js/issues/240)) ([6f6deb7](https://github.com/apify/apify-client-js/commit/6f6deb70025eeeb439a8361c80bcb7485696b0d1)) by [@foxt451](https://github.com/foxt451)
-- Add missing properties to `ActorCollectionCreateOptions` type ([#486](https://github.com/apify/apify-client-js/pulls/486)) ([623b516](https://github.com/apify/apify-client-js/commit/623b51677a6e748446f552db39d91093be40032c)) by [@jirimoravcik](https://github.com/jirimoravcik)
+- Replace ReadableStream with Readable ([#463](https://github.com/apify/apify-client-js/pull/463), closes [#240](https://github.com/apify/apify-client-js/issues/240)) ([6f6deb7](https://github.com/apify/apify-client-js/commit/6f6deb70025eeeb439a8361c80bcb7485696b0d1)) by [@foxt451](https://github.com/foxt451)
+- Add missing properties to `ActorCollectionCreateOptions` type ([#486](https://github.com/apify/apify-client-js/pull/486)) ([623b516](https://github.com/apify/apify-client-js/commit/623b51677a6e748446f552db39d91093be40032c)) by [@jirimoravcik](https://github.com/jirimoravcik)
 
 ## [2.8.4](https://github.com/apify/apify-client-js/releases/tags/v2.8.4) (2023-11-20)
 
 ### 🐛 Bug Fixes
 
-- *(schedule)* Expose other fields when id optional ([#451](https://github.com/apify/apify-client-js/pulls/451)) ([abe9d51](https://github.com/apify/apify-client-js/commit/abe9d518160da98ce43216a1cdec1b2289799e9c)) by [@omikader](https://github.com/omikader)
+- *(schedule)* Expose other fields when id optional ([#451](https://github.com/apify/apify-client-js/pull/451)) ([abe9d51](https://github.com/apify/apify-client-js/commit/abe9d518160da98ce43216a1cdec1b2289799e9c)) by [@omikader](https://github.com/omikader)
 
 ## [2.8.2](https://github.com/apify/apify-client-js/releases/tags/v2.8.2) (2023-10-30)
 
 ### 🚀 Features
 
-- Add how to install javascript Apify client ([#440](https://github.com/apify/apify-client-js/pulls/440)) ([b79e463](https://github.com/apify/apify-client-js/commit/b79e463a906f09d7544ead998f5ac5ced1f6c9b0)) by [@webrdaniel](https://github.com/webrdaniel)
+- Add how to install javascript Apify client ([#440](https://github.com/apify/apify-client-js/pull/440)) ([b79e463](https://github.com/apify/apify-client-js/commit/b79e463a906f09d7544ead998f5ac5ced1f6c9b0)) by [@webrdaniel](https://github.com/webrdaniel)
 
 ### 🐛 Bug Fixes
 
-- *(types)* `ScheduleCreateOrUpdateData` should have `id` as optional ([#276](https://github.com/apify/apify-client-js/pulls/276)) ([e59ff10](https://github.com/apify/apify-client-js/commit/e59ff10ad4569811d4554c3d73bf6800ecef5cef)) by [@magne4000](https://github.com/magne4000)
+- *(types)* `ScheduleCreateOrUpdateData` should have `id` as optional ([#276](https://github.com/apify/apify-client-js/pull/276)) ([e59ff10](https://github.com/apify/apify-client-js/commit/e59ff10ad4569811d4554c3d73bf6800ecef5cef)) by [@magne4000](https://github.com/magne4000)
 
 ## [2.8.1](https://github.com/apify/apify-client-js/releases/tags/v2.8.1) (2023-10-11)
 
 ### 🚀 Features
 
-- Add new webhook fields ([#426](https://github.com/apify/apify-client-js/pulls/426)) ([44ced4d](https://github.com/apify/apify-client-js/commit/44ced4d6d12cc71308e669377e6fa488978854f1)) by [@m-murasovs](https://github.com/m-murasovs)
-- Add delete to runs and builds ([#428](https://github.com/apify/apify-client-js/pulls/428)) ([a399663](https://github.com/apify/apify-client-js/commit/a3996638f1f342805df19f721f9f284d29b669c1)) by [@Jkuzz](https://github.com/Jkuzz)
+- Add new webhook fields ([#426](https://github.com/apify/apify-client-js/pull/426)) ([44ced4d](https://github.com/apify/apify-client-js/commit/44ced4d6d12cc71308e669377e6fa488978854f1)) by [@m-murasovs](https://github.com/m-murasovs)
+- Add delete to runs and builds ([#428](https://github.com/apify/apify-client-js/pull/428)) ([a399663](https://github.com/apify/apify-client-js/commit/a3996638f1f342805df19f721f9f284d29b669c1)) by [@Jkuzz](https://github.com/Jkuzz)
 
 ### 🐛 Bug Fixes
 
-- Don't parse non-date strings ([#412](https://github.com/apify/apify-client-js/pulls/412), closes [#406](https://github.com/apify/apify-client-js/issues/406)) ([97cf657](https://github.com/apify/apify-client-js/commit/97cf6576b01dcb1892cf84c48c5bb98ed7451b2c)) by [@barjin](https://github.com/barjin)
+- Don't parse non-date strings ([#412](https://github.com/apify/apify-client-js/pull/412), closes [#406](https://github.com/apify/apify-client-js/issues/406)) ([97cf657](https://github.com/apify/apify-client-js/commit/97cf6576b01dcb1892cf84c48c5bb98ed7451b2c)) by [@barjin](https://github.com/barjin)
 
 ## [2.8.0](https://github.com/apify/apify-client-js/releases/tags/v2.8.0) (2023-09-08)
 
 ### 🚀 Features
 
-- Add Actor reboot method ([#408](https://github.com/apify/apify-client-js/pulls/408)) ([be21c82](https://github.com/apify/apify-client-js/commit/be21c82ce9c852fc594a250d8bf9b7aaae0d61a7)) by [@jirimoravcik](https://github.com/jirimoravcik)
+- Add Actor reboot method ([#408](https://github.com/apify/apify-client-js/pull/408)) ([be21c82](https://github.com/apify/apify-client-js/commit/be21c82ce9c852fc594a250d8bf9b7aaae0d61a7)) by [@jirimoravcik](https://github.com/jirimoravcik)
 
 ### 🐛 Bug Fixes
 
@@ -152,36 +152,36 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
-- Rename APIFY_ACTOR_MAX_ITEMS to ACTOR_MAX_PAID_DATASET_ITEMS ([#353](https://github.com/apify/apify-client-js/pulls/353)) ([36d6c20](https://github.com/apify/apify-client-js/commit/36d6c208cb9edac4f8b1f0f61ee9cf42b8aa9e6e)) by [@novotnyj](https://github.com/novotnyj)
-- *(runs, builds)* Add usage usd into actor run and build types ([#355](https://github.com/apify/apify-client-js/pulls/355)) ([a6be0b8](https://github.com/apify/apify-client-js/commit/a6be0b89fbccc7592590cc4685e483d5a976a301)) by [@drobnikj](https://github.com/drobnikj)
-- Add shouldInterpolateStrings field to webhook type ([#358](https://github.com/apify/apify-client-js/pulls/358)) ([ad1f204](https://github.com/apify/apify-client-js/commit/ad1f2049f8f038681da6457d1e85bd56c29db99b)) by [@valekjo](https://github.com/valekjo)
-- Use Actor/Apify env vars instead of `ENV_VARS` ([#373](https://github.com/apify/apify-client-js/pulls/373)) ([b2743f5](https://github.com/apify/apify-client-js/commit/b2743f5b475631a2ba0171f8e94e82a3ac73da8e)) by [@jirimoravcik](https://github.com/jirimoravcik)
-- Added StoreCollectionClient class useful for listing Actors in Apify Store ([#395](https://github.com/apify/apify-client-js/pulls/395)) ([5ffd98b](https://github.com/apify/apify-client-js/commit/5ffd98b48eccffbf9dd1ef94a1bcf6d49ebefc02)) by [@drobnikj](https://github.com/drobnikj)
+- Rename APIFY_ACTOR_MAX_ITEMS to ACTOR_MAX_PAID_DATASET_ITEMS ([#353](https://github.com/apify/apify-client-js/pull/353)) ([36d6c20](https://github.com/apify/apify-client-js/commit/36d6c208cb9edac4f8b1f0f61ee9cf42b8aa9e6e)) by [@novotnyj](https://github.com/novotnyj)
+- *(runs, builds)* Add usage usd into actor run and build types ([#355](https://github.com/apify/apify-client-js/pull/355)) ([a6be0b8](https://github.com/apify/apify-client-js/commit/a6be0b89fbccc7592590cc4685e483d5a976a301)) by [@drobnikj](https://github.com/drobnikj)
+- Add shouldInterpolateStrings field to webhook type ([#358](https://github.com/apify/apify-client-js/pull/358)) ([ad1f204](https://github.com/apify/apify-client-js/commit/ad1f2049f8f038681da6457d1e85bd56c29db99b)) by [@valekjo](https://github.com/valekjo)
+- Use Actor/Apify env vars instead of `ENV_VARS` ([#373](https://github.com/apify/apify-client-js/pull/373)) ([b2743f5](https://github.com/apify/apify-client-js/commit/b2743f5b475631a2ba0171f8e94e82a3ac73da8e)) by [@jirimoravcik](https://github.com/jirimoravcik)
+- Added StoreCollectionClient class useful for listing Actors in Apify Store ([#395](https://github.com/apify/apify-client-js/pull/395)) ([5ffd98b](https://github.com/apify/apify-client-js/commit/5ffd98b48eccffbf9dd1ef94a1bcf6d49ebefc02)) by [@drobnikj](https://github.com/drobnikj)
 
 ### 🐛 Bug Fixes
 
-- *(docs)* Fix docs for resource clients to hide constructor ([#397](https://github.com/apify/apify-client-js/pulls/397)) ([bffb2a2](https://github.com/apify/apify-client-js/commit/bffb2a2a7b5fee01add8ddc26d0372739c453d3a)) by [@drobnikj](https://github.com/drobnikj)
+- *(docs)* Fix docs for resource clients to hide constructor ([#397](https://github.com/apify/apify-client-js/pull/397)) ([bffb2a2](https://github.com/apify/apify-client-js/commit/bffb2a2a7b5fee01add8ddc26d0372739c453d3a)) by [@drobnikj](https://github.com/drobnikj)
 
 ## [2.7.1](https://github.com/apify/apify-client-js/releases/tags/v2.7.1) (2023-04-06)
 
 ### 🐛 Bug Fixes
 
-- Add `types` to package `exports` ([#349](https://github.com/apify/apify-client-js/pulls/349)) ([930ea84](https://github.com/apify/apify-client-js/commit/930ea84c4754b8f05dd199c792cf2b9f26b5a077)) by [@B4nan](https://github.com/B4nan)
+- Add `types` to package `exports` ([#349](https://github.com/apify/apify-client-js/pull/349)) ([930ea84](https://github.com/apify/apify-client-js/commit/930ea84c4754b8f05dd199c792cf2b9f26b5a077)) by [@B4nan](https://github.com/B4nan)
 
 ## [2.7.0](https://github.com/apify/apify-client-js/releases/tags/v2.7.0) (2023-03-14)
 
 ### 🚀 Features
 
-- Add support for `maxItems` in run options ([#330](https://github.com/apify/apify-client-js/pulls/330)) ([9442187](https://github.com/apify/apify-client-js/commit/94421873ea1b8425e5c3178829bc0490ed4e7685)) by [@novotnyj](https://github.com/novotnyj)
-- *(repo)* Repository links ([#335](https://github.com/apify/apify-client-js/pulls/335)) ([8c30566](https://github.com/apify/apify-client-js/commit/8c30566c97170b04b41f80b04d383218449e5a42)) by [@drobnikj](https://github.com/drobnikj)
-- *(requestQueue)* Request queue v2 features release ([#334](https://github.com/apify/apify-client-js/pulls/334)) ([bde2ac7](https://github.com/apify/apify-client-js/commit/bde2ac71433437eaf1c48c03ba2d0bf25d64af21)) by [@drobnikj](https://github.com/drobnikj)
-- Add "standard" handing for setStatusMessage ([#333](https://github.com/apify/apify-client-js/pulls/333)) ([4dab74a](https://github.com/apify/apify-client-js/commit/4dab74a60eb701d74832dd6f91201bf33df2cdfb)) by [@barjin](https://github.com/barjin)
+- Add support for `maxItems` in run options ([#330](https://github.com/apify/apify-client-js/pull/330)) ([9442187](https://github.com/apify/apify-client-js/commit/94421873ea1b8425e5c3178829bc0490ed4e7685)) by [@novotnyj](https://github.com/novotnyj)
+- *(repo)* Repository links ([#335](https://github.com/apify/apify-client-js/pull/335)) ([8c30566](https://github.com/apify/apify-client-js/commit/8c30566c97170b04b41f80b04d383218449e5a42)) by [@drobnikj](https://github.com/drobnikj)
+- *(requestQueue)* Request queue v2 features release ([#334](https://github.com/apify/apify-client-js/pull/334)) ([bde2ac7](https://github.com/apify/apify-client-js/commit/bde2ac71433437eaf1c48c03ba2d0bf25d64af21)) by [@drobnikj](https://github.com/drobnikj)
+- Add "standard" handing for setStatusMessage ([#333](https://github.com/apify/apify-client-js/pull/333)) ([4dab74a](https://github.com/apify/apify-client-js/commit/4dab74a60eb701d74832dd6f91201bf33df2cdfb)) by [@barjin](https://github.com/barjin)
 
 ### 🐛 Bug Fixes
 
-- Fix isAtHome value in User-Agent header ([#286](https://github.com/apify/apify-client-js/pulls/286)) ([5232c1b](https://github.com/apify/apify-client-js/commit/5232c1b4b62cdb31b7509b6309d802f5d92eabbc)) by [@mvolfik](https://github.com/mvolfik)
-- *(actor)* Fix types for actor run ([#331](https://github.com/apify/apify-client-js/pulls/331)) ([8440f2f](https://github.com/apify/apify-client-js/commit/8440f2fa639917079b66ea97021d218d04970399)) by [@drobnikj](https://github.com/drobnikj)
-- Improve reading of the version when using bundlers ([#332](https://github.com/apify/apify-client-js/pulls/332), closes [#235](https://github.com/apify/apify-client-js/issues/235)) ([4ac1ba4](https://github.com/apify/apify-client-js/commit/4ac1ba4cd67eb98319428cc6d4587200adf214df)) by [@vladfrangu](https://github.com/vladfrangu)
+- Fix isAtHome value in User-Agent header ([#286](https://github.com/apify/apify-client-js/pull/286)) ([5232c1b](https://github.com/apify/apify-client-js/commit/5232c1b4b62cdb31b7509b6309d802f5d92eabbc)) by [@mvolfik](https://github.com/mvolfik)
+- *(actor)* Fix types for actor run ([#331](https://github.com/apify/apify-client-js/pull/331)) ([8440f2f](https://github.com/apify/apify-client-js/commit/8440f2fa639917079b66ea97021d218d04970399)) by [@drobnikj](https://github.com/drobnikj)
+- Improve reading of the version when using bundlers ([#332](https://github.com/apify/apify-client-js/pull/332), closes [#235](https://github.com/apify/apify-client-js/issues/235)) ([4ac1ba4](https://github.com/apify/apify-client-js/commit/4ac1ba4cd67eb98319428cc6d4587200adf214df)) by [@vladfrangu](https://github.com/vladfrangu)
 
 ## [2.6.3](https://github.com/apify/apify-client-js/releases/tags/v2.6.3) (2023-02-14)
 
@@ -189,35 +189,35 @@ All notable changes to this project will be documented in this file.
 
 - Updating pull request toolkit config [INTERNAL] ([3fc9f85](https://github.com/apify/apify-client-js/commit/3fc9f85881c68e0dbc91a3294b17527c3e160527)) by [@mtrunkat](https://github.com/mtrunkat)
 - Updating pull request toolkit config [INTERNAL] ([80008ea](https://github.com/apify/apify-client-js/commit/80008ea77bb16211cc177cae377c8e220cff3ed1)) by [@mtrunkat](https://github.com/mtrunkat)
-- IsStatusMessageTerminal in RunUpdate interface ([#306](https://github.com/apify/apify-client-js/pulls/306)) ([e60d9a6](https://github.com/apify/apify-client-js/commit/e60d9a691578240b42f4e114800ffb83f636f1c9)) by [@barjin](https://github.com/barjin)
+- IsStatusMessageTerminal in RunUpdate interface ([#306](https://github.com/apify/apify-client-js/pull/306)) ([e60d9a6](https://github.com/apify/apify-client-js/commit/e60d9a691578240b42f4e114800ffb83f636f1c9)) by [@barjin](https://github.com/barjin)
 
 ## [2.6.2](https://github.com/apify/apify-client-js/releases/tags/v2.6.2) (2023-01-04)
 
 ### 🚀 Features
 
-- Re-export useful types and classes ([#285](https://github.com/apify/apify-client-js/pulls/285), closes [#279](https://github.com/apify/apify-client-js/issues/279)) ([868c420](https://github.com/apify/apify-client-js/commit/868c420791e0374413ac8b7848466702753ac6e8)) by [@vladfrangu](https://github.com/vladfrangu)
+- Re-export useful types and classes ([#285](https://github.com/apify/apify-client-js/pull/285), closes [#279](https://github.com/apify/apify-client-js/issues/279)) ([868c420](https://github.com/apify/apify-client-js/commit/868c420791e0374413ac8b7848466702753ac6e8)) by [@vladfrangu](https://github.com/vladfrangu)
 
 ### 🐛 Bug Fixes
 
-- `Actor.call` and `Task.call` accept `waitSecs` not `waitForFinish` ([#283](https://github.com/apify/apify-client-js/pulls/283), closes [#282](https://github.com/apify/apify-client-js/issues/282)) ([1ce8ed5](https://github.com/apify/apify-client-js/commit/1ce8ed5bf0899826c58f248896623f93a18a2a44)) by [@vladfrangu](https://github.com/vladfrangu)
-- *(types)* Correct extends clause for Dataset entries ([#284](https://github.com/apify/apify-client-js/pulls/284), closes [#267](https://github.com/apify/apify-client-js/issues/267)) ([cb07c3a](https://github.com/apify/apify-client-js/commit/cb07c3a2e9c754045621c5a4dc3103a6708af680)) by [@vladfrangu](https://github.com/vladfrangu)
-- Correct docs links for actor env vars, some refactoring ([#287](https://github.com/apify/apify-client-js/pulls/287)) ([669d7ac](https://github.com/apify/apify-client-js/commit/669d7ac62537e5b54fa2d1fff3ea475a3ecf6415)) by [@jirimoravcik](https://github.com/jirimoravcik)
-- Make ActorUpdateOptions type have optional fields ([#288](https://github.com/apify/apify-client-js/pulls/288)) ([46a0e4f](https://github.com/apify/apify-client-js/commit/46a0e4ff59f3b42dc7fee047783ab040e31819f7)) by [@metalwarrior665](https://github.com/metalwarrior665)
-- Correctly set default client headers ([#290](https://github.com/apify/apify-client-js/pulls/290)) ([08eeae1](https://github.com/apify/apify-client-js/commit/08eeae1f6e04aefb67c01cee9e118bca4941c664)) by [@valekjo](https://github.com/valekjo)
+- `Actor.call` and `Task.call` accept `waitSecs` not `waitForFinish` ([#283](https://github.com/apify/apify-client-js/pull/283), closes [#282](https://github.com/apify/apify-client-js/issues/282)) ([1ce8ed5](https://github.com/apify/apify-client-js/commit/1ce8ed5bf0899826c58f248896623f93a18a2a44)) by [@vladfrangu](https://github.com/vladfrangu)
+- *(types)* Correct extends clause for Dataset entries ([#284](https://github.com/apify/apify-client-js/pull/284), closes [#267](https://github.com/apify/apify-client-js/issues/267)) ([cb07c3a](https://github.com/apify/apify-client-js/commit/cb07c3a2e9c754045621c5a4dc3103a6708af680)) by [@vladfrangu](https://github.com/vladfrangu)
+- Correct docs links for actor env vars, some refactoring ([#287](https://github.com/apify/apify-client-js/pull/287)) ([669d7ac](https://github.com/apify/apify-client-js/commit/669d7ac62537e5b54fa2d1fff3ea475a3ecf6415)) by [@jirimoravcik](https://github.com/jirimoravcik)
+- Make ActorUpdateOptions type have optional fields ([#288](https://github.com/apify/apify-client-js/pull/288)) ([46a0e4f](https://github.com/apify/apify-client-js/commit/46a0e4ff59f3b42dc7fee047783ab040e31819f7)) by [@metalwarrior665](https://github.com/metalwarrior665)
+- Correctly set default client headers ([#290](https://github.com/apify/apify-client-js/pull/290)) ([08eeae1](https://github.com/apify/apify-client-js/commit/08eeae1f6e04aefb67c01cee9e118bca4941c664)) by [@valekjo](https://github.com/valekjo)
 
 ## [2.6.1](https://github.com/apify/apify-client-js/releases/tags/v2.6.1) (2022-10-13)
 
 ### 🚀 Features
 
-- Drop single file support ([#257](https://github.com/apify/apify-client-js/pulls/257)) ([2b8b3af](https://github.com/apify/apify-client-js/commit/2b8b3afa56c854dd53272d92b0e33010aecba37f)) by [@valekjo](https://github.com/valekjo)
-- Update actor types ([#263](https://github.com/apify/apify-client-js/pulls/263)) ([cb57822](https://github.com/apify/apify-client-js/commit/cb578225636d54383d2ffbc89f4a8adceb25aa1a)) by [@HonzaTuron](https://github.com/HonzaTuron)
-- Add flatten param to Dataset items listing ([#264](https://github.com/apify/apify-client-js/pulls/264)) ([0c40ea7](https://github.com/apify/apify-client-js/commit/0c40ea7914586ce87f14ca00fc585900c25deb11)) by [@Strajk](https://github.com/Strajk)
-- Add optional title field to task, schedule, key-value store, dataset, and request queue ([#271](https://github.com/apify/apify-client-js/pulls/271)) ([46d625b](https://github.com/apify/apify-client-js/commit/46d625b4bd59ff82ad553643aca93a826c7aa6ee)) by [@valekjo](https://github.com/valekjo)
+- Drop single file support ([#257](https://github.com/apify/apify-client-js/pull/257)) ([2b8b3af](https://github.com/apify/apify-client-js/commit/2b8b3afa56c854dd53272d92b0e33010aecba37f)) by [@valekjo](https://github.com/valekjo)
+- Update actor types ([#263](https://github.com/apify/apify-client-js/pull/263)) ([cb57822](https://github.com/apify/apify-client-js/commit/cb578225636d54383d2ffbc89f4a8adceb25aa1a)) by [@HonzaTuron](https://github.com/HonzaTuron)
+- Add flatten param to Dataset items listing ([#264](https://github.com/apify/apify-client-js/pull/264)) ([0c40ea7](https://github.com/apify/apify-client-js/commit/0c40ea7914586ce87f14ca00fc585900c25deb11)) by [@Strajk](https://github.com/Strajk)
+- Add optional title field to task, schedule, key-value store, dataset, and request queue ([#271](https://github.com/apify/apify-client-js/pull/271)) ([46d625b](https://github.com/apify/apify-client-js/commit/46d625b4bd59ff82ad553643aca93a826c7aa6ee)) by [@valekjo](https://github.com/valekjo)
 
 ### 🐛 Bug Fixes
 
 - Add tslib dependency ([35d633f](https://github.com/apify/apify-client-js/commit/35d633fa17b8d5ca3dc236a09c49823c3a8e3ee0)) by [@B4nan](https://github.com/B4nan)
-- Add `defaultRequestQueueId` property to `ActorRun` type ([#268](https://github.com/apify/apify-client-js/pulls/268)) ([2a78dde](https://github.com/apify/apify-client-js/commit/2a78dde3a112eceaeaf431f63670af916c937282)) by [@fnesveda](https://github.com/fnesveda)
+- Add `defaultRequestQueueId` property to `ActorRun` type ([#268](https://github.com/apify/apify-client-js/pull/268)) ([2a78dde](https://github.com/apify/apify-client-js/commit/2a78dde3a112eceaeaf431f63670af916c937282)) by [@fnesveda](https://github.com/fnesveda)
 
 2.6.0 / 2022/07/18
 ==================
