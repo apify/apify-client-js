@@ -493,7 +493,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -519,7 +521,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -543,7 +547,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -573,7 +579,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -599,7 +606,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -639,7 +647,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -664,7 +674,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -689,7 +700,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -1634,7 +1647,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -1660,7 +1675,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -1684,7 +1701,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -1714,7 +1733,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -1740,7 +1760,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -1780,7 +1801,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -1805,7 +1828,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -1830,7 +1854,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -2094,7 +2120,8 @@
 					"kind": 1024,
 					"flags": {
 						"isExternal": true,
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -2227,7 +2254,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isExternal": true
+						"isExternal": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -2333,7 +2361,8 @@
 					"kind": 1024,
 					"flags": {
 						"isExternal": true,
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -2416,7 +2445,8 @@
 					"flags": {
 						"isStatic": true,
 						"isExternal": true,
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"comment": {
 						"summary": [
@@ -2440,7 +2470,7 @@
 					"sources": [
 						{
 							"fileName": "node_modules/@types/node/globals.d.ts",
-							"line": 143,
+							"line": 98,
 							"character": 8
 						}
 					],
@@ -2457,7 +2487,7 @@
 							"sources": [
 								{
 									"fileName": "node_modules/@types/node/globals.d.ts",
-									"line": 143,
+									"line": 98,
 									"character": 29
 								}
 							],
@@ -2473,7 +2503,7 @@
 									"sources": [
 										{
 											"fileName": "node_modules/@types/node/globals.d.ts",
-											"line": 143,
+											"line": 98,
 											"character": 29
 										}
 									],
@@ -2540,12 +2570,13 @@
 					"kind": 1024,
 					"flags": {
 						"isStatic": true,
-						"isExternal": true
+						"isExternal": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
 							"fileName": "node_modules/@types/node/globals.d.ts",
-							"line": 145,
+							"line": 100,
 							"character": 8
 						}
 					],
@@ -2566,12 +2597,13 @@
 					"kind": 2048,
 					"flags": {
 						"isStatic": true,
-						"isExternal": true
+						"isExternal": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
 							"fileName": "node_modules/@types/node/globals.d.ts",
-							"line": 136,
+							"line": 91,
 							"character": 8
 						}
 					],
@@ -2582,7 +2614,8 @@
 							"variant": "signature",
 							"kind": 4096,
 							"flags": {
-								"isExternal": true
+								"isExternal": true,
+								"isInherited": true
 							},
 							"comment": {
 								"summary": [
@@ -2595,7 +2628,7 @@
 							"sources": [
 								{
 									"fileName": "node_modules/@types/node/globals.d.ts",
-									"line": 136,
+									"line": 91,
 									"character": 8
 								}
 							],
@@ -3126,7 +3159,7 @@
 									"url": "https://github.com/apify/apify-client-js/blob/master/src/apify_client.ts#L141"
 								}
 							],
-							"typeParameter": [
+							"typeParameters": [
 								{
 									"id": 95,
 									"name": "Data",
@@ -4329,7 +4362,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -4355,7 +4390,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -4379,7 +4416,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -4409,7 +4448,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -4435,7 +4475,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -4475,7 +4516,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -4500,7 +4543,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -4525,7 +4569,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -4955,7 +5001,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -4981,7 +5029,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -5005,7 +5055,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -5035,7 +5087,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -5061,7 +5114,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -5101,7 +5155,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -5126,7 +5182,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -5151,7 +5208,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -5297,7 +5356,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -5323,7 +5384,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -5347,7 +5410,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -5377,7 +5442,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -5403,7 +5469,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -5443,7 +5510,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -5468,7 +5537,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -5493,7 +5563,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -5668,7 +5740,7 @@
 									{
 										"type": "reference",
 										"target": {
-											"sourceFileName": "../node_modules/@types/node/ts5.6/buffer.buffer.d.ts",
+											"sourceFileName": "../node_modules/@types/node/buffer.d.ts",
 											"qualifiedName": "__global.Buffer"
 										},
 										"name": "Buffer",
@@ -6126,7 +6198,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -6152,7 +6226,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -6176,7 +6252,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -6206,7 +6284,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -6232,7 +6311,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -6272,7 +6352,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -6297,7 +6379,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -6322,7 +6405,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -6705,7 +6790,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isExternal": true
+						"isExternal": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -6730,7 +6816,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isExternal": true
+						"isExternal": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -6790,7 +6877,8 @@
 					"kind": 1024,
 					"flags": {
 						"isExternal": true,
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -6817,7 +6905,8 @@
 					"flags": {
 						"isStatic": true,
 						"isExternal": true,
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"comment": {
 						"summary": [
@@ -6841,7 +6930,7 @@
 					"sources": [
 						{
 							"fileName": "node_modules/@types/node/globals.d.ts",
-							"line": 143,
+							"line": 98,
 							"character": 8
 						}
 					],
@@ -6858,7 +6947,7 @@
 							"sources": [
 								{
 									"fileName": "node_modules/@types/node/globals.d.ts",
-									"line": 143,
+									"line": 98,
 									"character": 29
 								}
 							],
@@ -6874,7 +6963,7 @@
 									"sources": [
 										{
 											"fileName": "node_modules/@types/node/globals.d.ts",
-											"line": 143,
+											"line": 98,
 											"character": 29
 										}
 									],
@@ -6941,12 +7030,13 @@
 					"kind": 1024,
 					"flags": {
 						"isStatic": true,
-						"isExternal": true
+						"isExternal": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
 							"fileName": "node_modules/@types/node/globals.d.ts",
-							"line": 145,
+							"line": 100,
 							"character": 8
 						}
 					],
@@ -6967,12 +7057,13 @@
 					"kind": 2048,
 					"flags": {
 						"isStatic": true,
-						"isExternal": true
+						"isExternal": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
 							"fileName": "node_modules/@types/node/globals.d.ts",
-							"line": 136,
+							"line": 91,
 							"character": 8
 						}
 					],
@@ -6983,7 +7074,8 @@
 							"variant": "signature",
 							"kind": 4096,
 							"flags": {
-								"isExternal": true
+								"isExternal": true,
+								"isInherited": true
 							},
 							"comment": {
 								"summary": [
@@ -6996,7 +7088,7 @@
 							"sources": [
 								{
 									"fileName": "node_modules/@types/node/globals.d.ts",
-									"line": 136,
+									"line": 91,
 									"character": 8
 								}
 							],
@@ -7111,7 +7203,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -7137,7 +7231,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -7161,7 +7257,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -7191,7 +7289,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -7217,7 +7316,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -7257,7 +7357,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -7282,7 +7384,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -7307,7 +7410,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -7669,7 +7774,7 @@
 									"url": "https://github.com/apify/apify-client-js/blob/master/src/resource_clients/key_value_store.ts#L108"
 								}
 							],
-							"typeParameter": [
+							"typeParameters": [
 								{
 									"id": 809,
 									"name": "Options",
@@ -8165,7 +8270,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -8191,7 +8298,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -8215,7 +8324,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -8245,7 +8356,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -8271,7 +8383,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -8311,7 +8424,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -8336,7 +8451,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -8361,7 +8477,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -8603,7 +8721,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -8629,7 +8749,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -8653,7 +8775,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -8683,7 +8807,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -8709,7 +8834,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -8749,7 +8875,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -8774,7 +8902,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -8799,7 +8928,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -9007,7 +9138,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -9033,7 +9166,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -9057,7 +9192,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -9087,7 +9224,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -9113,7 +9251,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -9153,7 +9292,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -9178,7 +9319,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -9203,7 +9345,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -10441,7 +10585,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -10467,7 +10613,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -10491,7 +10639,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -10521,7 +10671,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -10547,7 +10698,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -10587,7 +10739,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -10612,7 +10766,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -10637,7 +10792,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -10856,7 +11013,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -10882,7 +11041,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -10906,7 +11067,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -10936,7 +11099,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -10962,7 +11126,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -11002,7 +11167,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -11027,7 +11194,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -11052,7 +11220,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -11994,7 +12164,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -12020,7 +12192,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -12044,7 +12218,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -12074,7 +12250,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -12100,7 +12277,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -12140,7 +12318,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -12165,7 +12345,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -12190,7 +12371,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -12344,7 +12527,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -12370,7 +12555,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -12394,7 +12581,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -12424,7 +12613,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -12450,7 +12640,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -12490,7 +12681,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -12515,7 +12708,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -12540,7 +12734,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -13004,7 +13200,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -13030,7 +13228,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -13054,7 +13254,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -13084,7 +13286,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -13110,7 +13313,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -13150,7 +13354,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -13175,7 +13381,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -13200,7 +13407,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -13560,7 +13769,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -13586,7 +13797,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -13610,7 +13823,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -13640,7 +13855,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -13666,7 +13882,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -13706,7 +13923,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -13731,7 +13950,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -13756,7 +13976,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -13910,7 +14132,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -13936,7 +14160,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -13960,7 +14186,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -13990,7 +14218,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -14016,7 +14245,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -14056,7 +14286,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -14081,7 +14313,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -14106,7 +14339,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -14945,7 +15180,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -14971,7 +15208,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -14995,7 +15234,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -15025,7 +15266,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -15051,7 +15293,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -15091,7 +15334,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -15116,7 +15361,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -15141,7 +15387,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -15376,7 +15624,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -15402,7 +15652,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -15426,7 +15678,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -15456,7 +15710,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -15482,7 +15737,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -15522,7 +15778,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -15547,7 +15805,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -15572,7 +15831,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -15907,7 +16168,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -15933,7 +16196,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -15957,7 +16222,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -15987,7 +16254,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -16013,7 +16281,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -16053,7 +16322,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -16078,7 +16349,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -16103,7 +16375,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -16485,7 +16759,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -16511,7 +16787,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -16535,7 +16813,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -16565,7 +16845,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -16591,7 +16872,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -16631,7 +16913,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -16656,7 +16940,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -16681,7 +16966,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -16934,7 +17221,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -16960,7 +17249,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -16984,7 +17275,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -17014,7 +17307,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -17040,7 +17334,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -17080,7 +17375,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -17105,7 +17402,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -17130,7 +17428,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -17269,7 +17569,9 @@
 					"name": "apifyClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -17295,7 +17597,9 @@
 					"name": "baseUrl",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -17319,7 +17623,9 @@
 					"name": "httpClient",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -17349,7 +17655,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -17375,7 +17682,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -17415,7 +17723,9 @@
 					"name": "resourcePath",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -17440,7 +17750,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -17465,7 +17776,9 @@
 					"name": "url",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/base/api_client.ts",
@@ -18391,7 +18704,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"comment": {
 						"summary": [
@@ -18449,7 +18763,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"comment": {
 						"summary": [
@@ -18539,7 +18854,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"comment": {
 						"summary": [
@@ -18581,7 +18897,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"comment": {
 						"summary": [
@@ -18615,7 +18932,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"comment": {
 						"summary": [
@@ -18670,7 +18988,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"comment": {
 						"summary": [
@@ -19618,7 +19937,9 @@
 					"name": "actId",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/actor.ts",
@@ -19643,7 +19964,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -19668,7 +19990,9 @@
 					"name": "buildId",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/actor.ts",
@@ -19692,7 +20016,9 @@
 					"name": "buildNumber",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/actor.ts",
@@ -19735,7 +20061,9 @@
 					"name": "defaultDatasetId",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/actor.ts",
@@ -19759,7 +20087,9 @@
 					"name": "defaultKeyValueStoreId",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/actor.ts",
@@ -19783,7 +20113,9 @@
 					"name": "defaultRequestQueueId",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/actor.ts",
@@ -19828,7 +20160,9 @@
 					"name": "finishedAt",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/actor.ts",
@@ -19878,7 +20212,9 @@
 					"name": "id",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/actor.ts",
@@ -19923,7 +20259,9 @@
 					"name": "meta",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/actor.ts",
@@ -19970,7 +20308,9 @@
 					"name": "startedAt",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/actor.ts",
@@ -20020,7 +20360,9 @@
 					"name": "status",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/actor.ts",
@@ -20122,7 +20464,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -21115,48 +21458,6 @@
 					}
 				},
 				{
-					"id": 343,
-					"name": "DATASET_READS",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {
-						"isOptional": true
-					},
-					"sources": [
-						{
-							"fileName": "src/resource_clients/actor.ts",
-							"line": 391,
-							"character": 4,
-							"url": "https://github.com/apify/apify-client-js/blob/master/src/resource_clients/actor.ts#L391"
-						}
-					],
-					"type": {
-						"type": "intrinsic",
-						"name": "number"
-					}
-				},
-				{
-					"id": 344,
-					"name": "DATASET_WRITES",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {
-						"isOptional": true
-					},
-					"sources": [
-						{
-							"fileName": "src/resource_clients/actor.ts",
-							"line": 392,
-							"character": 4,
-							"url": "https://github.com/apify/apify-client-js/blob/master/src/resource_clients/actor.ts#L392"
-						}
-					],
-					"type": {
-						"type": "intrinsic",
-						"name": "number"
-					}
-				},
-				{
 					"id": 351,
 					"name": "DATA_TRANSFER_EXTERNAL_GBYTES",
 					"variant": "declaration",
@@ -21191,6 +21492,48 @@
 							"line": 398,
 							"character": 4,
 							"url": "https://github.com/apify/apify-client-js/blob/master/src/resource_clients/actor.ts#L398"
+						}
+					],
+					"type": {
+						"type": "intrinsic",
+						"name": "number"
+					}
+				},
+				{
+					"id": 343,
+					"name": "DATASET_READS",
+					"variant": "declaration",
+					"kind": 1024,
+					"flags": {
+						"isOptional": true
+					},
+					"sources": [
+						{
+							"fileName": "src/resource_clients/actor.ts",
+							"line": 391,
+							"character": 4,
+							"url": "https://github.com/apify/apify-client-js/blob/master/src/resource_clients/actor.ts#L391"
+						}
+					],
+					"type": {
+						"type": "intrinsic",
+						"name": "number"
+					}
+				},
+				{
+					"id": 344,
+					"name": "DATASET_WRITES",
+					"variant": "declaration",
+					"kind": 1024,
+					"flags": {
+						"isOptional": true
+					},
+					"sources": [
+						{
+							"fileName": "src/resource_clients/actor.ts",
+							"line": 392,
+							"character": 4,
+							"url": "https://github.com/apify/apify-client-js/blob/master/src/resource_clients/actor.ts#L392"
 						}
 					],
 					"type": {
@@ -21351,10 +21694,10 @@
 					"title": "Properties",
 					"children": [
 						342,
-						343,
-						344,
 						351,
 						350,
+						343,
+						344,
 						347,
 						345,
 						346,
@@ -22212,6 +22555,25 @@
 					}
 				},
 				{
+					"id": 2175,
+					"name": "username",
+					"variant": "declaration",
+					"kind": 1024,
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "src/resource_clients/store_collection.ts",
+							"line": 44,
+							"character": 4,
+							"url": "https://github.com/apify/apify-client-js/blob/master/src/resource_clients/store_collection.ts#L44"
+						}
+					],
+					"type": {
+						"type": "intrinsic",
+						"name": "string"
+					}
+				},
+				{
 					"id": 2181,
 					"name": "userPictureUrl",
 					"variant": "declaration",
@@ -22225,25 +22587,6 @@
 							"line": 50,
 							"character": 4,
 							"url": "https://github.com/apify/apify-client-js/blob/master/src/resource_clients/store_collection.ts#L50"
-						}
-					],
-					"type": {
-						"type": "intrinsic",
-						"name": "string"
-					}
-				},
-				{
-					"id": 2175,
-					"name": "username",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {},
-					"sources": [
-						{
-							"fileName": "src/resource_clients/store_collection.ts",
-							"line": 44,
-							"character": 4,
-							"url": "https://github.com/apify/apify-client-js/blob/master/src/resource_clients/store_collection.ts#L44"
 						}
 					],
 					"type": {
@@ -22264,8 +22607,8 @@
 						2178,
 						2176,
 						2182,
-						2181,
-						2175
+						2175,
+						2181
 					]
 				}
 			],
@@ -22585,8 +22928,8 @@
 										"sources": [
 											{
 												"fileName": "node_modules/axios/index.d.ts",
-												"line": 479,
-												"character": 53
+												"line": 480,
+												"character": 21
 											}
 										],
 										"signatures": [
@@ -22599,8 +22942,8 @@
 												"sources": [
 													{
 														"fileName": "node_modules/axios/index.d.ts",
-														"line": 479,
-														"character": 53
+														"line": 480,
+														"character": 21
 													}
 												],
 												"parameters": [
@@ -24284,7 +24627,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -24331,7 +24675,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -24357,7 +24702,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -24386,7 +24732,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -24415,7 +24762,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -24441,7 +24789,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -24467,7 +24816,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -24496,7 +24846,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -24543,7 +24894,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -24569,7 +24921,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -24607,7 +24960,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -26758,43 +27112,45 @@
 									"url": "https://github.com/apify/apify-client-js/blob/master/src/resource_clients/user.ts#L154"
 								}
 							],
-							"indexSignature": {
-								"id": 1834,
-								"name": "__index",
-								"variant": "signature",
-								"kind": 8192,
-								"flags": {},
-								"sources": [
-									{
-										"fileName": "src/resource_clients/user.ts",
-										"line": 154,
-										"character": 27,
-										"url": "https://github.com/apify/apify-client-js/blob/master/src/resource_clients/user.ts#L154"
-									}
-								],
-								"parameters": [
-									{
-										"id": 1835,
-										"name": "key",
-										"variant": "param",
-										"kind": 32768,
-										"flags": {},
-										"type": {
-											"type": "intrinsic",
-											"name": "string"
+							"indexSignatures": [
+								{
+									"id": 1834,
+									"name": "__index",
+									"variant": "signature",
+									"kind": 8192,
+									"flags": {},
+									"sources": [
+										{
+											"fileName": "src/resource_clients/user.ts",
+											"line": 154,
+											"character": 27,
+											"url": "https://github.com/apify/apify-client-js/blob/master/src/resource_clients/user.ts#L154"
 										}
+									],
+									"parameters": [
+										{
+											"id": 1835,
+											"name": "key",
+											"variant": "param",
+											"kind": 32768,
+											"flags": {},
+											"type": {
+												"type": "intrinsic",
+												"name": "string"
+											}
+										}
+									],
+									"type": {
+										"type": "reference",
+										"target": {
+											"sourceFileName": "../src/resource_clients/user.ts",
+											"qualifiedName": "MonthlyServiceUsageData"
+										},
+										"name": "MonthlyServiceUsageData",
+										"package": "apify-client"
 									}
-								],
-								"type": {
-									"type": "reference",
-									"target": {
-										"sourceFileName": "../src/resource_clients/user.ts",
-										"qualifiedName": "MonthlyServiceUsageData"
-									},
-									"name": "MonthlyServiceUsageData",
-									"package": "apify-client"
 								}
-							}
+							]
 						}
 					}
 				},
@@ -28086,7 +28442,9 @@
 					"name": "hadMultipleClients",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/request_queue.ts",
@@ -28110,7 +28468,9 @@
 					"name": "items",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/request_queue.ts",
@@ -28139,7 +28499,9 @@
 					"name": "limit",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/request_queue.ts",
@@ -28182,7 +28544,9 @@
 					"name": "queueModifiedAt",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/request_queue.ts",
@@ -32959,7 +33323,9 @@
 					"name": "id",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/schedule.ts",
@@ -33029,7 +33395,9 @@
 					"name": "type",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/schedule.ts",
@@ -33123,7 +33491,9 @@
 					"name": "id",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/schedule.ts",
@@ -33168,7 +33538,9 @@
 					"name": "type",
 					"variant": "declaration",
 					"kind": 1024,
-					"flags": {},
+					"flags": {
+						"isInherited": true
+					},
 					"sources": [
 						{
 							"fileName": "src/resource_clients/schedule.ts",
@@ -33998,7 +34370,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"comment": {
 						"summary": [
@@ -34056,7 +34429,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"comment": {
 						"summary": [
@@ -34098,7 +34472,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"comment": {
 						"summary": [
@@ -34132,7 +34507,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"comment": {
 						"summary": [
@@ -34187,7 +34563,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"comment": {
 						"summary": [
@@ -34392,7 +34769,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -34431,7 +34809,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -34457,7 +34836,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -34499,7 +34879,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -34525,7 +34906,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -34553,7 +34935,8 @@
 					"variant": "declaration",
 					"kind": 1024,
 					"flags": {
-						"isOptional": true
+						"isOptional": true,
+						"isInherited": true
 					},
 					"sources": [
 						{
@@ -37791,7 +38174,7 @@
 					"trueType": {
 						"type": "reference",
 						"target": {
-							"sourceFileName": "../node_modules/@types/node/ts5.6/buffer.buffer.d.ts",
+							"sourceFileName": "../node_modules/@types/node/buffer.d.ts",
 							"qualifiedName": "__global.Buffer"
 						},
 						"name": "Buffer",
@@ -44241,6 +44624,14 @@
 		"2190": {
 			"sourceFileName": "../src/resource_clients/store_collection.ts",
 			"qualifiedName": "StoreCollectionListOptions.pricingModel"
+		}
+	},
+	"files": {
+		"entries": {
+			"1": "../src/index.ts"
+		},
+		"reflections": {
+			"1": 0
 		}
 	}
 }
