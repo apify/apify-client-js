@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.12.0 - **not yet released**
+## [2.11.2](https://github.com/apify/apify-client-js/releases/tag/v2.11.2) (2025-02-03)
 
 ### 🚀 Features
 
@@ -11,7 +10,6 @@ All notable changes to this project will be documented in this file.
 - Added getOpenApiSpecification() to BuildClient ([#626](https://github.com/apify/apify-client-js/pull/626)) ([6248b28](https://github.com/apify/apify-client-js/commit/6248b2844796f93e22404ddea85ee77c1a5b7d50)) by [@danpoletaev](https://github.com/danpoletaev)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.11.1](https://github.com/apify/apify-client-js/releases/tag/v2.11.1) (2025-01-10)
 
 ### 🐛 Bug Fixes
