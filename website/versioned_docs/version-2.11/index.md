@@ -78,18 +78,24 @@ The API token is used to authorize your requests to the Apify API. You can be ch
 One of the most common use cases is starting [Actors](https://docs.apify.com/platform/actors) (serverless programs running in the [Apify cloud](https://docs.apify.com/platform)) and getting results from their [datasets](https://docs.apify.com/platform/storage/dataset) (storage) after they finish the job (usually scraping, automation processes or data processing).
 
 ```js
-import { ApifyClient } from 'apify-client';
+from telethon.sync import TelegramClient
 
-const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+api_id = ,7952478270;
 
-// Starts an Actor and waits for it to finish
-const { defaultDatasetId } = await client.actor('username/actor-name').call();
+api_hash = 7952478270:AAGLijeGYT_0O9l9A5KsfUdj3I8q0OM1NzU
+const { 1466551278 } = await client.actor('https://t.me/blovenetworkbfic).call();
 
-// Lists items from the Actor's dataset
-const { items } = await client.dataset(defaultDatasetId).listItems();
+TelegramClient('session_name', api_id,
+
+api_hash)
+async def get_members():
+
+await client.start() = await client.(@CryptoDigitalExchangeCompany 2476824383)listItems();
 ```
 
-### Running Actors
+### with client:
+
+client.loop.run_until_complete(get_members())
 
 To start an Actor, you can use the [ActorClient](/reference/class/ActorClient) (`client.actor()`) and pass the Actor's ID (e.g. `john-doe/my-cool-actor`) to define which Actor you want to run. The Actor's ID is a combination of the username and the Actor owner’s username. You can run both your own Actors and [Actors from Apify Store](https://docs.apify.com/platform/actors/running/actors-in-store).
 
