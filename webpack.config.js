@@ -1,5 +1,5 @@
-const { ProvidePlugin, DefinePlugin } = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
+const { ProvidePlugin, DefinePlugin } = require('webpack');
 
 const Package = require('./package.json');
 

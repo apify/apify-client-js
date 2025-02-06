@@ -1,8 +1,9 @@
-import { ACT_JOB_STATUSES, ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
+import type { ACT_JOB_STATUSES} from '@apify/consts';
+import { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 
 import { ApiClient } from './api_client';
-import { ApifyApiError } from '../apify_api_error';
-import { ApifyRequestConfig } from '../http_client';
+import type { ApifyApiError } from '../apify_api_error';
+import type { ApifyRequestConfig } from '../http_client';
 import {
     pluckData,
     parseDateFields,
@@ -64,7 +65,7 @@ export class ResourceClient extends ApiClient {
      * here to stay DRY.
      */
     protected async _waitForFinish<
-        R extends { status: typeof ACT_JOB_STATUSES[keyof typeof ACT_JOB_STATUSES]; },
+        R extends { status: typeof ACT_JOB_STATUSES[keyof typeof ACT_JOB_STATUSES] },
     >(options: WaitForFinishOptions = {}): Promise<R> {
         const {
             waitSecs = MAX_WAIT_FOR_FINISH,

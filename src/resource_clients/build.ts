@@ -1,15 +1,16 @@
-import { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 import ow from 'ow';
 
+import type { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
+
 import { LogClient } from './log';
-import { ApiClientSubResourceOptions } from '../base/api_client';
+import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import {
     cast,
     parseDateFields,
     pluckData,
 } from '../utils';
-import { ActorDefinition } from './actor';
+import type { ActorDefinition } from './actor';
 
 export class BuildClient extends ResourceClient {
     /**
@@ -96,7 +97,7 @@ export class BuildClient extends ResourceClient {
 }
 
 export interface BuildClientGetOptions {
-    waitForFinish?: number
+    waitForFinish?: number;
 }
 
 export interface BuildClientWaitForFinishOptions {
@@ -159,54 +160,54 @@ export interface BuildOptions {
 export interface OpenApiDefinition {
     openapi: string;
     info: {
-        title: string
+        title: string;
         description?: string;
-        version?: string
-        'x-build-id': string
+        version?: string;
+        'x-build-id': string;
     };
-    servers: { url: string }[]
+    servers: { url: string }[];
     paths: { [key: string]: { post: OpenApiOperation } };
     components: {
         schemas: {
-            [key: string]: object
-        }
-    }
+            [key: string]: object;
+        };
+    };
 }
 
 interface OpenApiOperation {
-    operationId: string
-    'x-openai-isConsequential': boolean
-    summary: string
-    tags: string[]
+    operationId: string;
+    'x-openai-isConsequential': boolean;
+    summary: string;
+    tags: string[];
     requestBody: {
         required: boolean;
         content: {
             'application/json': {
                 schema: {
-                    '$ref': string
-                }
-            }
-        }
-    }
+                    '$ref': string;
+                };
+            };
+        };
+    };
     parameters: {
-        name: string
-        in: string
-        required: boolean
+        name: string;
+        in: string;
+        required: boolean;
         schema: {
             type: string;
-        }
-        description: string
-    }[]
+        };
+        description: string;
+    }[];
     responses: {
         '200': {
-            description: string
+            description: string;
             content?: {
                 'application/json': {
                     schema: {
-                        '$ref': string
-                    }
-                }
-            }
-        }
-    }
+                        '$ref': string;
+                    };
+                };
+            };
+        };
+    };
 }

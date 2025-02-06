@@ -4,7 +4,7 @@ function maybeParseContextFromResourceId(resourceId) {
     const json = hexBuffer.toString('utf-8');
     try {
         return JSON.parse(json);
-    } catch (err) {
+    } catch {
         return undefined;
     }
 }

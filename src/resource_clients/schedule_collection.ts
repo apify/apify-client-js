@@ -1,9 +1,9 @@
 import ow from 'ow';
 
-import { Schedule, ScheduleCreateOrUpdateData } from './schedule';
-import { ApiClientSubResourceOptions } from '../base/api_client';
+import type { Schedule, ScheduleCreateOrUpdateData } from './schedule';
+import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import { PaginatedList } from '../utils';
+import type { PaginatedList } from '../utils';
 
 export class ScheduleCollectionClient extends ResourceCollectionClient {
     /**

@@ -3,7 +3,9 @@
 	"include": [
 		"src/**/*",
 		"test",
-		"jest.config.ts",
+		".github/scripts",
+		"jest.config.js",
+		"eslint.config.mjs",
 		"webpack.config.js"
 	],
 	"compilerOptions": {

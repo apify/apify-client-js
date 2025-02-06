@@ -1,9 +1,10 @@
-import axios, { AxiosInterceptorManager, AxiosResponse, AxiosRequestTransformer, AxiosHeaders } from 'axios';
+import type { AxiosInterceptorManager, AxiosResponse, AxiosRequestTransformer} from 'axios';
+import axios, { AxiosHeaders } from 'axios';
 import contentTypeParser from 'content-type';
-import { JsonObject } from 'type-fest';
+import type { JsonObject } from 'type-fest';
 
 import { maybeParseBody } from './body_parser';
-import { ApifyRequestConfig, ApifyResponse } from './http_client';
+import type { ApifyRequestConfig, ApifyResponse } from './http_client';
 import {
     isNode,
     maybeGzipValue,

@@ -1,18 +1,20 @@
-import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
 import ow from 'ow';
 
-import { ActorRun, ActorStandby, ActorStartOptions } from './actor';
+import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
+
+import type { ActorRun, ActorStandby, ActorStartOptions } from './actor';
 import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
 import { WebhookCollectionClient } from './webhook_collection';
-import { ApifyApiError } from '../apify_api_error';
-import { ApiClientSubResourceOptions } from '../base/api_client';
+import type { ApifyApiError } from '../apify_api_error';
+import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
-import { ApifyRequestConfig } from '../http_client';
+import type { ApifyRequestConfig } from '../http_client';
+import type {
+    Dictionary} from '../utils';
 import {
     cast,
     catchNotFoundOrThrow,
-    Dictionary,
     parseDateFields,
     pluckData,
     stringifyWebhooksToBase64,
@@ -203,7 +205,7 @@ export interface Task {
     stats: TaskStats;
     options?: TaskOptions;
     input?: Dictionary | Dictionary[];
-    actorStandby?: Partial<ActorStandby>,
+    actorStandby?: Partial<ActorStandby>;
 }
 
 export interface TaskStats {

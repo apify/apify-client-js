@@ -1,16 +1,17 @@
 import ow from 'ow';
 
-import { ApifyApiError } from '../apify_api_error';
-import { ApiClientSubResourceOptions } from '../base/api_client';
+import type { ApifyApiError } from '../apify_api_error';
+import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
-import { ApifyRequestConfig } from '../http_client';
-import { Timezone } from '../timezones';
+import type { ApifyRequestConfig } from '../http_client';
+import type { Timezone } from '../timezones';
+import type {
+    DistributiveOptional} from '../utils';
 import {
     pluckData,
     parseDateFields,
     catchNotFoundOrThrow,
     cast,
-    DistributiveOptional,
 } from '../utils';
 
 export class ScheduleClient extends ResourceClient {
@@ -98,7 +99,7 @@ export type ScheduleCreateOrUpdateData = Partial<
         | 'description'
         | 'notifications'
     > & {
-        actions: DistributiveOptional<ScheduleAction, 'id'>[]
+        actions: DistributiveOptional<ScheduleAction, 'id'>[];
     }
 >;
 

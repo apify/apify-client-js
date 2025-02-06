@@ -1,7 +1,7 @@
 import ow from 'ow';
 
-import { ActorEnvironmentVariable } from './actor_version';
-import { ApiClientSubResourceOptions } from '../base/api_client';
+import type { ActorEnvironmentVariable } from './actor_version';
+import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 
 export class ActorEnvVarClient extends ResourceClient {

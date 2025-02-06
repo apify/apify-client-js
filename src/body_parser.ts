@@ -1,5 +1,5 @@
 import contentTypeParser from 'content-type';
-import { JsonArray, JsonObject } from 'type-fest';
+import type { JsonArray, JsonObject } from 'type-fest';
 
 import { isNode } from './utils';
 

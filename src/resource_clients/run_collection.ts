@@ -1,10 +1,11 @@
-import { ACT_JOB_STATUSES } from '@apify/consts';
 import ow from 'ow';
 
-import { ActorRunListItem } from './actor';
-import { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
+import { ACT_JOB_STATUSES } from '@apify/consts';
+
+import type { ActorRunListItem } from './actor';
+import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import { PaginatedList } from '../utils';
+import type { PaginatedList } from '../utils';
 
 export class RunCollectionClient extends ResourceCollectionClient {
     /**

@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import { ActorEnvVarClient } from './actor_env_var';
 import { ActorEnvVarCollectionClient } from './actor_env_var_collection';
-import { ApiClientSubResourceOptions } from '../base/api_client';
+import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 
 export class ActorVersionClient extends ResourceClient {
