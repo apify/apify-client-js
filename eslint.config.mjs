@@ -78,27 +78,3 @@ export default [
         },
     },
 ];
-//
-//
-// {
-//     "extends": [
-//         "@apify/ts"
-//     ],
-//     "parserOptions": {
-//         "project": "tsconfig.eslint.json"
-//     },
-//     "overrides": [
-//         {
-//             "files": [
-//                 "test/**/*.js"
-//             ],
-//             "env": {
-//                 "jest": true
-//             }
-//         }
-//     ],
-//     "rules": {
-//         "@typescript-eslint/no-explicit-any": "off",
-//         "no-void": 0
-//     }
-// }
