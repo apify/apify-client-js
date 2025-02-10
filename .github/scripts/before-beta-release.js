@@ -14,7 +14,7 @@ const nextVersion = getNextVersion(VERSION);
 console.log(`before-deploy: Setting version to ${nextVersion}`);
 pkgJson.version = nextVersion;
 
-fs.writeFileSync(PKG_JSON_PATH, `${JSON.stringify(pkgJson, null, 2)  }\n`);
+fs.writeFileSync(PKG_JSON_PATH, `${JSON.stringify(pkgJson, null, 2)}\n`);
 
 function getNextVersion(version) {
     const versionString = execSync(`npm show ${PACKAGE_NAME} versions --json`, { encoding: 'utf8'});
