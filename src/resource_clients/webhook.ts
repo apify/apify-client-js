@@ -1,12 +1,13 @@
-import { WEBHOOK_EVENT_TYPES } from '@apify/consts';
 import ow from 'ow';
 
-import { WebhookDispatch } from './webhook_dispatch';
+import type { WEBHOOK_EVENT_TYPES } from '@apify/consts';
+
+import type { WebhookDispatch } from './webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection';
-import { ApifyApiError } from '../apify_api_error';
-import { ApiClientSubResourceOptions } from '../base/api_client';
+import type { ApifyApiError } from '../apify_api_error';
+import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
-import { ApifyRequestConfig } from '../http_client';
+import type { ApifyRequestConfig } from '../http_client';
 import {
     pluckData,
     parseDateFields,

@@ -1,4 +1,4 @@
-import { AxiosResponse } from 'axios';
+import type { AxiosResponse } from 'axios';
 
 import { isomorphicBufferToString } from './body_parser';
 import { isBuffer } from './utils';

@@ -319,7 +319,7 @@ describe('Request Queue methods', () => {
             await client.requestQueue(queueId).batchAddRequests(requests);
             const firedRequests = mockServer.getLastRequests(requestsLength / 25);
             const processedRequestUrls = [];
-            firedRequests.map((req) => {
+            firedRequests.forEach((req) => {
                 expect(req.url).toEqual(`/${queueId}/requests/batch`);
                 req.body.forEach(({ url }) => {
                     processedRequestUrls.push(url);
@@ -459,6 +459,7 @@ describe('Request Queue methods', () => {
                 for await (const browserPage of pgn) {
                     return browserPage;
                 }
+                return undefined;
             }, queueId, maxPageLimit);
             expect(browserRes.items).toEqual(browserRequests);
             validateRequest({ limit: maxPageLimit }, { queueId });
@@ -475,7 +476,7 @@ describe('Request Queue methods', () => {
             // Based on size of one request and limit 9MB as max payload size only 10 requests should be sent in one batch
             const firedRequests = mockServer.getLastRequests(requestsLength / 10);
             const processedRequestUrls = [];
-            firedRequests.map((req) => {
+            firedRequests.forEach((req) => {
                 expect(req.url).toEqual(`/${queueId}/requests/batch`);
                 req.body.forEach(({ url }) => {
                     processedRequestUrls.push(url);

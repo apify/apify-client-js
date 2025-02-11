@@ -5,12 +5,12 @@ import zlib from 'zlib';
 import ow from 'ow';
 import type { TypedArray, JsonValue } from 'type-fest';
 
-import { ApifyApiError } from './apify_api_error';
-import {
+import type { ApifyApiError } from './apify_api_error';
+import type {
     RequestQueueClientListRequestsOptions,
     RequestQueueClientListRequestsResult,
 } from './resource_clients/request_queue';
-import { WebhookUpdateData } from './resource_clients/webhook';
+import type { WebhookUpdateData } from './resource_clients/webhook';
 
 const NOT_FOUND_STATUS_CODE = 404;
 const RECORD_NOT_FOUND_TYPE = 'record-not-found';
@@ -46,7 +46,7 @@ export function catchNotFoundOrThrow(err: ApifyApiError): void {
 
 type ReturnJsonValue = string | number | boolean | null | Date | ReturnJsonObject | ReturnJsonArray;
 type ReturnJsonObject = { [Key in string]?: ReturnJsonValue; };
-type ReturnJsonArray = Array<ReturnJsonValue>;
+type ReturnJsonArray = ReturnJsonValue[];
 
 /**
  * Traverses JSON structure and converts fields that end with "At" to a Date object (fields such as "modifiedAt" or
@@ -158,7 +158,7 @@ export function isStream(value: unknown): value is Readable {
     return ow.isValid(value, ow.object.hasKeys('on', 'pipe'));
 }
 
-export function getVersionData(): { version: string; } {
+export function getVersionData(): { version: string } {
     if (typeof BROWSER_BUILD !== 'undefined') {
         return { version: VERSION! };
     }

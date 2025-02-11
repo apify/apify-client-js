@@ -1,9 +1,9 @@
 import ow from 'ow';
 
-import { RequestQueue } from './request_queue';
-import { ApiClientSubResourceOptions } from '../base/api_client';
+import type { RequestQueue } from './request_queue';
+import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import { PaginatedList } from '../utils';
+import type { PaginatedList } from '../utils';
 
 export class RequestQueueCollectionClient extends ResourceCollectionClient {
     /**
@@ -47,4 +47,4 @@ export interface RequestQueueCollectionListOptions {
     desc?: boolean;
 }
 
-export type RequestQueueCollectionListResult = PaginatedList<RequestQueue & { username?: string; }> & { unnamed: boolean; }
+export type RequestQueueCollectionListResult = PaginatedList<RequestQueue & { username?: string }> & { unnamed: boolean }

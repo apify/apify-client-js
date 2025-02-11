@@ -1,9 +1,9 @@
 import ow from 'ow';
 
-import { Dataset } from './dataset';
-import { ApiClientSubResourceOptions } from '../base/api_client';
+import type { Dataset } from './dataset';
+import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import { PaginatedList } from '../utils';
+import type { PaginatedList } from '../utils';
 
 export class DatasetCollectionClient extends ResourceCollectionClient {
     /**

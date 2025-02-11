@@ -1,10 +1,11 @@
 import ow from 'ow';
 
-import { ApifyApiError } from '../apify_api_error';
-import { ApiClientSubResourceOptions } from '../base/api_client';
+import type { ApifyApiError } from '../apify_api_error';
+import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
-import { ApifyRequestConfig, ApifyResponse } from '../http_client';
-import { cast, catchNotFoundOrThrow, PaginatedList, pluckData } from '../utils';
+import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
+import type { PaginatedList} from '../utils';
+import { cast, catchNotFoundOrThrow, pluckData } from '../utils';
 
 export class DatasetClient<
     Data extends Record<string | number, any> = Record<string | number, unknown>,
@@ -201,7 +202,7 @@ export interface DatasetClientListItemOptions {
     skipEmpty?: boolean;
     skipHidden?: boolean;
     unwind?: string | string[]; // TODO: when doing a breaking change release, change to string[] only
-    view?: string,
+    view?: string;
 }
 
 export enum DownloadItemsFormat {

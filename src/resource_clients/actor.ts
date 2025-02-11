@@ -1,16 +1,18 @@
-import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
-import { AxiosRequestConfig } from 'axios';
+import type { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
 
-import { ActorVersion, ActorVersionClient } from './actor_version';
+import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
+
+import type { ActorVersion} from './actor_version';
+import { ActorVersionClient } from './actor_version';
 import { ActorVersionCollectionClient } from './actor_version_collection';
-import { Build } from './build';
+import type { Build } from './build';
 import { BuildCollectionClient } from './build_collection';
 import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
-import { WebhookUpdateData } from './webhook';
+import type { WebhookUpdateData } from './webhook';
 import { WebhookCollectionClient } from './webhook_collection';
-import { ApiClientSubResourceOptions } from '../base/api_client';
+import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import {
     cast,
@@ -242,8 +244,8 @@ export interface Actor {
     seoDescription?: string;
     categories?: string[];
     actorStandby?: ActorStandby & {
-        isEnabled: boolean
-    },
+        isEnabled: boolean;
+    };
 }
 
 export interface ActorStats {
@@ -293,11 +295,11 @@ export type ActorUpdateOptions = Partial<Pick<
     >>
 
 export interface ActorStandby {
-    desiredRequestsPerActorRun: number,
-    maxRequestsPerActorRun: number,
-    idleTimeoutSecs: number,
-    build: string,
-    memoryMbytes: number,
+    desiredRequestsPerActorRun: number;
+    maxRequestsPerActorRun: number;
+    idleTimeoutSecs: number;
+    build: string;
+    memoryMbytes: number;
 }
 
 export interface ActorStartOptions {
@@ -388,7 +390,7 @@ export interface ActorRun extends ActorRunListItem {
 
 export interface ActorRunUsage {
     ACTOR_COMPUTE_UNITS?: number;
-    DATASET_READS?: number,
+    DATASET_READS?: number;
     DATASET_WRITES?: number;
     KEY_VALUE_STORE_READS?: number;
     KEY_VALUE_STORE_WRITES?: number;
@@ -505,7 +507,7 @@ export type ActorChargeEvents = Record<string, ActorChargeEvent>
 export interface PricePerEventActorPricingInfo extends CommonActorPricingInfo {
     pricingModel: 'PAY_PER_EVENT';
     pricingPerEvent: {
-        actorChargeEvents: ActorChargeEvents
+        actorChargeEvents: ActorChargeEvents;
     };
     minimalMaxTotalChargeUsd?: number;
 }

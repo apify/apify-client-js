@@ -1,10 +1,12 @@
-import { ME_USER_NAME_PLACEHOLDER, ACTOR_ENV_VARS } from '@apify/consts';
-import logger, { Log } from '@apify/log';
-import { SetStatusMessageOptions } from '@crawlee/types';
+import type { SetStatusMessageOptions } from '@crawlee/types';
 import ow from 'ow';
 
+import { ME_USER_NAME_PLACEHOLDER, ACTOR_ENV_VARS } from '@apify/consts';
+import type { Log } from '@apify/log';
+import logger from '@apify/log';
+
 import { HttpClient } from './http_client';
-import { RequestInterceptorFunction } from './interceptors';
+import type { RequestInterceptorFunction } from './interceptors';
 import { ActorClient } from './resource_clients/actor';
 import { ActorCollectionClient } from './resource_clients/actor_collection';
 import { BuildClient } from './resource_clients/build';
@@ -14,7 +16,8 @@ import { DatasetCollectionClient } from './resource_clients/dataset_collection';
 import { KeyValueStoreClient } from './resource_clients/key_value_store';
 import { KeyValueStoreCollectionClient } from './resource_clients/key_value_store_collection';
 import { LogClient } from './resource_clients/log';
-import { RequestQueueClient, RequestQueueUserOptions } from './resource_clients/request_queue';
+import type { RequestQueueUserOptions } from './resource_clients/request_queue';
+import { RequestQueueClient } from './resource_clients/request_queue';
 import { RequestQueueCollectionClient } from './resource_clients/request_queue_collection';
 import { RunClient } from './resource_clients/run';
 import { RunCollectionClient } from './resource_clients/run_collection';

@@ -1,12 +1,12 @@
-import { AxiosRequestConfig } from 'axios';
+import type { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
 
-import { ActorRun } from './actor';
+import type { ActorRun } from './actor';
 import { DatasetClient } from './dataset';
 import { KeyValueStoreClient } from './key_value_store';
 import { LogClient } from './log';
 import { RequestQueueClient } from './request_queue';
-import { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
+import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyResponse } from '../http_client';
 import {
@@ -263,14 +263,14 @@ export interface RunResurrectOptions {
     timeout?: number;
 }
 
-export type RunChargeOptions = {
+export interface RunChargeOptions {
     /** Name of the event to charge. Must be defined in the Actor's pricing info else the API will throw. */
     eventName: string;
     /** Defaults to 1 */
     count?: number;
     /** Defaults to runId-eventName-timestamp */
     idempotencyKey?: string;
-};
+}
 
 export interface RunWaitForFinishOptions {
     /**

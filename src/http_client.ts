@@ -1,26 +1,30 @@
 import os from 'os';
 
-import { APIFY_ENV_VARS } from '@apify/consts';
-import { Log } from '@apify/log';
 import KeepAliveAgent from 'agentkeepalive';
-import retry, { RetryFunction } from 'async-retry';
-import axios, {
+import type { RetryFunction } from 'async-retry';
+import retry from 'async-retry';
+import type {
     AxiosError,
-    AxiosHeaders,
     AxiosInstance,
     AxiosRequestConfig,
     AxiosResponse,
-    InternalAxiosRequestConfig,
+    InternalAxiosRequestConfig} from 'axios';
+import axios, {
+    AxiosHeaders,
 } from 'axios';
 
+import { APIFY_ENV_VARS } from '@apify/consts';
+import type { Log } from '@apify/log';
+
 import { ApifyApiError } from './apify_api_error';
+import type {
+    RequestInterceptorFunction} from './interceptors';
 import {
     InvalidResponseBodyError,
-    RequestInterceptorFunction,
     requestInterceptors,
     responseInterceptors,
 } from './interceptors';
-import { Statistics } from './statistics';
+import type { Statistics } from './statistics';
 import { asArray, cast, getVersionData, isNode, isStream } from './utils';
 
 const { version } = getVersionData();
