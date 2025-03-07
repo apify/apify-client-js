@@ -130,6 +130,8 @@ export class RunClient extends ResourceClient {
             build: ow.optional.string,
             memory: ow.optional.number,
             timeout: ow.optional.number,
+            maxItems: ow.optional.number,
+            maxTotalChargeUsd: ow.optional.number,
         }));
 
         const response = await this.httpClient.call({
@@ -261,6 +263,8 @@ export interface RunResurrectOptions {
     build?: string;
     memory?: number;
     timeout?: number;
+    maxItems?: number;
+    maxTotalChargeUsd?: number;
 }
 
 export interface RunChargeOptions {
