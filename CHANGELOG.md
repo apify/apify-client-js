@@ -2,15 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.12.0 - **not yet released**
+## [2.12.1](https://github.com/apify/apify-client-js/releases/tag/v2.12.1) (2025-03-11)
 
 ### 🚀 Features
 
 - Add maxItems and maxTotalChargeUsd to resurrect ([#652](https://github.com/apify/apify-client-js/pull/652)) ([5fb9c9a](https://github.com/apify/apify-client-js/commit/5fb9c9a35d6ccb7313c5cbbd7d09b19a64d70d8e)) by [@novotnyj](https://github.com/novotnyj)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.11.2](https://github.com/apify/apify-client-js/releases/tag/v2.11.2) (2025-02-03)
 
 ### 🚀 Features
