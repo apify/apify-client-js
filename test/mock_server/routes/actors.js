@@ -23,6 +23,7 @@ const ROUTES = [
     { id: 'resurrect-run', method: 'POST', path: '/:actorId/runs/:runId/resurrect' },
     { id: 'list-builds', method: 'GET', path: '/:actorId/builds' },
     { id: 'build-actor', method: 'POST', path: '/:actorId/builds' },
+    { id: 'get-default-build', method: 'GET', path: '/:actorId/builds/default', type: 'responseJsonMock' },
     { id: 'get-build', method: 'GET', path: '/:actorId/builds/:buildId', type: 'responseJsonMock' },
     { id: 'abort-build', method: 'POST', path: '/:actorId/builds/:buildId/abort' },
     { id: 'list-actor-versions', method: 'GET', path: '/:actorId/versions' },

@@ -161,6 +161,19 @@ export class ActorClient extends ResourceClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2/act-build-default-get
+     */
+    async defaultBuild(): Promise<Build> {
+        const response = await this.httpClient.call({
+            url: this._url('builds/default'),
+            method: 'GET',
+            params: this._params(),
+        });
+
+        return cast(parseDateFields(pluckData(response.data)));
+    }
+
+    /**
      * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
      */
     lastRun(options: ActorLastRunOptions = {}): RunClient {
