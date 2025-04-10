@@ -163,11 +163,11 @@ export class ActorClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2/act-build-default-get
      */
-    async defaultBuild(): Promise<Build> {
+    async defaultBuild(options: Pick<ActorStartOptions, 'waitForFinish'> = {}): Promise<Build> {
         const response = await this.httpClient.call({
             url: this._url('builds/default'),
             method: 'GET',
-            params: this._params(),
+            params: this._params(options),
         });
 
         return cast(parseDateFields(pluckData(response.data)));
