@@ -6,7 +6,7 @@ import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
 import type { ActorVersion} from './actor_version';
 import { ActorVersionClient } from './actor_version';
 import { ActorVersionCollectionClient } from './actor_version_collection';
-import type { Build } from './build';
+import type { Build, BuildClientGetOptions } from './build';
 import { BuildCollectionClient } from './build_collection';
 import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
@@ -163,7 +163,7 @@ export class ActorClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2/act-build-default-get
      */
-    async defaultBuild(options: Pick<ActorStartOptions, 'waitForFinish'> = {}): Promise<Build> {
+    async defaultBuild(options: BuildClientGetOptions = {}): Promise<Build> {
         const response = await this.httpClient.call({
             url: this._url('builds/default'),
             method: 'GET',
