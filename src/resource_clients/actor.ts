@@ -1,7 +1,7 @@
 import type { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
 
-import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
+import { ACT_JOB_STATUSES, META_ORIGINS, RUN_GENERAL_ACCESS } from '@apify/consts';
 
 import type { ActorVersion} from './actor_version';
 import { ActorVersionClient } from './actor_version';
@@ -386,6 +386,7 @@ export interface ActorRun extends ActorRunListItem {
     usageUsd?: ActorRunUsage;
     pricingInfo?: ActorRunPricingInfo;
     chargedEventCounts?: Record<string, number>;
+    generalAccess?: RUN_GENERAL_ACCESS | null,
 }
 
 export interface ActorRunUsage {

@@ -4,6 +4,7 @@ import ow from 'ow';
 import type { JsonValue } from 'type-fest';
 
 import log from '@apify/log';
+import { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
@@ -226,6 +227,7 @@ export interface KeyValueStore {
     actId?: string;
     actRunId?: string;
     stats?: KeyValueStoreStats;
+    generalAccess?: STORAGE_GENERAL_ACCESS | null,
 }
 
 export interface KeyValueStoreStats {
@@ -239,6 +241,7 @@ export interface KeyValueStoreStats {
 export interface KeyValueClientUpdateOptions {
     name?: string | null;
     title?: string;
+    generalAccess?: STORAGE_GENERAL_ACCESS | null,
 }
 
 export interface KeyValueClientListKeysOptions {
