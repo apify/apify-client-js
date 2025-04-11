@@ -1,12 +1,13 @@
 import ow from 'ow';
 
+import { STORAGE_GENERAL_ACCESS } from '@apify/consts';
+
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
 import type { PaginatedList} from '../utils';
 import { cast, catchNotFoundOrThrow, pluckData } from '../utils';
-import { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 
 export class DatasetClient<
     Data extends Record<string | number, any> = Record<string | number, unknown>,

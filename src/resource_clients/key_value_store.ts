@@ -4,6 +4,7 @@ import ow from 'ow';
 import type { JsonValue } from 'type-fest';
 
 import log from '@apify/log';
+import { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
@@ -18,7 +19,6 @@ import {
     parseDateFields,
     pluckData,
 } from '../utils';
-import { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 
 export class KeyValueStoreClient extends ResourceClient {
     /**
