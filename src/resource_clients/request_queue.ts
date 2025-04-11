@@ -220,7 +220,9 @@ export class RequestQueueClient extends ResourceClient {
 
             // Exponential backoff
             const delayMillis = Math.floor((1 + Math.random()) * (2 ** i) * minDelayBetweenUnprocessedRequestsRetriesMillis);
-            await new Promise((resolve) => setTimeout(resolve, delayMillis));
+            await new Promise((resolve) => {
+                setTimeout(resolve, delayMillis);
+            });
         }
 
         const result = { processedRequests, unprocessedRequests } as unknown as JsonObject;
