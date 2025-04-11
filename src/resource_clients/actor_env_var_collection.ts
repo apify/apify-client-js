@@ -1,9 +1,9 @@
 import ow from 'ow';
 
-import type { ActorEnvironmentVariable } from './actor_version';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList } from '../utils';
+import type { ActorEnvironmentVariable } from './actor_version';
 
 export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     /**

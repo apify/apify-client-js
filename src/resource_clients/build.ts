@@ -2,7 +2,6 @@ import ow from 'ow';
 
 import type { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 
-import { LogClient } from './log';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import {
@@ -11,6 +10,7 @@ import {
     pluckData,
 } from '../utils';
 import type { ActorDefinition } from './actor';
+import { LogClient } from './log';
 
 export class BuildClient extends ResourceClient {
     /**

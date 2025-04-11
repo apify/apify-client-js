@@ -1,14 +1,14 @@
 import type { ACT_JOB_STATUSES} from '@apify/consts';
 import { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 
-import { ApiClient } from './api_client';
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApifyRequestConfig } from '../http_client';
 import {
-    pluckData,
-    parseDateFields,
     catchNotFoundOrThrow,
+    parseDateFields,
+    pluckData,
 } from '../utils';
+import { ApiClient } from './api_client';
 
 /**
  * We need to supply some number for the API,

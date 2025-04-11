@@ -8,10 +8,10 @@ import type { Timezone } from '../timezones';
 import type {
     DistributiveOptional} from '../utils';
 import {
-    pluckData,
-    parseDateFields,
-    catchNotFoundOrThrow,
     cast,
+    catchNotFoundOrThrow,
+    parseDateFields,
+    pluckData,
 } from '../utils';
 
 export class ScheduleClient extends ResourceClient {

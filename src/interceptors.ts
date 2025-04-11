@@ -1,4 +1,4 @@
-import type { AxiosInterceptorManager, AxiosResponse, AxiosRequestTransformer} from 'axios';
+import type { AxiosInterceptorManager, AxiosRequestTransformer,AxiosResponse} from 'axios';
 import axios, { AxiosHeaders } from 'axios';
 import contentTypeParser from 'content-type';
 import type { JsonObject } from 'type-fest';

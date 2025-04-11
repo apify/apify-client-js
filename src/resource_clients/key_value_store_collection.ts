@@ -1,9 +1,9 @@
 import ow from 'ow';
 
-import type { KeyValueStore } from './key_value_store';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList } from '../utils';
+import type { KeyValueStore } from './key_value_store';
 
 export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     /**
