@@ -1,10 +1,10 @@
 import ow from 'ow';
 
-import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor';
-import type { ActorVersion } from './actor_version';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList } from '../utils';
+import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor';
+import type { ActorVersion } from './actor_version';
 
 export class ActorCollectionClient extends ResourceCollectionClient {
     /**

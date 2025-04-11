@@ -2,10 +2,6 @@ import ow from 'ow';
 
 import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
 
-import type { ActorRun, ActorStandby, ActorStartOptions } from './actor';
-import { RunClient } from './run';
-import { RunCollectionClient } from './run_collection';
-import { WebhookCollectionClient } from './webhook_collection';
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
@@ -19,6 +15,10 @@ import {
     pluckData,
     stringifyWebhooksToBase64,
 } from '../utils';
+import type { ActorRun, ActorStandby, ActorStartOptions } from './actor';
+import { RunClient } from './run';
+import { RunCollectionClient } from './run_collection';
+import { WebhookCollectionClient } from './webhook_collection';
 
 export class TaskClient extends ResourceClient {
     /**

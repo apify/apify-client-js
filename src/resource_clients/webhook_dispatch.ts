@@ -1,6 +1,6 @@
-import type { Webhook, WebhookEventType } from './webhook';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import type { Webhook, WebhookEventType } from './webhook';
 
 export class WebhookDispatchClient extends ResourceClient {
     /**

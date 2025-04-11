@@ -1,9 +1,9 @@
 import ow from 'ow';
 
-import type { ActorStats } from './actor';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList } from '../utils';
+import type { ActorStats } from './actor';
 
 export class StoreCollectionClient extends ResourceCollectionClient {
     /**

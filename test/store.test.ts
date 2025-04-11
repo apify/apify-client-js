@@ -1,6 +1,6 @@
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import type { StoreCollectionListOptions } from '../src';
 import { ApifyClient } from '../src';
+import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import mockServer from './mock_server/server';
 
 describe('Store', () => {
