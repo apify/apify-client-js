@@ -2,6 +2,7 @@
 // require('moment-timzone').tz.names()
 // This should be kept in sync with timezones.js in storage
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const timezones = [
     'Africa/Abidjan',
     'Africa/Accra',
