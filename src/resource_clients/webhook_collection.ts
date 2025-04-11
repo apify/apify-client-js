@@ -1,9 +1,9 @@
 import ow from 'ow';
 
-import type { Webhook, WebhookUpdateData } from './webhook';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList } from '../utils';
+import type { Webhook, WebhookUpdateData } from './webhook';
 
 export class WebhookCollectionClient extends ResourceCollectionClient {
     /**

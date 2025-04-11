@@ -1,4 +1,4 @@
-const { Readable } = require('stream');
+const { Readable } = require('node:stream');
 
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
 const { ApifyClient } = require('../src');

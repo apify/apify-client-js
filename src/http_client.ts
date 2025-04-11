@@ -1,4 +1,4 @@
-import os from 'os';
+import os from 'node:os';
 
 import KeepAliveAgent from 'agentkeepalive';
 import type { RetryFunction } from 'async-retry';

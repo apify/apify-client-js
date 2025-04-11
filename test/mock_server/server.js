@@ -1,5 +1,5 @@
-const http = require('http');
-const path = require('path');
+const http = require('node:http');
+const path = require('node:path');
 
 const bodyParser = require('body-parser');
 const compression = require('compression');

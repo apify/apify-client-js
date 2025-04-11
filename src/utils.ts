@@ -1,9 +1,9 @@
 import type { Readable } from 'node:stream';
-import util from 'util';
-import zlib from 'zlib';
+import util from 'node:util';
+import zlib from 'node:zlib';
 
 import ow from 'ow';
-import type { TypedArray, JsonValue } from 'type-fest';
+import type { JsonValue,TypedArray } from 'type-fest';
 
 import type { ApifyApiError } from './apify_api_error';
 import type {

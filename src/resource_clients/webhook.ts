@@ -2,18 +2,18 @@ import ow from 'ow';
 
 import type { WEBHOOK_EVENT_TYPES } from '@apify/consts';
 
-import type { WebhookDispatch } from './webhook_dispatch';
-import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection';
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import {
-    pluckData,
-    parseDateFields,
-    catchNotFoundOrThrow,
     cast,
+    catchNotFoundOrThrow,
+    parseDateFields,
+    pluckData,
 } from '../utils';
+import type { WebhookDispatch } from './webhook_dispatch';
+import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection';
 
 export class WebhookClient extends ResourceClient {
     /**

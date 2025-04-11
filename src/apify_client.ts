@@ -1,7 +1,7 @@
 import type { SetStatusMessageOptions } from '@crawlee/types';
 import ow from 'ow';
 
-import { ME_USER_NAME_PLACEHOLDER, ACTOR_ENV_VARS } from '@apify/consts';
+import { ACTOR_ENV_VARS,ME_USER_NAME_PLACEHOLDER } from '@apify/consts';
 import type { Log } from '@apify/log';
 import logger from '@apify/log';
 

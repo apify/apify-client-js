@@ -2,10 +2,10 @@ import ow from 'ow';
 
 import { ACT_JOB_STATUSES } from '@apify/consts';
 
-import type { ActorRunListItem } from './actor';
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList } from '../utils';
+import type { ActorRunListItem } from './actor';
 
 export class RunCollectionClient extends ResourceCollectionClient {
     /**
