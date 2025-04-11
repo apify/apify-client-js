@@ -14,6 +14,7 @@ import {
     parseDateFields,
     cast,
 } from '../utils';
+import { RUN_GENERAL_ACCESS } from '@apify/consts';
 
 const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
 
@@ -257,6 +258,7 @@ export interface RunMetamorphOptions {
 export interface RunUpdateOptions {
     statusMessage?: string;
     isStatusMessageTerminal?: boolean;
+    generalAccess?: RUN_GENERAL_ACCESS | null,
 }
 
 export interface RunResurrectOptions {

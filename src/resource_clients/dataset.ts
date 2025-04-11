@@ -6,6 +6,7 @@ import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
 import type { PaginatedList} from '../utils';
 import { cast, catchNotFoundOrThrow, pluckData } from '../utils';
+import { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 
 export class DatasetClient<
     Data extends Record<string | number, any> = Record<string | number, unknown>,
@@ -177,6 +178,7 @@ export interface Dataset {
     actRunId?: string;
     stats: DatasetStats;
     fields: string[];
+    generalAccess?: STORAGE_GENERAL_ACCESS | null,
 }
 
 export interface DatasetStats {
@@ -189,6 +191,7 @@ export interface DatasetStats {
 export interface DatasetClientUpdateOptions {
     name?: string | null;
     title?: string;
+    generalAccess?: STORAGE_GENERAL_ACCESS | null,
 }
 
 export interface DatasetClientListItemOptions {

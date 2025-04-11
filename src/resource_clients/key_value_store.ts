@@ -18,6 +18,7 @@ import {
     parseDateFields,
     pluckData,
 } from '../utils';
+import { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 
 export class KeyValueStoreClient extends ResourceClient {
     /**
@@ -226,6 +227,7 @@ export interface KeyValueStore {
     actId?: string;
     actRunId?: string;
     stats?: KeyValueStoreStats;
+    generalAccess?: STORAGE_GENERAL_ACCESS | null,
 }
 
 export interface KeyValueStoreStats {
@@ -239,6 +241,7 @@ export interface KeyValueStoreStats {
 export interface KeyValueClientUpdateOptions {
     name?: string | null;
     title?: string;
+    generalAccess?: STORAGE_GENERAL_ACCESS | null,
 }
 
 export interface KeyValueClientListKeysOptions {

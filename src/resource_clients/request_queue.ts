@@ -1,7 +1,11 @@
 import ow from 'ow';
 import type { JsonObject } from 'type-fest';
 
-import { MAX_PAYLOAD_SIZE_BYTES, REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION } from '@apify/consts';
+import {
+    MAX_PAYLOAD_SIZE_BYTES,
+    REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION,
+    STORAGE_GENERAL_ACCESS
+} from '@apify/consts';
 import log from '@apify/log';
 
 import type { ApifyApiError } from '../apify_api_error';
@@ -485,6 +489,7 @@ export interface RequestQueue {
     actRunId?: string;
     hadMultipleClients: boolean;
     stats: RequestQueueStats;
+    generalAccess?: STORAGE_GENERAL_ACCESS | null,
 }
 
 export interface RequestQueueStats {
@@ -498,6 +503,7 @@ export interface RequestQueueStats {
 export interface RequestQueueClientUpdateOptions {
     name?: string | null;
     title?: string;
+    generalAccess?: STORAGE_GENERAL_ACCESS | null,
 }
 
 export interface RequestQueueClientListHeadOptions {
