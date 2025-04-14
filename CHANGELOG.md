@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+<!-- git-cliff-unreleased-start -->
+## 2.13.0 - **not yet released**
+
+### 🚀 Features
+
+- Add support for general resource access ([#669](https://github.com/apify/apify-client-js/pull/669)) ([7deba52](https://github.com/apify/apify-client-js/commit/7deba52a5ff96c990254687d6b965fc1a5bf3467)) by [@tobice](https://github.com/tobice)
+
+
+<!-- git-cliff-unreleased-end -->
 ## [2.12.1](https://github.com/apify/apify-client-js/releases/tag/v2.12.1) (2025-03-11)
 
 ### 🚀 Features
