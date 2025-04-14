@@ -1,6 +1,6 @@
 import ow from 'ow';
 
-import { STORAGE_GENERAL_ACCESS } from '@apify/consts';
+import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';

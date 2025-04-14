@@ -1,7 +1,7 @@
 import type { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
 
-import { RUN_GENERAL_ACCESS } from '@apify/consts';
+import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 
 import type { ActorRun } from './actor';
 import { DatasetClient } from './dataset';

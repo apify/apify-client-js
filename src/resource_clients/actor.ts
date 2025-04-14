@@ -1,7 +1,8 @@
 import type { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
 
-import { ACT_JOB_STATUSES, META_ORIGINS, RUN_GENERAL_ACCESS } from '@apify/consts';
+import type { RUN_GENERAL_ACCESS } from '@apify/consts';
+import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
 
 import type { ActorVersion} from './actor_version';
 import { ActorVersionClient } from './actor_version';

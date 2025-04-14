@@ -1,10 +1,12 @@
 import ow from 'ow';
 import type { JsonObject } from 'type-fest';
 
+import type {
+    STORAGE_GENERAL_ACCESS
+} from '@apify/consts';
 import {
     MAX_PAYLOAD_SIZE_BYTES,
-    REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION,
-    STORAGE_GENERAL_ACCESS
+    REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION
 } from '@apify/consts';
 import log from '@apify/log';
 
