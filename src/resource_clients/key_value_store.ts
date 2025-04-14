@@ -3,6 +3,7 @@ import type { Readable } from 'node:stream';
 import ow from 'ow';
 import type { JsonValue } from 'type-fest';
 
+import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import log from '@apify/log';
 
 import type { ApifyApiError } from '../apify_api_error';
@@ -226,6 +227,7 @@ export interface KeyValueStore {
     actId?: string;
     actRunId?: string;
     stats?: KeyValueStoreStats;
+    generalAccess?: STORAGE_GENERAL_ACCESS | null,
 }
 
 export interface KeyValueStoreStats {
@@ -239,6 +241,7 @@ export interface KeyValueStoreStats {
 export interface KeyValueClientUpdateOptions {
     name?: string | null;
     title?: string;
+    generalAccess?: STORAGE_GENERAL_ACCESS | null,
 }
 
 export interface KeyValueClientListKeysOptions {

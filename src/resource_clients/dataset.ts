@@ -1,5 +1,7 @@
 import ow from 'ow';
 
+import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
+
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
@@ -177,6 +179,7 @@ export interface Dataset {
     actRunId?: string;
     stats: DatasetStats;
     fields: string[];
+    generalAccess?: STORAGE_GENERAL_ACCESS | null,
 }
 
 export interface DatasetStats {
@@ -189,6 +192,7 @@ export interface DatasetStats {
 export interface DatasetClientUpdateOptions {
     name?: string | null;
     title?: string;
+    generalAccess?: STORAGE_GENERAL_ACCESS | null,
 }
 
 export interface DatasetClientListItemOptions {

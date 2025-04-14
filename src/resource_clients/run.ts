@@ -1,6 +1,8 @@
 import type { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
 
+import type { RUN_GENERAL_ACCESS } from '@apify/consts';
+
 import type { ActorRun } from './actor';
 import { DatasetClient } from './dataset';
 import { KeyValueStoreClient } from './key_value_store';
@@ -257,6 +259,7 @@ export interface RunMetamorphOptions {
 export interface RunUpdateOptions {
     statusMessage?: string;
     isStatusMessageTerminal?: boolean;
+    generalAccess?: RUN_GENERAL_ACCESS | null,
 }
 
 export interface RunResurrectOptions {
