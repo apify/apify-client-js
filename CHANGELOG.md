@@ -2,15 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.13.0 - **not yet released**
+## [2.12.2](https://github.com/apify/apify-client-js/releases/tag/v2.12.2) (2025-04-14)
 
 ### 🚀 Features
 
 - Add support for general resource access ([#669](https://github.com/apify/apify-client-js/pull/669)) ([7deba52](https://github.com/apify/apify-client-js/commit/7deba52a5ff96c990254687d6b965fc1a5bf3467)) by [@tobice](https://github.com/tobice)
+- Add defaultBuild method ([#668](https://github.com/apify/apify-client-js/pull/668)) ([c494b3b](https://github.com/apify/apify-client-js/commit/c494b3b8b664a88620e9f41c902acba533d636cf)) by [@danpoletaev](https://github.com/danpoletaev)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.12.1](https://github.com/apify/apify-client-js/releases/tag/v2.12.1) (2025-03-11)
 
 ### 🚀 Features
