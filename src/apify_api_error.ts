@@ -80,7 +80,7 @@ export class ApifyApiError extends Error {
         if (isBuffer(responseData)) {
             try {
                 responseData = JSON.parse(isomorphicBufferToString(response.data, 'utf-8'));
-            } catch (e) {
+            } catch {
                 // This can happen. The data in the response body are malformed.
             }
         }
@@ -94,7 +94,7 @@ export class ApifyApiError extends Error {
             let dataString;
             try {
                 dataString = JSON.stringify(responseData, null, 2);
-            } catch (err) {
+            } catch {
                 dataString = `${responseData}`;
             }
             message = `Unexpected error: ${dataString}`;

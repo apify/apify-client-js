@@ -101,7 +101,9 @@ export class ResourceClient extends ApiClient {
 
             // It might take some time for database replicas to get up-to-date,
             // so getRun() might return null. Wait a little bit and try it again.
-            if (!job) await new Promise((resolve) => setTimeout(resolve, 250));
+            if (!job) await new Promise((resolve) => {
+                setTimeout(resolve, 250);
+            });
         } while (shouldRepeat());
 
         if (!job) {
