@@ -417,7 +417,7 @@ export interface ActorRun extends ActorRunListItem {
     usageUsd?: ActorRunUsage;
     pricingInfo?: ActorRunPricingInfo;
     chargedEventCounts?: Record<string, number>;
-    generalAccess?: RUN_GENERAL_ACCESS | null,
+    generalAccess?: RUN_GENERAL_ACCESS | null;
 }
 
 export interface ActorRunUsage {

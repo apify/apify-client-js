@@ -233,7 +233,7 @@ export interface KeyValueStore {
     actId?: string;
     actRunId?: string;
     stats?: KeyValueStoreStats;
-    generalAccess?: STORAGE_GENERAL_ACCESS | null,
+    generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
 export interface KeyValueStoreStats {
@@ -247,7 +247,7 @@ export interface KeyValueStoreStats {
 export interface KeyValueClientUpdateOptions {
     name?: string | null;
     title?: string;
-    generalAccess?: STORAGE_GENERAL_ACCESS | null,
+    generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
 export interface KeyValueClientListKeysOptions {

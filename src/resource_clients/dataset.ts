@@ -181,7 +181,7 @@ export interface Dataset {
     actRunId?: string;
     stats: DatasetStats;
     fields: string[];
-    generalAccess?: STORAGE_GENERAL_ACCESS | null,
+    generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
 export interface DatasetStats {
@@ -194,7 +194,7 @@ export interface DatasetStats {
 export interface DatasetClientUpdateOptions {
     name?: string | null;
     title?: string;
-    generalAccess?: STORAGE_GENERAL_ACCESS | null,
+    generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
 export interface DatasetClientListItemOptions {

@@ -308,7 +308,7 @@ describe('Run methods', () => {
 
             await expect(client.run(runId).charge()).rejects.toThrow(
                 'Expected `options` to be of type `object` but received type `undefined`\n' +
-                'Cannot convert undefined or null to object in object `options`',
+                    'Cannot convert undefined or null to object in object `options`',
             );
         });
     });

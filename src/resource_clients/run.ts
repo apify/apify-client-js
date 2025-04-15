@@ -282,7 +282,7 @@ export interface RunMetamorphOptions {
 export interface RunUpdateOptions {
     statusMessage?: string;
     isStatusMessageTerminal?: boolean;
-    generalAccess?: RUN_GENERAL_ACCESS | null,
+    generalAccess?: RUN_GENERAL_ACCESS | null;
 }
 
 export interface RunResurrectOptions {
