@@ -4,11 +4,7 @@ import type { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
-import {
-    cast,
-    parseDateFields,
-    pluckData,
-} from '../utils';
+import { cast, parseDateFields, pluckData } from '../utils';
 import type { ActorDefinition } from './actor';
 import { LogClient } from './log';
 
@@ -27,9 +23,12 @@ export class BuildClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actor-builds/build-object/get-build
      */
     async get(options: BuildClientGetOptions = {}): Promise<Build | undefined> {
-        ow(options, ow.object.exactShape({
-            waitForFinish: ow.optional.number,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                waitForFinish: ow.optional.number,
+            }),
+        );
 
         return this._get(options);
     }
@@ -79,9 +78,12 @@ export class BuildClient extends ResourceClient {
      * This is useful when you need to immediately start a run after a build finishes.
      */
     async waitForFinish(options: BuildClientWaitForFinishOptions = {}): Promise<Build> {
-        ow(options, ow.object.exactShape({
-            waitSecs: ow.optional.number,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                waitSecs: ow.optional.number,
+            }),
+        );
 
         return this._waitForFinish(options);
     }
@@ -90,9 +92,11 @@ export class BuildClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actor-builds/build-log
      */
     log(): LogClient {
-        return new LogClient(this._subResourceOptions({
-            resourcePath: 'log',
-        }));
+        return new LogClient(
+            this._subResourceOptions({
+                resourcePath: 'log',
+            }),
+        );
     }
 }
 
@@ -121,7 +125,7 @@ export interface Build {
     userId: string;
     startedAt: Date;
     finishedAt?: Date;
-    status: typeof ACT_JOB_TERMINAL_STATUSES[number];
+    status: (typeof ACT_JOB_TERMINAL_STATUSES)[number];
     meta: BuildMeta;
     stats?: BuildStats;
     options?: BuildOptions;
@@ -184,7 +188,7 @@ interface OpenApiOperation {
         content: {
             'application/json': {
                 schema: {
-                    '$ref': string;
+                    $ref: string;
                 };
             };
         };
@@ -204,7 +208,7 @@ interface OpenApiOperation {
             content?: {
                 'application/json': {
                     schema: {
-                        '$ref': string;
+                        $ref: string;
                     };
                 };
             };

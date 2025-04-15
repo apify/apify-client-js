@@ -6,7 +6,7 @@ import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
-import type { PaginatedList} from '../utils';
+import type { PaginatedList } from '../utils';
 import { cast, catchNotFoundOrThrow, pluckData } from '../utils';
 
 export class DatasetClient<
@@ -49,19 +49,22 @@ export class DatasetClient<
      * https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
      */
     async listItems(options: DatasetClientListItemOptions = {}): Promise<PaginatedList<Data>> {
-        ow(options, ow.object.exactShape({
-            clean: ow.optional.boolean,
-            desc: ow.optional.boolean,
-            flatten: ow.optional.array.ofType(ow.string),
-            fields: ow.optional.array.ofType(ow.string),
-            omit: ow.optional.array.ofType(ow.string),
-            limit: ow.optional.number,
-            offset: ow.optional.number,
-            skipEmpty: ow.optional.boolean,
-            skipHidden: ow.optional.boolean,
-            unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
-            view: ow.optional.string,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                clean: ow.optional.boolean,
+                desc: ow.optional.boolean,
+                flatten: ow.optional.array.ofType(ow.string),
+                fields: ow.optional.array.ofType(ow.string),
+                omit: ow.optional.array.ofType(ow.string),
+                limit: ow.optional.number,
+                offset: ow.optional.number,
+                skipEmpty: ow.optional.boolean,
+                skipHidden: ow.optional.boolean,
+                unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
+                view: ow.optional.string,
+            }),
+        );
 
         const response = await this.httpClient.call({
             url: this._url('items'),
@@ -79,25 +82,28 @@ export class DatasetClient<
      */
     async downloadItems(format: DownloadItemsFormat, options: DatasetClientDownloadItemsOptions = {}): Promise<Buffer> {
         ow(format, ow.string.oneOf(validItemFormats));
-        ow(options, ow.object.exactShape({
-            attachment: ow.optional.boolean,
-            bom: ow.optional.boolean,
-            clean: ow.optional.boolean,
-            delimiter: ow.optional.string,
-            desc: ow.optional.boolean,
-            flatten: ow.optional.array.ofType(ow.string),
-            fields: ow.optional.array.ofType(ow.string),
-            omit: ow.optional.array.ofType(ow.string),
-            limit: ow.optional.number,
-            offset: ow.optional.number,
-            skipEmpty: ow.optional.boolean,
-            skipHeaderRow: ow.optional.boolean,
-            skipHidden: ow.optional.boolean,
-            unwind: ow.any(ow.optional.string, ow.optional.array.ofType(ow.string)),
-            view: ow.optional.string,
-            xmlRoot: ow.optional.string,
-            xmlRow: ow.optional.string,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                attachment: ow.optional.boolean,
+                bom: ow.optional.boolean,
+                clean: ow.optional.boolean,
+                delimiter: ow.optional.string,
+                desc: ow.optional.boolean,
+                flatten: ow.optional.array.ofType(ow.string),
+                fields: ow.optional.array.ofType(ow.string),
+                omit: ow.optional.array.ofType(ow.string),
+                limit: ow.optional.number,
+                offset: ow.optional.number,
+                skipEmpty: ow.optional.boolean,
+                skipHeaderRow: ow.optional.boolean,
+                skipHidden: ow.optional.boolean,
+                unwind: ow.any(ow.optional.string, ow.optional.array.ofType(ow.string)),
+                view: ow.optional.string,
+                xmlRoot: ow.optional.string,
+                xmlRow: ow.optional.string,
+            }),
+        );
 
         const { data } = await this.httpClient.call({
             url: this._url('items'),
@@ -116,11 +122,7 @@ export class DatasetClient<
      * https://docs.apify.com/api/v2#/reference/datasets/item-collection/put-items
      */
     async pushItems(items: Data | Data[] | string | string[]): Promise<void> {
-        ow(items, ow.any(
-            ow.object,
-            ow.string,
-            ow.array.ofType(ow.any(ow.object, ow.string)),
-        ));
+        ow(items, ow.any(ow.object, ow.string, ow.array.ofType(ow.any(ow.object, ow.string))));
 
         await this.httpClient.call({
             url: this._url('items'),
@@ -219,12 +221,7 @@ export enum DownloadItemsFormat {
     RSS = 'rss',
 }
 
-const validItemFormats = [
-    ...new Set(
-        Object.values(DownloadItemsFormat)
-            .map((item) => item.toLowerCase()),
-    ),
-];
+const validItemFormats = [...new Set(Object.values(DownloadItemsFormat).map((item) => item.toLowerCase()))];
 
 export interface DatasetClientDownloadItemsOptions extends DatasetClientListItemOptions {
     attachment?: boolean;

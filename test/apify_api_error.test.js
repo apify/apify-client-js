@@ -1,6 +1,6 @@
 const { Browser, DEFAULT_OPTIONS } = require('./_helper');
 const mockServer = require('./mock_server/server');
-const { ApifyClient } = require('../src/index');
+const { ApifyClient } = require('apify-client');
 
 describe('ApifyApiError', () => {
     let baseUrl;
@@ -13,10 +13,7 @@ describe('ApifyApiError', () => {
     });
 
     afterAll(async () => {
-        await Promise.all([
-            mockServer.close(),
-            browser.cleanUpBrowser(),
-        ]);
+        await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
     test('should carry all the information', async () => {
@@ -96,21 +93,26 @@ describe('ApifyApiError', () => {
 
         // Works in browser
         const page = await browser.getInjectedPage();
-        const error = await page.evaluate(async (cConfig, dId, d) => {
-            const client = new window.Apify.ApifyClient(cConfig);
-            const datasetClient = client.dataset(dId);
-            try {
-                await datasetClient.pushItems(d);
-                throw new Error('wrong error');
-            } catch (err) {
-                const serializableErr = {};
-                Object.getOwnPropertyNames(err).forEach((prop) => {
-                    serializableErr[prop] = err[prop];
-                });
-                serializableErr.resourcePath = datasetClient.resourcePath;
-                return serializableErr;
-            }
-        }, clientConfig, datasetId, data);
+        const error = await page.evaluate(
+            async (cConfig, dId, d) => {
+                const client = new window.Apify.ApifyClient(cConfig);
+                const datasetClient = client.dataset(dId);
+                try {
+                    await datasetClient.pushItems(d);
+                    throw new Error('wrong error');
+                } catch (err) {
+                    const serializableErr = {};
+                    Object.getOwnPropertyNames(err).forEach((prop) => {
+                        serializableErr[prop] = err[prop];
+                    });
+                    serializableErr.resourcePath = datasetClient.resourcePath;
+                    return serializableErr;
+                }
+            },
+            clientConfig,
+            datasetId,
+            data,
+        );
         expect(error.name).toEqual('ApifyApiError');
         expect(error.type).toEqual('schema-validation-error');
         expect(error.data).toEqual({

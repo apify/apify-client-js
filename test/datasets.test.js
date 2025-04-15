@@ -1,5 +1,5 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
-const { ApifyClient } = require('../src');
+const { ApifyClient } = require('apify-client');
 const mockServer = require('./mock_server/server');
 
 describe('Dataset methods', () => {
@@ -13,10 +13,7 @@ describe('Dataset methods', () => {
     });
 
     afterAll(async () => {
-        await Promise.all([
-            mockServer.close(),
-            browser.cleanUpBrowser(),
-        ]);
+        await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
     let client;
@@ -227,7 +224,7 @@ describe('Dataset methods', () => {
             validateRequest(qs, { datasetId });
         });
 
-        test('downloadItems() doesn\'t parse application/json', async () => {
+        test("downloadItems() doesn't parse application/json", async () => {
             const datasetId = 'some-id';
             const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });
             const format = 'json';
@@ -246,12 +243,17 @@ describe('Dataset methods', () => {
             expect(resString).toBe(body);
             validateRequest({ format, ...options }, { datasetId });
 
-            const browserRes = await page.evaluate(async (id, f, opts) => {
-                /* eslint-disable no-shadow */
-                const res = await client.dataset(id).downloadItems(f, opts);
-                const decoder = new TextDecoder();
-                return decoder.decode(res);
-            }, datasetId, format, options);
+            const browserRes = await page.evaluate(
+                async (id, f, opts) => {
+                    /* eslint-disable no-shadow */
+                    const res = await client.dataset(id).downloadItems(f, opts);
+                    const decoder = new TextDecoder();
+                    return decoder.decode(res);
+                },
+                datasetId,
+                format,
+                options,
+            );
             expect(browserRes).toEqual(resString);
             validateRequest({ format, ...options }, { datasetId });
         });
@@ -290,7 +292,11 @@ describe('Dataset methods', () => {
             expect(res).toBeUndefined();
             validateRequest({}, { datasetId }, JSON.parse(data));
 
-            const browserRes = await page.evaluate((id, options) => client.dataset(id).pushItems(options), datasetId, data);
+            const browserRes = await page.evaluate(
+                (id, options) => client.dataset(id).pushItems(options),
+                datasetId,
+                data,
+            );
             expect(browserRes).toEqual(res);
             validateRequest({}, { datasetId }, JSON.parse(data));
         });

@@ -36,22 +36,13 @@ export abstract class ApiClient {
     params?: Record<string, unknown>;
 
     constructor(options: ApiClientOptions) {
-        const {
-            baseUrl,
-            apifyClient,
-            httpClient,
-            resourcePath,
-            id,
-            params = {},
-        } = options;
+        const { baseUrl, apifyClient, httpClient, resourcePath, id, params = {} } = options;
 
         this.id = id;
         this.safeId = id && this._toSafeId(id);
         this.baseUrl = baseUrl;
         this.resourcePath = resourcePath;
-        this.url = id
-            ? `${baseUrl}/${resourcePath}/${this.safeId}`
-            : `${baseUrl}/${resourcePath}`;
+        this.url = id ? `${baseUrl}/${resourcePath}/${this.safeId}` : `${baseUrl}/${resourcePath}`;
         this.apifyClient = apifyClient;
         this.httpClient = httpClient;
         this.params = params;

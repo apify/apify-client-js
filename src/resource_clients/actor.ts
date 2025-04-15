@@ -6,13 +6,8 @@ import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
-import {
-    cast,
-    parseDateFields,
-    pluckData,
-    stringifyWebhooksToBase64,
-} from '../utils';
-import type { ActorVersion} from './actor_version';
+import { cast, parseDateFields, pluckData, stringifyWebhooksToBase64 } from '../utils';
+import type { ActorVersion } from './actor_version';
 import { ActorVersionClient } from './actor_version';
 import { ActorVersionCollectionClient } from './actor_version_collection';
 import type { Build, BuildClientGetOptions } from './build';
@@ -63,16 +58,19 @@ export class ActorClient extends ResourceClient {
     async start(input?: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
         // then it will process input as a buffer.
-        ow(options, ow.object.exactShape({
-            build: ow.optional.string,
-            contentType: ow.optional.string,
-            memory: ow.optional.number,
-            timeout: ow.optional.number,
-            waitForFinish: ow.optional.number,
-            webhooks: ow.optional.array.ofType(ow.object),
-            maxItems: ow.optional.number.not.negative,
-            maxTotalChargeUsd: ow.optional.number.not.negative,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                build: ow.optional.string,
+                contentType: ow.optional.string,
+                memory: ow.optional.number,
+                timeout: ow.optional.number,
+                waitForFinish: ow.optional.number,
+                webhooks: ow.optional.array.ofType(ow.object),
+                maxItems: ow.optional.number.not.negative,
+                maxTotalChargeUsd: ow.optional.number.not.negative,
+            }),
+        );
 
         const { waitForFinish, timeout, memory, build, maxItems, maxTotalChargeUsd } = options;
 
@@ -116,16 +114,19 @@ export class ActorClient extends ResourceClient {
     async call(input?: unknown, options: ActorCallOptions = {}): Promise<ActorRun> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
         // then it will process input as a buffer.
-        ow(options, ow.object.exactShape({
-            build: ow.optional.string,
-            contentType: ow.optional.string,
-            memory: ow.optional.number,
-            timeout: ow.optional.number.not.negative,
-            waitSecs: ow.optional.number.not.negative,
-            webhooks: ow.optional.array.ofType(ow.object),
-            maxItems: ow.optional.number.not.negative,
-            maxTotalChargeUsd: ow.optional.number.not.negative,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                build: ow.optional.string,
+                contentType: ow.optional.string,
+                memory: ow.optional.number,
+                timeout: ow.optional.number.not.negative,
+                waitSecs: ow.optional.number.not.negative,
+                webhooks: ow.optional.array.ofType(ow.object),
+                maxItems: ow.optional.number.not.negative,
+                maxTotalChargeUsd: ow.optional.number.not.negative,
+            }),
+        );
 
         const { waitSecs, ...startOptions } = options;
         const { id } = await this.start(input, startOptions);
@@ -142,12 +143,15 @@ export class ActorClient extends ResourceClient {
      */
     async build(versionNumber: string, options: ActorBuildOptions = {}): Promise<Build> {
         ow(versionNumber, ow.string);
-        ow(options, ow.object.exactShape({
-            betaPackages: ow.optional.boolean,
-            tag: ow.optional.string,
-            useCache: ow.optional.boolean,
-            waitForFinish: ow.optional.number,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                betaPackages: ow.optional.boolean,
+                tag: ow.optional.string,
+                useCache: ow.optional.boolean,
+                waitForFinish: ow.optional.number,
+            }),
+        );
 
         const response = await this.httpClient.call({
             url: this._url('builds'),
@@ -178,34 +182,43 @@ export class ActorClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
      */
     lastRun(options: ActorLastRunOptions = {}): RunClient {
-        ow(options, ow.object.exactShape({
-            status: ow.optional.string.oneOf(Object.values(ACT_JOB_STATUSES)),
-            origin: ow.optional.string.oneOf(Object.values(META_ORIGINS)),
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                status: ow.optional.string.oneOf(Object.values(ACT_JOB_STATUSES)),
+                origin: ow.optional.string.oneOf(Object.values(META_ORIGINS)),
+            }),
+        );
 
-        return new RunClient(this._subResourceOptions({
-            id: 'last',
-            params: this._params(options),
-            resourcePath: 'runs',
-        }));
+        return new RunClient(
+            this._subResourceOptions({
+                id: 'last',
+                params: this._params(options),
+                resourcePath: 'runs',
+            }),
+        );
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/build-collection
      */
     builds(): BuildCollectionClient {
-        return new BuildCollectionClient(this._subResourceOptions({
-            resourcePath: 'builds',
-        }));
+        return new BuildCollectionClient(
+            this._subResourceOptions({
+                resourcePath: 'builds',
+            }),
+        );
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/run-collection
      */
     runs(): RunCollectionClient {
-        return new RunCollectionClient(this._subResourceOptions({
-            resourcePath: 'runs',
-        }));
+        return new RunCollectionClient(
+            this._subResourceOptions({
+                resourcePath: 'runs',
+            }),
+        );
     }
 
     /**
@@ -213,9 +226,11 @@ export class ActorClient extends ResourceClient {
      */
     version(versionNumber: string): ActorVersionClient {
         ow(versionNumber, ow.string);
-        return new ActorVersionClient(this._subResourceOptions({
-            id: versionNumber,
-        }));
+        return new ActorVersionClient(
+            this._subResourceOptions({
+                id: versionNumber,
+            }),
+        );
     }
 
     /**
@@ -284,7 +299,7 @@ export interface ActorExampleRunInput {
     contentType: string;
 }
 
-export type ActorTaggedBuilds = Record<string, ActorTaggedBuild>
+export type ActorTaggedBuilds = Record<string, ActorTaggedBuild>;
 
 export interface ActorTaggedBuild {
     buildId?: string;
@@ -292,21 +307,23 @@ export interface ActorTaggedBuild {
     finishedAt?: Date;
 }
 
-export type ActorUpdateOptions = Partial<Pick<
-    Actor,
-    | 'name'
-    | 'description'
-    | 'isPublic'
-    | 'isDeprecated'
-    | 'seoTitle'
-    | 'seoDescription'
-    | 'title'
-    | 'restartOnError'
-    | 'versions'
-    | 'categories'
-    | 'defaultRunOptions'
-    | 'actorStandby'
-    >>
+export type ActorUpdateOptions = Partial<
+    Pick<
+        Actor,
+        | 'name'
+        | 'description'
+        | 'isPublic'
+        | 'isDeprecated'
+        | 'seoTitle'
+        | 'seoDescription'
+        | 'title'
+        | 'restartOnError'
+        | 'versions'
+        | 'categories'
+        | 'defaultRunOptions'
+        | 'actorStandby'
+    >
+>;
 
 export interface ActorStandby {
     desiredRequestsPerActorRun: number;
@@ -377,7 +394,7 @@ export interface ActorRunListItem {
     actorTaskId?: string;
     startedAt: Date;
     finishedAt: Date;
-    status: typeof ACT_JOB_STATUSES[keyof typeof ACT_JOB_STATUSES];
+    status: (typeof ACT_JOB_STATUSES)[keyof typeof ACT_JOB_STATUSES];
     meta: ActorRunMeta;
     buildId: string;
     buildNumber: string;
@@ -517,7 +534,7 @@ export interface ActorChargeEvent {
     eventDescription?: string;
 }
 
-export type ActorChargeEvents = Record<string, ActorChargeEvent>
+export type ActorChargeEvents = Record<string, ActorChargeEvent>;
 
 export interface PricePerEventActorPricingInfo extends CommonActorPricingInfo {
     pricingModel: 'PAY_PER_EVENT';
@@ -527,4 +544,8 @@ export interface PricePerEventActorPricingInfo extends CommonActorPricingInfo {
     minimalMaxTotalChargeUsd?: number;
 }
 
-export type ActorRunPricingInfo = PricePerEventActorPricingInfo | PricePerDatasetItemActorPricingInfo | FlatPricePerMonthActorPricingInfo | FreeActorPricingInfo
+export type ActorRunPricingInfo =
+    | PricePerEventActorPricingInfo
+    | PricePerDatasetItemActorPricingInfo
+    | FlatPricePerMonthActorPricingInfo
+    | FreeActorPricingInfo;

@@ -6,11 +6,7 @@ import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyResponse } from '../http_client';
-import {
-    cast,
-    parseDateFields,
-    pluckData,
-} from '../utils';
+import { cast, parseDateFields, pluckData } from '../utils';
 import type { ActorRun } from './actor';
 import { DatasetClient } from './dataset';
 import { KeyValueStoreClient } from './key_value_store';
@@ -34,9 +30,12 @@ export class RunClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actor-runs/run-object/get-run
      */
     async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
-        ow(options, ow.object.exactShape({
-            waitForFinish: ow.optional.number,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                waitForFinish: ow.optional.number,
+            }),
+        );
 
         return this._get(options);
     }
@@ -45,9 +44,12 @@ export class RunClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actor-runs/abort-run/abort-run
      */
     async abort(options: RunAbortOptions = {}): Promise<ActorRun> {
-        ow(options, ow.object.exactShape({
-            gracefully: ow.optional.boolean,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                gracefully: ow.optional.boolean,
+            }),
+        );
 
         const response = await this.httpClient.call({
             url: this._url('abort'),
@@ -71,10 +73,13 @@ export class RunClient extends ResourceClient {
     async metamorph(targetActorId: string, input: unknown, options: RunMetamorphOptions = {}): Promise<ActorRun> {
         ow(targetActorId, ow.string);
         // input can be anything, pointless to validate
-        ow(options, ow.object.exactShape({
-            contentType: ow.optional.string,
-            build: ow.optional.string,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                contentType: ow.optional.string,
+                build: ow.optional.string,
+            }),
+        );
 
         const safeTargetActorId = this._toSafeId(targetActorId);
 
@@ -128,13 +133,16 @@ export class RunClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actor-runs/resurrect-run/resurrect-run
      */
     async resurrect(options: RunResurrectOptions = {}): Promise<ActorRun> {
-        ow(options, ow.object.exactShape({
-            build: ow.optional.string,
-            memory: ow.optional.number,
-            timeout: ow.optional.number,
-            maxItems: ow.optional.number,
-            maxTotalChargeUsd: ow.optional.number,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                build: ow.optional.string,
+                memory: ow.optional.number,
+                timeout: ow.optional.number,
+                maxItems: ow.optional.number,
+                maxTotalChargeUsd: ow.optional.number,
+            }),
+        );
 
         const response = await this.httpClient.call({
             url: this._url('resurrect'),
@@ -149,16 +157,20 @@ export class RunClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actor-runs/charge-events-in-run
      */
     async charge(options: RunChargeOptions): Promise<ApifyResponse<Record<string, never>>> {
-        ow(options, ow.object.exactShape({
-            eventName: ow.string,
-            count: ow.optional.number,
-            idempotencyKey: ow.optional.string,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                eventName: ow.string,
+                count: ow.optional.number,
+                idempotencyKey: ow.optional.string,
+            }),
+        );
 
         const count = options.count ?? 1;
         /** To avoid duplicates during the same milisecond, doesn't need to by crypto-secure. */
         const randomSuffix = (Math.random() + 1).toString(36).slice(3, 8);
-        const idempotencyKey = options.idempotencyKey ?? `${this.id}-${options.eventName}-${Date.now()}-${randomSuffix}`;
+        const idempotencyKey =
+            options.idempotencyKey ?? `${this.id}-${options.eventName}-${Date.now()}-${randomSuffix}`;
 
         const request: AxiosRequestConfig = {
             url: this._url('charge'),
@@ -188,9 +200,12 @@ export class RunClient extends ResourceClient {
      * by using webhooks, so be sure to review which technique fits your use-case better.
      */
     async waitForFinish(options: RunWaitForFinishOptions = {}): Promise<ActorRun> {
-        ow(options, ow.object.exactShape({
-            waitSecs: ow.optional.number,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                waitSecs: ow.optional.number,
+            }),
+        );
 
         return this._waitForFinish(options);
     }
@@ -202,9 +217,11 @@ export class RunClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
      */
     dataset(): DatasetClient {
-        return new DatasetClient(this._subResourceOptions({
-            resourcePath: 'dataset',
-        }));
+        return new DatasetClient(
+            this._subResourceOptions({
+                resourcePath: 'dataset',
+            }),
+        );
     }
 
     /**
@@ -214,9 +231,11 @@ export class RunClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
      */
     keyValueStore(): KeyValueStoreClient {
-        return new KeyValueStoreClient(this._subResourceOptions({
-            resourcePath: 'key-value-store',
-        }));
+        return new KeyValueStoreClient(
+            this._subResourceOptions({
+                resourcePath: 'key-value-store',
+            }),
+        );
     }
 
     /**
@@ -226,9 +245,11 @@ export class RunClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
      */
     requestQueue(): RequestQueueClient {
-        return new RequestQueueClient(this._subResourceOptions({
-            resourcePath: 'request-queue',
-        }));
+        return new RequestQueueClient(
+            this._subResourceOptions({
+                resourcePath: 'request-queue',
+            }),
+        );
     }
 
     /**
@@ -238,9 +259,11 @@ export class RunClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
      */
     log(): LogClient {
-        return new LogClient(this._subResourceOptions({
-            resourcePath: 'log',
-        }));
+        return new LogClient(
+            this._subResourceOptions({
+                resourcePath: 'log',
+            }),
+        );
     }
 }
 

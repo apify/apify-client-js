@@ -5,14 +5,8 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import type { Timezone } from '../timezones';
-import type {
-    DistributiveOptional} from '../utils';
-import {
-    cast,
-    catchNotFoundOrThrow,
-    parseDateFields,
-    pluckData,
-} from '../utils';
+import type { DistributiveOptional } from '../utils';
+import { cast, catchNotFoundOrThrow, parseDateFields, pluckData } from '../utils';
 
 export class ScheduleClient extends ResourceClient {
     /**
@@ -90,14 +84,7 @@ export interface Schedule {
 export type ScheduleCreateOrUpdateData = Partial<
     Pick<
         Schedule,
-        | 'name'
-        | 'title'
-        | 'cronExpression'
-        | 'timezone'
-        | 'isEnabled'
-        | 'isExclusive'
-        | 'description'
-        | 'notifications'
+        'name' | 'title' | 'cronExpression' | 'timezone' | 'isEnabled' | 'isExclusive' | 'description' | 'notifications'
     > & {
         actions: DistributiveOptional<ScheduleAction, 'id'>[];
     }

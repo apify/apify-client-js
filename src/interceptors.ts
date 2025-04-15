@@ -1,14 +1,11 @@
-import type { AxiosInterceptorManager, AxiosRequestTransformer,AxiosResponse} from 'axios';
+import type { AxiosInterceptorManager, AxiosRequestTransformer, AxiosResponse } from 'axios';
 import axios, { AxiosHeaders } from 'axios';
 import contentTypeParser from 'content-type';
 import type { JsonObject } from 'type-fest';
 
 import { maybeParseBody } from './body_parser';
 import type { ApifyRequestConfig, ApifyResponse } from './http_client';
-import {
-    isNode,
-    maybeGzipValue,
-} from './utils';
+import { isNode, maybeGzipValue } from './utils';
 
 /**
  * This error exists for the quite common situation, where only a partial JSON response is received and
@@ -96,9 +93,9 @@ async function maybeGzipRequest(config: ApifyRequestConfig): Promise<ApifyReques
 
 function parseResponseData(response: ApifyResponse): ApifyResponse {
     if (
-        !response.data // Nothing to do here.
-        || response.config.responseType !== 'arraybuffer' // We don't want to parse custom response types.
-        || response.config.forceBuffer // Apify custom property to prevent parsing of buffer.
+        !response.data || // Nothing to do here.
+        response.config.responseType !== 'arraybuffer' || // We don't want to parse custom response types.
+        response.config.forceBuffer // Apify custom property to prevent parsing of buffer.
     ) {
         return response;
     }
@@ -123,5 +120,9 @@ function parseResponseData(response: ApifyResponse): ApifyResponse {
 export type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyRequestConfig>['use']>[0];
 export type ResponseInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyResponse>['use']>[0];
 
-export const requestInterceptors: RequestInterceptorFunction[] = [maybeGzipRequest, serializeRequest, ensureHeadersPrototype];
+export const requestInterceptors: RequestInterceptorFunction[] = [
+    maybeGzipRequest,
+    serializeRequest,
+    ensureHeadersPrototype,
+];
 export const responseInterceptors: ResponseInterceptorFunction[] = [parseResponseData];

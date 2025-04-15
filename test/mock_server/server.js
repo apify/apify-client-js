@@ -90,7 +90,7 @@ v2Router.use('/webhook-dispatches', webhookDispatches);
 v2Router.use('/store', store);
 
 // Debugging middleware
-app.use((err, req, res, next) => { // eslint-disable-line
+app.use((err, req, res, _next) => {
     res.status(500).json({ error: { message: err.message } });
 });
 

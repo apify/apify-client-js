@@ -12,7 +12,6 @@ const ROUTES = [
     { id: 'delete-webhook', method: 'DELETE', path: '/:webhookId' },
     { id: 'test-webhook', method: 'POST', path: '/:webhookId/test' },
     { id: 'list-dispatches', method: 'GET', path: '/:webhookId/dispatches' },
-
 ];
 
 addRoutes(webhooks, ROUTES);

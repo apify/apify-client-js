@@ -13,9 +13,7 @@ function Hero() {
                 <div className="col col--7">
                     <div className={clsx(styles.relative, 'row')}>
                         <div className="col">
-                            <h1 className={styles.tagline}>
-                                Apify API client for JavaScript
-                            </h1>
+                            <h1 className={styles.tagline}>Apify API client for JavaScript</h1>
                             <h1 className={styles.tagline}>
                                 {/* eslint-disable-next-line max-len */}
                                 <span>Apify API client</span> for JavaScript
@@ -26,16 +24,26 @@ function Hero() {
                         <div className="col">
                             <h2></h2>
                             <h2>
-                            The official library to interact with Apify API from a web browser, Node.js, JavaScript,
-                            or TypeScript applications, providing convenience functions and automatic retries on errors.
+                                The official library to interact with Apify API from a web browser, Node.js, JavaScript,
+                                or TypeScript applications, providing convenience functions and automatic retries on
+                                errors.
                             </h2>
                         </div>
                     </div>
                     <div className="row">
                         <div className="col">
                             <div className={styles.heroButtons}>
-                                <Link to="docs" className={styles.getStarted}>Get Started</Link>
-                                <iframe src="https://ghbtns.com/github-btn.html?user=apify&repo=apify-client-js&type=star&count=true&size=large" frameBorder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
+                                <Link to="docs" className={styles.getStarted}>
+                                    Get Started
+                                </Link>
+                                <iframe
+                                    src="https://ghbtns.com/github-btn.html?user=apify&repo=apify-client-js&type=star&count=true&size=large"
+                                    frameBorder="0"
+                                    scrolling="0"
+                                    width="170"
+                                    height="30"
+                                    title="GitHub"
+                                ></iframe>
                             </div>
                         </div>
                     </div>
@@ -45,9 +53,7 @@ function Hero() {
                         <img src={require('/img/logo-blur.png').default} className={clsx(styles.hideSmall)} />
                     </div>
                     <div className={styles.codeBlock}>
-                        <CodeBlock className="language-bash">
-                            npm install apify-client
-                        </CodeBlock>
+                        <CodeBlock className="language-bash">npm install apify-client</CodeBlock>
                     </div>
                 </div>
             </div>
@@ -58,20 +64,19 @@ function Hero() {
 export default function Home() {
     const { siteConfig } = useDocusaurusContext();
     return (
-        <Layout
-            description={siteConfig.description}>
+        <Layout description={siteConfig.description}>
             <Hero />
             <div>
                 <div className="container">
-                    <div className="row padding-horiz--md" >
+                    <div className="row padding-horiz--md">
                         <div className="col col--4">
                             <p style={{ lineHeight: '200%' }}>
-                            Easily run Actors, await them to finish using the convenient <code>.call()</code> method,
-                            and retrieve results from the resulting dataset.
+                                Easily run Actors, await them to finish using the convenient <code>.call()</code>{' '}
+                                method, and retrieve results from the resulting dataset.
                             </p>
                         </div>
                         <div className="col col--8">
-                            <CodeBlock language='javascript'>{`const { ApifyClient } = require('apify-client');
+                            <CodeBlock language="javascript">{`const { ApifyClient } = require('apify-client');
 
 const client = new ApifyClient({
     token: 'MY-APIFY-TOKEN',

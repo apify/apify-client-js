@@ -1,5 +1,5 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
-const { ApifyClient } = require('../src');
+const { ApifyClient } = require('apify-client');
 const mockServer = require('./mock_server/server');
 
 describe('Run methods', () => {
@@ -13,10 +13,7 @@ describe('Run methods', () => {
     });
 
     afterAll(async () => {
-        await Promise.all([
-            mockServer.close(),
-            browser.cleanUpBrowser(),
-        ]);
+        await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
     let client;
@@ -31,7 +28,7 @@ describe('Run methods', () => {
     });
     afterEach(async () => {
         client = null;
-        page.close().catch(() => { });
+        page.close().catch(() => {});
     });
 
     describe('runs()', () => {
@@ -128,9 +125,15 @@ describe('Run methods', () => {
             expect(res.id).toEqual('metamorph-run');
             validateRequest(actualQuery, { runId }, { some: 'body' }, { 'content-type': contentType });
 
-            const browserRes = await page.evaluate((rId, targetId, i, opts) => {
-                return client.run(rId).metamorph(targetId, i, opts);
-            }, runId, targetActorId, input, options);
+            const browserRes = await page.evaluate(
+                (rId, targetId, i, opts) => {
+                    return client.run(rId).metamorph(targetId, i, opts);
+                },
+                runId,
+                targetActorId,
+                input,
+                options,
+            );
             expect(browserRes).toEqual(res);
             validateRequest(actualQuery, { runId }, { some: 'body' }, { 'content-type': contentType });
         });
@@ -141,20 +144,21 @@ describe('Run methods', () => {
             const contentType = 'application/json; charset=utf-8';
             const input = JSON.stringify({ foo: 'bar' });
 
-            const expectedRequest = [
-                { targetActorId },
-                { runId },
-                { foo: 'bar' },
-                { 'content-type': contentType },
-            ];
+            const expectedRequest = [{ targetActorId }, { runId }, { foo: 'bar' }, { 'content-type': contentType }];
 
             const res = await client.run(runId).metamorph(targetActorId, input, { contentType });
             expect(res.id).toEqual('metamorph-run');
             validateRequest(...expectedRequest);
 
-            const browserRes = await page.evaluate((rId, tId, i, cType) => {
-                return client.run(rId).metamorph(tId, i, { contentType: cType });
-            }, runId, targetActorId, input, contentType);
+            const browserRes = await page.evaluate(
+                (rId, tId, i, cType) => {
+                    return client.run(rId).metamorph(tId, i, { contentType: cType });
+                },
+                runId,
+                targetActorId,
+                input,
+                contentType,
+            );
             expect(browserRes).toEqual(res);
             validateRequest(...expectedRequest);
         });
@@ -178,12 +182,16 @@ describe('Run methods', () => {
             expect(res.id).toEqual('metamorph-run');
             validateRequest(...expectedRequest);
 
-            const browserRes = await page.evaluate((rId, tId) => {
-                return client.run(rId).metamorph(tId, {
-                    foo: 'bar',
-                    fn: async (a, b) => a + b,
-                });
-            }, runId, targetActorId);
+            const browserRes = await page.evaluate(
+                (rId, tId) => {
+                    return client.run(rId).metamorph(tId, {
+                        foo: 'bar',
+                        fn: async (a, b) => a + b,
+                    });
+                },
+                runId,
+                targetActorId,
+            );
             expect(browserRes).toEqual(res);
             validateRequest(...expectedRequest);
         });
@@ -211,7 +219,11 @@ describe('Run methods', () => {
             expect(res).toEqual(data);
             validateRequest({ waitForFinish: 0 }, { runId });
 
-            const browserRes = await page.evaluate((rId, ws) => client.run(rId).waitForFinish({ waitSecs: ws }), runId, waitSecs);
+            const browserRes = await page.evaluate(
+                (rId, ws) => client.run(rId).waitForFinish({ waitSecs: ws }),
+                runId,
+                waitSecs,
+            );
             expect(browserRes).toEqual(res);
             validateRequest({ waitForFinish: 0 }, { runId });
         });
@@ -227,7 +239,11 @@ describe('Run methods', () => {
             expect(res).toEqual(data);
             validateRequest({ waitForFinish: 0 }, { runId });
 
-            const browserRes = await page.evaluate((rId, ws) => client.run(rId).waitForFinish({ waitSecs: ws }), runId, waitSecs);
+            const browserRes = await page.evaluate(
+                (rId, ws) => client.run(rId).waitForFinish({ waitSecs: ws }),
+                runId,
+                waitSecs,
+            );
             expect(browserRes).toEqual(res);
             validateRequest({ waitForFinish: 0 }, { runId });
         });
@@ -290,7 +306,10 @@ describe('Run methods', () => {
             const res = await client.run(runId).charge({ eventName: 'some-event' });
             expect(res.status).toEqual(200);
 
-            await expect(client.run(runId).charge()).rejects.toThrow('Expected argument to be of type `object` but received type `undefined`');
+            await expect(client.run(runId).charge()).rejects.toThrow(
+                'Expected `options` to be of type `object` but received type `undefined`\n' +
+                'Cannot convert undefined or null to object in object `options`',
+            );
         });
     });
 });

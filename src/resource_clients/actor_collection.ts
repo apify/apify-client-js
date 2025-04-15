@@ -21,12 +21,15 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-actors
      */
     async list(options: ActorCollectionListOptions = {}): Promise<ActorCollectionListResult> {
-        ow(options, ow.object.exactShape({
-            my: ow.optional.boolean,
-            limit: ow.optional.number,
-            offset: ow.optional.number,
-            desc: ow.optional.boolean,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                my: ow.optional.boolean,
+                limit: ow.optional.number,
+                offset: ow.optional.number,
+                desc: ow.optional.boolean,
+            }),
+        );
 
         return this._list(options);
     }

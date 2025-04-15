@@ -1,1 +1,9 @@
-[{"entryPoints":{"index":{"label":"Index","path":"src/index.ts"}},"packagePath":".","packageSlug":".","packageName":"apify-client","packageVersion":"2.8.1"}]
+[
+    {
+        "entryPoints": { "index": { "label": "Index", "path": "src/index.ts" } },
+        "packagePath": ".",
+        "packageSlug": ".",
+        "packageName": "apify-client",
+        "packageVersion": "2.8.1"
+    }
+]

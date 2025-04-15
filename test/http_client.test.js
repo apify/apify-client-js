@@ -1,6 +1,6 @@
 const { Browser } = require('./_helper');
 const mockServer = require('./mock_server/server');
-const { ApifyClient } = require('../src/index');
+const { ApifyClient } = require('apify-client');
 
 describe('HttpClient', () => {
     let baseUrl;
@@ -13,10 +13,7 @@ describe('HttpClient', () => {
     });
 
     afterAll(async () => {
-        await Promise.all([
-            mockServer.close(),
-            browser.cleanUpBrowser(),
-        ]);
+        await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
     let client;

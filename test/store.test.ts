@@ -1,5 +1,6 @@
-import type { StoreCollectionListOptions } from '../src';
-import { ApifyClient } from '../src';
+import type { StoreCollectionListOptions } from 'apify-client';
+import { ApifyClient } from 'apify-client';
+
 import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import mockServer from './mock_server/server';
 
@@ -14,10 +15,7 @@ describe('Store', () => {
     });
 
     afterAll(async () => {
-        await Promise.all([
-            mockServer.close(),
-            browser.cleanUpBrowser(),
-        ]);
+        await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
     let client: ApifyClient | undefined;
@@ -46,11 +44,14 @@ describe('Store', () => {
             pricingModel: 'my pricing model',
         };
 
-        const res: any = client && await client.store().list(opts);
+        const res: any = client && (await client.store().list(opts));
         expect(res.id).toEqual('store-list');
         validateRequest(opts);
 
-        const browserRes: any = await page.evaluate(async (options: StoreCollectionListOptions) => client && client.store().list(options), opts);
+        const browserRes: any = await page.evaluate(
+            async (options: StoreCollectionListOptions) => client && client.store().list(options),
+            opts,
+        );
         expect(browserRes.id).toEqual('store-list');
         expect(browserRes).toEqual(res);
         validateRequest(opts);

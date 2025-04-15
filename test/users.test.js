@@ -1,7 +1,7 @@
 const { ME_USER_NAME_PLACEHOLDER } = require('@apify/consts');
 
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
-const { ApifyClient } = require('../src');
+const { ApifyClient } = require('apify-client');
 const mockServer = require('./mock_server/server');
 
 describe('User methods', () => {
@@ -15,10 +15,7 @@ describe('User methods', () => {
     });
 
     afterAll(async () => {
-        await Promise.all([
-            mockServer.close(),
-            browser.cleanUpBrowser(),
-        ]);
+        await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
     let client;
@@ -90,7 +87,10 @@ describe('User methods', () => {
             expect(res).toBeUndefined();
             validateRequest({}, { userId }, { maxMonthlyUsageUsd: 1000 });
 
-            const browserRes = await page.evaluate((id) => client.user(id).updateLimits({ maxMonthlyUsageUsd: 1000 }), userId);
+            const browserRes = await page.evaluate(
+                (id) => client.user(id).updateLimits({ maxMonthlyUsageUsd: 1000 }),
+                userId,
+            );
             expect(browserRes).toBeUndefined();
             validateRequest({}, { userId }, { maxMonthlyUsageUsd: 1000 });
         });

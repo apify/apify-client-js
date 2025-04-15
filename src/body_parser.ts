@@ -4,11 +4,7 @@ import type { JsonArray, JsonObject } from 'type-fest';
 import { isNode } from './utils';
 
 const CONTENT_TYPE_JSON = 'application/json';
-const STRINGIFIABLE_CONTENT_TYPE_RXS = [
-    new RegExp(`^${CONTENT_TYPE_JSON}`, 'i'),
-    /^application\/.*xml$/i,
-    /^text\//i,
-];
+const STRINGIFIABLE_CONTENT_TYPE_RXS = [new RegExp(`^${CONTENT_TYPE_JSON}`, 'i'), /^application\/.*xml$/i, /^text\//i];
 
 /**
  * Parses a Buffer or ArrayBuffer using the provided content type header.
@@ -20,7 +16,10 @@ const STRINGIFIABLE_CONTENT_TYPE_RXS = [
  * If the header includes a charset, the body will be stringified only
  * if the charset represents a known encoding to Node.js or Browser.
  */
-export function maybeParseBody(body: Buffer | ArrayBuffer, contentTypeHeader: string): string | Buffer | ArrayBuffer | JsonObject | JsonArray {
+export function maybeParseBody(
+    body: Buffer | ArrayBuffer,
+    contentTypeHeader: string,
+): string | Buffer | ArrayBuffer | JsonObject | JsonArray {
     let contentType;
     let charset: BufferEncoding;
     try {
@@ -37,9 +36,7 @@ export function maybeParseBody(body: Buffer | ArrayBuffer, contentTypeHeader: st
     if (!areDataStringifiable(contentType, charset)) return body;
     const dataString = isomorphicBufferToString(body, charset);
 
-    return contentType === CONTENT_TYPE_JSON
-        ? JSON.parse(dataString)
-        : dataString;
+    return contentType === CONTENT_TYPE_JSON ? JSON.parse(dataString) : dataString;
 }
 
 export function isomorphicBufferToString(buffer: Buffer | ArrayBuffer, encoding: BufferEncoding): string {

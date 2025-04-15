@@ -19,13 +19,18 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/get-list-of-key-value-stores
      */
-    async list(options: KeyValueStoreCollectionClientListOptions = {}): Promise<PaginatedList<KeyValueStoreCollectionListResult>> {
-        ow(options, ow.object.exactShape({
-            unnamed: ow.optional.boolean,
-            limit: ow.optional.number,
-            offset: ow.optional.number,
-            desc: ow.optional.boolean,
-        }));
+    async list(
+        options: KeyValueStoreCollectionClientListOptions = {},
+    ): Promise<PaginatedList<KeyValueStoreCollectionListResult>> {
+        ow(
+            options,
+            ow.object.exactShape({
+                unnamed: ow.optional.boolean,
+                limit: ow.optional.number,
+                offset: ow.optional.number,
+                desc: ow.optional.boolean,
+            }),
+        );
 
         return this._list(options);
     }
@@ -33,7 +38,10 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/create-key-value-store
      */
-    async getOrCreate(name?: string, options?: KeyValueStoreCollectionClientGetOrCreateOptions): Promise<KeyValueStore> {
+    async getOrCreate(
+        name?: string,
+        options?: KeyValueStoreCollectionClientGetOrCreateOptions,
+    ): Promise<KeyValueStore> {
         ow(name, ow.optional.string);
         ow(options?.schema, ow.optional.object); // TODO: Add schema validatioon
 

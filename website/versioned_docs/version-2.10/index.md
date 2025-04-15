@@ -180,15 +180,14 @@ const runsClient = actorClient.runs();
 // Lists the last 10 runs of your Actor.
 const { items } = await runsClient.list({
     limit: 10,
-    desc: true
+    desc: true,
 });
 
 // Select the last run of your Actor that finished
 // with a SUCCEEDED status.
 const lastSucceededRunClient = actorClient.lastRun({ status: 'SUCCEEDED' });
 // Fetches items from the run's dataset.
-const { items } = await lastSucceededRunClient.dataset()
-    .listItems();
+const { items } = await lastSucceededRunClient.dataset().listItems();
 ```
 
 The quick access to `dataset` and other storage directly from the run client can be used with the [`lastRun()`](/reference/class/ActorClient#lastRun) method.
@@ -203,11 +202,11 @@ import { ApifyClient } from 'apify-client';
 const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
 try {
-    const { items } = await client.dataset("non-existing-dataset-id").listItems();
+    const { items } = await client.dataset('non-existing-dataset-id').listItems();
 } catch (error) {
     // The error is an instance of ApifyApiError
     const { message, type, statusCode, clientMethod, path } = error;
-    // Log error for easier debugging 
+    // Log error for easier debugging
     console.log({ message, statusCode, clientMethod, type });
 }
 ```
@@ -219,11 +218,11 @@ Network communication sometimes fails. That's a given. The client will automatic
 ```js
 import { ApifyClient } from 'apify-client';
 
-const client = new ApifyClient({ 
+const client = new ApifyClient({
     token: 'MY-APIFY-TOKEN',
     maxRetries: 8,
     minDelayBetweenRetriesMillis: 500, // 0.5s
-    timeoutSecs: 360 // 6 mins
+    timeoutSecs: 360, // 6 mins
 });
 ```
 
@@ -241,7 +240,7 @@ const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 // Starts an Actor and waits for it to finish.
 const finishedActorRun = await client.actor('username/actor-name').call();
 
-// Starts an Actor and waits maximum 60s for the finish 
+// Starts an Actor and waits maximum 60s for the finish
 const { status } = await client.actor('username/actor-name').start({
     waitForFinish: 60, // 1 minute
 });
@@ -262,18 +261,18 @@ const datasetClient = client.dataset('dataset-id');
 // Number of items per page
 const limit = 1000;
 // Initial offset
-let offset = 0; 
+let offset = 0;
 // Array to store all items
-let allItems = []; 
+let allItems = [];
 
 while (true) {
     const { items, total } = await datasetClient.listItems({ limit, offset });
-    
+
     console.log(`Fetched ${items.length} items`);
-    
+
     // Merge new items with other already loaded items
     allItems.push(...items);
-  
+
     // If there are no more items to fetch, exit the loading
     if (offset + limit >= total) {
         break;

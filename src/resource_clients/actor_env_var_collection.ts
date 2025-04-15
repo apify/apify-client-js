@@ -20,11 +20,14 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      * https://docs.apify.com/api/v2#/reference/actors/environment-variable-collection/get-list-of-environment-variables
      */
     async list(options: ActorEnvVarCollectionListOptions = {}): Promise<ActorEnvVarListResult> {
-        ow(options, ow.object.exactShape({
-            limit: ow.optional.number,
-            offset: ow.optional.number,
-            desc: ow.optional.boolean,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                limit: ow.optional.number,
+                offset: ow.optional.number,
+                desc: ow.optional.boolean,
+            }),
+        );
         return this._list(options);
     }
 
@@ -43,4 +46,4 @@ export interface ActorEnvVarCollectionListOptions {
     desc?: boolean;
 }
 
-export type ActorEnvVarListResult = Pick<PaginatedList<ActorEnvironmentVariable>, 'total' | 'items'>
+export type ActorEnvVarListResult = Pick<PaginatedList<ActorEnvironmentVariable>, 'total' | 'items'>;

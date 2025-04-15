@@ -55,15 +55,14 @@ const runsClient = actorClient.runs();
 // Lists the last 10 runs of the john-doe/hello-world actor.
 const { items } = await runsClient.list({
     limit: 10,
-    desc: true
-})
+    desc: true,
+});
 
 // Selects the last run of the john-doe/hello-world actor that finished
 // with a SUCCEEDED status.
 const lastSucceededRunClient = actorClient.lastRun({ status: 'SUCCEEDED' });
 // Fetches items from the run's dataset.
-const { items } = await lastSucceededRunClient.dataset()
-    .listItems();
+const { items } = await lastSucceededRunClient.dataset().listItems();
 ```
 
 > The quick access to `dataset` and other storages directly from the run client can now only be used with the `lastRun()` method, but the feature will be available to all runs in the future.

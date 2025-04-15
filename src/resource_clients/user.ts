@@ -35,10 +35,13 @@ export class UserClient extends ResourceClient {
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return cast(parseDateFields(
-                pluckData(response.data),
-                // Convert  monthlyUsage.dailyServiceUsages[].date to Date (by default it's ignored by parseDateFields)
-                /* shouldParseField = */ (key) => key === 'date'));
+            return cast(
+                parseDateFields(
+                    pluckData(response.data),
+                    // Convert  monthlyUsage.dailyServiceUsages[].date to Date (by default it's ignored by parseDateFields)
+                    /* shouldParseField = */ (key) => key === 'date',
+                ),
+            );
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }
@@ -220,7 +223,7 @@ export interface Limits {
     dataRetentionDays: number;
 }
 
-export type LimitsUpdateOptions = Pick<Limits, 'maxMonthlyUsageUsd' | 'dataRetentionDays'>
+export type LimitsUpdateOptions = Pick<Limits, 'maxMonthlyUsageUsd' | 'dataRetentionDays'>;
 
 export interface Current {
     monthlyUsageUsd: number;

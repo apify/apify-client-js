@@ -3,7 +3,7 @@ import util from 'node:util';
 import zlib from 'node:zlib';
 
 import ow from 'ow';
-import type { JsonValue,TypedArray } from 'type-fest';
+import type { JsonValue, TypedArray } from 'type-fest';
 
 import type { ApifyApiError } from './apify_api_error';
 import type {
@@ -39,13 +39,14 @@ export function pluckData<R>(obj: MaybeData<R>): R {
  */
 export function catchNotFoundOrThrow(err: ApifyApiError): void {
     const isNotFoundStatus = err.statusCode === NOT_FOUND_STATUS_CODE;
-    const isNotFoundMessage = err.type === RECORD_NOT_FOUND_TYPE || err.type === RECORD_OR_TOKEN_NOT_FOUND_TYPE || err.httpMethod === 'head';
+    const isNotFoundMessage =
+        err.type === RECORD_NOT_FOUND_TYPE || err.type === RECORD_OR_TOKEN_NOT_FOUND_TYPE || err.httpMethod === 'head';
     const isNotFoundError = isNotFoundStatus && isNotFoundMessage;
     if (!isNotFoundError) throw err;
 }
 
 type ReturnJsonValue = string | number | boolean | null | Date | ReturnJsonObject | ReturnJsonArray;
-type ReturnJsonObject = { [Key in string]?: ReturnJsonValue; };
+type ReturnJsonObject = { [Key in string]?: ReturnJsonValue };
 type ReturnJsonArray = ReturnJsonValue[];
 
 /**
@@ -58,7 +59,11 @@ type ReturnJsonArray = ReturnJsonValue[];
  *
  * If the field cannot be converted to Date, it is left as is.
  */
-export function parseDateFields(input: JsonValue, shouldParseField: ((key: string) => boolean) | null = null, depth = 0): ReturnJsonValue {
+export function parseDateFields(
+    input: JsonValue,
+    shouldParseField: ((key: string) => boolean) | null = null,
+    depth = 0,
+): ReturnJsonValue {
     // Don't go too deep to avoid stack overflows (especially if there is a circular reference). The depth of 3
     // corresponds to obj.data.someArrayField.[x].field and should be generally enough.
     // TODO: Consider removing this limitation. It might came across as an annoying surprise as it's not communicated.
@@ -74,7 +79,7 @@ export function parseDateFields(input: JsonValue, shouldParseField: ((key: strin
         if (k.endsWith('At') || (shouldParseField && shouldParseField(k))) {
             if (v) {
                 const d = new Date(v as string);
-                output[k] = Number.isNaN(d.getTime()) ? v as string : d;
+                output[k] = Number.isNaN(d.getTime()) ? (v as string) : d;
             } else {
                 output[k] = v;
             }
@@ -101,7 +106,7 @@ export function stringifyWebhooksToBase64(webhooks: WebhookUpdateData[]): string
     return btoa(String.fromCharCode(...uint8Array));
 }
 
-let gzipPromise: ReturnType<typeof util['promisify']>;
+let gzipPromise: ReturnType<(typeof util)['promisify']>;
 if (isNode()) gzipPromise = util.promisify(zlib.gzip);
 
 /**
@@ -135,8 +140,10 @@ export function sliceArrayByByteLength<T>(array: T[], maxByteLength: number, sta
         const item = array[i];
         const itemByteSize = stringByteLength(JSON.stringify(item));
         if (itemByteSize > maxByteLength) {
-            throw new Error(`RequestQueueClient.batchAddRequests: The size of the request with index: ${startIndex + i} `
-                + `exceeds the maximum allowed size (${maxByteLength} bytes).`);
+            throw new Error(
+                `RequestQueueClient.batchAddRequests: The size of the request with index: ${startIndex + i} ` +
+                    `exceeds the maximum allowed size (${maxByteLength} bytes).`,
+            );
         }
         if (byteLength + itemByteSize >= maxByteLength) break;
         byteLength += itemByteSize;
@@ -173,7 +180,9 @@ export function getVersionData(): { version: string } {
 export class PaginationIterator {
     private readonly maxPageLimit: number;
 
-    private readonly getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<RequestQueueClientListRequestsResult>;
+    private readonly getPage: (
+        opts: RequestQueueClientListRequestsOptions,
+    ) => Promise<RequestQueueClientListRequestsResult>;
 
     private readonly limit?: number;
 
@@ -186,11 +195,13 @@ export class PaginationIterator {
         this.getPage = options.getPage;
     }
 
-    async* [Symbol.asyncIterator](): AsyncIterator<RequestQueueClientListRequestsResult> {
+    async *[Symbol.asyncIterator](): AsyncIterator<RequestQueueClientListRequestsResult> {
         let nextPageExclusiveStartId;
         let iterateItemCount = 0;
         while (true) {
-            const pageLimit = this.limit ? Math.min(this.maxPageLimit, this.limit - iterateItemCount) : this.maxPageLimit;
+            const pageLimit = this.limit
+                ? Math.min(this.maxPageLimit, this.limit - iterateItemCount)
+                : this.maxPageLimit;
             const pageExclusiveStartId = nextPageExclusiveStartId || this.exclusiveStartId;
             const page: RequestQueueClientListRequestsResult = await this.getPage({
                 limit: pageLimit,

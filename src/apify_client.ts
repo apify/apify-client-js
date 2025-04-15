@@ -1,7 +1,7 @@
 import type { SetStatusMessageOptions } from '@crawlee/types';
 import ow from 'ow';
 
-import { ACTOR_ENV_VARS,ME_USER_NAME_PLACEHOLDER } from '@apify/consts';
+import { ACTOR_ENV_VARS, ME_USER_NAME_PLACEHOLDER } from '@apify/consts';
 import type { Log } from '@apify/log';
 import logger from '@apify/log';
 
@@ -49,15 +49,18 @@ export class ApifyClient {
     httpClient: HttpClient;
 
     constructor(options: ApifyClientOptions = {}) {
-        ow(options, ow.object.exactShape({
-            baseUrl: ow.optional.string,
-            maxRetries: ow.optional.number,
-            minDelayBetweenRetriesMillis: ow.optional.number,
-            requestInterceptors: ow.optional.array,
-            timeoutSecs: ow.optional.number,
-            token: ow.optional.string,
-            userAgentSuffix: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                baseUrl: ow.optional.string,
+                maxRetries: ow.optional.number,
+                minDelayBetweenRetriesMillis: ow.optional.number,
+                requestInterceptors: ow.optional.array,
+                timeoutSecs: ow.optional.number,
+                token: ow.optional.string,
+                userAgentSuffix: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
+            }),
+        );
 
         const {
             baseUrl = 'https://api.apify.com',
@@ -141,9 +144,9 @@ export class ApifyClient {
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/dataset
      */
-    dataset<
-        Data extends Record<string | number, any> = Record<string | number, unknown>,
-    >(id: string): DatasetClient<Data> {
+    dataset<Data extends Record<string | number, any> = Record<string | number, unknown>>(
+        id: string,
+    ): DatasetClient<Data> {
         ow(id, ow.string.nonEmpty);
 
         return new DatasetClient({
@@ -195,10 +198,13 @@ export class ApifyClient {
      */
     requestQueue(id: string, options: RequestQueueUserOptions = {}): RequestQueueClient {
         ow(id, ow.string.nonEmpty);
-        ow(options, ow.object.exactShape({
-            clientKey: ow.optional.string.nonEmpty,
-            timeoutSecs: ow.optional.number,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                clientKey: ow.optional.string.nonEmpty,
+                timeoutSecs: ow.optional.number,
+            }),
+        );
 
         const apiClientOptions = {
             id,
@@ -326,7 +332,9 @@ export class ApifyClient {
 
     async setStatusMessage(message: string, options?: SetStatusMessageOptions): Promise<void> {
         const runId = process.env[ACTOR_ENV_VARS.RUN_ID];
-        if (!runId) { throw new Error(`Environment variable ${ACTOR_ENV_VARS.RUN_ID} is not set!`); }
+        if (!runId) {
+            throw new Error(`Environment variable ${ACTOR_ENV_VARS.RUN_ID} is not set!`);
+        }
         await this.run(runId).update({
             statusMessage: message,
             ...options,

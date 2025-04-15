@@ -14,15 +14,18 @@ class Browser {
         const page = await this.browser.newPage();
         await puppeteerUtils.injectFile(page, `${__dirname}/../dist/bundle.js`);
 
-         
         page.on('console', (msg) => console.log(msg.text()));
-        await page.evaluate((url, defaultQuery) => {
-            window.client = new window.Apify.ApifyClient({
-                baseUrl: url,
-                maxRetries: 0,
-                ...defaultQuery,
-            });
-        }, baseUrl, DEFAULT_OPTIONS);
+        await page.evaluate(
+            (url, defaultQuery) => {
+                window.client = new window.Apify.ApifyClient({
+                    baseUrl: url,
+                    maxRetries: 0,
+                    ...defaultQuery,
+                });
+            },
+            baseUrl,
+            DEFAULT_OPTIONS,
+        );
         return page;
     }
 
@@ -43,8 +46,7 @@ const getExpectedQuery = (callQuery = {}) => {
 };
 
 function optsToQuery(params) {
-    return Object
-        .entries(params)
+    return Object.entries(params)
         .filter(([k, v]) => v !== false) // eslint-disable-line no-unused-vars
         .map(([k, v]) => {
             if (v === true) v = '1';

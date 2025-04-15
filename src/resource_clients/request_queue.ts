@@ -74,9 +74,12 @@ export class RequestQueueClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/request-queues/queue-head/get-head
      */
     async listHead(options: RequestQueueClientListHeadOptions = {}): Promise<RequestQueueClientListHeadResult> {
-        ow(options, ow.object.exactShape({
-            limit: ow.optional.number,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                limit: ow.optional.number,
+            }),
+        );
 
         const response = await this.httpClient.call({
             url: this._url('head'),
@@ -94,11 +97,16 @@ export class RequestQueueClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/queue-head-with-locks/get-head-and-lock
      */
-    async listAndLockHead(options: RequestQueueClientListAndLockHeadOptions): Promise<RequestQueueClientListAndLockHeadResult> {
-        ow(options, ow.object.exactShape({
-            lockSecs: ow.number,
-            limit: ow.optional.number,
-        }));
+    async listAndLockHead(
+        options: RequestQueueClientListAndLockHeadOptions,
+    ): Promise<RequestQueueClientListAndLockHeadResult> {
+        ow(
+            options,
+            ow.object.exactShape({
+                lockSecs: ow.number,
+                limit: ow.optional.number,
+            }),
+        );
 
         const response = await this.httpClient.call({
             url: this._url('head/lock'),
@@ -121,13 +129,19 @@ export class RequestQueueClient extends ResourceClient {
         request: Omit<RequestQueueClientRequestSchema, 'id'>,
         options: RequestQueueClientAddRequestOptions = {},
     ): Promise<RequestQueueClientAddRequestResult> {
-        ow(request, ow.object.partialShape({
-            id: ow.undefined,
-        }));
+        ow(
+            request,
+            ow.object.partialShape({
+                id: ow.undefined,
+            }),
+        );
 
-        ow(options, ow.object.exactShape({
-            forefront: ow.optional.boolean,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                forefront: ow.optional.boolean,
+            }),
+        );
 
         const response = await this.httpClient.call({
             url: this._url('requests'),
@@ -152,12 +166,23 @@ export class RequestQueueClient extends ResourceClient {
         requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
         options: RequestQueueClientAddRequestOptions = {},
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
-        ow(requests, ow.array.ofType(ow.object.partialShape({
-            id: ow.undefined,
-        })).minLength(1).maxLength(REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION));
-        ow(options, ow.object.exactShape({
-            forefront: ow.optional.boolean,
-        }));
+        ow(
+            requests,
+            ow.array
+                .ofType(
+                    ow.object.partialShape({
+                        id: ow.undefined,
+                    }),
+                )
+                .minLength(1)
+                .maxLength(REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION),
+        );
+        ow(
+            options,
+            ow.object.exactShape({
+                forefront: ow.optional.boolean,
+            }),
+        );
 
         const { data } = await this.httpClient.call({
             url: this._url('requests/batch'),
@@ -206,7 +231,9 @@ export class RequestQueueClient extends ResourceClient {
                 // Get unique keys of all requests processed so far
                 const processedRequestsUniqueKeys = processedRequests.map(({ uniqueKey }) => uniqueKey);
                 // Requests remaining to be processed are the all that remain
-                remainingRequests = requests.filter(({ uniqueKey }) => !processedRequestsUniqueKeys.includes(uniqueKey));
+                remainingRequests = requests.filter(
+                    ({ uniqueKey }) => !processedRequestsUniqueKeys.includes(uniqueKey),
+                );
 
                 // Stop if all requests have been processed
                 if (remainingRequests.length === 0) {
@@ -225,7 +252,9 @@ export class RequestQueueClient extends ResourceClient {
             }
 
             // Exponential backoff
-            const delayMillis = Math.floor((1 + Math.random()) * (2 ** i) * minDelayBetweenUnprocessedRequestsRetriesMillis);
+            const delayMillis = Math.floor(
+                (1 + Math.random()) * 2 ** i * minDelayBetweenUnprocessedRequestsRetriesMillis,
+            );
             await new Promise((resolve) => {
                 setTimeout(resolve, delayMillis);
             });
@@ -249,9 +278,16 @@ export class RequestQueueClient extends ResourceClient {
             maxParallel = DEFAULT_PARALLEL_BATCH_ADD_REQUESTS,
             minDelayBetweenUnprocessedRequestsRetriesMillis = DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS,
         } = options;
-        ow(requests, ow.array.ofType(ow.object.partialShape({
-            id: ow.undefined,
-        })).minLength(1));
+        ow(
+            requests,
+            ow.array
+                .ofType(
+                    ow.object.partialShape({
+                        id: ow.undefined,
+                    }),
+                )
+                .minLength(1),
+        );
         ow(forefront, ow.optional.boolean);
         ow(maxUnprocessedRequestsRetries, ow.optional.number);
         ow(maxParallel, ow.optional.number);
@@ -259,7 +295,8 @@ export class RequestQueueClient extends ResourceClient {
 
         const executingRequests = new Set();
         const individualResults: RequestQueueClientBatchRequestsOperationResult[] = [];
-        const payloadSizeLimitBytes = MAX_PAYLOAD_SIZE_BYTES - Math.ceil(MAX_PAYLOAD_SIZE_BYTES * SAFETY_BUFFER_PERCENT);
+        const payloadSizeLimitBytes =
+            MAX_PAYLOAD_SIZE_BYTES - Math.ceil(MAX_PAYLOAD_SIZE_BYTES * SAFETY_BUFFER_PERCENT);
 
         // Keep a pool of up to `maxParallel` requests running at once
         let i = 0;
@@ -298,10 +335,15 @@ export class RequestQueueClient extends ResourceClient {
     async batchDeleteRequests(
         requests: RequestQueueClientRequestToDelete[],
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
-        ow(requests, ow.array.ofType(ow.any(
-            ow.object.partialShape({ id: ow.string }),
-            ow.object.partialShape({ uniqueKey: ow.string }),
-        )).minLength(1).maxLength(REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION));
+        ow(
+            requests,
+            ow.array
+                .ofType(
+                    ow.any(ow.object.partialShape({ id: ow.string }), ow.object.partialShape({ uniqueKey: ow.string })),
+                )
+                .minLength(1)
+                .maxLength(REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION),
+        );
 
         const { data } = await this.httpClient.call({
             url: this._url('requests/batch'),
@@ -344,13 +386,19 @@ export class RequestQueueClient extends ResourceClient {
         request: RequestQueueClientRequestSchema,
         options: RequestQueueClientAddRequestOptions = {},
     ): Promise<RequestQueueClientAddRequestResult> {
-        ow(request, ow.object.partialShape({
-            id: ow.string,
-        }));
+        ow(
+            request,
+            ow.object.partialShape({
+                id: ow.string,
+            }),
+        );
 
-        ow(options, ow.object.exactShape({
-            forefront: ow.optional.boolean,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                forefront: ow.optional.boolean,
+            }),
+        );
 
         const response = await this.httpClient.call({
             url: this._url(`requests/${request.id}`),
@@ -382,12 +430,18 @@ export class RequestQueueClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/request-lock/prolong-request-lock
      */
-    async prolongRequestLock(id: string, options: RequestQueueClientProlongRequestLockOptions): Promise<RequestQueueClientProlongRequestLockResult> {
+    async prolongRequestLock(
+        id: string,
+        options: RequestQueueClientProlongRequestLockOptions,
+    ): Promise<RequestQueueClientProlongRequestLockResult> {
         ow(id, ow.string);
-        ow(options, ow.object.exactShape({
-            lockSecs: ow.number,
-            forefront: ow.optional.boolean,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                lockSecs: ow.number,
+                forefront: ow.optional.boolean,
+            }),
+        );
 
         const response = await this.httpClient.call({
             url: this._url(`requests/${id}/lock`),
@@ -408,9 +462,12 @@ export class RequestQueueClient extends ResourceClient {
      */
     async deleteRequestLock(id: string, options: RequestQueueClientDeleteRequestLockOptions = {}): Promise<void> {
         ow(id, ow.string);
-        ow(options, ow.object.exactShape({
-            forefront: ow.optional.boolean,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                forefront: ow.optional.boolean,
+            }),
+        );
 
         await this.httpClient.call({
             url: this._url(`requests/${id}/lock`),
@@ -426,11 +483,16 @@ export class RequestQueueClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/request-collection/list-requests
      */
-    async listRequests(options: RequestQueueClientListRequestsOptions = {}): Promise<RequestQueueClientListRequestsResult> {
-        ow(options, ow.object.exactShape({
-            limit: ow.optional.number,
-            exclusiveStartId: ow.optional.string,
-        }));
+    async listRequests(
+        options: RequestQueueClientListRequestsOptions = {},
+    ): Promise<RequestQueueClientListRequestsResult> {
+        ow(
+            options,
+            ow.object.exactShape({
+                limit: ow.optional.number,
+                exclusiveStartId: ow.optional.string,
+            }),
+        );
 
         const response = await this.httpClient.call({
             url: this._url('requests'),
@@ -457,11 +519,14 @@ export class RequestQueueClient extends ResourceClient {
     paginateRequests(
         options: RequestQueueClientPaginateRequestsOptions = {},
     ): RequestQueueRequestsAsyncIterable<RequestQueueClientListRequestsResult> {
-        ow(options, ow.object.exactShape({
-            limit: ow.optional.number,
-            maxPageLimit: ow.optional.number,
-            exclusiveStartId: ow.optional.string,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                limit: ow.optional.number,
+                maxPageLimit: ow.optional.number,
+                exclusiveStartId: ow.optional.string,
+            }),
+        );
         const { limit, exclusiveStartId, maxPageLimit = DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT } = options;
         return new PaginationIterator({
             getPage: this.listRequests.bind(this),
@@ -621,10 +686,12 @@ export interface RequestQueueClientBatchRequestsOperationResult {
     unprocessedRequests: UnprocessedRequest[];
 }
 
-export type RequestQueueClientRequestToDelete = Pick<RequestQueueClientRequestSchema, 'id'> | Pick<RequestQueueClientRequestSchema, 'uniqueKey'>
+export type RequestQueueClientRequestToDelete =
+    | Pick<RequestQueueClientRequestSchema, 'id'>
+    | Pick<RequestQueueClientRequestSchema, 'uniqueKey'>;
 
-export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem, 'retryCount'>
+export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem, 'retryCount'>;
 
-export type AllowedHttpMethods = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'TRACE' | 'OPTIONS' | 'CONNECT' | 'PATCH'
+export type AllowedHttpMethods = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'TRACE' | 'OPTIONS' | 'CONNECT' | 'PATCH';
 
-export type RequestQueueRequestsAsyncIterable<T> = AsyncIterable<T>
+export type RequestQueueRequestsAsyncIterable<T> = AsyncIterable<T>;
