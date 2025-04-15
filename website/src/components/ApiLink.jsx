@@ -9,9 +9,7 @@ const ApiLink = ({ to, children }) => {
     const { siteConfig } = useDocusaurusContext();
 
     if (siteConfig.presets[0][1].docs.disableVersioning) {
-        return (
-            <Link to={`/api/${to}`}>{children}</Link>
-        );
+        return <Link to={`/api/${to}`}>{children}</Link>;
     }
 
     let versionSlug = `${version}/`;
@@ -22,9 +20,7 @@ const ApiLink = ({ to, children }) => {
         versionSlug = '';
     }
 
-    return (
-        <Link to={`/api/${versionSlug}${to}`}>{children}</Link>
-    );
+    return <Link to={`/api/${versionSlug}${to}`}>{children}</Link>;
 };
 
 export default ApiLink;

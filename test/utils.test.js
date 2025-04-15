@@ -1,4 +1,4 @@
-const { ApifyApiError } = require('../src/apify_api_error');
+const { ApifyApiError } = require('apify-client');
 const utils = require('../src/utils');
 
 describe('utils.pluckData()', () => {
@@ -15,7 +15,10 @@ describe('utils.pluckData()', () => {
 describe('utils.catchNotFoundOrThrow()', () => {
     test('works', () => {
         const recordNotFoundError = new ApifyApiError({ status: 404, data: { error: { type: 'record-not-found' } } });
-        const recordOrTokenNotFoundError = new ApifyApiError({ status: 404, data: { error: { type: 'record-or-token-not-found' } } });
+        const recordOrTokenNotFoundError = new ApifyApiError({
+            status: 404,
+            data: { error: { type: 'record-or-token-not-found' } },
+        });
         const otherError = new ApifyApiError({ status: 404, data: { error: { type: 'page-not-found' } } });
         const internalError = new ApifyApiError({ status: 500, data: { error: { type: 'internal-error' } } });
         const otherGenericError = new Error('blabla');

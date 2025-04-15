@@ -1,9 +1,9 @@
 import ow from 'ow';
 
-import type { Task, TaskUpdateData } from './task';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList } from '../utils';
+import type { Task, TaskUpdateData } from './task';
 
 export class TaskCollectionClient extends ResourceCollectionClient {
     /**
@@ -25,11 +25,14 @@ export class TaskCollectionClient extends ResourceCollectionClient {
      * @return {Promise<PaginationList>}
      */
     async list(options: TaskCollectionListOptions = {}): Promise<PaginatedList<TaskList>> {
-        ow(options, ow.object.exactShape({
-            limit: ow.optional.number,
-            offset: ow.optional.number,
-            desc: ow.optional.boolean,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                limit: ow.optional.number,
+                offset: ow.optional.number,
+                desc: ow.optional.boolean,
+            }),
+        );
 
         return this._list(options);
     }

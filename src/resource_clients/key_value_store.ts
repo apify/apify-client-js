@@ -10,15 +10,7 @@ import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
-import {
-    cast,
-    catchNotFoundOrThrow,
-    isBuffer,
-    isNode,
-    isStream,
-    parseDateFields,
-    pluckData,
-} from '../utils';
+import { cast, catchNotFoundOrThrow, isBuffer, isNode, isStream, parseDateFields, pluckData } from '../utils';
 
 export class KeyValueStoreClient extends ResourceClient {
     /**
@@ -58,10 +50,13 @@ export class KeyValueStoreClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/key-value-stores/key-collection/get-list-of-keys
      */
     async listKeys(options: KeyValueClientListKeysOptions = {}): Promise<KeyValueClientListKeysResult> {
-        ow(options, ow.object.exactShape({
-            limit: ow.optional.number,
-            exclusiveStartKey: ow.optional.string,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                limit: ow.optional.number,
+                exclusiveStartKey: ow.optional.string,
+            }),
+        );
 
         const response = await this.httpClient.call({
             url: this._url('keys'),
@@ -109,24 +104,32 @@ export class KeyValueStoreClient extends ResourceClient {
 
     async getRecord<Options extends KeyValueClientGetRecordOptions = KeyValueClientGetRecordOptions>(
         key: string,
-        options: Options
+        options: Options,
     ): Promise<KeyValueStoreRecord<ReturnTypeFromOptions<Options>> | undefined>;
 
-    async getRecord(key: string, options: KeyValueClientGetRecordOptions = {}): Promise<KeyValueStoreRecord<unknown> | undefined> {
+    async getRecord(
+        key: string,
+        options: KeyValueClientGetRecordOptions = {},
+    ): Promise<KeyValueStoreRecord<unknown> | undefined> {
         ow(key, ow.string);
-        ow(options, ow.object.exactShape({
-            buffer: ow.optional.boolean,
-            stream: ow.optional.boolean,
-            disableRedirect: ow.optional.boolean,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                buffer: ow.optional.boolean,
+                stream: ow.optional.boolean,
+                disableRedirect: ow.optional.boolean,
+            }),
+        );
 
         if (options.stream && !isNode()) {
             throw new Error('The stream option can only be used in Node.js environment.');
         }
 
         if ('disableRedirect' in options) {
-            log.deprecated('The disableRedirect option for getRecord() is deprecated. '
-                + 'It has no effect and will be removed in the following major release.');
+            log.deprecated(
+                'The disableRedirect option for getRecord() is deprecated. ' +
+                    'It has no effect and will be removed in the following major release.',
+            );
         }
 
         const requestOpts: Record<string, unknown> = {
@@ -164,11 +167,14 @@ export class KeyValueStoreClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/key-value-stores/record/put-record
      */
     async setRecord(record: KeyValueStoreRecord<JsonValue>): Promise<void> {
-        ow(record, ow.object.exactShape({
-            key: ow.string,
-            value: ow.any(ow.null, ow.string, ow.number, ow.object, ow.boolean),
-            contentType: ow.optional.string.nonEmpty,
-        }));
+        ow(
+            record,
+            ow.object.exactShape({
+                key: ow.string,
+                value: ow.any(ow.null, ow.string, ow.number, ow.object, ow.boolean),
+                contentType: ow.optional.string.nonEmpty,
+            }),
+        );
 
         const { key } = record;
         let { value, contentType } = record;
@@ -227,7 +233,7 @@ export interface KeyValueStore {
     actId?: string;
     actRunId?: string;
     stats?: KeyValueStoreStats;
-    generalAccess?: STORAGE_GENERAL_ACCESS | null,
+    generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
 export interface KeyValueStoreStats {
@@ -241,7 +247,7 @@ export interface KeyValueStoreStats {
 export interface KeyValueClientUpdateOptions {
     name?: string | null;
     title?: string;
-    generalAccess?: STORAGE_GENERAL_ACCESS | null,
+    generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
 export interface KeyValueClientListKeysOptions {
@@ -276,4 +282,6 @@ export interface KeyValueStoreRecord<T> {
 
 export type ReturnTypeFromOptions<Options extends KeyValueClientGetRecordOptions> = Options['stream'] extends true
     ? Readable
-    : Options['buffer'] extends true ? Buffer : JsonValue;
+    : Options['buffer'] extends true
+      ? Buffer
+      : JsonValue;

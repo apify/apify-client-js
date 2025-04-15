@@ -24,7 +24,7 @@ const input = { hashtags: ['rainbow'], resultsLimit: 20 };
 // Input is not persisted for next runs.
 const runData = await actorClient.call(input, { waitSecs: 60 });
 
-console.log("Run data:");
+console.log('Run data:');
 console.log(runData);
 ```
 
@@ -40,17 +40,19 @@ const animalsHashtags = ['zebra', 'lion', 'hippo'];
 
 // Multiple input schemas for one Actor can be persisted in tasks.
 // Tasks are saved in the Apify platform and can be run multiple times.
-const socialsTasksPromises = animalsHashtags.map((hashtag) => client.tasks().create({
-    actId: 'apify/instagram-hashtag-scraper',
-    name: `hashtags-${hashtag}`,
-    input: { hashtags: [hashtag], resultsLimit: 20 },
-    options: { memoryMbytes: 1024 },
-}));
+const socialsTasksPromises = animalsHashtags.map((hashtag) =>
+    client.tasks().create({
+        actId: 'apify/instagram-hashtag-scraper',
+        name: `hashtags-${hashtag}`,
+        input: { hashtags: [hashtag], resultsLimit: 20 },
+        options: { memoryMbytes: 1024 },
+    }),
+);
 
 // Create all tasks in parallel
 const createdTasks = await Promise.all(socialsTasksPromises);
 
-console.log("Created tasks:");
+console.log('Created tasks:');
 console.log(createdTasks);
 
 // Run all tasks in parallel
@@ -74,7 +76,7 @@ const actorRuns = actorClient.runs();
 // See pagination to understand how to get more datasets
 const actorDatasets = await actorRuns.list({ limit: 20 });
 
-console.log("Actor datasets:");
+console.log('Actor datasets:');
 console.log(actorDatasets);
 
 const mergingDataset = await client.datasets().getOrCreate('merge-dataset');
@@ -141,7 +143,7 @@ app.post('apify-webhook', async (req, res) => {
 
     // Respond to the webhook
     res.send('Webhook received');
-})
+});
 
 // Start express on the defined port
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

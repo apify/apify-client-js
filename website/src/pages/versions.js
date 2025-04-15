@@ -32,10 +32,7 @@ function Versions(props) {
                     <header className="postHeader">
                         <h1>{siteConfig.title} Versions</h1>
                     </header>
-                    <p>
-                        New versions of Apify SDK are released once a month or
-                        so. With major releases once a year.
-                    </p>
+                    <p>New versions of Apify SDK are released once a month or so. With major releases once a year.</p>
                     <h3 id="latest">Current version (Stable)</h3>
                     <table className="versions">
                         <tbody>
@@ -45,31 +42,20 @@ function Versions(props) {
                                     {/* You are supposed to change this href where appropriate
                         Example: href="<baseUrl>/docs(/:language)/:id" */}
                                     <a
-                                        href={`${siteConfig.baseUrl}${
-                                            siteConfig.docsUrl
-                                        }/${
-                                            props.language
-                                                ? `${props.language}/`
-                                                : ''
+                                        href={`${siteConfig.baseUrl}${siteConfig.docsUrl}/${
+                                            props.language ? `${props.language}/` : ''
                                         }api/apify`}
                                     >
                                         Documentation
                                     </a>
                                 </td>
                                 <td>
-                                    <a
-                                        href={`${repoUrl}/releases/tag/v${latestVersion}`}
-                                    >
-                                        Release Notes
-                                    </a>
+                                    <a href={`${repoUrl}/releases/tag/v${latestVersion}`}>Release Notes</a>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
-                    <p>
-                        This is the version that is configured automatically
-                        when you first install Apify SDK.
-                    </p>
+                    <p>This is the version that is configured automatically when you first install Apify SDK.</p>
                     <h3 id="rc">Pre-release versions</h3>
                     <table className="versions">
                         <tbody>
@@ -79,12 +65,8 @@ function Versions(props) {
                                     {/* You are supposed to change this href where appropriate
                         Example: href="<baseUrl>/docs(/:language)/next/:id" */}
                                     <a
-                                        href={`${siteConfig.baseUrl}${
-                                            siteConfig.docsUrl
-                                        }/${
-                                            props.language
-                                                ? `${props.language}/`
-                                                : ''
+                                        href={`${siteConfig.baseUrl}${siteConfig.docsUrl}/${
+                                            props.language ? `${props.language}/` : ''
                                         }next/api/apify`}
                                     >
                                         Documentation
@@ -97,10 +79,7 @@ function Versions(props) {
                         </tbody>
                     </table>
                     <h3 id="archive">Past Versions</h3>
-                    <p>
-                        Here you can find previous versions of the
-                        documentation.
-                    </p>
+                    <p>Here you can find previous versions of the documentation.</p>
                     <table className="versions">
                         <tbody>
                             {versions.map(
@@ -112,23 +91,15 @@ function Versions(props) {
                                                 {/* You are supposed to change this href where appropriate
                         Example: href="<baseUrl>/docs(/:language)/:version/:id" */}
                                                 <a
-                                                    href={`${
-                                                        siteConfig.baseUrl
-                                                    }${siteConfig.docsUrl}/${
-                                                        props.language
-                                                            ? `${props.language}/`
-                                                            : ''
+                                                    href={`${siteConfig.baseUrl}${siteConfig.docsUrl}/${
+                                                        props.language ? `${props.language}/` : ''
                                                     }${version}/api/apify`}
                                                 >
                                                     Documentation
                                                 </a>
                                             </td>
                                             <td>
-                                                <a
-                                                    href={`${repoUrl}/releases/tag/v${version}`}
-                                                >
-                                                    Release Notes
-                                                </a>
+                                                <a href={`${repoUrl}/releases/tag/v${version}`}>Release Notes</a>
                                             </td>
                                         </tr>
                                     ),
@@ -136,8 +107,7 @@ function Versions(props) {
                         </tbody>
                     </table>
                     <p>
-                        You can find past versions of this project on{' '}
-                        <a href={repoUrl}>GitHub</a>.
+                        You can find past versions of this project on <a href={repoUrl}>GitHub</a>.
                     </p>
                 </div>
             </Container>

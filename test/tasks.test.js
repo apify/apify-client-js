@@ -1,5 +1,5 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
-const { ApifyClient } = require('../src');
+const { ApifyClient } = require('apify-client');
 const mockServer = require('./mock_server/server');
 const { stringifyWebhooksToBase64 } = require('../src/utils');
 
@@ -14,10 +14,7 @@ describe('Task methods', () => {
     });
 
     afterAll(async () => {
-        await Promise.all([
-            mockServer.close(),
-            browser.cleanUpBrowser(),
-        ]);
+        await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
     let client;
@@ -175,7 +172,12 @@ describe('Task methods', () => {
             expect(res.id).toEqual('run-task');
             validateRequest(query, { taskId }, input);
 
-            const browserRes = await page.evaluate((id, i, opts) => client.task(id).start(i, opts), taskId, input, query);
+            const browserRes = await page.evaluate(
+                (id, i, opts) => client.task(id).start(i, opts),
+                taskId,
+                input,
+                query,
+            );
             expect(browserRes).toEqual(res);
             validateRequest(query, { taskId }, input);
         });
@@ -193,7 +195,12 @@ describe('Task methods', () => {
             expect(res.id).toEqual('run-task');
             validateRequest(query, { taskId }, input);
 
-            const browserRes = await page.evaluate((id, i, opts) => client.task(id).start(i, opts), taskId, input, query);
+            const browserRes = await page.evaluate(
+                (id, i, opts) => client.task(id).start(i, opts),
+                taskId,
+                input,
+                query,
+            );
             expect(browserRes).toEqual(res);
             validateRequest(query, { taskId }, input);
         });
@@ -244,7 +251,9 @@ describe('Task methods', () => {
             expect(res.id).toEqual('run-task');
             validateRequest(query, { taskId });
 
-            const browserRes = await page.evaluate((id, opts) => client.task(id).start(undefined, opts), taskId, { webhooks });
+            const browserRes = await page.evaluate((id, opts) => client.task(id).start(undefined, opts), taskId, {
+                webhooks,
+            });
             expect(browserRes).toEqual(res);
             validateRequest(query, { taskId });
         });
@@ -255,7 +264,9 @@ describe('Task methods', () => {
             expect(res.id).toEqual('run-task');
             validateRequest({ maxItems: 100 }, { taskId });
 
-            const browserRes = await page.evaluate((id, opts) => client.task(id).start(undefined, opts), taskId, { maxItems: 100 });
+            const browserRes = await page.evaluate((id, opts) => client.task(id).start(undefined, opts), taskId, {
+                maxItems: 100,
+            });
             expect(browserRes).toEqual(res);
             validateRequest({ maxItems: 100 }, { taskId });
         });
@@ -291,21 +302,23 @@ describe('Task methods', () => {
             validateRequest({ waitForFinish: waitSecs }, { runId });
             validateRequest(query, { taskId }, { some: 'body' });
 
-            const callBrowserRes = await page.evaluate(
-                (id, i, opts) => client.task(id).call(i, opts), taskId, input, {
-                    memory,
-                    timeout,
-                    build,
-                    waitSecs,
-                },
-            );
+            const callBrowserRes = await page.evaluate((id, i, opts) => client.task(id).call(i, opts), taskId, input, {
+                memory,
+                timeout,
+                build,
+                waitSecs,
+            });
             expect(callBrowserRes).toEqual(res);
             validateRequest({ waitForFinish: waitSecs }, { runId });
-            validateRequest({
-                timeout,
-                memory,
-                build,
-            }, { taskId }, { some: 'body' });
+            validateRequest(
+                {
+                    timeout,
+                    memory,
+                    build,
+                },
+                { taskId },
+                { some: 'body' },
+            );
         });
 
         test('call() works with maxItems', async () => {
@@ -331,7 +344,10 @@ describe('Task methods', () => {
             validateRequest(query, { taskId });
 
             const callBrowserRes = await page.evaluate(
-                (id, i, opts) => client.task(id).call(i, opts), taskId, undefined, {
+                (id, i, opts) => client.task(id).call(i, opts),
+                taskId,
+                undefined,
+                {
                     waitSecs,
                     maxItems,
                 },

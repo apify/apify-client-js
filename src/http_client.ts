@@ -1,29 +1,17 @@
-import os from 'os';
+import os from 'node:os';
 
 import KeepAliveAgent from 'agentkeepalive';
 import type { RetryFunction } from 'async-retry';
 import retry from 'async-retry';
-import type {
-    AxiosError,
-    AxiosInstance,
-    AxiosRequestConfig,
-    AxiosResponse,
-    InternalAxiosRequestConfig} from 'axios';
-import axios, {
-    AxiosHeaders,
-} from 'axios';
+import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosHeaders } from 'axios';
 
 import { APIFY_ENV_VARS } from '@apify/consts';
 import type { Log } from '@apify/log';
 
 import { ApifyApiError } from './apify_api_error';
-import type {
-    RequestInterceptorFunction} from './interceptors';
-import {
-    InvalidResponseBodyError,
-    requestInterceptors,
-    responseInterceptors,
-} from './interceptors';
+import type { RequestInterceptorFunction } from './interceptors';
+import { InvalidResponseBodyError, requestInterceptors, responseInterceptors } from './interceptors';
 import type { Statistics } from './statistics';
 import { asArray, cast, getVersionData, isNode, isStream } from './utils';
 
@@ -146,8 +134,12 @@ export class HttpClient {
     }
 
     private _informAboutStreamNoRetry() {
-        this.logger.warningOnce('Request body was a stream - retrying will not work, as part of it was already consumed.');
-        this.logger.warningOnce('If you want Apify client to handle retries for you, collect the stream into a buffer before sending it.');
+        this.logger.warningOnce(
+            'Request body was a stream - retrying will not work, as part of it was already consumed.',
+        );
+        this.logger.warningOnce(
+            'If you want Apify client to handle retries for you, collect the stream into a buffer before sending it.',
+        );
     }
 
     /**
@@ -268,7 +260,9 @@ export class HttpClient {
 
     private _onRequestRetry(error: Error, attempt: number) {
         if (attempt === Math.round(this.maxRetries / 2)) {
-            this.logger.warning(`API request failed ${attempt} times. Max attempts: ${this.maxRetries + 1}.\nCause:${error.stack}`);
+            this.logger.warning(
+                `API request failed ${attempt} times. Max attempts: ${this.maxRetries + 1}.\nCause:${error.stack}`,
+            );
         }
     }
 }

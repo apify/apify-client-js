@@ -14,10 +14,8 @@ module.exports = {
     organizationName: 'apify',
     projectName: 'apify-client-js',
     favicon: 'img/favicon.ico',
-    onBrokenLinks:
-    /** @type {import('@docusaurus/types').ReportingSeverity} */ ('throw'),
-    onBrokenMarkdownLinks:
-    /** @type {import('@docusaurus/types').ReportingSeverity} */ ('throw'),
+    onBrokenLinks: /** @type {import('@docusaurus/types').ReportingSeverity} */ ('throw'),
+    onBrokenMarkdownLinks: /** @type {import('@docusaurus/types').ReportingSeverity} */ ('throw'),
     themes: [
         [
             '@apify/docs-theme',
@@ -51,15 +49,15 @@ module.exports = {
                             label: 'GitHub',
                         },
                         {
-                            'type': 'docsVersionDropdown',
-                            'position': 'left',
-                            'className': 'navbar__item', // fixes margin around dropdown - hackish, should be fixed in theme
+                            type: 'docsVersionDropdown',
+                            position: 'left',
+                            className: 'navbar__item', // fixes margin around dropdown - hackish, should be fixed in theme
                             'data-api-links': JSON.stringify([
                                 'reference/next',
                                 ...versions.map((version, i) => (i === 0 ? 'reference' : `reference/${version}`)),
                             ]),
-                            'dropdownItemsBefore': [],
-                            'dropdownItemsAfter': [],
+                            dropdownItemsBefore: [],
+                            dropdownItemsAfter: [],
                         },
                     ],
                 },

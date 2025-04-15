@@ -1,9 +1,9 @@
 import ow from 'ow';
 
-import { ActorEnvVarClient } from './actor_env_var';
-import { ActorEnvVarCollectionClient } from './actor_env_var_collection';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import { ActorEnvVarClient } from './actor_env_var';
+import { ActorEnvVarCollectionClient } from './actor_env_var_collection';
 
 export class ActorVersionClient extends ResourceClient {
     /**
@@ -44,9 +44,11 @@ export class ActorVersionClient extends ResourceClient {
      */
     envVar(envVarName: string): ActorEnvVarClient {
         ow(envVarName, ow.string);
-        return new ActorEnvVarClient(this._subResourceOptions({
-            id: envVarName,
-        }));
+        return new ActorEnvVarClient(
+            this._subResourceOptions({
+                id: envVarName,
+            }),
+        );
     }
 
     /**
@@ -101,10 +103,6 @@ export interface ActorEnvironmentVariable {
     isSecret?: boolean;
 }
 
-export type ActorVersion =
-    | ActorVersionSourceFiles
-    | ActorVersionGitRepo
-    | ActorVersionTarball
-    | ActorVersionGitHubGist;
+export type ActorVersion = ActorVersionSourceFiles | ActorVersionGitRepo | ActorVersionTarball | ActorVersionGitHubGist;
 
 export type FinalActorVersion = ActorVersion & Required<Pick<ActorVersion, 'versionNumber' | 'buildTag'>>;

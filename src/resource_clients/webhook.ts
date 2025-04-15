@@ -2,18 +2,13 @@ import ow from 'ow';
 
 import type { WEBHOOK_EVENT_TYPES } from '@apify/consts';
 
-import type { WebhookDispatch } from './webhook_dispatch';
-import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection';
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
-import {
-    pluckData,
-    parseDateFields,
-    catchNotFoundOrThrow,
-    cast,
-} from '../utils';
+import { cast, catchNotFoundOrThrow, parseDateFields, pluckData } from '../utils';
+import type { WebhookDispatch } from './webhook_dispatch';
+import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection';
 
 export class WebhookClient extends ResourceClient {
     /**
@@ -73,9 +68,11 @@ export class WebhookClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/webhooks/dispatches-collection
      */
     dispatches(): WebhookDispatchCollectionClient {
-        return new WebhookDispatchCollectionClient(this._subResourceOptions({
-            resourcePath: 'dispatches',
-        }));
+        return new WebhookDispatchCollectionClient(
+            this._subResourceOptions({
+                resourcePath: 'dispatches',
+            }),
+        );
     }
 }
 
@@ -118,15 +115,19 @@ export type WebhookUpdateData = Partial<
         | 'headersTemplate'
         | 'description'
     >
-> & WebhookIdempotencyKey;
+> &
+    WebhookIdempotencyKey;
 
 export interface WebhookStats {
     totalDispatches: number;
 }
 
-export type WebhookEventType = typeof WEBHOOK_EVENT_TYPES[keyof typeof WEBHOOK_EVENT_TYPES];
+export type WebhookEventType = (typeof WEBHOOK_EVENT_TYPES)[keyof typeof WEBHOOK_EVENT_TYPES];
 
-export type WebhookCondition = WebhookAnyRunOfActorCondition | WebhookAnyRunOfActorTaskCondition | WebhookCertainRunCondition;
+export type WebhookCondition =
+    | WebhookAnyRunOfActorCondition
+    | WebhookAnyRunOfActorTaskCondition
+    | WebhookCertainRunCondition;
 
 export interface WebhookAnyRunOfActorCondition {
     actorId: string;

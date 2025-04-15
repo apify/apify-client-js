@@ -1,8 +1,5 @@
+import { parseDateFields, pluckData } from '../utils';
 import { ApiClient } from './api_client';
-import {
-    pluckData,
-    parseDateFields,
-} from '../utils';
 
 /**
  * Resource collection client.

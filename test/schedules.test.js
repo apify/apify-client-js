@@ -1,5 +1,5 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
-const { ApifyClient } = require('../src');
+const { ApifyClient } = require('apify-client');
 const mockServer = require('./mock_server/server');
 
 describe('Schedule methods', () => {
@@ -13,10 +13,7 @@ describe('Schedule methods', () => {
     });
 
     afterAll(async () => {
-        await Promise.all([
-            mockServer.close(),
-            browser.cleanUpBrowser(),
-        ]);
+        await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
     let client;

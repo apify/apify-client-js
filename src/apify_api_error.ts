@@ -149,10 +149,7 @@ export class ApifyApiError extends Error {
      *   path: /v2/actor-tasks/user~my-task/runs
      */
     private _createApiStack() {
-        const {
-            name,
-            ...props
-        } = this;
+        const { name, ...props } = this;
 
         const stack = Object.entries(props)
             .map(([k, v]) => {

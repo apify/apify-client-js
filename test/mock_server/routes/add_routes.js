@@ -65,9 +65,7 @@ const HANDLERS = {
             const context = maybeParseContextFromResourceId(resourceId);
             const delayMillis = context && context.delayMillis;
             setTimeout(() => {
-                res
-                    .status(responseStatusCode)
-                    .json(payload);
+                res.status(responseStatusCode).json(payload);
             }, delayMillis || 0);
         };
     },
@@ -107,10 +105,7 @@ const HANDLERS = {
             const context = maybeParseContextFromResourceId(resourceId);
             const delayMillis = context && context.delayMillis;
             setTimeout(() => {
-                res
-                    .status(statusCode)
-                    .set(headers)
-                    .send(payload);
+                res.status(statusCode).set(headers).send(payload);
             }, delayMillis || 0);
         };
     },

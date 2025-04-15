@@ -1,7 +1,7 @@
-const { Readable } = require('stream');
+const { Readable } = require('node:stream');
 
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
-const { ApifyClient } = require('../src');
+const { ApifyClient } = require('apify-client');
 const mockServer = require('./mock_server/server');
 
 describe('Key-Value Store methods', () => {
@@ -15,10 +15,7 @@ describe('Key-Value Store methods', () => {
     });
 
     afterAll(async () => {
-        await Promise.all([
-            mockServer.close(),
-            browser.cleanUpBrowser(),
-        ]);
+        await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
     let client;
@@ -138,7 +135,11 @@ describe('Key-Value Store methods', () => {
             expect(res.id).toEqual('list-keys');
             validateRequest(query, { storeId });
 
-            const browserRes = await page.evaluate((id, opts) => client.keyValueStore(id).listKeys(opts), storeId, query);
+            const browserRes = await page.evaluate(
+                (id, opts) => client.keyValueStore(id).listKeys(opts),
+                storeId,
+                query,
+            );
             expect(browserRes).toEqual(res);
             validateRequest(query, { storeId });
         });
@@ -263,13 +264,18 @@ describe('Key-Value Store methods', () => {
             expect(res).toEqual(expectedResult);
             validateRequest({}, { storeId, key });
 
-            const browserRes = await page.evaluate(async (id, k, opts) => {
-                /* eslint-disable no-shadow */
-                const res = await client.keyValueStore(id).getRecord(k, opts);
-                const decoder = new TextDecoder();
-                res.value = decoder.decode(res.value);
-                return res;
-            }, storeId, key, options);
+            const browserRes = await page.evaluate(
+                async (id, k, opts) => {
+                    /* eslint-disable no-shadow */
+                    const res = await client.keyValueStore(id).getRecord(k, opts);
+                    const decoder = new TextDecoder();
+                    res.value = decoder.decode(res.value);
+                    return res;
+                },
+                storeId,
+                key,
+                options,
+            );
             expect(browserRes).toEqual(res);
             validateRequest({}, { storeId, key });
         });
@@ -297,13 +303,17 @@ describe('Key-Value Store methods', () => {
             expect(res).toEqual(expectedResult);
             validateRequest({}, { storeId, key });
 
-            const browserRes = await page.evaluate(async (id, k, opts) => {
-                /* eslint-disable no-shadow */
-                const res = await client.keyValueStore(id).getRecord(k, opts);
-                const decoder = new TextDecoder();
-                res.value = decoder.decode(res.value);
-                return res;
-            }, storeId, key);
+            const browserRes = await page.evaluate(
+                async (id, k, opts) => {
+                    /* eslint-disable no-shadow */
+                    const res = await client.keyValueStore(id).getRecord(k, opts);
+                    const decoder = new TextDecoder();
+                    res.value = decoder.decode(res.value);
+                    return res;
+                },
+                storeId,
+                key,
+            );
             expect(browserRes).toEqual(res);
             validateRequest({}, { storeId, key });
         });
@@ -340,10 +350,15 @@ describe('Key-Value Store methods', () => {
             validateRequest({}, { storeId, key });
 
             try {
-                await page.evaluate(async (id, k, opts) => {
-                    /* eslint-disable no-shadow */
-                    return client.keyValueStore(id).getRecord(k, opts);
-                }, storeId, key, options);
+                await page.evaluate(
+                    async (id, k, opts) => {
+                        /* eslint-disable no-shadow */
+                        return client.keyValueStore(id).getRecord(k, opts);
+                    },
+                    storeId,
+                    key,
+                    options,
+                );
                 throw new Error('wrong error');
             } catch (err) {
                 expect(err.message).toMatch('The stream option can only be used in Node.js environment.');
@@ -423,11 +438,16 @@ describe('Key-Value Store methods', () => {
             expect(res).toBeUndefined();
             validateRequest({}, { storeId, key }, value, expectedHeaders);
 
-            const browserRes = await page.evaluate(async (id, key, s) => {
-                const encoder = new TextEncoder();
-                const value = encoder.encode(s);
-                return client.keyValueStore(id).setRecord({ key, value });
-            }, storeId, key, string);
+            const browserRes = await page.evaluate(
+                async (id, key, s) => {
+                    const encoder = new TextEncoder();
+                    const value = encoder.encode(s);
+                    return client.keyValueStore(id).setRecord({ key, value });
+                },
+                storeId,
+                key,
+                string,
+            );
             expect(browserRes).toBeUndefined();
             validateRequest({}, { storeId, key }, value, expectedHeaders);
         });

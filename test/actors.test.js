@@ -1,7 +1,7 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
-const { ApifyClient } = require('../src');
-const mockServer = require('./mock_server/server');
+const { ApifyClient } = require('apify-client');
 const { stringifyWebhooksToBase64 } = require('../src/utils');
+const mockServer = require('./mock_server/server');
 
 describe('Actor methods', () => {
     let baseUrl;
@@ -14,10 +14,7 @@ describe('Actor methods', () => {
     });
 
     afterAll(async () => {
-        await Promise.all([
-            mockServer.close(),
-            browser.cleanUpBrowser(),
-        ]);
+        await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
     let client;
@@ -140,7 +137,10 @@ describe('Actor methods', () => {
             expect(res.id).toEqual('run-actor');
             validateRequest(query, { actorId }, { some: 'body' }, { 'content-type': contentType });
 
-            const browserRes = await page.evaluate((id, i, opts) => client.actor(id).start(i, opts), actorId, input, { contentType, ...query });
+            const browserRes = await page.evaluate((id, i, opts) => client.actor(id).start(i, opts), actorId, input, {
+                contentType,
+                ...query,
+            });
             expect(browserRes).toEqual(res);
             validateRequest(query, { actorId }, { some: 'body' }, { 'content-type': contentType });
         });
@@ -154,7 +154,9 @@ describe('Actor methods', () => {
             expect(res.id).toEqual('run-actor');
             validateRequest({}, { actorId }, { some: 'body' }, { 'content-type': contentType });
 
-            const browserRes = await page.evaluate((id, i, opts) => client.actor(id).start(i, opts), actorId, input, { contentType });
+            const browserRes = await page.evaluate((id, i, opts) => client.actor(id).start(i, opts), actorId, input, {
+                contentType,
+            });
             expect(browserRes).toEqual(res);
             validateRequest({}, { actorId }, { some: 'body' }, { 'content-type': contentType });
         });
@@ -204,7 +206,9 @@ describe('Actor methods', () => {
             expect(res.id).toEqual('run-actor');
             validateRequest({ webhooks: stringifyWebhooksToBase64(webhooks) }, { actorId });
 
-            const browserRes = await page.evaluate((id, opts) => client.actor(id).start(undefined, opts), actorId, { webhooks });
+            const browserRes = await page.evaluate((id, opts) => client.actor(id).start(undefined, opts), actorId, {
+                webhooks,
+            });
             expect(browserRes).toEqual(res);
             validateRequest({ webhooks: stringifyWebhooksToBase64(webhooks) }, { actorId });
         });
@@ -216,7 +220,9 @@ describe('Actor methods', () => {
             expect(res.id).toEqual('run-actor');
             validateRequest({ maxItems: 100 }, { actorId });
 
-            const browserRes = await page.evaluate((id, opts) => client.actor(id).start(undefined, opts), actorId, { maxItems: 100 });
+            const browserRes = await page.evaluate((id, opts) => client.actor(id).start(undefined, opts), actorId, {
+                maxItems: 100,
+            });
             expect(browserRes).toEqual(res);
             validateRequest({ maxItems: 100 }, { actorId });
         });
@@ -244,14 +250,22 @@ describe('Actor methods', () => {
 
             expect(res).toEqual(data);
             validateRequest({ waitForFinish: waitSecs }, { runId });
-            validateRequest({
-                timeout,
-                memory,
-                build,
-            }, { actorId }, { some: 'body' }, { 'content-type': contentType });
+            validateRequest(
+                {
+                    timeout,
+                    memory,
+                    build,
+                },
+                { actorId },
+                { some: 'body' },
+                { 'content-type': contentType },
+            );
 
             const callBrowserRes = await page.evaluate(
-                (id, i, opts) => client.actor(id).call(i, opts), actorId, input, {
+                (id, i, opts) => client.actor(id).call(i, opts),
+                actorId,
+                input,
+                {
                     contentType,
                     memory,
                     timeout,
@@ -261,11 +275,16 @@ describe('Actor methods', () => {
             );
             expect(callBrowserRes).toEqual(res);
             validateRequest({ waitForFinish: waitSecs }, { runId });
-            validateRequest({
-                timeout,
-                memory,
-                build,
-            }, { actorId }, { some: 'body' }, { 'content-type': contentType });
+            validateRequest(
+                {
+                    timeout,
+                    memory,
+                    build,
+                },
+                { actorId },
+                { some: 'body' },
+                { 'content-type': contentType },
+            );
         });
 
         test('call() works with maxItems', async () => {
@@ -284,7 +303,10 @@ describe('Actor methods', () => {
             validateRequest({ maxItems }, { actorId });
 
             const callBrowserRes = await page.evaluate(
-                (id, i, opts) => client.actor(id).call(i, opts), actorId, undefined, {
+                (id, i, opts) => client.actor(id).call(i, opts),
+                actorId,
+                undefined,
+                {
                     waitSecs,
                     maxItems,
                 },
@@ -309,26 +331,23 @@ describe('Actor methods', () => {
             expect(res.id).toEqual('build-actor');
             validateRequest({ version, ...options }, { actorId });
 
-            const browserRes = await page.evaluate((aId, v, opts) => client.actor(aId).build(v, opts), actorId, version, options);
+            const browserRes = await page.evaluate(
+                (aId, v, opts) => client.actor(aId).build(v, opts),
+                actorId,
+                version,
+                options,
+            );
             expect(browserRes).toEqual(res);
             validateRequest({ version, ...options }, { actorId });
         });
 
         describe('lastRun()', () => {
-            test.each([
-                'get',
-                'dataset',
-                'keyValueStore',
-                'requestQueue',
-                'log',
-            ])('%s() works', async (method) => {
+            test.each(['get', 'dataset', 'keyValueStore', 'requestQueue', 'log'])('%s() works', async (method) => {
                 const actorId = 'some-actor-id';
                 const requestedStatus = 'SUCCEEDED';
 
                 const lastRunClient = client.actor(actorId).lastRun({ status: requestedStatus });
-                const res = method === 'get'
-                    ? await lastRunClient.get()
-                    : await lastRunClient[method]().get();
+                const res = method === 'get' ? await lastRunClient.get() : await lastRunClient[method]().get();
 
                 if (method === 'log') {
                     expect(res).toEqual('last-run-log');
@@ -337,11 +356,15 @@ describe('Actor methods', () => {
                 }
                 validateRequest({ status: requestedStatus }, { actorId });
 
-                const browserRes = await page.evaluate((aId, mthd) => {
-                    const lrc = client.actor(aId).lastRun();
-                    if (mthd === 'get') return lrc.get();
-                    return lrc[mthd]().get();
-                }, actorId, method);
+                const browserRes = await page.evaluate(
+                    (aId, mthd) => {
+                        const lrc = client.actor(aId).lastRun();
+                        if (mthd === 'get') return lrc.get();
+                        return lrc[mthd]().get();
+                    },
+                    actorId,
+                    method,
+                );
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { actorId });
             });
@@ -360,7 +383,11 @@ describe('Actor methods', () => {
             expect(res.id).toEqual('list-builds');
             validateRequest(query, { actorId });
 
-            const browserRes = await page.evaluate((aId, opts) => client.actor(aId).builds().list(opts), actorId, query);
+            const browserRes = await page.evaluate(
+                (aId, opts) => client.actor(aId).builds().list(opts),
+                actorId,
+                query,
+            );
             expect(browserRes).toEqual(res);
             validateRequest(query, { actorId });
         });
@@ -407,7 +434,11 @@ describe('Actor methods', () => {
                 expect(res.id).toEqual('create-actor-version');
                 validateRequest({}, { actorId }, actorVersion);
 
-                const browserRes = await page.evaluate((id, opts) => client.actor(id).versions().create(opts), actorId, actorVersion);
+                const browserRes = await page.evaluate(
+                    (id, opts) => client.actor(id).versions().create(opts),
+                    actorId,
+                    actorVersion,
+                );
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { actorId }, actorVersion);
             });
@@ -422,7 +453,11 @@ describe('Actor methods', () => {
                 expect(res.id).toEqual('get-actor-version');
                 validateRequest({}, { actorId, versionNumber });
 
-                const browserRes = await page.evaluate((id, vn) => client.actor(id).version(vn).get(), actorId, versionNumber);
+                const browserRes = await page.evaluate(
+                    (id, vn) => client.actor(id).version(vn).get(),
+                    actorId,
+                    versionNumber,
+                );
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { actorId, versionNumber });
             });
@@ -435,7 +470,11 @@ describe('Actor methods', () => {
                 expect(res).toBeUndefined();
                 validateRequest({}, { actorId, versionNumber });
 
-                const browserRes = await page.evaluate((id, vn) => client.actor(id).version(vn).get(), actorId, versionNumber);
+                const browserRes = await page.evaluate(
+                    (id, vn) => client.actor(id).version(vn).get(),
+                    actorId,
+                    versionNumber,
+                );
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { actorId, versionNumber });
             });
@@ -451,7 +490,12 @@ describe('Actor methods', () => {
                 expect(res.id).toEqual('update-actor-version');
                 validateRequest({}, { actorId: 'some-user~some-id', versionNumber }, newFields);
 
-                const browserRes = await page.evaluate((id, vn, nf) => client.actor(id).version(vn).update(nf), actorId, versionNumber, newFields);
+                const browserRes = await page.evaluate(
+                    (id, vn, nf) => client.actor(id).version(vn).update(nf),
+                    actorId,
+                    versionNumber,
+                    newFields,
+                );
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { actorId: 'some-user~some-id', versionNumber }, newFields);
             });
@@ -464,7 +508,11 @@ describe('Actor methods', () => {
                 expect(res).toBeUndefined();
                 validateRequest({}, { actorId, versionNumber });
 
-                const browserRes = await page.evaluate((id, vn) => client.actor(id).version(vn).delete(), actorId, versionNumber);
+                const browserRes = await page.evaluate(
+                    (id, vn) => client.actor(id).version(vn).delete(),
+                    actorId,
+                    versionNumber,
+                );
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { actorId, versionNumber });
             });
@@ -479,7 +527,11 @@ describe('Actor methods', () => {
                 expect(res.id).toEqual('list-actor-env-vars');
                 validateRequest({}, { actorId, versionNumber });
 
-                const browserRes = await page.evaluate((aId, vn) => client.actor(aId).version(vn).envVars().list(), actorId, versionNumber);
+                const browserRes = await page.evaluate(
+                    (aId, vn) => client.actor(aId).version(vn).envVars().list(),
+                    actorId,
+                    versionNumber,
+                );
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { actorId, versionNumber });
             });
@@ -497,7 +549,10 @@ describe('Actor methods', () => {
                 validateRequest({}, { actorId, versionNumber }, actorEnvVar);
 
                 const browserRes = await page.evaluate(
-                    (aId, vn, ev) => client.actor(aId).version(vn).envVars().create(ev), actorId, versionNumber, actorEnvVar,
+                    (aId, vn, ev) => client.actor(aId).version(vn).envVars().create(ev),
+                    actorId,
+                    versionNumber,
+                    actorEnvVar,
                 );
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { actorId, versionNumber }, actorEnvVar);
@@ -515,7 +570,10 @@ describe('Actor methods', () => {
                 validateRequest({}, { actorId, versionNumber, envVarName });
 
                 const browserRes = await page.evaluate(
-                    (aId, vn, evn) => client.actor(aId).version(vn).envVar(evn).get(), actorId, versionNumber, envVarName,
+                    (aId, vn, evn) => client.actor(aId).version(vn).envVar(evn).get(),
+                    actorId,
+                    versionNumber,
+                    envVarName,
                 );
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { actorId, versionNumber, envVarName });
@@ -531,7 +589,10 @@ describe('Actor methods', () => {
                 validateRequest({}, { actorId, versionNumber, envVarName });
 
                 const browserRes = await page.evaluate(
-                    (aId, vn, evn) => client.actor(aId).version(vn).envVar(evn).get(), actorId, versionNumber, envVarName,
+                    (aId, vn, evn) => client.actor(aId).version(vn).envVar(evn).get(),
+                    actorId,
+                    versionNumber,
+                    envVarName,
                 );
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { actorId, versionNumber, envVarName });
@@ -551,7 +612,11 @@ describe('Actor methods', () => {
                 validateRequest({}, { actorId: 'some-user~some-id', versionNumber, envVarName }, envVar);
 
                 const browserRes = await page.evaluate(
-                    (id, vn, evn, uev) => client.actor(id).version(vn).envVar(evn).update(uev), actorId, versionNumber, envVarName, envVar,
+                    (id, vn, evn, uev) => client.actor(id).version(vn).envVar(evn).update(uev),
+                    actorId,
+                    versionNumber,
+                    envVarName,
+                    envVar,
                 );
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { actorId: 'some-user~some-id', versionNumber, envVarName }, envVar);
@@ -567,7 +632,10 @@ describe('Actor methods', () => {
                 validateRequest({}, { actorId, versionNumber, envVarName });
 
                 const browserRes = await page.evaluate(
-                    (id, vn, evn) => client.actor(id).version(vn).envVar(evn).delete(), actorId, versionNumber, envVarName,
+                    (id, vn, evn) => client.actor(id).version(vn).envVar(evn).delete(),
+                    actorId,
+                    versionNumber,
+                    envVarName,
                 );
                 expect(browserRes).toEqual(res);
                 validateRequest({}, { actorId, versionNumber, envVarName });
@@ -586,7 +654,11 @@ describe('Actor methods', () => {
             expect(res.id).toEqual('list-webhooks');
             validateRequest(query, { actorId });
 
-            const browserRes = await page.evaluate((id, opts) => client.actor(id).webhooks().list(opts), actorId, query);
+            const browserRes = await page.evaluate(
+                (id, opts) => client.actor(id).webhooks().list(opts),
+                actorId,
+                query,
+            );
             expect(browserRes).toEqual(res);
             validateRequest(query, { actorId });
         });

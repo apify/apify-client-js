@@ -4,10 +4,7 @@ import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
-import {
-    cast,
-    catchNotFoundOrThrow,
-} from '../utils';
+import { cast, catchNotFoundOrThrow } from '../utils';
 
 export class LogClient extends ResourceClient {
     /**

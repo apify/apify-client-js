@@ -10,7 +10,7 @@ on:
         branches:
             - master
         tags-ignore:
-            - "**" # Ignore all tags to prevent duplicate builds when tags are pushed.
+            - '**' # Ignore all tags to prevent duplicate builds when tags are pushed.
 
 jobs:
     build_and_test:
@@ -21,67 +21,69 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                node-version: [ 16, 18, 20, 22 ]
+                node-version: [16, 18, 20, 22]
 
         steps:
-            -   name: Cancel Workflow Action
-                uses: styfle/cancel-workflow-action@0.12.1
-                with:
-                    access_token: ${{ github.token }}
+            - name: Cancel Workflow Action
+              uses: styfle/cancel-workflow-action@0.12.1
+              with:
+                  access_token: ${{ github.token }}
 
-            -   name: Checkout repository
-                uses: actions/checkout@v4
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-            -   name: Use Node.js ${{ matrix.node-version }}
-                uses: actions/setup-node@v4
-                with:
-                    node-version: ${{ matrix.node-version }}
-                    cache: 'npm'
-                    cache-dependency-path: 'package-lock.json'
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: 'npm'
+                  cache-dependency-path: 'package-lock.json'
 
-            -   name: Install Dependencies
-                run: npm ci
+            - name: Install Dependencies
+              run: npm ci
 
-            -   name: Run Tests
-                run: npm test
+            - name: Run Tests
+              run: npm test
 
     lint:
         name: Lint
         runs-on: ubuntu-latest
 
         steps:
-            -   uses: actions/checkout@v4
-            -   name: Use Node.js 22
-                uses: actions/setup-node@v4
-                with:
-                    node-version: 22
-                    cache: 'npm'
-                    cache-dependency-path: 'package-lock.json'
-            -   name: Install Dependencies
-                run: npm ci
-            -   run: npm run lint
+            - uses: actions/checkout@v4
+            - name: Use Node.js 22
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: 'npm'
+                  cache-dependency-path: 'package-lock.json'
+            - name: Install Dependencies
+              run: npm ci
+            - run: npm run lint
+            - name: Prettier
+              run: npm run format:check
 
     docs:
         name: Docs build
         if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
         runs-on: ubuntu-latest
         steps:
-            -   name: Checkout Source code
-                uses: actions/checkout@v4
+            - name: Checkout Source code
+              uses: actions/checkout@v4
 
-            -   name: Use Node.js 22
-                uses: actions/setup-node@v4
-                with:
-                    node-version: 22
-                    cache: 'npm'
-                    cache-dependency-path: 'package-lock.json'
-            -   name: Install Dependencies
-                run: npm ci
+            - name: Use Node.js 22
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: 'npm'
+                  cache-dependency-path: 'package-lock.json'
+            - name: Install Dependencies
+              run: npm ci
 
-            -   name: Install & build & deploy docs
-                run: |
-                    npm ci --force
-                    cd website
-                    npm ci --force
-                    npm run lint
-                    npm run build
+            - name: Install & build & deploy docs
+              run: |
+                  npm ci --force
+                  cd website
+                  npm ci --force
+                  npm run lint
+                  npm run build

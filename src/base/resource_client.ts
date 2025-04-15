@@ -1,14 +1,10 @@
-import type { ACT_JOB_STATUSES} from '@apify/consts';
+import type { ACT_JOB_STATUSES } from '@apify/consts';
 import { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 
-import { ApiClient } from './api_client';
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApifyRequestConfig } from '../http_client';
-import {
-    pluckData,
-    parseDateFields,
-    catchNotFoundOrThrow,
-} from '../utils';
+import { catchNotFoundOrThrow, parseDateFields, pluckData } from '../utils';
+import { ApiClient } from './api_client';
 
 /**
  * We need to supply some number for the API,
@@ -64,12 +60,10 @@ export class ResourceClient extends ApiClient {
      * This function is used in Build and Run endpoints so it's kept
      * here to stay DRY.
      */
-    protected async _waitForFinish<
-        R extends { status: typeof ACT_JOB_STATUSES[keyof typeof ACT_JOB_STATUSES] },
-    >(options: WaitForFinishOptions = {}): Promise<R> {
-        const {
-            waitSecs = MAX_WAIT_FOR_FINISH,
-        } = options;
+    protected async _waitForFinish<R extends { status: (typeof ACT_JOB_STATUSES)[keyof typeof ACT_JOB_STATUSES] }>(
+        options: WaitForFinishOptions = {},
+    ): Promise<R> {
+        const { waitSecs = MAX_WAIT_FOR_FINISH } = options;
         const waitMillis = waitSecs * 1000;
         let job: R | undefined;
 
@@ -77,7 +71,8 @@ export class ResourceClient extends ApiClient {
         const shouldRepeat = () => {
             const millisSinceStart = Date.now() - startedAt;
             if (millisSinceStart >= waitMillis) return false;
-            const hasJobEnded = job && ACT_JOB_TERMINAL_STATUSES.includes(job.status as typeof ACT_JOB_TERMINAL_STATUSES[number]);
+            const hasJobEnded =
+                job && ACT_JOB_TERMINAL_STATUSES.includes(job.status as (typeof ACT_JOB_TERMINAL_STATUSES)[number]);
             return !hasJobEnded;
         };
 
@@ -101,15 +96,18 @@ export class ResourceClient extends ApiClient {
 
             // It might take some time for database replicas to get up-to-date,
             // so getRun() might return null. Wait a little bit and try it again.
-            if (!job) await new Promise((resolve) => {
-                setTimeout(resolve, 250);
-            });
+            if (!job)
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 250);
+                });
         } while (shouldRepeat());
 
         if (!job) {
             const constructorName = this.constructor.name;
             const jobName = constructorName.match(/(\w+)Client/)![1].toLowerCase();
-            throw new Error(`Waiting for ${jobName} to finish failed. Cannot fetch actor ${jobName} details from the server.`);
+            throw new Error(
+                `Waiting for ${jobName} to finish failed. Cannot fetch actor ${jobName} details from the server.`,
+            );
         }
 
         return job;

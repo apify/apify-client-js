@@ -1,10 +1,10 @@
 import ow from 'ow';
 
-import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor';
-import type { ActorVersion } from './actor_version';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList } from '../utils';
+import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor';
+import type { ActorVersion } from './actor_version';
 
 export class ActorCollectionClient extends ResourceCollectionClient {
     /**
@@ -21,12 +21,15 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-actors
      */
     async list(options: ActorCollectionListOptions = {}): Promise<ActorCollectionListResult> {
-        ow(options, ow.object.exactShape({
-            my: ow.optional.boolean,
-            limit: ow.optional.number,
-            offset: ow.optional.number,
-            desc: ow.optional.boolean,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                my: ow.optional.boolean,
+                limit: ow.optional.number,
+                offset: ow.optional.number,
+                desc: ow.optional.boolean,
+            }),
+        );
 
         return this._list(options);
     }

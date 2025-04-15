@@ -1,9 +1,9 @@
 import ow from 'ow';
 
-import type { Dataset } from './dataset';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList } from '../utils';
+import type { Dataset } from './dataset';
 
 export class DatasetCollectionClient extends ResourceCollectionClient {
     /**
@@ -20,12 +20,15 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
      * https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of-datasets
      */
     async list(options: DatasetCollectionClientListOptions = {}): Promise<DatasetCollectionClientListResult> {
-        ow(options, ow.object.exactShape({
-            unnamed: ow.optional.boolean,
-            limit: ow.optional.number,
-            offset: ow.optional.number,
-            desc: ow.optional.boolean,
-        }));
+        ow(
+            options,
+            ow.object.exactShape({
+                unnamed: ow.optional.boolean,
+                limit: ow.optional.number,
+                offset: ow.optional.number,
+                desc: ow.optional.boolean,
+            }),
+        );
 
         return this._list(options);
     }
@@ -52,4 +55,4 @@ export interface DatasetCollectionClientGetOrCreateOptions {
     schema?: Record<string, unknown>;
 }
 
-export type DatasetCollectionClientListResult = PaginatedList<Dataset>
+export type DatasetCollectionClientListResult = PaginatedList<Dataset>;
