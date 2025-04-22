@@ -103,13 +103,17 @@ describe('Actor methods', () => {
         test('defaultBuild() works', async () => {
             const actorId = 'some-id';
 
-            const res = await client.actor(actorId).defaultBuild();
-            expect(res.id).toEqual('get-default-build');
-            validateRequest({}, { actorId });
+            const defaultBuildClient = await client.actor(actorId).defaultBuild();
+            const res = await defaultBuildClient.get();
+            await expect(res.id).toEqual('get-build');
+            validateRequest({}, { buildId: 'default-build-get' });
 
-            const browserRes = await page.evaluate((id) => client.actor(id).defaultBuild(), actorId);
+            const browserRes = await page.evaluate(async (id) => {
+                const dbc = await client.actor(id).defaultBuild();
+                return dbc.get();
+            }, actorId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { actorId });
+            validateRequest({}, { buildId: 'default-build-get' });
         });
 
         test('delete() works', async () => {

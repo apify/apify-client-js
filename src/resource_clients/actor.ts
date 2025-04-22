@@ -11,6 +11,7 @@ import type { ActorVersion } from './actor_version';
 import { ActorVersionClient } from './actor_version';
 import { ActorVersionCollectionClient } from './actor_version_collection';
 import type { Build, BuildClientGetOptions } from './build';
+import { BuildClient } from './build';
 import { BuildCollectionClient } from './build_collection';
 import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
@@ -168,14 +169,22 @@ export class ActorClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2/act-build-default-get
      */
-    async defaultBuild(options: BuildClientGetOptions = {}): Promise<Build> {
+    async defaultBuild(options: BuildClientGetOptions = {}): Promise<BuildClient> {
         const response = await this.httpClient.call({
             url: this._url('builds/default'),
             method: 'GET',
             params: this._params(options),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        const { id } = pluckData<Build>(response.data);
+
+        return new BuildClient({
+            baseUrl: this.apifyClient.baseUrl,
+            httpClient: this.httpClient,
+            apifyClient: this.apifyClient,
+            id,
+            params: this._params(options),
+        });
     }
 
     /**
