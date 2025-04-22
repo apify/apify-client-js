@@ -182,7 +182,7 @@ export class ActorClient extends ResourceClient {
             baseUrl: this.apifyClient.baseUrl,
             httpClient: this.httpClient,
             apifyClient: this.apifyClient,
-            id
+            id,
         });
     }
 
