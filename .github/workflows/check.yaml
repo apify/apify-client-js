@@ -12,6 +12,9 @@ on:
         tags-ignore:
             - '**' # Ignore all tags to prevent duplicate builds when tags are pushed.
 
+    # Release flow will trigger checks manually
+    workflow_call:
+
 jobs:
     build_and_test:
         name: Build & Test
