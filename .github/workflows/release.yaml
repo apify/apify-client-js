@@ -46,7 +46,6 @@ jobs:
     run_code_checks:
         uses: ./.github/workflows/check.yaml
 
-
     update_changelog:
         needs: [release_metadata, run_code_checks]
         name: Update changelog
