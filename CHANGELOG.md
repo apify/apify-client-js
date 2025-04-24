@@ -2,15 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.12.3 - **not yet released**
+## [2.12.3](https://github.com/apify/apify-client-js/releases/tag/v2.12.3) (2025-04-24)
 
 ### 🐛 Bug Fixes
 
 - DefaultBuild() returns BuildClient ([#677](https://github.com/apify/apify-client-js/pull/677)) ([8ce72a4](https://github.com/apify/apify-client-js/commit/8ce72a4c90aac421281d14ad0ff25fdecba1d094)) by [@danpoletaev](https://github.com/danpoletaev)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.12.2](https://github.com/apify/apify-client-js/releases/tag/v2.12.2) (2025-04-14)
 
 ### 🚀 Features
