@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+<!-- git-cliff-unreleased-start -->
+## 2.12.4 - **not yet released**
+
+### 🐛 Bug Fixes
+
+- Fix `RunCollectionListOptions` status type ([#681](https://github.com/apify/apify-client-js/pull/681)) ([8fbcf82](https://github.com/apify/apify-client-js/commit/8fbcf82bfaca57d087719cf079fc850c6d31daa5)) by [@MatousMarik](https://github.com/MatousMarik)
+
+
+<!-- git-cliff-unreleased-end -->
 ## [2.12.3](https://github.com/apify/apify-client-js/releases/tag/v2.12.3) (2025-04-24)
 
 ### 🐛 Bug Fixes
