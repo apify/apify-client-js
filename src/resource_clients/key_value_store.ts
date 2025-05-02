@@ -55,6 +55,8 @@ export class KeyValueStoreClient extends ResourceClient {
             ow.object.exactShape({
                 limit: ow.optional.number,
                 exclusiveStartKey: ow.optional.string,
+                collection: ow.optional.string,
+                prefix: ow.optional.string,
             }),
         );
 
@@ -253,6 +255,8 @@ export interface KeyValueClientUpdateOptions {
 export interface KeyValueClientListKeysOptions {
     limit?: number;
     exclusiveStartKey?: string;
+    collection?: string;
+    prefix?: string;
 }
 
 export interface KeyValueClientListKeysResult {
