@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### 🐛 Bug Fixes
 
 - Fix `RunCollectionListOptions` status type ([#681](https://github.com/apify/apify-client-js/pull/681)) ([8fbcf82](https://github.com/apify/apify-client-js/commit/8fbcf82bfaca57d087719cf079fc850c6d31daa5)) by [@MatousMarik](https://github.com/MatousMarik)
+- **actor:** Add missing &#x27;pricingInfos&#x27; field to Actor object ([#683](https://github.com/apify/apify-client-js/pull/683)) ([4bd4853](https://github.com/apify/apify-client-js/commit/4bd485369ac42d0b72597638c0316a6ca60f9847)) by [@metalwarrior665](https://github.com/metalwarrior665)
 
 
 <!-- git-cliff-unreleased-end -->
