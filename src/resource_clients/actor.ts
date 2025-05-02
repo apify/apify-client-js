@@ -271,6 +271,7 @@ export interface Actor {
     modifiedAt: Date;
     stats: ActorStats;
     versions: ActorVersion[];
+    pricingInfos?: ActorRunPricingInfo[];
     defaultRunOptions: ActorDefaultRunOptions;
     exampleRunInput?: ActorExampleRunInput;
     isDeprecated?: boolean;
