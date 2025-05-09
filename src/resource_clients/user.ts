@@ -83,7 +83,8 @@ export class UserClient extends ResourceClient {
 }
 
 //
-// Response interface for /users/:userId
+// Response interface for /users/:userId and /users/me
+// Using token will return private user data
 //
 
 export interface User {
@@ -102,6 +103,9 @@ export interface User {
     email?: string;
     proxy?: UserProxy;
     plan?: UserPlan;
+    effectivePlatformFeatures? : EffectivePlatformFeatures;
+    createdAt?: Date;
+    isPaying?: boolean;
 }
 
 export interface UserProxy {
@@ -146,6 +150,27 @@ export enum PlatformFeature {
     Webhooks = 'WEBHOOKS',
     Proxy = 'PROXY',
     ProxyExternalAccess = 'PROXY_EXTERNAL_ACCESS',
+}
+
+interface EffectivePlatformFeature {
+    isEnabled: boolean;
+    disabledReason: string | null;
+    disabledReasonType: string | null;
+    isTrial: boolean;
+    trialExpirationAt: Date | null;
+}
+
+interface EffectivePlatformFeatures {
+    ACTORS: EffectivePlatformFeature;
+    STORAGE: EffectivePlatformFeature;
+    SCHEDULER: EffectivePlatformFeature;
+    PROXY: EffectivePlatformFeature;
+    PROXY_EXTERNAL_ACCESS: EffectivePlatformFeature;
+    PROXY_RESIDENTIAL: EffectivePlatformFeature;
+    PROXY_SERPS: EffectivePlatformFeature;
+    WEBHOOKS: EffectivePlatformFeature;
+    ACTORS_PUBLIC_ALL: EffectivePlatformFeature;
+    ACTORS_PUBLIC_DEVELOPER: EffectivePlatformFeature;
 }
 
 //
