@@ -103,7 +103,7 @@ export interface User {
     email?: string;
     proxy?: UserProxy;
     plan?: UserPlan;
-    effectivePlatformFeatures? : EffectivePlatformFeatures;
+    effectivePlatformFeatures?: EffectivePlatformFeatures;
     createdAt?: Date;
     isPaying?: boolean;
 }
