@@ -372,7 +372,9 @@ export interface ActorStartOptions {
      * Maximum time to wait for the actor run to finish, in seconds.
      * If the limit is reached, the returned promise is resolved to a run object that will have
      * status `READY` or `RUNNING` and it will not contain the actor run output.
-     * If `waitForFinish` is null or undefined, the function waits for the actor to finish (default behavior).
+     * By default (or when `waitForFinish` is set to `0`), the function resolves immediately without waiting.
+     * The wait is limited to 60s and happens on the API directly, as opposed to the `call` method and its
+     * `waitSecs` option, which is implemented via polling on the client side instead (and has no limit like that).
      */
     waitForFinish?: number;
 
