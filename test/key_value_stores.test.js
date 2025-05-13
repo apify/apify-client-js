@@ -425,6 +425,41 @@ describe('Key-Value Store methods', () => {
             validateRequest({}, { storeId, key }, value, expectedHeaders);
         });
 
+        test('setRecord() works with custom timeout options', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const value = { foo: 'bar', one: 1 };
+            const expectedHeaders = {
+                'content-type': 'application/json; charset=utf-8',
+            };
+
+            const res = await client.keyValueStore(storeId).setRecord(
+                { key, value },
+                {
+                    timeoutSecs: 1,
+                    doNotRetryTimeouts: true,
+                },
+            );
+            expect(res).toBeUndefined();
+            validateRequest({}, { storeId, key }, value, expectedHeaders);
+
+            const browserRes = await page.evaluate(
+                (id, key, value) =>
+                    client.keyValueStore(id).setRecord(
+                        { key, value },
+                        {
+                            timeoutSecs: 1,
+                            doNotRetryTimeouts: true,
+                        },
+                    ),
+                storeId,
+                key,
+                value,
+            );
+            expect(browserRes).toBeUndefined();
+            validateRequest({}, { storeId, key }, value, expectedHeaders);
+        });
+
         test('setRecord() works with buffer', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
