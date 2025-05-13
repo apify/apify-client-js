@@ -177,7 +177,8 @@ export class KeyValueStoreClient extends ResourceClient {
         );
 
         const { key } = record;
-        let { value, contentType } = record;
+        // eslint-disable-next-line prefer-const
+        let { value, contentType, timeoutSecs, doNotRetryTimeouts } = record;
 
         const isValueStreamOrBuffer = isStream(value) || isBuffer(value);
         // To allow saving Objects to JSON without providing content type
@@ -204,6 +205,11 @@ export class KeyValueStoreClient extends ResourceClient {
             data: value,
             headers: contentType ? { 'content-type': contentType } : undefined,
         };
+
+        if (timeoutSecs != null) {
+            uploadOpts.timeout = timeoutSecs * 1000;
+            uploadOpts.doNotRetryTimeouts = doNotRetryTimeouts;
+        }
 
         await this.httpClient.call(uploadOpts);
     }
@@ -278,6 +284,8 @@ export interface KeyValueStoreRecord<T> {
     key: string;
     value: T;
     contentType?: string;
+    timeoutSecs?: number;
+    doNotRetryTimeouts?: boolean;
 }
 
 export type ReturnTypeFromOptions<Options extends KeyValueClientGetRecordOptions> = Options['stream'] extends true
