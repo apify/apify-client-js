@@ -166,7 +166,7 @@ export class KeyValueStoreClient extends ResourceClient {
      *
      * https://docs.apify.com/api/v2#/reference/key-value-stores/record/put-record
      */
-    async setRecord(record: KeyValueStoreRecord<JsonValue>): Promise<void> {
+    async setRecord(record: KeyValueStoreRecord<JsonValue>, options: KeyValueStoreRecordOptions = {}): Promise<void> {
         ow(
             record,
             ow.object.exactShape({
@@ -176,9 +176,17 @@ export class KeyValueStoreClient extends ResourceClient {
             }),
         );
 
+        ow(
+            options,
+            ow.object.exactShape({
+                timeoutSecs: ow.optional.number,
+                doNotRetryTimeouts: ow.optional.boolean,
+            }),
+        );
+
         const { key } = record;
-        // eslint-disable-next-line prefer-const
-        let { value, contentType, timeoutSecs, doNotRetryTimeouts } = record;
+        let { value, contentType } = record;
+        const { timeoutSecs, doNotRetryTimeouts } = options;
 
         const isValueStreamOrBuffer = isStream(value) || isBuffer(value);
         // To allow saving Objects to JSON without providing content type
@@ -204,11 +212,11 @@ export class KeyValueStoreClient extends ResourceClient {
             params: this._params(),
             data: value,
             headers: contentType ? { 'content-type': contentType } : undefined,
+            doNotRetryTimeouts,
         };
 
         if (timeoutSecs != null) {
             uploadOpts.timeout = timeoutSecs * 1000;
-            uploadOpts.doNotRetryTimeouts = doNotRetryTimeouts;
         }
 
         await this.httpClient.call(uploadOpts);
@@ -284,6 +292,9 @@ export interface KeyValueStoreRecord<T> {
     key: string;
     value: T;
     contentType?: string;
+}
+
+export interface KeyValueStoreRecordOptions {
     timeoutSecs?: number;
     doNotRetryTimeouts?: boolean;
 }
