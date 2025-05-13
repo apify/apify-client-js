@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.12.4 - **not yet released**
 
+### 🚀 Features
+
+- Allow overriding timeout of `KVS.setRecord` calls ([#692](https://github.com/apify/apify-client-js/pull/692)) ([105bd68](https://github.com/apify/apify-client-js/commit/105bd6888117a6c64b21a725c536d4992dff099c)) by [@B4nan](https://github.com/B4nan)
+
 ### 🐛 Bug Fixes
 
 - Fix `RunCollectionListOptions` status type ([#681](https://github.com/apify/apify-client-js/pull/681)) ([8fbcf82](https://github.com/apify/apify-client-js/commit/8fbcf82bfaca57d087719cf079fc850c6d31daa5)) by [@MatousMarik](https://github.com/MatousMarik)
