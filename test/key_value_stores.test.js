@@ -129,6 +129,8 @@ describe('Key-Value Store methods', () => {
             const query = {
                 limit: 10,
                 exclusiveStartKey: 'fromKey',
+                collection: 'my-collection',
+                prefix: 'my-prefix',
             };
 
             const res = await client.keyValueStore(storeId).listKeys(query);
