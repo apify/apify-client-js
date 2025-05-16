@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.12.5 - **not yet released**
 
+### 🚀 Features
+
+- List kv store keys by collection of prefix ([#688](https://github.com/apify/apify-client-js/pull/688)) ([be25137](https://github.com/apify/apify-client-js/commit/be25137575435547aaf2c3849fc772daf0537450)) by [@MFori](https://github.com/MFori)
+
 ### 🐛 Bug Fixes
 
 - Add missing &#x27;effectivePlatformFeatures&#x27;, &#x27;createdAt&#x27;, &#x27;isPaying&#x27; to User interface ([#691](https://github.com/apify/apify-client-js/pull/691)) ([e138093](https://github.com/apify/apify-client-js/commit/e1380933476e5336469e5da083d2017147518f88)) by [@metalwarrior665](https://github.com/metalwarrior665)
