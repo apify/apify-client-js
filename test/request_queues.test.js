@@ -166,6 +166,18 @@ describe('Request Queue methods', () => {
             validateRequest({ forefront }, { queueId }, request);
         });
 
+        test('unlockRequests() works', async () => {
+            const queueId = 'some-id';
+
+            const res = await client.requestQueue(queueId).unlockRequests();
+            expect(res.id).toEqual('unlockRequests');
+            validateRequest({}, { queueId });
+
+            const browserRes = await page.evaluate((id) => client.requestQueue(id).unlockRequests(), queueId);
+            expect(browserRes).toEqual(res);
+            validateRequest({}, { queueId });
+        })
+
         test('getRequest() works', async () => {
             const queueId = 'some-id';
             const requestId = 'xxx';
