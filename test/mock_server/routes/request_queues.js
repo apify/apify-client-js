@@ -16,6 +16,7 @@ const ROUTES = [
     { id: 'put-lock-request', method: 'PUT', path: '/:queueId/requests/:requestId/lock' },
     { id: 'delete-lock-request', method: 'DELETE', path: '/:queueId/requests/:requestId/lock' },
     { id: 'batch-insert', method: 'POST', path: '/:queueId/requests/batch', type: 'dummyBatchOperation' },
+    { id: 'unlockRequests', method: 'POST', path: '/:queueId/requests/unlock' },
     { id: 'batch-delete', method: 'DELETE', path: '/:queueId/requests/batch', type: 'dummyBatchOperation' },
     { id: 'get-request', method: 'GET', path: '/:queueId/requests/:requestId' },
     { id: 'delete-request', method: 'DELETE', path: '/:queueId/requests/:requestId' },

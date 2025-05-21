@@ -504,6 +504,22 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     /**
+     * https://docs.apify.com/api/v2/request-queue-requests-unlock-post
+     */
+    async unlockRequests(): Promise<RequestQueueClientUnlockRequestsResult> {
+        const response = await this.httpClient.call({
+            url: this._url('requests/unlock'),
+            method: 'POST',
+            timeout: this.timeoutMillis,
+            params: this._params({
+                clientKey: this.clientKey,
+            }),
+        });
+
+        return cast(parseDateFields(pluckData(response.data)));
+    }
+
+    /**
      * https://docs.apify.com/api/v2#/reference/request-queues/request-collection/list-requests
      *
      * Usage:
@@ -674,6 +690,10 @@ interface UnprocessedRequest {
     uniqueKey: string;
     url: string;
     method?: AllowedHttpMethods;
+}
+
+export interface RequestQueueClientUnlockRequestsResult {
+    unlockedCount: number;
 }
 
 export interface RequestQueueClientBatchRequestsOperationResult {
