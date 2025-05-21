@@ -176,7 +176,7 @@ describe('Request Queue methods', () => {
             const browserRes = await page.evaluate((id) => client.requestQueue(id).unlockRequests(), queueId);
             expect(browserRes).toEqual(res);
             validateRequest({}, { queueId });
-        })
+        });
 
         test('getRequest() works', async () => {
             const queueId = 'some-id';
