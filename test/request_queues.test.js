@@ -170,7 +170,7 @@ describe('Request Queue methods', () => {
             const queueId = 'some-id';
 
             const res = await client.requestQueue(queueId).unlockRequests();
-            expect(res.id).toEqual('unlockRequests');
+            expect(res.id).toEqual('unlock-requests');
             validateRequest({}, { queueId });
 
             const browserRes = await page.evaluate((id) => client.requestQueue(id).unlockRequests(), queueId);
