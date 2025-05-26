@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### 🚀 Features
 
 - List kv store keys by collection of prefix ([#688](https://github.com/apify/apify-client-js/pull/688)) ([be25137](https://github.com/apify/apify-client-js/commit/be25137575435547aaf2c3849fc772daf0537450)) by [@MFori](https://github.com/MFori)
+- Add unlockRequests endpoint to RequestQueue client ([#700](https://github.com/apify/apify-client-js/pull/700)) ([7c52c64](https://github.com/apify/apify-client-js/commit/7c52c645e2eb66ad97c8daa9791b080bfc747288)) by [@drobnikj](https://github.com/drobnikj)
 
 ### 🐛 Bug Fixes
 
