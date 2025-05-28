@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.12.5 - **not yet released**
+## [2.12.5](https://github.com/apify/apify-client-js/releases/tag/v2.12.5) (2025-05-28)
 
 ### 🚀 Features
 
@@ -16,7 +15,6 @@ All notable changes to this project will be documented in this file.
 - Move prettier into `devDependencies` ([#695](https://github.com/apify/apify-client-js/pull/695)) ([1ba903a](https://github.com/apify/apify-client-js/commit/1ba903a1bfa7a95a8c54ef53951db502dfa4b276)) by [@hudson-worden](https://github.com/hudson-worden)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.12.4](https://github.com/apify/apify-client-js/releases/tag/v2.12.4) (2025-05-13)
 
 ### 🚀 Features
