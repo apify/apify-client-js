@@ -18,11 +18,12 @@ const MAX_WAIT_FOR_FINISH = 999999;
  * @private
  */
 export class ResourceClient extends ApiClient {
-    protected async _get<T, R>(options: T = {} as T): Promise<R | undefined> {
+    protected async _get<T, R>(options: T = {} as T, timeoutSecs?: number): Promise<R | undefined> {
         const requestOpts: ApifyRequestConfig = {
             url: this._url(),
             method: 'GET',
             params: this._params(options),
+            timeout: timeoutSecs !== undefined ? timeoutSecs * 1000 : undefined,
         };
         try {
             const response = await this.httpClient.call(requestOpts);
@@ -34,22 +35,24 @@ export class ResourceClient extends ApiClient {
         return undefined;
     }
 
-    protected async _update<T, R>(newFields: T): Promise<R> {
+    protected async _update<T, R>(newFields: T, timeoutSecs?: number): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'PUT',
             params: this._params(),
             data: newFields,
+            timeout: timeoutSecs !== undefined ? timeoutSecs * 1000 : undefined,
         });
         return parseDateFields(pluckData(response.data)) as R;
     }
 
-    protected async _delete(): Promise<void> {
+    protected async _delete(timeoutSecs?: number): Promise<void> {
         try {
             await this.httpClient.call({
                 url: this._url(),
                 method: 'DELETE',
                 params: this._params(),
+                timeout: timeoutSecs !== undefined ? timeoutSecs * 1000 : undefined,
             });
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);

@@ -9,6 +9,10 @@ import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
 import type { PaginatedList } from '../utils';
 import { cast, catchNotFoundOrThrow, pluckData } from '../utils';
 
+const SMALL_TIMEOUT_SECS = 5; // For fast and common actions. Suitable for idempotent actions.
+const MEDIUM_TIMEOUT_SECS = 30; // For actions that may take longer.
+const DEFAULT_TIMEOUT_SECS = 360; // 6 minutes
+
 export class DatasetClient<
     Data extends Record<string | number, any> = Record<string | number, unknown>,
 > extends ResourceClient {
@@ -26,7 +30,7 @@ export class DatasetClient<
      * https://docs.apify.com/api/v2#/reference/datasets/dataset/get-dataset
      */
     async get(): Promise<Dataset | undefined> {
-        return this._get();
+        return this._get({}, SMALL_TIMEOUT_SECS);
     }
 
     /**
@@ -35,14 +39,14 @@ export class DatasetClient<
     async update(newFields: DatasetClientUpdateOptions): Promise<Dataset> {
         ow(newFields, ow.object);
 
-        return this._update(newFields);
+        return this._update(newFields, SMALL_TIMEOUT_SECS);
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/dataset/delete-dataset
      */
     async delete(): Promise<void> {
-        return this._delete();
+        return this._delete(SMALL_TIMEOUT_SECS);
     }
 
     /**
@@ -70,6 +74,7 @@ export class DatasetClient<
             url: this._url('items'),
             method: 'GET',
             params: this._params(options),
+            timeout: DEFAULT_TIMEOUT_SECS * 1000,
         });
 
         return this._createPaginationList(response, options.desc ?? false);
@@ -113,6 +118,7 @@ export class DatasetClient<
                 ...options,
             }),
             forceBuffer: true,
+            timeout: DEFAULT_TIMEOUT_SECS * 1000,
         });
 
         return cast(data);
@@ -133,6 +139,7 @@ export class DatasetClient<
             data: items,
             params: this._params(),
             doNotRetryTimeouts: true, // see timeout handling in http-client
+            timeout: MEDIUM_TIMEOUT_SECS * 1000,
         });
     }
 
@@ -144,6 +151,7 @@ export class DatasetClient<
             url: this._url('statistics'),
             method: 'GET',
             params: this._params(),
+            timeout: SMALL_TIMEOUT_SECS * 1000,
         };
         try {
             const response = await this.httpClient.call(requestOpts);

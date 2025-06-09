@@ -152,6 +152,7 @@ export class HttpClient {
             this.stats.requests++;
             let response: ApifyResponse;
             const requestIsStream = isStream(config.data);
+
             try {
                 if (requestIsStream) {
                     // Handling redirects is not possible without buffering - part of the stream has already been sent and can't be recovered
@@ -159,6 +160,13 @@ export class HttpClient {
                     // see also axios/axios#1045
                     config = { ...config, maxRedirects: 0 };
                 }
+
+                // Increase timeout with each attempt. Max timeout is bounded by the client timeout.
+                config.timeout = Math.min(
+                    this.timeoutMillis,
+                    config.timeout ?? this.timeoutMillis * 2 ** (attempt - 1),
+                );
+
                 response = await this.axios.request(config);
                 if (this._isStatusOk(response.status)) return response;
             } catch (err) {

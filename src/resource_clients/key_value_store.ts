@@ -12,6 +12,10 @@ import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow, isBuffer, isNode, isStream, parseDateFields, pluckData } from '../utils';
 
+const SMALL_TIMEOUT_SECS = 5; // For fast and common actions. Suitable for idempotent actions.
+const MEDIUM_TIMEOUT_SECS = 30; // For actions that may take longer.
+const DEFAULT_TIMEOUT_SECS = 360; // 6 minutes
+
 export class KeyValueStoreClient extends ResourceClient {
     /**
      * @hidden
@@ -27,7 +31,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store
      */
     async get(): Promise<KeyValueStore | undefined> {
-        return this._get();
+        return this._get({}, SMALL_TIMEOUT_SECS);
     }
 
     /**
@@ -36,14 +40,14 @@ export class KeyValueStoreClient extends ResourceClient {
     async update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore> {
         ow(newFields, ow.object);
 
-        return this._update(newFields);
+        return this._update(newFields, DEFAULT_TIMEOUT_SECS);
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/delete-store
      */
     async delete(): Promise<void> {
-        return this._delete();
+        return this._delete(SMALL_TIMEOUT_SECS);
     }
 
     /**
@@ -64,6 +68,7 @@ export class KeyValueStoreClient extends ResourceClient {
             url: this._url('keys'),
             method: 'GET',
             params: this._params(options),
+            timeout: MEDIUM_TIMEOUT_SECS * 1000,
         });
 
         return cast(parseDateFields(pluckData(response.data)));
@@ -138,6 +143,7 @@ export class KeyValueStoreClient extends ResourceClient {
             url: this._url(`records/${key}`),
             method: 'GET',
             params: this._params(),
+            timeout: DEFAULT_TIMEOUT_SECS * 1000,
         };
 
         if (options.buffer) requestOpts.forceBuffer = true;
@@ -181,14 +187,14 @@ export class KeyValueStoreClient extends ResourceClient {
         ow(
             options,
             ow.object.exactShape({
-                timeoutSecs: ow.optional.number,
+                timeoutMillis: ow.optional.number,
                 doNotRetryTimeouts: ow.optional.boolean,
             }),
         );
 
         const { key } = record;
         let { value, contentType } = record;
-        const { timeoutSecs, doNotRetryTimeouts } = options;
+        const { timeoutMillis, doNotRetryTimeouts } = options;
 
         const isValueStreamOrBuffer = isStream(value) || isBuffer(value);
         // To allow saving Objects to JSON without providing content type
@@ -215,11 +221,8 @@ export class KeyValueStoreClient extends ResourceClient {
             data: value,
             headers: contentType ? { 'content-type': contentType } : undefined,
             doNotRetryTimeouts,
+            timeout: timeoutMillis ?? DEFAULT_TIMEOUT_SECS * 1000,
         };
-
-        if (timeoutSecs != null) {
-            uploadOpts.timeout = timeoutSecs * 1000;
-        }
 
         await this.httpClient.call(uploadOpts);
     }
@@ -234,6 +237,7 @@ export class KeyValueStoreClient extends ResourceClient {
             url: this._url(`records/${key}`),
             method: 'DELETE',
             params: this._params(),
+            timeout: SMALL_TIMEOUT_SECS * 1000,
         });
     }
 }
@@ -299,7 +303,7 @@ export interface KeyValueStoreRecord<T> {
 }
 
 export interface KeyValueStoreRecordOptions {
-    timeoutSecs?: number;
+    timeoutMillis?: number;
     doNotRetryTimeouts?: boolean;
 }
 
