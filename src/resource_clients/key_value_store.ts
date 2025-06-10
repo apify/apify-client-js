@@ -187,14 +187,14 @@ export class KeyValueStoreClient extends ResourceClient {
         ow(
             options,
             ow.object.exactShape({
-                timeoutMillis: ow.optional.number,
+                timeoutSecs: ow.optional.number,
                 doNotRetryTimeouts: ow.optional.boolean,
             }),
         );
 
         const { key } = record;
         let { value, contentType } = record;
-        const { timeoutMillis, doNotRetryTimeouts } = options;
+        const { timeoutSecs, doNotRetryTimeouts } = options;
 
         const isValueStreamOrBuffer = isStream(value) || isBuffer(value);
         // To allow saving Objects to JSON without providing content type
@@ -221,7 +221,7 @@ export class KeyValueStoreClient extends ResourceClient {
             data: value,
             headers: contentType ? { 'content-type': contentType } : undefined,
             doNotRetryTimeouts,
-            timeout: timeoutMillis ?? DEFAULT_TIMEOUT_SECS * 1000,
+            timeout: (timeoutSecs ?? DEFAULT_TIMEOUT_SECS) * 1000,
         };
 
         await this.httpClient.call(uploadOpts);
@@ -303,7 +303,7 @@ export interface KeyValueStoreRecord<T> {
 }
 
 export interface KeyValueStoreRecordOptions {
-    timeoutMillis?: number;
+    timeoutSecs?: number;
     doNotRetryTimeouts?: boolean;
 }
 
