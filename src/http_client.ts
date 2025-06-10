@@ -164,7 +164,7 @@ export class HttpClient {
                 // Increase timeout with each attempt. Max timeout is bounded by the client timeout.
                 config.timeout = Math.min(
                     this.timeoutMillis,
-                    config.timeout ?? this.timeoutMillis * 2 ** (attempt - 1),
+                    (config.timeout ?? this.timeoutMillis) * 2 ** (attempt - 1),
                 );
 
                 response = await this.axios.request(config);
