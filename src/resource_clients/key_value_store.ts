@@ -8,13 +8,9 @@ import log from '@apify/log';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceClient } from '../base/resource_client';
+import { DEFAULT_TIMEOUT_SECS, MEDIUM_TIMEOUT_SECS, ResourceClient, SMALL_TIMEOUT_SECS } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow, isBuffer, isNode, isStream, parseDateFields, pluckData } from '../utils';
-
-const SMALL_TIMEOUT_SECS = 5; // For fast and common actions. Suitable for idempotent actions.
-const MEDIUM_TIMEOUT_SECS = 30; // For actions that may take longer.
-const DEFAULT_TIMEOUT_SECS = 360; // 6 minutes
 
 export class KeyValueStoreClient extends ResourceClient {
     /**

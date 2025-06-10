@@ -13,6 +13,10 @@ import { ApiClient } from './api_client';
  */
 const MAX_WAIT_FOR_FINISH = 999999;
 
+export const SMALL_TIMEOUT_SECS = 5; // For fast and common actions. Suitable for idempotent actions.
+export const MEDIUM_TIMEOUT_SECS = 30; // For actions that may take longer.
+export const DEFAULT_TIMEOUT_SECS = 360; // 6 minutes
+
 /**
  * Resource client.
  * @private

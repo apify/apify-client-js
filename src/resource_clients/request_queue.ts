@@ -7,7 +7,7 @@ import log from '@apify/log';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceClient } from '../base/resource_client';
+import { MEDIUM_TIMEOUT_SECS, ResourceClient, SMALL_TIMEOUT_SECS } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import {
     cast,
@@ -24,9 +24,6 @@ const DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS = 500;
 const DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT = 1000;
 const SAFETY_BUFFER_PERCENT = 0.01 / 100; // 0.01%
 
-const SMALL_TIMEOUT_SECS = 5; // For fast and common actions. Suitable for idempotent actions.
-const MEDIUM_TIMEOUT_SECS = 30; // For actions that may take longer.
-
 export class RequestQueueClient extends ResourceClient {
     private clientKey?: string;
 
@@ -42,17 +39,14 @@ export class RequestQueueClient extends ResourceClient {
         });
 
         this.clientKey = userOptions.clientKey;
-        this.timeoutMillis = userOptions.timeoutSecs;
+        this.timeoutMillis = userOptions.timeoutSecs ? userOptions.timeoutSecs * 1e3 : undefined;
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/queue/get-request-queue
      */
     async get(): Promise<RequestQueue | undefined> {
-        return this._get(
-            {},
-            this.timeoutMillis ? Math.min(SMALL_TIMEOUT_SECS, this.timeoutMillis) : SMALL_TIMEOUT_SECS,
-        );
+        return this._get({}, SMALL_TIMEOUT_SECS);
     }
 
     /**
@@ -61,17 +55,14 @@ export class RequestQueueClient extends ResourceClient {
     async update(newFields: RequestQueueClientUpdateOptions): Promise<RequestQueue> {
         ow(newFields, ow.object);
 
-        return this._update(
-            newFields,
-            this.timeoutMillis ? Math.min(SMALL_TIMEOUT_SECS, this.timeoutMillis) : SMALL_TIMEOUT_SECS,
-        );
+        return this._update(newFields, SMALL_TIMEOUT_SECS);
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/queue/delete-request-queue
      */
     async delete(): Promise<void> {
-        return this._delete(this.timeoutMillis ? Math.min(SMALL_TIMEOUT_SECS, this.timeoutMillis) : SMALL_TIMEOUT_SECS);
+        return this._delete(SMALL_TIMEOUT_SECS);
     }
 
     /**
@@ -88,9 +79,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('head'),
             method: 'GET',
-            timeout: this.timeoutMillis
-                ? Math.min(SMALL_TIMEOUT_SECS * 1000, this.timeoutMillis)
-                : SMALL_TIMEOUT_SECS * 1000,
+            timeout: Math.min(SMALL_TIMEOUT_SECS * 1000, this.timeoutMillis ?? Infinity),
             params: this._params({
                 limit: options.limit,
                 clientKey: this.clientKey,
@@ -117,7 +106,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('head/lock'),
             method: 'POST',
-            timeout: MEDIUM_TIMEOUT_SECS * 1000,
+            timeout: Math.min(MEDIUM_TIMEOUT_SECS * 1000, this.timeoutMillis ?? Infinity),
             params: this._params({
                 limit: options.limit,
                 lockSecs: options.lockSecs,
@@ -152,9 +141,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('requests'),
             method: 'POST',
-            timeout: this.timeoutMillis
-                ? Math.min(SMALL_TIMEOUT_SECS * 1000, this.timeoutMillis)
-                : SMALL_TIMEOUT_SECS * 1000,
+            timeout: Math.min(SMALL_TIMEOUT_SECS * 1000, this.timeoutMillis ?? Infinity),
             data: request,
             params: this._params({
                 forefront: options.forefront,
@@ -195,7 +182,7 @@ export class RequestQueueClient extends ResourceClient {
         const { data } = await this.httpClient.call({
             url: this._url('requests/batch'),
             method: 'POST',
-            timeout: MEDIUM_TIMEOUT_SECS * 1000,
+            timeout: Math.min(MEDIUM_TIMEOUT_SECS * 1000, this.timeoutMillis ?? Infinity),
             data: requests,
             params: this._params({
                 forefront: options.forefront,
@@ -356,7 +343,7 @@ export class RequestQueueClient extends ResourceClient {
         const { data } = await this.httpClient.call({
             url: this._url('requests/batch'),
             method: 'DELETE',
-            timeout: SMALL_TIMEOUT_SECS * 1000,
+            timeout: Math.min(SMALL_TIMEOUT_SECS * 1000, this.timeoutMillis ?? Infinity),
             data: requests,
             params: this._params({
                 clientKey: this.clientKey,
@@ -374,9 +361,7 @@ export class RequestQueueClient extends ResourceClient {
         const requestOpts: ApifyRequestConfig = {
             url: this._url(`requests/${id}`),
             method: 'GET',
-            timeout: this.timeoutMillis
-                ? Math.min(SMALL_TIMEOUT_SECS * 1000, this.timeoutMillis)
-                : SMALL_TIMEOUT_SECS * 1000,
+            timeout: Math.min(SMALL_TIMEOUT_SECS * 1000, this.timeoutMillis ?? Infinity),
             params: this._params(),
         };
         try {
@@ -413,9 +398,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url(`requests/${request.id}`),
             method: 'PUT',
-            timeout: this.timeoutMillis
-                ? Math.min(MEDIUM_TIMEOUT_SECS * 1000, this.timeoutMillis)
-                : MEDIUM_TIMEOUT_SECS * 1000,
+            timeout: Math.min(MEDIUM_TIMEOUT_SECS * 1000, this.timeoutMillis ?? Infinity),
             data: request,
             params: this._params({
                 forefront: options.forefront,
@@ -432,9 +415,7 @@ export class RequestQueueClient extends ResourceClient {
         await this.httpClient.call({
             url: this._url(`requests/${id}`),
             method: 'DELETE',
-            timeout: this.timeoutMillis
-                ? Math.min(SMALL_TIMEOUT_SECS * 1000, this.timeoutMillis)
-                : SMALL_TIMEOUT_SECS * 1000,
+            timeout: Math.min(SMALL_TIMEOUT_SECS * 1000, this.timeoutMillis ?? Infinity),
             params: this._params({
                 clientKey: this.clientKey,
             }),
@@ -460,7 +441,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url(`requests/${id}/lock`),
             method: 'PUT',
-            timeout: MEDIUM_TIMEOUT_SECS * 1000,
+            timeout: Math.min(MEDIUM_TIMEOUT_SECS * 1000, this.timeoutMillis ?? Infinity),
             params: this._params({
                 forefront: options.forefront,
                 lockSecs: options.lockSecs,
@@ -486,7 +467,7 @@ export class RequestQueueClient extends ResourceClient {
         await this.httpClient.call({
             url: this._url(`requests/${id}/lock`),
             method: 'DELETE',
-            timeout: SMALL_TIMEOUT_SECS * 1000,
+            timeout: Math.min(SMALL_TIMEOUT_SECS * 1000, this.timeoutMillis ?? Infinity),
             params: this._params({
                 forefront: options.forefront,
                 clientKey: this.clientKey,
@@ -511,7 +492,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('requests'),
             method: 'GET',
-            timeout: MEDIUM_TIMEOUT_SECS * 1000,
+            timeout: Math.min(MEDIUM_TIMEOUT_SECS * 1000, this.timeoutMillis ?? Infinity),
             params: this._params({
                 limit: options.limit,
                 exclusiveStartId: options.exclusiveStartId,
@@ -529,7 +510,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('requests/unlock'),
             method: 'POST',
-            timeout: MEDIUM_TIMEOUT_SECS * 1000,
+            timeout: Math.min(MEDIUM_TIMEOUT_SECS * 1000, this.timeoutMillis ?? Infinity),
             params: this._params({
                 clientKey: this.clientKey,
             }),

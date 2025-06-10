@@ -4,14 +4,10 @@ import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceClient } from '../base/resource_client';
+import { DEFAULT_TIMEOUT_SECS, MEDIUM_TIMEOUT_SECS, ResourceClient, SMALL_TIMEOUT_SECS } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
 import type { PaginatedList } from '../utils';
 import { cast, catchNotFoundOrThrow, pluckData } from '../utils';
-
-const SMALL_TIMEOUT_SECS = 5; // For fast and common actions. Suitable for idempotent actions.
-const MEDIUM_TIMEOUT_SECS = 30; // For actions that may take longer.
-const DEFAULT_TIMEOUT_SECS = 360; // 6 minutes
 
 export class DatasetClient<
     Data extends Record<string | number, any> = Record<string | number, unknown>,
