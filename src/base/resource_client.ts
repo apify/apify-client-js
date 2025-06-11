@@ -13,21 +13,21 @@ import { ApiClient } from './api_client';
  */
 const MAX_WAIT_FOR_FINISH = 999999;
 
-export const SMALL_TIMEOUT_SECS = 5; // For fast and common actions. Suitable for idempotent actions.
-export const MEDIUM_TIMEOUT_SECS = 30; // For actions that may take longer.
-export const DEFAULT_TIMEOUT_SECS = 360; // 6 minutes
+export const SMALL_TIMEOUT_MILLIS = 5 * 1000; // For fast and common actions. Suitable for idempotent actions.
+export const MEDIUM_TIMEOUT_MILLIS = 30 * 1000; // For actions that may take longer.
+export const DEFAULT_TIMEOUT_MILLIS = 360 * 1000; // 6 minutes
 
 /**
  * Resource client.
  * @private
  */
 export class ResourceClient extends ApiClient {
-    protected async _get<T, R>(options: T = {} as T, timeoutSecs?: number): Promise<R | undefined> {
+    protected async _get<T, R>(options: T = {} as T, timeoutMillis?: number): Promise<R | undefined> {
         const requestOpts: ApifyRequestConfig = {
             url: this._url(),
             method: 'GET',
             params: this._params(options),
-            timeout: timeoutSecs !== undefined ? timeoutSecs * 1000 : undefined,
+            timeout: timeoutMillis,
         };
         try {
             const response = await this.httpClient.call(requestOpts);
@@ -39,24 +39,24 @@ export class ResourceClient extends ApiClient {
         return undefined;
     }
 
-    protected async _update<T, R>(newFields: T, timeoutSecs?: number): Promise<R> {
+    protected async _update<T, R>(newFields: T, timeoutMillis?: number): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'PUT',
             params: this._params(),
             data: newFields,
-            timeout: timeoutSecs !== undefined ? timeoutSecs * 1000 : undefined,
+            timeout: timeoutMillis,
         });
         return parseDateFields(pluckData(response.data)) as R;
     }
 
-    protected async _delete(timeoutSecs?: number): Promise<void> {
+    protected async _delete(timeoutMillis?: number): Promise<void> {
         try {
             await this.httpClient.call({
                 url: this._url(),
                 method: 'DELETE',
                 params: this._params(),
-                timeout: timeoutSecs !== undefined ? timeoutSecs * 1000 : undefined,
+                timeout: timeoutMillis,
             });
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);

@@ -8,7 +8,12 @@ import log from '@apify/log';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { DEFAULT_TIMEOUT_SECS, MEDIUM_TIMEOUT_SECS, ResourceClient, SMALL_TIMEOUT_SECS } from '../base/resource_client';
+import {
+    DEFAULT_TIMEOUT_MILLIS,
+    MEDIUM_TIMEOUT_MILLIS,
+    ResourceClient,
+    SMALL_TIMEOUT_MILLIS,
+} from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow, isBuffer, isNode, isStream, parseDateFields, pluckData } from '../utils';
 
@@ -27,7 +32,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store
      */
     async get(): Promise<KeyValueStore | undefined> {
-        return this._get({}, SMALL_TIMEOUT_SECS);
+        return this._get({}, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -36,14 +41,14 @@ export class KeyValueStoreClient extends ResourceClient {
     async update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore> {
         ow(newFields, ow.object);
 
-        return this._update(newFields, DEFAULT_TIMEOUT_SECS);
+        return this._update(newFields, DEFAULT_TIMEOUT_MILLIS);
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/delete-store
      */
     async delete(): Promise<void> {
-        return this._delete(SMALL_TIMEOUT_SECS);
+        return this._delete(SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -64,7 +69,7 @@ export class KeyValueStoreClient extends ResourceClient {
             url: this._url('keys'),
             method: 'GET',
             params: this._params(options),
-            timeout: MEDIUM_TIMEOUT_SECS * 1000,
+            timeout: MEDIUM_TIMEOUT_MILLIS,
         });
 
         return cast(parseDateFields(pluckData(response.data)));
@@ -139,7 +144,7 @@ export class KeyValueStoreClient extends ResourceClient {
             url: this._url(`records/${key}`),
             method: 'GET',
             params: this._params(),
-            timeout: DEFAULT_TIMEOUT_SECS * 1000,
+            timeout: DEFAULT_TIMEOUT_MILLIS,
         };
 
         if (options.buffer) requestOpts.forceBuffer = true;
@@ -217,7 +222,7 @@ export class KeyValueStoreClient extends ResourceClient {
             data: value,
             headers: contentType ? { 'content-type': contentType } : undefined,
             doNotRetryTimeouts,
-            timeout: (timeoutSecs ?? DEFAULT_TIMEOUT_SECS) * 1000,
+            timeout: timeoutSecs !== undefined ? timeoutSecs * 1000 : DEFAULT_TIMEOUT_MILLIS,
         };
 
         await this.httpClient.call(uploadOpts);
@@ -233,7 +238,7 @@ export class KeyValueStoreClient extends ResourceClient {
             url: this._url(`records/${key}`),
             method: 'DELETE',
             params: this._params(),
-            timeout: SMALL_TIMEOUT_SECS * 1000,
+            timeout: SMALL_TIMEOUT_MILLIS,
         });
     }
 }
