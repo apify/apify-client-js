@@ -4,7 +4,12 @@ import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceClient } from '../base/resource_client';
+import {
+    DEFAULT_TIMEOUT_MILLIS,
+    MEDIUM_TIMEOUT_MILLIS,
+    ResourceClient,
+    SMALL_TIMEOUT_MILLIS,
+} from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
 import type { PaginatedList } from '../utils';
 import { cast, catchNotFoundOrThrow, pluckData } from '../utils';
@@ -26,7 +31,7 @@ export class DatasetClient<
      * https://docs.apify.com/api/v2#/reference/datasets/dataset/get-dataset
      */
     async get(): Promise<Dataset | undefined> {
-        return this._get();
+        return this._get({}, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -35,14 +40,14 @@ export class DatasetClient<
     async update(newFields: DatasetClientUpdateOptions): Promise<Dataset> {
         ow(newFields, ow.object);
 
-        return this._update(newFields);
+        return this._update(newFields, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/dataset/delete-dataset
      */
     async delete(): Promise<void> {
-        return this._delete();
+        return this._delete(SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -70,6 +75,7 @@ export class DatasetClient<
             url: this._url('items'),
             method: 'GET',
             params: this._params(options),
+            timeout: DEFAULT_TIMEOUT_MILLIS,
         });
 
         return this._createPaginationList(response, options.desc ?? false);
@@ -113,6 +119,7 @@ export class DatasetClient<
                 ...options,
             }),
             forceBuffer: true,
+            timeout: DEFAULT_TIMEOUT_MILLIS,
         });
 
         return cast(data);
@@ -133,6 +140,7 @@ export class DatasetClient<
             data: items,
             params: this._params(),
             doNotRetryTimeouts: true, // see timeout handling in http-client
+            timeout: MEDIUM_TIMEOUT_MILLIS,
         });
     }
 
@@ -144,6 +152,7 @@ export class DatasetClient<
             url: this._url('statistics'),
             method: 'GET',
             params: this._params(),
+            timeout: SMALL_TIMEOUT_MILLIS,
         };
         try {
             const response = await this.httpClient.call(requestOpts);

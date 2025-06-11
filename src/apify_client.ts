@@ -33,6 +33,8 @@ import { WebhookDispatchClient } from './resource_clients/webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './resource_clients/webhook_dispatch_collection';
 import { Statistics } from './statistics';
 
+const DEFAULT_TIMEOUT_SECS = 360;
+
 /**
  * ApifyClient is the official library to access [Apify API](https://docs.apify.com/api/v2) from your
  * JavaScript applications. It runs both in Node.js and browser.
@@ -67,7 +69,7 @@ export class ApifyClient {
             maxRetries = 8,
             minDelayBetweenRetriesMillis = 500,
             requestInterceptors = [],
-            timeoutSecs = 360,
+            timeoutSecs = DEFAULT_TIMEOUT_SECS,
             token,
         } = options;
 

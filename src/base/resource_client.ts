@@ -13,16 +13,21 @@ import { ApiClient } from './api_client';
  */
 const MAX_WAIT_FOR_FINISH = 999999;
 
+export const SMALL_TIMEOUT_MILLIS = 5 * 1000; // For fast and common actions. Suitable for idempotent actions.
+export const MEDIUM_TIMEOUT_MILLIS = 30 * 1000; // For actions that may take longer.
+export const DEFAULT_TIMEOUT_MILLIS = 360 * 1000; // 6 minutes
+
 /**
  * Resource client.
  * @private
  */
 export class ResourceClient extends ApiClient {
-    protected async _get<T, R>(options: T = {} as T): Promise<R | undefined> {
+    protected async _get<T, R>(options: T = {} as T, timeoutMillis?: number): Promise<R | undefined> {
         const requestOpts: ApifyRequestConfig = {
             url: this._url(),
             method: 'GET',
             params: this._params(options),
+            timeout: timeoutMillis,
         };
         try {
             const response = await this.httpClient.call(requestOpts);
@@ -34,22 +39,24 @@ export class ResourceClient extends ApiClient {
         return undefined;
     }
 
-    protected async _update<T, R>(newFields: T): Promise<R> {
+    protected async _update<T, R>(newFields: T, timeoutMillis?: number): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'PUT',
             params: this._params(),
             data: newFields,
+            timeout: timeoutMillis,
         });
         return parseDateFields(pluckData(response.data)) as R;
     }
 
-    protected async _delete(): Promise<void> {
+    protected async _delete(timeoutMillis?: number): Promise<void> {
         try {
             await this.httpClient.call({
                 url: this._url(),
                 method: 'DELETE',
                 params: this._params(),
+                timeout: timeoutMillis,
             });
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
