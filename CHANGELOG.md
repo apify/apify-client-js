@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.12.6 - **not yet released**
 
+### 🐛 Bug Fixes
+
+- Use appropriate timeouts ([#704](https://github.com/apify/apify-client-js/pull/704)) ([b896bf2](https://github.com/apify/apify-client-js/commit/b896bf2e653e0766ef297f29a35304c1a5f27598)) by [@janbuchar](https://github.com/janbuchar), closes [#685](https://github.com/apify/apify-client-js/issues/685)
+
 
 <!-- git-cliff-unreleased-end -->
 ## [2.12.5](https://github.com/apify/apify-client-js/releases/tag/v2.12.5) (2025-05-28)
