@@ -28,6 +28,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
                 limit: ow.optional.number,
                 offset: ow.optional.number,
                 desc: ow.optional.boolean,
+                sortBy: ow.optional.string.oneOf(['createdAt', 'lastRunStartedAt']),
             }),
         );
 
