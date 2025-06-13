@@ -28,7 +28,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
                 limit: ow.optional.number,
                 offset: ow.optional.number,
                 desc: ow.optional.boolean,
-                sortBy: ow.optional.string.oneOf(['createdAt', 'lastRunStartedAt']),
+                sortBy: ow.optional.string.oneOf(Object.values(ActorListSortBy)),
             }),
         );
 
@@ -45,11 +45,17 @@ export class ActorCollectionClient extends ResourceCollectionClient {
     }
 }
 
+export enum ActorListSortBy {
+    CREATED_AT = 'createdAt',
+    LAST_RUN_STARTED_AT = 'lastRunStartedAt',
+}
+
 export interface ActorCollectionListOptions {
     my?: boolean;
     limit?: number;
     offset?: number;
     desc?: boolean;
+    sortBy?: ActorListSortBy;
 }
 
 export interface ActorCollectionListItem {
