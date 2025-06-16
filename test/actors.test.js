@@ -1,5 +1,5 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
-const { ApifyClient } = require('apify-client');
+const { ApifyClient, ActorListSortBy } = require('apify-client');
 const { stringifyWebhooksToBase64 } = require('../src/utils');
 const mockServer = require('./mock_server/server');
 
@@ -39,6 +39,7 @@ describe('Actor methods', () => {
                 offset: 3,
                 desc: true,
                 my: true,
+                sortBy: ActorListSortBy.CREATED_AT,
             };
 
             const res = await client.actors().list(opts);
