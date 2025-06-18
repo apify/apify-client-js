@@ -1,5 +1,5 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
-const { ApifyClient, ActorListSortBy } = require('apify-client');
+const { ActorListSortBy, ApifyClient } = require('apify-client');
 const { stringifyWebhooksToBase64 } = require('../src/utils');
 const mockServer = require('./mock_server/server');
 
