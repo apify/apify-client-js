@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.12.6 - **not yet released**
 
+### 🚀 Features
+
+- Allow sorting of Actors collection ([#708](https://github.com/apify/apify-client-js/pull/708)) ([562a193](https://github.com/apify/apify-client-js/commit/562a193b90ce4f2b05bf166da8fe2dddaa87eb6b)) by [@protoss70](https://github.com/protoss70)
+
 ### 🐛 Bug Fixes
 
 - Use appropriate timeouts ([#704](https://github.com/apify/apify-client-js/pull/704)) ([b896bf2](https://github.com/apify/apify-client-js/commit/b896bf2e653e0766ef297f29a35304c1a5f27598)) by [@janbuchar](https://github.com/janbuchar), closes [#685](https://github.com/apify/apify-client-js/issues/685)
