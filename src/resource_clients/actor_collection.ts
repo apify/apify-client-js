@@ -47,7 +47,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
 
 export enum ActorListSortBy {
     CREATED_AT = 'createdAt',
-    LAST_RUN_STARTED_AT = 'lastRunStartedAt',
+    LAST_RUN_STARTED_AT = 'stats.lastRunStartedAt',
 }
 
 export interface ActorCollectionListOptions {
