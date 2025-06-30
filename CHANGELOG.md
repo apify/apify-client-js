@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.12.6 - **not yet released**
+## [2.12.6](https://github.com/apify/apify-client-js/releases/tag/v2.12.6) (2025-06-30)
 
 ### 🚀 Features
 
@@ -15,7 +14,6 @@ All notable changes to this project will be documented in this file.
 - Rename option for new sortBy parameter ([#711](https://github.com/apify/apify-client-js/pull/711)) ([f45dd03](https://github.com/apify/apify-client-js/commit/f45dd037c581a6c0e27fd8c036033b99cec1ba89)) by [@protoss70](https://github.com/protoss70)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.12.5](https://github.com/apify/apify-client-js/releases/tag/v2.12.5) (2025-05-28)
 
 ### 🚀 Features
