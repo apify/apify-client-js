@@ -47,7 +47,7 @@ export interface WebhookDispatchCall {
     responseBody: string | null;
 }
 
-export type WebhookDispatchEventData = {
+export interface WebhookDispatchEventData {
     actorRunId?: string;
     actorId?: string;
     actorTaskId?: string;
