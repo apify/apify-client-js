@@ -30,6 +30,7 @@ export interface WebhookDispatch {
     eventType: WebhookEventType;
     calls: WebhookDispatchCall[];
     webhook: Pick<Webhook, 'requestUrl' | 'isAdHoc'>;
+    eventData: WebhookDispatchEventData | null;
 }
 
 export enum WebhookDispatchStatus {
@@ -44,4 +45,11 @@ export interface WebhookDispatchCall {
     errorMessage: string | null;
     responseStatus: number | null;
     responseBody: string | null;
+}
+
+export interface WebhookDispatchEventData {
+    actorRunId?: string;
+    actorId?: string;
+    actorTaskId?: string;
+    actorBuildId?: string;
 }
