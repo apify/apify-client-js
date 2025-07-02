@@ -52,4 +52,4 @@ export interface WebhookDispatchEventData {
     actorId?: string;
     actorTaskId?: string;
     actorBuildId?: string;
-};
+}
