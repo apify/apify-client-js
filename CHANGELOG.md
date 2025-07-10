@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### 🐛 Bug Fixes
 
 - Add `eventData` to `WebhookDispatch` type ([#714](https://github.com/apify/apify-client-js/pull/714)) ([351f11f](https://github.com/apify/apify-client-js/commit/351f11f268a54532c7003ab099bc0d7d8d9c9ad7)) by [@valekjo](https://github.com/valekjo)
+- Sync `@docusaurus` dependencies version [internal] ([#715](https://github.com/apify/apify-client-js/pull/715)) ([3dc9c50](https://github.com/apify/apify-client-js/commit/3dc9c500c84840f13790013ee61642c032ce246f)) by [@katzino](https://github.com/katzino)
 
 
 <!-- git-cliff-unreleased-end -->
