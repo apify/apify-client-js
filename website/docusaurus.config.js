@@ -16,6 +16,13 @@ module.exports = {
     favicon: 'img/favicon.ico',
     onBrokenLinks: /** @type {import('@docusaurus/types').ReportingSeverity} */ ('throw'),
     onBrokenMarkdownLinks: /** @type {import('@docusaurus/types').ReportingSeverity} */ ('throw'),
+    future: {
+        experimental_faster: true,
+        v4: {
+            removeLegacyPostBuildHeadAttribute: true,
+            useCssCascadeLayers: false,
+        },
+    },
     themes: [
         [
             '@apify/docs-theme',
