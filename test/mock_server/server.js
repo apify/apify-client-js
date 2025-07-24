@@ -21,6 +21,9 @@ const userRouter = require('./routes/users');
 const webhookDispatches = require('./routes/webhook_dispatches');
 const webhooks = require('./routes/webhooks');
 
+// Consts
+const MOCKED_ACTOR_LOGS = require('./consts');
+
 const app = express();
 const v2Router = express.Router();
 const mockServer = {
@@ -74,12 +77,17 @@ app.set('mockServer', mockServer);
 app.use('/v2', v2Router);
 app.use('/external', external);
 
+
+
 // Attaching V2 routers
 v2Router.use('/acts', actorRouter);
 v2Router.use('/actor-builds', buildRouter);
 v2Router.use('/actor-runs', runRouter);
 v2Router.use('/actor-tasks', taskRouter);
 v2Router.use('/users', userRouter);
+v2Router.use('/logs/redirect-log-id', (req, res) => {
+    res.status(200).send(MOCKED_ACTOR_LOGS);
+});
 v2Router.use('/logs', logRouter);
 v2Router.use('/datasets', datasetRouter);
 v2Router.use('/key-value-stores', keyValueStores);
