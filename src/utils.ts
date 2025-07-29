@@ -263,19 +263,23 @@ export type Dictionary<T = unknown> = Record<PropertyKey, T>;
 
 export type DistributiveOptional<T, K extends keyof T> = T extends any ? Omit<T, K> & Partial<Pick<T, K>> : never;
 
-
 /**
  * Creates a storage signature for a resource, which can be used to generate signed URLs for accessing the resource.
  * The signature is created using HMAC with the provided secret key and includes the resource ID, expiration time, and version.
- * 
+ *
  * Note: expirationMillis is optional. If not provided, the signature will not expire.
  */
-export function createStorageSignature({ 
+export function createStorageSignature({
     resourceId,
     urlSigningSecretKey,
     expiresInMillis,
-    version = 0
-}: { resourceId: string, urlSigningSecretKey: string, expiresInMillis: number | undefined, version?: number }) {
+    version = 0,
+}: {
+    resourceId: string;
+    urlSigningSecretKey: string;
+    expiresInMillis: number | undefined;
+    version?: number;
+}) {
     const expiresAt = expiresInMillis ? new Date().getTime() + expiresInMillis : null;
     const hmac = createHmacSignature(urlSigningSecretKey, `${version}.${expiresAt}.${resourceId}`);
     return Buffer.from(`${version}.${expiresAt}.${hmac}`).toString('base64url');
@@ -284,7 +288,10 @@ export function createStorageSignature({
 /**
  * Adds query parameters to a given URL based on the provided options object.
  */
-export function applyQueryParamsToUrl(url: URL, options?: Record<string, string | number | boolean | string[] | undefined>) {
+export function applyQueryParamsToUrl(
+    url: URL,
+    options?: Record<string, string | number | boolean | string[] | undefined>,
+) {
     for (const [key, value] of Object.entries(options ?? {})) {
         // skip undefined values
         if (value === undefined) continue;

@@ -15,7 +15,17 @@ import {
     SMALL_TIMEOUT_MILLIS,
 } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
-import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, createStorageSignature, isBuffer, isNode, isStream, parseDateFields, pluckData } from '../utils';
+import {
+    applyQueryParamsToUrl,
+    cast,
+    catchNotFoundOrThrow,
+    createStorageSignature,
+    isBuffer,
+    isNode,
+    isStream,
+    parseDateFields,
+    pluckData,
+} from '../utils';
 
 export class KeyValueStoreClient extends ResourceClient {
     /**
@@ -87,7 +97,7 @@ export class KeyValueStoreClient extends ResourceClient {
      *
      * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
      *
-    */
+     */
     async getPublicKeysUrl(options: KeyValueClientListKeysOptions = {}, expiresInMillis?: number) {
         ow(
             options,

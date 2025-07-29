@@ -175,7 +175,7 @@ export class DatasetClient<
      *
      * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
      *
-    */
+     */
     async getPublicItemsUrl(options: DatasetClientListItemOptions = {}, expiresInMillis?: number): Promise<string> {
         ow(
             options,
@@ -197,7 +197,7 @@ export class DatasetClient<
         const dataset = await this.get();
 
         let publicItemsUrl = new URL(this._url('items'));
-        
+
         if (dataset?.urlSigningSecretKey) {
             const signature = createStorageSignature({
                 resourceId: dataset.id,

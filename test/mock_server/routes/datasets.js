@@ -31,7 +31,7 @@ datasets.get('/:datasetId', (req, res) => {
             data: {
                 id: datasetId,
                 urlSigningSecretKey: 'a-real-secret-key-for-testing',
-            }
+            },
         });
     }
 
@@ -42,7 +42,7 @@ datasets.get('/:datasetId', (req, res) => {
     return res.json({
         data: {
             id: 'get-dataset',
-        }
+        },
     });
 });
 

@@ -38,7 +38,7 @@ keyValueStores.get('/:storeId', (req, res) => {
             data: {
                 id: storeId,
                 urlSigningSecretKey: 'a-real-secret-key-for-testing',
-            }
+            },
         });
     }
 
@@ -49,7 +49,7 @@ keyValueStores.get('/:storeId', (req, res) => {
     return res.json({
         data: {
             id: 'get-store',
-        }
+        },
     });
 });
 
