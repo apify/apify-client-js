@@ -15,7 +15,7 @@ import {
     SMALL_TIMEOUT_MILLIS,
 } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
-import { cast, catchNotFoundOrThrow, isBuffer, isNode, isStream, parseDateFields, pluckData } from '../utils';
+import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, createStorageSignature, isBuffer, isNode, isStream, parseDateFields, pluckData } from '../utils';
 
 export class KeyValueStoreClient extends ResourceClient {
     /**
@@ -73,6 +73,48 @@ export class KeyValueStoreClient extends ResourceClient {
         });
 
         return cast(parseDateFields(pluckData(response.data)));
+    }
+
+    /**
+     * Returns a URL that can be used to access key-value store keys.
+     *
+     * If the token has permission to access the key-value store's URL signing key,
+     * the URL will include a signature to verify its authenticity.
+     *
+     * You can optionally control how long the signed URL should be valid using the `expiresInMillis` option.
+     * This value sets the expiration duration in milliseconds from the time the URL is generated.
+     * If not provided, the URL will not expire.
+     *
+     * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
+     *
+    */
+    async getPublicKeysUrl(options: KeyValueClientListKeysOptions = {}, expiresInMillis?: number) {
+        ow(
+            options,
+            ow.object.exactShape({
+                limit: ow.optional.number,
+                exclusiveStartKey: ow.optional.string,
+                collection: ow.optional.string,
+                prefix: ow.optional.string,
+            }),
+        );
+
+        const store = await this.get();
+
+        let publicKeysUrl = new URL(this._url('items'));
+
+        if (store?.urlSigningSecretKey) {
+            const signature = createStorageSignature({
+                resourceId: store.id,
+                urlSigningSecretKey: store.urlSigningSecretKey,
+                expiresInMillis,
+            });
+            publicKeysUrl.searchParams.set('signature', signature);
+        }
+
+        publicKeysUrl = applyQueryParamsToUrl(publicKeysUrl, options);
+
+        return publicKeysUrl.toString();
     }
 
     /**
@@ -255,6 +297,7 @@ export interface KeyValueStore {
     actRunId?: string;
     stats?: KeyValueStoreStats;
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
+    urlSigningSecretKey?: string | null;
 }
 
 export interface KeyValueStoreStats {

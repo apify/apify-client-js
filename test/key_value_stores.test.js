@@ -553,5 +553,31 @@ describe('Key-Value Store methods', () => {
             expect(browserRes).toBeUndefined();
             validateRequest({}, { storeId, key });
         });
+
+        describe('getPublicKeysUrl()', () => {
+            it('should include a signature in the URL when the caller has permission to access the signing secret key', async () => {
+                const storeId = 'id-with-secret-key';
+                const res = await client.keyValueStore(storeId).getPublicKeysUrl();
+
+                expect(new URL(res).searchParams.get('signature')).toBeDefined();
+            });
+
+            it('should not include a signature in the URL when the caller lacks permission to access the signing secret key', async () => {
+                const storeId = 'some-id';
+                const res = await client.keyValueStore(storeId).getPublicKeysUrl();
+
+                expect(new URL(res).searchParams.get('signature')).toBeNull();
+            });
+
+            it('includes provided options (e.g., limit and prefix) as query parameters', async () => {
+                const storeId = 'id-with-secret-key';
+                const res = await client.keyValueStore(storeId).getPublicKeysUrl({ limit: 10, prefix: 'prefix' });
+                const publicItemsUrl = new URL(res);
+
+                expect(publicItemsUrl.searchParams.get('limit')).toBe('10');
+                expect(publicItemsUrl.searchParams.get('prefix')).toBe('prefix');
+                expect(publicItemsUrl.searchParams.get('signature')).toBeDefined();
+            });
+        });
     });
 });
