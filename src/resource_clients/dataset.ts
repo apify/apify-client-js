@@ -12,7 +12,7 @@ import {
 } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
 import type { PaginatedList } from '../utils';
-import { cast, catchNotFoundOrThrow, pluckData } from '../utils';
+import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, createStorageSignature, pluckData } from '../utils';
 
 export class DatasetClient<
     Data extends Record<string | number, any> = Record<string | number, unknown>,
@@ -163,6 +163,55 @@ export class DatasetClient<
         return undefined;
     }
 
+    /**
+     * Returns a URL that can be used to access dataset items.
+     *
+     * If the token has permission to access the dataset's URL signing key,
+     * the URL will include a signature to verify its authenticity.
+     *
+     * You can optionally control how long the signed URL should be valid using the `expiresInMillis` option.
+     * This value sets the expiration duration in milliseconds from the time the URL is generated.
+     * If not provided, the URL will not expire.
+     *
+     * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
+     *
+    */
+    async getPublicItemsUrl(options: DatasetClientListItemOptions = {}, expiresInMillis?: number): Promise<string> {
+        ow(
+            options,
+            ow.object.exactShape({
+                clean: ow.optional.boolean,
+                desc: ow.optional.boolean,
+                flatten: ow.optional.array.ofType(ow.string),
+                fields: ow.optional.array.ofType(ow.string),
+                omit: ow.optional.array.ofType(ow.string),
+                limit: ow.optional.number,
+                offset: ow.optional.number,
+                skipEmpty: ow.optional.boolean,
+                skipHidden: ow.optional.boolean,
+                unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
+                view: ow.optional.string,
+            }),
+        );
+
+        const dataset = await this.get();
+
+        let publicItemsUrl = new URL(this._url('items'));
+        
+        if (dataset?.urlSigningSecretKey) {
+            const signature = createStorageSignature({
+                resourceId: dataset.id,
+                urlSigningSecretKey: dataset.urlSigningSecretKey,
+                expiresInMillis,
+            });
+            publicItemsUrl.searchParams.set('signature', signature);
+        }
+
+        publicItemsUrl = applyQueryParamsToUrl(publicItemsUrl, options);
+
+        return publicItemsUrl.toString();
+    }
+
     private _createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
         return {
             items: response.data,
@@ -191,6 +240,7 @@ export interface Dataset {
     stats: DatasetStats;
     fields: string[];
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
+    urlSigningSecretKey?: string | null;
 }
 
 export interface DatasetStats {
