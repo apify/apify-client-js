@@ -164,9 +164,9 @@ export class DatasetClient<
     }
 
     /**
-     * Returns a URL that can be used to access dataset items.
+     * Generates a URL that can be used to access dataset items.
      *
-     * If the token has permission to access the dataset's URL signing key,
+     * If the client has permission to access the dataset's URL signing key,
      * the URL will include a signature to verify its authenticity.
      *
      * You can optionally control how long the signed URL should be valid using the `expiresInMillis` option.
@@ -176,7 +176,7 @@ export class DatasetClient<
      * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
      *
      */
-    async getPublicItemsUrl(options: DatasetClientListItemOptions = {}, expiresInMillis?: number): Promise<string> {
+    async createItemsPublicUrl(options: DatasetClientListItemOptions = {}, expiresInMillis?: number): Promise<string> {
         ow(
             options,
             ow.object.exactShape({
@@ -196,7 +196,7 @@ export class DatasetClient<
 
         const dataset = await this.get();
 
-        let publicItemsUrl = new URL(this._url('items'));
+        let createdItemsPublicUrl = new URL(this._url('items'));
 
         if (dataset?.urlSigningSecretKey) {
             const signature = createStorageSignature({
@@ -204,12 +204,12 @@ export class DatasetClient<
                 urlSigningSecretKey: dataset.urlSigningSecretKey,
                 expiresInMillis,
             });
-            publicItemsUrl.searchParams.set('signature', signature);
+            createdItemsPublicUrl.searchParams.set('signature', signature);
         }
 
-        publicItemsUrl = applyQueryParamsToUrl(publicItemsUrl, options);
+        createdItemsPublicUrl = applyQueryParamsToUrl(createdItemsPublicUrl, options);
 
-        return publicItemsUrl.toString();
+        return createdItemsPublicUrl.toString();
     }
 
     private _createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
@@ -241,6 +241,7 @@ export interface Dataset {
     fields: string[];
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
     urlSigningSecretKey?: string | null;
+    itemsPublicUrl: string;
 }
 
 export interface DatasetStats {

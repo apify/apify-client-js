@@ -86,9 +86,9 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
-     * Returns a URL that can be used to access key-value store keys.
+     * Generates a URL that can be used to access key-value store keys.
      *
-     * If the token has permission to access the key-value store's URL signing key,
+     * If the client has permission to access the key-value store's URL signing key,
      * the URL will include a signature to verify its authenticity.
      *
      * You can optionally control how long the signed URL should be valid using the `expiresInMillis` option.
@@ -98,7 +98,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
      *
      */
-    async getPublicKeysUrl(options: KeyValueClientListKeysOptions = {}, expiresInMillis?: number) {
+    async createKeysPublicUrl(options: KeyValueClientListKeysOptions = {}, expiresInMillis?: number) {
         ow(
             options,
             ow.object.exactShape({
@@ -111,7 +111,7 @@ export class KeyValueStoreClient extends ResourceClient {
 
         const store = await this.get();
 
-        let publicKeysUrl = new URL(this._url('items'));
+        let createdPublicKeysUrl = new URL(this._url('items'));
 
         if (store?.urlSigningSecretKey) {
             const signature = createStorageSignature({
@@ -119,12 +119,12 @@ export class KeyValueStoreClient extends ResourceClient {
                 urlSigningSecretKey: store.urlSigningSecretKey,
                 expiresInMillis,
             });
-            publicKeysUrl.searchParams.set('signature', signature);
+            createdPublicKeysUrl.searchParams.set('signature', signature);
         }
 
-        publicKeysUrl = applyQueryParamsToUrl(publicKeysUrl, options);
+        createdPublicKeysUrl = applyQueryParamsToUrl(createdPublicKeysUrl, options);
 
-        return publicKeysUrl.toString();
+        return createdPublicKeysUrl.toString();
     }
 
     /**
@@ -308,6 +308,7 @@ export interface KeyValueStore {
     stats?: KeyValueStoreStats;
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
     urlSigningSecretKey?: string | null;
+    keysPublicUrl: string;
 }
 
 export interface KeyValueStoreStats {

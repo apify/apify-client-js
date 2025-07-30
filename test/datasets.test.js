@@ -328,30 +328,30 @@ describe('Dataset methods', () => {
             validateRequest({}, { datasetId });
         });
 
-        describe('getPublicItemsUrl()', () => {
+        describe('createItemsPublicUrl()', () => {
             it('should include a signature in the URL when the caller has permission to access the signing secret key', async () => {
                 const datasetId = 'id-with-secret-key';
-                const res = await client.dataset(datasetId).getPublicItemsUrl();
+                const res = await client.dataset(datasetId).createItemsPublicUrl();
 
                 expect(new URL(res).searchParams.get('signature')).toBeDefined();
             });
 
             it('should not include a signature in the URL when the caller lacks permission to access the signing secret key', async () => {
                 const datasetId = 'some-id';
-                const res = await client.dataset(datasetId).getPublicItemsUrl();
+                const res = await client.dataset(datasetId).createItemsPublicUrl();
 
                 expect(new URL(res).searchParams.get('signature')).toBeNull();
             });
 
             it('includes provided options (e.g., limit and prefix) as query parameters', async () => {
                 const datasetId = 'id-with-secret-key';
-                const res = await client.dataset(datasetId).getPublicItemsUrl({ desc: true, limit: 10, offset: 5 });
-                const publicItemsUrl = new URL(res);
+                const res = await client.dataset(datasetId).createItemsPublicUrl({ desc: true, limit: 10, offset: 5 });
+                const itemsPublicUrl = new URL(res);
 
-                expect(publicItemsUrl.searchParams.get('desc')).toBe('true');
-                expect(publicItemsUrl.searchParams.get('limit')).toBe('10');
-                expect(publicItemsUrl.searchParams.get('offset')).toBe('5');
-                expect(publicItemsUrl.searchParams.get('signature')).toBeDefined();
+                expect(itemsPublicUrl.searchParams.get('desc')).toBe('true');
+                expect(itemsPublicUrl.searchParams.get('limit')).toBe('10');
+                expect(itemsPublicUrl.searchParams.get('offset')).toBe('5');
+                expect(itemsPublicUrl.searchParams.get('signature')).toBeDefined();
             });
         });
     });

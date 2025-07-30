@@ -554,29 +554,29 @@ describe('Key-Value Store methods', () => {
             validateRequest({}, { storeId, key });
         });
 
-        describe('getPublicKeysUrl()', () => {
+        describe('createKeysPublicUrl()', () => {
             it('should include a signature in the URL when the caller has permission to access the signing secret key', async () => {
                 const storeId = 'id-with-secret-key';
-                const res = await client.keyValueStore(storeId).getPublicKeysUrl();
+                const res = await client.keyValueStore(storeId).createKeysPublicUrl();
 
                 expect(new URL(res).searchParams.get('signature')).toBeDefined();
             });
 
             it('should not include a signature in the URL when the caller lacks permission to access the signing secret key', async () => {
                 const storeId = 'some-id';
-                const res = await client.keyValueStore(storeId).getPublicKeysUrl();
+                const res = await client.keyValueStore(storeId).createKeysPublicUrl();
 
                 expect(new URL(res).searchParams.get('signature')).toBeNull();
             });
 
             it('includes provided options (e.g., limit and prefix) as query parameters', async () => {
                 const storeId = 'id-with-secret-key';
-                const res = await client.keyValueStore(storeId).getPublicKeysUrl({ limit: 10, prefix: 'prefix' });
-                const publicItemsUrl = new URL(res);
+                const res = await client.keyValueStore(storeId).createKeysPublicUrl({ limit: 10, prefix: 'prefix' });
+                const keysPublicUrl = new URL(res);
 
-                expect(publicItemsUrl.searchParams.get('limit')).toBe('10');
-                expect(publicItemsUrl.searchParams.get('prefix')).toBe('prefix');
-                expect(publicItemsUrl.searchParams.get('signature')).toBeDefined();
+                expect(keysPublicUrl.searchParams.get('limit')).toBe('10');
+                expect(keysPublicUrl.searchParams.get('prefix')).toBe('prefix');
+                expect(keysPublicUrl.searchParams.get('signature')).toBeDefined();
             });
         });
     });
