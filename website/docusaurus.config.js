@@ -14,6 +14,7 @@ module.exports = {
     organizationName: 'apify',
     projectName: 'apify-client-js',
     favicon: 'img/favicon.ico',
+    scripts: [...(config.scripts ?? [])],
     onBrokenLinks: /** @type {import('@docusaurus/types').ReportingSeverity} */ ('throw'),
     onBrokenMarkdownLinks: /** @type {import('@docusaurus/types').ReportingSeverity} */ ('throw'),
     future: {
@@ -112,4 +113,7 @@ module.exports = {
     ],
     themeConfig: { ...config.themeConfig, versions },
     staticDirectories: ['node_modules/@apify/docs-theme/static', 'static'],
+    customFields: {
+        ...(config.customFields ?? []),
+    },
 };
