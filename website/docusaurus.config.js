@@ -120,10 +120,13 @@ module.exports = {
                     includeGeneratedIndex: false,
                     includePages: true,
                     relativePaths: false,
-                    excludeRoutes: ['/api/client/js/reference/2.*/**', '/api/client/js/reference/2.*', '/api/client/js/reference/next/**', '/api/client/js/reference/next'],
-                    routeRules: [
-                        { route: '/api/client/js/**', depth: 1, categoryName: 'Apify JavaScript client' },
+                    excludeRoutes: [
+                        '/api/client/js/reference/2.*/**',
+                        '/api/client/js/reference/2.*',
+                        '/api/client/js/reference/next/**',
+                        '/api/client/js/reference/next',
                     ],
+                    routeRules: [{ route: '/api/client/js/**', depth: 1, categoryName: 'Apify JavaScript client' }],
                 },
             },
         ],
