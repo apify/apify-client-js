@@ -280,7 +280,7 @@ export function createStorageSignature({
     expiresInMillis: number | undefined;
     version?: number;
 }) {
-    const expiresAt = expiresInMillis ? new Date().getTime() + expiresInMillis : null;
+    const expiresAt = expiresInMillis ? new Date().getTime() + expiresInMillis : 0;
     const hmac = createHmacSignature(urlSigningSecretKey, `${version}.${expiresAt}.${resourceId}`);
     return Buffer.from(`${version}.${expiresAt}.${hmac}`).toString('base64url');
 }
