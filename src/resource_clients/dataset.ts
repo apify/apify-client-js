@@ -174,7 +174,6 @@ export class DatasetClient<
      * If not provided, the URL will not expire.
      *
      * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
-     *
      */
     async createItemsPublicUrl(options: DatasetClientListItemOptions = {}, expiresInMillis?: number): Promise<string> {
         ow(
