@@ -260,3 +260,23 @@ export function asArray<T>(value: T | T[]): T[] {
 export type Dictionary<T = unknown> = Record<PropertyKey, T>;
 
 export type DistributiveOptional<T, K extends keyof T> = T extends any ? Omit<T, K> & Partial<Pick<T, K>> : never;
+
+/**
+ * Adds query parameters to a given URL based on the provided options object.
+ */
+export function applyQueryParamsToUrl(
+    url: URL,
+    options?: Record<string, string | number | boolean | string[] | undefined>,
+) {
+    for (const [key, value] of Object.entries(options ?? {})) {
+        // skip undefined values
+        if (value === undefined) continue;
+        // join array values with a comma
+        if (Array.isArray(value)) {
+            url.searchParams.set(key, value.join(','));
+            continue;
+        }
+        url.searchParams.set(key, String(value));
+    }
+    return url;
+}

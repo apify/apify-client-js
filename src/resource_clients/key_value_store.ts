@@ -5,6 +5,7 @@ import type { JsonValue } from 'type-fest';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import log from '@apify/log';
+import { createStorageContentSignature } from '@apify/utilities';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
@@ -15,7 +16,16 @@ import {
     SMALL_TIMEOUT_MILLIS,
 } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
-import { cast, catchNotFoundOrThrow, isBuffer, isNode, isStream, parseDateFields, pluckData } from '../utils';
+import {
+    applyQueryParamsToUrl,
+    cast,
+    catchNotFoundOrThrow,
+    isBuffer,
+    isNode,
+    isStream,
+    parseDateFields,
+    pluckData,
+} from '../utils';
 
 export class KeyValueStoreClient extends ResourceClient {
     /**
@@ -73,6 +83,48 @@ export class KeyValueStoreClient extends ResourceClient {
         });
 
         return cast(parseDateFields(pluckData(response.data)));
+    }
+
+    /**
+     * Generates a URL that can be used to access key-value store keys.
+     *
+     * If the client has permission to access the key-value store's URL signing key,
+     * the URL will include a signature to verify its authenticity.
+     *
+     * You can optionally control how long the signed URL should be valid using the `expiresInMillis` option.
+     * This value sets the expiration duration in milliseconds from the time the URL is generated.
+     * If not provided, the URL will not expire.
+     *
+     * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
+     *
+     */
+    async createKeysPublicUrl(options: KeyValueClientListKeysOptions = {}, expiresInMillis?: number) {
+        ow(
+            options,
+            ow.object.exactShape({
+                limit: ow.optional.number,
+                exclusiveStartKey: ow.optional.string,
+                collection: ow.optional.string,
+                prefix: ow.optional.string,
+            }),
+        );
+
+        const store = await this.get();
+
+        let createdPublicKeysUrl = new URL(this._url('items'));
+
+        if (store?.urlSigningSecretKey) {
+            const signature = createStorageContentSignature({
+                resourceId: store.id,
+                urlSigningSecretKey: store.urlSigningSecretKey,
+                expiresInMillis,
+            });
+            createdPublicKeysUrl.searchParams.set('signature', signature);
+        }
+
+        createdPublicKeysUrl = applyQueryParamsToUrl(createdPublicKeysUrl, options);
+
+        return createdPublicKeysUrl.toString();
     }
 
     /**
@@ -255,6 +307,8 @@ export interface KeyValueStore {
     actRunId?: string;
     stats?: KeyValueStoreStats;
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
+    urlSigningSecretKey?: string | null;
+    keysPublicUrl: string;
 }
 
 export interface KeyValueStoreStats {

@@ -1,6 +1,7 @@
 import ow from 'ow';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
+import { createStorageContentSignature } from '@apify/utilities';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
@@ -12,7 +13,7 @@ import {
 } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
 import type { PaginatedList } from '../utils';
-import { cast, catchNotFoundOrThrow, pluckData } from '../utils';
+import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData } from '../utils';
 
 export class DatasetClient<
     Data extends Record<string | number, any> = Record<string | number, unknown>,
@@ -163,6 +164,54 @@ export class DatasetClient<
         return undefined;
     }
 
+    /**
+     * Generates a URL that can be used to access dataset items.
+     *
+     * If the client has permission to access the dataset's URL signing key,
+     * the URL will include a signature to verify its authenticity.
+     *
+     * You can optionally control how long the signed URL should be valid using the `expiresInMillis` option.
+     * This value sets the expiration duration in milliseconds from the time the URL is generated.
+     * If not provided, the URL will not expire.
+     *
+     * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
+     */
+    async createItemsPublicUrl(options: DatasetClientListItemOptions = {}, expiresInMillis?: number): Promise<string> {
+        ow(
+            options,
+            ow.object.exactShape({
+                clean: ow.optional.boolean,
+                desc: ow.optional.boolean,
+                flatten: ow.optional.array.ofType(ow.string),
+                fields: ow.optional.array.ofType(ow.string),
+                omit: ow.optional.array.ofType(ow.string),
+                limit: ow.optional.number,
+                offset: ow.optional.number,
+                skipEmpty: ow.optional.boolean,
+                skipHidden: ow.optional.boolean,
+                unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
+                view: ow.optional.string,
+            }),
+        );
+
+        const dataset = await this.get();
+
+        let createdItemsPublicUrl = new URL(this._url('items'));
+
+        if (dataset?.urlSigningSecretKey) {
+            const signature = createStorageContentSignature({
+                resourceId: dataset.id,
+                urlSigningSecretKey: dataset.urlSigningSecretKey,
+                expiresInMillis,
+            });
+            createdItemsPublicUrl.searchParams.set('signature', signature);
+        }
+
+        createdItemsPublicUrl = applyQueryParamsToUrl(createdItemsPublicUrl, options);
+
+        return createdItemsPublicUrl.toString();
+    }
+
     private _createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
         return {
             items: response.data,
@@ -191,6 +240,8 @@ export interface Dataset {
     stats: DatasetStats;
     fields: string[];
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
+    urlSigningSecretKey?: string | null;
+    itemsPublicUrl: string;
 }
 
 export interface DatasetStats {
