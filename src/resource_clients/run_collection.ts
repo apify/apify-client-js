@@ -28,7 +28,10 @@ export class RunCollectionClient extends ResourceCollectionClient {
                 limit: ow.optional.number,
                 offset: ow.optional.number,
                 desc: ow.optional.boolean,
-                status: ow.optional.array.ofType(ow.string.oneOf(Object.values(ACTOR_JOB_STATUSES))),
+                status: ow.optional.any(
+                    ow.string.oneOf(Object.values(ACTOR_JOB_STATUSES)),
+                    ow.array.ofType(ow.string.oneOf(Object.values(ACTOR_JOB_STATUSES))),
+                ),
             }),
         );
 
@@ -40,5 +43,5 @@ export interface RunCollectionListOptions {
     limit?: number;
     offset?: number;
     desc?: boolean;
-    status?: (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES][];
+    status?: (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES] | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES][];
 }
