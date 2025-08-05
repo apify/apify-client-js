@@ -43,5 +43,7 @@ export interface RunCollectionListOptions {
     limit?: number;
     offset?: number;
     desc?: boolean;
-    status?: (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES] | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES][];
+    status?:
+        | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES]
+        | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES][];
 }
