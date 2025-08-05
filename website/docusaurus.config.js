@@ -109,6 +109,26 @@ module.exports = {
                 routeBasePath: '/reference',
             },
         ],
+        [
+            '@signalwire/docusaurus-plugin-llms-txt',
+            {
+                content: {
+                    includeVersionedDocs: false,
+                    enableLlmsFullTxt: true,
+                    includeBlog: true,
+                    includeGeneratedIndex: false,
+                    includePages: true,
+                    relativePaths: false,
+                    excludeRoutes: [
+                        '/api/client/js/reference/2.*/**',
+                        '/api/client/js/reference/2.*',
+                        '/api/client/js/reference/next/**',
+                        '/api/client/js/reference/next',
+                    ],
+                    routeRules: [{ route: '/api/client/js/**', depth: 1, categoryName: 'Apify JavaScript client' }],
+                },
+            },
+        ],
         ...config.plugins,
     ],
     themeConfig: { ...config.themeConfig, versions },
