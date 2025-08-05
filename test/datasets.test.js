@@ -333,14 +333,18 @@ describe('Dataset methods', () => {
                 const datasetId = 'id-with-secret-key';
                 const res = await client.dataset(datasetId).createItemsPublicUrl();
 
-                expect(new URL(res).searchParams.get('signature')).toBeDefined();
+                const url = new URL(res);
+                expect(url.searchParams.get('signature')).toBeDefined();
+                expect(url.pathname).toBe(`/v2/datasets/${datasetId}/items`);
             });
 
             it('should not include a signature in the URL when the caller lacks permission to access the signing secret key', async () => {
                 const datasetId = 'some-id';
                 const res = await client.dataset(datasetId).createItemsPublicUrl();
 
-                expect(new URL(res).searchParams.get('signature')).toBeNull();
+                const url = new URL(res);
+                expect(url.searchParams.get('signature')).toBeNull();
+                expect(url.pathname).toBe(`/v2/datasets/${datasetId}/items`);
             });
 
             it('includes provided options (e.g., limit and prefix) as query parameters', async () => {
@@ -352,6 +356,7 @@ describe('Dataset methods', () => {
                 expect(itemsPublicUrl.searchParams.get('limit')).toBe('10');
                 expect(itemsPublicUrl.searchParams.get('offset')).toBe('5');
                 expect(itemsPublicUrl.searchParams.get('signature')).toBeDefined();
+                expect(itemsPublicUrl.pathname).toBe(`/v2/datasets/${datasetId}/items`);
             });
         });
     });
