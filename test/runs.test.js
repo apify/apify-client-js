@@ -28,7 +28,7 @@ describe('Run methods', () => {
     });
     afterEach(async () => {
         client = null;
-        page.close().catch(() => {});
+        page.close().catch(() => { });
     });
 
     describe('runs()', () => {
@@ -37,15 +37,21 @@ describe('Run methods', () => {
                 limit: 5,
                 offset: 3,
                 desc: true,
+                status: ['SUCCEEDED', 'FAILED'],
+            };
+
+            const expectedQuery = {
+                ...query,
+                status: 'SUCCEEDED,FAILED', // This is what should be sent to the API
             };
 
             const res = await client.runs().list(query);
             expect(res.id).toEqual('list-runs');
-            validateRequest(query);
+            validateRequest(expectedQuery);
 
             const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
             expect(browserRes).toEqual(res);
-            validateRequest(query);
+            validateRequest(expectedQuery);
         });
     });
 
@@ -308,7 +314,7 @@ describe('Run methods', () => {
 
             await expect(client.run(runId).charge()).rejects.toThrow(
                 'Expected `options` to be of type `object` but received type `undefined`\n' +
-                    'Cannot convert undefined or null to object in object `options`',
+                'Cannot convert undefined or null to object in object `options`',
             );
         });
     });
