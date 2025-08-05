@@ -5,6 +5,7 @@ import type { JsonValue } from 'type-fest';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import log from '@apify/log';
+import { createStorageContentSignature } from '@apify/utilities';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
@@ -19,7 +20,6 @@ import {
     applyQueryParamsToUrl,
     cast,
     catchNotFoundOrThrow,
-    createStorageSignature,
     isBuffer,
     isNode,
     isStream,
@@ -114,7 +114,7 @@ export class KeyValueStoreClient extends ResourceClient {
         let createdPublicKeysUrl = new URL(this._url('items'));
 
         if (store?.urlSigningSecretKey) {
-            const signature = createStorageSignature({
+            const signature = createStorageContentSignature({
                 resourceId: store.id,
                 urlSigningSecretKey: store.urlSigningSecretKey,
                 expiresInMillis,

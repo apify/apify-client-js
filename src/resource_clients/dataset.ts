@@ -1,6 +1,7 @@
 import ow from 'ow';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
+import { createStorageContentSignature } from '@apify/utilities';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
@@ -12,7 +13,7 @@ import {
 } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
 import type { PaginatedList } from '../utils';
-import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, createStorageSignature, pluckData } from '../utils';
+import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData } from '../utils';
 
 export class DatasetClient<
     Data extends Record<string | number, any> = Record<string | number, unknown>,
@@ -198,7 +199,7 @@ export class DatasetClient<
         let createdItemsPublicUrl = new URL(this._url('items'));
 
         if (dataset?.urlSigningSecretKey) {
-            const signature = createStorageSignature({
+            const signature = createStorageContentSignature({
                 resourceId: dataset.id,
                 urlSigningSecretKey: dataset.urlSigningSecretKey,
                 expiresInMillis,
