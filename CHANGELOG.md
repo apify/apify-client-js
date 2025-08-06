@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 
 - Add `eventData` to `WebhookDispatch` type ([#714](https://github.com/apify/apify-client-js/pull/714)) ([351f11f](https://github.com/apify/apify-client-js/commit/351f11f268a54532c7003ab099bc0d7d8d9c9ad7)) by [@valekjo](https://github.com/valekjo)
 - Sync `@docusaurus` dependencies version [internal] ([#715](https://github.com/apify/apify-client-js/pull/715)) ([3dc9c50](https://github.com/apify/apify-client-js/commit/3dc9c500c84840f13790013ee61642c032ce246f)) by [@katzino](https://github.com/katzino)
+- KV store createKeysPublicUrl wrong URL ([#724](https://github.com/apify/apify-client-js/pull/724)) ([a48ec58](https://github.com/apify/apify-client-js/commit/a48ec58e16a36cc8aa188524e4a738c40f5b74e9)) by [@danpoletaev](https://github.com/danpoletaev)
 
 
 <!-- git-cliff-unreleased-end -->
