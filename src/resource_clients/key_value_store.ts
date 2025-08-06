@@ -96,7 +96,6 @@ export class KeyValueStoreClient extends ResourceClient {
      * If not provided, the URL will not expire.
      *
      * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
-     *
      */
     async createKeysPublicUrl(options: KeyValueClientListKeysOptions = {}, expiresInMillis?: number) {
         ow(
@@ -111,7 +110,7 @@ export class KeyValueStoreClient extends ResourceClient {
 
         const store = await this.get();
 
-        let createdPublicKeysUrl = new URL(this._url('items'));
+        let createdPublicKeysUrl = new URL(this._url('keys'));
 
         if (store?.urlSigningSecretKey) {
             const signature = createStorageContentSignature({
