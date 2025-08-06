@@ -574,7 +574,7 @@ describe('Key-Value Store methods', () => {
                 expect(url.searchParams.get('signature')).toBeNull();
                 expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/records/${key}`);
             });
-        })
+        });
 
         describe('createKeysPublicUrl()', () => {
             it('should include a signature in the URL when the caller has permission to access the signing secret key', async () => {
