@@ -554,6 +554,28 @@ describe('Key-Value Store methods', () => {
             validateRequest({}, { storeId, key });
         });
 
+        describe('getRecordPublicUrl()', () => {
+            it('should include a signature in the URL when the caller has permission to access the signing secret key', async () => {
+                const storeId = 'id-with-secret-key';
+                const key = 'some-key';
+                const res = await client.keyValueStore(storeId).getRecordPublicUrl(key);
+
+                const url = new URL(res);
+                expect(url.searchParams.get('signature')).toBeDefined();
+                expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/records/${key}`);
+            });
+
+            it('should not include a signature in the URL when the caller lacks permission to access the signing secret key', async () => {
+                const storeId = 'some-id';
+                const key = 'some-key';
+                const res = await client.keyValueStore(storeId).getRecordPublicUrl(key);
+
+                const url = new URL(res);
+                expect(url.searchParams.get('signature')).toBeNull();
+                expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/records/${key}`);
+            });
+        });
+
         describe('createKeysPublicUrl()', () => {
             it('should include a signature in the URL when the caller has permission to access the signing secret key', async () => {
                 const storeId = 'id-with-secret-key';
