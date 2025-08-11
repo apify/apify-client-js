@@ -110,7 +110,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * Generates a URL that can be used to access key-value store keys.
      *
      * If the client has permission to access the key-value store's URL signing key,
-     * the URL will include a signature to verify its authenticity.
+     * the URL will include a signature which will allow the link to work even without authentication.
      *
      * You can optionally control how long the signed URL should be valid using the `expiresInMillis` option.
      * This value sets the expiration duration in milliseconds from the time the URL is generated.
