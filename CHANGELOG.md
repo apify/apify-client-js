@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+<!-- git-cliff-unreleased-start -->
+## 2.14.1 - **not yet released**
+
+### 🚀 Features
+
+- Extend status parameter to an array of possible statuses ([#723](https://github.com/apify/apify-client-js/pull/723)) ([0be893f](https://github.com/apify/apify-client-js/commit/0be893f2401a652908aff1ed305736068ee0b421)) by [@JanHranicky](https://github.com/JanHranicky)
+
+
+<!-- git-cliff-unreleased-end -->
 ## [2.14.0](https://github.com/apify/apify-client-js/releases/tag/v2.14.0) (2025-08-11)
 
 ### 🚀 Features
