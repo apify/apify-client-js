@@ -85,8 +85,22 @@ v2Router.use('/actor-builds', buildRouter);
 v2Router.use('/actor-runs', runRouter);
 v2Router.use('/actor-tasks', taskRouter);
 v2Router.use('/users', userRouter);
-v2Router.use('/logs/redirect-log-id', (req, res) => {
-    res.status(200).send(MOCKED_ACTOR_LOGS);
+v2Router.use('/logs/redirect-log-id', async (req, res) => {
+    // Set the appropriate headers for a Server-Sent Events (SSE) stream
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders(); // Send the headers immediately
+
+    // Asynchronously write each chunk to the response stream
+    for (const chunk of MOCKED_ACTOR_LOGS) {
+        res.write(chunk);
+        // Wait for a short period to simulate work being done on the server
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+    // End the response stream once all chunks have been sent
+    res.end();
 });
 v2Router.use('/logs', logRouter);
 v2Router.use('/datasets', datasetRouter);

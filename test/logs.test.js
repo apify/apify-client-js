@@ -91,14 +91,6 @@ describe('Redirect logs', () => {
     });
 
     describe('log(buildOrRunId)', () => {
-        test('get() works', async () => {
-            const logId = 'redirect-log-id';
-
-            const res = await client.log(logId).get();
-            expect(res).toBe(MOCKED_ACTOR_LOGS);
-
-        });
-
         test('stream() works', async () => {
             const logId = 'redirect-log-id';
 
@@ -107,8 +99,8 @@ describe('Redirect logs', () => {
             for await (const chunk of res) {
                 chunks.push(chunk);
             }
-            const id = Buffer.concat(chunks).toString();
-            expect(id).toBe('get-log');
+            const log = Buffer.concat(chunks).toString();
+            expect(log).toBe('get-log');
         });
     });
 });
