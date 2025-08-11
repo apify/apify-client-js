@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.13.1 - **not yet released**
 
+### 🚀 Features
+
+- Add keyValueStore.getRecordPublicUrl ([#725](https://github.com/apify/apify-client-js/pull/725)) ([d84a03a](https://github.com/apify/apify-client-js/commit/d84a03afe6fd49e38d4ca9a6821681e852c73a2a)) by [@danpoletaev](https://github.com/danpoletaev)
+
 
 <!-- git-cliff-unreleased-end -->
 ## [2.13.0](https://github.com/apify/apify-client-js/releases/tag/v2.13.0) (2025-08-06)
