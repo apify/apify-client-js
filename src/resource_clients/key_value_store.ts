@@ -5,7 +5,7 @@ import type { JsonValue } from 'type-fest';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import log from '@apify/log';
-import { createStorageContentSignature } from '@apify/utilities';
+import { createHmacSignature, createStorageContentSignature } from '@apify/utilities';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
@@ -86,10 +86,31 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
-     * Generates a URL that can be used to access key-value store keys.
+     * Generates a URL that can be used to access key-value store record.
      *
      * If the client has permission to access the key-value store's URL signing key,
      * the URL will include a signature to verify its authenticity.
+     */
+    async getRecordPublicUrl(key: string): Promise<string> {
+        ow(key, ow.string.nonEmpty);
+
+        const store = await this.get();
+
+        const recordPublicUrl = new URL(this._url(`records/${key}`));
+
+        if (store?.urlSigningSecretKey) {
+            const signature = createHmacSignature(store.urlSigningSecretKey, key);
+            recordPublicUrl.searchParams.append('signature', signature);
+        }
+
+        return recordPublicUrl.toString();
+    }
+
+    /**
+     * Generates a URL that can be used to access key-value store keys.
+     *
+     * If the client has permission to access the key-value store's URL signing key,
+     * the URL will include a signature which will allow the link to work even without authentication.
      *
      * You can optionally control how long the signed URL should be valid using the `expiresInMillis` option.
      * This value sets the expiration duration in milliseconds from the time the URL is generated.
