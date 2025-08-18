@@ -10,8 +10,9 @@ import { cast, parseDateFields, pluckData } from '../utils';
 import type { ActorRun } from './actor';
 import { DatasetClient } from './dataset';
 import { KeyValueStoreClient } from './key_value_store';
-import { LogClient } from './log';
+import { LogClient, StreamedLog} from "./log";
 import { RequestQueueClient } from './request_queue';
+import { LEVELS, Log } from "@apify/log";
 
 const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
 
@@ -264,6 +265,19 @@ export class RunClient extends ResourceClient {
                 resourcePath: 'log',
             }),
         );
+    }
+
+    /**
+     * Get StreamedLog for convenient streaming of the run log and their redirection.
+     */
+    getStreamedLog(toLogger?: Log, fromStart = true): StreamedLog {
+
+        if (!toLogger){
+            // Get actor name and run id
+            toLogger = new Log({level:LEVELS.DEBUG, prefix:"\x1b[36m actor_name runId:some_id -> \x1b[0m"})
+        }
+
+        return new StreamedLog(this.log(), toLogger, fromStart);
     }
 }
 

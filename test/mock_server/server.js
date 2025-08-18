@@ -22,7 +22,7 @@ const webhookDispatches = require('./routes/webhook_dispatches');
 const webhooks = require('./routes/webhooks');
 
 // Consts
-const MOCKED_ACTOR_LOGS = require('./consts');
+const {MOCKED_ACTOR_LOGS} = require('./consts');
 
 const app = express();
 const v2Router = express.Router();
@@ -82,21 +82,28 @@ app.use('/external', external);
 // Attaching V2 routers
 v2Router.use('/acts', actorRouter);
 v2Router.use('/actor-builds', buildRouter);
+v2Router.use('/actor-runs/redirect-run-id/log', async (req, res) => {
+    // Asynchronously write each chunk to the response stream
+    for (const chunk of MOCKED_ACTOR_LOGS) {
+        res.write(chunk);
+        res.flush(); // Flush the buffer and send the chunk immediately
+        // Wait for a short period to simulate work being done on the server
+        await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+
+    // End the response stream once all chunks have been sent
+    res.end();
+});
 v2Router.use('/actor-runs', runRouter);
 v2Router.use('/actor-tasks', taskRouter);
 v2Router.use('/users', userRouter);
 v2Router.use('/logs/redirect-log-id', async (req, res) => {
-    // Set the appropriate headers for a Server-Sent Events (SSE) stream
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.flushHeaders(); // Send the headers immediately
-
     // Asynchronously write each chunk to the response stream
     for (const chunk of MOCKED_ACTOR_LOGS) {
         res.write(chunk);
+        res.flush(); // Flush the buffer and send the chunk immediately
         // Wait for a short period to simulate work being done on the server
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 10));
     }
 
     // End the response stream once all chunks have been sent

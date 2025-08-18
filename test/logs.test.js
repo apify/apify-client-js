@@ -1,6 +1,6 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
 const { ApifyClient } = require('apify-client');
-const MOCKED_ACTOR_LOGS = require('./mock_server/consts');
+const {MOCKED_ACTOR_LOGS, MOCKED_ACTOR_LOGS_PROCESSED} = require('./mock_server/consts');
 const mockServer = require('./mock_server/server');
 
 describe('Log methods', () => {
@@ -90,7 +90,7 @@ describe('Redirect logs', () => {
         page.close().catch(() => {});
     });
 
-    describe('log(buildOrRunId)', () => {
+    describe('run log', () => {
         test('stream() works', async () => {
             const logId = 'redirect-log-id';
 
@@ -100,7 +100,21 @@ describe('Redirect logs', () => {
                 chunks.push(chunk);
             }
             const log = Buffer.concat(chunks).toString();
-            expect(log).toBe('get-log');
+            expect(log).toBe(MOCKED_ACTOR_LOGS.join(""));
+        });
+
+        test('StreamedLog', async () => {
+            const runId = 'redirect-run-id';
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+            const streamedLog = await client.run(runId).getStreamedLog();
+
+            await streamedLog.start()
+            await streamedLog.stop()
+            logger_prefix = 'apify.{_MOCKED_ACTOR_NAME}-{_MOCKED_RUN_ID}'
+            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map(item => [logger_prefix + item]));
+            logSpy.mockRestore();
+
         });
     });
 });

@@ -5,7 +5,7 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow } from '../utils';
-import { Log, LogLevel} from "@apify/log";
+import { Log} from "@apify/log";
 //import logger from '@apify/log';
 
 export class LogClient extends ResourceClient {
@@ -66,70 +66,23 @@ export class LogClient extends ResourceClient {
     }
 }
 
-export class StreamedLog {
-    protected toLogger: Log;
-    protected streamBuffer: Buffer[] = [];
-    protected splitMarker = /(?:\n|^)(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)/g;
-    protected relevancyTimeLimit: Date | null;
 
-    constructor(toLogger: Log, fromStart: boolean = true) {
-        this.toLogger = toLogger;
-        this.relevancyTimeLimit = fromStart ? null : new Date();
-    }
+export class StreamedLog{
+    private toLogger: Log;
+    private streamBuffer: Buffer[] = [];
+    private splitMarker = /(?:\n|^)(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)/g;
+    private relevancyTimeLimit: Date | null;
 
-    protected processNewData(data: Buffer): void {
-        this.streamBuffer.push(data);
-        if (this.splitMarker.test(data.toString())) {
-            this.logBufferContent(false);
-        }
-    }
-
-    protected logBufferContent(includeLastPart: boolean = false): void {
-        const allParts = Buffer.concat(this.streamBuffer).toString().split(this.splitMarker);
-        const messageMarkers = includeLastPart ? allParts.filter((_, i) => i % 2 === 0) : allParts.slice(0, -2).filter((_, i) => i % 2 === 0);
-        const messageContents = includeLastPart ? allParts.filter((_, i) => i % 2 !== 0) : allParts.slice(0, -2).filter((_, i) => i % 2 !== 0);
-
-        this.streamBuffer = includeLastPart ? [] : [Buffer.from(allParts.slice(-2).join(''))];
-
-        messageMarkers.forEach((marker, index) => {
-            const decodedMarker = marker;
-            const decodedContent = messageContents[index];
-            if (this.relevancyTimeLimit) {
-                const logTime = new Date(decodedMarker);
-                if (logTime < this.relevancyTimeLimit) {
-                    return;
-                }
-            }
-            const message = decodedMarker + decodedContent;
-            this.toLogger.internal(this.guessLogLevelFromMessage(message), message.trim());
-        });
-    }
-
-    protected guessLogLevelFromMessage(message: string): LogLevel {
-        // Original log level information does not have to be included in the message at all.
-        // This is methods just guesses.
-        if (message.includes("ERROR")) return LogLevel.ERROR
-        if (message.includes("SOFT_FAIL")) return LogLevel.SOFT_FAIL;
-        if (message.includes("WARNING")) return LogLevel.WARNING;
-        if (message.includes("INFO")) return LogLevel.INFO;
-        if (message.includes("DEBUG")) return LogLevel.DEBUG;
-        if (message.includes("PERF")) return LogLevel.PERF;
-        // Fallback in case original log message does not indicate known log level.
-        return LogLevel.INFO;
-    }
-}
-
-export class StreamedLogAsync extends StreamedLog{
-    private logClient: { stream: (options: { raw: boolean }) => Promise<Readable | null> };
+    private logClient: { stream: (options: { raw: boolean }) => Promise<Readable | undefined> };
     private streamingTask: Promise<void> | null = null;
     private stopLogging = false;
 
     constructor(
+        logClient: { stream: (options: { raw: boolean }) => Promise<Readable | undefined> },
         toLogger: Log,
-        logClient: { stream: (options: { raw: boolean }) => Promise<Readable | null> },
-        fromStart: boolean = true,
+        fromStart = true,
     ) {
-        super(toLogger, fromStart);
+        this.toLogger = toLogger;
         this.logClient = logClient;
         this.relevancyTimeLimit = fromStart ? null : new Date();
     }
@@ -159,7 +112,7 @@ export class StreamedLogAsync extends StreamedLog{
         }
     }
 
-    public async withContext<T>(callback: () => Promise<T>): Promise<T> {
+    public async with<T>(callback: () => Promise<T>): Promise<T> {
         await this.start();
         try {
             return await callback();
@@ -182,22 +135,32 @@ export class StreamedLogAsync extends StreamedLog{
         }
 
         // Process the remaining buffer
-        this._logBufferContent(true);
+        this.logBufferContent(true);
     }
 
     private _processNewData(data: Buffer): void {
         this.streamBuffer.push(data);
         if (this.splitMarker.test(data.toString())) {
-            this._logBufferContent(false);
+            this.logBufferContent(false);
         }
     }
 
-    private _logBufferContent(includeLastPart: boolean): void {
-        const allParts = Buffer.concat(this.streamBuffer).toString().split(this.splitMarker);
-        const messageMarkers = includeLastPart ? allParts.filter((_, i) => i % 2 === 0) : allParts.slice(0, -2).filter((_, i) => i % 2 === 0);
-        const messageContents = includeLastPart ? allParts.filter((_, i) => i % 2 !== 0) : allParts.slice(0, -2).filter((_, i) => i % 2 !== 0);
+    private logBufferContent(includeLastPart = false): void {
+        const allParts = Buffer.concat(this.streamBuffer).toString().split(this.splitMarker).slice(1);
+        let messageMarkers;
+        let messageContents;
+        if (includeLastPart) {
+            messageMarkers = allParts.filter((_, i) => i % 2 === 0);
+            messageContents = allParts.filter((_, i) => i % 2 !== 0);
+            this.streamBuffer = [];
+        }
+        else{
+            messageMarkers = allParts.filter((_, i) => i % 2 === 0).slice(-2);
+            messageContents = allParts.filter((_, i) => i % 2 !== 0).slice(-2);
 
-        this.streamBuffer = includeLastPart ? [] : [Buffer.from(allParts.slice(-2).join(''))];
+            // The last two parts (marker and message) are possibly not complete and will be left in the buffer
+            this.streamBuffer = [Buffer.from(allParts.slice(-2).join(''))];
+        }
 
         messageMarkers.forEach((marker, index) => {
             const decodedMarker = marker;
@@ -209,7 +172,21 @@ export class StreamedLogAsync extends StreamedLog{
                 }
             }
             const message = decodedMarker + decodedContent;
-            this.toLogger.internal(this.guessLogLevelFromMessage(message), message.trim());
+            this.logAtGuessedLevel(message);
         });
+    }
+
+    private logAtGuessedLevel(message: string) {
+        // Original log level information does not have to be included in the message at all.
+        // This is methods just guesses.
+        message = message.trim();
+        if (message.includes("ERROR")) this.toLogger.error(message);
+        if (message.includes("SOFT_FAIL")) this.toLogger.softFail(message);
+        if (message.includes("WARNING")) this.toLogger.warning(message);
+        if (message.includes("INFO")) this.toLogger.info(message)
+        if (message.includes("DEBUG")) this.toLogger.debug(message);
+        if (message.includes("PERF")) this.toLogger.perf(message);
+        // Fallback in case original log message does not indicate known log level.
+        this.toLogger.info(message);
     }
 }
