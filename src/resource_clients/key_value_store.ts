@@ -364,6 +364,7 @@ export interface KeyValueClientListKeysResult {
 export interface KeyValueListItem {
     key: string;
     size: number;
+    recordPublicUrl: string;
 }
 
 export interface KeyValueClientGetRecordOptions {
