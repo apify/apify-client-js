@@ -2,11 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.15.1 - **not yet released**
+## [2.15.1](https://github.com/apify/apify-client-js/releases/tag/v2.15.1) (2025-08-20)
+
+### 🐛 Bug Fixes
+
+- Add recordPublicUrl to KeyValueListItem type ([#730](https://github.com/apify/apify-client-js/pull/730)) ([42dfe64](https://github.com/apify/apify-client-js/commit/42dfe6484e3504aaf46c516bade3d7ff989782ea)) by [@danpoletaev](https://github.com/danpoletaev)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.15.0](https://github.com/apify/apify-client-js/releases/tag/v2.15.0) (2025-08-12)
 
 ### 🚀 Features
