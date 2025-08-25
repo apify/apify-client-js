@@ -5,8 +5,7 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow } from '../utils';
-import { Log} from "@apify/log";
-//import logger from '@apify/log';
+import { Log } from '@apify/log';
 
 export class LogClient extends ResourceClient {
     /**
@@ -67,7 +66,7 @@ export class LogClient extends ResourceClient {
 }
 
 
-export class StreamedLog{
+export class StreamedLog {
     private toLogger: Log;
     private streamBuffer: Buffer[] = [];
     private splitMarker = /(?:\n|^)(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)/g;
@@ -153,8 +152,7 @@ export class StreamedLog{
             messageMarkers = allParts.filter((_, i) => i % 2 === 0);
             messageContents = allParts.filter((_, i) => i % 2 !== 0);
             this.streamBuffer = [];
-        }
-        else{
+        } else {
             messageMarkers = allParts.filter((_, i) => i % 2 === 0).slice(-2);
             messageContents = allParts.filter((_, i) => i % 2 !== 0).slice(-2);
 
@@ -179,14 +177,18 @@ export class StreamedLog{
     private logAtGuessedLevel(message: string) {
         // Original log level information does not have to be included in the message at all.
         // This is methods just guesses.
+
         message = message.trim();
-        if (message.includes("ERROR")) this.toLogger.error(message);
-        if (message.includes("SOFT_FAIL")) this.toLogger.softFail(message);
-        if (message.includes("WARNING")) this.toLogger.warning(message);
-        if (message.includes("INFO")) this.toLogger.info(message)
-        if (message.includes("DEBUG")) this.toLogger.debug(message);
-        if (message.includes("PERF")) this.toLogger.perf(message);
+
+        if (message.includes('ERROR')) this.toLogger.error(message);
+        else if (message.includes('SOFT_FAIL')) this.toLogger.softFail(message);
+        else if (message.includes('WARNING')) this.toLogger.warning(message);
+        else if (message.includes('INFO')) this.toLogger.info(message);
+        else if (message.includes('DEBUG')) this.toLogger.debug(message);
+        else if (message.includes('PERF')) this.toLogger.perf(message);
         // Fallback in case original log message does not indicate known log level.
-        this.toLogger.info(message);
+        else this.toLogger.info(message);
+
+        // How to preserve log level filtering, but remove formatting???
     }
 }

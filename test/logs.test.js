@@ -2,6 +2,8 @@ const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
 const { ApifyClient } = require('apify-client');
 const {MOCKED_ACTOR_LOGS, MOCKED_ACTOR_LOGS_PROCESSED} = require('./mock_server/consts');
 const mockServer = require('./mock_server/server');
+const c = require("ansi-colors");
+const { Logger } = require("@apify/log");
 
 describe('Log methods', () => {
     let baseUrl;
@@ -104,14 +106,13 @@ describe('Redirect logs', () => {
         });
 
         test('StreamedLog', async () => {
-            const runId = 'redirect-run-id';
-            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+            const logSpy = jest.spyOn(Logger.prototype, '_outputWithConsole').mockImplementation(() => {});
 
-            const streamedLog = await client.run(runId).getStreamedLog();
+            const streamedLog = await client.run('redirect-run-id').getStreamedLog();
 
             await streamedLog.start()
             await streamedLog.stop()
-            logger_prefix = 'apify.{_MOCKED_ACTOR_NAME}-{_MOCKED_RUN_ID}'
+            logger_prefix = c.cyan('redirect-actor-name runId:redirect-run-id ->')
             expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map(item => [logger_prefix + item]));
             logSpy.mockRestore();
 

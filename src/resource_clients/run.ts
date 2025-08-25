@@ -1,6 +1,6 @@
 import type { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
-
+import c from 'ansi-colors';
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
@@ -12,7 +12,8 @@ import { DatasetClient } from './dataset';
 import { KeyValueStoreClient } from './key_value_store';
 import { LogClient, StreamedLog} from "./log";
 import { RequestQueueClient } from './request_queue';
-import { LEVELS, Log } from "@apify/log";
+import { LEVELS, Log} from "@apify/log";
+
 
 const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
 
@@ -270,11 +271,21 @@ export class RunClient extends ResourceClient {
     /**
      * Get StreamedLog for convenient streaming of the run log and their redirection.
      */
-    getStreamedLog(toLogger?: Log, fromStart = true): StreamedLog {
+    async getStreamedLog(toLogger?: Log, fromStart = true): Promise<StreamedLog> {
 
         if (!toLogger){
             // Get actor name and run id
-            toLogger = new Log({level:LEVELS.DEBUG, prefix:"\x1b[36m actor_name runId:some_id -> \x1b[0m"})
+            const runData = await this.get();
+            const runId = runData ? `${runData.id ?? ''}` : '';
+
+            const actorId = runData?.actId ?? '';
+            const actorData = (await this.apifyClient.actor(actorId).get()) || {name:""};
+
+            const actorName = runData ? actorData.name ?? '' : '';
+            const name = [actorName, `runId:${runId}`].filter(Boolean).join(' ');
+
+
+            toLogger = new Log({level:LEVELS.DEBUG, prefix: c.cyan(`${name} -> `)})
         }
 
         return new StreamedLog(this.log(), toLogger, fromStart);

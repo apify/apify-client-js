@@ -80,6 +80,9 @@ app.use('/external', external);
 
 
 // Attaching V2 routers
+v2Router.use('/acts/redirect-actor-id', async (req, res) => {
+    res.json({'data':{'name':'redirect-actor-name'}});
+});
 v2Router.use('/acts', actorRouter);
 v2Router.use('/actor-builds', buildRouter);
 v2Router.use('/actor-runs/redirect-run-id/log', async (req, res) => {
@@ -93,6 +96,9 @@ v2Router.use('/actor-runs/redirect-run-id/log', async (req, res) => {
 
     // End the response stream once all chunks have been sent
     res.end();
+});
+v2Router.use('/actor-runs/redirect-run-id', async (req, res) => {
+    res.json({'data':{'id':'redirect-run-id', 'actId':'redirect-actor-id'}});
 });
 v2Router.use('/actor-runs', runRouter);
 v2Router.use('/actor-tasks', taskRouter);
