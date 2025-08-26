@@ -118,7 +118,7 @@ export class KeyValueStoreClient extends ResourceClient {
      *
      * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
      */
-    async createKeysPublicUrl(options: KeyValueClientListKeysOptions = {}, expiresInSecs?: number) {
+    async createKeysPublicUrl(options: KeyValueClientCreateKeysUrlOptions = {}) {
         ow(
             options,
             ow.object.exactShape({
@@ -126,6 +126,7 @@ export class KeyValueStoreClient extends ResourceClient {
                 exclusiveStartKey: ow.optional.string,
                 collection: ow.optional.string,
                 prefix: ow.optional.string,
+                expiresInSecs: ow.optional.number,
             }),
         );
 
@@ -137,7 +138,7 @@ export class KeyValueStoreClient extends ResourceClient {
             const signature = createStorageContentSignature({
                 resourceId: store.id,
                 urlSigningSecretKey: store.urlSigningSecretKey,
-                expiresInMillis: expiresInSecs ? expiresInSecs * 1000 : undefined,
+                expiresInMillis: options.expiresInSecs ? options.expiresInSecs * 1000 : undefined,
             });
             createdPublicKeysUrl.searchParams.set('signature', signature);
         }
@@ -350,6 +351,10 @@ export interface KeyValueClientListKeysOptions {
     exclusiveStartKey?: string;
     collection?: string;
     prefix?: string;
+}
+
+export interface KeyValueClientCreateKeysUrlOptions extends KeyValueClientListKeysOptions {
+    expiresInSecs?: number;
 }
 
 export interface KeyValueClientListKeysResult {

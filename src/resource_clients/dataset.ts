@@ -176,7 +176,7 @@ export class DatasetClient<
      *
      * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
      */
-    async createItemsPublicUrl(options: DatasetClientListItemOptions = {}, expiresInSecs?: number): Promise<string> {
+    async createItemsPublicUrl(options: DatasetClientCreateItemsUrlOptions = {}): Promise<string> {
         ow(
             options,
             ow.object.exactShape({
@@ -191,6 +191,7 @@ export class DatasetClient<
                 skipHidden: ow.optional.boolean,
                 unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
                 view: ow.optional.string,
+                expiresInSecs: ow.optional.number,
             }),
         );
 
@@ -202,7 +203,7 @@ export class DatasetClient<
             const signature = createStorageContentSignature({
                 resourceId: dataset.id,
                 urlSigningSecretKey: dataset.urlSigningSecretKey,
-                expiresInMillis: expiresInSecs ? expiresInSecs * 1000 : undefined,
+                expiresInMillis: options.expiresInSecs ? options.expiresInSecs * 1000 : undefined,
             });
             createdItemsPublicUrl.searchParams.set('signature', signature);
         }
@@ -269,6 +270,10 @@ export interface DatasetClientListItemOptions {
     skipHidden?: boolean;
     unwind?: string | string[]; // TODO: when doing a breaking change release, change to string[] only
     view?: string;
+}
+
+export interface DatasetClientCreateItemsUrlOptions extends DatasetClientListItemOptions {
+    expiresInSecs?: number;
 }
 
 export enum DownloadItemsFormat {
