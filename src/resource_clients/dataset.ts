@@ -197,18 +197,20 @@ export class DatasetClient<
 
         const dataset = await this.get();
 
+        const { expiresInSecs, ...queryOptions } = options;
+
         let createdItemsPublicUrl = new URL(this._url('items'));
 
         if (dataset?.urlSigningSecretKey) {
             const signature = createStorageContentSignature({
                 resourceId: dataset.id,
                 urlSigningSecretKey: dataset.urlSigningSecretKey,
-                expiresInMillis: options.expiresInSecs ? options.expiresInSecs * 1000 : undefined,
+                expiresInMillis: expiresInSecs ? expiresInSecs * 1000 : undefined,
             });
             createdItemsPublicUrl.searchParams.set('signature', signature);
         }
 
-        createdItemsPublicUrl = applyQueryParamsToUrl(createdItemsPublicUrl, options);
+        createdItemsPublicUrl = applyQueryParamsToUrl(createdItemsPublicUrl, queryOptions);
 
         return createdItemsPublicUrl.toString();
     }
