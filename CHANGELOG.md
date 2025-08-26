@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+<!-- git-cliff-unreleased-start -->
+## 2.15.2 - **not yet released**
+
+### Refactor
+
+- [**breaking**] Rename expiresInMillis to expiresInSecs in create storage content URL ([#733](https://github.com/apify/apify-client-js/pull/733)) ([a190b72](https://github.com/apify/apify-client-js/commit/a190b72f6f62ffb54898fd74c80981a6967d573f)) by [@danpoletaev](https://github.com/danpoletaev)
+
+
+<!-- git-cliff-unreleased-end -->
 ## [2.15.1](https://github.com/apify/apify-client-js/releases/tag/v2.15.1) (2025-08-20)
 
 ### 🐛 Bug Fixes
