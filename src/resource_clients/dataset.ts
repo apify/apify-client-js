@@ -170,13 +170,13 @@ export class DatasetClient<
      * If the client has permission to access the dataset's URL signing key,
      * the URL will include a signature which will allow the link to work even without authentication.
      *
-     * You can optionally control how long the signed URL should be valid using the `expiresInMillis` option.
-     * This value sets the expiration duration in milliseconds from the time the URL is generated.
+     * You can optionally control how long the signed URL should be valid using the `expiresInSecs` option.
+     * This value sets the expiration duration in seconds from the time the URL is generated.
      * If not provided, the URL will not expire.
      *
      * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
      */
-    async createItemsPublicUrl(options: DatasetClientListItemOptions = {}, expiresInMillis?: number): Promise<string> {
+    async createItemsPublicUrl(options: DatasetClientListItemOptions = {}, expiresInSecs?: number): Promise<string> {
         ow(
             options,
             ow.object.exactShape({
@@ -202,7 +202,7 @@ export class DatasetClient<
             const signature = createStorageContentSignature({
                 resourceId: dataset.id,
                 urlSigningSecretKey: dataset.urlSigningSecretKey,
-                expiresInMillis,
+                expiresInMillis: expiresInSecs ? expiresInSecs * 1000 : undefined,
             });
             createdItemsPublicUrl.searchParams.set('signature', signature);
         }
