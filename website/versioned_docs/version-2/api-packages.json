@@ -1,1 +1,10 @@
-[{"entryPoints":{"index":{"label":"Index","path":"src/index.ts"}},"packageRoot":"..","packagePath":".","packageSlug":".","packageName":"apify-client","packageVersion":"2.16.1"}]
+[
+    {
+        "entryPoints": { "index": { "label": "Index", "path": "src/index.ts" } },
+        "packageRoot": "..",
+        "packagePath": ".",
+        "packageSlug": ".",
+        "packageName": "apify-client",
+        "packageVersion": "2.16.1"
+    }
+]
