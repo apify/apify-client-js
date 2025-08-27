@@ -152,10 +152,10 @@ jobs:
               run: |
                   cd website
                   VERSION=$(jq -r '.version' ../package.json)
-                  MAJOR=$(echo $VERSION | cut -d. -f1)
+                  export MAJOR=$(echo $VERSION | cut -d. -f1)
                   rm -rf versioned_docs/version-$MAJOR
                   rm -rf versioned_sidebars/version-$MAJOR-sidebars.json
-                  jq --arg major "$MAJOR" 'map(select(. != $major))' versions.json > tmp.json && mv tmp.json versions.json
+                  jq 'map(select(. != env.MAJOR))' versions.json > tmp.json && mv tmp.json versions.json
                   npx docusaurus docs:version $MAJOR
                   npx docusaurus api:version $MAJOR
 
