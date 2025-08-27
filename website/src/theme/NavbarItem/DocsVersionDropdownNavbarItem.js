@@ -61,8 +61,8 @@ export default function DocsVersionDropdownNavbarItem({
                   description: 'The label for the navbar versions dropdown on mobile view',
               })
             : dropdownVersion.label === currentMajor
-                ? pkg.version
-                : dropdownVersion.label;
+              ? pkg.version
+              : dropdownVersion.label;
     let dropdownTo = mobile && items.length > 1 ? undefined : getVersionMainDoc(dropdownVersion).path;
 
     if (dropdownTo && pathname.startsWith('/api/client/js/reference')) {
