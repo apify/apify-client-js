@@ -5,6 +5,7 @@ import { translate } from '@docusaurus/Translate';
 import { useLocation } from '@docusaurus/router';
 import DefaultNavbarItem from '@theme/NavbarItem/DefaultNavbarItem';
 import DropdownNavbarItem from '@theme/NavbarItem/DropdownNavbarItem';
+import pkg from '../../../../package.json';
 
 const getVersionMainDoc = (version) => version.docs.find((doc) => doc.id === version.mainDocId);
 
@@ -35,12 +36,14 @@ export default function DocsVersionDropdownNavbarItem({
     const activeDocContext = useActiveDocContext(docsPluginId);
     const versions = useVersions(docsPluginId);
     const { savePreferredVersionName } = useDocsPreferredVersion(docsPluginId);
+    const currentMajor = pkg.version.split('.')[0];
     const versionLinks = versions.map((version, idx) => {
         // We try to link to the same doc, in another version
         // When not possible, fallback to the "main doc" of the version
         const versionDoc = activeDocContext.alternateDocVersions[version.name] ?? getVersionMainDoc(version);
+        const label = version.label === currentMajor ? pkg.version : version.label;
         return {
-            label: version.label,
+            label,
             // preserve ?search#hash suffix on version switches
             to: `${apiLinks[idx] ?? versionDoc.path}${search}${hash}`,
             isActive: () => version === activeDocContext.activeVersion,
@@ -57,7 +60,9 @@ export default function DocsVersionDropdownNavbarItem({
                   message: 'Versions',
                   description: 'The label for the navbar versions dropdown on mobile view',
               })
-            : dropdownVersion.label;
+            : dropdownVersion.label === currentMajor
+                ? pkg.version
+                : dropdownVersion.label;
     let dropdownTo = mobile && items.length > 1 ? undefined : getVersionMainDoc(dropdownVersion).path;
 
     if (dropdownTo && pathname.startsWith('/api/client/js/reference')) {
