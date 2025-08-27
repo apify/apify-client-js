@@ -137,22 +137,16 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 22
+                  cache: 'npm'
 
             - name: Install jq
               run: sudo apt-get install jq
 
-            - name: Activate cache for Node.js 20
-              uses: actions/setup-node@v4
-              with:
-                  cache: 'yarn'
-
             - name: Install dependencies
               run: |
-                  # install project deps
-                  yarn
-                  # install website deps
+                  npm install
                   cd website
-                  yarn
+                  npm install
 
             - name: Snapshot the current version
               run: |
@@ -161,7 +155,7 @@ jobs:
                   MAJOR=$(echo $VERSION | cut -d. -f1)
                   rm -rf versioned_docs/version-$MAJOR
                   rm -rf versioned_sidebars/version-$MAJOR-sidebars.json
-                  jq --arg major "$MAJOR" 'map(select(. != $major))' version.json > tmp.json && mv tmp.json version.json
+                  jq --arg major "$MAJOR" 'map(select(. != $major))' versions.json > tmp.json && mv tmp.json versions.json
                   npx docusaurus docs:version $MAJOR
                   npx docusaurus api:version $MAJOR
 
