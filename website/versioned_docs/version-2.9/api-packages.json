@@ -1,9 +1,0 @@
-[
-    {
-        "entryPoints": { "index": { "label": "Index", "path": "src/index.ts" } },
-        "packagePath": ".",
-        "packageSlug": ".",
-        "packageName": "apify-client",
-        "packageVersion": "2.9.0"
-    }
-]
