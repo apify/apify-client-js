@@ -132,18 +132,20 @@ export class KeyValueStoreClient extends ResourceClient {
 
         const store = await this.get();
 
+        const { expiresInSecs, ...queryOptions } = options;
+
         let createdPublicKeysUrl = new URL(this._url('keys'));
 
         if (store?.urlSigningSecretKey) {
             const signature = createStorageContentSignature({
                 resourceId: store.id,
                 urlSigningSecretKey: store.urlSigningSecretKey,
-                expiresInMillis: options.expiresInSecs ? options.expiresInSecs * 1000 : undefined,
+                expiresInMillis: expiresInSecs ? expiresInSecs * 1000 : undefined,
             });
             createdPublicKeysUrl.searchParams.set('signature', signature);
         }
 
-        createdPublicKeysUrl = applyQueryParamsToUrl(createdPublicKeysUrl, options);
+        createdPublicKeysUrl = applyQueryParamsToUrl(createdPublicKeysUrl, queryOptions);
 
         return createdPublicKeysUrl.toString();
     }
