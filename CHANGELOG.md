@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.16.1 - **not yet released**
 
+### 🐛 Bug Fixes
+
+- Signed storage URLs avoid adding expiresInSecs to query params ([#734](https://github.com/apify/apify-client-js/pull/734)) ([70aff4f](https://github.com/apify/apify-client-js/commit/70aff4fedefc02a1c8c6e5155057e213a8ad6c81)) by [@danpoletaev](https://github.com/danpoletaev)
+
 
 <!-- git-cliff-unreleased-end -->
 ## [2.16.0](https://github.com/apify/apify-client-js/releases/tag/v2.16.0) (2025-08-26)
