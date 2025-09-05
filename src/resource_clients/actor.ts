@@ -2,7 +2,7 @@ import type { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
-import { ACT_JOB_STATUSES, ACTOR_PERMISSION_LEVEL , META_ORIGINS } from '@apify/consts';
+import { ACT_JOB_STATUSES, ACTOR_PERMISSION_LEVEL, META_ORIGINS } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
@@ -401,7 +401,7 @@ export interface ActorStartOptions {
      * Override the Actor's permissions for this run. If not set, the Actor will run with permissions configured in the
      * Actor settings.
      */
-    forcePermissionLevel?: ACTOR_PERMISSION_LEVEL
+    forcePermissionLevel?: ACTOR_PERMISSION_LEVEL;
 }
 
 export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
