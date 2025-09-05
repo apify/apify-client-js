@@ -232,7 +232,7 @@ export interface TaskLastRunOptions {
     status?: keyof typeof ACT_JOB_STATUSES;
 }
 
-export type TaskStartOptions = Omit<ActorStartOptions, 'contentType'>;
+export type TaskStartOptions = Omit<ActorStartOptions, 'contentType' | 'forcePermissionLevel'>;
 
 export interface TaskCallOptions extends Omit<TaskStartOptions, 'waitForFinish'> {
     waitSecs?: number;
