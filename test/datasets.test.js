@@ -329,6 +329,24 @@ describe('Dataset methods', () => {
         });
 
         describe('createItemsPublicUrl()', () => {
+            it.each([
+                ['https://custom.public.url/', 'custom.public.url'],
+                [undefined, 'api.apify.com'],
+            ])('respects publicBaseUrl client option (%s)', async (publicBaseUrl, expectedHostname) => {
+                const datasetId = 'dataset-id';
+                client = new ApifyClient({
+                    baseUrl,
+                    publicBaseUrl,
+                    ...DEFAULT_OPTIONS,
+                });
+
+                const res = await client.dataset(datasetId).createItemsPublicUrl();
+
+                const url = new URL(res);
+                expect(url.hostname).toBe(expectedHostname);
+                expect(url.pathname).toBe(`/v2/datasets/${datasetId}/items`);
+            });
+
             it('should include a signature in the URL when the caller has permission to access the signing secret key', async () => {
                 const datasetId = 'id-with-secret-key';
                 const res = await client.dataset(datasetId).createItemsPublicUrl();

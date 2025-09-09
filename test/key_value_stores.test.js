@@ -555,6 +555,26 @@ describe('Key-Value Store methods', () => {
         });
 
         describe('getRecordPublicUrl()', () => {
+            it.each([
+                ['https://custom.public.url/', 'custom.public.url'],
+                [undefined, 'api.apify.com'],
+            ])('respects publicBaseUrl client option (%s)', async (publicBaseUrl, expectedHostname) => {
+                const storeId = 'some-id';
+                const key = 'some-key';
+
+                client = new ApifyClient({
+                    baseUrl,
+                    publicBaseUrl,
+                    ...DEFAULT_OPTIONS,
+                });
+
+                const res = await client.keyValueStore(storeId).getRecordPublicUrl(key);
+
+                const url = new URL(res);
+                expect(url.hostname).toBe(expectedHostname);
+                expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/records/${key}`);
+            });
+
             it('should include a signature in the URL when the caller has permission to access the signing secret key', async () => {
                 const storeId = 'id-with-secret-key';
                 const key = 'some-key';
@@ -577,6 +597,25 @@ describe('Key-Value Store methods', () => {
         });
 
         describe('createKeysPublicUrl()', () => {
+            it.each([
+                ['https://custom.public.url/', 'custom.public.url'],
+                [undefined, 'api.apify.com'],
+            ])('respects publicBaseUrl client option (%s)', async (publicBaseUrl, expectedHostname) => {
+                const storeId = 'some-id';
+
+                client = new ApifyClient({
+                    baseUrl,
+                    publicBaseUrl,
+                    ...DEFAULT_OPTIONS,
+                });
+
+                const res = await client.keyValueStore(storeId).createKeysPublicUrl();
+
+                const url = new URL(res);
+                expect(url.hostname).toBe(expectedHostname);
+                expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/keys`);
+            });
+
             it('should include a signature in the URL when the caller has permission to access the signing secret key', async () => {
                 const storeId = 'id-with-secret-key';
                 const res = await client.keyValueStore(storeId).createKeysPublicUrl();

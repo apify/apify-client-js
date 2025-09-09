@@ -4,6 +4,7 @@ import type { HttpClient } from '../http_client';
 /** @private */
 export interface ApiClientOptions {
     baseUrl: string;
+    publicBaseUrl: string;
     resourcePath: string;
     apifyClient: ApifyClient;
     httpClient: HttpClient;
@@ -25,6 +26,8 @@ export abstract class ApiClient {
 
     baseUrl: string;
 
+    publicBaseUrl: string;
+
     resourcePath: string;
 
     url: string;
@@ -36,11 +39,12 @@ export abstract class ApiClient {
     params?: Record<string, unknown>;
 
     constructor(options: ApiClientOptions) {
-        const { baseUrl, apifyClient, httpClient, resourcePath, id, params = {} } = options;
+        const { baseUrl, publicBaseUrl, apifyClient, httpClient, resourcePath, id, params = {} } = options;
 
         this.id = id;
         this.safeId = id && this._toSafeId(id);
         this.baseUrl = baseUrl;
+        this.publicBaseUrl = publicBaseUrl;
         this.resourcePath = resourcePath;
         this.url = id ? `${baseUrl}/${resourcePath}/${this.safeId}` : `${baseUrl}/${resourcePath}`;
         this.apifyClient = apifyClient;
@@ -51,6 +55,7 @@ export abstract class ApiClient {
     protected _subResourceOptions<T>(moreOptions?: T): BaseOptions & T {
         const baseOptions: BaseOptions = {
             baseUrl: this._url(),
+            publicBaseUrl: this.publicBaseUrl,
             apifyClient: this.apifyClient,
             httpClient: this.httpClient,
             params: this._params(),
@@ -60,6 +65,13 @@ export abstract class ApiClient {
 
     protected _url(path?: string): string {
         return path ? `${this.url}/${path}` : this.url;
+    }
+
+    protected _publicUrl(path?: string): string {
+        const url = this.id
+            ? `${this.publicBaseUrl}/${this.resourcePath}/${this.safeId}`
+            : `${this.publicBaseUrl}/${this.resourcePath}`;
+        return path ? `${url}/${path}` : url;
     }
 
     protected _params<T>(endpointParams?: T): Record<string, unknown> {
@@ -74,6 +86,7 @@ export abstract class ApiClient {
 
 export interface BaseOptions {
     baseUrl: string;
+    publicBaseUrl: string;
     apifyClient: ApifyClient;
     httpClient: HttpClient;
     params: Record<string, unknown>;

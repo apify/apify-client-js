@@ -180,6 +180,7 @@ export class ActorClient extends ResourceClient {
 
         return new BuildClient({
             baseUrl: this.apifyClient.baseUrl,
+            publicBaseUrl: this.apifyClient.publicBaseUrl,
             httpClient: this.httpClient,
             apifyClient: this.apifyClient,
             id,
