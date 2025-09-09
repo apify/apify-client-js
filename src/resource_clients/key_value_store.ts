@@ -96,7 +96,7 @@ export class KeyValueStoreClient extends ResourceClient {
 
         const store = await this.get();
 
-        const recordPublicUrl = new URL(this._url(`records/${key}`));
+        const recordPublicUrl = new URL(this._publicUrl(`records/${key}`));
 
         if (store?.urlSigningSecretKey) {
             const signature = createHmacSignature(store.urlSigningSecretKey, key);
@@ -134,7 +134,7 @@ export class KeyValueStoreClient extends ResourceClient {
 
         const { expiresInSecs, ...queryOptions } = options;
 
-        let createdPublicKeysUrl = new URL(this._url('keys'));
+        let createdPublicKeysUrl = new URL(this._publicUrl('keys'));
 
         if (store?.urlSigningSecretKey) {
             const signature = createStorageContentSignature({

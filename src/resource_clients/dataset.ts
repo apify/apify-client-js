@@ -199,7 +199,7 @@ export class DatasetClient<
 
         const { expiresInSecs, ...queryOptions } = options;
 
-        let createdItemsPublicUrl = new URL(this._url('items'));
+        let createdItemsPublicUrl = new URL(this._publicUrl('items'));
 
         if (dataset?.urlSigningSecretKey) {
             const signature = createStorageContentSignature({
