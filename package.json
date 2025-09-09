@@ -62,7 +62,7 @@
         "build:browser": "rsbuild build"
     },
     "dependencies": {
-        "@apify/consts": "^2.25.0",
+        "@apify/consts": "^2.42.0",
         "@apify/log": "^2.2.6",
         "@apify/utilities": "^2.18.0",
         "@crawlee/types": "^3.3.0",
