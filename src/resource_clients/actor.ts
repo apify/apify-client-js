@@ -2,7 +2,7 @@ import type { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
-import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
+import { ACT_JOB_STATUSES, ACTOR_PERMISSION_LEVEL, META_ORIGINS } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
@@ -70,10 +70,11 @@ export class ActorClient extends ResourceClient {
                 webhooks: ow.optional.array.ofType(ow.object),
                 maxItems: ow.optional.number.not.negative,
                 maxTotalChargeUsd: ow.optional.number.not.negative,
+                forcePermissionLevel: ow.optional.string.oneOf(Object.values(ACTOR_PERMISSION_LEVEL)),
             }),
         );
 
-        const { waitForFinish, timeout, memory, build, maxItems, maxTotalChargeUsd } = options;
+        const { waitForFinish, timeout, memory, build, maxItems, maxTotalChargeUsd, forcePermissionLevel } = options;
 
         const params = {
             waitForFinish,
@@ -83,6 +84,7 @@ export class ActorClient extends ResourceClient {
             webhooks: stringifyWebhooksToBase64(options.webhooks),
             maxItems,
             maxTotalChargeUsd,
+            forcePermissionLevel,
         };
 
         const request: AxiosRequestConfig = {
@@ -126,6 +128,7 @@ export class ActorClient extends ResourceClient {
                 webhooks: ow.optional.array.ofType(ow.object),
                 maxItems: ow.optional.number.not.negative,
                 maxTotalChargeUsd: ow.optional.number.not.negative,
+                forcePermissionLevel: ow.optional.string.oneOf(Object.values(ACTOR_PERMISSION_LEVEL)),
             }),
         );
 
@@ -394,6 +397,12 @@ export interface ActorStartOptions {
     maxItems?: number;
 
     // TODO(PPE): add maxTotalChargeUsd after finished
+
+    /**
+     * Override the Actor's permissions for this run. If not set, the Actor will run with permissions configured in the
+     * Actor settings.
+     */
+    forcePermissionLevel?: ACTOR_PERMISSION_LEVEL;
 }
 
 export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
