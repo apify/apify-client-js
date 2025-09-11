@@ -158,6 +158,8 @@ jobs:
                   jq 'map(select(. != env.MAJOR))' versions.json > tmp.json && mv tmp.json versions.json
                   npx docusaurus docs:version $MAJOR
                   npx docusaurus api:version $MAJOR
+                  cd ..
+                  npm run format
 
             - name: Commit and push the version snapshot
               uses: EndBug/add-and-commit@v9
