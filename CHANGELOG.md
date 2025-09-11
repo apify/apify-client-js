@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.16.1 - **not yet released**
+## [2.17.0](https://github.com/apify/apify-client-js/releases/tag/v2.17.0) (2025-09-11)
 
 ### 🚀 Features
 
@@ -15,7 +14,6 @@ All notable changes to this project will be documented in this file.
 - Presigned resource urls shouldn&#x27;t follow `baseUrl` ([#745](https://github.com/apify/apify-client-js/pull/745)) ([07b36fb](https://github.com/apify/apify-client-js/commit/07b36fbd46ed74e9c4ad3977cac883af55ad525d)) by [@barjin](https://github.com/barjin), closes [#744](https://github.com/apify/apify-client-js/issues/744)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.16.0](https://github.com/apify/apify-client-js/releases/tag/v2.16.0) (2025-08-26)
 
 ### Refactor
