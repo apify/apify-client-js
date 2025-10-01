@@ -396,7 +396,12 @@ export interface ActorStartOptions {
      */
     maxItems?: number;
 
-    // TODO(PPE): add maxTotalChargeUsd after finished
+    /**
+     * Specifies the maximum cost of the Actor run. 
+     * This parameter is useful for pay-per-event Actors, as it allows you to limit the amount charged to your subscription. 
+     * Value can be accessed in actor run using `ACTOR_MAX_TOTAL_CHARGE_USD` environment variable.
+     */
+    maxTotalChargeUsd?: number;
 
     /**
      * Override the Actor's permissions for this run. If not set, the Actor will run with permissions configured in the
