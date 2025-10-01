@@ -18,8 +18,6 @@
     "devDependencies": {
         "@apify/tsconfig": "^0.1.0",
         "@types/react": "^19.0.0",
-        "fs-extra": "^11.1.0",
-        "globby": "^14.0.0",
         "markdownlint": "^0.38.0",
         "markdownlint-cli": "^0.45.0",
         "path-browserify": "^1.0.1",
@@ -30,13 +28,11 @@
         "@apify/docusaurus-plugin-typedoc-api": "^4.4.3",
         "@docusaurus/core": "^3.8.1",
         "@docusaurus/faster": "^3.8.1",
-        "@docusaurus/plugin-client-redirects": "^3.8.1",
         "@docusaurus/preset-classic": "^3.8.1",
         "@signalwire/docusaurus-plugin-llms-txt": "^1.2.2",
         "clsx": "^2.0.0",
         "docusaurus-gtm-plugin": "^0.0.2",
         "prop-types": "^15.8.1",
-        "raw-loader": "^4.0.2",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
         "unist-util-visit": "^5.0.0"
