@@ -76,7 +76,6 @@ export interface ActorCollectionCreateOptions {
     isDeprecated?: boolean;
     isPublic?: boolean;
     name?: string;
-    restartOnError?: boolean;
     seoTitle?: string;
     seoDescription?: string;
     title?: string;

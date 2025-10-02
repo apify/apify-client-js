@@ -268,7 +268,6 @@ export interface Actor {
     name: string;
     username: string;
     description?: string;
-    restartOnError?: boolean;
     isPublic: boolean;
     isAnonymouslyRunnable?: boolean;
     createdAt: Date;
@@ -305,6 +304,7 @@ export interface ActorDefaultRunOptions {
     build: string;
     timeoutSecs: number;
     memoryMbytes: number;
+    restartOnError?: boolean;
 }
 
 export interface ActorExampleRunInput {
@@ -330,7 +330,6 @@ export type ActorUpdateOptions = Partial<
         | 'seoTitle'
         | 'seoDescription'
         | 'title'
-        | 'restartOnError'
         | 'versions'
         | 'categories'
         | 'defaultRunOptions'
@@ -486,6 +485,7 @@ export interface ActorRunOptions {
     memoryMbytes: number;
     diskMbytes: number;
     maxTotalChargeUsd?: number;
+    restartOnError?: boolean;
 }
 
 export interface ActorBuildOptions {
