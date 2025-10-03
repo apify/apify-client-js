@@ -268,6 +268,8 @@ export interface Actor {
     name: string;
     username: string;
     description?: string;
+    /** @deprecated Moved to defaultRunOptions.restartOnError */
+    restartOnError?: boolean;
     isPublic: boolean;
     isAnonymouslyRunnable?: boolean;
     createdAt: Date;
@@ -334,7 +336,10 @@ export type ActorUpdateOptions = Partial<
         | 'categories'
         | 'defaultRunOptions'
         | 'actorStandby'
-    >
+    > & {
+        /** @deprecated Moved to defaultRunOptions.restartOnError */
+        restartOnError?: boolean;
+    }
 >;
 
 export interface ActorStandby {
