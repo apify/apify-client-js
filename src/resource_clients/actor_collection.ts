@@ -76,7 +76,7 @@ export interface ActorCollectionCreateOptions {
     isDeprecated?: boolean;
     isPublic?: boolean;
     name?: string;
-    /** @deprecated Moved to defaultRunOptions.restartOnError */
+    /** @deprecated Use defaultRunOptions.restartOnError instead */
     restartOnError?: boolean;
     seoTitle?: string;
     seoDescription?: string;

@@ -268,7 +268,7 @@ export interface Actor {
     name: string;
     username: string;
     description?: string;
-    /** @deprecated Moved to defaultRunOptions.restartOnError */
+    /** @deprecated Use defaultRunOptions.restartOnError instead */
     restartOnError?: boolean;
     isPublic: boolean;
     isAnonymouslyRunnable?: boolean;
@@ -337,7 +337,7 @@ export type ActorUpdateOptions = Partial<
         | 'defaultRunOptions'
         | 'actorStandby'
     > & {
-        /** @deprecated Moved to defaultRunOptions.restartOnError */
+        /** @deprecated Use defaultRunOptions.restartOnError instead */
         restartOnError?: boolean;
     }
 >;
