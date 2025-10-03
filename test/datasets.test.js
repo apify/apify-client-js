@@ -288,7 +288,7 @@ describe('Dataset methods', () => {
             validateRequest({ format, ...options }, { datasetId });
         });
 
-        test("downloadItems() correctly passes signature", async () => {
+        test('downloadItems() correctly passes signature', async () => {
             const datasetId = 'some-id';
             const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });
             const format = 'json';

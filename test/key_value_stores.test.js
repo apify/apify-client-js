@@ -160,11 +160,7 @@ describe('Key-Value Store methods', () => {
             await client.keyValueStore(storeId).listKeys(query);
             validateRequest(query, { storeId });
 
-            await page.evaluate(
-                (id, opts) => client.keyValueStore(id).listKeys(opts),
-                storeId,
-                query,
-            );
+            await page.evaluate((id, opts) => client.keyValueStore(id).listKeys(opts), storeId, query);
             validateRequest(query, { storeId });
         });
 
@@ -393,7 +389,7 @@ describe('Key-Value Store methods', () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const options = {
-                signature: 'some-signature'
+                signature: 'some-signature',
             };
 
             const body = { foo: 'bar', baz: [1, 2] };
