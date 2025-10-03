@@ -157,10 +157,10 @@ describe('Key-Value Store methods', () => {
                 signature: 'some-signature',
             };
 
-            const res = await client.keyValueStore(storeId).listKeys(query);
+            await client.keyValueStore(storeId).listKeys(query);
             validateRequest(query, { storeId });
 
-            const browserRes = await page.evaluate(
+            await page.evaluate(
                 (id, opts) => client.keyValueStore(id).listKeys(opts),
                 storeId,
                 query,
@@ -397,14 +397,13 @@ describe('Key-Value Store methods', () => {
             };
 
             const body = { foo: 'bar', baz: [1, 2] };
-            const expectedBody = JSON.stringify(body);
             const expectedContentType = 'application/json; charset=utf-8';
             const expectedHeaders = {
                 'content-type': expectedContentType,
             };
 
             mockServer.setResponse({ headers: expectedHeaders, body });
-            const res = await client.keyValueStore(storeId).getRecord(key, options);
+            await client.keyValueStore(storeId).getRecord(key, options);
             validateRequest(options, { storeId, key });
         });
 

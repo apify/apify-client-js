@@ -247,10 +247,10 @@ describe('Dataset methods', () => {
             const qs = { limit: 1, offset: 1, signature: expected.signature };
             mockServer.setResponse({ body, headers });
 
-            const res = await client.dataset(datasetId).listItems(qs);
+            await client.dataset(datasetId).listItems(qs);
             validateRequest(qs, { datasetId });
 
-            const browserRes = await page.evaluate((id, opts) => client.dataset(id).listItems(opts), datasetId, qs);
+            await page.evaluate((id, opts) => client.dataset(id).listItems(opts), datasetId, qs);
             validateRequest(qs, { datasetId });
         });
 
@@ -302,12 +302,11 @@ describe('Dataset methods', () => {
 
             mockServer.setResponse({ body, headers });
 
-            const res = await client.dataset(datasetId).downloadItems(format, options);
+            await client.dataset(datasetId).downloadItems(format, options);
             validateRequest({ format, ...options }, { datasetId });
 
-            const browserRes = await page.evaluate(
+            await page.evaluate(
                 async (id, f, opts) => {
-                    /* eslint-disable no-shadow */
                     const res = await client.dataset(id).downloadItems(f, opts);
                     const decoder = new TextDecoder();
                     return decoder.decode(res);
