@@ -69,6 +69,7 @@ export class DatasetClient<
                 skipHidden: ow.optional.boolean,
                 unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
                 view: ow.optional.string,
+                signature: ow.optional.string,
             }),
         );
 
@@ -109,6 +110,7 @@ export class DatasetClient<
                 view: ow.optional.string,
                 xmlRoot: ow.optional.string,
                 xmlRow: ow.optional.string,
+                signature: ow.optional.string,
             }),
         );
 
@@ -272,6 +274,7 @@ export interface DatasetClientListItemOptions {
     skipHidden?: boolean;
     unwind?: string | string[]; // TODO: when doing a breaking change release, change to string[] only
     view?: string;
+    signature?: string;
 }
 
 export interface DatasetClientCreateItemsUrlOptions extends DatasetClientListItemOptions {
