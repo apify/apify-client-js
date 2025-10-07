@@ -227,14 +227,6 @@ describe('Dataset methods', () => {
         test('listItems() correctly passes signature', async () => {
             const datasetId = 'some-id';
             const body = [{ test: 'value' }];
-            const expected = {
-                total: 1,
-                offset: 1,
-                count: 1,
-                limit: 1,
-                desc: false,
-                items: body,
-            };
             const headers = {
                 'content-type': 'application/json; chartset=utf-8',
                 'x-apify-pagination-total': '1',
@@ -244,7 +236,7 @@ describe('Dataset methods', () => {
                 // TODO: https://github.com/apify/apify-core/issues/3503
                 'x-apify-pagination-desc': false,
             };
-            const qs = { limit: 1, offset: 1, signature: expected.signature };
+            const qs = { limit: 1, offset: 1, signature: 'some-signature' };
             mockServer.setResponse({ body, headers });
 
             await client.dataset(datasetId).listItems(qs);
