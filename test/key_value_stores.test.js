@@ -146,6 +146,24 @@ describe('Key-Value Store methods', () => {
             validateRequest(query, { storeId });
         });
 
+        test('listKeys() passes signature', async () => {
+            const storeId = 'some-id';
+
+            const query = {
+                limit: 10,
+                exclusiveStartKey: 'fromKey',
+                collection: 'my-collection',
+                prefix: 'my-prefix',
+                signature: 'some-signature',
+            };
+
+            await client.keyValueStore(storeId).listKeys(query);
+            validateRequest(query, { storeId });
+
+            await page.evaluate((id, opts) => client.keyValueStore(id).listKeys(opts), storeId, query);
+            validateRequest(query, { storeId });
+        });
+
         test('recordExists() works', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
@@ -365,6 +383,24 @@ describe('Key-Value Store methods', () => {
             } catch (err) {
                 expect(err.message).toMatch('The stream option can only be used in Node.js environment.');
             }
+        });
+
+        test('getRecord() correctly passes signature', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const options = {
+                signature: 'some-signature',
+            };
+
+            const body = { foo: 'bar', baz: [1, 2] };
+            const expectedContentType = 'application/json; charset=utf-8';
+            const expectedHeaders = {
+                'content-type': expectedContentType,
+            };
+
+            mockServer.setResponse({ headers: expectedHeaders, body });
+            await client.keyValueStore(storeId).getRecord(key, options);
+            validateRequest(options, { storeId, key });
         });
 
         test('getRecord() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {

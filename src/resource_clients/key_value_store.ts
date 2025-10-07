@@ -72,6 +72,7 @@ export class KeyValueStoreClient extends ResourceClient {
                 exclusiveStartKey: ow.optional.string,
                 collection: ow.optional.string,
                 prefix: ow.optional.string,
+                signature: ow.optional.string,
             }),
         );
 
@@ -201,6 +202,7 @@ export class KeyValueStoreClient extends ResourceClient {
                 buffer: ow.optional.boolean,
                 stream: ow.optional.boolean,
                 disableRedirect: ow.optional.boolean,
+                signature: ow.optional.string,
             }),
         );
 
@@ -215,10 +217,13 @@ export class KeyValueStoreClient extends ResourceClient {
             );
         }
 
+        const queryParams: Pick<KeyValueClientGetRecordOptions, 'signature'> = {};
+        if (options.signature) queryParams.signature = options.signature;
+
         const requestOpts: Record<string, unknown> = {
             url: this._url(`records/${key}`),
             method: 'GET',
-            params: this._params(),
+            params: this._params(queryParams),
             timeout: DEFAULT_TIMEOUT_MILLIS,
         };
 
@@ -353,6 +358,7 @@ export interface KeyValueClientListKeysOptions {
     exclusiveStartKey?: string;
     collection?: string;
     prefix?: string;
+    signature?: string;
 }
 
 export interface KeyValueClientCreateKeysUrlOptions extends KeyValueClientListKeysOptions {
@@ -377,6 +383,7 @@ export interface KeyValueListItem {
 export interface KeyValueClientGetRecordOptions {
     buffer?: boolean;
     stream?: boolean;
+    signature?: string;
 }
 
 export interface KeyValueStoreRecord<T> {
