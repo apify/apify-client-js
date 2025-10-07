@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.17.1 - **not yet released**
 
+### 🚀 Features
+
+- Allowed signature to be passed in kv-store&#x2F;datasets ([#761](https://github.com/apify/apify-client-js/pull/761)) ([a31e36d](https://github.com/apify/apify-client-js/commit/a31e36d6201f90136da362af2aa10b29efb80bad)) by [@gippy](https://github.com/gippy)
+
 ### 🐛 Bug Fixes
 
 - Export missing symbols from env vars and version client ([#756](https://github.com/apify/apify-client-js/pull/756)) ([86b591f](https://github.com/apify/apify-client-js/commit/86b591fe8d2f07b4e746561ee9e055fca6639e1d)) by [@B4nan](https://github.com/B4nan), closes [#751](https://github.com/apify/apify-client-js/issues/751)
