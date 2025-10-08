@@ -75,28 +75,12 @@ export abstract class ApiClient {
     }
 
     protected _params<T>(endpointParams?: T): Record<string, unknown> {
-        return this._prepareParams({ ...this.params, ...endpointParams });
+        return { ...this.params, ...endpointParams };
     }
 
     protected _toSafeId(id: string): string {
         // The id has the format `username/actor-name`, so we only need to replace the first `/`.
         return id.replace('/', '~');
-    }
-
-    /**
-     * Prepares the query parameters by applying necessary transformations:
-     * - Converts Date objects to ISO strings.
-     */
-    private _prepareParams(params: Record<string, unknown>): Record<string, unknown> {
-        /**
-         * Convert only root-level Date objects to ISO strings.
-         */
-        Object.entries(params).forEach(([key, value]) => {
-            if (value instanceof Date) {
-                params[key] = value.toISOString();
-            }
-        });
-        return params;
     }
 }
 
