@@ -72,7 +72,7 @@ export class HttpClient {
                 const formattedParams: [string, string][] = Object.entries<string | Date>(params)
                     .filter(([, value]) => value !== undefined)
                     .map(([key, value]) => {
-                        if(value instanceof Date) {
+                        if (value instanceof Date) {
                             return [key, value.toISOString()];
                         }
                         const updatedValue = typeof value === 'boolean' ? Number(value) : value;

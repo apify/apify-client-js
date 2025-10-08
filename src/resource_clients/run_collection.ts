@@ -32,14 +32,8 @@ export class RunCollectionClient extends ResourceCollectionClient {
                     ow.string.oneOf(Object.values(ACTOR_JOB_STATUSES)),
                     ow.array.ofType(ow.string.oneOf(Object.values(ACTOR_JOB_STATUSES))),
                 ),
-                startedBefore: ow.optional.any(
-                    ow.optional.date,
-                    ow.optional.string,
-                ),
-                startedAfter: ow.optional.any(
-                    ow.optional.date,
-                    ow.optional.string,
-                ),
+                startedBefore: ow.optional.any(ow.optional.date, ow.optional.string),
+                startedAfter: ow.optional.any(ow.optional.date, ow.optional.string),
             }),
         );
 
