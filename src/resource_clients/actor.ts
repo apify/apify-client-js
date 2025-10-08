@@ -70,11 +70,12 @@ export class ActorClient extends ResourceClient {
                 webhooks: ow.optional.array.ofType(ow.object),
                 maxItems: ow.optional.number.not.negative,
                 maxTotalChargeUsd: ow.optional.number.not.negative,
+                restartOnError: ow.optional.boolean,
                 forcePermissionLevel: ow.optional.string.oneOf(Object.values(ACTOR_PERMISSION_LEVEL)),
             }),
         );
 
-        const { waitForFinish, timeout, memory, build, maxItems, maxTotalChargeUsd, forcePermissionLevel } = options;
+        const { waitForFinish, timeout, memory, build, maxItems, maxTotalChargeUsd, restartOnError, forcePermissionLevel } = options;
 
         const params = {
             waitForFinish,
@@ -84,6 +85,7 @@ export class ActorClient extends ResourceClient {
             webhooks: stringifyWebhooksToBase64(options.webhooks),
             maxItems,
             maxTotalChargeUsd,
+            restartOnError,
             forcePermissionLevel,
         };
 
@@ -128,6 +130,7 @@ export class ActorClient extends ResourceClient {
                 webhooks: ow.optional.array.ofType(ow.object),
                 maxItems: ow.optional.number.not.negative,
                 maxTotalChargeUsd: ow.optional.number.not.negative,
+                restartOnError: ow.optional.boolean,
                 forcePermissionLevel: ow.optional.string.oneOf(Object.values(ACTOR_PERMISSION_LEVEL)),
             }),
         );
@@ -399,6 +402,11 @@ export interface ActorStartOptions {
      * Value can be accessed in actor run using `ACTOR_MAX_PAID_DATASET_ITEMS` environment variable.
      */
     maxItems?: number;
+
+    /**
+     * Determines whether the run will be restarted if it fails.
+     */
+    restartOnError?: boolean;
 
     // TODO(PPE): add maxTotalChargeUsd after finished
 
