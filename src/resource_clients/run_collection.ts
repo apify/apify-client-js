@@ -32,6 +32,14 @@ export class RunCollectionClient extends ResourceCollectionClient {
                     ow.string.oneOf(Object.values(ACTOR_JOB_STATUSES)),
                     ow.array.ofType(ow.string.oneOf(Object.values(ACTOR_JOB_STATUSES))),
                 ),
+                startedBefore: ow.optional.any(
+                    ow.optional.date,
+                    ow.optional.string,
+                ),
+                startedAfter: ow.optional.any(
+                    ow.optional.date,
+                    ow.optional.string,
+                ),
             }),
         );
 
@@ -46,4 +54,6 @@ export interface RunCollectionListOptions {
     status?:
         | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES]
         | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES][];
+    startedBefore?: string;
+    startedAfter?: string;
 }
