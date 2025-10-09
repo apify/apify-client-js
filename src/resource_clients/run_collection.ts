@@ -48,6 +48,6 @@ export interface RunCollectionListOptions {
     status?:
         | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES]
         | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES][];
-    startedBefore?: string;
-    startedAfter?: string;
+    startedBefore?: Date | string;
+    startedAfter?: Date | string;
 }
