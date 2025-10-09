@@ -335,14 +335,12 @@ export type ActorUpdateOptions = Partial<
         | 'seoTitle'
         | 'seoDescription'
         | 'title'
+        | 'restartOnError'
         | 'versions'
         | 'categories'
         | 'defaultRunOptions'
         | 'actorStandby'
-    > & {
-        /** @deprecated Use defaultRunOptions.restartOnError instead */
-        restartOnError?: boolean;
-    }
+    >
 >;
 
 export interface ActorStandby {
