@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### 🚀 Features
 
 - Allowed signature to be passed in kv-store&#x2F;datasets ([#761](https://github.com/apify/apify-client-js/pull/761)) ([a31e36d](https://github.com/apify/apify-client-js/commit/a31e36d6201f90136da362af2aa10b29efb80bad)) by [@gippy](https://github.com/gippy)
+- Add startedBefore and startedAfter to run list ([#763](https://github.com/apify/apify-client-js/pull/763)) ([2345999](https://github.com/apify/apify-client-js/commit/23459990598ba01833a21bfe969a1c64f775be00)) by [@danpoletaev](https://github.com/danpoletaev)
 
 ### 🐛 Bug Fixes
 
