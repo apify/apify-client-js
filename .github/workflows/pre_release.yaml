@@ -53,7 +53,7 @@ jobs:
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
             - name: Use Node.js 22
-              uses: actions/setup-node@v5
+              uses: actions/setup-node@v6
               with:
                   node-version: 22
 
@@ -84,7 +84,7 @@ jobs:
               with:
                   ref: ${{ needs.update_changelog.outputs.changelog_commitish }}
             - name: Use Node.js 22
-              uses: actions/setup-node@v5
+              uses: actions/setup-node@v6
               with:
                   node-version: 22
                   cache: 'npm'
