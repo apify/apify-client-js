@@ -117,6 +117,7 @@ export interface ScheduledActorRunOptions {
     build: string;
     timeoutSecs: number;
     memoryMbytes: number;
+    restartOnError?: boolean;
 }
 
 export interface ScheduleActionRunActorTask extends BaseScheduleAction<ScheduleActions.RunActorTask> {
