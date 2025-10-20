@@ -120,10 +120,10 @@ export async function maybeGzipValue(value: unknown): Promise<Buffer | undefined
         if (!gzipPromisified) {
             const { promisify } = await import('node:util');
             const { gzip } = await import('node:zlib');
-            (gzipPromisified as any) = promisify(gzip);
+            gzipPromisified = promisify(gzip);
         }
 
-        return gzipPromisified!(value);
+        return gzipPromisified(value);
     }
 
     return undefined;
