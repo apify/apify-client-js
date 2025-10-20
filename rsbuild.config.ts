@@ -28,6 +28,10 @@ export default defineConfig({
                 },
             },
         },
+        externals: {
+            'node:util': 'node:util',
+            'node:zlib': 'node:zlib',
+        }
     },
     tools: {
         htmlPlugin: false,
