@@ -75,7 +75,16 @@ export class ActorClient extends ResourceClient {
             }),
         );
 
-        const { waitForFinish, timeout, memory, build, maxItems, maxTotalChargeUsd, restartOnError, forcePermissionLevel } = options;
+        const {
+            waitForFinish,
+            timeout,
+            memory,
+            build,
+            maxItems,
+            maxTotalChargeUsd,
+            restartOnError,
+            forcePermissionLevel,
+        } = options;
 
         const params = {
             waitForFinish,
