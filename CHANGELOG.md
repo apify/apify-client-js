@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.18.1 - **not yet released**
 
+### 🚀 Features
+
+- Move restartOnError from Actor to Run options ([#760](https://github.com/apify/apify-client-js/pull/760)) ([8f80f82](https://github.com/apify/apify-client-js/commit/8f80f82c22128fd3378ba00ad29766cf4cc8e3c0)) by [@DaveHanns](https://github.com/DaveHanns)
+
 
 <!-- git-cliff-unreleased-end -->
 ## [2.18.0](https://github.com/apify/apify-client-js/releases/tag/v2.18.0) (2025-10-09)
