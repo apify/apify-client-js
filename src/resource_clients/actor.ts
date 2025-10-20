@@ -70,11 +70,21 @@ export class ActorClient extends ResourceClient {
                 webhooks: ow.optional.array.ofType(ow.object),
                 maxItems: ow.optional.number.not.negative,
                 maxTotalChargeUsd: ow.optional.number.not.negative,
+                restartOnError: ow.optional.boolean,
                 forcePermissionLevel: ow.optional.string.oneOf(Object.values(ACTOR_PERMISSION_LEVEL)),
             }),
         );
 
-        const { waitForFinish, timeout, memory, build, maxItems, maxTotalChargeUsd, forcePermissionLevel } = options;
+        const {
+            waitForFinish,
+            timeout,
+            memory,
+            build,
+            maxItems,
+            maxTotalChargeUsd,
+            restartOnError,
+            forcePermissionLevel,
+        } = options;
 
         const params = {
             waitForFinish,
@@ -84,6 +94,7 @@ export class ActorClient extends ResourceClient {
             webhooks: stringifyWebhooksToBase64(options.webhooks),
             maxItems,
             maxTotalChargeUsd,
+            restartOnError,
             forcePermissionLevel,
         };
 
@@ -128,6 +139,7 @@ export class ActorClient extends ResourceClient {
                 webhooks: ow.optional.array.ofType(ow.object),
                 maxItems: ow.optional.number.not.negative,
                 maxTotalChargeUsd: ow.optional.number.not.negative,
+                restartOnError: ow.optional.boolean,
                 forcePermissionLevel: ow.optional.string.oneOf(Object.values(ACTOR_PERMISSION_LEVEL)),
             }),
         );
@@ -268,6 +280,7 @@ export interface Actor {
     name: string;
     username: string;
     description?: string;
+    /** @deprecated Use defaultRunOptions.restartOnError instead */
     restartOnError?: boolean;
     isPublic: boolean;
     isAnonymouslyRunnable?: boolean;
@@ -305,6 +318,7 @@ export interface ActorDefaultRunOptions {
     build: string;
     timeoutSecs: number;
     memoryMbytes: number;
+    restartOnError?: boolean;
 }
 
 export interface ActorExampleRunInput {
@@ -396,6 +410,11 @@ export interface ActorStartOptions {
      */
     maxItems?: number;
 
+    /**
+     * Determines whether the run will be restarted if it fails.
+     */
+    restartOnError?: boolean;
+
     // TODO(PPE): add maxTotalChargeUsd after finished
 
     /**
@@ -486,6 +505,7 @@ export interface ActorRunOptions {
     memoryMbytes: number;
     diskMbytes: number;
     maxTotalChargeUsd?: number;
+    restartOnError?: boolean;
 }
 
 export interface ActorBuildOptions {

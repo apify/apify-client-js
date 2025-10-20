@@ -141,6 +141,7 @@ export class RunClient extends ResourceClient {
                 timeout: ow.optional.number,
                 maxItems: ow.optional.number,
                 maxTotalChargeUsd: ow.optional.number,
+                restartOnError: ow.optional.boolean,
             }),
         );
 
@@ -291,6 +292,7 @@ export interface RunResurrectOptions {
     timeout?: number;
     maxItems?: number;
     maxTotalChargeUsd?: number;
+    restartOnError?: boolean;
 }
 
 export interface RunChargeOptions {
