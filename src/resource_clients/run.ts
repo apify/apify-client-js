@@ -1,6 +1,5 @@
 import type { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
-import c from 'ansi-colors';
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
@@ -10,7 +9,7 @@ import { cast, parseDateFields, pluckData } from '../utils';
 import type { ActorRun } from './actor';
 import { DatasetClient } from './dataset';
 import { KeyValueStoreClient } from './key_value_store';
-import { LogClient, StreamedLog} from "./log";
+import { LogClient, LoggerActorRedirect, StreamedLog } from "./log";
 import { RequestQueueClient } from './request_queue';
 import { LEVELS, Log} from "@apify/log";
 
@@ -285,7 +284,7 @@ export class RunClient extends ResourceClient {
             const name = [actorName, `runId:${runId}`].filter(Boolean).join(' ');
 
 
-            toLogger = new Log({level:LEVELS.DEBUG, prefix: c.cyan(`${name} -> `)})
+            toLogger = new Log({level:LEVELS.DEBUG, prefix: `${name} -> `, logger:new LoggerActorRedirect()})
         }
 
         return new StreamedLog(this.log(), toLogger, fromStart);

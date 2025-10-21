@@ -1,11 +1,12 @@
 import type { Readable } from 'node:stream';
+import c from 'ansi-colors';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow } from '../utils';
-import { Log } from '@apify/log';
+import { Log, Logger, LogLevel } from "@apify/log";
 
 export class LogClient extends ResourceClient {
     /**
@@ -66,8 +67,46 @@ export class LogClient extends ResourceClient {
 }
 
 
+// Temp create it here and ask Martin where to put it
+
+const DEFAULT_OPTIONS = {
+    skipTime: true,
+    level: LogLevel.DEBUG,
+};
+
+export class LoggerActorRedirect extends Logger {
+    constructor(options = {}) {
+        super({ ...DEFAULT_OPTIONS, ...options });
+    }
+
+    _console_log(line:string){
+        console.log(line)
+    }
+
+    override _log(level: LogLevel, message: string, data?: any, exception?: unknown, opts: Record<string, any> = {}) {
+        if (level > this.options.level) {
+            return;
+        }
+        if (data || exception){
+            throw new Error("Redirect logger does not use other arguments than level and message");
+        }
+        let { prefix } = opts;
+        prefix = prefix ? `${prefix}` : '';
+
+        let maybeDate = '';
+        if (!this.options.skipTime) {
+            maybeDate = `${new Date().toISOString().replace('Z', '').replace('T', ' ')} `;
+        }
+
+        const line = `${c.gray(maybeDate)}${c.cyan(prefix)}${message || ''}`;
+        this._console_log(line);
+        return line;
+    }
+}
+
+
 export class StreamedLog {
-    private toLogger: Log;
+    private toLog: Log;
     private streamBuffer: Buffer[] = [];
     private splitMarker = /(?:\n|^)(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)/g;
     private relevancyTimeLimit: Date | null;
@@ -78,10 +117,10 @@ export class StreamedLog {
 
     constructor(
         logClient: { stream: (options: { raw: boolean }) => Promise<Readable | undefined> },
-        toLogger: Log,
+        toLog: Log,
         fromStart = true,
     ) {
-        this.toLogger = toLogger;
+        this.toLog = toLog;
         this.logClient = logClient;
         this.relevancyTimeLimit = fromStart ? null : new Date();
     }
@@ -153,8 +192,8 @@ export class StreamedLog {
             messageContents = allParts.filter((_, i) => i % 2 !== 0);
             this.streamBuffer = [];
         } else {
-            messageMarkers = allParts.filter((_, i) => i % 2 === 0).slice(-2);
-            messageContents = allParts.filter((_, i) => i % 2 !== 0).slice(-2);
+            messageMarkers = allParts.filter((_, i) => i % 2 === 0).slice(0,-1);
+            messageContents = allParts.filter((_, i) => i % 2 !== 0).slice(0,-1);
 
             // The last two parts (marker and message) are possibly not complete and will be left in the buffer
             this.streamBuffer = [Buffer.from(allParts.slice(-2).join(''))];
@@ -176,19 +215,19 @@ export class StreamedLog {
 
     private logAtGuessedLevel(message: string) {
         // Original log level information does not have to be included in the message at all.
-        // This is methods just guesses.
+        // This is methods just guesses, exotic formating or specific keywords can break the guessing logic.
 
         message = message.trim();
 
-        if (message.includes('ERROR')) this.toLogger.error(message);
-        else if (message.includes('SOFT_FAIL')) this.toLogger.softFail(message);
-        else if (message.includes('WARNING')) this.toLogger.warning(message);
-        else if (message.includes('INFO')) this.toLogger.info(message);
-        else if (message.includes('DEBUG')) this.toLogger.debug(message);
-        else if (message.includes('PERF')) this.toLogger.perf(message);
-        // Fallback in case original log message does not indicate known log level.
-        else this.toLogger.info(message);
+        // TODO: Guessing can use the coloring symbols
 
-        // How to preserve log level filtering, but remove formatting???
+        if (message.includes('ERROR')) this.toLog.error(message);
+        else if (message.includes('SOFT_FAIL')) this.toLog.softFail(message);
+        else if (message.includes('WARNING')) this.toLog.warning(message);
+        else if (message.includes('INFO')) this.toLog.info(message);
+        else if (message.includes('DEBUG')) this.toLog.debug(message);
+        else if (message.includes('PERF')) this.toLog.perf(message);
+        // Fallback in case original log message does not indicate known log level.
+        else this.toLog.info(message);
     }
 }
