@@ -1,6 +1,4 @@
 import type { Readable } from 'node:stream';
-import util from 'node:util';
-import zlib from 'node:zlib';
 
 import ow from 'ow';
 import type { JsonValue, TypedArray } from 'type-fest';
@@ -106,8 +104,7 @@ export function stringifyWebhooksToBase64(webhooks: WebhookUpdateData[]): string
     return btoa(String.fromCharCode(...uint8Array));
 }
 
-let gzipPromise: ReturnType<(typeof util)['promisify']>;
-if (isNode()) gzipPromise = util.promisify(zlib.gzip);
+let gzipPromisified: ((arg: string | Buffer<ArrayBufferLike>) => Promise<Buffer>) | undefined;
 
 /**
  * Gzip provided value, otherwise returns undefined.
@@ -120,7 +117,13 @@ export async function maybeGzipValue(value: unknown): Promise<Buffer | undefined
     // skip it instead of throwing for unsupported types.
     const areDataLargeEnough = Buffer.byteLength(value as string) >= MIN_GZIP_BYTES;
     if (areDataLargeEnough) {
-        return gzipPromise(value);
+        if (!gzipPromisified) {
+            const { promisify } = await import('node:util');
+            const { gzip } = await import('node:zlib');
+            gzipPromisified = promisify(gzip);
+        }
+
+        return gzipPromisified(value);
     }
 
     return undefined;
