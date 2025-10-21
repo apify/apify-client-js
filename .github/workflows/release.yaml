@@ -20,14 +20,50 @@ on:
                 required: false
                 type: string
                 default: ''
+    # Push to master will deploy a beta version
+    push:
+        branches:
+            - master
+        tags-ignore:
+            - '**' # Ignore all tags to prevent duplicate builds when tags are pushed.
 
 concurrency:
     group: release
     cancel-in-progress: false
 
 jobs:
-    release_metadata:
-        name: Prepare release metadata
+    # ============================================================================
+    # ROUTE DECISION
+    # ============================================================================
+
+    determine_path:
+        name: Determine release path
+        runs-on: ubuntu-latest
+        outputs:
+            path: ${{ steps.decide.outputs.path }}
+        steps:
+            - name: Decide path
+              id: decide
+              run: |
+                  if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+                      echo "path=stable" >> $GITHUB_OUTPUT
+                  elif [[ "${{ github.event_name }}" == "push" ]] && \
+                       [[ ! "${{ github.event.head_commit.message }}" =~ ^docs ]] && \
+                       [[ ! "${{ github.event.head_commit.message }}" =~ ^ci ]] && \
+                       [[ "${{ github.repository }}" =~ ^apify/ ]]; then
+                      echo "path=prerelease" >> $GITHUB_OUTPUT
+                  else
+                      echo "path=skip" >> $GITHUB_OUTPUT
+                  fi
+
+    # ============================================================================
+    # STABLE RELEASE PATH (workflow_dispatch)
+    # ============================================================================
+
+    stable_release_metadata:
+        needs: determine_path
+        if: needs.determine_path.outputs.path == 'stable'
+        name: '[Stable] Prepare release metadata'
         runs-on: ubuntu-latest
         outputs:
             version_number: ${{ steps.release_metadata.outputs.version_number }}
@@ -43,12 +79,14 @@ jobs:
                   custom_version: ${{ inputs.custom_version }}
                   existing_changelog_path: CHANGELOG.md
 
-    run_code_checks:
+    stable_run_code_checks:
+        needs: determine_path
+        if: needs.determine_path.outputs.path == 'stable'
         uses: ./.github/workflows/check.yaml
 
-    update_changelog:
-        needs: [release_metadata, run_code_checks]
-        name: Update changelog
+    stable_update_changelog:
+        needs: [stable_release_metadata, stable_run_code_checks]
+        name: '[Stable] Update changelog'
         runs-on: ubuntu-latest
         outputs:
             changelog_commitish: ${{ steps.commit.outputs.commit_long_sha || github.sha }}
@@ -65,14 +103,14 @@ jobs:
                   node-version: 22
 
             - name: Update package version in package.json
-              run: npm version --no-git-tag-version --allow-same-version ${{ needs.release_metadata.outputs.version_number }}
+              run: npm version --no-git-tag-version --allow-same-version ${{ needs.stable_release_metadata.outputs.version_number }}
 
             - name: Update CHANGELOG.md
               uses: DamianReeves/write-file-action@master
               with:
                   path: CHANGELOG.md
                   write-mode: overwrite
-                  contents: ${{ needs.release_metadata.outputs.changelog }}
+                  contents: ${{ needs.stable_release_metadata.outputs.changelog }}
 
             - name: Commit changes
               id: commit
@@ -82,9 +120,9 @@ jobs:
                   author_email: noreply@apify.com
                   message: 'chore(release): Update changelog and package version [skip ci]'
 
-    create_github_release:
-        name: Create github release
-        needs: [release_metadata, update_changelog]
+    stable_create_github_release:
+        needs: [stable_release_metadata, stable_update_changelog]
+        name: '[Stable] Create github release'
         runs-on: ubuntu-latest
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -92,19 +130,19 @@ jobs:
             - name: Create release
               uses: softprops/action-gh-release@v2
               with:
-                  tag_name: ${{ needs.release_metadata.outputs.tag_name }}
-                  name: ${{ needs.release_metadata.outputs.version_number }}
-                  target_commitish: ${{ needs.update_changelog.outputs.changelog_commitish }}
-                  body: ${{ needs.release_metadata.outputs.release_notes }}
+                  tag_name: ${{ needs.stable_release_metadata.outputs.tag_name }}
+                  name: ${{ needs.stable_release_metadata.outputs.version_number }}
+                  target_commitish: ${{ needs.stable_update_changelog.outputs.changelog_commitish }}
+                  body: ${{ needs.stable_release_metadata.outputs.release_notes }}
 
-    publish_to_npm:
-        name: Publish to NPM
-        needs: [update_changelog]
+    stable_publish_to_npm:
+        needs: [stable_update_changelog]
+        name: '[Stable] Publish to NPM'
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v5
               with:
-                  ref: ${{ needs.update_changelog.outputs.changelog_commitish }}
+                  ref: ${{ needs.stable_update_changelog.outputs.changelog_commitish }}
             - name: Use Node.js 22
               uses: actions/setup-node@v6
               with:
@@ -121,8 +159,9 @@ jobs:
             - name: Publish to NPM
               run: npm publish --tag latest
 
-    version-docs:
-        needs: publish_to_npm
+    stable_version_docs:
+        needs: [stable_publish_to_npm]
+        name: '[Stable] Version docs'
         runs-on: ubuntu-latest
 
         steps:
@@ -167,6 +206,102 @@ jobs:
                   author_name: Apify Release Bot
                   author_email: noreply@apify.com
                   message: 'docs: update docs for ${{ inputs.version }} version'
+
+    # ============================================================================
+    # PRE-RELEASE PATH (push to master)
+    # ============================================================================
+
+    prerelease_release_metadata:
+        needs: determine_path
+        if: needs.determine_path.outputs.path == 'prerelease'
+        name: '[Pre-release] Prepare release metadata'
+        runs-on: ubuntu-latest
+        outputs:
+            version_number: ${{ steps.release_metadata.outputs.version_number }}
+            changelog: ${{ steps.release_metadata.outputs.changelog }}
+        steps:
+            - uses: apify/workflows/git-cliff-release@main
+              name: Prepare release metadata
+              id: release_metadata
+              with:
+                  release_type: prerelease
+                  existing_changelog_path: CHANGELOG.md
+
+    prerelease_wait_for_checks:
+        needs: determine_path
+        if: needs.determine_path.outputs.path == 'prerelease'
+        name: '[Pre-release] Wait for code checks to pass'
+        runs-on: ubuntu-latest
+        steps:
+            - uses: lewagon/wait-on-check-action@v1.4.1
+              with:
+                  ref: ${{ github.ref }}
+                  repo-token: ${{ secrets.GITHUB_TOKEN }}
+                  check-regexp: (Build & Test .*|Lint|Docs build)
+                  wait-interval: 5
+
+    prerelease_update_changelog:
+        needs: [prerelease_release_metadata, prerelease_wait_for_checks]
+        name: '[Pre-release] Update changelog'
+        runs-on: ubuntu-latest
+        outputs:
+            changelog_commitish: ${{ steps.commit.outputs.commit_long_sha || github.sha }}
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v5
+              with:
+                  token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+
+            - name: Use Node.js 22
+              uses: actions/setup-node@v6
+              with:
+                  node-version: 22
+
+            - name: Update package version in package.json
+              run: npm version --no-git-tag-version --allow-same-version ${{ needs.prerelease_release_metadata.outputs.version_number }}
+
+            - name: Update CHANGELOG.md
+              uses: DamianReeves/write-file-action@master
+              with:
+                  path: CHANGELOG.md
+                  write-mode: overwrite
+                  contents: ${{ needs.prerelease_release_metadata.outputs.changelog }}
+
+            - name: Commit changes
+              id: commit
+              uses: EndBug/add-and-commit@v9
+              with:
+                  author_name: Apify Release Bot
+                  author_email: noreply@apify.com
+                  message: 'chore(release): Update changelog and package version [skip ci]'
+
+    prerelease_publish_to_npm:
+        needs: [prerelease_update_changelog, prerelease_wait_for_checks]
+        name: '[Pre-release] Publish to NPM'
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+              with:
+                  ref: ${{ needs.prerelease_update_changelog.outputs.changelog_commitish }}
+            - name: Use Node.js 22
+              uses: actions/setup-node@v6
+              with:
+                  node-version: 22
+                  cache: 'npm'
+                  cache-dependency-path: 'package-lock.json'
+            - name: Install dependencies
+              run: |
+                  echo "access=public" >> .npmrc
+                  echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+                  npm ci
+            - # Check version consistency and increment pre-release version number for beta only.
+              name: Bump pre-release version
+              run: node ./.github/scripts/before-beta-release.js
+            - name: Build module
+              run: npm run build
+            - name: Publish to NPM
+              run: npm publish --tag beta
 
 env:
     NODE_AUTH_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}
