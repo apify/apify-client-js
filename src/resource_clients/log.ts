@@ -6,7 +6,8 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow } from '../utils';
-import { Log, Logger, LogLevel } from "@apify/log";
+import type { Log} from "@apify/log";
+import { Logger, LogLevel } from "@apify/log";
 
 export class LogClient extends ResourceClient {
     /**
@@ -22,11 +23,11 @@ export class LogClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/logs/log/get-log
      */
-    async get(): Promise<string | undefined> {
+    async get(options = {raw:false}): Promise<string | undefined> {
         const requestOpts: ApifyRequestConfig = {
             url: this._url(),
             method: 'GET',
-            params: this._params(),
+            params: this._params(options),
         };
 
         try {
@@ -43,9 +44,10 @@ export class LogClient extends ResourceClient {
      * Gets the log in a Readable stream format. Only works in Node.js.
      * https://docs.apify.com/api/v2#/reference/logs/log/get-log
      */
-    async stream(): Promise<Readable | undefined> {
+    async stream(options = {raw:false}): Promise<Readable | undefined> {
         const params = {
             stream: true,
+            raw: options.raw
         };
 
         const requestOpts: ApifyRequestConfig = {
@@ -192,8 +194,8 @@ export class StreamedLog {
             messageContents = allParts.filter((_, i) => i % 2 !== 0);
             this.streamBuffer = [];
         } else {
-            messageMarkers = allParts.filter((_, i) => i % 2 === 0).slice(0,-1);
-            messageContents = allParts.filter((_, i) => i % 2 !== 0).slice(0,-1);
+            messageMarkers = allParts.filter((_, i) => i % 2 === 0).slice(0, -1);
+            messageContents = allParts.filter((_, i) => i % 2 !== 0).slice(0, -1);
 
             // The last two parts (marker and message) are possibly not complete and will be left in the buffer
             this.streamBuffer = [Buffer.from(allParts.slice(-2).join(''))];

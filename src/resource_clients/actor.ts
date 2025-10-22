@@ -17,6 +17,8 @@ import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
 import type { WebhookUpdateData } from './webhook';
 import { WebhookCollectionClient } from './webhook_collection';
+import { Log } from "@apify/log";
+import { StreamedLog } from "./log";
 
 export class ActorClient extends ResourceClient {
     /**
@@ -112,7 +114,7 @@ export class ActorClient extends ResourceClient {
      * It waits indefinitely, unless the `waitSecs` option is provided.
      * https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
      */
-    async call(input?: unknown, options: ActorCallOptions = {}): Promise<ActorRun> {
+    async call(input?: unknown, options: ActorCallOptions = { log: "default"}): Promise<ActorRun> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
         // then it will process input as a buffer.
         ow(
@@ -126,16 +128,41 @@ export class ActorClient extends ResourceClient {
                 webhooks: ow.optional.array.ofType(ow.object),
                 maxItems: ow.optional.number.not.negative,
                 maxTotalChargeUsd: ow.optional.number.not.negative,
+                log: ow.optional.any(
+                    ow.string.oneOf(['default']),
+                    ow.null,
+                    ow.object.instanceOf(Log),
+                ),
             }),
         );
 
-        const { waitSecs, ...startOptions } = options;
+        const { waitSecs, log, ...startOptions } = options;
         const { id } = await this.start(input, startOptions);
 
         // Calling root client because we need access to top level API.
         // Creating a new instance of RunClient here would only allow
         // setting it up as a nested route under actor API.
-        return this.apifyClient.run(id).waitForFinish({ waitSecs });
+        const newRunClient = this.apifyClient.run(id)
+
+        if (!log) {
+            return newRunClient.waitForFinish({ waitSecs });
+        }
+        let streamedLog: StreamedLog
+
+        if (log === 'default') {
+            streamedLog = await newRunClient.getStreamedLog();
+        } else {
+            streamedLog = await newRunClient.getStreamedLog({ toLog: log });
+        }
+
+        try{
+            await streamedLog.start()
+            return this.apifyClient.run(id).waitForFinish({ waitSecs });
+        }
+        finally {
+            await streamedLog.stop()
+        }
+
     }
 
     /**
@@ -397,6 +424,7 @@ export interface ActorStartOptions {
 
 export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
     waitSecs?: number;
+    log?: Log | null | 'default';
 }
 
 export interface ActorRunListItem {

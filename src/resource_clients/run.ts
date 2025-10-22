@@ -270,9 +270,9 @@ export class RunClient extends ResourceClient {
     /**
      * Get StreamedLog for convenient streaming of the run log and their redirection.
      */
-    async getStreamedLog(toLogger?: Log, fromStart = true): Promise<StreamedLog> {
-
-        if (!toLogger){
+    async getStreamedLog(options: GetStreamedLogOptions = {}): Promise<StreamedLog> {
+        let { toLog, fromStart = true } = options;
+        if (!toLog){
             // Get actor name and run id
             const runData = await this.get();
             const runId = runData ? `${runData.id ?? ''}` : '';
@@ -284,11 +284,16 @@ export class RunClient extends ResourceClient {
             const name = [actorName, `runId:${runId}`].filter(Boolean).join(' ');
 
 
-            toLogger = new Log({level:LEVELS.DEBUG, prefix: `${name} -> `, logger:new LoggerActorRedirect()})
+            toLog = new Log({level:LEVELS.DEBUG, prefix: `${name} -> `, logger:new LoggerActorRedirect()})
         }
 
-        return new StreamedLog(this.log(), toLogger, fromStart);
+        return new StreamedLog(this.log(), toLog, fromStart);
     }
+}
+
+export interface GetStreamedLogOptions {
+    toLog?: Log;
+    fromStart?: boolean;
 }
 
 export interface RunGetOptions {
