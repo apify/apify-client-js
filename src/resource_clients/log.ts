@@ -113,12 +113,12 @@ export class StreamedLog {
     private splitMarker = /(?:\n|^)(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)/g;
     private relevancyTimeLimit: Date | null;
 
-    private logClient: { stream: (options: { raw: boolean }) => Promise<Readable | undefined> };
+    private logClient: LogClient;
     private streamingTask: Promise<void> | null = null;
     private stopLogging = false;
 
     constructor(
-        logClient: { stream: (options: { raw: boolean }) => Promise<Readable | undefined> },
+        logClient: LogClient,
         toLog: Log,
         fromStart = true,
     ) {
