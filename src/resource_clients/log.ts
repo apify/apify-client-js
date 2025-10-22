@@ -1,13 +1,16 @@
+// eslint-disable-next-line max-classes-per-file
 import type { Readable } from 'node:stream';
+
 import c from 'ansi-colors';
+
+import type { Log } from '@apify/log';
+import { Logger, LogLevel } from '@apify/log';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow } from '../utils';
-import type { Log} from "@apify/log";
-import { Logger, LogLevel } from "@apify/log";
 
 export class LogClient extends ResourceClient {
     /**
@@ -23,7 +26,7 @@ export class LogClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/logs/log/get-log
      */
-    async get(options = {raw:false}): Promise<string | undefined> {
+    async get(options = { raw: false }): Promise<string | undefined> {
         const requestOpts: ApifyRequestConfig = {
             url: this._url(),
             method: 'GET',
@@ -44,10 +47,10 @@ export class LogClient extends ResourceClient {
      * Gets the log in a Readable stream format. Only works in Node.js.
      * https://docs.apify.com/api/v2#/reference/logs/log/get-log
      */
-    async stream(options = {raw:false}): Promise<Readable | undefined> {
+    async stream(options = { raw: false }): Promise<Readable | undefined> {
         const params = {
             stream: true,
-            raw: options.raw
+            raw: options.raw,
         };
 
         const requestOpts: ApifyRequestConfig = {
@@ -68,7 +71,6 @@ export class LogClient extends ResourceClient {
     }
 }
 
-
 // Temp create it here and ask Martin where to put it
 
 const DEFAULT_OPTIONS = {
@@ -81,16 +83,16 @@ export class LoggerActorRedirect extends Logger {
         super({ ...DEFAULT_OPTIONS, ...options });
     }
 
-    _console_log(line:string){
-        console.log(line)
+    _console_log(line: string) {
+        console.log(line); // eslint-disable-line no-console
     }
 
     override _log(level: LogLevel, message: string, data?: any, exception?: unknown, opts: Record<string, any> = {}) {
         if (level > this.options.level) {
             return;
         }
-        if (data || exception){
-            throw new Error("Redirect logger does not use other arguments than level and message");
+        if (data || exception) {
+            throw new Error('Redirect logger does not use other arguments than level and message');
         }
         let { prefix } = opts;
         prefix = prefix ? `${prefix}` : '';
@@ -106,7 +108,6 @@ export class LoggerActorRedirect extends Logger {
     }
 }
 
-
 export class StreamedLog {
     private toLog: Log;
     private streamBuffer: Buffer[] = [];
@@ -117,11 +118,7 @@ export class StreamedLog {
     private streamingTask: Promise<void> | null = null;
     private stopLogging = false;
 
-    constructor(
-        logClient: LogClient,
-        toLog: Log,
-        fromStart = true,
-    ) {
+    constructor(logClient: LogClient, toLog: Log, fromStart = true) {
         this.toLog = toLog;
         this.logClient = logClient;
         this.relevancyTimeLimit = fromStart ? null : new Date();

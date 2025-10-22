@@ -3,6 +3,7 @@ import ow from 'ow';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
+import { Log } from '@apify/log';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
@@ -13,12 +14,11 @@ import { ActorVersionCollectionClient } from './actor_version_collection';
 import type { Build, BuildClientGetOptions } from './build';
 import { BuildClient } from './build';
 import { BuildCollectionClient } from './build_collection';
+import type { StreamedLog } from './log';
 import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
 import type { WebhookUpdateData } from './webhook';
 import { WebhookCollectionClient } from './webhook_collection';
-import { Log } from "@apify/log";
-import { StreamedLog } from "./log";
 
 export class ActorClient extends ResourceClient {
     /**
@@ -114,7 +114,7 @@ export class ActorClient extends ResourceClient {
      * It waits indefinitely, unless the `waitSecs` option is provided.
      * https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
      */
-    async call(input?: unknown, options: ActorCallOptions = { log: "default"}): Promise<ActorRun> {
+    async call(input?: unknown, options: ActorCallOptions = {}): Promise<ActorRun> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
         // then it will process input as a buffer.
         ow(
@@ -128,26 +128,22 @@ export class ActorClient extends ResourceClient {
                 webhooks: ow.optional.array.ofType(ow.object),
                 maxItems: ow.optional.number.not.negative,
                 maxTotalChargeUsd: ow.optional.number.not.negative,
-                log: ow.optional.any(
-                    ow.string.oneOf(['default']),
-                    ow.null,
-                    ow.object.instanceOf(Log),
-                ),
+                log: ow.optional.any(ow.null, ow.object.instanceOf(Log)),
             }),
         );
 
-        const { waitSecs, log, ...startOptions } = options;
+        const { waitSecs, log = 'default', ...startOptions } = options;
         const { id } = await this.start(input, startOptions);
 
         // Calling root client because we need access to top level API.
         // Creating a new instance of RunClient here would only allow
         // setting it up as a nested route under actor API.
-        const newRunClient = this.apifyClient.run(id)
+        const newRunClient = this.apifyClient.run(id);
 
         if (!log) {
             return newRunClient.waitForFinish({ waitSecs });
         }
-        let streamedLog: StreamedLog
+        let streamedLog: StreamedLog;
 
         if (log === 'default') {
             streamedLog = await newRunClient.getStreamedLog();
@@ -155,14 +151,12 @@ export class ActorClient extends ResourceClient {
             streamedLog = await newRunClient.getStreamedLog({ toLog: log });
         }
 
-        try{
-            await streamedLog.start()
+        try {
+            await streamedLog.start();
             return this.apifyClient.run(id).waitForFinish({ waitSecs });
+        } finally {
+            await streamedLog.stop();
         }
-        finally {
-            await streamedLog.stop()
-        }
-
     }
 
     /**
@@ -424,7 +418,7 @@ export interface ActorStartOptions {
 
 export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
     waitSecs?: number;
-    log?: Log | null | 'default';
+    log?: Log | null;
 }
 
 export interface ActorRunListItem {

@@ -1,9 +1,8 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
 const { ApifyClient, LoggerActorRedirect } = require('apify-client');
-const {MOCKED_ACTOR_LOGS, MOCKED_ACTOR_LOGS_PROCESSED} = require('./mock_server/consts');
+const { MOCKED_ACTOR_LOGS_PROCESSED } = require('./mock_server/consts');
 const mockServer = require('./mock_server/server');
-const c = require("ansi-colors");
-const { Logger } = require("@apify/log");
+const c = require('ansi-colors');
 
 describe('Log methods', () => {
     let baseUrl;
@@ -62,7 +61,6 @@ describe('Log methods', () => {
     });
 });
 
-
 describe('Redirect logs', () => {
     let baseUrl;
     const browser = new Browser();
@@ -92,30 +90,39 @@ describe('Redirect logs', () => {
         page.close().catch(() => {});
     });
 
-    describe('run log', () => {
-        test('stream() works', async () => {
-            const logId = 'redirect-log-id';
-
-            const res = await client.log(logId).stream();
-            const chunks = [];
-            for await (const chunk of res) {
-                chunks.push(chunk);
-            }
-            const log = Buffer.concat(chunks).toString();
-            expect(log).toBe(MOCKED_ACTOR_LOGS.join(""));
-        });
-
-        test('StreamedLog', async () => {
+    describe('run.getStreamedLog', () => {
+        test('getStreamedLog - fromStart', async () => {
             const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
 
+            // Set fake time in constructor to skip the first redirected log entry, fromStart=True should redirect all logs
+            jest.useFakeTimers();
+            jest.setSystemTime(new Date('2025-05-13T07:24:12.686Z'));
             const streamedLog = await client.run('redirect-run-id').getStreamedLog();
+            jest.useRealTimers();
 
-            await streamedLog.start()
-            await streamedLog.stop()
-            let logger_prefix = c.cyan('redirect-actor-name runId:redirect-run-id -> ');
-            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map(item => [logger_prefix + item]));
+            await streamedLog.start();
+            await streamedLog.stop();
+            const loggerPrefix = c.cyan('redirect-actor-name runId:redirect-run-id -> ');
+            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [loggerPrefix + item]));
             logSpy.mockRestore();
+        });
 
+        test('getStreamedLog - not fromStart', async () => {
+            const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
+
+            // Set fake time in constructor to skip the first redirected log entry, fromStart is redirecting only new logs
+            jest.useFakeTimers();
+            jest.setSystemTime(new Date('2025-05-13T07:24:12.686Z'));
+            const streamedLog = await client.run('redirect-run-id').getStreamedLog({ fromStart: false });
+            jest.useRealTimers();
+
+            await streamedLog.start();
+            await streamedLog.stop();
+            const loggerPrefix = c.cyan('redirect-actor-name runId:redirect-run-id -> ');
+            expect(logSpy.mock.calls).toEqual(
+                MOCKED_ACTOR_LOGS_PROCESSED.slice(1).map((item) => [loggerPrefix + item]),
+            );
+            logSpy.mockRestore();
         });
     });
 });

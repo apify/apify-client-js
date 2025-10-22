@@ -22,7 +22,7 @@ const webhookDispatches = require('./routes/webhook_dispatches');
 const webhooks = require('./routes/webhooks');
 
 // Consts
-const {MOCKED_ACTOR_LOGS} = require('./consts');
+const { MOCKED_ACTOR_LOGS } = require('./consts');
 
 const app = express();
 const v2Router = express.Router();
@@ -77,11 +77,9 @@ app.set('mockServer', mockServer);
 app.use('/v2', v2Router);
 app.use('/external', external);
 
-
-
 // Attaching V2 routers
 v2Router.use('/acts/redirect-actor-id', async (req, res) => {
-    res.json({'data':{'name':'redirect-actor-name'}});
+    res.json({ data: { name: 'redirect-actor-name' } });
 });
 v2Router.use('/acts', actorRouter);
 v2Router.use('/actor-builds', buildRouter);
@@ -91,14 +89,16 @@ v2Router.use('/actor-runs/redirect-run-id/log', async (req, res) => {
         res.write(chunk);
         res.flush(); // Flush the buffer and send the chunk immediately
         // Wait for a short period to simulate work being done on the server
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await new Promise((resolve) => {
+            setTimeout(resolve, 10);
+        });
     }
 
     // End the response stream once all chunks have been sent
     res.end();
 });
 v2Router.use('/actor-runs/redirect-run-id', async (req, res) => {
-    res.json({'data':{'id':'redirect-run-id', 'actId':'redirect-actor-id'}});
+    res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id' } });
 });
 v2Router.use('/actor-runs', runRouter);
 v2Router.use('/actor-tasks', taskRouter);
@@ -109,7 +109,9 @@ v2Router.use('/logs/redirect-log-id', async (req, res) => {
         res.write(chunk);
         res.flush(); // Flush the buffer and send the chunk immediately
         // Wait for a short period to simulate work being done on the server
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await new Promise((resolve) => {
+            setTimeout(resolve, 10);
+        });
     }
 
     // End the response stream once all chunks have been sent
