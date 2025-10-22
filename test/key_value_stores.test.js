@@ -146,6 +146,24 @@ describe('Key-Value Store methods', () => {
             validateRequest(query, { storeId });
         });
 
+        test('listKeys() passes signature', async () => {
+            const storeId = 'some-id';
+
+            const query = {
+                limit: 10,
+                exclusiveStartKey: 'fromKey',
+                collection: 'my-collection',
+                prefix: 'my-prefix',
+                signature: 'some-signature',
+            };
+
+            await client.keyValueStore(storeId).listKeys(query);
+            validateRequest(query, { storeId });
+
+            await page.evaluate((id, opts) => client.keyValueStore(id).listKeys(opts), storeId, query);
+            validateRequest(query, { storeId });
+        });
+
         test('recordExists() works', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
@@ -367,6 +385,24 @@ describe('Key-Value Store methods', () => {
             }
         });
 
+        test('getRecord() correctly passes signature', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const options = {
+                signature: 'some-signature',
+            };
+
+            const body = { foo: 'bar', baz: [1, 2] };
+            const expectedContentType = 'application/json; charset=utf-8';
+            const expectedHeaders = {
+                'content-type': expectedContentType,
+            };
+
+            mockServer.setResponse({ headers: expectedHeaders, body });
+            await client.keyValueStore(storeId).getRecord(key, options);
+            validateRequest(options, { storeId, key });
+        });
+
         test('getRecord() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
@@ -552,6 +588,98 @@ describe('Key-Value Store methods', () => {
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).deleteRecord(k), storeId, key);
             expect(browserRes).toBeUndefined();
             validateRequest({}, { storeId, key });
+        });
+
+        describe('getRecordPublicUrl()', () => {
+            it.each([
+                ['https://custom.public.url/', 'custom.public.url'],
+                [undefined, 'api.apify.com'],
+            ])('respects publicBaseUrl client option (%s)', async (publicBaseUrl, expectedHostname) => {
+                const storeId = 'some-id';
+                const key = 'some-key';
+
+                client = new ApifyClient({
+                    baseUrl,
+                    publicBaseUrl,
+                    ...DEFAULT_OPTIONS,
+                });
+
+                const res = await client.keyValueStore(storeId).getRecordPublicUrl(key);
+
+                const url = new URL(res);
+                expect(url.hostname).toBe(expectedHostname);
+                expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/records/${key}`);
+            });
+
+            it('should include a signature in the URL when the caller has permission to access the signing secret key', async () => {
+                const storeId = 'id-with-secret-key';
+                const key = 'some-key';
+                const res = await client.keyValueStore(storeId).getRecordPublicUrl(key);
+
+                const url = new URL(res);
+                expect(url.searchParams.get('signature')).toBeDefined();
+                expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/records/${key}`);
+            });
+
+            it('should not include a signature in the URL when the caller lacks permission to access the signing secret key', async () => {
+                const storeId = 'some-id';
+                const key = 'some-key';
+                const res = await client.keyValueStore(storeId).getRecordPublicUrl(key);
+
+                const url = new URL(res);
+                expect(url.searchParams.get('signature')).toBeNull();
+                expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/records/${key}`);
+            });
+        });
+
+        describe('createKeysPublicUrl()', () => {
+            it.each([
+                ['https://custom.public.url/', 'custom.public.url'],
+                [undefined, 'api.apify.com'],
+            ])('respects publicBaseUrl client option (%s)', async (publicBaseUrl, expectedHostname) => {
+                const storeId = 'some-id';
+
+                client = new ApifyClient({
+                    baseUrl,
+                    publicBaseUrl,
+                    ...DEFAULT_OPTIONS,
+                });
+
+                const res = await client.keyValueStore(storeId).createKeysPublicUrl();
+
+                const url = new URL(res);
+                expect(url.hostname).toBe(expectedHostname);
+                expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/keys`);
+            });
+
+            it('should include a signature in the URL when the caller has permission to access the signing secret key', async () => {
+                const storeId = 'id-with-secret-key';
+                const res = await client.keyValueStore(storeId).createKeysPublicUrl();
+
+                const url = new URL(res);
+                expect(url.searchParams.get('signature')).toBeDefined();
+                expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/keys`);
+            });
+
+            it('should not include a signature in the URL when the caller lacks permission to access the signing secret key', async () => {
+                const storeId = 'some-id';
+                const res = await client.keyValueStore(storeId).createKeysPublicUrl();
+
+                const url = new URL(res);
+                expect(url.searchParams.get('signature')).toBeNull();
+                expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/keys`);
+            });
+
+            it('includes provided options (e.g., limit and prefix) as query parameters', async () => {
+                const storeId = 'id-with-secret-key';
+                const res = await client.keyValueStore(storeId).createKeysPublicUrl({ limit: 10, prefix: 'prefix' });
+                const keysPublicUrl = new URL(res);
+
+                expect(keysPublicUrl.searchParams.get('limit')).toBe('10');
+                expect(keysPublicUrl.searchParams.get('prefix')).toBe('prefix');
+                expect(keysPublicUrl.searchParams.get('signature')).toBeDefined();
+                expect(keysPublicUrl.pathname).toBe(`/v2/key-value-stores/${storeId}/keys`);
+            });
         });
     });
 });

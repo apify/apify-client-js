@@ -32,11 +32,12 @@ describe('Run methods', () => {
     });
 
     describe('runs()', () => {
-        test('list() works', async () => {
+        test('list() works single status', async () => {
             const query = {
                 limit: 5,
                 offset: 3,
                 desc: true,
+                status: 'SUCCEEDED',
             };
 
             const res = await client.runs().list(query);
@@ -46,6 +47,69 @@ describe('Run methods', () => {
             const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
             expect(browserRes).toEqual(res);
             validateRequest(query);
+        });
+
+        test('list() works multiple statuses', async () => {
+            const query = {
+                limit: 5,
+                offset: 3,
+                desc: true,
+                status: ['SUCCEEDED', 'FAILED'],
+            };
+
+            const expectedQuery = {
+                ...query,
+                status: 'SUCCEEDED,FAILED', // This is what should be sent to the API
+            };
+
+            const res = await client.runs().list(query);
+            expect(res.id).toEqual('list-runs');
+            validateRequest(expectedQuery);
+
+            const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
+            expect(browserRes).toEqual(res);
+            validateRequest(expectedQuery);
+        });
+
+        test('list() allows startedBefore and startedAfter to be passed as Date object', async () => {
+            const now = new Date();
+            const query = {
+                startedBefore: now,
+                startedAfter: now,
+            };
+
+            const expectedQuery = {
+                startedBefore: now.toISOString(),
+                startedAfter: now.toISOString(),
+            };
+
+            const res = await client.runs().list(query);
+            expect(res.id).toEqual('list-runs');
+            validateRequest(expectedQuery);
+
+            const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
+            expect(browserRes).toEqual(res);
+            validateRequest(expectedQuery);
+        });
+
+        test('list() allows startedBefore and startedAfter to be passed as string', async () => {
+            const now = new Date();
+            const query = {
+                startedBefore: now.toISOString(),
+                startedAfter: now.toISOString(),
+            };
+
+            const expectedQuery = {
+                ...query,
+            };
+
+            const res = await client.runs().list(query);
+            expect(res.id).toEqual('list-runs');
+            validateRequest(expectedQuery);
+
+            const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
+            expect(browserRes).toEqual(res);
+            validateRequest(expectedQuery);
         });
     });
 

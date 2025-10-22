@@ -1,6 +1,7 @@
 import ow from 'ow';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
+import { createStorageContentSignature } from '@apify/utilities';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
@@ -12,7 +13,7 @@ import {
 } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
 import type { PaginatedList } from '../utils';
-import { cast, catchNotFoundOrThrow, pluckData } from '../utils';
+import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData } from '../utils';
 
 export class DatasetClient<
     Data extends Record<string | number, any> = Record<string | number, unknown>,
@@ -68,6 +69,7 @@ export class DatasetClient<
                 skipHidden: ow.optional.boolean,
                 unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
                 view: ow.optional.string,
+                signature: ow.optional.string,
             }),
         );
 
@@ -108,6 +110,7 @@ export class DatasetClient<
                 view: ow.optional.string,
                 xmlRoot: ow.optional.string,
                 xmlRow: ow.optional.string,
+                signature: ow.optional.string,
             }),
         );
 
@@ -163,6 +166,57 @@ export class DatasetClient<
         return undefined;
     }
 
+    /**
+     * Generates a URL that can be used to access dataset items.
+     *
+     * If the client has permission to access the dataset's URL signing key,
+     * the URL will include a signature which will allow the link to work even without authentication.
+     *
+     * You can optionally control how long the signed URL should be valid using the `expiresInSecs` option.
+     * This value sets the expiration duration in seconds from the time the URL is generated.
+     * If not provided, the URL will not expire.
+     *
+     * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
+     */
+    async createItemsPublicUrl(options: DatasetClientCreateItemsUrlOptions = {}): Promise<string> {
+        ow(
+            options,
+            ow.object.exactShape({
+                clean: ow.optional.boolean,
+                desc: ow.optional.boolean,
+                flatten: ow.optional.array.ofType(ow.string),
+                fields: ow.optional.array.ofType(ow.string),
+                omit: ow.optional.array.ofType(ow.string),
+                limit: ow.optional.number,
+                offset: ow.optional.number,
+                skipEmpty: ow.optional.boolean,
+                skipHidden: ow.optional.boolean,
+                unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
+                view: ow.optional.string,
+                expiresInSecs: ow.optional.number,
+            }),
+        );
+
+        const dataset = await this.get();
+
+        const { expiresInSecs, ...queryOptions } = options;
+
+        let createdItemsPublicUrl = new URL(this._publicUrl('items'));
+
+        if (dataset?.urlSigningSecretKey) {
+            const signature = createStorageContentSignature({
+                resourceId: dataset.id,
+                urlSigningSecretKey: dataset.urlSigningSecretKey,
+                expiresInMillis: expiresInSecs ? expiresInSecs * 1000 : undefined,
+            });
+            createdItemsPublicUrl.searchParams.set('signature', signature);
+        }
+
+        createdItemsPublicUrl = applyQueryParamsToUrl(createdItemsPublicUrl, queryOptions);
+
+        return createdItemsPublicUrl.toString();
+    }
+
     private _createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
         return {
             items: response.data,
@@ -191,6 +245,8 @@ export interface Dataset {
     stats: DatasetStats;
     fields: string[];
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
+    urlSigningSecretKey?: string | null;
+    itemsPublicUrl: string;
 }
 
 export interface DatasetStats {
@@ -218,6 +274,11 @@ export interface DatasetClientListItemOptions {
     skipHidden?: boolean;
     unwind?: string | string[]; // TODO: when doing a breaking change release, change to string[] only
     view?: string;
+    signature?: string;
+}
+
+export interface DatasetClientCreateItemsUrlOptions extends DatasetClientListItemOptions {
+    expiresInSecs?: number;
 }
 
 export enum DownloadItemsFormat {

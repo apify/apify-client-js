@@ -224,6 +224,28 @@ describe('Dataset methods', () => {
             validateRequest(qs, { datasetId });
         });
 
+        test('listItems() correctly passes signature', async () => {
+            const datasetId = 'some-id';
+            const body = [{ test: 'value' }];
+            const headers = {
+                'content-type': 'application/json; chartset=utf-8',
+                'x-apify-pagination-total': '1',
+                'x-apify-pagination-offset': '1',
+                'x-apify-pagination-count': '0',
+                'x-apify-pagination-limit': '1',
+                // TODO: https://github.com/apify/apify-core/issues/3503
+                'x-apify-pagination-desc': false,
+            };
+            const qs = { limit: 1, offset: 1, signature: 'some-signature' };
+            mockServer.setResponse({ body, headers });
+
+            await client.dataset(datasetId).listItems(qs);
+            validateRequest(qs, { datasetId });
+
+            await page.evaluate((id, opts) => client.dataset(id).listItems(opts), datasetId, qs);
+            validateRequest(qs, { datasetId });
+        });
+
         test("downloadItems() doesn't parse application/json", async () => {
             const datasetId = 'some-id';
             const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });
@@ -255,6 +277,36 @@ describe('Dataset methods', () => {
                 options,
             );
             expect(browserRes).toEqual(resString);
+            validateRequest({ format, ...options }, { datasetId });
+        });
+
+        test('downloadItems() correctly passes signature', async () => {
+            const datasetId = 'some-id';
+            const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });
+            const format = 'json';
+            const options = {
+                bom: true,
+                signature: 'some-signature',
+            };
+            const headers = {
+                contentType: 'application/json; charset=utf-8',
+            };
+
+            mockServer.setResponse({ body, headers });
+
+            await client.dataset(datasetId).downloadItems(format, options);
+            validateRequest({ format, ...options }, { datasetId });
+
+            await page.evaluate(
+                async (id, f, opts) => {
+                    const res = await client.dataset(id).downloadItems(f, opts);
+                    const decoder = new TextDecoder();
+                    return decoder.decode(res);
+                },
+                datasetId,
+                format,
+                options,
+            );
             validateRequest({ format, ...options }, { datasetId });
         });
 
@@ -326,6 +378,56 @@ describe('Dataset methods', () => {
             const browserRes = await page.evaluate((id) => client.dataset(id).getStatistics(), datasetId);
             expect(browserRes).toEqual(res);
             validateRequest({}, { datasetId });
+        });
+
+        describe('createItemsPublicUrl()', () => {
+            it.each([
+                ['https://custom.public.url/', 'custom.public.url'],
+                [undefined, 'api.apify.com'],
+            ])('respects publicBaseUrl client option (%s)', async (publicBaseUrl, expectedHostname) => {
+                const datasetId = 'dataset-id';
+                client = new ApifyClient({
+                    baseUrl,
+                    publicBaseUrl,
+                    ...DEFAULT_OPTIONS,
+                });
+
+                const res = await client.dataset(datasetId).createItemsPublicUrl();
+
+                const url = new URL(res);
+                expect(url.hostname).toBe(expectedHostname);
+                expect(url.pathname).toBe(`/v2/datasets/${datasetId}/items`);
+            });
+
+            it('should include a signature in the URL when the caller has permission to access the signing secret key', async () => {
+                const datasetId = 'id-with-secret-key';
+                const res = await client.dataset(datasetId).createItemsPublicUrl();
+
+                const url = new URL(res);
+                expect(url.searchParams.get('signature')).toBeDefined();
+                expect(url.pathname).toBe(`/v2/datasets/${datasetId}/items`);
+            });
+
+            it('should not include a signature in the URL when the caller lacks permission to access the signing secret key', async () => {
+                const datasetId = 'some-id';
+                const res = await client.dataset(datasetId).createItemsPublicUrl();
+
+                const url = new URL(res);
+                expect(url.searchParams.get('signature')).toBeNull();
+                expect(url.pathname).toBe(`/v2/datasets/${datasetId}/items`);
+            });
+
+            it('includes provided options (e.g., limit and prefix) as query parameters', async () => {
+                const datasetId = 'id-with-secret-key';
+                const res = await client.dataset(datasetId).createItemsPublicUrl({ desc: true, limit: 10, offset: 5 });
+                const itemsPublicUrl = new URL(res);
+
+                expect(itemsPublicUrl.searchParams.get('desc')).toBe('true');
+                expect(itemsPublicUrl.searchParams.get('limit')).toBe('10');
+                expect(itemsPublicUrl.searchParams.get('offset')).toBe('5');
+                expect(itemsPublicUrl.searchParams.get('signature')).toBeDefined();
+                expect(itemsPublicUrl.pathname).toBe(`/v2/datasets/${datasetId}/items`);
+            });
         });
     });
 });

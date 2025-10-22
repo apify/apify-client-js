@@ -42,6 +42,8 @@ const DEFAULT_TIMEOUT_SECS = 360;
 export class ApifyClient {
     baseUrl: string;
 
+    publicBaseUrl: string;
+
     token?: string;
 
     stats: Statistics;
@@ -55,6 +57,7 @@ export class ApifyClient {
             options,
             ow.object.exactShape({
                 baseUrl: ow.optional.string,
+                publicBaseUrl: ow.optional.string,
                 maxRetries: ow.optional.number,
                 minDelayBetweenRetriesMillis: ow.optional.number,
                 requestInterceptors: ow.optional.array,
@@ -66,6 +69,7 @@ export class ApifyClient {
 
         const {
             baseUrl = 'https://api.apify.com',
+            publicBaseUrl = 'https://api.apify.com',
             maxRetries = 8,
             minDelayBetweenRetriesMillis = 500,
             requestInterceptors = [],
@@ -75,6 +79,10 @@ export class ApifyClient {
 
         const tempBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, baseUrl.length - 1) : baseUrl;
         this.baseUrl = `${tempBaseUrl}/v2`;
+        const tempPublicBaseUrl = publicBaseUrl.endsWith('/')
+            ? publicBaseUrl.slice(0, publicBaseUrl.length - 1)
+            : publicBaseUrl;
+        this.publicBaseUrl = `${tempPublicBaseUrl}/v2`;
         this.token = token;
         this.stats = new Statistics();
         this.logger = logger.child({ prefix: 'ApifyClient' });
@@ -93,6 +101,7 @@ export class ApifyClient {
     private _options() {
         return {
             baseUrl: this.baseUrl,
+            publicBaseUrl: this.publicBaseUrl,
             apifyClient: this,
             httpClient: this.httpClient,
         };
@@ -347,6 +356,8 @@ export class ApifyClient {
 export interface ApifyClientOptions {
     /** @default https://api.apify.com */
     baseUrl?: string;
+    /** @default https://api.apify.com */
+    publicBaseUrl?: string;
     /** @default 8 */
     maxRetries?: number;
     /** @default 500 */

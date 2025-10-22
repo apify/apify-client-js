@@ -5,6 +5,7 @@ import type { JsonValue } from 'type-fest';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import log from '@apify/log';
+import { createHmacSignature, createStorageContentSignature } from '@apify/utilities';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
@@ -15,7 +16,16 @@ import {
     SMALL_TIMEOUT_MILLIS,
 } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
-import { cast, catchNotFoundOrThrow, isBuffer, isNode, isStream, parseDateFields, pluckData } from '../utils';
+import {
+    applyQueryParamsToUrl,
+    cast,
+    catchNotFoundOrThrow,
+    isBuffer,
+    isNode,
+    isStream,
+    parseDateFields,
+    pluckData,
+} from '../utils';
 
 export class KeyValueStoreClient extends ResourceClient {
     /**
@@ -62,6 +72,7 @@ export class KeyValueStoreClient extends ResourceClient {
                 exclusiveStartKey: ow.optional.string,
                 collection: ow.optional.string,
                 prefix: ow.optional.string,
+                signature: ow.optional.string,
             }),
         );
 
@@ -73,6 +84,71 @@ export class KeyValueStoreClient extends ResourceClient {
         });
 
         return cast(parseDateFields(pluckData(response.data)));
+    }
+
+    /**
+     * Generates a URL that can be used to access key-value store record.
+     *
+     * If the client has permission to access the key-value store's URL signing key,
+     * the URL will include a signature to verify its authenticity.
+     */
+    async getRecordPublicUrl(key: string): Promise<string> {
+        ow(key, ow.string.nonEmpty);
+
+        const store = await this.get();
+
+        const recordPublicUrl = new URL(this._publicUrl(`records/${key}`));
+
+        if (store?.urlSigningSecretKey) {
+            const signature = createHmacSignature(store.urlSigningSecretKey, key);
+            recordPublicUrl.searchParams.append('signature', signature);
+        }
+
+        return recordPublicUrl.toString();
+    }
+
+    /**
+     * Generates a URL that can be used to access key-value store keys.
+     *
+     * If the client has permission to access the key-value store's URL signing key,
+     * the URL will include a signature which will allow the link to work even without authentication.
+     *
+     * You can optionally control how long the signed URL should be valid using the `expiresInSecs` option.
+     * This value sets the expiration duration in seconds from the time the URL is generated.
+     * If not provided, the URL will not expire.
+     *
+     * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
+     */
+    async createKeysPublicUrl(options: KeyValueClientCreateKeysUrlOptions = {}) {
+        ow(
+            options,
+            ow.object.exactShape({
+                limit: ow.optional.number,
+                exclusiveStartKey: ow.optional.string,
+                collection: ow.optional.string,
+                prefix: ow.optional.string,
+                expiresInSecs: ow.optional.number,
+            }),
+        );
+
+        const store = await this.get();
+
+        const { expiresInSecs, ...queryOptions } = options;
+
+        let createdPublicKeysUrl = new URL(this._publicUrl('keys'));
+
+        if (store?.urlSigningSecretKey) {
+            const signature = createStorageContentSignature({
+                resourceId: store.id,
+                urlSigningSecretKey: store.urlSigningSecretKey,
+                expiresInMillis: expiresInSecs ? expiresInSecs * 1000 : undefined,
+            });
+            createdPublicKeysUrl.searchParams.set('signature', signature);
+        }
+
+        createdPublicKeysUrl = applyQueryParamsToUrl(createdPublicKeysUrl, queryOptions);
+
+        return createdPublicKeysUrl.toString();
     }
 
     /**
@@ -126,6 +202,7 @@ export class KeyValueStoreClient extends ResourceClient {
                 buffer: ow.optional.boolean,
                 stream: ow.optional.boolean,
                 disableRedirect: ow.optional.boolean,
+                signature: ow.optional.string,
             }),
         );
 
@@ -140,10 +217,13 @@ export class KeyValueStoreClient extends ResourceClient {
             );
         }
 
+        const queryParams: Pick<KeyValueClientGetRecordOptions, 'signature'> = {};
+        if (options.signature) queryParams.signature = options.signature;
+
         const requestOpts: Record<string, unknown> = {
             url: this._url(`records/${key}`),
             method: 'GET',
-            params: this._params(),
+            params: this._params(queryParams),
             timeout: DEFAULT_TIMEOUT_MILLIS,
         };
 
@@ -255,6 +335,8 @@ export interface KeyValueStore {
     actRunId?: string;
     stats?: KeyValueStoreStats;
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
+    urlSigningSecretKey?: string | null;
+    keysPublicUrl: string;
 }
 
 export interface KeyValueStoreStats {
@@ -276,6 +358,11 @@ export interface KeyValueClientListKeysOptions {
     exclusiveStartKey?: string;
     collection?: string;
     prefix?: string;
+    signature?: string;
+}
+
+export interface KeyValueClientCreateKeysUrlOptions extends KeyValueClientListKeysOptions {
+    expiresInSecs?: number;
 }
 
 export interface KeyValueClientListKeysResult {
@@ -290,11 +377,13 @@ export interface KeyValueClientListKeysResult {
 export interface KeyValueListItem {
     key: string;
     size: number;
+    recordPublicUrl: string;
 }
 
 export interface KeyValueClientGetRecordOptions {
     buffer?: boolean;
     stream?: boolean;
+    signature?: string;
 }
 
 export interface KeyValueStoreRecord<T> {

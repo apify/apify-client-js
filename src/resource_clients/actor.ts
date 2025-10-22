@@ -2,7 +2,7 @@ import type { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
-import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
+import { ACT_JOB_STATUSES, ACTOR_PERMISSION_LEVEL, META_ORIGINS } from '@apify/consts';
 import { Log } from '@apify/log';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
@@ -72,10 +72,21 @@ export class ActorClient extends ResourceClient {
                 webhooks: ow.optional.array.ofType(ow.object),
                 maxItems: ow.optional.number.not.negative,
                 maxTotalChargeUsd: ow.optional.number.not.negative,
+                restartOnError: ow.optional.boolean,
+                forcePermissionLevel: ow.optional.string.oneOf(Object.values(ACTOR_PERMISSION_LEVEL)),
             }),
         );
 
-        const { waitForFinish, timeout, memory, build, maxItems, maxTotalChargeUsd } = options;
+        const {
+            waitForFinish,
+            timeout,
+            memory,
+            build,
+            maxItems,
+            maxTotalChargeUsd,
+            restartOnError,
+            forcePermissionLevel,
+        } = options;
 
         const params = {
             waitForFinish,
@@ -85,6 +96,8 @@ export class ActorClient extends ResourceClient {
             webhooks: stringifyWebhooksToBase64(options.webhooks),
             maxItems,
             maxTotalChargeUsd,
+            restartOnError,
+            forcePermissionLevel,
         };
 
         const request: AxiosRequestConfig = {
@@ -129,6 +142,8 @@ export class ActorClient extends ResourceClient {
                 maxItems: ow.optional.number.not.negative,
                 maxTotalChargeUsd: ow.optional.number.not.negative,
                 log: ow.optional.any(ow.null, ow.object.instanceOf(Log)),
+                restartOnError: ow.optional.boolean,
+                forcePermissionLevel: ow.optional.string.oneOf(Object.values(ACTOR_PERMISSION_LEVEL)),
             }),
         );
 
@@ -201,6 +216,7 @@ export class ActorClient extends ResourceClient {
 
         return new BuildClient({
             baseUrl: this.apifyClient.baseUrl,
+            publicBaseUrl: this.apifyClient.publicBaseUrl,
             httpClient: this.httpClient,
             apifyClient: this.apifyClient,
             id,
@@ -285,6 +301,7 @@ export interface Actor {
     name: string;
     username: string;
     description?: string;
+    /** @deprecated Use defaultRunOptions.restartOnError instead */
     restartOnError?: boolean;
     isPublic: boolean;
     isAnonymouslyRunnable?: boolean;
@@ -322,6 +339,7 @@ export interface ActorDefaultRunOptions {
     build: string;
     timeoutSecs: number;
     memoryMbytes: number;
+    restartOnError?: boolean;
 }
 
 export interface ActorExampleRunInput {
@@ -413,7 +431,18 @@ export interface ActorStartOptions {
      */
     maxItems?: number;
 
+    /**
+     * Determines whether the run will be restarted if it fails.
+     */
+    restartOnError?: boolean;
+
     // TODO(PPE): add maxTotalChargeUsd after finished
+
+    /**
+     * Override the Actor's permissions for this run. If not set, the Actor will run with permissions configured in the
+     * Actor settings.
+     */
+    forcePermissionLevel?: ACTOR_PERMISSION_LEVEL;
 }
 
 export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
@@ -498,6 +527,7 @@ export interface ActorRunOptions {
     memoryMbytes: number;
     diskMbytes: number;
     maxTotalChargeUsd?: number;
+    restartOnError?: boolean;
 }
 
 export interface ActorBuildOptions {

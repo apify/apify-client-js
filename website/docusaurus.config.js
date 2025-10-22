@@ -14,6 +14,7 @@ module.exports = {
     organizationName: 'apify',
     projectName: 'apify-client-js',
     favicon: 'img/favicon.ico',
+    scripts: [...(config.scripts ?? [])],
     onBrokenLinks: /** @type {import('@docusaurus/types').ReportingSeverity} */ ('throw'),
     onBrokenMarkdownLinks: /** @type {import('@docusaurus/types').ReportingSeverity} */ ('throw'),
     future: {
@@ -108,8 +109,31 @@ module.exports = {
                 routeBasePath: '/reference',
             },
         ],
+        [
+            '@signalwire/docusaurus-plugin-llms-txt',
+            {
+                content: {
+                    includeVersionedDocs: false,
+                    enableLlmsFullTxt: true,
+                    includeBlog: true,
+                    includeGeneratedIndex: false,
+                    includePages: true,
+                    relativePaths: false,
+                    excludeRoutes: [
+                        '/api/client/js/reference/2.*/**',
+                        '/api/client/js/reference/2.*',
+                        '/api/client/js/reference/next/**',
+                        '/api/client/js/reference/next',
+                    ],
+                    routeRules: [{ route: '/api/client/js/**', depth: 1, categoryName: 'Apify JavaScript client' }],
+                },
+            },
+        ],
         ...config.plugins,
     ],
     themeConfig: { ...config.themeConfig, versions },
     staticDirectories: ['node_modules/@apify/docs-theme/static', 'static'],
+    customFields: {
+        ...(config.customFields ?? []),
+    },
 };

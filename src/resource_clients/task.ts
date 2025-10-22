@@ -63,10 +63,11 @@ export class TaskClient extends ResourceClient {
                 webhooks: ow.optional.array.ofType(ow.object),
                 maxItems: ow.optional.number.not.negative,
                 maxTotalChargeUsd: ow.optional.number.not.negative,
+                restartOnError: ow.optional.boolean,
             }),
         );
 
-        const { waitForFinish, timeout, memory, build, maxItems, maxTotalChargeUsd } = options;
+        const { waitForFinish, timeout, memory, build, maxItems, maxTotalChargeUsd, restartOnError } = options;
 
         const params = {
             waitForFinish,
@@ -76,6 +77,7 @@ export class TaskClient extends ResourceClient {
             webhooks: stringifyWebhooksToBase64(options.webhooks),
             maxItems,
             maxTotalChargeUsd,
+            restartOnError,
         };
 
         const request: ApifyRequestConfig = {
@@ -112,6 +114,7 @@ export class TaskClient extends ResourceClient {
                 webhooks: ow.optional.array.ofType(ow.object),
                 maxItems: ow.optional.number.not.negative,
                 maxTotalChargeUsd: ow.optional.number.not.negative,
+                restartOnError: ow.optional.boolean,
             }),
         );
 
@@ -222,6 +225,7 @@ export interface TaskOptions {
     build?: string;
     timeoutSecs?: number;
     memoryMbytes?: number;
+    restartOnError?: boolean;
 }
 
 export type TaskUpdateData = Partial<
@@ -232,7 +236,7 @@ export interface TaskLastRunOptions {
     status?: keyof typeof ACT_JOB_STATUSES;
 }
 
-export type TaskStartOptions = Omit<ActorStartOptions, 'contentType'>;
+export type TaskStartOptions = Omit<ActorStartOptions, 'contentType' | 'forcePermissionLevel'>;
 
 export interface TaskCallOptions extends Omit<TaskStartOptions, 'waitForFinish'> {
     waitSecs?: number;

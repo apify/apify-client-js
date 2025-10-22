@@ -3,15 +3,86 @@
 All notable changes to this project will be documented in this file.
 
 <!-- git-cliff-unreleased-start -->
-## 2.12.7 - **not yet released**
+## 2.19.1 - **not yet released**
+
+### ⚡ Performance
+
+- Dynamic imports for certain `node:` packages ([#767](https://github.com/apify/apify-client-js/pull/767)) ([0bf8db7](https://github.com/apify/apify-client-js/commit/0bf8db7ce61c98232d7051bf1f74e70fb89df8a5)) by [@barjin](https://github.com/barjin)
+
+
+<!-- git-cliff-unreleased-end -->
+## [2.19.0](https://github.com/apify/apify-client-js/releases/tag/v2.19.0) (2025-10-20)
+
+### 🚀 Features
+
+- Move restartOnError from Actor to Run options ([#760](https://github.com/apify/apify-client-js/pull/760)) ([8f80f82](https://github.com/apify/apify-client-js/commit/8f80f82c22128fd3378ba00ad29766cf4cc8e3c0)) by [@DaveHanns](https://github.com/DaveHanns)
+
+
+## [2.18.0](https://github.com/apify/apify-client-js/releases/tag/v2.18.0) (2025-10-09)
+
+### 🚀 Features
+
+- Allowed signature to be passed in kv-store&#x2F;datasets ([#761](https://github.com/apify/apify-client-js/pull/761)) ([a31e36d](https://github.com/apify/apify-client-js/commit/a31e36d6201f90136da362af2aa10b29efb80bad)) by [@gippy](https://github.com/gippy)
+- Add startedBefore and startedAfter to run list ([#763](https://github.com/apify/apify-client-js/pull/763)) ([2345999](https://github.com/apify/apify-client-js/commit/23459990598ba01833a21bfe969a1c64f775be00)) by [@danpoletaev](https://github.com/danpoletaev)
+
+### 🐛 Bug Fixes
+
+- Export missing symbols from env vars and version client ([#756](https://github.com/apify/apify-client-js/pull/756)) ([86b591f](https://github.com/apify/apify-client-js/commit/86b591fe8d2f07b4e746561ee9e055fca6639e1d)) by [@B4nan](https://github.com/B4nan), closes [#751](https://github.com/apify/apify-client-js/issues/751)
+
+
+## [2.17.0](https://github.com/apify/apify-client-js/releases/tag/v2.17.0) (2025-09-11)
+
+### 🚀 Features
+
+- Add forcePermissionLevel run option ([#743](https://github.com/apify/apify-client-js/pull/743)) ([693808c](https://github.com/apify/apify-client-js/commit/693808c6dbbf24542f8f86f3d49673b75309e9f6)) by [@tobice](https://github.com/tobice)
+
+### 🐛 Bug Fixes
+
+- Signed storage URLs avoid adding expiresInSecs to query params ([#734](https://github.com/apify/apify-client-js/pull/734)) ([70aff4f](https://github.com/apify/apify-client-js/commit/70aff4fedefc02a1c8c6e5155057e213a8ad6c81)) by [@danpoletaev](https://github.com/danpoletaev)
+- Presigned resource urls shouldn&#x27;t follow `baseUrl` ([#745](https://github.com/apify/apify-client-js/pull/745)) ([07b36fb](https://github.com/apify/apify-client-js/commit/07b36fbd46ed74e9c4ad3977cac883af55ad525d)) by [@barjin](https://github.com/barjin), closes [#744](https://github.com/apify/apify-client-js/issues/744)
+
+
+## [2.16.0](https://github.com/apify/apify-client-js/releases/tag/v2.16.0) (2025-08-26)
+
+### Refactor
+
+- [**breaking**] Rename expiresInMillis to expiresInSecs in create storage content URL ([#733](https://github.com/apify/apify-client-js/pull/733)) ([a190b72](https://github.com/apify/apify-client-js/commit/a190b72f6f62ffb54898fd74c80981a6967d573f)) by [@danpoletaev](https://github.com/danpoletaev)
+
+
+## [2.15.1](https://github.com/apify/apify-client-js/releases/tag/v2.15.1) (2025-08-20)
+
+### 🐛 Bug Fixes
+
+- Add recordPublicUrl to KeyValueListItem type ([#730](https://github.com/apify/apify-client-js/pull/730)) ([42dfe64](https://github.com/apify/apify-client-js/commit/42dfe6484e3504aaf46c516bade3d7ff989782ea)) by [@danpoletaev](https://github.com/danpoletaev)
+
+
+## [2.15.0](https://github.com/apify/apify-client-js/releases/tag/v2.15.0) (2025-08-12)
+
+### 🚀 Features
+
+- Extend status parameter to an array of possible statuses ([#723](https://github.com/apify/apify-client-js/pull/723)) ([0be893f](https://github.com/apify/apify-client-js/commit/0be893f2401a652908aff1ed305736068ee0b421)) by [@JanHranicky](https://github.com/JanHranicky)
+
+
+## [2.14.0](https://github.com/apify/apify-client-js/releases/tag/v2.14.0) (2025-08-11)
+
+### 🚀 Features
+
+- Add keyValueStore.getRecordPublicUrl ([#725](https://github.com/apify/apify-client-js/pull/725)) ([d84a03a](https://github.com/apify/apify-client-js/commit/d84a03afe6fd49e38d4ca9a6821681e852c73a2a)) by [@danpoletaev](https://github.com/danpoletaev)
+
+
+## [2.13.0](https://github.com/apify/apify-client-js/releases/tag/v2.13.0) (2025-08-06)
+
+### 🚀 Features
+
+- Add new methods Dataset.createItemsPublicUrl &amp; KeyValueStore.createKeysPublicUrl ([#720](https://github.com/apify/apify-client-js/pull/720)) ([62554e4](https://github.com/apify/apify-client-js/commit/62554e48a8bf6bf1853f356ac84f046fed5945c1)) by [@danpoletaev](https://github.com/danpoletaev)
 
 ### 🐛 Bug Fixes
 
 - Add `eventData` to `WebhookDispatch` type ([#714](https://github.com/apify/apify-client-js/pull/714)) ([351f11f](https://github.com/apify/apify-client-js/commit/351f11f268a54532c7003ab099bc0d7d8d9c9ad7)) by [@valekjo](https://github.com/valekjo)
 - Sync `@docusaurus` dependencies version [internal] ([#715](https://github.com/apify/apify-client-js/pull/715)) ([3dc9c50](https://github.com/apify/apify-client-js/commit/3dc9c500c84840f13790013ee61642c032ce246f)) by [@katzino](https://github.com/katzino)
+- KV store createKeysPublicUrl wrong URL ([#724](https://github.com/apify/apify-client-js/pull/724)) ([a48ec58](https://github.com/apify/apify-client-js/commit/a48ec58e16a36cc8aa188524e4a738c40f5b74e9)) by [@danpoletaev](https://github.com/danpoletaev)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.12.6](https://github.com/apify/apify-client-js/releases/tag/v2.12.6) (2025-06-30)
 
 ### 🚀 Features

@@ -1,6 +1,6 @@
 import ow from 'ow';
 
-import { ACT_JOB_STATUSES } from '@apify/consts';
+import { ACTOR_JOB_STATUSES } from '@apify/consts';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
@@ -28,7 +28,12 @@ export class RunCollectionClient extends ResourceCollectionClient {
                 limit: ow.optional.number,
                 offset: ow.optional.number,
                 desc: ow.optional.boolean,
-                status: ow.optional.string.oneOf(Object.values(ACT_JOB_STATUSES)),
+                status: ow.optional.any(
+                    ow.string.oneOf(Object.values(ACTOR_JOB_STATUSES)),
+                    ow.array.ofType(ow.string.oneOf(Object.values(ACTOR_JOB_STATUSES))),
+                ),
+                startedBefore: ow.optional.any(ow.optional.date, ow.optional.string),
+                startedAfter: ow.optional.any(ow.optional.date, ow.optional.string),
             }),
         );
 
@@ -40,5 +45,9 @@ export interface RunCollectionListOptions {
     limit?: number;
     offset?: number;
     desc?: boolean;
-    status?: (typeof ACT_JOB_STATUSES)[keyof typeof ACT_JOB_STATUSES];
+    status?:
+        | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES]
+        | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES][];
+    startedBefore?: Date | string;
+    startedAfter?: Date | string;
 }
