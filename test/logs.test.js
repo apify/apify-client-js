@@ -1,8 +1,6 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
-const { ApifyClient, LoggerActorRedirect } = require('apify-client');
-const { MOCKED_ACTOR_LOGS_PROCESSED } = require('./mock_server/consts');
+const { ApifyClient } = require('apify-client');
 const mockServer = require('./mock_server/server');
-const c = require('ansi-colors');
 
 describe('Log methods', () => {
     let baseUrl;
