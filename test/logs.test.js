@@ -39,7 +39,7 @@ describe('Log methods', () => {
 
             const res = await client.log(logId).get();
             expect(res).toBe('get-log');
-            validateRequest({raw:0}, { logId });
+            validateRequest({}, { logId });
 
             const browserRes = await page.evaluate((id) => client.log(id).get(), logId);
             expect(browserRes).toEqual(res);
@@ -56,7 +56,7 @@ describe('Log methods', () => {
             }
             const id = Buffer.concat(chunks).toString();
             expect(id).toBe('get-log');
-            validateRequest({ stream: true, raw:0}, { logId });
+            validateRequest({ stream: true }, { logId });
         });
     });
 });

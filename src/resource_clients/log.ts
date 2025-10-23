@@ -26,7 +26,7 @@ export class LogClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/logs/log/get-log
      */
-    async get(options = { raw: false }): Promise<string | undefined> {
+    async get(options: LogOptions = {}): Promise<string | undefined> {
         const requestOpts: ApifyRequestConfig = {
             url: this._url(),
             method: 'GET',
@@ -47,7 +47,7 @@ export class LogClient extends ResourceClient {
      * Gets the log in a Readable stream format. Only works in Node.js.
      * https://docs.apify.com/api/v2#/reference/logs/log/get-log
      */
-    async stream(options = { raw: false }): Promise<Readable | undefined> {
+    async stream(options: LogOptions = {}): Promise<Readable | undefined> {
         const params = {
             stream: true,
             raw: options.raw,
@@ -71,13 +71,23 @@ export class LogClient extends ResourceClient {
     }
 }
 
+export interface LogOptions {
+    /** @default false */
+    raw?: boolean;
+}
+
 // Temp create it here and ask Martin where to put it
 
 const DEFAULT_OPTIONS = {
+    /** Whether to exclude timestamp of log redirection in redirected logs. */
     skipTime: true,
+    /** Level of log redirection */
     level: LogLevel.DEBUG,
 };
 
+/**
+ * Logger for redirected actor logs.
+ */
 export class LoggerActorRedirect extends Logger {
     constructor(options = {}) {
         super({ ...DEFAULT_OPTIONS, ...options });
@@ -108,6 +118,9 @@ export class LoggerActorRedirect extends Logger {
     }
 }
 
+/**
+ * Helper class for redirecting streamed Actor logs to another log.
+ */
 export class StreamedLog {
     private toLog: Log;
     private streamBuffer: Buffer[] = [];
@@ -124,6 +137,9 @@ export class StreamedLog {
         this.relevancyTimeLimit = fromStart ? null : new Date();
     }
 
+    /**
+     * Start log redirection.
+     */
     public async start(): Promise<void> {
         if (this.streamingTask) {
             throw new Error('Streaming task already active');
@@ -133,6 +149,9 @@ export class StreamedLog {
         return this.streamingTask;
     }
 
+    /**
+     * Stop log redirection.
+     */
     public async stop(): Promise<void> {
         if (!this.streamingTask) {
             throw new Error('Streaming task is not active');
@@ -149,15 +168,9 @@ export class StreamedLog {
         }
     }
 
-    public async with<T>(callback: () => Promise<T>): Promise<T> {
-        await this.start();
-        try {
-            return await callback();
-        } finally {
-            await this.stop();
-        }
-    }
-
+    /**
+     * Get log stream from response and redirect it to another log.
+     */
     private async _streamLog(): Promise<void> {
         const logStream = await this.logClient.stream({ raw: true });
         if (!logStream) {
@@ -165,7 +178,11 @@ export class StreamedLog {
         }
 
         for await (const chunk of logStream) {
-            this._processNewData(chunk as Buffer);
+            // Keep processing the new data until stopped
+            this.streamBuffer.push(chunk);
+            if (this.splitMarker.test(chunk.toString())) {
+                this.logBufferContent(false);
+            }
             if (this.stopLogging) {
                 break;
             }
@@ -175,18 +192,16 @@ export class StreamedLog {
         this.logBufferContent(true);
     }
 
-    private _processNewData(data: Buffer): void {
-        this.streamBuffer.push(data);
-        if (this.splitMarker.test(data.toString())) {
-            this.logBufferContent(false);
-        }
-    }
-
+    /**
+     * Parse the buffer and log complete messages.
+     */
     private logBufferContent(includeLastPart = false): void {
         const allParts = Buffer.concat(this.streamBuffer).toString().split(this.splitMarker).slice(1);
         let messageMarkers;
         let messageContents;
+        // Parse the buffer parts into complete messages
         if (includeLastPart) {
+            // This is final call, so log everything. Do not keep anything in the buffer.
             messageMarkers = allParts.filter((_, i) => i % 2 === 0);
             messageContents = allParts.filter((_, i) => i % 2 !== 0);
             this.streamBuffer = [];
@@ -194,7 +209,7 @@ export class StreamedLog {
             messageMarkers = allParts.filter((_, i) => i % 2 === 0).slice(0, -1);
             messageContents = allParts.filter((_, i) => i % 2 !== 0).slice(0, -1);
 
-            // The last two parts (marker and message) are possibly not complete and will be left in the buffer
+            // The last two parts (marker and message) are possibly not complete and will be left in the buffer.
             this.streamBuffer = [Buffer.from(allParts.slice(-2).join(''))];
         }
 
@@ -202,23 +217,27 @@ export class StreamedLog {
             const decodedMarker = marker;
             const decodedContent = messageContents[index];
             if (this.relevancyTimeLimit) {
+                // Log only relevant messages. Ignore too old log messages.
                 const logTime = new Date(decodedMarker);
                 if (logTime < this.relevancyTimeLimit) {
                     return;
                 }
             }
             const message = decodedMarker + decodedContent;
+
+            // Log parsed message at guessed level.
             this.logAtGuessedLevel(message);
         });
     }
 
+    /**
+     * Log messages at appropriate log level guessed from the message content.
+     *
+     * Original log level information does not have to be included in the message at all.
+     * This is methods just guesses, exotic formating or specific keywords can break the guessing logic.
+     */
     private logAtGuessedLevel(message: string) {
-        // Original log level information does not have to be included in the message at all.
-        // This is methods just guesses, exotic formating or specific keywords can break the guessing logic.
-
         message = message.trim();
-
-        // TODO: Guessing can use the coloring symbols
 
         if (message.includes('ERROR')) this.toLog.error(message);
         else if (message.includes('SOFT_FAIL')) this.toLog.softFail(message);
