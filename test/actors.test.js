@@ -254,6 +254,7 @@ describe('Actor methods', () => {
                 timeout,
                 build,
                 waitSecs,
+                log: null,
             });
 
             expect(res).toEqual(data);
@@ -304,7 +305,7 @@ describe('Actor methods', () => {
             const maxItems = 100;
 
             mockServer.setResponse({ body });
-            const res = await client.actor(actorId).call(undefined, { waitSecs, maxItems });
+            const res = await client.actor(actorId).call(undefined, { waitSecs, maxItems, log: null });
 
             expect(res).toEqual(data);
             validateRequest({ waitForFinish: waitSecs }, { runId });
