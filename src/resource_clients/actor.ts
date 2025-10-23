@@ -147,23 +147,24 @@ export class ActorClient extends ResourceClient {
             }),
         );
 
-        const { waitSecs, log = 'default', ...startOptions } = options;
+        const { waitSecs, log, ...startOptions } = options;
         const { id } = await this.start(input, startOptions);
 
         // Calling root client because we need access to top level API.
         // Creating a new instance of RunClient here would only allow
         // setting it up as a nested route under actor API.
         const newRunClient = this.apifyClient.run(id);
-
-        if (!log) {
-            return newRunClient.waitForFinish({ waitSecs });
-        }
         let streamedLog: StreamedLog;
 
-        if (log === 'default') {
+        // Log redirections is not compatible with browser environment
+        const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+        if (options.log === null || isBrowser) {
+            return newRunClient.waitForFinish({ waitSecs });
+        }
+        if (options.log === undefined) {
             streamedLog = await newRunClient.getStreamedLog();
         } else {
-            streamedLog = await newRunClient.getStreamedLog({ toLog: log });
+            streamedLog = await newRunClient.getStreamedLog({ toLog: options.log });
         }
 
         try {
