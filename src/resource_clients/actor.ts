@@ -3,6 +3,7 @@ import ow from 'ow';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 import { ACT_JOB_STATUSES, ACTOR_PERMISSION_LEVEL, META_ORIGINS } from '@apify/consts';
+import { Log } from '@apify/log';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
@@ -13,6 +14,7 @@ import { ActorVersionCollectionClient } from './actor_version_collection';
 import type { Build, BuildClientGetOptions } from './build';
 import { BuildClient } from './build';
 import { BuildCollectionClient } from './build_collection';
+import type { StreamedLog } from './log';
 import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
 import type { WebhookUpdateData } from './webhook';
@@ -139,18 +141,38 @@ export class ActorClient extends ResourceClient {
                 webhooks: ow.optional.array.ofType(ow.object),
                 maxItems: ow.optional.number.not.negative,
                 maxTotalChargeUsd: ow.optional.number.not.negative,
+                log: ow.optional.any(ow.null, ow.object.instanceOf(Log)),
                 restartOnError: ow.optional.boolean,
                 forcePermissionLevel: ow.optional.string.oneOf(Object.values(ACTOR_PERMISSION_LEVEL)),
             }),
         );
 
-        const { waitSecs, ...startOptions } = options;
+        const { waitSecs, log, ...startOptions } = options;
         const { id } = await this.start(input, startOptions);
 
         // Calling root client because we need access to top level API.
         // Creating a new instance of RunClient here would only allow
         // setting it up as a nested route under actor API.
-        return this.apifyClient.run(id).waitForFinish({ waitSecs });
+        const newRunClient = this.apifyClient.run(id);
+        let streamedLog: StreamedLog;
+
+        // Log redirections is not compatible with browser environment
+        const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+        if (options.log === null || isBrowser) {
+            return newRunClient.waitForFinish({ waitSecs });
+        }
+        if (options.log === undefined) {
+            streamedLog = await newRunClient.getStreamedLog();
+        } else {
+            streamedLog = await newRunClient.getStreamedLog({ toLog: options.log });
+        }
+
+        try {
+            await streamedLog.start();
+            return this.apifyClient.run(id).waitForFinish({ waitSecs });
+        } finally {
+            await streamedLog.stop();
+        }
     }
 
     /**
@@ -426,6 +448,7 @@ export interface ActorStartOptions {
 
 export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
     waitSecs?: number;
+    log?: Log | null;
 }
 
 export interface ActorRunListItem {
