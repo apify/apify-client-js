@@ -102,7 +102,6 @@ jobs:
         needs: [update_changelog]
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v5
             - name: Execute publish workflow
               uses: apify/workflows/execute-workflow@execute-workflow-action
               with:
