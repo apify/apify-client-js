@@ -80,28 +80,8 @@ jobs:
         needs: [update_changelog, wait_for_checks]
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v5
+            - name: Execute publish workflow
+              uses: apify/workflows/execute-workflow@execute-workflow-action
               with:
-                  ref: ${{ needs.update_changelog.outputs.changelog_commitish }}
-            - name: Use Node.js 22
-              uses: actions/setup-node@v6
-              with:
-                  node-version: 22
-                  cache: 'npm'
-                  cache-dependency-path: 'package-lock.json'
-            - name: Install dependencies
-              run: |
-                  echo "access=public" >> .npmrc
-                  echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
-                  npm ci
-            - # Check version consistency and increment pre-release version number for beta only.
-              name: Bump pre-release version
-              run: node ./.github/scripts/before-beta-release.js
-            - name: Build module
-              run: npm run build
-            - name: Publish to NPM
-              run: npm publish --tag beta
-
-env:
-    NODE_AUTH_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}
-    NPM_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}
+                  workflow: publish_to_npm.yaml
+                  inputs: '{ "ref": "${{ needs.update_changelog.outputs.changelog_commitish }}", "tag": "beta" }'
