@@ -14,7 +14,6 @@ import { ActorVersionCollectionClient } from './actor_version_collection';
 import type { Build, BuildClientGetOptions } from './build';
 import { BuildClient } from './build';
 import { BuildCollectionClient } from './build_collection';
-import type { StreamedLog } from './log';
 import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
 import type { WebhookUpdateData } from './webhook';
@@ -154,24 +153,13 @@ export class ActorClient extends ResourceClient {
         // Creating a new instance of RunClient here would only allow
         // setting it up as a nested route under actor API.
         const newRunClient = this.apifyClient.run(id);
-        let streamedLog: StreamedLog;
 
-        // Log redirections is not compatible with browser environment
-        const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
-        if (options.log === null || isBrowser) {
-            return newRunClient.waitForFinish({ waitSecs });
-        }
-        if (options.log === undefined) {
-            streamedLog = await newRunClient.getStreamedLog();
-        } else {
-            streamedLog = await newRunClient.getStreamedLog({ toLog: options.log });
-        }
-
+        const streamedLog = await newRunClient.getStreamedLog({ toLog: options?.log });
         try {
-            await streamedLog.start();
+            await streamedLog?.start();
             return this.apifyClient.run(id).waitForFinish({ waitSecs });
         } finally {
-            await streamedLog.stop();
+            await streamedLog?.stop();
         }
     }
 

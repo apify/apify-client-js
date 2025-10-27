@@ -58,6 +58,21 @@ const mockServer = {
     },
 };
 
+async function streamLogChunks(req, res) {
+    // Asynchronously write each chunk to the response stream
+    for (const chunk of MOCKED_ACTOR_LOGS) {
+        res.write(chunk);
+        res.flush(); // Flush the buffer and send the chunk immediately
+        // Wait for a short period to simulate work being done on the server
+        await new Promise((resolve) => {
+            setTimeout(resolve, 10);
+        });
+    }
+
+    // End the response stream once all chunks have been sent
+    res.end();
+}
+
 // Debugging middleware
 app.use((req, res, next) => {
     next();
@@ -83,40 +98,14 @@ v2Router.use('/acts/redirect-actor-id', async (req, res) => {
 });
 v2Router.use('/acts', actorRouter);
 v2Router.use('/actor-builds', buildRouter);
-v2Router.use('/actor-runs/redirect-run-id/log', async (req, res) => {
-    // Asynchronously write each chunk to the response stream
-    for (const chunk of MOCKED_ACTOR_LOGS) {
-        res.write(chunk);
-        res.flush(); // Flush the buffer and send the chunk immediately
-        // Wait for a short period to simulate work being done on the server
-        await new Promise((resolve) => {
-            setTimeout(resolve, 10);
-        });
-    }
-
-    // End the response stream once all chunks have been sent
-    res.end();
-});
+v2Router.use('/actor-runs/redirect-run-id/log', streamLogChunks);
 v2Router.use('/actor-runs/redirect-run-id', async (req, res) => {
     res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status: 'SUCCEEDED' } });
 });
 v2Router.use('/actor-runs', runRouter);
 v2Router.use('/actor-tasks', taskRouter);
 v2Router.use('/users', userRouter);
-v2Router.use('/logs/redirect-log-id', async (req, res) => {
-    // Asynchronously write each chunk to the response stream
-    for (const chunk of MOCKED_ACTOR_LOGS) {
-        res.write(chunk);
-        res.flush(); // Flush the buffer and send the chunk immediately
-        // Wait for a short period to simulate work being done on the server
-        await new Promise((resolve) => {
-            setTimeout(resolve, 10);
-        });
-    }
-
-    // End the response stream once all chunks have been sent
-    res.end();
-});
+v2Router.use('/logs/redirect-log-id', streamLogChunks);
 v2Router.use('/logs', logRouter);
 v2Router.use('/datasets', datasetRouter);
 v2Router.use('/key-value-stores', keyValueStores);

@@ -7,7 +7,7 @@ import { LEVELS, Log } from '@apify/log';
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyResponse } from '../http_client';
-import { cast, parseDateFields, pluckData } from '../utils';
+import { cast, isNode, parseDateFields, pluckData } from '../utils';
 import type { ActorRun } from './actor';
 import { DatasetClient } from './dataset';
 import { KeyValueStoreClient } from './key_value_store';
@@ -271,10 +271,15 @@ export class RunClient extends ResourceClient {
     /**
      * Get StreamedLog for convenient streaming of the run log and their redirection.
      */
-    async getStreamedLog(options: GetStreamedLogOptions = {}): Promise<StreamedLog> {
+    async getStreamedLog(options: GetStreamedLogOptions = {}): Promise<StreamedLog | undefined> {
         const { fromStart = true } = options;
         let { toLog } = options;
-        if (!toLog) {
+        if (toLog === null || !isNode()) {
+            // Explicitly no logging or not in Node.js
+            return undefined;
+        }
+        if (toLog === undefined) {
+            // Create default StreamedLog
             // Get actor name and run id
             const runData = await this.get();
             const runId = runData ? `${runData.id ?? ''}` : '';
@@ -293,7 +298,7 @@ export class RunClient extends ResourceClient {
 }
 
 export interface GetStreamedLogOptions {
-    toLog?: Log;
+    toLog?: Log | null;
     fromStart?: boolean;
 }
 
