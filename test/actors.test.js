@@ -678,6 +678,8 @@ describe('Run actor with redirected logs', () => {
     let baseUrl;
 
     beforeAll(async () => {
+        // Ensure that the tests that use characters like á are correctly decoded in console.
+        process.stdout.setDefaultEncoding('utf8');
         const server = await mockServer.start();
         baseUrl = `http://localhost:${server.address().port}`;
     });
