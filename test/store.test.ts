@@ -2,7 +2,7 @@ import type { StoreCollectionListOptions } from 'apify-client';
 import { ApifyClient } from 'apify-client';
 
 import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
-import mockServer from './mock_server/server';
+import { mockServer } from './mock_server/server';
 
 describe('Store', () => {
     let baseUrl: string | undefined;

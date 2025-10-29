@@ -1,10 +1,11 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
 const { ActorListSortBy, ApifyClient, LoggerActorRedirect } = require('apify-client');
 const { stringifyWebhooksToBase64 } = require('../src/utils');
-const mockServer = require('./mock_server/server');
+const { mockServer, createDefaultApp } = require('./mock_server/server');
 const c = require('ansi-colors');
-const { MOCKED_ACTOR_LOGS_PROCESSED, statusGenerator } = require('./mock_server/consts');
+const { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator } = require('./mock_server/consts');
 const { Log, LEVELS } = require('@apify/log');
+const express = require('express');
 
 describe('Actor methods', () => {
     let baseUrl;
@@ -676,17 +677,31 @@ describe('Actor methods', () => {
 
 describe('Run actor with redirected logs', () => {
     let baseUrl;
+    let client;
+    const statusGenerator = new StatusGenerator();
 
     beforeAll(async () => {
-        // Ensure that the tests that use characters like á are correctly decoded in console.
-        process.stdout.setDefaultEncoding('utf8');
-        const server = await mockServer.start();
+        // Use custom router for the tests
+        const router = express.Router();
+        // Set up a status generator to simulate run status changes. It will be reset for each test.
+        router.get('/actor-runs/redirect-run-id', async (req, res) => {
+            // Delay the response to give the actor time to run and produce expected logs
+            await new Promise((resolve) => {
+                setTimeout(resolve, 10);
+            });
+            const [status, statusMessage] = statusGenerator.next().value;
+            res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status, statusMessage } });
+        });
+        const app = createDefaultApp(router);
+        const server = await mockServer.start(undefined, app);
         baseUrl = `http://localhost:${server.address().port}`;
     });
 
-    let client;
+    afterAll(async () => {
+        await Promise.all([mockServer.close()]);
+    });
+
     beforeEach(async () => {
-        statusGenerator.reset();
         client = new ApifyClient({
             baseUrl,
             maxRetries: 0,
@@ -694,6 +709,8 @@ describe('Run actor with redirected logs', () => {
         });
     });
     afterEach(async () => {
+        // Reset the generator to so that the next test starts fresh
+        statusGenerator.reset();
         client = null;
     });
 

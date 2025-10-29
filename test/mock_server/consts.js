@@ -55,24 +55,21 @@ class StatusGenerator {
     }
 
     reset() {
-        this.generator = (() => {
-            // Iterate over MOCKED_ACTOR_STATUSES and keep returning the last status when exhausted
-            let i = 0;
-            return () => {
-                if (i >= MOCKED_ACTOR_STATUSES.length) {
-                    return MOCKED_ACTOR_STATUSES[MOCKED_ACTOR_STATUSES.length - 1];
-                }
-                return MOCKED_ACTOR_STATUSES[i++];
-            };
-        })();
+        function* getStatusGenerator() {
+            for (const status of MOCKED_ACTOR_STATUSES) {
+                yield status;
+            }
+            // After exhausting, keep yielding the last status
+            while (true) {
+                yield MOCKED_ACTOR_STATUSES[MOCKED_ACTOR_STATUSES.length - 1];
+            }
+        }
+        this.generator = getStatusGenerator();
     }
 
     next() {
-        return this.generator();
+        return this.generator.next();
     }
 }
 
-// Test can call statusGenerator.reset() to receive the statuses from the start
-const statusGenerator = new StatusGenerator();
-
-module.exports = { MOCKED_ACTOR_LOGS, MOCKED_ACTOR_LOGS_PROCESSED, MOCKED_ACTOR_STATUSES, statusGenerator };
+module.exports = { MOCKED_ACTOR_LOGS, MOCKED_ACTOR_LOGS_PROCESSED, MOCKED_ACTOR_STATUSES, StatusGenerator };

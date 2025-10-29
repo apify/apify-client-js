@@ -1,6 +1,6 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
 const { ApifyClient, LoggerActorRedirect } = require('apify-client');
-const mockServer = require('./mock_server/server');
+const { mockServer } = require('./mock_server/server');
 const c = require('ansi-colors');
 const { MOCKED_ACTOR_LOGS_PROCESSED } = require('./mock_server/consts');
 
@@ -419,7 +419,7 @@ describe('Redirect run logs', () => {
             streamedLog.start();
             // Wait some time to accumulate logs
             await new Promise((resolve) => {
-                setTimeout(resolve, 10);
+                setTimeout(resolve, 1000);
             });
             await streamedLog.stop();
 
@@ -440,7 +440,7 @@ describe('Redirect run logs', () => {
             streamedLog.start();
             // Wait some time to accumulate logs
             await new Promise((resolve) => {
-                setTimeout(resolve, 10);
+                setTimeout(resolve, 1000);
             });
             await streamedLog.stop();
 
