@@ -3,7 +3,7 @@ import type { Readable } from 'node:stream';
 
 import c from 'ansi-colors';
 
-import type { Log } from "@apify/log";
+import type { Log } from '@apify/log';
 import { Logger, LogLevel } from '@apify/log';
 
 import type { ApifyApiError } from '../apify_api_error';
@@ -11,7 +11,7 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow } from '../utils';
-import type { RunClient } from "./run";
+import type { RunClient } from './run';
 
 export class LogClient extends ResourceClient {
     /**
@@ -72,20 +72,6 @@ export class LogClient extends ResourceClient {
     }
 }
 
-export interface LogOptions {
-    /** @default false */
-    raw?: boolean;
-}
-
-// Temp create it here and ask Martin where to put it
-
-const DEFAULT_OPTIONS = {
-    /** Whether to exclude timestamp of log redirection in redirected logs. */
-    skipTime: true,
-    /** Level of log redirection */
-    level: LogLevel.DEBUG,
-};
-
 /**
  * Logger for redirected actor logs.
  */
@@ -118,6 +104,20 @@ export class LoggerActorRedirect extends Logger {
         return line;
     }
 }
+
+export interface LogOptions {
+    /** @default false */
+    raw?: boolean;
+}
+
+// Temp create it here and ask Martin where to put it
+
+const DEFAULT_OPTIONS = {
+    /** Whether to exclude timestamp of log redirection in redirected logs. */
+    skipTime: true,
+    /** Level of log redirection */
+    level: LogLevel.DEBUG,
+};
 
 /**
  * Helper class for redirecting streamed Actor logs to another log.
@@ -286,7 +286,6 @@ export class StreamedLog {
     }
 }
 
-
 export class StatusMessageWatcher {
     private static finalSleepTimeMs = 6000;
 
@@ -297,14 +296,13 @@ export class StatusMessageWatcher {
     private loggingTask: Promise<void> | null = null;
     private stopped = false;
 
-    constructor(toLog: Log,runClient: RunClient, checkPeriod = 5000) {
-        this.runClient = runClient
+    constructor(toLog: Log, runClient: RunClient, checkPeriod = 5000) {
+        this.runClient = runClient;
         this.toLog = toLog;
         this.checkPeriod = checkPeriod;
-
     }
 
-    start(){
+    start() {
         if (this.loggingTask) {
             throw new Error('Logging task already active');
         }
@@ -316,7 +314,9 @@ export class StatusMessageWatcher {
         if (!this.loggingTask) {
             throw new Error('Logging task is not active');
         }
-        await new Promise(resolve => {setTimeout(resolve, StatusMessageWatcher.finalSleepTimeMs)});
+        await new Promise((resolve) => {
+            setTimeout(resolve, StatusMessageWatcher.finalSleepTimeMs);
+        });
         this.stopped = true;
         await this.loggingTask;
         this.loggingTask = null;
@@ -333,7 +333,9 @@ export class StatusMessageWatcher {
                     this.lastStatusMessage = newStatusMessage;
                     this.toLog.info(newStatusMessage);
                 }
-                await new Promise(resolve => {setTimeout(resolve, this.checkPeriod)});
+                await new Promise((resolve) => {
+                    setTimeout(resolve, this.checkPeriod);
+                });
             }
         }
     }

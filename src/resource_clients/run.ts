@@ -11,7 +11,7 @@ import { cast, isNode, parseDateFields, pluckData } from '../utils';
 import type { ActorRun } from './actor';
 import { DatasetClient } from './dataset';
 import { KeyValueStoreClient } from './key_value_store';
-import { LogClient, LoggerActorRedirect, StatusMessageWatcher,StreamedLog } from './log';
+import { LogClient, LoggerActorRedirect, StatusMessageWatcher, StreamedLog } from './log';
 import { RequestQueueClient } from './request_queue';
 
 const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
@@ -285,7 +285,7 @@ export class RunClient extends ResourceClient {
         return new StreamedLog(this.log(), toLog, fromStart);
     }
 
-    private async getActorRedirectLog():Promise<Log>{
+    private async getActorRedirectLog(): Promise<Log> {
         // Get actor name and run id
         const runData = await this.get();
         const runId = runData ? `${runData.id ?? ''}` : '';
@@ -302,7 +302,9 @@ export class RunClient extends ResourceClient {
     /**
      * Get StatusMessageWatcher for convenient streaming of the Actor run status message and its redirection.
      */
-    async getStatusMessageWatcher(options: getStatusMessageWatcherOptions = {}): Promise<StatusMessageWatcher | undefined> {
+    async getStatusMessageWatcher(
+        options: getStatusMessageWatcherOptions = {},
+    ): Promise<StatusMessageWatcher | undefined> {
         let { toLog } = options;
         if (toLog === null || !isNode()) {
             // Explicitly no logging or not in Node.js
@@ -313,8 +315,6 @@ export class RunClient extends ResourceClient {
         }
         return new StatusMessageWatcher(toLog, this, options.checkPeriod);
     }
-
-
 }
 
 export interface getStatusMessageWatcherOptions {

@@ -22,14 +22,15 @@ const webhookDispatches = require('./routes/webhook_dispatches');
 const webhooks = require('./routes/webhooks');
 
 // Consts
-const { MOCKED_ACTOR_LOGS, MOCKED_ACTOR_STATUSES } = require('./consts');
+const { MOCKED_ACTOR_LOGS } = require('./consts');
 
-const app = express();
-const v2Router = express.Router();
+const defaultApp = createDefaultApp();
+
 const mockServer = {
     requests: [],
     response: null,
-    async start(port = 0) {
+    async start(port = 0, app = defaultApp) {
+        app.set('mockServer', this);
         this.server = http.createServer(app);
         return new Promise((resolve, reject) => {
             this.server.on('error', reject);
@@ -58,87 +59,77 @@ const mockServer = {
     },
 };
 
-async function streamLogChunks(req, res) {
-    // Asynchronously write each chunk to the response stream
-    for (const chunk of MOCKED_ACTOR_LOGS) {
-        res.write(chunk);
-        res.flush(); // Flush the buffer and send the chunk immediately
-        // Wait for a short period to simulate work being done on the server
-        await new Promise((resolve) => {
-            setTimeout(resolve, 10);
-        });
-    }
+function createDefaultApp(v2Router = express.Router()) {
+    async function streamLogChunks(req, res) {
+        // Asynchronously write each chunk to the response stream
+        for (const chunk of MOCKED_ACTOR_LOGS) {
+            res.write(chunk);
+            res.flush(); // Flush the buffer and send the chunk immediately
+            // Wait for a short period to simulate work being done on the server
+            await new Promise((resolve) => {
+                setTimeout(resolve, 1);
+            });
+        }
 
-    // End the response stream once all chunks have been sent
-    res.end();
+        // End the response stream once all chunks have been sent
+        res.end();
+    }
+    const app = express();
+    // Debugging middleware
+    app.use((req, res, next) => {
+        next();
+    });
+    app.use(express.text());
+    app.use(express.json({ limit: '9mb' }));
+    app.use(express.urlencoded({ extended: false }));
+    app.use(bodyParser.raw());
+    app.use(express.static(path.join(__dirname, 'public')));
+    app.use(compression());
+    app.use('/', (req, res, next) => {
+        mockServer.requests.push(req);
+        next();
+    });
+    app.use('/v2', v2Router);
+    app.use('/external', external);
+
+    // Attaching V2 routers
+    v2Router.use('/acts/redirect-actor-id', async (req, res) => {
+        res.json({ data: { name: 'redirect-actor-name', id: 'redirect-run-id' } });
+    });
+    v2Router.use('/acts', actorRouter);
+    v2Router.use('/actor-builds', buildRouter);
+    v2Router.use('/actor-runs/redirect-run-id/log', streamLogChunks);
+    v2Router.use('/actor-runs/redirect-run-id', async (req, res) => {
+        res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status: 'SUCCEEDED' } });
+    });
+
+    v2Router.use('/actor-runs', runRouter);
+    v2Router.use('/actor-tasks', taskRouter);
+    v2Router.use('/users', userRouter);
+    v2Router.use('/logs/redirect-log-id', streamLogChunks);
+    v2Router.use('/logs', logRouter);
+    v2Router.use('/datasets', datasetRouter);
+    v2Router.use('/key-value-stores', keyValueStores);
+    v2Router.use('/request-queues', requestQueues);
+    v2Router.use('/webhooks', webhooks);
+    v2Router.use('/schedules', schedules);
+    v2Router.use('/webhook-dispatches', webhookDispatches);
+    v2Router.use('/store', store);
+
+    // Debugging middleware
+    app.use((err, req, res, _next) => {
+        res.status(500).json({ error: { message: err.message } });
+    });
+
+    app.use((req, res) => {
+        res.status(404).json({
+            error: {
+                type: 'page-not-found',
+                message: 'Nothing to do here.',
+            },
+        });
+    });
+    return app;
 }
 
-const statusGenerator = (() => {
-    // Iterate over MOCKED_ACTOR_STATUSES and keep returning the last status when exhausted
-    let i = 0;
-    return () => {
-        if (i >= MOCKED_ACTOR_STATUSES.length) {
-            return MOCKED_ACTOR_STATUSES[MOCKED_ACTOR_STATUSES.length-1];
-        }
-        return MOCKED_ACTOR_STATUSES[i++];
-    };
-})();
-
-// Debugging middleware
-app.use((req, res, next) => {
-    next();
-});
-app.use(express.text());
-app.use(express.json({ limit: '9mb' }));
-app.use(express.urlencoded({ extended: false }));
-app.use(bodyParser.raw());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(compression());
-
-app.use('/', (req, res, next) => {
-    mockServer.requests.push(req);
-    next();
-});
-app.set('mockServer', mockServer);
-app.use('/v2', v2Router);
-app.use('/external', external);
-
-// Attaching V2 routers
-v2Router.use('/acts/redirect-actor-id', async (req, res) => {
-    res.json({ data: { name: 'redirect-actor-name', id: 'redirect-run-id' } });
-});
-v2Router.use('/acts', actorRouter);
-v2Router.use('/actor-builds', buildRouter);
-v2Router.use('/actor-runs/redirect-run-id/log', streamLogChunks);
-v2Router.use('/actor-runs/redirect-run-id', async (req, res) => {
-    const [status, statusMessage] = statusGenerator()
-    res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status, statusMessage } });
-});
-v2Router.use('/actor-runs', runRouter);
-v2Router.use('/actor-tasks', taskRouter);
-v2Router.use('/users', userRouter);
-v2Router.use('/logs/redirect-log-id', streamLogChunks);
-v2Router.use('/logs', logRouter);
-v2Router.use('/datasets', datasetRouter);
-v2Router.use('/key-value-stores', keyValueStores);
-v2Router.use('/request-queues', requestQueues);
-v2Router.use('/webhooks', webhooks);
-v2Router.use('/schedules', schedules);
-v2Router.use('/webhook-dispatches', webhookDispatches);
-v2Router.use('/store', store);
-
-// Debugging middleware
-app.use((err, req, res, _next) => {
-    res.status(500).json({ error: { message: err.message } });
-});
-
-app.use((req, res) => {
-    res.status(404).json({
-        error: {
-            type: 'page-not-found',
-            message: 'Nothing to do here.',
-        },
-    });
-});
-
-module.exports = mockServer;
+module.exports = { mockServer, createDefaultApp };
