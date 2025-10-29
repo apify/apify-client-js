@@ -22,7 +22,7 @@ const webhookDispatches = require('./routes/webhook_dispatches');
 const webhooks = require('./routes/webhooks');
 
 // Consts
-const { MOCKED_ACTOR_LOGS } = require('./consts');
+const { MOCKED_ACTOR_LOGS, MOCKED_ACTOR_STATUSES } = require('./consts');
 
 const app = express();
 const v2Router = express.Router();
@@ -73,6 +73,17 @@ async function streamLogChunks(req, res) {
     res.end();
 }
 
+const statusGenerator = (() => {
+    // Iterate over MOCKED_ACTOR_STATUSES and keep returning the last status when exhausted
+    let i = 0;
+    return () => {
+        if (i >= MOCKED_ACTOR_STATUSES.length) {
+            return MOCKED_ACTOR_STATUSES[MOCKED_ACTOR_STATUSES.length-1];
+        }
+        return MOCKED_ACTOR_STATUSES[i++];
+    };
+})();
+
 // Debugging middleware
 app.use((req, res, next) => {
     next();
@@ -100,7 +111,8 @@ v2Router.use('/acts', actorRouter);
 v2Router.use('/actor-builds', buildRouter);
 v2Router.use('/actor-runs/redirect-run-id/log', streamLogChunks);
 v2Router.use('/actor-runs/redirect-run-id', async (req, res) => {
-    res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status: 'SUCCEEDED' } });
+    const [status, statusMessage] = statusGenerator()
+    res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status, statusMessage } });
 });
 v2Router.use('/actor-runs', runRouter);
 v2Router.use('/actor-tasks', taskRouter);

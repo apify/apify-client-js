@@ -2,7 +2,7 @@ const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
 const { ApifyClient, LoggerActorRedirect } = require('apify-client');
 const mockServer = require('./mock_server/server');
 const c = require('ansi-colors');
-const { MOCKED_ACTOR_LOGS_PROCESSED } = require('./mock_server/consts');
+const { MOCKED_ACTOR_LOGS_PROCESSED, MOCKED_ACTOR_STATUSES } = require('./mock_server/consts');
 
 describe('Run methods', () => {
     let baseUrl;
@@ -437,6 +437,51 @@ describe('Redirect run logs', () => {
             const loggerPrefix = c.cyan('redirect-actor-name runId:redirect-run-id -> ');
             expect(logSpy.mock.calls).toEqual(
                 MOCKED_ACTOR_LOGS_PROCESSED.slice(1).map((item) => [loggerPrefix + item]),
+            );
+            logSpy.mockRestore();
+        });
+    });
+});
+
+describe('Redirect run status message', () => {
+    let baseUrl;
+
+    beforeAll(async () => {
+        const server = await mockServer.start();
+        baseUrl = `http://localhost:${server.address().port}`;
+    });
+
+    afterAll(async () => {
+        await Promise.all([mockServer.close()]);
+    });
+
+    let client;
+    beforeEach(async () => {
+        client = new ApifyClient({
+            baseUrl,
+            maxRetries: 0,
+            ...DEFAULT_OPTIONS,
+        });
+    });
+    afterEach(async () => {
+        client = null;
+    });
+
+    describe('run.getStatusMessageWatcher', () => {
+        test('Log same repeated statuses just once', async () => {
+            const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
+
+            const statusMessageWatcher = await client.run('redirect-run-id').getStatusMessageWatcher(
+                {checkPeriod:1}
+            );
+            statusMessageWatcher.start();
+            await new Promise(resolve => {setTimeout(resolve, 1000)});
+            await statusMessageWatcher.stop();
+
+            const loggerPrefix = c.cyan('redirect-actor-name runId:redirect-run-id -> ');
+            const expectedStatuses = MOCKED_ACTOR_STATUSES.slice(2); // Same status is not repeated
+            expect(logSpy.mock.calls).toEqual(expectedStatuses.map(
+                (item) => [`${loggerPrefix  }Status: ${  item[0]  }, Message: ${  item[1]}`])
             );
             logSpy.mockRestore();
         });

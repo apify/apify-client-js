@@ -3,7 +3,7 @@ import type { Readable } from 'node:stream';
 
 import c from 'ansi-colors';
 
-import type { Log } from '@apify/log';
+import type { Log } from "@apify/log";
 import { Logger, LogLevel } from '@apify/log';
 
 import type { ApifyApiError } from '../apify_api_error';
@@ -11,8 +11,7 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow } from '../utils';
-import { RunClient } from "./run";
-import { Log } from "@apify/log";
+import type { RunClient } from "./run";
 
 export class LogClient extends ResourceClient {
     /**
@@ -288,7 +287,7 @@ export class StreamedLog {
 }
 
 
-class StatusMessageWatcher {
+export class StatusMessageWatcher {
     private static finalSleepTimeMs = 6000;
 
     protected toLog: Log;
@@ -305,13 +304,12 @@ class StatusMessageWatcher {
 
     }
 
-    async start(): Promise<void> {
+    start(){
         if (this.loggingTask) {
             throw new Error('Logging task already active');
         }
         this.stopped = false;
         this.loggingTask = this._logChangedStatusMessage();
-        return this.loggingTask;
     }
 
     async stop(): Promise<void> {

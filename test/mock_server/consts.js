@@ -33,4 +33,12 @@ const MOCKED_ACTOR_LOGS_PROCESSED = [
     '2025-05-13T07:28:14.132Z [apify.redirect-logger runId:4U1oAnKau6jpzjUuA] -> 2025-05-13T07:27:14.132Z ACTOR:...',
 ];
 
-module.exports = { MOCKED_ACTOR_LOGS, MOCKED_ACTOR_LOGS_PROCESSED };
+const MOCKED_ACTOR_STATUSES = [
+    ['RUNNING', 'Actor Started'],
+    ['RUNNING', 'Actor Started'],
+    ['RUNNING', 'Actor Started'],
+    ['RUNNING', 'Doing some stuff'],
+    ['SUCCEEDED', 'Actor Finished'],
+]
+
+module.exports = { MOCKED_ACTOR_LOGS, MOCKED_ACTOR_LOGS_PROCESSED, MOCKED_ACTOR_STATUSES };
