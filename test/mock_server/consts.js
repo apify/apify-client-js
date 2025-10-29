@@ -2,8 +2,12 @@ const MOCKED_ACTOR_LOGS = [
     '2025-05-13T07:24:12.588Z ACTOR: Pulling Docker image of build.\n',
     '2025-05-13T07:24:12.686Z ACTOR: Creating Docker container.\n',
     '2025-05-13T07:24:12.745Z ACTOR: Starting Docker container.\n', // Several logs merged into one chunk
-    Buffer.from('2025-05-13T07:26:14.132Z [apify] DEBUG \xc3', 'binary'), // Chunked log split in the middle of the multibyte character
-    Buffer.from([0xa1, 0x0a]),
+    Buffer.from('2025-05-13T07:26:14.132Z [apify] DEBUG \xc3', 'binary'), // Chunked log split in the middle of the 2-byte character
+    Buffer.from('\xa1\x0a', 'binary'),
+    Buffer.from('2025-05-13T07:26:14.132Z [apify] DEBUG \xE2', 'binary'), // Chunked log split in the middle of the 3-byte character
+    Buffer.from('\x82\xAC\x0a', 'binary'),
+    Buffer.from('2025-05-13T07:26:14.132Z [apify] DEBUG \xF0\x9F', 'binary'), // Chunked log split in the middle of the4-byte character
+    Buffer.from('\x98\x80\x0a', 'binary'),
     '2025-05-13T07:24:14.132Z [apify] INFO multiline \n log\n',
     '2025-05-13T07:25:14.132Z [apify] WARNING some warning\n',
     '2025-05-13T07:26:14.132Z [apify] DEBUG c\n',
@@ -19,6 +23,8 @@ const MOCKED_ACTOR_LOGS_PROCESSED = [
     '2025-05-13T07:24:12.686Z ACTOR: Creating Docker container.',
     '2025-05-13T07:24:12.745Z ACTOR: Starting Docker container.',
     '2025-05-13T07:26:14.132Z [apify] DEBUG á',
+    '2025-05-13T07:26:14.132Z [apify] DEBUG €',
+    '2025-05-13T07:26:14.132Z [apify] DEBUG 😀',
     '2025-05-13T07:24:14.132Z [apify] INFO multiline \n log',
     '2025-05-13T07:25:14.132Z [apify] WARNING some warning',
     '2025-05-13T07:26:14.132Z [apify] DEBUG c',
