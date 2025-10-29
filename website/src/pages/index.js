@@ -33,7 +33,7 @@ function Hero() {
                     <div className="row">
                         <div className="col">
                             <div className={styles.heroButtons}>
-                                <Link to="docs" className={styles.getStarted}>
+                                <Link to="/docs" className={styles.getStarted}>
                                     Get Started
                                 </Link>
                                 <iframe
