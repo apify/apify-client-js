@@ -416,8 +416,13 @@ describe('Redirect run logs', () => {
             const streamedLog = await client.run('redirect-run-id').getStreamedLog();
             jest.useRealTimers();
 
-            await streamedLog.start();
+            streamedLog.start();
+            // Wait some time to accumulate logs
+            await new Promise((resolve) => {
+                setTimeout(resolve, 10);
+            });
             await streamedLog.stop();
+
             const loggerPrefix = c.cyan('redirect-actor-name runId:redirect-run-id -> ');
             expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [loggerPrefix + item]));
             logSpy.mockRestore();
@@ -432,8 +437,13 @@ describe('Redirect run logs', () => {
             const streamedLog = await client.run('redirect-run-id').getStreamedLog({ fromStart: false });
             jest.useRealTimers();
 
-            await streamedLog.start();
+            streamedLog.start();
+            // Wait some time to accumulate logs
+            await new Promise((resolve) => {
+                setTimeout(resolve, 10);
+            });
             await streamedLog.stop();
+
             const loggerPrefix = c.cyan('redirect-actor-name runId:redirect-run-id -> ');
             expect(logSpy.mock.calls).toEqual(
                 MOCKED_ACTOR_LOGS_PROCESSED.slice(1).map((item) => [loggerPrefix + item]),

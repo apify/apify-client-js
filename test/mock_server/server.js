@@ -22,7 +22,7 @@ const webhookDispatches = require('./routes/webhook_dispatches');
 const webhooks = require('./routes/webhooks');
 
 // Consts
-const { MOCKED_ACTOR_LOGS } = require('./consts');
+const { MOCKED_ACTOR_LOGS, statusGenerator } = require('./consts');
 
 const app = express();
 const v2Router = express.Router();
@@ -100,7 +100,8 @@ v2Router.use('/acts', actorRouter);
 v2Router.use('/actor-builds', buildRouter);
 v2Router.use('/actor-runs/redirect-run-id/log', streamLogChunks);
 v2Router.use('/actor-runs/redirect-run-id', async (req, res) => {
-    res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status: 'SUCCEEDED' } });
+    const [status, statusMessage] = statusGenerator.next();
+    res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status, statusMessage } });
 });
 v2Router.use('/actor-runs', runRouter);
 v2Router.use('/actor-tasks', taskRouter);

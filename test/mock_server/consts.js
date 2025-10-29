@@ -33,4 +33,46 @@ const MOCKED_ACTOR_LOGS_PROCESSED = [
     '2025-05-13T07:28:14.132Z [apify.redirect-logger runId:4U1oAnKau6jpzjUuA] -> 2025-05-13T07:27:14.132Z ACTOR:...',
 ];
 
-module.exports = { MOCKED_ACTOR_LOGS, MOCKED_ACTOR_LOGS_PROCESSED };
+const MOCKED_ACTOR_STATUSES = [
+    ['RUNNING', 'Actor Started'],
+    ['RUNNING', 'Doing some stuff'],
+    ['RUNNING', 'Doing some stuff'],
+    ['RUNNING', 'Doing some stuff'],
+    ['RUNNING', 'Doing some stuff'],
+    ['RUNNING', 'Doing some stuff'],
+    ['RUNNING', 'Doing some stuff'],
+    ['RUNNING', 'Doing some stuff'],
+    ['RUNNING', 'Doing some stuff'],
+    ['SUCCEEDED', 'Actor Finished'],
+];
+
+/**
+ * Helper class to allow iterating over defined list of statuses for each test case.
+ */
+class StatusGenerator {
+    constructor() {
+        this.reset();
+    }
+
+    reset() {
+        this.generator = (() => {
+            // Iterate over MOCKED_ACTOR_STATUSES and keep returning the last status when exhausted
+            let i = 0;
+            return () => {
+                if (i >= MOCKED_ACTOR_STATUSES.length) {
+                    return MOCKED_ACTOR_STATUSES[MOCKED_ACTOR_STATUSES.length - 1];
+                }
+                return MOCKED_ACTOR_STATUSES[i++];
+            };
+        })();
+    }
+
+    next() {
+        return this.generator();
+    }
+}
+
+// Test can call statusGenerator.reset() to receive the statuses from the start
+const statusGenerator = new StatusGenerator();
+
+module.exports = { MOCKED_ACTOR_LOGS, MOCKED_ACTOR_LOGS_PROCESSED, MOCKED_ACTOR_STATUSES, statusGenerator };
