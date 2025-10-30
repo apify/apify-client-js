@@ -1,5 +1,5 @@
 const { Browser, DEFAULT_OPTIONS } = require('./_helper');
-const mockServer = require('./mock_server/server');
+const { mockServer } = require('./mock_server/server');
 const { ApifyClient } = require('apify-client');
 
 describe('ApifyApiError', () => {
