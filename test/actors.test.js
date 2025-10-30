@@ -717,8 +717,10 @@ describe('Run actor with redirected logs', () => {
     describe('actor.call - redirected logs', () => {
         test('default log', async () => {
             const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
-            //Ignore StatusMessageWatcher to not clutter the log redirection test
-            const mockedGetStatusMessageWatcher = jest.spyOn(RunClient.prototype, 'getStatusMessageWatcher').mockImplementation(() => {});
+            // Ignore StatusMessageWatcher to not clutter the log redirection test
+            const mockedGetStatusMessageWatcher = jest
+                .spyOn(RunClient.prototype, 'getStatusMessageWatcher')
+                .mockImplementation(() => {});
 
             const defaultPrefix = 'redirect-actor-name runId:redirect-run-id -> ';
             await client.actor('redirect-actor-id').call();
@@ -731,8 +733,10 @@ describe('Run actor with redirected logs', () => {
 
         test('custom log', async () => {
             const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
-            //Ignore StatusMessageWatcher to not clutter the log redirection test
-            const mockedGetStatusMessageWatcher = jest.spyOn(RunClient.prototype, 'getStatusMessageWatcher').mockImplementation(() => {});
+            // Ignore StatusMessageWatcher to not clutter the log redirection test
+            const mockedGetStatusMessageWatcher = jest
+                .spyOn(RunClient.prototype, 'getStatusMessageWatcher')
+                .mockImplementation(() => {});
 
             const customPrefix = 'custom prefix...';
             await client.actor('redirect-actor-id').call(undefined, {
@@ -756,7 +760,6 @@ describe('Run actor with redirected logs', () => {
     });
 });
 
-
 describe('Run actor with status message watcher', () => {
     let baseUrl;
     let client;
@@ -770,10 +773,16 @@ describe('Run actor with status message watcher', () => {
         // Set up a status generator to simulate run status changes. It will be reset for each test.
         router.get('/actor-runs/redirect-run-id', async (req, res) => {
             // Delay the response to give the actor time to run and produce expected logs
-            await new Promise((resolve) => {
-                setTimeout(resolve, 100);
-            });
-            const [status, statusMessage] = statusGenerator.next().value;
+            let [status, statusMessage] = ['', ''];
+            if ('waitForFinish' in req.query) {
+                // Delay the actor run response to simulate running actor while statuses watcher is polling this same endpoint without "waitForFinish"
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 100);
+                });
+                [status, statusMessage] = ['SUCCEEDED', 'Actor Finished'];
+            } else {
+                [status, statusMessage] = statusGenerator.next().value;
+            }
             res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status, statusMessage } });
         });
         const app = createDefaultApp(router);
@@ -814,7 +823,9 @@ describe('Run actor with status message watcher', () => {
 
             const loggerPrefix = c.cyan(defaultPrefix);
             const uniqueStatuses = Array.from(new Set(MOCKED_ACTOR_STATUSES.map(JSON.stringify))).map(JSON.parse);
-            expect(logSpy.mock.calls).toEqual(uniqueStatuses.map((item) => [`${loggerPrefix}Status: ${item[0]}, Message: ${item[1]}`]));
+            expect(logSpy.mock.calls).toEqual(
+                uniqueStatuses.map((item) => [`${loggerPrefix}Status: ${item[0]}, Message: ${item[1]}`]),
+            );
             logSpy.mockRestore();
             mockedGetStreamedLog.mockRestore();
         });
@@ -831,7 +842,9 @@ describe('Run actor with status message watcher', () => {
 
             const loggerPrefix = c.cyan(customPrefix);
             const uniqueStatuses = Array.from(new Set(MOCKED_ACTOR_STATUSES.map(JSON.stringify))).map(JSON.parse);
-            expect(logSpy.mock.calls).toEqual(uniqueStatuses.map((item) => [`${loggerPrefix}Status: ${item[0]}, Message: ${item[1]}`]));
+            expect(logSpy.mock.calls).toEqual(
+                uniqueStatuses.map((item) => [`${loggerPrefix}Status: ${item[0]}, Message: ${item[1]}`]),
+            );
             logSpy.mockRestore();
             mockedGetStreamedLog.mockRestore();
         });

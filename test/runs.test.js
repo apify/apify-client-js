@@ -3,7 +3,7 @@ const { ApifyClient, LoggerActorRedirect } = require('apify-client');
 const { mockServer, createDefaultApp } = require('./mock_server/server');
 const c = require('ansi-colors');
 const { MOCKED_ACTOR_LOGS_PROCESSED, MOCKED_ACTOR_STATUSES, StatusGenerator } = require('./mock_server/consts');
-const express = require("express");
+const express = require('express');
 
 describe('Run methods', () => {
     let baseUrl;
@@ -498,7 +498,8 @@ describe('Redirect run status message', () => {
             const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
 
             const statusMessageWatcher = await client
-                .run('redirect-run-id').getStatusMessageWatcher({ checkPeriod: 1 });
+                .run('redirect-run-id')
+                .getStatusMessageWatcher({ checkPeriod: 1 });
 
             statusMessageWatcher.start();
             // Wait some time to accumulate statuses

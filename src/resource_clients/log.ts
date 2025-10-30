@@ -296,7 +296,7 @@ export class StatusMessageWatcher {
     private loggingTask: Promise<void> | null = null;
     private stopped = false;
 
-    constructor(toLog: Log, runClient: RunClient, checkPeriod = StatusMessageWatcher.defaultCheckPeriodMs) {
+    constructor(toLog: Log, runClient: RunClient, checkPeriod: number = StatusMessageWatcher.defaultCheckPeriodMs) {
         this.runClient = runClient;
         this.toLog = toLog;
         this.checkPeriod = checkPeriod;
