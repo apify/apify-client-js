@@ -141,13 +141,12 @@ export class StreamedLog {
     /**
      * Start log redirection.
      */
-    public async start(): Promise<void> {
+    public start() {
         if (this.streamingTask) {
             throw new Error('Streaming task already active');
         }
         this.stopLogging = false;
         this.streamingTask = this.streamLog();
-        return this.streamingTask;
     }
 
     /**
@@ -288,6 +287,7 @@ export class StreamedLog {
 
 export class StatusMessageWatcher {
     private static finalSleepTimeMs = 6000;
+    private static defaultCheckPeriodMs = 5000;
 
     protected toLog: Log;
     protected checkPeriod: number;
@@ -296,7 +296,7 @@ export class StatusMessageWatcher {
     private loggingTask: Promise<void> | null = null;
     private stopped = false;
 
-    constructor(toLog: Log, runClient: RunClient, checkPeriod = 5000) {
+    constructor(toLog: Log, runClient: RunClient, checkPeriod = StatusMessageWatcher.defaultCheckPeriodMs) {
         this.runClient = runClient;
         this.toLog = toLog;
         this.checkPeriod = checkPeriod;

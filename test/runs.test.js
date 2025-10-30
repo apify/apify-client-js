@@ -1,8 +1,9 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
 const { ApifyClient, LoggerActorRedirect } = require('apify-client');
-const { mockServer } = require('./mock_server/server');
+const { mockServer, createDefaultApp } = require('./mock_server/server');
 const c = require('ansi-colors');
-const { MOCKED_ACTOR_LOGS_PROCESSED, MOCKED_ACTOR_STATUSES } = require('./mock_server/consts');
+const { MOCKED_ACTOR_LOGS_PROCESSED, MOCKED_ACTOR_STATUSES, StatusGenerator } = require('./mock_server/consts');
+const express = require("express");
 
 describe('Run methods', () => {
     let baseUrl;
@@ -455,9 +456,23 @@ describe('Redirect run logs', () => {
 
 describe('Redirect run status message', () => {
     let baseUrl;
+    let client;
+    const statusGenerator = new StatusGenerator();
 
     beforeAll(async () => {
-        const server = await mockServer.start();
+        // Use custom router for the tests
+        const router = express.Router();
+        // Set up a status generator to simulate run status changes. It will be reset for each test.
+        router.get('/actor-runs/redirect-run-id', async (req, res) => {
+            // Delay the response to give the actor time to run and produce expected logs
+            await new Promise((resolve) => {
+                setTimeout(resolve, 10);
+            });
+            const [status, statusMessage] = statusGenerator.next().value;
+            res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status, statusMessage } });
+        });
+        const app = createDefaultApp(router);
+        const server = await mockServer.start(undefined, app);
         baseUrl = `http://localhost:${server.address().port}`;
     });
 
@@ -465,7 +480,6 @@ describe('Redirect run status message', () => {
         await Promise.all([mockServer.close()]);
     });
 
-    let client;
     beforeEach(async () => {
         client = new ApifyClient({
             baseUrl,
@@ -474,6 +488,8 @@ describe('Redirect run status message', () => {
         });
     });
     afterEach(async () => {
+        // Reset the generator to so that the next test starts fresh
+        statusGenerator.reset();
         client = null;
     });
 
@@ -482,18 +498,19 @@ describe('Redirect run status message', () => {
             const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
 
             const statusMessageWatcher = await client
-                .run('redirect-run-id')
-                .getStatusMessageWatcher({ checkPeriod: 1 });
+                .run('redirect-run-id').getStatusMessageWatcher({ checkPeriod: 1 });
+
             statusMessageWatcher.start();
+            // Wait some time to accumulate statuses
             await new Promise((resolve) => {
                 setTimeout(resolve, 1000);
             });
             await statusMessageWatcher.stop();
 
             const loggerPrefix = c.cyan('redirect-actor-name runId:redirect-run-id -> ');
-            const expectedStatuses = MOCKED_ACTOR_STATUSES.slice(2); // Same status is not repeated
+            const uniqueStatuses = Array.from(new Set(MOCKED_ACTOR_STATUSES.map(JSON.stringify))).map(JSON.parse);
             expect(logSpy.mock.calls).toEqual(
-                expectedStatuses.map((item) => [`${loggerPrefix}Status: ${item[0]}, Message: ${item[1]}`]),
+                uniqueStatuses.map((item) => [`${loggerPrefix}Status: ${item[0]}, Message: ${item[1]}`]),
             );
             logSpy.mockRestore();
         });
