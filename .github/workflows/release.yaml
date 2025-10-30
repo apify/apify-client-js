@@ -103,7 +103,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Execute publish workflow
-              uses: apify/workflows/execute-workflow@execute-workflow-action
+              uses: apify/workflows/execute-workflow@main
               with:
                   workflow: publish_to_npm.yaml
                   inputs: '{ "ref": "${{ needs.update_changelog.outputs.changelog_commitish }}", "tag": "latest" }'
