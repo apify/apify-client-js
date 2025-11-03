@@ -93,10 +93,6 @@ export class LoggerActorRedirect extends Logger {
         super({ ...DEFAULT_OPTIONS, ...options });
     }
 
-    _console_log(line: string) {
-        console.log(line); // eslint-disable-line no-console
-    }
-
     override _log(level: LogLevel, message: string, data?: any, exception?: unknown, opts: Record<string, any> = {}) {
         if (level > this.options.level) {
             return;
@@ -113,7 +109,10 @@ export class LoggerActorRedirect extends Logger {
         }
 
         const line = `${c.gray(maybeDate)}${c.cyan(prefix)}${message || ''}`;
-        this._console_log(line);
+
+        // All redirected logs are logged at info level to avid any console specific formating for non-info levels,
+        // which have already been applied once to the original log. (For example error stack traces etc.)
+        this._outputWithConsole(LogLevel.INFO, line);
         return line;
     }
 }
@@ -140,13 +139,12 @@ export class StreamedLog {
     /**
      * Start log redirection.
      */
-    public async start(): Promise<void> {
+    public start(): void {
         if (this.streamingTask) {
             throw new Error('Streaming task already active');
         }
         this.stopLogging = false;
         this.streamingTask = this.streamLog();
-        return this.streamingTask;
     }
 
     /**

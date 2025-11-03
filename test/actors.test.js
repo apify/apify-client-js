@@ -716,7 +716,7 @@ describe('Run actor with redirected logs', () => {
 
     describe('actor.call - redirected logs', () => {
         test('default log', async () => {
-            const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
             const defaultPrefix = 'redirect-actor-name runId:redirect-run-id -> ';
             await client.actor('redirect-actor-id').call();
@@ -727,7 +727,7 @@ describe('Run actor with redirected logs', () => {
         });
 
         test('custom log', async () => {
-            const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
             const customPrefix = 'custom prefix...';
             await client.actor('redirect-actor-id').call(undefined, {
@@ -740,7 +740,7 @@ describe('Run actor with redirected logs', () => {
         });
 
         test('no log', async () => {
-            const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
             await client.actor('redirect-actor-id').call(undefined, { log: null });
 
