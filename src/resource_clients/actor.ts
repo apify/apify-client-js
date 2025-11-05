@@ -155,15 +155,13 @@ export class ActorClient extends ResourceClient {
         const newRunClient = this.apifyClient.run(id);
 
         const streamedLog = await newRunClient.getStreamedLog({ toLog: options?.log });
-        let actorRun: Promise<ActorRun> | undefined;
-        try {
-            streamedLog?.start();
-            actorRun = this.apifyClient.run(id).waitForFinish({ waitSecs });
-            return actorRun;
-        } finally {
-            await actorRun;
-            await streamedLog?.stop();
-        }
+        streamedLog?.start();
+        return this.apifyClient
+            .run(id)
+            .waitForFinish({ waitSecs })
+            .finally(async () => {
+                await streamedLog?.stop();
+            });
     }
 
     /**
