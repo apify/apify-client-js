@@ -438,7 +438,15 @@ export interface ActorStartOptions {
 }
 
 export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
+    /**
+     * Wait time in seconds for the actor run to finish.
+     */
     waitSecs?: number;
+    /**
+     * `Log` instance that should be used to redirect actor run logs to.
+     * If `undefined` default `Log` will be created and used.
+     * If `null`, no log redirection will occur.
+     */
     log?: Log | null;
 }
 

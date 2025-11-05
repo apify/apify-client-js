@@ -188,38 +188,29 @@ export class StreamedLog {
 
             // Push complete part of the chunk to the buffer
             this.streamBuffer.push(Buffer.from(chunkWithPreviousRemainder.slice(0, lastCompleteMessageIndex)));
-            this.logBufferContent(false);
+            this.logBufferContent();
 
             // Keep processing the new data until stopped
             if (this.stopLogging) {
                 break;
             }
         }
-
-        // Process the remaining buffer
-        this.logBufferContent(true);
+        // Process whatever is left when exiting. Maybe it is incomplete, maybe it is last line without EOL.
+        const lastMessage = Buffer.from(previousChunkRemainder).toString().trim();
+        if (lastMessage.length) {
+            this.toLog.info(lastMessage);
+        }
     }
 
     /**
      * Parse the buffer and log complete messages.
      */
-    private logBufferContent(includeLastPart = false): void {
+    private logBufferContent(): void {
         const allParts = Buffer.concat(this.streamBuffer).toString().split(this.splitMarker).slice(1);
-        let messageMarkers;
-        let messageContents;
         // Parse the buffer parts into complete messages
-        if (includeLastPart) {
-            // This is final call, so log everything. Do not keep anything in the buffer.
-            messageMarkers = allParts.filter((_, i) => i % 2 === 0);
-            messageContents = allParts.filter((_, i) => i % 2 !== 0);
-            this.streamBuffer = [];
-        } else {
-            messageMarkers = allParts.filter((_, i) => i % 2 === 0).slice(0, -1);
-            messageContents = allParts.filter((_, i) => i % 2 !== 0).slice(0, -1);
-
-            // The last two parts (marker and message) are possibly not complete and will be left in the buffer.
-            this.streamBuffer = [Buffer.from(allParts.slice(-2).join(''))];
-        }
+        const messageMarkers = allParts.filter((_, i) => i % 2 === 0);
+        const messageContents = allParts.filter((_, i) => i % 2 !== 0);
+        this.streamBuffer = [];
 
         messageMarkers.forEach((marker, index) => {
             const decodedMarker = marker;
