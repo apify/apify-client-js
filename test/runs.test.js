@@ -2,7 +2,7 @@ const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
 const { ApifyClient } = require('apify-client');
 const { mockServer } = require('./mock_server/server');
 const c = require('ansi-colors');
-const { MOCKED_ACTOR_LOGS_PROCESSED } = require('./mock_server/consts');
+const { MOCKED_ACTOR_LOGS_PROCESSED } = require('./mock_server/test_utils');
 
 describe('Run methods', () => {
     let baseUrl;
@@ -412,7 +412,7 @@ describe('Redirect run logs', () => {
     ];
 
     describe('run.getStreamedLog', () => {
-        test.each(testCases)('getStreamedLog $fromStart', async ({ fromStart, expected }) => {
+        test.each(testCases)('getStreamedLog fromStart:$fromStart', async ({ fromStart, expected }) => {
             const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
             // Set fake time in constructor to skip the first redirected log entry// fromStart=True should redirect all logs
             jest.useFakeTimers();

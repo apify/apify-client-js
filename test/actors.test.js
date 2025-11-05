@@ -3,7 +3,7 @@ const { ActorListSortBy, ApifyClient, LoggerActorRedirect } = require('apify-cli
 const { stringifyWebhooksToBase64 } = require('../src/utils');
 const { mockServer, createDefaultApp } = require('./mock_server/server');
 const c = require('ansi-colors');
-const { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator } = require('./mock_server/consts');
+const { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator } = require('./mock_server/test_utils');
 const { Log, LEVELS } = require('@apify/log');
 const express = require('express');
 
