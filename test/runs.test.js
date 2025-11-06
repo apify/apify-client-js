@@ -3,6 +3,7 @@ const { ApifyClient } = require('apify-client');
 const { mockServer } = require('./mock_server/server');
 const c = require('ansi-colors');
 const { MOCKED_ACTOR_LOGS_PROCESSED } = require('./mock_server/test_utils');
+const { setTimeout: setTimeoutNode } = require('node:timers/promises');
 
 describe('Run methods', () => {
     let baseUrl;
@@ -422,9 +423,7 @@ describe('Redirect run logs', () => {
 
             streamedLog.start();
             // Wait some time to accumulate logs
-            await new Promise((resolve) => {
-                setTimeout(resolve, 1000);
-            });
+            await setTimeoutNode(1000);
             await streamedLog.stop();
 
             const loggerPrefix = c.cyan('redirect-actor-name runId:redirect-run-id -> ');

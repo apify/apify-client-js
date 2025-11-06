@@ -6,6 +6,7 @@ const c = require('ansi-colors');
 const { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator } = require('./mock_server/test_utils');
 const { Log, LEVELS } = require('@apify/log');
 const express = require('express');
+const { setTimeout } = require('node:timers/promises');
 
 describe('Actor methods', () => {
     let baseUrl;
@@ -686,9 +687,8 @@ describe('Run actor with redirected logs', () => {
         // Set up a status generator to simulate run status changes. It will be reset for each test.
         router.get('/actor-runs/redirect-run-id', async (req, res) => {
             // Delay the response to give the actor time to run and produce expected logs
-            await new Promise((resolve) => {
-                setTimeout(resolve, 10);
-            });
+            await setTimeout(10);
+
             const [status, statusMessage] = statusGenerator.next().value;
             res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status, statusMessage } });
         });
