@@ -76,21 +76,12 @@ export interface LogOptions {
     raw?: boolean;
 }
 
-// Temp create it here and ask Martin where to put it
-
-const DEFAULT_OPTIONS = {
-    /** Whether to exclude timestamp of log redirection in redirected logs. */
-    skipTime: true,
-    /** Level of log redirection */
-    level: LogLevel.DEBUG,
-};
-
 /**
  * Logger for redirected actor logs.
  */
 export class LoggerActorRedirect extends Logger {
     constructor(options = {}) {
-        super({ ...DEFAULT_OPTIONS, ...options });
+        super({ skipTime: true, level: LogLevel.DEBUG, ...options });
     }
 
     override _log(level: LogLevel, message: string, data?: any, exception?: unknown, opts: Record<string, any> = {}) {
@@ -121,7 +112,7 @@ export class LoggerActorRedirect extends Logger {
  * Helper class for redirecting streamed Actor logs to another log.
  */
 export class StreamedLog {
-    private toLog: Log;
+    private destinationLog: Log;
     private streamBuffer: Buffer[] = [];
     private splitMarker = /(?:\n|^)(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)/g;
     private relevancyTimeLimit: Date | null;
@@ -130,8 +121,9 @@ export class StreamedLog {
     private streamingTask: Promise<void> | null = null;
     private stopLogging = false;
 
-    constructor(logClient: LogClient, toLog: Log, fromStart = true) {
-        this.toLog = toLog;
+    constructor(options: StreamedLogOptions) {
+        const { toLog, logClient, fromStart = true } = options;
+        this.destinationLog = toLog;
         this.logClient = logClient;
         this.relevancyTimeLimit = fromStart ? null : new Date();
     }
@@ -174,6 +166,16 @@ export class StreamedLog {
         if (!logStream) {
             return;
         }
+        const lastChunkRemainder = await this.logStreamChunks(logStream);
+        // Process whatever is left when exiting. Maybe it is incomplete, maybe it is last log without EOL.
+        const lastMessage = Buffer.from(lastChunkRemainder).toString().trim();
+        if (lastMessage.length) {
+            this.destinationLog.info(lastMessage);
+        }
+    }
+
+    private async logStreamChunks(logStream: Readable): Promise<Uint8Array> {
+        // Chunk may be incomplete. Keep remainder for next chunk.
         let previousChunkRemainder: Uint8Array = new Uint8Array();
 
         for await (const chunk of logStream) {
@@ -195,11 +197,7 @@ export class StreamedLog {
                 break;
             }
         }
-        // Process whatever is left when exiting. Maybe it is incomplete, maybe it is last line without EOL.
-        const lastMessage = Buffer.from(previousChunkRemainder).toString().trim();
-        if (lastMessage.length) {
-            this.toLog.info(lastMessage);
-        }
+        return previousChunkRemainder;
     }
 
     /**
@@ -226,7 +224,16 @@ export class StreamedLog {
 
             // Original log level information is not available. Log all on info level. Log level could be guessed for
             // some logs, but for any multiline logs such guess would be probably correct only for the first line.
-            this.toLog.info(message.trim());
+            this.destinationLog.info(message.trim());
         });
     }
+}
+
+export interface StreamedLogOptions {
+    /** Log client used to communicate with the Apify API. */
+    logClient: LogClient;
+    /** Log to which the Actor run logs will be redirected. */
+    toLog: Log;
+    /** Whether to redirect all logs from Actor run start (even logs from the past). */
+    fromStart?: boolean;
 }

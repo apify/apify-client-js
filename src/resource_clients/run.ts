@@ -293,7 +293,7 @@ export class RunClient extends ResourceClient {
             toLog = new Log({ level: LEVELS.DEBUG, prefix: `${name} -> `, logger: new LoggerActorRedirect() });
         }
 
-        return new StreamedLog(this.log(), toLog, fromStart);
+        return new StreamedLog({ logClient: this.log(), toLog, fromStart });
     }
 }
 
