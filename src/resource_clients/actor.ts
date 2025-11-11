@@ -140,7 +140,7 @@ export class ActorClient extends ResourceClient {
                 webhooks: ow.optional.array.ofType(ow.object),
                 maxItems: ow.optional.number.not.negative,
                 maxTotalChargeUsd: ow.optional.number.not.negative,
-                log: ow.optional.any(ow.null, ow.object.instanceOf(Log)),
+                log: ow.optional.any(ow.null, ow.object.instanceOf(Log), ow.string.equals('default')),
                 restartOnError: ow.optional.boolean,
                 forcePermissionLevel: ow.optional.string.oneOf(Object.values(ACTOR_PERMISSION_LEVEL)),
             }),
@@ -442,10 +442,10 @@ export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish
     waitSecs?: number;
     /**
      * `Log` instance that should be used to redirect actor run logs to.
-     * If `undefined` default `Log` will be created and used.
+     * If `undefined` or `'default'` the pre-defined `Log` will be created and used.
      * If `null`, no log redirection will occur.
      */
-    log?: Log | null;
+    log?: Log | null | 'default';
 }
 
 export interface ActorRunListItem {

@@ -278,7 +278,7 @@ export class RunClient extends ResourceClient {
             // Explicitly no logging or not in Node.js
             return undefined;
         }
-        if (toLog === undefined) {
+        if (toLog === undefined || toLog === 'default') {
             // Create default StreamedLog
             // Get actor name and run id
             const runData = await this.get();
@@ -298,7 +298,7 @@ export class RunClient extends ResourceClient {
 }
 
 export interface GetStreamedLogOptions {
-    toLog?: Log | null;
+    toLog?: Log | null | 'default';
     fromStart?: boolean;
 }
 

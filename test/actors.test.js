@@ -726,6 +726,17 @@ describe('Run actor with redirected logs', () => {
             logSpy.mockRestore();
         });
 
+        test('explicit default log', async () => {
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+            const defaultPrefix = 'redirect-actor-name runId:redirect-run-id -> ';
+            await client.actor('redirect-actor-id').call(undefined, { log: 'default' });
+
+            const loggerPrefix = c.cyan(defaultPrefix);
+            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [loggerPrefix + item]));
+            logSpy.mockRestore();
+        });
+
         test('custom log', async () => {
             const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
