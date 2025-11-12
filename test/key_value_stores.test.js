@@ -21,7 +21,8 @@ describe('Key-Value Store methods', () => {
     let client;
     let page;
     beforeEach(async () => {
-        page = await browser.getInjectedPage(baseUrl, DEFAULT_OPTIONS);
+        // Navigate to localhost address to ensure secure context e.g. for Web Crypto API
+        page = await browser.getInjectedPage(baseUrl, DEFAULT_OPTIONS, baseUrl);
         client = new ApifyClient({
             baseUrl,
             maxRetries: 0,
