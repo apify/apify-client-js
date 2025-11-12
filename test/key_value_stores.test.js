@@ -621,7 +621,10 @@ describe('Key-Value Store methods', () => {
                 expect(url.searchParams.get('signature')).toBeDefined();
                 expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/records/${key}`);
 
-                const browserRes = await page.evaluate(({ storeId, key }) => client.keyValueStore(storeId).getRecordPublicUrl(key), { storeId, key });
+                const browserRes = await page.evaluate(
+                    ({ storeId, key }) => client.keyValueStore(storeId).getRecordPublicUrl(key),
+                    { storeId, key },
+                );
                 expect(browserRes).toEqual(res);
             });
 
@@ -634,7 +637,10 @@ describe('Key-Value Store methods', () => {
                 expect(url.searchParams.get('signature')).toBeNull();
                 expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/records/${key}`);
 
-                const browserRes = await page.evaluate(({ storeId, key }) => client.keyValueStore(storeId).getRecordPublicUrl(key), { storeId, key });
+                const browserRes = await page.evaluate(
+                    ({ storeId, key }) => client.keyValueStore(storeId).getRecordPublicUrl(key),
+                    { storeId, key },
+                );
                 expect(browserRes).toEqual(res);
             });
         });

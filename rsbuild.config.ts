@@ -31,7 +31,7 @@ export default defineConfig({
         externals: {
             'node:util': 'node:util',
             'node:zlib': 'node:zlib',
-            'crypto': 'node:crypto',
+            crypto: 'node:crypto',
         },
     },
     tools: {
