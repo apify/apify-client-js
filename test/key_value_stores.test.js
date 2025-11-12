@@ -619,6 +619,9 @@ describe('Key-Value Store methods', () => {
                 const url = new URL(res);
                 expect(url.searchParams.get('signature')).toBeDefined();
                 expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/records/${key}`);
+
+                const browserRes = await page.evaluate(({ storeId, key }) => client.keyValueStore(storeId).getRecordPublicUrl(key), { storeId, key });
+                expect(browserRes).toEqual(res);
             });
 
             it('should not include a signature in the URL when the caller lacks permission to access the signing secret key', async () => {
@@ -629,6 +632,9 @@ describe('Key-Value Store methods', () => {
                 const url = new URL(res);
                 expect(url.searchParams.get('signature')).toBeNull();
                 expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/records/${key}`);
+
+                const browserRes = await page.evaluate(({ storeId, key }) => client.keyValueStore(storeId).getRecordPublicUrl(key), { storeId, key });
+                expect(browserRes).toEqual(res);
             });
         });
 
@@ -659,6 +665,9 @@ describe('Key-Value Store methods', () => {
                 const url = new URL(res);
                 expect(url.searchParams.get('signature')).toBeDefined();
                 expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/keys`);
+
+                const browserRes = await page.evaluate((id) => client.keyValueStore(id).createKeysPublicUrl(), storeId);
+                expect(browserRes).toEqual(res);
             });
 
             it('should not include a signature in the URL when the caller lacks permission to access the signing secret key', async () => {
@@ -668,6 +677,9 @@ describe('Key-Value Store methods', () => {
                 const url = new URL(res);
                 expect(url.searchParams.get('signature')).toBeNull();
                 expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/keys`);
+
+                const browserRes = await page.evaluate((id) => client.keyValueStore(id).createKeysPublicUrl(), storeId);
+                expect(browserRes).toEqual(res);
             });
 
             it('includes provided options (e.g., limit and prefix) as query parameters', async () => {
