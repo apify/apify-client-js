@@ -32,7 +32,7 @@ export default defineConfig({
             'node:util': 'node:util',
             'node:zlib': 'node:zlib',
             'node:crypto': 'node:crypto',
-            'crypto': 'node:crypto',
+            crypto: 'node:crypto',
         },
     },
     tools: {
