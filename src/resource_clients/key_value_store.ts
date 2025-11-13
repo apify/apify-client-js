@@ -5,7 +5,7 @@ import type { JsonValue } from 'type-fest';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import log from '@apify/log';
-import { createHmacSignature, createStorageContentSignature } from '@apify/utilities';
+import { createHmacSignatureAsync, createStorageContentSignatureAsync } from '@apify/utilities';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
@@ -100,7 +100,7 @@ export class KeyValueStoreClient extends ResourceClient {
         const recordPublicUrl = new URL(this._publicUrl(`records/${key}`));
 
         if (store?.urlSigningSecretKey) {
-            const signature = createHmacSignature(store.urlSigningSecretKey, key);
+            const signature = await createHmacSignatureAsync(store.urlSigningSecretKey, key);
             recordPublicUrl.searchParams.append('signature', signature);
         }
 
@@ -138,7 +138,7 @@ export class KeyValueStoreClient extends ResourceClient {
         let createdPublicKeysUrl = new URL(this._publicUrl('keys'));
 
         if (store?.urlSigningSecretKey) {
-            const signature = createStorageContentSignature({
+            const signature = await createStorageContentSignatureAsync({
                 resourceId: store.id,
                 urlSigningSecretKey: store.urlSigningSecretKey,
                 expiresInMillis: expiresInSecs ? expiresInSecs * 1000 : undefined,

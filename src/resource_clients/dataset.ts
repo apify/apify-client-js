@@ -1,7 +1,7 @@
 import ow from 'ow';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
-import { createStorageContentSignature } from '@apify/utilities';
+import { createStorageContentSignatureAsync } from '@apify/utilities';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
@@ -204,7 +204,7 @@ export class DatasetClient<
         let createdItemsPublicUrl = new URL(this._publicUrl('items'));
 
         if (dataset?.urlSigningSecretKey) {
-            const signature = createStorageContentSignature({
+            const signature = await createStorageContentSignatureAsync({
                 resourceId: dataset.id,
                 urlSigningSecretKey: dataset.urlSigningSecretKey,
                 expiresInMillis: expiresInSecs ? expiresInSecs * 1000 : undefined,

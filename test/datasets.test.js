@@ -19,7 +19,8 @@ describe('Dataset methods', () => {
     let client;
     let page;
     beforeEach(async () => {
-        page = await browser.getInjectedPage(baseUrl, DEFAULT_OPTIONS);
+        // Navigate to localhost address to ensure secure context e.g. for Web Crypto API
+        page = await browser.getInjectedPage(baseUrl, DEFAULT_OPTIONS, baseUrl);
         client = new ApifyClient({
             baseUrl,
             maxRetries: 0,
@@ -406,6 +407,9 @@ describe('Dataset methods', () => {
                 const url = new URL(res);
                 expect(url.searchParams.get('signature')).toBeDefined();
                 expect(url.pathname).toBe(`/v2/datasets/${datasetId}/items`);
+
+                const browserRes = await page.evaluate((id) => client.dataset(id).createItemsPublicUrl(), datasetId);
+                expect(browserRes).toEqual(res);
             });
 
             it('should not include a signature in the URL when the caller lacks permission to access the signing secret key', async () => {
@@ -415,6 +419,9 @@ describe('Dataset methods', () => {
                 const url = new URL(res);
                 expect(url.searchParams.get('signature')).toBeNull();
                 expect(url.pathname).toBe(`/v2/datasets/${datasetId}/items`);
+
+                const browserRes = await page.evaluate((id) => client.dataset(id).createItemsPublicUrl(), datasetId);
+                expect(browserRes).toEqual(res);
             });
 
             it('includes provided options (e.g., limit and prefix) as query parameters', async () => {

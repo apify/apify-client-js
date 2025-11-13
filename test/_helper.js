@@ -10,8 +10,10 @@ class Browser {
         return this.browser;
     }
 
-    async getInjectedPage(baseUrl, DEFAULT_OPTIONS) {
+    async getInjectedPage(baseUrl, DEFAULT_OPTIONS, gotoUrl = null) {
         const page = await this.browser.newPage();
+        if (gotoUrl) await page.goto(gotoUrl);
+
         await puppeteerUtils.injectFile(page, `${__dirname}/../dist/bundle.js`);
 
         page.on('console', (msg) => console.log(msg.text()));
@@ -26,6 +28,7 @@ class Browser {
             baseUrl,
             DEFAULT_OPTIONS,
         );
+
         return page;
     }
 
