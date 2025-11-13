@@ -1,5 +1,5 @@
 ---
-sidebar_label: 'Introduction'
+sidebar_label: 'Overview'
 title: 'Apify API client for JavaScript'
 ---
 
@@ -12,7 +12,7 @@ The client simplifies interaction with the Apify Platform by providing:
 
 - Intuitive methods for working with [Actors](https://docs.apify.com/platform/actors), [datasets](https://docs.apify.com/platform/storage/dataset), [key-value stores](https://docs.apify.com/platform/storage/key-value-store), and other Apify resources
 - Intelligent parsing of API responses and rich error messages for debugging
-- Built-in [exponential backoff](./getting-started#retries-with-exponential-backoff) for failed requests
+- Built-in [exponential backoff](./getting-started.md#retries-with-exponential-backoff) for failed requests
 - Full TypeScript support with comprehensive type definitions
 - Cross-platform compatibility in [Node.js](https://nodejs.org/) (v16+) and modern browsers
 
@@ -45,6 +45,6 @@ console.log(items);
 
 ## Next Steps
 
-- [Getting Started Guide](./getting-started.md) - Detailed setup and usage instructions
+- [x Started Guide](./getting-started.md) - Detailed setup and usage instructions
 - [API Reference](../reference) - Complete API documentation
 - [Examples](./examples) - Code examples for common use cases
