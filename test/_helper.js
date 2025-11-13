@@ -1,6 +1,6 @@
 const { launchPuppeteer, puppeteerUtils } = require('@crawlee/puppeteer');
 
-const mockServer = require('./mock_server/server');
+const { mockServer } = require('./mock_server/server');
 
 class Browser {
     async start() {

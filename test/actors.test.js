@@ -1,7 +1,12 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
-const { ActorListSortBy, ApifyClient } = require('apify-client');
+const { ActorListSortBy, ApifyClient, LoggerActorRedirect } = require('apify-client');
 const { stringifyWebhooksToBase64 } = require('../src/utils');
-const mockServer = require('./mock_server/server');
+const { mockServer, createDefaultApp } = require('./mock_server/server');
+const c = require('ansi-colors');
+const { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator } = require('./mock_server/test_utils');
+const { Log, LEVELS } = require('@apify/log');
+const express = require('express');
+const { setTimeout } = require('node:timers/promises');
 
 describe('Actor methods', () => {
     let baseUrl;
@@ -251,6 +256,7 @@ describe('Actor methods', () => {
                 timeout,
                 build,
                 waitSecs,
+                log: null,
             });
 
             expect(res).toEqual(data);
@@ -301,7 +307,7 @@ describe('Actor methods', () => {
             const maxItems = 100;
 
             mockServer.setResponse({ body });
-            const res = await client.actor(actorId).call(undefined, { waitSecs, maxItems });
+            const res = await client.actor(actorId).call(undefined, { waitSecs, maxItems, log: null });
 
             expect(res).toEqual(data);
             validateRequest({ waitForFinish: waitSecs }, { runId });
@@ -666,6 +672,91 @@ describe('Actor methods', () => {
             );
             expect(browserRes).toEqual(res);
             validateRequest(query, { actorId });
+        });
+    });
+});
+
+describe('Run actor with redirected logs', () => {
+    let baseUrl;
+    let client;
+    const statusGenerator = new StatusGenerator();
+
+    beforeAll(async () => {
+        // Use custom router for the tests
+        const router = express.Router();
+        // Set up a status generator to simulate run status changes. It will be reset for each test.
+        router.get('/actor-runs/redirect-run-id', async (req, res) => {
+            // Delay the response to give the actor time to run and produce expected logs
+            await setTimeout(10);
+
+            const [status, statusMessage] = statusGenerator.next().value;
+            res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status, statusMessage } });
+        });
+        const app = createDefaultApp(router);
+        const server = await mockServer.start(undefined, app);
+        baseUrl = `http://localhost:${server.address().port}`;
+    });
+
+    afterAll(async () => {
+        await Promise.all([mockServer.close()]);
+    });
+
+    beforeEach(async () => {
+        client = new ApifyClient({
+            baseUrl,
+            maxRetries: 0,
+            ...DEFAULT_OPTIONS,
+        });
+    });
+    afterEach(async () => {
+        // Reset the generator to so that the next test starts fresh
+        statusGenerator.reset();
+        client = null;
+    });
+
+    describe('actor.call - redirected logs', () => {
+        test('default log', async () => {
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+            const defaultPrefix = 'redirect-actor-name runId:redirect-run-id -> ';
+            await client.actor('redirect-actor-id').call();
+
+            const loggerPrefix = c.cyan(defaultPrefix);
+            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [loggerPrefix + item]));
+            logSpy.mockRestore();
+        });
+
+        test('explicit default log', async () => {
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+            const defaultPrefix = 'redirect-actor-name runId:redirect-run-id -> ';
+            await client.actor('redirect-actor-id').call(undefined, { log: 'default' });
+
+            const loggerPrefix = c.cyan(defaultPrefix);
+            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [loggerPrefix + item]));
+            logSpy.mockRestore();
+        });
+
+        test('custom log', async () => {
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+            const customPrefix = 'custom prefix...';
+            await client.actor('redirect-actor-id').call(undefined, {
+                log: new Log({ level: LEVELS.DEBUG, prefix: customPrefix, logger: new LoggerActorRedirect() }),
+            });
+
+            const loggerPrefix = c.cyan(customPrefix);
+            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [loggerPrefix + item]));
+            logSpy.mockRestore();
+        });
+
+        test('no log', async () => {
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+            await client.actor('redirect-actor-id').call(undefined, { log: null });
+
+            expect(logSpy.mock.calls).toEqual([]);
+            logSpy.mockRestore();
         });
     });
 });

@@ -3,6 +3,7 @@ import ow from 'ow';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 import { ACT_JOB_STATUSES, ACTOR_PERMISSION_LEVEL, META_ORIGINS } from '@apify/consts';
+import { Log } from '@apify/log';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
@@ -139,18 +140,28 @@ export class ActorClient extends ResourceClient {
                 webhooks: ow.optional.array.ofType(ow.object),
                 maxItems: ow.optional.number.not.negative,
                 maxTotalChargeUsd: ow.optional.number.not.negative,
+                log: ow.optional.any(ow.null, ow.object.instanceOf(Log), ow.string.equals('default')),
                 restartOnError: ow.optional.boolean,
                 forcePermissionLevel: ow.optional.string.oneOf(Object.values(ACTOR_PERMISSION_LEVEL)),
             }),
         );
 
-        const { waitSecs, ...startOptions } = options;
+        const { waitSecs, log, ...startOptions } = options;
         const { id } = await this.start(input, startOptions);
 
         // Calling root client because we need access to top level API.
         // Creating a new instance of RunClient here would only allow
         // setting it up as a nested route under actor API.
-        return this.apifyClient.run(id).waitForFinish({ waitSecs });
+        const newRunClient = this.apifyClient.run(id);
+
+        const streamedLog = await newRunClient.getStreamedLog({ toLog: options?.log });
+        streamedLog?.start();
+        return this.apifyClient
+            .run(id)
+            .waitForFinish({ waitSecs })
+            .finally(async () => {
+                await streamedLog?.stop();
+            });
     }
 
     /**
@@ -425,7 +436,16 @@ export interface ActorStartOptions {
 }
 
 export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
+    /**
+     * Wait time in seconds for the actor run to finish.
+     */
     waitSecs?: number;
+    /**
+     * `Log` instance that should be used to redirect actor run logs to.
+     * If `undefined` or `'default'` the pre-defined `Log` will be created and used.
+     * If `null`, no log redirection will occur.
+     */
+    log?: Log | null | 'default';
 }
 
 export interface ActorRunListItem {
