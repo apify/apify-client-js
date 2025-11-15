@@ -404,11 +404,21 @@ export interface ActorStartOptions {
     webhooks?: readonly WebhookUpdateData[];
 
     /**
-     * Specifies maximum number of items that the actor run should return.
-     * This is used by pay per result actors to limit the maximum number of results that will be charged to customer.
-     * Value can be accessed in actor run using `ACTOR_MAX_PAID_DATASET_ITEMS` environment variable.
+     * Specifies the maximum number of dataset items that will be charged for pay-per-result actors.
+     * This does NOT guarantee that the Actor will return only this many items.
+     * It only ensures you won't be charged for more than this number of items.
+     * Only works for pay-per-result actors.
+     * Value can be accessed in the actor run using `ACTOR_MAX_PAID_DATASET_ITEMS` environment variable.
      */
     maxItems?: number;
+
+    /**
+     * Specifies the maximum cost of the Actor run. This parameter is
+     * used only for pay-per-event Actors. It allows you to limit the amount
+     * charged to your subscription. You can access the maximum cost in your
+     * Actor by using the `ACTOR_MAX_TOTAL_CHARGE_USD` environment variable.
+     */
+    maxTotalChargeUsd?: number;
 
     /**
      * Determines whether the run will be restarted if it fails.
@@ -504,6 +514,7 @@ export interface ActorRunOptions {
     timeoutSecs: number;
     memoryMbytes: number;
     diskMbytes: number;
+    maxItems?: number;
     maxTotalChargeUsd?: number;
     restartOnError?: boolean;
 }
