@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### ⚡ Performance
 
 - Dynamic imports for certain `node:` packages ([#767](https://github.com/apify/apify-client-js/pull/767)) ([0bf8db7](https://github.com/apify/apify-client-js/commit/0bf8db7ce61c98232d7051bf1f74e70fb89df8a5)) by [@barjin](https://github.com/barjin)
+- Don&#x27;t bundle `node:crypto` in the browser bundle ([#782](https://github.com/apify/apify-client-js/pull/782)) ([72a1d3c](https://github.com/apify/apify-client-js/commit/72a1d3c154b1db1e3b6f89b69a0593e44bc5e062)) by [@barjin](https://github.com/barjin)
 
 
 <!-- git-cliff-unreleased-end -->
