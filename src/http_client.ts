@@ -1,6 +1,7 @@
+import http from 'node:http';
+import https from 'node:https';
 import os from 'node:os';
 
-import KeepAliveAgent from 'agentkeepalive';
 import type { RetryFunction } from 'async-retry';
 import retry from 'async-retry';
 import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
@@ -32,9 +33,9 @@ export class HttpClient {
 
     timeoutMillis: number;
 
-    httpAgent?: KeepAliveAgent;
+    httpAgent?: http.Agent;
 
-    httpsAgent?: KeepAliveAgent.HttpsAgent;
+    httpsAgent?: https.Agent;
 
     axios: AxiosInstance;
 
@@ -58,11 +59,13 @@ export class HttpClient {
             // is for inactive sockets, sometimes the platform would take
             // long to process requests and the socket would time-out
             // while waiting for the response.
-            const agentOpts = {
+            const agentOptions: http.AgentOptions = {
+                keepAlive: true,
                 timeout: this.timeoutMillis,
             };
-            this.httpAgent = new KeepAliveAgent(agentOpts);
-            this.httpsAgent = new KeepAliveAgent.HttpsAgent(agentOpts);
+
+            this.httpAgent = new http.Agent(agentOptions);
+            this.httpsAgent = new https.Agent(agentOptions);
         }
 
         this.axios = axios.create({
