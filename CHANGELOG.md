@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.19.1 - **not yet released**
 
+### 🚀 Features
+
+- Add redirected actor logs ([#769](https://github.com/apify/apify-client-js/pull/769)) ([a7f4233](https://github.com/apify/apify-client-js/commit/a7f42333796b294266dd7950a2ecf47fa504373c)) by [@Pijukatel](https://github.com/Pijukatel)
+
 ### ⚡ Performance
 
 - Dynamic imports for certain `node:` packages ([#767](https://github.com/apify/apify-client-js/pull/767)) ([0bf8db7](https://github.com/apify/apify-client-js/commit/0bf8db7ce61c98232d7051bf1f74e70fb89df8a5)) by [@barjin](https://github.com/barjin)
