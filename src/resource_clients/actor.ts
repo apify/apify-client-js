@@ -404,11 +404,11 @@ export interface ActorStartOptions {
     webhooks?: readonly WebhookUpdateData[];
 
     /**
-     * Specifies the maximum number of dataset items that will be charged for pay-per-result actors.
+     * Specifies the maximum number of dataset items that will be charged for pay-per-result Actors.
      * This does NOT guarantee that the Actor will return only this many items.
      * It only ensures you won't be charged for more than this number of items.
-     * Only works for pay-per-result actors.
-     * Value can be accessed in the actor run using `ACTOR_MAX_PAID_DATASET_ITEMS` environment variable.
+     * Only works for pay-per-result Actors.
+     * Value can be accessed in the Actor run using `ACTOR_MAX_PAID_DATASET_ITEMS` environment variable.
      */
     maxItems?: number;
 
