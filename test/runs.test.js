@@ -1,6 +1,9 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
 const { ApifyClient } = require('apify-client');
-const mockServer = require('./mock_server/server');
+const { mockServer } = require('./mock_server/server');
+const c = require('ansi-colors');
+const { MOCKED_ACTOR_LOGS_PROCESSED } = require('./mock_server/test_utils');
+const { setTimeout: setTimeoutNode } = require('node:timers/promises');
 
 describe('Run methods', () => {
     let baseUrl;
@@ -374,6 +377,58 @@ describe('Run methods', () => {
                 'Expected `options` to be of type `object` but received type `undefined`\n' +
                     'Cannot convert undefined or null to object in object `options`',
             );
+        });
+    });
+});
+
+describe('Redirect run logs', () => {
+    let baseUrl;
+
+    beforeAll(async () => {
+        // Ensure that the tests that use characters like á are correctly decoded in console.
+        process.stdout.setDefaultEncoding('utf8');
+        const server = await mockServer.start();
+        baseUrl = `http://localhost:${server.address().port}`;
+    });
+
+    afterAll(async () => {
+        await Promise.all([mockServer.close()]);
+    });
+
+    let client;
+    beforeEach(async () => {
+        client = new ApifyClient({
+            baseUrl,
+            maxRetries: 0,
+            ...DEFAULT_OPTIONS,
+        });
+    });
+    afterEach(async () => {
+        client = null;
+    });
+
+    const testCases = [
+        { fromStart: true, expected: MOCKED_ACTOR_LOGS_PROCESSED },
+        { fromStart: false, expected: MOCKED_ACTOR_LOGS_PROCESSED.slice(1) },
+    ];
+
+    describe('run.getStreamedLog', () => {
+        test.each(testCases)('getStreamedLog fromStart:$fromStart', async ({ fromStart, expected }) => {
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+            // Set fake time in constructor to skip the first redirected log entry// fromStart=True should redirect all logs
+            jest.useFakeTimers();
+            jest.setSystemTime(new Date('2025-05-13T07:24:12.686Z'));
+            const streamedLog = await client.run('redirect-run-id').getStreamedLog({ fromStart });
+            jest.useRealTimers();
+
+            streamedLog.start();
+            // Wait some time to accumulate logs
+            await setTimeoutNode(1000);
+            await streamedLog.stop();
+
+            const loggerPrefix = c.cyan('redirect-actor-name runId:redirect-run-id -> ');
+            expect(logSpy.mock.calls).toEqual(expected.map((item) => [loggerPrefix + item]));
+            logSpy.mockRestore();
         });
     });
 });
