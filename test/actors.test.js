@@ -698,7 +698,7 @@ describe('Run actor with redirected logs', () => {
     });
 
     afterAll(async () => {
-        await Promise.all([mockServer.close()]);
+        await mockServer.close();
     });
 
     beforeEach(async () => {
@@ -714,43 +714,28 @@ describe('Run actor with redirected logs', () => {
         client = null;
     });
 
+    const testCases = [
+        { expectedPrefix: c.cyan('redirect-actor-name runId:redirect-run-id -> '), logOptions: {} },
+        { expectedPrefix: c.cyan('redirect-actor-name runId:redirect-run-id -> '), logOptions: { log: 'default' } },
+        {
+            expectedPrefix: c.cyan('custom prefix...'),
+            logOptions: {
+                log: new Log({ level: LEVELS.DEBUG, prefix: 'custom prefix...', logger: new LoggerActorRedirect() }),
+            },
+        },
+    ];
+
     describe('actor.call - redirected logs', () => {
-        test('default log', async () => {
+        test.each(testCases)('logOptions:$logOptions', async ({ expectedPrefix, logOptions }) => {
             const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
-            const defaultPrefix = 'redirect-actor-name runId:redirect-run-id -> ';
-            await client.actor('redirect-actor-id').call();
+            await client.actor('redirect-actor-id').call(undefined, logOptions);
 
-            const loggerPrefix = c.cyan(defaultPrefix);
-            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [loggerPrefix + item]));
+            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [expectedPrefix + item]));
             logSpy.mockRestore();
         });
 
-        test('explicit default log', async () => {
-            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-
-            const defaultPrefix = 'redirect-actor-name runId:redirect-run-id -> ';
-            await client.actor('redirect-actor-id').call(undefined, { log: 'default' });
-
-            const loggerPrefix = c.cyan(defaultPrefix);
-            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [loggerPrefix + item]));
-            logSpy.mockRestore();
-        });
-
-        test('custom log', async () => {
-            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-
-            const customPrefix = 'custom prefix...';
-            await client.actor('redirect-actor-id').call(undefined, {
-                log: new Log({ level: LEVELS.DEBUG, prefix: customPrefix, logger: new LoggerActorRedirect() }),
-            });
-
-            const loggerPrefix = c.cyan(customPrefix);
-            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [loggerPrefix + item]));
-            logSpy.mockRestore();
-        });
-
-        test('no log', async () => {
+        test('logOptions:{ "log": null }', async () => {
             const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
             await client.actor('redirect-actor-id').call(undefined, { log: null });
