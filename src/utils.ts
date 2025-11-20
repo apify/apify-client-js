@@ -252,12 +252,12 @@ export interface PaginatedList<Data> {
     total: number;
     /** Count of dataset entries returned in this set. */
     count: number;
-    /** Should the results be in descending order. */
-    desc: boolean;
-    /** Position of the first returned entry. */
+    /** Position of the first returned entry in the dataset. */
     offset: number;
     /** Maximum number of dataset entries requested. */
     limit: number;
+    /** Should the results be in descending order. */
+    desc: boolean;
     /** Dataset entries based on chosen format parameter. */
     items: Data[];
 }

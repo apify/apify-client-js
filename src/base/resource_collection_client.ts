@@ -1,4 +1,5 @@
-import type { PaginatedResponse, PaginationOptions , parseDateFields, pluckData } from '../utils';
+import type { PaginatedResponse, PaginationOptions } from '../utils';
+import { parseDateFields, pluckData } from '../utils';
 import { ApiClient } from './api_client';
 
 /**

@@ -1,16 +1,9 @@
-import { setTimeout } from 'node:timers/promises';
-
-import c from 'ansi-colors';
 import type { StoreCollectionListOptions } from 'apify-client';
-import { ApifyClient, LoggerActorRedirect } from 'apify-client';
-import express from 'express';
-
-import { LEVELS, Log } from '@apify/log';
+import { ApifyClient } from 'apify-client';
 
 import type { ApifyResponse } from '../src/http_client';
 import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
-import { createDefaultApp, mockServer } from './mock_server/server';
-import { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator } from './mock_server/test_utils';
+import { mockServer } from './mock_server/server';
 
 describe('Store', () => {
     let baseUrl: string | undefined;
@@ -41,17 +34,16 @@ describe('Store', () => {
         page.close().catch(() => {});
     });
 
-    const opts = {
-        limit: 5,
-        offset: 3,
-        search: 'my search',
-        sortBy: 'my sort',
-        category: 'my category',
-        username: 'my username',
-        pricingModel: 'my pricing model',
-    };
-
     test('list() works', async () => {
+        const opts = {
+            limit: 5,
+            offset: 3,
+            search: 'my search',
+            sortBy: 'my sort',
+            category: 'my category',
+            username: 'my username',
+            pricingModel: 'my pricing model',
+        };
         const res: any = client && (await client.store().list(opts));
         expect(res.id).toEqual('store-list');
         validateRequest(opts);
