@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### 🚀 Features
 
 - Add redirected actor logs ([#769](https://github.com/apify/apify-client-js/pull/769)) ([a7f4233](https://github.com/apify/apify-client-js/commit/a7f42333796b294266dd7950a2ecf47fa504373c)) by [@Pijukatel](https://github.com/Pijukatel)
+- Replace `agentkeepalive` with native Node.js HTTP agents for proxy support ([#788](https://github.com/apify/apify-client-js/pull/788)) ([7d2be0f](https://github.com/apify/apify-client-js/commit/7d2be0f832a9cba2f7ada14fa80f66e6ea50b944)) by [@tducret](https://github.com/tducret)
 
 ### ⚡ Performance
 
