@@ -12,7 +12,7 @@ import {
     SMALL_TIMEOUT_MILLIS,
 } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
-import { IterablePaginatedList, PaginatedList } from "../utils";
+import type { PaginatedList } from '../utils';
 import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData } from '../utils';
 
 export class DatasetClient<
@@ -54,7 +54,7 @@ export class DatasetClient<
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
      */
-    async listItems(options: DatasetClientListItemOptions = {}): Promise<IterablePaginatedList<Data>> {
+    async listItems(options: DatasetClientListItemOptions = {}): Promise<PaginatedList<Data>> {
         ow(
             options,
             ow.object.exactShape({
@@ -73,36 +73,14 @@ export class DatasetClient<
             }),
         );
 
-        // TODO: Should empty limit return all, or current behavior, which is max per request 1000?
-        let chunksIterated = 0;
-        const self=this;
-        const firstResponse = await self.httpClient.call({
+        const response = await this.httpClient.call({
             url: this._url('items'),
             method: 'GET',
             params: this._params(options),
             timeout: DEFAULT_TIMEOUT_MILLIS,
         });
 
-        let currentPage = this._createPaginationList(firstResponse, options.desc ?? false);
-
-        return {
-            ...currentPage,
-            async *[Symbol.asyncIterator](){
-                while (currentPage.items.length!=0 || chunksIterated===0) {
-                    if (chunksIterated > 0) {
-                        const response = await self.httpClient.call({
-                            url: self._url('items'),
-                            method: 'GET',
-                            params: self._params(options),
-                            timeout: DEFAULT_TIMEOUT_MILLIS,
-                        });
-                        currentPage = self._createPaginationList(response, options.desc ?? false);
-                    }
-                    chunksIterated++;
-                    yield currentPage;
-                }
-            }
-        };
+        return this._createPaginationList(response, options.desc ?? false);
     }
 
     /**

@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { IterablePaginatedList , PaginatedList} from "../utils";
+import type { IterablePaginatedList } from '../utils';
 import type { ActorStats } from './actor';
 
 export class StoreCollectionClient extends ResourceCollectionClient {
@@ -32,32 +32,8 @@ export class StoreCollectionClient extends ResourceCollectionClient {
                 pricingModel: ow.optional.string,
             }),
         );
-        const getPaginatedList = this._list.bind(this);
 
-        let currentPage = await getPaginatedList<StoreCollectionListOptions, PaginatedList<ActorStoreList>>(options)
-
-
-
-        return {
-            ...currentPage,
-            async *[Symbol.asyncIterator](){
-                yield currentPage;
-                let itemsFetched = currentPage.items.length;
-                let currentLimit= options.limit !== undefined ? options.limit-itemsFetched: undefined;
-                let currentOffset= options.offset ?? 0 + itemsFetched;
-
-                while (currentPage.items.length>0 && (currentLimit === undefined || currentLimit>0)) {
-
-                    const newOptions = { ...options, limit: currentLimit, offset: currentOffset};
-                    currentPage = await getPaginatedList<StoreCollectionListOptions, PaginatedList<ActorStoreList>>(newOptions)
-                    yield currentPage;
-                    itemsFetched += currentPage.items.length
-                    currentLimit= options.limit !== undefined ? options.limit-itemsFetched: undefined;
-                    currentOffset= options.offset ?? 0 + itemsFetched;
-
-                }
-            }
-        };
+        return this._getIterablePagination(options);
     }
 }
 

@@ -233,32 +233,36 @@ export interface PaginationIteratorOptions {
     exclusiveStartId?: string;
 }
 
-export interface PaginatedList<Data>{
+export interface PaginationOptions {
+    /** Position of the first returned entry. */
+    offset?: number;
+    /** Maximum number of entries requested. */
+    limit?: number;
+}
+
+export interface PaginatedResponse {
+    /** Total count of entries. */
+    total?: number;
+    /** Entries. */
+    items: unknown[];
+}
+
+export interface PaginatedList<Data> {
     /** Total count of entries in the dataset. */
     total: number;
     /** Count of dataset entries returned in this set. */
     count: number;
-    /** Position of the first returned entry in the dataset. */
+    /** Should the results be in descending order. */
+    desc: boolean;
+    /** Position of the first returned entry. */
     offset: number;
     /** Maximum number of dataset entries requested. */
     limit: number;
-    /** Should the results be in descending order. */
-    desc: boolean;
     /** Dataset entries based on chosen format parameter. */
     items: Data[];
 }
 
-export interface IterablePagination<Data>{
-    /** Position of the first returned entry in the dataset. */
-    offset: number;
-    /** Maximum number of dataset entries requested. */
-    limit: number;
-    /** Should the results be in descending order. */
-    items: Data[];
-}
-
-export interface IterablePaginatedList<Data> extends PaginatedList<Data>, AsyncIterable<PaginatedList<Data>>{
-}
+export interface IterablePaginatedList<Data> extends PaginatedList<Data>, AsyncIterable<PaginatedList<Data>> {}
 
 export function cast<T>(input: unknown): T {
     return input as T;
