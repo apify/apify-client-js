@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.19.1 - **not yet released**
+## [2.20.0](https://github.com/apify/apify-client-js/releases/tag/v2.20.0) (2025-11-20)
 
 ### 🚀 Features
 
@@ -20,7 +19,6 @@ All notable changes to this project will be documented in this file.
 - Don&#x27;t bundle `node:crypto` in the browser bundle ([#782](https://github.com/apify/apify-client-js/pull/782)) ([72a1d3c](https://github.com/apify/apify-client-js/commit/72a1d3c154b1db1e3b6f89b69a0593e44bc5e062)) by [@barjin](https://github.com/barjin)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.19.0](https://github.com/apify/apify-client-js/releases/tag/v2.19.0) (2025-10-20)
 
 ### 🚀 Features
