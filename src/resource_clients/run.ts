@@ -299,7 +299,7 @@ export class RunClient extends ResourceClient {
         if (toLog === undefined || toLog === 'default') {
             toLog = await this.getActorRedirectLog();
         }
-        return new StatusMessageWatcher(toLog, this, options.checkPeriod);
+        return new StatusMessageWatcher({ toLog, runClient: this, checkPeriod: options.checkPeriod });
     }
 
     private async getActorRedirectLog(): Promise<Log> {

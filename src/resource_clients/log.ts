@@ -239,6 +239,9 @@ export interface StreamedLogOptions {
     fromStart?: boolean;
 }
 
+/**
+ * Helper class for redirecting Actor run status and status message to log.
+ */
 export class StatusMessageWatcher {
     private static finalSleepTimeMs = 6000;
     private static defaultCheckPeriodMs = 5000;
@@ -250,12 +253,16 @@ export class StatusMessageWatcher {
     private loggingTask: Promise<void> | null = null;
     private stopLogging = false;
 
-    constructor(toLog: Log, runClient: RunClient, checkPeriod: number = StatusMessageWatcher.defaultCheckPeriodMs) {
+    constructor(options: StatusMessageWatcherOptions) {
+        const { toLog, runClient, checkPeriod = StatusMessageWatcher.defaultCheckPeriodMs } = options;
         this.runClient = runClient;
         this.toLog = toLog;
         this.checkPeriod = checkPeriod;
     }
 
+    /**
+     * Start Actor run status and status message redirection.
+     */
     start() {
         if (this.loggingTask) {
             throw new Error('Logging task already active');
@@ -264,11 +271,15 @@ export class StatusMessageWatcher {
         this.loggingTask = this._logChangedStatusMessage();
     }
 
+    /**
+     * Stop Actor run status and status message redirection.
+     */
     async stop(): Promise<void> {
         if (!this.loggingTask) {
             throw new Error('Logging task is not active');
         }
         await new Promise((resolve) => {
+            // Wait for the final status and status message to be set
             setTimeout(resolve, StatusMessageWatcher.finalSleepTimeMs);
         });
         this.stopLogging = true;
@@ -284,6 +295,7 @@ export class StatusMessageWatcher {
                 const statusMessage = runData.statusMessage ?? '';
                 const newStatusMessage = `Status: ${status}, Message: ${statusMessage}`;
                 if (newStatusMessage !== this.lastStatusMessage) {
+                    // Log only when status or status message changed
                     this.lastStatusMessage = newStatusMessage;
                     this.toLog.info(newStatusMessage);
                 }
@@ -293,4 +305,13 @@ export class StatusMessageWatcher {
             }
         }
     }
+}
+
+export interface StatusMessageWatcherOptions {
+    /** Run client used to communicate with the Apify API. */
+    runClient: RunClient;
+    /** Log to which the Actor run logs will be redirected. */
+    toLog: Log;
+    /** How often should change in status be checked. */
+    checkPeriod?: number;
 }
