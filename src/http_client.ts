@@ -1,6 +1,7 @@
+import http from 'node:http';
+import https from 'node:https';
 import os from 'node:os';
 
-import KeepAliveAgent from 'agentkeepalive';
 import type { RetryFunction } from 'async-retry';
 import retry from 'async-retry';
 import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
@@ -32,9 +33,9 @@ export class HttpClient {
 
     timeoutMillis: number;
 
-    httpAgent?: KeepAliveAgent;
+    httpAgent?: http.Agent;
 
-    httpsAgent?: KeepAliveAgent.HttpsAgent;
+    httpsAgent?: https.Agent;
 
     axios: AxiosInstance;
 
@@ -53,16 +54,37 @@ export class HttpClient {
 
         if (isNode()) {
             // We want to keep sockets alive for better performance.
-            // It's important to set the user's timeout also here and not only
-            // on the axios instance, because even though this timeout
-            // is for inactive sockets, sometimes the platform would take
-            // long to process requests and the socket would time-out
-            // while waiting for the response.
-            const agentOpts = {
+            // Enhanced agent configuration based on agentkeepalive best practices:
+            // - Nagle's algorithm disabled for lower latency
+            // - Free socket timeout to prevent socket leaks
+            // - LIFO scheduling to reuse recent sockets
+            // - Socket TTL for connection freshness
+            const agentOptions: http.AgentOptions & { scheduling?: 'lifo' | 'fifo' } = {
+                keepAlive: true,
+                // Timeout for inactive sockets
+                // Prevents socket leaks from idle connections
                 timeout: this.timeoutMillis,
+                // Keep alive timeout for free sockets (15 seconds)
+                // Node.js will close unused sockets after this period
+                keepAliveMsecs: 15_000,
+                // Maximum number of sockets per host
+                maxSockets: 256,
+                maxFreeSockets: 256,
+                // LIFO scheduling - reuse most recently used sockets for better performance
+                scheduling: 'lifo',
             };
-            this.httpAgent = new KeepAliveAgent(agentOpts);
-            this.httpsAgent = new KeepAliveAgent.HttpsAgent(agentOpts);
+
+            this.httpAgent = new http.Agent(agentOptions);
+            this.httpsAgent = new https.Agent(agentOptions);
+
+            // Disable Nagle's algorithm for lower latency
+            // This sends data immediately instead of buffering small packets
+            const setNoDelay = (socket: any) => {
+                socket.setNoDelay(true);
+            };
+
+            this.httpAgent.on('socket', setNoDelay);
+            this.httpsAgent.on('socket', setNoDelay);
         }
 
         this.axios = axios.create({

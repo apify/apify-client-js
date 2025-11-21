@@ -22,7 +22,7 @@ const webhookDispatches = require('./routes/webhook_dispatches');
 const webhooks = require('./routes/webhooks');
 
 // Consts
-const { MOCKED_ACTOR_LOGS } = require('./consts');
+const { MOCKED_ACTOR_LOGS } = require('./test_utils');
 
 const defaultApp = createDefaultApp();
 

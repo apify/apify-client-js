@@ -3,9 +3,10 @@ const { ActorListSortBy, ApifyClient, LoggerActorRedirect, RunClient, StatusMess
 const { stringifyWebhooksToBase64 } = require('../src/utils');
 const { mockServer, createDefaultApp } = require('./mock_server/server');
 const c = require('ansi-colors');
-const { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator, MOCKED_ACTOR_STATUSES } = require('./mock_server/consts');
+const { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator, MOCKED_ACTOR_STATUSES } = require('./mock_server/test_utils');
 const { Log, LEVELS } = require('@apify/log');
 const express = require('express');
+const { setTimeout } = require('node:timers/promises');
 
 describe('Actor methods', () => {
     let baseUrl;
@@ -686,9 +687,8 @@ describe('Run actor with redirected logs', () => {
         // Set up a status generator to simulate run status changes. It will be reset for each test.
         router.get('/actor-runs/redirect-run-id', async (req, res) => {
             // Delay the response to give the actor time to run and produce expected logs
-            await new Promise((resolve) => {
-                setTimeout(resolve, 10);
-            });
+            await setTimeout(10);
+
             const [status, statusMessage] = statusGenerator.next().value;
             res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status, statusMessage } });
         });
@@ -698,7 +698,7 @@ describe('Run actor with redirected logs', () => {
     });
 
     afterAll(async () => {
-        await Promise.all([mockServer.close()]);
+        await mockServer.close();
     });
 
     beforeEach(async () => {
@@ -714,43 +714,33 @@ describe('Run actor with redirected logs', () => {
         client = null;
     });
 
+    const testCases = [
+        { expectedPrefix: c.cyan('redirect-actor-name runId:redirect-run-id -> '), logOptions: {} },
+        { expectedPrefix: c.cyan('redirect-actor-name runId:redirect-run-id -> '), logOptions: { log: 'default' } },
+        {
+            expectedPrefix: c.cyan('custom prefix...'),
+            logOptions: {
+                log: new Log({ level: LEVELS.DEBUG, prefix: 'custom prefix...', logger: new LoggerActorRedirect() }),
+            },
+        },
+    ];
+
     describe('actor.call - redirected logs', () => {
-        test('default log', async () => {
-            const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
-            // Ignore StatusMessageWatcher to not clutter the log redirection test
+        test.each(testCases)('logOptions:$logOptions', async ({ expectedPrefix, logOptions }) => {
             const mockedGetStatusMessageWatcher = jest
                 .spyOn(RunClient.prototype, 'getStatusMessageWatcher')
                 .mockImplementation(() => {});
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
-            const defaultPrefix = 'redirect-actor-name runId:redirect-run-id -> ';
-            await client.actor('redirect-actor-id').call();
+            await client.actor('redirect-actor-id').call(undefined, logOptions);
 
-            const loggerPrefix = c.cyan(defaultPrefix);
-            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [loggerPrefix + item]));
+            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [expectedPrefix + item]));
             logSpy.mockRestore();
             mockedGetStatusMessageWatcher.mockRestore();
         });
 
-        test('custom log', async () => {
-            const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
-            // Ignore StatusMessageWatcher to not clutter the log redirection test
-            const mockedGetStatusMessageWatcher = jest
-                .spyOn(RunClient.prototype, 'getStatusMessageWatcher')
-                .mockImplementation(() => {});
-
-            const customPrefix = 'custom prefix...';
-            await client.actor('redirect-actor-id').call(undefined, {
-                log: new Log({ level: LEVELS.DEBUG, prefix: customPrefix, logger: new LoggerActorRedirect() }),
-            });
-
-            const loggerPrefix = c.cyan(customPrefix);
-            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [loggerPrefix + item]));
-            logSpy.mockRestore();
-            mockedGetStatusMessageWatcher.mockRestore();
-        });
-
-        test('no log', async () => {
-            const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
+        test('logOptions:{ "log": null }', async () => {
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
             await client.actor('redirect-actor-id').call(undefined, { log: null });
 
@@ -773,16 +763,9 @@ describe('Run actor with status message watcher', () => {
         // Set up a status generator to simulate run status changes. It will be reset for each test.
         router.get('/actor-runs/redirect-run-id', async (req, res) => {
             // Delay the response to give the actor time to run and produce expected logs
+            await setTimeout(10);
             let [status, statusMessage] = ['', ''];
-            if ('waitForFinish' in req.query) {
-                // Delay the actor run response to simulate running actor while statuses watcher is polling this same endpoint without "waitForFinish"
-                await new Promise((resolve) => {
-                    setTimeout(resolve, 100);
-                });
-                [status, statusMessage] = ['SUCCEEDED', 'Actor Finished'];
-            } else {
-                [status, statusMessage] = statusGenerator.next().value;
-            }
+            [status, statusMessage] = statusGenerator.next().value;
             res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status, statusMessage } });
         });
         const app = createDefaultApp(router);
@@ -812,45 +795,35 @@ describe('Run actor with status message watcher', () => {
         client = null;
     });
 
+    const testCases = [
+        { expectedPrefix: c.cyan('redirect-actor-name runId:redirect-run-id -> '), logOptions: {} },
+        { expectedPrefix: c.cyan('redirect-actor-name runId:redirect-run-id -> '), logOptions: { log: 'default' } },
+        {
+            expectedPrefix: c.cyan('custom prefix...'),
+            logOptions: {
+                log: new Log({ level: LEVELS.DEBUG, prefix: 'custom prefix...', logger: new LoggerActorRedirect() }),
+            },
+        },
+    ];
+
     describe('actor.call - status watcher', () => {
-        test('default log', async () => {
-            const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
+        test.each(testCases)('logOptions:$logOptions', async ({ expectedPrefix, logOptions }) => {
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
             // Ignore StreamedLog to not clutter the status message watcher test
             const mockedGetStreamedLog = jest.spyOn(RunClient.prototype, 'getStreamedLog').mockImplementation(() => {});
 
-            const defaultPrefix = 'redirect-actor-name runId:redirect-run-id -> ';
-            await client.actor('redirect-actor-id').call();
+            await client.actor('redirect-actor-id').call(undefined, logOptions);
 
-            const loggerPrefix = c.cyan(defaultPrefix);
             const uniqueStatuses = Array.from(new Set(MOCKED_ACTOR_STATUSES.map(JSON.stringify))).map(JSON.parse);
             expect(logSpy.mock.calls).toEqual(
-                uniqueStatuses.map((item) => [`${loggerPrefix}Status: ${item[0]}, Message: ${item[1]}`]),
-            );
-            logSpy.mockRestore();
-            mockedGetStreamedLog.mockRestore();
-        });
-
-        test('custom log', async () => {
-            const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
-            // Ignore StreamedLog to not clutter the status message watcher test
-            const mockedGetStreamedLog = jest.spyOn(RunClient.prototype, 'getStreamedLog').mockImplementation(() => {});
-
-            const customPrefix = 'custom prefix...';
-            await client.actor('redirect-actor-id').call(undefined, {
-                log: new Log({ level: LEVELS.DEBUG, prefix: customPrefix, logger: new LoggerActorRedirect() }),
-            });
-
-            const loggerPrefix = c.cyan(customPrefix);
-            const uniqueStatuses = Array.from(new Set(MOCKED_ACTOR_STATUSES.map(JSON.stringify))).map(JSON.parse);
-            expect(logSpy.mock.calls).toEqual(
-                uniqueStatuses.map((item) => [`${loggerPrefix}Status: ${item[0]}, Message: ${item[1]}`]),
+                uniqueStatuses.map((item) => [`${expectedPrefix}Status: ${item[0]}, Message: ${item[1]}`]),
             );
             logSpy.mockRestore();
             mockedGetStreamedLog.mockRestore();
         });
 
         test('no log', async () => {
-            const logSpy = jest.spyOn(LoggerActorRedirect.prototype, '_console_log').mockImplementation(() => {});
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
             await client.actor('redirect-actor-id').call(undefined, { log: null });
 

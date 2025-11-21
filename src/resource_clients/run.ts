@@ -278,11 +278,28 @@ export class RunClient extends ResourceClient {
             // Explicitly no logging or not in Node.js
             return undefined;
         }
-        if (toLog === undefined) {
+        if (toLog === undefined || toLog === 'default') {
             toLog = await this.getActorRedirectLog();
         }
 
-        return new StreamedLog(this.log(), toLog, fromStart);
+        return new StreamedLog({ logClient: this.log(), toLog, fromStart });
+    }
+
+    /**
+     * Get StatusMessageWatcher for convenient streaming of the Actor run status message and its redirection.
+     */
+    async getStatusMessageWatcher(
+        options: getStatusMessageWatcherOptions = {},
+    ): Promise<StatusMessageWatcher | undefined> {
+        let { toLog } = options;
+        if (toLog === null || !isNode()) {
+            // Explicitly no logging or not in Node.js
+            return undefined;
+        }
+        if (toLog === undefined || toLog === 'default') {
+            toLog = await this.getActorRedirectLog();
+        }
+        return new StatusMessageWatcher(toLog, this, options.checkPeriod);
     }
 
     private async getActorRedirectLog(): Promise<Log> {
@@ -298,32 +315,15 @@ export class RunClient extends ResourceClient {
 
         return new Log({ level: LEVELS.DEBUG, prefix: `${name} -> `, logger: new LoggerActorRedirect() });
     }
-
-    /**
-     * Get StatusMessageWatcher for convenient streaming of the Actor run status message and its redirection.
-     */
-    async getStatusMessageWatcher(
-        options: getStatusMessageWatcherOptions = {},
-    ): Promise<StatusMessageWatcher | undefined> {
-        let { toLog } = options;
-        if (toLog === null || !isNode()) {
-            // Explicitly no logging or not in Node.js
-            return undefined;
-        }
-        if (toLog === undefined) {
-            toLog = await this.getActorRedirectLog();
-        }
-        return new StatusMessageWatcher(toLog, this, options.checkPeriod);
-    }
 }
 
 export interface getStatusMessageWatcherOptions {
-    toLog?: Log | null;
+    toLog?: Log | null | 'default';
     checkPeriod?: number;
 }
 
 export interface GetStreamedLogOptions {
-    toLog?: Log | null;
+    toLog?: Log | null | 'default';
     fromStart?: boolean;
 }
 
