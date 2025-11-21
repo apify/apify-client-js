@@ -72,7 +72,7 @@
         "content-type": "^1.0.5",
         "ow": "^0.28.2",
         "tslib": "^2.5.0",
-        "type-fest": "^4.0.0"
+        "type-fest": "^5.0.0"
     },
     "devDependencies": {
         "@apify/eslint-config": "^1.0.0",
