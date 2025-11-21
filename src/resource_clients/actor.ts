@@ -155,12 +155,15 @@ export class ActorClient extends ResourceClient {
         const newRunClient = this.apifyClient.run(id);
 
         const streamedLog = await newRunClient.getStreamedLog({ toLog: options?.log });
+        const statusMessageWatcher = await newRunClient.getStatusMessageWatcher({ toLog: options?.log });
         streamedLog?.start();
+        statusMessageWatcher?.start();
         return this.apifyClient
             .run(id)
             .waitForFinish({ waitSecs })
             .finally(async () => {
                 await streamedLog?.stop();
+                await statusMessageWatcher?.stop();
             });
     }
 
@@ -415,11 +418,21 @@ export interface ActorStartOptions {
     webhooks?: readonly WebhookUpdateData[];
 
     /**
-     * Specifies maximum number of items that the actor run should return.
-     * This is used by pay per result actors to limit the maximum number of results that will be charged to customer.
-     * Value can be accessed in actor run using `ACTOR_MAX_PAID_DATASET_ITEMS` environment variable.
+     * Specifies the maximum number of dataset items that will be charged for pay-per-result Actors.
+     * This does NOT guarantee that the Actor will return only this many items.
+     * It only ensures you won't be charged for more than this number of items.
+     * Only works for pay-per-result Actors.
+     * Value can be accessed in the Actor run using `ACTOR_MAX_PAID_DATASET_ITEMS` environment variable.
      */
     maxItems?: number;
+
+    /**
+     * Specifies the maximum cost of the Actor run. This parameter is
+     * used only for pay-per-event Actors. It allows you to limit the amount
+     * charged to your subscription. You can access the maximum cost in your
+     * Actor by using the `ACTOR_MAX_TOTAL_CHARGE_USD` environment variable.
+     */
+    maxTotalChargeUsd?: number;
 
     /**
      * Determines whether the run will be restarted if it fails.
@@ -524,6 +537,7 @@ export interface ActorRunOptions {
     timeoutSecs: number;
     memoryMbytes: number;
     diskMbytes: number;
+    maxItems?: number;
     maxTotalChargeUsd?: number;
     restartOnError?: boolean;
 }

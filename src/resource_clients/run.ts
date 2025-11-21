@@ -11,7 +11,7 @@ import { cast, isNode, parseDateFields, pluckData } from '../utils';
 import type { ActorRun } from './actor';
 import { DatasetClient } from './dataset';
 import { KeyValueStoreClient } from './key_value_store';
-import { LogClient, LoggerActorRedirect, StreamedLog } from './log';
+import { LogClient, LoggerActorRedirect, StatusMessageWatcher, StreamedLog } from './log';
 import { RequestQueueClient } from './request_queue';
 
 const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
@@ -279,22 +279,47 @@ export class RunClient extends ResourceClient {
             return undefined;
         }
         if (toLog === undefined || toLog === 'default') {
-            // Create default StreamedLog
-            // Get actor name and run id
-            const runData = await this.get();
-            const runId = runData?.id ?? '';
-
-            const actorId = runData?.actId ?? '';
-            const actorData = (await this.apifyClient.actor(actorId).get()) || { name: '' };
-
-            const actorName = actorData?.name ?? '';
-            const name = [actorName, `runId:${runId}`].filter(Boolean).join(' ');
-
-            toLog = new Log({ level: LEVELS.DEBUG, prefix: `${name} -> `, logger: new LoggerActorRedirect() });
+            toLog = await this.getActorRedirectLog();
         }
 
         return new StreamedLog({ logClient: this.log(), toLog, fromStart });
     }
+
+    /**
+     * Get StatusMessageWatcher for convenient streaming of the Actor run status message and its redirection.
+     */
+    async getStatusMessageWatcher(
+        options: getStatusMessageWatcherOptions = {},
+    ): Promise<StatusMessageWatcher | undefined> {
+        let { toLog } = options;
+        if (toLog === null || !isNode()) {
+            // Explicitly no logging or not in Node.js
+            return undefined;
+        }
+        if (toLog === undefined || toLog === 'default') {
+            toLog = await this.getActorRedirectLog();
+        }
+        return new StatusMessageWatcher(toLog, this, options.checkPeriod);
+    }
+
+    private async getActorRedirectLog(): Promise<Log> {
+        // Get actor name and run id
+        const runData = await this.get();
+        const runId = runData ? `${runData.id ?? ''}` : '';
+
+        const actorId = runData?.actId ?? '';
+        const actorData = (await this.apifyClient.actor(actorId).get()) || { name: '' };
+
+        const actorName = runData ? (actorData.name ?? '') : '';
+        const name = [actorName, `runId:${runId}`].filter(Boolean).join(' ');
+
+        return new Log({ level: LEVELS.DEBUG, prefix: `${name} -> `, logger: new LoggerActorRedirect() });
+    }
+}
+
+export interface getStatusMessageWatcherOptions {
+    toLog?: Log | null | 'default';
+    checkPeriod?: number;
 }
 
 export interface GetStreamedLogOptions {

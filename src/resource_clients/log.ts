@@ -11,6 +11,7 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow } from '../utils';
+import type { RunClient } from './run';
 
 export class LogClient extends ResourceClient {
     /**
@@ -236,4 +237,60 @@ export interface StreamedLogOptions {
     toLog: Log;
     /** Whether to redirect all logs from Actor run start (even logs from the past). */
     fromStart?: boolean;
+}
+
+export class StatusMessageWatcher {
+    private static finalSleepTimeMs = 6000;
+    private static defaultCheckPeriodMs = 5000;
+
+    protected toLog: Log;
+    protected checkPeriod: number;
+    protected lastStatusMessage = '';
+    private runClient: RunClient;
+    private loggingTask: Promise<void> | null = null;
+    private stopLogging = false;
+
+    constructor(toLog: Log, runClient: RunClient, checkPeriod: number = StatusMessageWatcher.defaultCheckPeriodMs) {
+        this.runClient = runClient;
+        this.toLog = toLog;
+        this.checkPeriod = checkPeriod;
+    }
+
+    start() {
+        if (this.loggingTask) {
+            throw new Error('Logging task already active');
+        }
+        this.stopLogging = false;
+        this.loggingTask = this._logChangedStatusMessage();
+    }
+
+    async stop(): Promise<void> {
+        if (!this.loggingTask) {
+            throw new Error('Logging task is not active');
+        }
+        await new Promise((resolve) => {
+            setTimeout(resolve, StatusMessageWatcher.finalSleepTimeMs);
+        });
+        this.stopLogging = true;
+        await this.loggingTask;
+        this.loggingTask = null;
+    }
+
+    async _logChangedStatusMessage(): Promise<void> {
+        while (!this.stopLogging) {
+            const runData = await this.runClient.get();
+            if (runData !== undefined) {
+                const status = runData.status ?? 'Unknown status';
+                const statusMessage = runData.statusMessage ?? '';
+                const newStatusMessage = `Status: ${status}, Message: ${statusMessage}`;
+                if (newStatusMessage !== this.lastStatusMessage) {
+                    this.lastStatusMessage = newStatusMessage;
+                    this.toLog.info(newStatusMessage);
+                }
+                await new Promise((resolve) => {
+                    setTimeout(resolve, this.checkPeriod);
+                });
+            }
+        }
+    }
 }

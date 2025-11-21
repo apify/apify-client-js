@@ -3,11 +3,20 @@
 All notable changes to this project will be documented in this file.
 
 <!-- git-cliff-unreleased-start -->
-## 2.19.1 - **not yet released**
+## 2.20.1 - **not yet released**
+
+
+<!-- git-cliff-unreleased-end -->
+## [2.20.0](https://github.com/apify/apify-client-js/releases/tag/v2.20.0) (2025-11-20)
 
 ### 🚀 Features
 
 - Add redirected actor logs ([#769](https://github.com/apify/apify-client-js/pull/769)) ([a7f4233](https://github.com/apify/apify-client-js/commit/a7f42333796b294266dd7950a2ecf47fa504373c)) by [@Pijukatel](https://github.com/Pijukatel)
+- Replace `agentkeepalive` with native Node.js HTTP agents for proxy support ([#788](https://github.com/apify/apify-client-js/pull/788)) ([7d2be0f](https://github.com/apify/apify-client-js/commit/7d2be0f832a9cba2f7ada14fa80f66e6ea50b944)) by [@tducret](https://github.com/tducret)
+
+### 🐛 Bug Fixes
+
+- Actor start and run options and doc ([#785](https://github.com/apify/apify-client-js/pull/785)) ([61f91e5](https://github.com/apify/apify-client-js/commit/61f91e5d2bad1c622a40a11d0d321443e68c4540)) by [@michael-apify](https://github.com/michael-apify)
 
 ### ⚡ Performance
 
@@ -15,7 +24,6 @@ All notable changes to this project will be documented in this file.
 - Don&#x27;t bundle `node:crypto` in the browser bundle ([#782](https://github.com/apify/apify-client-js/pull/782)) ([72a1d3c](https://github.com/apify/apify-client-js/commit/72a1d3c154b1db1e3b6f89b69a0593e44bc5e062)) by [@barjin](https://github.com/barjin)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.19.0](https://github.com/apify/apify-client-js/releases/tag/v2.19.0) (2025-10-20)
 
 ### 🚀 Features
