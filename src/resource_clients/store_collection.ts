@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList } from '../utils';
+import type { IterablePaginatedList } from '../utils';
 import type { ActorStats } from './actor';
 
 export class StoreCollectionClient extends ResourceCollectionClient {
@@ -19,7 +19,7 @@ export class StoreCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2/#/reference/store/store-actors-collection/get-list-of-actors-in-store
      */
-    async list(options: StoreCollectionListOptions = {}): Promise<PaginatedList<ActorStoreList>> {
+    async list(options: StoreCollectionListOptions = {}): Promise<IterablePaginatedList<ActorStoreList>> {
         ow(
             options,
             ow.object.exactShape({
@@ -33,7 +33,7 @@ export class StoreCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._getIterablePagination(options);
     }
 }
 
