@@ -19,7 +19,9 @@ export class StoreCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2/#/reference/store/store-actors-collection/get-list-of-actors-in-store
      */
-    async list(options: StoreCollectionListOptions = {}): Promise<IterablePaginatedList<ActorStoreList>> {
+    list(
+        options: StoreCollectionListOptions = {},
+    ): Promise<IterablePaginatedList<ActorStoreList>> & AsyncIterable<ActorStoreList> {
         ow(
             options,
             ow.object.exactShape({

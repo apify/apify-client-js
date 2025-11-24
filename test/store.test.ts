@@ -176,11 +176,9 @@ describe('actor.store.list as async iterable', () => {
             return next.value;
         });
 
-        const pages = await client.store().list(options);
-
         const totalItems: any[] = [];
-        for await (const page of pages) {
-            totalItems.push(...page.items);
+        for await (const page of client.store().list(options)) {
+            totalItems.push(page);
         }
         mockedClient.mockRestore();
         expect(totalItems.length).toBe(expectedItems);

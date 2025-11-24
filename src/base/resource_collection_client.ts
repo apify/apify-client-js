@@ -20,40 +20,45 @@ export class ResourceCollectionClient extends ApiClient {
     }
 
     /**
-     * Returns async iterator to paginate through all pages and first page of results is returned immediately as well.
-     * @private
+     * Returns async iterator to paginate through all items and first page of results is returned immediately as well.
      */
-    protected async _getIterablePagination<T extends PaginationOptions, R extends PaginatedResponse>(
+    protected _getIterablePagination<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(
         options: T = {} as T,
-    ): Promise<R & AsyncIterable<R>> {
+    ): AsyncIterable<Data> & Promise<R> {
         const getPaginatedList = this._list.bind(this);
 
-        let currentPage = await getPaginatedList<T, R>(options);
+        const paginatedListPromise = getPaginatedList<T, R>(options);
 
-        return {
-            ...currentPage,
-            async *[Symbol.asyncIterator]() {
-                yield currentPage;
-                let itemsFetched = currentPage.items.length;
-                let currentLimit = options.limit !== undefined ? options.limit - itemsFetched : undefined;
-                let currentOffset = options.offset ?? 0 + itemsFetched;
-                const maxRelevantItems =
-                    currentPage.total === undefined ? undefined : currentPage.total - (options.offset || 0);
+        async function* asyncGenerator() {
+            let currentPage = await paginatedListPromise;
+            let itemsFetched = currentPage.items.length;
+            let currentLimit = options.limit !== undefined ? options.limit - itemsFetched : undefined;
+            let currentOffset = options.offset ?? 0 + itemsFetched;
+            const maxRelevantItems =
+                currentPage.total === undefined ? undefined : currentPage.total - (options.offset || 0);
+            for (const item of currentPage.items) {
+                yield item;
+            }
 
-                while (
-                    currentPage.items.length > 0 && // Some items were returned in last page
-                    (currentLimit === undefined || currentLimit > 0) && // User defined a limit, and we have not yet exhausted it
-                    (maxRelevantItems === undefined || maxRelevantItems > itemsFetched) // We know total and we did not get it yet
-                ) {
-                    const newOptions = { ...options, limit: currentLimit, offset: currentOffset };
-                    currentPage = await getPaginatedList<T, R>(newOptions);
-                    yield currentPage;
-                    itemsFetched += currentPage.items.length;
-                    currentLimit = options.limit !== undefined ? options.limit - itemsFetched : undefined;
-                    currentOffset = options.offset ?? 0 + itemsFetched;
+            while (
+                currentPage.items.length > 0 && // Some items were returned in last page
+                (currentLimit === undefined || currentLimit > 0) && // User defined a limit, and we have not yet exhausted it
+                (maxRelevantItems === undefined || maxRelevantItems > itemsFetched) // We know total and we did not get it yet
+            ) {
+                const newOptions = { ...options, limit: currentLimit, offset: currentOffset };
+                currentPage = await getPaginatedList<T, R>(newOptions);
+                for (const item of currentPage.items) {
+                    yield item;
                 }
-            },
-        };
+                itemsFetched += currentPage.items.length;
+                currentLimit = options.limit !== undefined ? options.limit - itemsFetched : undefined;
+                currentOffset = options.offset ?? 0 + itemsFetched;
+            }
+        }
+
+        return Object.defineProperty(paginatedListPromise, Symbol.asyncIterator, {
+            value: asyncGenerator,
+        }) as unknown as AsyncIterable<Data> & Promise<R>;
     }
 
     protected async _create<D, R>(resource: D): Promise<R> {

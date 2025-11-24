@@ -240,11 +240,11 @@ export interface PaginationOptions {
     limit?: number;
 }
 
-export interface PaginatedResponse {
+export interface PaginatedResponse<Data> {
     /** Total count of entries. */
     total?: number;
     /** Entries. */
-    items: unknown[];
+    items: Data[];
 }
 
 export interface PaginatedList<Data> {
