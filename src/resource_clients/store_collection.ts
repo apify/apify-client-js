@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { IterablePaginatedList } from '../utils';
+import type { PaginatedList } from '../utils';
 import type { ActorStats } from './actor';
 
 export class StoreCollectionClient extends ResourceCollectionClient {
@@ -21,7 +21,7 @@ export class StoreCollectionClient extends ResourceCollectionClient {
      */
     list(
         options: StoreCollectionListOptions = {},
-    ): Promise<IterablePaginatedList<ActorStoreList>> & AsyncIterable<ActorStoreList> {
+    ): Promise<PaginatedList<ActorStoreList>> & AsyncIterable<ActorStoreList> {
         ow(
             options,
             ow.object.exactShape({
