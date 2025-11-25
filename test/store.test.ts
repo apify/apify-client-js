@@ -78,7 +78,7 @@ describe('actor.store.list as async iterable', () => {
 
     const testCases = [
         {
-            testName: 'Known total items, no offset, no limit',
+            testName: 'No offset, no limit',
             options: {},
             responseDataOverrides: [
                 { count: 1000, limit: 1000 },
@@ -88,7 +88,7 @@ describe('actor.store.list as async iterable', () => {
             expectedItems: 2500,
         },
         {
-            testName: 'Known total items, user offset, no limit',
+            testName: 'User offset, no limit',
             options: { offset: 1000 },
             responseDataOverrides: [
                 { count: 1000, limit: 1000, offset: 1000 },
@@ -97,7 +97,7 @@ describe('actor.store.list as async iterable', () => {
             expectedItems: 1500,
         },
         {
-            testName: 'Known total items, no offset, user limit',
+            testName: 'No offset, user limit',
             options: { limit: 1100 },
             responseDataOverrides: [
                 { count: 1000, limit: 1000 },
@@ -106,7 +106,7 @@ describe('actor.store.list as async iterable', () => {
             expectedItems: 1100,
         },
         {
-            testName: 'Known total items, user offset, user limit',
+            testName: 'User offset, user limit',
             options: { offset: 1000, limit: 1100 },
             responseDataOverrides: [
                 { count: 1000, limit: 1000, offset: 1000 },
@@ -115,43 +115,20 @@ describe('actor.store.list as async iterable', () => {
             expectedItems: 1100,
         },
         {
-            testName: 'Unknown total items, no offset, no limit',
-            options: {},
+            testName: 'User out of range offset, no limit',
+            options: { offset: 3000 },
+            responseDataOverrides: [{ count: 0, limit: 0, offset: 3000, items: [] }],
+            expectedItems: 0,
+        },
+        {
+            testName: 'User no offset, out of range limit',
+            options: { limit: 3000 },
             responseDataOverrides: [
-                { total: undefined, count: 1000, limit: 1000 },
-                { total: undefined, count: 1000, limit: 1000, offset: 1000 },
-                { total: undefined, count: 500, limit: 1000, offset: 2000, items: createItems(500) },
-                { total: undefined, count: 0, limit: 1000, offset: 2500, items: [] }, // In this case, iterator had to try as it does not know if there is more or not and there is no user limit.
+                { count: 1000, limit: 1000 },
+                { count: 1000, limit: 1000, offset: 1000 },
+                { count: 500, limit: 1000, offset: 2000, items: createItems(500) },
             ],
             expectedItems: 2500,
-        },
-        {
-            testName: 'Unknown total items, user offset, no limit',
-            options: { offset: 1000 },
-            responseDataOverrides: [
-                { total: undefined, count: 1000, limit: 1000, offset: 1000 },
-                { total: undefined, count: 500, limit: 1000, offset: 2000, items: createItems(500) },
-                { total: undefined, count: 0, limit: 1000, offset: 2500, items: [] }, // In this case, iterator had to try as it does not know if there is more or not and there is no user limit.
-            ],
-            expectedItems: 1500,
-        },
-        {
-            testName: 'Unknown total items, no offset, user limit',
-            options: { limit: 1100 },
-            responseDataOverrides: [
-                { total: undefined, count: 1000, limit: 1000 },
-                { total: undefined, count: 100, limit: 100, offset: 1000, items: createItems(100) },
-            ],
-            expectedItems: 1100,
-        },
-        {
-            testName: 'Unknown total items, user offset, user limit',
-            options: { offset: 1000, limit: 1100 },
-            responseDataOverrides: [
-                { total: undefined, count: 1000, limit: 1000, offset: 1000 },
-                { total: undefined, count: 100, limit: 100, offset: 2000, items: createItems(100) },
-            ],
-            expectedItems: 1100,
         },
     ];
 

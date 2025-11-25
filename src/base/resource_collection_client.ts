@@ -26,33 +26,26 @@ export class ResourceCollectionClient extends ApiClient {
         options: T = {} as T,
     ): AsyncIterable<Data> & Promise<R> {
         const getPaginatedList = this._list.bind(this);
-
         const paginatedListPromise = getPaginatedList<T, R>(options);
 
         async function* asyncGenerator() {
             let currentPage = await paginatedListPromise;
-            let itemsFetched = currentPage.items.length;
-            let currentLimit = options.limit !== undefined ? options.limit - itemsFetched : undefined;
-            let currentOffset = options.offset ?? 0 + itemsFetched;
-            const maxRelevantItems =
-                currentPage.total === undefined ? undefined : currentPage.total - (options.offset || 0);
-            for (const item of currentPage.items) {
-                yield item;
-            }
+            yield* currentPage.items;
+            const offset = options.offset || 0;
+            const limit = Math.min(options.limit || currentPage.total, currentPage.total);
+
+            let currentOffset = offset + currentPage.items.length;
+            let remainingItems = Math.min(currentPage.total - offset, limit) - currentPage.items.length;
 
             while (
-                currentPage.items.length > 0 && // Some items were returned in last page
-                (currentLimit === undefined || currentLimit > 0) && // User defined a limit, and we have not yet exhausted it
-                (maxRelevantItems === undefined || maxRelevantItems > itemsFetched) // We know total and we did not get it yet
+                currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
+                remainingItems > 0
             ) {
-                const newOptions = { ...options, limit: currentLimit, offset: currentOffset };
+                const newOptions = { ...options, limit: remainingItems, offset: currentOffset };
                 currentPage = await getPaginatedList<T, R>(newOptions);
-                for (const item of currentPage.items) {
-                    yield item;
-                }
-                itemsFetched += currentPage.items.length;
-                currentLimit = options.limit !== undefined ? options.limit - itemsFetched : undefined;
-                currentOffset = options.offset ?? 0 + itemsFetched;
+                yield* currentPage.items;
+                currentOffset += currentPage.items.length;
+                remainingItems -= currentPage.items.length;
             }
         }
 

@@ -242,7 +242,7 @@ export interface PaginationOptions {
 
 export interface PaginatedResponse<Data> {
     /** Total count of entries. */
-    total?: number;
+    total: number;
     /** Entries. */
     items: Data[];
 }
