@@ -1,13 +1,12 @@
-import http from 'node:http';
-import https from 'node:https';
+import type http from 'node:http';
+import type https from 'node:https';
 import os from 'node:os';
 
 import type { RetryFunction } from 'async-retry';
 import retry from 'async-retry';
 import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import axios, { AxiosHeaders } from 'axios';
-import { HttpProxyAgent } from 'http-proxy-agent';
-import { HttpsProxyAgent } from 'https-proxy-agent';
+import { ProxyAgent } from 'proxy-agent';
 
 import { APIFY_ENV_VARS } from '@apify/consts';
 import type { Log } from '@apify/log';
@@ -76,21 +75,11 @@ export class HttpClient {
                 scheduling: 'lifo',
             };
 
-            // Support proxy configuration with CONNECT tunneling
-            const httpProxyUrl = process.env.HTTP_PROXY || process.env.http_proxy;
-            const httpsProxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy;
-
-            if (httpProxyUrl) {
-                this.httpAgent = new HttpProxyAgent(httpProxyUrl, agentOptions);
-            } else {
-                this.httpAgent = new http.Agent(agentOptions);
-            }
-
-            if (httpsProxyUrl) {
-                this.httpsAgent = new HttpsProxyAgent(httpsProxyUrl, agentOptions);
-            } else {
-                this.httpsAgent = new https.Agent(agentOptions);
-            }
+            // Use ProxyAgent which automatically detects proxy from environment variables
+            // and supports CONNECT tunneling
+            const proxyAgent = new ProxyAgent(agentOptions);
+            this.httpAgent = proxyAgent;
+            this.httpsAgent = proxyAgent;
 
             // Disable Nagle's algorithm for lower latency
             // This sends data immediately instead of buffering small packets
