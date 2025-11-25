@@ -1,7 +1,8 @@
 import type { StoreCollectionListOptions } from 'apify-client';
 import { ApifyClient } from 'apify-client';
 
-import type { ApifyResponse } from '../src/http_client';
+import type { ApifyRequestConfig, ApifyResponse } from '../src/http_client';
+import { PaginationOptions } from '../src/utils';
 import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
 
@@ -63,98 +64,73 @@ describe('actor.store.list as async iterable', () => {
     // Test using store().list() as an async iterable
     const client: ApifyClient = new ApifyClient();
 
-    const createItems = (count: number) => {
-        return new Array(count).fill('some actor details');
-    };
-
-    const exampleResponseData = {
-        total: 2500,
-        count: 0,
-        offset: 0,
-        limit: 0,
-        desc: false,
-        items: createItems(1000),
-    };
-
     const testCases = [
         {
-            testName: 'No offset, no limit',
-            options: {},
-            responseDataOverrides: [
-                { count: 1000, limit: 1000 },
-                { count: 1000, limit: 1000, offset: 1000 },
-                { count: 500, limit: 1000, offset: 2000, items: createItems(500) },
-            ],
-            expectedItems: 2500,
-        },
-        {
             testName: 'User offset, no limit',
-            options: { offset: 1000 },
-            responseDataOverrides: [
-                { count: 1000, limit: 1000, offset: 1000 },
-                { count: 500, limit: 1000, offset: 2000, items: createItems(500) },
-            ],
+            userDefinedOptions: { offset: 1000 },
             expectedItems: 1500,
         },
         {
+            testName: 'No offset, no limit',
+            userDefinedOptions: {},
+            expectedItems: 2500,
+        },
+        {
             testName: 'No offset, user limit',
-            options: { limit: 1100 },
-            responseDataOverrides: [
-                { count: 1000, limit: 1000 },
-                { count: 100, limit: 100, offset: 1000, items: createItems(100) },
-            ],
+            userDefinedOptions: { limit: 1100 },
             expectedItems: 1100,
         },
         {
             testName: 'User offset, user limit',
-            options: { offset: 1000, limit: 1100 },
-            responseDataOverrides: [
-                { count: 1000, limit: 1000, offset: 1000 },
-                { count: 100, limit: 100, offset: 2000, items: createItems(100) },
-            ],
+            userDefinedOptions: { offset: 1000, limit: 1100 },
             expectedItems: 1100,
         },
         {
             testName: 'User out of range offset, no limit',
-            options: { offset: 3000 },
-            responseDataOverrides: [{ count: 0, limit: 0, offset: 3000, items: [] }],
+            userDefinedOptions: { offset: 3000 },
             expectedItems: 0,
         },
         {
             testName: 'User no offset, out of range limit',
-            options: { limit: 3000 },
-            responseDataOverrides: [
-                { count: 1000, limit: 1000 },
-                { count: 1000, limit: 1000, offset: 1000 },
-                { count: 500, limit: 1000, offset: 2000, items: createItems(500) },
-            ],
+            userDefinedOptions: { limit: 3000 },
             expectedItems: 2500,
         },
     ];
 
-    test.each(testCases)('$testName', async ({ options, responseDataOverrides, expectedItems }) => {
-        // Simulate 2500 actors in store and 8 possible combinations of user options and API responses.
-
-        function* mockedResponsesGenerator() {
-            for (const responseDataOverride of responseDataOverrides) {
-                yield { data: { data: { ...exampleResponseData, ...responseDataOverride } } } as ApifyResponse;
+    test.each(testCases)('$testName', async ({ userDefinedOptions, expectedItems }) => {
+        const mockedPlatformLogic = async (request: ApifyRequestConfig) => {
+            // Simulated platform logic for pagination when there are 2500 actors in store.
+            const maxItems = 2500;
+            const maxItemsPerPage = 1000;
+            const offset = request.params.offset ? request.params.offset : 0;
+            const limit = request.params.limit ? request.params.limit : 0;
+            if (offset < 0 || limit < 0) {
+                throw new Error('Offset and limit must be non-negative');
             }
-        }
 
-        const mockedResponses = mockedResponsesGenerator();
+            const lowerIndex = Math.min(offset, maxItems);
+            const upperIndex = Math.min(offset + (limit || maxItems), maxItems);
+            const returnedItemsCount = Math.min(upperIndex - lowerIndex, maxItemsPerPage);
+
+            return {
+                data: {
+                    data: {
+                        total: maxItems,
+                        count: returnedItemsCount,
+                        offset,
+                        limit: returnedItemsCount,
+                        desc: false,
+                        items: new Array(returnedItemsCount).fill('some actor details'),
+                    },
+                },
+            } as ApifyResponse;
+        };
 
         const storeClient = client.store();
-        const mockedClient = jest.spyOn(storeClient.httpClient, 'call').mockImplementation(async () => {
-            const next = mockedResponses.next();
-            if (next.done) {
-                // Return a default or dummy ApifyResponse here
-                return { data: {} } as ApifyResponse<unknown>;
-            }
-            return next.value;
-        });
+        const mockedClient = jest.spyOn(storeClient.httpClient, 'call').mockImplementation(mockedPlatformLogic);
 
         const totalItems: any[] = [];
-        for await (const page of client.store().list(options)) {
+        for await (const page of client.store().list(userDefinedOptions)) {
             totalItems.push(page);
         }
         mockedClient.mockRestore();
