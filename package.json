@@ -71,6 +71,7 @@
         "axios": "^1.6.7",
         "content-type": "^1.0.5",
         "ow": "^0.28.2",
+        "proxy-agent": "^6.5.0",
         "tslib": "^2.5.0",
         "type-fest": "^4.0.0"
     },

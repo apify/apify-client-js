@@ -1,11 +1,12 @@
-import http from 'node:http';
-import https from 'node:https';
+import type http from 'node:http';
+import type https from 'node:https';
 import os from 'node:os';
 
 import type { RetryFunction } from 'async-retry';
 import retry from 'async-retry';
 import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import axios, { AxiosHeaders } from 'axios';
+import { ProxyAgent } from 'proxy-agent';
 
 import { APIFY_ENV_VARS } from '@apify/consts';
 import type { Log } from '@apify/log';
@@ -74,8 +75,11 @@ export class HttpClient {
                 scheduling: 'lifo',
             };
 
-            this.httpAgent = new http.Agent(agentOptions);
-            this.httpsAgent = new https.Agent(agentOptions);
+            // Use ProxyAgent which automatically detects proxy from environment variables
+            // and supports CONNECT tunneling
+            const proxyAgent = new ProxyAgent(agentOptions);
+            this.httpAgent = proxyAgent;
+            this.httpsAgent = proxyAgent;
 
             // Disable Nagle's algorithm for lower latency
             // This sends data immediately instead of buffering small packets
@@ -90,6 +94,8 @@ export class HttpClient {
         this.axios = axios.create({
             httpAgent: this.httpAgent,
             httpsAgent: this.httpsAgent,
+            // Disable axios's built-in proxy handling since we're using custom agents
+            proxy: false,
             paramsSerializer: (params) => {
                 const formattedParams: [string, string][] = Object.entries<string | Date>(params)
                     .filter(([, value]) => value !== undefined)
