@@ -19,9 +19,9 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/get-list-of-key-value-stores
      */
-    async list(
+    list(
         options: KeyValueStoreCollectionClientListOptions = {},
-    ): Promise<PaginatedList<KeyValueStoreCollectionListResult>> {
+    ): Promise<PaginatedList<KeyValueStoreCollectionListResult>> & AsyncIterable<KeyValueStore> {
         ow(
             options,
             ow.object.exactShape({
@@ -32,7 +32,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._getIterablePagination(options);
     }
 
     /**

@@ -19,7 +19,9 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/actors/environment-variable-collection/get-list-of-environment-variables
      */
-    async list(options: ActorEnvVarCollectionListOptions = {}): Promise<ActorEnvVarListResult> {
+    list(
+        options: ActorEnvVarCollectionListOptions = {},
+    ): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
         ow(
             options,
             ow.object.exactShape({
@@ -28,7 +30,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
                 desc: ow.optional.boolean,
             }),
         );
-        return this._list(options);
+        return this._getIterablePagination(options);
     }
 
     /**

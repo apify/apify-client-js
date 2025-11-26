@@ -21,7 +21,9 @@ export class RunCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/actors/run-collection/get-list-of-runs
      */
-    async list(options: RunCollectionListOptions = {}): Promise<PaginatedList<ActorRunListItem>> {
+    list(
+        options: RunCollectionListOptions = {},
+    ): Promise<PaginatedList<ActorRunListItem>> & AsyncIterable<ActorRunListItem> {
         ow(
             options,
             ow.object.exactShape({
@@ -37,7 +39,7 @@ export class RunCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._getIterablePagination(options);
     }
 }
 

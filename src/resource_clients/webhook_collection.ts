@@ -19,9 +19,10 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/get-list-of-webhooks
      */
-    async list(
+    list(
         options: WebhookCollectionListOptions = {},
-    ): Promise<PaginatedList<Omit<Webhook, 'payloadTemplate' | 'headersTemplate'>>> {
+    ): Promise<PaginatedList<Omit<Webhook, 'payloadTemplate' | 'headersTemplate'>>> &
+        AsyncIterable<Omit<Webhook, 'payloadTemplate' | 'headersTemplate'>> {
         ow(
             options,
             ow.object.exactShape({
@@ -31,7 +32,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._getIterablePagination(options);
     }
 
     /**

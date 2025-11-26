@@ -20,7 +20,9 @@ export class ActorCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-actors
      */
-    async list(options: ActorCollectionListOptions = {}): Promise<ActorCollectionListResult> {
+    list(
+        options: ActorCollectionListOptions = {},
+    ): Promise<PaginatedList<ActorCollectionListItem>> & AsyncIterable<ActorCollectionListItem> {
         ow(
             options,
             ow.object.exactShape({
@@ -32,7 +34,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._getIterablePagination(options);
     }
 
     /**

@@ -19,7 +19,9 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/actors/version-collection/get-list-of-versions
      */
-    async list(options: ActorVersionCollectionListOptions = {}): Promise<ActorVersionListResult> {
+    list(
+        options: ActorVersionCollectionListOptions = {},
+    ): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
         ow(
             options,
             ow.object.exactShape({
@@ -29,7 +31,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._getIterablePagination(options);
     }
 
     /**

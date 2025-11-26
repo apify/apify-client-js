@@ -19,7 +19,9 @@ export class BuildCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/actors/build-collection/get-list-of-builds
      */
-    async list(options: BuildCollectionClientListOptions = {}): Promise<BuildCollectionClientListResult> {
+    list(
+        options: BuildCollectionClientListOptions = {},
+    ): Promise<PaginatedList<BuildCollectionClientListItem>> & AsyncIterable<BuildCollectionClientListItem> {
         ow(
             options,
             ow.object.exactShape({
@@ -29,7 +31,7 @@ export class BuildCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._getIterablePagination(options);
     }
 }
 

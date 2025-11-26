@@ -19,7 +19,9 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatches-collection/get-list-of-webhook-dispatches
      */
-    async list(options: WebhookDispatchCollectionListOptions = {}): Promise<PaginatedList<WebhookDispatch>> {
+    list(
+        options: WebhookDispatchCollectionListOptions = {},
+    ): Promise<PaginatedList<WebhookDispatch>> & AsyncIterable<WebhookDispatch> {
         ow(
             options,
             ow.object.exactShape({
@@ -29,7 +31,7 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._getIterablePagination(options);
     }
 }
 

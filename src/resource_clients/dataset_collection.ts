@@ -19,7 +19,9 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of-datasets
      */
-    async list(options: DatasetCollectionClientListOptions = {}): Promise<DatasetCollectionClientListResult> {
+    list(
+        options: DatasetCollectionClientListOptions = {},
+    ): Promise<PaginatedList<DatasetCollectionClientListResult>> & AsyncIterable<DatasetCollectionClientListResult> {
         ow(
             options,
             ow.object.exactShape({
@@ -30,7 +32,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._getIterablePagination(options);
     }
 
     /**

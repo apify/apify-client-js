@@ -19,7 +19,9 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/get-list-of-request-queues
      */
-    async list(options: RequestQueueCollectionListOptions = {}): Promise<RequestQueueCollectionListResult> {
+    list(
+        options: RequestQueueCollectionListOptions = {},
+    ): Promise<RequestQueueCollectionListResult> & AsyncIterable<RequestQueue> {
         ow(
             options,
             ow.object.exactShape({
@@ -30,7 +32,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._getIterablePagination(options);
     }
 
     /**

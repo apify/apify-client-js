@@ -24,7 +24,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
      * @param {boolean} [options.desc]
      * @return {Promise<PaginationList>}
      */
-    async list(options: TaskCollectionListOptions = {}): Promise<PaginatedList<TaskList>> {
+    list(options: TaskCollectionListOptions = {}): Promise<PaginatedList<TaskList>> & AsyncIterable<TaskList> {
         ow(
             options,
             ow.object.exactShape({
@@ -34,7 +34,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._getIterablePagination(options);
     }
 
     /**

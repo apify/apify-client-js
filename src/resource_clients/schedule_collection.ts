@@ -19,7 +19,7 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
     /**
      * https://docs.apify.com/api/v2#/reference/schedules/schedules-collection/get-list-of-schedules
      */
-    async list(options: ScheduleCollectionListOptions = {}): Promise<PaginatedList<Schedule>> {
+    list(options: ScheduleCollectionListOptions = {}): Promise<PaginatedList<Schedule>> & AsyncIterable<Schedule> {
         ow(
             options,
             ow.object.exactShape({
@@ -29,7 +29,7 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._getIterablePagination(options);
     }
 
     /**
