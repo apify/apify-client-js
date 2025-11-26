@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.20.1 - **not yet released**
 
+### 🚀 Features
+
+- Add CONNECT tunneling support for HTTP proxy in sandboxed environments ([#791](https://github.com/apify/apify-client-js/pull/791)) ([a27d55a](https://github.com/apify/apify-client-js/commit/a27d55a504cdddebb5a4afa594a94784d27d3dba)) by [@tducret](https://github.com/tducret)
+
 
 <!-- git-cliff-unreleased-end -->
 ## [2.20.0](https://github.com/apify/apify-client-js/releases/tag/v2.20.0) (2025-11-20)
