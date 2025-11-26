@@ -43,6 +43,7 @@ describe('Store', () => {
             username: 'my username',
             pricingModel: 'my pricing model',
         };
+
         const res: any = client && (await client.store().list(opts));
         expect(res.id).toEqual('store-list');
         validateRequest(opts);
@@ -52,8 +53,7 @@ describe('Store', () => {
             opts,
         );
         expect(browserRes.id).toEqual('store-list');
-        const { [Symbol.asyncIterator]: _, ...expectedResponse } = res;
-        expect(browserRes).toEqual(expectedResponse);
+        expect(browserRes).toEqual(res);
         validateRequest(opts);
     });
 });
