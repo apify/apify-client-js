@@ -76,7 +76,7 @@ export class ActorClient extends ResourceClient {
      * @param options.memory - Memory in megabytes allocated for the run. If not provided, uses the Actor's default memory setting.
      * @param options.timeout - Timeout for the run in seconds. Zero means no timeout. If not provided, uses the Actor's default timeout.
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the run to finish on the API side before returning. Default is 0 (returns immediately).
-     * @param options.webhooks - Webhooks to trigger when the Actor run reaches a specific state (e.g., SUCCEEDED, FAILED).
+     * @param options.webhooks - Webhooks to trigger when the Actor run reaches a specific state (e.g., `SUCCEEDED`, `FAILED`).
      * @param options.maxItems - Maximum number of dataset items that will be charged (only for pay-per-result Actors).
      * @param options.maxTotalChargeUsd - Maximum cost in USD (only for pay-per-event Actors).
      * @param options.contentType - Content type of the input. If specified, input must be a string or Buffer.
@@ -175,7 +175,7 @@ export class ActorClient extends ResourceClient {
      * @param options.build - Tag or number of the build to run (e.g., `'beta'` or `'1.2.345'`).
      * @param options.memory - Memory in megabytes allocated for the run.
      * @param options.timeout - Maximum run duration in seconds.
-     * @returns The finished Actor run object with final status (SUCCEEDED, FAILED, ABORTED, or TIMED-OUT)
+     * @returns The finished Actor run object with final status (`SUCCEEDED`, `FAILED`, `ABORTED`, or `TIMED-OUT`)
      * @see https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
      *
      * @example

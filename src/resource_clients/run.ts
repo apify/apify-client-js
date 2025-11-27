@@ -61,7 +61,7 @@ export class RunClient extends ResourceClient {
      *
      * @param options - Abort options
      * @param options.gracefully - If `true`, the Actor run will abort gracefully - it can send status messages and perform cleanup. Default is `false` (immediate abort).
-     * @returns The updated ActorRun object with ABORTING or ABORTED status
+     * @returns The updated ActorRun object with `ABORTING` or `ABORTED` status
      * @see https://docs.apify.com/api/v2#/reference/actor-runs/abort-run/abort-run
      *
      * @example
@@ -294,9 +294,9 @@ export class RunClient extends ResourceClient {
     /**
      * Waits for the Actor run to finish and returns the finished Run object.
      *
-     * The promise resolves when the run reaches a terminal state (SUCCEEDED, FAILED, ABORTED, or TIMED-OUT).
+     * The promise resolves when the run reaches a terminal state (`SUCCEEDED`, `FAILED`, `ABORTED`, or `TIMED-OUT`).
      * If `waitSecs` is provided and the timeout is reached, the promise resolves with the unfinished
-     * Run object (status will be RUNNING or READY). The promise is NOT rejected based on run status.
+     * Run object (status will be `RUNNING` or `READY`). The promise is NOT rejected based on run status.
      *
      * Unlike the `waitForFinish` parameter in {@link get}, this method can wait indefinitely
      * by polling the run status. It uses the `waitForFinish` parameter internally (max 60s per call)

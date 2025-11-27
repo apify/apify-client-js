@@ -51,9 +51,9 @@ export class BuildClient extends ResourceClient {
     /**
      * Aborts the Actor build.
      *
-     * Stops the build process immediately. The build will have an ABORTED status.
+     * Stops the build process immediately. The build will have an `ABORTED` status.
      *
-     * @returns The updated Build object with ABORTED status
+     * @returns The updated Build object with `ABORTED` status
      * @see https://docs.apify.com/api/v2#/reference/actor-builds/abort-build/abort-build
      *
      * @example
@@ -96,9 +96,9 @@ export class BuildClient extends ResourceClient {
     /**
      * Waits for the Actor build to finish and returns the finished Build object.
      *
-     * The promise resolves when the build reaches a terminal state (SUCCEEDED, FAILED, ABORTED, or TIMED-OUT).
+     * The promise resolves when the build reaches a terminal state (`SUCCEEDED`, `FAILED`, `ABORTED`, or `TIMED-OUT`).
      * If `waitSecs` is provided and the timeout is reached, the promise resolves with the unfinished
-     * Build object (status will be RUNNING or READY). The promise is NOT rejected based on build status.
+     * Build object (status will be `RUNNING` or `READY`). The promise is NOT rejected based on build status.
      *
      * Unlike the `waitForFinish` parameter in {@link get}, this method can wait indefinitely
      * by polling the build status. It uses the `waitForFinish` parameter internally (max 60s per call)
