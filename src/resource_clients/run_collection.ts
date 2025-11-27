@@ -4,7 +4,7 @@ import { ACTOR_JOB_STATUSES } from '@apify/consts';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedIterator } from '../utils';
+import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { ActorRunListItem } from './actor';
 
 export class RunCollectionClient extends ResourceCollectionClient {
@@ -48,9 +48,7 @@ export class RunCollectionClient extends ResourceCollectionClient {
     }
 }
 
-export interface RunCollectionListOptions {
-    limit?: number;
-    offset?: number;
+export interface RunCollectionListOptions extends PaginationOptions {
     desc?: boolean;
     status?:
         | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES]

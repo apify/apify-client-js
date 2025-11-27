@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedIterator } from '../utils';
+import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { Webhook, WebhookUpdateData } from './webhook';
 
 export class WebhookCollectionClient extends ResourceCollectionClient {
@@ -52,8 +52,6 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
     }
 }
 
-export interface WebhookCollectionListOptions {
-    limit?: number;
-    offset?: number;
+export interface WebhookCollectionListOptions extends PaginationOptions {
     desc?: boolean;
 }

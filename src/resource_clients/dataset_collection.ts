@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedIterator, PaginatedList } from '../utils';
+import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import type { Dataset } from './dataset';
 
 export class DatasetCollectionClient extends ResourceCollectionClient {
@@ -51,10 +51,8 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     }
 }
 
-export interface DatasetCollectionClientListOptions {
+export interface DatasetCollectionClientListOptions extends PaginationOptions {
     unnamed?: boolean;
-    limit?: number;
-    offset?: number;
     desc?: boolean;
 }
 

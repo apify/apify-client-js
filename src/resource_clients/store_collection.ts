@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedIterator } from '../utils';
+import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { ActorStats } from './actor';
 
 export class StoreCollectionClient extends ResourceCollectionClient {
@@ -61,9 +61,7 @@ export interface ActorStoreList {
     url: string;
 }
 
-export interface StoreCollectionListOptions {
-    limit?: number;
-    offset?: number;
+export interface StoreCollectionListOptions extends PaginationOptions {
     search?: string;
     sortBy?: string;
     category?: string;

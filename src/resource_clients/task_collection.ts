@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedIterator } from '../utils';
+import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { Task, TaskUpdateData } from './task';
 
 export class TaskCollectionClient extends ResourceCollectionClient {
@@ -54,9 +54,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
     }
 }
 
-export interface TaskCollectionListOptions {
-    limit?: number;
-    offset?: number;
+export interface TaskCollectionListOptions extends PaginationOptions {
     desc?: boolean;
 }
 

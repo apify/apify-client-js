@@ -31,7 +31,7 @@ export class ResourceCollectionClient extends ApiClient {
         async function* asyncGenerator() {
             let currentPage = await paginatedListPromise;
             yield* currentPage.items;
-            const offset = options.offset || 0;
+            const offset = options.offset ?? 0;
             const limit = Math.min(options.limit || currentPage.total, currentPage.total);
 
             let currentOffset = offset + currentPage.items.length;

@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedIterator, PaginatedList } from '../utils';
+import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import type { Build } from './build';
 
 export class BuildCollectionClient extends ResourceCollectionClient {
@@ -40,9 +40,7 @@ export class BuildCollectionClient extends ResourceCollectionClient {
     }
 }
 
-export interface BuildCollectionClientListOptions {
-    limit?: number;
-    offset?: number;
+export interface BuildCollectionClientListOptions extends PaginationOptions {
     desc?: boolean;
 }
 

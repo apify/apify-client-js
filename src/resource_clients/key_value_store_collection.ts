@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList } from '../utils';
+import type { PaginatedList, PaginationOptions } from '../utils';
 import type { KeyValueStore } from './key_value_store';
 
 export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
@@ -56,10 +56,8 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     }
 }
 
-export interface KeyValueStoreCollectionClientListOptions {
+export interface KeyValueStoreCollectionClientListOptions extends PaginationOptions {
     unnamed?: boolean;
-    limit?: number;
-    offset?: number;
     desc?: boolean;
 }
 

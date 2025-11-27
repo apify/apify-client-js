@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList } from '../utils';
+import type { PaginatedList, PaginationOptions } from '../utils';
 import type { ActorEnvironmentVariable } from './actor_version';
 
 export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
@@ -49,9 +49,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     }
 }
 
-export interface ActorEnvVarCollectionListOptions {
-    limit?: number;
-    offset?: number;
+export interface ActorEnvVarCollectionListOptions extends PaginationOptions {
     desc?: boolean;
 }
 

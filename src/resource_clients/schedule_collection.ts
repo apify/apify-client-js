@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedIterator } from '../utils';
+import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { Schedule, ScheduleCreateOrUpdateData } from './schedule';
 
 export class ScheduleCollectionClient extends ResourceCollectionClient {
@@ -49,8 +49,6 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
     }
 }
 
-export interface ScheduleCollectionListOptions {
-    limit?: number;
-    offset?: number;
+export interface ScheduleCollectionListOptions extends PaginationOptions {
     desc?: boolean;
 }

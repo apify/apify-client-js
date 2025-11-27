@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList } from '../utils';
+import type { PaginatedList, PaginationOptions } from '../utils';
 import type { RequestQueue } from './request_queue';
 
 export class RequestQueueCollectionClient extends ResourceCollectionClient {
@@ -52,10 +52,8 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
     }
 }
 
-export interface RequestQueueCollectionListOptions {
+export interface RequestQueueCollectionListOptions extends PaginationOptions {
     unnamed?: boolean;
-    limit?: number;
-    offset?: number;
     desc?: boolean;
 }
 
