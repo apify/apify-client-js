@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList } from '../utils';
+import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { Task, TaskUpdateData } from './task';
 
 export class TaskCollectionClient extends ResourceCollectionClient {
@@ -22,9 +22,22 @@ export class TaskCollectionClient extends ResourceCollectionClient {
      * @param {number} [options.limit]
      * @param {number} [options.offset]
      * @param {boolean} [options.desc]
-     * @return {Promise<PaginationList>}
+     * @return {PaginatedIterator<TaskList>}
+     *
+     * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
+     * items in a single API call is limited.
+     * ```javascript
+     * const paginatedList = await client.list(options);
+     *```
+     *
+     * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
+     * retrieved.
+     *
+     * ```javascript
+     * for await (const singleItem of client.list(options)) {...}
+     * ```
      */
-    async list(options: TaskCollectionListOptions = {}): Promise<PaginatedList<TaskList>> {
+    list(options: TaskCollectionListOptions = {}): PaginatedIterator<TaskList> {
         ow(
             options,
             ow.object.exactShape({
@@ -34,7 +47,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._listPaginated(options);
     }
 
     /**
@@ -47,9 +60,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
     }
 }
 
-export interface TaskCollectionListOptions {
-    limit?: number;
-    offset?: number;
+export interface TaskCollectionListOptions extends PaginationOptions {
     desc?: boolean;
 }
 

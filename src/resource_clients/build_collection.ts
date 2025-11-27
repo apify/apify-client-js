@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList } from '../utils';
+import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import type { Build } from './build';
 
 export class BuildCollectionClient extends ResourceCollectionClient {
@@ -18,8 +18,21 @@ export class BuildCollectionClient extends ResourceCollectionClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/build-collection/get-list-of-builds
+     *
+     * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
+     * items in a single API call is limited.
+     * ```javascript
+     * const paginatedList = await client.list(options);
+     *```
+     *
+     * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
+     * retrieved.
+     *
+     * ```javascript
+     * for await (const singleItem of client.list(options)) {...}
+     * ```
      */
-    async list(options: BuildCollectionClientListOptions = {}): Promise<BuildCollectionClientListResult> {
+    list(options: BuildCollectionClientListOptions = {}): PaginatedIterator<BuildCollectionClientListItem> {
         ow(
             options,
             ow.object.exactShape({
@@ -29,13 +42,11 @@ export class BuildCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._listPaginated(options);
     }
 }
 
-export interface BuildCollectionClientListOptions {
-    limit?: number;
-    offset?: number;
+export interface BuildCollectionClientListOptions extends PaginationOptions {
     desc?: boolean;
 }
 

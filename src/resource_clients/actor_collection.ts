@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList } from '../utils';
+import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor';
 import type { ActorVersion } from './actor_version';
 
@@ -19,8 +19,21 @@ export class ActorCollectionClient extends ResourceCollectionClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-actors
+     *
+     * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
+     * items in a single API call is limited.
+     * ```javascript
+     * const paginatedList = await client.list(options);
+     *```
+     *
+     * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
+     * retrieved.
+     *
+     * ```javascript
+     * for await (const singleItem of client.list(options)) {...}
+     * ```
      */
-    async list(options: ActorCollectionListOptions = {}): Promise<ActorCollectionListResult> {
+    list(options: ActorCollectionListOptions = {}): PaginatedIterator<ActorCollectionListItem> {
         ow(
             options,
             ow.object.exactShape({
@@ -32,7 +45,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._listPaginated(options);
     }
 
     /**
@@ -50,11 +63,8 @@ export enum ActorListSortBy {
     LAST_RUN_STARTED_AT = 'stats.lastRunStartedAt',
 }
 
-export interface ActorCollectionListOptions {
+export interface ActorCollectionListOptions extends PaginationOptions {
     my?: boolean;
-    limit?: number;
-    offset?: number;
-    desc?: boolean;
     sortBy?: ActorListSortBy;
 }
 

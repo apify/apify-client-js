@@ -1,3 +1,4 @@
+import type { PaginatedResponse, PaginationOptions } from '../utils';
 import { parseDateFields, pluckData } from '../utils';
 import { ApiClient } from './api_client';
 
@@ -16,6 +17,41 @@ export class ResourceCollectionClient extends ApiClient {
             params: this._params(options),
         });
         return parseDateFields(pluckData(response.data)) as R;
+    }
+
+    /**
+     * Returns async iterator to iterate through all items and Promise that can be awaited to get first page of results.
+     */
+    protected _listPaginated<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(
+        options: T = {} as T,
+    ): AsyncIterable<Data> & Promise<R> {
+        const getPaginatedList = this._list.bind(this);
+        const paginatedListPromise = getPaginatedList<T, R>(options);
+
+        async function* asyncGenerator() {
+            let currentPage = await paginatedListPromise;
+            yield* currentPage.items;
+            const offset = options.offset ?? 0;
+            const limit = Math.min(options.limit || currentPage.total, currentPage.total);
+
+            let currentOffset = offset + currentPage.items.length;
+            let remainingItems = Math.min(currentPage.total - offset, limit) - currentPage.items.length;
+
+            while (
+                currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
+                remainingItems > 0
+            ) {
+                const newOptions = { ...options, limit: remainingItems, offset: currentOffset };
+                currentPage = await getPaginatedList<T, R>(newOptions);
+                yield* currentPage.items;
+                currentOffset += currentPage.items.length;
+                remainingItems -= currentPage.items.length;
+            }
+        }
+
+        return Object.defineProperty(paginatedListPromise, Symbol.asyncIterator, {
+            value: asyncGenerator,
+        }) as unknown as AsyncIterable<Data> & Promise<R>;
     }
 
     protected async _create<D, R>(resource: D): Promise<R> {

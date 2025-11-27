@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList } from '../utils';
+import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { ActorStats } from './actor';
 
 export class StoreCollectionClient extends ResourceCollectionClient {
@@ -18,8 +18,21 @@ export class StoreCollectionClient extends ResourceCollectionClient {
 
     /**
      * https://docs.apify.com/api/v2/#/reference/store/store-actors-collection/get-list-of-actors-in-store
+     *
+     * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
+     * items in a single API call is limited.
+     * ```javascript
+     * const paginatedList = await client.list(options);
+     *```
+     *
+     * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
+     * retrieved.
+     *
+     * ```javascript
+     * for await (const singleItem of client.list(options)) {...}
+     * ```
      */
-    async list(options: StoreCollectionListOptions = {}): Promise<PaginatedList<ActorStoreList>> {
+    list(options: StoreCollectionListOptions = {}): PaginatedIterator<ActorStoreList> {
         ow(
             options,
             ow.object.exactShape({
@@ -33,7 +46,7 @@ export class StoreCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._listPaginated(options);
     }
 }
 
@@ -54,9 +67,7 @@ export interface ActorStoreList {
     url: string;
 }
 
-export interface StoreCollectionListOptions {
-    limit?: number;
-    offset?: number;
+export interface StoreCollectionListOptions extends PaginationOptions {
     search?: string;
     sortBy?: string;
     category?: string;

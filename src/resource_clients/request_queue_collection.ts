@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList } from '../utils';
+import type { PaginatedList, PaginationOptions } from '../utils';
 import type { RequestQueue } from './request_queue';
 
 export class RequestQueueCollectionClient extends ResourceCollectionClient {
@@ -18,8 +18,23 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/get-list-of-request-queues
+     *
+     * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
+     * items in a single API call is limited.
+     * ```javascript
+     * const paginatedList = await client.list(options);
+     *```
+     *
+     * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
+     * retrieved.
+     *
+     * ```javascript
+     * for await (const singleItem of client.list(options)) {...}
+     * ```
      */
-    async list(options: RequestQueueCollectionListOptions = {}): Promise<RequestQueueCollectionListResult> {
+    list(
+        options: RequestQueueCollectionListOptions = {},
+    ): Promise<RequestQueueCollectionListResult> & AsyncIterable<RequestQueue> {
         ow(
             options,
             ow.object.exactShape({
@@ -30,7 +45,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._listPaginated(options);
     }
 
     /**
@@ -43,10 +58,8 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
     }
 }
 
-export interface RequestQueueCollectionListOptions {
+export interface RequestQueueCollectionListOptions extends PaginationOptions {
     unnamed?: boolean;
-    limit?: number;
-    offset?: number;
     desc?: boolean;
 }
 

@@ -4,7 +4,7 @@ import { ACTOR_JOB_STATUSES } from '@apify/consts';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList } from '../utils';
+import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { ActorRunListItem } from './actor';
 
 export class RunCollectionClient extends ResourceCollectionClient {
@@ -20,8 +20,21 @@ export class RunCollectionClient extends ResourceCollectionClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/run-collection/get-list-of-runs
+     *
+     * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
+     * items in a single API call is limited.
+     * ```javascript
+     * const paginatedList = await client.list(options);
+     *```
+     *
+     * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
+     * retrieved.
+     *
+     * ```javascript
+     * for await (const singleItem of client.list(options)) {...}
+     * ```
      */
-    async list(options: RunCollectionListOptions = {}): Promise<PaginatedList<ActorRunListItem>> {
+    list(options: RunCollectionListOptions = {}): PaginatedIterator<ActorRunListItem> {
         ow(
             options,
             ow.object.exactShape({
@@ -37,13 +50,11 @@ export class RunCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._listPaginated(options);
     }
 }
 
-export interface RunCollectionListOptions {
-    limit?: number;
-    offset?: number;
+export interface RunCollectionListOptions extends PaginationOptions {
     desc?: boolean;
     status?:
         | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES]

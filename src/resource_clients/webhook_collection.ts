@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList } from '../utils';
+import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { Webhook, WebhookUpdateData } from './webhook';
 
 export class WebhookCollectionClient extends ResourceCollectionClient {
@@ -18,10 +18,24 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/get-list-of-webhooks
+     *
+     * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
+     * items in a single API call is limited.
+     * ```javascript
+     * const paginatedList = await client.list(options);
+     *```
+     *
+     * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
+     * retrieved.
+     *
+     * ```javascript
+     * for await (const singleItem of client.list(options)) {...}
+     * ```
      */
-    async list(
+
+    list(
         options: WebhookCollectionListOptions = {},
-    ): Promise<PaginatedList<Omit<Webhook, 'payloadTemplate' | 'headersTemplate'>>> {
+    ): PaginatedIterator<Omit<Webhook, 'payloadTemplate' | 'headersTemplate'>> {
         ow(
             options,
             ow.object.exactShape({
@@ -31,7 +45,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._list(options);
+        return this._listPaginated(options);
     }
 
     /**
@@ -44,8 +58,6 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
     }
 }
 
-export interface WebhookCollectionListOptions {
-    limit?: number;
-    offset?: number;
+export interface WebhookCollectionListOptions extends PaginationOptions {
     desc?: boolean;
 }
