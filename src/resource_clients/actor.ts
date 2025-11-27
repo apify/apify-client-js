@@ -727,11 +727,11 @@ export interface ActorRunUsage {
     DATASET_READS?: number;
     /** Number of Dataset write operations */
     DATASET_WRITES?: number;
-    /** Number of Key-value store read operations */
+    /** Number of key-value store read operations */
     KEY_VALUE_STORE_READS?: number;
-    /** Number of Key-value store write operations */
+    /** Number of key-value store write operations */
     KEY_VALUE_STORE_WRITES?: number;
-    /** Number of Key-value store list operations */
+    /** Number of key-value store list operations */
     KEY_VALUE_STORE_LISTS?: number;
     /** Number of Request queue read operations */
     REQUEST_QUEUE_READS?: number;

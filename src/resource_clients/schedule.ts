@@ -179,7 +179,7 @@ export interface ScheduledActorRunOptions {
 }
 
 /**
- * Scheduled action to run an Actor Task.
+ * Scheduled action to run an Actor task.
  */
 export interface ScheduleActionRunActorTask extends BaseScheduleAction<ScheduleActions.RunActorTask> {
     actorTaskId: string;

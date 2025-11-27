@@ -11,7 +11,7 @@ import type { WebhookDispatch } from './webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection';
 
 /**
- * Client for managing a specific Webhook.
+ * Client for managing a specific webhook.
  *
  * Webhooks allow you to receive notifications when specific events occur in your Actors or tasks.
  * This client provides methods to get, update, delete, and test webhooks, as well as retrieve
@@ -150,7 +150,7 @@ export interface WebhookIdempotencyKey {
 }
 
 /**
- * Data for updating a Webhook.
+ * Data for updating a webhook.
  */
 export type WebhookUpdateData = Partial<
     Pick<
@@ -171,7 +171,7 @@ export type WebhookUpdateData = Partial<
     WebhookIdempotencyKey;
 
 /**
- * Statistics about Webhook usage.
+ * Statistics about webhook usage.
  */
 export interface WebhookStats {
     totalDispatches: number;

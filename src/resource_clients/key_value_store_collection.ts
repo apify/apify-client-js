@@ -73,11 +73,11 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * Gets or creates a Key-value store with the specified name.
+     * Gets or creates a key-value store with the specified name.
      *
-     * @param name - Name of the Key-value store. If not provided, a default store is used.
+     * @param name - Name of the key-value store. If not provided, a default store is used.
      * @param options - Additional options like schema.
-     * @returns The Key-value store object.
+     * @returns The key-value store object.
      * @see https://docs.apify.com/api/v2/key-value-stores-post
      */
     async getOrCreate(

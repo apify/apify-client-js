@@ -45,7 +45,7 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * Retrieves the Actor Task.
+     * Retrieves the Actor task.
      *
      * @returns The task object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/actor-task-get
@@ -77,7 +77,7 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * Starts an Actor Task and immediately returns the Run object.
+     * Starts an Actor task and immediately returns the Run object.
      *
      * @param input - Input overrides for the task. If not provided, the task's saved input is used.
      * @param options - Run options.
@@ -182,7 +182,7 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * Retrieves the Actor Task's input object.
+     * Retrieves the Actor task's input object.
      *
      * @returns The Task's input, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/actor-task-input-get
@@ -204,7 +204,7 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * Updates the Actor Task's input object.
+     * Updates the Actor task's input object.
      *
      * @param newFields - New input data for the task.
      * @returns The updated task input.
@@ -274,7 +274,7 @@ export class TaskClient extends ResourceClient {
 }
 
 /**
- * Represents an Actor Task.
+ * Represents an Actor task.
  *
  * Tasks are saved Actor configurations with input and settings that can be executed
  * repeatedly without having to specify the full input each time.
@@ -296,14 +296,14 @@ export interface Task {
 }
 
 /**
- * Statistics about Actor Task usage.
+ * Statistics about Actor task usage.
  */
 export interface TaskStats {
     totalRuns: number;
 }
 
 /**
- * Configuration options for an Actor Task.
+ * Configuration options for an Actor task.
  */
 export interface TaskOptions {
     build?: string;

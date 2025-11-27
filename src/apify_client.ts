@@ -256,7 +256,7 @@ export class ApifyClient {
      * any type of data including text, JSON, images, and other files.
      *
      * @param id - Key-value store ID or name
-     * @returns A client for the specific Key-value store
+     * @returns A client for the specific key-value store
      * @see https://docs.apify.com/api/v2/key-value-store-get
      *
      * @example
@@ -488,7 +488,7 @@ export class ApifyClient {
      * Use this to get, update, delete, or test a webhook.
      *
      * @param id - Webhook ID
-     * @returns A client for the specific Webhook
+     * @returns A client for the specific webhook
      * @see https://docs.apify.com/api/v2/webhook-get
      */
     webhook(id: string): WebhookClient {
@@ -505,7 +505,7 @@ export class ApifyClient {
      *
      * Webhook dispatches represent individual invocations of webhooks.
      *
-     * @returns A client for the Webhook dispatches collection
+     * @returns A client for the webhook dispatches collection
      * @see https://docs.apify.com/api/v2/webhook-dispatches-get
      */
     webhookDispatches(): WebhookDispatchCollectionClient {
@@ -516,7 +516,7 @@ export class ApifyClient {
      * Returns a client for a specific webhook dispatch.
      *
      * @param id - Webhook dispatch ID
-     * @returns A client for the specific Webhook dispatch
+     * @returns A client for the specific webhook dispatch
      * @see https://docs.apify.com/api/v2/webhook-dispatch-get
      */
     webhookDispatch(id: string): WebhookDispatchClient {

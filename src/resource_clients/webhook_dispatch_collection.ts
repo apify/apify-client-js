@@ -6,7 +6,7 @@ import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { WebhookDispatch } from './webhook_dispatch';
 
 /**
- * Client for managing the collection of Webhook dispatches.
+ * Client for managing the collection of webhook dispatches.
  *
  * Webhook dispatches represent individual notifications sent by a webhook. This client provides
  * methods to list all dispatches for a specific webhook.

@@ -6,7 +6,7 @@ import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../uti
 import type { Dataset } from './dataset';
 
 /**
- * Client for managing the collection of Datasets in your account.
+ * Client for managing the collection of datasets in your account.
  *
  * Datasets store structured data results from Actor runs. This client provides methods
  * to list, create, or get datasets by name.
@@ -71,11 +71,11 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * Gets or creates a Dataset with the specified name.
+     * Gets or creates a dataset with the specified name.
      *
-     * @param name - Name of the Dataset. If not provided, a default dataset is used.
+     * @param name - Name of the dataset. If not provided, a default dataset is used.
      * @param options - Additional options like schema.
-     * @returns The Dataset object.
+     * @returns The dataset object.
      * @see https://docs.apify.com/api/v2/datasets-post
      */
     async getOrCreate(name?: string, options?: DatasetCollectionClientGetOrCreateOptions): Promise<Dataset> {
