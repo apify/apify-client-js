@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList } from '../utils';
+import type { PaginatedIterator, PaginatedList } from '../utils';
 import type { Dataset } from './dataset';
 
 export class DatasetCollectionClient extends ResourceCollectionClient {
@@ -18,10 +18,15 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of-datasets
+     *
+     * Use as a promise. It will always do only 1 API call:
+     * const paginatedList = await client.list(options);
+     *
+     * Use as an async iterator. It can do multiple API calls if needed:
+     * for await (const singleItem of client.list(options)) {...}
+     *
      */
-    list(
-        options: DatasetCollectionClientListOptions = {},
-    ): Promise<PaginatedList<DatasetCollectionClientListResult>> & AsyncIterable<DatasetCollectionClientListResult> {
+    list(options: DatasetCollectionClientListOptions = {}): PaginatedIterator<Dataset> {
         ow(
             options,
             ow.object.exactShape({
@@ -32,7 +37,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._getIterablePagination(options);
+        return this._getPaginatedIterator(options);
     }
 
     /**

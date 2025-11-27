@@ -442,6 +442,7 @@ describe('Dataset methods', () => {
 describe('actor.store.list as async iterable', () => {
     // Test using store().list() as an async iterable
     const client = new ApifyClient();
+    const maxItemsPerPage = 1000;
 
     const range = (start, end, step = 1) => {
         // Inclusive range, ordered based on start and end values
@@ -512,7 +513,6 @@ describe('actor.store.list as async iterable', () => {
 
             const totalItems = request.params.unnamed ? namedItems + unnamedItems : namedItems;
 
-            const maxItemsPerPage = 1000;
             const offset = request.params.offset ? request.params.offset : 0;
             const limit = request.params.limit ? request.params.limit : 0;
             const desc = request.params.desc ? request.params.desc : false;
@@ -535,20 +535,25 @@ describe('actor.store.list as async iterable', () => {
                         offset,
                         limit: returnedItemsCount,
                         desc: false,
-                        items: items.slice(lowerIndex, upperIndex),
+                        items: items.slice(lowerIndex, Math.min(upperIndex, lowerIndex + maxItemsPerPage)),
                     },
                 },
             };
         };
 
         const datasetsClient = client.datasets();
+
         const mockedClient = jest.spyOn(datasetsClient.httpClient, 'call').mockImplementation(mockedPlatformLogic);
 
-        const totalItems = [];
-        for await (const page of datasetsClient.list(userDefinedOptions)) {
-            totalItems.push(page);
+        try {
+            const totalItems = [];
+            for await (const page of datasetsClient.list(userDefinedOptions)) {
+                totalItems.push(page);
+            }
+            expect(totalItems).toEqual(expectedItems);
+            expect(mockedClient).toHaveBeenCalledTimes(Math.max(Math.ceil(expectedItems.length / maxItemsPerPage), 1));
+        } finally {
+            mockedClient.mockRestore();
         }
-        mockedClient.mockRestore();
-        expect(totalItems).toEqual(expectedItems);
     });
 });

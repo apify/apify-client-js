@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList } from '../utils';
+import type { PaginatedIterator } from '../utils';
 import type { Schedule, ScheduleCreateOrUpdateData } from './schedule';
 
 export class ScheduleCollectionClient extends ResourceCollectionClient {
@@ -18,8 +18,15 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/schedules/schedules-collection/get-list-of-schedules
+     *
+     * Use as a promise. It will always do only 1 API call:
+     * const paginatedList = await client.list(options);
+     *
+     * Use as an async iterator. It can do multiple API calls if needed:
+     * for await (const singleItem of client.list(options)) {...}
+     *
      */
-    list(options: ScheduleCollectionListOptions = {}): Promise<PaginatedList<Schedule>> & AsyncIterable<Schedule> {
+    list(options: ScheduleCollectionListOptions = {}): PaginatedIterator<Schedule> {
         ow(
             options,
             ow.object.exactShape({
@@ -29,7 +36,7 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._getIterablePagination(options);
+        return this._getPaginatedIterator(options);
     }
 
     /**

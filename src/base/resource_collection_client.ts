@@ -22,7 +22,7 @@ export class ResourceCollectionClient extends ApiClient {
     /**
      * Returns async iterator to paginate through all items and first page of results is returned immediately as well.
      */
-    protected _getIterablePagination<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(
+    protected _getPaginatedIterator<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(
         options: T = {} as T,
     ): AsyncIterable<Data> & Promise<R> {
         const getPaginatedList = this._list.bind(this);

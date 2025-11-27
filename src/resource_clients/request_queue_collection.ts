@@ -18,6 +18,13 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/get-list-of-request-queues
+     *
+     * Use as a promise. It will always do only 1 API call:
+     * const paginatedList = await client.list(options);
+     *
+     * Use as an async iterator. It can do multiple API calls if needed:
+     * for await (const singleItem of client.list(options)) {...}
+     *
      */
     list(
         options: RequestQueueCollectionListOptions = {},
@@ -32,7 +39,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._getIterablePagination(options);
+        return this._getPaginatedIterator(options);
     }
 
     /**

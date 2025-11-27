@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList } from '../utils';
+import type { PaginatedIterator } from '../utils';
 import type { Task, TaskUpdateData } from './task';
 
 export class TaskCollectionClient extends ResourceCollectionClient {
@@ -22,9 +22,16 @@ export class TaskCollectionClient extends ResourceCollectionClient {
      * @param {number} [options.limit]
      * @param {number} [options.offset]
      * @param {boolean} [options.desc]
-     * @return {Promise<PaginationList>}
+     * @return {PaginatedIterator<TaskList>}
+     *
+     * Use as a promise. It will always do only 1 API call:
+     * const paginatedList = await client.list(options);
+     *
+     * Use as an async iterator. It can do multiple API calls if needed:
+     * for await (const singleItem of client.list(options)) {...}
+     *
      */
-    list(options: TaskCollectionListOptions = {}): Promise<PaginatedList<TaskList>> & AsyncIterable<TaskList> {
+    list(options: TaskCollectionListOptions = {}): PaginatedIterator<TaskList> {
         ow(
             options,
             ow.object.exactShape({
@@ -34,7 +41,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._getIterablePagination(options);
+        return this._getPaginatedIterator(options);
     }
 
     /**

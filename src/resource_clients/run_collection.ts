@@ -4,7 +4,7 @@ import { ACTOR_JOB_STATUSES } from '@apify/consts';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList } from '../utils';
+import type { PaginatedIterator } from '../utils';
 import type { ActorRunListItem } from './actor';
 
 export class RunCollectionClient extends ResourceCollectionClient {
@@ -20,10 +20,15 @@ export class RunCollectionClient extends ResourceCollectionClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/run-collection/get-list-of-runs
+     *
+     * Use as a promise. It will always do only 1 API call:
+     * const paginatedList = await client.list(options);
+     *
+     * Use as an async iterator. It can do multiple API calls if needed:
+     * for await (const singleItem of client.list(options)) {...}
+     *
      */
-    list(
-        options: RunCollectionListOptions = {},
-    ): Promise<PaginatedList<ActorRunListItem>> & AsyncIterable<ActorRunListItem> {
+    list(options: RunCollectionListOptions = {}): PaginatedIterator<ActorRunListItem> {
         ow(
             options,
             ow.object.exactShape({
@@ -39,7 +44,7 @@ export class RunCollectionClient extends ResourceCollectionClient {
             }),
         );
 
-        return this._getIterablePagination(options);
+        return this._getPaginatedIterator(options);
     }
 }
 

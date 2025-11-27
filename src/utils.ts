@@ -262,7 +262,7 @@ export interface PaginatedList<Data> {
     items: Data[];
 }
 
-export interface IterablePaginatedList<Data> extends PaginatedList<Data>, AsyncIterable<PaginatedList<Data>> {}
+export type PaginatedIterator<T> = Promise<PaginatedList<T>> & AsyncIterable<T>;
 
 export function cast<T>(input: unknown): T {
     return input as T;

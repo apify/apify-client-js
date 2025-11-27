@@ -18,6 +18,13 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
 
     /**
      * https://docs.apify.com/api/v2#/reference/actors/environment-variable-collection/get-list-of-environment-variables
+     *
+     * Use as a promise. It will always do only 1 API call:
+     * const paginatedList = await client.list(options);
+     *
+     * Use as an async iterator. It can do multiple API calls if needed:
+     * for await (const singleItem of client.list(options)) {...}
+     *
      */
     list(
         options: ActorEnvVarCollectionListOptions = {},
@@ -30,7 +37,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
                 desc: ow.optional.boolean,
             }),
         );
-        return this._getIterablePagination(options);
+        return this._getPaginatedIterator(options);
     }
 
     /**
