@@ -80,7 +80,7 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
      * @returns The created schedule object.
      * @see https://docs.apify.com/api/v2/schedules-post
      */
-    async create(schedule: ScheduleCreateOrUpdateData): Promise<Schedule> {
+    async create(schedule?: ScheduleCreateOrUpdateData): Promise<Schedule> {
         ow(schedule, ow.optional.object);
 
         return this._create(schedule);

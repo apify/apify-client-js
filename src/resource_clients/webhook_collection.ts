@@ -82,7 +82,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
      * @returns The created webhook object.
      * @see https://docs.apify.com/api/v2/webhooks-post
      */
-    async create(webhook: WebhookUpdateData): Promise<Webhook> {
+    async create(webhook?: WebhookUpdateData): Promise<Webhook> {
         ow(webhook, ow.optional.object);
 
         return this._create(webhook);
