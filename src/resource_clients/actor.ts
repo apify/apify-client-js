@@ -556,8 +556,8 @@ export interface ActorStandby {
 
 export interface ActorStartOptions {
     /**
-     * Tag or number of the actor build to run (e.g. `beta` or `1.2.345`).
-     * If not provided, the run uses build tag or number from the default actor run configuration (typically `latest`).
+     * Tag or number of the Actor build to run (e.g. `beta` or `1.2.345`).
+     * If not provided, the run uses build tag or number from the default Actor run configuration (typically `latest`).
      */
     build?: string;
 
@@ -570,20 +570,20 @@ export interface ActorStartOptions {
     contentType?: string;
 
     /**
-     * Memory in megabytes which will be allocated for the new actor run.
-     * If not provided, the run uses memory of the default actor run configuration.
+     * Memory in megabytes which will be allocated for the new Actor run.
+     * If not provided, the run uses memory of the default Actor run configuration.
      */
     memory?: number;
     /**
-     * Timeout for the actor run in seconds. Zero value means there is no timeout.
-     * If not provided, the run uses timeout of the default actor run configuration.
+     * Timeout for the Actor run in seconds. Zero value means there is no timeout.
+     * If not provided, the run uses timeout of the default Actor run configuration.
      */
     timeout?: number;
 
     /**
-     * Maximum time to wait for the actor run to finish, in seconds.
+     * Maximum time to wait for the Actor run to finish, in seconds.
      * If the limit is reached, the returned promise is resolved to a run object that will have
-     * status `READY` or `RUNNING` and it will not contain the actor run output.
+     * status `READY` or `RUNNING` and it will not contain the Actor run output.
      * By default (or when `waitForFinish` is set to `0`), the function resolves immediately without waiting.
      * The wait is limited to 60s and happens on the API directly, as opposed to the `call` method and its
      * `waitSecs` option, which is implemented via polling on the client side instead (and has no limit like that).
@@ -591,8 +591,8 @@ export interface ActorStartOptions {
     waitForFinish?: number;
 
     /**
-     * Specifies optional webhooks associated with the actor run, which can be used
-     * to receive a notification e.g. when the actor finished or failed, see
+     * Specifies optional webhooks associated with the Actor run, which can be used
+     * to receive a notification e.g. when the Actor finished or failed, see
      * [ad hook webhooks documentation](https://docs.apify.com/webhooks/ad-hoc-webhooks) for detailed description.
      */
     webhooks?: readonly WebhookUpdateData[];
@@ -635,11 +635,11 @@ export interface ActorStartOptions {
  */
 export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
     /**
-     * Wait time in seconds for the actor run to finish.
+     * Wait time in seconds for the Actor run to finish.
      */
     waitSecs?: number;
     /**
-     * `Log` instance that should be used to redirect actor run logs to.
+     * `Log` instance that should be used to redirect Actor run logs to.
      * If `undefined` or `'default'` the pre-defined `Log` will be created and used.
      * If `null`, no log redirection will occur.
      */
@@ -697,19 +697,19 @@ export interface ActorRun extends ActorRunListItem {
 export interface ActorRunUsage {
     /** Compute units consumed (combines CPU and memory usage over time) */
     ACTOR_COMPUTE_UNITS?: number;
-    /** Number of dataset read operations */
+    /** Number of Dataset read operations */
     DATASET_READS?: number;
-    /** Number of dataset write operations */
+    /** Number of Dataset write operations */
     DATASET_WRITES?: number;
-    /** Number of key-value store read operations */
+    /** Number of Key-value store read operations */
     KEY_VALUE_STORE_READS?: number;
-    /** Number of key-value store write operations */
+    /** Number of Key-value store write operations */
     KEY_VALUE_STORE_WRITES?: number;
-    /** Number of key-value store list operations */
+    /** Number of Key-value store list operations */
     KEY_VALUE_STORE_LISTS?: number;
-    /** Number of request queue read operations */
+    /** Number of Request queue read operations */
     REQUEST_QUEUE_READS?: number;
-    /** Number of request queue write operations */
+    /** Number of Request queue write operations */
     REQUEST_QUEUE_WRITES?: number;
     /** Internal data transfer within Apify platform (in gigabytes) */
     DATA_TRANSFER_INTERNAL_GBYTES?: number;

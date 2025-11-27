@@ -39,7 +39,7 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
-     * Gets the key-value store object from the Apify API.
+     * Gets the Key-value store object from the Apify API.
      *
      * @returns The KeyValueStore object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store
@@ -49,9 +49,9 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
-     * Updates the key-value store with specified fields.
+     * Updates the Key-value store with specified fields.
      *
-     * @param newFields - Fields to update in the key-value store
+     * @param newFields - Fields to update in the Key-value store
      * @param newFields.name - New name for the store
      * @param newFields.title - New title for the store
      * @param newFields.generalAccess - General access level (PUBLIC or PRIVATE)
@@ -65,7 +65,7 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
-     * Deletes the key-value store.
+     * Deletes the Key-value store.
      *
      * @see https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/delete-store
      */
@@ -131,9 +131,9 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
-     * Generates a public URL for accessing a specific record in the key-value store.
+     * Generates a public URL for accessing a specific record in the Key-value store.
      *
-     * If the client has permission to access the key-value store's URL signing key,
+     * If the client has permission to access the Key-value store's URL signing key,
      * the URL will include a cryptographic signature for authenticated access without
      * requiring an API token.
      *
@@ -163,9 +163,9 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
-     * Generates a public URL for accessing the list of keys in the key-value store.
+     * Generates a public URL for accessing the list of keys in the Key-value store.
      *
-     * If the client has permission to access the key-value store's URL signing key,
+     * If the client has permission to access the Key-value store's URL signing key,
      * the URL will include a cryptographic signature which allows access without authentication.
      *
      * @param options - URL generation options (extends all options from {@link listKeys})
@@ -217,7 +217,7 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
-     * Tests whether a record with the given key exists in the key-value store without retrieving its value.
+     * Tests whether a record with the given key exists in the Key-value store without retrieving its value.
      *
      * This is more efficient than {@link getRecord} when you only need to check for existence.
      *
@@ -320,7 +320,7 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
-     * Stores a record in the key-value store.
+     * Stores a record in the Key-value store.
      *
      * The record value can be any JSON-serializable object, a string, or a Buffer/Stream.
      * The content type is automatically determined based on the value type, but can be

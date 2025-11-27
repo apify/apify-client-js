@@ -43,7 +43,7 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     /**
-     * Gets the request queue object from the Apify API.
+     * Gets the Request queue object from the Apify API.
      *
      * @returns The RequestQueue object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2#/reference/request-queues/queue/get-request-queue
@@ -53,9 +53,9 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     /**
-     * Updates the request queue with specified fields.
+     * Updates the Request queue with specified fields.
      *
-     * @param newFields - Fields to update in the request queue
+     * @param newFields - Fields to update in the Request queue
      * @returns The updated RequestQueue object
      * @see https://docs.apify.com/api/v2#/reference/request-queues/queue/update-request-queue
      */
@@ -66,7 +66,7 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     /**
-     * Deletes the request queue.
+     * Deletes the Request queue.
      *
      * @see https://docs.apify.com/api/v2#/reference/request-queues/queue/delete-request-queue
      */
@@ -233,7 +233,7 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     /**
-     * Writes requests to request queue in batch.
+     * Writes requests to Request queue in batch.
      *
      * @private
      */

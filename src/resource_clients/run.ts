@@ -102,7 +102,7 @@ export class RunClient extends ResourceClient {
     /**
      * Transforms the Actor run into a run of another Actor (metamorph).
      *
-     * This operation preserves the run ID, storages (dataset, key-value store, request queue),
+     * This operation preserves the run ID, storages (Dataset, Key-value store, Request queue),
      * and resource allocation. The run effectively becomes a run of the target Actor with new input.
      * This is useful for chaining Actor executions or implementing complex workflows.
      *
@@ -216,7 +216,7 @@ export class RunClient extends ResourceClient {
      * Resurrects a finished Actor run, starting it again with the same settings.
      *
      * This creates a new run with the same configuration as the original run. The original
-     * run's storages (dataset, key-value store, request queue) are preserved and reused.
+     * run's storages (Dataset, Key-value store, Request queue) are preserved and reused.
      *
      * @param options - Resurrection options (override original run settings)
      * @param options.build - Tag or number of the build to use. If not provided, uses the original run's build.
@@ -351,14 +351,14 @@ export class RunClient extends ResourceClient {
     }
 
     /**
-     * Returns a client for the default key-value store of this Actor run.
+     * Returns a client for the default Key-value store of this Actor run.
      *
-     * @returns A client for accessing the run's default key-value store
+     * @returns A client for accessing the run's default Key-value store
      * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
      *
      * @example
      * ```javascript
-     * // Access run's key-value store
+     * // Access run's Key-value store
      * const output = await client.run('run-id').keyValueStore().getRecord('OUTPUT');
      * ```
      */
@@ -371,14 +371,14 @@ export class RunClient extends ResourceClient {
     }
 
     /**
-     * Returns a client for the default request queue of this Actor run.
+     * Returns a client for the default Request queue of this Actor run.
      *
-     * @returns A client for accessing the run's default request queue
+     * @returns A client for accessing the run's default Request queue
      * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
      *
      * @example
      * ```javascript
-     * // Access run's request queue
+     * // Access run's Request queue
      * const { items } = await client.run('run-id').requestQueue().listHead();
      * ```
      */
