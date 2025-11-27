@@ -82,7 +82,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * @returns The created Actor object.
      * @see https://docs.apify.com/api/v2/acts-post
      */
-    async create(actor: ActorUpdateOptions): Promise<Actor> {
+    async create(actor: ActorCollectionCreateOptions): Promise<Actor> {
         ow(actor, ow.optional.object);
 
         return this._create(actor);
