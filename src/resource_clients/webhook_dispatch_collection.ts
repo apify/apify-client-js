@@ -17,8 +17,8 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatches-collection/get-list-of-webhook-dispatches
-     *
+     * https://docs.apify.com/api/v2/webhook-dispatches-get
+     */
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
      * ```javascript

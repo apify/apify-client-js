@@ -18,7 +18,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-actors
+     * https://docs.apify.com/api/v2/acts-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -49,7 +49,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/actor-collection/create-actor
+     * https://docs.apify.com/api/v2/acts-post
      */
     async create(actor: ActorCollectionCreateOptions): Promise<Actor> {
         ow(actor, ow.optional.object);

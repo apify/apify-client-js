@@ -32,7 +32,7 @@ export class DatasetClient<
      * Gets the dataset object from the Apify API.
      *
      * @returns The Dataset object, or `undefined` if it does not exist
-     * @see https://docs.apify.com/api/v2#/reference/datasets/dataset/get-dataset
+     * @see https://docs.apify.com/api/v2/dataset-get
      */
     async get(): Promise<Dataset | undefined> {
         return this._get({}, SMALL_TIMEOUT_MILLIS);
@@ -43,7 +43,7 @@ export class DatasetClient<
      *
      * @param newFields - Fields to update in the dataset
      * @returns The updated Dataset object
-     * @see https://docs.apify.com/api/v2#/reference/datasets/dataset/update-dataset
+     * @see https://docs.apify.com/api/v2/dataset-put
      */
     async update(newFields: DatasetClientUpdateOptions): Promise<Dataset> {
         ow(newFields, ow.object);
@@ -54,7 +54,7 @@ export class DatasetClient<
     /**
      * Deletes the dataset.
      *
-     * @see https://docs.apify.com/api/v2#/reference/datasets/dataset/delete-dataset
+     * @see https://docs.apify.com/api/v2/dataset-delete
      */
     async delete(): Promise<void> {
         return this._delete(SMALL_TIMEOUT_MILLIS);
@@ -80,7 +80,7 @@ export class DatasetClient<
      * @param options.unwind - Field name or array of field names to unwind. Each array value creates a separate item.
      * @param options.view - Name of a predefined view to use for field selection.
      * @returns A paginated list with `items`, `total` count, `offset`, `count`, and `limit`
-     * @see https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
+     * @see https://docs.apify.com/api/v2/dataset-items-get
      *
      * @example
      * ```javascript
@@ -150,7 +150,7 @@ export class DatasetClient<
      * @param options.fields - Array of field names to include in the export.
      * @param options.omit - Array of field names to exclude from the export.
      * @returns Buffer containing the serialized data in the specified format
-     * @see https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
+     * @see https://docs.apify.com/api/v2/dataset-items-get
      *
      * @example
      * ```javascript
@@ -222,7 +222,7 @@ export class DatasetClient<
      *
      * @param items - A single item (object or string) or an array of items to store.
      *                Objects are automatically stringified to JSON. Strings are stored as-is.
-     * @see https://docs.apify.com/api/v2#/reference/datasets/item-collection/put-items
+     * @see https://docs.apify.com/api/v2/dataset-items-post
      *
      * @example
      * ```javascript

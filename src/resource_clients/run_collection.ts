@@ -19,8 +19,8 @@ export class RunCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/run-collection/get-list-of-runs
-     *
+     * https://docs.apify.com/api/v2/actor-runs-get
+     */
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
      * ```javascript

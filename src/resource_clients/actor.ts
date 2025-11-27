@@ -34,7 +34,7 @@ export class ActorClient extends ResourceClient {
      * Gets the Actor object from the Apify API.
      *
      * @returns The Actor object, or `undefined` if it does not exist
-     * @see https://docs.apify.com/api/v2#/reference/actors/actor-object/get-actor
+     * @see https://docs.apify.com/api/v2/act-get
      */
     async get(): Promise<Actor | undefined> {
         return this._get();
@@ -45,7 +45,7 @@ export class ActorClient extends ResourceClient {
      *
      * @param newFields - Fields to update in the Actor
      * @returns The updated Actor object
-     * @see https://docs.apify.com/api/v2#/reference/actors/actor-object/update-actor
+     * @see https://docs.apify.com/api/v2/act-put
      */
     async update(newFields: ActorUpdateOptions): Promise<Actor> {
         ow(newFields, ow.object);
@@ -56,7 +56,7 @@ export class ActorClient extends ResourceClient {
     /**
      * Deletes the Actor.
      *
-     * @see https://docs.apify.com/api/v2#/reference/actors/actor-object/delete-actor
+     * @see https://docs.apify.com/api/v2/act-delete
      */
     async delete(): Promise<void> {
         return this._delete();
@@ -81,7 +81,7 @@ export class ActorClient extends ResourceClient {
      * @param options.maxTotalChargeUsd - Maximum cost in USD (only for pay-per-event Actors).
      * @param options.contentType - Content type of the input. If specified, input must be a string or Buffer.
      * @returns The Actor run object with status, usage, and storage IDs
-     * @see https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
+     * @see https://docs.apify.com/api/v2/act-runs-post
      *
      * @example
      * ```javascript
@@ -176,7 +176,7 @@ export class ActorClient extends ResourceClient {
      * @param options.memory - Memory in megabytes allocated for the run.
      * @param options.timeout - Maximum run duration in seconds.
      * @returns The finished Actor run object with final status (`SUCCEEDED`, `FAILED`, `ABORTED`, or `TIMED-OUT`)
-     * @see https://docs.apify.com/api/v2#/reference/actors/run-collection/run-actor
+     * @see https://docs.apify.com/api/v2/act-runs-post
      *
      * @example
      * ```javascript
@@ -248,7 +248,7 @@ export class ActorClient extends ResourceClient {
      * @param options.useCache - If `false`, Docker build cache will be ignored. Default is `true`.
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the build to finish on the API side before returning. Default is 0 (returns immediately).
      * @returns The Build object with status and build details
-     * @see https://docs.apify.com/api/v2#/reference/actors/build-collection/build-actor
+     * @see https://docs.apify.com/api/v2/act-builds-post
      *
      * @example
      * ```javascript
@@ -316,7 +316,7 @@ export class ActorClient extends ResourceClient {
      *
      * @param options - Options to filter the last run
      * @returns A client for the last run
-     * @see https://docs.apify.com/api/v2#/reference/actors/last-run-object-and-its-storages
+     * @see https://docs.apify.com/api/v2/act-runs-last-get
      *
      * @example
      * ```javascript
@@ -346,7 +346,7 @@ export class ActorClient extends ResourceClient {
      * Returns a client for managing builds of this Actor.
      *
      * @returns A client for the Actor's build collection
-     * @see https://docs.apify.com/api/v2#/reference/actors/build-collection
+     * @see https://docs.apify.com/api/v2/act-builds-get
      */
     builds(): BuildCollectionClient {
         return new BuildCollectionClient(
@@ -360,7 +360,7 @@ export class ActorClient extends ResourceClient {
      * Returns a client for managing runs of this Actor.
      *
      * @returns A client for the Actor's run collection
-     * @see https://docs.apify.com/api/v2#/reference/actors/run-collection
+     * @see https://docs.apify.com/api/v2/act-runs-get
      */
     runs(): RunCollectionClient {
         return new RunCollectionClient(
@@ -375,7 +375,7 @@ export class ActorClient extends ResourceClient {
      *
      * @param versionNumber - Version number (e.g., '0.1', '1.2.3')
      * @returns A client for the specified Actor version
-     * @see https://docs.apify.com/api/v2#/reference/actors/version-object
+     * @see https://docs.apify.com/api/v2/act-version-get
      */
     version(versionNumber: string): ActorVersionClient {
         ow(versionNumber, ow.string);
@@ -390,7 +390,7 @@ export class ActorClient extends ResourceClient {
      * Returns a client for managing versions of this Actor.
      *
      * @returns A client for the Actor's version collection
-     * @see https://docs.apify.com/api/v2#/reference/actors/version-collection
+     * @see https://docs.apify.com/api/v2/act-versions-get
      */
     versions(): ActorVersionCollectionClient {
         return new ActorVersionCollectionClient(this._subResourceOptions());
@@ -400,7 +400,7 @@ export class ActorClient extends ResourceClient {
      * Returns a client for managing webhooks associated with this Actor.
      *
      * @returns A client for the Actor's webhook collection
-     * @see https://docs.apify.com/api/v2#/reference/actors/webhook-collection
+     * @see https://docs.apify.com/api/v2/act-webhooks-get
      */
     webhooks(): WebhookCollectionClient {
         return new WebhookCollectionClient(this._subResourceOptions());

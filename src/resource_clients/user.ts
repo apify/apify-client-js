@@ -18,14 +18,14 @@ export class UserClient extends ResourceClient {
     /**
      * Depending on whether ApifyClient was created with a token,
      * the method will either return public or private user data.
-     * https://docs.apify.com/api/v2#/reference/users
+     * https://docs.apify.com/api/v2/user-get
      */
     async get(): Promise<User> {
         return this._get() as Promise<User>;
     }
 
     /**
-     * https://docs.apify.com/api/v2/#/reference/users/monthly-usage
+     * https://docs.apify.com/api/v2/user-usage-monthly-get
      */
     async monthlyUsage(): Promise<MonthlyUsage | undefined> {
         const requestOpts: ApifyRequestConfig = {
@@ -50,7 +50,7 @@ export class UserClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/#/reference/users/account-and-usage-limits
+     * https://docs.apify.com/api/v2/user-limits-get
      */
     async limits(): Promise<AccountAndUsageLimits | undefined> {
         const requestOpts: ApifyRequestConfig = {
@@ -69,7 +69,7 @@ export class UserClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/#/reference/users/account-and-usage-limits
+     * https://docs.apify.com/api/v2/user-limits-put
      */
     async updateLimits(options: LimitsUpdateOptions): Promise<void> {
         const requestOpts: ApifyRequestConfig = {

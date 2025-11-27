@@ -17,7 +17,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/get-list-of-webhooks
+     * https://docs.apify.com/api/v2/webhooks-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -49,7 +49,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection/create-webhook
+     * https://docs.apify.com/api/v2/webhooks-post
      */
     async create(webhook?: WebhookUpdateData): Promise<Webhook> {
         ow(webhook, ow.optional.object);

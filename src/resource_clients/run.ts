@@ -33,7 +33,7 @@ export class RunClient extends ResourceClient {
      * @param options - Get options
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the run to finish on the API side before returning. Default is 0 (returns immediately).
      * @returns The ActorRun object, or `undefined` if it does not exist
-     * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-object/get-run
+     * @see https://docs.apify.com/api/v2/actor-run-get
      *
      * @example
      * ```javascript
@@ -62,7 +62,7 @@ export class RunClient extends ResourceClient {
      * @param options - Abort options
      * @param options.gracefully - If `true`, the Actor run will abort gracefully - it can send status messages and perform cleanup. Default is `false` (immediate abort).
      * @returns The updated ActorRun object with `ABORTING` or `ABORTED` status
-     * @see https://docs.apify.com/api/v2#/reference/actor-runs/abort-run/abort-run
+     * @see https://docs.apify.com/api/v2/actor-run-abort-post
      *
      * @example
      * ```javascript
@@ -93,7 +93,7 @@ export class RunClient extends ResourceClient {
     /**
      * Deletes the Actor run.
      *
-     * @see https://docs.apify.com/api/v2#/reference/actor-runs/delete-run/delete-run
+     * @see https://docs.apify.com/api/v2/actor-run-delete
      */
     async delete(): Promise<void> {
         return this._delete();
@@ -112,7 +112,7 @@ export class RunClient extends ResourceClient {
      * @param options.build - Tag or number of the target Actor's build to run. Default is the target Actor's default build.
      * @param options.contentType - Content type of the input. If specified, input must be a string or Buffer.
      * @returns The metamorphed ActorRun object (same ID, but now running the target Actor)
-     * @see https://docs.apify.com/api/v2#/reference/actor-runs/metamorph-run/metamorph-run
+     * @see https://docs.apify.com/api/v2/actor-run-metamorph-post
      *
      * @example
      * ```javascript
@@ -172,7 +172,7 @@ export class RunClient extends ResourceClient {
      * with a fresh environment.
      *
      * @returns The updated ActorRun object
-     * @see https://docs.apify.com/api/v2#/reference/actor-runs/reboot-run/reboot-run
+     * @see https://docs.apify.com/api/v2/actor-run-reboot-post
      *
      * @example
      * ```javascript
@@ -226,7 +226,7 @@ export class RunClient extends ResourceClient {
      * @param options.maxTotalChargeUsd - Maximum cost in USD (pay-per-event Actors).
      * @param options.restartOnError - Whether to restart on error.
      * @returns The new (resurrected) ActorRun object
-     * @see https://docs.apify.com/api/v2#/reference/actor-runs/resurrect-run/resurrect-run
+     * @see https://docs.apify.com/api/v2/post-resurrect-run
      *
      * @example
      * ```javascript
@@ -258,7 +258,7 @@ export class RunClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-runs/charge-events-in-run
+     * https://docs.apify.com/api/v2/post-charge-run
      */
     async charge(options: RunChargeOptions): Promise<ApifyResponse<Record<string, never>>> {
         ow(
@@ -334,7 +334,7 @@ export class RunClient extends ResourceClient {
      * Returns a client for the default dataset of this Actor run.
      *
      * @returns A client for accessing the run's default dataset
-     * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
+     * @see https://docs.apify.com/api/v2/actor-run-get
      *
      * @example
      * ```javascript
@@ -354,7 +354,7 @@ export class RunClient extends ResourceClient {
      * Returns a client for the default Key-value store of this Actor run.
      *
      * @returns A client for accessing the run's default Key-value store
-     * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
+     * @see https://docs.apify.com/api/v2/actor-run-get
      *
      * @example
      * ```javascript
@@ -374,7 +374,7 @@ export class RunClient extends ResourceClient {
      * Returns a client for the default Request queue of this Actor run.
      *
      * @returns A client for accessing the run's default Request queue
-     * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
+     * @see https://docs.apify.com/api/v2/actor-run-get
      *
      * @example
      * ```javascript
@@ -394,7 +394,7 @@ export class RunClient extends ResourceClient {
      * Returns a client for accessing the log of this Actor run.
      *
      * @returns A client for accessing the run's log
-     * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
+     * @see https://docs.apify.com/api/v2/actor-run-get
      *
      * @example
      * ```javascript

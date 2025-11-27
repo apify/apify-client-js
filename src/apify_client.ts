@@ -129,8 +129,8 @@ export class ApifyClient {
      *
      * Provides access to the Actor collection, allowing you to list, create, and search for Actors.
      *
-     * @returns A client for the Actor collection
-     * @see https://docs.apify.com/api/v2#/reference/actors/actor-collection
+     * @returns A client for the Actors collection
+     * @see https://docs.apify.com/api/v2/acts-get
      */
     actors(): ActorCollectionClient {
         return new ActorCollectionClient(this._options());
@@ -143,8 +143,8 @@ export class ApifyClient {
      * runs, versions, and webhooks.
      *
      * @param id - Actor ID or username/name
-     * @returns A client for the specified Actor
-     * @see https://docs.apify.com/api/v2#/reference/actors/actor-object
+     * @returns A client for the specific Actor
+     * @see https://docs.apify.com/api/v2/act-get
      *
      * @example
      * ```javascript
@@ -166,8 +166,8 @@ export class ApifyClient {
      *
      * Lists all builds across all of your Actors.
      *
-     * @returns A client for the build collection
-     * @see https://docs.apify.com/api/v2#/reference/actor-builds/build-collection
+     * @returns A client for Actor builds collection
+     * @see https://docs.apify.com/api/v2/actor-builds-get
      */
     builds(): BuildCollectionClient {
         return new BuildCollectionClient(this._options());
@@ -180,7 +180,7 @@ export class ApifyClient {
      *
      * @param id - Build ID
      * @returns A client for the specified build
-     * @see https://docs.apify.com/api/v2#/reference/actor-builds/build-object
+     * @see https://docs.apify.com/api/v2/actor-build-get
      */
     build(id: string): BuildClient {
         ow(id, ow.string.nonEmpty);
@@ -196,8 +196,8 @@ export class ApifyClient {
      *
      * Datasets store structured data results from Actor runs. Use this to list or create datasets.
      *
-     * @returns A client for the dataset collection
-     * @see https://docs.apify.com/api/v2#/reference/datasets/dataset-collection
+     * @returns A client for the Datasets collection
+     * @see https://docs.apify.com/api/v2/datasets-get
      */
     datasets(): DatasetCollectionClient {
         return new DatasetCollectionClient(this._options());
@@ -211,8 +211,8 @@ export class ApifyClient {
      *
      * @template Data - Type of items stored in the dataset
      * @param id - Dataset ID or name
-     * @returns A client for the specified dataset
-     * @see https://docs.apify.com/api/v2#/reference/datasets/dataset
+     * @returns A client for the specific Dataset
+     * @see https://docs.apify.com/api/v2/dataset-get
      *
      * @example
      * ```javascript
@@ -242,8 +242,8 @@ export class ApifyClient {
      *
      * Key-value stores are used to store arbitrary data records or files.
      *
-     * @returns A client for the key-value store collection
-     * @see https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection
+     * @returns A client for the Key-value stores collection
+     * @see https://docs.apify.com/api/v2/key-value-stores-get
      */
     keyValueStores(): KeyValueStoreCollectionClient {
         return new KeyValueStoreCollectionClient(this._options());
@@ -256,8 +256,8 @@ export class ApifyClient {
      * any type of data including text, JSON, images, and other files.
      *
      * @param id - Key-value store ID or name
-     * @returns A client for the specified key-value store
-     * @see https://docs.apify.com/api/v2#/reference/key-value-stores/store-object
+     * @returns A client for the specific Key-value store
+     * @see https://docs.apify.com/api/v2/key-value-store-get
      *
      * @example
      * ```javascript
@@ -282,7 +282,7 @@ export class ApifyClient {
      *
      * @param buildOrRunId - Build ID or run ID
      * @returns A client for accessing logs
-     * @see https://docs.apify.com/api/v2#/reference/logs
+     * @see https://docs.apify.com/api/v2/log-get
      */
     log(buildOrRunId: string): LogClient {
         ow(buildOrRunId, ow.string.nonEmpty);
@@ -298,8 +298,8 @@ export class ApifyClient {
      *
      * Request queues store URLs to be crawled, along with their metadata.
      *
-     * @returns A client for the request queue collection
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/queue-collection
+     * @returns A client for the Request queues collection
+     * @see https://docs.apify.com/api/v2/request-queues-get
      */
     requestQueues(): RequestQueueCollectionClient {
         return new RequestQueueCollectionClient(this._options());
@@ -313,8 +313,8 @@ export class ApifyClient {
      *
      * @param id - Request queue ID or name
      * @param options - Configuration options for the request queue client
-     * @returns A client for the specified request queue
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/queue
+     * @returns A client for the specific Request queue
+     * @see https://docs.apify.com/api/v2/request-queue-get
      *
      * @example
      * ```javascript
@@ -349,7 +349,7 @@ export class ApifyClient {
      * Lists all runs across all of your Actors.
      *
      * @returns A client for the run collection
-     * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-collection
+     * @see https://docs.apify.com/api/v2/actor-runs-get
      */
     runs(): RunCollectionClient {
         return new RunCollectionClient({
@@ -366,7 +366,7 @@ export class ApifyClient {
      *
      * @param id - Run ID
      * @returns A client for the specified run
-     * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
+     * @see https://docs.apify.com/api/v2/actor-run-get
      *
      * @example
      * ```javascript
@@ -392,7 +392,7 @@ export class ApifyClient {
      * Tasks are pre-configured Actor runs with stored input that can be executed repeatedly.
      *
      * @returns A client for the task collection
-     * @see https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection
+     * @see https://docs.apify.com/api/v2/actor-tasks-get
      */
     tasks(): TaskCollectionClient {
         return new TaskCollectionClient(this._options());
@@ -405,7 +405,7 @@ export class ApifyClient {
      *
      * @param id - Task ID or username/task-name
      * @returns A client for the specified task
-     * @see https://docs.apify.com/api/v2#/reference/actor-tasks/task-object
+     * @see https://docs.apify.com/api/v2/actor-task-get
      *
      * @example
      * ```javascript
@@ -427,8 +427,8 @@ export class ApifyClient {
      *
      * Schedules automatically start Actor or task runs at specified times.
      *
-     * @returns A client for the schedule collection
-     * @see https://docs.apify.com/api/v2#/reference/schedules/schedules-collection
+     * @returns A client for the Schedules collection
+     * @see https://docs.apify.com/api/v2/schedules-get
      */
     schedules(): ScheduleCollectionClient {
         return new ScheduleCollectionClient(this._options());
@@ -440,8 +440,8 @@ export class ApifyClient {
      * Use this to get, update, or delete a schedule.
      *
      * @param id - Schedule ID
-     * @returns A client for the specified schedule
-     * @see https://docs.apify.com/api/v2#/reference/schedules/schedule-object
+     * @returns A client for the specific Schedule
+     * @see https://docs.apify.com/api/v2/schedule-get
      */
     schedule(id: string): ScheduleClient {
         ow(id, ow.string.nonEmpty);
@@ -459,7 +459,7 @@ export class ApifyClient {
      *
      * @param id - User ID or username. Defaults to 'me' (current user)
      * @returns A client for the user
-     * @see https://docs.apify.com/api/v2#/reference/users
+     * @see https://docs.apify.com/api/v2/user-get
      */
     user(id = ME_USER_NAME_PLACEHOLDER): UserClient {
         ow(id, ow.string.nonEmpty);
@@ -475,8 +475,8 @@ export class ApifyClient {
      *
      * Webhooks notify external services when specific events occur (e.g., Actor run finishes).
      *
-     * @returns A client for the webhook collection
-     * @see https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection
+     * @returns A client for the Webhooks collection
+     * @see https://docs.apify.com/api/v2/webhooks-get
      */
     webhooks(): WebhookCollectionClient {
         return new WebhookCollectionClient(this._options());
@@ -488,8 +488,8 @@ export class ApifyClient {
      * Use this to get, update, delete, or test a webhook.
      *
      * @param id - Webhook ID
-     * @returns A client for the specified webhook
-     * @see https://docs.apify.com/api/v2#/reference/webhooks/webhook-object
+     * @returns A client for the specific Webhook
+     * @see https://docs.apify.com/api/v2/webhook-get
      */
     webhook(id: string): WebhookClient {
         ow(id, ow.string.nonEmpty);
@@ -505,8 +505,8 @@ export class ApifyClient {
      *
      * Webhook dispatches represent individual invocations of webhooks.
      *
-     * @returns A client for the webhook dispatch collection
-     * @see https://docs.apify.com/api/v2#/reference/webhook-dispatches
+     * @returns A client for the Webhook dispatches collection
+     * @see https://docs.apify.com/api/v2/webhook-dispatches-get
      */
     webhookDispatches(): WebhookDispatchCollectionClient {
         return new WebhookDispatchCollectionClient(this._options());
@@ -516,8 +516,8 @@ export class ApifyClient {
      * Returns a client for a specific webhook dispatch.
      *
      * @param id - Webhook dispatch ID
-     * @returns A client for the specified webhook dispatch
-     * @see https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatch-object
+     * @returns A client for the specific Webhook dispatch
+     * @see https://docs.apify.com/api/v2/webhook-dispatch-get
      */
     webhookDispatch(id: string): WebhookDispatchClient {
         ow(id, ow.string.nonEmpty);
@@ -534,7 +534,7 @@ export class ApifyClient {
      * Use this to search and retrieve information about public Actors.
      *
      * @returns A client for the Apify Store
-     * @see https://docs.apify.com/api/v2/#/reference/store
+     * @see https://docs.apify.com/api/v2/store-actors-get
      */
     store(): StoreCollectionClient {
         return new StoreCollectionClient(this._options());

@@ -17,7 +17,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection/get-list-of-tasks
+     * https://docs.apify.com/api/v2/actor-tasks-get
      * @param {object} [options]
      * @param {number} [options.limit]
      * @param {number} [options.offset]
@@ -51,7 +51,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection/create-task
+     * https://docs.apify.com/api/v2/actor-tasks-post
      */
     async create(task: TaskCreateData): Promise<Task> {
         ow(task, ow.object);

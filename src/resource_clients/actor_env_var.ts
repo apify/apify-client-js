@@ -16,14 +16,14 @@ export class ActorEnvVarClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/environment-variable-object/get-environment-variable
+     * https://docs.apify.com/api/v2/act-version-env-var-get
      */
     async get(): Promise<ActorEnvironmentVariable | undefined> {
         return this._get();
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/environment-variable-object/update-environment-variable
+     * https://docs.apify.com/api/v2/act-version-env-var-put
      */
     async update(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
         ow(actorEnvVar, ow.object);
@@ -31,7 +31,7 @@ export class ActorEnvVarClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/environment-variable-object/delete-environment-variable
+     * https://docs.apify.com/api/v2/act-version-env-var-delete
      */
     async delete(): Promise<void> {
         return this._delete();

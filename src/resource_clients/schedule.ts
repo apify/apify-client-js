@@ -20,14 +20,14 @@ export class ScheduleClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/schedules/schedule-object/get-schedule
+     * https://docs.apify.com/api/v2/schedule-get
      */
     async get(): Promise<Schedule | undefined> {
         return this._get();
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/schedules/schedule-object/update-schedule
+     * https://docs.apify.com/api/v2/schedule-put
      */
     async update(newFields: ScheduleCreateOrUpdateData): Promise<Schedule> {
         ow(newFields, ow.object);
@@ -35,14 +35,14 @@ export class ScheduleClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/schedules/schedule-object/delete-schedule
+     * https://docs.apify.com/api/v2/schedule-delete
      */
     async delete(): Promise<void> {
         return this._delete();
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/schedules/schedule-log/get-schedule-log
+     * https://docs.apify.com/api/v2/schedule-log-get
      */
     async getLog(): Promise<string | undefined> {
         const requestOpts: ApifyRequestConfig = {

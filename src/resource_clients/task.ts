@@ -25,14 +25,14 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/get-task
+     * https://docs.apify.com/api/v2/actor-task-get
      */
     async get(): Promise<Task | undefined> {
         return this._get();
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/update-task
+     * https://docs.apify.com/api/v2/actor-task-put
      */
     async update(newFields: TaskUpdateData): Promise<Task> {
         ow(newFields, ow.object);
@@ -41,7 +41,7 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/delete-task
+     * https://docs.apify.com/api/v2/actor-task-delete
      */
     async delete(): Promise<void> {
         return this._delete();
@@ -49,7 +49,7 @@ export class TaskClient extends ResourceClient {
 
     /**
      * Starts a task and immediately returns the Run object.
-     * https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task
+     * https://docs.apify.com/api/v2/actor-task-runs-post
      */
     async start(input?: Dictionary, options: TaskStartOptions = {}): Promise<ActorRun> {
         ow(input, ow.optional.object);
@@ -100,7 +100,7 @@ export class TaskClient extends ResourceClient {
     /**
      * Starts a task and waits for it to finish before returning the Run object.
      * It waits indefinitely, unless the `waitSecs` option is provided.
-     * https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection/run-task
+     * https://docs.apify.com/api/v2/actor-task-runs-post
      */
     async call(input?: Dictionary, options: TaskCallOptions = {}): Promise<ActorRun> {
         ow(input, ow.optional.object);
@@ -129,7 +129,7 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-tasks/task-input-object/get-task-input
+     * https://docs.apify.com/api/v2/actor-task-input-get
      */
     async getInput(): Promise<Dictionary | Dictionary[] | undefined> {
         const requestOpts: ApifyRequestConfig = {
@@ -148,7 +148,7 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-tasks/task-input-object/update-task-input
+     * https://docs.apify.com/api/v2/actor-task-input-put
      */
     async updateInput(newFields: Dictionary | Dictionary[]): Promise<Dictionary | Dictionary[]> {
         const response = await this.httpClient.call({
@@ -162,7 +162,7 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-tasks/last-run-object-and-its-storages
+     * https://docs.apify.com/api/v2/actor-task-runs-last-get
      */
     lastRun(options: TaskLastRunOptions = {}): RunClient {
         ow(
@@ -183,7 +183,7 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-tasks/run-collection
+     * https://docs.apify.com/api/v2/actor-task-runs-get
      */
     runs(): RunCollectionClient {
         return new RunCollectionClient(
@@ -194,7 +194,7 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-tasks/webhook-collection
+     * https://docs.apify.com/api/v2/actor-task-webhooks-get
      */
     webhooks(): WebhookCollectionClient {
         return new WebhookCollectionClient(this._subResourceOptions());

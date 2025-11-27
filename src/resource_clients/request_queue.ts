@@ -46,7 +46,7 @@ export class RequestQueueClient extends ResourceClient {
      * Gets the Request queue object from the Apify API.
      *
      * @returns The RequestQueue object, or `undefined` if it does not exist
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/queue/get-request-queue
+     * @see https://docs.apify.com/api/v2/request-queue-get
      */
     async get(): Promise<RequestQueue | undefined> {
         return this._get({}, SMALL_TIMEOUT_MILLIS);
@@ -57,7 +57,7 @@ export class RequestQueueClient extends ResourceClient {
      *
      * @param newFields - Fields to update in the Request queue
      * @returns The updated RequestQueue object
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/queue/update-request-queue
+     * @see https://docs.apify.com/api/v2/request-queue-put
      */
     async update(newFields: RequestQueueClientUpdateOptions): Promise<RequestQueue> {
         ow(newFields, ow.object);
@@ -68,7 +68,7 @@ export class RequestQueueClient extends ResourceClient {
     /**
      * Deletes the Request queue.
      *
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/queue/delete-request-queue
+     * @see https://docs.apify.com/api/v2/request-queue-delete
      */
     async delete(): Promise<void> {
         return this._delete(SMALL_TIMEOUT_MILLIS);
@@ -82,7 +82,7 @@ export class RequestQueueClient extends ResourceClient {
      *
      * @param options - Options for listing (e.g., limit)
      * @returns List of requests from the queue head
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/queue-head/get-head
+     * @see https://docs.apify.com/api/v2/request-queue-head-get
      */
     async listHead(options: RequestQueueClientListHeadOptions = {}): Promise<RequestQueueClientListHeadResult> {
         ow(
@@ -118,7 +118,7 @@ export class RequestQueueClient extends ResourceClient {
      * @param options.lockSecs - **Required.** Duration in seconds to lock the requests. After this time, the locks expire and requests can be retrieved by other clients.
      * @param options.limit - Maximum number of requests to return. Default is 25.
      * @returns Object containing `items` (locked requests), `queueModifiedAt`, `hadMultipleClients`, and lock information
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/queue-head-with-locks/get-head-and-lock
+     * @see https://docs.apify.com/api/v2/request-queue-head-lock-post
      *
      * @example
      * ```javascript
@@ -179,7 +179,7 @@ export class RequestQueueClient extends ResourceClient {
      * @param options - Additional options
      * @param options.forefront - If `true`, adds the request to the beginning of the queue. Default is `false` (adds to the end).
      * @returns Object with `requestId`, `wasAlreadyPresent`, and `wasAlreadyHandled` flags
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/request-collection/add-request
+     * @see https://docs.apify.com/api/v2/request-queue-requests-post
      *
      * @example
      * ```javascript
@@ -356,7 +356,7 @@ export class RequestQueueClient extends ResourceClient {
      * @param options.maxParallel - Maximum number of parallel batch API calls. Default is 5.
      * @param options.minDelayBetweenUnprocessedRequestsRetriesMillis - Minimum delay before retrying rate-limited requests. Default is 500ms.
      * @returns Object with `processedRequests` (successfully added) and `unprocessedRequests` (failed after all retries)
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/batch-request-operations/add-requests
+     * @see https://docs.apify.com/api/v2/request-queue-requests-batch-post
      *
      * @example
      * ```javascript
@@ -445,7 +445,7 @@ export class RequestQueueClient extends ResourceClient {
      *
      * @param requests - Array of requests to delete (by id or uniqueKey)
      * @returns Result containing processed and unprocessed requests
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/batch-request-operations/delete-requests
+     * @see https://docs.apify.com/api/v2/request-queue-requests-batch-delete
      */
     async batchDeleteRequests(
         requests: RequestQueueClientRequestToDelete[],
@@ -478,7 +478,7 @@ export class RequestQueueClient extends ResourceClient {
      *
      * @param id - Request ID
      * @returns The request object, or `undefined` if not found
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/request/get-request
+     * @see https://docs.apify.com/api/v2/request-queue-request-get
      */
     async getRequest(id: string): Promise<RequestQueueClientGetRequestResult | undefined> {
         ow(id, ow.string);
@@ -504,7 +504,7 @@ export class RequestQueueClient extends ResourceClient {
      * @param request - The updated request object (must include id)
      * @param options - Update options such as whether to move to front
      * @returns Information about the updated request
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/request/update-request
+     * @see https://docs.apify.com/api/v2/request-queue-request-put
      */
     async updateRequest(
         request: RequestQueueClientRequestSchema,
@@ -568,7 +568,7 @@ export class RequestQueueClient extends ResourceClient {
      * @param options.lockSecs - **Required.** New lock duration in seconds from now.
      * @param options.forefront - If `true`, moves the request to the beginning of the queue when the lock expires. Default is `false`.
      * @returns Object with new `lockExpiresAt` timestamp
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/request-lock/prolong-request-lock
+     * @see https://docs.apify.com/api/v2/request-queue-request-lock-put
      *
      * @example
      * ```javascript
@@ -615,7 +615,7 @@ export class RequestQueueClient extends ResourceClient {
      *
      * @param id - Request ID
      * @param options - Options such as whether to move to front
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/request-lock/delete-request-lock
+     * @see https://docs.apify.com/api/v2/request-queue-request-lock-delete
      */
     async deleteRequestLock(id: string, options: RequestQueueClientDeleteRequestLockOptions = {}): Promise<void> {
         ow(id, ow.string);
@@ -645,7 +645,7 @@ export class RequestQueueClient extends ResourceClient {
      *
      * @param options - Pagination options
      * @returns List of requests with pagination information
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/request-collection/list-requests
+     * @see https://docs.apify.com/api/v2/request-queue-requests-get
      */
     async listRequests(
         options: RequestQueueClientListRequestsOptions = {},
@@ -702,7 +702,7 @@ export class RequestQueueClient extends ResourceClient {
      *
      * @param options - Pagination options
      * @returns An async iterable of request pages
-     * @see https://docs.apify.com/api/v2#/reference/request-queues/request-collection/list-requests
+     * @see https://docs.apify.com/api/v2/request-queue-requests-get
      *
      * @example
      * ```javascript

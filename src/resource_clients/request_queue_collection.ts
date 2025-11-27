@@ -17,7 +17,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/get-list-of-request-queues
+     * https://docs.apify.com/api/v2/request-queues-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -49,7 +49,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/request-queues/queue-collection/create-request-queue
+     * https://docs.apify.com/api/v2/request-queues-post
      */
     async getOrCreate(name?: string): Promise<RequestQueue> {
         ow(name, ow.optional.string);

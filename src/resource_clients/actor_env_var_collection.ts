@@ -17,7 +17,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/environment-variable-collection/get-list-of-environment-variables
+     * https://docs.apify.com/api/v2/act-version-env-vars-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -47,7 +47,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/environment-variable-collection/create-environment-variable
+     * https://docs.apify.com/api/v2/act-version-env-vars-post
      */
     async create(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
         ow(actorEnvVar, ow.optional.object);

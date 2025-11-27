@@ -17,7 +17,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of-datasets
+     * https://docs.apify.com/api/v2/datasets-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -47,7 +47,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/create-dataset
+     * https://docs.apify.com/api/v2/datasets-post
      */
     async getOrCreate(name?: string, options?: DatasetCollectionClientGetOrCreateOptions): Promise<Dataset> {
         ow(name, ow.optional.string);

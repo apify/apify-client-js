@@ -42,7 +42,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * Gets the Key-value store object from the Apify API.
      *
      * @returns The KeyValueStore object, or `undefined` if it does not exist
-     * @see https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store
+     * @see https://docs.apify.com/api/v2/key-value-store-get
      */
     async get(): Promise<KeyValueStore | undefined> {
         return this._get({}, SMALL_TIMEOUT_MILLIS);
@@ -56,7 +56,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @param newFields.title - New title for the store
      * @param newFields.generalAccess - General access level (PUBLIC or PRIVATE)
      * @returns The updated KeyValueStore object
-     * @see https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/update-store
+     * @see https://docs.apify.com/api/v2/key-value-store-put
      */
     async update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore> {
         ow(newFields, ow.object);
@@ -67,7 +67,7 @@ export class KeyValueStoreClient extends ResourceClient {
     /**
      * Deletes the Key-value store.
      *
-     * @see https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/delete-store
+     * @see https://docs.apify.com/api/v2/key-value-store-delete
      */
     async delete(): Promise<void> {
         return this._delete(SMALL_TIMEOUT_MILLIS);
@@ -85,7 +85,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @param options.collection - Filter keys by collection name.
      * @param options.prefix - Filter keys that start with this prefix.
      * @returns Object containing `items` array of key metadata, pagination info (`count`, `limit`, `isTruncated`, `nextExclusiveStartKey`)
-     * @see https://docs.apify.com/api/v2#/reference/key-value-stores/key-collection/get-list-of-keys
+     * @see https://docs.apify.com/api/v2/key-value-store-keys-get
      *
      * @example
      * ```javascript
@@ -223,7 +223,7 @@ export class KeyValueStoreClient extends ResourceClient {
      *
      * @param key - The record key to check
      * @returns `true` if the record exists, `false` if it does not
-     * @see https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record
+     * @see https://docs.apify.com/api/v2/key-value-store-record-get
      *
      * @example
      * ```javascript
@@ -257,7 +257,7 @@ export class KeyValueStoreClient extends ResourceClient {
      *
      * When the record does not exist, the function resolves to `undefined`. It does
      * NOT resolve to a `KeyValueStore` record with an `undefined` value.
-     * https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record
+     * https://docs.apify.com/api/v2/key-value-store-record-get
      */
     async getRecord(key: string): Promise<KeyValueStoreRecord<JsonValue> | undefined>;
 
@@ -340,7 +340,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @param options - Storage options
      * @param options.timeoutSecs - Timeout for the upload in seconds. Default varies by value size.
      * @param options.doNotRetryTimeouts - If `true`, don't retry on timeout errors. Default is `false`.
-     * @see https://docs.apify.com/api/v2#/reference/key-value-stores/record/put-record
+     * @see https://docs.apify.com/api/v2/key-value-store-record-put
      *
      * @example
      * ```javascript
@@ -423,7 +423,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * Deletes a record from the key-value store.
      *
      * @param key - The record key to delete
-     * @see https://docs.apify.com/api/v2#/reference/key-value-stores/record/delete-record
+     * @see https://docs.apify.com/api/v2/key-value-store-record-delete
      *
      * @example
      * ```javascript

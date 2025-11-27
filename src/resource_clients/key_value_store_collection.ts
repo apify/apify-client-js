@@ -17,7 +17,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/get-list-of-key-value-stores
+     * https://docs.apify.com/api/v2/key-value-stores-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -49,7 +49,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/create-key-value-store
+     * https://docs.apify.com/api/v2/key-value-stores-post
      */
     async getOrCreate(
         name?: string,

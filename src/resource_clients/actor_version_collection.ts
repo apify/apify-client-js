@@ -17,7 +17,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/version-collection/get-list-of-versions
+     * https://docs.apify.com/api/v2/act-versions-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -48,7 +48,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/version-collection/create-version
+     * https://docs.apify.com/api/v2/act-versions-post
      */
     async create(actorVersion: ActorVersion): Promise<FinalActorVersion> {
         ow(actorVersion, ow.optional.object);

@@ -17,7 +17,7 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/schedules/schedules-collection/get-list-of-schedules
+     * https://docs.apify.com/api/v2/schedules-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -46,7 +46,7 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/schedules/schedules-collection/create-schedule
+     * https://docs.apify.com/api/v2/schedules-post
      */
     async create(schedule?: ScheduleCreateOrUpdateData): Promise<Schedule> {
         ow(schedule, ow.optional.object);

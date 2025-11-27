@@ -25,7 +25,7 @@ export class BuildClient extends ResourceClient {
      * @param options - Get options
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the build to finish on the API side before returning. Default is 0 (returns immediately).
      * @returns The Build object, or `undefined` if it does not exist
-     * @see https://docs.apify.com/api/v2#/reference/actor-builds/build-object/get-build
+     * @see https://docs.apify.com/api/v2/actor-build-get
      *
      * @example
      * ```javascript
@@ -54,7 +54,7 @@ export class BuildClient extends ResourceClient {
      * Stops the build process immediately. The build will have an `ABORTED` status.
      *
      * @returns The updated Build object with `ABORTED` status
-     * @see https://docs.apify.com/api/v2#/reference/actor-builds/abort-build/abort-build
+     * @see https://docs.apify.com/api/v2/actor-build-abort-post
      *
      * @example
      * ```javascript
@@ -74,7 +74,7 @@ export class BuildClient extends ResourceClient {
     /**
      * Deletes the Actor build.
      *
-     * @see https://docs.apify.com/api/v2#/reference/actor-builds/delete-build/delete-build
+     * @see https://docs.apify.com/api/v2/actor-build-delete
      */
     async delete(): Promise<void> {
         return this._delete();
@@ -138,7 +138,7 @@ export class BuildClient extends ResourceClient {
      * Returns a client for accessing the log of this Actor build.
      *
      * @returns A client for accessing the build's log
-     * @see https://docs.apify.com/api/v2#/reference/actor-builds/build-log
+     * @see https://docs.apify.com/api/v2/actor-build-log-get
      *
      * @example
      * ```javascript

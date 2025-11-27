@@ -17,14 +17,14 @@ export class ActorVersionClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/version-object/get-version
+     * https://docs.apify.com/api/v2/act-version-get
      */
     async get(): Promise<FinalActorVersion | undefined> {
         return this._get();
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/version-object/update-version
+     * https://docs.apify.com/api/v2/act-version-put
      */
     async update(newFields: ActorVersion): Promise<FinalActorVersion> {
         ow(newFields, ow.object);
@@ -33,14 +33,14 @@ export class ActorVersionClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/version-object/delete-version
+     * https://docs.apify.com/api/v2/act-version-delete
      */
     async delete(): Promise<void> {
         return this._delete();
     }
 
     /**
-     * TODO: https://docs.apify.com/api/v2#/reference/actors/env-var-object
+     * TODO: https://docs.apify.com/api/v2/act-version-env-var-get
      */
     envVar(envVarName: string): ActorEnvVarClient {
         ow(envVarName, ow.string);
@@ -52,7 +52,7 @@ export class ActorVersionClient extends ResourceClient {
     }
 
     /**
-     * TODO: https://docs.apify.com/api/v2#/reference/actors/env-var-collection
+     * TODO: https://docs.apify.com/api/v2/act-version-env-vars-get
      * @return {ActorVersionCollectionClient}
      */
     envVars(): ActorEnvVarCollectionClient {

@@ -22,14 +22,14 @@ export class WebhookClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/get-webhook
+     * https://docs.apify.com/api/v2/webhook-get
      */
     async get(): Promise<Webhook | undefined> {
         return this._get();
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/update-webhook
+     * https://docs.apify.com/api/v2/webhook-put
      */
     async update(newFields: WebhookUpdateData): Promise<Webhook> {
         ow(newFields, ow.object);
@@ -38,14 +38,14 @@ export class WebhookClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/delete-webhook
+     * https://docs.apify.com/api/v2/webhook-delete
      */
     async delete(): Promise<void> {
         return this._delete();
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/webhooks/webhook-test/test-webhook
+     * https://docs.apify.com/api/v2/webhook-test-post
      */
     async test(): Promise<WebhookDispatch | undefined> {
         const request: ApifyRequestConfig = {
@@ -65,7 +65,7 @@ export class WebhookClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/webhooks/dispatches-collection
+     * https://docs.apify.com/api/v2/webhook-webhook-dispatches-get
      */
     dispatches(): WebhookDispatchCollectionClient {
         return new WebhookDispatchCollectionClient(
