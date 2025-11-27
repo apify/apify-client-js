@@ -20,9 +20,9 @@ export class ResourceCollectionClient extends ApiClient {
     }
 
     /**
-     * Returns async iterator to paginate through all items and first page of results is returned immediately as well.
+     * Returns async iterator to iterate through all items and Promise that can be awaited to get first page of results.
      */
-    protected _getPaginatedIterator<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(
+    protected _listPaginated<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(
         options: T = {} as T,
     ): AsyncIterable<Data> & Promise<R> {
         const getPaginatedList = this._list.bind(this);
