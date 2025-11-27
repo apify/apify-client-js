@@ -76,6 +76,12 @@ export class WebhookClient extends ResourceClient {
     }
 }
 
+/**
+ * Represents a webhook for receiving notifications about Actor events.
+ * 
+ * Webhooks send HTTP POST requests to specified URLs when certain events occur
+ * (e.g., Actor run succeeds, fails, or times out).
+ */
 export interface Webhook {
     id: string;
     userId: string;
@@ -100,6 +106,9 @@ export interface WebhookIdempotencyKey {
     idempotencyKey?: string;
 }
 
+/**
+ * Data for updating a Webhook.
+ */
 export type WebhookUpdateData = Partial<
     Pick<
         Webhook,
@@ -118,12 +127,21 @@ export type WebhookUpdateData = Partial<
 > &
     WebhookIdempotencyKey;
 
+/**
+ * Statistics about Webhook usage.
+ */
 export interface WebhookStats {
     totalDispatches: number;
 }
 
+/**
+ * Event types that can trigger webhooks.
+ */
 export type WebhookEventType = (typeof WEBHOOK_EVENT_TYPES)[keyof typeof WEBHOOK_EVENT_TYPES];
 
+/**
+ * Condition that determines when a webhook should be triggered.
+ */
 export type WebhookCondition =
     | WebhookAnyRunOfActorCondition
     | WebhookAnyRunOfActorTaskCondition

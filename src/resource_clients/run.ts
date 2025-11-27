@@ -440,29 +440,48 @@ export class RunClient extends ResourceClient {
     }
 }
 
+/**
+ * Options for getting a streamed log.
+ */
 export interface GetStreamedLogOptions {
     toLog?: Log | null | 'default';
     fromStart?: boolean;
 }
 
+/**
+ * Options for getting a Run.
+ */
 export interface RunGetOptions {
     waitForFinish?: number;
 }
 
+/**
+ * Options for aborting a Run.
+ */
 export interface RunAbortOptions {
     gracefully?: boolean;
 }
 
+/**
+ * Options for metamorphing a Run into another Actor.
+ */
 export interface RunMetamorphOptions {
     contentType?: string;
     build?: string;
 }
+
+/**
+ * Options for updating a Run.
+ */
 export interface RunUpdateOptions {
     statusMessage?: string;
     isStatusMessageTerminal?: boolean;
     generalAccess?: RUN_GENERAL_ACCESS | null;
 }
 
+/**
+ * Options for resurrecting a finished Run.
+ */
 export interface RunResurrectOptions {
     build?: string;
     memory?: number;
@@ -472,6 +491,9 @@ export interface RunResurrectOptions {
     restartOnError?: boolean;
 }
 
+/**
+ * Options for charging events in a pay-per-event Actor run.
+ */
 export interface RunChargeOptions {
     /** Name of the event to charge. Must be defined in the Actor's pricing info else the API will throw. */
     eventName: string;
@@ -481,6 +503,9 @@ export interface RunChargeOptions {
     idempotencyKey?: string;
 }
 
+/**
+ * Options for waiting for a Run to finish.
+ */
 export interface RunWaitForFinishOptions {
     /**
      * Maximum time to wait for the run to finish, in seconds.

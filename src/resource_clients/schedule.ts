@@ -61,6 +61,11 @@ export class ScheduleClient extends ResourceClient {
     }
 }
 
+/**
+ * Represents a schedule for automated Actor or Task runs.
+ * 
+ * Schedules use cron expressions to define when Actors or Tasks should run automatically.
+ */
 export interface Schedule {
     id: string;
     userId: string;
@@ -81,6 +86,9 @@ export interface Schedule {
     };
 }
 
+/**
+ * Data for creating or updating a Schedule.
+ */
 export type ScheduleCreateOrUpdateData = Partial<
     Pick<
         Schedule,
@@ -90,6 +98,9 @@ export type ScheduleCreateOrUpdateData = Partial<
     }
 >;
 
+/**
+ * Types of actions that can be scheduled.
+ */
 export enum ScheduleActions {
     RunActor = 'RUN_ACTOR',
     RunActorTask = 'RUN_ACTOR_TASK',
@@ -100,19 +111,31 @@ interface BaseScheduleAction<Type extends ScheduleActions> {
     type: Type;
 }
 
+/**
+ * Union type representing all possible scheduled actions.
+ */
 export type ScheduleAction = ScheduleActionRunActor | ScheduleActionRunActorTask;
 
+/**
+ * Scheduled action to run an Actor.
+ */
 export interface ScheduleActionRunActor extends BaseScheduleAction<ScheduleActions.RunActor> {
     actorId: string;
     runInput?: ScheduledActorRunInput;
     runOptions?: ScheduledActorRunOptions;
 }
 
+/**
+ * Input configuration for a scheduled Actor run.
+ */
 export interface ScheduledActorRunInput {
     body: string;
     contentType: string;
 }
 
+/**
+ * Run options for a scheduled Actor run.
+ */
 export interface ScheduledActorRunOptions {
     build: string;
     timeoutSecs: number;
@@ -120,6 +143,9 @@ export interface ScheduledActorRunOptions {
     restartOnError?: boolean;
 }
 
+/**
+ * Scheduled action to run an Actor Task.
+ */
 export interface ScheduleActionRunActorTask extends BaseScheduleAction<ScheduleActions.RunActorTask> {
     actorTaskId: string;
     input?: string;

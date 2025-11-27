@@ -442,6 +442,12 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 }
 
+/**
+ * Represents a Key-Value Store storage on the Apify platform.
+ * 
+ * Key-value stores are used to store arbitrary data records or files. Each record is identified
+ * by a unique key and can contain any data - JSON objects, strings, binary files, etc.
+ */
 export interface KeyValueStore {
     id: string;
     name?: string;
@@ -458,6 +464,9 @@ export interface KeyValueStore {
     keysPublicUrl: string;
 }
 
+/**
+ * Statistics about Key-Value Store usage and storage.
+ */
 export interface KeyValueStoreStats {
     readCount?: number;
     writeCount?: number;
@@ -466,12 +475,18 @@ export interface KeyValueStoreStats {
     storageBytes?: number;
 }
 
+/**
+ * Options for updating a Key-Value Store.
+ */
 export interface KeyValueClientUpdateOptions {
     name?: string | null;
     title?: string;
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
+/**
+ * Options for listing keys in a Key-Value Store.
+ */
 export interface KeyValueClientListKeysOptions {
     limit?: number;
     exclusiveStartKey?: string;
@@ -480,10 +495,20 @@ export interface KeyValueClientListKeysOptions {
     signature?: string;
 }
 
+/**
+ * Options for creating a public URL to list keys in a Key-Value Store.
+ * 
+ * Extends {@link KeyValueClientListKeysOptions} with URL expiration control.
+ */
 export interface KeyValueClientCreateKeysUrlOptions extends KeyValueClientListKeysOptions {
     expiresInSecs?: number;
 }
 
+/**
+ * Result of listing keys in a Key-Value Store.
+ * 
+ * Contains paginated list of keys with metadata and pagination information.
+ */
 export interface KeyValueClientListKeysResult {
     count: number;
     limit: number;
@@ -493,29 +518,49 @@ export interface KeyValueClientListKeysResult {
     items: KeyValueListItem[];
 }
 
+/**
+ * Metadata about a single key in a Key-Value Store.
+ */
 export interface KeyValueListItem {
     key: string;
     size: number;
     recordPublicUrl: string;
 }
 
+/**
+ * Options for retrieving a record from a Key-Value Store.
+ */
 export interface KeyValueClientGetRecordOptions {
     buffer?: boolean;
     stream?: boolean;
     signature?: string;
 }
 
+/**
+ * Represents a record (key-value pair) in a Key-Value Store.
+ * 
+ * @template T - The type of the record's value
+ */
 export interface KeyValueStoreRecord<T> {
     key: string;
     value: T;
     contentType?: string;
 }
 
+/**
+ * Options for storing a record in a Key-Value Store.
+ */
 export interface KeyValueStoreRecordOptions {
     timeoutSecs?: number;
     doNotRetryTimeouts?: boolean;
 }
 
+/**
+ * Helper type to determine the return type based on getRecord options.
+ * 
+ * Returns Readable if stream option is true, Buffer if buffer option is true,
+ * otherwise returns JsonValue.
+ */
 export type ReturnTypeFromOptions<Options extends KeyValueClientGetRecordOptions> = Options['stream'] extends true
     ? Readable
     : Options['buffer'] extends true

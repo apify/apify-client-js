@@ -732,11 +732,20 @@ export class RequestQueueClient extends ResourceClient {
     }
 }
 
+/**
+ * User-specific options for RequestQueueClient.
+ */
 export interface RequestQueueUserOptions {
     clientKey?: string;
     timeoutSecs?: number;
 }
 
+/**
+ * Represents a Request Queue storage on the Apify platform.
+ * 
+ * Request queues store URLs (requests) to be processed by web crawlers. They provide
+ * automatic deduplication, request locking for parallel processing, and persistence.
+ */
 export interface RequestQueue {
     id: string;
     name?: string;
@@ -756,6 +765,9 @@ export interface RequestQueue {
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
+/**
+ * Statistics about Request Queue usage and storage.
+ */
 export interface RequestQueueStats {
     readCount?: number;
     writeCount?: number;
@@ -764,16 +776,25 @@ export interface RequestQueueStats {
     storageBytes?: number;
 }
 
+/**
+ * Options for updating a Request Queue.
+ */
 export interface RequestQueueClientUpdateOptions {
     name?: string | null;
     title?: string;
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
+/**
+ * Options for listing requests from the queue head.
+ */
 export interface RequestQueueClientListHeadOptions {
     limit?: number;
 }
 
+/**
+ * Result of listing requests from the queue head.
+ */
 export interface RequestQueueClientListHeadResult {
     limit: number;
     queueModifiedAt: Date;
@@ -781,34 +802,54 @@ export interface RequestQueueClientListHeadResult {
     items: RequestQueueClientListItem[];
 }
 
+/**
+ * Options for listing all requests in the queue.
+ */
 export interface RequestQueueClientListRequestsOptions {
     limit?: number;
     exclusiveStartId?: string;
 }
 
+/**
+ * Options for paginating through requests in the queue.
+ */
 export interface RequestQueueClientPaginateRequestsOptions {
     limit?: number;
     maxPageLimit?: number;
     exclusiveStartId?: string;
 }
 
+/**
+ * Result of listing all requests in the queue.
+ */
 export interface RequestQueueClientListRequestsResult {
     limit: number;
     exclusiveStartId?: string;
     items: RequestQueueClientRequestSchema[];
 }
 
+/**
+ * Options for listing and locking requests from the queue head.
+ */
 export interface RequestQueueClientListAndLockHeadOptions {
     lockSecs: number;
     limit?: number;
 }
 
+/**
+ * Result of listing and locking requests from the queue head.
+ * 
+ * Extends {@link RequestQueueClientListHeadResult} with lock information.
+ */
 export interface RequestQueueClientListAndLockHeadResult extends RequestQueueClientListHeadResult {
     lockSecs: number;
     queueHasLockedRequests: boolean;
     clientKey: string;
 }
 
+/**
+ * Simplified request information used in list results.
+ */
 export interface RequestQueueClientListItem {
     id: string;
     retryCount: number;
@@ -842,6 +883,11 @@ export interface RequestQueueClientBatchAddRequestWithRetriesOptions {
     minDelayBetweenUnprocessedRequestsRetriesMillis?: number;
 }
 
+/**
+ * Complete schema for a request in the queue.
+ * 
+ * Represents a URL to be crawled along with its metadata, retry information, and custom data.
+ */
 export interface RequestQueueClientRequestSchema {
     id: string;
     uniqueKey: string;
@@ -857,6 +903,9 @@ export interface RequestQueueClientRequestSchema {
     loadedUrl?: string;
 }
 
+/**
+ * Result of adding a request to the queue.
+ */
 export interface RequestQueueClientAddRequestResult {
     requestId: string;
     wasAlreadyPresent: boolean;
@@ -880,6 +929,11 @@ export interface RequestQueueClientUnlockRequestsResult {
     unlockedCount: number;
 }
 
+/**
+ * Result of a batch operation on requests.
+ * 
+ * Contains lists of successfully processed and unprocessed requests.
+ */
 export interface RequestQueueClientBatchRequestsOperationResult {
     processedRequests: ProcessedRequest[];
     unprocessedRequests: UnprocessedRequest[];
@@ -891,6 +945,9 @@ export type RequestQueueClientRequestToDelete =
 
 export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem, 'retryCount'>;
 
+/**
+ * HTTP methods supported by Request Queue requests.
+ */
 export type AllowedHttpMethods = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'TRACE' | 'OPTIONS' | 'CONNECT' | 'PATCH';
 
 export type RequestQueueRequestsAsyncIterable<T> = AsyncIterable<T>;

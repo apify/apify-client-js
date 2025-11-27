@@ -201,6 +201,12 @@ export class TaskClient extends ResourceClient {
     }
 }
 
+/**
+ * Represents an Actor task.
+ * 
+ * Tasks are pre-configured Actor runs with stored input and settings that can be executed
+ * repeatedly without having to specify the input each time.
+ */
 export interface Task {
     id: string;
     userId: string;
@@ -217,10 +223,16 @@ export interface Task {
     actorStandby?: Partial<ActorStandby>;
 }
 
+/**
+ * Statistics about Task usage.
+ */
 export interface TaskStats {
     totalRuns: number;
 }
 
+/**
+ * Configuration options for a Task.
+ */
 export interface TaskOptions {
     build?: string;
     timeoutSecs?: number;
@@ -228,16 +240,31 @@ export interface TaskOptions {
     restartOnError?: boolean;
 }
 
+/**
+ * Fields that can be updated when modifying a Task.
+ */
 export type TaskUpdateData = Partial<
     Pick<Task, 'name' | 'title' | 'description' | 'options' | 'input' | 'actorStandby'>
 >;
 
+/**
+ * Options for filtering the last run of a Task.
+ */
 export interface TaskLastRunOptions {
     status?: keyof typeof ACT_JOB_STATUSES;
 }
 
+/**
+ * Options for starting a Task.
+ * 
+ * Similar to {@link ActorStartOptions} but without contentType (Task input is predefined)
+ * and forcePermissionLevel (uses Task's configured permissions).
+ */
 export type TaskStartOptions = Omit<ActorStartOptions, 'contentType' | 'forcePermissionLevel'>;
 
+/**
+ * Options for calling a Task and waiting for it to finish.
+ */
 export interface TaskCallOptions extends Omit<TaskStartOptions, 'waitForFinish'> {
     waitSecs?: number;
 }

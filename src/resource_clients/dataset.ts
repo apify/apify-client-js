@@ -368,6 +368,12 @@ export class DatasetClient<
     }
 }
 
+/**
+ * Represents a Dataset storage on the Apify platform.
+ * 
+ * Datasets store structured data as a sequence of items (records). Each item is a JSON object.
+ * Datasets are useful for storing results from web scraping, crawling, or data processing tasks.
+ */
 export interface Dataset {
     id: string;
     name?: string;
@@ -387,6 +393,9 @@ export interface Dataset {
     itemsPublicUrl: string;
 }
 
+/**
+ * Statistics about Dataset usage and storage.
+ */
 export interface DatasetStats {
     readCount?: number;
     writeCount?: number;
@@ -394,12 +403,21 @@ export interface DatasetStats {
     storageBytes?: number;
 }
 
+/**
+ * Options for updating a Dataset.
+ */
 export interface DatasetClientUpdateOptions {
     name?: string | null;
     title?: string;
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
+/**
+ * Options for listing items from a Dataset.
+ * 
+ * Provides various filtering, pagination, and transformation options to customize
+ * the output format and content of retrieved items.
+ */
 export interface DatasetClientListItemOptions {
     clean?: boolean;
     desc?: boolean;
@@ -415,10 +433,18 @@ export interface DatasetClientListItemOptions {
     signature?: string;
 }
 
+/**
+ * Options for creating a public URL to access Dataset items.
+ * 
+ * Extends {@link DatasetClientListItemOptions} with URL expiration control.
+ */
 export interface DatasetClientCreateItemsUrlOptions extends DatasetClientListItemOptions {
     expiresInSecs?: number;
 }
 
+/**
+ * Supported formats for downloading Dataset items.
+ */
 export enum DownloadItemsFormat {
     JSON = 'json',
     JSONL = 'jsonl',
@@ -431,6 +457,11 @@ export enum DownloadItemsFormat {
 
 const validItemFormats = [...new Set(Object.values(DownloadItemsFormat).map((item) => item.toLowerCase()))];
 
+/**
+ * Options for downloading Dataset items in a specific format.
+ * 
+ * Extends {@link DatasetClientListItemOptions} with format-specific options.
+ */
 export interface DatasetClientDownloadItemsOptions extends DatasetClientListItemOptions {
     attachment?: boolean;
     bom?: boolean;
@@ -440,10 +471,18 @@ export interface DatasetClientDownloadItemsOptions extends DatasetClientListItem
     xmlRow?: string;
 }
 
+/**
+ * Statistical information about Dataset fields.
+ * 
+ * Provides insights into the data structure and content of the Dataset.
+ */
 export interface DatasetStatistics {
     fieldStatistics: Record<string, FieldStatistics>;
 }
 
+/**
+ * Statistics for a single field in a Dataset.
+ */
 export interface FieldStatistics {
     min?: number;
     max?: number;

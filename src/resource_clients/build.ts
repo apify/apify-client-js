@@ -156,10 +156,16 @@ export class BuildClient extends ResourceClient {
     }
 }
 
+/**
+ * Options for getting a Build.
+ */
 export interface BuildClientGetOptions {
     waitForFinish?: number;
 }
 
+/**
+ * Options for waiting for a Build to finish.
+ */
 export interface BuildClientWaitForFinishOptions {
     /**
      * Maximum time to wait for the build to finish, in seconds.
@@ -169,12 +175,21 @@ export interface BuildClientWaitForFinishOptions {
     waitSecs?: number;
 }
 
+/**
+ * Metadata about how a Build was initiated.
+ */
 export interface BuildMeta {
     origin: string;
     clientIp: string;
     userAgent: string;
 }
 
+/**
+ * Represents an Actor build.
+ * 
+ * Builds compile Actor source code and prepare it for execution. Each build has a unique ID
+ * and can be tagged (e.g., 'latest', 'beta') for easy reference.
+ */
 export interface Build {
     id: string;
     actId: string;
@@ -200,16 +215,25 @@ export interface Build {
     actorDefinition?: ActorDefinition;
 }
 
+/**
+ * Resource usage for an Actor build.
+ */
 export interface BuildUsage {
     ACTOR_COMPUTE_UNITS?: number;
 }
 
+/**
+ * Runtime statistics for an Actor build.
+ */
 export interface BuildStats {
     durationMillis: number;
     runTimeSecs: number;
     computeUnits: number;
 }
 
+/**
+ * Configuration options used for an Actor build.
+ */
 export interface BuildOptions {
     useCache?: boolean;
     betaPackages?: boolean;
@@ -217,6 +241,12 @@ export interface BuildOptions {
     diskMbytes?: number;
 }
 
+/**
+ * OpenAPI specification for an Actor.
+ * 
+ * Defines the Actor's API interface in OpenAPI 3.0 format, useful for integration
+ * with tools like ChatGPT plugins and other API consumers.
+ */
 export interface OpenApiDefinition {
     openapi: string;
     info: {

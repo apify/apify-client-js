@@ -562,6 +562,9 @@ export class ApifyClient {
     }
 }
 
+/**
+ * Configuration options for ApifyClient.
+ */
 export interface ApifyClientOptions {
     /** @default https://api.apify.com */
     baseUrl?: string;
