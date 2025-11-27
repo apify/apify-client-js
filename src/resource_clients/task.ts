@@ -25,14 +25,21 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/actor-task-get
+     * Retrieves the Actor Task.
+     *
+     * @returns The task object, or `undefined` if it does not exist.
+     * @see https://docs.apify.com/api/v2/actor-task-get
      */
     async get(): Promise<Task | undefined> {
         return this._get();
     }
 
     /**
-     * https://docs.apify.com/api/v2/actor-task-put
+     * Updates the task with the specified fields.
+     *
+     * @param newFields - Fields to update.
+     * @returns The updated task object.
+     * @see https://docs.apify.com/api/v2/actor-task-put
      */
     async update(newFields: TaskUpdateData): Promise<Task> {
         ow(newFields, ow.object);
@@ -41,15 +48,21 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/actor-task-delete
+     * Deletes the Task.
+     *
+     * @see https://docs.apify.com/api/v2/actor-task-delete
      */
     async delete(): Promise<void> {
         return this._delete();
     }
 
     /**
-     * Starts a task and immediately returns the Run object.
-     * https://docs.apify.com/api/v2/actor-task-runs-post
+     * Starts an Actor Task and immediately returns the Run object.
+     *
+     * @param input - Input overrides for the task. If not provided, the task's saved input is used.
+     * @param options - Run options.
+     * @returns The Actor Run object.
+     * @see https://docs.apify.com/api/v2/actor-task-runs-post
      */
     async start(input?: Dictionary, options: TaskStartOptions = {}): Promise<ActorRun> {
         ow(input, ow.optional.object);
@@ -100,7 +113,11 @@ export class TaskClient extends ResourceClient {
     /**
      * Starts a task and waits for it to finish before returning the Run object.
      * It waits indefinitely, unless the `waitSecs` option is provided.
-     * https://docs.apify.com/api/v2/actor-task-runs-post
+     *
+     * @param input - Input overrides for the task. If not provided, the task's saved input is used.
+     * @param options - Run and wait options.
+     * @returns The Actor run object.
+     * @see https://docs.apify.com/api/v2/actor-task-runs-post
      */
     async call(input?: Dictionary, options: TaskCallOptions = {}): Promise<ActorRun> {
         ow(input, ow.optional.object);
@@ -129,7 +146,10 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/actor-task-input-get
+     * Retrieves the Actor Task's input object.
+     *
+     * @returns The Task's input, or `undefined` if it does not exist.
+     * @see https://docs.apify.com/api/v2/actor-task-input-get
      */
     async getInput(): Promise<Dictionary | Dictionary[] | undefined> {
         const requestOpts: ApifyRequestConfig = {
@@ -148,7 +168,11 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/actor-task-input-put
+     * Updates the Actor Task's input object.
+     *
+     * @param newFields - New input data for the task.
+     * @returns The updated task input.
+     * @see https://docs.apify.com/api/v2/actor-task-input-put
      */
     async updateInput(newFields: Dictionary | Dictionary[]): Promise<Dictionary | Dictionary[]> {
         const response = await this.httpClient.call({
@@ -162,7 +186,11 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/actor-task-runs-last-get
+     * Returns a client for the last run of this task.
+     *
+     * @param options - Filter options for the last run.
+     * @returns A client for the last run.
+     * @see https://docs.apify.com/api/v2/actor-task-runs-last-get
      */
     lastRun(options: TaskLastRunOptions = {}): RunClient {
         ow(
@@ -183,7 +211,10 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/actor-task-runs-get
+     * Returns a client for the Runs of this Task.
+     *
+     * @returns A client for the task's runs.
+     * @see https://docs.apify.com/api/v2/actor-task-runs-get
      */
     runs(): RunCollectionClient {
         return new RunCollectionClient(
@@ -194,7 +225,10 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/actor-task-webhooks-get
+     * Returns a client for the Webhooks of this Task.
+     *
+     * @returns A client for the task's webhooks.
+     * @see https://docs.apify.com/api/v2/actor-task-webhooks-get
      */
     webhooks(): WebhookCollectionClient {
         return new WebhookCollectionClient(this._subResourceOptions());
@@ -202,10 +236,10 @@ export class TaskClient extends ResourceClient {
 }
 
 /**
- * Represents an Actor task.
+ * Represents an Actor Task.
  *
- * Tasks are pre-configured Actor runs with stored input and settings that can be executed
- * repeatedly without having to specify the input each time.
+ * Tasks are saved Actor configurations with input and settings that can be executed
+ * repeatedly without having to specify the full input each time.
  */
 export interface Task {
     id: string;
@@ -224,14 +258,14 @@ export interface Task {
 }
 
 /**
- * Statistics about Task usage.
+ * Statistics about Actor Task usage.
  */
 export interface TaskStats {
     totalRuns: number;
 }
 
 /**
- * Configuration options for a Task.
+ * Configuration options for an Actor Task.
  */
 export interface TaskOptions {
     build?: string;

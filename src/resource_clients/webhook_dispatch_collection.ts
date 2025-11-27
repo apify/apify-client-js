@@ -17,7 +17,11 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/webhook-dispatches-get
+     * Lists all webhook dispatches.
+     *
+     * @param options - Pagination and sorting options.
+     * @returns A paginated iterator of webhook dispatches.
+     * @see https://docs.apify.com/api/v2/webhook-dispatches-get
      */
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.

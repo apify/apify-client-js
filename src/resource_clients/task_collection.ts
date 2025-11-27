@@ -17,12 +17,11 @@ export class TaskCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/actor-tasks-get
-     * @param {object} [options]
-     * @param {number} [options.limit]
-     * @param {number} [options.offset]
-     * @param {boolean} [options.desc]
-     * @return {PaginatedIterator<TaskList>}
+     * Lists all Tasks.
+     *
+     * @param options - Pagination and sorting options.
+     * @returns A paginated iterator of tasks.
+     * @see https://docs.apify.com/api/v2/actor-tasks-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -51,7 +50,11 @@ export class TaskCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/actor-tasks-post
+     * Creates a new task.
+     *
+     * @param task - The task data.
+     * @returns The created task object.
+     * @see https://docs.apify.com/api/v2/actor-tasks-post
      */
     async create(task: TaskCreateData): Promise<Task> {
         ow(task, ow.object);

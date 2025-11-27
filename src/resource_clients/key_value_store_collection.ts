@@ -17,7 +17,11 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/key-value-stores-get
+     * Lists all Key-value stores.
+     *
+     * @param options - Pagination options.
+     * @returns A paginated iterator of Key-value stores.
+     * @see https://docs.apify.com/api/v2/key-value-stores-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -49,7 +53,12 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/key-value-stores-post
+     * Gets or creates a Key-value store with the specified name.
+     *
+     * @param name - Name of the Key-value store. If not provided, a default store is used.
+     * @param options - Additional options like schema.
+     * @returns The Key-value store object.
+     * @see https://docs.apify.com/api/v2/key-value-stores-post
      */
     async getOrCreate(
         name?: string,

@@ -16,14 +16,21 @@ export class ActorEnvVarClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/act-version-env-var-get
+     * Retrieves the environment variable.
+     *
+     * @returns The environment variable object, or `undefined` if it does not exist.
+     * @see https://docs.apify.com/api/v2/act-version-env-var-get
      */
     async get(): Promise<ActorEnvironmentVariable | undefined> {
         return this._get();
     }
 
     /**
-     * https://docs.apify.com/api/v2/act-version-env-var-put
+     * Updates the environment variable.
+     *
+     * @param actorEnvVar - The updated environment variable data.
+     * @returns The updated environment variable object.
+     * @see https://docs.apify.com/api/v2/act-version-env-var-put
      */
     async update(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
         ow(actorEnvVar, ow.object);
@@ -31,7 +38,9 @@ export class ActorEnvVarClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/act-version-env-var-delete
+     * Deletes the environment variable.
+     *
+     * @see https://docs.apify.com/api/v2/act-version-env-var-delete
      */
     async delete(): Promise<void> {
         return this._delete();

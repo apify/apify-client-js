@@ -289,7 +289,11 @@ export class ActorClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/act-build-default-get
+     * Retrieves the default build of the Actor.
+     *
+     * @param options - Options for getting the build.
+     * @returns A client for the default build.
+     * @see https://docs.apify.com/api/v2/act-build-default-get
      */
     async defaultBuild(options: BuildClientGetOptions = {}): Promise<BuildClient> {
         const response = await this.httpClient.call({

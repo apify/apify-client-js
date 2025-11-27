@@ -17,7 +17,11 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/schedules-get
+     * Lists all schedules.
+     *
+     * @param options - Pagination and sorting options.
+     * @returns A paginated iterator of schedules.
+     * @see https://docs.apify.com/api/v2/schedules-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -46,9 +50,13 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/schedules-post
+     * Creates a new schedule.
+     *
+     * @param schedule - The schedule data.
+     * @returns The created schedule object.
+     * @see https://docs.apify.com/api/v2/schedules-post
      */
-    async create(schedule?: ScheduleCreateOrUpdateData): Promise<Schedule> {
+    async create(schedule: ScheduleCreateOrUpdateData): Promise<Schedule> {
         ow(schedule, ow.optional.object);
 
         return this._create(schedule);

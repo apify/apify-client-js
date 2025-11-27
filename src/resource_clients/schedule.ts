@@ -20,14 +20,21 @@ export class ScheduleClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/schedule-get
+     * Retrieves the schedule.
+     *
+     * @returns The schedule object, or `undefined` if it does not exist.
+     * @see https://docs.apify.com/api/v2/schedule-get
      */
     async get(): Promise<Schedule | undefined> {
         return this._get();
     }
 
     /**
-     * https://docs.apify.com/api/v2/schedule-put
+     * Updates the schedule with the specified fields.
+     *
+     * @param newFields - Fields to update.
+     * @returns The updated schedule object.
+     * @see https://docs.apify.com/api/v2/schedule-put
      */
     async update(newFields: ScheduleCreateOrUpdateData): Promise<Schedule> {
         ow(newFields, ow.object);
@@ -35,14 +42,19 @@ export class ScheduleClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/schedule-delete
+     * Deletes the schedule.
+     *
+     * @see https://docs.apify.com/api/v2/schedule-delete
      */
     async delete(): Promise<void> {
         return this._delete();
     }
 
     /**
-     * https://docs.apify.com/api/v2/schedule-log-get
+     * Retrieves the schedule's log.
+     *
+     * @returns The schedule log as a string, or `undefined` if it does not exist.
+     * @see https://docs.apify.com/api/v2/schedule-log-get
      */
     async getLog(): Promise<string | undefined> {
         const requestOpts: ApifyRequestConfig = {

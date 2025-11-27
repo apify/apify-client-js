@@ -24,7 +24,11 @@ export class LogClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/log-get
+     * Retrieves the log as a string.
+     *
+     * @param options - Log retrieval options.
+     * @returns The log content as a string, or `undefined` if it does not exist.
+     * @see https://docs.apify.com/api/v2/log-get
      */
     async get(options: LogOptions = {}): Promise<string | undefined> {
         const requestOpts: ApifyRequestConfig = {
@@ -44,8 +48,11 @@ export class LogClient extends ResourceClient {
     }
 
     /**
-     * Gets the log in a Readable stream format. Only works in Node.js.
-     * https://docs.apify.com/api/v2/log-get
+     * Retrieves the log as a Readable stream. Only works in Node.js.
+     *
+     * @param options - Log retrieval options.
+     * @returns The log content as a Readable stream, or `undefined` if it does not exist.
+     * @see https://docs.apify.com/api/v2/log-get
      */
     async stream(options: LogOptions = {}): Promise<Readable | undefined> {
         const params = {

@@ -267,7 +267,7 @@ export class DatasetClient<
      * data types, null counts, and value ranges.
      *
      * @returns Dataset statistics, or `undefined` if not available
-     * @see https://docs.apify.com/api/v2#tag/DatasetsStatistics/operation/dataset_statistics_get
+     * @see https://docs.apify.com/api/v2/dataset-statistics-get
      */
     async getStatistics(): Promise<DatasetStatistics | undefined> {
         const requestOpts: ApifyRequestConfig = {

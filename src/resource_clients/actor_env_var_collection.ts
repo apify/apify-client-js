@@ -17,7 +17,11 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/act-version-env-vars-get
+     * Lists all environment variables of this Actor version.
+     *
+     * @param options - Pagination options.
+     * @returns A paginated iterator of environment variables.
+     * @see https://docs.apify.com/api/v2/act-version-env-vars-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -47,7 +51,11 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/act-version-env-vars-post
+     * Creates a new environment variable for this Actor version.
+     *
+     * @param actorEnvVar - The environment variable data.
+     * @returns The created environment variable object.
+     * @see https://docs.apify.com/api/v2/act-version-env-vars-post
      */
     async create(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
         ow(actorEnvVar, ow.optional.object);

@@ -17,7 +17,11 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/request-queues-get
+     * Lists all Request queues.
+     *
+     * @param options - Pagination options.
+     * @returns A paginated iterator of Request queues.
+     * @see https://docs.apify.com/api/v2/request-queues-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -49,7 +53,11 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/request-queues-post
+     * Gets or creates a Request queue with the specified name.
+     *
+     * @param name - Name of the Request queue. If not provided, a default queue is used.
+     * @returns The Request queue object.
+     * @see https://docs.apify.com/api/v2/request-queues-post
      */
     async getOrCreate(name?: string): Promise<RequestQueue> {
         ow(name, ow.optional.string);

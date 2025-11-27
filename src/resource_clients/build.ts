@@ -81,7 +81,10 @@ export class BuildClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/actor-build-openapi-json-get
+     * Retrieves the OpenAPI definition for the Actor build.
+     *
+     * @returns The OpenAPI definition object.
+     * @see https://docs.apify.com/api/v2/actor-build-openapi-json-get
      */
     async getOpenApiDefinition(): Promise<OpenApiDefinition> {
         const response = await this.httpClient.call({

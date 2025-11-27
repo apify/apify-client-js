@@ -17,7 +17,11 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/datasets-get
+     * Lists all Datasets.
+     *
+     * @param options - Pagination options.
+     * @returns A paginated iterator of Datasets.
+     * @see https://docs.apify.com/api/v2/datasets-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -47,7 +51,12 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/datasets-post
+     * Gets or creates a Dataset with the specified name.
+     *
+     * @param name - Name of the Dataset. If not provided, a default dataset is used.
+     * @param options - Additional options like schema.
+     * @returns The Dataset object.
+     * @see https://docs.apify.com/api/v2/datasets-post
      */
     async getOrCreate(name?: string, options?: DatasetCollectionClientGetOrCreateOptions): Promise<Dataset> {
         ow(name, ow.optional.string);

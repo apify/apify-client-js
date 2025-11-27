@@ -257,7 +257,8 @@ export class KeyValueStoreClient extends ResourceClient {
      *
      * When the record does not exist, the function resolves to `undefined`. It does
      * NOT resolve to a `KeyValueStore` record with an `undefined` value.
-     * https://docs.apify.com/api/v2/key-value-store-record-get
+     *
+     * @see https://docs.apify.com/api/v2/key-value-store-record-get
      */
     async getRecord(key: string): Promise<KeyValueStoreRecord<JsonValue> | undefined>;
 

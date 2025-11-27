@@ -17,7 +17,11 @@ export class BuildCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/actor-builds-get
+     * Lists all Actor builds.
+     *
+     * @param options - Pagination and sorting options.
+     * @returns A paginated iterator of Actor builds.
+     * @see https://docs.apify.com/api/v2/actor-builds-get
      */
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.

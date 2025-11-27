@@ -258,7 +258,11 @@ export class RunClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/post-charge-run
+     * Charges the Actor run for a specific event.
+     *
+     * @param options - Charge options including event name and count.
+     * @returns Empty response object.
+     * @see https://docs.apify.com/api/v2/post-charge-run
      */
     async charge(options: RunChargeOptions): Promise<ApifyResponse<Record<string, never>>> {
         ow(

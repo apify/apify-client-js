@@ -18,7 +18,11 @@ export class ActorCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/acts-get
+     * Lists all Actors.
+     *
+     * @param options - Pagination options.
+     * @returns A paginated iterator of Actors.
+     * @see https://docs.apify.com/api/v2/acts-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -49,9 +53,13 @@ export class ActorCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/acts-post
+     * Creates a new Actor.
+     *
+     * @param actor - The Actor data.
+     * @returns The created Actor object.
+     * @see https://docs.apify.com/api/v2/acts-post
      */
-    async create(actor: ActorCollectionCreateOptions): Promise<Actor> {
+    async create(actor: ActorUpdateOptions): Promise<Actor> {
         ow(actor, ow.optional.object);
 
         return this._create(actor);

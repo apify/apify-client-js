@@ -19,7 +19,11 @@ export class RunCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/actor-runs-get
+     * Lists all Actor runs.
+     *
+     * @param options - Pagination and filtering options.
+     * @returns A paginated iterator of Actor runs.
+     * @see https://docs.apify.com/api/v2/actor-runs-get
      */
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.

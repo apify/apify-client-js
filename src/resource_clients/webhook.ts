@@ -22,14 +22,21 @@ export class WebhookClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/webhook-get
+     * Retrieves the webhook.
+     *
+     * @returns The webhook object, or `undefined` if it does not exist.
+     * @see https://docs.apify.com/api/v2/webhook-get
      */
     async get(): Promise<Webhook | undefined> {
         return this._get();
     }
 
     /**
-     * https://docs.apify.com/api/v2/webhook-put
+     * Updates the webhook with the specified fields.
+     *
+     * @param newFields - Fields to update.
+     * @returns The updated webhook object.
+     * @see https://docs.apify.com/api/v2/webhook-put
      */
     async update(newFields: WebhookUpdateData): Promise<Webhook> {
         ow(newFields, ow.object);
@@ -38,14 +45,19 @@ export class WebhookClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/webhook-delete
+     * Deletes the webhook.
+     *
+     * @see https://docs.apify.com/api/v2/webhook-delete
      */
     async delete(): Promise<void> {
         return this._delete();
     }
 
     /**
-     * https://docs.apify.com/api/v2/webhook-test-post
+     * Tests the webhook by dispatching a test event.
+     *
+     * @returns The webhook dispatch object, or `undefined` if the test fails.
+     * @see https://docs.apify.com/api/v2/webhook-test-post
      */
     async test(): Promise<WebhookDispatch | undefined> {
         const request: ApifyRequestConfig = {
@@ -65,7 +77,10 @@ export class WebhookClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2/webhook-webhook-dispatches-get
+     * Returns a client for the dispatches of this webhook.
+     *
+     * @returns A client for the webhook's dispatches.
+     * @see https://docs.apify.com/api/v2/webhook-webhook-dispatches-get
      */
     dispatches(): WebhookDispatchCollectionClient {
         return new WebhookDispatchCollectionClient(
