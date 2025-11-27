@@ -63,7 +63,7 @@ export class ScheduleClient extends ResourceClient {
 
 /**
  * Represents a schedule for automated Actor or Task runs.
- * 
+ *
  * Schedules use cron expressions to define when Actors or Tasks should run automatically.
  */
 export interface Schedule {

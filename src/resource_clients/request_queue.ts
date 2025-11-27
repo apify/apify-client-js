@@ -44,7 +44,7 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Gets the request queue object from the Apify API.
-     * 
+     *
      * @returns The RequestQueue object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2#/reference/request-queues/queue/get-request-queue
      */
@@ -54,7 +54,7 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Updates the request queue with specified fields.
-     * 
+     *
      * @param newFields - Fields to update in the request queue
      * @returns The updated RequestQueue object
      * @see https://docs.apify.com/api/v2#/reference/request-queues/queue/update-request-queue
@@ -67,7 +67,7 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Deletes the request queue.
-     * 
+     *
      * @see https://docs.apify.com/api/v2#/reference/request-queues/queue/delete-request-queue
      */
     async delete(): Promise<void> {
@@ -76,10 +76,10 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Lists requests from the beginning of the queue (head).
-     * 
+     *
      * Returns the first N requests from the queue without locking them. This is useful for
      * inspecting what requests are waiting to be processed.
-     * 
+     *
      * @param options - Options for listing (e.g., limit)
      * @returns List of requests from the queue head
      * @see https://docs.apify.com/api/v2#/reference/request-queues/queue-head/get-head
@@ -107,19 +107,19 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Gets and locks the next requests from the queue head for processing.
-     * 
+     *
      * This method retrieves requests from the beginning of the queue and locks them for
      * the specified duration to prevent other clients from processing them simultaneously.
      * This is the primary method used by distributed web crawlers to coordinate work across
      * multiple workers. Locked requests won't be returned to other clients until the lock expires
      * or is explicitly released using {@link deleteRequestLock}.
-     * 
+     *
      * @param options - Lock configuration
      * @param options.lockSecs - **Required.** Duration in seconds to lock the requests. After this time, the locks expire and requests can be retrieved by other clients.
      * @param options.limit - Maximum number of requests to return. Default is 25.
      * @returns Object containing `items` (locked requests), `queueModifiedAt`, `hadMultipleClients`, and lock information
      * @see https://docs.apify.com/api/v2#/reference/request-queues/queue-head-with-locks/get-head-and-lock
-     * 
+     *
      * @example
      * ```javascript
      * // Get and lock up to 10 requests for 60 seconds
@@ -127,7 +127,7 @@ export class RequestQueueClient extends ResourceClient {
      *   lockSecs: 60,
      *   limit: 10
      * });
-     * 
+     *
      * // Process each locked request
      * for (const request of items) {
      *   console.log(`Processing: ${request.url}`);
@@ -164,11 +164,11 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Adds a single request to the queue.
-     * 
+     *
      * If a request with the same `uniqueKey` already exists, the method will return information
      * about the existing request without adding a duplicate. The `uniqueKey` is used for
      * deduplication - typically it's the URL, but you can use any string to identify the request.
-     * 
+     *
      * @param request - The request object to add (excluding `id`, which is assigned by the API)
      * @param request.url - URL to be crawled
      * @param request.uniqueKey - Unique identifier for request deduplication. If not provided, defaults to `url`.
@@ -180,7 +180,7 @@ export class RequestQueueClient extends ResourceClient {
      * @param options.forefront - If `true`, adds the request to the beginning of the queue. Default is `false` (adds to the end).
      * @returns Object with `requestId`, `wasAlreadyPresent`, and `wasAlreadyHandled` flags
      * @see https://docs.apify.com/api/v2#/reference/request-queues/request-collection/add-request
-     * 
+     *
      * @example
      * ```javascript
      * const result = await client.requestQueue('my-queue').addRequest({
@@ -192,7 +192,7 @@ export class RequestQueueClient extends ResourceClient {
      * console.log(`Request ID: ${result.requestId}`);
      * console.log(`Already present: ${result.wasAlreadyPresent}`);
      * console.log(`Already handled: ${result.wasAlreadyHandled}`);
-     * 
+     *
      * // Add urgent request to the front of the queue
      * await client.requestQueue('my-queue').addRequest(
      *   { url: 'https://priority.com', uniqueKey: 'priority-page' },
@@ -342,13 +342,13 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Adds multiple requests to the queue in a single operation.
-     * 
+     *
      * This is significantly more efficient than calling {@link addRequest} multiple times, especially
      * for large batches. The method automatically handles batching (max 25 requests per API call),
      * retries on rate limiting, and parallel processing. Requests are sent in chunks respecting the
      * API payload size limit, and any unprocessed requests due to rate limits are automatically
      * retried with exponential backoff.
-     * 
+     *
      * @param requests - Array of request objects to add (excluding `id` fields)
      * @param options - Batch operation configuration
      * @param options.forefront - If `true`, adds all requests to the beginning of the queue. Default is `false`.
@@ -357,7 +357,7 @@ export class RequestQueueClient extends ResourceClient {
      * @param options.minDelayBetweenUnprocessedRequestsRetriesMillis - Minimum delay before retrying rate-limited requests. Default is 500ms.
      * @returns Object with `processedRequests` (successfully added) and `unprocessedRequests` (failed after all retries)
      * @see https://docs.apify.com/api/v2#/reference/request-queues/batch-request-operations/add-requests
-     * 
+     *
      * @example
      * ```javascript
      * // Add a batch of URLs to crawl
@@ -369,7 +369,7 @@ export class RequestQueueClient extends ResourceClient {
      * const result = await client.requestQueue('my-queue').batchAddRequests(requests);
      * console.log(`Successfully added: ${result.processedRequests.length}`);
      * console.log(`Failed: ${result.unprocessedRequests.length}`);
-     * 
+     *
      * // Batch add with custom retry settings
      * const result = await client.requestQueue('my-queue').batchAddRequests(
      *   requests,
@@ -440,9 +440,9 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Deletes multiple requests from the queue in a single operation.
-     * 
+     *
      * Requests can be identified by either their ID or unique key.
-     * 
+     *
      * @param requests - Array of requests to delete (by id or uniqueKey)
      * @returns Result containing processed and unprocessed requests
      * @see https://docs.apify.com/api/v2#/reference/request-queues/batch-request-operations/delete-requests
@@ -475,7 +475,7 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Gets a specific request from the queue by its ID.
-     * 
+     *
      * @param id - Request ID
      * @returns The request object, or `undefined` if not found
      * @see https://docs.apify.com/api/v2#/reference/request-queues/request/get-request
@@ -500,7 +500,7 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Updates a request in the queue.
-     * 
+     *
      * @param request - The updated request object (must include id)
      * @param options - Update options such as whether to move to front
      * @returns Information about the updated request
@@ -540,7 +540,7 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Deletes a specific request from the queue.
-     * 
+     *
      * @param id - Request ID
      */
     async deleteRequest(id: string): Promise<void> {
@@ -558,24 +558,24 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Prolongs the lock on a request to prevent it from being returned to other clients.
-     * 
+     *
      * This is useful when processing a request takes longer than expected and you need
      * to extend the lock duration to prevent other workers from picking it up. The lock
      * expiration time is reset to the current time plus the specified duration.
-     * 
+     *
      * @param id - Request ID (obtained from {@link listAndLockHead} or {@link getRequest})
      * @param options - Lock extension options
      * @param options.lockSecs - **Required.** New lock duration in seconds from now.
      * @param options.forefront - If `true`, moves the request to the beginning of the queue when the lock expires. Default is `false`.
      * @returns Object with new `lockExpiresAt` timestamp
      * @see https://docs.apify.com/api/v2#/reference/request-queues/request-lock/prolong-request-lock
-     * 
+     *
      * @example
      * ```javascript
      * // Lock request for initial processing
      * const { items } = await client.requestQueue('my-queue').listAndLockHead({ lockSecs: 60, limit: 1 });
      * const request = items[0];
-     * 
+     *
      * // Processing takes longer than expected, extend the lock
      * await client.requestQueue('my-queue').prolongRequestLock(request.id, { lockSecs: 120 });
      * ```
@@ -609,10 +609,10 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Releases the lock on a request, allowing other clients to process it.
-     * 
+     *
      * This should be called after successfully processing a request or when you decide
      * not to process it.
-     * 
+     *
      * @param id - Request ID
      * @param options - Options such as whether to move to front
      * @see https://docs.apify.com/api/v2#/reference/request-queues/request-lock/delete-request-lock
@@ -639,10 +639,10 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Lists all requests in the queue.
-     * 
+     *
      * Returns a paginated list of all requests, allowing you to iterate through the entire
      * queue contents.
-     * 
+     *
      * @param options - Pagination options
      * @returns List of requests with pagination information
      * @see https://docs.apify.com/api/v2#/reference/request-queues/request-collection/list-requests
@@ -674,10 +674,10 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Unlocks all requests locked by this client.
-     * 
+     *
      * This is useful for releasing all locks at once, for example when shutting down
      * a crawler gracefully.
-     * 
+     *
      * @returns Number of requests that were unlocked
      * @see https://docs.apify.com/api/v2/request-queue-requests-unlock-post
      */
@@ -696,14 +696,14 @@ export class RequestQueueClient extends ResourceClient {
 
     /**
      * Returns an async iterable for paginating through all requests in the queue.
-     * 
+     *
      * This allows you to efficiently process all requests using a for-await-of loop,
      * automatically handling pagination behind the scenes.
-     * 
+     *
      * @param options - Pagination options
      * @returns An async iterable of request pages
      * @see https://docs.apify.com/api/v2#/reference/request-queues/request-collection/list-requests
-     * 
+     *
      * @example
      * ```javascript
      * for await (const { items } of client.requestQueue('my-queue').paginateRequests({ limit: 100 })) {
@@ -742,7 +742,7 @@ export interface RequestQueueUserOptions {
 
 /**
  * Represents a Request Queue storage on the Apify platform.
- * 
+ *
  * Request queues store URLs (requests) to be processed by web crawlers. They provide
  * automatic deduplication, request locking for parallel processing, and persistence.
  */
@@ -838,7 +838,7 @@ export interface RequestQueueClientListAndLockHeadOptions {
 
 /**
  * Result of listing and locking requests from the queue head.
- * 
+ *
  * Extends {@link RequestQueueClientListHeadResult} with lock information.
  */
 export interface RequestQueueClientListAndLockHeadResult extends RequestQueueClientListHeadResult {
@@ -885,7 +885,7 @@ export interface RequestQueueClientBatchAddRequestWithRetriesOptions {
 
 /**
  * Complete schema for a request in the queue.
- * 
+ *
  * Represents a URL to be crawled along with its metadata, retry information, and custom data.
  */
 export interface RequestQueueClientRequestSchema {
@@ -931,7 +931,7 @@ export interface RequestQueueClientUnlockRequestsResult {
 
 /**
  * Result of a batch operation on requests.
- * 
+ *
  * Contains lists of successfully processed and unprocessed requests.
  */
 export interface RequestQueueClientBatchRequestsOperationResult {

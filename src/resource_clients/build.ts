@@ -21,18 +21,18 @@ export class BuildClient extends ResourceClient {
 
     /**
      * Gets the Actor build object from the Apify API.
-     * 
+     *
      * @param options - Get options
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the build to finish on the API side before returning. Default is 0 (returns immediately).
      * @returns The Build object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2#/reference/actor-builds/build-object/get-build
-     * 
+     *
      * @example
      * ```javascript
      * // Get build status immediately
      * const build = await client.build('build-id').get();
      * console.log(`Status: ${build.status}`);
-     * 
+     *
      * // Wait up to 60 seconds for build to finish
      * const build = await client.build('build-id').get({ waitForFinish: 60 });
      * ```
@@ -50,12 +50,12 @@ export class BuildClient extends ResourceClient {
 
     /**
      * Aborts the Actor build.
-     * 
+     *
      * Stops the build process immediately. The build will have an ABORTED status.
-     * 
+     *
      * @returns The updated Build object with ABORTED status
      * @see https://docs.apify.com/api/v2#/reference/actor-builds/abort-build/abort-build
-     * 
+     *
      * @example
      * ```javascript
      * await client.build('build-id').abort();
@@ -73,7 +73,7 @@ export class BuildClient extends ResourceClient {
 
     /**
      * Deletes the Actor build.
-     * 
+     *
      * @see https://docs.apify.com/api/v2#/reference/actor-builds/delete-build/delete-build
      */
     async delete(): Promise<void> {
@@ -95,27 +95,27 @@ export class BuildClient extends ResourceClient {
 
     /**
      * Waits for the Actor build to finish and returns the finished Build object.
-     * 
+     *
      * The promise resolves when the build reaches a terminal state (SUCCEEDED, FAILED, ABORTED, or TIMED-OUT).
      * If `waitSecs` is provided and the timeout is reached, the promise resolves with the unfinished
      * Build object (status will be RUNNING or READY). The promise is NOT rejected based on build status.
-     * 
+     *
      * Unlike the `waitForFinish` parameter in {@link get}, this method can wait indefinitely
      * by polling the build status. It uses the `waitForFinish` parameter internally (max 60s per call)
      * and continuously polls until the build finishes or the timeout is reached.
-     * 
+     *
      * This is useful when you need to immediately start a run after a build finishes.
-     * 
+     *
      * @param options - Wait options
      * @param options.waitSecs - Maximum time to wait for the build to finish, in seconds. If omitted, waits indefinitely.
      * @returns The Build object (finished or still building if timeout was reached)
-     * 
+     *
      * @example
      * ```javascript
      * // Wait indefinitely for build to finish
      * const build = await client.build('build-id').waitForFinish();
      * console.log(`Build finished with status: ${build.status}`);
-     * 
+     *
      * // Start a run immediately after build succeeds
      * const build = await client.build('build-id').waitForFinish();
      * if (build.status === 'SUCCEEDED') {
@@ -136,10 +136,10 @@ export class BuildClient extends ResourceClient {
 
     /**
      * Returns a client for accessing the log of this Actor build.
-     * 
+     *
      * @returns A client for accessing the build's log
      * @see https://docs.apify.com/api/v2#/reference/actor-builds/build-log
-     * 
+     *
      * @example
      * ```javascript
      * // Get build log
@@ -186,7 +186,7 @@ export interface BuildMeta {
 
 /**
  * Represents an Actor build.
- * 
+ *
  * Builds compile Actor source code and prepare it for execution. Each build has a unique ID
  * and can be tagged (e.g., 'latest', 'beta') for easy reference.
  */
@@ -243,7 +243,7 @@ export interface BuildOptions {
 
 /**
  * OpenAPI specification for an Actor.
- * 
+ *
  * Defines the Actor's API interface in OpenAPI 3.0 format, useful for integration
  * with tools like ChatGPT plugins and other API consumers.
  */

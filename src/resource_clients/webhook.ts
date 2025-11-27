@@ -78,7 +78,7 @@ export class WebhookClient extends ResourceClient {
 
 /**
  * Represents a webhook for receiving notifications about Actor events.
- * 
+ *
  * Webhooks send HTTP POST requests to specified URLs when certain events occur
  * (e.g., Actor run succeeds, fails, or times out).
  */

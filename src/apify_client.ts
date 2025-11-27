@@ -37,23 +37,23 @@ const DEFAULT_TIMEOUT_SECS = 360;
 
 /**
  * The official JavaScript client for the Apify API.
- * 
+ *
  * Provides programmatic access to all Apify platform resources including Actors, runs, datasets,
  * key-value stores, request queues, and more. Works in both Node.js and browser environments.
- * 
+ *
  * @example
  * ```javascript
  * import { ApifyClient } from 'apify-client';
- * 
+ *
  * const client = new ApifyClient({ token: 'my-token' });
- * 
+ *
  * // Start an Actor and wait for it to finish
  * const run = await client.actor('my-actor-id').call();
- * 
+ *
  * // Fetch dataset items
  * const { items } = await client.dataset(run.defaultDatasetId).listItems();
  * ```
- * 
+ *
  * @see https://docs.apify.com/api/v2
  */
 export class ApifyClient {
@@ -126,9 +126,9 @@ export class ApifyClient {
 
     /**
      * Returns a client for managing Actors in your account.
-     * 
+     *
      * Provides access to the Actor collection, allowing you to list, create, and search for Actors.
-     * 
+     *
      * @returns A client for the Actor collection
      * @see https://docs.apify.com/api/v2#/reference/actors/actor-collection
      */
@@ -138,14 +138,14 @@ export class ApifyClient {
 
     /**
      * Returns a client for a specific Actor.
-     * 
+     *
      * Use this to get, update, delete, start, or call an Actor, as well as manage its builds,
      * runs, versions, and webhooks.
-     * 
+     *
      * @param id - Actor ID or username/name
      * @returns A client for the specified Actor
      * @see https://docs.apify.com/api/v2#/reference/actors/actor-object
-     * 
+     *
      * @example
      * ```javascript
      * // Call an Actor and wait for it to finish
@@ -163,9 +163,9 @@ export class ApifyClient {
 
     /**
      * Returns a client for managing Actor builds in your account.
-     * 
+     *
      * Lists all builds across all of your Actors.
-     * 
+     *
      * @returns A client for the build collection
      * @see https://docs.apify.com/api/v2#/reference/actor-builds/build-collection
      */
@@ -175,9 +175,9 @@ export class ApifyClient {
 
     /**
      * Returns a client for a specific Actor build.
-     * 
+     *
      * Use this to get details about a build, wait for it to finish, or access its logs.
-     * 
+     *
      * @param id - Build ID
      * @returns A client for the specified build
      * @see https://docs.apify.com/api/v2#/reference/actor-builds/build-object
@@ -193,9 +193,9 @@ export class ApifyClient {
 
     /**
      * Returns a client for managing datasets in your account.
-     * 
+     *
      * Datasets store structured data results from Actor runs. Use this to list or create datasets.
-     * 
+     *
      * @returns A client for the dataset collection
      * @see https://docs.apify.com/api/v2#/reference/datasets/dataset-collection
      */
@@ -205,15 +205,15 @@ export class ApifyClient {
 
     /**
      * Returns a client for a specific dataset.
-     * 
+     *
      * Use this to read, write, and manage items in the dataset. Datasets contain structured
      * data stored as individual items (records).
-     * 
+     *
      * @template Data - Type of items stored in the dataset
      * @param id - Dataset ID or name
      * @returns A client for the specified dataset
      * @see https://docs.apify.com/api/v2#/reference/datasets/dataset
-     * 
+     *
      * @example
      * ```javascript
      * // Push items to a dataset
@@ -221,7 +221,7 @@ export class ApifyClient {
      *   { url: 'https://example.com', title: 'Example' },
      *   { url: 'https://test.com', title: 'Test' }
      * ]);
-     * 
+     *
      * // Retrieve items
      * const { items } = await client.dataset('my-dataset').listItems();
      * ```
@@ -239,9 +239,9 @@ export class ApifyClient {
 
     /**
      * Returns a client for managing key-value stores in your account.
-     * 
+     *
      * Key-value stores are used to store arbitrary data records or files.
-     * 
+     *
      * @returns A client for the key-value store collection
      * @see https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection
      */
@@ -251,19 +251,19 @@ export class ApifyClient {
 
     /**
      * Returns a client for a specific key-value store.
-     * 
+     *
      * Use this to read, write, and delete records in the store. Key-value stores can hold
      * any type of data including text, JSON, images, and other files.
-     * 
+     *
      * @param id - Key-value store ID or name
      * @returns A client for the specified key-value store
      * @see https://docs.apify.com/api/v2#/reference/key-value-stores/store-object
-     * 
+     *
      * @example
      * ```javascript
      * // Save a record
      * await client.keyValueStore('my-store').setRecord({ key: 'OUTPUT', value: { foo: 'bar' } });
-     * 
+     *
      * // Get a record
      * const record = await client.keyValueStore('my-store').getRecord('OUTPUT');
      * ```
@@ -279,7 +279,7 @@ export class ApifyClient {
 
     /**
      * Returns a client for accessing logs of an Actor build or run.
-     * 
+     *
      * @param buildOrRunId - Build ID or run ID
      * @returns A client for accessing logs
      * @see https://docs.apify.com/api/v2#/reference/logs
@@ -295,9 +295,9 @@ export class ApifyClient {
 
     /**
      * Returns a client for managing request queues in your account.
-     * 
+     *
      * Request queues store URLs to be crawled, along with their metadata.
-     * 
+     *
      * @returns A client for the request queue collection
      * @see https://docs.apify.com/api/v2#/reference/request-queues/queue-collection
      */
@@ -307,21 +307,21 @@ export class ApifyClient {
 
     /**
      * Returns a client for a specific request queue.
-     * 
+     *
      * Use this to add, retrieve, and manage requests in the queue. Request queues are used
      * by web crawlers to manage URLs that need to be visited.
-     * 
+     *
      * @param id - Request queue ID or name
      * @param options - Configuration options for the request queue client
      * @returns A client for the specified request queue
      * @see https://docs.apify.com/api/v2#/reference/request-queues/queue
-     * 
+     *
      * @example
      * ```javascript
      * // Add requests to a queue
      * const queue = client.requestQueue('my-queue');
      * await queue.addRequest({ url: 'https://example.com', uniqueKey: 'example' });
-     * 
+     *
      * // Get and lock the next request
      * const { items } = await queue.listAndLockHead({ lockSecs: 60 });
      * ```
@@ -345,9 +345,9 @@ export class ApifyClient {
 
     /**
      * Returns a client for managing Actor runs in your account.
-     * 
+     *
      * Lists all runs across all of your Actors.
-     * 
+     *
      * @returns A client for the run collection
      * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-collection
      */
@@ -360,19 +360,19 @@ export class ApifyClient {
 
     /**
      * Returns a client for a specific Actor run.
-     * 
+     *
      * Use this to get details about a run, wait for it to finish, abort it, or access its
      * dataset, key-value store, and request queue.
-     * 
+     *
      * @param id - Run ID
      * @returns A client for the specified run
      * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
-     * 
+     *
      * @example
      * ```javascript
      * // Wait for a run to finish
      * const run = await client.run('run-id').waitForFinish();
-     * 
+     *
      * // Access run's dataset
      * const { items } = await client.run('run-id').dataset().listItems();
      * ```
@@ -388,9 +388,9 @@ export class ApifyClient {
 
     /**
      * Returns a client for managing Actor tasks in your account.
-     * 
+     *
      * Tasks are pre-configured Actor runs with stored input that can be executed repeatedly.
-     * 
+     *
      * @returns A client for the task collection
      * @see https://docs.apify.com/api/v2#/reference/actor-tasks/task-collection
      */
@@ -400,13 +400,13 @@ export class ApifyClient {
 
     /**
      * Returns a client for a specific Actor task.
-     * 
+     *
      * Use this to get, update, delete, or run a task with pre-configured input.
-     * 
+     *
      * @param id - Task ID or username/task-name
      * @returns A client for the specified task
      * @see https://docs.apify.com/api/v2#/reference/actor-tasks/task-object
-     * 
+     *
      * @example
      * ```javascript
      * // Run a task and wait for it to finish
@@ -424,9 +424,9 @@ export class ApifyClient {
 
     /**
      * Returns a client for managing schedules in your account.
-     * 
+     *
      * Schedules automatically start Actor or task runs at specified times.
-     * 
+     *
      * @returns A client for the schedule collection
      * @see https://docs.apify.com/api/v2#/reference/schedules/schedules-collection
      */
@@ -436,9 +436,9 @@ export class ApifyClient {
 
     /**
      * Returns a client for a specific schedule.
-     * 
+     *
      * Use this to get, update, or delete a schedule.
-     * 
+     *
      * @param id - Schedule ID
      * @returns A client for the specified schedule
      * @see https://docs.apify.com/api/v2#/reference/schedules/schedule-object
@@ -454,9 +454,9 @@ export class ApifyClient {
 
     /**
      * Returns a client for accessing user data.
-     * 
+     *
      * By default, returns information about the current user (determined by the API token).
-     * 
+     *
      * @param id - User ID or username. Defaults to 'me' (current user)
      * @returns A client for the user
      * @see https://docs.apify.com/api/v2#/reference/users
@@ -472,9 +472,9 @@ export class ApifyClient {
 
     /**
      * Returns a client for managing webhooks in your account.
-     * 
+     *
      * Webhooks notify external services when specific events occur (e.g., Actor run finishes).
-     * 
+     *
      * @returns A client for the webhook collection
      * @see https://docs.apify.com/api/v2#/reference/webhooks/webhook-collection
      */
@@ -484,9 +484,9 @@ export class ApifyClient {
 
     /**
      * Returns a client for a specific webhook.
-     * 
+     *
      * Use this to get, update, delete, or test a webhook.
-     * 
+     *
      * @param id - Webhook ID
      * @returns A client for the specified webhook
      * @see https://docs.apify.com/api/v2#/reference/webhooks/webhook-object
@@ -502,9 +502,9 @@ export class ApifyClient {
 
     /**
      * Returns a client for viewing webhook dispatches in your account.
-     * 
+     *
      * Webhook dispatches represent individual invocations of webhooks.
-     * 
+     *
      * @returns A client for the webhook dispatch collection
      * @see https://docs.apify.com/api/v2#/reference/webhook-dispatches
      */
@@ -514,7 +514,7 @@ export class ApifyClient {
 
     /**
      * Returns a client for a specific webhook dispatch.
-     * 
+     *
      * @param id - Webhook dispatch ID
      * @returns A client for the specified webhook dispatch
      * @see https://docs.apify.com/api/v2#/reference/webhook-dispatches/webhook-dispatch-object
@@ -530,9 +530,9 @@ export class ApifyClient {
 
     /**
      * Returns a client for browsing Actors in Apify Store.
-     * 
+     *
      * Use this to search and retrieve information about public Actors.
-     * 
+     *
      * @returns A client for the Apify Store
      * @see https://docs.apify.com/api/v2/#/reference/store
      */
@@ -542,10 +542,10 @@ export class ApifyClient {
 
     /**
      * Sets a status message for the current Actor run.
-     * 
+     *
      * This is a convenience method that updates the status message of the run specified by
      * the `ACTOR_RUN_ID` environment variable. Only works when called from within an Actor run.
-     * 
+     *
      * @param message - The status message to set
      * @param options - Additional options for the status message
      * @throws {Error} If `ACTOR_RUN_ID` environment variable is not set

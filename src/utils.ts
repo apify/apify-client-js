@@ -17,7 +17,7 @@ const MIN_GZIP_BYTES = 1024;
 
 /**
  * Generic interface for objects that may contain a data property.
- * 
+ *
  * @template R - The type of the data property
  */
 export interface MaybeData<R> {
@@ -253,7 +253,7 @@ export interface PaginationOptions {
 
 /**
  * Standard paginated response format.
- * 
+ *
  * @template Data - The type of items in the response
  */
 export interface PaginatedResponse<Data> {
@@ -265,10 +265,10 @@ export interface PaginatedResponse<Data> {
 
 /**
  * Paginated list with detailed pagination information.
- * 
+ *
  * Used primarily for Dataset items and other list operations that support
  * offset-based pagination and field transformations.
- * 
+ *
  * @template Data - The type of items in the list
  */
 export interface PaginatedList<Data> {
@@ -288,9 +288,9 @@ export interface PaginatedList<Data> {
 
 /**
  * Type representing both a Promise of a paginated list and an async iterable.
- * 
+ *
  * Allows both awaiting the first page and iterating through all pages.
- * 
+ *
  * @template T - The type of items in the paginated list
  */
 export type PaginatedIterator<T> = Promise<PaginatedList<T>> & AsyncIterable<T>;
@@ -309,14 +309,14 @@ export function asArray<T>(value: T | T[]): T[] {
 
 /**
  * Generic dictionary type (key-value map).
- * 
+ *
  * @template T - The type of values in the dictionary
  */
 export type Dictionary<T = unknown> = Record<PropertyKey, T>;
 
 /**
  * Utility type that makes specific keys optional while preserving union types.
- * 
+ *
  * @template T - The base type
  * @template K - Keys to make optional
  */

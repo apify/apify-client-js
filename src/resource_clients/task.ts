@@ -203,7 +203,7 @@ export class TaskClient extends ResourceClient {
 
 /**
  * Represents an Actor task.
- * 
+ *
  * Tasks are pre-configured Actor runs with stored input and settings that can be executed
  * repeatedly without having to specify the input each time.
  */
@@ -256,7 +256,7 @@ export interface TaskLastRunOptions {
 
 /**
  * Options for starting a Task.
- * 
+ *
  * Similar to {@link ActorStartOptions} but without contentType (Task input is predefined)
  * and forcePermissionLevel (uses Task's configured permissions).
  */

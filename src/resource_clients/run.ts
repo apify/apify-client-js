@@ -29,18 +29,18 @@ export class RunClient extends ResourceClient {
 
     /**
      * Gets the Actor run object from the Apify API.
-     * 
+     *
      * @param options - Get options
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the run to finish on the API side before returning. Default is 0 (returns immediately).
      * @returns The ActorRun object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-object/get-run
-     * 
+     *
      * @example
      * ```javascript
      * // Get run status immediately
      * const run = await client.run('run-id').get();
      * console.log(`Status: ${run.status}`);
-     * 
+     *
      * // Wait up to 60 seconds for run to finish
      * const run = await client.run('run-id').get({ waitForFinish: 60 });
      * ```
@@ -58,17 +58,17 @@ export class RunClient extends ResourceClient {
 
     /**
      * Aborts the Actor run.
-     * 
+     *
      * @param options - Abort options
      * @param options.gracefully - If `true`, the Actor run will abort gracefully - it can send status messages and perform cleanup. Default is `false` (immediate abort).
      * @returns The updated ActorRun object with ABORTING or ABORTED status
      * @see https://docs.apify.com/api/v2#/reference/actor-runs/abort-run/abort-run
-     * 
+     *
      * @example
      * ```javascript
      * // Abort immediately
      * await client.run('run-id').abort();
-     * 
+     *
      * // Abort gracefully (allows cleanup)
      * await client.run('run-id').abort({ gracefully: true });
      * ```
@@ -92,7 +92,7 @@ export class RunClient extends ResourceClient {
 
     /**
      * Deletes the Actor run.
-     * 
+     *
      * @see https://docs.apify.com/api/v2#/reference/actor-runs/delete-run/delete-run
      */
     async delete(): Promise<void> {
@@ -101,11 +101,11 @@ export class RunClient extends ResourceClient {
 
     /**
      * Transforms the Actor run into a run of another Actor (metamorph).
-     * 
+     *
      * This operation preserves the run ID, storages (dataset, key-value store, request queue),
      * and resource allocation. The run effectively becomes a run of the target Actor with new input.
      * This is useful for chaining Actor executions or implementing complex workflows.
-     * 
+     *
      * @param targetActorId - ID or username/name of the target Actor
      * @param input - Input for the target Actor. Can be any JSON-serializable value.
      * @param options - Metamorph options
@@ -113,7 +113,7 @@ export class RunClient extends ResourceClient {
      * @param options.contentType - Content type of the input. If specified, input must be a string or Buffer.
      * @returns The metamorphed ActorRun object (same ID, but now running the target Actor)
      * @see https://docs.apify.com/api/v2#/reference/actor-runs/metamorph-run/metamorph-run
-     * 
+     *
      * @example
      * ```javascript
      * // Transform current run into another Actor
@@ -166,14 +166,14 @@ export class RunClient extends ResourceClient {
 
     /**
      * Reboots the Actor run.
-     * 
+     *
      * Rebooting restarts the Actor's Docker container while preserving the run ID and storages.
      * This can be useful to recover from certain errors or to force the Actor to restart
      * with a fresh environment.
-     * 
+     *
      * @returns The updated ActorRun object
      * @see https://docs.apify.com/api/v2#/reference/actor-runs/reboot-run/reboot-run
-     * 
+     *
      * @example
      * ```javascript
      * const run = await client.run('run-id').reboot();
@@ -191,18 +191,18 @@ export class RunClient extends ResourceClient {
 
     /**
      * Updates the Actor run with specified fields.
-     * 
+     *
      * @param newFields - Fields to update
      * @param newFields.statusMessage - Custom status message to display (e.g., "Processing page 10/100")
      * @param newFields.isStatusMessageTerminal - If `true`, the status message is final and won't be overwritten. Default is `false`.
      * @param newFields.generalAccess - General access level (PUBLIC or PRIVATE)
      * @returns The updated ActorRun object
-     * 
+     *
      * @example
      * ```javascript
      * // Set a status message
-     * await client.run('run-id').update({ 
-     *   statusMessage: 'Processing items: 50/100' 
+     * await client.run('run-id').update({
+     *   statusMessage: 'Processing items: 50/100'
      * });
      * ```
      */
@@ -214,10 +214,10 @@ export class RunClient extends ResourceClient {
 
     /**
      * Resurrects a finished Actor run, starting it again with the same settings.
-     * 
+     *
      * This creates a new run with the same configuration as the original run. The original
      * run's storages (dataset, key-value store, request queue) are preserved and reused.
-     * 
+     *
      * @param options - Resurrection options (override original run settings)
      * @param options.build - Tag or number of the build to use. If not provided, uses the original run's build.
      * @param options.memory - Memory in megabytes. If not provided, uses the original run's memory.
@@ -227,7 +227,7 @@ export class RunClient extends ResourceClient {
      * @param options.restartOnError - Whether to restart on error.
      * @returns The new (resurrected) ActorRun object
      * @see https://docs.apify.com/api/v2#/reference/actor-runs/resurrect-run/resurrect-run
-     * 
+     *
      * @example
      * ```javascript
      * // Resurrect a failed run with more memory
@@ -293,25 +293,25 @@ export class RunClient extends ResourceClient {
 
     /**
      * Waits for the Actor run to finish and returns the finished Run object.
-     * 
+     *
      * The promise resolves when the run reaches a terminal state (SUCCEEDED, FAILED, ABORTED, or TIMED-OUT).
      * If `waitSecs` is provided and the timeout is reached, the promise resolves with the unfinished
      * Run object (status will be RUNNING or READY). The promise is NOT rejected based on run status.
-     * 
+     *
      * Unlike the `waitForFinish` parameter in {@link get}, this method can wait indefinitely
      * by polling the run status. It uses the `waitForFinish` parameter internally (max 60s per call)
      * and continuously polls until the run finishes or the timeout is reached.
-     * 
+     *
      * @param options - Wait options
      * @param options.waitSecs - Maximum time to wait for the run to finish, in seconds. If omitted, waits indefinitely.
      * @returns The ActorRun object (finished or still running if timeout was reached)
-     * 
+     *
      * @example
      * ```javascript
      * // Wait indefinitely for run to finish
      * const run = await client.run('run-id').waitForFinish();
      * console.log(`Run finished with status: ${run.status}`);
-     * 
+     *
      * // Wait up to 5 minutes
      * const run = await client.run('run-id').waitForFinish({ waitSecs: 300 });
      * if (run.status === 'SUCCEEDED') {
@@ -332,10 +332,10 @@ export class RunClient extends ResourceClient {
 
     /**
      * Returns a client for the default dataset of this Actor run.
-     * 
+     *
      * @returns A client for accessing the run's default dataset
      * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
-     * 
+     *
      * @example
      * ```javascript
      * // Access run's dataset
@@ -352,10 +352,10 @@ export class RunClient extends ResourceClient {
 
     /**
      * Returns a client for the default key-value store of this Actor run.
-     * 
+     *
      * @returns A client for accessing the run's default key-value store
      * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
-     * 
+     *
      * @example
      * ```javascript
      * // Access run's key-value store
@@ -372,10 +372,10 @@ export class RunClient extends ResourceClient {
 
     /**
      * Returns a client for the default request queue of this Actor run.
-     * 
+     *
      * @returns A client for accessing the run's default request queue
      * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
-     * 
+     *
      * @example
      * ```javascript
      * // Access run's request queue
@@ -392,10 +392,10 @@ export class RunClient extends ResourceClient {
 
     /**
      * Returns a client for accessing the log of this Actor run.
-     * 
+     *
      * @returns A client for accessing the run's log
      * @see https://docs.apify.com/api/v2#/reference/actor-runs/run-object-and-its-storages
-     * 
+     *
      * @example
      * ```javascript
      * // Get run log
