@@ -7,6 +7,27 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { ActorRunListItem } from './actor';
 
+/**
+ * Client for managing the collection of Actor runs.
+ *
+ * Provides methods to list Actor runs across all Actors or for a specific Actor.
+ * To access an individual run, use the `run()` method on the main ApifyClient.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ *
+ * // List all runs
+ * const runsClient = client.runs();
+ * const { items } = await runsClient.list();
+ *
+ * // List runs for a specific Actor
+ * const actorRunsClient = client.actor('my-actor-id').runs();
+ * const { items: actorRuns } = await actorRunsClient.list();
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors/running/runs-and-builds
+ */
 export class RunCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden
@@ -24,7 +45,7 @@ export class RunCollectionClient extends ResourceCollectionClient {
      * @param options - Pagination and filtering options.
      * @returns A paginated iterator of Actor runs.
      * @see https://docs.apify.com/api/v2/actor-runs-get
-     */
+     *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
      * ```javascript

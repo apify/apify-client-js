@@ -16,6 +16,29 @@ import { RequestQueueClient } from './request_queue';
 
 const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
 
+/**
+ * Client for managing a specific Actor run.
+ *
+ * Provides methods to get run details, abort, metamorph, resurrect, wait for completion,
+ * and access the run's dataset, key-value store, request queue, and logs.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const runClient = client.run('my-run-id');
+ *
+ * // Get run details
+ * const run = await runClient.get();
+ *
+ * // Wait for the run to finish
+ * const finishedRun = await runClient.waitForFinish();
+ *
+ * // Access the run's dataset
+ * const { items } = await runClient.dataset().listItems();
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors/running/runs-and-builds
+ */
 export class RunClient extends ResourceClient {
     /**
      * @hidden

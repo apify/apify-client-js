@@ -8,6 +8,29 @@ import { cast, parseDateFields, pluckData } from '../utils';
 import type { ActorDefinition } from './actor';
 import { LogClient } from './log';
 
+/**
+ * Client for managing a specific Actor build.
+ *
+ * Builds are created when an Actor is built from source code. This client provides methods
+ * to get build details, wait for the build to finish, abort it, and access its logs.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const buildClient = client.build('my-build-id');
+ *
+ * // Get build details
+ * const build = await buildClient.get();
+ *
+ * // Wait for the build to finish
+ * const finishedBuild = await buildClient.waitForFinish();
+ *
+ * // Access build logs
+ * const log = await buildClient.log().get();
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors/running/runs-and-builds#builds
+ */
 export class BuildClient extends ResourceClient {
     /**
      * @hidden

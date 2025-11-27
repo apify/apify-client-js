@@ -24,6 +24,36 @@ const DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS = 500;
 const DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT = 1000;
 const SAFETY_BUFFER_PERCENT = 0.01 / 100; // 0.01%
 
+/**
+ * Client for managing a specific Request queue.
+ *
+ * Request queues store URLs to be crawled and their metadata. Each request in the queue has a unique ID
+ * and can be in various states (pending, handled). This client provides methods to add, get, update,
+ * and delete requests, as well as manage the queue itself.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const queueClient = client.requestQueue('my-queue-id');
+ *
+ * // Add a request to the queue
+ * await queueClient.addRequest({
+ *   url: 'https://example.com',
+ *   uniqueKey: 'example-com'
+ * });
+ *
+ * // Get the next request from the queue
+ * const request = await queueClient.listHead();
+ *
+ * // Mark request as handled
+ * await queueClient.updateRequest({
+ *   id: request.id,
+ *   handledAt: new Date().toISOString()
+ * });
+ * ```
+ *
+ * @see https://docs.apify.com/platform/storage/request-queue
+ */
 export class RequestQueueClient extends ResourceClient {
     private clientKey?: string;
 

@@ -5,6 +5,30 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
 import type { ActorVersion, FinalActorVersion } from './actor_version';
 
+/**
+ * Client for managing the collection of Actor versions.
+ *
+ * Actor versions represent specific builds or snapshots of an Actor's code. This client provides
+ * methods to list and create versions for a specific Actor.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const actorClient = client.actor('my-actor-id');
+ *
+ * // List all versions
+ * const versionsClient = actorClient.versions();
+ * const { items } = await versionsClient.list();
+ *
+ * // Create a new version
+ * const newVersion = await versionsClient.create({
+ *   versionNumber: '0.2',
+ *   buildTag: 'latest'
+ * });
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors/development/actor-definition/versions
+ */
 export class ActorVersionCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden

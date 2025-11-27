@@ -5,6 +5,26 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import type { Dataset } from './dataset';
 
+/**
+ * Client for managing the collection of Datasets in your account.
+ *
+ * Datasets store structured data results from Actor runs. This client provides methods
+ * to list, create, or get datasets by name.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const datasetsClient = client.datasets();
+ *
+ * // List all datasets
+ * const { items } = await datasetsClient.list();
+ *
+ * // Get or create a dataset by name
+ * const dataset = await datasetsClient.getOrCreate('my-dataset');
+ * ```
+ *
+ * @see https://docs.apify.com/platform/storage/dataset
+ */
 export class DatasetCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden

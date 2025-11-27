@@ -4,6 +4,28 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ActorEnvironmentVariable } from './actor_version';
 
+/**
+ * Client for managing a specific Actor environment variable.
+ *
+ * Environment variables are key-value pairs that are available to the Actor during execution.
+ * This client provides methods to get, update, and delete environment variables.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const actorClient = client.actor('my-actor-id');
+ * const versionClient = actorClient.version('0.1');
+ *
+ * // Get an environment variable
+ * const envVarClient = versionClient.envVar('MY_VAR');
+ * const envVar = await envVarClient.get();
+ *
+ * // Update environment variable
+ * await envVarClient.update({ value: 'new-value' });
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors/development/actor-definition/environment-variables
+ */
 export class ActorEnvVarClient extends ResourceClient {
     /**
      * @hidden

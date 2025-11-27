@@ -5,6 +5,30 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { Task, TaskUpdateData } from './task';
 
+/**
+ * Client for managing the collection of Actor tasks in your account.
+ *
+ * Tasks are pre-configured Actor runs with saved input and options. This client provides
+ * methods to list and create tasks.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const tasksClient = client.tasks();
+ *
+ * // List all tasks
+ * const { items } = await tasksClient.list();
+ *
+ * // Create a new task
+ * const newTask = await tasksClient.create({
+ *   actId: 'my-actor-id',
+ *   name: 'my-task',
+ *   input: { url: 'https://example.com' }
+ * });
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors/running/tasks
+ */
 export class TaskCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden

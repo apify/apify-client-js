@@ -13,6 +13,26 @@ import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
 import { WebhookCollectionClient } from './webhook_collection';
 
+/**
+ * Client for managing a specific Actor task.
+ *
+ * Tasks are pre-configured Actor runs with saved input and options. This client provides methods
+ * to start, call, update, and delete tasks, as well as manage their runs and webhooks.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const taskClient = client.task('my-task-id');
+ *
+ * // Start a task
+ * const run = await taskClient.start();
+ *
+ * // Call a task and wait for it to finish
+ * const finishedRun = await taskClient.call();
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors/running/tasks
+ */
 export class TaskClient extends ResourceClient {
     /**
      * @hidden

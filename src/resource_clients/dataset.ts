@@ -15,6 +15,35 @@ import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
 import type { PaginatedList } from '../utils';
 import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData } from '../utils';
 
+/**
+ * Client for managing a specific Dataset.
+ *
+ * Datasets store structured data results from Actor runs. This client provides methods to push items,
+ * list and retrieve items, download items in various formats (JSON, CSV, Excel, etc.), and manage
+ * the dataset.
+ *
+ * @template Data - Type of items stored in the dataset
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const datasetClient = client.dataset('my-dataset-id');
+ *
+ * // Push items to the dataset
+ * await datasetClient.pushItems([
+ *   { url: 'https://example.com', title: 'Example' },
+ *   { url: 'https://test.com', title: 'Test' }
+ * ]);
+ *
+ * // List all items
+ * const { items } = await datasetClient.listItems();
+ *
+ * // Download items as CSV
+ * const buffer = await datasetClient.downloadItems('csv');
+ * ```
+ *
+ * @see https://docs.apify.com/platform/storage/dataset
+ */
 export class DatasetClient<
     Data extends Record<string | number, any> = Record<string | number, unknown>,
 > extends ResourceClient {

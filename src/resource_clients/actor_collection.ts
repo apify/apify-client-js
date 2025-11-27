@@ -6,6 +6,29 @@ import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../uti
 import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor';
 import type { ActorVersion } from './actor_version';
 
+/**
+ * Client for managing the collection of Actors in your account.
+ *
+ * Provides methods to list and create Actors. To access an individual Actor,
+ * use the `actor()` method on the main ApifyClient.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const actorsClient = client.actors();
+ *
+ * // List all Actors
+ * const { items } = await actorsClient.list();
+ *
+ * // Create a new Actor
+ * const newActor = await actorsClient.create({
+ *   name: 'my-actor',
+ *   title: 'My Actor'
+ * });
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors
+ */
 export class ActorCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden

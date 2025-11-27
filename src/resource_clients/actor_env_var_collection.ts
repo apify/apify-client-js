@@ -5,6 +5,32 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
 import type { ActorEnvironmentVariable } from './actor_version';
 
+/**
+ * Client for managing the collection of environment variables for an Actor version.
+ *
+ * Environment variables are key-value pairs that are available to the Actor during execution.
+ * This client provides methods to list and create environment variables.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const actorClient = client.actor('my-actor-id');
+ * const versionClient = actorClient.version('0.1');
+ *
+ * // List all environment variables
+ * const envVarsClient = versionClient.envVars();
+ * const { items } = await envVarsClient.list();
+ *
+ * // Create a new environment variable
+ * const newEnvVar = await envVarsClient.create({
+ *   name: 'MY_VAR',
+ *   value: 'my-value',
+ *   isSecret: false
+ * });
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors/development/actor-definition/environment-variables
+ */
 export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden

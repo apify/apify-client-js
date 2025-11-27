@@ -4,6 +4,30 @@ import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow, parseDateFields, pluckData } from '../utils';
 
+/**
+ * Client for managing user account information.
+ *
+ * Provides methods to retrieve user details, monthly usage statistics, and account limits.
+ * When using an API token, you can access your own user information or public information
+ * about other users.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const userClient = client.user('my-user-id');
+ *
+ * // Get user information
+ * const user = await userClient.get();
+ *
+ * // Get monthly usage
+ * const usage = await userClient.monthlyUsage();
+ *
+ * // Get account limits
+ * const limits = await userClient.limits();
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors/running
+ */
 export class UserClient extends ResourceClient {
     /**
      * @hidden

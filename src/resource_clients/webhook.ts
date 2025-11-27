@@ -10,6 +10,34 @@ import { cast, catchNotFoundOrThrow, parseDateFields, pluckData } from '../utils
 import type { WebhookDispatch } from './webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection';
 
+/**
+ * Client for managing a specific Webhook.
+ *
+ * Webhooks allow you to receive notifications when specific events occur in your Actors or tasks.
+ * This client provides methods to get, update, delete, and test webhooks, as well as retrieve
+ * webhook dispatches.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const webhookClient = client.webhook('my-webhook-id');
+ *
+ * // Get webhook details
+ * const webhook = await webhookClient.get();
+ *
+ * // Update webhook
+ * await webhookClient.update({
+ *   isEnabled: true,
+ *   eventTypes: ['ACTOR.RUN.SUCCEEDED'],
+ *   requestUrl: 'https://example.com/webhook'
+ * });
+ *
+ * // Test webhook
+ * await webhookClient.test();
+ * ```
+ *
+ * @see https://docs.apify.com/platform/integrations/webhooks
+ */
 export class WebhookClient extends ResourceClient {
     /**
      * @hidden

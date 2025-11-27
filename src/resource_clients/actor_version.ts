@@ -5,6 +5,27 @@ import { ResourceClient } from '../base/resource_client';
 import { ActorEnvVarClient } from './actor_env_var';
 import { ActorEnvVarCollectionClient } from './actor_env_var_collection';
 
+/**
+ * Client for managing a specific Actor version.
+ *
+ * Actor versions represent specific builds or snapshots of an Actor's code. This client provides
+ * methods to get, update, and delete versions, as well as manage their environment variables.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const actorClient = client.actor('my-actor-id');
+ *
+ * // Get a specific version
+ * const versionClient = actorClient.version('0.1');
+ * const version = await versionClient.get();
+ *
+ * // Update version
+ * await versionClient.update({ buildTag: 'latest' });
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors/development/actor-definition/versions
+ */
 export class ActorVersionClient extends ResourceClient {
     /**
      * @hidden

@@ -5,6 +5,26 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
 import type { RequestQueue } from './request_queue';
 
+/**
+ * Client for managing the collection of Request queues in your account.
+ *
+ * Request queues store URLs to be crawled and their metadata. This client provides methods
+ * to list, create, or get request queues by name.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const queuesClient = client.requestQueues();
+ *
+ * // List all request queues
+ * const { items } = await queuesClient.list();
+ *
+ * // Get or create a request queue by name
+ * const queue = await queuesClient.getOrCreate('my-queue');
+ * ```
+ *
+ * @see https://docs.apify.com/platform/storage/request-queue
+ */
 export class RequestQueueCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden

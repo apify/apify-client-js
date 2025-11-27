@@ -12,6 +12,28 @@ import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow } from '../utils';
 
+/**
+ * Client for accessing Actor run or build logs.
+ *
+ * Provides methods to retrieve logs as text or stream them in real-time. Logs can be accessed
+ * for both running and finished Actor runs and builds.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const runClient = client.run('my-run-id');
+ *
+ * // Get the log content
+ * const log = await runClient.log().get();
+ * console.log(log);
+ *
+ * // Stream the log in real-time
+ * const stream = await runClient.log().stream();
+ * stream.on('line', (line) => console.log(line));
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors/running/runs-and-builds#logging
+ */
 export class LogClient extends ResourceClient {
     /**
      * @hidden

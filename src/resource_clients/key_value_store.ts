@@ -27,6 +27,34 @@ import {
     pluckData,
 } from '../utils';
 
+/**
+ * Client for managing a specific Key-value store.
+ *
+ * Key-value stores are used to store arbitrary data records or files. Each record is identified by
+ * a unique key and can contain any type of data. This client provides methods to get, set, and delete
+ * records, list keys, and manage the store.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const storeClient = client.keyValueStore('my-store-id');
+ *
+ * // Set a record
+ * await storeClient.setRecord({
+ *   key: 'OUTPUT',
+ *   value: { foo: 'bar' },
+ *   contentType: 'application/json'
+ * });
+ *
+ * // Get a record
+ * const record = await storeClient.getRecord('OUTPUT');
+ *
+ * // List all keys
+ * const { items } = await storeClient.listKeys();
+ * ```
+ *
+ * @see https://docs.apify.com/platform/storage/key-value-store
+ */
 export class KeyValueStoreClient extends ResourceClient {
     /**
      * @hidden

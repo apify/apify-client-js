@@ -5,6 +5,26 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { ActorStats } from './actor';
 
+/**
+ * Client for browsing Actors in the Apify Store.
+ *
+ * The Apify Store contains publicly available Actors that can be used by anyone.
+ * This client provides methods to search and list Actors from the Store.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient();
+ * const storeClient = client.store();
+ *
+ * // Search for Actors in the Store
+ * const { items } = await storeClient.list({ search: 'web scraper' });
+ *
+ * // Get details about a specific Store Actor
+ * const actor = await storeClient.list({ username: 'apify', actorName: 'web-scraper' });
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors/publishing
+ */
 export class StoreCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden

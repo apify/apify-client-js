@@ -2,6 +2,24 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { Webhook, WebhookEventType } from './webhook';
 
+/**
+ * Client for managing a specific webhook dispatch.
+ *
+ * Webhook dispatches represent individual notifications sent by webhooks. This client provides
+ * methods to retrieve details about a specific dispatch.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const webhookClient = client.webhook('my-webhook-id');
+ *
+ * // Get a specific dispatch
+ * const dispatchClient = webhookClient.dispatches().get('dispatch-id');
+ * const dispatch = await dispatchClient.get();
+ * ```
+ *
+ * @see https://docs.apify.com/platform/integrations/webhooks
+ */
 export class WebhookDispatchClient extends ResourceClient {
     /**
      * @hidden

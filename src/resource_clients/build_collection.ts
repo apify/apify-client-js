@@ -5,6 +5,27 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import type { Build } from './build';
 
+/**
+ * Client for managing the collection of Actor builds.
+ *
+ * Provides methods to list Actor builds across all Actors or for a specific Actor.
+ * To access an individual build, use the `build()` method on the main ApifyClient.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ *
+ * // List all builds
+ * const buildsClient = client.builds();
+ * const { items } = await buildsClient.list();
+ *
+ * // List builds for a specific Actor
+ * const actorBuildsClient = client.actor('my-actor-id').builds();
+ * const { items: actorBuilds } = await actorBuildsClient.list();
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors/running/runs-and-builds#builds
+ */
 export class BuildCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden
@@ -22,7 +43,7 @@ export class BuildCollectionClient extends ResourceCollectionClient {
      * @param options - Pagination and sorting options.
      * @returns A paginated iterator of Actor builds.
      * @see https://docs.apify.com/api/v2/actor-builds-get
-     */
+     *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
      * ```javascript

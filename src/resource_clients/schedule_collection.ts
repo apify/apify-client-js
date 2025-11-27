@@ -5,6 +5,30 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { Schedule, ScheduleCreateOrUpdateData } from './schedule';
 
+/**
+ * Client for managing the collection of Schedules in your account.
+ *
+ * Schedules are used to automatically start Actors or tasks at specified times.
+ * This client provides methods to list and create schedules.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const schedulesClient = client.schedules();
+ *
+ * // List all schedules
+ * const { items } = await schedulesClient.list();
+ *
+ * // Create a new schedule
+ * const newSchedule = await schedulesClient.create({
+ *   actorId: 'my-actor-id',
+ *   cronExpression: '0 9 * * *',
+ *   isEnabled: true
+ * });
+ * ```
+ *
+ * @see https://docs.apify.com/platform/schedules
+ */
 export class ScheduleCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden

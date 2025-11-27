@@ -8,6 +8,29 @@ import type { Timezone } from '../timezones';
 import type { DistributiveOptional } from '../utils';
 import { cast, catchNotFoundOrThrow, parseDateFields, pluckData } from '../utils';
 
+/**
+ * Client for managing a specific Schedule.
+ *
+ * Schedules are used to automatically start Actors or tasks at specified times. This client provides
+ * methods to get, update, and delete schedules, as well as retrieve schedule logs.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const scheduleClient = client.schedule('my-schedule-id');
+ *
+ * // Get schedule details
+ * const schedule = await scheduleClient.get();
+ *
+ * // Update schedule
+ * await scheduleClient.update({
+ *   cronExpression: '0 12 * * *',
+ *   isEnabled: true
+ * });
+ * ```
+ *
+ * @see https://docs.apify.com/platform/schedules
+ */
 export class ScheduleClient extends ResourceClient {
     /**
      * @hidden

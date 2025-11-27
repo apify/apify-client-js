@@ -5,6 +5,24 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { WebhookDispatch } from './webhook_dispatch';
 
+/**
+ * Client for managing the collection of Webhook dispatches.
+ *
+ * Webhook dispatches represent individual notifications sent by a webhook. This client provides
+ * methods to list all dispatches for a specific webhook.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const webhookClient = client.webhook('my-webhook-id');
+ *
+ * // List all dispatches for this webhook
+ * const dispatchesClient = webhookClient.dispatches();
+ * const { items } = await dispatchesClient.list();
+ * ```
+ *
+ * @see https://docs.apify.com/platform/integrations/webhooks
+ */
 export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden
@@ -22,7 +40,7 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
      * @param options - Pagination and sorting options.
      * @returns A paginated iterator of webhook dispatches.
      * @see https://docs.apify.com/api/v2/webhook-dispatches-get
-     */
+     *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
      * ```javascript

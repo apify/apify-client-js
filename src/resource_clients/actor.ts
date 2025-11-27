@@ -19,6 +19,26 @@ import { RunCollectionClient } from './run_collection';
 import type { WebhookUpdateData } from './webhook';
 import { WebhookCollectionClient } from './webhook_collection';
 
+/**
+ * Client for managing a specific Actor.
+ *
+ * Provides methods to start, call, build, update, and delete an Actor, as well as manage its
+ * versions, builds, runs, and webhooks.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const actorClient = client.actor('my-actor-id');
+ *
+ * // Start an Actor
+ * const run = await actorClient.start({ memory: 256 });
+ *
+ * // Call an Actor and wait for it to finish
+ * const finishedRun = await actorClient.call({ url: 'https://example.com' });
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors
+ */
 export class ActorClient extends ResourceClient {
     /**
      * @hidden

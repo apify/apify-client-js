@@ -5,6 +5,26 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
 import type { KeyValueStore } from './key_value_store';
 
+/**
+ * Client for managing the collection of Key-value stores in your account.
+ *
+ * Key-value stores are used to store arbitrary data records or files. This client provides
+ * methods to list, create, or get key-value stores by name.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const storesClient = client.keyValueStores();
+ *
+ * // List all key-value stores
+ * const { items } = await storesClient.list();
+ *
+ * // Get or create a key-value store by name
+ * const store = await storesClient.getOrCreate('my-store');
+ * ```
+ *
+ * @see https://docs.apify.com/platform/storage/key-value-store
+ */
 export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden
