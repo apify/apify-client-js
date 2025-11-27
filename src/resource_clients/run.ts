@@ -261,6 +261,9 @@ export class RunClient extends ResourceClient {
      * Charges the Actor run for a specific event.
      *
      * @param options - Charge options including event name and count.
+     * @param options.eventName - **Required.** Name of the event to charge for.
+     * @param options.count - Number of times to charge the event. Default is 1.
+     * @param options.idempotencyKey - Optional key to ensure the charge is not duplicated. If not provided, one is auto-generated.
      * @returns Empty response object.
      * @see https://docs.apify.com/api/v2/post-charge-run
      */
@@ -307,7 +310,7 @@ export class RunClient extends ResourceClient {
      * and continuously polls until the run finishes or the timeout is reached.
      *
      * @param options - Wait options
-     * @param options.waitSecs - Maximum time to wait for the run to finish, in seconds. If omitted, waits indefinitely.
+     * @param options.waitSecs - Maximum time to wait for the run to finish, in seconds. If the limit is reached, the returned promise resolves to a run object that will have status `READY` or `RUNNING`. If omitted, waits indefinitely.
      * @returns The ActorRun object (finished or still running if timeout was reached)
      *
      * @example

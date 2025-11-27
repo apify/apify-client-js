@@ -27,6 +27,7 @@ export class LogClient extends ResourceClient {
      * Retrieves the log as a string.
      *
      * @param options - Log retrieval options.
+     * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
      * @returns The log content as a string, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/log-get
      */
@@ -51,6 +52,7 @@ export class LogClient extends ResourceClient {
      * Retrieves the log as a Readable stream. Only works in Node.js.
      *
      * @param options - Log retrieval options.
+     * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
      * @returns The log content as a Readable stream, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/log-get
      */

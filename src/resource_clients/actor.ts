@@ -319,6 +319,8 @@ export class ActorClient extends ResourceClient {
      * Provides access to the most recent Actor run, optionally filtered by status or origin.
      *
      * @param options - Options to filter the last run
+     * @param options.status - Filter by run status (e.g., `'SUCCEEDED'`, `'FAILED'`, `'RUNNING'`, `'ABORTED'`, `'TIMED-OUT'`).
+     * @param options.origin - Filter by run origin (e.g., `'DEVELOPMENT'`, `'WEB'`, `'API'`, `'SCHEDULER'`).
      * @returns A client for the last run
      * @see https://docs.apify.com/api/v2/act-runs-last-get
      *

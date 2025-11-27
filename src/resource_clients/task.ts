@@ -61,6 +61,14 @@ export class TaskClient extends ResourceClient {
      *
      * @param input - Input overrides for the task. If not provided, the task's saved input is used.
      * @param options - Run options.
+     * @param options.build - Tag or number of the Actor build to run (e.g., `'beta'` or `'1.2.345'`).
+     * @param options.memory - Memory in megabytes allocated for the run.
+     * @param options.timeout - Timeout for the run in seconds. Zero means no timeout.
+     * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the run to finish before returning.
+     * @param options.webhooks - Webhooks to trigger for specific Actor run events.
+     * @param options.maxItems - Maximum number of dataset items (for pay-per-result Actors).
+     * @param options.maxTotalChargeUsd - Maximum cost in USD (for pay-per-event Actors).
+     * @param options.restartOnError - Whether to restart the run on error.
      * @returns The Actor Run object.
      * @see https://docs.apify.com/api/v2/actor-task-runs-post
      */
@@ -116,6 +124,14 @@ export class TaskClient extends ResourceClient {
      *
      * @param input - Input overrides for the task. If not provided, the task's saved input is used.
      * @param options - Run and wait options.
+     * @param options.build - Tag or number of the Actor build to run.
+     * @param options.memory - Memory in megabytes allocated for the run.
+     * @param options.timeout - Timeout for the run in seconds.
+     * @param options.waitSecs - Maximum time to wait for the run to finish, in seconds. If omitted, waits indefinitely.
+     * @param options.webhooks - Webhooks to trigger for specific Actor run events.
+     * @param options.maxItems - Maximum number of dataset items (for pay-per-result Actors).
+     * @param options.maxTotalChargeUsd - Maximum cost in USD (for pay-per-event Actors).
+     * @param options.restartOnError - Whether to restart the run on error.
      * @returns The Actor run object.
      * @see https://docs.apify.com/api/v2/actor-task-runs-post
      */
@@ -189,6 +205,8 @@ export class TaskClient extends ResourceClient {
      * Returns a client for the last run of this task.
      *
      * @param options - Filter options for the last run.
+     * @param options.status - Filter by run status (e.g., `'SUCCEEDED'`, `'FAILED'`, `'RUNNING'`).
+     * @param options.origin - Filter by run origin (e.g., `'WEB'`, `'API'`, `'SCHEDULE'`).
      * @returns A client for the last run.
      * @see https://docs.apify.com/api/v2/actor-task-runs-last-get
      */
