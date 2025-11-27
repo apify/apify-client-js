@@ -43,10 +43,6 @@
         "url": "https://github.com/apify/apify-client-js/issues"
     },
     "homepage": "https://docs.apify.com/api/client/js/",
-    "files": [
-        "dist",
-        "!dist/*.tsbuildinfo"
-    ],
     "scripts": {
         "build": "npm run clean && npm run build:node && npm run build:browser",
         "postbuild": "gen-esm-wrapper dist/index.js dist/index.mjs",
