@@ -65,6 +65,7 @@ export enum ActorListSortBy {
 
 export interface ActorCollectionListOptions extends PaginationOptions {
     my?: boolean;
+    desc?: boolean;
     sortBy?: ActorListSortBy;
 }
 
