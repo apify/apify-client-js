@@ -330,7 +330,7 @@ export interface TaskLastRunOptions {
  * Options for starting a Task.
  *
  * Similar to {@link ActorStartOptions} but without contentType (Task input is predefined)
- * and forcePermissionLevel (uses Task's configured permissions).
+ * and forcePermissionLevel.
  */
 export type TaskStartOptions = Omit<ActorStartOptions, 'contentType' | 'forcePermissionLevel'>;
 
