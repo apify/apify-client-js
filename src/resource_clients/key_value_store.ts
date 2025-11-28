@@ -82,7 +82,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @param newFields - Fields to update in the key-value store
      * @param newFields.name - New name for the store
      * @param newFields.title - New title for the store
-     * @param newFields.generalAccess - General access level (PUBLIC or PRIVATE)
+     * @param newFields.generalAccess - General resource access level ('FOLLOW_USER_SETTING', 'ANYONE_WITH_ID_CAN_READ' or 'RESTRICTED')
      * @returns The updated KeyValueStore object
      * @see https://docs.apify.com/api/v2/key-value-store-put
      */
