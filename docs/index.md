@@ -18,9 +18,9 @@ The client simplifies interaction with the Apify platform by providing:
 
 All requests and responses (including errors) are encoded in JSON format with UTF-8 encoding.
 
-> For installation instructions, see the [Getting Started Guide](./getting-started.md).
+> For installation instructions, check the [Getting Started Guide](./getting-started.md).
 
-## Quick Example
+## Quick example
 
 Here's an example showing how to run an Actor and retrieve its results:
 
@@ -43,7 +43,9 @@ const { items } = await client.dataset(run.defaultDatasetId).listItems();
 console.log(items);
 ```
 
-## Next Steps
+> You can find your API token in the [Integrations section](https://console.apify.com/account/integrations) of Apify Console. See the [Getting Started Guide](./getting-started.md#authentication-and-initialization) for more details on authentication.
+
+## Next steps
 
 - [Getting Started Guide](./getting-started.md) - Detailed setup and usage instructions
 - [API Reference](../reference) - Complete API documentation
