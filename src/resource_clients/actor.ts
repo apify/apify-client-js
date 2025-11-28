@@ -31,7 +31,7 @@ import { WebhookCollectionClient } from './webhook_collection';
  * const actorClient = client.actor('my-actor-id');
  *
  * // Start an Actor
- * const run = await actorClient.start({ memory: 256 });
+ * const run = await actorClient.start(input, { memory: 256 });
  *
  * // Call an Actor and wait for it to finish
  * const finishedRun = await actorClient.call({ url: 'https://example.com' });
