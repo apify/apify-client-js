@@ -5,6 +5,26 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import type { Dataset } from './dataset';
 
+/**
+ * Client for managing the collection of datasets in your account.
+ *
+ * Datasets store structured data results from Actor runs. This client provides methods
+ * to list, create, or get datasets by name.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const datasetsClient = client.datasets();
+ *
+ * // List all datasets
+ * const { items } = await datasetsClient.list();
+ *
+ * // Get or create a dataset by name
+ * const dataset = await datasetsClient.getOrCreate('my-dataset');
+ * ```
+ *
+ * @see https://docs.apify.com/platform/storage/dataset
+ */
 export class DatasetCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden
@@ -17,7 +37,11 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/get-list-of-datasets
+     * Lists all Datasets.
+     *
+     * @param options - Pagination options.
+     * @returns A paginated iterator of Datasets.
+     * @see https://docs.apify.com/api/v2/datasets-get
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
@@ -47,7 +71,12 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/datasets/dataset-collection/create-dataset
+     * Gets or creates a dataset with the specified name.
+     *
+     * @param name - Name of the dataset. If not provided, a default dataset is used.
+     * @param options - Additional options like schema.
+     * @returns The dataset object.
+     * @see https://docs.apify.com/api/v2/datasets-post
      */
     async getOrCreate(name?: string, options?: DatasetCollectionClientGetOrCreateOptions): Promise<Dataset> {
         ow(name, ow.optional.string);

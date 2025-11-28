@@ -10,6 +10,34 @@ import { cast, catchNotFoundOrThrow, parseDateFields, pluckData } from '../utils
 import type { WebhookDispatch } from './webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection';
 
+/**
+ * Client for managing a specific webhook.
+ *
+ * Webhooks allow you to receive notifications when specific events occur in your Actors or tasks.
+ * This client provides methods to get, update, delete, and test webhooks, as well as retrieve
+ * webhook dispatches.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const webhookClient = client.webhook('my-webhook-id');
+ *
+ * // Get webhook details
+ * const webhook = await webhookClient.get();
+ *
+ * // Update webhook
+ * await webhookClient.update({
+ *   isEnabled: true,
+ *   eventTypes: ['ACTOR.RUN.SUCCEEDED'],
+ *   requestUrl: 'https://example.com/webhook'
+ * });
+ *
+ * // Test webhook
+ * await webhookClient.test();
+ * ```
+ *
+ * @see https://docs.apify.com/platform/integrations/webhooks
+ */
 export class WebhookClient extends ResourceClient {
     /**
      * @hidden
@@ -22,14 +50,21 @@ export class WebhookClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/get-webhook
+     * Retrieves the webhook.
+     *
+     * @returns The webhook object, or `undefined` if it does not exist.
+     * @see https://docs.apify.com/api/v2/webhook-get
      */
     async get(): Promise<Webhook | undefined> {
         return this._get();
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/update-webhook
+     * Updates the webhook with the specified fields.
+     *
+     * @param newFields - Fields to update.
+     * @returns The updated webhook object.
+     * @see https://docs.apify.com/api/v2/webhook-put
      */
     async update(newFields: WebhookUpdateData): Promise<Webhook> {
         ow(newFields, ow.object);
@@ -38,14 +73,19 @@ export class WebhookClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/webhooks/webhook-object/delete-webhook
+     * Deletes the webhook.
+     *
+     * @see https://docs.apify.com/api/v2/webhook-delete
      */
     async delete(): Promise<void> {
         return this._delete();
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/webhooks/webhook-test/test-webhook
+     * Tests the webhook by dispatching a test event.
+     *
+     * @returns The webhook dispatch object, or `undefined` if the test fails.
+     * @see https://docs.apify.com/api/v2/webhook-test-post
      */
     async test(): Promise<WebhookDispatch | undefined> {
         const request: ApifyRequestConfig = {
@@ -65,7 +105,10 @@ export class WebhookClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/webhooks/dispatches-collection
+     * Returns a client for the dispatches of this webhook.
+     *
+     * @returns A client for the webhook's dispatches.
+     * @see https://docs.apify.com/api/v2/webhook-webhook-dispatches-get
      */
     dispatches(): WebhookDispatchCollectionClient {
         return new WebhookDispatchCollectionClient(
@@ -76,6 +119,12 @@ export class WebhookClient extends ResourceClient {
     }
 }
 
+/**
+ * Represents a webhook for receiving notifications about Actor events.
+ *
+ * Webhooks send HTTP POST requests to specified URLs when certain events occur
+ * (e.g., Actor run succeeds, fails, or times out).
+ */
 export interface Webhook {
     id: string;
     userId: string;
@@ -100,6 +149,9 @@ export interface WebhookIdempotencyKey {
     idempotencyKey?: string;
 }
 
+/**
+ * Data for updating a webhook.
+ */
 export type WebhookUpdateData = Partial<
     Pick<
         Webhook,
@@ -118,12 +170,21 @@ export type WebhookUpdateData = Partial<
 > &
     WebhookIdempotencyKey;
 
+/**
+ * Statistics about webhook usage.
+ */
 export interface WebhookStats {
     totalDispatches: number;
 }
 
+/**
+ * Event types that can trigger webhooks.
+ */
 export type WebhookEventType = (typeof WEBHOOK_EVENT_TYPES)[keyof typeof WEBHOOK_EVENT_TYPES];
 
+/**
+ * Condition that determines when a webhook should be triggered.
+ */
 export type WebhookCondition =
     | WebhookAnyRunOfActorCondition
     | WebhookAnyRunOfActorTaskCondition

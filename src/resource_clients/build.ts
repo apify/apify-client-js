@@ -8,6 +8,29 @@ import { cast, parseDateFields, pluckData } from '../utils';
 import type { ActorDefinition } from './actor';
 import { LogClient } from './log';
 
+/**
+ * Client for managing a specific Actor build.
+ *
+ * Builds are created when an Actor is built from source code. This client provides methods
+ * to get build details, wait for the build to finish, abort it, and access its logs.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const buildClient = client.build('my-build-id');
+ *
+ * // Get build details
+ * const build = await buildClient.get();
+ *
+ * // Wait for the build to finish
+ * const finishedBuild = await buildClient.waitForFinish();
+ *
+ * // Access build logs
+ * const log = await buildClient.log().get();
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors/running/runs-and-builds#builds
+ */
 export class BuildClient extends ResourceClient {
     /**
      * @hidden
@@ -20,7 +43,22 @@ export class BuildClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-builds/build-object/get-build
+     * Gets the Actor build object from the Apify API.
+     *
+     * @param options - Get options
+     * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the build to finish on the API side before returning. Default is 0 (returns immediately).
+     * @returns The Build object, or `undefined` if it does not exist
+     * @see https://docs.apify.com/api/v2/actor-build-get
+     *
+     * @example
+     * ```javascript
+     * // Get build status immediately
+     * const build = await client.build('build-id').get();
+     * console.log(`Status: ${build.status}`);
+     *
+     * // Wait up to 60 seconds for build to finish
+     * const build = await client.build('build-id').get({ waitForFinish: 60 });
+     * ```
      */
     async get(options: BuildClientGetOptions = {}): Promise<Build | undefined> {
         ow(
@@ -34,7 +72,17 @@ export class BuildClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-builds/abort-build/abort-build
+     * Aborts the Actor build.
+     *
+     * Stops the build process immediately. The build will have an `ABORTED` status.
+     *
+     * @returns The updated Build object with `ABORTED` status
+     * @see https://docs.apify.com/api/v2/actor-build-abort-post
+     *
+     * @example
+     * ```javascript
+     * await client.build('build-id').abort();
+     * ```
      */
     async abort(): Promise<Build> {
         const response = await this.httpClient.call({
@@ -47,14 +95,19 @@ export class BuildClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-builds/delete-build/delete-build
+     * Deletes the Actor build.
+     *
+     * @see https://docs.apify.com/api/v2/actor-build-delete
      */
     async delete(): Promise<void> {
         return this._delete();
     }
 
     /**
-     * https://docs.apify.com/api/v2/actor-build-openapi-json-get
+     * Retrieves the OpenAPI definition for the Actor build.
+     *
+     * @returns The OpenAPI definition object.
+     * @see https://docs.apify.com/api/v2/actor-build-openapi-json-get
      */
     async getOpenApiDefinition(): Promise<OpenApiDefinition> {
         const response = await this.httpClient.call({
@@ -67,15 +120,34 @@ export class BuildClient extends ResourceClient {
     }
 
     /**
-     * Returns a promise that resolves with the finished Build object when the provided actor build finishes
-     * or with the unfinished Build object when the `waitSecs` timeout lapses. The promise is NOT rejected
-     * based on run status. You can inspect the `status` property of the Build object to find out its status.
+     * Waits for the Actor build to finish and returns the finished Build object.
      *
-     * The difference between this function and the `waitForFinish` parameter of the `get` method
-     * is the fact that this function can wait indefinitely. Its use is preferable to the
-     * `waitForFinish` parameter alone, which it uses internally.
+     * The promise resolves when the build reaches a terminal state (`SUCCEEDED`, `FAILED`, `ABORTED`, or `TIMED-OUT`).
+     * If `waitSecs` is provided and the timeout is reached, the promise resolves with the unfinished
+     * Build object (status will be `RUNNING` or `READY`). The promise is NOT rejected based on build status.
+     *
+     * Unlike the `waitForFinish` parameter in {@link get}, this method can wait indefinitely
+     * by polling the build status. It uses the `waitForFinish` parameter internally (max 60s per call)
+     * and continuously polls until the build finishes or the timeout is reached.
      *
      * This is useful when you need to immediately start a run after a build finishes.
+     *
+     * @param options - Wait options
+     * @param options.waitSecs - Maximum time to wait for the build to finish, in seconds. If omitted, waits indefinitely.
+     * @returns The Build object (finished or still building if timeout was reached)
+     *
+     * @example
+     * ```javascript
+     * // Wait indefinitely for build to finish
+     * const build = await client.build('build-id').waitForFinish();
+     * console.log(`Build finished with status: ${build.status}`);
+     *
+     * // Start a run immediately after build succeeds
+     * const build = await client.build('build-id').waitForFinish();
+     * if (build.status === 'SUCCEEDED') {
+     *   const run = await client.actor('my-actor').start();
+     * }
+     * ```
      */
     async waitForFinish(options: BuildClientWaitForFinishOptions = {}): Promise<Build> {
         ow(
@@ -89,7 +161,17 @@ export class BuildClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actor-builds/build-log
+     * Returns a client for accessing the log of this Actor build.
+     *
+     * @returns A client for accessing the build's log
+     * @see https://docs.apify.com/api/v2/actor-build-log-get
+     *
+     * @example
+     * ```javascript
+     * // Get build log
+     * const log = await client.build('build-id').log().get();
+     * console.log(log);
+     * ```
      */
     log(): LogClient {
         return new LogClient(
@@ -100,10 +182,16 @@ export class BuildClient extends ResourceClient {
     }
 }
 
+/**
+ * Options for getting a Build.
+ */
 export interface BuildClientGetOptions {
     waitForFinish?: number;
 }
 
+/**
+ * Options for waiting for a Build to finish.
+ */
 export interface BuildClientWaitForFinishOptions {
     /**
      * Maximum time to wait for the build to finish, in seconds.
@@ -113,12 +201,21 @@ export interface BuildClientWaitForFinishOptions {
     waitSecs?: number;
 }
 
+/**
+ * Metadata about how a Build was initiated.
+ */
 export interface BuildMeta {
     origin: string;
     clientIp: string;
     userAgent: string;
 }
 
+/**
+ * Represents an Actor build.
+ *
+ * Builds compile Actor source code and prepare it for execution. Each build has a unique ID
+ * and can be tagged (e.g., 'latest', 'beta') for easy reference.
+ */
 export interface Build {
     id: string;
     actId: string;
@@ -144,16 +241,25 @@ export interface Build {
     actorDefinition?: ActorDefinition;
 }
 
+/**
+ * Resource usage for an Actor build.
+ */
 export interface BuildUsage {
     ACTOR_COMPUTE_UNITS?: number;
 }
 
+/**
+ * Runtime statistics for an Actor build.
+ */
 export interface BuildStats {
     durationMillis: number;
     runTimeSecs: number;
     computeUnits: number;
 }
 
+/**
+ * Configuration options used for an Actor build.
+ */
 export interface BuildOptions {
     useCache?: boolean;
     betaPackages?: boolean;
@@ -161,6 +267,12 @@ export interface BuildOptions {
     diskMbytes?: number;
 }
 
+/**
+ * OpenAPI specification for an Actor.
+ *
+ * Defines the Actor's API interface in OpenAPI 3.0 format, useful for integration
+ * with tools like ChatGPT plugins and other API consumers.
+ */
 export interface OpenApiDefinition {
     openapi: string;
     info: {
