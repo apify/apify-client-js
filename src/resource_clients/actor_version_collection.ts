@@ -22,29 +22,20 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
      * ```javascript
-     * const paginatedList = await client.list(options);
+     * const paginatedList = await client.list();
      *```
      *
      * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
      * retrieved.
      *
      * ```javascript
-     * for await (const singleItem of client.list(options)) {...}
+     * for await (const singleItem of client.list()) {...}
      * ```
      */
     list(
-        options: ActorVersionCollectionListOptions = {},
+        _options: ActorVersionCollectionListOptions = {},
     ): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
-        ow(
-            options,
-            ow.object.exactShape({
-                limit: ow.optional.number,
-                offset: ow.optional.number,
-                desc: ow.optional.boolean,
-            }),
-        );
-
-        return this._listPaginated(options);
+        return this._listPaginated();
     }
 
     /**
@@ -57,6 +48,10 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
     }
 }
 
+/**
+ * @deprecated No options are used in the current API implementation.
+ * https://github.com/apify/apify-client-js/issues/799
+ */
 export interface ActorVersionCollectionListOptions extends PaginationOptions {
     desc?: boolean;
 }
