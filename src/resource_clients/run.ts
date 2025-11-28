@@ -218,7 +218,7 @@ export class RunClient extends ResourceClient {
      * @param newFields - Fields to update
      * @param newFields.statusMessage - Custom status message to display (e.g., "Processing page 10/100")
      * @param newFields.isStatusMessageTerminal - If `true`, the status message is final and won't be overwritten. Default is `false`.
-     * @param newFields.generalAccess - General access level (PUBLIC or PRIVATE)
+     * @param newFields.generalAccess - General resource access level ('FOLLOW_USER_SETTING', 'ANYONE_WITH_ID_CAN_READ' or 'RESTRICTED')
      * @returns The updated ActorRun object
      *
      * @example
