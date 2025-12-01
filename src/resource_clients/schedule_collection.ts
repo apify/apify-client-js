@@ -45,23 +45,20 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
-     *
-     * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
-     * retrieved.
-     *
-     * @param options - Pagination and sorting options.
-     * @returns A paginated iterator of schedules.
-     * @see https://docs.apify.com/api/v2/schedules-get
-     *
-     * @example
      * ```javascript
      * const paginatedList = await client.list(options);
      * ```
      *
-     * @example
+     * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
+     * retrieved.
+     *
      * ```javascript
      * for await (const singleItem of client.list(options)) {...}
      * ```
+     *
+     * @param options - Pagination and sorting options.
+     * @returns A paginated iterator of schedules.
+     * @see https://docs.apify.com/api/v2/schedules-get
      */
     list(options: ScheduleCollectionListOptions = {}): PaginatedIterator<Schedule> {
         ow(
