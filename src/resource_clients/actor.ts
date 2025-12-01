@@ -89,6 +89,19 @@ export class ActorClient extends ResourceClient {
      * asynchronously and this method returns immediately without waiting for completion.
      * Use the {@link call} method if you want to wait for the Actor to finish.
      *
+     * @example
+     * ```javascript
+     * // Start Actor with simple input
+     * const run = await client.actor('my-actor').start({ url: 'https://example.com' });
+     * console.log(`Run started with ID: ${run.id}, status: ${run.status}`);
+     *
+     * // Start Actor with specific build and memory
+     * const run = await client.actor('my-actor').start(
+     *   { url: 'https://example.com' },
+     *   { build: '0.1.2', memory: 512, timeout: 300 }
+     * );
+     * ```
+     *
      * @param input - Input for the Actor. Can be any JSON-serializable value (object, array, string, number).
      *                If `contentType` is specified in options, input should be a string or Buffer.
      * @param options - Run configuration options
@@ -102,19 +115,6 @@ export class ActorClient extends ResourceClient {
      * @param options.contentType - Content type of the input. If specified, input must be a string or Buffer.
      * @returns The Actor run object with status, usage, and storage IDs
      * @see https://docs.apify.com/api/v2/act-runs-post
-     *
-     * @example
-     * ```javascript
-     * // Start Actor with simple input
-     * const run = await client.actor('my-actor').start({ url: 'https://example.com' });
-     * console.log(`Run started with ID: ${run.id}, status: ${run.status}`);
-     *
-     * // Start Actor with specific build and memory
-     * const run = await client.actor('my-actor').start(
-     *   { url: 'https://example.com' },
-     *   { build: '0.1.2', memory: 512, timeout: 300 }
-     * );
-     * ```
      */
     async start(input?: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
@@ -187,17 +187,6 @@ export class ActorClient extends ResourceClient {
      * by polling the run status. It optionally streams logs to the console or a custom Log instance.
      * By default, it waits indefinitely unless the `waitSecs` option is provided.
      *
-     * @param input - Input for the Actor. Can be any JSON-serializable value (object, array, string, number).
-     *                If `contentType` is specified in options, input should be a string or Buffer.
-     * @param options - Run configuration options (extends all options from {@link start})
-     * @param options.waitSecs - Maximum time to wait for the run to finish, in seconds. If omitted, waits indefinitely.
-     * @param options.log - Log instance for streaming run logs. Use `'default'` for console output, `null` to disable logging, or provide a custom Log instance.
-     * @param options.build - Tag or number of the build to run (e.g., `'beta'` or `'1.2.345'`).
-     * @param options.memory - Memory in megabytes allocated for the run.
-     * @param options.timeout - Maximum run duration in seconds.
-     * @returns The finished Actor run object with final status (`SUCCEEDED`, `FAILED`, `ABORTED`, or `TIMED-OUT`)
-     * @see https://docs.apify.com/api/v2/act-runs-post
-     *
      * @example
      * ```javascript
      * // Run an Actor and wait for it to finish
@@ -216,6 +205,17 @@ export class ActorClient extends ResourceClient {
      * const log = new Log({ prefix: 'My Actor' });
      * const run = await client.actor('my-actor').call({ url: 'https://example.com' }, { log });
      * ```
+     *
+     * @param input - Input for the Actor. Can be any JSON-serializable value (object, array, string, number).
+     *                If `contentType` is specified in options, input should be a string or Buffer.
+     * @param options - Run configuration options (extends all options from {@link start})
+     * @param options.waitSecs - Maximum time to wait for the run to finish, in seconds. If omitted, waits indefinitely.
+     * @param options.log - Log instance for streaming run logs. Use `'default'` for console output, `null` to disable logging, or provide a custom Log instance.
+     * @param options.build - Tag or number of the build to run (e.g., `'beta'` or `'1.2.345'`).
+     * @param options.memory - Memory in megabytes allocated for the run.
+     * @param options.timeout - Maximum run duration in seconds.
+     * @returns The finished Actor run object with final status (`SUCCEEDED`, `FAILED`, `ABORTED`, or `TIMED-OUT`)
+     * @see https://docs.apify.com/api/v2/act-runs-post
      */
     async call(input?: unknown, options: ActorCallOptions = {}): Promise<ActorRun> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
@@ -261,15 +261,6 @@ export class ActorClient extends ResourceClient {
      * Creates a new build of the specified Actor version. The build compiles the Actor's
      * source code, installs dependencies, and prepares it for execution.
      *
-     * @param versionNumber - Version number or tag to build (e.g., `'0.1'`, `'0.2'`, `'latest'`)
-     * @param options - Build configuration options
-     * @param options.betaPackages - If `true`, the build uses beta versions of Apify NPM packages.
-     * @param options.tag - Tag to be applied to the build (e.g., `'latest'`, `'beta'`). Existing tag with the same name will be replaced.
-     * @param options.useCache - If `false`, Docker build cache will be ignored. Default is `true`.
-     * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the build to finish on the API side before returning. Default is 0 (returns immediately).
-     * @returns The Build object with status and build details
-     * @see https://docs.apify.com/api/v2/act-builds-post
-     *
      * @example
      * ```javascript
      * // Start a build and return immediately
@@ -283,6 +274,15 @@ export class ActorClient extends ResourceClient {
      *   useCache: true
      * });
      * ```
+     *
+     * @param versionNumber - Version number or tag to build (e.g., `'0.1'`, `'0.2'`, `'latest'`)
+     * @param options - Build configuration options
+     * @param options.betaPackages - If `true`, the build uses beta versions of Apify NPM packages.
+     * @param options.tag - Tag to be applied to the build (e.g., `'latest'`, `'beta'`). Existing tag with the same name will be replaced.
+     * @param options.useCache - If `false`, Docker build cache will be ignored. Default is `true`.
+     * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the build to finish on the API side before returning. Default is 0 (returns immediately).
+     * @returns The Build object with status and build details
+     * @see https://docs.apify.com/api/v2/act-builds-post
      */
     async build(versionNumber: string, options: ActorBuildOptions = {}): Promise<Build> {
         ow(versionNumber, ow.string);
@@ -338,17 +338,17 @@ export class ActorClient extends ResourceClient {
      *
      * Provides access to the most recent Actor run, optionally filtered by status or origin.
      *
-     * @param options - Options to filter the last run
-     * @param options.status - Filter by run status (e.g., `'SUCCEEDED'`, `'FAILED'`, `'RUNNING'`, `'ABORTED'`, `'TIMED-OUT'`).
-     * @param options.origin - Filter by run origin (e.g., `'DEVELOPMENT'`, `'WEB'`, `'API'`, `'SCHEDULER'`).
-     * @returns A client for the last run
-     * @see https://docs.apify.com/api/v2/act-runs-last-get
-     *
      * @example
      * ```javascript
      * // Get the last successful run
      * const lastRun = await client.actor('my-actor').lastRun({ status: 'SUCCEEDED' }).get();
      * ```
+     *
+     * @param options - Options to filter the last run
+     * @param options.status - Filter by run status (e.g., `'SUCCEEDED'`, `'FAILED'`, `'RUNNING'`, `'ABORTED'`, `'TIMED-OUT'`).
+     * @param options.origin - Filter by run origin (e.g., `'DEVELOPMENT'`, `'WEB'`, `'API'`, `'SCHEDULER'`).
+     * @returns A client for the last run
+     * @see https://docs.apify.com/api/v2/act-runs-last-get
      */
     lastRun(options: ActorLastRunOptions = {}): RunClient {
         ow(

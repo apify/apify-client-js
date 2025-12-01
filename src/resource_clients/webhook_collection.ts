@@ -42,22 +42,25 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
     /**
      * Lists all Webhooks.
      *
-     * @param options - Pagination and sorting options.
-     * @returns A paginated iterator of webhooks.
-     * @see https://docs.apify.com/api/v2/webhooks-get
-     *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
-     * ```javascript
-     * const paginatedList = await client.list(options);
-     *```
      *
      * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
      * retrieved.
      *
+     * @example
+     * ```javascript
+     * const paginatedList = await client.list(options);
+     * ```
+     *
+     * @example
      * ```javascript
      * for await (const singleItem of client.list(options)) {...}
      * ```
+     *
+     * @param options - Pagination and sorting options.
+     * @returns A paginated iterator of webhooks.
+     * @see https://docs.apify.com/api/v2/webhooks-get
      */
 
     list(

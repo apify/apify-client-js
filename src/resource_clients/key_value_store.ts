@@ -107,14 +107,6 @@ export class KeyValueStoreClient extends ResourceClient {
      * Returns a paginated list of all record keys in the store. Use pagination parameters
      * to retrieve large lists efficiently.
      *
-     * @param options - Listing options
-     * @param options.limit - Maximum number of keys to return. Default is 1000.
-     * @param options.exclusiveStartKey - Key to start listing from (for pagination). The listing starts with the next key after this one.
-     * @param options.collection - Filter keys by collection name.
-     * @param options.prefix - Filter keys that start with this prefix.
-     * @returns Object containing `items` array of key metadata, pagination info (`count`, `limit`, `isTruncated`, `nextExclusiveStartKey`)
-     * @see https://docs.apify.com/api/v2/key-value-store-keys-get
-     *
      * @example
      * ```javascript
      * // List all keys
@@ -135,6 +127,14 @@ export class KeyValueStoreClient extends ResourceClient {
      *   exclusiveStartKey = result.nextExclusiveStartKey;
      * } while (result.isTruncated);
      * ```
+     *
+     * @param options - Listing options
+     * @param options.limit - Maximum number of keys to return. Default is 1000.
+     * @param options.exclusiveStartKey - Key to start listing from (for pagination). The listing starts with the next key after this one.
+     * @param options.collection - Filter keys by collection name.
+     * @param options.prefix - Filter keys that start with this prefix.
+     * @returns Object containing `items` array of key metadata, pagination info (`count`, `limit`, `isTruncated`, `nextExclusiveStartKey`)
+     * @see https://docs.apify.com/api/v2/key-value-store-keys-get
      */
     async listKeys(options: KeyValueClientListKeysOptions = {}): Promise<KeyValueClientListKeysResult> {
         ow(
@@ -165,15 +165,15 @@ export class KeyValueStoreClient extends ResourceClient {
      * the URL will include a cryptographic signature for authenticated access without
      * requiring an API token.
      *
-     * @param key - The record key
-     * @returns A public URL string for accessing the record
-     *
      * @example
      * ```javascript
      * const url = await client.keyValueStore('my-store').getRecordPublicUrl('OUTPUT');
      * console.log(`Public URL: ${url}`);
      * // You can now share this URL or use it in a browser
      * ```
+     *
+     * @param key - The record key
+     * @returns A public URL string for accessing the record
      */
     async getRecordPublicUrl(key: string): Promise<string> {
         ow(key, ow.string.nonEmpty);
@@ -196,12 +196,6 @@ export class KeyValueStoreClient extends ResourceClient {
      * If the client has permission to access the key-value store's URL signing key,
      * the URL will include a cryptographic signature which allows access without authentication.
      *
-     * @param options - URL generation options (extends all options from {@link listKeys})
-     * @param options.expiresInSecs - Number of seconds until the signed URL expires. If omitted, the URL never expires.
-     * @param options.limit - Maximum number of keys to return.
-     * @param options.prefix - Filter keys by prefix.
-     * @returns A public URL string for accessing the keys list
-     *
      * @example
      * ```javascript
      * // Create a URL that expires in 1 hour
@@ -211,6 +205,12 @@ export class KeyValueStoreClient extends ResourceClient {
      * });
      * console.log(`Share this URL: ${url}`);
      * ```
+     *
+     * @param options - URL generation options (extends all options from {@link listKeys})
+     * @param options.expiresInSecs - Number of seconds until the signed URL expires. If omitted, the URL never expires.
+     * @param options.limit - Maximum number of keys to return.
+     * @param options.prefix - Filter keys by prefix.
+     * @returns A public URL string for accessing the keys list
      */
     async createKeysPublicUrl(options: KeyValueClientCreateKeysUrlOptions = {}) {
         ow(
@@ -249,10 +249,6 @@ export class KeyValueStoreClient extends ResourceClient {
      *
      * This is more efficient than {@link getRecord} when you only need to check for existence.
      *
-     * @param key - The record key to check
-     * @returns `true` if the record exists, `false` if it does not
-     * @see https://docs.apify.com/api/v2/key-value-store-record-get
-     *
      * @example
      * ```javascript
      * const exists = await client.keyValueStore('my-store').recordExists('OUTPUT');
@@ -260,6 +256,10 @@ export class KeyValueStoreClient extends ResourceClient {
      *   console.log('OUTPUT record exists');
      * }
      * ```
+     *
+     * @param key - The record key to check
+     * @returns `true` if the record exists, `false` if it does not
+     * @see https://docs.apify.com/api/v2/key-value-store-record-get
      */
     async recordExists(key: string): Promise<boolean> {
         const requestOpts: Record<string, unknown> = {
@@ -359,18 +359,6 @@ export class KeyValueStoreClient extends ResourceClient {
      * the upload cannot be retried on failure or follow redirects. For reliable uploads,
      * buffer the entire stream into memory first.
      *
-     * @param record - The record to store
-     * @param record.key - Record key (unique identifier)
-     * @param record.value - Record value (object, string, Buffer, or Stream)
-     * @param record.contentType - Optional MIME type. Auto-detected if not provided:
-     *                             - Objects: `'application/json; charset=utf-8'`
-     *                             - Strings: `'text/plain; charset=utf-8'`
-     *                             - Buffers/Streams: `'application/octet-stream'`
-     * @param options - Storage options
-     * @param options.timeoutSecs - Timeout for the upload in seconds. Default varies by value size.
-     * @param options.doNotRetryTimeouts - If `true`, don't retry on timeout errors. Default is `false`.
-     * @see https://docs.apify.com/api/v2/key-value-store-record-put
-     *
      * @example
      * ```javascript
      * // Store JSON object
@@ -394,6 +382,18 @@ export class KeyValueStoreClient extends ResourceClient {
      *   contentType: 'image/png'
      * });
      * ```
+     *
+     * @param record - The record to store
+     * @param record.key - Record key (unique identifier)
+     * @param record.value - Record value (object, string, Buffer, or Stream)
+     * @param record.contentType - Optional MIME type. Auto-detected if not provided:
+     *                             - Objects: `'application/json; charset=utf-8'`
+     *                             - Strings: `'text/plain; charset=utf-8'`
+     *                             - Buffers/Streams: `'application/octet-stream'`
+     * @param options - Storage options
+     * @param options.timeoutSecs - Timeout for the upload in seconds. Default varies by value size.
+     * @param options.doNotRetryTimeouts - If `true`, don't retry on timeout errors. Default is `false`.
+     * @see https://docs.apify.com/api/v2/key-value-store-record-put
      */
     async setRecord(record: KeyValueStoreRecord<JsonValue>, options: KeyValueStoreRecordOptions = {}): Promise<void> {
         ow(
@@ -451,13 +451,13 @@ export class KeyValueStoreClient extends ResourceClient {
     /**
      * Deletes a record from the key-value store.
      *
-     * @param key - The record key to delete
-     * @see https://docs.apify.com/api/v2/key-value-store-record-delete
-     *
      * @example
      * ```javascript
      * await client.keyValueStore('my-store').deleteRecord('temp-data');
      * ```
+     *
+     * @param key - The record key to delete
+     * @see https://docs.apify.com/api/v2/key-value-store-record-delete
      */
     async deleteRecord(key: string): Promise<void> {
         ow(key, ow.string);

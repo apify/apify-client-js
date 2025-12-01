@@ -43,22 +43,25 @@ export class TaskCollectionClient extends ResourceCollectionClient {
     /**
      * Lists all Tasks.
      *
-     * @param options - Pagination and sorting options.
-     * @returns A paginated iterator of tasks.
-     * @see https://docs.apify.com/api/v2/actor-tasks-get
-     *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
-     * ```javascript
-     * const paginatedList = await client.list(options);
-     *```
      *
      * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
      * retrieved.
      *
+     * @example
+     * ```javascript
+     * const paginatedList = await client.list(options);
+     * ```
+     *
+     * @example
      * ```javascript
      * for await (const singleItem of client.list(options)) {...}
      * ```
+     *
+     * @param options - Pagination and sorting options.
+     * @returns A paginated iterator of tasks.
+     * @see https://docs.apify.com/api/v2/actor-tasks-get
      */
     list(options: TaskCollectionListOptions = {}): PaginatedIterator<TaskList> {
         ow(
