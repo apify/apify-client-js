@@ -238,6 +238,8 @@ export interface PaginationOptions {
     offset?: number;
     /** Maximum number of entries requested. */
     limit?: number;
+    /** Maximum number of items returned in one API response. Relevant in the context of asyncIterator. */
+    chunkSize?: number;
 }
 
 export interface PaginatedResponse<Data> {

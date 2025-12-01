@@ -12,7 +12,7 @@ import {
     SMALL_TIMEOUT_MILLIS,
 } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
-import type { PaginatedList } from '../utils';
+import { type PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData } from '../utils';
 
 export class DatasetClient<
@@ -54,7 +54,8 @@ export class DatasetClient<
     /**
      * https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
      */
-    async listItems(options: DatasetClientListItemOptions = {}): Promise<PaginatedList<Data>> {
+    listItems(options: DatasetClientListItemOptions = {}): PaginatedIterator<Data> {
+        this._changeZeroPaginationOptionsToUndefined(options)
         ow(
             options,
             ow.object.exactShape({
@@ -63,8 +64,9 @@ export class DatasetClient<
                 flatten: ow.optional.array.ofType(ow.string),
                 fields: ow.optional.array.ofType(ow.string),
                 omit: ow.optional.array.ofType(ow.string),
-                limit: ow.optional.number,
-                offset: ow.optional.number,
+                limit: ow.optional.number.positive,
+                offset: ow.optional.number.greaterThan(0),
+                chunkSize: ow.optional.number.positive,
                 skipEmpty: ow.optional.boolean,
                 skipHidden: ow.optional.boolean,
                 unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
@@ -73,14 +75,20 @@ export class DatasetClient<
             }),
         );
 
-        const response = await this.httpClient.call({
-            url: this._url('items'),
-            method: 'GET',
-            params: this._params(options),
-            timeout: DEFAULT_TIMEOUT_MILLIS,
-        });
+        const listItems = async (
+            datasetListOptions:DatasetClientListItemOptions ={}):Promise<PaginatedList<Data>> => {
+            const response = await this.httpClient.call({
+                url: this._url('items'),
+                method: 'GET',
+                params: this._params(datasetListOptions),
+                timeout: DEFAULT_TIMEOUT_MILLIS,
+            });
 
-        return this._createPaginationList(response, options.desc ?? false);
+            return this._createPaginationList(response, datasetListOptions.desc ?? false);
+
+        }
+
+        return this._listPaginatedFromCallback(listItems.bind(this), options);
     }
 
     /**
@@ -89,6 +97,7 @@ export class DatasetClient<
      * https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
      */
     async downloadItems(format: DownloadItemsFormat, options: DatasetClientDownloadItemsOptions = {}): Promise<Buffer> {
+        this._changeZeroPaginationOptionsToUndefined(options)
         ow(format, ow.string.oneOf(validItemFormats));
         ow(
             options,
@@ -101,8 +110,8 @@ export class DatasetClient<
                 flatten: ow.optional.array.ofType(ow.string),
                 fields: ow.optional.array.ofType(ow.string),
                 omit: ow.optional.array.ofType(ow.string),
-                limit: ow.optional.number,
-                offset: ow.optional.number,
+                limit: ow.optional.number.positive,
+                offset: ow.optional.number.greaterThan(0),
                 skipEmpty: ow.optional.boolean,
                 skipHeaderRow: ow.optional.boolean,
                 skipHidden: ow.optional.boolean,
@@ -179,6 +188,7 @@ export class DatasetClient<
      * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
      */
     async createItemsPublicUrl(options: DatasetClientCreateItemsUrlOptions = {}): Promise<string> {
+        this._changeZeroPaginationOptionsToUndefined(options)
         ow(
             options,
             ow.object.exactShape({
@@ -187,8 +197,8 @@ export class DatasetClient<
                 flatten: ow.optional.array.ofType(ow.string),
                 fields: ow.optional.array.ofType(ow.string),
                 omit: ow.optional.array.ofType(ow.string),
-                limit: ow.optional.number,
-                offset: ow.optional.number,
+                limit: ow.optional.number.positive,
+                offset: ow.optional.number.greaterThan(0),
                 skipEmpty: ow.optional.boolean,
                 skipHidden: ow.optional.boolean,
                 unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
@@ -262,14 +272,12 @@ export interface DatasetClientUpdateOptions {
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
-export interface DatasetClientListItemOptions {
+export interface DatasetClientListItemOptions extends PaginationOptions{
     clean?: boolean;
     desc?: boolean;
     flatten?: string[];
     fields?: string[];
     omit?: string[];
-    limit?: number;
-    offset?: number;
     skipEmpty?: boolean;
     skipHidden?: boolean;
     unwind?: string | string[]; // TODO: when doing a breaking change release, change to string[] only
