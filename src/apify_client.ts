@@ -142,15 +142,15 @@ export class ApifyClient {
      * Use this to get, update, delete, start, or call an Actor, as well as manage its builds,
      * runs, versions, and webhooks.
      *
+     * @param id - Actor ID or username/name
+     * @returns A client for the specific Actor
+     * @see https://docs.apify.com/api/v2/act-get
+     *
      * @example
      * ```javascript
      * // Call an Actor and wait for it to finish
      * const run = await client.actor('apify/web-scraper').call({ url: 'https://example.com' });
      * ```
-     *
-     * @param id - Actor ID or username/name
-     * @returns A client for the specific Actor
-     * @see https://docs.apify.com/api/v2/act-get
      */
     actor(id: string): ActorClient {
         ow(id, ow.string.nonEmpty);
@@ -209,6 +209,11 @@ export class ApifyClient {
      * Use this to read, write, and manage items in the dataset. Datasets contain structured
      * data stored as individual items (records).
      *
+     * @template Data - Type of items stored in the dataset
+     * @param id - Dataset ID or name
+     * @returns A client for the specific Dataset
+     * @see https://docs.apify.com/api/v2/dataset-get
+     *
      * @example
      * ```javascript
      * // Push items to a dataset
@@ -220,11 +225,6 @@ export class ApifyClient {
      * // Retrieve items
      * const { items } = await client.dataset('my-dataset').listItems();
      * ```
-     *
-     * @template Data - Type of items stored in the dataset
-     * @param id - Dataset ID or name
-     * @returns A client for the specific Dataset
-     * @see https://docs.apify.com/api/v2/dataset-get
      */
     dataset<Data extends Record<string | number, any> = Record<string | number, unknown>>(
         id: string,
@@ -255,6 +255,10 @@ export class ApifyClient {
      * Use this to read, write, and delete records in the store. Key-value stores can hold
      * any type of data including text, JSON, images, and other files.
      *
+     * @param id - Key-value store ID or name
+     * @returns A client for the specific key-value store
+     * @see https://docs.apify.com/api/v2/key-value-store-get
+     *
      * @example
      * ```javascript
      * // Save a record
@@ -263,10 +267,6 @@ export class ApifyClient {
      * // Get a record
      * const record = await client.keyValueStore('my-store').getRecord('OUTPUT');
      * ```
-     *
-     * @param id - Key-value store ID or name
-     * @returns A client for the specific key-value store
-     * @see https://docs.apify.com/api/v2/key-value-store-get
      */
     keyValueStore(id: string): KeyValueStoreClient {
         ow(id, ow.string.nonEmpty);
@@ -311,6 +311,11 @@ export class ApifyClient {
      * Use this to add, retrieve, and manage requests in the queue. Request queues are used
      * by web crawlers to manage URLs that need to be visited.
      *
+     * @param id - Request queue ID or name
+     * @param options - Configuration options for the request queue client
+     * @returns A client for the specific Request queue
+     * @see https://docs.apify.com/api/v2/request-queue-get
+     *
      * @example
      * ```javascript
      * // Add requests to a queue
@@ -320,11 +325,6 @@ export class ApifyClient {
      * // Get and lock the next request
      * const { items } = await queue.listAndLockHead({ lockSecs: 60 });
      * ```
-     *
-     * @param id - Request queue ID or name
-     * @param options - Configuration options for the request queue client
-     * @returns A client for the specific Request queue
-     * @see https://docs.apify.com/api/v2/request-queue-get
      */
     requestQueue(id: string, options: RequestQueueUserOptions = {}): RequestQueueClient {
         ow(id, ow.string.nonEmpty);
@@ -364,6 +364,10 @@ export class ApifyClient {
      * Use this to get details about a run, wait for it to finish, abort it, or access its
      * dataset, key-value store, and request queue.
      *
+     * @param id - Run ID
+     * @returns A client for the specified run
+     * @see https://docs.apify.com/api/v2/actor-run-get
+     *
      * @example
      * ```javascript
      * // Wait for a run to finish
@@ -372,10 +376,6 @@ export class ApifyClient {
      * // Access run's dataset
      * const { items } = await client.run('run-id').dataset().listItems();
      * ```
-     *
-     * @param id - Run ID
-     * @returns A client for the specified run
-     * @see https://docs.apify.com/api/v2/actor-run-get
      */
     run(id: string): RunClient {
         ow(id, ow.string.nonEmpty);
@@ -403,15 +403,15 @@ export class ApifyClient {
      *
      * Use this to get, update, delete, or run a task with pre-configured input.
      *
+     * @param id - Task ID or username/task-name
+     * @returns A client for the specified task
+     * @see https://docs.apify.com/api/v2/actor-task-get
+     *
      * @example
      * ```javascript
      * // Run a task and wait for it to finish
      * const run = await client.task('my-task').call();
      * ```
-     *
-     * @param id - Task ID or username/task-name
-     * @returns A client for the specified task
-     * @see https://docs.apify.com/api/v2/actor-task-get
      */
     task(id: string): TaskClient {
         ow(id, ow.string.nonEmpty);

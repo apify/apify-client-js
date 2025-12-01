@@ -45,6 +45,10 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
      * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
      * retrieved.
      *
+     * @param options - Pagination options.
+     * @returns A paginated iterator of Request queues.
+     * @see https://docs.apify.com/api/v2/request-queues-get
+     *
      * @example
      * ```javascript
      * const paginatedList = await client.list(options);
@@ -54,10 +58,6 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
      * ```javascript
      * for await (const singleItem of client.list(options)) {...}
      * ```
-     *
-     * @param options - Pagination options.
-     * @returns A paginated iterator of Request queues.
-     * @see https://docs.apify.com/api/v2/request-queues-get
      */
     list(
         options: RequestQueueCollectionListOptions = {},

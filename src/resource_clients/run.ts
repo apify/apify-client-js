@@ -53,6 +53,11 @@ export class RunClient extends ResourceClient {
     /**
      * Gets the Actor run object from the Apify API.
      *
+     * @param options - Get options
+     * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the run to finish on the API side before returning. Default is 0 (returns immediately).
+     * @returns The ActorRun object, or `undefined` if it does not exist
+     * @see https://docs.apify.com/api/v2/actor-run-get
+     *
      * @example
      * ```javascript
      * // Get run status immediately
@@ -62,11 +67,6 @@ export class RunClient extends ResourceClient {
      * // Wait up to 60 seconds for run to finish
      * const run = await client.run('run-id').get({ waitForFinish: 60 });
      * ```
-     *
-     * @param options - Get options
-     * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the run to finish on the API side before returning. Default is 0 (returns immediately).
-     * @returns The ActorRun object, or `undefined` if it does not exist
-     * @see https://docs.apify.com/api/v2/actor-run-get
      */
     async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
         ow(
@@ -82,6 +82,11 @@ export class RunClient extends ResourceClient {
     /**
      * Aborts the Actor run.
      *
+     * @param options - Abort options
+     * @param options.gracefully - If `true`, the Actor run will abort gracefully - it can send status messages and perform cleanup. Default is `false` (immediate abort).
+     * @returns The updated ActorRun object with `ABORTING` or `ABORTED` status
+     * @see https://docs.apify.com/api/v2/actor-run-abort-post
+     *
      * @example
      * ```javascript
      * // Abort immediately
@@ -90,11 +95,6 @@ export class RunClient extends ResourceClient {
      * // Abort gracefully (allows cleanup)
      * await client.run('run-id').abort({ gracefully: true });
      * ```
-     *
-     * @param options - Abort options
-     * @param options.gracefully - If `true`, the Actor run will abort gracefully - it can send status messages and perform cleanup. Default is `false` (immediate abort).
-     * @returns The updated ActorRun object with `ABORTING` or `ABORTED` status
-     * @see https://docs.apify.com/api/v2/actor-run-abort-post
      */
     async abort(options: RunAbortOptions = {}): Promise<ActorRun> {
         ow(
@@ -129,6 +129,14 @@ export class RunClient extends ResourceClient {
      * and resource allocation. The run effectively becomes a run of the target Actor with new input.
      * This is useful for chaining Actor executions or implementing complex workflows.
      *
+     * @param targetActorId - ID or username/name of the target Actor
+     * @param input - Input for the target Actor. Can be any JSON-serializable value.
+     * @param options - Metamorph options
+     * @param options.build - Tag or number of the target Actor's build to run. Default is the target Actor's default build.
+     * @param options.contentType - Content type of the input. If specified, input must be a string or Buffer.
+     * @returns The metamorphed ActorRun object (same ID, but now running the target Actor)
+     * @see https://docs.apify.com/api/v2/actor-run-metamorph-post
+     *
      * @example
      * ```javascript
      * // Transform current run into another Actor
@@ -138,14 +146,6 @@ export class RunClient extends ResourceClient {
      * );
      * console.log(`Run ${metamorphedRun.id} is now running ${metamorphedRun.actId}`);
      * ```
-     *
-     * @param targetActorId - ID or username/name of the target Actor
-     * @param input - Input for the target Actor. Can be any JSON-serializable value.
-     * @param options - Metamorph options
-     * @param options.build - Tag or number of the target Actor's build to run. Default is the target Actor's default build.
-     * @param options.contentType - Content type of the input. If specified, input must be a string or Buffer.
-     * @returns The metamorphed ActorRun object (same ID, but now running the target Actor)
-     * @see https://docs.apify.com/api/v2/actor-run-metamorph-post
      */
     async metamorph(targetActorId: string, input: unknown, options: RunMetamorphOptions = {}): Promise<ActorRun> {
         ow(targetActorId, ow.string);
@@ -194,13 +194,13 @@ export class RunClient extends ResourceClient {
      * This can be useful to recover from certain errors or to force the Actor to restart
      * with a fresh environment.
      *
+     * @returns The updated ActorRun object
+     * @see https://docs.apify.com/api/v2/actor-run-reboot-post
+     *
      * @example
      * ```javascript
      * const run = await client.run('run-id').reboot();
      * ```
-     *
-     * @returns The updated ActorRun object
-     * @see https://docs.apify.com/api/v2/actor-run-reboot-post
      */
     async reboot(): Promise<ActorRun> {
         const request: AxiosRequestConfig = {
@@ -215,6 +215,12 @@ export class RunClient extends ResourceClient {
     /**
      * Updates the Actor run with specified fields.
      *
+     * @param newFields - Fields to update
+     * @param newFields.statusMessage - Custom status message to display (e.g., "Processing page 10/100")
+     * @param newFields.isStatusMessageTerminal - If `true`, the status message is final and won't be overwritten. Default is `false`.
+     * @param newFields.generalAccess - General resource access level ('FOLLOW_USER_SETTING', 'ANYONE_WITH_ID_CAN_READ' or 'RESTRICTED')
+     * @returns The updated ActorRun object
+     *
      * @example
      * ```javascript
      * // Set a status message
@@ -222,12 +228,6 @@ export class RunClient extends ResourceClient {
      *   statusMessage: 'Processing items: 50/100'
      * });
      * ```
-     *
-     * @param newFields - Fields to update
-     * @param newFields.statusMessage - Custom status message to display (e.g., "Processing page 10/100")
-     * @param newFields.isStatusMessageTerminal - If `true`, the status message is final and won't be overwritten. Default is `false`.
-     * @param newFields.generalAccess - General resource access level ('FOLLOW_USER_SETTING', 'ANYONE_WITH_ID_CAN_READ' or 'RESTRICTED')
-     * @returns The updated ActorRun object
      */
     async update(newFields: RunUpdateOptions): Promise<ActorRun> {
         ow(newFields, ow.object);
@@ -241,13 +241,6 @@ export class RunClient extends ResourceClient {
      * This creates a new run with the same configuration as the original run. The original
      * run's storages (dataset, key-value store, request queue) are preserved and reused.
      *
-     * @example
-     * ```javascript
-     * // Resurrect a failed run with more memory
-     * const newRun = await client.run('failed-run-id').resurrect({ memory: 2048 });
-     * console.log(`New run started: ${newRun.id}`);
-     * ```
-     *
      * @param options - Resurrection options (override original run settings)
      * @param options.build - Tag or number of the build to use. If not provided, uses the original run's build.
      * @param options.memory - Memory in megabytes. If not provided, uses the original run's memory.
@@ -257,6 +250,13 @@ export class RunClient extends ResourceClient {
      * @param options.restartOnError - Whether to restart on error.
      * @returns The new (resurrected) ActorRun object
      * @see https://docs.apify.com/api/v2/post-resurrect-run
+     *
+     * @example
+     * ```javascript
+     * // Resurrect a failed run with more memory
+     * const newRun = await client.run('failed-run-id').resurrect({ memory: 2048 });
+     * console.log(`New run started: ${newRun.id}`);
+     * ```
      */
     async resurrect(options: RunResurrectOptions = {}): Promise<ActorRun> {
         ow(
@@ -363,14 +363,14 @@ export class RunClient extends ResourceClient {
     /**
      * Returns a client for the default dataset of this Actor run.
      *
+     * @returns A client for accessing the run's default dataset
+     * @see https://docs.apify.com/api/v2/actor-run-get
+     *
      * @example
      * ```javascript
      * // Access run's dataset
      * const { items } = await client.run('run-id').dataset().listItems();
      * ```
-     *
-     * @returns A client for accessing the run's default dataset
-     * @see https://docs.apify.com/api/v2/actor-run-get
      */
     dataset(): DatasetClient {
         return new DatasetClient(
@@ -383,14 +383,14 @@ export class RunClient extends ResourceClient {
     /**
      * Returns a client for the default key-value store of this Actor run.
      *
+     * @returns A client for accessing the run's default key-value store
+     * @see https://docs.apify.com/api/v2/actor-run-get
+     *
      * @example
      * ```javascript
      * // Access run's key-value store
      * const output = await client.run('run-id').keyValueStore().getRecord('OUTPUT');
      * ```
-     *
-     * @returns A client for accessing the run's default key-value store
-     * @see https://docs.apify.com/api/v2/actor-run-get
      */
     keyValueStore(): KeyValueStoreClient {
         return new KeyValueStoreClient(
@@ -403,14 +403,14 @@ export class RunClient extends ResourceClient {
     /**
      * Returns a client for the default Request queue of this Actor run.
      *
+     * @returns A client for accessing the run's default Request queue
+     * @see https://docs.apify.com/api/v2/actor-run-get
+     *
      * @example
      * ```javascript
      * // Access run's Request queue
      * const { items } = await client.run('run-id').requestQueue().listHead();
      * ```
-     *
-     * @returns A client for accessing the run's default Request queue
-     * @see https://docs.apify.com/api/v2/actor-run-get
      */
     requestQueue(): RequestQueueClient {
         return new RequestQueueClient(
@@ -423,15 +423,15 @@ export class RunClient extends ResourceClient {
     /**
      * Returns a client for accessing the log of this Actor run.
      *
+     * @returns A client for accessing the run's log
+     * @see https://docs.apify.com/api/v2/actor-run-get
+     *
      * @example
      * ```javascript
      * // Get run log
      * const log = await client.run('run-id').log().get();
      * console.log(log);
      * ```
-     *
-     * @returns A client for accessing the run's log
-     * @see https://docs.apify.com/api/v2/actor-run-get
      */
     log(): LogClient {
         return new LogClient(

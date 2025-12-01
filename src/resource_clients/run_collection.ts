@@ -48,6 +48,10 @@ export class RunCollectionClient extends ResourceCollectionClient {
      * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
      * retrieved.
      *
+     * @param options - Pagination and filtering options.
+     * @returns A paginated iterator of Actor runs.
+     * @see https://docs.apify.com/api/v2/actor-runs-get
+     *
      * @example
      * ```javascript
      * const paginatedList = await client.list(options);
@@ -57,10 +61,6 @@ export class RunCollectionClient extends ResourceCollectionClient {
      * ```javascript
      * for await (const singleItem of client.list(options)) {...}
      * ```
-     *
-     * @param options - Pagination and filtering options.
-     * @returns A paginated iterator of Actor runs.
-     * @see https://docs.apify.com/api/v2/actor-runs-get
      */
     list(options: RunCollectionListOptions = {}): PaginatedIterator<ActorRunListItem> {
         ow(

@@ -51,6 +51,10 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
      * retrieved.
      *
+     * @param options - Pagination options.
+     * @returns A paginated iterator of environment variables.
+     * @see https://docs.apify.com/api/v2/act-version-env-vars-get
+     *
      * @example
      * ```javascript
      * const paginatedList = await client.list(options);
@@ -60,10 +64,6 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      * ```javascript
      * for await (const singleItem of client.list(options)) {...}
      * ```
-     *
-     * @param options - Pagination options.
-     * @returns A paginated iterator of environment variables.
-     * @see https://docs.apify.com/api/v2/act-version-env-vars-get
      */
     list(
         options: ActorEnvVarCollectionListOptions = {},

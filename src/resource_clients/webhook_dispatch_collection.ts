@@ -43,6 +43,10 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
      * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
      * retrieved.
      *
+     * @param options - Pagination and sorting options.
+     * @returns A paginated iterator of webhook dispatches.
+     * @see https://docs.apify.com/api/v2/webhook-dispatches-get
+     *
      * @example
      * ```javascript
      * const paginatedList = await client.list(options);
@@ -52,10 +56,6 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
      * ```javascript
      * for await (const singleItem of client.list(options)) {...}
      * ```
-     *
-     * @param options - Pagination and sorting options.
-     * @returns A paginated iterator of webhook dispatches.
-     * @see https://docs.apify.com/api/v2/webhook-dispatches-get
      */
     list(options: WebhookDispatchCollectionListOptions = {}): PaginatedIterator<WebhookDispatch> {
         ow(
