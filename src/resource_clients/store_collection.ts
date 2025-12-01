@@ -39,15 +39,11 @@ export class StoreCollectionClient extends ResourceCollectionClient {
     /**
      * Lists Actors from the Apify Store.
      *
-     * @param options - Search and pagination options.
-     * @returns A paginated iterator of store Actors.
-     * @see https://docs.apify.com/api/v2/store-actors-get
-     *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
      * ```javascript
      * const paginatedList = await client.list(options);
-     *```
+     * ```
      *
      * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
      * retrieved.
@@ -55,6 +51,10 @@ export class StoreCollectionClient extends ResourceCollectionClient {
      * ```javascript
      * for await (const singleItem of client.list(options)) {...}
      * ```
+     *
+     * @param options - Search and pagination options.
+     * @returns A paginated iterator of store Actors.
+     * @see https://docs.apify.com/api/v2/store-actors-get
      */
     list(options: StoreCollectionListOptions = {}): PaginatedIterator<ActorStoreList> {
         ow(
