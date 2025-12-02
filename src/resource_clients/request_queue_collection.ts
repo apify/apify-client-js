@@ -39,8 +39,8 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
             options,
             ow.object.exactShape({
                 unnamed: ow.optional.boolean,
-                limit: ow.optional.number,
-                offset: ow.optional.number,
+                limit: ow.optional.number.not.negative,
+                offset: ow.optional.number.not.negative,
                 desc: ow.optional.boolean,
             }),
         );

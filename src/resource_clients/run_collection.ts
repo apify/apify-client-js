@@ -38,8 +38,8 @@ export class RunCollectionClient extends ResourceCollectionClient {
         ow(
             options,
             ow.object.exactShape({
-                limit: ow.optional.number,
-                offset: ow.optional.number,
+                limit: ow.optional.number.not.negative,
+                offset: ow.optional.number.not.negative,
                 desc: ow.optional.boolean,
                 status: ow.optional.any(
                     ow.string.oneOf(Object.values(ACTOR_JOB_STATUSES)),

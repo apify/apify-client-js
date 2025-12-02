@@ -39,8 +39,8 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
         ow(
             options,
             ow.object.exactShape({
-                limit: ow.optional.number,
-                offset: ow.optional.number,
+                limit: ow.optional.number.not.negative,
+                offset: ow.optional.number.not.negative,
                 desc: ow.optional.boolean,
             }),
         );

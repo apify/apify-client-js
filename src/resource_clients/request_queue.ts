@@ -72,7 +72,7 @@ export class RequestQueueClient extends ResourceClient {
         ow(
             options,
             ow.object.exactShape({
-                limit: ow.optional.number,
+                limit: ow.optional.number.not.negative,
             }),
         );
 
@@ -99,7 +99,7 @@ export class RequestQueueClient extends ResourceClient {
             options,
             ow.object.exactShape({
                 lockSecs: ow.number,
-                limit: ow.optional.number,
+                limit: ow.optional.number.not.negative,
             }),
         );
 
@@ -478,29 +478,53 @@ export class RequestQueueClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/request-queues/request-collection/list-requests
      */
-    async listRequests(
+    listRequests(
         options: RequestQueueClientListRequestsOptions = {},
-    ): Promise<RequestQueueClientListRequestsResult> {
+    ): Promise<RequestQueueClientListRequestsResult> & AsyncIterable<RequestQueueClientRequestSchema> {
         ow(
             options,
             ow.object.exactShape({
-                limit: ow.optional.number,
+                limit: ow.optional.number.not.negative,
                 exclusiveStartId: ow.optional.string,
             }),
         );
 
-        const response = await this.httpClient.call({
-            url: this._url('requests'),
-            method: 'GET',
-            timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
-            params: this._params({
-                limit: options.limit,
-                exclusiveStartId: options.exclusiveStartId,
-                clientKey: this.clientKey,
-            }),
-        });
+        const listItems = async (
+            rqListOptions: RequestQueueClientListRequestsOptions = {},
+        ): Promise<RequestQueueClientListRequestsResult> => {
+            const response = await this.httpClient.call({
+                url: this._url('requests'),
+                method: 'GET',
+                timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
+                params: this._params({ ...rqListOptions, clientKey: this.clientKey }),
+            });
 
-        return cast(parseDateFields(pluckData(response.data)));
+            return cast(parseDateFields(pluckData(response.data)));
+        };
+
+        async function* asyncGenerator() {
+            let currentPage = await listItems(options);
+            yield* currentPage.items;
+
+            let remainingItems = options.limit ? options.limit - currentPage.items.length : undefined;
+
+            while (
+                currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
+                (remainingItems === undefined || remainingItems > 0)
+            ) {
+                const exclusiveStartId = currentPage.items[currentPage.items.length].id;
+                const newOptions = { ...options, limit: remainingItems, exclusiveStartId };
+                currentPage = await listItems(newOptions);
+                yield* currentPage.items;
+                if (remainingItems) {
+                    remainingItems -= currentPage.items.length;
+                }
+            }
+        }
+
+        return Object.defineProperty(listItems(options), Symbol.asyncIterator, {
+            value: asyncGenerator,
+        }) as unknown as Promise<RequestQueueClientListRequestsResult> & AsyncIterable<RequestQueueClientRequestSchema>;
     }
 
     /**
@@ -533,7 +557,7 @@ export class RequestQueueClient extends ResourceClient {
         ow(
             options,
             ow.object.exactShape({
-                limit: ow.optional.number,
+                limit: ow.optional.number.not.negative,
                 maxPageLimit: ow.optional.number,
                 exclusiveStartId: ow.optional.string,
             }),

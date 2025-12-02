@@ -33,13 +33,12 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
      * ```
      */
     list(options: DatasetCollectionClientListOptions = {}): PaginatedIterator<Dataset> {
-        this._changeZeroPaginationOptionsToUndefined(options)
         ow(
             options,
             ow.object.exactShape({
                 unnamed: ow.optional.boolean,
-                limit: ow.optional.number.positive,
-                offset: ow.optional.number.greaterThan(0),
+                limit: ow.optional.number.not.negative,
+                offset: ow.optional.number.not.negative,
                 desc: ow.optional.boolean,
             }),
         );

@@ -238,20 +238,28 @@ export interface PaginationOptions {
     offset?: number;
     /** Maximum number of entries requested. */
     limit?: number;
-    /** Maximum number of items returned in one API response. Relevant in the context of asyncIterator. */
+    /** Maximum number of items returned in one API response. Relevant in the context of asyncIterator, the iterator
+     * will fetch results in chunks of this size from API and yield them one by one. It will stop fetching once the
+     * limit is reached or once all items from API have been fetched.
+     *
+     * Chunk size is usually limited by API. Minimum of those two limits will be used.
+     * */
     chunkSize?: number;
 }
 
-export interface PaginatedResponse<Data> {
-    /** Total count of entries. */
-    total: number;
+export interface MinimalPaginatedResponse<Data> {
     /** Entries. */
     items: Data[];
+    /** Total count of entries. */
+    total?: number;
 }
 
-export interface PaginatedList<Data> {
-    /** Total count of entries in the dataset. */
+export interface PaginatedResponse<Data> extends MinimalPaginatedResponse<Data> {
+    /** Total count of entries. */
     total: number;
+}
+
+export interface PaginatedList<Data> extends PaginatedResponse<Data> {
     /** Count of dataset entries returned in this set. */
     count: number;
     /** Position of the first returned entry in the dataset. */
@@ -260,8 +268,6 @@ export interface PaginatedList<Data> {
     limit: number;
     /** Should the results be in descending order. */
     desc: boolean;
-    /** Dataset entries based on chosen format parameter. */
-    items: Data[];
 }
 
 export type PaginatedIterator<T> = Promise<PaginatedList<T>> & AsyncIterable<T>;

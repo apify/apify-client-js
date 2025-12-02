@@ -12,7 +12,7 @@ import {
     SMALL_TIMEOUT_MILLIS,
 } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
-import { type PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
+import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData } from '../utils';
 
 export class DatasetClient<
@@ -55,7 +55,6 @@ export class DatasetClient<
      * https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
      */
     listItems(options: DatasetClientListItemOptions = {}): PaginatedIterator<Data> {
-        this._changeZeroPaginationOptionsToUndefined(options)
         ow(
             options,
             ow.object.exactShape({
@@ -64,8 +63,8 @@ export class DatasetClient<
                 flatten: ow.optional.array.ofType(ow.string),
                 fields: ow.optional.array.ofType(ow.string),
                 omit: ow.optional.array.ofType(ow.string),
-                limit: ow.optional.number.positive,
-                offset: ow.optional.number.greaterThan(0),
+                limit: ow.optional.number.not.negative,
+                offset: ow.optional.number.not.negative,
                 chunkSize: ow.optional.number.positive,
                 skipEmpty: ow.optional.boolean,
                 skipHidden: ow.optional.boolean,
@@ -76,7 +75,8 @@ export class DatasetClient<
         );
 
         const listItems = async (
-            datasetListOptions:DatasetClientListItemOptions ={}):Promise<PaginatedList<Data>> => {
+            datasetListOptions: DatasetClientListItemOptions = {},
+        ): Promise<PaginatedList<Data>> => {
             const response = await this.httpClient.call({
                 url: this._url('items'),
                 method: 'GET',
@@ -84,9 +84,8 @@ export class DatasetClient<
                 timeout: DEFAULT_TIMEOUT_MILLIS,
             });
 
-            return this._createPaginationList(response, datasetListOptions.desc ?? false);
-
-        }
+            return this._createPaginationList(response);
+        };
 
         return this._listPaginatedFromCallback(listItems.bind(this), options);
     }
@@ -97,7 +96,6 @@ export class DatasetClient<
      * https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items
      */
     async downloadItems(format: DownloadItemsFormat, options: DatasetClientDownloadItemsOptions = {}): Promise<Buffer> {
-        this._changeZeroPaginationOptionsToUndefined(options)
         ow(format, ow.string.oneOf(validItemFormats));
         ow(
             options,
@@ -110,8 +108,8 @@ export class DatasetClient<
                 flatten: ow.optional.array.ofType(ow.string),
                 fields: ow.optional.array.ofType(ow.string),
                 omit: ow.optional.array.ofType(ow.string),
-                limit: ow.optional.number.positive,
-                offset: ow.optional.number.greaterThan(0),
+                limit: ow.optional.number.not.negative,
+                offset: ow.optional.number.not.negative,
                 skipEmpty: ow.optional.boolean,
                 skipHeaderRow: ow.optional.boolean,
                 skipHidden: ow.optional.boolean,
@@ -188,7 +186,6 @@ export class DatasetClient<
      * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
      */
     async createItemsPublicUrl(options: DatasetClientCreateItemsUrlOptions = {}): Promise<string> {
-        this._changeZeroPaginationOptionsToUndefined(options)
         ow(
             options,
             ow.object.exactShape({
@@ -197,8 +194,8 @@ export class DatasetClient<
                 flatten: ow.optional.array.ofType(ow.string),
                 fields: ow.optional.array.ofType(ow.string),
                 omit: ow.optional.array.ofType(ow.string),
-                limit: ow.optional.number.positive,
-                offset: ow.optional.number.greaterThan(0),
+                limit: ow.optional.number.not.negative,
+                offset: ow.optional.number.not.negative,
                 skipEmpty: ow.optional.boolean,
                 skipHidden: ow.optional.boolean,
                 unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
@@ -227,15 +224,14 @@ export class DatasetClient<
         return createdItemsPublicUrl.toString();
     }
 
-    private _createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
+    private _createPaginationList(response: ApifyResponse): PaginatedList<Data> {
         return {
             items: response.data,
             total: Number(response.headers['x-apify-pagination-total']),
             offset: Number(response.headers['x-apify-pagination-offset']),
             count: response.data.length, // because x-apify-pagination-count returns invalid values when hidden/empty items are skipped
             limit: Number(response.headers['x-apify-pagination-limit']), // API returns 999999999999 when no limit is used
-            // TODO: Replace this once https://github.com/apify/apify-core/issues/3503 is solved
-            desc: JSON.parse(response.headers['x-apify-pagination-desc'] ?? userProvidedDesc),
+            desc: JSON.parse(response.headers['x-apify-pagination-desc']),
         };
     }
 }
@@ -272,7 +268,7 @@ export interface DatasetClientUpdateOptions {
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
-export interface DatasetClientListItemOptions extends PaginationOptions{
+export interface DatasetClientListItemOptions extends PaginationOptions {
     clean?: boolean;
     desc?: boolean;
     flatten?: string[];

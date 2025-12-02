@@ -64,11 +64,13 @@ export class KeyValueStoreClient extends ResourceClient {
     /**
      * https://docs.apify.com/api/v2#/reference/key-value-stores/key-collection/get-list-of-keys
      */
-    async listKeys(options: KeyValueClientListKeysOptions = {}): Promise<KeyValueClientListKeysResult> {
+    listKeys(
+        options: KeyValueClientListKeysOptions = {},
+    ): Promise<KeyValueClientListKeysResult> & AsyncIterable<KeyValueListItem> {
         ow(
             options,
             ow.object.exactShape({
-                limit: ow.optional.number,
+                limit: ow.optional.number.not.negative,
                 exclusiveStartKey: ow.optional.string,
                 collection: ow.optional.string,
                 prefix: ow.optional.string,
@@ -76,14 +78,42 @@ export class KeyValueStoreClient extends ResourceClient {
             }),
         );
 
-        const response = await this.httpClient.call({
-            url: this._url('keys'),
-            method: 'GET',
-            params: this._params(options),
-            timeout: MEDIUM_TIMEOUT_MILLIS,
-        });
+        const listItems = async (
+            kvsListOptions: KeyValueClientListKeysOptions = {},
+        ): Promise<KeyValueClientListKeysResult> => {
+            const response = await this.httpClient.call({
+                url: this._url('keys'),
+                method: 'GET',
+                params: this._params(kvsListOptions),
+                timeout: MEDIUM_TIMEOUT_MILLIS,
+            });
 
-        return cast(parseDateFields(pluckData(response.data)));
+            return cast(parseDateFields(pluckData(response.data)));
+        };
+
+        async function* asyncGenerator() {
+            let currentPage = await listItems(options);
+            yield* currentPage.items;
+
+            let remainingItems = options.limit ? options.limit - currentPage.items.length : undefined;
+
+            while (
+                currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
+                (remainingItems === undefined || remainingItems > 0)
+            ) {
+                const exclusiveStartKey = currentPage.items[currentPage.items.length].key;
+                const newOptions = { ...options, limit: remainingItems, exclusiveStartKey };
+                currentPage = await listItems(newOptions);
+                yield* currentPage.items;
+                if (remainingItems) {
+                    remainingItems -= currentPage.items.length;
+                }
+            }
+        }
+
+        return Object.defineProperty(listItems(options), Symbol.asyncIterator, {
+            value: asyncGenerator,
+        }) as unknown as AsyncIterable<KeyValueListItem> & Promise<KeyValueClientListKeysResult>;
     }
 
     /**
@@ -123,7 +153,7 @@ export class KeyValueStoreClient extends ResourceClient {
         ow(
             options,
             ow.object.exactShape({
-                limit: ow.optional.number,
+                limit: ow.optional.number.not.negative,
                 exclusiveStartKey: ow.optional.string,
                 collection: ow.optional.string,
                 prefix: ow.optional.string,
