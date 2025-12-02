@@ -489,7 +489,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         );
 
-        const listItems = async (
+        const getPaginatedList = async (
             rqListOptions: RequestQueueClientListRequestsOptions = {},
         ): Promise<RequestQueueClientListRequestsResult> => {
             const response = await this.httpClient.call({
@@ -502,19 +502,22 @@ export class RequestQueueClient extends ResourceClient {
             return cast(parseDateFields(pluckData(response.data)));
         };
 
+        const paginatedListPromise = getPaginatedList(options);
         async function* asyncGenerator() {
-            let currentPage = await listItems(options);
+            let currentPage = await paginatedListPromise;
             yield* currentPage.items;
 
             let remainingItems = options.limit ? options.limit - currentPage.items.length : undefined;
 
+            // RQ API response does not indicate whether there are more requests left, so we have to try and in case
+            // of exhausting all requests we get response with empty items which ends the loop.
             while (
                 currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
-                (remainingItems === undefined || remainingItems > 0)
+                (remainingItems === undefined || remainingItems > 0) // Continue only if the limit was not exceeded.
             ) {
-                const exclusiveStartId = currentPage.items[currentPage.items.length].id;
+                const exclusiveStartId = currentPage.items[currentPage.items.length - 1].id;
                 const newOptions = { ...options, limit: remainingItems, exclusiveStartId };
-                currentPage = await listItems(newOptions);
+                currentPage = await getPaginatedList(newOptions);
                 yield* currentPage.items;
                 if (remainingItems) {
                     remainingItems -= currentPage.items.length;
@@ -522,7 +525,7 @@ export class RequestQueueClient extends ResourceClient {
             }
         }
 
-        return Object.defineProperty(listItems(options), Symbol.asyncIterator, {
+        return Object.defineProperty(paginatedListPromise, Symbol.asyncIterator, {
             value: asyncGenerator,
         }) as unknown as Promise<RequestQueueClientListRequestsResult> & AsyncIterable<RequestQueueClientRequestSchema>;
     }

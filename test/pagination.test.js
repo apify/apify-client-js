@@ -4,65 +4,66 @@ const range = (start, end, step = 1) => {
     // Inclusive range, ordered based on start and end values
     return Array.from(
         {
-            length: Math.abs(end - start) + 1,
+            length: Math.abs(end - start),
         },
-        (_, i) => start + Math.sign(end - start) * step * i,
+        (_, i) => {
+            const number = start + Math.sign(end - start) * step * i;
+            return { id: number.toString(), key: number.toString() };
+        },
     );
 };
 
-const commonPaginationOptions = [
+const limitPaginationOptions = [
     {
-        testName: 'No offset, no limit',
+        testName: 'No options',
         userDefinedOptions: {},
-        expectedItems: range(0, 2499),
+        expectedItems: range(0, 2500),
     },
     {
-        testName: 'No offset, user limit',
+        testName: 'User limit',
         userDefinedOptions: { limit: 1100 },
-        expectedItems: range(0, 1099),
+        expectedItems: range(0, 1100),
     },
     {
-        testName: 'User offset, no limit',
+        testName: 'Out of range limit',
+        userDefinedOptions: { limit: 3000 },
+        expectedItems: range(0, 2500),
+    },
+];
+
+const offsetPaginationOptions = [
+    {
+        testName: 'User offset',
         userDefinedOptions: { offset: 1000 },
-        expectedItems: range(1000, 2499),
+        expectedItems: range(1000, 2500),
     },
     {
         testName: 'User offset, user limit',
         userDefinedOptions: { offset: 1000, limit: 1100 },
-        expectedItems: range(1000, 2099),
+        expectedItems: range(1000, 2100),
     },
     {
-        testName: 'User out of range offset, no limit',
+        testName: 'User out of range offset',
         userDefinedOptions: { offset: 3000 },
         expectedItems: [],
     },
-    {
-        testName: 'User no offset, out of range limit',
-        userDefinedOptions: { limit: 3000 },
-        expectedItems: range(0, 2499),
-    },
-    {
-        testName: 'User no offset, out of range limit',
-        userDefinedOptions: { limit: 3000 },
-        expectedItems: range(0, 2499),
-    },
 ];
 
-const unnamedPaginationOptions =  [{
-    testName: 'User offset, user limit, descending, unnamed included',
-    userDefinedOptions: { offset: 50, limit: 1100, desc: true, unnamed: true },
-    expectedItems: range(2550, 1451),},
-];
-
-const descPaginationOptions =  [{
-    testName: 'User offset, user limit, descending',
+const descPaginationOptions = [
+    {
+        testName: 'User offset, user limit, descending',
         userDefinedOptions: { offset: 1000, limit: 1100, desc: true },
-    expectedItems: range(1500, 401),},
+        expectedItems: range(1500, 400),
+    },
 ];
 
-function generateTestCases(resourceClients, testOptions){
-    return resourceClients.flatMap(resourceClient =>
-        testOptions.map(testOption => ({ resourceClient, clientName: resourceClient.constructor.name, ...testOption }))
+function generateTestCases(resourceClients, testOptions) {
+    return resourceClients.flatMap((resourceClient) =>
+        testOptions.map((testOption) => ({
+            resourceClient,
+            clientName: resourceClient.constructor.name,
+            ...testOption,
+        })),
     );
 }
 
@@ -71,101 +72,124 @@ describe('Collection clients list method as async iterable', () => {
     const maxItemsPerPage = 1000;
 
     const allCollectionClients = [
-        client.store(),  // Does not support desc
+        client.store(), // Does not support desc
         client.actors(),
-        client.actor("some-id").version("some-version").envVars(),
-        client.actor("some-id").versions(),
-        client.actor("some-id").builds(),
-        client.datasets(),  // Supports unnamed
-        client.keyValueStores(),  // Supports unnamed
-        client.requestQueues(),  // Supports unnamed
+        client.actor('some-id').version('some-version').envVars(),
+        client.actor('some-id').versions(),
+        client.actor('some-id').builds(),
+        client.datasets(), // Supports unnamed
+        client.keyValueStores(), // Supports unnamed
+        client.requestQueues(), // Supports unnamed
         client.schedules(),
         client.tasks(),
         client.webhooks(),
         client.webhookDispatches(),
-    ]
+    ];
+
+    const unnamedPaginationOptions = [
+        {
+            testName: 'User offset, user limit, descending, unnamed included',
+            userDefinedOptions: { offset: 50, limit: 1100, desc: true, unnamed: true },
+            expectedItems: range(2550, 1450),
+        },
+    ];
 
     // Create valid tests cases for each client based on the pagination options it is supporting.
-    const commonTestCases = generateTestCases(allCollectionClients, commonPaginationOptions);
+    const commonTestCases = generateTestCases(allCollectionClients, [
+        ...limitPaginationOptions,
+        ...offsetPaginationOptions,
+    ]);
     const unnamedTestCases = generateTestCases(
-        [client.datasets(),client.keyValueStores(),client.requestQueues(),], unnamedPaginationOptions);
+        [client.datasets(), client.keyValueStores(), client.requestQueues()],
+        unnamedPaginationOptions,
+    );
     const descTestCases = generateTestCases(allCollectionClients.slice(1), descPaginationOptions);
 
+    test.each([...commonTestCases, ...unnamedTestCases, ...descTestCases])(
+        '$clientName: $testName',
+        async ({ resourceClient, userDefinedOptions, expectedItems }) => {
+            const mockedPlatformLogic = async (request) => {
+                // Simulated platform logic for pagination.
+                // There are 2500 normal items in the collection and additional 100 extra items.
+                // Items are simple objects with incrementing attributes for easy verification.
 
-    test.each([...commonTestCases,...unnamedTestCases, ...descTestCases])('$clientName: $testName', async ({ resourceClient, userDefinedOptions, expectedItems }) => {
-        const mockedPlatformLogic = async (request) => {
-            // Simulated platform logic for pagination.
-            // There are 2500 normal items in the collection and additional 100 extra items.
-            // Items are simple number for easy verification 0..2499 -> normal, 2500..2599 -> extra
+                const normalItems = 2500;
+                const extraItems = 100; // additional items, for example unnamed
 
-            const normalItems = 2500;
-            const extraItems = 100; // additional items, for example unnamed
+                const totalItems = request.params.unnamed ? normalItems + extraItems : normalItems;
 
-            const totalItems = request.params.unnamed ? normalItems + extraItems : normalItems;
+                const offset = request.params.offset ? request.params.offset : 0;
+                const limit = request.params.limit ? request.params.limit : 0;
+                const desc = request.params.desc ? request.params.desc : false;
 
-            const offset = request.params.offset ? request.params.offset : 0;
-            const limit = request.params.limit ? request.params.limit : 0;
-            const desc = request.params.desc ? request.params.desc : false;
+                const items = range(desc ? totalItems : 0, desc ? 0 : totalItems);
 
-            const items = range(desc ? totalItems : 0, desc ? 0 : totalItems);
+                if (offset < 0 || limit < 0) {
+                    throw new Error('Offset and limit must be non-negative');
+                }
 
-            if (offset < 0 || limit < 0) {
-                throw new Error('Offset and limit must be non-negative');
-            }
+                const lowerIndex = Math.min(offset, totalItems);
+                const upperIndex = Math.min(offset + (limit || totalItems), totalItems);
+                const returnedItemsCount = Math.min(upperIndex - lowerIndex, maxItemsPerPage);
 
-            const lowerIndex = Math.min(offset, totalItems);
-            const upperIndex = Math.min(offset + (limit || totalItems), totalItems);
-            const returnedItemsCount = Math.min(upperIndex - lowerIndex, maxItemsPerPage);
-
-            return {
-                data: {
+                return {
                     data: {
-                        total: totalItems,
-                        count: returnedItemsCount,
-                        offset,
-                        limit: returnedItemsCount,
-                        desc: false,
-                        items: items.slice(lowerIndex, Math.min(upperIndex, lowerIndex + maxItemsPerPage)),
+                        data: {
+                            total: totalItems,
+                            count: returnedItemsCount,
+                            offset,
+                            limit: returnedItemsCount,
+                            desc: false,
+                            items: items.slice(lowerIndex, Math.min(upperIndex, lowerIndex + maxItemsPerPage)),
+                        },
                     },
-                },
+                };
             };
-        };
 
-        const mockedClient = jest.spyOn(client.httpClient, 'call').mockImplementation(mockedPlatformLogic);
+            const mockedClient = jest.spyOn(client.httpClient, 'call').mockImplementation(mockedPlatformLogic);
 
-        try {
-            const totalItems = [];
-            for await (const page of resourceClient.list(userDefinedOptions)) {
-                totalItems.push(page);
+            try {
+                const items = [];
+                for await (const page of resourceClient.list(userDefinedOptions)) {
+                    items.push(page);
+                }
+                expect(items).toEqual(expectedItems);
+                expect(mockedClient).toHaveBeenCalledTimes(
+                    Math.max(Math.ceil(expectedItems.length / maxItemsPerPage), 1),
+                );
+            } finally {
+                mockedClient.mockRestore();
             }
-            expect(totalItems).toEqual(expectedItems);
-            expect(mockedClient).toHaveBeenCalledTimes(Math.max(Math.ceil(expectedItems.length / maxItemsPerPage), 1));
-        } finally {
-            mockedClient.mockRestore();
-        }
-    });
+        },
+    );
 });
 
-
-
-describe('actor.dataset.listItems as async iterable', () => {
+describe('DatasetClient.listItems as async iterable', () => {
     const client = new ApifyClient();
     const maxItemsPerPage = 2500;
 
-    const chunkSizePaginationOptions =  [{
-        testName: 'User offset, user limit, descending',
-        userDefinedOptions: { offset: 1000, limit: 1100, desc: true , chunkSize: 100},
-        expectedItems: range(1500, 401),},
+    const chunkSizePaginationOptions = [
+        {
+            testName: 'User offset, user limit, descending, user chunkSize',
+            userDefinedOptions: { offset: 1000, limit: 1100, desc: true, chunkSize: 100 },
+            expectedItems: range(1500, 400),
+        },
     ];
 
-    const testCases = generateTestCases([client.dataset("some-id")],
-        [...commonPaginationOptions, ...descPaginationOptions, ...chunkSizePaginationOptions])
-    test.each(testCases)
-        ('$testName', async ({ userDefinedOptions, expectedItems }) => {
+    const testCases = generateTestCases(
+        [client.dataset('some-id')],
+        [
+            ...limitPaginationOptions,
+            ...offsetPaginationOptions,
+            ...descPaginationOptions,
+            ...chunkSizePaginationOptions,
+        ],
+    );
+    test.each(testCases)('$testName', async ({ resourceClient, userDefinedOptions, expectedItems }) => {
         const mockedPlatformLogic = async (request) => {
             // Simulated platform logic for pagination.
-            // There are 2500 items in the collection
-            // Items are simple number for easy verification 0..2499
+            // There are 2500 items in the collection.
+            // Items are simple objects with incrementing attributes for easy verification.
             const totalItems = 2500;
 
             const offset = request.params.offset ? request.params.offset : 0;
@@ -185,32 +209,168 @@ describe('actor.dataset.listItems as async iterable', () => {
             return {
                 data: items.slice(lowerIndex, Math.min(upperIndex, lowerIndex + maxItemsPerPage)),
                 // Only mock pagination related headers
-                headers : {
-                    "x-apify-pagination-total": totalItems,
-                    "x-apify-pagination-offset": offset,
-                    "x-apify-pagination-count": returnedItemsCount,
-                    "x-apify-pagination-limit": returnedItemsCount,
-                    "x-apify-pagination-desc": desc,
-                }
+                headers: {
+                    'x-apify-pagination-total': totalItems,
+                    'x-apify-pagination-offset': offset,
+                    'x-apify-pagination-count': returnedItemsCount,
+                    'x-apify-pagination-limit': returnedItemsCount,
+                    'x-apify-pagination-desc': desc,
+                },
             };
         };
 
-        const datasetClient = client.dataset('some-id');
-
-        const mockedClient = jest.spyOn(
-            datasetClient.httpClient, 'call').mockImplementation(mockedPlatformLogic);
+        const mockedClient = jest.spyOn(client.httpClient, 'call').mockImplementation(mockedPlatformLogic);
 
         try {
-            const totalItems = [];
-            for await (const page of datasetClient.listItems(userDefinedOptions)) {
-                totalItems.push(page);
+            const items = [];
+            for await (const page of resourceClient.listItems(userDefinedOptions)) {
+                items.push(page);
             }
-            expect(totalItems).toEqual(expectedItems);
+            expect(items).toEqual(expectedItems);
             expect(mockedClient).toHaveBeenCalledTimes(
-                Math.max(Math.ceil(expectedItems.length / (userDefinedOptions.chunkSize || maxItemsPerPage)), 1));
+                Math.max(Math.ceil(expectedItems.length / (userDefinedOptions.chunkSize || maxItemsPerPage)), 1),
+            );
         } finally {
             mockedClient.mockRestore();
         }
     });
 });
 
+describe('KeyValueStoreClient.listKeys as async iterable', () => {
+    const client = new ApifyClient();
+    const maxItemsPerPage = 1000;
+
+    const exclusiveStartKeyPaginationOptions = [
+        {
+            testName: 'exclusiveStartKey',
+            userDefinedOptions: { exclusiveStartKey: '1000' },
+            expectedItems: range(1001, 2500),
+        },
+    ];
+
+    const testCases = generateTestCases(
+        [client.keyValueStore('some-id')],
+        [...limitPaginationOptions, ...exclusiveStartKeyPaginationOptions],
+    );
+    test.each(testCases)('$testName', async ({ resourceClient, userDefinedOptions, expectedItems }) => {
+        const mockedPlatformLogic = async (request) => {
+            // Simulated platform logic for pagination.
+            // There are 2500 items in the collection.
+            // Items are simple objects with incrementing attributes for easy verification.
+            const totalItems = 2500;
+
+            const exclusiveStartKey = request.params.exclusiveStartKey ? request.params.exclusiveStartKey : null;
+            const limit = request.params.limit ? request.params.limit : 0;
+
+            if (limit < 0) {
+                throw new Error('Limit must be non-negative');
+            }
+
+            const lowerIndex = Math.min(
+                request.params.exclusiveStartKey ? Number(request.params.exclusiveStartKey) + 1 : 0,
+                totalItems,
+            );
+            const upperIndex = Math.min(lowerIndex + (limit || totalItems), totalItems, lowerIndex + maxItemsPerPage);
+            const items = range(lowerIndex, upperIndex);
+
+            return {
+                data: {
+                    data: {
+                        items,
+                        count: items.length,
+                        limit: limit || maxItemsPerPage,
+                        exclusiveStartKey,
+                        isTruncated: false,
+                        nextExclusiveStartKey: upperIndex < totalItems ? upperIndex - 1 : null,
+                    },
+                },
+            };
+        };
+
+        const mockedClient = jest.spyOn(client.httpClient, 'call').mockImplementation(mockedPlatformLogic);
+
+        try {
+            const items = [];
+            for await (const page of resourceClient.listKeys(userDefinedOptions)) {
+                items.push(page);
+            }
+            expect(items).toEqual(expectedItems);
+            expect(mockedClient).toHaveBeenCalledTimes(
+                Math.max(Math.ceil(expectedItems.length / (userDefinedOptions.chunkSize || maxItemsPerPage)), 1),
+            );
+        } finally {
+            mockedClient.mockRestore();
+        }
+    });
+});
+
+describe('RequestQueueClient.listKeys as async iterable', () => {
+    const client = new ApifyClient();
+    const maxItemsPerPage = 10000;
+
+    const exclusiveStartIdPaginationOptions = [
+        {
+            testName: 'exclusiveStartId',
+            userDefinedOptions: { exclusiveStartId: '1000' },
+            expectedItems: range(1001, 2500),
+        },
+    ];
+
+    const testCases = generateTestCases(
+        [client.requestQueue('some-id')],
+        [...limitPaginationOptions, ...exclusiveStartIdPaginationOptions],
+    );
+    test.each(testCases)('$testName', async ({ resourceClient, userDefinedOptions, expectedItems }) => {
+        const totalItems = 2500;
+        const mockedPlatformLogic = async (request) => {
+            // Simulated platform logic for pagination.
+            // There are 2500 items in the collection.
+            // Items are simple objects with incrementing attributes for easy verification.
+
+            const exclusiveStartId = request.params.exclusiveStartId ? request.params.exclusiveStartId : null;
+            const limit = request.params.limit ? request.params.limit : 0;
+
+            if (limit < 0) {
+                throw new Error('Limit must be non-negative');
+            }
+
+            const lowerIndex = Math.min(
+                request.params.exclusiveStartId ? Number(request.params.exclusiveStartId) + 1 : 0,
+                totalItems,
+            );
+            const upperIndex = Math.min(lowerIndex + (limit || totalItems), totalItems, lowerIndex + maxItemsPerPage);
+            const items = range(lowerIndex, upperIndex);
+
+            return {
+                data: {
+                    data: {
+                        items,
+                        count: items.length,
+                        limit: limit || maxItemsPerPage,
+                        exclusiveStartId,
+                    },
+                },
+            };
+        };
+
+        const mockedClient = jest.spyOn(client.httpClient, 'call').mockImplementation(mockedPlatformLogic);
+
+        try {
+            const items = [];
+            for await (const page of resourceClient.listRequests(userDefinedOptions)) {
+                items.push(page);
+            }
+
+            let expectedAPIcalls = Math.max(Math.ceil(expectedItems.length / maxItemsPerPage), 1);
+            if (userDefinedOptions.limit === undefined || userDefinedOptions.limit > totalItems) {
+                // One extra call to confirm there are no more items due RQ API design.
+                expectedAPIcalls += 1;
+            }
+
+            expect(items).toEqual(expectedItems);
+            expect(mockedClient).toHaveBeenCalledTimes(expectedAPIcalls);
+        } finally {
+            mockedClient.mockRestore();
+        }
+    });
+});

@@ -78,7 +78,7 @@ export class KeyValueStoreClient extends ResourceClient {
             }),
         );
 
-        const listItems = async (
+        const getPaginatedList = async (
             kvsListOptions: KeyValueClientListKeysOptions = {},
         ): Promise<KeyValueClientListKeysResult> => {
             const response = await this.httpClient.call({
@@ -91,19 +91,24 @@ export class KeyValueStoreClient extends ResourceClient {
             return cast(parseDateFields(pluckData(response.data)));
         };
 
+        const paginatedListPromise = getPaginatedList(options);
         async function* asyncGenerator() {
-            let currentPage = await listItems(options);
+            let currentPage = await paginatedListPromise;
             yield* currentPage.items;
 
             let remainingItems = options.limit ? options.limit - currentPage.items.length : undefined;
 
             while (
                 currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
-                (remainingItems === undefined || remainingItems > 0)
+                currentPage.nextExclusiveStartKey !== null && // Continue only if there is some next key.
+                (remainingItems === undefined || remainingItems > 0) // Continue only if the limit was not exceeded.
             ) {
-                const exclusiveStartKey = currentPage.items[currentPage.items.length].key;
-                const newOptions = { ...options, limit: remainingItems, exclusiveStartKey };
-                currentPage = await listItems(newOptions);
+                const newOptions = {
+                    ...options,
+                    limit: remainingItems,
+                    exclusiveStartKey: currentPage.nextExclusiveStartKey,
+                };
+                currentPage = await getPaginatedList(newOptions);
                 yield* currentPage.items;
                 if (remainingItems) {
                     remainingItems -= currentPage.items.length;
@@ -111,7 +116,7 @@ export class KeyValueStoreClient extends ResourceClient {
             }
         }
 
-        return Object.defineProperty(listItems(options), Symbol.asyncIterator, {
+        return Object.defineProperty(paginatedListPromise, Symbol.asyncIterator, {
             value: asyncGenerator,
         }) as unknown as AsyncIterable<KeyValueListItem> & Promise<KeyValueClientListKeysResult>;
     }
