@@ -247,16 +247,11 @@ export interface PaginationOptions {
     chunkSize?: number;
 }
 
-export interface MinimalPaginatedResponse<Data> {
-    /** Entries. */
-    items: Data[];
-    /** Total count of entries. */
-    total?: number;
-}
-
-export interface PaginatedResponse<Data> extends MinimalPaginatedResponse<Data> {
+export interface PaginatedResponse<Data> {
     /** Total count of entries. */
     total: number;
+    /** Entries. */
+    items: Data[];
 }
 
 export interface PaginatedList<Data> extends PaginatedResponse<Data> {

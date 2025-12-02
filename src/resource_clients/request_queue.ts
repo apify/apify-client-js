@@ -626,6 +626,7 @@ export interface RequestQueueClientListHeadResult {
 
 export interface RequestQueueClientListRequestsOptions {
     limit?: number;
+    /* Using id of request that does not exist in request queue leads to unpredictable results. */
     exclusiveStartId?: string;
 }
 
