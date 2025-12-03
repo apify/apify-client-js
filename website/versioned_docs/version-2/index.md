@@ -48,5 +48,5 @@ console.log(items);
 ## Next steps
 
 - [Getting Started Guide](./getting-started.md) - Detailed setup and usage instructions
-- [API Reference](../reference) - Complete API documentation
+- [API Reference](../reference/2) - Complete API documentation
 - [Examples](./examples) - Code examples for common use cases
