@@ -235,6 +235,7 @@ export interface Dataset {
     name?: string;
     title?: string;
     userId: string;
+    username?: string;
     createdAt: Date;
     modifiedAt: Date;
     accessedAt: Date;
