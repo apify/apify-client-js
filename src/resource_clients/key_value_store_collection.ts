@@ -34,7 +34,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
      */
     list(
         options: KeyValueStoreCollectionClientListOptions = {},
-    ): Promise<PaginatedList<KeyValueStoreCollectionListResult>> & AsyncIterable<KeyValueStore> {
+    ): Promise<KeyValueStoreCollectionListResult> & AsyncIterable<KeyValueStore> {
         ow(
             options,
             ow.object.exactShape({
@@ -71,4 +71,4 @@ export interface KeyValueStoreCollectionClientGetOrCreateOptions {
     schema?: Record<string, unknown>;
 }
 
-export type KeyValueStoreCollectionListResult = Omit<KeyValueStore, 'stats'> & { username?: string };
+export type KeyValueStoreCollectionListResult = PaginatedList<KeyValueStore> & { unnamed: boolean };

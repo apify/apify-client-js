@@ -63,6 +63,4 @@ export interface RequestQueueCollectionListOptions extends PaginationOptions {
     desc?: boolean;
 }
 
-export type RequestQueueCollectionListResult = PaginatedList<RequestQueue & { username?: string }> & {
-    unnamed: boolean;
-};
+export type RequestQueueCollectionListResult = PaginatedList<RequestQueue> & { unnamed: boolean };

@@ -2,7 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
+import type { PaginatedList, PaginationOptions } from '../utils';
 import type { Dataset } from './dataset';
 
 export class DatasetCollectionClient extends ResourceCollectionClient {
@@ -32,7 +32,9 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
      * for await (const singleItem of client.list(options)) {...}
      * ```
      */
-    list(options: DatasetCollectionClientListOptions = {}): PaginatedIterator<Dataset> {
+    list(
+        options: DatasetCollectionClientListOptions = {},
+    ): Promise<DatasetCollectionClientListResult> & AsyncIterable<Dataset> {
         ow(
             options,
             ow.object.exactShape({
@@ -66,4 +68,4 @@ export interface DatasetCollectionClientGetOrCreateOptions {
     schema?: Record<string, unknown>;
 }
 
-export type DatasetCollectionClientListResult = PaginatedList<Dataset>;
+export type DatasetCollectionClientListResult = PaginatedList<Dataset> & { unnamed: boolean };
