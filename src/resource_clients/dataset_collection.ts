@@ -32,7 +32,8 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
      * for await (const singleItem of client.list(options)) {...}
      * ```
      */
-    list(options: DatasetCollectionClientListOptions = {}
+    list(
+        options: DatasetCollectionClientListOptions = {},
     ): Promise<DatasetCollectionClientListResult> & AsyncIterable<Dataset> {
         ow(
             options,
@@ -67,4 +68,4 @@ export interface DatasetCollectionClientGetOrCreateOptions {
     schema?: Record<string, unknown>;
 }
 
-export type DatasetCollectionClientListResult = PaginatedList<Dataset> & {unnamed: boolean;};
+export type DatasetCollectionClientListResult = PaginatedList<Dataset> & { unnamed: boolean };

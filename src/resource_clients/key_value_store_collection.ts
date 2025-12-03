@@ -71,4 +71,4 @@ export interface KeyValueStoreCollectionClientGetOrCreateOptions {
     schema?: Record<string, unknown>;
 }
 
-export type KeyValueStoreCollectionListResult = PaginatedList<KeyValueStore> & {unnamed: boolean;};
+export type KeyValueStoreCollectionListResult = PaginatedList<KeyValueStore> & { unnamed: boolean };
