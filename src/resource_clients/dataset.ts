@@ -153,7 +153,7 @@ export class DatasetClient<
             }),
         );
 
-        const listItems = async (
+        const fetchItems = async (
             datasetListOptions: DatasetClientListItemOptions = {},
         ): Promise<PaginatedList<Data>> => {
             const response = await this.httpClient.call({
@@ -166,7 +166,7 @@ export class DatasetClient<
             return this._createPaginationList(response, datasetListOptions.desc ?? false);
         };
 
-        return this._listPaginatedFromCallback(listItems.bind(this), options);
+        return this._listPaginatedFromCallback(fetchItems, options);
     }
 
     /**

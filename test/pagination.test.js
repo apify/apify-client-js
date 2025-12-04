@@ -118,11 +118,11 @@ describe('Collection clients list method as async iterable', () => {
 
                 const totalItems = request.params.unnamed ? normalItems + extraItems : normalItems;
 
-                const offset = request.params.offset ? request.params.offset : 0;
-                const limit = request.params.limit ? request.params.limit : 0;
-                const desc = request.params.desc ? request.params.desc : false;
+                const offset = request.params.offset ?? 0;
+                const limit = request.params.limit ?? 0;
+                const desc = request.params.desc ?? false;
 
-                const items = range(desc ? totalItems : 0, desc ? 0 : totalItems);
+                const items = desc ? range(totalItems, 0) : range(0, totalItems);
 
                 if (offset < 0 || limit < 0) {
                     throw new Error('Offset and limit must be non-negative');
