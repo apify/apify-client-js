@@ -118,7 +118,7 @@ export class RequestQueueClient extends ResourceClient {
         ow(
             options,
             ow.object.exactShape({
-                limit: ow.optional.number,
+                limit: ow.optional.number.not.negative,
             }),
         );
 
@@ -174,7 +174,7 @@ export class RequestQueueClient extends ResourceClient {
             options,
             ow.object.exactShape({
                 lockSecs: ow.number,
-                limit: ow.optional.number,
+                limit: ow.optional.number.not.negative,
             }),
         );
 
@@ -677,29 +677,56 @@ export class RequestQueueClient extends ResourceClient {
      * @returns List of requests with pagination information
      * @see https://docs.apify.com/api/v2/request-queue-requests-get
      */
-    async listRequests(
+    listRequests(
         options: RequestQueueClientListRequestsOptions = {},
-    ): Promise<RequestQueueClientListRequestsResult> {
+    ): Promise<RequestQueueClientListRequestsResult> & AsyncIterable<RequestQueueClientRequestSchema> {
         ow(
             options,
             ow.object.exactShape({
-                limit: ow.optional.number,
+                limit: ow.optional.number.not.negative,
                 exclusiveStartId: ow.optional.string,
             }),
         );
 
-        const response = await this.httpClient.call({
-            url: this._url('requests'),
-            method: 'GET',
-            timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
-            params: this._params({
-                limit: options.limit,
-                exclusiveStartId: options.exclusiveStartId,
-                clientKey: this.clientKey,
-            }),
-        });
+        const getPaginatedList = async (
+            rqListOptions: RequestQueueClientListRequestsOptions = {},
+        ): Promise<RequestQueueClientListRequestsResult> => {
+            const response = await this.httpClient.call({
+                url: this._url('requests'),
+                method: 'GET',
+                timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
+                params: this._params({ ...rqListOptions, clientKey: this.clientKey }),
+            });
 
-        return cast(parseDateFields(pluckData(response.data)));
+            return cast(parseDateFields(pluckData(response.data)));
+        };
+
+        const paginatedListPromise = getPaginatedList(options);
+        async function* asyncGenerator() {
+            let currentPage = await paginatedListPromise;
+            yield* currentPage.items;
+
+            let remainingItems = options.limit ? options.limit - currentPage.items.length : undefined;
+
+            // RQ API response does not indicate whether there are more requests left, so we have to try and in case
+            // of exhausting all requests we get response with empty items which ends the loop.
+            while (
+                currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
+                (remainingItems === undefined || remainingItems > 0) // Continue only if the limit was not exceeded.
+            ) {
+                const exclusiveStartId = currentPage.items[currentPage.items.length - 1].id;
+                const newOptions = { ...options, limit: remainingItems, exclusiveStartId };
+                currentPage = await getPaginatedList(newOptions);
+                yield* currentPage.items;
+                if (remainingItems) {
+                    remainingItems -= currentPage.items.length;
+                }
+            }
+        }
+
+        return Object.defineProperty(paginatedListPromise, Symbol.asyncIterator, {
+            value: asyncGenerator,
+        }) as unknown as Promise<RequestQueueClientListRequestsResult> & AsyncIterable<RequestQueueClientRequestSchema>;
     }
 
     /**
@@ -747,7 +774,7 @@ export class RequestQueueClient extends ResourceClient {
         ow(
             options,
             ow.object.exactShape({
-                limit: ow.optional.number,
+                limit: ow.optional.number.not.negative,
                 maxPageLimit: ow.optional.number,
                 exclusiveStartId: ow.optional.string,
             }),
@@ -838,6 +865,7 @@ export interface RequestQueueClientListHeadResult {
  */
 export interface RequestQueueClientListRequestsOptions {
     limit?: number;
+    /* Using id of request that does not exist in request queue leads to unpredictable results. */
     exclusiveStartId?: string;
 }
 

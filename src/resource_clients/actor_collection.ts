@@ -65,8 +65,8 @@ export class ActorCollectionClient extends ResourceCollectionClient {
             options,
             ow.object.exactShape({
                 my: ow.optional.boolean,
-                limit: ow.optional.number,
-                offset: ow.optional.number,
+                limit: ow.optional.number.not.negative,
+                offset: ow.optional.number.not.negative,
                 desc: ow.optional.boolean,
                 sortBy: ow.optional.string.oneOf(Object.values(ActorListSortBy)),
             }),
@@ -96,6 +96,7 @@ export enum ActorListSortBy {
 
 export interface ActorCollectionListOptions extends PaginationOptions {
     my?: boolean;
+    desc?: boolean;
     sortBy?: ActorListSortBy;
 }
 

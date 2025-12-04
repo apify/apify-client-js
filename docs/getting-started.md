@@ -260,28 +260,15 @@ const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 // Resource clients accept an ID of the resource.
 const datasetClient = client.dataset('dataset-id');
 
-// Number of items per page
+// Maximum amount of items to fetch in total
 const limit = 1000;
+// Maximum amount of items to fetch in one API call
+const chunkSize = 100;
 // Initial offset
-let offset = 0;
-// Array to store all items
-let allItems = [];
+const offset = 0;
 
-while (true) {
-    const { items, total } = await datasetClient.listItems({ limit, offset });
-
-    console.log(`Fetched ${items.length} items`);
-
-    // Merge new items with other already loaded items
-    allItems.push(...items);
-
-    // If there are no more items to fetch, exit the loading
-    if (offset + limit >= total) {
-        break;
-    }
-
-    offset += limit;
+for await (const item of datasetClient.listItems({ limit, offset, chunkSize })) {
+    // Processs individual item
+    console.log(item);
 }
-
-console.log(`Overall fetched ${allItems.length} items`);
 ```

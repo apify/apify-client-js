@@ -12,7 +12,7 @@ import {
     SMALL_TIMEOUT_MILLIS,
 } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
-import type { PaginatedList } from '../utils';
+import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData } from '../utils';
 
 /**
@@ -98,6 +98,7 @@ export class DatasetClient<
      *
      * @param options - Options for listing items
      * @param options.limit - Maximum number of items to return. Default is all items.
+     * @param options.chunkSize - Maximum number of items returned in one API response. Relevant in the context of asyncIterator.
      * @param options.offset - Number of items to skip from the beginning. Default is 0.
      * @param options.desc - If `true`, items are returned in descending order (newest first). Default is `false`.
      * @param options.fields - Array of field names to include in the results. Omits all other fields.
@@ -132,7 +133,7 @@ export class DatasetClient<
      * });
      * ```
      */
-    async listItems(options: DatasetClientListItemOptions = {}): Promise<PaginatedList<Data>> {
+    listItems(options: DatasetClientListItemOptions = {}): PaginatedIterator<Data> {
         ow(
             options,
             ow.object.exactShape({
@@ -141,8 +142,9 @@ export class DatasetClient<
                 flatten: ow.optional.array.ofType(ow.string),
                 fields: ow.optional.array.ofType(ow.string),
                 omit: ow.optional.array.ofType(ow.string),
-                limit: ow.optional.number,
-                offset: ow.optional.number,
+                limit: ow.optional.number.not.negative,
+                offset: ow.optional.number.not.negative,
+                chunkSize: ow.optional.number.positive,
                 skipEmpty: ow.optional.boolean,
                 skipHidden: ow.optional.boolean,
                 unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
@@ -151,14 +153,20 @@ export class DatasetClient<
             }),
         );
 
-        const response = await this.httpClient.call({
-            url: this._url('items'),
-            method: 'GET',
-            params: this._params(options),
-            timeout: DEFAULT_TIMEOUT_MILLIS,
-        });
+        const fetchItems = async (
+            datasetListOptions: DatasetClientListItemOptions = {},
+        ): Promise<PaginatedList<Data>> => {
+            const response = await this.httpClient.call({
+                url: this._url('items'),
+                method: 'GET',
+                params: this._params(datasetListOptions),
+                timeout: DEFAULT_TIMEOUT_MILLIS,
+            });
 
-        return this._createPaginationList(response, options.desc ?? false);
+            return this._createPaginationList(response, datasetListOptions.desc ?? false);
+        };
+
+        return this._listPaginatedFromCallback(fetchItems, options);
     }
 
     /**
@@ -214,8 +222,8 @@ export class DatasetClient<
                 flatten: ow.optional.array.ofType(ow.string),
                 fields: ow.optional.array.ofType(ow.string),
                 omit: ow.optional.array.ofType(ow.string),
-                limit: ow.optional.number,
-                offset: ow.optional.number,
+                limit: ow.optional.number.not.negative,
+                offset: ow.optional.number.not.negative,
                 skipEmpty: ow.optional.boolean,
                 skipHeaderRow: ow.optional.boolean,
                 skipHidden: ow.optional.boolean,
@@ -354,8 +362,8 @@ export class DatasetClient<
                 flatten: ow.optional.array.ofType(ow.string),
                 fields: ow.optional.array.ofType(ow.string),
                 omit: ow.optional.array.ofType(ow.string),
-                limit: ow.optional.number,
-                offset: ow.optional.number,
+                limit: ow.optional.number.not.negative,
+                offset: ow.optional.number.not.negative,
                 skipEmpty: ow.optional.boolean,
                 skipHidden: ow.optional.boolean,
                 unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
@@ -448,14 +456,12 @@ export interface DatasetClientUpdateOptions {
  * Provides various filtering, pagination, and transformation options to customize
  * the output format and content of retrieved items.
  */
-export interface DatasetClientListItemOptions {
+export interface DatasetClientListItemOptions extends PaginationOptions {
     clean?: boolean;
     desc?: boolean;
     flatten?: string[];
     fields?: string[];
     omit?: string[];
-    limit?: number;
-    offset?: number;
     skipEmpty?: boolean;
     skipHidden?: boolean;
     unwind?: string | string[]; // TODO: when doing a breaking change release, change to string[] only

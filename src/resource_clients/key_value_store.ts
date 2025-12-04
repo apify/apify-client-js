@@ -136,11 +136,13 @@ export class KeyValueStoreClient extends ResourceClient {
      * } while (result.isTruncated);
      * ```
      */
-    async listKeys(options: KeyValueClientListKeysOptions = {}): Promise<KeyValueClientListKeysResult> {
+    listKeys(
+        options: KeyValueClientListKeysOptions = {},
+    ): Promise<KeyValueClientListKeysResult> & AsyncIterable<KeyValueListItem> {
         ow(
             options,
             ow.object.exactShape({
-                limit: ow.optional.number,
+                limit: ow.optional.number.not.negative,
                 exclusiveStartKey: ow.optional.string,
                 collection: ow.optional.string,
                 prefix: ow.optional.string,
@@ -148,14 +150,47 @@ export class KeyValueStoreClient extends ResourceClient {
             }),
         );
 
-        const response = await this.httpClient.call({
-            url: this._url('keys'),
-            method: 'GET',
-            params: this._params(options),
-            timeout: MEDIUM_TIMEOUT_MILLIS,
-        });
+        const getPaginatedList = async (
+            kvsListOptions: KeyValueClientListKeysOptions = {},
+        ): Promise<KeyValueClientListKeysResult> => {
+            const response = await this.httpClient.call({
+                url: this._url('keys'),
+                method: 'GET',
+                params: this._params(kvsListOptions),
+                timeout: MEDIUM_TIMEOUT_MILLIS,
+            });
 
-        return cast(parseDateFields(pluckData(response.data)));
+            return cast(parseDateFields(pluckData(response.data)));
+        };
+
+        const paginatedListPromise = getPaginatedList(options);
+        async function* asyncGenerator() {
+            let currentPage = await paginatedListPromise;
+            yield* currentPage.items;
+
+            let remainingItems = options.limit ? options.limit - currentPage.items.length : undefined;
+
+            while (
+                currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
+                currentPage.nextExclusiveStartKey !== null && // Continue only if there is some next key.
+                (remainingItems === undefined || remainingItems > 0) // Continue only if the limit was not exceeded.
+            ) {
+                const newOptions = {
+                    ...options,
+                    limit: remainingItems,
+                    exclusiveStartKey: currentPage.nextExclusiveStartKey,
+                };
+                currentPage = await getPaginatedList(newOptions);
+                yield* currentPage.items;
+                if (remainingItems) {
+                    remainingItems -= currentPage.items.length;
+                }
+            }
+        }
+
+        return Object.defineProperty(paginatedListPromise, Symbol.asyncIterator, {
+            value: asyncGenerator,
+        }) as unknown as AsyncIterable<KeyValueListItem> & Promise<KeyValueClientListKeysResult>;
     }
 
     /**
@@ -216,7 +251,7 @@ export class KeyValueStoreClient extends ResourceClient {
         ow(
             options,
             ow.object.exactShape({
-                limit: ow.optional.number,
+                limit: ow.optional.number.not.negative,
                 exclusiveStartKey: ow.optional.string,
                 collection: ow.optional.string,
                 prefix: ow.optional.string,

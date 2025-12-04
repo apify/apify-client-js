@@ -60,8 +60,8 @@ export class StoreCollectionClient extends ResourceCollectionClient {
         ow(
             options,
             ow.object.exactShape({
-                limit: ow.optional.number,
-                offset: ow.optional.number,
+                limit: ow.optional.number.not.negative,
+                offset: ow.optional.number.not.negative,
                 search: ow.optional.string,
                 sortBy: ow.optional.string,
                 category: ow.optional.string,
