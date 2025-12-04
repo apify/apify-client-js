@@ -5,6 +5,26 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
 import type { KeyValueStore } from './key_value_store';
 
+/**
+ * Client for managing the collection of Key-value stores in your account.
+ *
+ * Key-value stores are used to store arbitrary data records or files. This client provides
+ * methods to list, create, or get key-value stores by name.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const storesClient = client.keyValueStores();
+ *
+ * // List all key-value stores
+ * const { items } = await storesClient.list();
+ *
+ * // Get or create a key-value store by name
+ * const store = await storesClient.getOrCreate('my-store');
+ * ```
+ *
+ * @see https://docs.apify.com/platform/storage/key-value-store
+ */
 export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden
@@ -17,13 +37,13 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/get-list-of-key-value-stores
+     * Lists all Key-value stores.
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
      * ```javascript
      * const paginatedList = await client.list(options);
-     *```
+     * ```
      *
      * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
      * retrieved.
@@ -31,10 +51,14 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
      * ```javascript
      * for await (const singleItem of client.list(options)) {...}
      * ```
+     *
+     * @param options - Pagination options.
+     * @returns A paginated iterator of Key-value stores.
+     * @see https://docs.apify.com/api/v2/key-value-stores-get
      */
     list(
         options: KeyValueStoreCollectionClientListOptions = {},
-    ): Promise<PaginatedList<KeyValueStoreCollectionListResult>> & AsyncIterable<KeyValueStore> {
+    ): Promise<KeyValueStoreCollectionListResult> & AsyncIterable<KeyValueStore> {
         ow(
             options,
             ow.object.exactShape({
@@ -49,7 +73,12 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/key-value-stores/store-collection/create-key-value-store
+     * Gets or creates a key-value store with the specified name.
+     *
+     * @param name - Name of the key-value store. If not provided, a default store is used.
+     * @param options - Additional options like schema.
+     * @returns The key-value store object.
+     * @see https://docs.apify.com/api/v2/key-value-stores-post
      */
     async getOrCreate(
         name?: string,
@@ -71,4 +100,4 @@ export interface KeyValueStoreCollectionClientGetOrCreateOptions {
     schema?: Record<string, unknown>;
 }
 
-export type KeyValueStoreCollectionListResult = Omit<KeyValueStore, 'stats'> & { username?: string };
+export type KeyValueStoreCollectionListResult = PaginatedList<KeyValueStore> & { unnamed: boolean };

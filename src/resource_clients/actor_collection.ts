@@ -6,6 +6,29 @@ import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../uti
 import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor';
 import type { ActorVersion } from './actor_version';
 
+/**
+ * Client for managing the collection of Actors in your account.
+ *
+ * Provides methods to list and create Actors. To access an individual Actor,
+ * use the `actor()` method on the main ApifyClient.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const actorsClient = client.actors();
+ *
+ * // List all Actors
+ * const { items } = await actorsClient.list();
+ *
+ * // Create a new Actor
+ * const newActor = await actorsClient.create({
+ *   name: 'my-actor',
+ *   title: 'My Actor'
+ * });
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors
+ */
 export class ActorCollectionClient extends ResourceCollectionClient {
     /**
      * @hidden
@@ -18,13 +41,13 @@ export class ActorCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/actor-collection/get-list-of-actors
+     * Lists all Actors.
      *
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
      * ```javascript
      * const paginatedList = await client.list(options);
-     *```
+     * ```
      *
      * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
      * retrieved.
@@ -32,6 +55,10 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * ```javascript
      * for await (const singleItem of client.list(options)) {...}
      * ```
+     *
+     * @param options - Pagination options.
+     * @returns A paginated iterator of Actors.
+     * @see https://docs.apify.com/api/v2/acts-get
      */
     list(options: ActorCollectionListOptions = {}): PaginatedIterator<ActorCollectionListItem> {
         ow(
@@ -49,7 +76,11 @@ export class ActorCollectionClient extends ResourceCollectionClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/actors/actor-collection/create-actor
+     * Creates a new Actor.
+     *
+     * @param actor - The Actor data.
+     * @returns The created Actor object.
+     * @see https://docs.apify.com/api/v2/acts-post
      */
     async create(actor: ActorCollectionCreateOptions): Promise<Actor> {
         ow(actor, ow.optional.object);
@@ -65,6 +96,7 @@ export enum ActorListSortBy {
 
 export interface ActorCollectionListOptions extends PaginationOptions {
     my?: boolean;
+    desc?: boolean;
     sortBy?: ActorListSortBy;
 }
 

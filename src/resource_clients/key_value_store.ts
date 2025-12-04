@@ -27,6 +27,34 @@ import {
     pluckData,
 } from '../utils';
 
+/**
+ * Client for managing a specific key-value store.
+ *
+ * Key-value stores are used to store arbitrary data records or files. Each record is identified by
+ * a unique key and can contain any type of data. This client provides methods to get, set, and delete
+ * records, list keys, and manage the store.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const storeClient = client.keyValueStore('my-store-id');
+ *
+ * // Set a record
+ * await storeClient.setRecord({
+ *   key: 'OUTPUT',
+ *   value: { foo: 'bar' },
+ *   contentType: 'application/json'
+ * });
+ *
+ * // Get a record
+ * const record = await storeClient.getRecord('OUTPUT');
+ *
+ * // List all keys
+ * const { items } = await storeClient.listKeys();
+ * ```
+ *
+ * @see https://docs.apify.com/platform/storage/key-value-store
+ */
 export class KeyValueStoreClient extends ResourceClient {
     /**
      * @hidden
@@ -39,14 +67,24 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/get-store
+     * Gets the key-value store object from the Apify API.
+     *
+     * @returns The KeyValueStore object, or `undefined` if it does not exist
+     * @see https://docs.apify.com/api/v2/key-value-store-get
      */
     async get(): Promise<KeyValueStore | undefined> {
         return this._get({}, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/update-store
+     * Updates the key-value store with specified fields.
+     *
+     * @param newFields - Fields to update in the key-value store
+     * @param newFields.name - New name for the store
+     * @param newFields.title - New title for the store
+     * @param newFields.generalAccess - General resource access level ('FOLLOW_USER_SETTING', 'ANYONE_WITH_ID_CAN_READ' or 'RESTRICTED')
+     * @returns The updated KeyValueStore object
+     * @see https://docs.apify.com/api/v2/key-value-store-put
      */
     async update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore> {
         ow(newFields, ow.object);
@@ -55,14 +93,48 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/key-value-stores/store-object/delete-store
+     * Deletes the key-value store.
+     *
+     * @see https://docs.apify.com/api/v2/key-value-store-delete
      */
     async delete(): Promise<void> {
         return this._delete(SMALL_TIMEOUT_MILLIS);
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/key-value-stores/key-collection/get-list-of-keys
+     * Lists all keys in the key-value store.
+     *
+     * Returns a paginated list of all record keys in the store. Use pagination parameters
+     * to retrieve large lists efficiently.
+     *
+     * @param options - Listing options
+     * @param options.limit - Maximum number of keys to return. Default is 1000.
+     * @param options.exclusiveStartKey - Key to start listing from (for pagination). The listing starts with the next key after this one.
+     * @param options.collection - Filter keys by collection name.
+     * @param options.prefix - Filter keys that start with this prefix.
+     * @returns Object containing `items` array of key metadata, pagination info (`count`, `limit`, `isTruncated`, `nextExclusiveStartKey`)
+     * @see https://docs.apify.com/api/v2/key-value-store-keys-get
+     *
+     * @example
+     * ```javascript
+     * // List all keys
+     * const { items, isTruncated } = await client.keyValueStore('my-store').listKeys();
+     * items.forEach(item => console.log(`${item.key}: ${item.size} bytes`));
+     *
+     * // List keys with prefix
+     * const { items } = await client.keyValueStore('my-store').listKeys({ prefix: 'user-' });
+     *
+     * // Paginate through all keys
+     * let exclusiveStartKey;
+     * do {
+     *   const result = await client.keyValueStore('my-store').listKeys({
+     *     limit: 100,
+     *     exclusiveStartKey
+     *   });
+     *   // Process result.items...
+     *   exclusiveStartKey = result.nextExclusiveStartKey;
+     * } while (result.isTruncated);
+     * ```
      */
     listKeys(
         options: KeyValueClientListKeysOptions = {},
@@ -122,10 +194,21 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
-     * Generates a URL that can be used to access key-value store record.
+     * Generates a public URL for accessing a specific record in the key-value store.
      *
      * If the client has permission to access the key-value store's URL signing key,
-     * the URL will include a signature to verify its authenticity.
+     * the URL will include a cryptographic signature for authenticated access without
+     * requiring an API token.
+     *
+     * @param key - The record key
+     * @returns A public URL string for accessing the record
+     *
+     * @example
+     * ```javascript
+     * const url = await client.keyValueStore('my-store').getRecordPublicUrl('OUTPUT');
+     * console.log(`Public URL: ${url}`);
+     * // You can now share this URL or use it in a browser
+     * ```
      */
     async getRecordPublicUrl(key: string): Promise<string> {
         ow(key, ow.string.nonEmpty);
@@ -143,16 +226,26 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
-     * Generates a URL that can be used to access key-value store keys.
+     * Generates a public URL for accessing the list of keys in the key-value store.
      *
      * If the client has permission to access the key-value store's URL signing key,
-     * the URL will include a signature which will allow the link to work even without authentication.
+     * the URL will include a cryptographic signature which allows access without authentication.
      *
-     * You can optionally control how long the signed URL should be valid using the `expiresInSecs` option.
-     * This value sets the expiration duration in seconds from the time the URL is generated.
-     * If not provided, the URL will not expire.
+     * @param options - URL generation options (extends all options from {@link listKeys})
+     * @param options.expiresInSecs - Number of seconds until the signed URL expires. If omitted, the URL never expires.
+     * @param options.limit - Maximum number of keys to return.
+     * @param options.prefix - Filter keys by prefix.
+     * @returns A public URL string for accessing the keys list
      *
-     * Any other options (like `limit` or `prefix`) will be included as query parameters in the URL.
+     * @example
+     * ```javascript
+     * // Create a URL that expires in 1 hour
+     * const url = await client.keyValueStore('my-store').createKeysPublicUrl({
+     *   expiresInSecs: 3600,
+     *   prefix: 'image-'
+     * });
+     * console.log(`Share this URL: ${url}`);
+     * ```
      */
     async createKeysPublicUrl(options: KeyValueClientCreateKeysUrlOptions = {}) {
         ow(
@@ -189,9 +282,19 @@ export class KeyValueStoreClient extends ResourceClient {
     /**
      * Tests whether a record with the given key exists in the key-value store without retrieving its value.
      *
-     * https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record
-     * @param key The queried record key.
-     * @returns `true` if the record exists, `false` if it does not.
+     * This is more efficient than {@link getRecord} when you only need to check for existence.
+     *
+     * @param key - The record key to check
+     * @returns `true` if the record exists, `false` if it does not
+     * @see https://docs.apify.com/api/v2/key-value-store-record-get
+     *
+     * @example
+     * ```javascript
+     * const exists = await client.keyValueStore('my-store').recordExists('OUTPUT');
+     * if (exists) {
+     *   console.log('OUTPUT record exists');
+     * }
+     * ```
      */
     async recordExists(key: string): Promise<boolean> {
         const requestOpts: Record<string, unknown> = {
@@ -217,7 +320,8 @@ export class KeyValueStoreClient extends ResourceClient {
      *
      * When the record does not exist, the function resolves to `undefined`. It does
      * NOT resolve to a `KeyValueStore` record with an `undefined` value.
-     * https://docs.apify.com/api/v2#/reference/key-value-stores/record/get-record
+     *
+     * @see https://docs.apify.com/api/v2/key-value-store-record-get
      */
     async getRecord(key: string): Promise<KeyValueStoreRecord<JsonValue> | undefined>;
 
@@ -280,15 +384,51 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
-     * The value in the record can be a stream object (detected by having the `.pipe`
-     * and `.on` methods). However, note that in that case following redirects or
-     * retrying the request if it fails (for example due to rate limiting) isn't
-     * possible. If you want to keep that behavior, you need to collect the whole
-     * stream contents into a Buffer and then send the full buffer. See [this
-     * StackOverflow answer](https://stackoverflow.com/a/14269536/7292139) for
-     * an example how to do that.
+     * Stores a record in the key-value store.
      *
-     * https://docs.apify.com/api/v2#/reference/key-value-stores/record/put-record
+     * The record value can be any JSON-serializable object, a string, or a Buffer/Stream.
+     * The content type is automatically determined based on the value type, but can be
+     * overridden using the `contentType` property.
+     *
+     * **Note about streams:** If the value is a stream object (has `.pipe` and `.on` methods),
+     * the upload cannot be retried on failure or follow redirects. For reliable uploads,
+     * buffer the entire stream into memory first.
+     *
+     * @param record - The record to store
+     * @param record.key - Record key (unique identifier)
+     * @param record.value - Record value (object, string, Buffer, or Stream)
+     * @param record.contentType - Optional MIME type. Auto-detected if not provided:
+     *                             - Objects: `'application/json; charset=utf-8'`
+     *                             - Strings: `'text/plain; charset=utf-8'`
+     *                             - Buffers/Streams: `'application/octet-stream'`
+     * @param options - Storage options
+     * @param options.timeoutSecs - Timeout for the upload in seconds. Default varies by value size.
+     * @param options.doNotRetryTimeouts - If `true`, don't retry on timeout errors. Default is `false`.
+     * @see https://docs.apify.com/api/v2/key-value-store-record-put
+     *
+     * @example
+     * ```javascript
+     * // Store JSON object
+     * await client.keyValueStore('my-store').setRecord({
+     *   key: 'OUTPUT',
+     *   value: { crawledUrls: 100, items: [...] }
+     * });
+     *
+     * // Store text
+     * await client.keyValueStore('my-store').setRecord({
+     *   key: 'README',
+     *   value: 'This is my readme text',
+     *   contentType: 'text/plain'
+     * });
+     *
+     * // Store binary data
+     * const imageBuffer = await fetchImageBuffer();
+     * await client.keyValueStore('my-store').setRecord({
+     *   key: 'screenshot.png',
+     *   value: imageBuffer,
+     *   contentType: 'image/png'
+     * });
+     * ```
      */
     async setRecord(record: KeyValueStoreRecord<JsonValue>, options: KeyValueStoreRecordOptions = {}): Promise<void> {
         ow(
@@ -344,7 +484,15 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/key-value-stores/record/delete-record
+     * Deletes a record from the key-value store.
+     *
+     * @param key - The record key to delete
+     * @see https://docs.apify.com/api/v2/key-value-store-record-delete
+     *
+     * @example
+     * ```javascript
+     * await client.keyValueStore('my-store').deleteRecord('temp-data');
+     * ```
      */
     async deleteRecord(key: string): Promise<void> {
         ow(key, ow.string);
@@ -358,11 +506,18 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 }
 
+/**
+ * Represents a Key-Value Store storage on the Apify platform.
+ *
+ * Key-value stores are used to store arbitrary data records or files. Each record is identified
+ * by a unique key and can contain any data - JSON objects, strings, binary files, etc.
+ */
 export interface KeyValueStore {
     id: string;
     name?: string;
     title?: string;
     userId: string;
+    username?: string;
     createdAt: Date;
     modifiedAt: Date;
     accessedAt: Date;
@@ -374,6 +529,9 @@ export interface KeyValueStore {
     keysPublicUrl: string;
 }
 
+/**
+ * Statistics about Key-Value Store usage and storage.
+ */
 export interface KeyValueStoreStats {
     readCount?: number;
     writeCount?: number;
@@ -382,12 +540,18 @@ export interface KeyValueStoreStats {
     storageBytes?: number;
 }
 
+/**
+ * Options for updating a Key-Value Store.
+ */
 export interface KeyValueClientUpdateOptions {
     name?: string | null;
     title?: string;
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
+/**
+ * Options for listing keys in a Key-Value Store.
+ */
 export interface KeyValueClientListKeysOptions {
     limit?: number;
     exclusiveStartKey?: string;
@@ -396,10 +560,20 @@ export interface KeyValueClientListKeysOptions {
     signature?: string;
 }
 
+/**
+ * Options for creating a public URL to list keys in a Key-Value Store.
+ *
+ * Extends {@link KeyValueClientListKeysOptions} with URL expiration control.
+ */
 export interface KeyValueClientCreateKeysUrlOptions extends KeyValueClientListKeysOptions {
     expiresInSecs?: number;
 }
 
+/**
+ * Result of listing keys in a Key-Value Store.
+ *
+ * Contains paginated list of keys with metadata and pagination information.
+ */
 export interface KeyValueClientListKeysResult {
     count: number;
     limit: number;
@@ -409,29 +583,49 @@ export interface KeyValueClientListKeysResult {
     items: KeyValueListItem[];
 }
 
+/**
+ * Metadata about a single key in a Key-Value Store.
+ */
 export interface KeyValueListItem {
     key: string;
     size: number;
     recordPublicUrl: string;
 }
 
+/**
+ * Options for retrieving a record from a Key-Value Store.
+ */
 export interface KeyValueClientGetRecordOptions {
     buffer?: boolean;
     stream?: boolean;
     signature?: string;
 }
 
+/**
+ * Represents a record (key-value pair) in a Key-Value Store.
+ *
+ * @template T - The type of the record's value
+ */
 export interface KeyValueStoreRecord<T> {
     key: string;
     value: T;
     contentType?: string;
 }
 
+/**
+ * Options for storing a record in a Key-Value Store.
+ */
 export interface KeyValueStoreRecordOptions {
     timeoutSecs?: number;
     doNotRetryTimeouts?: boolean;
 }
 
+/**
+ * Helper type to determine the return type based on getRecord options.
+ *
+ * Returns Readable if stream option is true, Buffer if buffer option is true,
+ * otherwise returns JsonValue.
+ */
 export type ReturnTypeFromOptions<Options extends KeyValueClientGetRecordOptions> = Options['stream'] extends true
     ? Readable
     : Options['buffer'] extends true

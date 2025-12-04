@@ -15,6 +15,11 @@ const RECORD_NOT_FOUND_TYPE = 'record-not-found';
 const RECORD_OR_TOKEN_NOT_FOUND_TYPE = 'record-or-token-not-found';
 const MIN_GZIP_BYTES = 1024;
 
+/**
+ * Generic interface for objects that may contain a data property.
+ *
+ * @template R - The type of the data property
+ */
 export interface MaybeData<R> {
     data?: R;
 }
@@ -226,6 +231,9 @@ declare global {
     export const VERSION: string | undefined;
 }
 
+/**
+ * Options for creating a pagination iterator.
+ */
 export interface PaginationIteratorOptions {
     maxPageLimit: number;
     getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<RequestQueueClientListRequestsResult>;
@@ -233,6 +241,9 @@ export interface PaginationIteratorOptions {
     exclusiveStartId?: string;
 }
 
+/**
+ * Standard pagination options for API requests.
+ */
 export interface PaginationOptions {
     /** Position of the first returned entry. */
     offset?: number;
@@ -247,6 +258,11 @@ export interface PaginationOptions {
     chunkSize?: number;
 }
 
+/**
+ * Standard paginated response format.
+ *
+ * @template Data - The type of items in the response
+ */
 export interface PaginatedResponse<Data> {
     /** Total count of entries. */
     total: number;
@@ -254,6 +270,14 @@ export interface PaginatedResponse<Data> {
     items: Data[];
 }
 
+/**
+ * Paginated list with detailed pagination information.
+ *
+ * Used primarily for Dataset items and other list operations that support
+ * offset-based pagination and field transformations.
+ *
+ * @template Data - The type of items in the list
+ */
 export interface PaginatedList<Data> extends PaginatedResponse<Data> {
     /** Count of dataset entries returned in this set. */
     count: number;
@@ -265,6 +289,13 @@ export interface PaginatedList<Data> extends PaginatedResponse<Data> {
     desc: boolean;
 }
 
+/**
+ * Type representing both a Promise of a paginated list and an async iterable.
+ *
+ * Allows both awaiting the first page and iterating through all pages.
+ *
+ * @template T - The type of items in the paginated list
+ */
 export type PaginatedIterator<T> = Promise<PaginatedList<T>> & AsyncIterable<T>;
 
 export function cast<T>(input: unknown): T {
@@ -279,8 +310,19 @@ export function asArray<T>(value: T | T[]): T[] {
     return [value];
 }
 
+/**
+ * Generic dictionary type (key-value map).
+ *
+ * @template T - The type of values in the dictionary
+ */
 export type Dictionary<T = unknown> = Record<PropertyKey, T>;
 
+/**
+ * Utility type that makes specific keys optional while preserving union types.
+ *
+ * @template T - The base type
+ * @template K - Keys to make optional
+ */
 export type DistributiveOptional<T, K extends keyof T> = T extends any ? Omit<T, K> & Partial<Pick<T, K>> : never;
 
 /**
