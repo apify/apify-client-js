@@ -44,9 +44,3 @@ console.log(items);
 ```
 
 > You can find your API token in the [Integrations section](https://console.apify.com/account/integrations) of Apify Console. See the [Getting Started Guide](./getting-started.md#authentication-and-initialization) for more details on authentication.
-
-## Next steps
-
-- [Getting Started Guide](./getting-started.md) - Detailed setup and usage instructions
-- [API Reference](../reference/2) - Complete API documentation
-- [Examples](./examples) - Code examples for common use cases
