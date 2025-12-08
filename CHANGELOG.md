@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file.
 
 - Add CONNECT tunneling support for HTTP proxy in sandboxed environments ([#791](https://github.com/apify/apify-client-js/pull/791)) ([a27d55a](https://github.com/apify/apify-client-js/commit/a27d55a504cdddebb5a4afa594a94784d27d3dba)) by [@tducret](https://github.com/tducret)
 - Make all `collectionClient.list` methods return value also be `asyncIterator` of relevant data ([#790](https://github.com/apify/apify-client-js/pull/790)) ([f855fd4](https://github.com/apify/apify-client-js/commit/f855fd4a774ee8fe91671711f530203475ee1dbd)) by [@Pijukatel](https://github.com/Pijukatel), closes [#777](https://github.com/apify/apify-client-js/issues/777)
+- Generated JSDocs based on the API reference ([#797](https://github.com/apify/apify-client-js/pull/797)) ([85653a1](https://github.com/apify/apify-client-js/commit/85653a171fcb699d6e8eb16caa481980ecc50ae8)) by [@jancurn](https://github.com/jancurn)
+- Make storage clients list methods return value also be asyncIterator of relevant data ([#803](https://github.com/apify/apify-client-js/pull/803)) ([c58ce6f](https://github.com/apify/apify-client-js/commit/c58ce6f11363e1863b53754427aed93a185f4ae1)) by [@Pijukatel](https://github.com/Pijukatel), closes [#777](https://github.com/apify/apify-client-js/issues/777)
 
 
 <!-- git-cliff-unreleased-end -->

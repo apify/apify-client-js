@@ -12,6 +12,28 @@ import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow } from '../utils';
 
+/**
+ * Client for accessing Actor run or build logs.
+ *
+ * Provides methods to retrieve logs as text or stream them in real-time. Logs can be accessed
+ * for both running and finished Actor runs and builds.
+ *
+ * @example
+ * ```javascript
+ * const client = new ApifyClient({ token: 'my-token' });
+ * const runClient = client.run('my-run-id');
+ *
+ * // Get the log content
+ * const log = await runClient.log().get();
+ * console.log(log);
+ *
+ * // Stream the log in real-time
+ * const stream = await runClient.log().stream();
+ * stream.on('line', (line) => console.log(line));
+ * ```
+ *
+ * @see https://docs.apify.com/platform/actors/running/runs-and-builds#logging
+ */
 export class LogClient extends ResourceClient {
     /**
      * @hidden
@@ -24,7 +46,12 @@ export class LogClient extends ResourceClient {
     }
 
     /**
-     * https://docs.apify.com/api/v2#/reference/logs/log/get-log
+     * Retrieves the log as a string.
+     *
+     * @param options - Log retrieval options.
+     * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
+     * @returns The log content as a string, or `undefined` if it does not exist.
+     * @see https://docs.apify.com/api/v2/log-get
      */
     async get(options: LogOptions = {}): Promise<string | undefined> {
         const requestOpts: ApifyRequestConfig = {
@@ -44,8 +71,12 @@ export class LogClient extends ResourceClient {
     }
 
     /**
-     * Gets the log in a Readable stream format. Only works in Node.js.
-     * https://docs.apify.com/api/v2#/reference/logs/log/get-log
+     * Retrieves the log as a Readable stream. Only works in Node.js.
+     *
+     * @param options - Log retrieval options.
+     * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
+     * @returns The log content as a Readable stream, or `undefined` if it does not exist.
+     * @see https://docs.apify.com/api/v2/log-get
      */
     async stream(options: LogOptions = {}): Promise<Readable | undefined> {
         const params = {
