@@ -48,32 +48,23 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
      * items in a single API call is limited.
      * ```javascript
-     * const paginatedList = await client.list(options);
-     * ```
+     * const paginatedList = await client.list();
+     *```
      *
      * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
      * retrieved.
      *
      * ```javascript
-     * for await (const singleItem of client.list(options)) {...}
+     * for await (const singleItem of client.list()) {...}
      * ```
      *
-     * @param options - Pagination options.
      * @returns A paginated iterator of environment variables.
      * @see https://docs.apify.com/api/v2/act-version-env-vars-get
      */
     list(
-        options: ActorEnvVarCollectionListOptions = {},
+        _options: ActorEnvVarCollectionListOptions = {},
     ): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
-        ow(
-            options,
-            ow.object.exactShape({
-                limit: ow.optional.number.not.negative,
-                offset: ow.optional.number.not.negative,
-                desc: ow.optional.boolean,
-            }),
-        );
-        return this._listPaginated(options);
+        return this._listPaginated();
     }
 
     /**
@@ -89,6 +80,10 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     }
 }
 
+/**
+ * @deprecated No options are used in the current API implementation.
+ * https://github.com/apify/apify-client-js/issues/799
+ */
 export interface ActorEnvVarCollectionListOptions extends PaginationOptions {
     desc?: boolean;
 }
