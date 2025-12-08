@@ -13,12 +13,15 @@ const range = (start, end, step = 1) => {
     );
 };
 
-const limitPaginationOptions = [
+const noOptions = [
     {
         testName: 'No options',
         userDefinedOptions: {},
         expectedItems: range(0, 2500),
     },
+];
+
+const limitPaginationOptions = [
     {
         testName: 'User limit',
         userDefinedOptions: { limit: 1100 },
@@ -72,11 +75,11 @@ describe('Collection clients list method as async iterable', () => {
     const maxItemsPerPage = 1000;
 
     const allCollectionClients = [
+        client.actor('some-id').version('some-version').envVars(), // Does not support options
+        client.actor('some-id').versions(), // Does not support options
         client.store(), // Does not support desc
-        client.actors(),
-        client.actor('some-id').version('some-version').envVars(),
-        client.actor('some-id').versions(),
         client.actor('some-id').builds(),
+        client.actors(),
         client.datasets(), // Supports unnamed
         client.keyValueStores(), // Supports unnamed
         client.requestQueues(), // Supports unnamed
@@ -95,17 +98,22 @@ describe('Collection clients list method as async iterable', () => {
     ];
 
     // Create valid tests cases for each client based on the pagination options it is supporting.
-    const commonTestCases = generateTestCases(allCollectionClients, [
-        ...limitPaginationOptions,
-        ...offsetPaginationOptions,
-    ]);
+    const noOptionsTestCases = generateTestCases(allCollectionClients, noOptions);
+
+    const commonTestCases = generateTestCases(
+        allCollectionClients.slice(2), // without envVars and versions
+        [...limitPaginationOptions, ...offsetPaginationOptions],
+    );
     const unnamedTestCases = generateTestCases(
         [client.datasets(), client.keyValueStores(), client.requestQueues()],
         unnamedPaginationOptions,
     );
-    const descTestCases = generateTestCases(allCollectionClients.slice(1), descPaginationOptions);
+    const descTestCases = generateTestCases(
+        allCollectionClients.slice(3), // without envVars, versions and store
+        descPaginationOptions,
+    );
 
-    test.each([...commonTestCases, ...unnamedTestCases, ...descTestCases])(
+    test.each([...noOptionsTestCases, ...commonTestCases, ...unnamedTestCases, ...descTestCases])(
         '$clientName: $testName',
         async ({ resourceClient, userDefinedOptions, expectedItems }) => {
             const mockedPlatformLogic = async (request) => {
