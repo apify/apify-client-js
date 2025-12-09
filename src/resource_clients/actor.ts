@@ -489,6 +489,8 @@ export interface Actor {
     actorStandby?: ActorStandby & {
         isEnabled: boolean;
     };
+    /** Permission level of the Actor on Apify platform */
+    actorPermissionLevel: ACTOR_PERMISSION_LEVEL;
 }
 
 /**
@@ -563,6 +565,7 @@ export type ActorUpdateOptions = Partial<
         | 'categories'
         | 'defaultRunOptions'
         | 'actorStandby'
+        | 'actorPermissionLevel'
     >
 >;
 
