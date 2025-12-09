@@ -305,12 +305,12 @@ export class RunClient extends ResourceClient {
     private async getActorRedirectLog(): Promise<Log> {
         // Get actor name and run id
         const runData = await this.get();
-        const runId = runData ? `${runData.id ?? ''}` : '';
+        const runId = runData?.id ?? '';
 
         const actorId = runData?.actId ?? '';
         const actorData = (await this.apifyClient.actor(actorId).get()) || { name: '' };
 
-        const actorName = runData ? (actorData.name ?? '') : '';
+        const actorName = actorData?.name ?? '';
         const name = [actorName, `runId:${runId}`].filter(Boolean).join(' ');
 
         return new Log({ level: LEVELS.DEBUG, prefix: `${name} -> `, logger: new LoggerActorRedirect() });
