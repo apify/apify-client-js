@@ -108,7 +108,7 @@ const { defaultDatasetId } = await client.actor('username/actor-name').call({
 
 ### Getting results from the dataset
 
-To get the results from the dataset, call the [`client.dataset()`](/reference/class/DatasetClient) method with the dataset ID, then call [`listItems()`](/reference/class/DatasetClient#listItems) to retrieve the data. The dataset ID is returned in the Actor run's `defaultDatasetId` property.
+To get the results from the dataset, call the [`client.dataset()`](/reference/class/DatasetClient) method with the dataset ID, then call [`listItems()`](/reference/class/DatasetClient#listItems) to retrieve the data. You can get the dataset ID from the Actor's run object (represented by `defaultDatasetId`).
 
 ```js
 import { ApifyClient } from 'apify-client';
@@ -147,7 +147,7 @@ const { items } = await actorCollectionClient.list();
 
 :::note Resource identification
 
-The resource ID can be either the `id` of the said resource, or a combination of your `username/resource-name`.
+The resource ID can be either the `id` of the said resource, or a combination of your `username/resource-name`.
 
 :::
 
@@ -188,11 +188,11 @@ const lastSucceededRunClient = actorClient.lastRun({ status: 'SUCCEEDED' });
 const { items } = await lastSucceededRunClient.dataset().listItems();
 ```
 
-The quick access to `dataset` and other storage directly from the run client can be used with the [`lastRun()`](/reference/class/ActorClient#lastRun) method.
+The quick access to `dataset` and other storage directly from the run client can be used with the [`lastRun()`](/reference/class/ActorClient#lastRun) method.
 
 ## Features
 
-Based on the endpoint, the client automatically extracts the relevant data and returns it in the expected format. Date strings are automatically converted to `Date` objects. For exceptions, the client throws an [`ApifyApiError`](/reference/class/ApifyApiError), which wraps the plain JSON errors returned by API and enriches them with other contexts for easier debugging.
+Based on the endpoint, the client automatically extracts the relevant data and returns it in the expected format. Date strings are automatically converted to `Date` objects. For exceptions, the client throws an [`ApifyApiError`](/reference/class/ApifyApiError), which wraps the plain JSON errors returned by API and enriches them with other contexts for easier debugging.
 
 ```js
 import { ApifyClient } from 'apify-client';
@@ -228,7 +228,7 @@ const client = new ApifyClient({
 
 ### Convenience functions and options
 
-Some actions can't be performed by the API itself, such as indefinite waiting for an Actor run to finish (because of network timeouts). The client provides convenient `call()` and `waitForFinish()` functions that do that. If the limit is reached, the returned promise is resolved to a run object that will have status `READY` or `RUNNING` and it will not contain the Actor run output.
+Some actions can't be performed by the API itself, such as indefinite waiting for an Actor run to finish (because of network timeouts). The client provides convenient `call()` and `waitForFinish()` functions that do that. If the limit is reached, the returned promise is resolved to a run object that will have status `READY` or `RUNNING` and it will not contain the Actor run output.
 
 [Key-value store](https://docs.apify.com/platform/storage/key-value-store) records can be retrieved as objects, buffers, or streams via the respective options, dataset items can be fetched as individual objects or serialized data.
 
@@ -260,28 +260,15 @@ const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 // Resource clients accept an ID of the resource.
 const datasetClient = client.dataset('dataset-id');
 
-// Number of items per page
+// Maximum amount of items to fetch in total
 const limit = 1000;
+// Maximum amount of items to fetch in one API call
+const chunkSize = 100;
 // Initial offset
-let offset = 0;
-// Array to store all items
-let allItems = [];
+const offset = 0;
 
-while (true) {
-    const { items, total } = await datasetClient.listItems({ limit, offset });
-
-    console.log(`Fetched ${items.length} items`);
-
-    // Merge new items with other already loaded items
-    allItems.push(...items);
-
-    // If there are no more items to fetch, exit the loading
-    if (offset + limit >= total) {
-        break;
-    }
-
-    offset += limit;
+for await (const item of datasetClient.listItems({ limit, offset, chunkSize })) {
+    // Processs individual item
+    console.log(item);
 }
-
-console.log(`Overall fetched ${allItems.length} items`);
 ```
