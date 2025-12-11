@@ -1,9 +1,9 @@
 const { Browser, validateRequest, DEFAULT_OPTIONS } = require('./_helper');
-const { ActorListSortBy, ApifyClient, LoggerActorRedirect } = require('apify-client');
+const { ActorListSortBy, ApifyClient, LoggerActorRedirect, RunClient, StatusMessageWatcher } = require('apify-client');
 const { stringifyWebhooksToBase64 } = require('../src/utils');
 const { mockServer, createDefaultApp } = require('./mock_server/server');
 const c = require('ansi-colors');
-const { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator } = require('./mock_server/test_utils');
+const { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator, MOCKED_ACTOR_STATUSES } = require('./mock_server/test_utils');
 const { Log, LEVELS } = require('@apify/log');
 const express = require('express');
 const { setTimeout } = require('node:timers/promises');
@@ -727,15 +727,102 @@ describe('Run actor with redirected logs', () => {
 
     describe('actor.call - redirected logs', () => {
         test.each(testCases)('logOptions:$logOptions', async ({ expectedPrefix, logOptions }) => {
+            const mockedGetStatusMessageWatcher = jest
+                .spyOn(RunClient.prototype, 'getStatusMessageWatcher')
+                .mockImplementation(() => {});
             const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
             await client.actor('redirect-actor-id').call(undefined, logOptions);
 
             expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [expectedPrefix + item]));
             logSpy.mockRestore();
+            mockedGetStatusMessageWatcher.mockRestore();
         });
 
         test('logOptions:{ "log": null }', async () => {
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+            await client.actor('redirect-actor-id').call(undefined, { log: null });
+
+            expect(logSpy.mock.calls).toEqual([]);
+            logSpy.mockRestore();
+        });
+    });
+});
+
+describe('Run actor with status message watcher', () => {
+    let baseUrl;
+    let client;
+    const originalCheckPeriodMs = StatusMessageWatcher.defaultCheckPeriodMs;
+    const originalFinalSleepTimeMs = StatusMessageWatcher.finalSleepTimeMs;
+    const statusGenerator = new StatusGenerator();
+
+    beforeAll(async () => {
+        // Use custom router for the tests
+        const router = express.Router();
+        // Set up a status generator to simulate run status changes. It will be reset for each test.
+        router.get('/actor-runs/redirect-run-id', async (req, res) => {
+            // Delay the response to give the actor time to run and produce expected logs
+            await setTimeout(10);
+            let [status, statusMessage] = ['', ''];
+            [status, statusMessage] = statusGenerator.next().value;
+            res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status, statusMessage } });
+        });
+        const app = createDefaultApp(router);
+        const server = await mockServer.start(undefined, app);
+        baseUrl = `http://localhost:${server.address().port}`;
+
+        StatusMessageWatcher.defaultCheckPeriodMs = 1; // speed up tests
+        StatusMessageWatcher.finalSleepTimeMs = 1; // speed up tests
+    });
+
+    afterAll(async () => {
+        await Promise.all([mockServer.close()]);
+        StatusMessageWatcher.defaultCheckPeriodMs = originalCheckPeriodMs;
+        StatusMessageWatcher.finalSleepTimeMs = originalFinalSleepTimeMs;
+    });
+
+    beforeEach(async () => {
+        client = new ApifyClient({
+            baseUrl,
+            maxRetries: 0,
+            ...DEFAULT_OPTIONS,
+        });
+    });
+    afterEach(async () => {
+        // Reset the generator to so that the next test starts fresh
+        statusGenerator.reset();
+        client = null;
+    });
+
+    const testCases = [
+        { expectedPrefix: c.cyan('redirect-actor-name runId:redirect-run-id -> '), logOptions: {} },
+        { expectedPrefix: c.cyan('redirect-actor-name runId:redirect-run-id -> '), logOptions: { log: 'default' } },
+        {
+            expectedPrefix: c.cyan('custom prefix...'),
+            logOptions: {
+                log: new Log({ level: LEVELS.DEBUG, prefix: 'custom prefix...', logger: new LoggerActorRedirect() }),
+            },
+        },
+    ];
+
+    describe('actor.call - status watcher', () => {
+        test.each(testCases)('logOptions:$logOptions', async ({ expectedPrefix, logOptions }) => {
+            const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+            // Ignore StreamedLog to not clutter the status message watcher test
+            const mockedGetStreamedLog = jest.spyOn(RunClient.prototype, 'getStreamedLog').mockImplementation(() => {});
+
+            await client.actor('redirect-actor-id').call(undefined, logOptions);
+
+            const uniqueStatuses = Array.from(new Set(MOCKED_ACTOR_STATUSES.map(JSON.stringify))).map(JSON.parse);
+            expect(logSpy.mock.calls).toEqual(
+                uniqueStatuses.map((item) => [`${expectedPrefix}Status: ${item[0]}, Message: ${item[1]}`]),
+            );
+            logSpy.mockRestore();
+            mockedGetStreamedLog.mockRestore();
+        });
+
+        test('no log', async () => {
             const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
             await client.actor('redirect-actor-id').call(undefined, { log: null });
