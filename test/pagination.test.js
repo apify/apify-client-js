@@ -79,6 +79,7 @@ describe('Collection clients list method as async iterable', () => {
         client.actor('some-id').versions(), // Does not support options
         client.store(), // Does not support desc
         client.actor('some-id').builds(),
+        client.actor('some-id').runs(),
         client.actors(),
         client.datasets(), // Supports unnamed
         client.keyValueStores(), // Supports unnamed
