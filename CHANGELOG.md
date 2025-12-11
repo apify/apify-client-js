@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.20.1 - **not yet released**
+## [2.21.0](https://github.com/apify/apify-client-js/releases/tag/v2.21.0) (2025-12-11)
 
 ### 🚀 Features
 
@@ -14,7 +13,6 @@ All notable changes to this project will be documented in this file.
 - Expose `actorPermissionLevel` in Actor client ([#809](https://github.com/apify/apify-client-js/pull/809)) ([513e41c](https://github.com/apify/apify-client-js/commit/513e41ce16bb7a1269513337ee807ff4e3664f47)) by [@stepskop](https://github.com/stepskop)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.20.0](https://github.com/apify/apify-client-js/releases/tag/v2.20.0) (2025-11-20)
 
 ### 🚀 Features
