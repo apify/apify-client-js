@@ -1,6 +1,6 @@
 {
     "extends": "./tsconfig.json",
-    "include": ["src/**/*", "test", ".github/scripts", "jest.config.js", "eslint.config.mjs", "rsbuild.config.ts"],
+    "include": ["src/**/*", "test", ".github/scripts", "vitest.config.ts", "eslint.config.mjs", "rsbuild.config.ts"],
     "compilerOptions": {
         "allowJs": true
     }

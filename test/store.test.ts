@@ -1,5 +1,6 @@
 import type { StoreCollectionListOptions } from 'apify-client';
 import { ApifyClient } from 'apify-client';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';

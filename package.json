@@ -52,7 +52,7 @@
         "postbuild": "gen-esm-wrapper dist/index.js dist/index.mjs",
         "prepublishOnly": "(test $CI || (echo \"Publishing is reserved to CI!\"; exit 1))",
         "clean": "rimraf dist",
-        "test": "npm run build && jest",
+        "test": "npm run build && vitest run",
         "lint": "eslint",
         "lint:fix": "eslint --fix",
         "tsc-check-tests": "tsc --noEmit --project test/tsconfig.json",
@@ -90,7 +90,6 @@
         "@types/content-type": "^1.1.5",
         "@types/express": "^5.0.0",
         "@types/fs-extra": "^11.0.1",
-        "@types/jest": "^29.4.0",
         "@types/node": "^24.0.0",
         "ajv": "^8.17.1",
         "babel-loader": "^10.0.0",
@@ -102,17 +101,16 @@
         "fs-extra": "^11.1.0",
         "gen-esm-wrapper": "^1.1.2",
         "globals": "^16.0.0",
-        "jest": "^29.4.3",
         "prettier": "^3.5.3",
         "process": "^0.11.10",
         "puppeteer": "^24.0.0",
         "rimraf": "^6.0.0",
         "source-map-support": "^0.5.21",
-        "ts-jest": "^29.0.5",
         "ts-loader": "^9.4.2",
         "ts-node": "^10.9.1",
         "typescript": "^5.8.3",
-        "typescript-eslint": "^8.29.1"
+        "typescript-eslint": "^8.29.1",
+        "vitest": "^4.0.16"
     },
     "packageManager": "npm@10.9.2"
 }

@@ -1,3 +1,5 @@
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
+
 import { Statistics } from '../src/statistics';
 
 describe('Statistics', () => {
