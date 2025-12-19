@@ -1,25 +1,28 @@
-import { ApifyClient } from 'apify-client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
+import { ApifyClient, Dictionary } from 'apify-client';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
+import { Page } from 'puppeteer';
+import { AddressInfo } from 'net';
+import { Request } from 'express';
 
 describe('Request Queue methods', () => {
-    let baseUrl;
+    let baseUrl: string;
     const browser = new Browser();
 
     beforeAll(async () => {
         const server = await mockServer.start();
         await browser.start();
-        baseUrl = `http://localhost:${server.address().port}`;
+        baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`;
     });
 
     afterAll(async () => {
         await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
-    let client;
-    let page;
+    let client: ApifyClient
+    let page: Page
     beforeEach(async () => {
         page = await browser.getInjectedPage(baseUrl, DEFAULT_OPTIONS);
         client = new ApifyClient({
@@ -29,7 +32,7 @@ describe('Request Queue methods', () => {
         });
     });
     afterEach(async () => {
-        client = null;
+        client = null as unknown as ApifyClient;
         page.close().catch(() => {});
     });
 
@@ -56,7 +59,7 @@ describe('Request Queue methods', () => {
             expect(res.id).toEqual('get-or-create-queue');
             validateRequest();
 
-            const browserRes = await page.evaluate((n) => client.requestQueues().getOrCreate(n));
+            const browserRes = await page.evaluate((n) => client.requestQueues().getOrCreate(n), undefined);
             expect(browserRes).toEqual(res);
             validateRequest();
         });
@@ -79,7 +82,7 @@ describe('Request Queue methods', () => {
             const queueId = 'some-id';
 
             const res = await client.requestQueue(queueId).get();
-            expect(res.id).toEqual('get-queue');
+            expect(res?.id).toEqual('get-queue');
             validateRequest({}, { queueId });
 
             const browserRes = await page.evaluate((id) => client.requestQueue(id).get(), queueId);
@@ -142,7 +145,7 @@ describe('Request Queue methods', () => {
             let errorMessage;
             try {
                 await client.requestQueue(queueId, { timeoutSecs: 0.001 }).addRequest(request);
-            } catch (e) {
+            } catch (e: any) {
                 errorMessage = e.toString();
             }
             expect(errorMessage).toEqual('AxiosError: timeout of 1ms exceeded');
@@ -185,7 +188,7 @@ describe('Request Queue methods', () => {
             const requestId = 'xxx';
 
             const res = await client.requestQueue(queueId).getRequest(requestId);
-            expect(res.id).toEqual('get-request');
+            expect(res?.id).toEqual('get-request');
             validateRequest({}, { queueId, requestId });
 
             const browserRes = await page.evaluate(
@@ -203,7 +206,7 @@ describe('Request Queue methods', () => {
             let errorMessage;
             try {
                 await client.requestQueue(queueId, { timeoutSecs: 0.001 }).getRequest(requestId);
-            } catch (e) {
+            } catch (e: any) {
                 errorMessage = e.toString();
             }
             expect(errorMessage).toEqual('AxiosError: timeout of 1ms exceeded');
@@ -232,7 +235,7 @@ describe('Request Queue methods', () => {
             let errorMessage;
             try {
                 await client.requestQueue(queueId, { timeoutSecs: 0.001 }).deleteRequest(requestId);
-            } catch (e) {
+            } catch (e: any) {
                 errorMessage = e.toString();
             }
             expect(errorMessage).toEqual('AxiosError: timeout of 1ms exceeded');
@@ -286,7 +289,7 @@ describe('Request Queue methods', () => {
             let errorMessage;
             try {
                 await client.requestQueue(queueId, { timeoutSecs: 0.001 }).updateRequest(request);
-            } catch (e) {
+            } catch (e: any) {
                 errorMessage = e.toString();
             }
             expect(errorMessage).toEqual('AxiosError: timeout of 1ms exceeded');
@@ -315,18 +318,18 @@ describe('Request Queue methods', () => {
             let errorMessage;
             try {
                 await client.requestQueue(queueId, { timeoutSecs: 0.001 }).listHead(options);
-            } catch (e) {
+            } catch (e: any) {
                 errorMessage = e.toString();
             }
             expect(errorMessage).toEqual('AxiosError: timeout of 1ms exceeded');
         });
 
-        test.each(['addRequest', 'updateRequest', 'deleteRequest'])(
+        test.each(['addRequest', 'updateRequest', 'deleteRequest'] as const)(
             'clientKey param propagates to %s()',
             async (method) => {
                 const queueId = 'some-id';
                 const requestId = 'xxx';
-                const request = { id: requestId, url: 'http://example.com' };
+                const request: { id?: string, url?: string } = { id: requestId, url: 'http://example.com' };
                 const clientKey = 'my-client-key';
 
                 const param = method.startsWith('delete') ? request.id : request;
@@ -412,8 +415,8 @@ describe('Request Queue methods', () => {
             const options = { limit: 5, lockSecs: 10 };
 
             // Throw if lockSecs is missing or is not a number
-            await expect(client.requestQueue(queueId).listAndLockHead({ limit: 10 })).rejects.toThrow();
-            await expect(client.requestQueue(queueId).listAndLockHead({ lockSecs: 'bla' })).rejects.toThrow();
+            await expect(client.requestQueue(queueId).listAndLockHead({ limit: 10 } as any)).rejects.toThrow();
+            await expect(client.requestQueue(queueId).listAndLockHead({ lockSecs: 'bla' } as any)).rejects.toThrow();
 
             const res = await client.requestQueue(queueId).listAndLockHead(options);
             expect(res.id).toEqual('post-lock-head');
@@ -489,7 +492,7 @@ describe('Request Queue methods', () => {
             const queueId = 'some-id';
             const maxPageLimit = 90;
             const requests = new Array(1000).fill(0).map((_, i) => ({ id: i.toString() }));
-            const mockResponse = (items) => {
+            const mockResponse = (items: Dictionary<any>[]) => {
                 mockServer.setResponse({
                     statusCode: 200,
                     body: {
@@ -529,7 +532,7 @@ describe('Request Queue methods', () => {
                 queueId,
                 maxPageLimit,
             );
-            expect(browserRes.items).toEqual(browserRequests);
+            expect(browserRes?.items).toEqual(browserRequests);
             validateRequest({ limit: maxPageLimit }, { queueId });
         });
 
@@ -545,10 +548,10 @@ describe('Request Queue methods', () => {
             await client.requestQueue(queueId).batchAddRequests(requests);
             // Based on size of one request and limit 9MB as max payload size only 10 requests should be sent in one batch
             const firedRequests = mockServer.getLastRequests(requestsLength / 10);
-            const processedRequestUrls = [];
-            firedRequests.forEach((req) => {
+            const processedRequestUrls: string[] = [];
+            firedRequests.forEach((req: Request) => {
                 expect(req.url).toEqual(`/${queueId}/requests/batch`);
-                req.body.forEach(({ url }) => {
+                req.body.forEach(({ url }: { url: string }) => {
                     processedRequestUrls.push(url);
                 });
             });
@@ -557,7 +560,7 @@ describe('Request Queue methods', () => {
 
             // It throws error when single request is too big
             const bigRequest = { url: `http://example.com/x`, userData: { longString: 'b'.repeat(9_500_000) } };
-            const requestsWithBigRequest = [...requests, bigRequest];
+            const requestsWithBigRequest: typeof requests = [...requests, bigRequest];
             await expect(client.requestQueue(queueId).batchAddRequests(requestsWithBigRequest)).rejects.toThrow(
                 `RequestQueueClient.batchAddRequests: The size of the request with index: ${requestsWithBigRequest.length - 1}`,
             );

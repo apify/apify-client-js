@@ -1,7 +1,8 @@
 import { ApifyClient } from 'apify-client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
+import { HttpClient } from '../src/http_client';
 
-const range = (start, end, step = 1) => {
+const range = (start: number, end: number, step: number = 1) => {
     // Inclusive range, ordered based on start and end values
     return Array.from(
         {
@@ -118,7 +119,7 @@ describe('Collection clients list method as async iterable', () => {
     test.each([...noOptionsTestCases, ...commonTestCases, ...unnamedTestCases, ...descTestCases])(
         '$clientName: $testName',
         async ({ resourceClient, userDefinedOptions, expectedItems }) => {
-            const mockedPlatformLogic = async (request) => {
+            const mockedPlatformLogic: HttpClient['call'] = async (request) => {
                 // Simulated platform logic for pagination.
                 // There are 2500 normal items in the collection and additional 100 extra items.
                 // Items are simple objects with incrementing attributes for easy verification.

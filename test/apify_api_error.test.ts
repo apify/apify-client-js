@@ -1,17 +1,18 @@
-import { ApifyClient } from 'apify-client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
+import { ApifyApiError, ApifyClient, Dictionary } from 'apify-client';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS } from './_helper';
 import { mockServer } from './mock_server/server';
+import { AddressInfo } from 'node:net';
 
 describe('ApifyApiError', () => {
-    let baseUrl;
+    let baseUrl: string;
     const browser = new Browser();
 
     beforeAll(async () => {
         await browser.start();
         const server = await mockServer.start();
-        baseUrl = `http://localhost:${server.address().port}`;
+        baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`;
     });
 
     afterAll(async () => {
@@ -25,7 +26,9 @@ describe('ApifyApiError', () => {
         try {
             await actorCollectionClient[method]();
             throw new Error('wrong error');
-        } catch (err) {
+        } catch (err: any) {
+            if (!(err instanceof ApifyApiError)) throw err;
+
             expect(err.name).toEqual('ApifyApiError');
             // This does not work in v10 and lower, but we want to be able to run tests for v10,
             // because some people might still use it. They will just see clientMethod: undefined.
@@ -45,20 +48,22 @@ describe('ApifyApiError', () => {
         const page = await browser.getInjectedPage();
         const method = 'list';
         const error = await page.evaluate(async (m) => {
-            const client = new window.Apify.ApifyClient();
+            const client = new (window as any).Apify.ApifyClient();
             const actorCollectionClient = client.actors();
             try {
                 await actorCollectionClient[m]();
                 throw new Error('wrong error');
-            } catch (err) {
-                const serializableErr = {};
+            } catch (err: any) {
+                const serializableErr: Dictionary<any> = {};
                 Object.getOwnPropertyNames(err).forEach((prop) => {
                     serializableErr[prop] = err[prop];
                 });
                 serializableErr.resourcePath = actorCollectionClient.resourcePath;
-                return serializableErr;
+                return serializableErr as Dictionary<any>;
             }
         }, method);
+
+
         expect(error.name).toEqual('ApifyApiError');
         expect(error.clientMethod).toBe(`ActorCollectionClient.${method}`);
         expect(error.type).toEqual('token-not-provided');
@@ -84,6 +89,8 @@ describe('ApifyApiError', () => {
             await client.dataset(datasetId).pushItems(data);
             throw new Error('wrong error');
         } catch (err) {
+            if (!(err instanceof ApifyApiError)) throw err;
+
             expect(err.name).toEqual('ApifyApiError');
             expect(err.type).toEqual('schema-validation-error');
             expect(err.data).toEqual({
@@ -97,13 +104,13 @@ describe('ApifyApiError', () => {
         const page = await browser.getInjectedPage();
         const error = await page.evaluate(
             async (cConfig, dId, d) => {
-                const client = new window.Apify.ApifyClient(cConfig);
+                const client = new (window as any).Apify.ApifyClient(cConfig);
                 const datasetClient = client.dataset(dId);
                 try {
                     await datasetClient.pushItems(d);
                     throw new Error('wrong error');
-                } catch (err) {
-                    const serializableErr = {};
+                } catch (err: any) {
+                    const serializableErr: Dictionary<any> = {};
                     Object.getOwnPropertyNames(err).forEach((prop) => {
                         serializableErr[prop] = err[prop];
                     });

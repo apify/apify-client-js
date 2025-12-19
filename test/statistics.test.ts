@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { Statistics } from '../src/statistics';
 

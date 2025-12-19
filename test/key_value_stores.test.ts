@@ -1,27 +1,29 @@
 import { Readable } from 'node:stream';
 
 import { ApifyClient } from 'apify-client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
+import { Page } from 'puppeteer';
+import { AddressInfo } from 'node:net';
 
 describe('Key-Value Store methods', () => {
-    let baseUrl;
+    let baseUrl: string;
     const browser = new Browser();
 
     beforeAll(async () => {
         const server = await mockServer.start();
         await browser.start();
-        baseUrl = `http://localhost:${server.address().port}`;
+        baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`;
     });
 
     afterAll(async () => {
         await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
-    let client;
-    let page;
+    let client: ApifyClient;
+    let page: Page;
     beforeEach(async () => {
         // Navigate to localhost address to ensure secure context e.g. for Web Crypto API
         page = await browser.getInjectedPage(baseUrl, DEFAULT_OPTIONS, baseUrl);
@@ -32,7 +34,7 @@ describe('Key-Value Store methods', () => {
         });
     });
     afterEach(async () => {
-        client = null;
+        client = null as unknown as ApifyClient;
         page.close().catch(() => {});
     });
 
@@ -59,7 +61,7 @@ describe('Key-Value Store methods', () => {
             expect(res.id).toEqual('get-or-create-store');
             validateRequest();
 
-            const browserRes = await page.evaluate((n) => client.keyValueStores().getOrCreate(n));
+            const browserRes = await page.evaluate((n) => client.keyValueStores().getOrCreate(n), undefined);
             expect(browserRes).toEqual(res);
             validateRequest();
         });
@@ -82,7 +84,7 @@ describe('Key-Value Store methods', () => {
             const storeId = 'some-id';
 
             const res = await client.keyValueStore(storeId).get();
-            expect(res.id).toEqual('get-store');
+            expect(res?.id).toEqual('get-store');
             validateRequest({}, { storeId });
 
             const browserRes = await page.evaluate((id) => client.keyValueStore(id).get(), storeId);
@@ -252,7 +254,7 @@ describe('Key-Value Store methods', () => {
             mockServer.setResponse({ headers: expectedHeaders, body: expectedBody });
 
             const res = await client.keyValueStore(storeId).getRecord(key);
-            expect(res.value).toEqual(expectedBody);
+            expect(res?.value).toEqual(expectedBody);
             validateRequest({}, { storeId, key });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getRecord(k), storeId, key);
@@ -328,7 +330,6 @@ describe('Key-Value Store methods', () => {
 
             const browserRes = await page.evaluate(
                 async (id, k, opts) => {
-                     
                     const res = await client.keyValueStore(id).getRecord(k, opts);
                     const decoder = new TextDecoder();
                     res.value = decoder.decode(res.value);
@@ -365,7 +366,7 @@ describe('Key-Value Store methods', () => {
             const res = await client.keyValueStore(storeId).getRecord(key, options);
             expect(res.value).toBeInstanceOf(Readable);
             const chunks = [];
-            for await (const chunk of res.value) {
+            for await (const chunk of res.value!) {
                 chunks.push(chunk);
             }
             res.value = Buffer.concat(chunks).toString();
@@ -375,7 +376,7 @@ describe('Key-Value Store methods', () => {
             try {
                 await page.evaluate(
                     async (id, k, opts) => {
-                         
+
                         return client.keyValueStore(id).getRecord(k, opts);
                     },
                     storeId,
@@ -383,7 +384,7 @@ describe('Key-Value Store methods', () => {
                     options,
                 );
                 throw new Error('wrong error');
-            } catch (err) {
+            } catch (err: any) {
                 expect(err.message).toMatch('The stream option can only be used in Node.js environment.');
             }
         });

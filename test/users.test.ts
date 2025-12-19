@@ -7,7 +7,7 @@ import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
 
 describe('User methods', () => {
-    let baseUrl;
+    let baseUrl: string;
     const browser = new Browser();
 
     beforeAll(async () => {

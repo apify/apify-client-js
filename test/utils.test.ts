@@ -1,5 +1,5 @@
 import { ApifyApiError } from 'apify-client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import * as utils from '../src/utils';
 
@@ -39,7 +39,7 @@ describe('utils.parseDateFields()', () => {
     test('works', () => {
         const date = new Date('2018-01-11T14:44:48.997Z');
         const original = { fooAt: date, barat: date };
-        const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(original)));
+        const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(original))) as utils.Dictionary<Date | string>;
 
         expect(parsed.fooAt).toBeInstanceOf(Date);
         expect(typeof parsed.barat).toBe('string');
@@ -57,7 +57,7 @@ describe('utils.parseDateFields()', () => {
             },
         };
 
-        const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(original)));
+        const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(original))) as utils.Dictionary<any>;
 
         expect(parsed.data.foo[0].fooAt).toBeInstanceOf(Date);
         expect(typeof parsed.data.foo[0].barat).toBe('string');
@@ -71,7 +71,7 @@ describe('utils.parseDateFields()', () => {
 
     test('does not parse falsy values', () => {
         const original = { fooAt: null, barAt: '' };
-        const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(original)));
+        const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(original))) as utils.Dictionary<Date | string>;
 
         expect(parsed.fooAt).toEqual(null);
         expect(parsed.barAt).toEqual('');
@@ -79,7 +79,7 @@ describe('utils.parseDateFields()', () => {
 
     test('does not mangle non-date strings', () => {
         const original = { fooAt: 'three days ago', barAt: '30+ days' };
-        const parsed = utils.parseDateFields(original);
+        const parsed = utils.parseDateFields(original) as utils.Dictionary<Date | string>;
 
         expect(parsed.fooAt).toEqual('three days ago');
         expect(parsed.barAt).toEqual('30+ days');
@@ -87,7 +87,7 @@ describe('utils.parseDateFields()', () => {
 
     test('ignores perfectly fine RFC 3339 date', () => {
         const original = { fooAt: 'three days ago', date: '2024-02-18T00:00:00.000Z' };
-        const parsed = utils.parseDateFields(original);
+        const parsed = utils.parseDateFields(original) as utils.Dictionary<Date | string>;
 
         expect(parsed.fooAt).toEqual('three days ago');
         expect(parsed.date).toEqual('2024-02-18T00:00:00.000Z');
@@ -96,7 +96,7 @@ describe('utils.parseDateFields()', () => {
     test('parses custom date field detected by matcher', () => {
         const original = { fooAt: 'three days ago', date: '2024-02-18T00:00:00.000Z' };
 
-        const parsed = utils.parseDateFields(original, (key) => key === 'date');
+        const parsed = utils.parseDateFields(original, (key) => key === 'date') as utils.Dictionary<Date | string>;
 
         expect(parsed.fooAt).toEqual('three days ago');
         expect(parsed.date).toBeInstanceOf(Date);
@@ -105,14 +105,14 @@ describe('utils.parseDateFields()', () => {
     test('parses custom nested date field detected by matcher', () => {
         const original = { fooAt: 'three days ago', foo: { date: '2024-02-18T00:00:00.000Z' } };
 
-        const parsed = utils.parseDateFields(original, (key) => key === 'date');
+        const parsed = utils.parseDateFields(original, (key) => key === 'date') as utils.Dictionary<Date | string>;
 
         expect(parsed.foo.date).toBeInstanceOf(Date);
     });
 
     test('does not mangle non-date strings even when detected by matcher', () => {
         const original = { fooAt: 'three days ago', date: '30+ days' };
-        const parsed = utils.parseDateFields(original, (key) => key === 'date');
+        const parsed = utils.parseDateFields(original, (key) => key === 'date') as utils.Dictionary<Date | string>;
 
         expect(parsed.fooAt).toEqual('three days ago');
         expect(parsed.date).toEqual('30+ days');

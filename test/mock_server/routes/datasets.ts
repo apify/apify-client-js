@@ -1,10 +1,10 @@
 import express from 'express';
 
-import { addRoutes } from './add_routes';
+import { addRoutes, type MockServerRoute } from './add_routes';
 
-export const datasets = express.Router();
+export const datasetRouter = express.Router();
 
-const ROUTES = [
+const ROUTES: MockServerRoute[] = [
     { id: 'get-or-create-dataset', method: 'POST', path: '/' },
     { id: 'list-datasets', method: 'GET', path: '/' },
     { id: 'delete-dataset', method: 'DELETE', path: '/:datasetId' },
@@ -14,7 +14,7 @@ const ROUTES = [
     { id: 'get-statistics', method: 'GET', path: '/:datasetId/statistics' },
 ];
 
-addRoutes(datasets, ROUTES);
+addRoutes(datasetRouter, ROUTES);
 
 /**
  * GET /datasets/:datasetId
@@ -23,7 +23,7 @@ addRoutes(datasets, ROUTES);
  * If the dataset ID is '404', it returns a 404 error with a RECORD_NOT_FOUND type.
  * Otherwise, it returns a dataset with an ID of 'get-dataset' (default).
  */
-datasets.get('/:datasetId', (req, res) => {
+datasetRouter.get('/:datasetId', (req, res) => {
     const { datasetId } = req.params;
 
     if (datasetId === 'id-with-secret-key') {

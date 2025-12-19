@@ -1,10 +1,10 @@
 import express from 'express';
 
-import { addRoutes } from './add_routes';
+import { addRoutes, type MockServerRoute } from './add_routes';
 
-export const runs = express.Router();
+export const runRouter = express.Router();
 
-const ROUTES = [
+const ROUTES: MockServerRoute[] = [
     { id: 'list-runs', method: 'GET', path: '/' },
     { id: 'get-run', method: 'GET', path: '/:runId', type: 'responseJsonMock' },
     { id: 'abort-run', method: 'POST', path: '/:runId/abort' },
@@ -18,5 +18,5 @@ const ROUTES = [
     { id: 'run-charge', method: 'POST', path: '/:runId/charge' },
 ];
 
-addRoutes(runs, ROUTES);
+addRoutes(runRouter, ROUTES);
 

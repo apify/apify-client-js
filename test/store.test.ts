@@ -1,9 +1,10 @@
 import type { StoreCollectionListOptions } from 'apify-client';
 import { ApifyClient } from 'apify-client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
+import { AddressInfo } from 'node:net';
 
 describe('Store', () => {
     let baseUrl: string | undefined;
@@ -12,7 +13,7 @@ describe('Store', () => {
     beforeAll(async () => {
         const server = await mockServer.start();
         await browser.start();
-        baseUrl = `http://localhost:${server.address().port}`;
+        baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`;
     });
 
     afterAll(async () => {

@@ -1,10 +1,10 @@
 import express from 'express';
 
-import { addRoutes } from './add_routes';
+import { addRoutes, type MockServerRoute } from './add_routes';
 
 export const requestQueues = express.Router();
 
-const ROUTES = [
+const ROUTES: MockServerRoute[] = [
     { id: 'get-or-create-queue', method: 'POST', path: '/' },
     { id: 'list-queues', method: 'GET', path: '/' },
     { id: 'get-queue', method: 'GET', path: '/:queueId' },

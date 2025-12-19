@@ -1,5 +1,5 @@
 import { ApifyClient } from 'apify-client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 describe('ApifyClient', () => {
     test('default baseUrl is correctly set', () => {

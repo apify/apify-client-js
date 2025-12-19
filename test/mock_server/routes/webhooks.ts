@@ -1,10 +1,10 @@
 import express from 'express';
 
-import { addRoutes } from './add_routes';
+import { addRoutes, type MockServerRoute } from './add_routes';
 
 export const webhooks = express.Router();
 
-const ROUTES = [
+const ROUTES: MockServerRoute[] = [
     { id: 'create-webhook', method: 'POST', path: '/' },
     { id: 'list-webhooks', method: 'GET', path: '/' },
     { id: 'get-webhook', method: 'GET', path: '/:webhookId' },

@@ -1,10 +1,10 @@
 import express from 'express';
 
-import { addRoutes } from './add_routes';
+import { addRoutes, type MockServerRoute } from './add_routes';
 
 export const webhookDispatches = express.Router();
 
-const ROUTES = [
+const ROUTES: MockServerRoute[] = [
     { id: 'list-dispatches', method: 'GET', path: '/' },
     { id: 'get-dispatch', method: 'GET', path: '/:webhookDispatchId' },
 ];

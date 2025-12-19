@@ -1,29 +1,31 @@
 import { setTimeout as setTimeoutNode } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import { ApifyClient } from 'apify-client';
+import { ApifyClient, RunCollectionListOptions } from 'apify-client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
 import { MOCKED_ACTOR_LOGS_PROCESSED } from './mock_server/test_utils';
+import { Page } from 'puppeteer';
+import { AddressInfo } from 'node:net';
 
 describe('Run methods', () => {
-    let baseUrl;
+    let baseUrl: string;
     const browser = new Browser();
 
     beforeAll(async () => {
         const server = await mockServer.start();
         await browser.start();
-        baseUrl = `http://localhost:${server.address().port}`;
+        baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`;
     });
 
     afterAll(async () => {
         await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
-    let client;
-    let page;
+    let client: ApifyClient;
+    let page: Page;
     beforeEach(async () => {
         page = await browser.getInjectedPage(baseUrl, DEFAULT_OPTIONS);
         client = new ApifyClient({
@@ -33,7 +35,7 @@ describe('Run methods', () => {
         });
     });
     afterEach(async () => {
-        client = null;
+        client = null as unknown as ApifyClient;
         page.close().catch(() => {});
     });
 
@@ -44,7 +46,7 @@ describe('Run methods', () => {
                 offset: 3,
                 desc: true,
                 status: 'SUCCEEDED',
-            };
+            } as const;
 
             const res = await client.runs().list(query);
             expect(res.id).toEqual('list-runs');
@@ -61,12 +63,12 @@ describe('Run methods', () => {
                 offset: 3,
                 desc: true,
                 status: ['SUCCEEDED', 'FAILED'],
-            };
+            } as RunCollectionListOptions;
 
             const expectedQuery = {
                 ...query,
                 status: 'SUCCEEDED,FAILED', // This is what should be sent to the API
-            };
+            } as const;
 
             const res = await client.runs().list(query);
             expect(res.id).toEqual('list-runs');
@@ -124,7 +126,7 @@ describe('Run methods', () => {
             const runId = 'some-run-id';
 
             const res = await client.run(runId).get();
-            expect(res.id).toEqual('get-run');
+            expect(res?.id).toEqual('get-run');
             validateRequest({}, { runId });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).get(), runId);
@@ -238,7 +240,7 @@ describe('Run methods', () => {
             const targetActorId = 'some-target-id';
             const input = {
                 foo: 'bar',
-                fn: async (a, b) => a + b,
+                fn: async (a: number, b: number) => a + b,
             };
 
             const expectedRequest = [
@@ -256,7 +258,7 @@ describe('Run methods', () => {
                 (rId, tId) => {
                     return client.run(rId).metamorph(tId, {
                         foo: 'bar',
-                        fn: async (a, b) => a + b,
+                        fn: async (a: number, b: number) => a + b,
                     });
                 },
                 runId,
@@ -322,7 +324,7 @@ describe('Run methods', () => {
             const runId = 'some-run-id';
 
             const res = await client.run(runId).dataset().get();
-            expect(res.id).toEqual('run-dataset');
+            expect(res?.id).toEqual('run-dataset');
 
             validateRequest({}, { runId });
 
@@ -335,7 +337,7 @@ describe('Run methods', () => {
             const runId = 'some-run-id';
 
             const res = await client.run(runId).keyValueStore().get();
-            expect(res.id).toEqual('run-keyValueStore');
+            expect(res?.id).toEqual('run-keyValueStore');
 
             validateRequest({}, { runId });
 
@@ -348,7 +350,7 @@ describe('Run methods', () => {
             const runId = 'some-run-id';
 
             const res = await client.run(runId).requestQueue().get();
-            expect(res.id).toEqual('run-requestQueue');
+            expect(res?.id).toEqual('run-requestQueue');
 
             validateRequest({}, { runId });
 
@@ -376,7 +378,7 @@ describe('Run methods', () => {
             const res = await client.run(runId).charge({ eventName: 'some-event' });
             expect(res.status).toEqual(200);
 
-            await expect(client.run(runId).charge()).rejects.toThrow(
+            await expect(client.run(runId).charge(undefined as any)).rejects.toThrow(
                 'Expected `options` to be of type `object` but received type `undefined`\n' +
                     'Cannot convert undefined or null to object in object `options`',
             );
@@ -385,7 +387,7 @@ describe('Run methods', () => {
 });
 
 describe('Redirect run logs', () => {
-    let baseUrl;
+    let baseUrl: string;
 
     beforeAll(async () => {
         // Ensure that the tests that use characters like á are correctly decoded in console.
@@ -398,7 +400,7 @@ describe('Redirect run logs', () => {
         await Promise.all([mockServer.close()]);
     });
 
-    let client;
+    let client: ApifyClient;
     beforeEach(async () => {
         client = new ApifyClient({
             baseUrl,
@@ -407,7 +409,7 @@ describe('Redirect run logs', () => {
         });
     });
     afterEach(async () => {
-        client = null;
+        client = null as unknown as ApifyClient;
     });
 
     const testCases = [
@@ -424,10 +426,10 @@ describe('Redirect run logs', () => {
             const streamedLog = await client.run('redirect-run-id').getStreamedLog({ fromStart });
             vi.useRealTimers();
 
-            streamedLog.start();
+            streamedLog?.start();
             // Wait some time to accumulate logs
             await setTimeoutNode(1000);
-            await streamedLog.stop();
+            await streamedLog?.stop();
 
             const loggerPrefix = c.cyan('redirect-actor-name runId:redirect-run-id -> ');
             expect(logSpy.mock.calls).toEqual(expected.map((item) => [loggerPrefix + item]));

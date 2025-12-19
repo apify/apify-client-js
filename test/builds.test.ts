@@ -1,25 +1,27 @@
 import { ApifyClient } from 'apify-client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
+import { Page } from 'puppeteer';
+import { AddressInfo } from 'node:net';
 
 describe('Build methods', () => {
-    let baseUrl;
+    let baseUrl: string;
     const browser = new Browser();
 
     beforeAll(async () => {
         const server = await mockServer.start();
         await browser.start();
-        baseUrl = `http://localhost:${server.address().port}`;
+        baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`;
     });
 
     afterAll(async () => {
         await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
-    let client;
-    let page;
+    let client: ApifyClient;
+    let page: Page;
     beforeEach(async () => {
         page = await browser.getInjectedPage(baseUrl, DEFAULT_OPTIONS);
         client = new ApifyClient({
@@ -29,7 +31,8 @@ describe('Build methods', () => {
         });
     });
     afterEach(async () => {
-        client = null;
+        // purge the client instance to avoid sharing state between tests
+        client = null as any as ApifyClient;
         page.close().catch(() => {});
     });
 
@@ -56,7 +59,7 @@ describe('Build methods', () => {
             const buildId = 'some-build-id';
 
             const res = await client.build(buildId).get();
-            expect(res.id).toEqual('get-build');
+            expect(res?.id).toEqual('get-build');
             validateRequest({}, { buildId });
 
             const browserRes = await page.evaluate((bId) => client.build(bId).get(), buildId);

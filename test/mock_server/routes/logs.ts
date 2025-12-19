@@ -1,10 +1,10 @@
 import express from 'express';
 
-import { addRoutes } from './add_routes';
+import { addRoutes, type MockServerRoute } from './add_routes';
 
-export const logs = express.Router();
+export const logRouter = express.Router();
 
-const ROUTES = [{ id: 'get-log', method: 'GET', path: '/:logId', type: 'text' }];
+const ROUTES: MockServerRoute[] = [{ id: 'get-log', method: 'GET', path: '/:logId', type: 'text' }];
 
-addRoutes(logs, ROUTES);
+addRoutes(logRouter, ROUTES);
 

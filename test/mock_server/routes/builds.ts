@@ -1,10 +1,10 @@
 import express from 'express';
 
-import { addRoutes } from './add_routes';
+import { addRoutes, type MockServerRoute } from './add_routes';
 
-export const builds = express.Router();
+export const buildRouter = express.Router();
 
-const ROUTES = [
+const ROUTES: MockServerRoute[] = [
     { id: 'list-builds', method: 'GET', path: '/' },
     { id: 'get-build', method: 'GET', path: '/:buildId', type: 'responseJsonMock' },
     { id: 'abort-build', method: 'POST', path: '/:buildId/abort' },
@@ -12,5 +12,5 @@ const ROUTES = [
     { id: 'build-openapi', method: 'GET', path: '/:buildId/openapi.json', type: 'responseJsonMock' },
 ];
 
-addRoutes(builds, ROUTES);
+addRoutes(buildRouter, ROUTES);
 

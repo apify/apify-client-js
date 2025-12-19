@@ -1,10 +1,10 @@
 import express from 'express';
 
-import { addRoutes } from './add_routes';
+import { addRoutes, type MockServerRoute } from './add_routes';
 
 export const keyValueStores = express.Router();
 
-const ROUTES = [
+const ROUTES: MockServerRoute[] = [
     { id: 'list-stores', method: 'GET', path: '/' },
     { id: 'get-or-create-store', method: 'POST', path: '/' },
     { id: 'delete-store', method: 'DELETE', path: '/:storeId' },

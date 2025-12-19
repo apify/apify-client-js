@@ -1,4 +1,7 @@
-function maybeParseContextFromResourceId(resourceId) {
+import { Dictionary } from 'apify-client';
+import type { Request, Response, Router } from 'express';
+
+function maybeParseContextFromResourceId(resourceId: any) {
     if (typeof resourceId !== 'string') return;
     const hexBuffer = Buffer.from(resourceId, 'hex');
     const json = hexBuffer.toString('utf-8');
@@ -10,11 +13,11 @@ function maybeParseContextFromResourceId(resourceId) {
 }
 
 const HANDLERS = {
-    text(id) {
-        return (req, res) => {
+    text(id: string) {
+        return (req: Request, res: Response) => {
             const [resourceId] = Object.values(req.params);
             const responseStatusCode = Number(resourceId) || 200;
-            let payload;
+            let payload: string | null | Dictionary<any>;
             if (responseStatusCode === 200) payload = id;
             else if (responseStatusCode === 204) payload = null;
             else if (responseStatusCode === 404) {
@@ -33,11 +36,11 @@ const HANDLERS = {
             }, delayMillis || 0);
         };
     },
-    json(id) {
-        return (req, res) => {
+    json(id: string) {
+        return (req: Request, res: Response) => {
             const [resourceId] = Object.values(req.params);
             const responseStatusCode = Number(resourceId) || 200;
-            let payload = {};
+            let payload: Dictionary<any> | null = {};
             if (responseStatusCode === 200) payload = { data: { id } };
             else if (responseStatusCode === 204) payload = null;
             else if (responseStatusCode === 400) {
@@ -70,18 +73,18 @@ const HANDLERS = {
         };
     },
     dummyBatchOperation() {
-        return (req, res) => {
+        return (req: Request, res: Response) => {
             res.status(200).json({ data: { unprocessedRequests: [], processedRequests: req.body } });
         };
     },
-    responseJsonMock(id) {
-        return (req, res) => {
+    responseJsonMock(id: string) {
+        return (req: Request, res: Response) => {
             const [resourceId] = Object.values(req.params);
             const responseStatusCode = Number(resourceId) || 200;
 
             const mockServer = req.app.get('mockServer');
             let body = { data: { id } };
-            let headers;
+            let headers: Dictionary<string> = {};
             let statusCode = responseStatusCode;
 
             if (mockServer.response) {
@@ -90,7 +93,7 @@ const HANDLERS = {
                 statusCode = mockServer.response.statusCode || 200;
             }
 
-            let payload;
+            let payload: Dictionary<any> | null = {};
             if (statusCode === 200) payload = body;
             else if (statusCode === 204) payload = null;
             else if (statusCode === 404) {
@@ -109,13 +112,20 @@ const HANDLERS = {
             }, delayMillis || 0);
         };
     },
-};
+} as const;
 
-export function addRoutes(router, routes) {
+export interface MockServerRoute {
+    id: string;
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    path: string;
+    type?: 'json' | 'text' | 'dummyBatchOperation' | 'responseJsonMock';
+}
+
+export function addRoutes(router: Router, routes: MockServerRoute[]) {
     routes.forEach((route) => {
         const type = route.type ? route.type : 'json';
         const handler = HANDLERS[type];
-        const method = route.method.toLowerCase();
+        const method = route.method.toLowerCase() as 'get' | 'post' | 'put' | 'delete';
         router[method](route.path, handler(route.id));
     });
 }

@@ -50,24 +50,27 @@ export const MOCKED_ACTOR_STATUSES = [
  * Helper class to allow iterating over defined list of statuses for each test case.
  */
 export class StatusGenerator {
+    private generator: Generator<string[], void, unknown>;
+
+    private *getStatusGenerator() {
+        for (const status of MOCKED_ACTOR_STATUSES) {
+            yield status;
+        }
+        // After exhausting, keep yielding the last status
+        while (true) {
+            yield MOCKED_ACTOR_STATUSES[MOCKED_ACTOR_STATUSES.length - 1];
+        }
+    }
+
     constructor() {
-        this.reset();
+        this.generator = this.getStatusGenerator();
     }
 
     reset() {
-        function* getStatusGenerator() {
-            for (const status of MOCKED_ACTOR_STATUSES) {
-                yield status;
-            }
-            // After exhausting, keep yielding the last status
-            while (true) {
-                yield MOCKED_ACTOR_STATUSES[MOCKED_ACTOR_STATUSES.length - 1];
-            }
-        }
-        this.generator = getStatusGenerator();
+        this.generator = this.getStatusGenerator();
     }
 
-    next() {
+    next(): IteratorResult<string[]> {
         return this.generator.next();
     }
 }

@@ -1,25 +1,27 @@
 import { ApifyClient } from 'apify-client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
+import { Page } from 'puppeteer';
+import { AddressInfo } from 'node:net';
 
 describe('Webhook Dispatch methods', () => {
-    let baseUrl;
+    let baseUrl: string;
     const browser = new Browser();
 
     beforeAll(async () => {
         const server = await mockServer.start();
         await browser.start();
-        baseUrl = `http://localhost:${server.address().port}`;
+        baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`;
     });
 
     afterAll(async () => {
         await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
-    let client;
-    let page;
+    let client: ApifyClient;
+    let page: Page;
     beforeEach(async () => {
         page = await browser.getInjectedPage(baseUrl, DEFAULT_OPTIONS);
         client = new ApifyClient({
@@ -29,7 +31,7 @@ describe('Webhook Dispatch methods', () => {
         });
     });
     afterEach(async () => {
-        client = null;
+        client = null as unknown as ApifyClient;
         page.close().catch(() => {});
     });
 
@@ -56,7 +58,7 @@ describe('Webhook Dispatch methods', () => {
             const webhookDispatchId = 'some-id';
 
             const res = await client.webhookDispatch(webhookDispatchId).get();
-            expect(res.id).toEqual('get-dispatch');
+            expect(res?.id).toEqual('get-dispatch');
             validateRequest({}, { webhookDispatchId });
 
             const browserRes = await page.evaluate((id) => client.webhookDispatch(id).get(), webhookDispatchId);

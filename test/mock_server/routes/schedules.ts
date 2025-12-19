@@ -1,10 +1,10 @@
 import express from 'express';
 
-import { addRoutes } from './add_routes';
+import { addRoutes, type MockServerRoute } from './add_routes';
 
 export const schedules = express.Router();
 
-const ROUTES = [
+const ROUTES: MockServerRoute[] = [
     { id: 'create-schedule', method: 'POST', path: '/' },
     { id: 'list-schedules', method: 'GET', path: '/' },
     { id: 'get-schedule', method: 'GET', path: '/:scheduleId' },

@@ -87,6 +87,7 @@
         "@rsbuild/plugin-node-polyfill": "^1.3.0",
         "@stylistic/eslint-plugin-ts": "^4.2.0",
         "@types/async-retry": "^1.4.5",
+        "@types/compression": "^1.8.1",
         "@types/content-type": "^1.1.5",
         "@types/express": "^5.0.0",
         "@types/fs-extra": "^11.0.1",

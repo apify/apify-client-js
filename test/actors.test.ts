@@ -3,6 +3,8 @@ import { setTimeout } from 'node:timers/promises';
 import c from 'ansi-colors';
 import { ActorListSortBy, ApifyClient, LoggerActorRedirect } from 'apify-client';
 import express from 'express';
+import type { Page } from 'puppeteer';
+import type { AddressInfo } from 'net';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
 
 import { LEVELS,Log } from '@apify/log';
@@ -11,23 +13,24 @@ import { stringifyWebhooksToBase64 } from '../src/utils';
 import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
 import { createDefaultApp,mockServer } from './mock_server/server';
 import { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator } from './mock_server/test_utils';
+import { WEBHOOK_EVENT_TYPES } from '@apify/consts';
 
 describe('Actor methods', () => {
-    let baseUrl;
+    let baseUrl: string;
     const browser = new Browser();
 
     beforeAll(async () => {
-        const server = await mockServer.start();
+        const server = await mockServer.start() as import('http').Server;
         await browser.start();
-        baseUrl = `http://localhost:${server.address().port}`;
+        baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`;
     });
 
     afterAll(async () => {
         await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
-    let client;
-    let page;
+    let client: ApifyClient;
+    let page: Page;
     beforeEach(async () => {
         page = await browser.getInjectedPage(baseUrl, DEFAULT_OPTIONS);
         client = new ApifyClient({
@@ -37,7 +40,8 @@ describe('Actor methods', () => {
         });
     });
     afterEach(async () => {
-        client = null;
+        // purge the client instance to avoid sharing state between tests
+        client = null as any;
         page.close().catch(() => {});
     });
 
@@ -90,7 +94,7 @@ describe('Actor methods', () => {
             const actorId = 'some-id';
 
             const res = await client.actor(actorId).get();
-            expect(res.id).toEqual('get-actor');
+            expect(res?.id).toEqual('get-actor');
             validateRequest({}, { actorId });
 
             const browserRes = await page.evaluate((id) => client.actor(id).get(), actorId);
@@ -115,7 +119,7 @@ describe('Actor methods', () => {
 
             const defaultBuildClient = await client.actor(actorId).defaultBuild();
             const res = await defaultBuildClient.get();
-            expect(res.id).toEqual('get-build');
+            expect(res?.id).toEqual('get-build');
             validateRequest({}, { buildId: 'default-build-get' });
 
             const browserRes = await page.evaluate(async (id) => {
@@ -179,7 +183,7 @@ describe('Actor methods', () => {
             const actorId = 'some-id';
             const input = {
                 foo: 'bar',
-                fn: async (a, b) => a + b,
+                fn: async (a: number, b: number) => a + b,
             };
 
             const expectedRequestProps = [
@@ -196,7 +200,7 @@ describe('Actor methods', () => {
             const browserRes = await page.evaluate((id) => {
                 return client.actor(id).start({
                     foo: 'bar',
-                    fn: async (a, b) => a + b,
+                    fn: async (a: number, b: number) => a + b,
                 });
             }, actorId);
             expect(browserRes).toEqual(res);
@@ -207,11 +211,11 @@ describe('Actor methods', () => {
             const actorId = 'some-id';
             const webhooks = [
                 {
-                    eventTypes: ['ACTOR.RUN.CREATED'],
+                    eventTypes: [WEBHOOK_EVENT_TYPES.ACTOR_RUN_CREATED],
                     requestUrl: 'https://example.com/run-created',
                 },
                 {
-                    eventTypes: ['ACTOR.RUN.SUCCEEDED'],
+                    eventTypes: [WEBHOOK_EVENT_TYPES.ACTOR_RUN_SUCCEEDED],
                     requestUrl: 'https://example.com/run-succeeded',
                 },
             ];
@@ -357,7 +361,7 @@ describe('Actor methods', () => {
         });
 
         describe('lastRun()', () => {
-            test.each(['get', 'dataset', 'keyValueStore', 'requestQueue', 'log'])('%s() works', async (method) => {
+            test.each(['get', 'dataset', 'keyValueStore', 'requestQueue', 'log'] as const)('%s() works', async (method) => {
                 const actorId = 'some-actor-id';
                 const requestedStatus = 'SUCCEEDED';
 
@@ -367,7 +371,7 @@ describe('Actor methods', () => {
                 if (method === 'log') {
                     expect(res).toEqual('last-run-log');
                 } else {
-                    expect(res.id).toEqual(`last-run-${method}`);
+                    expect(res?.id).toEqual(`last-run-${method}`);
                 }
                 validateRequest({ status: requestedStatus }, { actorId });
 
@@ -581,7 +585,7 @@ describe('Actor methods', () => {
                 const envVarName = 'TEST_ENV_VAR';
 
                 const res = await client.actor(actorId).version(versionNumber).envVar(envVarName).get();
-                expect(res.id).toEqual('get-actor-env-var');
+                expect(res?.id).toEqual('get-actor-env-var');
                 validateRequest({}, { actorId, versionNumber, envVarName });
 
                 const browserRes = await page.evaluate(
@@ -681,8 +685,8 @@ describe('Actor methods', () => {
 });
 
 describe('Run actor with redirected logs', () => {
-    let baseUrl;
-    let client;
+    let baseUrl: string;
+    let client: ApifyClient;
     const statusGenerator = new StatusGenerator();
 
     beforeAll(async () => {
@@ -698,7 +702,7 @@ describe('Run actor with redirected logs', () => {
         });
         const app = createDefaultApp(router);
         const server = await mockServer.start(undefined, app);
-        baseUrl = `http://localhost:${server.address().port}`;
+        baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`;
     });
 
     afterAll(async () => {
@@ -715,7 +719,7 @@ describe('Run actor with redirected logs', () => {
     afterEach(async () => {
         // Reset the generator to so that the next test starts fresh
         statusGenerator.reset();
-        client = null;
+        client = null as unknown as ApifyClient;
     });
 
     const testCases = [
@@ -727,7 +731,7 @@ describe('Run actor with redirected logs', () => {
                 log: new Log({ level: LEVELS.DEBUG, prefix: 'custom prefix...', logger: new LoggerActorRedirect() }),
             },
         },
-    ];
+    ] as const;
 
     describe('actor.call - redirected logs', () => {
         test.each(testCases)('logOptions:$logOptions', async ({ expectedPrefix, logOptions }) => {

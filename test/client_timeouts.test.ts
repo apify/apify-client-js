@@ -1,10 +1,15 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
+import { beforeEach, describe, expect,test, vi } from 'vitest';
 
-import { ApifyClient } from '../dist/index.js';
+import { ApifyClient, type Dictionary } from 'apify-client';
+import type { HttpClient } from '../src/http_client.js';
 
 // Mock for testing timeout functionality
 class MockHttpClient {
-    constructor(timeoutSecs) {
+    public timeoutSecs: number;
+    public callHistory: Array<any>
+    public stats: { addRateLimitError: ReturnType<typeof vi.fn> };
+
+    constructor(timeoutSecs: number) {
         this.timeoutSecs = timeoutSecs * 1000; // Convert to milliseconds
         this.callHistory = [];
         this.stats = {
@@ -12,7 +17,7 @@ class MockHttpClient {
         };
     }
 
-    async call(config) {
+    async call(config: Dictionary<any>) {
         // Track the call for assertions
         this.callHistory.push({
             ...config,
@@ -68,17 +73,17 @@ const timeoutTestParams = [
     ['RequestQueueClient', 'batchAddRequests', 30000, [[{ uniqueKey: 'request-key' }], {}]],
     ['RequestQueueClient', 'batchDeleteRequests', 5000, [[{ id: 'request-id' }]]],
     ['RequestQueueClient', 'listRequests', 30000, []],
-];
+] as const;
 
 describe('Client Timeout Tests', () => {
-    let client;
-    let mockHttpClient;
+    let client: ApifyClient;
+    let mockHttpClient: MockHttpClient;
 
     beforeEach(() => {
         mockHttpClient = new MockHttpClient(360); // 6 minutes default
         client = new ApifyClient();
         // Replace the http client with our mock
-        client.httpClient = mockHttpClient;
+        client.httpClient = mockHttpClient as any as HttpClient;
     });
 
     describe('Dynamic Timeout with Exponential Backoff', () => {
@@ -112,28 +117,27 @@ describe('Client Timeout Tests', () => {
         'Specific timeouts for specific endpoints',
         (clientType, methodName, expectedTimeoutMillis, methodArgs) => {
             test(`${clientType}.${methodName}() uses ${expectedTimeoutMillis} millisecond timeout`, async () => {
-                let clientInstance;
-
+                let clientInstance: Record<string, unknown> & { httpClient: HttpClient };
                 // Create the appropriate client instance
                 switch (clientType) {
                     case 'DatasetClient':
-                        clientInstance = client.dataset('test-id');
+                        clientInstance = client.dataset('test-id') as unknown as typeof clientInstance;
                         break;
                     case 'KeyValueStoreClient':
-                        clientInstance = client.keyValueStore('test-id');
+                        clientInstance = client.keyValueStore('test-id') as unknown as typeof clientInstance;
                         break;
                     case 'RequestQueueClient':
-                        clientInstance = client.requestQueue('test-id');
+                        clientInstance = client.requestQueue('test-id') as unknown as typeof clientInstance;
                         break;
                     default:
                         throw new Error(`Unknown client type: ${clientType}`);
                 }
 
                 // Replace with our mock
-                clientInstance.httpClient = mockHttpClient;
+                clientInstance.httpClient = mockHttpClient as unknown as HttpClient;
 
                 // Call the method
-                await clientInstance[methodName](...methodArgs);
+                await (clientInstance[methodName] as (...args: readonly unknown[]) => Promise<unknown>)(...methodArgs);
 
                 // Check the timeout was set correctly
                 const lastCall = mockHttpClient.callHistory[mockHttpClient.callHistory.length - 1];
