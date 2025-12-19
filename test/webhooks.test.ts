@@ -1,4 +1,4 @@
-import { ApifyClient } from 'apify-client';
+import { ApifyClient, WebhookUpdateData } from 'apify-client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
@@ -37,15 +37,19 @@ describe('Webhook methods', () => {
 
     describe('webhooks()', () => {
         test('create() works', async () => {
-            const webhook = { foo: 'bar' };
+            const webhook: WebhookUpdateData = { description: 'My new webhook' };
 
             const res = await client.webhooks().create(webhook);
-            expect(res.id).toEqual('create-webhook');
-            validateRequest({}, {}, webhook);
+            validateRequest({
+                path: '/v2/webhooks/',
+                body: webhook,
+            });
 
             const browserRes = await page.evaluate((w) => client.webhooks().create(w), webhook);
             expect(browserRes).toEqual(res);
-            validateRequest({}, {}, webhook);
+            validateRequest({
+                body: webhook,
+            });
         });
 
         test('listWebhooks() works', async () => {
@@ -56,12 +60,16 @@ describe('Webhook methods', () => {
             };
 
             const res = await client.webhooks().list(opts);
-            expect(res.id).toEqual('list-webhooks');
-            validateRequest(opts);
+            validateRequest({
+                path: '/v2/webhooks/',
+                query: opts
+            });
 
             const browserRes = await page.evaluate((options) => client.webhooks().list(options), opts);
             expect(browserRes).toEqual(res);
-            validateRequest(opts);
+            validateRequest({
+                query: opts
+            });
         });
     });
 
@@ -70,12 +78,17 @@ describe('Webhook methods', () => {
             const webhookId = 'webhook_id';
 
             const res = await client.webhook(webhookId).get();
-            expect(res.id).toEqual('get-webhook');
-            validateRequest({}, { webhookId });
+            validateRequest({
+                path: `/v2/webhooks/${webhookId}`,
+                params: { webhookId },
+            });
 
             const browserRes = await page.evaluate((id) => client.webhook(id).get(), webhookId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { webhookId });
+            validateRequest({
+                path: `/v2/webhooks/${webhookId}`,
+                params: { webhookId },
+            });
         });
 
         test('get() 404', async () => {
@@ -83,27 +96,38 @@ describe('Webhook methods', () => {
 
             const res = await client.webhook(webhookId).get();
             expect(res).toBeUndefined();
-            validateRequest({}, { webhookId });
+            validateRequest({
+                params: { webhookId },
+            });
 
             const browserRes = await page.evaluate((id) => client.webhook(id).get(), webhookId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { webhookId });
+            validateRequest({
+                params: { webhookId },
+            });
         });
 
         test('update() works', async () => {
             const webhookId = 'webhook_id';
-            const webhook = {
-                foo: 'bar',
-                updated: 'value',
+            const webhook: WebhookUpdateData = {
+                description: 'My updated webhook',
+                isAdHoc: true,
             };
 
             const res = await client.webhook(webhookId).update(webhook);
-            expect(res.id).toEqual('update-webhook');
-            validateRequest({}, { webhookId }, webhook);
+            validateRequest({
+                path: `/v2/webhooks/${webhookId}`,
+                body: webhook,
+                params: { webhookId },
+            })
 
             const browserRes = await page.evaluate((id, w) => client.webhook(id).update(w), webhookId, webhook);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { webhookId }, webhook);
+            validateRequest({
+                path: `/v2/webhooks/${webhookId}`,
+                body: webhook,
+                params: { webhookId },
+            });
         });
 
         test('delete() works', async () => {
@@ -111,23 +135,34 @@ describe('Webhook methods', () => {
 
             const res = await client.webhook(webhookId).delete();
             expect(res).toBeUndefined();
-            validateRequest({}, { webhookId });
+            validateRequest({
+                path: `/v2/webhooks/${webhookId}`,
+                params: { webhookId },
+            });
 
             const browserRes = await page.evaluate((id) => client.webhook(id).delete(), webhookId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { webhookId });
+            validateRequest({
+                path: `/v2/webhooks/${webhookId}`,
+                params: { webhookId },
+            });
         });
 
         test('test() works', async () => {
             const webhookId = 'webhook_test_id';
 
             const res = await client.webhook(webhookId).test();
-            expect(res.id).toEqual('test-webhook');
-            validateRequest({}, { webhookId });
+            validateRequest({
+                path: `/v2/webhooks/${webhookId}/test`,
+                params: { webhookId },
+            });
 
             const browserRes = await page.evaluate((id) => client.webhook(id).test(), webhookId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { webhookId });
+            validateRequest({
+                path: `/v2/webhooks/${webhookId}/test`,
+                params: { webhookId },
+            });
         });
 
         test('listDispatches() works', async () => {
@@ -139,12 +174,19 @@ describe('Webhook methods', () => {
             };
 
             const res = await client.webhook(webhookId).dispatches().list(opts);
-            expect(res.id).toEqual('list-dispatches');
-            validateRequest(opts, { webhookId });
+            validateRequest({
+                path: `/v2/webhooks/${webhookId}/dispatches`,
+                params: { webhookId },
+                query: opts,
+            });
 
             const browserRes = await page.evaluate((id, o) => client.webhook(id).dispatches().list(o), webhookId, opts);
             expect(browserRes).toEqual(res);
-            validateRequest(opts, { webhookId });
+            validateRequest({
+                path: `/v2/webhooks/${webhookId}/dispatches`,
+                params: { webhookId },
+                query: opts,
+            });
         });
     });
 });

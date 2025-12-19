@@ -21,6 +21,7 @@ const MIN_GZIP_BYTES = 1024;
  * @template R - The type of the data property
  */
 export interface MaybeData<R> {
+    [key: string]: any;
     data?: R;
 }
 

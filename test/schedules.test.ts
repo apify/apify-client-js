@@ -1,5 +1,5 @@
 import { ApifyClient } from 'apify-client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
@@ -37,15 +37,14 @@ describe('Schedule methods', () => {
 
     describe('schedules()', () => {
         test('create() works', async () => {
-            const schedule = { foo: 'bar' };
+            const schedule = { name: 'my-schedule', cronExpression: '0 0 * * *' };
 
             const res = await client.schedules().create(schedule);
-            expect(res.id).toEqual('create-schedule');
-            validateRequest({}, {}, schedule);
+            validateRequest({ query: {}, params: {}, body: schedule, path: '/v2/schedules/' });
 
             const browserRes = await page.evaluate((options) => client.schedules().create(options), schedule);
             expect(browserRes).toEqual(res);
-            validateRequest({}, {}, schedule);
+            validateRequest({ query: {}, params: {}, body: schedule });
         });
 
         test('list() works', async () => {
@@ -56,12 +55,11 @@ describe('Schedule methods', () => {
             };
 
             const res = await client.schedules().list(opts);
-            expect(res.id).toEqual('list-schedules');
-            validateRequest(opts);
+            validateRequest({ query: opts, path: '/v2/schedules/' });
 
             const browserRes = await page.evaluate((options) => client.schedules().list(options), opts);
             expect(browserRes).toEqual(res);
-            validateRequest(opts);
+            validateRequest({ query: opts });
         });
     });
 
@@ -70,12 +68,11 @@ describe('Schedule methods', () => {
             const scheduleId = 'schedule_id';
 
             const res = await client.schedule(scheduleId).get();
-            expect(res.id).toEqual('get-schedule');
-            validateRequest({}, { scheduleId });
+            validateRequest({ query: {}, params: { scheduleId }, path: `/v2/schedules/${encodeURIComponent(scheduleId)}` });
 
             const browserRes = await page.evaluate((id) => client.schedule(id).get(), scheduleId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { scheduleId });
+            validateRequest({ query: {}, params: { scheduleId } });
         });
 
         test('get() 404', async () => {
@@ -83,27 +80,23 @@ describe('Schedule methods', () => {
 
             const res = await client.schedule(scheduleId).get();
             expect(res).toBeUndefined();
-            validateRequest({}, { scheduleId });
+            validateRequest({ query: {}, params: { scheduleId } });
 
             const browserRes = await page.evaluate((id) => client.schedule(id).get(), scheduleId);
             expect(browserRes).toBeUndefined();
-            validateRequest({}, { scheduleId });
+            validateRequest({ query: {}, params: { scheduleId } });
         });
 
         test('update() works', async () => {
             const scheduleId = 'schedule_id';
-            const schedule = {
-                foo: 'bar',
-                updated: 'value',
-            };
+            const schedule = { title: 'my new schedule', cronExpression: '0 0 * * *' };
 
             const res = await client.schedule(scheduleId).update(schedule);
-            expect(res.id).toEqual('update-schedule');
-            validateRequest({}, { scheduleId }, schedule);
+            validateRequest({ query: {}, params: { scheduleId }, body: schedule, path: `/v2/schedules/${encodeURIComponent(scheduleId)}` });
 
             const browserRes = await page.evaluate((id, s) => client.schedule(id).update(s), scheduleId, schedule);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { scheduleId }, schedule);
+            validateRequest({ query: {}, params: { scheduleId }, body: schedule });
         });
 
         test('delete() works', async () => {
@@ -111,22 +104,21 @@ describe('Schedule methods', () => {
 
             const res = await client.schedule(scheduleId).delete();
             expect(res).toBeUndefined();
-            validateRequest({}, { scheduleId });
+            validateRequest({ query: {}, params: { scheduleId } });
 
             const browserRes = await page.evaluate((id) => client.schedule(id).delete(), scheduleId);
             expect(browserRes).toBeUndefined();
-            validateRequest({}, { scheduleId });
+            validateRequest({ query: {}, params: { scheduleId } });
         });
         test('getLog() works', async () => {
             const scheduleId = 'schedule_id';
 
             const res = await client.schedule(scheduleId).getLog();
-            expect(res.id).toEqual('get-log');
-            validateRequest({}, { scheduleId });
+            validateRequest({ query: {}, params: { scheduleId }, path: `/v2/schedules/${encodeURIComponent(scheduleId)}/log` });
 
             const browserRes = await page.evaluate((id) => client.schedule(id).getLog(), scheduleId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { scheduleId });
+            validateRequest({ query: {}, params: { scheduleId } });
         });
     });
 });

@@ -45,12 +45,11 @@ describe('Build methods', () => {
             };
 
             const res = await client.builds().list(query);
-            expect(res.id).toEqual('list-builds');
-            validateRequest(query);
+            validateRequest({ query: query, path: '/v2/actor-builds/' });
 
             const browserRes = await page.evaluate((opts) => client.builds().list(opts), query);
             expect(browserRes).toEqual(res);
-            validateRequest(query);
+            validateRequest({ query: query });
         });
     });
 
@@ -60,11 +59,11 @@ describe('Build methods', () => {
 
             const res = await client.build(buildId).get();
             expect(res?.id).toEqual('get-build');
-            validateRequest({}, { buildId });
+            validateRequest({ query: {}, params: { buildId } });
 
             const browserRes = await page.evaluate((bId) => client.build(bId).get(), buildId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { buildId });
+            validateRequest({ query: {}, params: { buildId } });
         });
 
         test('get() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
@@ -72,11 +71,11 @@ describe('Build methods', () => {
 
             const res = await client.build(buildId).get();
             expect(res).toBeUndefined();
-            validateRequest({}, { buildId });
+            validateRequest({ query: {}, params: { buildId } });
 
             const browserRes = await page.evaluate((bId) => client.build(bId).get(), buildId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { buildId });
+            validateRequest({ query: {}, params: { buildId } });
         });
 
         test('abort() works', async () => {
@@ -84,23 +83,22 @@ describe('Build methods', () => {
 
             const res = await client.build(buildId).abort();
             expect(res.id).toEqual('abort-build');
-            validateRequest({}, { buildId });
+            validateRequest({ query: {}, params: { buildId } });
 
             const browserRes = await page.evaluate((bId) => client.build(bId).abort(), buildId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { buildId });
+            validateRequest({ query: {}, params: { buildId } });
         });
 
         test('getOpenApiDefinition() works', async () => {
             const buildId = 'some-build-id';
 
             const res = await client.build(buildId).getOpenApiDefinition();
-            expect(res.data.id).toEqual('build-openapi');
-            validateRequest({}, { buildId });
+            validateRequest({ query: {}, params: { buildId }, path: `/v2/actor-builds/${encodeURIComponent(buildId)}/openapi.json` });
 
             const browserRes = await page.evaluate((bId) => client.build(bId).getOpenApiDefinition(), buildId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { buildId });
+            validateRequest({ query: {}, params: { buildId } });
         });
 
         test('waitForFinish() works', async () => {
@@ -112,7 +110,7 @@ describe('Build methods', () => {
             setTimeout(() => mockServer.setResponse({ body }), (waitSecs * 1000) / 2);
             const res = await client.build(buildId).waitForFinish({ waitSecs });
             expect(res).toEqual(data);
-            validateRequest({ waitForFinish: 0 }, { buildId });
+            validateRequest({ query: { waitForFinish: 0 }, params: { buildId } });
 
             const browserRes = await page.evaluate(
                 (bId, ws) => client.build(bId).waitForFinish({ waitSecs: ws }),
@@ -120,7 +118,7 @@ describe('Build methods', () => {
                 waitSecs,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({ waitForFinish: 0 }, { buildId });
+            validateRequest({ query: { waitForFinish: 0 }, params: { buildId } });
         });
 
         test('log().get() works', async () => {
@@ -128,11 +126,11 @@ describe('Build methods', () => {
 
             const resource = await client.build(buildId).log().get();
             expect(resource).toEqual('build-log');
-            validateRequest({}, { buildId });
+            validateRequest({ query: {}, params: { buildId } });
 
             const browserRes = await page.evaluate((id) => client.build(id).log().get(), buildId);
             expect(browserRes).toEqual('build-log');
-            validateRequest({}, { buildId });
+            validateRequest({ query: {}, params: { buildId } });
         });
     });
 });

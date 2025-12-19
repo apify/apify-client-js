@@ -46,22 +46,21 @@ describe('Request Queue methods', () => {
             };
 
             const res = await client.requestQueues().list(opts);
-            expect(res.id).toEqual('list-queues');
-            validateRequest(opts);
+            validateRequest({ query: opts, path: '/v2/request-queues/' });
 
             const browserRes = await page.evaluate((options) => client.requestQueues().list(options), opts);
             expect(browserRes).toEqual(res);
-            validateRequest(opts);
+            validateRequest({ query: opts });
         });
 
         test('getOrCreate() works without name', async () => {
             const res = await client.requestQueues().getOrCreate();
             expect(res.id).toEqual('get-or-create-queue');
-            validateRequest();
+            validateRequest({});
 
             const browserRes = await page.evaluate((n) => client.requestQueues().getOrCreate(n), undefined);
             expect(browserRes).toEqual(res);
-            validateRequest();
+            validateRequest({});
         });
 
         test('getOrCreate() works with name', async () => {
@@ -69,11 +68,11 @@ describe('Request Queue methods', () => {
 
             const res = await client.requestQueues().getOrCreate(name);
             expect(res.id).toEqual('get-or-create-queue');
-            validateRequest({ name });
+            validateRequest({query:{ name }});
 
             const browserRes = await page.evaluate((n) => client.requestQueues().getOrCreate(n), name);
             expect(browserRes).toEqual(res);
-            validateRequest({ name });
+            validateRequest({query:{ name }});
         });
     });
 
@@ -83,11 +82,11 @@ describe('Request Queue methods', () => {
 
             const res = await client.requestQueue(queueId).get();
             expect(res?.id).toEqual('get-queue');
-            validateRequest({}, { queueId });
+            validateRequest({ query: {}, params: { queueId } });
 
             const browserRes = await page.evaluate((id) => client.requestQueue(id).get(), queueId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { queueId });
+            validateRequest({ query: {}, params: { queueId } });
         });
 
         test('get() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
@@ -95,11 +94,11 @@ describe('Request Queue methods', () => {
 
             const res = await client.requestQueue(queueId).get();
             expect(res).toBeUndefined();
-            validateRequest({}, { queueId });
+            validateRequest({ query: {}, params: { queueId } });
 
             const browserRes = await page.evaluate((id) => client.requestQueue(id).get(), queueId);
             expect(browserRes).toBeUndefined();
-            validateRequest({}, { queueId });
+            validateRequest({ query: {}, params: { queueId } });
         });
 
         test('delete() works', async () => {
@@ -107,7 +106,7 @@ describe('Request Queue methods', () => {
 
             const res = await client.requestQueue(queueId).delete();
             expect(res).toBeUndefined();
-            validateRequest({}, { queueId });
+            validateRequest({ query: {}, params: { queueId } });
 
             const browserRes = await page.evaluate((id) => client.requestQueue(id).delete(), queueId);
             expect(browserRes).toBeUndefined();
@@ -119,29 +118,28 @@ describe('Request Queue methods', () => {
 
             const res = await client.requestQueue(queueId).update(queue);
             expect(res.id).toEqual('update-queue');
-            validateRequest({}, { queueId }, { name: queue.name });
+            validateRequest({ query: {}, params: { queueId }, body: { name: queue.name } });
 
             const browserRes = await page.evaluate((id, opts) => client.requestQueue(id).update(opts), queueId, queue);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { queueId }, { name: queue.name });
+            validateRequest({ query: {}, params: { queueId }, body: { name: queue.name } });
         });
 
         test('addRequest() works without forefront param', async () => {
             const queueId = 'some-id';
-            const request = { url: 'http://example.com' };
+            const request = { url: 'http://example.com', uniqueKey: 'my-unique-key' };
 
             const res = await client.requestQueue(queueId).addRequest(request);
-            expect(res.id).toEqual('add-request');
-            validateRequest({}, { queueId }, request);
+            validateRequest({ query: {}, params: { queueId }, body: request, path: `/v2/request-queues/${queueId}/requests` });
 
             const browserRes = await page.evaluate((id, r) => client.requestQueue(id).addRequest(r), queueId, request);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { queueId }, request);
+            validateRequest({ query: {}, params: { queueId }, body: request });
         });
 
         test('addRequest() respects over-ridden timeout', async () => {
             const queueId = 'some-id';
-            const request = { url: 'http://example.com' };
+            const request = { url: 'http://example.com', uniqueKey: 'my-unique-key' };
             let errorMessage;
             try {
                 await client.requestQueue(queueId, { timeoutSecs: 0.001 }).addRequest(request);
@@ -153,12 +151,11 @@ describe('Request Queue methods', () => {
 
         test('addRequest() works with forefront param', async () => {
             const queueId = 'some-id';
-            const request = { url: 'http://example.com' };
+            const request = { url: 'http://example.com', uniqueKey: 'my-unique-key' };
             const forefront = true;
 
             const res = await client.requestQueue(queueId).addRequest(request, { forefront });
-            expect(res.id).toEqual('add-request');
-            validateRequest({ forefront }, { queueId }, request);
+            validateRequest({ query: { forefront }, params: { queueId }, body: request, path: `/v2/request-queues/${queueId}/requests` });
 
             const browserRes = await page.evaluate(
                 (qId, r) => {
@@ -168,19 +165,18 @@ describe('Request Queue methods', () => {
                 request,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({ forefront }, { queueId }, request);
+            validateRequest({ query: { forefront }, params: { queueId }, body: request });
         });
 
         test('unlockRequests() works', async () => {
             const queueId = 'some-id';
 
             const res = await client.requestQueue(queueId).unlockRequests();
-            expect(res.id).toEqual('unlock-requests');
-            validateRequest({}, { queueId });
+            validateRequest({ query: {}, params: { queueId }, path: `/v2/request-queues/${encodeURIComponent(queueId)}/requests/unlock` });
 
             const browserRes = await page.evaluate((id) => client.requestQueue(id).unlockRequests(), queueId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { queueId });
+            validateRequest({ query: {}, params: { queueId } });
         });
 
         test('getRequest() works', async () => {
@@ -189,7 +185,7 @@ describe('Request Queue methods', () => {
 
             const res = await client.requestQueue(queueId).getRequest(requestId);
             expect(res?.id).toEqual('get-request');
-            validateRequest({}, { queueId, requestId });
+            validateRequest({ query: {}, params: { queueId, requestId } });
 
             const browserRes = await page.evaluate(
                 (qId, rId) => client.requestQueue(qId).getRequest(rId),
@@ -197,7 +193,7 @@ describe('Request Queue methods', () => {
                 requestId,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({}, { queueId, requestId });
+            validateRequest({ query: {}, params: { queueId, requestId } });
         });
 
         test('getRequest() respects over-ridden timeout', async () => {
@@ -218,7 +214,7 @@ describe('Request Queue methods', () => {
 
             const res = await client.requestQueue(queueId).deleteRequest(requestId);
             expect(res).toBeUndefined();
-            validateRequest({}, { queueId, requestId });
+            validateRequest({ query: {}, params: { queueId, requestId } });
 
             const browserRes = await page.evaluate(
                 (qId, rId) => client.requestQueue(qId).deleteRequest(rId),
@@ -226,7 +222,7 @@ describe('Request Queue methods', () => {
                 requestId,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({}, { queueId, requestId });
+            validateRequest({ query: {}, params: { queueId, requestId } });
         });
 
         test('deleteRequest() respects over-ridden timeout', async () => {
@@ -244,12 +240,11 @@ describe('Request Queue methods', () => {
         test('updateRequest() works with forefront', async () => {
             const queueId = 'some-id';
             const requestId = 'xxx';
-            const request = { id: requestId, url: 'http://example.com' };
+            const request = { id: requestId, url: 'http://example.com', uniqueKey: 'my-unique-key' };
             const forefront = true;
 
             const res = await client.requestQueue(queueId).updateRequest(request, { forefront });
-            expect(res.id).toEqual('update-request');
-            validateRequest({ forefront }, { queueId, requestId }, request);
+            validateRequest({ query: { forefront }, params: { queueId, requestId }, body: request, path: `/v2/request-queues/${queueId}/requests/${requestId}` });
 
             const browserRes = await page.evaluate(
                 (id, r) => {
@@ -259,17 +254,16 @@ describe('Request Queue methods', () => {
                 request,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({ forefront }, { queueId, requestId }, request);
+            validateRequest({ query: { forefront }, params: { queueId, requestId }, body: request });
         });
 
         test('updateRequest() works without forefront', async () => {
             const queueId = 'some-id';
             const requestId = 'xxx';
-            const request = { id: requestId, url: 'http://example.com' };
+            const request = { id: requestId, url: 'http://example.com', uniqueKey: 'my-unique-key' };
 
             const res = await client.requestQueue(queueId).updateRequest(request);
-            expect(res.id).toEqual('update-request');
-            validateRequest({}, { queueId, requestId }, request);
+            validateRequest({ query: {}, params: { queueId, requestId }, body: request, path: `/v2/request-queues/${queueId}/requests/${requestId}` });
 
             const browserRes = await page.evaluate(
                 (id, r) => {
@@ -279,13 +273,13 @@ describe('Request Queue methods', () => {
                 request,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({}, { queueId, requestId }, request);
+            validateRequest({ query: {}, params: { queueId, requestId }, body: request });
         });
 
         test('updateRequest() respects over-ridden timeout', async () => {
             const queueId = 'some-id';
             const requestId = 'xxx';
-            const request = { id: requestId, url: 'http://example.com' };
+            const request = { id: requestId, url: 'http://example.com', uniqueKey: 'my-unique-key' };
             let errorMessage;
             try {
                 await client.requestQueue(queueId, { timeoutSecs: 0.001 }).updateRequest(request);
@@ -300,8 +294,7 @@ describe('Request Queue methods', () => {
             const options = { limit: 5 };
 
             const res = await client.requestQueue(queueId).listHead(options);
-            expect(res.id).toEqual('get-head');
-            validateRequest(options, { queueId });
+            validateRequest({ query: options, params: { queueId }, path: `/v2/request-queues/${queueId}/head` });
 
             const browserRes = await page.evaluate(
                 (id, opts) => client.requestQueue(id).listHead(opts),
@@ -309,7 +302,7 @@ describe('Request Queue methods', () => {
                 options,
             );
             expect(browserRes).toEqual(res);
-            validateRequest(options, { queueId });
+            validateRequest({ query: options, params: { queueId } });
         });
 
         test('listHead() respects over-ridden timeout', async () => {
@@ -329,7 +322,7 @@ describe('Request Queue methods', () => {
             async (method) => {
                 const queueId = 'some-id';
                 const requestId = 'xxx';
-                const request: { id?: string, url?: string } = { id: requestId, url: 'http://example.com' };
+                const request: { id?: string, url?: string, uniqueKey?: string } = { id: requestId, url: 'http://example.com', uniqueKey: 'my-unique-key' };
                 const clientKey = 'my-client-key';
 
                 const param = method.startsWith('delete') ? request.id : request;
@@ -337,7 +330,7 @@ describe('Request Queue methods', () => {
 
                 const queue = client.requestQueue(queueId, { clientKey });
                 const res = await queue[method](param);
-                validateRequest({ clientKey }, false, false);
+                validateRequest({ query: { clientKey }, params: { queueId, requestId }});
 
                 const browserRes = await page.evaluate(
                     (id, k, p, m) => {
@@ -350,21 +343,21 @@ describe('Request Queue methods', () => {
                     method,
                 );
                 expect(browserRes).toEqual(res);
-                validateRequest({ clientKey }, false, false);
+                validateRequest({ query: { clientKey }, params: { queueId } });
             },
         );
 
         test('batchAddRequests() works', async () => {
             const queueId = 'some-id';
             const requestsLength = 1000;
-            const requests = new Array(requestsLength).fill(0).map((_, i) => ({ url: `http://example.com/${i}` }));
+            const requests = new Array(requestsLength).fill(0).map((_, i) => ({ url: `http://example.com/${i}`, uniqueKey: `key-${i}` }));
 
             await client.requestQueue(queueId).batchAddRequests(requests);
             const firedRequests = mockServer.getLastRequests(requestsLength / 25);
-            const processedRequestUrls = [];
+            const processedRequestUrls: string[] = [];
             firedRequests.forEach((req) => {
                 expect(req.url).toEqual(`/${queueId}/requests/batch`);
-                req.body.forEach(({ url }) => {
+                req.body.forEach(({ url }: { url: string }) => {
                     processedRequestUrls.push(url);
                 });
             });
@@ -375,10 +368,10 @@ describe('Request Queue methods', () => {
         test('batchAddRequests() propagates forefront', async () => {
             const queueId = 'some-id';
             const options = { forefront: true };
-            const requests = new Array(10).fill(0).map((_, i) => ({ url: `http://example.com/${i}` }));
+            const requests = new Array(10).fill(0).map((_, i) => ({ url: `http://example.com/${i}`, uniqueKey: `key-${i}` }));
 
             const res = await client.requestQueue(queueId).batchAddRequests(requests, options);
-            validateRequest(options, { queueId }, requests);
+            validateRequest({ query: options, params: { queueId }, body: requests });
 
             const browserRes = await page.evaluate(
                 (id, req, opts) => {
@@ -389,7 +382,7 @@ describe('Request Queue methods', () => {
                 options,
             );
             expect(browserRes).toEqual(res);
-            validateRequest(options, { queueId }, requests);
+            validateRequest({ query: options, params: { queueId }, body: requests });
         });
 
         test('batchDeleteRequests() works', async () => {
@@ -397,7 +390,7 @@ describe('Request Queue methods', () => {
             const requests = new Array(10).fill(0).map((_, i) => ({ uniqueKey: `http://example.com/${i}` }));
 
             const res = await client.requestQueue(queueId).batchDeleteRequests(requests);
-            validateRequest(false, { queueId }, requests);
+            validateRequest({ params: { queueId }, body: requests });
 
             const browserRes = await page.evaluate(
                 (id, req) => {
@@ -407,7 +400,7 @@ describe('Request Queue methods', () => {
                 requests,
             );
             expect(browserRes).toEqual(res);
-            validateRequest(false, { queueId }, requests);
+            validateRequest({ params: { queueId }, body: requests });
         });
 
         test('listAndLockHead() works', async () => {
@@ -419,8 +412,7 @@ describe('Request Queue methods', () => {
             await expect(client.requestQueue(queueId).listAndLockHead({ lockSecs: 'bla' } as any)).rejects.toThrow();
 
             const res = await client.requestQueue(queueId).listAndLockHead(options);
-            expect(res.id).toEqual('post-lock-head');
-            validateRequest(options, { queueId });
+            validateRequest({ query: options, params: { queueId }, path: `/v2/request-queues/${queueId}/head/lock` });
 
             const browserRes = await page.evaluate(
                 (id, opts) => client.requestQueue(id).listAndLockHead(opts),
@@ -428,7 +420,7 @@ describe('Request Queue methods', () => {
                 options,
             );
             expect(browserRes).toEqual(res);
-            validateRequest(options, { queueId });
+            validateRequest({ query: options, params: { queueId } });
         });
 
         test('prolongRequestLock() works', async () => {
@@ -437,8 +429,7 @@ describe('Request Queue methods', () => {
             const options = { forefront: true, lockSecs: 10 };
 
             const res = await client.requestQueue(queueId).prolongRequestLock(requestId, options);
-            expect(res.id).toEqual('put-lock-request');
-            validateRequest(options, { queueId, requestId });
+            validateRequest({ query: options, params: { queueId, requestId }, path: `/v2/request-queues/${queueId}/requests/${requestId}/lock` });
 
             const browserRes = await page.evaluate(
                 (qId, rId, opts) => {
@@ -449,7 +440,7 @@ describe('Request Queue methods', () => {
                 options,
             );
             expect(browserRes).toEqual(res);
-            validateRequest(options, { queueId, requestId });
+            validateRequest({ query: options, params: { queueId, requestId } });
         });
 
         test('deleteRequestLock() works', async () => {
@@ -458,7 +449,7 @@ describe('Request Queue methods', () => {
 
             const res = await client.requestQueue(queueId).deleteRequestLock(requestId);
             expect(res).toBeUndefined();
-            validateRequest({}, { queueId, requestId });
+            validateRequest({ query: {}, params: { queueId, requestId } });
 
             const browserRes = await page.evaluate(
                 (qId, rId) => {
@@ -468,7 +459,7 @@ describe('Request Queue methods', () => {
                 requestId,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({}, { queueId, requestId });
+            validateRequest({ query: {}, params: { queueId, requestId } });
         });
 
         test('listRequests() works', async () => {
@@ -476,8 +467,7 @@ describe('Request Queue methods', () => {
             const options = { limit: 5, exclusiveStartId: '123' };
 
             const res = await client.requestQueue(queueId).listRequests(options);
-            expect(res.id).toEqual('list-requests');
-            validateRequest(options, { queueId });
+            validateRequest({ query: options, params: { queueId }, path: `/v2/request-queues/${queueId}/requests` });
 
             const browserRes = await page.evaluate(
                 (id, opts) => client.requestQueue(id).listRequests(opts),
@@ -485,7 +475,7 @@ describe('Request Queue methods', () => {
                 options,
             );
             expect(browserRes).toEqual(res);
-            validateRequest(options, { queueId });
+            validateRequest({ query: options, params: { queueId } });
         });
 
         test('paginateRequests() works', async () => {
@@ -511,7 +501,7 @@ describe('Request Queue methods', () => {
             for await (const { items } of pagination) {
                 expect(items).toEqual(expectedItemsInPage);
                 // Validate the request for the current iteration page
-                validateRequest({ exclusiveStartId: expectedExclusiveStartId, limit: maxPageLimit }, { queueId });
+                validateRequest({ query: { exclusiveStartId: expectedExclusiveStartId, limit: maxPageLimit }, params: { queueId } });
                 // Prepare expectations and mock request for the next iteration page
                 expectedExclusiveStartId = items[items.length - 1].id;
                 expectedItemsInPage = requests.splice(0, maxPageLimit);
@@ -533,7 +523,7 @@ describe('Request Queue methods', () => {
                 maxPageLimit,
             );
             expect(browserRes?.items).toEqual(browserRequests);
-            validateRequest({ limit: maxPageLimit }, { queueId });
+            validateRequest({ query: { limit: maxPageLimit }, params: { queueId } });
         });
 
         // NOTE: This test needs to be last otherwise it will break other tests
@@ -543,7 +533,7 @@ describe('Request Queue methods', () => {
             const longString = 'a'.repeat(940_000);
             const requests = new Array(requestsLength)
                 .fill(0)
-                .map((_, i) => ({ url: `http://example.com/${i}`, userData: { longString } }));
+                .map((_, i) => ({ url: `http://example.com/${i}`, userData: { longString }, uniqueKey: `key-${i}` }));
 
             await client.requestQueue(queueId).batchAddRequests(requests);
             // Based on size of one request and limit 9MB as max payload size only 10 requests should be sent in one batch
@@ -559,12 +549,12 @@ describe('Request Queue methods', () => {
             expect(processedRequestUrls).toEqual(expect.arrayContaining(requests.map((req) => req.url)));
 
             // It throws error when single request is too big
-            const bigRequest = { url: `http://example.com/x`, userData: { longString: 'b'.repeat(9_500_000) } };
+            const bigRequest = { url: `http://example.com/x`, userData: { longString: 'b'.repeat(9_500_000) }, uniqueKey: 'key-big' };
             const requestsWithBigRequest: typeof requests = [...requests, bigRequest];
             await expect(client.requestQueue(queueId).batchAddRequests(requestsWithBigRequest)).rejects.toThrow(
                 `RequestQueueClient.batchAddRequests: The size of the request with index: ${requestsWithBigRequest.length - 1}`,
             );
-            validateRequest({}, { queueId }, false);
+            validateRequest({ query: {}, params: { queueId }, body: false });
         });
     });
 });

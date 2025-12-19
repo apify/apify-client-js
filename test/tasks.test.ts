@@ -6,6 +6,7 @@ import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
 import { Page } from 'puppeteer';
 import { AddressInfo } from 'net';
+import { WEBHOOK_EVENT_TYPES } from '@apify/consts';
 
 describe('Task methods', () => {
     let baseUrl: string;
@@ -45,39 +46,36 @@ describe('Task methods', () => {
             };
 
             const res = await client.tasks().list(opts);
-            expect(res.id).toEqual('list-tasks');
-            validateRequest(opts);
+            validateRequest({ query: opts, path: '/v2/actor-tasks/' });
 
             const browserRes = await page.evaluate((options) => client.tasks().list(options), opts);
             expect(browserRes).toEqual(res);
-            validateRequest(opts);
+            validateRequest({ query: opts });
         });
 
         test('create() works', async () => {
-            const task = { foo: 'bar' };
+            const task = { actId: 'some-act-id', name: 'my-task' };
 
             const res = await client.tasks().create(task);
-            expect(res.id).toEqual('create-task');
-            validateRequest({}, {}, task);
+            validateRequest({ query: {}, params: {}, body: task, path: '/v2/actor-tasks/' });
 
             const browserRes = await page.evaluate((t) => client.tasks().create(t), task);
             expect(browserRes).toEqual(res);
-            validateRequest({}, {}, task);
+            validateRequest({ query: {}, params: {}, body: task });
         });
     });
 
     describe('task(id)', () => {
         test('update() works', async () => {
             const taskId = 'some-user/some-id';
-            const task = { foo: 'bar' };
+            const task = { input: { foo: 'bar' } };
 
             const res = await client.task(taskId).update(task);
-            expect(res.id).toEqual('update-task');
-            validateRequest({}, { taskId: 'some-user~some-id' }, task);
+            validateRequest({ query: {}, params: { taskId: 'some-user~some-id' }, body: task, path: '/v2/actor-tasks/some-user~some-id' });
 
             const browserRes = await page.evaluate((id, t) => client.task(id).update(t), taskId, task);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { taskId: 'some-user~some-id' }, { foo: 'bar' });
+            validateRequest({ query: {}, params: { taskId: 'some-user~some-id' }, body: task });
         });
 
         test('delete() works', async () => {
@@ -85,23 +83,22 @@ describe('Task methods', () => {
 
             const res = await client.task(taskId).delete();
             expect(res).toBeUndefined();
-            validateRequest({}, { taskId });
+            validateRequest({ query: {}, params: { taskId } });
 
             const browserRes = await page.evaluate((id) => client.task(id).delete(), taskId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { taskId });
+            validateRequest({ query: {}, params: { taskId } });
         });
 
         test('get() works', async () => {
             const taskId = 'some-id';
 
             const res = await client.task(taskId).get();
-            expect(res.id).toEqual('get-task');
-            validateRequest({}, { taskId });
+            validateRequest({ query: {}, params: { taskId }, path: '/v2/actor-tasks/some-id' });
 
             const browserRes = await page.evaluate((id) => client.task(id).get(), taskId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { taskId });
+            validateRequest({ query: {}, params: { taskId } });
         });
 
         test('get() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
@@ -109,11 +106,11 @@ describe('Task methods', () => {
 
             const res = await client.task(taskId).get();
             expect(res).toBeUndefined();
-            validateRequest({}, { taskId });
+            validateRequest({ query: {}, params: { taskId } });
 
             const browserRes = await page.evaluate((id) => client.task(id).get(), taskId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { taskId });
+            validateRequest({ query: {}, params: { taskId } });
         });
 
         test('runs().list() works', async () => {
@@ -126,12 +123,11 @@ describe('Task methods', () => {
             };
 
             const res = await client.task(taskId).runs().list(query);
-            expect(res.id).toEqual('list-runs');
-            validateRequest(query, { taskId });
+            validateRequest({ query: query, params: { taskId }, path: '/v2/actor-tasks/task-id/runs' });
 
             const browserRes = await page.evaluate((id, q) => client.task(id).runs().list(q), taskId, query);
             expect(browserRes).toEqual(res);
-            validateRequest(query, { taskId });
+            validateRequest({ query: query, params: { taskId } });
         });
 
         test('start() works', async () => {
@@ -139,11 +135,11 @@ describe('Task methods', () => {
 
             const res = await client.task(taskId).start();
             expect(res.id).toEqual('run-task');
-            validateRequest({}, { taskId });
+            validateRequest({ query: {}, params: { taskId } });
 
             const browserRes = await page.evaluate((id) => client.task(id).start(), taskId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { taskId });
+            validateRequest({ query: {}, params: { taskId } });
         });
 
         test('start() with query parameters works', async () => {
@@ -155,35 +151,11 @@ describe('Task methods', () => {
 
             const res = await client.task(taskId).start(undefined, query);
             expect(res.id).toEqual('run-task');
-            validateRequest(query, { taskId });
+            validateRequest({ query: query, params: { taskId } });
 
             const browserRes = await page.evaluate((id, q) => client.task(id).start(undefined, q), taskId, query);
             expect(browserRes).toEqual(res);
-            validateRequest(query, { taskId });
-        });
-
-        test.skip('start() works with pre-stringified JSON', async () => {
-            const taskId = 'some-id2';
-            const input = { foo: 'bar' };
-            const body = JSON.stringify(input);
-
-            const query = {
-                waitForFinish: 100,
-                memory: 512,
-            };
-
-            const res = await client.task(taskId).start(body, query);
-            expect(res.id).toEqual('run-task');
-            validateRequest(query, { taskId }, input);
-
-            const browserRes = await page.evaluate(
-                (id, i, opts) => client.task(id).start(i, opts),
-                taskId,
-                input,
-                query,
-            );
-            expect(browserRes).toEqual(res);
-            validateRequest(query, { taskId }, input);
+            validateRequest({ query: query, params: { taskId } });
         });
 
         test('start() works with input and options overrides', async () => {
@@ -197,7 +169,7 @@ describe('Task methods', () => {
 
             const res = await client.task(taskId).start(input, query);
             expect(res.id).toEqual('run-task');
-            validateRequest(query, { taskId }, input);
+            validateRequest({ query: query, params: { taskId }, body: input });
 
             const browserRes = await page.evaluate(
                 (id, i, opts) => client.task(id).start(i, opts),
@@ -206,73 +178,72 @@ describe('Task methods', () => {
                 query,
             );
             expect(browserRes).toEqual(res);
-            validateRequest(query, { taskId }, input);
+            validateRequest({ query: query, params: { taskId }, body: input });
         });
 
         test('start() works with functions in input', async () => {
             const taskId = 'some-id';
             const input = {
                 foo: 'bar',
-                fn: async (a, b) => a + b,
+                fn: async (a: number, b: number) => a + b,
             };
 
-            const expectedRequestProps = [
-                {},
-                { taskId },
-                { foo: 'bar', fn: input.fn.toString() },
-                { 'content-type': 'application/json' },
-            ];
+            const expectedRequestProps = {
+                query: {},
+                params: { taskId },
+                body: { foo: 'bar', fn: input.fn.toString() },
+                headers: { 'content-type': 'application/json' },
+            };
 
             const res = await client.task(taskId).start(input);
             expect(res.id).toEqual('run-task');
-            validateRequest(...expectedRequestProps);
+            validateRequest(expectedRequestProps);
 
             const browserRes = await page.evaluate((id) => {
                 return client.task(id).start({
                     foo: 'bar',
-                    fn: async (a, b) => a + b,
+                    fn: async (a: number, b: number) => a + b,
                 });
             }, taskId);
             expect(browserRes).toEqual(res);
-            validateRequest(...expectedRequestProps);
+            validateRequest(expectedRequestProps);
         });
 
         test('start() works with webhooks', async () => {
             const taskId = 'some-id';
             const webhooks = [
                 {
-                    eventTypes: ['ACTOR.RUN.CREATED'],
+                    eventTypes: [WEBHOOK_EVENT_TYPES.ACTOR_RUN_CREATED],
                     requestUrl: 'https://example.com/run-created',
                 },
                 {
-                    eventTypes: ['ACTOR.RUN.SUCCEEDED'],
+                    eventTypes: [WEBHOOK_EVENT_TYPES.ACTOR_RUN_SUCCEEDED],
                     requestUrl: 'https://example.com/run-succeeded',
                 },
             ];
 
             const query = { webhooks: stringifyWebhooksToBase64(webhooks) };
             const res = await client.task(taskId).start(undefined, { webhooks });
-            expect(res.id).toEqual('run-task');
-            validateRequest(query, { taskId });
+            validateRequest({ query: query, params: { taskId }, path: '/v2/actor-tasks/some-id/runs' });
 
             const browserRes = await page.evaluate((id, opts) => client.task(id).start(undefined, opts), taskId, {
                 webhooks,
             });
             expect(browserRes).toEqual(res);
-            validateRequest(query, { taskId });
+            validateRequest({ query: query, params: { taskId } });
         });
 
         test('start() works with maxItems', async () => {
             const taskId = 'some-id';
             const res = await client.task(taskId).start(undefined, { maxItems: 100 });
             expect(res.id).toEqual('run-task');
-            validateRequest({ maxItems: 100 }, { taskId });
+            validateRequest({ query: { maxItems: 100 }, params: { taskId } });
 
             const browserRes = await page.evaluate((id, opts) => client.task(id).start(undefined, opts), taskId, {
                 maxItems: 100,
             });
             expect(browserRes).toEqual(res);
-            validateRequest({ maxItems: 100 }, { taskId });
+            validateRequest({ query: { maxItems: 100 }, params: { taskId } });
         });
 
         test('call() works', async () => {
@@ -303,8 +274,8 @@ describe('Task methods', () => {
             expect(res).toEqual(data);
 
             expect(res).toEqual(data);
-            validateRequest({ waitForFinish: waitSecs }, { runId });
-            validateRequest(query, { taskId }, { some: 'body' });
+            validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
+            validateRequest({ query: query, params: { taskId }, body: { some: 'body' } });
 
             const callBrowserRes = await page.evaluate((id, i, opts) => client.task(id).call(i, opts), taskId, input, {
                 memory,
@@ -313,16 +284,16 @@ describe('Task methods', () => {
                 waitSecs,
             });
             expect(callBrowserRes).toEqual(res);
-            validateRequest({ waitForFinish: waitSecs }, { runId });
-            validateRequest(
-                {
+            validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
+            validateRequest({
+                query: {
                     timeout,
                     memory,
                     build,
                 },
-                { taskId },
-                { some: 'body' },
-            );
+                params: { taskId },
+                body: { some: 'body' },
+            });
         });
 
         test('call() works with maxItems', async () => {
@@ -344,8 +315,8 @@ describe('Task methods', () => {
             expect(res).toEqual(data);
 
             expect(res).toEqual(data);
-            validateRequest({ waitForFinish: waitSecs }, { runId });
-            validateRequest(query, { taskId });
+            validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
+            validateRequest({ query: query, params: { taskId } });
 
             const callBrowserRes = await page.evaluate(
                 (id, i, opts) => client.task(id).call(i, opts),
@@ -357,8 +328,8 @@ describe('Task methods', () => {
                 },
             );
             expect(callBrowserRes).toEqual(res);
-            validateRequest({ waitForFinish: waitSecs }, { runId });
-            validateRequest({ maxItems }, { taskId });
+            validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
+            validateRequest({ query: { maxItems }, params: { taskId } });
         });
 
         test('webhooks().list() works', async () => {
@@ -370,24 +341,22 @@ describe('Task methods', () => {
             };
 
             const res = await client.task(taskId).webhooks().list(query);
-            expect(res.id).toEqual('list-webhooks');
-            validateRequest(query, { taskId });
+            validateRequest({ query: query, params: { taskId }, path: '/v2/actor-tasks/some-task-id/webhooks' });
 
             const browserRes = await page.evaluate((id, opts) => client.task(id).webhooks().list(opts), taskId, query);
             expect(browserRes).toEqual(res);
-            validateRequest(query, { taskId });
+            validateRequest({ query: query, params: { taskId } });
         });
 
         test('getInput() works', async () => {
             const taskId = 'some-task-id';
 
             const res = await client.task(taskId).getInput();
-            expect(res.data.id).toEqual('get-input');
-            validateRequest({}, { taskId });
+            validateRequest({ query: {}, params: { taskId }, path: '/v2/actor-tasks/some-task-id/input' });
 
             const browserRes = await page.evaluate((id) => client.task(id).getInput(), taskId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { taskId });
+            validateRequest({ query: {}, params: { taskId } });
         });
 
         test('updateInput() works', async () => {
@@ -395,12 +364,11 @@ describe('Task methods', () => {
             const input = { foo: 'bar' };
 
             const res = await client.task(taskId).updateInput(input);
-            expect(res.data.id).toEqual('update-input');
-            validateRequest({}, { taskId }, input);
+            validateRequest({ query: {}, params: { taskId }, body: input, path: '/v2/actor-tasks/some-task-id/input' });
 
             const browserRes = await page.evaluate((id, i) => client.task(id).updateInput(i), taskId, input);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { taskId }, input);
+            validateRequest({ query: {}, params: { taskId }, body: input });
         });
     });
 });

@@ -41,11 +41,11 @@ describe('Log methods', () => {
 
             const res = await client.log(logId).get();
             expect(res).toBe('get-log');
-            validateRequest({}, { logId });
+            validateRequest({ query: {}, params: { logId } });
 
             const browserRes = await page.evaluate((id) => client.log(id).get(), logId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { logId });
+            validateRequest({ query: {}, params: { logId } });
         });
 
         test('stream() works', async () => {
@@ -63,7 +63,7 @@ describe('Log methods', () => {
             }
             const id = Buffer.concat(chunks).toString();
             expect(id).toBe('get-log');
-            validateRequest({ stream: true }, { logId });
+            validateRequest({ query: { stream: true }, params: { logId } });
         });
     });
 });

@@ -1,7 +1,7 @@
 import { setTimeout as setTimeoutNode } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import { ApifyClient, RunCollectionListOptions } from 'apify-client';
+import { ApifyClient, Dictionary, RunCollectionListOptions } from 'apify-client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
@@ -49,12 +49,11 @@ describe('Run methods', () => {
             } as const;
 
             const res = await client.runs().list(query);
-            expect(res.id).toEqual('list-runs');
-            validateRequest(query);
+            validateRequest({ query: query, path: '/v2/actor-runs/' });
 
             const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
             expect(browserRes).toEqual(res);
-            validateRequest(query);
+            validateRequest({ query: query });
         });
 
         test('list() works multiple statuses', async () => {
@@ -62,21 +61,20 @@ describe('Run methods', () => {
                 limit: 5,
                 offset: 3,
                 desc: true,
-                status: ['SUCCEEDED', 'FAILED'],
-            } as RunCollectionListOptions;
+                status: ['SUCCEEDED' as const, 'FAILED' as const],
+            };
 
             const expectedQuery = {
                 ...query,
                 status: 'SUCCEEDED,FAILED', // This is what should be sent to the API
-            } as const;
+            };
 
             const res = await client.runs().list(query);
-            expect(res.id).toEqual('list-runs');
-            validateRequest(expectedQuery);
+            validateRequest({ query: expectedQuery, path: '/v2/actor-runs/' });
 
             const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
             expect(browserRes).toEqual(res);
-            validateRequest(expectedQuery);
+            validateRequest({ query: expectedQuery, path: '/v2/actor-runs/' });
         });
 
         test('list() allows startedBefore and startedAfter to be passed as Date object', async () => {
@@ -92,12 +90,11 @@ describe('Run methods', () => {
             };
 
             const res = await client.runs().list(query);
-            expect(res.id).toEqual('list-runs');
-            validateRequest(expectedQuery);
+            validateRequest({ query: expectedQuery, path: '/v2/actor-runs/' });
 
             const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
             expect(browserRes).toEqual(res);
-            validateRequest(expectedQuery);
+            validateRequest({ query: expectedQuery });
         });
 
         test('list() allows startedBefore and startedAfter to be passed as string', async () => {
@@ -112,12 +109,11 @@ describe('Run methods', () => {
             };
 
             const res = await client.runs().list(query);
-            expect(res.id).toEqual('list-runs');
-            validateRequest(expectedQuery);
+            validateRequest({ query: expectedQuery, path: '/v2/actor-runs/' });
 
             const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
             expect(browserRes).toEqual(res);
-            validateRequest(expectedQuery);
+            validateRequest({ query: expectedQuery, path: '/v2/actor-runs/' });
         });
     });
 
@@ -127,11 +123,11 @@ describe('Run methods', () => {
 
             const res = await client.run(runId).get();
             expect(res?.id).toEqual('get-run');
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).get(), runId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
         });
 
         test('get() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
@@ -139,11 +135,11 @@ describe('Run methods', () => {
 
             const res = await client.run(runId).get();
             expect(res).toBeUndefined();
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).get(), runId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
         });
 
         test('abort() works', async () => {
@@ -151,11 +147,11 @@ describe('Run methods', () => {
 
             const res = await client.run(runId).abort();
             expect(res.id).toEqual('abort-run');
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).abort(), runId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
         });
 
         test('resurrect() works', async () => {
@@ -169,11 +165,11 @@ describe('Run methods', () => {
 
             const res = await client.run(runId).resurrect(options);
             expect(res.id).toEqual('resurrect-run');
-            validateRequest(options, { runId });
+            validateRequest({ query: options, params: { runId } });
 
             const browserRes = await page.evaluate((rId, opts) => client.run(rId).resurrect(opts), runId, options);
             expect(browserRes).toEqual(res);
-            validateRequest(options, { runId });
+            validateRequest({ query: options, params: { runId } });
         });
 
         test('metamorph() works', async () => {
@@ -194,8 +190,13 @@ describe('Run methods', () => {
             };
 
             const res = await client.run(runId).metamorph(targetActorId, input, options);
-            expect(res.id).toEqual('metamorph-run');
-            validateRequest(actualQuery, { runId }, { some: 'body' }, { 'content-type': contentType });
+            validateRequest({
+                path: `/v2/actor-runs/${runId}/metamorph`,
+                query: actualQuery,
+                params: { runId },
+                body: { some: 'body' },
+                additionalHeaders: { 'content-type': contentType }
+            });
 
             const browserRes = await page.evaluate(
                 (rId, targetId, i, opts) => {
@@ -207,7 +208,7 @@ describe('Run methods', () => {
                 options,
             );
             expect(browserRes).toEqual(res);
-            validateRequest(actualQuery, { runId }, { some: 'body' }, { 'content-type': contentType });
+            validateRequest({ query: actualQuery, params: { runId }, body: { some: 'body' }, additionalHeaders: { 'content-type': contentType } });
         });
 
         test('metamorph() works with pre-stringified JSON input', async () => {
@@ -216,11 +217,16 @@ describe('Run methods', () => {
             const contentType = 'application/json; charset=utf-8';
             const input = JSON.stringify({ foo: 'bar' });
 
-            const expectedRequest = [{ targetActorId }, { runId }, { foo: 'bar' }, { 'content-type': contentType }];
+            const expectedRequest = {
+                query: { targetActorId },
+                params: { runId },
+                body: { foo: 'bar' },
+                additionalHeaders: { 'content-type': contentType }
+            };
 
             const res = await client.run(runId).metamorph(targetActorId, input, { contentType });
             expect(res.id).toEqual('metamorph-run');
-            validateRequest(...expectedRequest);
+            validateRequest(expectedRequest);
 
             const browserRes = await page.evaluate(
                 (rId, tId, i, cType) => {
@@ -232,7 +238,7 @@ describe('Run methods', () => {
                 contentType,
             );
             expect(browserRes).toEqual(res);
-            validateRequest(...expectedRequest);
+            validateRequest(expectedRequest);
         });
 
         test('metamorph() works with functions in input', async () => {
@@ -243,16 +249,16 @@ describe('Run methods', () => {
                 fn: async (a: number, b: number) => a + b,
             };
 
-            const expectedRequest = [
-                { targetActorId },
-                { runId },
-                { foo: 'bar', fn: input.fn.toString() },
-                { 'content-type': 'application/json' },
-            ];
+            const expectedRequest = {
+                query: { targetActorId },
+                params: { runId },
+                body: { foo: 'bar', fn: input.fn.toString() },
+                additionalHeaders: { 'content-type': 'application/json' },
+            };
 
             const res = await client.run(runId).metamorph(targetActorId, input);
             expect(res.id).toEqual('metamorph-run');
-            validateRequest(...expectedRequest);
+            validateRequest(expectedRequest);
 
             const browserRes = await page.evaluate(
                 (rId, tId) => {
@@ -265,7 +271,7 @@ describe('Run methods', () => {
                 targetActorId,
             );
             expect(browserRes).toEqual(res);
-            validateRequest(...expectedRequest);
+            validateRequest(expectedRequest);
         });
 
         test('reboot() works', async () => {
@@ -273,11 +279,11 @@ describe('Run methods', () => {
 
             const res = await client.run(runId).reboot();
             expect(res.id).toEqual('reboot-run');
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).reboot(), runId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
         });
 
         test('waitForFinish() works', async () => {
@@ -289,7 +295,7 @@ describe('Run methods', () => {
             setTimeout(() => mockServer.setResponse({ body }), (waitSecs * 1000) / 2);
             const res = await client.run(runId).waitForFinish({ waitSecs });
             expect(res).toEqual(data);
-            validateRequest({ waitForFinish: 0 }, { runId });
+            validateRequest({ query: { waitForFinish: 0 }, params: { runId } });
 
             const browserRes = await page.evaluate(
                 (rId, ws) => client.run(rId).waitForFinish({ waitSecs: ws }),
@@ -297,7 +303,7 @@ describe('Run methods', () => {
                 waitSecs,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({ waitForFinish: 0 }, { runId });
+            validateRequest({ query: { waitForFinish: 0 }, params: { runId } });
         });
 
         test('waitForFinish() resolves immediately with waitSecs: 0', async () => {
@@ -309,7 +315,7 @@ describe('Run methods', () => {
             setTimeout(() => mockServer.setResponse({ body }), 10);
             const res = await client.run(runId).waitForFinish({ waitSecs });
             expect(res).toEqual(data);
-            validateRequest({ waitForFinish: 0 }, { runId });
+            validateRequest({ query: { waitForFinish: 0 }, params: { runId } });
 
             const browserRes = await page.evaluate(
                 (rId, ws) => client.run(rId).waitForFinish({ waitSecs: ws }),
@@ -317,7 +323,7 @@ describe('Run methods', () => {
                 waitSecs,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({ waitForFinish: 0 }, { runId });
+            validateRequest({ query: { waitForFinish: 0 }, params: { runId } });
         });
 
         test('dataset().get() works', async () => {
@@ -326,11 +332,11 @@ describe('Run methods', () => {
             const res = await client.run(runId).dataset().get();
             expect(res?.id).toEqual('run-dataset');
 
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).dataset().get(), runId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
         });
 
         test('keyValueStore().get() works', async () => {
@@ -339,11 +345,11 @@ describe('Run methods', () => {
             const res = await client.run(runId).keyValueStore().get();
             expect(res?.id).toEqual('run-keyValueStore');
 
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).keyValueStore().get(), runId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
         });
 
         test('requestQueue().get() works', async () => {
@@ -352,11 +358,11 @@ describe('Run methods', () => {
             const res = await client.run(runId).requestQueue().get();
             expect(res?.id).toEqual('run-requestQueue');
 
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).requestQueue().get(), runId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
         });
 
         test('log().get() works', async () => {
@@ -365,11 +371,11 @@ describe('Run methods', () => {
             const res = await client.run(runId).log().get();
             expect(res).toEqual('run-log');
 
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).log().get(), runId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { runId });
+            validateRequest({ query: {}, params: { runId } });
         });
 
         test('charge() works', async () => {
@@ -393,7 +399,7 @@ describe('Redirect run logs', () => {
         // Ensure that the tests that use characters like á are correctly decoded in console.
         process.stdout.setDefaultEncoding('utf8');
         const server = await mockServer.start();
-        baseUrl = `http://localhost:${server.address().port}`;
+        baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`;
     });
 
     afterAll(async () => {

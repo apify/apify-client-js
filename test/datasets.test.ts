@@ -1,5 +1,5 @@
-import { ApifyClient } from 'apify-client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
+import { ApifyClient, DownloadItemsFormat } from 'apify-client';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
@@ -46,22 +46,20 @@ describe('Dataset methods', () => {
             };
 
             const res = await client.datasets().list(opts);
-            expect(res.id).toEqual('list-datasets');
-            validateRequest(opts);
+            validateRequest({ query: opts, path: '/v2/datasets/' });
 
             const browserRes = await page.evaluate((options) => client.datasets().list(options), opts);
             expect(browserRes).toEqual(res);
-            validateRequest(opts);
+            validateRequest({ query: opts });
         });
 
         test('getOrCreate() works without name', async () => {
             const res = await client.datasets().getOrCreate();
-            expect(res.id).toEqual('get-or-create-dataset');
-            validateRequest();
+            validateRequest({ path: '/v2/datasets/' });
 
-            const browserRes = await page.evaluate((n) => client.datasets().getOrCreate(n));
+            const browserRes = await page.evaluate((n) => client.datasets().getOrCreate(n), undefined);
             expect(browserRes).toEqual(res);
-            validateRequest();
+            validateRequest({});
         });
 
         test('getOrCreate() works with name', async () => {
@@ -69,11 +67,11 @@ describe('Dataset methods', () => {
 
             const res = await client.datasets().getOrCreate(name);
             expect(res.id).toEqual('get-or-create-dataset');
-            validateRequest({ name });
+            validateRequest({ query: { name }, path: '/v2/datasets/' });
 
             const browserRes = await page.evaluate((n) => client.datasets().getOrCreate(n), name);
             expect(browserRes).toEqual(res);
-            validateRequest({ name });
+            validateRequest({ query: { name }, path: '/v2/datasets/' });
         });
     });
 
@@ -82,12 +80,11 @@ describe('Dataset methods', () => {
             const datasetId = 'some-id';
 
             const res = await client.dataset(datasetId).get();
-            expect(res.id).toEqual('get-dataset');
-            validateRequest({}, { datasetId });
+            validateRequest({ query: {}, params: { datasetId }, path: `/v2/datasets/${encodeURIComponent(datasetId)}` });
 
             const browserRes = await page.evaluate((id) => client.dataset(id).get(), datasetId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId });
+            validateRequest({ query: {}, params: { datasetId } });
         });
 
         test('get() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
@@ -95,22 +92,22 @@ describe('Dataset methods', () => {
 
             const res = await client.dataset(datasetId).get();
             expect(res).toBeUndefined();
-            validateRequest({}, { datasetId });
+            validateRequest({ query: {}, params: { datasetId } });
 
             const browserRes = await page.evaluate((id) => client.dataset(id).get(), datasetId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId });
+            validateRequest({ query: {}, params: { datasetId } });
         });
 
         test('delete() works', async () => {
             const datasetId = '204';
             const res = await client.dataset(datasetId).delete();
             expect(res).toBeUndefined();
-            validateRequest({}, { datasetId });
+            validateRequest({ query: {}, params: { datasetId } });
 
             const browserRes = await page.evaluate((id) => client.dataset(id).delete(), datasetId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId });
+            validateRequest({ query: {}, params: { datasetId } });
         });
 
         test('update() works', async () => {
@@ -119,11 +116,11 @@ describe('Dataset methods', () => {
 
             const res = await client.dataset(datasetId).update(dataset);
             expect(res.id).toEqual('update-dataset');
-            validateRequest({}, { datasetId }, dataset);
+            validateRequest({ query: {}, params: { datasetId }, body: dataset });
 
             const browserRes = await page.evaluate((id, opts) => client.dataset(id).update(opts), datasetId, dataset);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId }, dataset);
+            validateRequest({ query: {}, params: { datasetId }, body: dataset });
         });
 
         test('listItems() works', async () => {
@@ -154,11 +151,11 @@ describe('Dataset methods', () => {
 
             const res = await client.dataset(datasetId).listItems(query);
             expect(res).toEqual(expected);
-            validateRequest(query, { datasetId });
+            validateRequest({ query: query, params: { datasetId } });
 
             const browserRes = await page.evaluate((id, opts) => client.dataset(id).listItems(opts), datasetId, query);
             expect(browserRes).toEqual(res);
-            validateRequest(query, { datasetId });
+            validateRequest({ query: query, params: { datasetId } });
         });
 
         test('downloadItems() works with bom=false', async () => {
@@ -170,7 +167,7 @@ describe('Dataset methods', () => {
             mockServer.setResponse({ body, headers });
             const qs = { bom: 0, format: 'csv', delimiter: ';', fields: 'a,b', omit: 'c,d' };
 
-            const format = 'csv';
+            const format = DownloadItemsFormat.CSV;
             const options = {
                 bom: false,
                 fields: ['a', 'b'],
@@ -181,7 +178,7 @@ describe('Dataset methods', () => {
             const res = await client.dataset(datasetId).downloadItems(format, options);
             const resString = res.toString();
             expect(resString).toEqual(body);
-            validateRequest(qs, { datasetId });
+            validateRequest({ query: qs, params: { datasetId } });
 
             const browserRes = await page.evaluate(
                 async (dId, f, opts) => {
@@ -194,7 +191,7 @@ describe('Dataset methods', () => {
                 options,
             );
             expect(browserRes).toEqual(resString);
-            validateRequest(qs, { datasetId });
+            validateRequest({ query: qs, params: { datasetId } });
         });
 
         test('listItems() limit and offset work', async () => {
@@ -222,11 +219,11 @@ describe('Dataset methods', () => {
 
             const res = await client.dataset(datasetId).listItems(qs);
             expect(res).toEqual(expected);
-            validateRequest(qs, { datasetId });
+            validateRequest({ query: qs, params: { datasetId } });
 
             const browserRes = await page.evaluate((id, opts) => client.dataset(id).listItems(opts), datasetId, qs);
             expect(browserRes).toEqual(res);
-            validateRequest(qs, { datasetId });
+            validateRequest({ query: qs, params: { datasetId } });
         });
 
         test('listItems() correctly passes signature', async () => {
@@ -245,16 +242,16 @@ describe('Dataset methods', () => {
             mockServer.setResponse({ body, headers });
 
             await client.dataset(datasetId).listItems(qs);
-            validateRequest(qs, { datasetId });
+            validateRequest({ query: qs, params: { datasetId } });
 
             await page.evaluate((id, opts) => client.dataset(id).listItems(opts), datasetId, qs);
-            validateRequest(qs, { datasetId });
+            validateRequest({ query: qs, params: { datasetId } });
         });
 
         test("downloadItems() doesn't parse application/json", async () => {
             const datasetId = 'some-id';
             const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });
-            const format = 'json';
+            const format = DownloadItemsFormat.JSON;
             const options = {
                 bom: true,
             };
@@ -268,7 +265,7 @@ describe('Dataset methods', () => {
             expect(res).toBeInstanceOf(Buffer);
             const resString = res.toString('utf-8');
             expect(resString).toBe(body);
-            validateRequest({ format, ...options }, { datasetId });
+            validateRequest({ query: { format, ...options }, params: { datasetId } });
 
             const browserRes = await page.evaluate(
                 async (id, f, opts) => {
@@ -282,13 +279,13 @@ describe('Dataset methods', () => {
                 options,
             );
             expect(browserRes).toEqual(resString);
-            validateRequest({ format, ...options }, { datasetId });
+            validateRequest({ query: { format, ...options }, params: { datasetId } });
         });
 
         test('downloadItems() correctly passes signature', async () => {
             const datasetId = 'some-id';
             const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });
-            const format = 'json';
+            const format = DownloadItemsFormat.JSON;
             const options = {
                 bom: true,
                 signature: 'some-signature',
@@ -300,7 +297,7 @@ describe('Dataset methods', () => {
             mockServer.setResponse({ body, headers });
 
             await client.dataset(datasetId).downloadItems(format, options);
-            validateRequest({ format, ...options }, { datasetId });
+            validateRequest({ query: { format, ...options }, params: { datasetId } });
 
             await page.evaluate(
                 async (id, f, opts) => {
@@ -312,7 +309,7 @@ describe('Dataset methods', () => {
                 format,
                 options,
             );
-            validateRequest({ format, ...options }, { datasetId });
+            validateRequest({ query: { format, ...options }, params: { datasetId } });
         });
 
         test('pushItems() works with object', async () => {
@@ -321,11 +318,11 @@ describe('Dataset methods', () => {
 
             const res = await client.dataset(datasetId).pushItems(data);
             expect(res).toBeUndefined();
-            validateRequest({}, { datasetId }, data);
+            validateRequest({ query: {}, params: { datasetId }, body: data });
 
             const browserRes = await page.evaluate((id, items) => client.dataset(id).pushItems(items), datasetId, data);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId }, data);
+            validateRequest({ query: {}, params: { datasetId }, body: data });
         });
 
         test('pushItems() works with array', async () => {
@@ -334,11 +331,11 @@ describe('Dataset methods', () => {
 
             const res = await client.dataset(datasetId).pushItems(data);
             expect(res).toBeUndefined();
-            validateRequest({}, { datasetId }, data);
+            validateRequest({ query: {}, params: { datasetId }, body: data });
 
             const browserRes = await page.evaluate((id, items) => client.dataset(id).pushItems(items), datasetId, data);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId }, data);
+            validateRequest({ query: {}, params: { datasetId }, body: data });
         });
 
         test('pushItems() works with string', async () => {
@@ -347,7 +344,7 @@ describe('Dataset methods', () => {
 
             const res = await client.dataset(datasetId).pushItems(data);
             expect(res).toBeUndefined();
-            validateRequest({}, { datasetId }, JSON.parse(data));
+            validateRequest({ params: { datasetId }, body: JSON.parse(data) });
 
             const browserRes = await page.evaluate(
                 (id, options) => client.dataset(id).pushItems(options),
@@ -355,7 +352,7 @@ describe('Dataset methods', () => {
                 data,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId }, JSON.parse(data));
+            validateRequest({ params: { datasetId }, body: JSON.parse(data) });
         });
 
         test('pushItems() compresses large request in Node.js', async () => {
@@ -370,19 +367,18 @@ describe('Dataset methods', () => {
 
             const res = await client.dataset(datasetId).pushItems(data);
             expect(res).toBeUndefined();
-            validateRequest({}, { datasetId }, data, expectedHeaders);
+            validateRequest({ params: { datasetId }, body: data, additionalHeaders: expectedHeaders });
         });
 
         test('statistics() works', async () => {
             const datasetId = 'some-id';
 
             const res = await client.dataset(datasetId).getStatistics();
-            expect(res.id).toEqual('get-statistics');
-            validateRequest({}, { datasetId });
+            validateRequest({ query: {}, params: { datasetId }, path: `/v2/datasets/${encodeURIComponent(datasetId)}/statistics` });
 
             const browserRes = await page.evaluate((id) => client.dataset(id).getStatistics(), datasetId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { datasetId });
+            validateRequest({ query: {}, params: { datasetId } });
         });
 
         describe('createItemsPublicUrl()', () => {

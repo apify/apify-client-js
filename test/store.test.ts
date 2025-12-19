@@ -48,7 +48,7 @@ describe('Store', () => {
 
         const res: any = client && (await client.store().list(opts));
         expect(res.id).toEqual('store-list');
-        validateRequest(opts);
+        validateRequest({ query: opts });
 
         const browserRes: any = await page.evaluate(
             async (options: StoreCollectionListOptions) => client && client.store().list(options),
@@ -56,6 +56,6 @@ describe('Store', () => {
         );
         expect(browserRes.id).toEqual('store-list');
         expect(browserRes).toEqual(res);
-        validateRequest(opts);
+        validateRequest({ query: opts });
     });
 });

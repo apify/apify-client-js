@@ -48,22 +48,21 @@ describe('Key-Value Store methods', () => {
             };
 
             const res = await client.keyValueStores().list(opts);
-            expect(res.id).toEqual('list-stores');
-            validateRequest(opts);
+            validateRequest({ query: opts, path: '/v2/key-value-stores/' });
 
             const browserRes = await page.evaluate((options) => client.keyValueStores().list(options), opts);
             expect(browserRes).toEqual(res);
-            validateRequest(opts);
+            validateRequest({ query: opts, path: '/v2/key-value-stores/' });
         });
 
         test('getOrCreate() works without name', async () => {
             const res = await client.keyValueStores().getOrCreate();
             expect(res.id).toEqual('get-or-create-store');
-            validateRequest();
+            validateRequest({});
 
             const browserRes = await page.evaluate((n) => client.keyValueStores().getOrCreate(n), undefined);
             expect(browserRes).toEqual(res);
-            validateRequest();
+            validateRequest({});
         });
 
         test('getOrCreate() works with name', async () => {
@@ -71,11 +70,11 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStores().getOrCreate(name);
             expect(res.id).toEqual('get-or-create-store');
-            validateRequest({ name });
+            validateRequest({ query: { name }});
 
             const browserRes = await page.evaluate((n) => client.keyValueStores().getOrCreate(n), name);
             expect(browserRes).toEqual(res);
-            validateRequest({ name });
+            validateRequest({ query: { name } });
         });
     });
 
@@ -85,11 +84,11 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).get();
             expect(res?.id).toEqual('get-store');
-            validateRequest({}, { storeId });
+            validateRequest({ query: {}, params: { storeId } });
 
             const browserRes = await page.evaluate((id) => client.keyValueStore(id).get(), storeId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { storeId });
+            validateRequest({ query: {}, params: { storeId } });
         });
 
         test('get() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
@@ -97,22 +96,22 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).get();
             expect(res).toBeUndefined();
-            validateRequest({}, { storeId });
+            validateRequest({ query: {}, params: { storeId } });
 
             const browserRes = await page.evaluate((id) => client.keyValueStore(id).get(), storeId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { storeId });
+            validateRequest({ query: {}, params: { storeId } });
         });
 
         test('delete() works', async () => {
             const storeId = '204';
             const res = await client.keyValueStore(storeId).delete();
             expect(res).toBeUndefined();
-            validateRequest({}, { storeId });
+            validateRequest({ query: {}, params: { storeId } });
 
             const browserRes = await page.evaluate((id) => client.keyValueStore(id).delete(), storeId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { storeId });
+            validateRequest({ query: {}, params: { storeId } });
         });
 
         test('update() works', async () => {
@@ -121,11 +120,11 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).update(store);
             expect(res.id).toEqual('update-store');
-            validateRequest({}, { storeId }, store);
+            validateRequest({ query: {}, params: { storeId }, body: store });
 
             const browserRes = await page.evaluate((id, opts) => client.keyValueStore(id).update(opts), storeId, store);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { storeId }, store);
+            validateRequest({ query: {}, params: { storeId }, body: store });
         });
 
         test('listKeys() works', async () => {
@@ -139,8 +138,7 @@ describe('Key-Value Store methods', () => {
             };
 
             const res = await client.keyValueStore(storeId).listKeys(query);
-            expect(res.id).toEqual('list-keys');
-            validateRequest(query, { storeId });
+            validateRequest({ query: query, params: { storeId }, path: `/v2/key-value-stores/${storeId}/keys` });
 
             const browserRes = await page.evaluate(
                 (id, opts) => client.keyValueStore(id).listKeys(opts),
@@ -148,7 +146,7 @@ describe('Key-Value Store methods', () => {
                 query,
             );
             expect(browserRes).toEqual(res);
-            validateRequest(query, { storeId });
+            validateRequest({ query: query, params: { storeId } });
         });
 
         test('listKeys() passes signature', async () => {
@@ -163,10 +161,10 @@ describe('Key-Value Store methods', () => {
             };
 
             await client.keyValueStore(storeId).listKeys(query);
-            validateRequest(query, { storeId });
+            validateRequest({ query: query, params: { storeId } });
 
             await page.evaluate((id, opts) => client.keyValueStore(id).listKeys(opts), storeId, query);
-            validateRequest(query, { storeId });
+            validateRequest({ query: query, params: { storeId } });
         });
 
         test('recordExists() works', async () => {
@@ -185,11 +183,11 @@ describe('Key-Value Store methods', () => {
             const expectedResult = true;
 
             expect(res).toEqual(expectedResult);
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).recordExists(k), storeId, key);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
         });
 
         test('recordExists() works with a missing record', async () => {
@@ -208,11 +206,11 @@ describe('Key-Value Store methods', () => {
             const expectedResult = false;
 
             expect(res).toEqual(expectedResult);
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).recordExists(k), storeId, key);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
         });
 
         test('getRecord() works', async () => {
@@ -234,11 +232,11 @@ describe('Key-Value Store methods', () => {
                 contentType: expectedContentType,
             };
             expect(res).toEqual(expectedResult);
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getRecord(k), storeId, key);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
         });
 
         test('getRecord() parses JSON', async () => {
@@ -255,11 +253,11 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).getRecord(key);
             expect(res?.value).toEqual(expectedBody);
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getRecord(k), storeId, key);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
         });
 
         test('getRecord() returns buffer when selected', async () => {
@@ -284,14 +282,14 @@ describe('Key-Value Store methods', () => {
             };
 
             const res = await client.keyValueStore(storeId).getRecord(key, options);
-            expect(res.value).toBeInstanceOf(Buffer);
+            expect(res?.value).toBeInstanceOf(Buffer);
             res.value = res.value.toString();
             expect(res).toEqual(expectedResult);
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
 
             const browserRes = await page.evaluate(
                 async (id, k, opts) => {
-                     
+
                     const res = await client.keyValueStore(id).getRecord(k, opts);
                     const decoder = new TextDecoder();
                     res.value = decoder.decode(res.value);
@@ -302,7 +300,7 @@ describe('Key-Value Store methods', () => {
                 options,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
         });
 
         test('getRecord() returns buffer for non-text content-types', async () => {
@@ -326,7 +324,7 @@ describe('Key-Value Store methods', () => {
             expect(res.value).toBeInstanceOf(Buffer);
             res.value = res.value.toString();
             expect(res).toEqual(expectedResult);
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
 
             const browserRes = await page.evaluate(
                 async (id, k, opts) => {
@@ -337,9 +335,10 @@ describe('Key-Value Store methods', () => {
                 },
                 storeId,
                 key,
+                undefined,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
         });
 
         test('getRecord() correctly returns stream', async () => {
@@ -364,14 +363,14 @@ describe('Key-Value Store methods', () => {
             };
 
             const res = await client.keyValueStore(storeId).getRecord(key, options);
-            expect(res.value).toBeInstanceOf(Readable);
+            expect(res?.value).toBeInstanceOf(Readable);
             const chunks = [];
             for await (const chunk of res.value!) {
                 chunks.push(chunk);
             }
             res.value = Buffer.concat(chunks).toString();
             expect(res).toEqual(expectedResult);
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
 
             try {
                 await page.evaluate(
@@ -404,7 +403,7 @@ describe('Key-Value Store methods', () => {
 
             mockServer.setResponse({ headers: expectedHeaders, body });
             await client.keyValueStore(storeId).getRecord(key, options);
-            validateRequest(options, { storeId, key });
+            validateRequest({ query: options, params: { storeId, key } });
         });
 
         test('getRecord() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
@@ -416,11 +415,11 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).getRecord(key);
             expect(res).toBeUndefined();
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getRecord(k), storeId, key);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
         });
 
         test('setRecord() works with text', async () => {
@@ -433,7 +432,7 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).setRecord({ key, value });
             expect(res).toBeUndefined();
-            validateRequest({}, { storeId, key }, value, expectedHeaders);
+            validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
 
             const browserRes = await page.evaluate(
                 (id, key, value) => client.keyValueStore(id).setRecord({ key, value }),
@@ -442,7 +441,7 @@ describe('Key-Value Store methods', () => {
                 value,
             );
             expect(browserRes).toBeUndefined();
-            validateRequest({}, { storeId, key }, value, expectedHeaders);
+            validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
         });
 
         test('setRecord() works with object', async () => {
@@ -455,7 +454,7 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).setRecord({ key, value });
             expect(res).toBeUndefined();
-            validateRequest({}, { storeId, key }, value, expectedHeaders);
+            validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
 
             const browserRes = await page.evaluate(
                 (id, key, value) => client.keyValueStore(id).setRecord({ key, value }),
@@ -464,7 +463,7 @@ describe('Key-Value Store methods', () => {
                 value,
             );
             expect(browserRes).toBeUndefined();
-            validateRequest({}, { storeId, key }, value, expectedHeaders);
+            validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
         });
 
         test('setRecord() works with custom timeout options', async () => {
@@ -483,7 +482,7 @@ describe('Key-Value Store methods', () => {
                 },
             );
             expect(res).toBeUndefined();
-            validateRequest({}, { storeId, key }, value, expectedHeaders);
+            validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
 
             const browserRes = await page.evaluate(
                 (id, key, value) =>
@@ -499,7 +498,7 @@ describe('Key-Value Store methods', () => {
                 value,
             );
             expect(browserRes).toBeUndefined();
-            validateRequest({}, { storeId, key }, value, expectedHeaders);
+            validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
         });
 
         test('setRecord() works with buffer', async () => {
@@ -513,7 +512,7 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).setRecord({ key, value });
             expect(res).toBeUndefined();
-            validateRequest({}, { storeId, key }, value, expectedHeaders);
+            validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
 
             const browserRes = await page.evaluate(
                 async (id, key, s) => {
@@ -526,7 +525,7 @@ describe('Key-Value Store methods', () => {
                 string,
             );
             expect(browserRes).toBeUndefined();
-            validateRequest({}, { storeId, key }, value, expectedHeaders);
+            validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
         });
 
         test('setRecord() works with pre-stringified JSON', async () => {
@@ -540,7 +539,7 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).setRecord({ key, value, contentType });
             expect(res).toBeUndefined();
-            validateRequest({}, { storeId, key }, JSON.parse(value), expectedHeaders);
+            validateRequest({ params: { storeId, key }, body: JSON.parse(value), additionalHeaders: expectedHeaders });
 
             const browserRes = await page.evaluate(
                 (id, key, value, contentType) => client.keyValueStore(id).setRecord({ key, value, contentType }),
@@ -550,7 +549,7 @@ describe('Key-Value Store methods', () => {
                 contentType,
             );
             expect(browserRes).toBeUndefined();
-            validateRequest({}, { storeId, key }, JSON.parse(value), expectedHeaders);
+            validateRequest({ params: { storeId, key }, body: JSON.parse(value), additionalHeaders: expectedHeaders });
         });
 
         test('setRecord() uploads gzipped buffer in node context', async () => {
@@ -564,10 +563,10 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).setRecord({ key, value });
             expect(res).toBeUndefined();
-            validateRequest({}, { storeId, key }, value, {
+            validateRequest({ params: { storeId, key }, body: value, additionalHeaders: {
                 'content-type': contentType,
                 'content-encoding': 'gzip',
-            });
+            } });
 
             const browserRes = await page.evaluate(
                 (id, key, value) => client.keyValueStore(id).setRecord({ key, value }),
@@ -576,9 +575,9 @@ describe('Key-Value Store methods', () => {
                 value,
             );
             expect(browserRes).toBeUndefined();
-            validateRequest({}, { storeId, key }, value, {
+            validateRequest({ params: { storeId, key }, body: value, additionalHeaders: {
                 'content-type': contentType,
-            });
+            } });
         });
 
         test('deleteRecord() works', async () => {
@@ -587,11 +586,11 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).deleteRecord(key);
             expect(res).toBeUndefined();
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).deleteRecord(k), storeId, key);
             expect(browserRes).toBeUndefined();
-            validateRequest({}, { storeId, key });
+            validateRequest({ query: {}, params: { storeId, key } });
         });
 
         describe('getRecordPublicUrl()', () => {

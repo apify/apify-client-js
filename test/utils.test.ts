@@ -1,4 +1,4 @@
-import { ApifyApiError } from 'apify-client';
+import { ApifyApiError, WebhookUpdateData } from 'apify-client';
 import { describe, expect, test } from 'vitest';
 
 import * as utils from '../src/utils';
@@ -7,33 +7,31 @@ describe('utils.pluckData()', () => {
     test('works', () => {
         expect(utils.pluckData({ foo: 'bar', data: 'something' })).toEqual('something');
         expect(() => utils.pluckData({ foo: 'bar' })).toThrow();
-        expect(() => utils.pluckData(1)).toThrow();
-        expect(() => utils.pluckData('string')).toThrow();
-        expect(() => utils.pluckData(null)).toThrow();
-        expect(() => utils.pluckData(undefined)).toThrow();
+        expect(() => utils.pluckData(1 as any)).toThrow();
+        expect(() => utils.pluckData('string' as any)).toThrow();
+        expect(() => utils.pluckData(null as any)).toThrow();
+        expect(() => utils.pluckData(undefined as any)).toThrow();
     });
 });
 
 describe('utils.catchNotFoundOrThrow()', () => {
     test('works', () => {
-        const recordNotFoundError = new ApifyApiError({ status: 404, data: { error: { type: 'record-not-found' } } });
+        const recordNotFoundError = new ApifyApiError({ status: 404, data: { error: { type: 'record-not-found' } } }, 0);
         const recordOrTokenNotFoundError = new ApifyApiError({
             status: 404,
             data: { error: { type: 'record-or-token-not-found' } },
-        });
-        const otherError = new ApifyApiError({ status: 404, data: { error: { type: 'page-not-found' } } });
-        const internalError = new ApifyApiError({ status: 500, data: { error: { type: 'internal-error' } } });
+        }, 0);
+        const otherError = new ApifyApiError({ status: 404, data: { error: { type: 'page-not-found' } } }, 0);
+        const internalError = new ApifyApiError({ status: 500, data: { error: { type: 'internal-error' } } }, 0);
         const otherGenericError = new Error('blabla');
 
         expect(utils.catchNotFoundOrThrow(recordNotFoundError)).toBeUndefined();
         expect(utils.catchNotFoundOrThrow(recordOrTokenNotFoundError)).toBeUndefined();
         expect(() => utils.catchNotFoundOrThrow(otherError)).toThrowError(otherError);
         expect(() => utils.catchNotFoundOrThrow(internalError)).toThrowError(internalError);
-        expect(() => utils.catchNotFoundOrThrow(otherGenericError)).toThrowError(otherGenericError);
+        expect(() => utils.catchNotFoundOrThrow(otherGenericError as any)).toThrowError(otherGenericError);
     });
 });
-
-const expectDatesDame = (d1, d2) => expect(d1).toEqual(d2);
 
 describe('utils.parseDateFields()', () => {
     test('works', () => {
@@ -43,7 +41,7 @@ describe('utils.parseDateFields()', () => {
 
         expect(parsed.fooAt).toBeInstanceOf(Date);
         expect(typeof parsed.barat).toBe('string');
-        expectDatesDame(parsed.fooAt, date);
+        expect(parsed.fooAt).toEqual(date);
     });
 
     test('works with depth enough', () => {
@@ -62,11 +60,11 @@ describe('utils.parseDateFields()', () => {
         expect(parsed.data.foo[0].fooAt).toBeInstanceOf(Date);
         expect(typeof parsed.data.foo[0].barat).toBe('string');
         expect(typeof parsed.data.foo[0].tooDeep.fooAt).toBe('string');
-        expectDatesDame(parsed.data.foo[0].fooAt, date);
+        expect(parsed.data.foo[0].fooAt).toEqual(date);
         expect(parsed.data.foo[1].fooAt).toBeInstanceOf(Date);
         expect(typeof parsed.data.foo[1].barat).toBe('string');
         expect(typeof parsed.data.foo[1].tooDeep.fooAt).toBe('string');
-        expectDatesDame(parsed.data.foo[1].fooAt, date);
+        expect(parsed.data.foo[1].fooAt).toEqual(date);
     });
 
     test('does not parse falsy values', () => {
@@ -96,7 +94,7 @@ describe('utils.parseDateFields()', () => {
     test('parses custom date field detected by matcher', () => {
         const original = { fooAt: 'three days ago', date: '2024-02-18T00:00:00.000Z' };
 
-        const parsed = utils.parseDateFields(original, (key) => key === 'date') as utils.Dictionary<Date | string>;
+        const parsed = utils.parseDateFields(original, (key) => key === 'date') as { fooAt: string; date: Date };
 
         expect(parsed.fooAt).toEqual('three days ago');
         expect(parsed.date).toBeInstanceOf(Date);
@@ -105,14 +103,14 @@ describe('utils.parseDateFields()', () => {
     test('parses custom nested date field detected by matcher', () => {
         const original = { fooAt: 'three days ago', foo: { date: '2024-02-18T00:00:00.000Z' } };
 
-        const parsed = utils.parseDateFields(original, (key) => key === 'date') as utils.Dictionary<Date | string>;
+        const parsed = utils.parseDateFields(original, (key) => key === 'date') as { foo: { date: Date } };
 
         expect(parsed.foo.date).toBeInstanceOf(Date);
     });
 
     test('does not mangle non-date strings even when detected by matcher', () => {
         const original = { fooAt: 'three days ago', date: '30+ days' };
-        const parsed = utils.parseDateFields(original, (key) => key === 'date') as utils.Dictionary<Date | string>;
+        const parsed = utils.parseDateFields(original, (key) => key === 'date') as { fooAt: string; date: Date };
 
         expect(parsed.fooAt).toEqual('three days ago');
         expect(parsed.date).toEqual('30+ days');
@@ -121,15 +119,15 @@ describe('utils.parseDateFields()', () => {
 
 describe('utils.stringifyWebhooksToBase64()', () => {
     test('works', () => {
-        const webhooks = [
+        const webhooks: WebhookUpdateData[] = [
             {
-                foo1: 'bar1',
+                description: 'My webhook',
             },
             {
-                foo2: 'bar2',
+                isAdHoc: true,
             },
         ];
-        const base64String = utils.stringifyWebhooksToBase64(webhooks);
+        const base64String = utils.stringifyWebhooksToBase64(webhooks)!;
 
         expect(base64String).toBe(Buffer.from(JSON.stringify(webhooks), 'utf8').toString('base64'));
         expect(JSON.parse(Buffer.from(base64String, 'base64').toString('utf8'))).toStrictEqual(webhooks);

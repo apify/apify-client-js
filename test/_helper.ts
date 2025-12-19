@@ -78,7 +78,7 @@ export const validateRequest = ({
     additionalHeaders = {},
     path,
 }: {
-    query?: Request['query'];
+    query?: Dictionary<string | number | boolean | undefined | string[]>;
     params?: Request['params'];
     body?: Request['body'];
     additionalHeaders?: Request['headers'];
@@ -90,7 +90,7 @@ export const validateRequest = ({
     };
     const request = mockServer.getLastRequest();
     if (path) {
-        expect(request?.path).toEqual(path);
+        expect(`${request?.baseUrl}${request?.path}`).toEqual(path);
     }
 
     const expectedQuery = getExpectedQuery(query);

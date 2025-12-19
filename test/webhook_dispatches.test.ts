@@ -44,12 +44,11 @@ describe('Webhook Dispatch methods', () => {
             };
 
             const res = await client.webhookDispatches().list(opts);
-            expect(res.id).toEqual('list-dispatches');
-            validateRequest(opts);
+            validateRequest({ query: opts, path: '/v2/webhook-dispatches/' });
 
             const browserRes = await page.evaluate((options) => client.webhookDispatches().list(options), opts);
             expect(browserRes).toEqual(res);
-            validateRequest(opts);
+            validateRequest({ query: opts, path: '/v2/webhook-dispatches/' });
         });
     });
 
@@ -59,11 +58,11 @@ describe('Webhook Dispatch methods', () => {
 
             const res = await client.webhookDispatch(webhookDispatchId).get();
             expect(res?.id).toEqual('get-dispatch');
-            validateRequest({}, { webhookDispatchId });
+            validateRequest({ query: {}, params: { webhookDispatchId } });
 
             const browserRes = await page.evaluate((id) => client.webhookDispatch(id).get(), webhookDispatchId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { webhookDispatchId });
+            validateRequest({ query: {}, params: { webhookDispatchId } });
         });
 
         test('get() 404 works', async () => {
@@ -71,11 +70,11 @@ describe('Webhook Dispatch methods', () => {
 
             const res = await client.webhookDispatch(webhookDispatchId).get();
             expect(res).toBeUndefined();
-            validateRequest({}, { webhookDispatchId });
+            validateRequest({ query: {}, params: { webhookDispatchId } });
 
             const browserRes = await page.evaluate((id) => client.webhookDispatch(id).get(), webhookDispatchId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { webhookDispatchId });
+            validateRequest({ query: {}, params: { webhookDispatchId } });
         });
     });
 });

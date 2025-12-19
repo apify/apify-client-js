@@ -1,10 +1,12 @@
 import { ApifyClient } from 'apify-client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
 import { ME_USER_NAME_PLACEHOLDER } from '@apify/consts';
 
 import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
+import { AddressInfo } from 'node:net';
+import { Page } from 'puppeteer';
 
 describe('User methods', () => {
     let baseUrl: string;
@@ -13,15 +15,15 @@ describe('User methods', () => {
     beforeAll(async () => {
         const server = await mockServer.start();
         await browser.start();
-        baseUrl = `http://localhost:${server.address().port}`;
+        baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`;
     });
 
     afterAll(async () => {
         await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
-    let client;
-    let page;
+    let client: ApifyClient;
+    let page: Page;
     beforeEach(async () => {
         page = await browser.getInjectedPage(baseUrl, DEFAULT_OPTIONS);
         client = new ApifyClient({
@@ -31,7 +33,7 @@ describe('User methods', () => {
         });
     });
     afterEach(async () => {
-        client = null;
+        client = null as unknown as ApifyClient;
         page.close().catch(() => {});
     });
 
@@ -41,45 +43,43 @@ describe('User methods', () => {
 
             const res = await client.user(userId).get();
             expect(res.id).toEqual('get-user');
-            validateRequest({}, { userId });
+            validateRequest({ query: {}, params: { userId } });
 
             const browserRes = await page.evaluate((id) => client.user(id).get(), userId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { userId });
+            validateRequest({ query: {}, params: { userId } });
         });
 
         test('get() with no userId', async () => {
             const res = await client.user().get();
             expect(res.id).toEqual('get-user');
-            validateRequest({}, { userId: ME_USER_NAME_PLACEHOLDER });
+            validateRequest({ query: {}, params: { userId: ME_USER_NAME_PLACEHOLDER } });
 
-            const browserRes = await page.evaluate((id) => client.user(id).get());
+            const browserRes = await page.evaluate((id) => client.user(id).get(), undefined);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { userId: ME_USER_NAME_PLACEHOLDER });
+            validateRequest({ query: {}, params: { userId: ME_USER_NAME_PLACEHOLDER } });
         });
 
         test('monthlyUsage() works', async () => {
             const userId = 'some-id';
 
             const res = await client.user(userId).monthlyUsage();
-            expect(res.id).toEqual('get-monthly-usage');
-            validateRequest({}, { userId });
+            validateRequest({ query: {}, params: { userId }, path: '/v2/users/some-id/usage/monthly' });
 
             const browserRes = await page.evaluate((id) => client.user(id).monthlyUsage(), userId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { userId });
+            validateRequest({ query: {}, params: { userId } });
         });
 
         test('limits() works', async () => {
             const userId = 'some-id';
 
             const res = await client.user(userId).limits();
-            expect(res.id).toEqual('get-limits');
-            validateRequest({}, { userId });
+            validateRequest({ query: {}, params: { userId }, path: '/v2/users/some-id/limits' });
 
             const browserRes = await page.evaluate((id) => client.user(id).limits(), userId);
             expect(browserRes).toEqual(res);
-            validateRequest({}, { userId });
+            validateRequest({ query: {}, params: { userId } });
         });
 
         test('updateLimits() works', async () => {
@@ -87,14 +87,14 @@ describe('User methods', () => {
 
             const res = await client.user(userId).updateLimits({ maxMonthlyUsageUsd: 1000 });
             expect(res).toBeUndefined();
-            validateRequest({}, { userId }, { maxMonthlyUsageUsd: 1000 });
+            validateRequest({ query: {}, params: { userId }, body: { maxMonthlyUsageUsd: 1000 } });
 
             const browserRes = await page.evaluate(
                 (id) => client.user(id).updateLimits({ maxMonthlyUsageUsd: 1000 }),
                 userId,
             );
             expect(browserRes).toBeUndefined();
-            validateRequest({}, { userId }, { maxMonthlyUsageUsd: 1000 });
+            validateRequest({ query: {}, params: { userId }, body: { maxMonthlyUsageUsd: 1000 } });
         });
     });
 });
