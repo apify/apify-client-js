@@ -1,10 +1,11 @@
+import type { AddressInfo } from 'node:net';
+
 import type { StoreCollectionListOptions } from 'apify-client';
 import { ApifyClient } from 'apify-client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
-import { AddressInfo } from 'node:net';
 
 describe('Store', () => {
     let baseUrl: string | undefined;

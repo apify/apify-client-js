@@ -1,10 +1,11 @@
+import type { AddressInfo } from 'node:net';
+
 import { ApifyClient, DownloadItemsFormat } from 'apify-client';
+import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest';
 
-import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
+import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
-import { Page } from 'puppeteer';
-import { AddressInfo } from 'net';
 
 describe('Dataset methods', () => {
     let baseUrl: string;
@@ -80,7 +81,11 @@ describe('Dataset methods', () => {
             const datasetId = 'some-id';
 
             const res = await client.dataset(datasetId).get();
-            validateRequest({ query: {}, params: { datasetId }, path: `/v2/datasets/${encodeURIComponent(datasetId)}` });
+            validateRequest({
+                query: {},
+                params: { datasetId },
+                path: `/v2/datasets/${encodeURIComponent(datasetId)}`,
+            });
 
             const browserRes = await page.evaluate((id) => client.dataset(id).get(), datasetId);
             expect(browserRes).toEqual(res);
@@ -151,11 +156,11 @@ describe('Dataset methods', () => {
 
             const res = await client.dataset(datasetId).listItems(query);
             expect(res).toEqual(expected);
-            validateRequest({ query: query, params: { datasetId } });
+            validateRequest({ query, params: { datasetId } });
 
             const browserRes = await page.evaluate((id, opts) => client.dataset(id).listItems(opts), datasetId, query);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: query, params: { datasetId } });
+            validateRequest({ query, params: { datasetId } });
         });
 
         test('downloadItems() works with bom=false', async () => {
@@ -269,7 +274,6 @@ describe('Dataset methods', () => {
 
             const browserRes = await page.evaluate(
                 async (id, f, opts) => {
-
                     const res = await client.dataset(id).downloadItems(f, opts);
                     const decoder = new TextDecoder();
                     return decoder.decode(res);
@@ -374,7 +378,11 @@ describe('Dataset methods', () => {
             const datasetId = 'some-id';
 
             const res = await client.dataset(datasetId).getStatistics();
-            validateRequest({ query: {}, params: { datasetId }, path: `/v2/datasets/${encodeURIComponent(datasetId)}/statistics` });
+            validateRequest({
+                query: {},
+                params: { datasetId },
+                path: `/v2/datasets/${encodeURIComponent(datasetId)}/statistics`,
+            });
 
             const browserRes = await page.evaluate((id) => client.dataset(id).getStatistics(), datasetId);
             expect(browserRes).toEqual(res);

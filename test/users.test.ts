@@ -1,12 +1,13 @@
+import type { AddressInfo } from 'node:net';
+
 import { ApifyClient } from 'apify-client';
+import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
 import { ME_USER_NAME_PLACEHOLDER } from '@apify/consts';
 
-import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
+import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
-import { AddressInfo } from 'node:net';
-import { Page } from 'puppeteer';
 
 describe('User methods', () => {
     let baseUrl: string;

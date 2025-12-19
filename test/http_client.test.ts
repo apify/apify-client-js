@@ -1,10 +1,11 @@
+import type { AddressInfo } from 'node:net';
+
 import { ApifyClient } from 'apify-client';
+import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
 import { Browser } from './_helper';
 import { mockServer } from './mock_server/server';
-import { Page } from 'puppeteer';
-import { AddressInfo } from 'node:net';
 
 describe('HttpClient', () => {
     let baseUrl: string;

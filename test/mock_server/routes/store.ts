@@ -7,4 +7,3 @@ export const store = express.Router();
 const ROUTES: MockServerRoute[] = [{ id: 'store-list', method: 'GET', path: '/' }];
 
 addRoutes(store, ROUTES);
-

@@ -1,12 +1,12 @@
+import type { AddressInfo } from 'node:net';
 import { Readable } from 'node:stream';
 
 import { ApifyClient } from 'apify-client';
+import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest';
 
-import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
+import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
-import { Page } from 'puppeteer';
-import { AddressInfo } from 'node:net';
 
 describe('Key-Value Store methods', () => {
     let baseUrl: string;
@@ -70,7 +70,7 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStores().getOrCreate(name);
             expect(res.id).toEqual('get-or-create-store');
-            validateRequest({ query: { name }});
+            validateRequest({ query: { name } });
 
             const browserRes = await page.evaluate((n) => client.keyValueStores().getOrCreate(n), name);
             expect(browserRes).toEqual(res);
@@ -138,7 +138,7 @@ describe('Key-Value Store methods', () => {
             };
 
             const res = await client.keyValueStore(storeId).listKeys(query);
-            validateRequest({ query: query, params: { storeId }, path: `/v2/key-value-stores/${storeId}/keys` });
+            validateRequest({ query, params: { storeId }, path: `/v2/key-value-stores/${storeId}/keys` });
 
             const browserRes = await page.evaluate(
                 (id, opts) => client.keyValueStore(id).listKeys(opts),
@@ -146,7 +146,7 @@ describe('Key-Value Store methods', () => {
                 query,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({ query: query, params: { storeId } });
+            validateRequest({ query, params: { storeId } });
         });
 
         test('listKeys() passes signature', async () => {
@@ -161,10 +161,10 @@ describe('Key-Value Store methods', () => {
             };
 
             await client.keyValueStore(storeId).listKeys(query);
-            validateRequest({ query: query, params: { storeId } });
+            validateRequest({ query, params: { storeId } });
 
             await page.evaluate((id, opts) => client.keyValueStore(id).listKeys(opts), storeId, query);
-            validateRequest({ query: query, params: { storeId } });
+            validateRequest({ query, params: { storeId } });
         });
 
         test('recordExists() works', async () => {
@@ -289,7 +289,6 @@ describe('Key-Value Store methods', () => {
 
             const browserRes = await page.evaluate(
                 async (id, k, opts) => {
-
                     const res = await client.keyValueStore(id).getRecord(k, opts);
                     const decoder = new TextDecoder();
                     res.value = decoder.decode(res.value);
@@ -375,7 +374,6 @@ describe('Key-Value Store methods', () => {
             try {
                 await page.evaluate(
                     async (id, k, opts) => {
-
                         return client.keyValueStore(id).getRecord(k, opts);
                     },
                     storeId,
@@ -563,10 +561,14 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).setRecord({ key, value });
             expect(res).toBeUndefined();
-            validateRequest({ params: { storeId, key }, body: value, additionalHeaders: {
-                'content-type': contentType,
-                'content-encoding': 'gzip',
-            } });
+            validateRequest({
+                params: { storeId, key },
+                body: value,
+                additionalHeaders: {
+                    'content-type': contentType,
+                    'content-encoding': 'gzip',
+                },
+            });
 
             const browserRes = await page.evaluate(
                 (id, key, value) => client.keyValueStore(id).setRecord({ key, value }),
@@ -575,9 +577,13 @@ describe('Key-Value Store methods', () => {
                 value,
             );
             expect(browserRes).toBeUndefined();
-            validateRequest({ params: { storeId, key }, body: value, additionalHeaders: {
-                'content-type': contentType,
-            } });
+            validateRequest({
+                params: { storeId, key },
+                body: value,
+                additionalHeaders: {
+                    'content-type': contentType,
+                },
+            });
         });
 
         test('deleteRecord() works', async () => {

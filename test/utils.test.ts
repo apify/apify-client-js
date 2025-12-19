@@ -1,4 +1,5 @@
-import { ApifyApiError, WebhookUpdateData } from 'apify-client';
+import type { WebhookUpdateData } from 'apify-client';
+import { ApifyApiError } from 'apify-client';
 import { describe, expect, test } from 'vitest';
 
 import * as utils from '../src/utils';
@@ -16,11 +17,17 @@ describe('utils.pluckData()', () => {
 
 describe('utils.catchNotFoundOrThrow()', () => {
     test('works', () => {
-        const recordNotFoundError = new ApifyApiError({ status: 404, data: { error: { type: 'record-not-found' } } }, 0);
-        const recordOrTokenNotFoundError = new ApifyApiError({
-            status: 404,
-            data: { error: { type: 'record-or-token-not-found' } },
-        }, 0);
+        const recordNotFoundError = new ApifyApiError(
+            { status: 404, data: { error: { type: 'record-not-found' } } },
+            0,
+        );
+        const recordOrTokenNotFoundError = new ApifyApiError(
+            {
+                status: 404,
+                data: { error: { type: 'record-or-token-not-found' } },
+            },
+            0,
+        );
         const otherError = new ApifyApiError({ status: 404, data: { error: { type: 'page-not-found' } } }, 0);
         const internalError = new ApifyApiError({ status: 500, data: { error: { type: 'internal-error' } } }, 0);
         const otherGenericError = new Error('blabla');

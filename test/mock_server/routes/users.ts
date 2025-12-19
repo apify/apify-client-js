@@ -12,4 +12,3 @@ const ROUTES: MockServerRoute[] = [
 ];
 
 addRoutes(userRouter, ROUTES);
-

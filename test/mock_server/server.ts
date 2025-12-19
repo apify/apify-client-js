@@ -1,6 +1,8 @@
-import http, { Server } from 'node:http';
+import type { Server } from 'node:http';
+import http from 'node:http';
 import path from 'node:path';
 
+import type { Dictionary } from 'apify-client';
 import bodyParser from 'body-parser';
 import compression from 'compression';
 import express from 'express';
@@ -22,7 +24,6 @@ import { webhookDispatches } from './routes/webhook_dispatches';
 import { webhooks } from './routes/webhooks';
 // Consts
 import { MOCKED_ACTOR_LOGS } from './test_utils';
-import { Dictionary } from 'apify-client';
 
 const defaultApp = createDefaultApp();
 

@@ -1,8 +1,9 @@
 import { ApifyClient } from 'apify-client';
 import { describe, expect, test, vi } from 'vitest';
-import { HttpClient } from '../src/http_client';
 
-const range = (start: number, end: number, step: number = 1) => {
+import type { HttpClient } from '../src/http_client';
+
+const range = (start: number, end: number, step = 1) => {
     // Inclusive range, ordered based on start and end values
     return Array.from(
         {

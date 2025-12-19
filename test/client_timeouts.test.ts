@@ -1,12 +1,12 @@
-import { beforeEach, describe, expect,test, vi } from 'vitest';
-
 import { ApifyClient, type Dictionary } from 'apify-client';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+
 import type { HttpClient } from '../src/http_client.js';
 
 // Mock for testing timeout functionality
 class MockHttpClient {
     public timeoutSecs: number;
-    public callHistory: Array<any>
+    public callHistory: any[];
     public stats: { addRateLimitError: ReturnType<typeof vi.fn> };
 
     constructor(timeoutSecs: number) {

@@ -1,10 +1,10 @@
 import { launchPuppeteer, puppeteerUtils } from '@crawlee/puppeteer';
+import type { Dictionary } from 'apify-client';
+import type { Request } from 'express';
+import type { Browser as PuppeteerBrowser } from 'puppeteer';
 import { expect } from 'vitest';
 
 import { mockServer } from './mock_server/server';
-import { Dictionary } from 'apify-client';
-import { Browser as PuppeteerBrowser } from 'puppeteer';
-import { Request } from 'express';
 
 export class Browser {
     private browser: PuppeteerBrowser | undefined;

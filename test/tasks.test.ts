@@ -1,12 +1,14 @@
+import type { AddressInfo } from 'node:net';
+
 import { ApifyClient } from 'apify-client';
+import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
-import { stringifyWebhooksToBase64 } from '../src/utils';
-import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
-import { mockServer } from './mock_server/server';
-import { Page } from 'puppeteer';
-import { AddressInfo } from 'net';
 import { WEBHOOK_EVENT_TYPES } from '@apify/consts';
+
+import { stringifyWebhooksToBase64 } from '../src/utils';
+import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
+import { mockServer } from './mock_server/server';
 
 describe('Task methods', () => {
     let baseUrl: string;
@@ -71,7 +73,12 @@ describe('Task methods', () => {
             const task = { input: { foo: 'bar' } };
 
             const res = await client.task(taskId).update(task);
-            validateRequest({ query: {}, params: { taskId: 'some-user~some-id' }, body: task, path: '/v2/actor-tasks/some-user~some-id' });
+            validateRequest({
+                query: {},
+                params: { taskId: 'some-user~some-id' },
+                body: task,
+                path: '/v2/actor-tasks/some-user~some-id',
+            });
 
             const browserRes = await page.evaluate((id, t) => client.task(id).update(t), taskId, task);
             expect(browserRes).toEqual(res);
@@ -123,11 +130,11 @@ describe('Task methods', () => {
             };
 
             const res = await client.task(taskId).runs().list(query);
-            validateRequest({ query: query, params: { taskId }, path: '/v2/actor-tasks/task-id/runs' });
+            validateRequest({ query, params: { taskId }, path: '/v2/actor-tasks/task-id/runs' });
 
             const browserRes = await page.evaluate((id, q) => client.task(id).runs().list(q), taskId, query);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: query, params: { taskId } });
+            validateRequest({ query, params: { taskId } });
         });
 
         test('start() works', async () => {
@@ -151,11 +158,11 @@ describe('Task methods', () => {
 
             const res = await client.task(taskId).start(undefined, query);
             expect(res.id).toEqual('run-task');
-            validateRequest({ query: query, params: { taskId } });
+            validateRequest({ query, params: { taskId } });
 
             const browserRes = await page.evaluate((id, q) => client.task(id).start(undefined, q), taskId, query);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: query, params: { taskId } });
+            validateRequest({ query, params: { taskId } });
         });
 
         test('start() works with input and options overrides', async () => {
@@ -169,7 +176,7 @@ describe('Task methods', () => {
 
             const res = await client.task(taskId).start(input, query);
             expect(res.id).toEqual('run-task');
-            validateRequest({ query: query, params: { taskId }, body: input });
+            validateRequest({ query, params: { taskId }, body: input });
 
             const browserRes = await page.evaluate(
                 (id, i, opts) => client.task(id).start(i, opts),
@@ -178,7 +185,7 @@ describe('Task methods', () => {
                 query,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({ query: query, params: { taskId }, body: input });
+            validateRequest({ query, params: { taskId }, body: input });
         });
 
         test('start() works with functions in input', async () => {
@@ -224,13 +231,13 @@ describe('Task methods', () => {
 
             const query = { webhooks: stringifyWebhooksToBase64(webhooks) };
             const res = await client.task(taskId).start(undefined, { webhooks });
-            validateRequest({ query: query, params: { taskId }, path: '/v2/actor-tasks/some-id/runs' });
+            validateRequest({ query, params: { taskId }, path: '/v2/actor-tasks/some-id/runs' });
 
             const browserRes = await page.evaluate((id, opts) => client.task(id).start(undefined, opts), taskId, {
                 webhooks,
             });
             expect(browserRes).toEqual(res);
-            validateRequest({ query: query, params: { taskId } });
+            validateRequest({ query, params: { taskId } });
         });
 
         test('start() works with maxItems', async () => {
@@ -275,7 +282,7 @@ describe('Task methods', () => {
 
             expect(res).toEqual(data);
             validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
-            validateRequest({ query: query, params: { taskId }, body: { some: 'body' } });
+            validateRequest({ query, params: { taskId }, body: { some: 'body' } });
 
             const callBrowserRes = await page.evaluate((id, i, opts) => client.task(id).call(i, opts), taskId, input, {
                 memory,
@@ -316,7 +323,7 @@ describe('Task methods', () => {
 
             expect(res).toEqual(data);
             validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
-            validateRequest({ query: query, params: { taskId } });
+            validateRequest({ query, params: { taskId } });
 
             const callBrowserRes = await page.evaluate(
                 (id, i, opts) => client.task(id).call(i, opts),
@@ -341,11 +348,11 @@ describe('Task methods', () => {
             };
 
             const res = await client.task(taskId).webhooks().list(query);
-            validateRequest({ query: query, params: { taskId }, path: '/v2/actor-tasks/some-task-id/webhooks' });
+            validateRequest({ query, params: { taskId }, path: '/v2/actor-tasks/some-task-id/webhooks' });
 
             const browserRes = await page.evaluate((id, opts) => client.task(id).webhooks().list(opts), taskId, query);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: query, params: { taskId } });
+            validateRequest({ query, params: { taskId } });
         });
 
         test('getInput() works', async () => {

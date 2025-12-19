@@ -1,10 +1,11 @@
+import type { AddressInfo } from 'node:net';
+
 import { ApifyClient } from 'apify-client';
+import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
-import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
+import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
-import { Page } from 'puppeteer';
-import { AddressInfo } from 'node:net';
 
 describe('Schedule methods', () => {
     let baseUrl: string;
@@ -68,7 +69,11 @@ describe('Schedule methods', () => {
             const scheduleId = 'schedule_id';
 
             const res = await client.schedule(scheduleId).get();
-            validateRequest({ query: {}, params: { scheduleId }, path: `/v2/schedules/${encodeURIComponent(scheduleId)}` });
+            validateRequest({
+                query: {},
+                params: { scheduleId },
+                path: `/v2/schedules/${encodeURIComponent(scheduleId)}`,
+            });
 
             const browserRes = await page.evaluate((id) => client.schedule(id).get(), scheduleId);
             expect(browserRes).toEqual(res);
@@ -92,7 +97,12 @@ describe('Schedule methods', () => {
             const schedule = { title: 'my new schedule', cronExpression: '0 0 * * *' };
 
             const res = await client.schedule(scheduleId).update(schedule);
-            validateRequest({ query: {}, params: { scheduleId }, body: schedule, path: `/v2/schedules/${encodeURIComponent(scheduleId)}` });
+            validateRequest({
+                query: {},
+                params: { scheduleId },
+                body: schedule,
+                path: `/v2/schedules/${encodeURIComponent(scheduleId)}`,
+            });
 
             const browserRes = await page.evaluate((id, s) => client.schedule(id).update(s), scheduleId, schedule);
             expect(browserRes).toEqual(res);
@@ -114,7 +124,11 @@ describe('Schedule methods', () => {
             const scheduleId = 'schedule_id';
 
             const res = await client.schedule(scheduleId).getLog();
-            validateRequest({ query: {}, params: { scheduleId }, path: `/v2/schedules/${encodeURIComponent(scheduleId)}/log` });
+            validateRequest({
+                query: {},
+                params: { scheduleId },
+                path: `/v2/schedules/${encodeURIComponent(scheduleId)}/log`,
+            });
 
             const browserRes = await page.evaluate((id) => client.schedule(id).getLog(), scheduleId);
             expect(browserRes).toEqual(res);

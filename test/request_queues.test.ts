@@ -1,11 +1,13 @@
-import { ApifyClient, Dictionary } from 'apify-client';
+import type { AddressInfo } from 'node:net';
+
+import type { Dictionary } from 'apify-client';
+import { ApifyClient } from 'apify-client';
+import type { Request } from 'express';
+import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
-import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
+import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
-import { Page } from 'puppeteer';
-import { AddressInfo } from 'net';
-import { Request } from 'express';
 
 describe('Request Queue methods', () => {
     let baseUrl: string;
@@ -21,8 +23,8 @@ describe('Request Queue methods', () => {
         await Promise.all([mockServer.close(), browser.cleanUpBrowser()]);
     });
 
-    let client: ApifyClient
-    let page: Page
+    let client: ApifyClient;
+    let page: Page;
     beforeEach(async () => {
         page = await browser.getInjectedPage(baseUrl, DEFAULT_OPTIONS);
         client = new ApifyClient({
@@ -68,11 +70,11 @@ describe('Request Queue methods', () => {
 
             const res = await client.requestQueues().getOrCreate(name);
             expect(res.id).toEqual('get-or-create-queue');
-            validateRequest({query:{ name }});
+            validateRequest({ query: { name } });
 
             const browserRes = await page.evaluate((n) => client.requestQueues().getOrCreate(n), name);
             expect(browserRes).toEqual(res);
-            validateRequest({query:{ name }});
+            validateRequest({ query: { name } });
         });
     });
 
@@ -130,7 +132,12 @@ describe('Request Queue methods', () => {
             const request = { url: 'http://example.com', uniqueKey: 'my-unique-key' };
 
             const res = await client.requestQueue(queueId).addRequest(request);
-            validateRequest({ query: {}, params: { queueId }, body: request, path: `/v2/request-queues/${queueId}/requests` });
+            validateRequest({
+                query: {},
+                params: { queueId },
+                body: request,
+                path: `/v2/request-queues/${queueId}/requests`,
+            });
 
             const browserRes = await page.evaluate((id, r) => client.requestQueue(id).addRequest(r), queueId, request);
             expect(browserRes).toEqual(res);
@@ -155,7 +162,12 @@ describe('Request Queue methods', () => {
             const forefront = true;
 
             const res = await client.requestQueue(queueId).addRequest(request, { forefront });
-            validateRequest({ query: { forefront }, params: { queueId }, body: request, path: `/v2/request-queues/${queueId}/requests` });
+            validateRequest({
+                query: { forefront },
+                params: { queueId },
+                body: request,
+                path: `/v2/request-queues/${queueId}/requests`,
+            });
 
             const browserRes = await page.evaluate(
                 (qId, r) => {
@@ -172,7 +184,11 @@ describe('Request Queue methods', () => {
             const queueId = 'some-id';
 
             const res = await client.requestQueue(queueId).unlockRequests();
-            validateRequest({ query: {}, params: { queueId }, path: `/v2/request-queues/${encodeURIComponent(queueId)}/requests/unlock` });
+            validateRequest({
+                query: {},
+                params: { queueId },
+                path: `/v2/request-queues/${encodeURIComponent(queueId)}/requests/unlock`,
+            });
 
             const browserRes = await page.evaluate((id) => client.requestQueue(id).unlockRequests(), queueId);
             expect(browserRes).toEqual(res);
@@ -244,7 +260,12 @@ describe('Request Queue methods', () => {
             const forefront = true;
 
             const res = await client.requestQueue(queueId).updateRequest(request, { forefront });
-            validateRequest({ query: { forefront }, params: { queueId, requestId }, body: request, path: `/v2/request-queues/${queueId}/requests/${requestId}` });
+            validateRequest({
+                query: { forefront },
+                params: { queueId, requestId },
+                body: request,
+                path: `/v2/request-queues/${queueId}/requests/${requestId}`,
+            });
 
             const browserRes = await page.evaluate(
                 (id, r) => {
@@ -263,7 +284,12 @@ describe('Request Queue methods', () => {
             const request = { id: requestId, url: 'http://example.com', uniqueKey: 'my-unique-key' };
 
             const res = await client.requestQueue(queueId).updateRequest(request);
-            validateRequest({ query: {}, params: { queueId, requestId }, body: request, path: `/v2/request-queues/${queueId}/requests/${requestId}` });
+            validateRequest({
+                query: {},
+                params: { queueId, requestId },
+                body: request,
+                path: `/v2/request-queues/${queueId}/requests/${requestId}`,
+            });
 
             const browserRes = await page.evaluate(
                 (id, r) => {
@@ -322,7 +348,11 @@ describe('Request Queue methods', () => {
             async (method) => {
                 const queueId = 'some-id';
                 const requestId = 'xxx';
-                const request: { id?: string, url?: string, uniqueKey?: string } = { id: requestId, url: 'http://example.com', uniqueKey: 'my-unique-key' };
+                const request: { id?: string; url?: string; uniqueKey?: string } = {
+                    id: requestId,
+                    url: 'http://example.com',
+                    uniqueKey: 'my-unique-key',
+                };
                 const clientKey = 'my-client-key';
 
                 const param = method.startsWith('delete') ? request.id : request;
@@ -330,7 +360,7 @@ describe('Request Queue methods', () => {
 
                 const queue = client.requestQueue(queueId, { clientKey });
                 const res = await queue[method](param);
-                validateRequest({ query: { clientKey }, params: { queueId, requestId }});
+                validateRequest({ query: { clientKey }, params: { queueId, requestId } });
 
                 const browserRes = await page.evaluate(
                     (id, k, p, m) => {
@@ -350,7 +380,9 @@ describe('Request Queue methods', () => {
         test('batchAddRequests() works', async () => {
             const queueId = 'some-id';
             const requestsLength = 1000;
-            const requests = new Array(requestsLength).fill(0).map((_, i) => ({ url: `http://example.com/${i}`, uniqueKey: `key-${i}` }));
+            const requests = new Array(requestsLength)
+                .fill(0)
+                .map((_, i) => ({ url: `http://example.com/${i}`, uniqueKey: `key-${i}` }));
 
             await client.requestQueue(queueId).batchAddRequests(requests);
             const firedRequests = mockServer.getLastRequests(requestsLength / 25);
@@ -368,7 +400,9 @@ describe('Request Queue methods', () => {
         test('batchAddRequests() propagates forefront', async () => {
             const queueId = 'some-id';
             const options = { forefront: true };
-            const requests = new Array(10).fill(0).map((_, i) => ({ url: `http://example.com/${i}`, uniqueKey: `key-${i}` }));
+            const requests = new Array(10)
+                .fill(0)
+                .map((_, i) => ({ url: `http://example.com/${i}`, uniqueKey: `key-${i}` }));
 
             const res = await client.requestQueue(queueId).batchAddRequests(requests, options);
             validateRequest({ query: options, params: { queueId }, body: requests });
@@ -429,7 +463,11 @@ describe('Request Queue methods', () => {
             const options = { forefront: true, lockSecs: 10 };
 
             const res = await client.requestQueue(queueId).prolongRequestLock(requestId, options);
-            validateRequest({ query: options, params: { queueId, requestId }, path: `/v2/request-queues/${queueId}/requests/${requestId}/lock` });
+            validateRequest({
+                query: options,
+                params: { queueId, requestId },
+                path: `/v2/request-queues/${queueId}/requests/${requestId}/lock`,
+            });
 
             const browserRes = await page.evaluate(
                 (qId, rId, opts) => {
@@ -501,7 +539,10 @@ describe('Request Queue methods', () => {
             for await (const { items } of pagination) {
                 expect(items).toEqual(expectedItemsInPage);
                 // Validate the request for the current iteration page
-                validateRequest({ query: { exclusiveStartId: expectedExclusiveStartId, limit: maxPageLimit }, params: { queueId } });
+                validateRequest({
+                    query: { exclusiveStartId: expectedExclusiveStartId, limit: maxPageLimit },
+                    params: { queueId },
+                });
                 // Prepare expectations and mock request for the next iteration page
                 expectedExclusiveStartId = items[items.length - 1].id;
                 expectedItemsInPage = requests.splice(0, maxPageLimit);
@@ -549,7 +590,11 @@ describe('Request Queue methods', () => {
             expect(processedRequestUrls).toEqual(expect.arrayContaining(requests.map((req) => req.url)));
 
             // It throws error when single request is too big
-            const bigRequest = { url: `http://example.com/x`, userData: { longString: 'b'.repeat(9_500_000) }, uniqueKey: 'key-big' };
+            const bigRequest = {
+                url: `http://example.com/x`,
+                userData: { longString: 'b'.repeat(9_500_000) },
+                uniqueKey: 'key-big',
+            };
             const requestsWithBigRequest: typeof requests = [...requests, bigRequest];
             await expect(client.requestQueue(queueId).batchAddRequests(requestsWithBigRequest)).rejects.toThrow(
                 `RequestQueueClient.batchAddRequests: The size of the request with index: ${requestsWithBigRequest.length - 1}`,

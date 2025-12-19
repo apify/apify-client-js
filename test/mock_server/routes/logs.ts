@@ -7,4 +7,3 @@ export const logRouter = express.Router();
 const ROUTES: MockServerRoute[] = [{ id: 'get-log', method: 'GET', path: '/:logId', type: 'text' }];
 
 addRoutes(logRouter, ROUTES);
-

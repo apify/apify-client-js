@@ -1,10 +1,11 @@
-import { ApifyClient } from 'apify-client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test } from 'vitest';
+import type { AddressInfo } from 'node:net';
 
-import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
+import { ApifyClient } from 'apify-client';
+import type { Page } from 'puppeteer';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
+
+import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
-import { Page } from 'puppeteer';
-import { AddressInfo } from 'node:net';
 
 describe('Build methods', () => {
     let baseUrl: string;
@@ -45,11 +46,11 @@ describe('Build methods', () => {
             };
 
             const res = await client.builds().list(query);
-            validateRequest({ query: query, path: '/v2/actor-builds/' });
+            validateRequest({ query, path: '/v2/actor-builds/' });
 
             const browserRes = await page.evaluate((opts) => client.builds().list(opts), query);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: query });
+            validateRequest({ query });
         });
     });
 
@@ -94,7 +95,11 @@ describe('Build methods', () => {
             const buildId = 'some-build-id';
 
             const res = await client.build(buildId).getOpenApiDefinition();
-            validateRequest({ query: {}, params: { buildId }, path: `/v2/actor-builds/${encodeURIComponent(buildId)}/openapi.json` });
+            validateRequest({
+                query: {},
+                params: { buildId },
+                path: `/v2/actor-builds/${encodeURIComponent(buildId)}/openapi.json`,
+            });
 
             const browserRes = await page.evaluate((bId) => client.build(bId).getOpenApiDefinition(), buildId);
             expect(browserRes).toEqual(res);

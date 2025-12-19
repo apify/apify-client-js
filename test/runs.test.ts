@@ -1,14 +1,14 @@
+import type { AddressInfo } from 'node:net';
 import { setTimeout as setTimeoutNode } from 'node:timers/promises';
 
 import c from 'ansi-colors';
 import { ApifyClient, Dictionary, RunCollectionListOptions } from 'apify-client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect,test, vi } from 'vitest';
+import type { Page } from 'puppeteer';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { Browser, DEFAULT_OPTIONS,validateRequest } from './_helper';
+import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
 import { MOCKED_ACTOR_LOGS_PROCESSED } from './mock_server/test_utils';
-import { Page } from 'puppeteer';
-import { AddressInfo } from 'node:net';
 
 describe('Run methods', () => {
     let baseUrl: string;
@@ -49,11 +49,11 @@ describe('Run methods', () => {
             } as const;
 
             const res = await client.runs().list(query);
-            validateRequest({ query: query, path: '/v2/actor-runs/' });
+            validateRequest({ query, path: '/v2/actor-runs/' });
 
             const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: query });
+            validateRequest({ query });
         });
 
         test('list() works multiple statuses', async () => {
@@ -195,7 +195,7 @@ describe('Run methods', () => {
                 query: actualQuery,
                 params: { runId },
                 body: { some: 'body' },
-                additionalHeaders: { 'content-type': contentType }
+                additionalHeaders: { 'content-type': contentType },
             });
 
             const browserRes = await page.evaluate(
@@ -208,7 +208,12 @@ describe('Run methods', () => {
                 options,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({ query: actualQuery, params: { runId }, body: { some: 'body' }, additionalHeaders: { 'content-type': contentType } });
+            validateRequest({
+                query: actualQuery,
+                params: { runId },
+                body: { some: 'body' },
+                additionalHeaders: { 'content-type': contentType },
+            });
         });
 
         test('metamorph() works with pre-stringified JSON input', async () => {
@@ -221,7 +226,7 @@ describe('Run methods', () => {
                 query: { targetActorId },
                 params: { runId },
                 body: { foo: 'bar' },
-                additionalHeaders: { 'content-type': contentType }
+                additionalHeaders: { 'content-type': contentType },
             };
 
             const res = await client.run(runId).metamorph(targetActorId, input, { contentType });

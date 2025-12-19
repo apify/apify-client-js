@@ -1,9 +1,11 @@
-import { ApifyApiError, ApifyClient, Dictionary } from 'apify-client';
+import type { AddressInfo } from 'node:net';
+
+import type { Dictionary } from 'apify-client';
+import { ApifyApiError, ApifyClient } from 'apify-client';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS } from './_helper';
 import { mockServer } from './mock_server/server';
-import { AddressInfo } from 'node:net';
 
 describe('ApifyApiError', () => {
     let baseUrl: string;
@@ -62,7 +64,6 @@ describe('ApifyApiError', () => {
                 return serializableErr as Dictionary<any>;
             }
         }, method);
-
 
         expect(error.name).toEqual('ApifyApiError');
         expect(error.clientMethod).toBe(`ActorCollectionClient.${method}`);

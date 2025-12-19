@@ -10,4 +10,3 @@ const ROUTES: MockServerRoute[] = [
 ];
 
 addRoutes(webhookDispatches, ROUTES);
-

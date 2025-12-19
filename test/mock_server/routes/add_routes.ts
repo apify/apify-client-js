@@ -1,4 +1,4 @@
-import { Dictionary } from 'apify-client';
+import type { Dictionary } from 'apify-client';
 import type { Request, Response, Router } from 'express';
 
 function maybeParseContextFromResourceId(resourceId: any) {
