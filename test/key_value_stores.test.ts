@@ -283,7 +283,8 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).getRecord(key, options);
             expect(res?.value).toBeInstanceOf(Buffer);
-            res.value = res.value.toString();
+            res!.value = (res!.value as unknown as Buffer).toString();
+
             expect(res).toEqual(expectedResult);
             validateRequest({ query: {}, params: { storeId, key } });
 
@@ -291,8 +292,9 @@ describe('Key-Value Store methods', () => {
                 async (id, k, opts) => {
                     const res = await client.keyValueStore(id).getRecord(k, opts);
                     const decoder = new TextDecoder();
-                    res.value = decoder.decode(res.value);
-                    return res;
+                    if (!res) throw new Error('Expected a record response');
+                    res.value = decoder.decode(res.value as unknown as BufferSource);
+                    return res as any;
                 },
                 storeId,
                 key,
@@ -320,8 +322,8 @@ describe('Key-Value Store methods', () => {
             };
 
             const res = await client.keyValueStore(storeId).getRecord(key);
-            expect(res.value).toBeInstanceOf(Buffer);
-            res.value = res.value.toString();
+            expect(res?.value).toBeInstanceOf(Buffer);
+            res!.value = (res!.value as unknown as Buffer).toString();
             expect(res).toEqual(expectedResult);
             validateRequest({ query: {}, params: { storeId, key } });
 
@@ -329,12 +331,13 @@ describe('Key-Value Store methods', () => {
                 async (id, k, opts) => {
                     const res = await client.keyValueStore(id).getRecord(k, opts);
                     const decoder = new TextDecoder();
-                    res.value = decoder.decode(res.value);
+                    if (!res) throw new Error('Expected a record response');
+                    res.value = decoder.decode(res.value as unknown as BufferSource);
                     return res;
                 },
                 storeId,
                 key,
-                undefined,
+                {},
             );
             expect(browserRes).toEqual(res);
             validateRequest({ query: {}, params: { storeId, key } });
@@ -362,12 +365,13 @@ describe('Key-Value Store methods', () => {
             };
 
             const res = await client.keyValueStore(storeId).getRecord(key, options);
+
             expect(res?.value).toBeInstanceOf(Readable);
-            const chunks = [];
-            for await (const chunk of res.value!) {
+            const chunks: Buffer[] = [];
+            for await (const chunk of res!.value as unknown as Readable) {
                 chunks.push(chunk);
             }
-            res.value = Buffer.concat(chunks).toString();
+            res!.value = Buffer.concat(chunks).toString();
             expect(res).toEqual(expectedResult);
             validateRequest({ query: {}, params: { storeId, key } });
 
@@ -508,7 +512,8 @@ describe('Key-Value Store methods', () => {
                 'content-type': 'application/octet-stream',
             };
 
-            const res = await client.keyValueStore(storeId).setRecord({ key, value });
+            // required cast -
+            const res = await client.keyValueStore(storeId).setRecord({ key, value: value as any });
             expect(res).toBeUndefined();
             validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
 
@@ -516,7 +521,7 @@ describe('Key-Value Store methods', () => {
                 async (id, key, s) => {
                     const encoder = new TextEncoder();
                     const value = encoder.encode(s);
-                    return client.keyValueStore(id).setRecord({ key, value });
+                    return client.keyValueStore(id).setRecord({ key, value } as any);
                 },
                 storeId,
                 key,

@@ -1,8 +1,6 @@
 import { ApifyClient } from 'apify-client';
 import { describe, expect, test, vi } from 'vitest';
 
-import type { HttpClient } from '../src/http_client';
-
 const range = (start: number, end: number, step = 1) => {
     // Inclusive range, ordered based on start and end values
     return Array.from(
@@ -63,9 +61,32 @@ const descPaginationOptions = [
     },
 ];
 
-function generateTestCases(resourceClients, testOptions) {
-    return resourceClients.flatMap((resourceClient) =>
-        testOptions.map((testOption) => ({
+interface ListOptions {
+    offset?: number;
+    limit?: number;
+    desc?: boolean;
+    unnamed?: boolean;
+    chunkSize?: number;
+    exclusiveStartKey?: string;
+    exclusiveStartId?: string;
+}
+
+interface TestOption {
+    testName: string;
+    userDefinedOptions: ListOptions;
+    expectedItems: { id: string; key: string }[];
+}
+
+interface ListableClient {
+    constructor: { name: string };
+    list?: (opts: ListOptions) => AsyncIterable<any> & Promise<any>;
+    listItems?: (opts: ListOptions) => AsyncIterable<any> & Promise<any>;
+    listKeys?: (opts: ListOptions) => AsyncIterable<any> & Promise<any>;
+}
+
+function generateTestCases<TClient extends ListableClient>(resourceClients: TClient[], testOptions: TestOption[]) {
+    return resourceClients.flatMap((resourceClient: TClient) =>
+        testOptions.map((testOption: TestOption) => ({
             resourceClient,
             clientName: resourceClient.constructor.name,
             ...testOption,
@@ -117,10 +138,14 @@ describe('Collection clients list method as async iterable', () => {
         descPaginationOptions,
     );
 
-    test.each([...noOptionsTestCases, ...commonTestCases, ...unnamedTestCases, ...descTestCases])(
+    test.each([...noOptionsTestCases, ...commonTestCases, ...unnamedTestCases, ...descTestCases] as const)(
         '$clientName: $testName',
-        async ({ resourceClient, userDefinedOptions, expectedItems }) => {
-            const mockedPlatformLogic: HttpClient['call'] = async (request) => {
+        async function handler({
+            resourceClient,
+            userDefinedOptions,
+            expectedItems,
+        }: ReturnType<typeof generateTestCases>[0]) {
+            const mockedPlatformLogic = async (request: any): Promise<any> => {
                 // Simulated platform logic for pagination.
                 // There are 2500 normal items in the collection and additional 100 extra items.
                 // Items are simple objects with incrementing attributes for easy verification.
@@ -158,11 +183,11 @@ describe('Collection clients list method as async iterable', () => {
                 };
             };
 
-            const mockedClient = vi.spyOn(client.httpClient, 'call').mockImplementation(mockedPlatformLogic);
+            const mockedClient = vi.spyOn(client.httpClient, 'call').mockImplementation(mockedPlatformLogic as any);
 
             try {
                 const items = [];
-                for await (const page of resourceClient.list(userDefinedOptions)) {
+                for await (const page of resourceClient.list!(userDefinedOptions)) {
                     items.push(page);
                 }
                 expect(items).toEqual(expectedItems);
@@ -172,7 +197,7 @@ describe('Collection clients list method as async iterable', () => {
             } finally {
                 mockedClient.mockRestore();
             }
-        },
+        } as any,
     );
 });
 
@@ -197,8 +222,12 @@ describe('DatasetClient.listItems as async iterable', () => {
             ...chunkSizePaginationOptions,
         ],
     );
-    test.each(testCases)('$testName', async ({ resourceClient, userDefinedOptions, expectedItems }) => {
-        const mockedPlatformLogic = async (request) => {
+    test.each(testCases as any)('$testName', async function handler({
+        resourceClient,
+        userDefinedOptions,
+        expectedItems,
+    }: any) {
+        const mockedPlatformLogic = async (request: any): Promise<any> => {
             // Simulated platform logic for pagination.
             // There are 2500 items in the collection.
             // Items are simple objects with incrementing attributes for easy verification.
@@ -231,7 +260,7 @@ describe('DatasetClient.listItems as async iterable', () => {
             };
         };
 
-        const mockedClient = vi.spyOn(client.httpClient, 'call').mockImplementation(mockedPlatformLogic);
+        const mockedClient = vi.spyOn(client.httpClient, 'call').mockImplementation(mockedPlatformLogic as any);
 
         try {
             const items = [];
@@ -245,7 +274,7 @@ describe('DatasetClient.listItems as async iterable', () => {
         } finally {
             mockedClient.mockRestore();
         }
-    });
+    } as any);
 });
 
 describe('KeyValueStoreClient.listKeys as async iterable', () => {
@@ -264,8 +293,12 @@ describe('KeyValueStoreClient.listKeys as async iterable', () => {
         [client.keyValueStore('some-id')],
         [...limitPaginationOptions, ...exclusiveStartKeyPaginationOptions],
     );
-    test.each(testCases)('$testName', async ({ resourceClient, userDefinedOptions, expectedItems }) => {
-        const mockedPlatformLogic = async (request) => {
+    test.each(testCases as any)('$testName', async function handler({
+        resourceClient,
+        userDefinedOptions,
+        expectedItems,
+    }: any) {
+        const mockedPlatformLogic = async (request: any): Promise<any> => {
             // Simulated platform logic for pagination.
             // There are 2500 items in the collection.
             // Items are simple objects with incrementing attributes for easy verification.
@@ -299,7 +332,7 @@ describe('KeyValueStoreClient.listKeys as async iterable', () => {
             };
         };
 
-        const mockedClient = vi.spyOn(client.httpClient, 'call').mockImplementation(mockedPlatformLogic);
+        const mockedClient = vi.spyOn(client.httpClient, 'call').mockImplementation(mockedPlatformLogic as any);
 
         try {
             const items = [];
@@ -313,7 +346,7 @@ describe('KeyValueStoreClient.listKeys as async iterable', () => {
         } finally {
             mockedClient.mockRestore();
         }
-    });
+    } as any);
 });
 
 describe('RequestQueueClient.listKeys as async iterable', () => {
@@ -332,9 +365,13 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
         [client.requestQueue('some-id')],
         [...limitPaginationOptions, ...exclusiveStartIdPaginationOptions],
     );
-    test.each(testCases)('$testName', async ({ resourceClient, userDefinedOptions, expectedItems }) => {
+    test.each(testCases as any)('$testName', async function handler({
+        resourceClient,
+        userDefinedOptions,
+        expectedItems,
+    }: any) {
         const totalItems = 2500;
-        const mockedPlatformLogic = async (request) => {
+        const mockedPlatformLogic = async (request: any): Promise<any> => {
             // Simulated platform logic for pagination.
             // There are 2500 items in the collection.
             // Items are simple objects with incrementing attributes for easy verification.
@@ -365,7 +402,7 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
             };
         };
 
-        const mockedClient = vi.spyOn(client.httpClient, 'call').mockImplementation(mockedPlatformLogic);
+        const mockedClient = vi.spyOn(client.httpClient, 'call').mockImplementation(mockedPlatformLogic as any);
 
         try {
             const items = [];
@@ -384,5 +421,5 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
         } finally {
             mockedClient.mockRestore();
         }
-    });
+    } as any);
 });

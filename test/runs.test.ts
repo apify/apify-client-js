@@ -2,7 +2,7 @@ import type { AddressInfo } from 'node:net';
 import { setTimeout as setTimeoutNode } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import { ApifyClient, Dictionary, RunCollectionListOptions } from 'apify-client';
+import { ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
@@ -390,8 +390,8 @@ describe('Run methods', () => {
             expect(res.status).toEqual(200);
 
             await expect(client.run(runId).charge(undefined as any)).rejects.toThrow(
-                'Expected `options` to be of type `object` but received type `undefined`\n' +
-                    'Cannot convert undefined or null to object in object `options`',
+                'Expected argument to be of type `object` but received type `undefined`\n' +
+                    'Cannot convert undefined or null to object in object',
             );
         });
     });

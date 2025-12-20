@@ -348,32 +348,54 @@ describe('Request Queue methods', () => {
             async (method) => {
                 const queueId = 'some-id';
                 const requestId = 'xxx';
-                const request: { id?: string; url?: string; uniqueKey?: string } = {
+                const request: { id: string; url: string; uniqueKey: string } = {
                     id: requestId,
                     url: 'http://example.com',
                     uniqueKey: 'my-unique-key',
                 };
                 const clientKey = 'my-client-key';
-
-                const param = method.startsWith('delete') ? request.id : request;
-                if (method.startsWith('add')) delete request.id;
-
                 const queue = client.requestQueue(queueId, { clientKey });
-                const res = await queue[method](param);
-                validateRequest({ query: { clientKey }, params: { queueId, requestId } });
+
+                let response: any;
+
+                if (method === 'deleteRequest') {
+                    response = await queue[method](request.id);
+                } else if (method === 'addRequest') {
+                    const { id, ...requestWithoutId } = request;
+                    response = await queue[method](requestWithoutId);
+                } else {
+                    response = await queue[method](request);
+                }
+
+                if (method === 'addRequest') {
+                    validateRequest({ query: { clientKey }, params: { queueId } });
+                } else {
+                    validateRequest({ query: { clientKey }, params: { queueId, requestId } });
+                }
 
                 const browserRes = await page.evaluate(
-                    (id, k, p, m) => {
+                    (id, k, m, r) => {
                         const rq = client.requestQueue(id, { clientKey: k });
-                        return rq[m](p);
+                        if (m === 'deleteRequest') {
+                            return rq[m](r.id);
+                        } if (m === 'addRequest') {
+                            const { id: _, ...rWithoutId } = r;
+                            return rq[m](rWithoutId);
+                        } 
+                            return rq[m](r);
+                        
                     },
                     queueId,
                     clientKey,
-                    param,
                     method,
+                    request,
                 );
-                expect(browserRes).toEqual(res);
-                validateRequest({ query: { clientKey }, params: { queueId } });
+                expect(browserRes).toEqual(response);
+                if (method === 'addRequest') {
+                    validateRequest({ query: { clientKey }, params: { queueId } });
+                } else {
+                    validateRequest({ query: { clientKey }, params: { queueId, requestId } });
+                }
             },
         );
 

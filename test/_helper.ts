@@ -72,10 +72,10 @@ function optsToQuery(params: Dictionary<any>) {
 }
 
 export const validateRequest = ({
-    query = {},
-    params = {},
-    body = {},
-    additionalHeaders = {},
+    query,
+    params,
+    body,
+    additionalHeaders,
     path,
 }: {
     query?: Dictionary<string | number | boolean | undefined | string[]>;
