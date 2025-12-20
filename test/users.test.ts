@@ -85,17 +85,15 @@ describe('User methods', () => {
 
         test('updateLimits() works', async () => {
             const userId = 'me';
+            const opts = { maxMonthlyUsageUsd: 1000, dataRetentionDays: 20 };
 
-            const res = await client.user(userId).updateLimits({ maxMonthlyUsageUsd: 1000 });
+            const res = await client.user(userId).updateLimits(opts);
             expect(res).toBeUndefined();
-            validateRequest({ query: {}, params: { userId }, body: { maxMonthlyUsageUsd: 1000 } });
+            validateRequest({ query: {}, params: { userId }, body: opts });
 
-            const browserRes = await page.evaluate(
-                (id) => client.user(id).updateLimits({ maxMonthlyUsageUsd: 1000 }),
-                userId,
-            );
+            const browserRes = await page.evaluate((id, o) => client.user(id).updateLimits(o), userId, opts);
             expect(browserRes).toBeUndefined();
-            validateRequest({ query: {}, params: { userId }, body: { maxMonthlyUsageUsd: 1000 } });
+            validateRequest({ query: {}, params: { userId }, body: opts });
         });
     });
 });
