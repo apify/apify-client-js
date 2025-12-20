@@ -290,11 +290,11 @@ describe('Key-Value Store methods', () => {
 
             const browserRes = await page.evaluate(
                 async (id, k, opts) => {
-                    const res = await client.keyValueStore(id).getRecord(k, opts);
+                    const r = await client.keyValueStore(id).getRecord(k, opts);
                     const decoder = new TextDecoder();
-                    if (!res) throw new Error('Expected a record response');
-                    res.value = decoder.decode(res.value as unknown as BufferSource);
-                    return res as any;
+                    if (!r) throw new Error('Expected a record response');
+                    r.value = decoder.decode(r.value as unknown as BufferSource);
+                    return r as any;
                 },
                 storeId,
                 key,
@@ -329,11 +329,11 @@ describe('Key-Value Store methods', () => {
 
             const browserRes = await page.evaluate(
                 async (id, k, opts) => {
-                    const res = await client.keyValueStore(id).getRecord(k, opts);
+                    const r = await client.keyValueStore(id).getRecord(k, opts);
                     const decoder = new TextDecoder();
-                    if (!res) throw new Error('Expected a record response');
-                    res.value = decoder.decode(res.value as unknown as BufferSource);
-                    return res;
+                    if (!r) throw new Error('Expected a record response');
+                    r.value = decoder.decode(r.value as unknown as BufferSource);
+                    return r;
                 },
                 storeId,
                 key,
@@ -437,7 +437,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
 
             const browserRes = await page.evaluate(
-                (id, key, value) => client.keyValueStore(id).setRecord({ key, value }),
+                (id, k, v) => client.keyValueStore(id).setRecord({ key: k, value: v }),
                 storeId,
                 key,
                 value,
@@ -459,7 +459,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
 
             const browserRes = await page.evaluate(
-                (id, key, value) => client.keyValueStore(id).setRecord({ key, value }),
+                (id, k, v) => client.keyValueStore(id).setRecord({ key: k, value: v }),
                 storeId,
                 key,
                 value,
@@ -487,9 +487,9 @@ describe('Key-Value Store methods', () => {
             validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
 
             const browserRes = await page.evaluate(
-                (id, key, value) =>
+                (id, k, v) =>
                     client.keyValueStore(id).setRecord(
-                        { key, value },
+                        { key: k, value: v },
                         {
                             timeoutSecs: 1,
                             doNotRetryTimeouts: true,
@@ -506,26 +506,25 @@ describe('Key-Value Store methods', () => {
         test('setRecord() works with buffer', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
-            const string = 'special chars 🤖✅';
-            const value = Buffer.from(string);
+            const data = 'special chars 🤖✅';
+            const value = Buffer.from(data);
             const expectedHeaders = {
                 'content-type': 'application/octet-stream',
             };
 
-            // required cast -
             const res = await client.keyValueStore(storeId).setRecord({ key, value: value as any });
             expect(res).toBeUndefined();
             validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
 
             const browserRes = await page.evaluate(
-                async (id, key, s) => {
+                async (id, k, d) => {
                     const encoder = new TextEncoder();
-                    const value = encoder.encode(s);
-                    return client.keyValueStore(id).setRecord({ key, value } as any);
+                    const v = encoder.encode(d);
+                    return client.keyValueStore(id).setRecord({ key: k, value: v } as any);
                 },
                 storeId,
                 key,
-                string,
+                data,
             );
             expect(browserRes).toBeUndefined();
             validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
@@ -545,7 +544,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({ params: { storeId, key }, body: JSON.parse(value), additionalHeaders: expectedHeaders });
 
             const browserRes = await page.evaluate(
-                (id, key, value, contentType) => client.keyValueStore(id).setRecord({ key, value, contentType }),
+                (id, k, v, ct) => client.keyValueStore(id).setRecord({ key: k, value: v, contentType: ct }),
                 storeId,
                 key,
                 value,
@@ -576,7 +575,7 @@ describe('Key-Value Store methods', () => {
             });
 
             const browserRes = await page.evaluate(
-                (id, key, value) => client.keyValueStore(id).setRecord({ key, value }),
+                (id, k, v) => client.keyValueStore(id).setRecord({ key: k, value: v }),
                 storeId,
                 key,
                 value,
@@ -635,8 +634,9 @@ describe('Key-Value Store methods', () => {
                 expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/records/${key}`);
 
                 const browserRes = await page.evaluate(
-                    ({ storeId, key }) => client.keyValueStore(storeId).getRecordPublicUrl(key),
-                    { storeId, key },
+                    (sId, k) => client.keyValueStore(sId).getRecordPublicUrl(k),
+                    storeId,
+                    key,
                 );
                 expect(browserRes).toEqual(res);
             });
@@ -651,8 +651,9 @@ describe('Key-Value Store methods', () => {
                 expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/records/${key}`);
 
                 const browserRes = await page.evaluate(
-                    ({ storeId, key }) => client.keyValueStore(storeId).getRecordPublicUrl(key),
-                    { storeId, key },
+                    (sId, k) => client.keyValueStore(sId).getRecordPublicUrl(k),
+                    storeId,
+                    key,
                 );
                 expect(browserRes).toEqual(res);
             });

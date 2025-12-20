@@ -378,12 +378,12 @@ describe('Request Queue methods', () => {
                         const rq = client.requestQueue(id, { clientKey: k });
                         if (m === 'deleteRequest') {
                             return rq[m](r.id);
-                        } if (m === 'addRequest') {
+                        }
+                        if (m === 'addRequest') {
                             const { id: _, ...rWithoutId } = r;
                             return rq[m](rWithoutId);
-                        } 
-                            return rq[m](r);
-                        
+                        }
+                        return rq[m](r);
                     },
                     queueId,
                     clientKey,

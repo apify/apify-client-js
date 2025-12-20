@@ -1,3 +1,4 @@
+import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { setTimeout } from 'node:timers/promises';
 
@@ -21,7 +22,7 @@ describe('Actor methods', () => {
     const browser = new Browser();
 
     beforeAll(async () => {
-        const server = (await mockServer.start()) as import('http').Server;
+        const server = (await mockServer.start()) as Server;
         await browser.start();
         baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`;
     });
@@ -389,14 +390,12 @@ describe('Actor methods', () => {
                     const lastRunClient = client.actor(actorId).lastRun({ status: requestedStatus });
                     const res = method === 'get' ? await lastRunClient.get() : await lastRunClient[method]().get();
 
-                    const pathSuffix =
-                        method === 'get'
-                            ? ''
-                            : method === 'keyValueStore'
-                              ? '/key-value-store'
-                              : method === 'requestQueue'
-                                ? '/request-queue'
-                                : `/${method}`;
+                    let pathSuffix = '';
+                    if (method !== 'get') {
+                        if (method === 'keyValueStore') pathSuffix = '/key-value-store';
+                        else if (method === 'requestQueue') pathSuffix = '/request-queue';
+                        else pathSuffix = `/${method}`;
+                    }
                     validateRequest({
                         query: { status: requestedStatus },
                         params: { actorId },

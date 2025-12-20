@@ -274,9 +274,9 @@ describe('Dataset methods', () => {
 
             const browserRes = await page.evaluate(
                 async (id, f, opts) => {
-                    const res = await client.dataset(id).downloadItems(f, opts);
+                    const r = await client.dataset(id).downloadItems(f, opts);
                     const decoder = new TextDecoder();
-                    return decoder.decode(res);
+                    return decoder.decode(r);
                 },
                 datasetId,
                 format,
