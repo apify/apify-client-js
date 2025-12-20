@@ -45,11 +45,11 @@ describe('Webhook Dispatch methods', () => {
             };
 
             const res = await client.webhookDispatches().list(opts);
-            validateRequest({ query: opts, path: '/v2/webhook-dispatches/' });
+            validateRequest({ query: opts, endpointId: 'list-dispatches' });
 
             const browserRes = await page.evaluate((options) => client.webhookDispatches().list(options), opts);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: opts, path: '/v2/webhook-dispatches/' });
+            validateRequest({ query: opts, endpointId: 'list-dispatches' });
         });
     });
 

@@ -43,7 +43,7 @@ describe('Webhook methods', () => {
 
             const res = await client.webhooks().create(webhook);
             validateRequest({
-                path: '/v2/webhooks/',
+                endpointId: 'create-webhook',
                 body: webhook,
             });
 
@@ -63,7 +63,7 @@ describe('Webhook methods', () => {
 
             const res = await client.webhooks().list(opts);
             validateRequest({
-                path: '/v2/webhooks/',
+                endpointId: 'list-webhooks',
                 query: opts,
             });
 
@@ -81,14 +81,14 @@ describe('Webhook methods', () => {
 
             const res = await client.webhook(webhookId).get();
             validateRequest({
-                path: `/v2/webhooks/${webhookId}`,
+                endpointId: 'get-webhook',
                 params: { webhookId },
             });
 
             const browserRes = await page.evaluate((id) => client.webhook(id).get(), webhookId);
             expect(browserRes).toEqual(res);
             validateRequest({
-                path: `/v2/webhooks/${webhookId}`,
+                endpointId: 'get-webhook',
                 params: { webhookId },
             });
         });
@@ -118,7 +118,7 @@ describe('Webhook methods', () => {
 
             const res = await client.webhook(webhookId).update(webhook);
             validateRequest({
-                path: `/v2/webhooks/${webhookId}`,
+                endpointId: 'update-webhook',
                 body: webhook,
                 params: { webhookId },
             });
@@ -126,7 +126,7 @@ describe('Webhook methods', () => {
             const browserRes = await page.evaluate((id, w) => client.webhook(id).update(w), webhookId, webhook);
             expect(browserRes).toEqual(res);
             validateRequest({
-                path: `/v2/webhooks/${webhookId}`,
+                endpointId: 'update-webhook',
                 body: webhook,
                 params: { webhookId },
             });
@@ -138,14 +138,14 @@ describe('Webhook methods', () => {
             const res = await client.webhook(webhookId).delete();
             expect(res).toBeUndefined();
             validateRequest({
-                path: `/v2/webhooks/${webhookId}`,
+                endpointId: 'delete-webhook',
                 params: { webhookId },
             });
 
             const browserRes = await page.evaluate((id) => client.webhook(id).delete(), webhookId);
             expect(browserRes).toEqual(res);
             validateRequest({
-                path: `/v2/webhooks/${webhookId}`,
+                endpointId: 'delete-webhook',
                 params: { webhookId },
             });
         });
@@ -155,14 +155,14 @@ describe('Webhook methods', () => {
 
             const res = await client.webhook(webhookId).test();
             validateRequest({
-                path: `/v2/webhooks/${webhookId}/test`,
+                endpointId: 'test-webhook',
                 params: { webhookId },
             });
 
             const browserRes = await page.evaluate((id) => client.webhook(id).test(), webhookId);
             expect(browserRes).toEqual(res);
             validateRequest({
-                path: `/v2/webhooks/${webhookId}/test`,
+                endpointId: 'test-webhook',
                 params: { webhookId },
             });
         });
@@ -177,7 +177,7 @@ describe('Webhook methods', () => {
 
             const res = await client.webhook(webhookId).dispatches().list(opts);
             validateRequest({
-                path: `/v2/webhooks/${webhookId}/dispatches`,
+                endpointId: 'list-dispatches',
                 params: { webhookId },
                 query: opts,
             });
@@ -185,7 +185,7 @@ describe('Webhook methods', () => {
             const browserRes = await page.evaluate((id, o) => client.webhook(id).dispatches().list(o), webhookId, opts);
             expect(browserRes).toEqual(res);
             validateRequest({
-                path: `/v2/webhooks/${webhookId}/dispatches`,
+                endpointId: 'list-dispatches',
                 params: { webhookId },
                 query: opts,
             });

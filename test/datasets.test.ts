@@ -47,7 +47,7 @@ describe('Dataset methods', () => {
             };
 
             const res = await client.datasets().list(opts);
-            validateRequest({ query: opts, path: '/v2/datasets/' });
+            validateRequest({ query: opts, endpointId: 'list-datasets' });
 
             const browserRes = await page.evaluate((options) => client.datasets().list(options), opts);
             expect(browserRes).toEqual(res);
@@ -56,7 +56,7 @@ describe('Dataset methods', () => {
 
         test('getOrCreate() works without name', async () => {
             const res = await client.datasets().getOrCreate();
-            validateRequest({ path: '/v2/datasets/' });
+            validateRequest({ endpointId: 'get-or-create-dataset' });
 
             const browserRes = await page.evaluate((n) => client.datasets().getOrCreate(n), undefined);
             expect(browserRes).toEqual(res);
@@ -68,11 +68,11 @@ describe('Dataset methods', () => {
 
             const res = await client.datasets().getOrCreate(name);
             expect(res.id).toEqual('get-or-create-dataset');
-            validateRequest({ query: { name }, path: '/v2/datasets/' });
+            validateRequest({ query: { name }, endpointId: 'get-or-create-dataset' });
 
             const browserRes = await page.evaluate((n) => client.datasets().getOrCreate(n), name);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: { name }, path: '/v2/datasets/' });
+            validateRequest({ query: { name }, endpointId: 'get-or-create-dataset' });
         });
     });
 
@@ -84,7 +84,7 @@ describe('Dataset methods', () => {
             validateRequest({
                 query: {},
                 params: { datasetId },
-                path: `/v2/datasets/${encodeURIComponent(datasetId)}`,
+                endpointId: 'get-dataset',
             });
 
             const browserRes = await page.evaluate((id) => client.dataset(id).get(), datasetId);
@@ -381,7 +381,7 @@ describe('Dataset methods', () => {
             validateRequest({
                 query: {},
                 params: { datasetId },
-                path: `/v2/datasets/${encodeURIComponent(datasetId)}/statistics`,
+                endpointId: 'get-statistics',
             });
 
             const browserRes = await page.evaluate((id) => client.dataset(id).getStatistics(), datasetId);

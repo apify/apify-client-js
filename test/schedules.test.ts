@@ -41,7 +41,7 @@ describe('Schedule methods', () => {
             const schedule = { name: 'my-schedule', cronExpression: '0 0 * * *' };
 
             const res = await client.schedules().create(schedule);
-            validateRequest({ query: {}, params: {}, body: schedule, path: '/v2/schedules/' });
+            validateRequest({ query: {}, params: {}, body: schedule, endpointId: 'create-schedule' });
 
             const browserRes = await page.evaluate((options) => client.schedules().create(options), schedule);
             expect(browserRes).toEqual(res);
@@ -56,7 +56,7 @@ describe('Schedule methods', () => {
             };
 
             const res = await client.schedules().list(opts);
-            validateRequest({ query: opts, path: '/v2/schedules/' });
+            validateRequest({ query: opts, endpointId: 'list-schedules' });
 
             const browserRes = await page.evaluate((options) => client.schedules().list(options), opts);
             expect(browserRes).toEqual(res);
@@ -72,7 +72,7 @@ describe('Schedule methods', () => {
             validateRequest({
                 query: {},
                 params: { scheduleId },
-                path: `/v2/schedules/${encodeURIComponent(scheduleId)}`,
+                endpointId: 'get-schedule',
             });
 
             const browserRes = await page.evaluate((id) => client.schedule(id).get(), scheduleId);
@@ -101,7 +101,7 @@ describe('Schedule methods', () => {
                 query: {},
                 params: { scheduleId },
                 body: schedule,
-                path: `/v2/schedules/${encodeURIComponent(scheduleId)}`,
+                endpointId: 'update-schedule',
             });
 
             const browserRes = await page.evaluate((id, s) => client.schedule(id).update(s), scheduleId, schedule);
@@ -127,7 +127,7 @@ describe('Schedule methods', () => {
             validateRequest({
                 query: {},
                 params: { scheduleId },
-                path: `/v2/schedules/${encodeURIComponent(scheduleId)}/log`,
+                endpointId: 'get-log',
             });
 
             const browserRes = await page.evaluate((id) => client.schedule(id).getLog(), scheduleId);

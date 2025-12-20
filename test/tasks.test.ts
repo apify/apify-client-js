@@ -48,7 +48,7 @@ describe('Task methods', () => {
             };
 
             const res = await client.tasks().list(opts);
-            validateRequest({ query: opts, path: '/v2/actor-tasks/' });
+            validateRequest({ query: opts, endpointId: 'list-tasks' });
 
             const browserRes = await page.evaluate((options) => client.tasks().list(options), opts);
             expect(browserRes).toEqual(res);
@@ -59,7 +59,7 @@ describe('Task methods', () => {
             const task = { actId: 'some-act-id', name: 'my-task' };
 
             const res = await client.tasks().create(task);
-            validateRequest({ query: {}, params: {}, body: task, path: '/v2/actor-tasks/' });
+            validateRequest({ query: {}, params: {}, body: task, endpointId: 'create-task' });
 
             const browserRes = await page.evaluate((t) => client.tasks().create(t), task);
             expect(browserRes).toEqual(res);
@@ -77,7 +77,7 @@ describe('Task methods', () => {
                 query: {},
                 params: { taskId: 'some-user~some-id' },
                 body: task,
-                path: '/v2/actor-tasks/some-user~some-id',
+                endpointId: 'update-task',
             });
 
             const browserRes = await page.evaluate((id, t) => client.task(id).update(t), taskId, task);
@@ -101,7 +101,7 @@ describe('Task methods', () => {
             const taskId = 'some-id';
 
             const res = await client.task(taskId).get();
-            validateRequest({ query: {}, params: { taskId }, path: '/v2/actor-tasks/some-id' });
+            validateRequest({ query: {}, params: { taskId }, endpointId: 'get-task' });
 
             const browserRes = await page.evaluate((id) => client.task(id).get(), taskId);
             expect(browserRes).toEqual(res);
@@ -130,7 +130,7 @@ describe('Task methods', () => {
             };
 
             const res = await client.task(taskId).runs().list(query);
-            validateRequest({ query, params: { taskId }, path: '/v2/actor-tasks/task-id/runs' });
+            validateRequest({ query, params: { taskId }, endpointId: 'list-runs' });
 
             const browserRes = await page.evaluate((id, q) => client.task(id).runs().list(q), taskId, query);
             expect(browserRes).toEqual(res);
@@ -231,7 +231,7 @@ describe('Task methods', () => {
 
             const query = { webhooks: stringifyWebhooksToBase64(webhooks) };
             const res = await client.task(taskId).start(undefined, { webhooks });
-            validateRequest({ query, params: { taskId }, path: '/v2/actor-tasks/some-id/runs' });
+            validateRequest({ query, params: { taskId }, endpointId: 'run-task' });
 
             const browserRes = await page.evaluate((id, opts) => client.task(id).start(undefined, opts), taskId, {
                 webhooks,
@@ -348,7 +348,7 @@ describe('Task methods', () => {
             };
 
             const res = await client.task(taskId).webhooks().list(query);
-            validateRequest({ query, params: { taskId }, path: '/v2/actor-tasks/some-task-id/webhooks' });
+            validateRequest({ query, params: { taskId }, endpointId: 'list-webhooks' });
 
             const browserRes = await page.evaluate((id, opts) => client.task(id).webhooks().list(opts), taskId, query);
             expect(browserRes).toEqual(res);
@@ -359,7 +359,7 @@ describe('Task methods', () => {
             const taskId = 'some-task-id';
 
             const res = await client.task(taskId).getInput();
-            validateRequest({ query: {}, params: { taskId }, path: '/v2/actor-tasks/some-task-id/input' });
+            validateRequest({ query: {}, params: { taskId }, endpointId: 'get-input' });
 
             const browserRes = await page.evaluate((id) => client.task(id).getInput(), taskId);
             expect(browserRes).toEqual(res);
@@ -371,7 +371,7 @@ describe('Task methods', () => {
             const input = { foo: 'bar' };
 
             const res = await client.task(taskId).updateInput(input);
-            validateRequest({ query: {}, params: { taskId }, body: input, path: '/v2/actor-tasks/some-task-id/input' });
+            validateRequest({ query: {}, params: { taskId }, body: input, endpointId: 'update-input' });
 
             const browserRes = await page.evaluate((id, i) => client.task(id).updateInput(i), taskId, input);
             expect(browserRes).toEqual(res);

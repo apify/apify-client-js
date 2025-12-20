@@ -46,7 +46,7 @@ describe('Build methods', () => {
             };
 
             const res = await client.builds().list(query);
-            validateRequest({ query, path: '/v2/actor-builds/' });
+            validateRequest({ query, endpointId: 'list-builds' });
 
             const browserRes = await page.evaluate((opts) => client.builds().list(opts), query);
             expect(browserRes).toEqual(res);
@@ -98,7 +98,7 @@ describe('Build methods', () => {
             validateRequest({
                 query: {},
                 params: { buildId },
-                path: `/v2/actor-builds/${encodeURIComponent(buildId)}/openapi.json`,
+                endpointId: 'build-openapi',
             });
 
             const browserRes = await page.evaluate((bId) => client.build(bId).getOpenApiDefinition(), buildId);

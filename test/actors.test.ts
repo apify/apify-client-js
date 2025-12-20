@@ -59,7 +59,7 @@ describe('Actor methods', () => {
 
             const res = await client.actors().list(opts);
             validateRequest({
-                path: '/v2/acts/',
+                endpointId: 'list-actors',
                 query: opts,
             });
 
@@ -72,10 +72,10 @@ describe('Actor methods', () => {
             const actor: ActorCollectionCreateOptions = { name: 'my-actor', isPublic: true };
 
             const res = await client.actors().create(actor);
-            validateRequest({ query: {}, params: {}, body: actor, path: '/v2/acts/' });
+            validateRequest({ query: {}, params: {}, body: actor, endpointId: 'create-actor' });
             const browserRes = await page.evaluate((opts) => client.actors().create(opts), actor);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: {}, params: {}, body: actor, path: '/v2/acts/' });
+            validateRequest({ query: {}, params: {}, body: actor, endpointId: 'create-actor' });
         });
     });
 
@@ -211,7 +211,7 @@ describe('Actor methods', () => {
                 params: { actorId },
                 body: { foo: 'bar', fn: input.fn.toString() },
                 additionalHeaders: { 'content-type': 'application/json' },
-                path: `/v2/acts/${encodeURIComponent(actorId)}/runs`,
+                endpointId: 'run-actor',
             };
 
             const res = await client.actor(actorId).start(input);
@@ -390,16 +390,17 @@ describe('Actor methods', () => {
                     const lastRunClient = client.actor(actorId).lastRun({ status: requestedStatus });
                     const res = method === 'get' ? await lastRunClient.get() : await lastRunClient[method]().get();
 
-                    let pathSuffix = '';
-                    if (method !== 'get') {
-                        if (method === 'keyValueStore') pathSuffix = '/key-value-store';
-                        else if (method === 'requestQueue') pathSuffix = '/request-queue';
-                        else pathSuffix = `/${method}`;
-                    }
+                    const endpointIdMap = {
+                        get: 'last-run-get',
+                        dataset: 'last-run-dataset',
+                        keyValueStore: 'last-run-keyValueStore',
+                        requestQueue: 'last-run-requestQueue',
+                        log: 'last-run-log',
+                    } as const;
                     validateRequest({
                         query: { status: requestedStatus },
                         params: { actorId },
-                        path: `/v2/acts/${encodeURIComponent(actorId)}/runs/last${pathSuffix}`,
+                        endpointId: endpointIdMap[method],
                     });
 
                     const browserRes = await page.evaluate(
@@ -430,7 +431,7 @@ describe('Actor methods', () => {
             validateRequest({
                 query,
                 params: { actorId },
-                path: `/v2/acts/${encodeURIComponent(actorId)}/builds`,
+                endpointId: 'list-builds',
             });
 
             const browserRes = await page.evaluate(
@@ -455,7 +456,7 @@ describe('Actor methods', () => {
             validateRequest({
                 query,
                 params: { actorId },
-                path: `/v2/acts/${encodeURIComponent(actorId)}/runs`,
+                endpointId: 'list-runs',
             });
 
             const browserRes = await page.evaluate((aId, opts) => client.actor(aId).runs().list(opts), actorId, query);
@@ -471,7 +472,7 @@ describe('Actor methods', () => {
                 validateRequest({
                     query: {},
                     params: { actorId },
-                    path: `/v2/acts/${encodeURIComponent(actorId)}/versions`,
+                    endpointId: 'list-actor-versions',
                 });
 
                 const browserRes = await page.evaluate((id) => client.actor(id).versions().list(), actorId);
@@ -479,7 +480,7 @@ describe('Actor methods', () => {
                 validateRequest({
                     query: {},
                     params: { actorId },
-                    path: `/v2/acts/${encodeURIComponent(actorId)}/versions`,
+                    endpointId: 'list-actor-versions',
                 });
             });
 
@@ -496,7 +497,7 @@ describe('Actor methods', () => {
                     query: {},
                     params: { actorId },
                     body: actorVersion,
-                    path: `/v2/acts/${encodeURIComponent(actorId)}/versions`,
+                    endpointId: 'create-actor-version',
                 });
 
                 const browserRes = await page.evaluate(
@@ -518,7 +519,7 @@ describe('Actor methods', () => {
                 validateRequest({
                     query: {},
                     params: { actorId, versionNumber },
-                    path: `/v2/acts/${encodeURIComponent(actorId)}/versions/${encodeURIComponent(versionNumber)}`,
+                    endpointId: 'get-actor-version',
                 });
 
                 const browserRes = await page.evaluate(
@@ -561,7 +562,7 @@ describe('Actor methods', () => {
                     query: {},
                     params: { actorId: 'some-user~some-id', versionNumber },
                     body: newFields,
-                    path: `/v2/acts/some-user~some-id/versions/${encodeURIComponent(versionNumber)}`,
+                    endpointId: 'update-actor-version',
                 });
 
                 const browserRes = await page.evaluate(
@@ -605,7 +606,7 @@ describe('Actor methods', () => {
                 validateRequest({
                     query: {},
                     params: { actorId, versionNumber },
-                    path: `/v2/acts/${encodeURIComponent(actorId)}/versions/${encodeURIComponent(versionNumber)}/env-vars`,
+                    endpointId: 'list-actor-env-vars',
                 });
 
                 const browserRes = await page.evaluate(
@@ -630,7 +631,7 @@ describe('Actor methods', () => {
                     query: {},
                     params: { actorId, versionNumber },
                     body: actorEnvVar,
-                    path: `/v2/acts/${encodeURIComponent(actorId)}/versions/${encodeURIComponent(versionNumber)}/env-vars`,
+                    endpointId: 'create-actor-env-var',
                 });
 
                 const browserRes = await page.evaluate(
@@ -654,7 +655,7 @@ describe('Actor methods', () => {
                 validateRequest({
                     query: {},
                     params: { actorId, versionNumber, envVarName },
-                    path: `/v2/acts/${encodeURIComponent(actorId)}/versions/${encodeURIComponent(versionNumber)}/env-vars/${encodeURIComponent(envVarName)}`,
+                    endpointId: 'get-actor-env-var',
                 });
 
                 const browserRes = await page.evaluate(
@@ -700,7 +701,7 @@ describe('Actor methods', () => {
                     query: {},
                     params: { actorId: 'some-user~some-id', versionNumber, envVarName },
                     body: envVar,
-                    path: `/v2/acts/some-user~some-id/versions/${encodeURIComponent(versionNumber)}/env-vars/${encodeURIComponent(envVarName)}`,
+                    endpointId: 'update-actor-env-var',
                 });
 
                 const browserRes = await page.evaluate(
@@ -750,7 +751,7 @@ describe('Actor methods', () => {
             validateRequest({
                 query,
                 params: { actorId },
-                path: `/v2/acts/${encodeURIComponent(actorId)}/webhooks`,
+                endpointId: 'list-webhooks',
             });
 
             const browserRes = await page.evaluate(

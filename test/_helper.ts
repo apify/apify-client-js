@@ -76,21 +76,21 @@ export const validateRequest = ({
     params,
     body,
     additionalHeaders,
-    path,
+    endpointId,
 }: {
     query?: Dictionary<string | number | boolean | undefined | string[]>;
     params?: Request['params'];
     body?: Request['body'];
     additionalHeaders?: Request['headers'];
-    path?: Request['path'];
+    endpointId?: string;
 } = {}) => {
     const headers = {
         authorization: `Bearer ${DEFAULT_OPTIONS.token}`,
         ...additionalHeaders,
     };
     const request = mockServer.getLastRequest();
-    if (path) {
-        expect(`${request?.baseUrl}${request?.path}`).toEqual(path);
+    if (endpointId) {
+        expect(request?.endpointId).toEqual(endpointId);
     }
 
     const expectedQuery = getExpectedQuery(query);

@@ -48,7 +48,7 @@ describe('Request Queue methods', () => {
             };
 
             const res = await client.requestQueues().list(opts);
-            validateRequest({ query: opts, path: '/v2/request-queues/' });
+            validateRequest({ query: opts, endpointId: 'list-queues' });
 
             const browserRes = await page.evaluate((options) => client.requestQueues().list(options), opts);
             expect(browserRes).toEqual(res);
@@ -136,7 +136,7 @@ describe('Request Queue methods', () => {
                 query: {},
                 params: { queueId },
                 body: request,
-                path: `/v2/request-queues/${queueId}/requests`,
+                endpointId: 'add-request',
             });
 
             const browserRes = await page.evaluate((id, r) => client.requestQueue(id).addRequest(r), queueId, request);
@@ -166,7 +166,7 @@ describe('Request Queue methods', () => {
                 query: { forefront },
                 params: { queueId },
                 body: request,
-                path: `/v2/request-queues/${queueId}/requests`,
+                endpointId: 'add-request',
             });
 
             const browserRes = await page.evaluate(
@@ -187,7 +187,7 @@ describe('Request Queue methods', () => {
             validateRequest({
                 query: {},
                 params: { queueId },
-                path: `/v2/request-queues/${encodeURIComponent(queueId)}/requests/unlock`,
+                endpointId: 'unlock-requests',
             });
 
             const browserRes = await page.evaluate((id) => client.requestQueue(id).unlockRequests(), queueId);
@@ -264,7 +264,7 @@ describe('Request Queue methods', () => {
                 query: { forefront },
                 params: { queueId, requestId },
                 body: request,
-                path: `/v2/request-queues/${queueId}/requests/${requestId}`,
+                endpointId: 'update-request',
             });
 
             const browserRes = await page.evaluate(
@@ -288,7 +288,7 @@ describe('Request Queue methods', () => {
                 query: {},
                 params: { queueId, requestId },
                 body: request,
-                path: `/v2/request-queues/${queueId}/requests/${requestId}`,
+                endpointId: 'update-request',
             });
 
             const browserRes = await page.evaluate(
@@ -320,7 +320,7 @@ describe('Request Queue methods', () => {
             const options = { limit: 5 };
 
             const res = await client.requestQueue(queueId).listHead(options);
-            validateRequest({ query: options, params: { queueId }, path: `/v2/request-queues/${queueId}/head` });
+            validateRequest({ query: options, params: { queueId }, endpointId: 'get-head' });
 
             const browserRes = await page.evaluate(
                 (id, opts) => client.requestQueue(id).listHead(opts),
@@ -468,7 +468,7 @@ describe('Request Queue methods', () => {
             await expect(client.requestQueue(queueId).listAndLockHead({ lockSecs: 'bla' } as any)).rejects.toThrow();
 
             const res = await client.requestQueue(queueId).listAndLockHead(options);
-            validateRequest({ query: options, params: { queueId }, path: `/v2/request-queues/${queueId}/head/lock` });
+            validateRequest({ query: options, params: { queueId }, endpointId: 'post-lock-head' });
 
             const browserRes = await page.evaluate(
                 (id, opts) => client.requestQueue(id).listAndLockHead(opts),
@@ -488,7 +488,7 @@ describe('Request Queue methods', () => {
             validateRequest({
                 query: options,
                 params: { queueId, requestId },
-                path: `/v2/request-queues/${queueId}/requests/${requestId}/lock`,
+                endpointId: 'put-lock-request',
             });
 
             const browserRes = await page.evaluate(
@@ -527,7 +527,7 @@ describe('Request Queue methods', () => {
             const options = { limit: 5, exclusiveStartId: '123' };
 
             const res = await client.requestQueue(queueId).listRequests(options);
-            validateRequest({ query: options, params: { queueId }, path: `/v2/request-queues/${queueId}/requests` });
+            validateRequest({ query: options, params: { queueId }, endpointId: 'list-requests' });
 
             const browserRes = await page.evaluate(
                 (id, opts) => client.requestQueue(id).listRequests(opts),

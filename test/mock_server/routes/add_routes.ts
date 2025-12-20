@@ -126,6 +126,9 @@ export function addRoutes(router: Router, routes: MockServerRoute[]) {
         const type = route.type ? route.type : 'json';
         const handler = HANDLERS[type];
         const method = route.method.toLowerCase() as 'get' | 'post' | 'put' | 'delete';
-        router[method](route.path, handler(route.id));
+        router[method](route.path, (req: Request, res: Response) => {
+            (req as any).endpointId = route.id;
+            handler(route.id)(req, res);
+        });
     });
 }

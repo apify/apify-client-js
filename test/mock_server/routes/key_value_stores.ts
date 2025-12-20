@@ -32,6 +32,7 @@ addRoutes(keyValueStores, ROUTES);
  */
 keyValueStores.get('/:storeId', (req, res) => {
     const { storeId } = req.params;
+    (req as any).endpointId = 'get-store';
 
     if (storeId === 'id-with-secret-key') {
         return res.json({

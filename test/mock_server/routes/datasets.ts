@@ -25,6 +25,7 @@ addRoutes(datasetRouter, ROUTES);
  */
 datasetRouter.get('/:datasetId', (req, res) => {
     const { datasetId } = req.params;
+    (req as any).endpointId = 'get-dataset';
 
     if (datasetId === 'id-with-secret-key') {
         return res.json({

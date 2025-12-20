@@ -49,7 +49,7 @@ describe('Run methods', () => {
             } as const;
 
             const res = await client.runs().list(query);
-            validateRequest({ query, path: '/v2/actor-runs/' });
+            validateRequest({ query, endpointId: 'list-runs' });
 
             const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
             expect(browserRes).toEqual(res);
@@ -70,11 +70,11 @@ describe('Run methods', () => {
             };
 
             const res = await client.runs().list(query);
-            validateRequest({ query: expectedQuery, path: '/v2/actor-runs/' });
+            validateRequest({ query: expectedQuery, endpointId: 'list-runs' });
 
             const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: expectedQuery, path: '/v2/actor-runs/' });
+            validateRequest({ query: expectedQuery, endpointId: 'list-runs' });
         });
 
         test('list() allows startedBefore and startedAfter to be passed as Date object', async () => {
@@ -90,7 +90,7 @@ describe('Run methods', () => {
             };
 
             const res = await client.runs().list(query);
-            validateRequest({ query: expectedQuery, path: '/v2/actor-runs/' });
+            validateRequest({ query: expectedQuery, endpointId: 'list-runs' });
 
             const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
             expect(browserRes).toEqual(res);
@@ -109,11 +109,11 @@ describe('Run methods', () => {
             };
 
             const res = await client.runs().list(query);
-            validateRequest({ query: expectedQuery, path: '/v2/actor-runs/' });
+            validateRequest({ query: expectedQuery, endpointId: 'list-runs' });
 
             const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: expectedQuery, path: '/v2/actor-runs/' });
+            validateRequest({ query: expectedQuery, endpointId: 'list-runs' });
         });
     });
 
@@ -191,7 +191,7 @@ describe('Run methods', () => {
 
             const res = await client.run(runId).metamorph(targetActorId, input, options);
             validateRequest({
-                path: `/v2/actor-runs/${runId}/metamorph`,
+                endpointId: 'metamorph-run',
                 query: actualQuery,
                 params: { runId },
                 body: { some: 'body' },

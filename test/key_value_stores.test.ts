@@ -48,11 +48,11 @@ describe('Key-Value Store methods', () => {
             };
 
             const res = await client.keyValueStores().list(opts);
-            validateRequest({ query: opts, path: '/v2/key-value-stores/' });
+            validateRequest({ query: opts, endpointId: 'list-stores' });
 
             const browserRes = await page.evaluate((options) => client.keyValueStores().list(options), opts);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: opts, path: '/v2/key-value-stores/' });
+            validateRequest({ query: opts, endpointId: 'list-stores' });
         });
 
         test('getOrCreate() works without name', async () => {
@@ -138,7 +138,7 @@ describe('Key-Value Store methods', () => {
             };
 
             const res = await client.keyValueStore(storeId).listKeys(query);
-            validateRequest({ query, params: { storeId }, path: `/v2/key-value-stores/${storeId}/keys` });
+            validateRequest({ query, params: { storeId }, endpointId: 'list-keys' });
 
             const browserRes = await page.evaluate(
                 (id, opts) => client.keyValueStore(id).listKeys(opts),

@@ -65,7 +65,7 @@ describe('User methods', () => {
             const userId = 'some-id';
 
             const res = await client.user(userId).monthlyUsage();
-            validateRequest({ query: {}, params: { userId }, path: '/v2/users/some-id/usage/monthly' });
+            validateRequest({ query: {}, params: { userId }, endpointId: 'get-monthly-usage' });
 
             const browserRes = await page.evaluate((id) => client.user(id).monthlyUsage(), userId);
             expect(browserRes).toEqual(res);
@@ -76,7 +76,7 @@ describe('User methods', () => {
             const userId = 'some-id';
 
             const res = await client.user(userId).limits();
-            validateRequest({ query: {}, params: { userId }, path: '/v2/users/some-id/limits' });
+            validateRequest({ query: {}, params: { userId }, endpointId: 'get-limits' });
 
             const browserRes = await page.evaluate((id) => client.user(id).limits(), userId);
             expect(browserRes).toEqual(res);
