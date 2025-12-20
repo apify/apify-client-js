@@ -2,7 +2,7 @@ import express from 'express';
 
 import { addRoutes, type MockServerRoute } from './add_routes';
 
-export const datasetRouter = express.Router();
+export const datasets = express.Router();
 
 const ROUTES: MockServerRoute[] = [
     { id: 'get-or-create-dataset', method: 'POST', path: '/' },
@@ -14,7 +14,7 @@ const ROUTES: MockServerRoute[] = [
     { id: 'get-statistics', method: 'GET', path: '/:datasetId/statistics' },
 ];
 
-addRoutes(datasetRouter, ROUTES);
+addRoutes(datasets, ROUTES);
 
 /**
  * GET /datasets/:datasetId
@@ -23,7 +23,7 @@ addRoutes(datasetRouter, ROUTES);
  * If the dataset ID is '404', it returns a 404 error with a RECORD_NOT_FOUND type.
  * Otherwise, it returns a dataset with an ID of 'get-dataset' (default).
  */
-datasetRouter.get('/:datasetId', (req, res) => {
+datasets.get('/:datasetId', (req, res) => {
     const { datasetId } = req.params;
     (req as any).endpointId = 'get-dataset';
 

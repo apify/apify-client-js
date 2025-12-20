@@ -90,7 +90,7 @@ export const validateRequest = ({
     };
     const request = mockServer.getLastRequest();
     if (endpointId) {
-        expect(request?.endpointId).toEqual(endpointId);
+        expect((request as any)?.endpointId).toEqual(endpointId);
     }
 
     const expectedQuery = getExpectedQuery(query);

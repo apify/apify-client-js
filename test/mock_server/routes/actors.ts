@@ -2,7 +2,7 @@ import express from 'express';
 
 import { addRoutes, type MockServerRoute } from './add_routes';
 
-export const actorRouter = express.Router();
+export const actors = express.Router();
 
 const ROUTES: MockServerRoute[] = [
     { id: 'list-actors', method: 'GET', path: '/' },
@@ -39,4 +39,4 @@ const ROUTES: MockServerRoute[] = [
     { id: 'list-webhooks', method: 'GET', path: '/:actorId/webhooks' },
 ];
 
-addRoutes(actorRouter, ROUTES);
+addRoutes(actors, ROUTES);

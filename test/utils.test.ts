@@ -6,8 +6,8 @@ import * as utils from '../src/utils';
 
 describe('utils.pluckData()', () => {
     test('works', () => {
-        expect(utils.pluckData({ foo: 'bar', data: 'something' })).toEqual('something');
-        expect(() => utils.pluckData({ foo: 'bar' })).toThrow();
+        expect(utils.pluckData({ foo: 'bar', data: 'something' } as any)).toEqual('something');
+        expect(() => utils.pluckData({ foo: 'bar' } as any)).toThrow();
         expect(() => utils.pluckData(1 as any)).toThrow();
         expect(() => utils.pluckData('string' as any)).toThrow();
         expect(() => utils.pluckData(null as any)).toThrow();

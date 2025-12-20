@@ -8,18 +8,18 @@ import compression from 'compression';
 import express from 'express';
 
 // Routers
-import { actorRouter } from './routes/actors';
-import { buildRouter } from './routes/builds';
-import { datasetRouter } from './routes/datasets';
+import { actors } from './routes/actors';
+import { builds } from './routes/builds';
+import { datasets } from './routes/datasets';
 import { external } from './routes/external';
 import { keyValueStores } from './routes/key_value_stores';
-import { logRouter } from './routes/logs';
+import { logs } from './routes/logs';
 import { requestQueues } from './routes/request_queues';
-import { runRouter } from './routes/runs';
+import { runs } from './routes/runs';
 import { schedules } from './routes/schedules';
 import { store } from './routes/store';
-import { taskRouter } from './routes/tasks';
-import { userRouter } from './routes/users';
+import { tasks } from './routes/tasks';
+import { users } from './routes/users';
 import { webhookDispatches } from './routes/webhook_dispatches';
 import { webhooks } from './routes/webhooks';
 // Consts
@@ -99,19 +99,19 @@ export function createDefaultApp(v2Router = express.Router()) {
     v2Router.use('/acts/redirect-actor-id', async (_, res) => {
         res.json({ data: { name: 'redirect-actor-name', id: 'redirect-run-id' } });
     });
-    v2Router.use('/acts', actorRouter);
-    v2Router.use('/actor-builds', buildRouter);
+    v2Router.use('/acts', actors);
+    v2Router.use('/actor-builds', builds);
     v2Router.use('/actor-runs/redirect-run-id/log', streamLogChunks);
     v2Router.use('/actor-runs/redirect-run-id', async (_, res) => {
         res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status: 'SUCCEEDED' } });
     });
 
-    v2Router.use('/actor-runs', runRouter);
-    v2Router.use('/actor-tasks', taskRouter);
-    v2Router.use('/users', userRouter);
+    v2Router.use('/actor-runs', runs);
+    v2Router.use('/actor-tasks', tasks);
+    v2Router.use('/users', users);
     v2Router.use('/logs/redirect-log-id', streamLogChunks);
-    v2Router.use('/logs', logRouter);
-    v2Router.use('/datasets', datasetRouter);
+    v2Router.use('/logs', logs);
+    v2Router.use('/datasets', datasets);
     v2Router.use('/key-value-stores', keyValueStores);
     v2Router.use('/request-queues', requestQueues);
     v2Router.use('/webhooks', webhooks);

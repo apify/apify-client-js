@@ -2,7 +2,7 @@ import express from 'express';
 
 import { addRoutes, type MockServerRoute } from './add_routes';
 
-export const runRouter = express.Router();
+export const runs = express.Router();
 
 const ROUTES: MockServerRoute[] = [
     { id: 'list-runs', method: 'GET', path: '/' },
@@ -18,4 +18,4 @@ const ROUTES: MockServerRoute[] = [
     { id: 'run-charge', method: 'POST', path: '/:runId/charge' },
 ];
 
-addRoutes(runRouter, ROUTES);
+addRoutes(runs, ROUTES);

@@ -2,7 +2,7 @@ import express from 'express';
 
 import { addRoutes, type MockServerRoute } from './add_routes';
 
-export const buildRouter = express.Router();
+export const builds = express.Router();
 
 const ROUTES: MockServerRoute[] = [
     { id: 'list-builds', method: 'GET', path: '/' },
@@ -12,4 +12,4 @@ const ROUTES: MockServerRoute[] = [
     { id: 'build-openapi', method: 'GET', path: '/:buildId/openapi.json', type: 'responseJsonMock' },
 ];
 
-addRoutes(buildRouter, ROUTES);
+addRoutes(builds, ROUTES);

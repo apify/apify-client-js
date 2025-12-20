@@ -2,7 +2,7 @@ import express from 'express';
 
 import { addRoutes, type MockServerRoute } from './add_routes';
 
-export const taskRouter = express.Router();
+export const tasks = express.Router();
 
 const ROUTES: MockServerRoute[] = [
     { id: 'list-tasks', method: 'GET', path: '/' },
@@ -17,4 +17,4 @@ const ROUTES: MockServerRoute[] = [
     { id: 'update-input', method: 'PUT', path: '/:taskId/input' },
 ];
 
-addRoutes(taskRouter, ROUTES);
+addRoutes(tasks, ROUTES);
