@@ -34,6 +34,7 @@ export default defineConfig({
             'node:http': 'node:http',
             'node:https': 'node:https',
             crypto: 'node:crypto',
+            'proxy-agent': 'proxy-agent',
         },
     },
     tools: {
