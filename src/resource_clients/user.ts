@@ -285,7 +285,7 @@ export interface Limits {
     dataRetentionDays: number;
 }
 
-export type LimitsUpdateOptions = Pick<Limits, 'maxMonthlyUsageUsd' | 'dataRetentionDays'>;
+export type LimitsUpdateOptions = { maxMonthlyUsageUsd: number } | { dataRetentionDays: number };
 
 export interface Current {
     monthlyUsageUsd: number;
