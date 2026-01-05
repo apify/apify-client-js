@@ -11,6 +11,7 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow } from '../utils';
+import type { RunClient } from './run';
 
 /**
  * Client for accessing Actor run or build logs.
@@ -267,4 +268,81 @@ export interface StreamedLogOptions {
     toLog: Log;
     /** Whether to redirect all logs from Actor run start (even logs from the past). */
     fromStart?: boolean;
+}
+
+/**
+ * Helper class for redirecting Actor run status and status message to log.
+ */
+export class StatusMessageWatcher {
+    private static finalSleepTimeMs = 6000;
+    private static defaultCheckPeriodMs = 5000;
+
+    protected toLog: Log;
+    protected checkPeriod: number;
+    protected lastStatusMessage = '';
+    private runClient: RunClient;
+    private loggingTask: Promise<void> | null = null;
+    private stopLogging = false;
+
+    constructor(options: StatusMessageWatcherOptions) {
+        const { toLog, runClient, checkPeriod = StatusMessageWatcher.defaultCheckPeriodMs } = options;
+        this.runClient = runClient;
+        this.toLog = toLog;
+        this.checkPeriod = checkPeriod;
+    }
+
+    /**
+     * Start Actor run status and status message redirection.
+     */
+    start() {
+        if (this.loggingTask) {
+            throw new Error('Logging task already active');
+        }
+        this.stopLogging = false;
+        this.loggingTask = this._logChangedStatusMessage();
+    }
+
+    /**
+     * Stop Actor run status and status message redirection.
+     */
+    async stop(): Promise<void> {
+        if (!this.loggingTask) {
+            throw new Error('Logging task is not active');
+        }
+        await new Promise((resolve) => {
+            // Wait for the final status and status message to be set
+            setTimeout(resolve, StatusMessageWatcher.finalSleepTimeMs);
+        });
+        this.stopLogging = true;
+        await this.loggingTask;
+        this.loggingTask = null;
+    }
+
+    async _logChangedStatusMessage(): Promise<void> {
+        while (!this.stopLogging) {
+            const runData = await this.runClient.get();
+            if (runData !== undefined) {
+                const status = runData.status ?? 'Unknown status';
+                const statusMessage = runData.statusMessage ?? '';
+                const newStatusMessage = `Status: ${status}, Message: ${statusMessage}`;
+                if (newStatusMessage !== this.lastStatusMessage) {
+                    // Log only when status or status message changed
+                    this.lastStatusMessage = newStatusMessage;
+                    this.toLog.info(newStatusMessage);
+                }
+                await new Promise((resolve) => {
+                    setTimeout(resolve, this.checkPeriod);
+                });
+            }
+        }
+    }
+}
+
+export interface StatusMessageWatcherOptions {
+    /** Run client used to communicate with the Apify API. */
+    runClient: RunClient;
+    /** Log to which the Actor run logs will be redirected. */
+    toLog: Log;
+    /** How often should change in status be checked. */
+    checkPeriod?: number;
 }

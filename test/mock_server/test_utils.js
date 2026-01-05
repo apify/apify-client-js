@@ -35,14 +35,12 @@ const MOCKED_ACTOR_LOGS_PROCESSED = [
 
 const MOCKED_ACTOR_STATUSES = [
     ['RUNNING', 'Actor Started'],
+    ['RUNNING', 'Actor Started'],
     ['RUNNING', 'Doing some stuff'],
     ['RUNNING', 'Doing some stuff'],
     ['RUNNING', 'Doing some stuff'],
-    ['RUNNING', 'Doing some stuff'],
-    ['RUNNING', 'Doing some stuff'],
-    ['RUNNING', 'Doing some stuff'],
-    ['RUNNING', 'Doing some stuff'],
-    ['RUNNING', 'Doing some stuff'],
+    ['SUCCEEDED', 'Actor Finished'],
+    ['SUCCEEDED', 'Actor Finished'],
     ['SUCCEEDED', 'Actor Finished'],
 ];
 
