@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.21.1 - **not yet released**
 
+### 🐛 Bug Fixes
+
+- Align `LimitsUpdateOptions` type with backend validation logic ([#820](https://github.com/apify/apify-client-js/pull/820)) ([74c1e2a](https://github.com/apify/apify-client-js/commit/74c1e2a7b91b976e1298084f6b6858f965c73fdd)) by [@barjin](https://github.com/barjin), closes [#813](https://github.com/apify/apify-client-js/issues/813)
+
 ### ⚡ Performance
 
 - Omit `proxy-agent` from the browser bundle ([#816](https://github.com/apify/apify-client-js/pull/816)) ([d948b11](https://github.com/apify/apify-client-js/commit/d948b11e8d65f0d72b98fdbfe64d33eea0253a85)) by [@barjin](https://github.com/barjin), closes [#812](https://github.com/apify/apify-client-js/issues/812)
