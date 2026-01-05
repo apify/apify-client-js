@@ -1,5 +1,8 @@
+import type { AddressInfo } from 'node:net';
+
 import type { StoreCollectionListOptions } from 'apify-client';
 import { ApifyClient } from 'apify-client';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
@@ -11,7 +14,7 @@ describe('Store', () => {
     beforeAll(async () => {
         const server = await mockServer.start();
         await browser.start();
-        baseUrl = `http://localhost:${server.address().port}`;
+        baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`;
     });
 
     afterAll(async () => {
@@ -46,7 +49,7 @@ describe('Store', () => {
 
         const res: any = client && (await client.store().list(opts));
         expect(res.id).toEqual('store-list');
-        validateRequest(opts);
+        validateRequest({ query: opts });
 
         const browserRes: any = await page.evaluate(
             async (options: StoreCollectionListOptions) => client && client.store().list(options),
@@ -54,6 +57,6 @@ describe('Store', () => {
         );
         expect(browserRes.id).toEqual('store-list');
         expect(browserRes).toEqual(res);
-        validateRequest(opts);
+        validateRequest({ query: opts });
     });
 });

@@ -24,7 +24,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                node-version: [16, 18, 20, 22]
+                node-version: [18, 20, 22, 24]
 
         steps:
             - name: Cancel Workflow Action
@@ -54,7 +54,7 @@ jobs:
 
         steps:
             - uses: actions/checkout@v6
-            - name: Use Node.js 22
+            - name: Use Node.js
               uses: actions/setup-node@v6
               with:
                   node-version: 24
@@ -74,7 +74,7 @@ jobs:
             - name: Checkout Source code
               uses: actions/checkout@v6
 
-            - name: Use Node.js 22
+            - name: Use Node.js
               uses: actions/setup-node@v6
               with:
                   node-version: 24
