@@ -73,7 +73,7 @@
         "ow": "^0.28.2",
         "proxy-agent": "^6.5.0",
         "tslib": "^2.5.0",
-        "type-fest": "^4.0.0"
+        "type-fest": "^5.0.0"
     },
     "devDependencies": {
         "@apify/eslint-config": "^1.0.0",
