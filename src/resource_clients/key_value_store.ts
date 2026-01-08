@@ -356,7 +356,7 @@ export class KeyValueStoreClient extends ResourceClient {
             );
         }
 
-        const queryParams: Pick<KeyValueClientGetRecordOptions, 'signature'> = {};
+        const queryParams: Record<string, string> = { attachment: 'true' };
         if (options.signature) queryParams.signature = options.signature;
 
         const requestOpts: Record<string, unknown> = {
