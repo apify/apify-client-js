@@ -232,11 +232,11 @@ describe('Key-Value Store methods', () => {
                 contentType: expectedContentType,
             };
             expect(res).toEqual(expectedResult);
-            validateRequest({ query: {}, params: { storeId, key } });
+            validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getRecord(k), storeId, key);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: {}, params: { storeId, key } });
+            validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
         });
 
         test('getRecord() parses JSON', async () => {
@@ -253,11 +253,11 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).getRecord(key);
             expect(res?.value).toEqual(expectedBody);
-            validateRequest({ query: {}, params: { storeId, key } });
+            validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getRecord(k), storeId, key);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: {}, params: { storeId, key } });
+            validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
         });
 
         test('getRecord() returns buffer when selected', async () => {
@@ -286,7 +286,7 @@ describe('Key-Value Store methods', () => {
             res!.value = (res!.value as unknown as Buffer).toString();
 
             expect(res).toEqual(expectedResult);
-            validateRequest({ query: {}, params: { storeId, key } });
+            validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
 
             const browserRes = await page.evaluate(
                 async (id, k, opts) => {
@@ -301,7 +301,7 @@ describe('Key-Value Store methods', () => {
                 options,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({ query: {}, params: { storeId, key } });
+            validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
         });
 
         test('getRecord() returns buffer for non-text content-types', async () => {
@@ -325,7 +325,7 @@ describe('Key-Value Store methods', () => {
             expect(res?.value).toBeInstanceOf(Buffer);
             res!.value = (res!.value as unknown as Buffer).toString();
             expect(res).toEqual(expectedResult);
-            validateRequest({ query: {}, params: { storeId, key } });
+            validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
 
             const browserRes = await page.evaluate(
                 async (id, k, opts) => {
@@ -340,7 +340,7 @@ describe('Key-Value Store methods', () => {
                 {},
             );
             expect(browserRes).toEqual(res);
-            validateRequest({ query: {}, params: { storeId, key } });
+            validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
         });
 
         test('getRecord() correctly returns stream', async () => {
@@ -373,7 +373,7 @@ describe('Key-Value Store methods', () => {
             }
             res!.value = Buffer.concat(chunks).toString();
             expect(res).toEqual(expectedResult);
-            validateRequest({ query: {}, params: { storeId, key } });
+            validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
 
             try {
                 await page.evaluate(
@@ -405,7 +405,7 @@ describe('Key-Value Store methods', () => {
 
             mockServer.setResponse({ headers: expectedHeaders, body });
             await client.keyValueStore(storeId).getRecord(key, options);
-            validateRequest({ query: options, params: { storeId, key } });
+            validateRequest({ query: { signature: 'some-signature', attachment: 'true' }, params: { storeId, key } });
         });
 
         test('getRecord() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
@@ -417,11 +417,11 @@ describe('Key-Value Store methods', () => {
 
             const res = await client.keyValueStore(storeId).getRecord(key);
             expect(res).toBeUndefined();
-            validateRequest({ query: {}, params: { storeId, key } });
+            validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getRecord(k), storeId, key);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: {}, params: { storeId, key } });
+            validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
         });
 
         test('setRecord() works with text', async () => {
