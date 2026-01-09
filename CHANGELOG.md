@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### 🐛 Bug Fixes
 
 - Align `LimitsUpdateOptions` type with backend validation logic ([#820](https://github.com/apify/apify-client-js/pull/820)) ([74c1e2a](https://github.com/apify/apify-client-js/commit/74c1e2a7b91b976e1298084f6b6858f965c73fdd)) by [@barjin](https://github.com/barjin), closes [#813](https://github.com/apify/apify-client-js/issues/813)
+- Fetch key-value store records as attachments ([#821](https://github.com/apify/apify-client-js/pull/821)) ([2073e69](https://github.com/apify/apify-client-js/commit/2073e69a03beec9d3810797334479e3e5951766a)) by [@mvolfik](https://github.com/mvolfik)
 
 ### ⚡ Performance
 
