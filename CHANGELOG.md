@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.21.1 - **not yet released**
 
+### 🚀 Features
+
+- **actor:** Add &#x27;taggedBuilds&#x27; to ActorUpdateOptions ([#830](https://github.com/apify/apify-client-js/pull/830)) ([c2c3560](https://github.com/apify/apify-client-js/commit/c2c35603d44678dcc0cdbf00897c9d4202a5fc67)) by [@l2ysho](https://github.com/l2ysho), closes [#829](https://github.com/apify/apify-client-js/issues/829)
+
 ### 🐛 Bug Fixes
 
 - Align `LimitsUpdateOptions` type with backend validation logic ([#820](https://github.com/apify/apify-client-js/pull/820)) ([74c1e2a](https://github.com/apify/apify-client-js/commit/74c1e2a7b91b976e1298084f6b6858f965c73fdd)) by [@barjin](https://github.com/barjin), closes [#813](https://github.com/apify/apify-client-js/issues/813)
