@@ -566,6 +566,7 @@ export type ActorUpdateOptions = Partial<
         | 'defaultRunOptions'
         | 'actorStandby'
         | 'actorPermissionLevel'
+        | 'taggedBuilds'
     >
 >;
 
