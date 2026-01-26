@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### 🚀 Features
 
 - **actor:** Add &#x27;taggedBuilds&#x27; to ActorUpdateOptions ([#830](https://github.com/apify/apify-client-js/pull/830)) ([c2c3560](https://github.com/apify/apify-client-js/commit/c2c35603d44678dcc0cdbf00897c9d4202a5fc67)) by [@l2ysho](https://github.com/l2ysho), closes [#829](https://github.com/apify/apify-client-js/issues/829)
+- **actor:** Updates ActorStandby type ([#833](https://github.com/apify/apify-client-js/pull/833)) ([10144e8](https://github.com/apify/apify-client-js/commit/10144e868eb484d096ace170c3282b4b8ba2f8be)) by [@l2ysho](https://github.com/l2ysho), closes [#832](https://github.com/apify/apify-client-js/issues/832)
 
 ### 🐛 Bug Fixes
 
