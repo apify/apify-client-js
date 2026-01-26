@@ -577,11 +577,13 @@ export type ActorUpdateOptions = Partial<
  * This is useful for Actors that need to respond quickly to incoming requests.
  */
 export interface ActorStandby {
-    desiredRequestsPerActorRun: number;
-    maxRequestsPerActorRun: number;
-    idleTimeoutSecs: number;
-    build: string;
-    memoryMbytes: number;
+    build?: string;
+    desiredRequestsPerActorRun?: number;
+    disableStandbyFieldsOverride?: boolean;
+    idleTimeoutSecs?: number;
+    maxRequestsPerActorRun?: number;
+    memoryMbytes?: number;
+    shouldPassActorInput?: boolean;
 }
 
 export interface ActorStartOptions {
