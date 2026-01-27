@@ -2,6 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
+import { StorageOwnership } from '../utils';
 import type { PaginatedList, PaginationOptions } from '../utils';
 import type { KeyValueStore } from './key_value_store';
 
@@ -66,6 +67,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
                 limit: ow.optional.number.not.negative,
                 offset: ow.optional.number.not.negative,
                 desc: ow.optional.boolean,
+                ownership: ow.optional.string.oneOf(Object.values(StorageOwnership)),
             }),
         );
 
@@ -94,6 +96,8 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
 export interface KeyValueStoreCollectionClientListOptions extends PaginationOptions {
     unnamed?: boolean;
     desc?: boolean;
+    /** Filter by ownership: 'ownedByMe' returns only user's own key-value stores, 'sharedWithMe' returns only shared key-value stores. */
+    ownership?: StorageOwnership;
 }
 
 export interface KeyValueStoreCollectionClientGetOrCreateOptions {

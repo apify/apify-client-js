@@ -2,6 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
+import { StorageOwnership } from '../utils';
 import type { PaginatedList, PaginationOptions } from '../utils';
 import type { RequestQueue } from './request_queue';
 
@@ -66,6 +67,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
                 limit: ow.optional.number.not.negative,
                 offset: ow.optional.number.not.negative,
                 desc: ow.optional.boolean,
+                ownership: ow.optional.string.oneOf(Object.values(StorageOwnership)),
             }),
         );
 
@@ -89,6 +91,8 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
 export interface RequestQueueCollectionListOptions extends PaginationOptions {
     unnamed?: boolean;
     desc?: boolean;
+    /** Filter by ownership: 'ownedByMe' returns only user's own request queues, 'sharedWithMe' returns only shared request queues. */
+    ownership?: StorageOwnership;
 }
 
 export type RequestQueueCollectionListResult = PaginatedList<RequestQueue> & { unnamed: boolean };

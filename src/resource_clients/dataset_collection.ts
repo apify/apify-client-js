@@ -2,6 +2,7 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
+import { StorageOwnership } from '../utils';
 import type { PaginatedList, PaginationOptions } from '../utils';
 import type { Dataset } from './dataset';
 
@@ -66,6 +67,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
                 limit: ow.optional.number.not.negative,
                 offset: ow.optional.number.not.negative,
                 desc: ow.optional.boolean,
+                ownership: ow.optional.string.oneOf(Object.values(StorageOwnership)),
             }),
         );
 
@@ -91,6 +93,8 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
 export interface DatasetCollectionClientListOptions extends PaginationOptions {
     unnamed?: boolean;
     desc?: boolean;
+    /** Filter by ownership: 'ownedByMe' returns only user's own datasets, 'sharedWithMe' returns only shared datasets. */
+    ownership?: StorageOwnership;
 }
 
 export interface DatasetCollectionClientGetOrCreateOptions {

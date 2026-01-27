@@ -1,6 +1,6 @@
 import type { AddressInfo } from 'node:net';
 
-import { ApifyClient, DownloadItemsFormat } from 'apify-client';
+import { ApifyClient, DownloadItemsFormat, StorageOwnership } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest';
 
@@ -44,6 +44,7 @@ describe('Dataset methods', () => {
                 offset: 3,
                 desc: true,
                 unnamed: true,
+                ownership: StorageOwnership.OWNED_BY_ME,
             };
 
             const res = await client.datasets().list(opts);

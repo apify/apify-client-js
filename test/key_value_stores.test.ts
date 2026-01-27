@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net';
 import { Readable } from 'node:stream';
 
-import { ApifyClient } from 'apify-client';
+import { ApifyClient, StorageOwnership } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest';
 
@@ -45,6 +45,7 @@ describe('Key-Value Store methods', () => {
                 offset: 3,
                 desc: true,
                 unnamed: true,
+                ownership: StorageOwnership.OWNED_BY_ME,
             };
 
             const res = await client.keyValueStores().list(opts);
