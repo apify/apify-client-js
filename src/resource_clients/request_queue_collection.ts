@@ -2,8 +2,8 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
-import { StorageOwnership } from '../utils';
 import type { PaginatedList, PaginationOptions } from '../utils';
+import { StorageOwnership } from '../utils';
 import type { RequestQueue } from './request_queue';
 
 /**
