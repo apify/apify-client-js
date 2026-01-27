@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.21.1 - **not yet released**
+## [2.22.0](https://github.com/apify/apify-client-js/releases/tag/v2.22.0) (2026-01-27)
 
 ### 🚀 Features
 
@@ -20,7 +19,6 @@ All notable changes to this project will be documented in this file.
 - Omit `proxy-agent` from the browser bundle ([#816](https://github.com/apify/apify-client-js/pull/816)) ([d948b11](https://github.com/apify/apify-client-js/commit/d948b11e8d65f0d72b98fdbfe64d33eea0253a85)) by [@barjin](https://github.com/barjin), closes [#812](https://github.com/apify/apify-client-js/issues/812)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.21.0](https://github.com/apify/apify-client-js/releases/tag/v2.21.0) (2025-12-11)
 
 ### 🚀 Features
