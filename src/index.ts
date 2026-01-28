@@ -28,4 +28,5 @@ export * from './resource_clients/webhook_dispatch';
 export * from './resource_clients/webhook_dispatch_collection';
 export * from './apify_api_error';
 export { InvalidResponseBodyError } from './interceptors';
+export { StorageOwnership } from './utils';
 export type { PaginatedList, Dictionary } from './utils';

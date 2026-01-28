@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net';
 
 import type { Dictionary } from 'apify-client';
-import { ApifyClient } from 'apify-client';
+import { ApifyClient, StorageOwnership } from 'apify-client';
 import type { Request } from 'express';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
@@ -45,6 +45,7 @@ describe('Request Queue methods', () => {
                 offset: 3,
                 desc: true,
                 unnamed: true,
+                ownership: StorageOwnership.OWNED_BY_ME,
             };
 
             const res = await client.requestQueues().list(opts);
