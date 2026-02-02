@@ -16,7 +16,8 @@
         "lint:md:fix": "cd .. && markdownlint 'website/**/*.md' 'docs/**/*.md' --fix && cd website"
     },
     "overrides": {
-        "@rspack/core": "1.7.4"
+        "@rspack/core": "1.7.4",
+        "lodash": "4.17.23"
     },
     "devDependencies": {
         "@apify/tsconfig": "^0.1.0",
