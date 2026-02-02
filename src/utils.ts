@@ -298,16 +298,6 @@ export interface PaginatedList<Data> extends PaginatedResponse<Data> {
  */
 export type PaginatedIterator<T> = Promise<PaginatedList<T>> & AsyncIterable<T>;
 
-/**
- * Filter for listing storages by ownership.
- */
-export enum StorageOwnership {
-    /** Return only storages owned by the user. */
-    OWNED_BY_ME = 'ownedByMe',
-    /** Return only storages shared with the user. */
-    SHARED_WITH_ME = 'sharedWithMe',
-}
-
 export function cast<T>(input: unknown): T {
     return input as T;
 }

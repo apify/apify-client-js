@@ -1,9 +1,10 @@
 import ow from 'ow';
 
+import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
+
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
-import { StorageOwnership } from '../utils';
 import type { Dataset } from './dataset';
 
 /**
@@ -67,7 +68,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
                 limit: ow.optional.number.not.negative,
                 offset: ow.optional.number.not.negative,
                 desc: ow.optional.boolean,
-                ownership: ow.optional.string.oneOf(Object.values(StorageOwnership)),
+                ownership: ow.optional.string.oneOf(Object.values(STORAGE_OWNERSHIP_FILTER)),
             }),
         );
 
@@ -94,7 +95,7 @@ export interface DatasetCollectionClientListOptions extends PaginationOptions {
     unnamed?: boolean;
     desc?: boolean;
     /** Filter by ownership: 'ownedByMe' returns only user's own datasets, 'sharedWithMe' returns only shared datasets. */
-    ownership?: StorageOwnership;
+    ownership?: STORAGE_OWNERSHIP_FILTER;
 }
 
 export interface DatasetCollectionClientGetOrCreateOptions {
