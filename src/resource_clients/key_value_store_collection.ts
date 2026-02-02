@@ -1,5 +1,7 @@
 import ow from 'ow';
 
+import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
+
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
@@ -66,6 +68,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
                 limit: ow.optional.number.not.negative,
                 offset: ow.optional.number.not.negative,
                 desc: ow.optional.boolean,
+                ownership: ow.optional.string.oneOf(Object.values(STORAGE_OWNERSHIP_FILTER)),
             }),
         );
 
@@ -94,6 +97,8 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
 export interface KeyValueStoreCollectionClientListOptions extends PaginationOptions {
     unnamed?: boolean;
     desc?: boolean;
+    /** Filter by ownership: 'ownedByMe' returns only user's own key-value stores, 'sharedWithMe' returns only shared key-value stores. */
+    ownership?: STORAGE_OWNERSHIP_FILTER;
 }
 
 export interface KeyValueStoreCollectionClientGetOrCreateOptions {

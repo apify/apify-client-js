@@ -6,6 +6,8 @@ import type { Request } from 'express';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
+import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
+
 import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
 
@@ -45,6 +47,7 @@ describe('Request Queue methods', () => {
                 offset: 3,
                 desc: true,
                 unnamed: true,
+                ownership: STORAGE_OWNERSHIP_FILTER.OWNED_BY_ME,
             };
 
             const res = await client.requestQueues().list(opts);

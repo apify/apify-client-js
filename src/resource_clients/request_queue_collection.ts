@@ -1,5 +1,7 @@
 import ow from 'ow';
 
+import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
+
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
@@ -66,6 +68,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
                 limit: ow.optional.number.not.negative,
                 offset: ow.optional.number.not.negative,
                 desc: ow.optional.boolean,
+                ownership: ow.optional.string.oneOf(Object.values(STORAGE_OWNERSHIP_FILTER)),
             }),
         );
 
@@ -89,6 +92,8 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
 export interface RequestQueueCollectionListOptions extends PaginationOptions {
     unnamed?: boolean;
     desc?: boolean;
+    /** Filter by ownership: 'ownedByMe' returns only user's own request queues, 'sharedWithMe' returns only shared request queues. */
+    ownership?: STORAGE_OWNERSHIP_FILTER;
 }
 
 export type RequestQueueCollectionListResult = PaginatedList<RequestQueue> & { unnamed: boolean };
