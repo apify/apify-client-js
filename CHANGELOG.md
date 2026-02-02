@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+<!-- git-cliff-unreleased-start -->
+## 2.22.1 - **not yet released**
+
+### 🚀 Features
+
+- Add the new &#x27;ownership&#x27; parameter to the storage list methods ([#835](https://github.com/apify/apify-client-js/pull/835)) ([7b328e1](https://github.com/apify/apify-client-js/commit/7b328e1eb1e5e90c717844fedcf4444027cd485e)) by [@nmanerikar](https://github.com/nmanerikar)
+
+
+<!-- git-cliff-unreleased-end -->
 ## [2.22.0](https://github.com/apify/apify-client-js/releases/tag/v2.22.0) (2026-01-27)
 
 ### 🚀 Features
