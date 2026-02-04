@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/apify-client.svg)](https://www.npmjs.com/package/apify-client)
 [![Downloads](https://img.shields.io/npm/dm/apify-client.svg)](https://www.npmjs.com/package/apify-client)
 [![Chat on discord](https://img.shields.io/discord/801163717915574323?label=discord)](https://discord.gg/jyEM2PRvMU)
-[![Build Status](https://github.com/apify/apify-client-js/actions/workflows/test-and-release.yaml/badge.svg?branch=master)](https://github.com/apify/apify-client-js/actions/workflows/test-and-release.yaml)
+[![Build Status](https://github.com/apify/apify-client-js/actions/workflows/check.yaml/badge.svg?branch=master)](https://github.com/apify/apify-client-js/actions/workflows/check.yaml)
 
 `apify-client` is the official library to access [Apify API](https://docs.apify.com/api/v2) from your
 JavaScript applications. It runs both in Node.js and browser and provides useful features like
