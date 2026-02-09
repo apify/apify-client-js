@@ -1,3 +1,5 @@
+const { resolve } = require('node:path');
+
 /* eslint-disable global-require,import/no-extraneous-dependencies */
 const { config } = require('@apify/docs-theme');
 
