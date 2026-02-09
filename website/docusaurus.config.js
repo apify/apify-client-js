@@ -110,6 +110,13 @@ module.exports = {
             },
         ],
         [
+            resolve(__dirname, 'src/plugins/docusaurus-plugin-segment'),
+            {
+                writeKey: process.env.SEGMENT_TOKEN,
+                allowedInDev: false,
+            },
+        ],
+        [
             '@signalwire/docusaurus-plugin-llms-txt',
             {
                 content: {

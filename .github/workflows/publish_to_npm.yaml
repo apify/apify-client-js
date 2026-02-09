@@ -45,5 +45,7 @@ jobs:
               run: node ./.github/scripts/before-beta-release.js
             - name: Build module
               run: npm run build
+              env:
+                  SEGMENT_TOKEN: ${{ secrets.SEGMENT_TOKEN }}
             - name: Publish to NPM
               run: npm publish --tag ${{ inputs.tag }}
