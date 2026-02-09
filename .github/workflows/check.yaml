@@ -90,5 +90,3 @@ jobs:
                   npm ci --force
                   npm run lint
                   npm run build
-              env:
-                  SEGMENT_TOKEN: ${{ secrets.SEGMENT_TOKEN }}
