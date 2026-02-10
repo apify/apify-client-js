@@ -1,3 +1,5 @@
+const { resolve } = require('node:path');
+
 /* eslint-disable global-require,import/no-extraneous-dependencies */
 const { config } = require('@apify/docs-theme');
 
@@ -107,6 +109,13 @@ module.exports = {
                     excludeExternals: false,
                 },
                 routeBasePath: '/reference',
+            },
+        ],
+        [
+            resolve(__dirname, 'src/plugins/docusaurus-plugin-segment'),
+            {
+                writeKey: process.env.SEGMENT_TOKEN,
+                allowedInDev: false,
             },
         ],
         [
