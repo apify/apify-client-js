@@ -491,7 +491,7 @@ export interface Actor {
     };
     /** Permission level of the Actor on Apify platform */
     actorPermissionLevel: ACTOR_PERMISSION_LEVEL;
-    /** A brief, LLM-generated readme summary **/
+    /** A brief, LLM-generated readme summary */
     readmeSummary?: string;
 }
 
