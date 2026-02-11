@@ -9,6 +9,7 @@
     "unpkg": "dist/bundle.js",
     "exports": {
         "./package.json": "./package.json",
+        "./browser": "./dist/bundle.js",
         ".": {
             "import": "./dist/index.mjs",
             "require": "./dist/index.js",
