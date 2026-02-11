@@ -87,7 +87,7 @@
         "@types/content-type": "^1.1.5",
         "@types/express": "^5.0.0",
         "@types/node": "^24.0.0",
-        "body-parser": "^1.20.3",
+        "body-parser": "^2.0.0",
         "compression": "^1.7.4",
         "eslint": "^9.24.0",
         "eslint-config-prettier": "^10.1.2",
