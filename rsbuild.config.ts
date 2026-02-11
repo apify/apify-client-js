@@ -52,5 +52,5 @@ export default defineConfig({
     },
     // mode: 'production',
     mode: 'development',
-    plugins: [pluginNodePolyfill({ overrides: { crypto: false, "node:zlib": false, "node:util": false } })],
+    plugins: [pluginNodePolyfill({ overrides: { crypto: false } })],
 });

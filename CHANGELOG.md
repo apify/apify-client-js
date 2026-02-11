@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 ### 🚀 Features
 
 - Add the new &#x27;ownership&#x27; parameter to the storage list methods ([#835](https://github.com/apify/apify-client-js/pull/835)) ([7b328e1](https://github.com/apify/apify-client-js/commit/7b328e1eb1e5e90c717844fedcf4444027cd485e)) by [@nmanerikar](https://github.com/nmanerikar)
+- Add `.&#x2F;browser` conditional export ([#845](https://github.com/apify/apify-client-js/pull/845)) ([fab3913](https://github.com/apify/apify-client-js/commit/fab3913c867c91315e8c0a92799e596b408874a1)) by [@barjin](https://github.com/barjin), closes [#564](https://github.com/apify/apify-client-js/issues/564)
+- Add the `readmeSummary` field to Actor responses ([#846](https://github.com/apify/apify-client-js/pull/846)) ([7d6bb2f](https://github.com/apify/apify-client-js/commit/7d6bb2f56db3702400efdf927106c817ad08310d)) by [@janbuchar](https://github.com/janbuchar)
 
 
 <!-- git-cliff-unreleased-end -->
