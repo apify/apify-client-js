@@ -123,8 +123,8 @@ export async function maybeGzipValue(value: unknown): Promise<Buffer | undefined
     const areDataLargeEnough = Buffer.byteLength(value as string) >= MIN_GZIP_BYTES;
     if (areDataLargeEnough) {
         if (!gzipPromisified) {
-            const { promisify } = await import('node:util');
-            const { gzip } = await import('node:zlib');
+            const { promisify } = await import(/* webpackIgnore: true */ 'node:util');
+            const { gzip } = await import(/* webpackIgnore: true */ 'node:zlib');
             gzipPromisified = promisify(gzip);
         }
 
