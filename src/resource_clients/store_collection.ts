@@ -89,6 +89,8 @@ export interface ActorStoreList {
     pictureUrl?: string;
     userPictureUrl?: string;
     url: string;
+    /** A brief, LLM-generated readme summary **/
+    readmeSummary?: string;
 }
 
 export interface StoreCollectionListOptions extends PaginationOptions {
