@@ -141,6 +141,16 @@ There are some exceptions though, like `listKeys` or `listHead` which paginate d
 The results you're looking for are always stored under `items` and you can use the `limit`
 property to get only a subset of results. Other props are also available, depending on the method.
 
+## Bundled environments
+
+The package includes a pre-built browser bundle that is automatically resolved by bundlers targeting browser environments. You can also import it explicitly via
+
+```typescript
+import { ApifyClient } from 'apify-client/browser';
+```
+
+For edge runtimes like Cloudflare Workers, you may need to enable Node compatibility (e.g. `node_compat = true` in `wrangler.toml`). Note that some Node-specific features (streaming, proxy support) are not available in the bundle.
+
 ## API Reference
 
 All public classes, methods and their parameters can be inspected in the [API reference](https://docs.apify.com/api/client/js/reference).
