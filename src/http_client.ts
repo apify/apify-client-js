@@ -104,17 +104,19 @@ export class HttpClient {
         responseInterceptors.forEach((i) => this.axios.interceptors.response.use(i as any));
     }
 
-    private async _ensureNodeInit(): Promise<void> {
+    private async ensureNodeInit(): Promise<void> {
         if (!isNode()) return;
 
         if (!this.nodeInitPromise) {
-            this.nodeInitPromise = this._initNode();
+            this.nodeInitPromise = this.initNode();
         }
 
         return this.nodeInitPromise;
     }
 
-    private async _initNode(): Promise<void> {
+    private async initNode(): Promise<void> {
+        if (!isNode()) return;
+
         const [{ ProxyAgent }, { default: os }] = await Promise.all([
             import(/* webpackIgnore: true */ 'proxy-agent'),
             import(/* webpackIgnore: true */ 'node:os'),
@@ -171,7 +173,7 @@ export class HttpClient {
     }
 
     async call<T = any>(config: ApifyRequestConfig): Promise<ApifyResponse<T>> {
-        await this._ensureNodeInit();
+        await this.ensureNodeInit();
         this.stats.calls++;
         const makeRequest = this._createRequestHandler(config);
 

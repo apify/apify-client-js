@@ -52,5 +52,6 @@ export default defineConfig({
     },
     // mode: 'production',
     mode: 'development',
+    // @apify/utilities dynamically imports `crypto` on missing `SubtleCrypto` (but browsers have it).
     plugins: [pluginNodePolyfill({ overrides: { crypto: false } })],
 });
