@@ -1,0 +1,16 @@
+{
+  "name": "apify-client-bundling-test",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build:webpack": "webpack",
+    "build:rspack": "rspack build",
+    "build:rolldown": "rolldown src/index.js -d dist",
+    "build:esbuild": "esbuild src/index.js --bundle --format=esm --outfile=dist/index.js",
+    "clean": "rimraf dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Tests whether `ApifyClient` can be bundled using popular bundlers with default settings."
+}

@@ -100,7 +100,13 @@
         "rimraf": "^6.0.0",
         "typescript": "^5.8.3",
         "typescript-eslint": "^8.29.1",
-        "vitest": "^4.0.16"
+        "vitest": "^4.0.16",
+        "@rspack/cli": "^1.7.6",
+        "@rspack/core": "^1.7.6",
+        "esbuild": "0.27.3",
+        "rolldown": "^1.0.0-rc.4",
+        "webpack": "^5.105.2",
+        "webpack-cli": "^6.0.1"
     },
     "packageManager": "npm@10.9.2"
 }
