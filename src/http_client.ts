@@ -116,7 +116,7 @@ export class HttpClient {
     private async initNode(): Promise<void> {
         if (!isNode()) return;
 
-        const [{ ProxyAgent }, { default: os }] = await Promise.all([
+        const [{ ProxyAgent }, os] = await Promise.all([
             dynamicNodeImport<typeof import('proxy-agent')>('proxy-agent'),
             dynamicNodeImport<typeof import('node:os')>('node:os'),
         ]);

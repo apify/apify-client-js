@@ -169,8 +169,9 @@ export function isNode(): boolean {
  * Dynamic import wrapper that prevents bundlers from statically analyzing the import specifier.
  * Use this for Node.js-only modules that should not be included in browser bundles.
  */
-// eslint-disable-next-line no-new-func
-export const dynamicNodeImport = new Function('specifier', 'return import(specifier)') as <T = any>(specifier: string) => Promise<T>;
+export async function dynamicNodeImport<T = any>(specifier: string): Promise<T> {
+    return await import(specifier)
+}
 
 export function isBuffer(value: unknown): value is Buffer | ArrayBuffer | TypedArray {
     return ow.isValid(value, ow.any(ow.buffer, ow.arrayBuffer, ow.typedArray));
