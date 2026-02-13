@@ -123,7 +123,9 @@ export async function maybeGzipValue(value: unknown): Promise<Buffer | undefined
     const areDataLargeEnough = Buffer.byteLength(value as string) >= MIN_GZIP_BYTES;
     if (areDataLargeEnough) {
         if (!gzipPromisified) {
+            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
             const { promisify } = await dynamicNodeImport<typeof import('node:util')>('node:util');
+            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
             const { gzip } = await dynamicNodeImport<typeof import('node:zlib')>('node:zlib');
             gzipPromisified = promisify(gzip);
         }

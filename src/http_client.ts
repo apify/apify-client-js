@@ -117,7 +117,9 @@ export class HttpClient {
         if (!isNode()) return;
 
         const [{ ProxyAgent }, os] = await Promise.all([
+            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
             dynamicNodeImport<typeof import('proxy-agent')>('proxy-agent'),
+            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
             dynamicNodeImport<typeof import('node:os')>('node:os'),
         ]);
 
