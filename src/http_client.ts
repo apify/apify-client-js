@@ -1,5 +1,6 @@
 import type http from 'node:http';
 import type https from 'node:https';
+import type { Socket } from 'node:net';
 
 import type { RetryFunction } from 'async-retry';
 import retry from 'async-retry';
@@ -14,7 +15,6 @@ import type { RequestInterceptorFunction } from './interceptors';
 import { InvalidResponseBodyError, requestInterceptors, responseInterceptors } from './interceptors';
 import type { Statistics } from './statistics';
 import { asArray, cast, getVersionData, isNode, isStream } from './utils';
-import type { Socket } from 'node:net';
 
 const { version } = getVersionData();
 
