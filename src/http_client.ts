@@ -108,9 +108,7 @@ export class HttpClient {
     private async ensureNodeInit(): Promise<void> {
         if (!isNode()) return;
 
-        if (!this.nodeInitPromise) {
-            this.nodeInitPromise = this.initNode();
-        }
+        this.nodeInitPromise ??= this.initNode();
 
         return this.nodeInitPromise;
     }
