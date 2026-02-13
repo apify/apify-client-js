@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+<!-- git-cliff-unreleased-start -->
+## 2.22.2 - **not yet released**
+
+### 🐛 Bug Fixes
+
+- Make all node-specific imports `async`, ignore in browser bundle ([#847](https://github.com/apify/apify-client-js/pull/847)) ([f61b417](https://github.com/apify/apify-client-js/commit/f61b417945e18eb8954af1ea1c28cb79ffb4558b)) by [@barjin](https://github.com/barjin)
+
+
+<!-- git-cliff-unreleased-end -->
 ## [2.22.1](https://github.com/apify/apify-client-js/releases/tag/v2.22.1) (2026-02-13)
 
 ### 🚀 Features
