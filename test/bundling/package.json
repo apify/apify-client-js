@@ -1,17 +1,17 @@
 {
-  "name": "apify-client-bundling-test",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "bundle:webpack": "npm run clean && webpack",
-    "bundle:rspack": "npm run clean && rspack build",
-    "bundle:rolldown": "npm run clean && rolldown src/index.js -d dist",
-    "bundle:esbuild": "npm run clean && esbuild src/index.js --bundle --format=esm --outfile=dist/index.js",
-    "clean": "rimraf dist",
-    "bundle:all": "npm run bundle:webpack && npm run bundle:rspack && npm run bundle:rolldown && npm run bundle:esbuild"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "Tests whether `ApifyClient` can be bundled using popular bundlers with default settings."
+    "name": "apify-client-bundling-test",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "bundle:webpack": "npm run clean && webpack",
+        "bundle:rspack": "npm run clean && rspack build",
+        "bundle:rolldown": "npm run clean && rolldown src/index.js -d dist",
+        "bundle:esbuild": "npm run clean && esbuild src/index.js --bundle --format=esm --outfile=dist/index.js",
+        "clean": "rimraf dist",
+        "bundle:all": "npm run bundle:webpack && npm run bundle:rspack && npm run bundle:rolldown && npm run bundle:esbuild"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "Tests whether `ApifyClient` can be bundled using popular bundlers with default settings."
 }

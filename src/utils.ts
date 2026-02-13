@@ -172,7 +172,7 @@ export function isNode(): boolean {
  * Use this for Node.js-only modules that should not be included in browser bundles.
  */
 export async function dynamicNodeImport<T = any>(specifier: string): Promise<T> {
-    return await import(specifier)
+    return await import(specifier);
 }
 
 export function isBuffer(value: unknown): value is Buffer | ArrayBuffer | TypedArray {
