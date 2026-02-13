@@ -14,6 +14,7 @@ import type { RequestInterceptorFunction } from './interceptors';
 import { InvalidResponseBodyError, requestInterceptors, responseInterceptors } from './interceptors';
 import type { Statistics } from './statistics';
 import { asArray, cast, getVersionData, isNode, isStream } from './utils';
+import type { Socket } from 'node:net';
 
 const { version } = getVersionData();
 
@@ -151,7 +152,7 @@ export class HttpClient {
 
         // Disable Nagle's algorithm for lower latency
         // This sends data immediately instead of buffering small packets
-        const setNoDelay = (socket: any) => {
+        const setNoDelay = (socket: Socket) => {
             socket.setNoDelay(true);
         };
 
