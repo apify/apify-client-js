@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.22.1 - **not yet released**
+## [2.22.1](https://github.com/apify/apify-client-js/releases/tag/v2.22.1) (2026-02-13)
 
 ### 🚀 Features
 
@@ -12,7 +11,6 @@ All notable changes to this project will be documented in this file.
 - Add the `readmeSummary` field to Actor responses ([#846](https://github.com/apify/apify-client-js/pull/846)) ([7d6bb2f](https://github.com/apify/apify-client-js/commit/7d6bb2f56db3702400efdf927106c817ad08310d)) by [@janbuchar](https://github.com/janbuchar)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.22.0](https://github.com/apify/apify-client-js/releases/tag/v2.22.0) (2026-01-27)
 
 ### 🚀 Features
