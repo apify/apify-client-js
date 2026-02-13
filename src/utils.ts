@@ -123,8 +123,10 @@ export async function maybeGzipValue(value: unknown): Promise<Buffer | undefined
     const areDataLargeEnough = Buffer.byteLength(value as string) >= MIN_GZIP_BYTES;
     if (areDataLargeEnough) {
         if (!gzipPromisified) {
-            const { promisify } = await import('node:util');
-            const { gzip } = await import('node:zlib');
+            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+            const { promisify } = await dynamicNodeImport<typeof import('node:util')>('node:util');
+            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+            const { gzip } = await dynamicNodeImport<typeof import('node:zlib')>('node:zlib');
             gzipPromisified = promisify(gzip);
         }
 
@@ -163,6 +165,14 @@ export function sliceArrayByByteLength<T>(array: T[], maxByteLength: number, sta
 
 export function isNode(): boolean {
     return !!(typeof process !== 'undefined' && process.versions && process.versions.node);
+}
+
+/**
+ * Dynamic import wrapper that prevents bundlers from statically analyzing the import specifier.
+ * Use this for Node.js-only modules that should not be included in browser bundles.
+ */
+export async function dynamicNodeImport<T = any>(specifier: string): Promise<T> {
+    return await import(specifier);
 }
 
 export function isBuffer(value: unknown): value is Buffer | ArrayBuffer | TypedArray {

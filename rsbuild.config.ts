@@ -28,14 +28,6 @@ export default defineConfig({
                 },
             },
         },
-        externals: {
-            'node:util': 'node:util',
-            'node:zlib': 'node:zlib',
-            'node:http': 'node:http',
-            'node:https': 'node:https',
-            crypto: 'node:crypto',
-            'proxy-agent': 'proxy-agent',
-        },
     },
     tools: {
         htmlPlugin: false,
@@ -60,5 +52,6 @@ export default defineConfig({
     },
     // mode: 'production',
     mode: 'development',
-    plugins: [pluginNodePolyfill()],
+    // @apify/utilities dynamically imports `crypto` on missing `SubtleCrypto` (but browsers have it).
+    plugins: [pluginNodePolyfill({ overrides: { crypto: false } })],
 });

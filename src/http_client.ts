@@ -1,12 +1,11 @@
 import type http from 'node:http';
 import type https from 'node:https';
-import os from 'node:os';
+import type { Socket } from 'node:net';
 
 import type { RetryFunction } from 'async-retry';
 import retry from 'async-retry';
 import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import axios, { AxiosHeaders } from 'axios';
-import { ProxyAgent } from 'proxy-agent';
 
 import { APIFY_ENV_VARS } from '@apify/consts';
 import type { Log } from '@apify/log';
@@ -15,7 +14,7 @@ import { ApifyApiError } from './apify_api_error';
 import type { RequestInterceptorFunction } from './interceptors';
 import { InvalidResponseBodyError, requestInterceptors, responseInterceptors } from './interceptors';
 import type { Statistics } from './statistics';
-import { asArray, cast, getVersionData, isNode, isStream } from './utils';
+import { asArray, cast, dynamicNodeImport, getVersionData, isNode, isStream } from './utils';
 
 const { version } = getVersionData();
 
@@ -42,6 +41,10 @@ export class HttpClient {
 
     workflowKey?: string;
 
+    private nodeInitPromise?: Promise<void>;
+
+    private userAgentSuffix?: string | string[];
+
     constructor(options: HttpClientOptions) {
         const { token } = options;
         this.stats = options.apifyClientStats;
@@ -51,49 +54,10 @@ export class HttpClient {
         this.timeoutMillis = options.timeoutSecs * 1000;
         this.logger = options.logger;
         this.workflowKey = options.workflowKey || process.env[APIFY_ENV_VARS.WORKFLOW_KEY];
+        this.userAgentSuffix = options.userAgentSuffix;
         this._onRequestRetry = this._onRequestRetry.bind(this);
 
-        if (isNode()) {
-            // We want to keep sockets alive for better performance.
-            // Enhanced agent configuration based on agentkeepalive best practices:
-            // - Nagle's algorithm disabled for lower latency
-            // - Free socket timeout to prevent socket leaks
-            // - LIFO scheduling to reuse recent sockets
-            // - Socket TTL for connection freshness
-            const agentOptions: http.AgentOptions & { scheduling?: 'lifo' | 'fifo' } = {
-                keepAlive: true,
-                // Timeout for inactive sockets
-                // Prevents socket leaks from idle connections
-                timeout: this.timeoutMillis,
-                // Keep alive timeout for free sockets (15 seconds)
-                // Node.js will close unused sockets after this period
-                keepAliveMsecs: 15_000,
-                // Maximum number of sockets per host
-                maxSockets: 256,
-                maxFreeSockets: 256,
-                // LIFO scheduling - reuse most recently used sockets for better performance
-                scheduling: 'lifo',
-            };
-
-            // Use ProxyAgent which automatically detects proxy from environment variables
-            // and supports CONNECT tunneling
-            const proxyAgent = new ProxyAgent(agentOptions);
-            this.httpAgent = proxyAgent;
-            this.httpsAgent = proxyAgent;
-
-            // Disable Nagle's algorithm for lower latency
-            // This sends data immediately instead of buffering small packets
-            const setNoDelay = (socket: any) => {
-                socket.setNoDelay(true);
-            };
-
-            this.httpAgent.on('socket', setNoDelay);
-            this.httpsAgent.on('socket', setNoDelay);
-        }
-
         this.axios = axios.create({
-            httpAgent: this.httpAgent,
-            httpsAgent: this.httpsAgent,
             // Disable axios's built-in proxy handling since we're using custom agents
             proxy: false,
             paramsSerializer: (params) => {
@@ -131,18 +95,6 @@ export class HttpClient {
             this.axios.defaults.headers['X-Apify-Workflow-Key'] = this.workflowKey;
         }
 
-        if (isNode()) {
-            // Works only in Node. Cannot be set in browser
-            const isAtHome = !!process.env[APIFY_ENV_VARS.IS_AT_HOME];
-            let userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${isAtHome}`;
-
-            if (options.userAgentSuffix) {
-                userAgent += `; ${asArray(options.userAgentSuffix).join('; ')}`;
-            }
-
-            this.axios.defaults.headers['User-Agent'] = userAgent;
-        }
-
         // Attach Authorization header for all requests if token was provided
         if (token) {
             this.axios.defaults.headers.Authorization = `Bearer ${token}`;
@@ -153,7 +105,76 @@ export class HttpClient {
         responseInterceptors.forEach((i) => this.axios.interceptors.response.use(i as any));
     }
 
+    private async ensureNodeInit(): Promise<void> {
+        if (!isNode()) return;
+
+        this.nodeInitPromise ??= this.initNode();
+
+        return this.nodeInitPromise;
+    }
+
+    private async initNode(): Promise<void> {
+        if (!isNode()) return;
+
+        const [{ ProxyAgent }, os] = await Promise.all([
+            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+            dynamicNodeImport<typeof import('proxy-agent')>('proxy-agent'),
+            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+            dynamicNodeImport<typeof import('node:os')>('node:os'),
+        ]);
+
+        // We want to keep sockets alive for better performance.
+        // Enhanced agent configuration based on agentkeepalive best practices:
+        // - Nagle's algorithm disabled for lower latency
+        // - Free socket timeout to prevent socket leaks
+        // - LIFO scheduling to reuse recent sockets
+        // - Socket TTL for connection freshness
+        const agentOptions: http.AgentOptions & { scheduling?: 'lifo' | 'fifo' } = {
+            keepAlive: true,
+            // Timeout for inactive sockets
+            // Prevents socket leaks from idle connections
+            timeout: this.timeoutMillis,
+            // Keep alive timeout for free sockets (15 seconds)
+            // Node.js will close unused sockets after this period
+            keepAliveMsecs: 15_000,
+            // Maximum number of sockets per host
+            maxSockets: 256,
+            maxFreeSockets: 256,
+            // LIFO scheduling - reuse most recently used sockets for better performance
+            scheduling: 'lifo',
+        };
+
+        // Use ProxyAgent which automatically detects proxy from environment variables
+        // and supports CONNECT tunneling
+        const proxyAgent = new ProxyAgent(agentOptions);
+        this.httpAgent = proxyAgent;
+        this.httpsAgent = proxyAgent;
+
+        // Disable Nagle's algorithm for lower latency
+        // This sends data immediately instead of buffering small packets
+        const setNoDelay = (socket: Socket) => {
+            socket.setNoDelay(true);
+        };
+
+        this.httpAgent.on('socket', setNoDelay);
+        this.httpsAgent.on('socket', setNoDelay);
+
+        this.axios.defaults.httpAgent = this.httpAgent;
+        this.axios.defaults.httpsAgent = this.httpsAgent;
+
+        // Works only in Node. Cannot be set in browser
+        const isAtHome = !!process.env[APIFY_ENV_VARS.IS_AT_HOME];
+        let userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${isAtHome}`;
+
+        if (this.userAgentSuffix) {
+            userAgent += `; ${asArray(this.userAgentSuffix).join('; ')}`;
+        }
+
+        this.axios.defaults.headers['User-Agent'] = userAgent;
+    }
+
     async call<T = any>(config: ApifyRequestConfig): Promise<ApifyResponse<T>> {
+        await this.ensureNodeInit();
         this.stats.calls++;
         const makeRequest = this._createRequestHandler(config);
 
