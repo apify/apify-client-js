@@ -246,6 +246,24 @@ const { status } = await client.actor('username/actor-name').start({
 });
 ```
 
+### Using in bundled environments
+
+:::warning Advanced
+
+This applies only to non-Node.js environments (browsers, Cloudflare Workers, edge runtimes). If you're running on Node.js, you can skip this section.
+
+:::
+
+The package ships a pre-built browser bundle that is automatically resolved when your bundler targets a browser environment. If it isn't picked up automatically, you can import it directly:
+
+```js
+import { ApifyClient } from 'apify-client/browser';
+```
+
+For Cloudflare Workers or other edge runtimes that don't provide Node built-ins, you may need to enable Node compatibility in your runtime config (e.g. `node_compat = true`.
+
+Note that some Node-specific features (streaming APIs, proxy) are not available in the browser bundle.
+
 ### Pagination
 
 Methods that return lists (such as `list()` or `listSomething()`) return a [`PaginatedList`](/reference/interface/PaginatedList) object. Exceptions include `listKeys()` and `listHead()`, which use different pagination mechanisms.
