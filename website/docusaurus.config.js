@@ -46,13 +46,8 @@ module.exports = {
                         {
                             to: 'docs',
                             label: 'Docs',
-                            activeBaseRegex: '/docs(?!/changelog|/examples)',
+                            activeBaseRegex: '/docs(?!/changelog)',
                         },
-                        // {
-                        //     to: 'docs/examples',
-                        //     label: 'Examples',
-                        //     activeBaseRegex: '/docs/examples',
-                        // },
                         {
                             to: 'reference',
                             label: 'Reference',
