@@ -2,7 +2,7 @@
 id: convenience-functions
 title: Convenience functions
 sidebar_label: Convenience functions
-description: "Use call(), waitForFinish(), and other convenience functions in the Apify API client for JavaScript."
+description: 'Use call(), waitForFinish(), and other convenience functions in the Apify API client for JavaScript.'
 ---
 
 Some actions can't be performed by the API itself, such as indefinite waiting for an Actor run to finish (because of network timeouts). The client provides convenient `call()` and `waitForFinish()` functions that do that. If the limit is reached, the returned promise is resolved to a run object that will have status `READY` or `RUNNING` and it will not contain the Actor run output.

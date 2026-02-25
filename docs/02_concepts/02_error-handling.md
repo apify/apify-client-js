@@ -2,7 +2,7 @@
 id: error-handling
 title: Error handling and retries
 sidebar_label: Error handling and retries
-description: "Handle API errors and configure automatic retries with exponential backoff in the Apify API client for JavaScript."
+description: 'Handle API errors and configure automatic retries with exponential backoff in the Apify API client for JavaScript.'
 ---
 
 Based on the endpoint, the client automatically extracts the relevant data and returns it in the expected format. Date strings are automatically converted to `Date` objects. For exceptions, the client throws an [`ApifyApiError`](/reference/class/ApifyApiError), which wraps the plain JSON errors returned by API and enriches them with other contexts for easier debugging.

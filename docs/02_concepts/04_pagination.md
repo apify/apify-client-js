@@ -2,7 +2,7 @@
 id: pagination
 title: Pagination
 sidebar_label: Pagination
-description: "Paginate through large result sets and use async iteration with the Apify API client for JavaScript."
+description: 'Paginate through large result sets and use async iteration with the Apify API client for JavaScript.'
 ---
 
 Methods that return lists (such as `list()` or `listSomething()`) return a [`PaginatedList`](/reference/interface/PaginatedList) object. Exceptions include `listKeys()` and `listHead()`, which use different pagination mechanisms.

@@ -3,7 +3,7 @@ id: introduction
 title: Overview
 sidebar_label: Overview
 slug: /
-description: "The official JavaScript library to access the Apify API, with automatic retries, TypeScript support, and cross-platform compatibility."
+description: 'The official JavaScript library to access the Apify API, with automatic retries, TypeScript support, and cross-platform compatibility.'
 ---
 
 import Tabs from '@theme/Tabs';

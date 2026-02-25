@@ -2,7 +2,7 @@
 id: quick-start
 title: Quick start
 sidebar_label: Quick start
-description: "Get started with the Apify API client for JavaScript by running an Actor and retrieving results from its dataset."
+description: 'Get started with the Apify API client for JavaScript by running an Actor and retrieving results from its dataset.'
 ---
 
 Learn how to authenticate, run Actors, and retrieve results using the Apify API client for JavaScript.

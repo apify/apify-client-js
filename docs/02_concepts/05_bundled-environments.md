@@ -2,7 +2,7 @@
 id: bundled-environments
 title: Use in bundled environments
 sidebar_label: Bundled environments
-description: "Use the Apify API client for JavaScript in browsers, Cloudflare Workers, and other edge runtimes."
+description: 'Use the Apify API client for JavaScript in browsers, Cloudflare Workers, and other edge runtimes.'
 ---
 
 :::warning Advanced
