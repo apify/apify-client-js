@@ -110,3 +110,22 @@ jobs:
                   npm ci --force
                   npm run lint
                   npm run build
+
+            - name: Run Lychee Link Checker
+              id: lychee
+              uses: lycheeverse/lychee-action@v2.8.0
+              env:
+                  GITHUB_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+              with:
+                fail: false
+                args: >
+                    --base https://docs.apify.com
+                    --max-retries 6
+                    --exclude="github.com"
+                    --verbose
+                    --no-progress
+                    --timeout '60'
+                    --accept '100..=103,200..=299,429'
+                    --max-redirects 5
+                    --format markdown
+                    './build/**/*.html'
