@@ -119,7 +119,7 @@ jobs:
               with:
                   fail: false
                   args: >
-                      --base https://docs.apify.com
+                      --base-url https://docs.apify.com
                       --max-retries 6
                       --exclude="github.com"
                       --no-progress
@@ -128,3 +128,35 @@ jobs:
                       --max-redirects 5
                       --format markdown
                       './website/build/**/*.html'
+
+            - name: Find Comment
+              uses: peter-evans/find-comment@v3
+              id: find-comment
+              with:
+                  issue-number: ${{ github.event.pull_request.number }}
+                  comment-author: 'github-actions[bot]'
+                  body-includes: Build output
+
+            - name: Links are passing
+              if: steps.lychee.outputs.exit_code == 0
+              uses: peter-evans/create-or-update-comment@v5
+              with:
+                  comment-id: ${{ steps.find-comment.outputs.comment-id }}
+                  issue-number: ${{ github.event.pull_request.number }}
+                  body: |
+                      ✅ The link checker did not find any broken links.
+
+                      See more at ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#summary-${{ job.check_run_id }}
+                  edit-mode: replace
+
+            - name: Links are failing
+              if: steps.lychee.outputs.exit_code != 0
+              uses: peter-evans/create-or-update-comment@v5
+              with:
+                  comment-id: ${{ steps.find-comment.outputs.comment-id }}
+                  issue-number: ${{ github.event.pull_request.number }}
+                  body: |
+                      ⚠️ There are broken links in the documentation.
+
+                      See more at ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#summary-${{ job.check_run_id }}
+                  edit-mode: replace
