@@ -27,7 +27,7 @@ import type { ActorVersion, FinalActorVersion } from './actor_version';
  * });
  * ```
  *
- * @see https://docs.apify.com/api/v2/act-versions-get
+ * @see https://docs.apify.com/platform/actors/development/actor-definition/versions
  */
 export class ActorVersionCollectionClient extends ResourceCollectionClient {
     /**

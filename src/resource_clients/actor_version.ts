@@ -24,7 +24,7 @@ import { ActorEnvVarCollectionClient } from './actor_env_var_collection';
  * await versionClient.update({ buildTag: 'latest' });
  * ```
  *
- * @see https://docs.apify.com/api/v2/act-versions-get
+ * @see https://docs.apify.com/platform/actors/development/actor-definition/versions
  */
 export class ActorVersionClient extends ResourceClient {
     /**

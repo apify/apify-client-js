@@ -56,7 +56,7 @@ export class UserClient extends ResourceClient {
      * Retrieves the user's monthly usage data.
      *
      * @returns The monthly usage object, or `undefined` if it does not exist.
-     * @see https://docs.apify.com/api/v2/users-me-usage-monthly-get
+     * @see https://docs.apify.com/api/v2/user-usage-monthly-get
      */
     async monthlyUsage(): Promise<MonthlyUsage | undefined> {
         const requestOpts: ApifyRequestConfig = {
@@ -84,7 +84,7 @@ export class UserClient extends ResourceClient {
      * Retrieves the user's account and usage limits.
      *
      * @returns The account and usage limits object, or `undefined` if it does not exist.
-     * @see https://docs.apify.com/api/v2/users-me-limits-get
+     * @see https://docs.apify.com/api/v2/user-limits-get
      */
     async limits(): Promise<AccountAndUsageLimits | undefined> {
         const requestOpts: ApifyRequestConfig = {
@@ -106,7 +106,7 @@ export class UserClient extends ResourceClient {
      * Updates the user's account and usage limits.
      *
      * @param options - The new limits to set.
-     * @see https://docs.apify.com/api/v2/users-me-limits-put
+     * @see https://docs.apify.com/api/v2/user-limits-put
      */
     async updateLimits(options: LimitsUpdateOptions): Promise<void> {
         const requestOpts: ApifyRequestConfig = {

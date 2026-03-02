@@ -2999,7 +2999,7 @@
                         "content": [
                             {
                                 "kind": "text",
-                                "text": "https://docs.apify.com/platform/actors/development/programming-interface/environment-variables"
+                                "text": "https://docs.apify.com/platform/actors/development/actor-definition/environment-variables"
                             }
                         ]
                     }
@@ -3600,7 +3600,7 @@
                         "content": [
                             {
                                 "kind": "text",
-                                "text": "https://docs.apify.com/platform/actors/development/programming-interface/environment-variables"
+                                "text": "https://docs.apify.com/platform/actors/development/actor-definition/environment-variables"
                             }
                         ]
                     }
@@ -4174,7 +4174,7 @@
                         "content": [
                             {
                                 "kind": "text",
-                                "text": "https://docs.apify.com/api/v2/act-versions-get"
+                                "text": "https://docs.apify.com/platform/actors/development/actor-definition/versions"
                             }
                         ]
                     }
@@ -4932,7 +4932,7 @@
                         "content": [
                             {
                                 "kind": "text",
-                                "text": "https://docs.apify.com/api/v2/act-versions-get"
+                                "text": "https://docs.apify.com/platform/actors/development/actor-definition/versions"
                             }
                         ]
                     }
@@ -7984,7 +7984,7 @@
                                         "content": [
                                             {
                                                 "kind": "text",
-                                                "text": "https://docs.apify.com/api/v2/store-get"
+                                                "text": "https://docs.apify.com/api/v2/store-actors-get"
                                             }
                                         ]
                                     }
@@ -28064,7 +28064,7 @@
                                         "content": [
                                             {
                                                 "kind": "text",
-                                                "text": "https://docs.apify.com/api/v2/store-get"
+                                                "text": "https://docs.apify.com/api/v2/store-actors-get"
                                             }
                                         ]
                                     }
@@ -30714,7 +30714,7 @@
                                         "content": [
                                             {
                                                 "kind": "text",
-                                                "text": "https://docs.apify.com/api/v2/users-me-limits-get"
+                                                "text": "https://docs.apify.com/api/v2/user-limits-get"
                                             }
                                         ]
                                     }
@@ -30810,7 +30810,7 @@
                                         "content": [
                                             {
                                                 "kind": "text",
-                                                "text": "https://docs.apify.com/api/v2/users-me-usage-monthly-get"
+                                                "text": "https://docs.apify.com/api/v2/user-usage-monthly-get"
                                             }
                                         ]
                                     }
@@ -30889,7 +30889,7 @@
                                         "content": [
                                             {
                                                 "kind": "text",
-                                                "text": "https://docs.apify.com/api/v2/users-me-limits-put"
+                                                "text": "https://docs.apify.com/api/v2/user-limits-put"
                                             }
                                         ]
                                     }

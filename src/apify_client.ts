@@ -534,7 +534,7 @@ export class ApifyClient {
      * Use this to search and retrieve information about public Actors.
      *
      * @returns A client for the Apify Store
-     * @see https://docs.apify.com/api/v2/store-get
+     * @see https://docs.apify.com/api/v2/store-actors-get
      */
     store(): StoreCollectionClient {
         return new StoreCollectionClient(this._options());

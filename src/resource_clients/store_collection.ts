@@ -54,7 +54,7 @@ export class StoreCollectionClient extends ResourceCollectionClient {
      *
      * @param options - Search and pagination options.
      * @returns A paginated iterator of store Actors.
-     * @see https://docs.apify.com/api/v2/store-get
+     * @see https://docs.apify.com/api/v2/store-actors-get
      */
     list(options: StoreCollectionListOptions = {}): PaginatedIterator<ActorStoreList> {
         ow(
