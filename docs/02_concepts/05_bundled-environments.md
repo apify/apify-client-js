@@ -5,7 +5,7 @@ sidebar_label: Bundled environments
 description: 'Use the Apify API client for JavaScript in browsers, Cloudflare Workers, and other edge runtimes.'
 ---
 
-:::warning Advanced
+:::warning Non-Node.js environments
 
 This applies only to non-Node.js environments (browsers, Cloudflare Workers, edge runtimes). If you're running on Node.js, you can skip this section.
 
