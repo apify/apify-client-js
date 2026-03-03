@@ -1,6 +1,8 @@
 ---
+id: examples
+title: Code examples
 sidebar_label: Examples
-title: 'Code examples'
+description: 'Practical code examples for common tasks with the Apify API client for JavaScript, including webhooks and datasets.'
 ---
 
 ## Passing an input to the Actor
