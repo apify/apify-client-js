@@ -73,7 +73,7 @@ import { ApifyClient } from 'apify-client';
 
 // Initialize the client with your API token
 const client = new ApifyClient({
-    token: 'YOUR-APIFY-TOKEN',
+    token: 'MY-APIFY-TOKEN',
 });
 
 // Start an Actor and wait for it to finish
