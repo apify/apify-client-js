@@ -15,6 +15,10 @@ on:
     # Release flow will trigger checks manually
     workflow_call:
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 jobs:
     build_and_test:
         name: Build & Test
@@ -27,11 +31,6 @@ jobs:
                 node-version: [18, 20, 22, 24]
 
         steps:
-            - name: Cancel Workflow Action
-              uses: styfle/cancel-workflow-action@0.13.1
-              with:
-                  access_token: ${{ github.token }}
-
             - name: Checkout repository
               uses: actions/checkout@v6
 
