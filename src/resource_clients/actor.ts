@@ -730,7 +730,7 @@ export interface ActorRun extends ActorRunListItem {
     pricingInfo?: ActorRunPricingInfo;
     chargedEventCounts?: Record<string, number>;
     generalAccess?: RUN_GENERAL_ACCESS | null;
-    storageIds: ActorRunStorageIds;
+    storageIds?: ActorRunStorageIds;
 }
 
 /**
