@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.22.3 - **not yet released**
 
+### 🚀 Features
+
+- Add the `ActorRunStorageIds` field to Actor Run responses ([#868](https://github.com/apify/apify-client-js/pull/868)) ([de8d315](https://github.com/apify/apify-client-js/commit/de8d3152e27f623ffd94fe9fa62962a7ab653a41)) by [@Pijukatel](https://github.com/Pijukatel), closes [#860](https://github.com/apify/apify-client-js/issues/860)
+
 
 <!-- git-cliff-unreleased-end -->
 ## [2.22.2](https://github.com/apify/apify-client-js/releases/tag/v2.22.2) (2026-02-20)
