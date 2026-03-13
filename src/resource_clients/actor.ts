@@ -701,6 +701,15 @@ export interface ActorRunListItem {
     usageTotalUsd?: number;
 }
 
+export interface ActorRunStorageIds {
+    /** Aliased dataset IDs for this run. */
+    datasets: { default: string; [alias: string]: string };
+    /** Aliased key-value store IDs for this run. */
+    keyValueStores: { default: string; [alias: string]: string };
+    /** Aliased request queue IDs for this run. */
+    requestQueues: { default: string; [alias: string]: string };
+}
+
 /**
  * Complete Actor run information including statistics and usage details.
  *
@@ -721,6 +730,7 @@ export interface ActorRun extends ActorRunListItem {
     pricingInfo?: ActorRunPricingInfo;
     chargedEventCounts?: Record<string, number>;
     generalAccess?: RUN_GENERAL_ACCESS | null;
+    storageIds?: ActorRunStorageIds;
 }
 
 /**
