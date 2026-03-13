@@ -14,6 +14,13 @@ export default defineConfig({
             BROWSER_BUILD: true,
         },
     },
+    resolve: {
+        // proxy-agent is a Node.js-only package, exclude it from the browser bundle.
+        // The isNode() guard in http_client.ts ensures it's never called in browsers.
+        alias: {
+            'proxy-agent': false,
+        },
+    },
     output: {
         distPath: { js: '.' },
         filename: { js: 'bundle.js' },
