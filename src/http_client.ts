@@ -1,13 +1,11 @@
 import type http from 'node:http';
 import type https from 'node:https';
 import type { Socket } from 'node:net';
-import os from 'node:os';
 
 import type { RetryFunction } from 'async-retry';
 import retry from 'async-retry';
 import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import axios, { AxiosHeaders } from 'axios';
-import { ProxyAgent } from 'proxy-agent';
 
 import { APIFY_ENV_VARS } from '@apify/consts';
 import type { Log } from '@apify/log';
@@ -16,7 +14,7 @@ import { ApifyApiError } from './apify_api_error';
 import type { RequestInterceptorFunction } from './interceptors';
 import { InvalidResponseBodyError, requestInterceptors, responseInterceptors } from './interceptors';
 import type { Statistics } from './statistics';
-import { asArray, cast, getVersionData, isNode, isStream } from './utils';
+import { asArray, cast, dynamicNodeImport, getVersionData, isNode, isStream } from './utils';
 
 const { version } = getVersionData();
 
@@ -117,6 +115,13 @@ export class HttpClient {
 
     private async initNode(): Promise<void> {
         if (!isNode()) return;
+
+        const [{ ProxyAgent }, os] = await Promise.all([
+            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+            dynamicNodeImport<typeof import('proxy-agent')>('proxy-agent'),
+            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+            dynamicNodeImport<typeof import('node:os')>('node:os'),
+        ]);
 
         // We want to keep sockets alive for better performance.
         // Enhanced agent configuration based on agentkeepalive best practices:
