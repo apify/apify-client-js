@@ -6,6 +6,7 @@ import type { RetryFunction } from 'async-retry';
 import retry from 'async-retry';
 import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import axios, { AxiosHeaders } from 'axios';
+import { ProxyAgent } from 'proxy-agent';
 
 import { APIFY_ENV_VARS } from '@apify/consts';
 import type { Log } from '@apify/log';
@@ -115,13 +116,8 @@ export class HttpClient {
 
     private async initNode(): Promise<void> {
         if (!isNode()) return;
-
-        const [{ ProxyAgent }, os] = await Promise.all([
-            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-            dynamicNodeImport<typeof import('proxy-agent')>('proxy-agent'),
-            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-            dynamicNodeImport<typeof import('node:os')>('node:os'),
-        ]);
+        // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+        const os = await dynamicNodeImport<typeof import('node:os')>('node:os');
 
         // We want to keep sockets alive for better performance.
         // Enhanced agent configuration based on agentkeepalive best practices:
