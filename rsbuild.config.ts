@@ -38,7 +38,7 @@ export default defineConfig({
                     type: 'umd', // or 'umd', 'commonjs', etc.
                     name: 'Apify',
                 },
-                globalObject: 'this',
+                globalObject: 'globalThis',
             };
             config.optimization = {
                 ...config.optimization,
@@ -50,8 +50,7 @@ export default defineConfig({
             config.devtool = 'source-map';
         },
     },
-    // mode: 'production',
-    mode: 'development',
+    mode: 'production',
     // @apify/utilities dynamically imports `crypto` on missing `SubtleCrypto` (but browsers have it).
     plugins: [pluginNodePolyfill({ overrides: { crypto: false } })],
 });
