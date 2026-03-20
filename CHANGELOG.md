@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.22.3 - **not yet released**
+## [2.22.3](https://github.com/apify/apify-client-js/releases/tag/v2.22.3) (2026-03-20)
 
 ### 🚀 Features
 
@@ -14,7 +13,6 @@ All notable changes to this project will be documented in this file.
 - Use production mode and globalThis in browser bundle ([#870](https://github.com/apify/apify-client-js/pull/870)) ([b29c846](https://github.com/apify/apify-client-js/commit/b29c8465ef9a4726b596195b241e9a3649d832e1)) by [@MartinKristof](https://github.com/MartinKristof)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.22.2](https://github.com/apify/apify-client-js/releases/tag/v2.22.2) (2026-02-20)
 
 ### 🐛 Bug Fixes
