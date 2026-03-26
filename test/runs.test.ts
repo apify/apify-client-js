@@ -447,4 +447,18 @@ describe('Redirect run logs', () => {
             logSpy.mockRestore();
         });
     });
+
+    describe('run.getStreamedLog ECONNRESET', () => {
+        test('logs warning instead of throwing on error', async () => {
+            const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            const streamedLog = await client.run('econnreset-run-id').getStreamedLog({ fromStart: true });
+            streamedLog?.start();
+            await setTimeoutNode(500);
+            await expect(streamedLog?.stop()).resolves.not.toThrow();
+            expect(
+                warnSpy.mock.calls.some(([msg]: [string]) => msg?.includes('Log redirection stopped due to error')),
+            ).toBe(true);
+            warnSpy.mockRestore();
+        });
+    });
 });
