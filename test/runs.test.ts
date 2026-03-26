@@ -428,6 +428,20 @@ describe('Redirect run logs', () => {
         { fromStart: false, expected: MOCKED_ACTOR_LOGS_PROCESSED.slice(1) },
     ];
 
+    describe('run.getStreamedLog ECONNRESET', () => {
+        test('logs warning instead of throwing on error', async () => {
+            const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+            const streamedLog = await client.run('econnreset-run-id').getStreamedLog({ fromStart: true });
+            streamedLog?.start();
+            await setTimeoutNode(500);
+            await expect(streamedLog?.stop()).resolves.not.toThrow();
+            expect(
+                logSpy.mock.calls.some(([msg]: [string]) => msg?.includes('Log redirection stopped due to error')),
+            ).toBe(true);
+            logSpy.mockRestore();
+        });
+    });
+
     describe('run.getStreamedLog', () => {
         test.each(testCases)('getStreamedLog fromStart:$fromStart', async ({ fromStart, expected }) => {
             const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});

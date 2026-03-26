@@ -106,6 +106,18 @@ export function createDefaultApp(v2Router = express.Router()) {
         res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status: 'SUCCEEDED' } });
     });
 
+    v2Router.use('/actor-runs/econnreset-run-id/log', async (req: express.Request, res: express.Response) => {
+        res.write(MOCKED_ACTOR_LOGS[0]);
+        (res as any).flush();
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, 10);
+        });
+        req.socket.destroy();
+    });
+    v2Router.use('/actor-runs/econnreset-run-id', async (_, res) => {
+        res.json({ data: { id: 'econnreset-run-id', actId: 'redirect-actor-id', status: 'SUCCEEDED' } });
+    });
+
     v2Router.use('/actor-runs', runs);
     v2Router.use('/actor-tasks', tasks);
     v2Router.use('/users', users);

@@ -197,11 +197,15 @@ export class StreamedLog {
         if (!logStream) {
             return;
         }
-        const lastChunkRemainder = await this.logStreamChunks(logStream);
-        // Process whatever is left when exiting. Maybe it is incomplete, maybe it is last log without EOL.
-        const lastMessage = Buffer.from(lastChunkRemainder).toString().trim();
-        if (lastMessage.length) {
-            this.destinationLog.info(lastMessage);
+        try {
+            const lastChunkRemainder = await this.logStreamChunks(logStream);
+            // Process whatever is left when exiting. Maybe it is incomplete, maybe it is last log without EOL.
+            const lastMessage = Buffer.from(lastChunkRemainder).toString().trim();
+            if (lastMessage.length) {
+                this.destinationLog.info(lastMessage);
+            }
+        } catch (err) {
+            this.destinationLog.warning(`Log redirection stopped due to error: ${JSON.stringify(err)}`);
         }
     }
 
