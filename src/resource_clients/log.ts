@@ -4,7 +4,7 @@ import type { Readable } from 'node:stream';
 import c from 'ansi-colors';
 
 import type { Log } from '@apify/log';
-import { Logger, LogLevel } from '@apify/log';
+import log, { Logger, LogLevel } from '@apify/log';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
@@ -205,7 +205,7 @@ export class StreamedLog {
                 this.destinationLog.info(lastMessage);
             }
         } catch (err) {
-            this.destinationLog.warning(`Log redirection stopped due to error: ${JSON.stringify(err)}`);
+            log.warning(`Log redirection stopped due to error`, err as Error);
         }
     }
 
