@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.22.4 - **not yet released**
 
+### 🐛 Bug Fixes
+
+- Turn any log streaming related errors to warnings ([#876](https://github.com/apify/apify-client-js/pull/876)) ([a3268ee](https://github.com/apify/apify-client-js/commit/a3268eeee38f1d47dbfa3fe0e0cfe26a949ca10d)) by [@Pijukatel](https://github.com/Pijukatel), closes [#873](https://github.com/apify/apify-client-js/issues/873)
+
 
 <!-- git-cliff-unreleased-end -->
 ## [2.22.3](https://github.com/apify/apify-client-js/releases/tag/v2.22.3) (2026-03-20)
