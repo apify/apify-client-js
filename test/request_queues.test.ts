@@ -1,6 +1,6 @@
 import type { AddressInfo } from 'node:net';
 
-import type { Dictionary } from 'apify-client';
+import type { Dictionary, RequestQueueClientListRequestsOptions } from 'apify-client';
 import { ApifyClient } from 'apify-client';
 import type { Request } from 'express';
 import type { Page } from 'puppeteer';
@@ -527,7 +527,7 @@ describe('Request Queue methods', () => {
 
         test('listRequests() works', async () => {
             const queueId = 'some-id';
-            const options = { limit: 5, exclusiveStartId: '123' };
+            const options = { limit: 5, exclusiveStartId: '123', filter: ['pending', 'locked'] } satisfies RequestQueueClientListRequestsOptions;
 
             const res = await client.requestQueue(queueId).listRequests(options);
             validateRequest({ query: options, params: { queueId }, endpointId: 'list-requests' });

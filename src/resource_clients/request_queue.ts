@@ -697,7 +697,7 @@ export class RequestQueueClient extends ResourceClient {
                 url: this._url('requests'),
                 method: 'GET',
                 timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
-                params: this._params({ ...rqListOptions, clientKey: this.clientKey }),
+                params: this._params({ ...rqListOptions, filter: rqListOptions.filter ? rqListOptions.filter.join(",") : undefined, clientKey: this.clientKey }),
             });
 
             return cast(parseDateFields(pluckData(response.data)));
@@ -883,7 +883,7 @@ export interface RequestQueueClientListRequestsOptions {
      */
     exclusiveStartId?: string;
     cursor?: string;
-    filter?: RequestQueueListRequestsFilter[];
+    filter?: readonly RequestQueueListRequestsFilter[];
 }
 
 /**
@@ -895,7 +895,7 @@ export interface RequestQueueClientPaginateRequestsOptions {
     /** @deprecated Use `cursor` for pagination instead. */
     exclusiveStartId?: string;
     cursor?: string;
-    filter?: RequestQueueListRequestsFilter[];
+    filter?: readonly RequestQueueListRequestsFilter[];
 }
 
 /**

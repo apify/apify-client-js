@@ -404,7 +404,7 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
                         limit: limit || maxItemsPerPage,
                         exclusiveStartId: request.params.exclusiveStartId,
                         cursor: request.params.cursor,
-                        nextCursor: upperIndex < totalItems ? `cursor:${upperIndex}` : null,
+                        nextCursor: `cursor:${upperIndex}`,
                     },
                 },
             };
