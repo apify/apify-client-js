@@ -843,7 +843,18 @@ export interface ActorDefinition {
     dockerfile?: string;
     dockerContextDir?: string;
     readme?: string | null;
+    /**
+     * @deprecated Use `inputSchema` instead.
+     */
     input?: object | null;
+    /**
+     * The input schema for the Actor, defining expected input parameters.
+     */
+    inputSchema?: object | null;
+    /**
+     * The output schema for the Actor, defining the structure of the output data.
+     */
+    outputSchema?: object | null;
     changelog?: string | null;
     storages?: {
         dataset?: object;
