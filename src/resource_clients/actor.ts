@@ -833,6 +833,7 @@ export interface ActorLastRunOptions {
  * Actor definition from the `.actor/actor.json` file.
  *
  * Contains the Actor's configuration, input schema, and other metadata.
+ * @see https://docs.apify.com/platform/actors/development/actor-definition
  */
 export interface ActorDefinition {
     actorSpecification: number;
