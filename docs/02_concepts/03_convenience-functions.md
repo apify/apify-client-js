@@ -22,3 +22,12 @@ const { status } = await client.actor('username/actor-name').start({
     waitForFinish: 60, // 1 minute
 });
 ```
+
+The `defaultBuild()` method resolves the Actor's default build and returns a `BuildClient` for it. Note that unlike `call()` and `start()`, this method returns a client rather than data directly — call `.get()` on the returned client to fetch build details.
+
+```js
+// Get the default build details
+const buildClient = await client.actor('username/actor-name').defaultBuild();
+const build = await buildClient.get();
+console.log(`Default build status: ${build.status}`);
+```
