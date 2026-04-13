@@ -833,6 +833,7 @@ export interface ActorLastRunOptions {
  * Actor definition from the `.actor/actor.json` file.
  *
  * Contains the Actor's configuration, input schema, and other metadata.
+ * @see https://docs.apify.com/platform/actors/development/actor-definition/actor-json
  */
 export interface ActorDefinition {
     actorSpecification: number;
@@ -843,7 +844,16 @@ export interface ActorDefinition {
     dockerfile?: string;
     dockerContextDir?: string;
     readme?: string | null;
+    /**
+     * Input schema for the Actor.
+     * @see https://docs.apify.com/platform/actors/development/actor-definition/input-schema
+     */
     input?: object | null;
+    /**
+     * Output schema for the Actor.
+     * @see https://docs.apify.com/platform/actors/development/actor-definition/output-schema
+     */
+    output?: object | null;
     changelog?: string | null;
     storages?: {
         dataset?: object;

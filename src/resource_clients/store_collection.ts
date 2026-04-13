@@ -67,6 +67,7 @@ export class StoreCollectionClient extends ResourceCollectionClient {
                 category: ow.optional.string,
                 username: ow.optional.string,
                 pricingModel: ow.optional.string,
+                includeUnrunnableActors: ow.optional.boolean,
             }),
         );
 
@@ -99,4 +100,9 @@ export interface StoreCollectionListOptions extends PaginationOptions {
     category?: string;
     username?: string;
     pricingModel?: string;
+    /**
+     * If true, the response will include Actors that cannot be run (e.g., Actors
+     * that require a linked integration account that the current user does not have).
+     */
+    includeUnrunnableActors?: boolean;
 }
