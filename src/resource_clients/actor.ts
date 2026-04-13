@@ -309,11 +309,28 @@ export class ActorClient extends ResourceClient {
     }
 
     /**
-     * Retrieves the default build of the Actor.
+     * Returns a client for the default build of this Actor.
      *
-     * @param options - Options for getting the build.
-     * @returns A client for the default build.
+     * Makes an API call to resolve the Actor's default build, then returns a {@link BuildClient}
+     * for that build. Use the returned client to get build details, wait for the build to finish,
+     * or access its logs.
+     *
+     * @param options - Options for getting the default build
+     * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the build to finish on the API side before returning. Default is 0 (returns immediately).
+     * @returns A client for the default build
      * @see https://docs.apify.com/api/v2/act-build-default-get
+     *
+     * @example
+     * ```javascript
+     * // Get the default build client, then fetch build details
+     * const buildClient = await client.actor('my-actor').defaultBuild();
+     * const build = await buildClient.get();
+     * console.log(`Default build status: ${build.status}`);
+     *
+     * // Wait up to 60 seconds for the default build to finish
+     * const buildClient = await client.actor('my-actor').defaultBuild({ waitForFinish: 60 });
+     * const build = await buildClient.get();
+     * ```
      */
     async defaultBuild(options: BuildClientGetOptions = {}): Promise<BuildClient> {
         const response = await this.httpClient.call({
