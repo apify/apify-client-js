@@ -26,20 +26,17 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: 24
-                  cache: npm
-                  cache-dependency-path: website/package-lock.json
 
             - name: Set git identity
               run: |
                   git config user.name 'GitHub Actions'
                   git config user.email 'github-actions[bot]@users.noreply.github.com'
 
-            - name: Install Node.js dependencies
-              run: |
-                  npm install
-                  cd website
-                  npm install
-                  npm update @apify/docs-theme
+            - name: Install pnpm and dependencies
+              uses: ./.github/actions/pnpm-install
+
+            - name: Update docs theme
+              run: pnpm --filter apify-client-website update @apify/docs-theme
 
             # We do this as early as possible to prevent conflicts if someone else would push something in the meantime
             - name: Commit the updated package.json and lockfile
@@ -47,12 +44,12 @@ jobs:
                   git config user.name 'GitHub Actions'
                   git config user.email 'github-actions[bot]@users.noreply.github.com'
                   git add website/package.json
-                  git add website/package-lock.json
+                  git add pnpm-lock.yaml
                   git diff-index --quiet HEAD || git commit -m 'chore: Automatic theme updating workflow [skip ci]' || true
                   git push
 
             - name: Build Docusaurus docs
-              run: npm run build
+              run: pnpm build
               working-directory: ./website
               env:
                   SMARTLOOK_PROJECT_KEY: ${{ secrets.SMARTLOOK_DOCS_PROJECT_KEY }}
