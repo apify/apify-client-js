@@ -205,25 +205,31 @@ export class PaginationIterator {
     private readonly limit?: number;
 
     private readonly exclusiveStartId?: string;
+    private readonly cursor?: string;
 
     constructor(options: PaginationIteratorOptions) {
         this.maxPageLimit = options.maxPageLimit;
         this.limit = options.limit;
         this.exclusiveStartId = options.exclusiveStartId;
+        this.cursor = options.cursor;
         this.getPage = options.getPage;
     }
 
     async *[Symbol.asyncIterator](): AsyncIterator<RequestQueueClientListRequestsResult> {
-        let nextPageExclusiveStartId;
+        let nextCursor = this.cursor;
+        // allow using exclusiveStartId for the first page, but then we'll delete it to avoid using it for any later page
+        let nextExclusiveStartId = this.exclusiveStartId;
+
         let iterateItemCount = 0;
         while (true) {
             const pageLimit = this.limit
                 ? Math.min(this.maxPageLimit, this.limit - iterateItemCount)
                 : this.maxPageLimit;
-            const pageExclusiveStartId = nextPageExclusiveStartId || this.exclusiveStartId;
+
             const page: RequestQueueClientListRequestsResult = await this.getPage({
                 limit: pageLimit,
-                exclusiveStartId: pageExclusiveStartId,
+                cursor: nextCursor,
+                exclusiveStartId: nextExclusiveStartId,
             });
             // There are no more pages to iterate
             if (page.items.length === 0) return;
@@ -231,7 +237,9 @@ export class PaginationIterator {
             iterateItemCount += page.items.length;
             // Limit reached stopping to iterate
             if (this.limit && iterateItemCount >= this.limit) return;
-            nextPageExclusiveStartId = page.items[page.items.length - 1].id;
+
+            nextCursor = page.nextCursor;
+            nextExclusiveStartId = undefined; // see comment above - delete it for any page after the first one, and paginate with cursor
         }
     }
 }
@@ -249,6 +257,7 @@ export interface PaginationIteratorOptions {
     getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<RequestQueueClientListRequestsResult>;
     limit?: number;
     exclusiveStartId?: string;
+    cursor?: string;
 }
 
 /**
