@@ -49,12 +49,12 @@
         "!dist/*.tsbuildinfo"
     ],
     "scripts": {
-        "build": "npm run clean && npm run build:node && npm run build:browser",
+        "build": "pnpm clean && pnpm build:node && pnpm build:browser",
         "postbuild": "gen-esm-wrapper dist/index.js dist/index.mjs",
         "prepublishOnly": "(test $CI || (echo \"Publishing is reserved to CI!\"; exit 1))",
         "clean": "rimraf dist",
-        "test": "npm run build && vitest run",
-        "test:bundling": "npm run build && npm --prefix=./test/bundling run bundle:all",
+        "test": "pnpm build && vitest run",
+        "test:bundling": "pnpm build && pnpm --prefix=./test/bundling run bundle:all",
         "lint": "eslint",
         "lint:fix": "eslint --fix",
         "tsc-check-tests": "tsc --noEmit --project test/tsconfig.json",
@@ -110,5 +110,5 @@
         "webpack": "^5.105.2",
         "webpack-cli": "^7.0.0"
     },
-    "packageManager": "npm@10.9.2"
+    "packageManager": "pnpm@10.24.0"
 }
