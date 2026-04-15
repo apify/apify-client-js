@@ -5,3 +5,9 @@ minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - "@apify/*"
   - "@crawlee/*"
+
+onlyBuiltDependencies:
+  - "@playwright/browser-chromium"
+  - "@swc/core"
+  - esbuild
+  - puppeteer
