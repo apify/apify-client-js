@@ -40,7 +40,7 @@ jobs:
                   node-version: ${{ matrix.node-version }}
 
             - name: Install pnpm and dependencies
-              uses: ./.github/actions/pnpm-install
+              uses: apify/workflows/pnpm-install@main
 
             - name: Install Chrome for puppeteer
               run: pnpm exec puppeteer browsers install chrome
@@ -61,7 +61,7 @@ jobs:
                   node-version: 24
 
             - name: Install pnpm and dependencies
-              uses: ./.github/actions/pnpm-install
+              uses: apify/workflows/pnpm-install@main
 
             - name: Run Tests
               run: pnpm test:bundling
@@ -77,7 +77,7 @@ jobs:
               with:
                   node-version: 24
             - name: Install pnpm and dependencies
-              uses: ./.github/actions/pnpm-install
+              uses: apify/workflows/pnpm-install@main
             - run: pnpm lint
             - name: Prettier
               run: pnpm format:check
@@ -95,7 +95,7 @@ jobs:
               with:
                   node-version: 24
             - name: Install pnpm and dependencies
-              uses: ./.github/actions/pnpm-install
+              uses: apify/workflows/pnpm-install@main
 
             - name: Build docs
               run: |
