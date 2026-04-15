@@ -15,3 +15,10 @@ onlyBuiltDependencies:
   - "@swc/core"
   - esbuild
   - puppeteer
+
+nodeLinker: hoisted
+linkWorkspacePackages: true
+preferWorkspacePackages: true
+legacyPeerDeps: true
+publicHoistPattern:
+    - "*"
