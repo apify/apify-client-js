@@ -146,7 +146,10 @@ module.exports = {
             },
         },
     },
-    staticDirectories: ['node_modules/@apify/docs-theme/static', 'static'],
+    staticDirectories: [
+        require('path').dirname(require.resolve('@apify/docs-theme/package.json')) + '/static',
+        'static',
+    ],
     customFields: {
         ...(config.customFields ?? []),
     },
