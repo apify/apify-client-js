@@ -134,7 +134,7 @@ jobs:
               run: sudo apt-get install jq
 
             - name: Install pnpm and dependencies
-              uses: ./.github/actions/pnpm-install
+              uses: apify/workflows/pnpm-install@main
 
             - name: Snapshot the current version
               run: |
