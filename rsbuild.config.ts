@@ -1,7 +1,16 @@
-import { defineConfig } from '@rsbuild/core';
+import { defineConfig, rspack } from '@rsbuild/core';
 import { pluginNodePolyfill } from '@rsbuild/plugin-node-polyfill';
 
 import { version } from './package.json';
+
+const nodeOnlyModules = /^proxy-agent$/;
+const unusedInBrowserBuiltins = ['os', 'zlib', 'util'];
+const builtinAliases = Object.fromEntries(
+    unusedInBrowserBuiltins.flatMap((m) => [
+        [m, false],
+        [`node:${m}`, false],
+    ]),
+);
 
 // eslint-disable-next-line import/no-default-export
 export default defineConfig({
@@ -39,6 +48,7 @@ export default defineConfig({
                     name: 'Apify',
                 },
                 globalObject: 'globalThis',
+                asyncChunks: false,
             };
             config.optimization = {
                 ...config.optimization,
@@ -46,6 +56,14 @@ export default defineConfig({
                 usedExports: false,
                 splitChunks: false,
                 minimize: false,
+            };
+            config.plugins = [...(config.plugins ?? []), new rspack.IgnorePlugin({ resourceRegExp: nodeOnlyModules })];
+            config.resolve = {
+                ...config.resolve,
+                alias: {
+                    ...config.resolve?.alias,
+                    ...builtinAliases,
+                },
             };
             config.devtool = 'source-map';
         },
