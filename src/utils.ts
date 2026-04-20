@@ -195,7 +195,7 @@ export function getVersionData(): { version: string } {
 /**
  * Helper class to create async iterators from paginated list endpoints with exclusive start key.
  */
-export class PaginationIterator {
+export class RequestQueuePaginationIterator {
     private readonly maxPageLimit: number;
 
     private readonly getPage: (
@@ -207,7 +207,7 @@ export class PaginationIterator {
     private readonly exclusiveStartId?: string;
     private readonly cursor?: string;
 
-    constructor(options: PaginationIteratorOptions) {
+    constructor(options: RequestQueuePaginationIteratorOptions) {
         this.maxPageLimit = options.maxPageLimit;
         this.limit = options.limit;
         this.exclusiveStartId = options.exclusiveStartId;
@@ -236,7 +236,7 @@ export class PaginationIterator {
             yield page;
             iterateItemCount += page.items.length;
             // Limit reached stopping to iterate
-            if (this.limit && iterateItemCount >= this.limit) return;
+            if ((this.limit && iterateItemCount >= this.limit) || !page.nextCursor) return;
 
             nextCursor = page.nextCursor;
             nextExclusiveStartId = undefined; // see comment above - delete it for any page after the first one, and paginate with cursor
@@ -252,7 +252,7 @@ declare global {
 /**
  * Options for creating a pagination iterator.
  */
-export interface PaginationIteratorOptions {
+export interface RequestQueuePaginationIteratorOptions {
     maxPageLimit: number;
     getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<RequestQueueClientListRequestsResult>;
     limit?: number;
