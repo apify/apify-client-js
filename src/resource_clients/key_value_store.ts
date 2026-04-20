@@ -374,7 +374,7 @@ export class KeyValueStoreClient extends ResourceClient {
             return {
                 key,
                 value: response.data,
-                contentType: response.headers['content-type'],
+                contentType: response.headers['content-type'] as string | undefined,
             };
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);

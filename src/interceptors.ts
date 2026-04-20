@@ -107,7 +107,7 @@ function parseResponseData(response: ApifyResponse): ApifyResponse {
         return response;
     }
 
-    const contentTypeHeader = response.headers['content-type'];
+    const contentTypeHeader = response.headers['content-type'] as string;
     try {
         response.data = maybeParseBody(response.data, contentTypeHeader);
     } catch (err) {
