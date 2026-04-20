@@ -525,21 +525,26 @@ describe('Request Queue methods', () => {
             validateRequest({ query: {}, params: { queueId, requestId } });
         });
 
-        test('listRequests() works', async () => {
-            const queueId = 'some-id';
-            const options = { limit: 5, exclusiveStartId: '123', filter: ['pending', 'locked'] } satisfies RequestQueueClientListRequestsOptions;
+        test.each([[undefined, undefined], [['pending'], 'pending'], [['pending', 'locked'], 'pending,locked']] as const)(
+            'listRequests() works',
+            async (filter, filterInQuery) => {
+                const queueId = 'some-id';
+                const options = { limit: 5, exclusiveStartId: '123' } as RequestQueueClientListRequestsOptions;
+                if (filter) options.filter = filter;
+                const queryForValidation = { ...options, filter: filterInQuery };
 
-            const res = await client.requestQueue(queueId).listRequests(options);
-            validateRequest({ query: options, params: { queueId }, endpointId: 'list-requests' });
+                const res = await client.requestQueue(queueId).listRequests(options);
+                validateRequest({ query: queryForValidation, params: { queueId }, endpointId: 'list-requests' });
 
-            const browserRes = await page.evaluate(
-                (id, opts) => client.requestQueue(id).listRequests(opts),
-                queueId,
-                options,
-            );
-            expect(browserRes).toEqual(res);
-            validateRequest({ query: options, params: { queueId } });
-        });
+                const browserRes = await page.evaluate(
+                    (id, opts) => client.requestQueue(id).listRequests(opts),
+                    queueId,
+                    options,
+                );
+                expect(browserRes).toEqual(res);
+                validateRequest({ query: queryForValidation, params: { queueId } });
+            },
+        );
 
         test('paginateRequests() works', async () => {
             const queueId = 'some-id';
@@ -551,7 +556,8 @@ describe('Request Queue methods', () => {
                     body: {
                         data: {
                             items,
-                            nextCursor: items.length > 0 ? `the-request-after-${items[items.length - 1].id}` : undefined
+                            nextCursor:
+                                items.length > 0 ? `the-request-after-${items[items.length - 1].id}` : undefined,
                         },
                     },
                 });

@@ -697,7 +697,11 @@ export class RequestQueueClient extends ResourceClient {
                 url: this._url('requests'),
                 method: 'GET',
                 timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
-                params: this._params({ ...rqListOptions, filter: rqListOptions.filter ? rqListOptions.filter.join(",") : undefined, clientKey: this.clientKey }),
+                params: this._params({
+                    ...rqListOptions,
+                    filter: rqListOptions.filter ? rqListOptions.filter.join(',') : undefined,
+                    clientKey: this.clientKey,
+                }),
             });
 
             return cast(parseDateFields(pluckData(response.data)));
@@ -717,11 +721,12 @@ export class RequestQueueClient extends ResourceClient {
                 currentPage.nextCursor && // Continue only if the API returned a cursor for the next page.
                 (remainingItems === undefined || remainingItems > 0) // Continue only if the limit was not exceeded.
             ) {
-                const newOptions = { ...options,
+                const newOptions = {
+                    ...options,
                     limit: remainingItems,
                     // remove original exclusiveStartId, if there was any, and use cursor-based pagination
                     exclusiveStartId: undefined,
-                    cursor: currentPage.nextCursor
+                    cursor: currentPage.nextCursor,
                 };
                 currentPage = await getPaginatedList(newOptions);
                 yield* currentPage.items;
@@ -788,7 +793,13 @@ export class RequestQueueClient extends ResourceClient {
                 filter: ow.optional.array.ofType(ow.string.oneOf(['locked', 'pending'])),
             }),
         );
-        const { limit, exclusiveStartId, cursor, filter, maxPageLimit = DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT } = options;
+        const {
+            limit,
+            exclusiveStartId,
+            cursor,
+            filter,
+            maxPageLimit = DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT,
+        } = options;
         return new PaginationIterator({
             getPage: async (pageOptions) => this.listRequests({ ...pageOptions, filter }),
             limit,
