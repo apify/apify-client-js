@@ -162,6 +162,7 @@ export function sliceArrayByByteLength<T>(array: T[], maxByteLength: number, sta
 }
 
 export function isNode(): boolean {
+    if (typeof BROWSER_BUILD !== 'undefined') return false;
     return !!(typeof process !== 'undefined' && process.versions && process.versions.node);
 }
 
