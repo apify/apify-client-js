@@ -38,14 +38,15 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ matrix.node-version }}
-                  cache: 'npm'
-                  cache-dependency-path: 'package-lock.json'
 
-            - name: Install Dependencies
-              run: npm ci
+            - name: Install pnpm and dependencies
+              uses: apify/workflows/pnpm-install@main
+
+            - name: Install Chrome for puppeteer
+              run: pnpm exec puppeteer browsers install chrome
 
             - name: Run Tests
-              run: npm test
+              run: pnpm test
 
     test_bundling:
         name: Test bundler support
@@ -58,14 +59,12 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: 24
-                  cache: 'npm'
-                  cache-dependency-path: 'package-lock.json'
 
-            - name: Install Dependencies
-              run: npm ci
+            - name: Install pnpm and dependencies
+              uses: apify/workflows/pnpm-install@main
 
             - name: Run Tests
-              run: npm run test:bundling
+              run: pnpm test:bundling
 
     lint:
         name: Lint
@@ -77,13 +76,11 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: 24
-                  cache: 'npm'
-                  cache-dependency-path: 'package-lock.json'
-            - name: Install Dependencies
-              run: npm ci
-            - run: npm run lint
+            - name: Install pnpm and dependencies
+              uses: apify/workflows/pnpm-install@main
+            - run: pnpm lint
             - name: Prettier
-              run: npm run format:check
+              run: pnpm format:check
 
     docs:
         name: Docs build
@@ -97,15 +94,11 @@ jobs:
               uses: actions/setup-node@v6
               with:
                   node-version: 24
-                  cache: 'npm'
-                  cache-dependency-path: 'package-lock.json'
-            - name: Install Dependencies
-              run: npm ci
+            - name: Install pnpm and dependencies
+              uses: apify/workflows/pnpm-install@main
 
-            - name: Install & build & deploy docs
+            - name: Build docs
               run: |
-                  npm ci --force
                   cd website
-                  npm ci --force
-                  npm run lint
-                  npm run build
+                  pnpm lint
+                  pnpm build
