@@ -81,6 +81,7 @@ jobs:
                   author_name: Apify Release Bot
                   author_email: noreply@apify.com
                   message: 'chore(release): Update changelog and package version [skip ci]'
+                  pull: '--rebase --autostash'
 
     create_github_release:
         name: Create github release

@@ -20,7 +20,7 @@ module.exports = {
     onBrokenLinks: /** @type {import('@docusaurus/types').ReportingSeverity} */ ('throw'),
     onBrokenMarkdownLinks: /** @type {import('@docusaurus/types').ReportingSeverity} */ ('throw'),
     future: {
-        experimental_faster: {
+        faster: {
             // ssgWorkerThreads: true,
             swcJsLoader: true,
             swcJsMinimizer: true,
