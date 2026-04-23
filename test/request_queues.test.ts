@@ -1,6 +1,6 @@
 import type { AddressInfo } from 'node:net';
 
-import type { Dictionary } from 'apify-client';
+import type { Dictionary, RequestQueueClientListRequestsOptions } from 'apify-client';
 import { ApifyClient } from 'apify-client';
 import type { Request } from 'express';
 import type { Page } from 'puppeteer';
@@ -525,12 +525,18 @@ describe('Request Queue methods', () => {
             validateRequest({ query: {}, params: { queueId, requestId } });
         });
 
-        test('listRequests() works', async () => {
+        test.each([
+            [undefined, undefined],
+            [['pending'], 'pending'],
+            [['pending', 'locked'], 'pending,locked'],
+        ] as const)('listRequests() works', async (filter, filterInQuery) => {
             const queueId = 'some-id';
-            const options = { limit: 5, exclusiveStartId: '123' };
+            const options = { limit: 5, exclusiveStartId: '123' } as RequestQueueClientListRequestsOptions;
+            if (filter) options.filter = filter;
+            const queryForValidation = { ...options, filter: filterInQuery };
 
             const res = await client.requestQueue(queueId).listRequests(options);
-            validateRequest({ query: options, params: { queueId }, endpointId: 'list-requests' });
+            validateRequest({ query: queryForValidation, params: { queueId }, endpointId: 'list-requests' });
 
             const browserRes = await page.evaluate(
                 (id, opts) => client.requestQueue(id).listRequests(opts),
@@ -538,7 +544,7 @@ describe('Request Queue methods', () => {
                 options,
             );
             expect(browserRes).toEqual(res);
-            validateRequest({ query: options, params: { queueId } });
+            validateRequest({ query: queryForValidation, params: { queueId } });
         });
 
         test('paginateRequests() works', async () => {
@@ -551,6 +557,8 @@ describe('Request Queue methods', () => {
                     body: {
                         data: {
                             items,
+                            nextCursor:
+                                items.length > 0 ? `the-request-after-${items[items.length - 1].id}` : undefined,
                         },
                     },
                 });
@@ -559,17 +567,17 @@ describe('Request Queue methods', () => {
             const pagination = client.requestQueue(queueId).paginateRequests({ maxPageLimit });
             // Mock API call for the first page
             let expectedItemsInPage = requests.splice(0, maxPageLimit);
-            let expectedExclusiveStartId;
+            let expectedCursor;
             mockResponse(expectedItemsInPage);
             for await (const { items } of pagination) {
                 expect(items).toEqual(expectedItemsInPage);
                 // Validate the request for the current iteration page
                 validateRequest({
-                    query: { exclusiveStartId: expectedExclusiveStartId, limit: maxPageLimit },
+                    query: { cursor: expectedCursor, limit: maxPageLimit },
                     params: { queueId },
                 });
                 // Prepare expectations and mock request for the next iteration page
-                expectedExclusiveStartId = items[items.length - 1].id;
+                expectedCursor = `the-request-after-${items[items.length - 1].id}`;
                 expectedItemsInPage = requests.splice(0, maxPageLimit);
                 mockResponse(expectedItemsInPage);
             }

@@ -12,9 +12,9 @@ import type { ApifyRequestConfig } from '../http_client';
 import {
     cast,
     catchNotFoundOrThrow,
-    PaginationIterator,
     parseDateFields,
     pluckData,
+    RequestQueuePaginationIterator,
     sliceArrayByByteLength,
 } from '../utils';
 
@@ -685,8 +685,13 @@ export class RequestQueueClient extends ResourceClient {
             ow.object.exactShape({
                 limit: ow.optional.number.not.negative,
                 exclusiveStartId: ow.optional.string,
+                cursor: ow.optional.string,
+                filter: ow.optional.array.ofType(ow.string.oneOf(['locked', 'pending'])),
             }),
         );
+        if (options.exclusiveStartId && options.cursor) {
+            throw new Error('Cannot specify both exclusiveStartId and cursor for pagination');
+        }
 
         const getPaginatedList = async (
             rqListOptions: RequestQueueClientListRequestsOptions = {},
@@ -695,7 +700,11 @@ export class RequestQueueClient extends ResourceClient {
                 url: this._url('requests'),
                 method: 'GET',
                 timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
-                params: this._params({ ...rqListOptions, clientKey: this.clientKey }),
+                params: this._params({
+                    ...rqListOptions,
+                    filter: rqListOptions.filter ? rqListOptions.filter.join(',') : undefined,
+                    clientKey: this.clientKey,
+                }),
             });
 
             return cast(parseDateFields(pluckData(response.data)));
@@ -712,10 +721,16 @@ export class RequestQueueClient extends ResourceClient {
             // of exhausting all requests we get response with empty items which ends the loop.
             while (
                 currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
+                currentPage.nextCursor && // Continue only if the API returned a cursor for the next page.
                 (remainingItems === undefined || remainingItems > 0) // Continue only if the limit was not exceeded.
             ) {
-                const exclusiveStartId = currentPage.items[currentPage.items.length - 1].id;
-                const newOptions = { ...options, limit: remainingItems, exclusiveStartId };
+                const newOptions = {
+                    ...options,
+                    limit: remainingItems,
+                    // remove original exclusiveStartId, if there was any, and use cursor-based pagination
+                    exclusiveStartId: undefined,
+                    cursor: currentPage.nextCursor,
+                };
                 currentPage = await getPaginatedList(newOptions);
                 yield* currentPage.items;
                 if (remainingItems) {
@@ -777,13 +792,22 @@ export class RequestQueueClient extends ResourceClient {
                 limit: ow.optional.number.not.negative,
                 maxPageLimit: ow.optional.number,
                 exclusiveStartId: ow.optional.string,
+                cursor: ow.optional.string,
+                filter: ow.optional.array.ofType(ow.string.oneOf(['locked', 'pending'])),
             }),
         );
-        const { limit, exclusiveStartId, maxPageLimit = DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT } = options;
-        return new PaginationIterator({
-            getPage: this.listRequests.bind(this),
+        const {
             limit,
             exclusiveStartId,
+            cursor,
+            filter,
+            maxPageLimit = DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT,
+        } = options;
+        return new RequestQueuePaginationIterator({
+            getPage: async (pageOptions) => this.listRequests({ ...pageOptions, filter }),
+            limit,
+            exclusiveStartId,
+            cursor,
             maxPageLimit,
         });
     }
@@ -860,13 +884,20 @@ export interface RequestQueueClientListHeadResult {
     items: RequestQueueClientListItem[];
 }
 
+export type RequestQueueListRequestsFilter = 'locked' | 'pending';
+
 /**
  * Options for listing all requests in the queue.
  */
 export interface RequestQueueClientListRequestsOptions {
     limit?: number;
-    /* Using id of request that does not exist in request queue leads to unpredictable results. */
+    /**
+     * Using id of request that does not exist in request queue leads to unpredictable results.
+     * @deprecated Use `cursor` for pagination instead.
+     */
     exclusiveStartId?: string;
+    cursor?: string;
+    filter?: readonly RequestQueueListRequestsFilter[];
 }
 
 /**
@@ -875,7 +906,10 @@ export interface RequestQueueClientListRequestsOptions {
 export interface RequestQueueClientPaginateRequestsOptions {
     limit?: number;
     maxPageLimit?: number;
+    /** @deprecated Use `cursor` for pagination instead. */
     exclusiveStartId?: string;
+    cursor?: string;
+    filter?: readonly RequestQueueListRequestsFilter[];
 }
 
 /**
@@ -883,7 +917,10 @@ export interface RequestQueueClientPaginateRequestsOptions {
  */
 export interface RequestQueueClientListRequestsResult {
     limit: number;
+    /** @deprecated Use `cursor` for pagination instead. */
     exclusiveStartId?: string;
+    cursor?: string;
+    nextCursor?: string;
     items: RequestQueueClientRequestSchema[];
 }
 
