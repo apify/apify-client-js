@@ -2,15 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.23.1 - **not yet released**
+## [2.23.1](https://github.com/apify/apify-client-js/releases/tag/v2.23.1) (2026-04-29)
 
 ### 🐛 Bug Fixes
 
 - Make Node-only imports bundler-discoverable ([#885](https://github.com/apify/apify-client-js/pull/885)) ([d57c048](https://github.com/apify/apify-client-js/commit/d57c048fed430e07a8a4fe48c3f3e5bbd3bebc19)) by [@barjin](https://github.com/barjin), closes [#852](https://github.com/apify/apify-client-js/issues/852), [#861](https://github.com/apify/apify-client-js/issues/861)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.23.0](https://github.com/apify/apify-client-js/releases/tag/v2.23.0) (2026-04-14)
 
 ### 🚀 Features
