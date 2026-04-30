@@ -532,8 +532,11 @@ describe('Request Queue methods', () => {
         ] as const)('listRequests() works', async (filter, filterInQuery) => {
             const queueId = 'some-id';
             const options = { limit: 5, exclusiveStartId: '123' } as RequestQueueClientListRequestsOptions;
-            if (filter) options.filter = filter;
-            const queryForValidation = { ...options, filter: filterInQuery };
+            const queryForValidation = { limit: '5', exclusiveStartId: '123' } as Record<string, string>;
+            if (filter) {
+                options.filter = filter;
+                queryForValidation.filter = filterInQuery;
+            }
 
             const res = await client.requestQueue(queueId).listRequests(options);
             validateRequest({ query: queryForValidation, params: { queueId }, endpointId: 'list-requests' });
