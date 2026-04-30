@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.23.2 - **not yet released**
 
+### 🐛 Bug Fixes
+
+- Add support for new list request-queue requests parameters ([#880](https://github.com/apify/apify-client-js/pull/880)) ([c5f441b](https://github.com/apify/apify-client-js/commit/c5f441b50d52d528897cadfd53cbae9650366daa)) by [@mvolfik](https://github.com/mvolfik)
+
 
 <!-- git-cliff-unreleased-end -->
 ## [2.23.1](https://github.com/apify/apify-client-js/releases/tag/v2.23.1) (2026-04-29)
