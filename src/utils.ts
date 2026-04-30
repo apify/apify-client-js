@@ -363,3 +363,13 @@ export function applyQueryParamsToUrl(
     }
     return url;
 }
+
+export const mutuallyExclusive =
+    <T, K extends keyof T>(...keys: K[]) =>
+    (value: T) => {
+        const presentKeys = keys.filter((key) => typeof value[key] !== 'undefined');
+        return {
+            validator: presentKeys.length <= 1,
+            message: `At most one of the following fields is allowed: ${keys.join(', ')}`,
+        };
+    };

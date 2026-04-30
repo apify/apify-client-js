@@ -359,6 +359,11 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
             userDefinedOptions: { exclusiveStartId: '1000' },
             expectedItems: range(1001, 2500),
         },
+        {
+            testName: 'cursor',
+            userDefinedOptions: { cursor: 'cursor:1000' },
+            expectedItems: range(1000, 2500),
+        }
     ];
 
     const testCases = generateTestCases(
@@ -404,7 +409,7 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
                         limit: limit || maxItemsPerPage,
                         exclusiveStartId: request.params.exclusiveStartId,
                         cursor: request.params.cursor,
-                        nextCursor: `cursor:${upperIndex}`,
+                        nextCursor: items.length < maxItemsPerPage ? undefined : `cursor:${upperIndex}`,
                     },
                 },
             };
@@ -418,11 +423,7 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
                 items.push(page);
             }
 
-            let expectedAPIcalls = Math.max(Math.ceil(expectedItems.length / maxItemsPerPage), 1);
-            if (userDefinedOptions.limit === undefined || userDefinedOptions.limit > totalItems) {
-                // One extra call to confirm there are no more items due RQ API design.
-                expectedAPIcalls += 1;
-            }
+            const expectedAPIcalls = Math.max(Math.ceil(expectedItems.length / maxItemsPerPage), 1);
 
             expect(items).toEqual(expectedItems);
             expect(mockedClient).toHaveBeenCalledTimes(expectedAPIcalls);

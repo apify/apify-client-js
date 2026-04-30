@@ -12,6 +12,7 @@ import type { ApifyRequestConfig } from '../http_client';
 import {
     cast,
     catchNotFoundOrThrow,
+    mutuallyExclusive,
     parseDateFields,
     pluckData,
     RequestQueuePaginationIterator,
@@ -686,12 +687,9 @@ export class RequestQueueClient extends ResourceClient {
                 limit: ow.optional.number.not.negative,
                 exclusiveStartId: ow.optional.string,
                 cursor: ow.optional.string,
-                filter: ow.optional.array.ofType(ow.string.oneOf(['locked', 'pending'])),
-            }),
+                filter: ow.optional.array.ofType(ow.string.oneOf(['locked', 'pending'])).minLength(1),
+            }).validate(mutuallyExclusive('exclusiveStartId', 'cursor'))
         );
-        if (options.exclusiveStartId && options.cursor) {
-            throw new Error('Cannot specify both exclusiveStartId and cursor for pagination');
-        }
 
         const getPaginatedList = async (
             rqListOptions: RequestQueueClientListRequestsOptions = {},
@@ -793,9 +791,10 @@ export class RequestQueueClient extends ResourceClient {
                 maxPageLimit: ow.optional.number,
                 exclusiveStartId: ow.optional.string,
                 cursor: ow.optional.string,
-                filter: ow.optional.array.ofType(ow.string.oneOf(['locked', 'pending'])),
-            }),
+                filter: ow.optional.array.ofType(ow.string.oneOf(['locked', 'pending'])).minLength(1),
+            }).validate(mutuallyExclusive('exclusiveStartId', 'cursor')),
         );
+
         const {
             limit,
             exclusiveStartId,
