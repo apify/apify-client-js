@@ -363,7 +363,7 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
             testName: 'cursor',
             userDefinedOptions: { cursor: 'cursor:1000' },
             expectedItems: range(1000, 2500),
-        }
+        },
     ];
 
     const testCases = generateTestCases(

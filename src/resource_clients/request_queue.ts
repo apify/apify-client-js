@@ -683,12 +683,14 @@ export class RequestQueueClient extends ResourceClient {
     ): Promise<RequestQueueClientListRequestsResult> & AsyncIterable<RequestQueueClientRequestSchema> {
         ow(
             options,
-            ow.object.exactShape({
-                limit: ow.optional.number.not.negative,
-                exclusiveStartId: ow.optional.string,
-                cursor: ow.optional.string,
-                filter: ow.optional.array.ofType(ow.string.oneOf(['locked', 'pending'])).minLength(1),
-            }).validate(mutuallyExclusive('exclusiveStartId', 'cursor'))
+            ow.object
+                .exactShape({
+                    limit: ow.optional.number.not.negative,
+                    exclusiveStartId: ow.optional.string,
+                    cursor: ow.optional.string,
+                    filter: ow.optional.array.ofType(ow.string.oneOf(['locked', 'pending'])).minLength(1),
+                })
+                .validate(mutuallyExclusive('exclusiveStartId', 'cursor')),
         );
 
         const getPaginatedList = async (
@@ -786,13 +788,15 @@ export class RequestQueueClient extends ResourceClient {
     ): RequestQueueRequestsAsyncIterable<RequestQueueClientListRequestsResult> {
         ow(
             options,
-            ow.object.exactShape({
-                limit: ow.optional.number.not.negative,
-                maxPageLimit: ow.optional.number,
-                exclusiveStartId: ow.optional.string,
-                cursor: ow.optional.string,
-                filter: ow.optional.array.ofType(ow.string.oneOf(['locked', 'pending'])).minLength(1),
-            }).validate(mutuallyExclusive('exclusiveStartId', 'cursor')),
+            ow.object
+                .exactShape({
+                    limit: ow.optional.number.not.negative,
+                    maxPageLimit: ow.optional.number,
+                    exclusiveStartId: ow.optional.string,
+                    cursor: ow.optional.string,
+                    filter: ow.optional.array.ofType(ow.string.oneOf(['locked', 'pending'])).minLength(1),
+                })
+                .validate(mutuallyExclusive('exclusiveStartId', 'cursor')),
         );
 
         const {
