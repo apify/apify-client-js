@@ -79,7 +79,7 @@ jobs:
             - name: Install pnpm and dependencies
               uses: apify/workflows/pnpm-install@main
             - run: pnpm lint
-            - name: Prettier
+            - name: Format check
               run: pnpm format:check
 
     docs:
