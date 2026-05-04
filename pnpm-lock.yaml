@@ -170,8 +170,8 @@ importers:
         version: 5.1.0
     devDependencies:
       '@apify/tsconfig':
-        specifier: ^0.1.0
-        version: 0.1.1
+        specifier: ^0.1.2
+        version: 0.1.2
       '@types/react':
         specifier: ^19.0.0
         version: 19.2.14
@@ -390,9 +390,6 @@ packages:
 
   '@apify/timeout@0.3.2':
     resolution: {integrity: sha512-JnOLIOpqfm366q7opKrA6HrL0iYRpYYDn8Mi77sMR2GZ1fPbwMWCVzN23LJWfJV7izetZbCMrqRUXsR1etZ7dA==}
-
-  '@apify/tsconfig@0.1.1':
-    resolution: {integrity: sha512-cS7mwN2UW1UXcluGXRDHH0Vr2VsSLkw2DwLTwoSBkcJSe8fvCr3MPryTSq0uod4MashpMURxJ7CsLKxs82VmOQ==}
 
   '@apify/tsconfig@0.1.2':
     resolution: {integrity: sha512-9dzEI1ZQ5+iM0k0fmPJrpdSSPUolVdeI1nDGFZMjD9UabTmIvjQrzui+1a25uy913AUEBrKTojEPj87pU9/Ekg==}
@@ -9003,8 +9000,6 @@ snapshots:
       '@apify/log': 2.5.34
 
   '@apify/timeout@0.3.2': {}
-
-  '@apify/tsconfig@0.1.1': {}
 
   '@apify/tsconfig@0.1.2': {}
 
