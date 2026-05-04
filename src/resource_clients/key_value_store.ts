@@ -460,7 +460,7 @@ export class KeyValueStoreClient extends ResourceClient {
             else contentType = 'application/json; charset=utf-8';
         }
 
-        const isContentTypeJson = /^application\/json/.test(contentType);
+        const isContentTypeJson = contentType.startsWith('application/json');
         if (isContentTypeJson && !isValueStreamOrBuffer && typeof value !== 'string') {
             try {
                 value = JSON.stringify(value, null, 2);
