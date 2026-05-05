@@ -408,7 +408,7 @@ describe('Redirect run logs', () => {
     });
 
     afterAll(async () => {
-        await Promise.all([mockServer.close()]);
+        await mockServer.close();
     });
 
     let client: ApifyClient;
