@@ -61,8 +61,7 @@
         "format": "oxfmt",
         "format:check": "oxfmt --check",
         "build:node": "tsc",
-        "build:browser": "rsbuild build",
-        "preinstall": "npx only-allow pnpm"
+        "build:browser": "rsbuild build"
     },
     "dependencies": {
         "@apify/consts": "^2.50.0",
@@ -108,5 +107,12 @@
         "webpack": "^5.105.2",
         "webpack-cli": "^7.0.0"
     },
-    "packageManager": "pnpm@10.24.0"
+    "packageManager": "pnpm@10.24.0",
+    "devEngines": {
+        "packageManager": {
+            "name": "pnpm",
+            "version": "10.24.0",
+            "onFail": "error"
+        }
+    }
 }
