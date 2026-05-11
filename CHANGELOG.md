@@ -2,15 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.23.3 - **not yet released**
+## [2.23.3](https://github.com/apify/apify-client-js/releases/tag/v2.23.3) (2026-05-11)
 
 ### 🐛 Bug Fixes
 
 - Drop only-allow preinstall, enforce pnpm via devEngines ([#895](https://github.com/apify/apify-client-js/pull/895)) ([27f7b7b](https://github.com/apify/apify-client-js/commit/27f7b7bed713eb4fd0585ef366d3022b37c82de9)) by [@B4nan](https://github.com/B4nan), closes [#893](https://github.com/apify/apify-client-js/issues/893)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.23.2](https://github.com/apify/apify-client-js/releases/tag/v2.23.2) (2026-05-07)
 
 ### 🐛 Bug Fixes
