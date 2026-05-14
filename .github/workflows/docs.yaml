@@ -39,14 +39,23 @@ jobs:
               run: pnpm --filter apify-client-website update @apify/docs-theme
 
             # We do this as early as possible to prevent conflicts if someone else would push something in the meantime
-            - name: Commit the updated package.json and lockfile
+            - name: Stage the updated package.json and lockfile
+              id: stage
               run: |
-                  git config user.name 'GitHub Actions'
-                  git config user.email 'github-actions[bot]@users.noreply.github.com'
                   git add website/package.json
                   git add pnpm-lock.yaml
-                  git diff-index --quiet HEAD || git commit -m 'chore: Automatic theme updating workflow [skip ci]' || true
-                  git push
+                  if git diff --cached --quiet; then
+                    echo "has-changes=false" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "has-changes=true" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Commit the updated package.json and lockfile
+              if: steps.stage.outputs.has-changes == 'true'
+              uses: apify/workflows/commit@v0.44.0
+              with:
+                  commit-message: 'chore: Automatic theme updating workflow [skip ci]'
+                  github-token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
             - name: Build Docusaurus docs
               run: pnpm build
