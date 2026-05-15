@@ -51,7 +51,7 @@ jobs:
         name: Update changelog
         runs-on: ubuntu-latest
         outputs:
-            changelog_commitish: ${{ steps.commit.outputs.commit-sha || github.sha }}
+            changelog_commitish: ${{ steps.commit.outputs.commit_sha || github.sha }}
 
         steps:
             - name: Checkout repository
@@ -77,23 +77,12 @@ jobs:
                   write-mode: overwrite
                   contents: ${{ needs.release_metadata.outputs.changelog }}
 
-            - name: Stage changes
-              id: stage
-              run: |
-                  git pull --rebase --autostash
-                  git add -A
-                  if git diff --cached --quiet; then
-                    echo "has-changes=false" >> "$GITHUB_OUTPUT"
-                  else
-                    echo "has-changes=true" >> "$GITHUB_OUTPUT"
-                  fi
-
             - name: Commit changes
               id: commit
-              if: steps.stage.outputs.has-changes == 'true'
-              uses: apify/workflows/commit@v0.44.0
+              uses: apify/actions/signed-commit@v1.0.0
               with:
-                  commit-message: 'chore(release): Update changelog and package version [skip ci]'
+                  message: 'chore(release): Update changelog and package version [skip ci]'
+                  pull: '--rebase --autostash'
                   github-token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
     create_github_release:
@@ -158,13 +147,9 @@ jobs:
                   cd ..
                   pnpm format
 
-            - name: Stage the version snapshot
-              run: |
-                  git pull --rebase --autostash
-                  git add -A
-
             - name: Commit and push the version snapshot
-              uses: apify/workflows/commit@v0.44.0
+              uses: apify/actions/signed-commit@v1.0.0
               with:
-                  commit-message: 'docs: update docs for ${{ needs.release_metadata.outputs.version_number }} version'
+                  message: 'docs: update docs for ${{ needs.release_metadata.outputs.version_number }} version'
+                  pull: '--rebase --autostash'
                   github-token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
