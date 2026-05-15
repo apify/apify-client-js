@@ -5,10 +5,12 @@ sidebar_label: Usage patterns
 description: 'Learn the resource client and collection client patterns used by the Apify API client for JavaScript.'
 ---
 
+import ApiLink from '@theme/ApiLink';
+
 The `ApifyClient` interface follows a generic pattern that applies to all of its components. By calling individual methods of `ApifyClient`, specific clients that target individual API resources are created. There are two types of those clients:
 
-- [`ActorClient`](/reference/class/ActorClient): a client for the management of a single resource
-- [`ActorCollectionClient`](/reference/class/ActorCollectionClient): a client for the collection of resources
+- <ApiLink to="class/ActorClient">`ActorClient`</ApiLink>: a client for the management of a single resource
+- <ApiLink to="class/ActorCollectionClient">`ActorCollectionClient`</ApiLink>: a client for the collection of resources
 
 ```js
 import { ApifyClient } from 'apify-client';
@@ -66,4 +68,4 @@ const lastSucceededRunClient = actorClient.lastRun({ status: 'SUCCEEDED' });
 const { items } = await lastSucceededRunClient.dataset().listItems();
 ```
 
-The quick access to `dataset` and other storage directly from the run client can be used with the [`lastRun()`](/reference/class/ActorClient#lastRun) method.
+The quick access to `dataset` and other storage directly from the run client can be used with the <ApiLink to="class/ActorClient#lastRun">`lastRun()`</ApiLink> method.

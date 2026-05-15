@@ -87,4 +87,4 @@ const { items } = await client.dataset(run.defaultDatasetId).listItems();
 console.log(items);
 ```
 
-> You can find your API token in the [Integrations section](https://console.apify.com/account/integrations) of Apify Console. See the [Quick start guide](./quick-start.md) for more details on authentication.
+> You can find your API token in the [Integrations section](https://console.apify.com/account/integrations) of Apify Console. See the [Quick start guide](./quick-start.mdx) for more details on authentication.
