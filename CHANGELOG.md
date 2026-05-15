@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.23.4 - **not yet released**
 
+### 🐛 Bug Fixes
+
+- Use long commit SHA in release workflow [internal] ([#902](https://github.com/apify/apify-client-js/pull/902)) ([a3ca5c7](https://github.com/apify/apify-client-js/commit/a3ca5c76e5acb8b69f8bd209b6b2aadc7cd1a612)) by [@fnesveda](https://github.com/fnesveda)
+
 
 <!-- git-cliff-unreleased-end -->
 ## [2.23.3](https://github.com/apify/apify-client-js/releases/tag/v2.23.3) (2026-05-11)
