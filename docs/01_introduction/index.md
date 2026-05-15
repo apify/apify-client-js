@@ -15,7 +15,7 @@ The client simplifies interaction with the Apify platform by providing:
 
 - Intuitive methods for working with [Actors](https://docs.apify.com/platform/actors), [datasets](https://docs.apify.com/platform/storage/dataset), [key-value stores](https://docs.apify.com/platform/storage/key-value-store), and other Apify resources
 - Intelligent parsing of API responses and rich error messages for debugging
-- Built-in [exponential backoff](../02_concepts/02_error-handling.md#retries-with-exponential-backoff) for failed requests
+- Built-in [exponential backoff](../02_concepts/02_error-handling.mdx#retries-with-exponential-backoff) for failed requests
 - Full TypeScript support with comprehensive type definitions
 - Cross-platform compatibility in [Node.js](https://nodejs.org/) v16+ and modern browsers
 
