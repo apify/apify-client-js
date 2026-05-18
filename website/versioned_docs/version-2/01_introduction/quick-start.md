@@ -76,10 +76,10 @@ Running an Actor might take time, depending on the Actor's complexity and the am
 
 To learn more about how the client works, check out the Concepts section in the sidebar:
 
-- [Usage patterns](../02_concepts/01_usage-patterns.mdx) - resource clients, collection clients, and nested clients
-- [Error handling and retries](../02_concepts/02_error-handling.mdx) - automatic retries with exponential backoff
+- [Usage patterns](../02_concepts/01_usage-patterns.md) - resource clients, collection clients, and nested clients
+- [Error handling and retries](../02_concepts/02_error-handling.md) - automatic retries with exponential backoff
 - [Convenience functions](../02_concepts/03_convenience-functions.md) - `call()`, `waitForFinish()`, and more
-- [Pagination](../02_concepts/04_pagination.mdx) - iterating through large result sets
+- [Pagination](../02_concepts/04_pagination.md) - iterating through large result sets
 
 ### Guides
 
