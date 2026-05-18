@@ -5,6 +5,8 @@ sidebar_label: Quick start
 description: 'Get started with the Apify API client for JavaScript by running an Actor and retrieving results from its dataset.'
 ---
 
+import ApiLink from '@theme/ApiLink';
+
 Learn how to authenticate, run Actors, and retrieve results using the Apify API client for JavaScript.
 
 ---
@@ -30,9 +32,9 @@ The API token is used to authorize your requests to the Apify API. You can be ch
 
 ## Step 2: Run an Actor
 
-To start an Actor, call the [`client.actor()`](/reference/class/ActorClient) method with the Actor's ID (e.g. `john-doe/my-cool-actor`). The Actor's ID is a combination of the Actor owner's username and the Actor name. You can run both your own Actors and Actors from Apify Store.
+To start an Actor, call the <ApiLink to="class/ActorClient">`client.actor()`</ApiLink> method with the Actor's ID (e.g. `john-doe/my-cool-actor`). The Actor's ID is a combination of the Actor owner's username and the Actor name. You can run both your own Actors and Actors from Apify Store.
 
-To define the Actor's input, pass a JSON object to the [`call()`](/reference/class/ActorClient#call) method that matches the Actor's [input schema](https://docs.apify.com/platform/actors/development/actor-definition/input-schema). The input can include URLs to scrape, search terms, or other configuration data.
+To define the Actor's input, pass a JSON object to the <ApiLink to="class/ActorClient#call">`call()`</ApiLink> method that matches the Actor's [input schema](https://docs.apify.com/platform/actors/development/actor-definition/input-schema). The input can include URLs to scrape, search terms, or other configuration data.
 
 ```js
 import { ApifyClient } from 'apify-client';
@@ -47,7 +49,7 @@ const { defaultDatasetId } = await client.actor('username/actor-name').call({
 
 ## Step 3: Get results from the dataset
 
-To get the results from the dataset, call the [`client.dataset()`](/reference/class/DatasetClient) method with the dataset ID, then call [`listItems()`](/reference/class/DatasetClient#listItems) to retrieve the data. You can get the dataset ID from the Actor's run object (represented by `defaultDatasetId`).
+To get the results from the dataset, call the <ApiLink to="class/DatasetClient">`client.dataset()`</ApiLink> method with the dataset ID, then call <ApiLink to="class/DatasetClient#listItems">`listItems()`</ApiLink> to retrieve the data. You can get the dataset ID from the Actor's run object (represented by `defaultDatasetId`).
 
 ```js
 import { ApifyClient } from 'apify-client';
