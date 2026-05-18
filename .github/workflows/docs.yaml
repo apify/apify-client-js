@@ -33,7 +33,7 @@ jobs:
                   git config user.email 'github-actions[bot]@users.noreply.github.com'
 
             - name: Install pnpm and dependencies
-              uses: apify/workflows/pnpm-install@main
+              uses: apify/actions/pnpm-install@v1.0.0
 
             - name: Update docs theme
               run: pnpm --filter apify-client-website update @apify/docs-theme
