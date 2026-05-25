@@ -85,7 +85,7 @@ importers:
         specifier: ^8.17.1
         version: 8.18.0
       body-parser:
-        specifier: ^2.2.2
+        specifier: ^2.0.0
         version: 2.2.2
       compression:
         specifier: ^1.7.4
@@ -94,7 +94,7 @@ importers:
         specifier: 0.27.4
         version: 0.27.4
       express:
-        specifier: ^5.2.1
+        specifier: ^5.0.0
         version: 5.2.1
       gen-esm-wrapper:
         specifier: ^1.1.2
