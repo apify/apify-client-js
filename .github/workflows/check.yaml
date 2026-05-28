@@ -41,6 +41,16 @@ jobs:
 
             - name: Install pnpm and dependencies
               uses: apify/actions/pnpm-install@v1.1.2
+              env:
+                  # Puppeteer's postinstall kicks off the Chrome download in a
+                  # fire-and-forget Promise (downloadBrowsers() is not awaited
+                  # in puppeteer's install.mjs). When pnpm install returns
+                  # before the download finishes, ~/.cache/puppeteer is left
+                  # half-populated, and the subsequent `browsers install`
+                  # silently no-ops because the directory already exists.
+                  # Skip the postinstall download entirely and let the explicit
+                  # step below do it synchronously.
+                  PUPPETEER_SKIP_DOWNLOAD: 1
 
             - name: Install Chrome for puppeteer
               run: pnpm exec puppeteer browsers install chrome
