@@ -53,7 +53,30 @@ jobs:
                   PUPPETEER_SKIP_DOWNLOAD: 1
 
             - name: Install Chrome for puppeteer
-              run: pnpm exec puppeteer browsers install chrome
+              # TEMPORARY DIAGNOSTIC: figure out why this step silently no-ops
+              # on Node 24 sometimes (finishes in ~1s with no output, leaving
+              # Chrome uninstalled). Revert to a single-line `run:` once we
+              # know the cause.
+              run: |
+                  echo "=== Node + pnpm versions ==="
+                  node --version
+                  pnpm --version
+                  echo "=== Puppeteer-related env ==="
+                  env | grep -i puppeteer || echo "(no PUPPETEER_* env vars)"
+                  echo "=== Puppeteer cache state before ==="
+                  ls -la ~/.cache/puppeteer 2>&1 || echo "(no cache dir)"
+                  echo "=== Cosmiconfig search paths (.puppeteerrc.*, puppeteer.config.*) ==="
+                  for dir in . .. ../.. ~ /home /; do
+                      ls -la "$dir"/.puppeteerrc* "$dir"/puppeteer.config* 2>/dev/null || true
+                  done
+                  echo "=== puppeteer.configuration as the CLI sees it ==="
+                  node -e "console.log(JSON.stringify(require('puppeteer/internal/getConfiguration.js').getConfiguration(), null, 2))" || true
+                  echo "=== Running the actual install (DEBUG=puppeteer:*) ==="
+                  set -x
+                  DEBUG='puppeteer:*,@puppeteer/browsers:*' pnpm exec puppeteer browsers install chrome
+                  echo "=== Puppeteer cache state after ==="
+                  ls -la ~/.cache/puppeteer 2>&1 || echo "(no cache dir)"
+                  find ~/.cache/puppeteer -maxdepth 4 -type f 2>/dev/null | head -20 || true
 
             - name: Run Tests
               run: pnpm test
