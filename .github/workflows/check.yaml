@@ -43,7 +43,11 @@ jobs:
               uses: apify/actions/pnpm-install@v1.1.2
 
             - name: Install Chrome for puppeteer
-              run: pnpm exec puppeteer browsers install chrome
+              # Clear the cache first so puppeteer's "already installed" check
+              # can't short-circuit on stale state restored from the pnpm store.
+              run: |
+                  rm -rf ~/.cache/puppeteer
+                  pnpm exec puppeteer browsers install chrome
 
             - name: Run Tests
               run: pnpm test
