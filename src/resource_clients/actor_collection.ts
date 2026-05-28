@@ -35,7 +35,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      */
     constructor(options: ApiClientSubResourceOptions) {
         super({
-            resourcePath: 'acts',
+            resourcePath: 'actors',
             ...options,
         });
     }
