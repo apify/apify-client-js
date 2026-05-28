@@ -96,10 +96,10 @@ export function createDefaultApp(v2Router = express.Router()) {
     app.use('/external', external);
 
     // Attaching V2 routers
-    v2Router.use('/acts/redirect-actor-id', async (_, res) => {
+    v2Router.use('/actors/redirect-actor-id', async (_, res) => {
         res.json({ data: { name: 'redirect-actor-name', id: 'redirect-run-id' } });
     });
-    v2Router.use('/acts', actors);
+    v2Router.use('/actors', actors);
     v2Router.use('/actor-builds', builds);
     v2Router.use('/actor-runs/redirect-run-id/log', streamLogChunks);
     v2Router.use('/actor-runs/redirect-run-id', async (_, res) => {
