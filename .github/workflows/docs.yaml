@@ -33,14 +33,14 @@ jobs:
                   git config user.email 'github-actions[bot]@users.noreply.github.com'
 
             - name: Install pnpm and dependencies
-              uses: apify/actions/pnpm-install@v1.1.2
+              uses: apify/actions/pnpm-install@v1.2.0
 
             - name: Update docs theme
               run: pnpm --filter apify-client-website update @apify/docs-theme
 
             # We do this as early as possible to prevent conflicts if someone else would push something in the meantime
             - name: Commit the updated package.json and lockfile
-              uses: apify/actions/signed-commit@v1.0.0
+              uses: apify/actions/signed-commit@v1.2.0
               with:
                   message: 'chore: Automatic theme updating workflow [skip ci]'
                   add: 'website/package.json pnpm-lock.yaml'
