@@ -90,6 +90,7 @@ module.exports = {
                     rehypePlugins: [externalLinkProcessor],
                     editUrl: 'https://github.com/apify/apify-client-js/edit/master/website/',
                 },
+                blog: false,
             }),
         ],
     ]),
@@ -120,7 +121,6 @@ module.exports = {
                 content: {
                     includeVersionedDocs: false,
                     enableLlmsFullTxt: true,
-                    includeBlog: true,
                     includeGeneratedIndex: false,
                     includePages: true,
                     relativePaths: false,
