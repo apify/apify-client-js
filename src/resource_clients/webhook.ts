@@ -156,7 +156,6 @@ export type WebhookUpdateData = Partial<
     Pick<
         Webhook,
         | 'isAdHoc'
-        | 'eventTypes'
         | 'condition'
         | 'ignoreSslErrors'
         | 'doNotRetry'
@@ -166,7 +165,11 @@ export type WebhookUpdateData = Partial<
         | 'isApifyIntegration'
         | 'headersTemplate'
         | 'description'
-    >
+    > & {
+        // Input only: the client doesn't mutate the array, so accept a `readonly`
+        // one too (the `Webhook` response keeps `eventTypes` mutable).
+        eventTypes: readonly WebhookEventType[];
+    }
 > &
     WebhookIdempotencyKey;
 

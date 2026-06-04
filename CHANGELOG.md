@@ -2,6 +2,57 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.23.4](https://github.com/apify/apify-client-js/releases/tag/v2.23.4) (2026-06-04)
+
+### 🐛 Bug Fixes
+
+- Use long commit SHA in release workflow [internal] ([#902](https://github.com/apify/apify-client-js/pull/902)) ([a3ca5c7](https://github.com/apify/apify-client-js/commit/a3ca5c76e5acb8b69f8bd209b6b2aadc7cd1a612)) by [@fnesveda](https://github.com/fnesveda)
+- Accept readonly arrays for webhook `eventTypes` input ([#931](https://github.com/apify/apify-client-js/pull/931)) ([1737867](https://github.com/apify/apify-client-js/commit/1737867817b8e70525a2d6c2ef1bfc4ffb1f8955)) by [@B4nan](https://github.com/B4nan)
+
+
+## [2.23.3](https://github.com/apify/apify-client-js/releases/tag/v2.23.3) (2026-05-11)
+
+### 🐛 Bug Fixes
+
+- Drop only-allow preinstall, enforce pnpm via devEngines ([#895](https://github.com/apify/apify-client-js/pull/895)) ([27f7b7b](https://github.com/apify/apify-client-js/commit/27f7b7bed713eb4fd0585ef366d3022b37c82de9)) by [@B4nan](https://github.com/B4nan), closes [#893](https://github.com/apify/apify-client-js/issues/893)
+
+
+## [2.23.2](https://github.com/apify/apify-client-js/releases/tag/v2.23.2) (2026-05-07)
+
+### 🐛 Bug Fixes
+
+- Add support for new list request-queue requests parameters ([#880](https://github.com/apify/apify-client-js/pull/880)) ([c5f441b](https://github.com/apify/apify-client-js/commit/c5f441b50d52d528897cadfd53cbae9650366daa)) by [@mvolfik](https://github.com/mvolfik)
+
+
+## [2.23.1](https://github.com/apify/apify-client-js/releases/tag/v2.23.1) (2026-04-29)
+
+### 🐛 Bug Fixes
+
+- Make Node-only imports bundler-discoverable ([#885](https://github.com/apify/apify-client-js/pull/885)) ([d57c048](https://github.com/apify/apify-client-js/commit/d57c048fed430e07a8a4fe48c3f3e5bbd3bebc19)) by [@barjin](https://github.com/barjin), closes [#852](https://github.com/apify/apify-client-js/issues/852), [#861](https://github.com/apify/apify-client-js/issues/861)
+
+
+## [2.23.0](https://github.com/apify/apify-client-js/releases/tag/v2.23.0) (2026-04-14)
+
+### 🚀 Features
+
+- Add output schema to ActorDefinition and includeUnrunnableActors to store API ([#881](https://github.com/apify/apify-client-js/pull/881)) ([c965d15](https://github.com/apify/apify-client-js/commit/c965d154a5e8f6e52e84761e566292d67a2e05d7)) by [@jancurn](https://github.com/jancurn)
+
+### 🐛 Bug Fixes
+
+- Turn any log streaming related errors to warnings ([#876](https://github.com/apify/apify-client-js/pull/876)) ([a3268ee](https://github.com/apify/apify-client-js/commit/a3268eeee38f1d47dbfa3fe0e0cfe26a949ca10d)) by [@Pijukatel](https://github.com/Pijukatel), closes [#873](https://github.com/apify/apify-client-js/issues/873)
+
+
+## [2.22.3](https://github.com/apify/apify-client-js/releases/tag/v2.22.3) (2026-03-20)
+
+### 🚀 Features
+
+- Add the `ActorRunStorageIds` field to Actor Run responses ([#868](https://github.com/apify/apify-client-js/pull/868)) ([de8d315](https://github.com/apify/apify-client-js/commit/de8d3152e27f623ffd94fe9fa62962a7ab653a41)) by [@Pijukatel](https://github.com/Pijukatel), closes [#860](https://github.com/apify/apify-client-js/issues/860)
+
+### 🐛 Bug Fixes
+
+- Use production mode and globalThis in browser bundle ([#870](https://github.com/apify/apify-client-js/pull/870)) ([b29c846](https://github.com/apify/apify-client-js/commit/b29c8465ef9a4726b596195b241e9a3649d832e1)) by [@MartinKristof](https://github.com/MartinKristof)
+
+
 ## [2.22.2](https://github.com/apify/apify-client-js/releases/tag/v2.22.2) (2026-02-20)
 
 ### 🐛 Bug Fixes

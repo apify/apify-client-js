@@ -123,10 +123,8 @@ export async function maybeGzipValue(value: unknown): Promise<Buffer | undefined
     const areDataLargeEnough = Buffer.byteLength(value as string) >= MIN_GZIP_BYTES;
     if (areDataLargeEnough) {
         if (!gzipPromisified) {
-            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-            const { promisify } = await dynamicNodeImport<typeof import('node:util')>('node:util');
-            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-            const { gzip } = await dynamicNodeImport<typeof import('node:zlib')>('node:zlib');
+            const { promisify } = await import('node:util');
+            const { gzip } = await import('node:zlib');
             gzipPromisified = promisify(gzip);
         }
 
@@ -164,15 +162,8 @@ export function sliceArrayByByteLength<T>(array: T[], maxByteLength: number, sta
 }
 
 export function isNode(): boolean {
+    if (typeof BROWSER_BUILD !== 'undefined') return false;
     return !!(typeof process !== 'undefined' && process.versions && process.versions.node);
-}
-
-/**
- * Dynamic import wrapper that prevents bundlers from statically analyzing the import specifier.
- * Use this for Node.js-only modules that should not be included in browser bundles.
- */
-export async function dynamicNodeImport<T = any>(specifier: string): Promise<T> {
-    return await import(specifier);
 }
 
 export function isBuffer(value: unknown): value is Buffer | ArrayBuffer | TypedArray {
@@ -195,7 +186,7 @@ export function getVersionData(): { version: string } {
 /**
  * Helper class to create async iterators from paginated list endpoints with exclusive start key.
  */
-export class PaginationIterator {
+export class RequestQueuePaginationIterator {
     private readonly maxPageLimit: number;
 
     private readonly getPage: (
@@ -205,33 +196,41 @@ export class PaginationIterator {
     private readonly limit?: number;
 
     private readonly exclusiveStartId?: string;
+    private readonly cursor?: string;
 
-    constructor(options: PaginationIteratorOptions) {
+    constructor(options: RequestQueuePaginationIteratorOptions) {
         this.maxPageLimit = options.maxPageLimit;
         this.limit = options.limit;
         this.exclusiveStartId = options.exclusiveStartId;
+        this.cursor = options.cursor;
         this.getPage = options.getPage;
     }
 
     async *[Symbol.asyncIterator](): AsyncIterator<RequestQueueClientListRequestsResult> {
-        let nextPageExclusiveStartId;
+        let nextCursor = this.cursor;
+        // allow using exclusiveStartId for the first page, but then we'll delete it to avoid using it for any later page
+        let nextExclusiveStartId = this.exclusiveStartId;
+
         let iterateItemCount = 0;
         while (true) {
             const pageLimit = this.limit
                 ? Math.min(this.maxPageLimit, this.limit - iterateItemCount)
                 : this.maxPageLimit;
-            const pageExclusiveStartId = nextPageExclusiveStartId || this.exclusiveStartId;
+
             const page: RequestQueueClientListRequestsResult = await this.getPage({
                 limit: pageLimit,
-                exclusiveStartId: pageExclusiveStartId,
+                cursor: nextCursor,
+                exclusiveStartId: nextExclusiveStartId,
             });
             // There are no more pages to iterate
             if (page.items.length === 0) return;
             yield page;
             iterateItemCount += page.items.length;
             // Limit reached stopping to iterate
-            if (this.limit && iterateItemCount >= this.limit) return;
-            nextPageExclusiveStartId = page.items[page.items.length - 1].id;
+            if ((this.limit && iterateItemCount >= this.limit) || !page.nextCursor) return;
+
+            nextCursor = page.nextCursor;
+            nextExclusiveStartId = undefined; // see comment above - delete it for any page after the first one, and paginate with cursor
         }
     }
 }
@@ -244,11 +243,12 @@ declare global {
 /**
  * Options for creating a pagination iterator.
  */
-export interface PaginationIteratorOptions {
+export interface RequestQueuePaginationIteratorOptions {
     maxPageLimit: number;
     getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<RequestQueueClientListRequestsResult>;
     limit?: number;
     exclusiveStartId?: string;
+    cursor?: string;
 }
 
 /**
@@ -354,3 +354,13 @@ export function applyQueryParamsToUrl(
     }
     return url;
 }
+
+export const mutuallyExclusive =
+    <T, K extends keyof T>(...keys: K[]) =>
+    (value: T) => {
+        const presentKeys = keys.filter((key) => typeof value[key] !== 'undefined');
+        return {
+            validator: presentKeys.length <= 1,
+            message: `At most one of the following fields is allowed: ${keys.join(', ')}`,
+        };
+    };

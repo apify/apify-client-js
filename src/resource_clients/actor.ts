@@ -45,7 +45,7 @@ export class ActorClient extends ResourceClient {
      */
     constructor(options: ApiClientSubResourceOptions) {
         super({
-            resourcePath: 'acts',
+            resourcePath: 'actors',
             ...options,
         });
     }
@@ -309,11 +309,28 @@ export class ActorClient extends ResourceClient {
     }
 
     /**
-     * Retrieves the default build of the Actor.
+     * Returns a client for the default build of this Actor.
      *
-     * @param options - Options for getting the build.
-     * @returns A client for the default build.
+     * Makes an API call to resolve the Actor's default build, then returns a {@link BuildClient}
+     * for that build. Use the returned client to get build details, wait for the build to finish,
+     * or access its logs.
+     *
+     * @param options - Options for getting the default build
+     * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the build to finish on the API side before returning. Default is 0 (returns immediately).
+     * @returns A client for the default build
      * @see https://docs.apify.com/api/v2/act-build-default-get
+     *
+     * @example
+     * ```javascript
+     * // Get the default build client, then fetch build details
+     * const buildClient = await client.actor('my-actor').defaultBuild();
+     * const build = await buildClient.get();
+     * console.log(`Default build status: ${build.status}`);
+     *
+     * // Wait up to 60 seconds for the default build to finish
+     * const buildClient = await client.actor('my-actor').defaultBuild({ waitForFinish: 60 });
+     * const build = await buildClient.get();
+     * ```
      */
     async defaultBuild(options: BuildClientGetOptions = {}): Promise<BuildClient> {
         const response = await this.httpClient.call({
@@ -701,6 +718,15 @@ export interface ActorRunListItem {
     usageTotalUsd?: number;
 }
 
+export interface ActorRunStorageIds {
+    /** Aliased dataset IDs for this run. */
+    datasets: { default: string; [alias: string]: string };
+    /** Aliased key-value store IDs for this run. */
+    keyValueStores: { default: string; [alias: string]: string };
+    /** Aliased request queue IDs for this run. */
+    requestQueues: { default: string; [alias: string]: string };
+}
+
 /**
  * Complete Actor run information including statistics and usage details.
  *
@@ -721,6 +747,7 @@ export interface ActorRun extends ActorRunListItem {
     pricingInfo?: ActorRunPricingInfo;
     chargedEventCounts?: Record<string, number>;
     generalAccess?: RUN_GENERAL_ACCESS | null;
+    storageIds?: ActorRunStorageIds;
 }
 
 /**
@@ -823,6 +850,7 @@ export interface ActorLastRunOptions {
  * Actor definition from the `.actor/actor.json` file.
  *
  * Contains the Actor's configuration, input schema, and other metadata.
+ * @see https://docs.apify.com/platform/actors/development/actor-definition/actor-json
  */
 export interface ActorDefinition {
     actorSpecification: number;
@@ -833,7 +861,16 @@ export interface ActorDefinition {
     dockerfile?: string;
     dockerContextDir?: string;
     readme?: string | null;
+    /**
+     * Input schema for the Actor.
+     * @see https://docs.apify.com/platform/actors/development/actor-definition/input-schema
+     */
     input?: object | null;
+    /**
+     * Output schema for the Actor.
+     * @see https://docs.apify.com/platform/actors/development/actor-definition/output-schema
+     */
+    output?: object | null;
     changelog?: string | null;
     storages?: {
         dataset?: object;

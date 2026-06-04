@@ -359,6 +359,11 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
             userDefinedOptions: { exclusiveStartId: '1000' },
             expectedItems: range(1001, 2500),
         },
+        {
+            testName: 'cursor',
+            userDefinedOptions: { cursor: 'cursor:1000' },
+            expectedItems: range(1000, 2500),
+        },
     ];
 
     const testCases = generateTestCases(
@@ -376,17 +381,23 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
             // There are 2500 items in the collection.
             // Items are simple objects with incrementing attributes for easy verification.
 
-            const exclusiveStartId = request.params.exclusiveStartId ? request.params.exclusiveStartId : null;
             const limit = request.params.limit ? request.params.limit : 0;
 
             if (limit < 0) {
                 throw new Error('Limit must be non-negative');
             }
 
-            const lowerIndex = Math.min(
-                request.params.exclusiveStartId ? Number(request.params.exclusiveStartId) + 1 : 0,
-                totalItems,
-            );
+            if (request.params.exclusiveStartId && request.params.cursor) {
+                throw new Error('exclusiveStartId and cursor cannot be used together');
+            }
+            let effectiveStartIndex = 0;
+            if (request.params.exclusiveStartId) {
+                effectiveStartIndex = Number(request.params.exclusiveStartId) + 1;
+            } else if (request.params.cursor) {
+                effectiveStartIndex = Number(request.params.cursor.split(':')[1]);
+            }
+
+            const lowerIndex = Math.min(effectiveStartIndex, totalItems);
             const upperIndex = Math.min(lowerIndex + (limit || totalItems), totalItems, lowerIndex + maxItemsPerPage);
             const items = range(lowerIndex, upperIndex);
 
@@ -396,7 +407,9 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
                         items,
                         count: items.length,
                         limit: limit || maxItemsPerPage,
-                        exclusiveStartId,
+                        exclusiveStartId: request.params.exclusiveStartId,
+                        cursor: request.params.cursor,
+                        nextCursor: items.length < maxItemsPerPage ? undefined : `cursor:${upperIndex}`,
                     },
                 },
             };
@@ -410,11 +423,7 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
                 items.push(page);
             }
 
-            let expectedAPIcalls = Math.max(Math.ceil(expectedItems.length / maxItemsPerPage), 1);
-            if (userDefinedOptions.limit === undefined || userDefinedOptions.limit > totalItems) {
-                // One extra call to confirm there are no more items due RQ API design.
-                expectedAPIcalls += 1;
-            }
+            const expectedAPIcalls = Math.max(Math.ceil(expectedItems.length / maxItemsPerPage), 1);
 
             expect(items).toEqual(expectedItems);
             expect(mockedClient).toHaveBeenCalledTimes(expectedAPIcalls);

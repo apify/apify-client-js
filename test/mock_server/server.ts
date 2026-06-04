@@ -96,14 +96,26 @@ export function createDefaultApp(v2Router = express.Router()) {
     app.use('/external', external);
 
     // Attaching V2 routers
-    v2Router.use('/acts/redirect-actor-id', async (_, res) => {
+    v2Router.use('/actors/redirect-actor-id', async (_, res) => {
         res.json({ data: { name: 'redirect-actor-name', id: 'redirect-run-id' } });
     });
-    v2Router.use('/acts', actors);
+    v2Router.use('/actors', actors);
     v2Router.use('/actor-builds', builds);
     v2Router.use('/actor-runs/redirect-run-id/log', streamLogChunks);
     v2Router.use('/actor-runs/redirect-run-id', async (_, res) => {
         res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status: 'SUCCEEDED' } });
+    });
+
+    v2Router.use('/actor-runs/econnreset-run-id/log', async (req: express.Request, res: express.Response) => {
+        res.write(MOCKED_ACTOR_LOGS[0]);
+        (res as any).flush();
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, 10);
+        });
+        req.socket.destroy();
+    });
+    v2Router.use('/actor-runs/econnreset-run-id', async (_, res) => {
+        res.json({ data: { id: 'econnreset-run-id', actId: 'redirect-actor-id', status: 'SUCCEEDED' } });
     });
 
     v2Router.use('/actor-runs', runs);

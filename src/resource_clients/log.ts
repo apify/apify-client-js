@@ -4,7 +4,7 @@ import type { Readable } from 'node:stream';
 import c from 'ansi-colors';
 
 import type { Log } from '@apify/log';
-import { Logger, LogLevel } from '@apify/log';
+import log, { Logger, LogLevel } from '@apify/log';
 
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
@@ -197,11 +197,15 @@ export class StreamedLog {
         if (!logStream) {
             return;
         }
-        const lastChunkRemainder = await this.logStreamChunks(logStream);
-        // Process whatever is left when exiting. Maybe it is incomplete, maybe it is last log without EOL.
-        const lastMessage = Buffer.from(lastChunkRemainder).toString().trim();
-        if (lastMessage.length) {
-            this.destinationLog.info(lastMessage);
+        try {
+            const lastChunkRemainder = await this.logStreamChunks(logStream);
+            // Process whatever is left when exiting. Maybe it is incomplete, maybe it is last log without EOL.
+            const lastMessage = Buffer.from(lastChunkRemainder).toString().trim();
+            if (lastMessage.length) {
+                this.destinationLog.info(lastMessage);
+            }
+        } catch (err) {
+            log.warning(`Log redirection stopped due to error`, err as Error);
         }
     }
 

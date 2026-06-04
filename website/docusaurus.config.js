@@ -20,7 +20,7 @@ module.exports = {
     onBrokenLinks: /** @type {import('@docusaurus/types').ReportingSeverity} */ ('throw'),
     onBrokenMarkdownLinks: /** @type {import('@docusaurus/types').ReportingSeverity} */ ('throw'),
     future: {
-        experimental_faster: {
+        faster: {
             // ssgWorkerThreads: true,
             swcJsLoader: true,
             swcJsMinimizer: true,
@@ -40,19 +40,15 @@ module.exports = {
             '@apify/docs-theme',
             /** @type { import('@apify/docs-theme/types').ThemeOptions } */
             {
+                changelogDisplayedSidebar: 'sidebar',
                 subNavbar: {
                     title: 'API client for JavaScript',
                     items: [
                         {
                             to: 'docs',
                             label: 'Docs',
-                            activeBaseRegex: '/docs(?!/changelog|/examples)',
+                            activeBaseRegex: '/docs(?!/changelog)',
                         },
-                        // {
-                        //     to: 'docs/examples',
-                        //     label: 'Examples',
-                        //     activeBaseRegex: '/docs/examples',
-                        // },
                         {
                             to: 'reference',
                             label: 'Reference',
@@ -151,7 +147,10 @@ module.exports = {
             },
         },
     },
-    staticDirectories: ['node_modules/@apify/docs-theme/static', 'static'],
+    staticDirectories: [
+        require('path').dirname(require.resolve('@apify/docs-theme/package.json')) + '/static',
+        'static',
+    ],
     customFields: {
         ...(config.customFields ?? []),
     },

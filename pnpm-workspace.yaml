@@ -1,0 +1,36 @@
+packages:
+  - website
+
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - "@apify/*"
+  - "@crawlee/*"
+  - "apify-client"
+  - "apify"
+  - "crawlee"
+  - "got-scraping"
+
+onlyBuiltDependencies:
+  - "@playwright/browser-chromium"
+  - "@swc/core"
+  - esbuild
+  - puppeteer
+
+# Pin @puppeteer/browsers to v3 even though our direct puppeteer dep
+# is still on v24 (which would otherwise pull in @puppeteer/browsers v2).
+# v2.x uses extract-zip@2.0.1, which silently aborts mid-stream on newer
+# Node releases, leaving ~/.cache/puppeteer/chrome/.../ with only the
+# first archive entry and no `chrome` binary. Test runs then fail with
+# "Could not find Chrome (ver. X)". Fixed in @puppeteer/browsers v3,
+# which shells out to system `unzip`/`tar.exe` instead.
+# Upstream: https://github.com/puppeteer/puppeteer/issues/14957
+# Fix:      https://github.com/puppeteer/puppeteer/pull/14960
+overrides:
+  "@puppeteer/browsers": "^3.0.4"
+
+nodeLinker: hoisted
+linkWorkspacePackages: true
+preferWorkspacePackages: true
+legacyPeerDeps: true
+publicHoistPattern:
+    - "*"

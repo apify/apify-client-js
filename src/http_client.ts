@@ -14,7 +14,7 @@ import { ApifyApiError } from './apify_api_error';
 import type { RequestInterceptorFunction } from './interceptors';
 import { InvalidResponseBodyError, requestInterceptors, responseInterceptors } from './interceptors';
 import type { Statistics } from './statistics';
-import { asArray, cast, dynamicNodeImport, getVersionData, isNode, isStream } from './utils';
+import { asArray, cast, getVersionData, isNode, isStream } from './utils';
 
 const { version } = getVersionData();
 
@@ -116,12 +116,7 @@ export class HttpClient {
     private async initNode(): Promise<void> {
         if (!isNode()) return;
 
-        const [{ ProxyAgent }, os] = await Promise.all([
-            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-            dynamicNodeImport<typeof import('proxy-agent')>('proxy-agent'),
-            // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-            dynamicNodeImport<typeof import('node:os')>('node:os'),
-        ]);
+        const [{ ProxyAgent }, os] = await Promise.all([import('proxy-agent'), import('node:os')]);
 
         // We want to keep sockets alive for better performance.
         // Enhanced agent configuration based on agentkeepalive best practices:

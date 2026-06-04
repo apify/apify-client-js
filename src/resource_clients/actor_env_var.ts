@@ -24,7 +24,7 @@ import type { ActorEnvironmentVariable } from './actor_version';
  * await envVarClient.update({ value: 'new-value' });
  * ```
  *
- * @see https://docs.apify.com/platform/actors/development/actor-definition/environment-variables
+ * @see https://docs.apify.com/platform/actors/development/programming-interface/environment-variables
  */
 export class ActorEnvVarClient extends ResourceClient {
     /**

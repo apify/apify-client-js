@@ -45,6 +45,7 @@ describe('Store', () => {
             category: 'my category',
             username: 'my username',
             pricingModel: 'my pricing model',
+            includeUnrunnableActors: true,
         };
 
         const res: any = client && (await client.store().list(opts));
