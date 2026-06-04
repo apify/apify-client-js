@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-<!-- git-cliff-unreleased-start -->
-## 2.23.4 - **not yet released**
+## [2.23.4](https://github.com/apify/apify-client-js/releases/tag/v2.23.4) (2026-06-04)
 
 ### 🐛 Bug Fixes
 
@@ -11,7 +10,6 @@ All notable changes to this project will be documented in this file.
 - Accept readonly arrays for webhook `eventTypes` input ([#931](https://github.com/apify/apify-client-js/pull/931)) ([1737867](https://github.com/apify/apify-client-js/commit/1737867817b8e70525a2d6c2ef1bfc4ffb1f8955)) by [@B4nan](https://github.com/B4nan)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.23.3](https://github.com/apify/apify-client-js/releases/tag/v2.23.3) (2026-05-11)
 
 ### 🐛 Bug Fixes
