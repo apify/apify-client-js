@@ -129,7 +129,7 @@ jobs:
                   body-includes: There are broken links in the documentation.
 
             - name: Links are passing
-              if: github.event_path == 'pull_request' && steps.lychee.outputs.exit_code == 0 && steps.find-comment.outputs.comment-id
+              if: github.event_name == 'pull_request' && steps.lychee.outputs.exit_code == 0 && steps.find-comment.outputs.comment-id
               uses: peter-evans/create-or-update-comment@v5
               with:
                   comment-id: ${{ steps.find-comment.outputs.comment-id }}
@@ -141,7 +141,7 @@ jobs:
                   edit-mode: replace
 
             - name: Links are failing
-              if: github.event_path == 'pull_request' && steps.lychee.outputs.exit_code != 0
+              if: github.event_name == 'pull_request' && steps.lychee.outputs.exit_code != 0
               uses: peter-evans/create-or-update-comment@v5
               with:
                   comment-id: ${{ steps.find-comment.outputs.comment-id }}
