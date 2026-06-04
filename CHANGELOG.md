@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### 🐛 Bug Fixes
 
 - Use long commit SHA in release workflow [internal] ([#902](https://github.com/apify/apify-client-js/pull/902)) ([a3ca5c7](https://github.com/apify/apify-client-js/commit/a3ca5c76e5acb8b69f8bd209b6b2aadc7cd1a612)) by [@fnesveda](https://github.com/fnesveda)
+- Accept readonly arrays for webhook `eventTypes` input ([#931](https://github.com/apify/apify-client-js/pull/931)) ([1737867](https://github.com/apify/apify-client-js/commit/1737867817b8e70525a2d6c2ef1bfc4ffb1f8955)) by [@B4nan](https://github.com/B4nan)
 
 
 <!-- git-cliff-unreleased-end -->
