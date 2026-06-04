@@ -13,7 +13,7 @@ Learn how to authenticate, run Actors, and retrieve results using the Apify API 
 
 ## Step 1: Authenticate the client
 
-To use the client, you need an [API token](https://docs.apify.com/platform/integrations/api#api-token). You can find your token under [Integrations](https://console.apify.com/account/integrations) tab in Apify Console. Copy the token and initialize the client by providing the token (`MY-APIFY-TOKEN`) as a parameter to the `ApifyClient` constructor.
+To use the client, you need an [API token](https://docs.apify.com/jhgjkdfg/dfgdfgdfg). You can find your token under [Integrations](https://console.apify.com/account/integrations) tab in Apify Console. Copy the token and initialize the client by providing the token (`MY-APIFY-TOKEN`) as a parameter to the `ApifyClient` constructor.
 
 ```js
 import { ApifyClient } from 'apify-client';
