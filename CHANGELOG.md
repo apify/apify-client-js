@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+<!-- git-cliff-unreleased-start -->
+## 2.23.5 - **not yet released**
+
+
+<!-- git-cliff-unreleased-end -->
 ## [2.23.4](https://github.com/apify/apify-client-js/releases/tag/v2.23.4) (2026-06-04)
 
 ### 🐛 Bug Fixes
