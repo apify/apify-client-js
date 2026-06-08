@@ -105,6 +105,7 @@ jobs:
 
             - name: Run Lychee Link Checker
               id: lychee
+              if: github.event_name == 'pull_request'
               uses: lycheeverse/lychee-action@v2.8.0
               with:
                   fail: false
