@@ -97,7 +97,7 @@
         "express": "^5.0.0",
         "gen-esm-wrapper": "^1.1.2",
         "oxfmt": "0.53.0",
-        "oxlint": "1.68.0",
+        "oxlint": "1.69.0",
         "oxlint-tsgolint": "0.23.0",
         "puppeteer": "^25.0.0",
         "rimraf": "^6.0.0",
