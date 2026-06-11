@@ -20,49 +20,61 @@ const CLIENT_METHOD_REGEX = /at( async)? ([A-Za-z]+(Collection)?Client)\._?([A-Z
  * errors and internal errors, which are automatically retried, or validation
  * errors, which are thrown immediately, because a correction by the user is
  * needed.
+ * @since Added in 1.0.0
  */
 export class ApifyApiError extends Error {
+    /**
+     * @since Added in 2.0.1
+     */
     override name: string;
 
     /**
      * The invoked resource client and the method. Known issue: Sometimes it displays
      * as `unknown` because it can't be parsed from a stack trace.
+     * @since Added in 2.0.1
      */
     clientMethod: string;
 
     /**
      * HTTP status code of the error.
+     * @since Added in 2.0.1
      */
     statusCode: number;
 
     /**
      * The type of the error, as returned by the API.
+     * @since Added in 2.0.1
      */
     type?: string;
 
     /**
      * Number of the API call attempt.
+     * @since Added in 2.0.1
      */
     attempt: number;
 
     /**
      * HTTP method of the API call.
+     * @since Added in 2.0.1
      */
     httpMethod?: string;
 
     /**
      * Full path of the API endpoint (URL excluding origin).
+     * @since Added in 2.0.1
      */
     path?: string;
 
     /**
      * Original stack trace of the exception. It is replaced
      * by a more informative stack with API call information.
+     * @since Added in 2.0.1
      */
     originalStack: string;
 
     /**
      * Additional data provided by the API about the error
+     * @since Added in 2.0.1
      */
     data?: Record<string, unknown>;
 

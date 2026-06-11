@@ -28,6 +28,7 @@ import type { ActorVersion } from './actor_version';
  * ```
  *
  * @see https://docs.apify.com/platform/actors
+ * @since Added in 1.0.0
  */
 export class ActorCollectionClient extends ResourceCollectionClient {
     /**
@@ -59,6 +60,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * @param options - Pagination options.
      * @returns A paginated iterator of Actors.
      * @see https://docs.apify.com/api/v2/acts-get
+     * @since Added in 2.0.1
      */
     list(options: ActorCollectionListOptions = {}): PaginatedIterator<ActorCollectionListItem> {
         ow(
@@ -81,6 +83,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * @param actor - The Actor data.
      * @returns The created Actor object.
      * @see https://docs.apify.com/api/v2/acts-post
+     * @since Added in 2.0.1
      */
     async create(actor: ActorCollectionCreateOptions): Promise<Actor> {
         ow(actor, ow.optional.object);
@@ -89,41 +92,125 @@ export class ActorCollectionClient extends ResourceCollectionClient {
     }
 }
 
+/**
+ * @since Added in 2.12.6
+ */
 export enum ActorListSortBy {
+    /**
+     * @since Added in 2.12.6
+     */
     CREATED_AT = 'createdAt',
+    /**
+     * @since Added in 2.12.6
+     */
     LAST_RUN_STARTED_AT = 'stats.lastRunStartedAt',
 }
 
+/**
+ * @since Added in 2.0.1
+ */
 export interface ActorCollectionListOptions extends PaginationOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     my?: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     desc?: boolean;
+    /**
+     * @since Added in 2.12.6
+     */
     sortBy?: ActorListSortBy;
 }
 
+/**
+ * @since Added in 2.0.1
+ */
 export interface ActorCollectionListItem {
+    /**
+     * @since Added in 2.0.1
+     */
     id: string;
+    /**
+     * @since Added in 2.0.1
+     */
     createdAt: Date;
+    /**
+     * @since Added in 2.0.1
+     */
     modifiedAt: Date;
+    /**
+     * @since Added in 2.0.1
+     */
     name: string;
+    /**
+     * @since Added in 2.0.1
+     */
     username: string;
 }
 
+/**
+ * @since Added in 2.0.1
+ */
 export type ActorCollectionListResult = PaginatedList<ActorCollectionListItem>;
 
+/**
+ * @since Added in 2.0.1
+ */
 export interface ActorCollectionCreateOptions {
+    /**
+     * @since Added in 2.8.6
+     */
     categories?: string[];
+    /**
+     * @since Added in 2.8.6
+     */
     defaultRunOptions?: ActorDefaultRunOptions;
+    /**
+     * @since Added in 2.0.1
+     */
     description?: string;
+    /**
+     * @since Added in 2.8.6
+     */
     exampleRunInput?: ActorExampleRunInput;
+    /**
+     * @since Added in 2.8.6
+     */
     isDeprecated?: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     isPublic?: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     name?: string;
-    /** @deprecated Use defaultRunOptions.restartOnError instead */
+    /**
+     * @deprecated Use defaultRunOptions.restartOnError instead
+     * @since Added in 2.0.1
+     */
     restartOnError?: boolean;
+    /**
+     * @since Added in 2.8.6
+     */
     seoTitle?: string;
+    /**
+     * @since Added in 2.8.6
+     */
     seoDescription?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     title?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     versions?: ActorVersion[];
+    /**
+     * @since Added in 2.9.5
+     */
     actorStandby?: ActorStandby & {
         isEnabled: boolean;
     };

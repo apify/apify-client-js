@@ -43,6 +43,7 @@ import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData } from '..
  * ```
  *
  * @see https://docs.apify.com/platform/storage/dataset
+ * @since Added in 1.0.0
  */
 export class DatasetClient<
     Data extends Record<string | number, any> = Record<string | number, unknown>,
@@ -62,6 +63,7 @@ export class DatasetClient<
      *
      * @returns The Dataset object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/dataset-get
+     * @since Added in 2.0.1
      */
     async get(): Promise<Dataset | undefined> {
         return this._get({}, SMALL_TIMEOUT_MILLIS);
@@ -73,6 +75,7 @@ export class DatasetClient<
      * @param newFields - Fields to update in the dataset
      * @returns The updated Dataset object
      * @see https://docs.apify.com/api/v2/dataset-put
+     * @since Added in 2.0.1
      */
     async update(newFields: DatasetClientUpdateOptions): Promise<Dataset> {
         ow(newFields, ow.object);
@@ -84,6 +87,7 @@ export class DatasetClient<
      * Deletes the dataset.
      *
      * @see https://docs.apify.com/api/v2/dataset-delete
+     * @since Added in 2.0.1
      */
     async delete(): Promise<void> {
         return this._delete(SMALL_TIMEOUT_MILLIS);
@@ -132,6 +136,7 @@ export class DatasetClient<
      *   limit: 50
      * });
      * ```
+     * @since Added in 2.0.1
      */
     listItems(options: DatasetClientListItemOptions = {}): PaginatedIterator<Data> {
         ow(
@@ -208,6 +213,7 @@ export class DatasetClient<
      *   xmlRow: 'product'
      * });
      * ```
+     * @since Added in 2.0.1
      */
     async downloadItems(format: DownloadItemsFormat, options: DatasetClientDownloadItemsOptions = {}): Promise<Buffer> {
         ow(format, ow.string.oneOf(validItemFormats));
@@ -280,6 +286,7 @@ export class DatasetClient<
      * // Store string items
      * await client.dataset('my-dataset').pushItems(['item1', 'item2', 'item3']);
      * ```
+     * @since Added in 2.0.1
      */
     async pushItems(items: Data | Data[] | string | string[]): Promise<void> {
         ow(items, ow.any(ow.object, ow.string, ow.array.ofType(ow.any(ow.object, ow.string))));
@@ -305,6 +312,7 @@ export class DatasetClient<
      *
      * @returns Dataset statistics, or `undefined` if not available
      * @see https://docs.apify.com/api/v2/dataset-statistics-get
+     * @since Added in 2.11.2
      */
     async getStatistics(): Promise<DatasetStatistics | undefined> {
         const requestOpts: ApifyRequestConfig = {
@@ -352,6 +360,7 @@ export class DatasetClient<
      *   skipEmpty: true
      * });
      * ```
+     * @since Added in 2.13.0
      */
     async createItemsPublicUrl(options: DatasetClientCreateItemsUrlOptions = {}): Promise<string> {
         ow(
@@ -410,43 +419,118 @@ export class DatasetClient<
  *
  * Datasets store structured data as a sequence of items (records). Each item is a JSON object.
  * Datasets are useful for storing results from web scraping, crawling, or data processing tasks.
+ * @since Added in 0.1.61
  */
 export interface Dataset {
+    /**
+     * @since Added in 2.0.1
+     */
     id: string;
+    /**
+     * @since Added in 2.0.1
+     */
     name?: string;
+    /**
+     * @since Added in 2.6.1
+     */
     title?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     userId: string;
+    /**
+     * @since Added in 2.21.0
+     */
     username?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     createdAt: Date;
+    /**
+     * @since Added in 2.0.1
+     */
     modifiedAt: Date;
+    /**
+     * @since Added in 2.0.1
+     */
     accessedAt: Date;
+    /**
+     * @since Added in 2.0.1
+     */
     itemCount: number;
+    /**
+     * @since Added in 2.0.1
+     */
     cleanItemCount: number;
+    /**
+     * @since Added in 2.0.1
+     */
     actId?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     actRunId?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     stats: DatasetStats;
+    /**
+     * @since Added in 2.0.1
+     */
     fields: string[];
+    /**
+     * @since Added in 2.12.2
+     */
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
+    /**
+     * @since Added in 2.13.0
+     */
     urlSigningSecretKey?: string | null;
+    /**
+     * @since Added in 2.13.0
+     */
     itemsPublicUrl: string;
 }
 
 /**
  * Statistics about dataset usage and storage.
+ * @since Added in 2.0.1
  */
 export interface DatasetStats {
+    /**
+     * @since Added in 2.0.1
+     */
     readCount?: number;
+    /**
+     * @since Added in 2.0.1
+     */
     writeCount?: number;
+    /**
+     * @since Added in 2.0.1
+     */
     deleteCount?: number;
+    /**
+     * @since Added in 2.0.1
+     */
     storageBytes?: number;
 }
 
 /**
  * Options for updating a dataset.
+ * @since Added in 2.0.1
  */
 export interface DatasetClientUpdateOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     name?: string | null;
+    /**
+     * @since Added in 2.6.1
+     */
     title?: string;
+    /**
+     * @since Added in 2.12.2
+     */
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
@@ -455,17 +539,48 @@ export interface DatasetClientUpdateOptions {
  *
  * Provides various filtering, pagination, and transformation options to customize
  * the output format and content of retrieved items.
+ * @since Added in 2.0.1
  */
 export interface DatasetClientListItemOptions extends PaginationOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     clean?: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     desc?: boolean;
+    /**
+     * @since Added in 2.6.1
+     */
     flatten?: string[];
+    /**
+     * @since Added in 2.0.1
+     */
     fields?: string[];
+    /**
+     * @since Added in 2.0.1
+     */
     omit?: string[];
+    /**
+     * @since Added in 2.0.1
+     */
     skipEmpty?: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     skipHidden?: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     unwind?: string | string[]; // TODO: when doing a breaking change release, change to string[] only
+    /**
+     * @since Added in 2.2.0
+     */
     view?: string;
+    /**
+     * @since Added in 2.13.0
+     */
     signature?: string;
 }
 
@@ -473,21 +588,47 @@ export interface DatasetClientListItemOptions extends PaginationOptions {
  * Options for creating a public URL to access dataset items.
  *
  * Extends {@link DatasetClientListItemOptions} with URL expiration control.
+ * @since Added in 2.16.0
  */
 export interface DatasetClientCreateItemsUrlOptions extends DatasetClientListItemOptions {
+    /**
+     * @since Added in 2.16.0
+     */
     expiresInSecs?: number;
 }
 
 /**
  * Supported formats for downloading dataset items.
+ * @since Added in 2.0.1
  */
 export enum DownloadItemsFormat {
+    /**
+     * @since Added in 2.0.1
+     */
     JSON = 'json',
+    /**
+     * @since Added in 2.0.1
+     */
     JSONL = 'jsonl',
+    /**
+     * @since Added in 2.0.1
+     */
     XML = 'xml',
+    /**
+     * @since Added in 2.0.1
+     */
     HTML = 'html',
+    /**
+     * @since Added in 2.0.1
+     */
     CSV = 'csv',
+    /**
+     * @since Added in 2.0.1
+     */
     XLSX = 'xlsx',
+    /**
+     * @since Added in 2.0.1
+     */
     RSS = 'rss',
 }
 
@@ -497,13 +638,32 @@ const validItemFormats = [...new Set(Object.values(DownloadItemsFormat).map((ite
  * Options for downloading dataset items in a specific format.
  *
  * Extends {@link DatasetClientListItemOptions} with format-specific options.
+ * @since Added in 2.0.1
  */
 export interface DatasetClientDownloadItemsOptions extends DatasetClientListItemOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     attachment?: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     bom?: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     delimiter?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     skipHeaderRow?: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     xmlRoot?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     xmlRow?: string;
 }
 
@@ -511,17 +671,34 @@ export interface DatasetClientDownloadItemsOptions extends DatasetClientListItem
  * Statistical information about dataset fields.
  *
  * Provides insights into the data structure and content of the dataset.
+ * @since Added in 2.11.2
  */
 export interface DatasetStatistics {
+    /**
+     * @since Added in 2.11.2
+     */
     fieldStatistics: Record<string, FieldStatistics>;
 }
 
 /**
  * Statistics for a single field in a dataset.
+ * @since Added in 2.11.2
  */
 export interface FieldStatistics {
+    /**
+     * @since Added in 2.11.2
+     */
     min?: number;
+    /**
+     * @since Added in 2.11.2
+     */
     max?: number;
+    /**
+     * @since Added in 2.11.2
+     */
     nullCount?: number;
+    /**
+     * @since Added in 2.11.2
+     */
     emptyCount?: number;
 }

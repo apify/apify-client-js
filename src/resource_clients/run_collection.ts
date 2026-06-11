@@ -27,6 +27,7 @@ import type { ActorRunListItem } from './actor';
  * ```
  *
  * @see https://docs.apify.com/platform/actors/running/runs-and-builds
+ * @since Added in 1.0.0
  */
 export class RunCollectionClient extends ResourceCollectionClient {
     /**
@@ -58,6 +59,7 @@ export class RunCollectionClient extends ResourceCollectionClient {
      * @param options - Pagination and filtering options.
      * @returns A paginated iterator of Actor runs.
      * @see https://docs.apify.com/api/v2/actor-runs-get
+     * @since Added in 2.0.1
      */
     list(options: RunCollectionListOptions = {}): PaginatedIterator<ActorRunListItem> {
         ow(
@@ -79,11 +81,26 @@ export class RunCollectionClient extends ResourceCollectionClient {
     }
 }
 
+/**
+ * @since Added in 2.0.1
+ */
 export interface RunCollectionListOptions extends PaginationOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     desc?: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     status?:
         | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES]
         | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES][];
+    /**
+     * @since Added in 2.18.0
+     */
     startedBefore?: Date | string;
+    /**
+     * @since Added in 2.18.0
+     */
     startedAfter?: Date | string;
 }

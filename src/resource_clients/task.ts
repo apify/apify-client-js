@@ -32,6 +32,7 @@ import { WebhookCollectionClient } from './webhook_collection';
  * ```
  *
  * @see https://docs.apify.com/platform/actors/running/tasks
+ * @since Added in 1.0.0
  */
 export class TaskClient extends ResourceClient {
     /**
@@ -49,6 +50,7 @@ export class TaskClient extends ResourceClient {
      *
      * @returns The task object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/actor-task-get
+     * @since Added in 2.0.1
      */
     async get(): Promise<Task | undefined> {
         return this._get();
@@ -60,6 +62,7 @@ export class TaskClient extends ResourceClient {
      * @param newFields - Fields to update.
      * @returns The updated task object.
      * @see https://docs.apify.com/api/v2/actor-task-put
+     * @since Added in 2.0.1
      */
     async update(newFields: TaskUpdateData): Promise<Task> {
         ow(newFields, ow.object);
@@ -71,6 +74,7 @@ export class TaskClient extends ResourceClient {
      * Deletes the Task.
      *
      * @see https://docs.apify.com/api/v2/actor-task-delete
+     * @since Added in 2.0.1
      */
     async delete(): Promise<void> {
         return this._delete();
@@ -91,6 +95,7 @@ export class TaskClient extends ResourceClient {
      * @param options.restartOnError - Whether to restart the run on error.
      * @returns The Actor Run object.
      * @see https://docs.apify.com/api/v2/actor-task-runs-post
+     * @since Added in 2.0.1
      */
     async start(input?: Dictionary, options: TaskStartOptions = {}): Promise<ActorRun> {
         ow(input, ow.optional.object);
@@ -154,6 +159,7 @@ export class TaskClient extends ResourceClient {
      * @param options.restartOnError - Whether to restart the run on error.
      * @returns The Actor run object.
      * @see https://docs.apify.com/api/v2/actor-task-runs-post
+     * @since Added in 2.0.1
      */
     async call(input?: Dictionary, options: TaskCallOptions = {}): Promise<ActorRun> {
         ow(input, ow.optional.object);
@@ -186,6 +192,7 @@ export class TaskClient extends ResourceClient {
      *
      * @returns The Task's input, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/actor-task-input-get
+     * @since Added in 2.0.1
      */
     async getInput(): Promise<Dictionary | Dictionary[] | undefined> {
         const requestOpts: ApifyRequestConfig = {
@@ -209,6 +216,7 @@ export class TaskClient extends ResourceClient {
      * @param newFields - New input data for the task.
      * @returns The updated task input.
      * @see https://docs.apify.com/api/v2/actor-task-input-put
+     * @since Added in 2.0.1
      */
     async updateInput(newFields: Dictionary | Dictionary[]): Promise<Dictionary | Dictionary[]> {
         const response = await this.httpClient.call({
@@ -229,6 +237,7 @@ export class TaskClient extends ResourceClient {
      * @param options.origin - Filter by run origin (e.g., `'WEB'`, `'API'`, `'SCHEDULE'`).
      * @returns A client for the last run.
      * @see https://docs.apify.com/api/v2/actor-task-runs-last-get
+     * @since Added in 2.0.1
      */
     lastRun(options: TaskLastRunOptions = {}): RunClient {
         ow(
@@ -253,6 +262,7 @@ export class TaskClient extends ResourceClient {
      *
      * @returns A client for the task's runs.
      * @see https://docs.apify.com/api/v2/actor-task-runs-get
+     * @since Added in 2.0.1
      */
     runs(): RunCollectionClient {
         return new RunCollectionClient(
@@ -267,6 +277,7 @@ export class TaskClient extends ResourceClient {
      *
      * @returns A client for the task's webhooks.
      * @see https://docs.apify.com/api/v2/actor-task-webhooks-get
+     * @since Added in 2.0.1
      */
     webhooks(): WebhookCollectionClient {
         return new WebhookCollectionClient(this._subResourceOptions());
@@ -278,42 +289,100 @@ export class TaskClient extends ResourceClient {
  *
  * Tasks are saved Actor configurations with input and settings that can be executed
  * repeatedly without having to specify the full input each time.
+ * @since Added in 0.3.2
  */
 export interface Task {
+    /**
+     * @since Added in 2.0.1
+     */
     id: string;
+    /**
+     * @since Added in 2.0.1
+     */
     userId: string;
+    /**
+     * @since Added in 2.0.1
+     */
     actId: string;
+    /**
+     * @since Added in 2.0.1
+     */
     name: string;
+    /**
+     * @since Added in 2.6.1
+     */
     title?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     description?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     username?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     createdAt: Date;
+    /**
+     * @since Added in 2.0.1
+     */
     modifiedAt: Date;
+    /**
+     * @since Added in 2.0.1
+     */
     stats: TaskStats;
+    /**
+     * @since Added in 2.0.1
+     */
     options?: TaskOptions;
+    /**
+     * @since Added in 2.0.1
+     */
     input?: Dictionary | Dictionary[];
+    /**
+     * @since Added in 2.9.5
+     */
     actorStandby?: Partial<ActorStandby>;
 }
 
 /**
  * Statistics about Actor task usage.
+ * @since Added in 2.0.1
  */
 export interface TaskStats {
+    /**
+     * @since Added in 2.0.1
+     */
     totalRuns: number;
 }
 
 /**
  * Configuration options for an Actor task.
+ * @since Added in 2.0.1
  */
 export interface TaskOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     build?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     timeoutSecs?: number;
+    /**
+     * @since Added in 2.0.1
+     */
     memoryMbytes?: number;
+    /**
+     * @since Added in 2.19.0
+     */
     restartOnError?: boolean;
 }
 
 /**
  * Fields that can be updated when modifying a Task.
+ * @since Added in 2.0.1
  */
 export type TaskUpdateData = Partial<
     Pick<Task, 'name' | 'title' | 'description' | 'options' | 'input' | 'actorStandby'>
@@ -321,8 +390,12 @@ export type TaskUpdateData = Partial<
 
 /**
  * Options for filtering the last run of a Task.
+ * @since Added in 2.0.1
  */
 export interface TaskLastRunOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     status?: keyof typeof ACT_JOB_STATUSES;
 }
 
@@ -331,12 +404,17 @@ export interface TaskLastRunOptions {
  *
  * Similar to {@link ActorStartOptions} but without contentType (Task input is predefined)
  * and forcePermissionLevel.
+ * @since Added in 2.0.4
  */
 export type TaskStartOptions = Omit<ActorStartOptions, 'contentType' | 'forcePermissionLevel'>;
 
 /**
  * Options for calling a Task and waiting for it to finish.
+ * @since Added in 2.6.2
  */
 export interface TaskCallOptions extends Omit<TaskStartOptions, 'waitForFinish'> {
+    /**
+     * @since Added in 2.6.2
+     */
     waitSecs?: number;
 }

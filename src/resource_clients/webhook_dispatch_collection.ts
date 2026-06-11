@@ -22,6 +22,7 @@ import type { WebhookDispatch } from './webhook_dispatch';
  * ```
  *
  * @see https://docs.apify.com/platform/integrations/webhooks
+ * @since Added in 1.0.0
  */
 export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
     /**
@@ -53,6 +54,7 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
      * @param options - Pagination and sorting options.
      * @returns A paginated iterator of webhook dispatches.
      * @see https://docs.apify.com/api/v2/webhook-dispatches-get
+     * @since Added in 2.0.1
      */
     list(options: WebhookDispatchCollectionListOptions = {}): PaginatedIterator<WebhookDispatch> {
         ow(
@@ -68,6 +70,12 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
     }
 }
 
+/**
+ * @since Added in 2.0.1
+ */
 export interface WebhookDispatchCollectionListOptions extends PaginationOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     desc?: boolean;
 }

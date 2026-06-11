@@ -255,15 +255,22 @@ export interface RequestQueuePaginationIteratorOptions {
  * Standard pagination options for API requests.
  */
 export interface PaginationOptions {
-    /** Position of the first returned entry. */
+    /**
+     * Position of the first returned entry.
+     * @since Added in 2.0.1
+     */
     offset?: number;
-    /** Maximum number of entries requested. */
+    /**
+     * Maximum number of entries requested.
+     * @since Added in 2.0.1
+     */
     limit?: number;
     /** Maximum number of items returned in one API response. Relevant in the context of asyncIterator, the iterator
      * will fetch results in chunks of this size from API and yield them one by one. It will stop fetching once the
      * limit is reached or once all items from API have been fetched.
      *
      * Chunk size is usually limited by API. Minimum of those two limits will be used.
+     * @since Added in 2.21.0
      * */
     chunkSize?: number;
 }
@@ -274,9 +281,15 @@ export interface PaginationOptions {
  * @template Data - The type of items in the response
  */
 export interface PaginatedResponse<Data> {
-    /** Total count of entries. */
+    /**
+     * Total count of entries.
+     * @since Added in 2.0.1
+     */
     total: number;
-    /** Entries. */
+    /**
+     * Entries.
+     * @since Added in 2.0.1
+     */
     items: Data[];
 }
 
@@ -287,15 +300,28 @@ export interface PaginatedResponse<Data> {
  * offset-based pagination and field transformations.
  *
  * @template Data - The type of items in the list
+ * @since Added in 2.0.1
  */
 export interface PaginatedList<Data> extends PaginatedResponse<Data> {
-    /** Count of dataset entries returned in this set. */
+    /**
+     * Count of dataset entries returned in this set.
+     * @since Added in 2.0.1
+     */
     count: number;
-    /** Position of the first returned entry in the dataset. */
+    /**
+     * Position of the first returned entry in the dataset.
+     * @since Added in 2.0.1
+     */
     offset: number;
-    /** Maximum number of dataset entries requested. */
+    /**
+     * Maximum number of dataset entries requested.
+     * @since Added in 2.0.1
+     */
     limit: number;
-    /** Should the results be in descending order. */
+    /**
+     * Should the results be in descending order.
+     * @since Added in 2.0.1
+     */
     desc: boolean;
 }
 
@@ -324,6 +350,7 @@ export function asArray<T>(value: T | T[]): T[] {
  * Generic dictionary type (key-value map).
  *
  * @template T - The type of values in the dictionary
+ * @since Added in 2.0.4
  */
 export type Dictionary<T = unknown> = Record<PropertyKey, T>;
 

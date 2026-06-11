@@ -13,12 +13,22 @@ import { isNode, maybeGzipValue } from './utils';
  * request. We do that by identifying this error in HttpClient.
  *
  * The properties mimic AxiosError for easier integration in HttpClient error handling.
+ * @since Added in 1.0.0
  */
 export class InvalidResponseBodyError extends Error {
+    /**
+     * @since Added in 2.0.1
+     */
     code: string;
 
+    /**
+     * @since Added in 2.0.1
+     */
     response: AxiosResponse;
 
+    /**
+     * @since Added in 2.0.1
+     */
     declare cause: Error;
 
     constructor(response: AxiosResponse, cause: Error) {

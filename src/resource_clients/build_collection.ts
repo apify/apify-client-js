@@ -25,6 +25,7 @@ import type { Build } from './build';
  * ```
  *
  * @see https://docs.apify.com/platform/actors/running/runs-and-builds#builds
+ * @since Added in 1.0.0
  */
 export class BuildCollectionClient extends ResourceCollectionClient {
     /**
@@ -56,6 +57,7 @@ export class BuildCollectionClient extends ResourceCollectionClient {
      * @param options - Pagination and sorting options.
      * @returns A paginated iterator of Actor builds.
      * @see https://docs.apify.com/api/v2/actor-builds-get
+     * @since Added in 2.0.1
      */
     list(options: BuildCollectionClientListOptions = {}): PaginatedIterator<BuildCollectionClientListItem> {
         ow(
@@ -71,11 +73,23 @@ export class BuildCollectionClient extends ResourceCollectionClient {
     }
 }
 
+/**
+ * @since Added in 2.0.1
+ */
 export interface BuildCollectionClientListOptions extends PaginationOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     desc?: boolean;
 }
 
+/**
+ * @since Added in 2.0.1
+ */
 export type BuildCollectionClientListItem = Required<Pick<Build, 'id' | 'status' | 'startedAt' | 'finishedAt'>> &
     Partial<Pick<Build, 'meta' | 'usageTotalUsd'>>;
 
+/**
+ * @since Added in 2.0.1
+ */
 export type BuildCollectionClientListResult = PaginatedList<BuildCollectionClientListItem>;

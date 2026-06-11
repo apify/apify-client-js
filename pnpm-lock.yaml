@@ -139,7 +139,7 @@ importers:
         specifier: ^1.0.251
         version: 1.0.251(959f6a77c61b01e5801039cc98a02b4a)
       '@apify/docusaurus-plugin-typedoc-api':
-        specifier: ^5.1.6
+        specifier: ^5.1.11
         version: 5.1.11(2fce7341730efb937c1d18fab5517614)
       '@docusaurus/core':
         specifier: ^3.8.1

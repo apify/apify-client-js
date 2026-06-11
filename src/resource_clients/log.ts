@@ -33,6 +33,7 @@ import { cast, catchNotFoundOrThrow } from '../utils';
  * ```
  *
  * @see https://docs.apify.com/platform/actors/running/runs-and-builds#logging
+ * @since Added in 1.0.0
  */
 export class LogClient extends ResourceClient {
     /**
@@ -52,6 +53,7 @@ export class LogClient extends ResourceClient {
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
      * @returns The log content as a string, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/log-get
+     * @since Added in 2.0.1
      */
     async get(options: LogOptions = {}): Promise<string | undefined> {
         const requestOpts: ApifyRequestConfig = {
@@ -77,6 +79,7 @@ export class LogClient extends ResourceClient {
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
      * @returns The log content as a Readable stream, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/log-get
+     * @since Added in 2.0.1
      */
     async stream(options: LogOptions = {}): Promise<Readable | undefined> {
         const params = {
@@ -102,19 +105,29 @@ export class LogClient extends ResourceClient {
     }
 }
 
+/**
+ * @since Added in 2.20.0
+ */
 export interface LogOptions {
-    /** @default false */
+    /**
+     * @default false
+     * @since Added in 2.20.0
+     */
     raw?: boolean;
 }
 
 /**
  * Logger for redirected actor logs.
+ * @since Added in 2.20.0
  */
 export class LoggerActorRedirect extends Logger {
     constructor(options = {}) {
         super({ skipTime: true, level: LogLevel.DEBUG, ...options });
     }
 
+    /**
+     * @since Added in 2.20.0
+     */
     override _log(level: LogLevel, message: string, data?: any, exception?: unknown, opts: Record<string, any> = {}) {
         if (level > this.options.level) {
             return;
@@ -141,6 +154,7 @@ export class LoggerActorRedirect extends Logger {
 
 /**
  * Helper class for redirecting streamed Actor logs to another log.
+ * @since Added in 2.20.0
  */
 export class StreamedLog {
     private destinationLog: Log;
@@ -161,6 +175,7 @@ export class StreamedLog {
 
     /**
      * Start log redirection.
+     * @since Added in 2.20.0
      */
     public start(): void {
         if (this.streamingTask) {
@@ -172,6 +187,7 @@ export class StreamedLog {
 
     /**
      * Stop log redirection.
+     * @since Added in 2.20.0
      */
     public async stop(): Promise<void> {
         if (!this.streamingTask) {
@@ -264,11 +280,23 @@ export class StreamedLog {
     }
 }
 
+/**
+ * @since Added in 2.20.0
+ */
 export interface StreamedLogOptions {
-    /** Log client used to communicate with the Apify API. */
+    /**
+     * Log client used to communicate with the Apify API.
+     * @since Added in 2.20.0
+     */
     logClient: LogClient;
-    /** Log to which the Actor run logs will be redirected. */
+    /**
+     * Log to which the Actor run logs will be redirected.
+     * @since Added in 2.20.0
+     */
     toLog: Log;
-    /** Whether to redirect all logs from Actor run start (even logs from the past). */
+    /**
+     * Whether to redirect all logs from Actor run start (even logs from the past).
+     * @since Added in 2.20.0
+     */
     fromStart?: boolean;
 }

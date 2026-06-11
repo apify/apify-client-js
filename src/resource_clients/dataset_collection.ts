@@ -26,6 +26,7 @@ import type { Dataset } from './dataset';
  * ```
  *
  * @see https://docs.apify.com/platform/storage/dataset
+ * @since Added in 1.0.0
  */
 export class DatasetCollectionClient extends ResourceCollectionClient {
     /**
@@ -57,6 +58,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
      * @param options - Pagination options.
      * @returns A paginated iterator of Datasets.
      * @see https://docs.apify.com/api/v2/datasets-get
+     * @since Added in 2.0.1
      */
     list(
         options: DatasetCollectionClientListOptions = {},
@@ -82,6 +84,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
      * @param options - Additional options like schema.
      * @returns The dataset object.
      * @see https://docs.apify.com/api/v2/datasets-post
+     * @since Added in 2.0.1
      */
     async getOrCreate(name?: string, options?: DatasetCollectionClientGetOrCreateOptions): Promise<Dataset> {
         ow(name, ow.optional.string);
@@ -91,15 +94,36 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     }
 }
 
+/**
+ * @since Added in 2.0.1
+ */
 export interface DatasetCollectionClientListOptions extends PaginationOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     unnamed?: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     desc?: boolean;
-    /** Filter by ownership: 'ownedByMe' returns only user's own datasets, 'sharedWithMe' returns only shared datasets. */
+    /**
+     * Filter by ownership: 'ownedByMe' returns only user's own datasets, 'sharedWithMe' returns only shared datasets.
+     * @since Added in 2.22.1
+     */
     ownership?: STORAGE_OWNERSHIP_FILTER;
 }
 
+/**
+ * @since Added in 2.3.0
+ */
 export interface DatasetCollectionClientGetOrCreateOptions {
+    /**
+     * @since Added in 2.3.0
+     */
     schema?: Record<string, unknown>;
 }
 
+/**
+ * @since Added in 2.0.1
+ */
 export type DatasetCollectionClientListResult = PaginatedList<Dataset> & { unnamed: boolean };
