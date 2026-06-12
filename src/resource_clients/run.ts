@@ -38,6 +38,7 @@ const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
  * ```
  *
  * @see https://docs.apify.com/platform/actors/running/runs-and-builds
+ * @since Added in 1.0.0
  */
 export class RunClient extends ResourceClient {
     /**
@@ -67,6 +68,7 @@ export class RunClient extends ResourceClient {
      * // Wait up to 60 seconds for run to finish
      * const run = await client.run('run-id').get({ waitForFinish: 60 });
      * ```
+     * @since Added in 2.0.1
      */
     async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
         ow(
@@ -95,6 +97,7 @@ export class RunClient extends ResourceClient {
      * // Abort gracefully (allows cleanup)
      * await client.run('run-id').abort({ gracefully: true });
      * ```
+     * @since Added in 2.0.1
      */
     async abort(options: RunAbortOptions = {}): Promise<ActorRun> {
         ow(
@@ -117,6 +120,7 @@ export class RunClient extends ResourceClient {
      * Deletes the Actor run.
      *
      * @see https://docs.apify.com/api/v2/actor-run-delete
+     * @since Added in 2.8.1
      */
     async delete(): Promise<void> {
         return this._delete();
@@ -146,6 +150,7 @@ export class RunClient extends ResourceClient {
      * );
      * console.log(`Run ${metamorphedRun.id} is now running ${metamorphedRun.actId}`);
      * ```
+     * @since Added in 2.0.1
      */
     async metamorph(targetActorId: string, input: unknown, options: RunMetamorphOptions = {}): Promise<ActorRun> {
         ow(targetActorId, ow.string);
@@ -201,6 +206,7 @@ export class RunClient extends ResourceClient {
      * ```javascript
      * const run = await client.run('run-id').reboot();
      * ```
+     * @since Added in 2.8.0
      */
     async reboot(): Promise<ActorRun> {
         const request: AxiosRequestConfig = {
@@ -228,6 +234,7 @@ export class RunClient extends ResourceClient {
      *   statusMessage: 'Processing items: 50/100'
      * });
      * ```
+     * @since Added in 2.6.0
      */
     async update(newFields: RunUpdateOptions): Promise<ActorRun> {
         ow(newFields, ow.object);
@@ -257,6 +264,7 @@ export class RunClient extends ResourceClient {
      * const newRun = await client.run('failed-run-id').resurrect({ memory: 2048 });
      * console.log(`New run started: ${newRun.id}`);
      * ```
+     * @since Added in 2.0.1
      */
     async resurrect(options: RunResurrectOptions = {}): Promise<ActorRun> {
         ow(
@@ -289,6 +297,7 @@ export class RunClient extends ResourceClient {
      * @param options.idempotencyKey - Optional key to ensure the charge is not duplicated. If not provided, one is auto-generated.
      * @returns Empty response object.
      * @see https://docs.apify.com/api/v2/post-charge-run
+     * @since Added in 2.11.0
      */
     async charge(options: RunChargeOptions): Promise<ApifyResponse<Record<string, never>>> {
         ow(
@@ -348,6 +357,7 @@ export class RunClient extends ResourceClient {
      *   console.log('Run succeeded!');
      * }
      * ```
+     * @since Added in 2.0.1
      */
     async waitForFinish(options: RunWaitForFinishOptions = {}): Promise<ActorRun> {
         ow(
@@ -371,6 +381,7 @@ export class RunClient extends ResourceClient {
      * // Access run's dataset
      * const { items } = await client.run('run-id').dataset().listItems();
      * ```
+     * @since Added in 2.0.1
      */
     dataset(): DatasetClient {
         return new DatasetClient(
@@ -391,6 +402,7 @@ export class RunClient extends ResourceClient {
      * // Access run's key-value store
      * const output = await client.run('run-id').keyValueStore().getRecord('OUTPUT');
      * ```
+     * @since Added in 2.0.1
      */
     keyValueStore(): KeyValueStoreClient {
         return new KeyValueStoreClient(
@@ -411,6 +423,7 @@ export class RunClient extends ResourceClient {
      * // Access run's Request queue
      * const { items } = await client.run('run-id').requestQueue().listHead();
      * ```
+     * @since Added in 2.0.1
      */
     requestQueue(): RequestQueueClient {
         return new RequestQueueClient(
@@ -432,6 +445,7 @@ export class RunClient extends ResourceClient {
      * const log = await client.run('run-id').log().get();
      * console.log(log);
      * ```
+     * @since Added in 2.0.1
      */
     log(): LogClient {
         return new LogClient(
@@ -443,6 +457,7 @@ export class RunClient extends ResourceClient {
 
     /**
      * Get StreamedLog for convenient streaming of the run log and their redirection.
+     * @since Added in 2.20.0
      */
     async getStreamedLog(options: GetStreamedLogOptions = {}): Promise<StreamedLog | undefined> {
         const { fromStart = true } = options;
@@ -472,75 +487,138 @@ export class RunClient extends ResourceClient {
 
 /**
  * Options for getting a streamed log.
+ * @since Added in 2.20.0
  */
 export interface GetStreamedLogOptions {
+    /**
+     * @since Added in 2.20.0
+     */
     toLog?: Log | null | 'default';
+    /**
+     * @since Added in 2.20.0
+     */
     fromStart?: boolean;
 }
 
 /**
  * Options for getting a Run.
+ * @since Added in 2.0.1
  */
 export interface RunGetOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     waitForFinish?: number;
 }
 
 /**
  * Options for aborting a Run.
+ * @since Added in 2.0.1
  */
 export interface RunAbortOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     gracefully?: boolean;
 }
 
 /**
  * Options for metamorphing a Run into another Actor.
+ * @since Added in 2.0.1
  */
 export interface RunMetamorphOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     contentType?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     build?: string;
 }
 
 /**
  * Options for updating a Run.
+ * @since Added in 2.6.0
  */
 export interface RunUpdateOptions {
+    /**
+     * @since Added in 2.6.0
+     */
     statusMessage?: string;
+    /**
+     * @since Added in 2.6.3
+     */
     isStatusMessageTerminal?: boolean;
+    /**
+     * @since Added in 2.12.2
+     */
     generalAccess?: RUN_GENERAL_ACCESS | null;
 }
 
 /**
  * Options for resurrecting a finished Run.
+ * @since Added in 2.0.1
  */
 export interface RunResurrectOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     build?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     memory?: number;
+    /**
+     * @since Added in 2.0.1
+     */
     timeout?: number;
+    /**
+     * @since Added in 2.12.1
+     */
     maxItems?: number;
+    /**
+     * @since Added in 2.12.1
+     */
     maxTotalChargeUsd?: number;
+    /**
+     * @since Added in 2.19.0
+     */
     restartOnError?: boolean;
 }
 
 /**
  * Options for charging events in a pay-per-event Actor run.
+ * @since Added in 2.11.0
  */
 export interface RunChargeOptions {
-    /** Name of the event to charge. Must be defined in the Actor's pricing info else the API will throw. */
+    /**
+     * Name of the event to charge. Must be defined in the Actor's pricing info else the API will throw.
+     * @since Added in 2.11.0
+     */
     eventName: string;
-    /** Defaults to 1 */
+    /**
+     * Defaults to 1
+     * @since Added in 2.11.0
+     */
     count?: number;
-    /** Defaults to runId-eventName-timestamp */
+    /**
+     * Defaults to runId-eventName-timestamp
+     * @since Added in 2.11.0
+     */
     idempotencyKey?: string;
 }
 
 /**
  * Options for waiting for a Run to finish.
+ * @since Added in 2.0.1
  */
 export interface RunWaitForFinishOptions {
     /**
      * Maximum time to wait for the run to finish, in seconds.
      * If the limit is reached, the returned promise is resolved to a run object that will have
      * status `READY` or `RUNNING`. If `waitSecs` omitted, the function waits indefinitely.
+     * @since Added in 2.0.1
      */
     waitSecs?: number;
 }

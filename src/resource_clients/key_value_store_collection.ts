@@ -26,6 +26,7 @@ import type { KeyValueStore } from './key_value_store';
  * ```
  *
  * @see https://docs.apify.com/platform/storage/key-value-store
+ * @since Added in 1.0.0
  */
 export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     /**
@@ -57,6 +58,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
      * @param options - Pagination options.
      * @returns A paginated iterator of Key-value stores.
      * @see https://docs.apify.com/api/v2/key-value-stores-get
+     * @since Added in 2.0.1
      */
     list(
         options: KeyValueStoreCollectionClientListOptions = {},
@@ -82,6 +84,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
      * @param options - Additional options like schema.
      * @returns The key-value store object.
      * @see https://docs.apify.com/api/v2/key-value-stores-post
+     * @since Added in 2.0.1
      */
     async getOrCreate(
         name?: string,
@@ -94,15 +97,36 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     }
 }
 
+/**
+ * @since Added in 2.0.1
+ */
 export interface KeyValueStoreCollectionClientListOptions extends PaginationOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     unnamed?: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     desc?: boolean;
-    /** Filter by ownership: 'ownedByMe' returns only user's own key-value stores, 'sharedWithMe' returns only shared key-value stores. */
+    /**
+     * Filter by ownership: 'ownedByMe' returns only user's own key-value stores, 'sharedWithMe' returns only shared key-value stores.
+     * @since Added in 2.22.1
+     */
     ownership?: STORAGE_OWNERSHIP_FILTER;
 }
 
+/**
+ * @since Added in 2.3.0
+ */
 export interface KeyValueStoreCollectionClientGetOrCreateOptions {
+    /**
+     * @since Added in 2.3.0
+     */
     schema?: Record<string, unknown>;
 }
 
+/**
+ * @since Added in 2.0.1
+ */
 export type KeyValueStoreCollectionListResult = PaginatedList<KeyValueStore> & { unnamed: boolean };

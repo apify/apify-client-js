@@ -37,6 +37,7 @@ import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection';
  * ```
  *
  * @see https://docs.apify.com/platform/integrations/webhooks
+ * @since Added in 1.0.0
  */
 export class WebhookClient extends ResourceClient {
     /**
@@ -54,6 +55,7 @@ export class WebhookClient extends ResourceClient {
      *
      * @returns The webhook object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/webhook-get
+     * @since Added in 2.0.1
      */
     async get(): Promise<Webhook | undefined> {
         return this._get();
@@ -65,6 +67,7 @@ export class WebhookClient extends ResourceClient {
      * @param newFields - Fields to update.
      * @returns The updated webhook object.
      * @see https://docs.apify.com/api/v2/webhook-put
+     * @since Added in 2.0.1
      */
     async update(newFields: WebhookUpdateData): Promise<Webhook> {
         ow(newFields, ow.object);
@@ -76,6 +79,7 @@ export class WebhookClient extends ResourceClient {
      * Deletes the webhook.
      *
      * @see https://docs.apify.com/api/v2/webhook-delete
+     * @since Added in 2.0.1
      */
     async delete(): Promise<void> {
         return this._delete();
@@ -86,6 +90,7 @@ export class WebhookClient extends ResourceClient {
      *
      * @returns The webhook dispatch object, or `undefined` if the test fails.
      * @see https://docs.apify.com/api/v2/webhook-test-post
+     * @since Added in 2.0.1
      */
     async test(): Promise<WebhookDispatch | undefined> {
         const request: ApifyRequestConfig = {
@@ -109,6 +114,7 @@ export class WebhookClient extends ResourceClient {
      *
      * @returns A client for the webhook's dispatches.
      * @see https://docs.apify.com/api/v2/webhook-webhook-dispatches-get
+     * @since Added in 2.0.1
      */
     dispatches(): WebhookDispatchCollectionClient {
         return new WebhookDispatchCollectionClient(
@@ -124,33 +130,92 @@ export class WebhookClient extends ResourceClient {
  *
  * Webhooks send HTTP POST requests to specified URLs when certain events occur
  * (e.g., Actor run succeeds, fails, or times out).
+ * @since Added in 0.5.8
  */
 export interface Webhook {
+    /**
+     * @since Added in 2.0.1
+     */
     id: string;
+    /**
+     * @since Added in 2.0.1
+     */
     userId: string;
+    /**
+     * @since Added in 2.0.1
+     */
     createdAt: Date;
+    /**
+     * @since Added in 2.0.1
+     */
     modifiedAt: Date;
+    /**
+     * @since Added in 2.0.1
+     */
     isAdHoc: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     eventTypes: WebhookEventType[];
+    /**
+     * @since Added in 2.0.1
+     */
     condition: WebhookCondition;
+    /**
+     * @since Added in 2.0.1
+     */
     ignoreSslErrors: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     doNotRetry: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     requestUrl: string;
+    /**
+     * @since Added in 2.0.1
+     */
     payloadTemplate: string;
+    /**
+     * @since Added in 2.0.1
+     */
     lastDispatch: string;
+    /**
+     * @since Added in 2.0.1
+     */
     stats: WebhookStats;
+    /**
+     * @since Added in 2.7.2
+     */
     shouldInterpolateStrings: boolean;
+    /**
+     * @since Added in 2.9.4
+     */
     isApifyIntegration?: boolean;
+    /**
+     * @since Added in 2.8.1
+     */
     headersTemplate?: string;
+    /**
+     * @since Added in 2.8.1
+     */
     description?: string;
 }
 
+/**
+ * @since Added in 2.0.1
+ */
 export interface WebhookIdempotencyKey {
+    /**
+     * @since Added in 2.0.1
+     */
     idempotencyKey?: string;
 }
 
 /**
  * Data for updating a webhook.
+ * @since Added in 2.0.1
  */
 export type WebhookUpdateData = Partial<
     Pick<
@@ -175,32 +240,56 @@ export type WebhookUpdateData = Partial<
 
 /**
  * Statistics about webhook usage.
+ * @since Added in 2.0.1
  */
 export interface WebhookStats {
+    /**
+     * @since Added in 2.0.1
+     */
     totalDispatches: number;
 }
 
 /**
  * Event types that can trigger webhooks.
+ * @since Added in 2.0.1
  */
 export type WebhookEventType = (typeof WEBHOOK_EVENT_TYPES)[keyof typeof WEBHOOK_EVENT_TYPES];
 
 /**
  * Condition that determines when a webhook should be triggered.
+ * @since Added in 2.0.1
  */
 export type WebhookCondition =
     | WebhookAnyRunOfActorCondition
     | WebhookAnyRunOfActorTaskCondition
     | WebhookCertainRunCondition;
 
+/**
+ * @since Added in 2.0.1
+ */
 export interface WebhookAnyRunOfActorCondition {
+    /**
+     * @since Added in 2.0.1
+     */
     actorId: string;
 }
 
+/**
+ * @since Added in 2.0.1
+ */
 export interface WebhookAnyRunOfActorTaskCondition {
+    /**
+     * @since Added in 2.0.1
+     */
     actorTaskId: string;
 }
 
+/**
+ * @since Added in 2.0.1
+ */
 export interface WebhookCertainRunCondition {
+    /**
+     * @since Added in 2.0.1
+     */
     actorRunId: string;
 }

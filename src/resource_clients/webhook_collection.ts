@@ -27,6 +27,7 @@ import type { Webhook, WebhookUpdateData } from './webhook';
  * ```
  *
  * @see https://docs.apify.com/platform/integrations/webhooks
+ * @since Added in 1.0.0
  */
 export class WebhookCollectionClient extends ResourceCollectionClient {
     /**
@@ -60,6 +61,9 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/webhooks-get
      */
 
+    /**
+     * @since Added in 2.0.1
+     */
     list(
         options: WebhookCollectionListOptions = {},
     ): PaginatedIterator<Omit<Webhook, 'payloadTemplate' | 'headersTemplate'>> {
@@ -81,6 +85,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
      * @param webhook - The webhook data.
      * @returns The created webhook object.
      * @see https://docs.apify.com/api/v2/webhooks-post
+     * @since Added in 2.0.1
      */
     async create(webhook?: WebhookUpdateData): Promise<Webhook> {
         ow(webhook, ow.optional.object);
@@ -89,6 +94,12 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
     }
 }
 
+/**
+ * @since Added in 2.0.1
+ */
 export interface WebhookCollectionListOptions extends PaginationOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     desc?: boolean;
 }

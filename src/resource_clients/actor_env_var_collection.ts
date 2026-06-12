@@ -30,6 +30,7 @@ import type { ActorEnvironmentVariable } from './actor_version';
  * ```
  *
  * @see https://docs.apify.com/platform/actors/development/programming-interface/environment-variables
+ * @since Added in 2.1.0
  */
 export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     /**
@@ -60,6 +61,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      *
      * @returns A paginated iterator of environment variables.
      * @see https://docs.apify.com/api/v2/act-version-env-vars-get
+     * @since Added in 2.1.0
      */
     list(
         _options: ActorEnvVarCollectionListOptions = {},
@@ -73,6 +75,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      * @param actorEnvVar - The environment variable data.
      * @returns The created environment variable object.
      * @see https://docs.apify.com/api/v2/act-version-env-vars-post
+     * @since Added in 2.1.0
      */
     async create(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
         ow(actorEnvVar, ow.optional.object);
@@ -83,9 +86,16 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
 /**
  * @deprecated No options are used in the current API implementation.
  * https://github.com/apify/apify-client-js/issues/799
+ * @since Added in 2.1.0
  */
 export interface ActorEnvVarCollectionListOptions extends PaginationOptions {
+    /**
+     * @since Added in 2.1.0
+     */
     desc?: boolean;
 }
 
+/**
+ * @since Added in 2.1.0
+ */
 export type ActorEnvVarListResult = Pick<PaginatedList<ActorEnvironmentVariable>, 'total' | 'items'>;

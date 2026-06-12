@@ -54,6 +54,7 @@ import {
  * ```
  *
  * @see https://docs.apify.com/platform/storage/key-value-store
+ * @since Added in 1.0.0
  */
 export class KeyValueStoreClient extends ResourceClient {
     /**
@@ -71,6 +72,7 @@ export class KeyValueStoreClient extends ResourceClient {
      *
      * @returns The KeyValueStore object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/key-value-store-get
+     * @since Added in 2.0.1
      */
     async get(): Promise<KeyValueStore | undefined> {
         return this._get({}, SMALL_TIMEOUT_MILLIS);
@@ -85,6 +87,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @param newFields.generalAccess - General resource access level ('FOLLOW_USER_SETTING', 'ANYONE_WITH_ID_CAN_READ' or 'RESTRICTED')
      * @returns The updated KeyValueStore object
      * @see https://docs.apify.com/api/v2/key-value-store-put
+     * @since Added in 2.0.1
      */
     async update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore> {
         ow(newFields, ow.object);
@@ -96,6 +99,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * Deletes the key-value store.
      *
      * @see https://docs.apify.com/api/v2/key-value-store-delete
+     * @since Added in 2.0.1
      */
     async delete(): Promise<void> {
         return this._delete(SMALL_TIMEOUT_MILLIS);
@@ -135,6 +139,7 @@ export class KeyValueStoreClient extends ResourceClient {
      *   exclusiveStartKey = result.nextExclusiveStartKey;
      * } while (result.isTruncated);
      * ```
+     * @since Added in 2.0.1
      */
     listKeys(
         options: KeyValueClientListKeysOptions = {},
@@ -209,6 +214,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * console.log(`Public URL: ${url}`);
      * // You can now share this URL or use it in a browser
      * ```
+     * @since Added in 2.14.0
      */
     async getRecordPublicUrl(key: string): Promise<string> {
         ow(key, ow.string.nonEmpty);
@@ -246,6 +252,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * });
      * console.log(`Share this URL: ${url}`);
      * ```
+     * @since Added in 2.13.0
      */
     async createKeysPublicUrl(options: KeyValueClientCreateKeysUrlOptions = {}) {
         ow(
@@ -295,6 +302,7 @@ export class KeyValueStoreClient extends ResourceClient {
      *   console.log('OUTPUT record exists');
      * }
      * ```
+     * @since Added in 2.9.0
      */
     async recordExists(key: string): Promise<boolean> {
         const requestOpts: Record<string, unknown> = {
@@ -322,6 +330,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * NOT resolve to a `KeyValueStore` record with an `undefined` value.
      *
      * @see https://docs.apify.com/api/v2/key-value-store-record-get
+     * @since Added in 2.0.1
      */
     async getRecord(key: string): Promise<KeyValueStoreRecord<JsonValue> | undefined>;
 
@@ -429,6 +438,7 @@ export class KeyValueStoreClient extends ResourceClient {
      *   contentType: 'image/png'
      * });
      * ```
+     * @since Added in 2.0.1
      */
     async setRecord(record: KeyValueStoreRecord<JsonValue>, options: KeyValueStoreRecordOptions = {}): Promise<void> {
         ow(
@@ -493,6 +503,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * ```javascript
      * await client.keyValueStore('my-store').deleteRecord('temp-data');
      * ```
+     * @since Added in 2.0.1
      */
     async deleteRecord(key: string): Promise<void> {
         ow(key, ow.string);
@@ -511,52 +522,137 @@ export class KeyValueStoreClient extends ResourceClient {
  *
  * Key-value stores are used to store arbitrary data records or files. Each record is identified
  * by a unique key and can contain any data - JSON objects, strings, binary files, etc.
+ * @since Added in 0.1.39
  */
 export interface KeyValueStore {
+    /**
+     * @since Added in 2.0.1
+     */
     id: string;
+    /**
+     * @since Added in 2.0.1
+     */
     name?: string;
+    /**
+     * @since Added in 2.6.1
+     */
     title?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     userId: string;
+    /**
+     * @since Added in 2.21.0
+     */
     username?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     createdAt: Date;
+    /**
+     * @since Added in 2.0.1
+     */
     modifiedAt: Date;
+    /**
+     * @since Added in 2.0.1
+     */
     accessedAt: Date;
+    /**
+     * @since Added in 2.0.1
+     */
     actId?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     actRunId?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     stats?: KeyValueStoreStats;
+    /**
+     * @since Added in 2.12.2
+     */
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
+    /**
+     * @since Added in 2.13.0
+     */
     urlSigningSecretKey?: string | null;
+    /**
+     * @since Added in 2.13.0
+     */
     keysPublicUrl: string;
 }
 
 /**
  * Statistics about Key-Value Store usage and storage.
+ * @since Added in 2.0.1
  */
 export interface KeyValueStoreStats {
+    /**
+     * @since Added in 2.0.1
+     */
     readCount?: number;
+    /**
+     * @since Added in 2.0.1
+     */
     writeCount?: number;
+    /**
+     * @since Added in 2.0.1
+     */
     deleteCount?: number;
+    /**
+     * @since Added in 2.0.1
+     */
     listCount?: number;
+    /**
+     * @since Added in 2.0.1
+     */
     storageBytes?: number;
 }
 
 /**
  * Options for updating a Key-Value Store.
+ * @since Added in 2.0.1
  */
 export interface KeyValueClientUpdateOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     name?: string | null;
+    /**
+     * @since Added in 2.6.1
+     */
     title?: string;
+    /**
+     * @since Added in 2.12.2
+     */
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
 /**
  * Options for listing keys in a Key-Value Store.
+ * @since Added in 2.0.1
  */
 export interface KeyValueClientListKeysOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     limit?: number;
+    /**
+     * @since Added in 2.0.1
+     */
     exclusiveStartKey?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     collection?: string;
+    /**
+     * @since Added in 2.12.5
+     */
     prefix?: string;
+    /**
+     * @since Added in 2.13.0
+     */
     signature?: string;
 }
 
@@ -564,8 +660,12 @@ export interface KeyValueClientListKeysOptions {
  * Options for creating a public URL to list keys in a Key-Value Store.
  *
  * Extends {@link KeyValueClientListKeysOptions} with URL expiration control.
+ * @since Added in 2.16.0
  */
 export interface KeyValueClientCreateKeysUrlOptions extends KeyValueClientListKeysOptions {
+    /**
+     * @since Added in 2.16.0
+     */
     expiresInSecs?: number;
 }
 
@@ -573,31 +673,70 @@ export interface KeyValueClientCreateKeysUrlOptions extends KeyValueClientListKe
  * Result of listing keys in a Key-Value Store.
  *
  * Contains paginated list of keys with metadata and pagination information.
+ * @since Added in 2.0.1
  */
 export interface KeyValueClientListKeysResult {
+    /**
+     * @since Added in 2.0.1
+     */
     count: number;
+    /**
+     * @since Added in 2.0.1
+     */
     limit: number;
+    /**
+     * @since Added in 2.0.1
+     */
     exclusiveStartKey: string;
+    /**
+     * @since Added in 2.0.1
+     */
     isTruncated: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     nextExclusiveStartKey: string;
+    /**
+     * @since Added in 2.0.1
+     */
     items: KeyValueListItem[];
 }
 
 /**
  * Metadata about a single key in a Key-Value Store.
+ * @since Added in 2.0.1
  */
 export interface KeyValueListItem {
+    /**
+     * @since Added in 2.0.1
+     */
     key: string;
+    /**
+     * @since Added in 2.0.1
+     */
     size: number;
+    /**
+     * @since Added in 2.15.1
+     */
     recordPublicUrl: string;
 }
 
 /**
  * Options for retrieving a record from a Key-Value Store.
+ * @since Added in 2.0.1
  */
 export interface KeyValueClientGetRecordOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     buffer?: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     stream?: boolean;
+    /**
+     * @since Added in 2.18.0
+     */
     signature?: string;
 }
 
@@ -605,18 +744,35 @@ export interface KeyValueClientGetRecordOptions {
  * Represents a record (key-value pair) in a Key-Value Store.
  *
  * @template T - The type of the record's value
+ * @since Added in 0.1.39
  */
 export interface KeyValueStoreRecord<T> {
+    /**
+     * @since Added in 2.0.1
+     */
     key: string;
+    /**
+     * @since Added in 2.0.1
+     */
     value: T;
+    /**
+     * @since Added in 2.0.1
+     */
     contentType?: string;
 }
 
 /**
  * Options for storing a record in a Key-Value Store.
+ * @since Added in 2.12.4
  */
 export interface KeyValueStoreRecordOptions {
+    /**
+     * @since Added in 2.12.4
+     */
     timeoutSecs?: number;
+    /**
+     * @since Added in 2.12.4
+     */
     doNotRetryTimeouts?: boolean;
 }
 
@@ -625,6 +781,7 @@ export interface KeyValueStoreRecordOptions {
  *
  * Returns Readable if stream option is true, Buffer if buffer option is true,
  * otherwise returns JsonValue.
+ * @since Added in 2.0.6
  */
 export type ReturnTypeFromOptions<Options extends KeyValueClientGetRecordOptions> = Options['stream'] extends true
     ? Readable

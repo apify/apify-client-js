@@ -30,6 +30,7 @@ import { LogClient } from './log';
  * ```
  *
  * @see https://docs.apify.com/platform/actors/running/runs-and-builds#builds
+ * @since Added in 1.0.0
  */
 export class BuildClient extends ResourceClient {
     /**
@@ -59,6 +60,7 @@ export class BuildClient extends ResourceClient {
      * // Wait up to 60 seconds for build to finish
      * const build = await client.build('build-id').get({ waitForFinish: 60 });
      * ```
+     * @since Added in 2.0.1
      */
     async get(options: BuildClientGetOptions = {}): Promise<Build | undefined> {
         ow(
@@ -83,6 +85,7 @@ export class BuildClient extends ResourceClient {
      * ```javascript
      * await client.build('build-id').abort();
      * ```
+     * @since Added in 2.0.1
      */
     async abort(): Promise<Build> {
         const response = await this.httpClient.call({
@@ -98,6 +101,7 @@ export class BuildClient extends ResourceClient {
      * Deletes the Actor build.
      *
      * @see https://docs.apify.com/api/v2/actor-build-delete
+     * @since Added in 2.8.1
      */
     async delete(): Promise<void> {
         return this._delete();
@@ -108,6 +112,7 @@ export class BuildClient extends ResourceClient {
      *
      * @returns The OpenAPI definition object.
      * @see https://docs.apify.com/api/v2/actor-build-openapi-json-get
+     * @since Added in 2.11.2
      */
     async getOpenApiDefinition(): Promise<OpenApiDefinition> {
         const response = await this.httpClient.call({
@@ -148,6 +153,7 @@ export class BuildClient extends ResourceClient {
      *   const run = await client.actor('my-actor').start();
      * }
      * ```
+     * @since Added in 2.0.1
      */
     async waitForFinish(options: BuildClientWaitForFinishOptions = {}): Promise<Build> {
         ow(
@@ -172,6 +178,7 @@ export class BuildClient extends ResourceClient {
      * const log = await client.build('build-id').log().get();
      * console.log(log);
      * ```
+     * @since Added in 2.9.0
      */
     log(): LogClient {
         return new LogClient(
@@ -184,29 +191,45 @@ export class BuildClient extends ResourceClient {
 
 /**
  * Options for getting a Build.
+ * @since Added in 2.0.1
  */
 export interface BuildClientGetOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     waitForFinish?: number;
 }
 
 /**
  * Options for waiting for a Build to finish.
+ * @since Added in 2.0.1
  */
 export interface BuildClientWaitForFinishOptions {
     /**
      * Maximum time to wait for the build to finish, in seconds.
      * If the limit is reached, the returned promise is resolved to a build object that will have
      * status `READY` or `RUNNING`. If `waitSecs` omitted, the function waits indefinitely.
+     * @since Added in 2.0.1
      */
     waitSecs?: number;
 }
 
 /**
  * Metadata about how a Build was initiated.
+ * @since Added in 2.0.1
  */
 export interface BuildMeta {
+    /**
+     * @since Added in 2.0.1
+     */
     origin: string;
+    /**
+     * @since Added in 2.0.1
+     */
     clientIp: string;
+    /**
+     * @since Added in 2.0.1
+     */
     userAgent: string;
 }
 
@@ -215,55 +238,127 @@ export interface BuildMeta {
  *
  * Builds compile Actor source code and prepare it for execution. Each build has a unique ID
  * and can be tagged (e.g., 'latest', 'beta') for easy reference.
+ * @since Added in 1.0.0
  */
 export interface Build {
+    /**
+     * @since Added in 2.0.1
+     */
     id: string;
+    /**
+     * @since Added in 2.0.1
+     */
     actId: string;
+    /**
+     * @since Added in 2.0.1
+     */
     userId: string;
+    /**
+     * @since Added in 2.0.1
+     */
     startedAt: Date;
+    /**
+     * @since Added in 2.0.1
+     */
     finishedAt?: Date;
+    /**
+     * @since Added in 2.0.1
+     */
     status: (typeof ACT_JOB_TERMINAL_STATUSES)[number];
+    /**
+     * @since Added in 2.0.1
+     */
     meta: BuildMeta;
+    /**
+     * @since Added in 2.0.1
+     */
     stats?: BuildStats;
+    /**
+     * @since Added in 2.0.1
+     */
     options?: BuildOptions;
     /**
      * @deprecated This property is deprecated in favor of `actorDefinition.input`.
+     * @since Added in 2.0.1
      */
     inputSchema?: string;
     /**
      * @deprecated This property is deprecated in favor of `actorDefinition.readme`.
+     * @since Added in 2.0.1
      */
     readme?: string;
+    /**
+     * @since Added in 2.0.1
+     */
     buildNumber: string;
+    /**
+     * @since Added in 2.7.2
+     */
     usage?: BuildUsage;
+    /**
+     * @since Added in 2.7.2
+     */
     usageTotalUsd?: number;
+    /**
+     * @since Added in 2.7.2
+     */
     usageUsd?: BuildUsage;
+    /**
+     * @since Added in 2.11.0
+     */
     actorDefinition?: ActorDefinition;
 }
 
 /**
  * Resource usage for an Actor build.
+ * @since Added in 2.7.2
  */
 export interface BuildUsage {
+    /**
+     * @since Added in 2.7.2
+     */
     ACTOR_COMPUTE_UNITS?: number;
 }
 
 /**
  * Runtime statistics for an Actor build.
+ * @since Added in 2.0.1
  */
 export interface BuildStats {
+    /**
+     * @since Added in 2.0.1
+     */
     durationMillis: number;
+    /**
+     * @since Added in 2.0.1
+     */
     runTimeSecs: number;
+    /**
+     * @since Added in 2.0.1
+     */
     computeUnits: number;
 }
 
 /**
  * Configuration options used for an Actor build.
+ * @since Added in 2.0.1
  */
 export interface BuildOptions {
+    /**
+     * @since Added in 2.0.1
+     */
     useCache?: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     betaPackages?: boolean;
+    /**
+     * @since Added in 2.0.1
+     */
     memoryMbytes?: number;
+    /**
+     * @since Added in 2.0.1
+     */
     diskMbytes?: number;
 }
 
@@ -272,17 +367,33 @@ export interface BuildOptions {
  *
  * Defines the Actor's API interface in OpenAPI 3.0 format, useful for integration
  * with tools like ChatGPT plugins and other API consumers.
+ * @since Added in 2.11.2
  */
 export interface OpenApiDefinition {
+    /**
+     * @since Added in 2.11.2
+     */
     openapi: string;
+    /**
+     * @since Added in 2.11.2
+     */
     info: {
         title: string;
         description?: string;
         version?: string;
         'x-build-id': string;
     };
+    /**
+     * @since Added in 2.11.2
+     */
     servers: { url: string }[];
+    /**
+     * @since Added in 2.11.2
+     */
     paths: { [key: string]: { post: OpenApiOperation } };
+    /**
+     * @since Added in 2.11.2
+     */
     components: {
         schemas: {
             [key: string]: object;
