@@ -9,6 +9,8 @@ minimumReleaseAgeExclude:
   - "apify"
   - "crawlee"
   - "got-scraping"
+  # Renovate security update: esbuild@0.28.1
+  - esbuild@0.28.1
 
 onlyBuiltDependencies:
   - "@playwright/browser-chromium"
@@ -33,4 +35,4 @@ linkWorkspacePackages: true
 preferWorkspacePackages: true
 legacyPeerDeps: true
 publicHoistPattern:
-    - "*"
+  - "*"
