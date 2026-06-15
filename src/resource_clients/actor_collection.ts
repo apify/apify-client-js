@@ -5,6 +5,7 @@ import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor';
 import type { ActorVersion } from './actor_version';
+import { ACTOR_PERMISSION_LEVEL } from '@apify/consts';
 
 /**
  * Client for managing the collection of Actors in your account.
@@ -127,4 +128,5 @@ export interface ActorCollectionCreateOptions {
     actorStandby?: ActorStandby & {
         isEnabled: boolean;
     };
+    actorPermissionLevel?: ACTOR_PERMISSION_LEVEL;
 }
