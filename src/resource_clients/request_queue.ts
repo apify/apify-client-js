@@ -838,9 +838,6 @@ export class RequestQueueClient extends ResourceClient {
  * @since Added in 2.0.1
  */
 export interface RequestQueueUserOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     clientKey?: string;
     /**
      * @since Added in 2.2.0
@@ -931,25 +928,10 @@ export interface RequestQueue {
  * @since Added in 2.0.1
  */
 export interface RequestQueueStats {
-    /**
-     * @since Added in 2.0.1
-     */
     readCount?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     writeCount?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     deleteCount?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     headItemReadCount?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     storageBytes?: number;
 }
 
@@ -958,9 +940,6 @@ export interface RequestQueueStats {
  * @since Added in 2.0.1
  */
 export interface RequestQueueClientUpdateOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     name?: string | null;
     /**
      * @since Added in 2.6.1
@@ -977,9 +956,6 @@ export interface RequestQueueClientUpdateOptions {
  * @since Added in 2.0.1
  */
 export interface RequestQueueClientListHeadOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     limit?: number;
 }
 
@@ -1016,14 +992,10 @@ export type RequestQueueListRequestsFilter = 'locked' | 'pending';
  * @since Added in 2.5.1
  */
 export interface RequestQueueClientListRequestsOptions {
-    /**
-     * @since Added in 2.5.1
-     */
     limit?: number;
     /**
      * Using id of request that does not exist in request queue leads to unpredictable results.
      * @deprecated Use `cursor` for pagination instead.
-     * @since Added in 2.5.1
      */
     exclusiveStartId?: string;
     /**
@@ -1041,18 +1013,9 @@ export interface RequestQueueClientListRequestsOptions {
  * @since Added in 2.5.1
  */
 export interface RequestQueueClientPaginateRequestsOptions {
-    /**
-     * @since Added in 2.5.1
-     */
     limit?: number;
-    /**
-     * @since Added in 2.5.1
-     */
     maxPageLimit?: number;
-    /**
-     * @deprecated Use `cursor` for pagination instead.
-     * @since Added in 2.5.1
-     */
+    /** @deprecated Use `cursor` for pagination instead. */
     exclusiveStartId?: string;
     /**
      * @since Added in 2.23.2
@@ -1069,14 +1032,8 @@ export interface RequestQueueClientPaginateRequestsOptions {
  * @since Added in 2.5.1
  */
 export interface RequestQueueClientListRequestsResult {
-    /**
-     * @since Added in 2.5.1
-     */
     limit: number;
-    /**
-     * @deprecated Use `cursor` for pagination instead.
-     * @since Added in 2.5.1
-     */
+    /** @deprecated Use `cursor` for pagination instead. */
     exclusiveStartId?: string;
     /**
      * @since Added in 2.23.2
@@ -1086,9 +1043,6 @@ export interface RequestQueueClientListRequestsResult {
      * @since Added in 2.23.2
      */
     nextCursor?: string;
-    /**
-     * @since Added in 2.5.1
-     */
     items: RequestQueueClientRequestSchema[];
 }
 
@@ -1097,13 +1051,7 @@ export interface RequestQueueClientListRequestsResult {
  * @since Added in 2.4.1
  */
 export interface RequestQueueClientListAndLockHeadOptions {
-    /**
-     * @since Added in 2.4.1
-     */
     lockSecs: number;
-    /**
-     * @since Added in 2.4.1
-     */
     limit?: number;
 }
 
@@ -1114,9 +1062,6 @@ export interface RequestQueueClientListAndLockHeadOptions {
  * @since Added in 2.4.1
  */
 export interface RequestQueueClientListAndLockHeadResult extends RequestQueueClientListHeadResult {
-    /**
-     * @since Added in 2.4.1
-     */
     lockSecs: number;
     /**
      * @since Added in 2.11.0
@@ -1133,25 +1078,10 @@ export interface RequestQueueClientListAndLockHeadResult extends RequestQueueCli
  * @since Added in 2.0.1
  */
 export interface RequestQueueClientListItem {
-    /**
-     * @since Added in 2.0.1
-     */
     id: string;
-    /**
-     * @since Added in 2.0.1
-     */
     retryCount: number;
-    /**
-     * @since Added in 2.0.1
-     */
     uniqueKey: string;
-    /**
-     * @since Added in 2.0.1
-     */
     url: string;
-    /**
-     * @since Added in 2.0.1
-     */
     method: AllowedHttpMethods;
     /**
      * @since Added in 2.4.1
@@ -1163,9 +1093,6 @@ export interface RequestQueueClientListItem {
  * @since Added in 2.0.1
  */
 export interface RequestQueueClientAddRequestOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     forefront?: boolean;
 }
 
@@ -1173,13 +1100,7 @@ export interface RequestQueueClientAddRequestOptions {
  * @since Added in 2.4.1
  */
 export interface RequestQueueClientProlongRequestLockOptions {
-    /**
-     * @since Added in 2.4.1
-     */
     forefront?: boolean;
-    /**
-     * @since Added in 2.4.1
-     */
     lockSecs: number;
 }
 
@@ -1187,9 +1108,6 @@ export interface RequestQueueClientProlongRequestLockOptions {
  * @since Added in 2.4.1
  */
 export interface RequestQueueClientDeleteRequestLockOptions {
-    /**
-     * @since Added in 2.4.1
-     */
     forefront?: boolean;
 }
 
@@ -1197,9 +1115,6 @@ export interface RequestQueueClientDeleteRequestLockOptions {
  * @since Added in 2.4.1
  */
 export interface RequestQueueClientProlongRequestLockResult {
-    /**
-     * @since Added in 2.4.1
-     */
     lockExpiresAt: Date;
 }
 
@@ -1207,17 +1122,8 @@ export interface RequestQueueClientProlongRequestLockResult {
  * @since Added in 2.3.0
  */
 export interface RequestQueueClientBatchAddRequestWithRetriesOptions {
-    /**
-     * @since Added in 2.3.0
-     */
     forefront?: boolean;
-    /**
-     * @since Added in 2.3.0
-     */
     maxUnprocessedRequestsRetries?: number;
-    /**
-     * @since Added in 2.3.0
-     */
     maxParallel?: number;
     /**
      * @since Added in 2.4.0
@@ -1232,53 +1138,17 @@ export interface RequestQueueClientBatchAddRequestWithRetriesOptions {
  * @since Added in 2.0.1
  */
 export interface RequestQueueClientRequestSchema {
-    /**
-     * @since Added in 2.0.1
-     */
     id: string;
-    /**
-     * @since Added in 2.0.1
-     */
     uniqueKey: string;
-    /**
-     * @since Added in 2.0.1
-     */
     url: string;
-    /**
-     * @since Added in 2.0.1
-     */
     method?: AllowedHttpMethods;
-    /**
-     * @since Added in 2.0.1
-     */
     payload?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     retryCount?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     errorMessages?: string[];
-    /**
-     * @since Added in 2.0.1
-     */
     headers?: Record<string, string>;
-    /**
-     * @since Added in 2.0.1
-     */
     userData?: Record<string, unknown>;
-    /**
-     * @since Added in 2.0.1
-     */
     handledAt?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     noRetry?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     loadedUrl?: string;
 }
 
@@ -1287,17 +1157,8 @@ export interface RequestQueueClientRequestSchema {
  * @since Added in 2.0.1
  */
 export interface RequestQueueClientAddRequestResult {
-    /**
-     * @since Added in 2.0.1
-     */
     requestId: string;
-    /**
-     * @since Added in 2.0.1
-     */
     wasAlreadyPresent: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     wasAlreadyHandled: boolean;
 }
 
@@ -1318,9 +1179,6 @@ interface UnprocessedRequest {
  * @since Added in 2.12.5
  */
 export interface RequestQueueClientUnlockRequestsResult {
-    /**
-     * @since Added in 2.12.5
-     */
     unlockedCount: number;
 }
 
@@ -1331,13 +1189,7 @@ export interface RequestQueueClientUnlockRequestsResult {
  * @since Added in 2.3.0
  */
 export interface RequestQueueClientBatchRequestsOperationResult {
-    /**
-     * @since Added in 2.3.0
-     */
     processedRequests: ProcessedRequest[];
-    /**
-     * @since Added in 2.3.0
-     */
     unprocessedRequests: UnprocessedRequest[];
 }
 

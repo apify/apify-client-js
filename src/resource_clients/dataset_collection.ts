@@ -98,13 +98,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
  * @since Added in 2.0.1
  */
 export interface DatasetCollectionClientListOptions extends PaginationOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     unnamed?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     desc?: boolean;
     /**
      * Filter by ownership: 'ownedByMe' returns only user's own datasets, 'sharedWithMe' returns only shared datasets.
@@ -117,9 +111,6 @@ export interface DatasetCollectionClientListOptions extends PaginationOptions {
  * @since Added in 2.3.0
  */
 export interface DatasetCollectionClientGetOrCreateOptions {
-    /**
-     * @since Added in 2.3.0
-     */
     schema?: Record<string, unknown>;
 }
 

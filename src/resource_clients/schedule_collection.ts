@@ -94,8 +94,5 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
  * @since Added in 2.0.1
  */
 export interface ScheduleCollectionListOptions extends PaginationOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     desc?: boolean;
 }

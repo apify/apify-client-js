@@ -94,9 +94,6 @@ export class TaskCollectionClient extends ResourceCollectionClient {
  * @since Added in 2.0.1
  */
 export interface TaskCollectionListOptions extends PaginationOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     desc?: boolean;
 }
 
@@ -109,8 +106,5 @@ export type TaskList = Omit<Task, 'options' | 'input'>;
  * @since Added in 2.3.0
  */
 export interface TaskCreateData extends TaskUpdateData {
-    /**
-     * @since Added in 2.3.0
-     */
     actId: string;
 }

@@ -109,10 +109,7 @@ export class LogClient extends ResourceClient {
  * @since Added in 2.20.0
  */
 export interface LogOptions {
-    /**
-     * @default false
-     * @since Added in 2.20.0
-     */
+    /** @default false */
     raw?: boolean;
 }
 
@@ -125,9 +122,6 @@ export class LoggerActorRedirect extends Logger {
         super({ skipTime: true, level: LogLevel.DEBUG, ...options });
     }
 
-    /**
-     * @since Added in 2.20.0
-     */
     override _log(level: LogLevel, message: string, data?: any, exception?: unknown, opts: Record<string, any> = {}) {
         if (level > this.options.level) {
             return;
@@ -175,7 +169,6 @@ export class StreamedLog {
 
     /**
      * Start log redirection.
-     * @since Added in 2.20.0
      */
     public start(): void {
         if (this.streamingTask) {
@@ -187,7 +180,6 @@ export class StreamedLog {
 
     /**
      * Stop log redirection.
-     * @since Added in 2.20.0
      */
     public async stop(): Promise<void> {
         if (!this.streamingTask) {
@@ -284,19 +276,10 @@ export class StreamedLog {
  * @since Added in 2.20.0
  */
 export interface StreamedLogOptions {
-    /**
-     * Log client used to communicate with the Apify API.
-     * @since Added in 2.20.0
-     */
+    /** Log client used to communicate with the Apify API. */
     logClient: LogClient;
-    /**
-     * Log to which the Actor run logs will be redirected.
-     * @since Added in 2.20.0
-     */
+    /** Log to which the Actor run logs will be redirected. */
     toLog: Log;
-    /**
-     * Whether to redirect all logs from Actor run start (even logs from the past).
-     * @since Added in 2.20.0
-     */
+    /** Whether to redirect all logs from Actor run start (even logs from the past). */
     fromStart?: boolean;
 }

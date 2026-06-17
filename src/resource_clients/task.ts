@@ -351,9 +351,6 @@ export interface Task {
  * @since Added in 2.0.1
  */
 export interface TaskStats {
-    /**
-     * @since Added in 2.0.1
-     */
     totalRuns: number;
 }
 
@@ -362,17 +359,8 @@ export interface TaskStats {
  * @since Added in 2.0.1
  */
 export interface TaskOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     build?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     timeoutSecs?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     memoryMbytes?: number;
     /**
      * @since Added in 2.19.0
@@ -393,9 +381,6 @@ export type TaskUpdateData = Partial<
  * @since Added in 2.0.1
  */
 export interface TaskLastRunOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     status?: keyof typeof ACT_JOB_STATUSES;
 }
 
@@ -413,8 +398,5 @@ export type TaskStartOptions = Omit<ActorStartOptions, 'contentType' | 'forcePer
  * @since Added in 2.6.2
  */
 export interface TaskCallOptions extends Omit<TaskStartOptions, 'waitForFinish'> {
-    /**
-     * @since Added in 2.6.2
-     */
     waitSecs?: number;
 }

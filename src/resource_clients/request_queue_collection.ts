@@ -96,13 +96,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
  * @since Added in 2.0.1
  */
 export interface RequestQueueCollectionListOptions extends PaginationOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     unnamed?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     desc?: boolean;
     /**
      * Filter by ownership: 'ownedByMe' returns only user's own request queues, 'sharedWithMe' returns only shared request queues.

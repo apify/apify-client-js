@@ -610,39 +610,21 @@ export class ApifyClient {
  * @since Added in 2.0.1
  */
 export interface ApifyClientOptions {
-    /**
-     * @default https://api.apify.com
-     * @since Added in 2.0.1
-     */
+    /** @default https://api.apify.com */
     baseUrl?: string;
     /**
      * @default https://api.apify.com
      * @since Added in 2.17.0
      */
     publicBaseUrl?: string;
-    /**
-     * @default 8
-     * @since Added in 2.0.1
-     */
+    /** @default 8 */
     maxRetries?: number;
-    /**
-     * @default 500
-     * @since Added in 2.0.1
-     */
+    /** @default 500 */
     minDelayBetweenRetriesMillis?: number;
-    /**
-     * @default []
-     * @since Added in 2.0.1
-     */
+    /** @default [] */
     requestInterceptors?: RequestInterceptorFunction[];
-    /**
-     * @default 360
-     * @since Added in 2.0.1
-     */
+    /** @default 360 */
     timeoutSecs?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     token?: string;
     /**
      * @since Added in 2.10.0

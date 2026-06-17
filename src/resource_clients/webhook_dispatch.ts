@@ -90,17 +90,8 @@ export interface WebhookDispatch {
  * @since Added in 2.0.1
  */
 export enum WebhookDispatchStatus {
-    /**
-     * @since Added in 2.0.1
-     */
     Active = 'ACTIVE',
-    /**
-     * @since Added in 2.0.1
-     */
     Succeeded = 'SUCCEEDED',
-    /**
-     * @since Added in 2.0.1
-     */
     Failed = 'FAILED',
 }
 
@@ -108,25 +99,10 @@ export enum WebhookDispatchStatus {
  * @since Added in 2.0.1
  */
 export interface WebhookDispatchCall {
-    /**
-     * @since Added in 2.0.1
-     */
     startedAt: Date;
-    /**
-     * @since Added in 2.0.1
-     */
     finishedAt: Date;
-    /**
-     * @since Added in 2.0.1
-     */
     errorMessage: string | null;
-    /**
-     * @since Added in 2.0.1
-     */
     responseStatus: number | null;
-    /**
-     * @since Added in 2.0.1
-     */
     responseBody: string | null;
 }
 
@@ -134,20 +110,8 @@ export interface WebhookDispatchCall {
  * @since Added in 2.13.0
  */
 export interface WebhookDispatchEventData {
-    /**
-     * @since Added in 2.13.0
-     */
     actorRunId?: string;
-    /**
-     * @since Added in 2.13.0
-     */
     actorId?: string;
-    /**
-     * @since Added in 2.13.0
-     */
     actorTaskId?: string;
-    /**
-     * @since Added in 2.13.0
-     */
     actorBuildId?: string;
 }

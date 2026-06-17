@@ -255,15 +255,9 @@ export interface RequestQueuePaginationIteratorOptions {
  * Standard pagination options for API requests.
  */
 export interface PaginationOptions {
-    /**
-     * Position of the first returned entry.
-     * @since Added in 2.0.1
-     */
+    /** Position of the first returned entry. */
     offset?: number;
-    /**
-     * Maximum number of entries requested.
-     * @since Added in 2.0.1
-     */
+    /** Maximum number of entries requested. */
     limit?: number;
     /** Maximum number of items returned in one API response. Relevant in the context of asyncIterator, the iterator
      * will fetch results in chunks of this size from API and yield them one by one. It will stop fetching once the
@@ -281,15 +275,9 @@ export interface PaginationOptions {
  * @template Data - The type of items in the response
  */
 export interface PaginatedResponse<Data> {
-    /**
-     * Total count of entries.
-     * @since Added in 2.0.1
-     */
+    /** Total count of entries. */
     total: number;
-    /**
-     * Entries.
-     * @since Added in 2.0.1
-     */
+    /** Entries. */
     items: Data[];
 }
 
@@ -303,25 +291,13 @@ export interface PaginatedResponse<Data> {
  * @since Added in 2.0.1
  */
 export interface PaginatedList<Data> extends PaginatedResponse<Data> {
-    /**
-     * Count of dataset entries returned in this set.
-     * @since Added in 2.0.1
-     */
+    /** Count of dataset entries returned in this set. */
     count: number;
-    /**
-     * Position of the first returned entry in the dataset.
-     * @since Added in 2.0.1
-     */
+    /** Position of the first returned entry in the dataset. */
     offset: number;
-    /**
-     * Maximum number of dataset entries requested.
-     * @since Added in 2.0.1
-     */
+    /** Maximum number of dataset entries requested. */
     limit: number;
-    /**
-     * Should the results be in descending order.
-     * @since Added in 2.0.1
-     */
+    /** Should the results be in descending order. */
     desc: boolean;
 }
 

@@ -184,13 +184,7 @@ export interface User {
  * @since Added in 2.0.1
  */
 export interface UserProxy {
-    /**
-     * @since Added in 2.0.1
-     */
     password: string;
-    /**
-     * @since Added in 2.0.1
-     */
     groups: ProxyGroup[];
 }
 
@@ -198,17 +192,8 @@ export interface UserProxy {
  * @since Added in 2.0.1
  */
 export interface ProxyGroup {
-    /**
-     * @since Added in 2.0.1
-     */
     name: string;
-    /**
-     * @since Added in 2.0.1
-     */
     description: string;
-    /**
-     * @since Added in 2.0.1
-     */
     availableCount: number;
 }
 
@@ -216,85 +201,25 @@ export interface ProxyGroup {
  * @since Added in 2.0.1
  */
 export interface UserPlan {
-    /**
-     * @since Added in 2.0.1
-     */
     id: string;
-    /**
-     * @since Added in 2.0.1
-     */
     description: string;
-    /**
-     * @since Added in 2.0.1
-     */
     isEnabled: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     monthlyBasePriceUsd: number;
-    /**
-     * @since Added in 2.0.1
-     */
     monthlyUsageCreditsUsd: number;
-    /**
-     * @since Added in 2.0.1
-     */
     usageDiscountPercent: number;
-    /**
-     * @since Added in 2.0.1
-     */
     enabledPlatformFeatures: PlatformFeature[];
-    /**
-     * @since Added in 2.0.1
-     */
     maxMonthlyUsageUsd: number;
-    /**
-     * @since Added in 2.0.1
-     */
     maxActorMemoryGbytes: number;
-    /**
-     * @since Added in 2.0.1
-     */
     maxMonthlyActorComputeUnits: number;
-    /**
-     * @since Added in 2.0.1
-     */
     maxMonthlyResidentialProxyGbytes: number;
-    /**
-     * @since Added in 2.0.1
-     */
     maxMonthlyProxySerps: number;
-    /**
-     * @since Added in 2.0.1
-     */
     maxMonthlyExternalDataTransferGbytes: number;
-    /**
-     * @since Added in 2.0.1
-     */
     maxActorCount: number;
-    /**
-     * @since Added in 2.0.1
-     */
     maxActorTaskCount: number;
-    /**
-     * @since Added in 2.0.1
-     */
     dataRetentionDays: number;
-    /**
-     * @since Added in 2.0.1
-     */
     availableProxyGroups: Record<string, number>;
-    /**
-     * @since Added in 2.0.1
-     */
     teamAccountSeatCount: number;
-    /**
-     * @since Added in 2.0.1
-     */
     supportLevel: string;
-    /**
-     * @since Added in 2.0.1
-     */
     availableAddOns: unknown[];
 }
 
@@ -302,33 +227,12 @@ export interface UserPlan {
  * @since Added in 2.0.1
  */
 export enum PlatformFeature {
-    /**
-     * @since Added in 2.0.1
-     */
     Actors = 'ACTORS',
-    /**
-     * @since Added in 2.0.1
-     */
     Storage = 'STORAGE',
-    /**
-     * @since Added in 2.0.1
-     */
     ProxySERPS = 'PROXY_SERPS',
-    /**
-     * @since Added in 2.0.1
-     */
     Scheduler = 'SCHEDULER',
-    /**
-     * @since Added in 2.0.1
-     */
     Webhooks = 'WEBHOOKS',
-    /**
-     * @since Added in 2.0.1
-     */
     Proxy = 'PROXY',
-    /**
-     * @since Added in 2.0.1
-     */
     ProxyExternalAccess = 'PROXY_EXTERNAL_ACCESS',
 }
 
@@ -361,25 +265,10 @@ interface EffectivePlatformFeatures {
  * @since Added in 2.9.2
  */
 export interface MonthlyUsage {
-    /**
-     * @since Added in 2.9.2
-     */
     usageCycle: UsageCycle;
-    /**
-     * @since Added in 2.9.2
-     */
     monthlyServiceUsage: { [key: string]: MonthlyServiceUsageData };
-    /**
-     * @since Added in 2.9.2
-     */
     dailyServiceUsages: DailyServiceUsage[];
-    /**
-     * @since Added in 2.9.2
-     */
     totalUsageCreditsUsdBeforeVolumeDiscount: number;
-    /**
-     * @since Added in 2.9.2
-     */
     totalUsageCreditsUsdAfterVolumeDiscount: number;
 }
 
@@ -387,13 +276,7 @@ export interface MonthlyUsage {
  * @since Added in 2.9.2
  */
 export interface UsageCycle {
-    /**
-     * @since Added in 2.9.2
-     */
     startAt: Date;
-    /**
-     * @since Added in 2.9.2
-     */
     endAt: Date;
 }
 
@@ -434,17 +317,8 @@ interface DailyServiceUsageData {
  * @since Added in 2.9.2
  */
 export interface AccountAndUsageLimits {
-    /**
-     * @since Added in 2.9.2
-     */
     monthlyUsageCycle: MonthlyUsageCycle;
-    /**
-     * @since Added in 2.9.2
-     */
     limits: Limits;
-    /**
-     * @since Added in 2.9.2
-     */
     current: Current;
 }
 
@@ -452,13 +326,7 @@ export interface AccountAndUsageLimits {
  * @since Added in 2.9.2
  */
 export interface MonthlyUsageCycle {
-    /**
-     * @since Added in 2.9.2
-     */
     startAt: Date;
-    /**
-     * @since Added in 2.9.2
-     */
     endAt: Date;
 }
 
@@ -466,49 +334,16 @@ export interface MonthlyUsageCycle {
  * @since Added in 2.9.2
  */
 export interface Limits {
-    /**
-     * @since Added in 2.9.2
-     */
     maxMonthlyUsageUsd: number;
-    /**
-     * @since Added in 2.9.2
-     */
     maxMonthlyActorComputeUnits: number;
-    /**
-     * @since Added in 2.9.2
-     */
     maxMonthlyExternalDataTransferGbytes: number;
-    /**
-     * @since Added in 2.9.2
-     */
     maxMonthlyProxySerps: number;
-    /**
-     * @since Added in 2.9.2
-     */
     maxMonthlyResidentialProxyGbytes: number;
-    /**
-     * @since Added in 2.9.2
-     */
     maxActorMemoryGbytes: number;
-    /**
-     * @since Added in 2.9.2
-     */
     maxActorCount: number;
-    /**
-     * @since Added in 2.9.2
-     */
     maxActorTaskCount: number;
-    /**
-     * @since Added in 2.9.2
-     */
     maxConcurrentActorJobs: number;
-    /**
-     * @since Added in 2.9.2
-     */
     maxTeamAccountSeatCount: number;
-    /**
-     * @since Added in 2.9.2
-     */
     dataRetentionDays: number;
 }
 
@@ -521,44 +356,14 @@ export type LimitsUpdateOptions = { maxMonthlyUsageUsd: number } | { dataRetenti
  * @since Added in 2.9.2
  */
 export interface Current {
-    /**
-     * @since Added in 2.9.2
-     */
     monthlyUsageUsd: number;
-    /**
-     * @since Added in 2.9.2
-     */
     monthlyActorComputeUnits: number;
-    /**
-     * @since Added in 2.9.2
-     */
     monthlyExternalDataTransferGbytes: number;
-    /**
-     * @since Added in 2.9.2
-     */
     monthlyProxySerps: number;
-    /**
-     * @since Added in 2.9.2
-     */
     monthlyResidentialProxyGbytes: number;
-    /**
-     * @since Added in 2.9.2
-     */
     actorMemoryGbytes: number;
-    /**
-     * @since Added in 2.9.2
-     */
     actorCount: number;
-    /**
-     * @since Added in 2.9.2
-     */
     actorTaskCount: number;
-    /**
-     * @since Added in 2.9.2
-     */
     activeActorJobCount: number;
-    /**
-     * @since Added in 2.9.2
-     */
     teamAccountSeatCount: number;
 }

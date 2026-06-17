@@ -194,9 +194,6 @@ export class BuildClient extends ResourceClient {
  * @since Added in 2.0.1
  */
 export interface BuildClientGetOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     waitForFinish?: number;
 }
 
@@ -209,7 +206,6 @@ export interface BuildClientWaitForFinishOptions {
      * Maximum time to wait for the build to finish, in seconds.
      * If the limit is reached, the returned promise is resolved to a build object that will have
      * status `READY` or `RUNNING`. If `waitSecs` omitted, the function waits indefinitely.
-     * @since Added in 2.0.1
      */
     waitSecs?: number;
 }
@@ -219,17 +215,8 @@ export interface BuildClientWaitForFinishOptions {
  * @since Added in 2.0.1
  */
 export interface BuildMeta {
-    /**
-     * @since Added in 2.0.1
-     */
     origin: string;
-    /**
-     * @since Added in 2.0.1
-     */
     clientIp: string;
-    /**
-     * @since Added in 2.0.1
-     */
     userAgent: string;
 }
 
@@ -314,9 +301,6 @@ export interface Build {
  * @since Added in 2.7.2
  */
 export interface BuildUsage {
-    /**
-     * @since Added in 2.7.2
-     */
     ACTOR_COMPUTE_UNITS?: number;
 }
 
@@ -325,17 +309,8 @@ export interface BuildUsage {
  * @since Added in 2.0.1
  */
 export interface BuildStats {
-    /**
-     * @since Added in 2.0.1
-     */
     durationMillis: number;
-    /**
-     * @since Added in 2.0.1
-     */
     runTimeSecs: number;
-    /**
-     * @since Added in 2.0.1
-     */
     computeUnits: number;
 }
 
@@ -344,21 +319,9 @@ export interface BuildStats {
  * @since Added in 2.0.1
  */
 export interface BuildOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     useCache?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     betaPackages?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     memoryMbytes?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     diskMbytes?: number;
 }
 
@@ -370,30 +333,15 @@ export interface BuildOptions {
  * @since Added in 2.11.2
  */
 export interface OpenApiDefinition {
-    /**
-     * @since Added in 2.11.2
-     */
     openapi: string;
-    /**
-     * @since Added in 2.11.2
-     */
     info: {
         title: string;
         description?: string;
         version?: string;
         'x-build-id': string;
     };
-    /**
-     * @since Added in 2.11.2
-     */
     servers: { url: string }[];
-    /**
-     * @since Added in 2.11.2
-     */
     paths: { [key: string]: { post: OpenApiOperation } };
-    /**
-     * @since Added in 2.11.2
-     */
     components: {
         schemas: {
             [key: string]: object;

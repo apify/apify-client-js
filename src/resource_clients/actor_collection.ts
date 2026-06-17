@@ -96,13 +96,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
  * @since Added in 2.12.6
  */
 export enum ActorListSortBy {
-    /**
-     * @since Added in 2.12.6
-     */
     CREATED_AT = 'createdAt',
-    /**
-     * @since Added in 2.12.6
-     */
     LAST_RUN_STARTED_AT = 'stats.lastRunStartedAt',
 }
 
@@ -110,13 +104,7 @@ export enum ActorListSortBy {
  * @since Added in 2.0.1
  */
 export interface ActorCollectionListOptions extends PaginationOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     my?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     desc?: boolean;
     /**
      * @since Added in 2.12.6
@@ -128,25 +116,10 @@ export interface ActorCollectionListOptions extends PaginationOptions {
  * @since Added in 2.0.1
  */
 export interface ActorCollectionListItem {
-    /**
-     * @since Added in 2.0.1
-     */
     id: string;
-    /**
-     * @since Added in 2.0.1
-     */
     createdAt: Date;
-    /**
-     * @since Added in 2.0.1
-     */
     modifiedAt: Date;
-    /**
-     * @since Added in 2.0.1
-     */
     name: string;
-    /**
-     * @since Added in 2.0.1
-     */
     username: string;
 }
 
@@ -167,9 +140,6 @@ export interface ActorCollectionCreateOptions {
      * @since Added in 2.8.6
      */
     defaultRunOptions?: ActorDefaultRunOptions;
-    /**
-     * @since Added in 2.0.1
-     */
     description?: string;
     /**
      * @since Added in 2.8.6
@@ -179,18 +149,9 @@ export interface ActorCollectionCreateOptions {
      * @since Added in 2.8.6
      */
     isDeprecated?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     isPublic?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     name?: string;
-    /**
-     * @deprecated Use defaultRunOptions.restartOnError instead
-     * @since Added in 2.0.1
-     */
+    /** @deprecated Use defaultRunOptions.restartOnError instead */
     restartOnError?: boolean;
     /**
      * @since Added in 2.8.6
@@ -200,13 +161,7 @@ export interface ActorCollectionCreateOptions {
      * @since Added in 2.8.6
      */
     seoDescription?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     title?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     versions?: ActorVersion[];
     /**
      * @since Added in 2.9.5

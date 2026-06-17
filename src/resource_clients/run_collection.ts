@@ -85,13 +85,7 @@ export class RunCollectionClient extends ResourceCollectionClient {
  * @since Added in 2.0.1
  */
 export interface RunCollectionListOptions extends PaginationOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     desc?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     status?:
         | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES]
         | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES][];

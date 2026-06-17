@@ -106,25 +106,10 @@ export class ActorVersionClient extends ResourceClient {
  * @since Added in 2.0.1
  */
 export interface BaseActorVersion<SourceType extends ActorSourceType> {
-    /**
-     * @since Added in 2.0.1
-     */
     versionNumber?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     sourceType: SourceType;
-    /**
-     * @since Added in 2.0.1
-     */
     envVars?: ActorEnvironmentVariable[];
-    /**
-     * @since Added in 2.0.1
-     */
     applyEnvVarsToBuild?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     buildTag?: string;
 }
 
@@ -132,9 +117,6 @@ export interface BaseActorVersion<SourceType extends ActorSourceType> {
  * @since Added in 2.6.1
  */
 export interface ActorVersionSourceFiles extends BaseActorVersion<ActorSourceType.SourceFiles> {
-    /**
-     * @since Added in 2.6.1
-     */
     sourceFiles: ActorVersionSourceFile[];
 }
 
@@ -142,17 +124,8 @@ export interface ActorVersionSourceFiles extends BaseActorVersion<ActorSourceTyp
  * @since Added in 2.0.1
  */
 export interface ActorVersionSourceFile {
-    /**
-     * @since Added in 2.0.1
-     */
     name: string;
-    /**
-     * @since Added in 2.0.1
-     */
     format: 'TEXT' | 'BASE64';
-    /**
-     * @since Added in 2.0.1
-     */
     content: string;
 }
 
@@ -160,9 +133,6 @@ export interface ActorVersionSourceFile {
  * @since Added in 2.0.1
  */
 export interface ActorVersionGitRepo extends BaseActorVersion<ActorSourceType.GitRepo> {
-    /**
-     * @since Added in 2.0.1
-     */
     gitRepoUrl: string;
 }
 
@@ -170,9 +140,6 @@ export interface ActorVersionGitRepo extends BaseActorVersion<ActorSourceType.Gi
  * @since Added in 2.0.1
  */
 export interface ActorVersionTarball extends BaseActorVersion<ActorSourceType.Tarball> {
-    /**
-     * @since Added in 2.0.1
-     */
     tarballUrl: string;
 }
 
@@ -180,9 +147,6 @@ export interface ActorVersionTarball extends BaseActorVersion<ActorSourceType.Ta
  * @since Added in 2.0.1
  */
 export interface ActorVersionGitHubGist extends BaseActorVersion<ActorSourceType.GitHubGist> {
-    /**
-     * @since Added in 2.0.1
-     */
     gitHubGistUrl: string;
 }
 
@@ -190,21 +154,9 @@ export interface ActorVersionGitHubGist extends BaseActorVersion<ActorSourceType
  * @since Added in 2.0.1
  */
 export enum ActorSourceType {
-    /**
-     * @since Added in 2.0.1
-     */
     SourceFiles = 'SOURCE_FILES',
-    /**
-     * @since Added in 2.0.1
-     */
     GitRepo = 'GIT_REPO',
-    /**
-     * @since Added in 2.0.1
-     */
     Tarball = 'TARBALL',
-    /**
-     * @since Added in 2.0.1
-     */
     GitHubGist = 'GITHUB_GIST',
 }
 
@@ -212,17 +164,8 @@ export enum ActorSourceType {
  * @since Added in 2.0.1
  */
 export interface ActorEnvironmentVariable {
-    /**
-     * @since Added in 2.0.1
-     */
     name?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     value?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     isSecret?: boolean;
 }
 

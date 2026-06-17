@@ -207,9 +207,6 @@ export interface Webhook {
  * @since Added in 2.0.1
  */
 export interface WebhookIdempotencyKey {
-    /**
-     * @since Added in 2.0.1
-     */
     idempotencyKey?: string;
 }
 
@@ -243,9 +240,6 @@ export type WebhookUpdateData = Partial<
  * @since Added in 2.0.1
  */
 export interface WebhookStats {
-    /**
-     * @since Added in 2.0.1
-     */
     totalDispatches: number;
 }
 
@@ -268,9 +262,6 @@ export type WebhookCondition =
  * @since Added in 2.0.1
  */
 export interface WebhookAnyRunOfActorCondition {
-    /**
-     * @since Added in 2.0.1
-     */
     actorId: string;
 }
 
@@ -278,9 +269,6 @@ export interface WebhookAnyRunOfActorCondition {
  * @since Added in 2.0.1
  */
 export interface WebhookAnyRunOfActorTaskCondition {
-    /**
-     * @since Added in 2.0.1
-     */
     actorTaskId: string;
 }
 
@@ -288,8 +276,5 @@ export interface WebhookAnyRunOfActorTaskCondition {
  * @since Added in 2.0.1
  */
 export interface WebhookCertainRunCondition {
-    /**
-     * @since Added in 2.0.1
-     */
     actorRunId: string;
 }

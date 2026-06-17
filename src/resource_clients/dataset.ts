@@ -497,21 +497,9 @@ export interface Dataset {
  * @since Added in 2.0.1
  */
 export interface DatasetStats {
-    /**
-     * @since Added in 2.0.1
-     */
     readCount?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     writeCount?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     deleteCount?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     storageBytes?: number;
 }
 
@@ -520,9 +508,6 @@ export interface DatasetStats {
  * @since Added in 2.0.1
  */
 export interface DatasetClientUpdateOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     name?: string | null;
     /**
      * @since Added in 2.6.1
@@ -591,9 +576,6 @@ export interface DatasetClientListItemOptions extends PaginationOptions {
  * @since Added in 2.16.0
  */
 export interface DatasetClientCreateItemsUrlOptions extends DatasetClientListItemOptions {
-    /**
-     * @since Added in 2.16.0
-     */
     expiresInSecs?: number;
 }
 
@@ -602,33 +584,12 @@ export interface DatasetClientCreateItemsUrlOptions extends DatasetClientListIte
  * @since Added in 2.0.1
  */
 export enum DownloadItemsFormat {
-    /**
-     * @since Added in 2.0.1
-     */
     JSON = 'json',
-    /**
-     * @since Added in 2.0.1
-     */
     JSONL = 'jsonl',
-    /**
-     * @since Added in 2.0.1
-     */
     XML = 'xml',
-    /**
-     * @since Added in 2.0.1
-     */
     HTML = 'html',
-    /**
-     * @since Added in 2.0.1
-     */
     CSV = 'csv',
-    /**
-     * @since Added in 2.0.1
-     */
     XLSX = 'xlsx',
-    /**
-     * @since Added in 2.0.1
-     */
     RSS = 'rss',
 }
 
@@ -641,29 +602,11 @@ const validItemFormats = [...new Set(Object.values(DownloadItemsFormat).map((ite
  * @since Added in 2.0.1
  */
 export interface DatasetClientDownloadItemsOptions extends DatasetClientListItemOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     attachment?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     bom?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     delimiter?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     skipHeaderRow?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     xmlRoot?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     xmlRow?: string;
 }
 
@@ -674,9 +617,6 @@ export interface DatasetClientDownloadItemsOptions extends DatasetClientListItem
  * @since Added in 2.11.2
  */
 export interface DatasetStatistics {
-    /**
-     * @since Added in 2.11.2
-     */
     fieldStatistics: Record<string, FieldStatistics>;
 }
 
@@ -685,20 +625,8 @@ export interface DatasetStatistics {
  * @since Added in 2.11.2
  */
 export interface FieldStatistics {
-    /**
-     * @since Added in 2.11.2
-     */
     min?: number;
-    /**
-     * @since Added in 2.11.2
-     */
     max?: number;
-    /**
-     * @since Added in 2.11.2
-     */
     nullCount?: number;
-    /**
-     * @since Added in 2.11.2
-     */
     emptyCount?: number;
 }

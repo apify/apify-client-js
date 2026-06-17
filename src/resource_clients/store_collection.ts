@@ -56,7 +56,6 @@ export class StoreCollectionClient extends ResourceCollectionClient {
      * @param options - Search and pagination options.
      * @returns A paginated iterator of store Actors.
      * @see https://docs.apify.com/api/v2/store-get
-     * @since Added in 2.7.2
      */
     list(options: StoreCollectionListOptions = {}): PaginatedIterator<ActorStoreList> {
         ow(
@@ -81,9 +80,6 @@ export class StoreCollectionClient extends ResourceCollectionClient {
  * @since Added in 2.7.2
  */
 export interface PricingInfo {
-    /**
-     * @since Added in 2.7.2
-     */
     pricingModel: string;
 }
 
@@ -91,41 +87,14 @@ export interface PricingInfo {
  * @since Added in 2.7.2
  */
 export interface ActorStoreList {
-    /**
-     * @since Added in 2.7.2
-     */
     id: string;
-    /**
-     * @since Added in 2.7.2
-     */
     name: string;
-    /**
-     * @since Added in 2.7.2
-     */
     username: string;
-    /**
-     * @since Added in 2.7.2
-     */
     title?: string;
-    /**
-     * @since Added in 2.7.2
-     */
     description?: string;
-    /**
-     * @since Added in 2.7.2
-     */
     stats: ActorStats;
-    /**
-     * @since Added in 2.7.2
-     */
     currentPricingInfo: PricingInfo;
-    /**
-     * @since Added in 2.7.2
-     */
     pictureUrl?: string;
-    /**
-     * @since Added in 2.7.2
-     */
     userPictureUrl?: string;
     /**
      * @since Added in 2.8.6
@@ -142,25 +111,10 @@ export interface ActorStoreList {
  * @since Added in 2.7.2
  */
 export interface StoreCollectionListOptions extends PaginationOptions {
-    /**
-     * @since Added in 2.7.2
-     */
     search?: string;
-    /**
-     * @since Added in 2.7.2
-     */
     sortBy?: string;
-    /**
-     * @since Added in 2.7.2
-     */
     category?: string;
-    /**
-     * @since Added in 2.7.2
-     */
     username?: string;
-    /**
-     * @since Added in 2.7.2
-     */
     pricingModel?: string;
     /**
      * If true, the response will include Actors that cannot be run (e.g., Actors

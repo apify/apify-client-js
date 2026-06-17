@@ -190,24 +190,12 @@ export type ScheduleCreateOrUpdateData = Partial<
  * @since Added in 2.0.1
  */
 export enum ScheduleActions {
-    /**
-     * @since Added in 2.0.1
-     */
     RunActor = 'RUN_ACTOR',
-    /**
-     * @since Added in 2.0.1
-     */
     RunActorTask = 'RUN_ACTOR_TASK',
 }
 
 interface BaseScheduleAction<Type extends ScheduleActions> {
-    /**
-     * @since Added in 2.0.1
-     */
     id: string;
-    /**
-     * @since Added in 2.0.1
-     */
     type: Type;
 }
 
@@ -222,17 +210,8 @@ export type ScheduleAction = ScheduleActionRunActor | ScheduleActionRunActorTask
  * @since Added in 2.0.1
  */
 export interface ScheduleActionRunActor extends BaseScheduleAction<ScheduleActions.RunActor> {
-    /**
-     * @since Added in 2.0.1
-     */
     actorId: string;
-    /**
-     * @since Added in 2.0.1
-     */
     runInput?: ScheduledActorRunInput;
-    /**
-     * @since Added in 2.0.1
-     */
     runOptions?: ScheduledActorRunOptions;
 }
 
@@ -241,13 +220,7 @@ export interface ScheduleActionRunActor extends BaseScheduleAction<ScheduleActio
  * @since Added in 2.0.1
  */
 export interface ScheduledActorRunInput {
-    /**
-     * @since Added in 2.0.1
-     */
     body: string;
-    /**
-     * @since Added in 2.0.1
-     */
     contentType: string;
 }
 
@@ -256,17 +229,8 @@ export interface ScheduledActorRunInput {
  * @since Added in 2.0.1
  */
 export interface ScheduledActorRunOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     build: string;
-    /**
-     * @since Added in 2.0.1
-     */
     timeoutSecs: number;
-    /**
-     * @since Added in 2.0.1
-     */
     memoryMbytes: number;
     /**
      * @since Added in 2.19.0
@@ -279,12 +243,6 @@ export interface ScheduledActorRunOptions {
  * @since Added in 2.0.1
  */
 export interface ScheduleActionRunActorTask extends BaseScheduleAction<ScheduleActions.RunActorTask> {
-    /**
-     * @since Added in 2.0.1
-     */
     actorTaskId: string;
-    /**
-     * @since Added in 2.0.1
-     */
     input?: string;
 }

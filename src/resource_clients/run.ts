@@ -490,13 +490,7 @@ export class RunClient extends ResourceClient {
  * @since Added in 2.20.0
  */
 export interface GetStreamedLogOptions {
-    /**
-     * @since Added in 2.20.0
-     */
     toLog?: Log | null | 'default';
-    /**
-     * @since Added in 2.20.0
-     */
     fromStart?: boolean;
 }
 
@@ -505,9 +499,6 @@ export interface GetStreamedLogOptions {
  * @since Added in 2.0.1
  */
 export interface RunGetOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     waitForFinish?: number;
 }
 
@@ -516,9 +507,6 @@ export interface RunGetOptions {
  * @since Added in 2.0.1
  */
 export interface RunAbortOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     gracefully?: boolean;
 }
 
@@ -527,13 +515,7 @@ export interface RunAbortOptions {
  * @since Added in 2.0.1
  */
 export interface RunMetamorphOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     contentType?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     build?: string;
 }
 
@@ -542,9 +524,6 @@ export interface RunMetamorphOptions {
  * @since Added in 2.6.0
  */
 export interface RunUpdateOptions {
-    /**
-     * @since Added in 2.6.0
-     */
     statusMessage?: string;
     /**
      * @since Added in 2.6.3
@@ -561,17 +540,8 @@ export interface RunUpdateOptions {
  * @since Added in 2.0.1
  */
 export interface RunResurrectOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     build?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     memory?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     timeout?: number;
     /**
      * @since Added in 2.12.1
@@ -592,20 +562,11 @@ export interface RunResurrectOptions {
  * @since Added in 2.11.0
  */
 export interface RunChargeOptions {
-    /**
-     * Name of the event to charge. Must be defined in the Actor's pricing info else the API will throw.
-     * @since Added in 2.11.0
-     */
+    /** Name of the event to charge. Must be defined in the Actor's pricing info else the API will throw. */
     eventName: string;
-    /**
-     * Defaults to 1
-     * @since Added in 2.11.0
-     */
+    /** Defaults to 1 */
     count?: number;
-    /**
-     * Defaults to runId-eventName-timestamp
-     * @since Added in 2.11.0
-     */
+    /** Defaults to runId-eventName-timestamp */
     idempotencyKey?: string;
 }
 
@@ -618,7 +579,6 @@ export interface RunWaitForFinishOptions {
      * Maximum time to wait for the run to finish, in seconds.
      * If the limit is reached, the returned promise is resolved to a run object that will have
      * status `READY` or `RUNNING`. If `waitSecs` omitted, the function waits indefinitely.
-     * @since Added in 2.0.1
      */
     waitSecs?: number;
 }

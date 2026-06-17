@@ -588,25 +588,10 @@ export interface KeyValueStore {
  * @since Added in 2.0.1
  */
 export interface KeyValueStoreStats {
-    /**
-     * @since Added in 2.0.1
-     */
     readCount?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     writeCount?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     deleteCount?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     listCount?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     storageBytes?: number;
 }
 
@@ -615,9 +600,6 @@ export interface KeyValueStoreStats {
  * @since Added in 2.0.1
  */
 export interface KeyValueClientUpdateOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     name?: string | null;
     /**
      * @since Added in 2.6.1
@@ -663,9 +645,6 @@ export interface KeyValueClientListKeysOptions {
  * @since Added in 2.16.0
  */
 export interface KeyValueClientCreateKeysUrlOptions extends KeyValueClientListKeysOptions {
-    /**
-     * @since Added in 2.16.0
-     */
     expiresInSecs?: number;
 }
 
@@ -676,29 +655,11 @@ export interface KeyValueClientCreateKeysUrlOptions extends KeyValueClientListKe
  * @since Added in 2.0.1
  */
 export interface KeyValueClientListKeysResult {
-    /**
-     * @since Added in 2.0.1
-     */
     count: number;
-    /**
-     * @since Added in 2.0.1
-     */
     limit: number;
-    /**
-     * @since Added in 2.0.1
-     */
     exclusiveStartKey: string;
-    /**
-     * @since Added in 2.0.1
-     */
     isTruncated: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     nextExclusiveStartKey: string;
-    /**
-     * @since Added in 2.0.1
-     */
     items: KeyValueListItem[];
 }
 
@@ -707,13 +668,7 @@ export interface KeyValueClientListKeysResult {
  * @since Added in 2.0.1
  */
 export interface KeyValueListItem {
-    /**
-     * @since Added in 2.0.1
-     */
     key: string;
-    /**
-     * @since Added in 2.0.1
-     */
     size: number;
     /**
      * @since Added in 2.15.1
@@ -726,13 +681,7 @@ export interface KeyValueListItem {
  * @since Added in 2.0.1
  */
 export interface KeyValueClientGetRecordOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     buffer?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     stream?: boolean;
     /**
      * @since Added in 2.18.0
@@ -766,13 +715,7 @@ export interface KeyValueStoreRecord<T> {
  * @since Added in 2.12.4
  */
 export interface KeyValueStoreRecordOptions {
-    /**
-     * @since Added in 2.12.4
-     */
     timeoutSecs?: number;
-    /**
-     * @since Added in 2.12.4
-     */
     doNotRetryTimeouts?: boolean;
 }
 

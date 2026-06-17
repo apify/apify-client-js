@@ -607,45 +607,21 @@ export interface Actor {
  * @since Added in 2.0.1
  */
 export interface ActorStats {
-    /**
-     * Total number of builds created for this Actor
-     * @since Added in 2.0.1
-     */
+    /** Total number of builds created for this Actor */
     totalBuilds: number;
-    /**
-     * Total number of times this Actor has been run
-     * @since Added in 2.0.1
-     */
+    /** Total number of times this Actor has been run */
     totalRuns: number;
-    /**
-     * Total number of unique users who have run this Actor
-     * @since Added in 2.0.1
-     */
+    /** Total number of unique users who have run this Actor */
     totalUsers: number;
-    /**
-     * Number of unique users in the last 7 days
-     * @since Added in 2.0.1
-     */
+    /** Number of unique users in the last 7 days */
     totalUsers7Days: number;
-    /**
-     * Number of unique users in the last 30 days
-     * @since Added in 2.0.1
-     */
+    /** Number of unique users in the last 30 days */
     totalUsers30Days: number;
-    /**
-     * Number of unique users in the last 90 days
-     * @since Added in 2.0.1
-     */
+    /** Number of unique users in the last 90 days */
     totalUsers90Days: number;
-    /**
-     * Total number of times this Actor was used via metamorph
-     * @since Added in 2.0.1
-     */
+    /** Total number of times this Actor was used via metamorph */
     totalMetamorphs: number;
-    /**
-     * Timestamp when the last run was started
-     * @since Added in 2.0.1
-     */
+    /** Timestamp when the last run was started */
     lastRunStartedAt: Date;
 }
 
@@ -654,17 +630,8 @@ export interface ActorStats {
  * @since Added in 2.0.1
  */
 export interface ActorDefaultRunOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     build: string;
-    /**
-     * @since Added in 2.0.1
-     */
     timeoutSecs: number;
-    /**
-     * @since Added in 2.0.1
-     */
     memoryMbytes: number;
     /**
      * @since Added in 2.19.0
@@ -677,13 +644,7 @@ export interface ActorDefaultRunOptions {
  * @since Added in 2.0.1
  */
 export interface ActorExampleRunInput {
-    /**
-     * @since Added in 2.0.1
-     */
     body: string;
-    /**
-     * @since Added in 2.0.1
-     */
     contentType: string;
 }
 
@@ -698,17 +659,8 @@ export type ActorTaggedBuilds = Record<string, ActorTaggedBuild>;
  * @since Added in 2.0.1
  */
 export interface ActorTaggedBuild {
-    /**
-     * @since Added in 2.0.1
-     */
     buildId?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     buildNumber?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     finishedAt?: Date;
 }
 
@@ -744,29 +696,14 @@ export type ActorUpdateOptions = Partial<
  * @since Added in 2.9.5
  */
 export interface ActorStandby {
-    /**
-     * @since Added in 2.9.5
-     */
     build?: string;
-    /**
-     * @since Added in 2.9.5
-     */
     desiredRequestsPerActorRun?: number;
     /**
      * @since Added in 2.22.0
      */
     disableStandbyFieldsOverride?: boolean;
-    /**
-     * @since Added in 2.9.5
-     */
     idleTimeoutSecs?: number;
-    /**
-     * @since Added in 2.9.5
-     */
     maxRequestsPerActorRun?: number;
-    /**
-     * @since Added in 2.9.5
-     */
     memoryMbytes?: number;
     /**
      * @since Added in 2.22.0
@@ -814,7 +751,6 @@ export interface ActorStartOptions {
      * By default (or when `waitForFinish` is set to `0`), the function resolves immediately without waiting.
      * The wait is limited to 60s and happens on the API directly, as opposed to the `call` method and its
      * `waitSecs` option, which is implemented via polling on the client side instead (and has no limit like that).
-     * @since Added in 2.0.1
      */
     waitForFinish?: number;
 
@@ -870,7 +806,6 @@ export interface ActorStartOptions {
 export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
     /**
      * Wait time in seconds for the Actor run to finish.
-     * @since Added in 2.6.2
      */
     waitSecs?: number;
     /**
@@ -947,20 +882,11 @@ export interface ActorRunListItem {
  * @since Added in 2.22.3
  */
 export interface ActorRunStorageIds {
-    /**
-     * Aliased dataset IDs for this run.
-     * @since Added in 2.22.3
-     */
+    /** Aliased dataset IDs for this run. */
     datasets: { default: string; [alias: string]: string };
-    /**
-     * Aliased key-value store IDs for this run.
-     * @since Added in 2.22.3
-     */
+    /** Aliased key-value store IDs for this run. */
     keyValueStores: { default: string; [alias: string]: string };
-    /**
-     * Aliased request queue IDs for this run.
-     * @since Added in 2.22.3
-     */
+    /** Aliased request queue IDs for this run. */
     requestQueues: { default: string; [alias: string]: string };
 }
 
@@ -1037,65 +963,29 @@ export interface ActorRun extends ActorRunListItem {
  * @since Added in 2.7.0
  */
 export interface ActorRunUsage {
-    /**
-     * Compute units consumed (combines CPU and memory usage over time)
-     * @since Added in 2.7.0
-     */
+    /** Compute units consumed (combines CPU and memory usage over time) */
     ACTOR_COMPUTE_UNITS?: number;
-    /**
-     * Number of Dataset read operations
-     * @since Added in 2.7.0
-     */
+    /** Number of Dataset read operations */
     DATASET_READS?: number;
-    /**
-     * Number of Dataset write operations
-     * @since Added in 2.7.0
-     */
+    /** Number of Dataset write operations */
     DATASET_WRITES?: number;
-    /**
-     * Number of key-value store read operations
-     * @since Added in 2.7.0
-     */
+    /** Number of key-value store read operations */
     KEY_VALUE_STORE_READS?: number;
-    /**
-     * Number of key-value store write operations
-     * @since Added in 2.7.0
-     */
+    /** Number of key-value store write operations */
     KEY_VALUE_STORE_WRITES?: number;
-    /**
-     * Number of key-value store list operations
-     * @since Added in 2.7.0
-     */
+    /** Number of key-value store list operations */
     KEY_VALUE_STORE_LISTS?: number;
-    /**
-     * Number of Request queue read operations
-     * @since Added in 2.7.0
-     */
+    /** Number of Request queue read operations */
     REQUEST_QUEUE_READS?: number;
-    /**
-     * Number of Request queue write operations
-     * @since Added in 2.7.0
-     */
+    /** Number of Request queue write operations */
     REQUEST_QUEUE_WRITES?: number;
-    /**
-     * Internal data transfer within Apify platform (in gigabytes)
-     * @since Added in 2.7.0
-     */
+    /** Internal data transfer within Apify platform (in gigabytes) */
     DATA_TRANSFER_INTERNAL_GBYTES?: number;
-    /**
-     * External data transfer to/from internet (in gigabytes)
-     * @since Added in 2.7.0
-     */
+    /** External data transfer to/from internet (in gigabytes) */
     DATA_TRANSFER_EXTERNAL_GBYTES?: number;
-    /**
-     * Residential proxy data transfer (in gigabytes)
-     * @since Added in 2.7.0
-     */
+    /** Residential proxy data transfer (in gigabytes) */
     PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number;
-    /**
-     * Number of SERP (Search Engine Results Page) proxy requests
-     * @since Added in 2.7.0
-     */
+    /** Number of SERP (Search Engine Results Page) proxy requests */
     PROXY_SERPS?: number;
 }
 
@@ -1104,17 +994,8 @@ export interface ActorRunUsage {
  * @since Added in 2.0.1
  */
 export interface ActorRunMeta {
-    /**
-     * @since Added in 2.0.1
-     */
     origin: string;
-    /**
-     * @since Added in 2.0.1
-     */
     clientIp?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     userAgent: string;
 }
 
@@ -1125,65 +1006,20 @@ export interface ActorRunMeta {
  * @since Added in 2.0.1
  */
 export interface ActorRunStats {
-    /**
-     * @since Added in 2.0.1
-     */
     inputBodyLen: number;
-    /**
-     * @since Added in 2.0.1
-     */
     restartCount: number;
-    /**
-     * @since Added in 2.0.1
-     */
     resurrectCount: number;
-    /**
-     * @since Added in 2.0.1
-     */
     memAvgBytes: number;
-    /**
-     * @since Added in 2.0.1
-     */
     memMaxBytes: number;
-    /**
-     * @since Added in 2.0.1
-     */
     memCurrentBytes: number;
-    /**
-     * @since Added in 2.0.1
-     */
     cpuAvgUsage: number;
-    /**
-     * @since Added in 2.0.1
-     */
     cpuMaxUsage: number;
-    /**
-     * @since Added in 2.0.1
-     */
     cpuCurrentUsage: number;
-    /**
-     * @since Added in 2.0.1
-     */
     netRxBytes: number;
-    /**
-     * @since Added in 2.0.1
-     */
     netTxBytes: number;
-    /**
-     * @since Added in 2.0.1
-     */
     durationMillis: number;
-    /**
-     * @since Added in 2.0.1
-     */
     runTimeSecs: number;
-    /**
-     * @since Added in 2.0.1
-     */
     metamorph: number;
-    /**
-     * @since Added in 2.0.1
-     */
     computeUnits: number;
 }
 
@@ -1194,21 +1030,9 @@ export interface ActorRunStats {
  * @since Added in 2.0.1
  */
 export interface ActorRunOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     build: string;
-    /**
-     * @since Added in 2.0.1
-     */
     timeoutSecs: number;
-    /**
-     * @since Added in 2.0.1
-     */
     memoryMbytes: number;
-    /**
-     * @since Added in 2.0.1
-     */
     diskMbytes: number;
     /**
      * @since Added in 2.20.0
@@ -1229,21 +1053,9 @@ export interface ActorRunOptions {
  * @since Added in 2.0.1
  */
 export interface ActorBuildOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     betaPackages?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     tag?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     useCache?: boolean;
-    /**
-     * @since Added in 2.0.1
-     */
     waitForFinish?: number;
 }
 
@@ -1252,9 +1064,6 @@ export interface ActorBuildOptions {
  * @since Added in 2.0.1
  */
 export interface ActorLastRunOptions {
-    /**
-     * @since Added in 2.0.1
-     */
     status?: keyof typeof ACT_JOB_STATUSES;
 }
 
@@ -1266,42 +1075,17 @@ export interface ActorLastRunOptions {
  * @since Added in 2.11.0
  */
 export interface ActorDefinition {
-    /**
-     * @since Added in 2.11.0
-     */
     actorSpecification: number;
-    /**
-     * @since Added in 2.11.0
-     */
     name: string;
-    /**
-     * @since Added in 2.11.0
-     */
     version: string;
-    /**
-     * @since Added in 2.11.0
-     */
     buildTag?: string;
-    /**
-     * @since Added in 2.11.0
-     */
     environmentVariables?: Record<string, string>;
-    /**
-     * @since Added in 2.11.0
-     */
     dockerfile?: string;
-    /**
-     * @since Added in 2.11.0
-     */
     dockerContextDir?: string;
-    /**
-     * @since Added in 2.11.0
-     */
     readme?: string | null;
     /**
      * Input schema for the Actor.
      * @see https://docs.apify.com/platform/actors/development/actor-definition/input-schema
-     * @since Added in 2.11.0
      */
     input?: object | null;
     /**
@@ -1310,35 +1094,17 @@ export interface ActorDefinition {
      * @since Added in 2.23.0
      */
     output?: object | null;
-    /**
-     * @since Added in 2.11.0
-     */
     changelog?: string | null;
-    /**
-     * @since Added in 2.11.0
-     */
     storages?: {
         dataset?: object;
     };
-    /**
-     * @since Added in 2.11.0
-     */
     minMemoryMbytes?: number;
-    /**
-     * @since Added in 2.11.0
-     */
     maxMemoryMbytes?: number;
-    /**
-     * @since Added in 2.11.0
-     */
     usesStandbyMode?: boolean;
 }
 
 interface CommonActorPricingInfo {
-    /**
-     * In [0, 1], fraction of pricePerUnitUsd that goes to Apify
-     * @since Added in 2.11.1
-     */
+    /** In [0, 1], fraction of pricePerUnitUsd that goes to Apify */
     apifyMarginPercentage: number;
     /**
      * When this pricing info record has been created
@@ -1350,17 +1116,8 @@ interface CommonActorPricingInfo {
      * @since Added in 2.0.1
      */
     startedAt: Date;
-    /**
-     * @since Added in 2.11.1
-     */
     notifiedAboutFutureChangeAt?: Date;
-    /**
-     * @since Added in 2.11.1
-     */
     notifiedAboutChangeAt?: Date;
-    /**
-     * @since Added in 2.11.1
-     */
     reasonForChange?: string;
 }
 
@@ -1369,9 +1126,6 @@ interface CommonActorPricingInfo {
  * @since Added in 2.11.1
  */
 export interface FreeActorPricingInfo extends CommonActorPricingInfo {
-    /**
-     * @since Added in 2.11.1
-     */
     pricingModel: 'FREE';
 }
 
@@ -1380,19 +1134,10 @@ export interface FreeActorPricingInfo extends CommonActorPricingInfo {
  * @since Added in 2.11.1
  */
 export interface FlatPricePerMonthActorPricingInfo extends CommonActorPricingInfo {
-    /**
-     * @since Added in 2.11.1
-     */
     pricingModel: 'FLAT_PRICE_PER_MONTH';
-    /**
-     * For how long this Actor can be used for free in trial period
-     * @since Added in 2.11.1
-     */
+    /** For how long this Actor can be used for free in trial period */
     trialMinutes?: number;
-    /**
-     * Monthly flat price in USD
-     * @since Added in 2.11.1
-     */
+    /** Monthly flat price in USD */
     pricePerUnitUsd: number;
 }
 
@@ -1403,18 +1148,9 @@ export interface FlatPricePerMonthActorPricingInfo extends CommonActorPricingInf
  * @since Added in 2.11.1
  */
 export interface PricePerDatasetItemActorPricingInfo extends CommonActorPricingInfo {
-    /**
-     * @since Added in 2.11.1
-     */
     pricingModel: 'PRICE_PER_DATASET_ITEM';
-    /**
-     * Name of the unit that is being charged
-     * @since Added in 2.11.1
-     */
+    /** Name of the unit that is being charged */
     unitName?: string;
-    /**
-     * @since Added in 2.11.1
-     */
     pricePerUnitUsd: number;
 }
 
@@ -1423,17 +1159,8 @@ export interface PricePerDatasetItemActorPricingInfo extends CommonActorPricingI
  * @since Added in 2.11.1
  */
 export interface ActorChargeEvent {
-    /**
-     * @since Added in 2.11.1
-     */
     eventPriceUsd: number;
-    /**
-     * @since Added in 2.11.1
-     */
     eventTitle: string;
-    /**
-     * @since Added in 2.11.1
-     */
     eventDescription?: string;
 }
 
@@ -1450,19 +1177,10 @@ export type ActorChargeEvents = Record<string, ActorChargeEvent>;
  * @since Added in 2.11.1
  */
 export interface PricePerEventActorPricingInfo extends CommonActorPricingInfo {
-    /**
-     * @since Added in 2.11.1
-     */
     pricingModel: 'PAY_PER_EVENT';
-    /**
-     * @since Added in 2.11.1
-     */
     pricingPerEvent: {
         actorChargeEvents: ActorChargeEvents;
     };
-    /**
-     * @since Added in 2.11.1
-     */
     minimalMaxTotalChargeUsd?: number;
 }
 
