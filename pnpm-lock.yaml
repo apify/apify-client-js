@@ -141,8 +141,8 @@ importers:
         specifier: ^1.0.251
         version: 1.0.251(f5e0b63f7bb87829478b2ea424c206c6)
       '@apify/docusaurus-plugin-typedoc-api':
-        specifier: ^5.1.6
-        version: 5.1.11(aa6c3cff772a8e8226e8c6611f9e1686)
+        specifier: ^5.1.13
+        version: 5.1.13(aa6c3cff772a8e8226e8c6611f9e1686)
       '@docusaurus/core':
         specifier: ^3.8.1
         version: 3.10.1(@docusaurus/faster@3.10.1(@docusaurus/types@3.10.1(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.1)(postcss@8.5.15)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(webpack-cli@7.0.3))(@swc/helpers@0.5.23)(esbuild@0.28.1)(postcss@8.5.15)(webpack-cli@7.0.3))(@mdx-js/react@3.1.1(@types/react@19.2.17)(react@19.2.7))(@rspack/core@1.7.11(@swc/helpers@0.5.23))(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.1)(postcss@8.5.15)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@6.0.3)(webpack-cli@7.0.3)
@@ -9418,7 +9418,7 @@ snapshots:
       - webpack
       - webpack-cli
 
-  '@apify/docusaurus-plugin-typedoc-api@5.1.11(aa6c3cff772a8e8226e8c6611f9e1686)':
+  '@apify/docusaurus-plugin-typedoc-api@5.1.13(aa6c3cff772a8e8226e8c6611f9e1686)':
     dependencies:
       '@docusaurus/core': 3.10.1(@docusaurus/faster@3.10.1(@docusaurus/types@3.10.1(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.1)(postcss@8.5.15)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(webpack-cli@7.0.3))(@swc/helpers@0.5.23)(esbuild@0.28.1)(postcss@8.5.15)(webpack-cli@7.0.3))(@mdx-js/react@3.1.1(@types/react@19.2.17)(react@19.2.7))(@rspack/core@1.7.11(@swc/helpers@0.5.23))(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.1)(postcss@8.5.15)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@6.0.3)(webpack-cli@7.0.3)
       '@docusaurus/mdx-loader': 3.10.1(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.1)(postcss@8.5.15)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(webpack-cli@7.0.3)
