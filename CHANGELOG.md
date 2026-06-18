@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.23.5 - **not yet released**
 
+### 🐛 Bug Fixes
+
+- ActorPermissionLevel was missing in ActorCollectionCreateOptions ([#940](https://github.com/apify/apify-client-js/pull/940)) ([4d8125e](https://github.com/apify/apify-client-js/commit/4d8125ebc1c6897d5cc2d1e602ef2d52468f2623)) by [@valekjo](https://github.com/valekjo)
+
 
 <!-- git-cliff-unreleased-end -->
 ## [2.23.4](https://github.com/apify/apify-client-js/releases/tag/v2.23.4) (2026-06-04)

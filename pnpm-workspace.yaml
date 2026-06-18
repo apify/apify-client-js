@@ -9,6 +9,8 @@ minimumReleaseAgeExclude:
   - "apify"
   - "crawlee"
   - "got-scraping"
+  # Renovate security update: esbuild@0.28.1
+  - esbuild@0.28.1
 
 onlyBuiltDependencies:
   - "@playwright/browser-chromium"
@@ -27,10 +29,12 @@ onlyBuiltDependencies:
 # Fix:      https://github.com/puppeteer/puppeteer/pull/14960
 overrides:
   "@puppeteer/browsers": "^3.0.4"
+  js-yaml@4: ^4.2.0
+  markdown-it: ^14.2.0
 
 nodeLinker: hoisted
 linkWorkspacePackages: true
 preferWorkspacePackages: true
 legacyPeerDeps: true
 publicHoistPattern:
-    - "*"
+  - "*"

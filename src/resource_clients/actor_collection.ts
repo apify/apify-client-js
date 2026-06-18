@@ -1,5 +1,7 @@
 import ow from 'ow';
 
+import type { ACTOR_PERMISSION_LEVEL } from '@apify/consts';
+
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
@@ -169,4 +171,5 @@ export interface ActorCollectionCreateOptions {
     actorStandby?: ActorStandby & {
         isEnabled: boolean;
     };
+    actorPermissionLevel?: ACTOR_PERMISSION_LEVEL;
 }
