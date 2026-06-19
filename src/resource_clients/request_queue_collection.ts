@@ -26,7 +26,6 @@ import type { RequestQueue } from './request_queue';
  * ```
  *
  * @see https://docs.apify.com/platform/storage/request-queue
- * @since Added in 1.0.0
  */
 export class RequestQueueCollectionClient extends ResourceCollectionClient {
     /**
@@ -58,7 +57,6 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
      * @param options - Pagination options.
      * @returns A paginated iterator of Request queues.
      * @see https://docs.apify.com/api/v2/request-queues-get
-     * @since Added in 2.0.1
      */
     list(
         options: RequestQueueCollectionListOptions = {},
@@ -83,7 +81,6 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
      * @param name - Name of the Request queue. If not provided, a default queue is used.
      * @returns The Request queue object.
      * @see https://docs.apify.com/api/v2/request-queues-post
-     * @since Added in 2.0.1
      */
     async getOrCreate(name?: string): Promise<RequestQueue> {
         ow(name, ow.optional.string);
@@ -92,9 +89,6 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
     }
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface RequestQueueCollectionListOptions extends PaginationOptions {
     unnamed?: boolean;
     desc?: boolean;
@@ -105,7 +99,4 @@ export interface RequestQueueCollectionListOptions extends PaginationOptions {
     ownership?: STORAGE_OWNERSHIP_FILTER;
 }
 
-/**
- * @since Added in 2.0.1
- */
 export type RequestQueueCollectionListResult = PaginatedList<RequestQueue> & { unnamed: boolean };

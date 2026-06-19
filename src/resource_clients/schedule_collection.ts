@@ -28,7 +28,6 @@ import type { Schedule, ScheduleCreateOrUpdateData } from './schedule';
  * ```
  *
  * @see https://docs.apify.com/platform/schedules
- * @since Added in 1.0.0
  */
 export class ScheduleCollectionClient extends ResourceCollectionClient {
     /**
@@ -60,7 +59,6 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
      * @param options - Pagination and sorting options.
      * @returns A paginated iterator of schedules.
      * @see https://docs.apify.com/api/v2/schedules-get
-     * @since Added in 2.0.1
      */
     list(options: ScheduleCollectionListOptions = {}): PaginatedIterator<Schedule> {
         ow(
@@ -81,7 +79,6 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
      * @param schedule - The schedule data.
      * @returns The created schedule object.
      * @see https://docs.apify.com/api/v2/schedules-post
-     * @since Added in 2.0.1
      */
     async create(schedule?: ScheduleCreateOrUpdateData): Promise<Schedule> {
         ow(schedule, ow.optional.object);
@@ -90,9 +87,6 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
     }
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface ScheduleCollectionListOptions extends PaginationOptions {
     desc?: boolean;
 }

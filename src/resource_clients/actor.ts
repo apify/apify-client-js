@@ -38,7 +38,6 @@ import { WebhookCollectionClient } from './webhook_collection';
  * ```
  *
  * @see https://docs.apify.com/platform/actors
- * @since Added in 1.0.0
  */
 export class ActorClient extends ResourceClient {
     /**
@@ -56,7 +55,6 @@ export class ActorClient extends ResourceClient {
      *
      * @returns The Actor object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/act-get
-     * @since Added in 2.0.1
      */
     async get(): Promise<Actor | undefined> {
         return this._get();
@@ -68,7 +66,6 @@ export class ActorClient extends ResourceClient {
      * @param newFields - Fields to update in the Actor
      * @returns The updated Actor object
      * @see https://docs.apify.com/api/v2/act-put
-     * @since Added in 2.0.1
      */
     async update(newFields: ActorUpdateOptions): Promise<Actor> {
         ow(newFields, ow.object);
@@ -80,7 +77,6 @@ export class ActorClient extends ResourceClient {
      * Deletes the Actor.
      *
      * @see https://docs.apify.com/api/v2/act-delete
-     * @since Added in 2.0.1
      */
     async delete(): Promise<void> {
         return this._delete();
@@ -119,7 +115,6 @@ export class ActorClient extends ResourceClient {
      *   { build: '0.1.2', memory: 512, timeout: 300 }
      * );
      * ```
-     * @since Added in 2.0.1
      */
     async start(input?: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
@@ -221,7 +216,6 @@ export class ActorClient extends ResourceClient {
      * const log = new Log({ prefix: 'My Actor' });
      * const run = await client.actor('my-actor').call({ url: 'https://example.com' }, { log });
      * ```
-     * @since Added in 2.0.1
      */
     async call(input?: unknown, options: ActorCallOptions = {}): Promise<ActorRun> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
@@ -289,7 +283,6 @@ export class ActorClient extends ResourceClient {
      *   useCache: true
      * });
      * ```
-     * @since Added in 2.0.1
      */
     async build(versionNumber: string, options: ActorBuildOptions = {}): Promise<Build> {
         ow(versionNumber, ow.string);
@@ -374,7 +367,6 @@ export class ActorClient extends ResourceClient {
      * // Get the last successful run
      * const lastRun = await client.actor('my-actor').lastRun({ status: 'SUCCEEDED' }).get();
      * ```
-     * @since Added in 2.0.1
      */
     lastRun(options: ActorLastRunOptions = {}): RunClient {
         ow(
@@ -399,7 +391,6 @@ export class ActorClient extends ResourceClient {
      *
      * @returns A client for the Actor's build collection
      * @see https://docs.apify.com/api/v2/act-builds-get
-     * @since Added in 2.0.1
      */
     builds(): BuildCollectionClient {
         return new BuildCollectionClient(
@@ -414,7 +405,6 @@ export class ActorClient extends ResourceClient {
      *
      * @returns A client for the Actor's run collection
      * @see https://docs.apify.com/api/v2/act-runs-get
-     * @since Added in 2.0.1
      */
     runs(): RunCollectionClient {
         return new RunCollectionClient(
@@ -430,7 +420,6 @@ export class ActorClient extends ResourceClient {
      * @param versionNumber - Version number (e.g., '0.1', '1.2.3')
      * @returns A client for the specified Actor version
      * @see https://docs.apify.com/api/v2/act-version-get
-     * @since Added in 2.0.1
      */
     version(versionNumber: string): ActorVersionClient {
         ow(versionNumber, ow.string);
@@ -446,7 +435,6 @@ export class ActorClient extends ResourceClient {
      *
      * @returns A client for the Actor's version collection
      * @see https://docs.apify.com/api/v2/act-versions-get
-     * @since Added in 2.0.1
      */
     versions(): ActorVersionCollectionClient {
         return new ActorVersionCollectionClient(this._subResourceOptions());
@@ -457,7 +445,6 @@ export class ActorClient extends ResourceClient {
      *
      * @returns A client for the Actor's webhook collection
      * @see https://docs.apify.com/api/v2/act-webhooks-get
-     * @since Added in 2.0.1
      */
     webhooks(): WebhookCollectionClient {
         return new WebhookCollectionClient(this._subResourceOptions());
@@ -470,103 +457,48 @@ export class ActorClient extends ResourceClient {
  * Actors are serverless computing units that can perform arbitrary tasks such as web scraping,
  * data processing, automation, and more. Each Actor has versions, builds, and can be executed
  * with different configurations.
- * @since Added in 0.5.0
  */
 export interface Actor {
-    /**
-     * Unique Actor ID
-     * @since Added in 2.0.1
-     */
+    /** Unique Actor ID */
     id: string;
-    /**
-     * ID of the user who owns the Actor
-     * @since Added in 2.0.1
-     */
+    /** ID of the user who owns the Actor */
     userId: string;
-    /**
-     * Unique name of the Actor (used in API paths, e.g., 'my-actor')
-     * @since Added in 2.0.1
-     */
+    /** Unique name of the Actor (used in API paths, e.g., 'my-actor') */
     name: string;
-    /**
-     * Username of the Actor's owner
-     * @since Added in 2.0.1
-     */
+    /** Username of the Actor's owner */
     username: string;
-    /**
-     * Detailed description of what the Actor does
-     * @since Added in 2.0.1
-     */
+    /** Detailed description of what the Actor does */
     description?: string;
-    /**
-     * @deprecated Use defaultRunOptions.restartOnError instead
-     * @since Added in 2.0.1
-     */
+    /** @deprecated Use defaultRunOptions.restartOnError instead */
     restartOnError?: boolean;
-    /**
-     * Whether the Actor is publicly available in Apify Store
-     * @since Added in 2.0.1
-     */
+    /** Whether the Actor is publicly available in Apify Store */
     isPublic: boolean;
-    /**
-     * Whether the Actor can be run by anonymous users without authentication
-     * @since Added in 2.0.1
-     */
+    /** Whether the Actor can be run by anonymous users without authentication */
     isAnonymouslyRunnable?: boolean;
-    /**
-     * Timestamp when the Actor was created
-     * @since Added in 2.0.1
-     */
+    /** Timestamp when the Actor was created */
     createdAt: Date;
-    /**
-     * Timestamp when the Actor was last modified
-     * @since Added in 2.0.1
-     */
+    /** Timestamp when the Actor was last modified */
     modifiedAt: Date;
-    /**
-     * Usage and run statistics for the Actor
-     * @since Added in 2.0.1
-     */
+    /** Usage and run statistics for the Actor */
     stats: ActorStats;
-    /**
-     * All versions of this Actor
-     * @since Added in 2.0.1
-     */
+    /** All versions of this Actor */
     versions: ActorVersion[];
     /**
      * Pricing information for pay-per-result or pay-per-event Actors
      * @since Added in 2.12.4
      */
     pricingInfos?: ActorRunPricingInfo[];
-    /**
-     * Default configuration options for Actor runs
-     * @since Added in 2.0.1
-     */
+    /** Default configuration options for Actor runs */
     defaultRunOptions: ActorDefaultRunOptions;
-    /**
-     * Example input to help users understand how to use the Actor
-     * @since Added in 2.0.1
-     */
+    /** Example input to help users understand how to use the Actor */
     exampleRunInput?: ActorExampleRunInput;
-    /**
-     * Whether the Actor is deprecated and should not be used
-     * @since Added in 2.0.1
-     */
+    /** Whether the Actor is deprecated and should not be used */
     isDeprecated?: boolean;
-    /**
-     * Deployment key used for automated deployments
-     * @since Added in 2.0.1
-     */
+    /** Deployment key used for automated deployments */
     deploymentKey: string;
-    /**
-     * Human-readable title of the Actor (displayed in UI)
-     * @since Added in 2.0.1
-     */
+    /** Human-readable title of the Actor (displayed in UI) */
     title?: string;
-    /**
-     * Mapping of tags to specific builds (e.g., 'latest', 'beta')
-     * @since Added in 2.0.1
-     */
+    /** Mapping of tags to specific builds (e.g., 'latest', 'beta') */
     taggedBuilds?: ActorTaggedBuilds;
     /**
      * SEO-optimized title for the Actor's public page
@@ -604,7 +536,6 @@ export interface Actor {
 
 /**
  * Statistics about Actor usage and activity.
- * @since Added in 2.0.1
  */
 export interface ActorStats {
     /** Total number of builds created for this Actor */
@@ -627,7 +558,6 @@ export interface ActorStats {
 
 /**
  * Default configuration options for Actor runs.
- * @since Added in 2.0.1
  */
 export interface ActorDefaultRunOptions {
     build: string;
@@ -641,7 +571,6 @@ export interface ActorDefaultRunOptions {
 
 /**
  * Example input data to demonstrate Actor usage.
- * @since Added in 2.0.1
  */
 export interface ActorExampleRunInput {
     body: string;
@@ -650,13 +579,11 @@ export interface ActorExampleRunInput {
 
 /**
  * Mapping of build tags (e.g., 'latest', 'beta') to their corresponding build information.
- * @since Added in 2.0.1
  */
 export type ActorTaggedBuilds = Record<string, ActorTaggedBuild>;
 
 /**
  * Information about a specific tagged build.
- * @since Added in 2.0.1
  */
 export interface ActorTaggedBuild {
     buildId?: string;
@@ -666,7 +593,6 @@ export interface ActorTaggedBuild {
 
 /**
  * Fields that can be updated when modifying an Actor.
- * @since Added in 2.0.1
  */
 export type ActorUpdateOptions = Partial<
     Pick<
@@ -711,14 +637,10 @@ export interface ActorStandby {
     shouldPassActorInput?: boolean;
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface ActorStartOptions {
     /**
      * Tag or number of the Actor build to run (e.g. `beta` or `1.2.345`).
      * If not provided, the run uses build tag or number from the default Actor run configuration (typically `latest`).
-     * @since Added in 2.0.1
      */
     build?: string;
 
@@ -727,20 +649,17 @@ export interface ActorStartOptions {
      * `input` is expected to be an object that will be stringified to JSON and content type set to
      * `application/json; charset=utf-8`. If `options.contentType` is specified, then `input` must be a
      * `String` or `Buffer`.
-     * @since Added in 2.0.1
      */
     contentType?: string;
 
     /**
      * Memory in megabytes which will be allocated for the new Actor run.
      * If not provided, the run uses memory of the default Actor run configuration.
-     * @since Added in 2.0.1
      */
     memory?: number;
     /**
      * Timeout for the Actor run in seconds. Zero value means there is no timeout.
      * If not provided, the run uses timeout of the default Actor run configuration.
-     * @since Added in 2.0.1
      */
     timeout?: number;
 
@@ -758,7 +677,6 @@ export interface ActorStartOptions {
      * Specifies optional webhooks associated with the Actor run, which can be used
      * to receive a notification e.g. when the Actor finished or failed, see
      * [ad hook webhooks documentation](https://docs.apify.com/webhooks/ad-hoc-webhooks) for detailed description.
-     * @since Added in 2.0.1
      */
     webhooks?: readonly WebhookUpdateData[];
 
@@ -783,7 +701,6 @@ export interface ActorStartOptions {
 
     /**
      * Determines whether the run will be restarted if it fails.
-     * @since Added in 2.0.1
      */
     restartOnError?: boolean;
 
@@ -824,49 +741,16 @@ export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish
  * @since Added in 2.7.0
  */
 export interface ActorRunListItem {
-    /**
-     * @since Added in 2.0.1
-     */
     id: string;
-    /**
-     * @since Added in 2.0.1
-     */
     actId: string;
-    /**
-     * @since Added in 2.0.1
-     */
     actorTaskId?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     startedAt: Date;
-    /**
-     * @since Added in 2.0.1
-     */
     finishedAt: Date;
-    /**
-     * @since Added in 2.0.1
-     */
     status: (typeof ACT_JOB_STATUSES)[keyof typeof ACT_JOB_STATUSES];
-    /**
-     * @since Added in 2.0.1
-     */
     meta: ActorRunMeta;
-    /**
-     * @since Added in 2.0.1
-     */
     buildId: string;
-    /**
-     * @since Added in 2.0.1
-     */
     buildNumber: string;
-    /**
-     * @since Added in 2.0.1
-     */
     defaultKeyValueStoreId: string;
-    /**
-     * @since Added in 2.0.1
-     */
     defaultDatasetId: string;
     /**
      * @since Added in 2.6.1
@@ -895,32 +779,16 @@ export interface ActorRunStorageIds {
  *
  * Represents a single execution of an Actor with all its configuration, status,
  * and resource usage information.
- * @since Added in 0.10.0
  */
 export interface ActorRun extends ActorRunListItem {
-    /**
-     * @since Added in 2.0.1
-     */
     userId: string;
     /**
      * @since Added in 2.6.0
      */
     statusMessage?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     stats: ActorRunStats;
-    /**
-     * @since Added in 2.0.1
-     */
     options: ActorRunOptions;
-    /**
-     * @since Added in 2.0.1
-     */
     exitCode?: number;
-    /**
-     * @since Added in 2.0.1
-     */
     containerUrl: string;
     /**
      * @since Added in 2.7.0
@@ -991,7 +859,6 @@ export interface ActorRunUsage {
 
 /**
  * Metadata about how an Actor run was initiated.
- * @since Added in 2.0.1
  */
 export interface ActorRunMeta {
     origin: string;
@@ -1003,7 +870,6 @@ export interface ActorRunMeta {
  * Runtime statistics for an Actor run.
  *
  * Provides detailed metrics about resource consumption and performance during the run.
- * @since Added in 2.0.1
  */
 export interface ActorRunStats {
     inputBodyLen: number;
@@ -1027,7 +893,6 @@ export interface ActorRunStats {
  * Configuration options used for an Actor run.
  *
  * These are the actual options that were applied to the run (may differ from requested options).
- * @since Added in 2.0.1
  */
 export interface ActorRunOptions {
     build: string;
@@ -1050,7 +915,6 @@ export interface ActorRunOptions {
 
 /**
  * Options for building an Actor.
- * @since Added in 2.0.1
  */
 export interface ActorBuildOptions {
     betaPackages?: boolean;
@@ -1061,7 +925,6 @@ export interface ActorBuildOptions {
 
 /**
  * Options for filtering the last run of an Actor.
- * @since Added in 2.0.1
  */
 export interface ActorLastRunOptions {
     status?: keyof typeof ACT_JOB_STATUSES;
@@ -1106,15 +969,9 @@ export interface ActorDefinition {
 interface CommonActorPricingInfo {
     /** In [0, 1], fraction of pricePerUnitUsd that goes to Apify */
     apifyMarginPercentage: number;
-    /**
-     * When this pricing info record has been created
-     * @since Added in 2.0.1
-     */
+    /** When this pricing info record has been created */
     createdAt: Date;
-    /**
-     * Since when is this pricing info record effective for a given Actor
-     * @since Added in 2.0.1
-     */
+    /** Since when is this pricing info record effective for a given Actor */
     startedAt: Date;
     notifiedAboutFutureChangeAt?: Date;
     notifiedAboutChangeAt?: Date;

@@ -33,7 +33,6 @@ import { cast, catchNotFoundOrThrow } from '../utils';
  * ```
  *
  * @see https://docs.apify.com/platform/actors/running/runs-and-builds#logging
- * @since Added in 1.0.0
  */
 export class LogClient extends ResourceClient {
     /**
@@ -53,7 +52,6 @@ export class LogClient extends ResourceClient {
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
      * @returns The log content as a string, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/log-get
-     * @since Added in 2.0.1
      */
     async get(options: LogOptions = {}): Promise<string | undefined> {
         const requestOpts: ApifyRequestConfig = {
@@ -79,7 +77,6 @@ export class LogClient extends ResourceClient {
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
      * @returns The log content as a Readable stream, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/log-get
-     * @since Added in 2.0.1
      */
     async stream(options: LogOptions = {}): Promise<Readable | undefined> {
         const params = {

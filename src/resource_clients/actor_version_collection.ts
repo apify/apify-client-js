@@ -28,7 +28,6 @@ import type { ActorVersion, FinalActorVersion } from './actor_version';
  * ```
  *
  * @see https://docs.apify.com/api/v2/act-versions-get
- * @since Added in 1.0.0
  */
 export class ActorVersionCollectionClient extends ResourceCollectionClient {
     /**
@@ -59,7 +58,6 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      *
      * @returns A paginated iterator of Actor versions.
      * @see https://docs.apify.com/api/v2/act-versions-get
-     * @since Added in 2.0.1
      */
     list(
         _options: ActorVersionCollectionListOptions = {},
@@ -73,7 +71,6 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      * @param actorVersion - The Actor version data.
      * @returns The created Actor version object.
      * @see https://docs.apify.com/api/v2/act-versions-post
-     * @since Added in 2.0.1
      */
     async create(actorVersion: ActorVersion): Promise<FinalActorVersion> {
         ow(actorVersion, ow.optional.object);
@@ -85,13 +82,9 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
 /**
  * @deprecated No options are used in the current API implementation.
  * https://github.com/apify/apify-client-js/issues/799
- * @since Added in 2.0.1
  */
 export interface ActorVersionCollectionListOptions extends PaginationOptions {
     desc?: boolean;
 }
 
-/**
- * @since Added in 2.0.1
- */
 export type ActorVersionListResult = Pick<PaginatedList<FinalActorVersion>, 'total' | 'items'>;

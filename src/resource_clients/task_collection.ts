@@ -28,7 +28,6 @@ import type { Task, TaskUpdateData } from './task';
  * ```
  *
  * @see https://docs.apify.com/platform/actors/running/tasks
- * @since Added in 1.0.0
  */
 export class TaskCollectionClient extends ResourceCollectionClient {
     /**
@@ -60,7 +59,6 @@ export class TaskCollectionClient extends ResourceCollectionClient {
      * @param options - Pagination and sorting options.
      * @returns A paginated iterator of tasks.
      * @see https://docs.apify.com/api/v2/actor-tasks-get
-     * @since Added in 2.0.1
      */
     list(options: TaskCollectionListOptions = {}): PaginatedIterator<TaskList> {
         ow(
@@ -81,7 +79,6 @@ export class TaskCollectionClient extends ResourceCollectionClient {
      * @param task - The task data.
      * @returns The created task object.
      * @see https://docs.apify.com/api/v2/actor-tasks-post
-     * @since Added in 2.0.1
      */
     async create(task: TaskCreateData): Promise<Task> {
         ow(task, ow.object);
@@ -90,16 +87,10 @@ export class TaskCollectionClient extends ResourceCollectionClient {
     }
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface TaskCollectionListOptions extends PaginationOptions {
     desc?: boolean;
 }
 
-/**
- * @since Added in 2.0.1
- */
 export type TaskList = Omit<Task, 'options' | 'input'>;
 
 /**

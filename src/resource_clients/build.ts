@@ -30,7 +30,6 @@ import { LogClient } from './log';
  * ```
  *
  * @see https://docs.apify.com/platform/actors/running/runs-and-builds#builds
- * @since Added in 1.0.0
  */
 export class BuildClient extends ResourceClient {
     /**
@@ -60,7 +59,6 @@ export class BuildClient extends ResourceClient {
      * // Wait up to 60 seconds for build to finish
      * const build = await client.build('build-id').get({ waitForFinish: 60 });
      * ```
-     * @since Added in 2.0.1
      */
     async get(options: BuildClientGetOptions = {}): Promise<Build | undefined> {
         ow(
@@ -85,7 +83,6 @@ export class BuildClient extends ResourceClient {
      * ```javascript
      * await client.build('build-id').abort();
      * ```
-     * @since Added in 2.0.1
      */
     async abort(): Promise<Build> {
         const response = await this.httpClient.call({
@@ -153,7 +150,6 @@ export class BuildClient extends ResourceClient {
      *   const run = await client.actor('my-actor').start();
      * }
      * ```
-     * @since Added in 2.0.1
      */
     async waitForFinish(options: BuildClientWaitForFinishOptions = {}): Promise<Build> {
         ow(
@@ -191,7 +187,6 @@ export class BuildClient extends ResourceClient {
 
 /**
  * Options for getting a Build.
- * @since Added in 2.0.1
  */
 export interface BuildClientGetOptions {
     waitForFinish?: number;
@@ -199,7 +194,6 @@ export interface BuildClientGetOptions {
 
 /**
  * Options for waiting for a Build to finish.
- * @since Added in 2.0.1
  */
 export interface BuildClientWaitForFinishOptions {
     /**
@@ -212,7 +206,6 @@ export interface BuildClientWaitForFinishOptions {
 
 /**
  * Metadata about how a Build was initiated.
- * @since Added in 2.0.1
  */
 export interface BuildMeta {
     origin: string;
@@ -225,58 +218,25 @@ export interface BuildMeta {
  *
  * Builds compile Actor source code and prepare it for execution. Each build has a unique ID
  * and can be tagged (e.g., 'latest', 'beta') for easy reference.
- * @since Added in 1.0.0
  */
 export interface Build {
-    /**
-     * @since Added in 2.0.1
-     */
     id: string;
-    /**
-     * @since Added in 2.0.1
-     */
     actId: string;
-    /**
-     * @since Added in 2.0.1
-     */
     userId: string;
-    /**
-     * @since Added in 2.0.1
-     */
     startedAt: Date;
-    /**
-     * @since Added in 2.0.1
-     */
     finishedAt?: Date;
-    /**
-     * @since Added in 2.0.1
-     */
     status: (typeof ACT_JOB_TERMINAL_STATUSES)[number];
-    /**
-     * @since Added in 2.0.1
-     */
     meta: BuildMeta;
-    /**
-     * @since Added in 2.0.1
-     */
     stats?: BuildStats;
-    /**
-     * @since Added in 2.0.1
-     */
     options?: BuildOptions;
     /**
      * @deprecated This property is deprecated in favor of `actorDefinition.input`.
-     * @since Added in 2.0.1
      */
     inputSchema?: string;
     /**
      * @deprecated This property is deprecated in favor of `actorDefinition.readme`.
-     * @since Added in 2.0.1
      */
     readme?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     buildNumber: string;
     /**
      * @since Added in 2.7.2
@@ -306,7 +266,6 @@ export interface BuildUsage {
 
 /**
  * Runtime statistics for an Actor build.
- * @since Added in 2.0.1
  */
 export interface BuildStats {
     durationMillis: number;
@@ -316,7 +275,6 @@ export interface BuildStats {
 
 /**
  * Configuration options used for an Actor build.
- * @since Added in 2.0.1
  */
 export interface BuildOptions {
     useCache?: boolean;

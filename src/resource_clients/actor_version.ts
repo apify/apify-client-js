@@ -25,7 +25,6 @@ import { ActorEnvVarCollectionClient } from './actor_env_var_collection';
  * ```
  *
  * @see https://docs.apify.com/api/v2/act-versions-get
- * @since Added in 1.0.0
  */
 export class ActorVersionClient extends ResourceClient {
     /**
@@ -43,7 +42,6 @@ export class ActorVersionClient extends ResourceClient {
      *
      * @returns The Actor version object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/act-version-get
-     * @since Added in 2.0.1
      */
     async get(): Promise<FinalActorVersion | undefined> {
         return this._get();
@@ -55,7 +53,6 @@ export class ActorVersionClient extends ResourceClient {
      * @param newFields - Fields to update.
      * @returns The updated Actor version object.
      * @see https://docs.apify.com/api/v2/act-version-put
-     * @since Added in 2.0.1
      */
     async update(newFields: ActorVersion): Promise<FinalActorVersion> {
         ow(newFields, ow.object);
@@ -67,7 +64,6 @@ export class ActorVersionClient extends ResourceClient {
      * Deletes the Actor version.
      *
      * @see https://docs.apify.com/api/v2/act-version-delete
-     * @since Added in 2.0.1
      */
     async delete(): Promise<void> {
         return this._delete();
@@ -102,9 +98,6 @@ export class ActorVersionClient extends ResourceClient {
     }
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface BaseActorVersion<SourceType extends ActorSourceType> {
     versionNumber?: string;
     sourceType: SourceType;
@@ -120,39 +113,24 @@ export interface ActorVersionSourceFiles extends BaseActorVersion<ActorSourceTyp
     sourceFiles: ActorVersionSourceFile[];
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface ActorVersionSourceFile {
     name: string;
     format: 'TEXT' | 'BASE64';
     content: string;
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface ActorVersionGitRepo extends BaseActorVersion<ActorSourceType.GitRepo> {
     gitRepoUrl: string;
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface ActorVersionTarball extends BaseActorVersion<ActorSourceType.Tarball> {
     tarballUrl: string;
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface ActorVersionGitHubGist extends BaseActorVersion<ActorSourceType.GitHubGist> {
     gitHubGistUrl: string;
 }
 
-/**
- * @since Added in 2.0.1
- */
 export enum ActorSourceType {
     SourceFiles = 'SOURCE_FILES',
     GitRepo = 'GIT_REPO',
@@ -160,21 +138,12 @@ export enum ActorSourceType {
     GitHubGist = 'GITHUB_GIST',
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface ActorEnvironmentVariable {
     name?: string;
     value?: string;
     isSecret?: boolean;
 }
 
-/**
- * @since Added in 0.10.0
- */
 export type ActorVersion = ActorVersionSourceFiles | ActorVersionGitRepo | ActorVersionTarball | ActorVersionGitHubGist;
 
-/**
- * @since Added in 2.0.1
- */
 export type FinalActorVersion = ActorVersion & Required<Pick<ActorVersion, 'versionNumber' | 'buildTag'>>;

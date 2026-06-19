@@ -288,7 +288,6 @@ export interface PaginatedResponse<Data> {
  * offset-based pagination and field transformations.
  *
  * @template Data - The type of items in the list
- * @since Added in 2.0.1
  */
 export interface PaginatedList<Data> extends PaginatedResponse<Data> {
     /** Count of dataset entries returned in this set. */

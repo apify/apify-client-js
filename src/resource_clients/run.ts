@@ -38,7 +38,6 @@ const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
  * ```
  *
  * @see https://docs.apify.com/platform/actors/running/runs-and-builds
- * @since Added in 1.0.0
  */
 export class RunClient extends ResourceClient {
     /**
@@ -68,7 +67,6 @@ export class RunClient extends ResourceClient {
      * // Wait up to 60 seconds for run to finish
      * const run = await client.run('run-id').get({ waitForFinish: 60 });
      * ```
-     * @since Added in 2.0.1
      */
     async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
         ow(
@@ -97,7 +95,6 @@ export class RunClient extends ResourceClient {
      * // Abort gracefully (allows cleanup)
      * await client.run('run-id').abort({ gracefully: true });
      * ```
-     * @since Added in 2.0.1
      */
     async abort(options: RunAbortOptions = {}): Promise<ActorRun> {
         ow(
@@ -150,7 +147,6 @@ export class RunClient extends ResourceClient {
      * );
      * console.log(`Run ${metamorphedRun.id} is now running ${metamorphedRun.actId}`);
      * ```
-     * @since Added in 2.0.1
      */
     async metamorph(targetActorId: string, input: unknown, options: RunMetamorphOptions = {}): Promise<ActorRun> {
         ow(targetActorId, ow.string);
@@ -264,7 +260,6 @@ export class RunClient extends ResourceClient {
      * const newRun = await client.run('failed-run-id').resurrect({ memory: 2048 });
      * console.log(`New run started: ${newRun.id}`);
      * ```
-     * @since Added in 2.0.1
      */
     async resurrect(options: RunResurrectOptions = {}): Promise<ActorRun> {
         ow(
@@ -357,7 +352,6 @@ export class RunClient extends ResourceClient {
      *   console.log('Run succeeded!');
      * }
      * ```
-     * @since Added in 2.0.1
      */
     async waitForFinish(options: RunWaitForFinishOptions = {}): Promise<ActorRun> {
         ow(
@@ -381,7 +375,6 @@ export class RunClient extends ResourceClient {
      * // Access run's dataset
      * const { items } = await client.run('run-id').dataset().listItems();
      * ```
-     * @since Added in 2.0.1
      */
     dataset(): DatasetClient {
         return new DatasetClient(
@@ -402,7 +395,6 @@ export class RunClient extends ResourceClient {
      * // Access run's key-value store
      * const output = await client.run('run-id').keyValueStore().getRecord('OUTPUT');
      * ```
-     * @since Added in 2.0.1
      */
     keyValueStore(): KeyValueStoreClient {
         return new KeyValueStoreClient(
@@ -423,7 +415,6 @@ export class RunClient extends ResourceClient {
      * // Access run's Request queue
      * const { items } = await client.run('run-id').requestQueue().listHead();
      * ```
-     * @since Added in 2.0.1
      */
     requestQueue(): RequestQueueClient {
         return new RequestQueueClient(
@@ -445,7 +436,6 @@ export class RunClient extends ResourceClient {
      * const log = await client.run('run-id').log().get();
      * console.log(log);
      * ```
-     * @since Added in 2.0.1
      */
     log(): LogClient {
         return new LogClient(
@@ -496,7 +486,6 @@ export interface GetStreamedLogOptions {
 
 /**
  * Options for getting a Run.
- * @since Added in 2.0.1
  */
 export interface RunGetOptions {
     waitForFinish?: number;
@@ -504,7 +493,6 @@ export interface RunGetOptions {
 
 /**
  * Options for aborting a Run.
- * @since Added in 2.0.1
  */
 export interface RunAbortOptions {
     gracefully?: boolean;
@@ -512,7 +500,6 @@ export interface RunAbortOptions {
 
 /**
  * Options for metamorphing a Run into another Actor.
- * @since Added in 2.0.1
  */
 export interface RunMetamorphOptions {
     contentType?: string;
@@ -537,7 +524,6 @@ export interface RunUpdateOptions {
 
 /**
  * Options for resurrecting a finished Run.
- * @since Added in 2.0.1
  */
 export interface RunResurrectOptions {
     build?: string;
@@ -572,7 +558,6 @@ export interface RunChargeOptions {
 
 /**
  * Options for waiting for a Run to finish.
- * @since Added in 2.0.1
  */
 export interface RunWaitForFinishOptions {
     /**

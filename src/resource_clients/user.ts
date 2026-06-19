@@ -27,7 +27,6 @@ import { cast, catchNotFoundOrThrow, parseDateFields, pluckData } from '../utils
  * ```
  *
  * @see https://docs.apify.com/platform/actors/running
- * @since Added in 1.0.0
  */
 export class UserClient extends ResourceClient {
     /**
@@ -48,7 +47,6 @@ export class UserClient extends ResourceClient {
      *
      * @returns The user object.
      * @see https://docs.apify.com/api/v2/user-get
-     * @since Added in 2.0.1
      */
     async get(): Promise<User> {
         return this._get() as Promise<User>;
@@ -129,18 +127,9 @@ export class UserClient extends ResourceClient {
 // Using token will return private user data
 //
 
-/**
- * @since Added in 0.2.2
- */
 export interface User {
     // Public properties
-    /**
-     * @since Added in 2.0.1
-     */
     username: string;
-    /**
-     * @since Added in 2.0.1
-     */
     profile: {
         bio?: string;
         name?: string;
@@ -150,21 +139,9 @@ export interface User {
         twitterUsername?: string;
     };
     // Private properties
-    /**
-     * @since Added in 2.0.1
-     */
     id?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     email?: string;
-    /**
-     * @since Added in 2.0.1
-     */
     proxy?: UserProxy;
-    /**
-     * @since Added in 2.0.1
-     */
     plan?: UserPlan;
     /**
      * @since Added in 2.12.5
@@ -180,26 +157,17 @@ export interface User {
     isPaying?: boolean;
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface UserProxy {
     password: string;
     groups: ProxyGroup[];
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface ProxyGroup {
     name: string;
     description: string;
     availableCount: number;
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface UserPlan {
     id: string;
     description: string;
@@ -223,9 +191,6 @@ export interface UserPlan {
     availableAddOns: unknown[];
 }
 
-/**
- * @since Added in 2.0.1
- */
 export enum PlatformFeature {
     Actors = 'ACTORS',
     Storage = 'STORAGE',

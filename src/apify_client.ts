@@ -55,12 +55,8 @@ const DEFAULT_TIMEOUT_SECS = 360;
  * ```
  *
  * @see https://docs.apify.com/api/v2
- * @since Added in 0.0.3
  */
 export class ApifyClient {
-    /**
-     * @since Added in 2.0.1
-     */
     baseUrl: string;
 
     /**
@@ -68,24 +64,12 @@ export class ApifyClient {
      */
     publicBaseUrl: string;
 
-    /**
-     * @since Added in 2.0.1
-     */
     token?: string;
 
-    /**
-     * @since Added in 2.0.1
-     */
     stats: Statistics;
 
-    /**
-     * @since Added in 2.0.1
-     */
     logger: Log;
 
-    /**
-     * @since Added in 2.0.1
-     */
     httpClient: HttpClient;
 
     constructor(options: ApifyClientOptions = {}) {
@@ -150,7 +134,6 @@ export class ApifyClient {
      *
      * @returns A client for the Actors collection
      * @see https://docs.apify.com/api/v2/acts-get
-     * @since Added in 2.0.1
      */
     actors(): ActorCollectionClient {
         return new ActorCollectionClient(this._options());
@@ -171,7 +154,6 @@ export class ApifyClient {
      * // Call an Actor and wait for it to finish
      * const run = await client.actor('apify/web-scraper').call({ url: 'https://example.com' });
      * ```
-     * @since Added in 2.0.1
      */
     actor(id: string): ActorClient {
         ow(id, ow.string.nonEmpty);
@@ -189,7 +171,6 @@ export class ApifyClient {
      *
      * @returns A client for Actor builds collection
      * @see https://docs.apify.com/api/v2/actor-builds-get
-     * @since Added in 2.0.1
      */
     builds(): BuildCollectionClient {
         return new BuildCollectionClient(this._options());
@@ -203,7 +184,6 @@ export class ApifyClient {
      * @param id - Build ID
      * @returns A client for the specified build
      * @see https://docs.apify.com/api/v2/actor-build-get
-     * @since Added in 2.0.1
      */
     build(id: string): BuildClient {
         ow(id, ow.string.nonEmpty);
@@ -221,7 +201,6 @@ export class ApifyClient {
      *
      * @returns A client for the Datasets collection
      * @see https://docs.apify.com/api/v2/datasets-get
-     * @since Added in 2.0.1
      */
     datasets(): DatasetCollectionClient {
         return new DatasetCollectionClient(this._options());
@@ -249,7 +228,6 @@ export class ApifyClient {
      * // Retrieve items
      * const { items } = await client.dataset('my-dataset').listItems();
      * ```
-     * @since Added in 2.0.1
      */
     dataset<Data extends Record<string | number, any> = Record<string | number, unknown>>(
         id: string,
@@ -269,7 +247,6 @@ export class ApifyClient {
      *
      * @returns A client for the Key-value stores collection
      * @see https://docs.apify.com/api/v2/key-value-stores-get
-     * @since Added in 2.0.1
      */
     keyValueStores(): KeyValueStoreCollectionClient {
         return new KeyValueStoreCollectionClient(this._options());
@@ -293,7 +270,6 @@ export class ApifyClient {
      * // Get a record
      * const record = await client.keyValueStore('my-store').getRecord('OUTPUT');
      * ```
-     * @since Added in 2.0.1
      */
     keyValueStore(id: string): KeyValueStoreClient {
         ow(id, ow.string.nonEmpty);
@@ -310,7 +286,6 @@ export class ApifyClient {
      * @param buildOrRunId - Build ID or run ID
      * @returns A client for accessing logs
      * @see https://docs.apify.com/api/v2/log-get
-     * @since Added in 2.0.1
      */
     log(buildOrRunId: string): LogClient {
         ow(buildOrRunId, ow.string.nonEmpty);
@@ -328,7 +303,6 @@ export class ApifyClient {
      *
      * @returns A client for the Request queues collection
      * @see https://docs.apify.com/api/v2/request-queues-get
-     * @since Added in 2.0.1
      */
     requestQueues(): RequestQueueCollectionClient {
         return new RequestQueueCollectionClient(this._options());
@@ -354,7 +328,6 @@ export class ApifyClient {
      * // Get and lock the next request
      * const { items } = await queue.listAndLockHead({ lockSecs: 60 });
      * ```
-     * @since Added in 2.0.1
      */
     requestQueue(id: string, options: RequestQueueUserOptions = {}): RequestQueueClient {
         ow(id, ow.string.nonEmpty);
@@ -380,7 +353,6 @@ export class ApifyClient {
      *
      * @returns A client for the run collection
      * @see https://docs.apify.com/api/v2/actor-runs-get
-     * @since Added in 2.0.1
      */
     runs(): RunCollectionClient {
         return new RunCollectionClient({
@@ -407,7 +379,6 @@ export class ApifyClient {
      * // Access run's dataset
      * const { items } = await client.run('run-id').dataset().listItems();
      * ```
-     * @since Added in 2.0.1
      */
     run(id: string): RunClient {
         ow(id, ow.string.nonEmpty);
@@ -425,7 +396,6 @@ export class ApifyClient {
      *
      * @returns A client for the task collection
      * @see https://docs.apify.com/api/v2/actor-tasks-get
-     * @since Added in 2.0.1
      */
     tasks(): TaskCollectionClient {
         return new TaskCollectionClient(this._options());
@@ -445,7 +415,6 @@ export class ApifyClient {
      * // Run a task and wait for it to finish
      * const run = await client.task('my-task').call();
      * ```
-     * @since Added in 2.0.1
      */
     task(id: string): TaskClient {
         ow(id, ow.string.nonEmpty);
@@ -463,7 +432,6 @@ export class ApifyClient {
      *
      * @returns A client for the Schedules collection
      * @see https://docs.apify.com/api/v2/schedules-get
-     * @since Added in 2.0.1
      */
     schedules(): ScheduleCollectionClient {
         return new ScheduleCollectionClient(this._options());
@@ -477,7 +445,6 @@ export class ApifyClient {
      * @param id - Schedule ID
      * @returns A client for the specific Schedule
      * @see https://docs.apify.com/api/v2/schedule-get
-     * @since Added in 2.0.1
      */
     schedule(id: string): ScheduleClient {
         ow(id, ow.string.nonEmpty);
@@ -496,7 +463,6 @@ export class ApifyClient {
      * @param id - User ID or username. Defaults to 'me' (current user)
      * @returns A client for the user
      * @see https://docs.apify.com/api/v2/user-get
-     * @since Added in 2.0.1
      */
     user(id = ME_USER_NAME_PLACEHOLDER): UserClient {
         ow(id, ow.string.nonEmpty);
@@ -514,7 +480,6 @@ export class ApifyClient {
      *
      * @returns A client for the Webhooks collection
      * @see https://docs.apify.com/api/v2/webhooks-get
-     * @since Added in 2.0.1
      */
     webhooks(): WebhookCollectionClient {
         return new WebhookCollectionClient(this._options());
@@ -528,7 +493,6 @@ export class ApifyClient {
      * @param id - Webhook ID
      * @returns A client for the specific webhook
      * @see https://docs.apify.com/api/v2/webhook-get
-     * @since Added in 2.0.1
      */
     webhook(id: string): WebhookClient {
         ow(id, ow.string.nonEmpty);
@@ -546,7 +510,6 @@ export class ApifyClient {
      *
      * @returns A client for the webhook dispatches collection
      * @see https://docs.apify.com/api/v2/webhook-dispatches-get
-     * @since Added in 2.0.1
      */
     webhookDispatches(): WebhookDispatchCollectionClient {
         return new WebhookDispatchCollectionClient(this._options());
@@ -558,7 +521,6 @@ export class ApifyClient {
      * @param id - Webhook dispatch ID
      * @returns A client for the specific webhook dispatch
      * @see https://docs.apify.com/api/v2/webhook-dispatch-get
-     * @since Added in 2.0.1
      */
     webhookDispatch(id: string): WebhookDispatchClient {
         ow(id, ow.string.nonEmpty);
@@ -576,7 +538,6 @@ export class ApifyClient {
      *
      * @returns A client for the Apify Store
      * @see https://docs.apify.com/api/v2/store-get
-     * @since Added in 2.0.1
      */
     store(): StoreCollectionClient {
         return new StoreCollectionClient(this._options());
@@ -607,7 +568,6 @@ export class ApifyClient {
 
 /**
  * Configuration options for ApifyClient.
- * @since Added in 2.0.1
  */
 export interface ApifyClientOptions {
     /** @default https://api.apify.com */

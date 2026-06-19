@@ -21,19 +21,10 @@ export type ApiClientSubResourceOptions = Omit<ApiClientOptions, 'resourcePath'>
 
 /** @private */
 export abstract class ApiClient {
-    /**
-     * @since Added in 2.0.1
-     */
     id?: string;
 
-    /**
-     * @since Added in 2.0.1
-     */
     safeId?: string;
 
-    /**
-     * @since Added in 2.0.1
-     */
     baseUrl: string;
 
     /**
@@ -41,29 +32,14 @@ export abstract class ApiClient {
      */
     publicBaseUrl: string;
 
-    /**
-     * @since Added in 2.0.1
-     */
     resourcePath: string;
 
-    /**
-     * @since Added in 2.0.1
-     */
     url: string;
 
-    /**
-     * @since Added in 2.0.1
-     */
     apifyClient: ApifyClient;
 
-    /**
-     * @since Added in 2.0.1
-     */
     httpClient: HttpClient;
 
-    /**
-     * @since Added in 2.0.1
-     */
     params?: Record<string, unknown>;
 
     constructor(options: ApiClientOptions) {

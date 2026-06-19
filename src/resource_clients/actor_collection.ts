@@ -30,7 +30,6 @@ import type { ActorVersion } from './actor_version';
  * ```
  *
  * @see https://docs.apify.com/platform/actors
- * @since Added in 1.0.0
  */
 export class ActorCollectionClient extends ResourceCollectionClient {
     /**
@@ -62,7 +61,6 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * @param options - Pagination options.
      * @returns A paginated iterator of Actors.
      * @see https://docs.apify.com/api/v2/acts-get
-     * @since Added in 2.0.1
      */
     list(options: ActorCollectionListOptions = {}): PaginatedIterator<ActorCollectionListItem> {
         ow(
@@ -85,7 +83,6 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * @param actor - The Actor data.
      * @returns The created Actor object.
      * @see https://docs.apify.com/api/v2/acts-post
-     * @since Added in 2.0.1
      */
     async create(actor: ActorCollectionCreateOptions): Promise<Actor> {
         ow(actor, ow.optional.object);
@@ -102,9 +99,6 @@ export enum ActorListSortBy {
     LAST_RUN_STARTED_AT = 'stats.lastRunStartedAt',
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface ActorCollectionListOptions extends PaginationOptions {
     my?: boolean;
     desc?: boolean;
@@ -114,9 +108,6 @@ export interface ActorCollectionListOptions extends PaginationOptions {
     sortBy?: ActorListSortBy;
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface ActorCollectionListItem {
     id: string;
     createdAt: Date;
@@ -125,14 +116,8 @@ export interface ActorCollectionListItem {
     username: string;
 }
 
-/**
- * @since Added in 2.0.1
- */
 export type ActorCollectionListResult = PaginatedList<ActorCollectionListItem>;
 
-/**
- * @since Added in 2.0.1
- */
 export interface ActorCollectionCreateOptions {
     /**
      * @since Added in 2.8.6
@@ -171,5 +156,8 @@ export interface ActorCollectionCreateOptions {
     actorStandby?: ActorStandby & {
         isEnabled: boolean;
     };
+    /**
+     * @since Added in next
+     */
     actorPermissionLevel?: ACTOR_PERMISSION_LEVEL;
 }

@@ -26,7 +26,6 @@ import type { KeyValueStore } from './key_value_store';
  * ```
  *
  * @see https://docs.apify.com/platform/storage/key-value-store
- * @since Added in 1.0.0
  */
 export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     /**
@@ -58,7 +57,6 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
      * @param options - Pagination options.
      * @returns A paginated iterator of Key-value stores.
      * @see https://docs.apify.com/api/v2/key-value-stores-get
-     * @since Added in 2.0.1
      */
     list(
         options: KeyValueStoreCollectionClientListOptions = {},
@@ -84,7 +82,6 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
      * @param options - Additional options like schema.
      * @returns The key-value store object.
      * @see https://docs.apify.com/api/v2/key-value-stores-post
-     * @since Added in 2.0.1
      */
     async getOrCreate(
         name?: string,
@@ -97,9 +94,6 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     }
 }
 
-/**
- * @since Added in 2.0.1
- */
 export interface KeyValueStoreCollectionClientListOptions extends PaginationOptions {
     unnamed?: boolean;
     desc?: boolean;
@@ -117,7 +111,4 @@ export interface KeyValueStoreCollectionClientGetOrCreateOptions {
     schema?: Record<string, unknown>;
 }
 
-/**
- * @since Added in 2.0.1
- */
 export type KeyValueStoreCollectionListResult = PaginatedList<KeyValueStore> & { unnamed: boolean };
