@@ -9,7 +9,7 @@ import express from 'express';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { WEBHOOK_EVENT_TYPES } from '@apify/consts';
+import { META_ORIGINS, WEBHOOK_EVENT_TYPES } from '@apify/consts';
 import { LEVELS, Log } from '@apify/log';
 
 import { stringifyWebhooksToBase64 } from '../src/utils';
@@ -385,9 +385,11 @@ describe('Actor methods', () => {
                 '%s() works',
                 async (method) => {
                     const actorId = 'some-actor-id';
-                    const requestedStatus = 'SUCCEEDED';
+                    const requestedStatus = 'TIMING-OUT';
 
-                    const lastRunClient = client.actor(actorId).lastRun({ status: requestedStatus });
+                    const lastRunClient = client
+                        .actor(actorId)
+                        .lastRun({ status: requestedStatus, origin: META_ORIGINS.API });
                     const res = method === 'get' ? await lastRunClient.get() : await lastRunClient[method]().get();
 
                     const endpointIdMap = {
@@ -398,7 +400,7 @@ describe('Actor methods', () => {
                         log: 'last-run-log',
                     } as const;
                     validateRequest({
-                        query: { status: requestedStatus },
+                        query: { status: requestedStatus, origin: META_ORIGINS.API },
                         params: { actorId },
                         endpointId: endpointIdMap[method],
                     });
