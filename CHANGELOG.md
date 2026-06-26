@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### 🐛 Bug Fixes
 
 - ActorPermissionLevel was missing in ActorCollectionCreateOptions ([#940](https://github.com/apify/apify-client-js/pull/940)) ([4d8125e](https://github.com/apify/apify-client-js/commit/4d8125ebc1c6897d5cc2d1e602ef2d52468f2623)) by [@valekjo](https://github.com/valekjo)
+- Fix incomplete type hint of last run&#x2F;task ([#952](https://github.com/apify/apify-client-js/pull/952)) ([3924ce0](https://github.com/apify/apify-client-js/commit/3924ce0098e657c34c10dd55dca4ffd2b44c2bea)) by [@Pijukatel](https://github.com/Pijukatel)
 
 
 <!-- git-cliff-unreleased-end -->
