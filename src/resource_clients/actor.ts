@@ -844,6 +844,7 @@ export interface ActorBuildOptions {
  */
 export interface ActorLastRunOptions {
     status?: keyof typeof ACT_JOB_STATUSES;
+    origin?: keyof typeof META_ORIGINS;
 }
 
 /**

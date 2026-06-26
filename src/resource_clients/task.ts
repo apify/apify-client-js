@@ -8,7 +8,7 @@ import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import type { Dictionary } from '../utils';
 import { cast, catchNotFoundOrThrow, parseDateFields, pluckData, stringifyWebhooksToBase64 } from '../utils';
-import type { ActorRun, ActorStandby, ActorStartOptions } from './actor';
+import type { ActorLastRunOptions, ActorRun, ActorStandby, ActorStartOptions } from './actor';
 import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
 import { WebhookCollectionClient } from './webhook_collection';
@@ -322,9 +322,7 @@ export type TaskUpdateData = Partial<
 /**
  * Options for filtering the last run of a Task.
  */
-export interface TaskLastRunOptions {
-    status?: keyof typeof ACT_JOB_STATUSES;
-}
+export interface TaskLastRunOptions extends ActorLastRunOptions {}
 
 /**
  * Options for starting a Task.
