@@ -18,7 +18,7 @@ import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
 import type { WebhookUpdateData } from './webhook';
 import { WebhookCollectionClient } from './webhook_collection';
-import { ValueOf } from 'type-fest';
+import type { ValueOf } from 'type-fest';
 
 /**
  * Client for managing a specific Actor.
