@@ -2,7 +2,7 @@ import type { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
-import { ACT_JOB_STATUSES, ACTOR_PERMISSION_LEVEL, META_ORIGINS } from '@apify/consts';
+import { ACTOR_JOB_STATUSES, ACTOR_PERMISSION_LEVEL, META_ORIGINS } from '@apify/consts';
 import { Log } from '@apify/log';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
@@ -18,6 +18,7 @@ import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
 import type { WebhookUpdateData } from './webhook';
 import { WebhookCollectionClient } from './webhook_collection';
+import { ValueOf } from 'type-fest';
 
 /**
  * Client for managing a specific Actor.
@@ -371,7 +372,7 @@ export class ActorClient extends ResourceClient {
         ow(
             options,
             ow.object.exactShape({
-                status: ow.optional.string.oneOf(Object.values(ACT_JOB_STATUSES)),
+                status: ow.optional.string.oneOf(Object.values(ACTOR_JOB_STATUSES)),
                 origin: ow.optional.string.oneOf(Object.values(META_ORIGINS)),
             }),
         );
@@ -708,7 +709,7 @@ export interface ActorRunListItem {
     actorTaskId?: string;
     startedAt: Date;
     finishedAt: Date;
-    status: (typeof ACT_JOB_STATUSES)[keyof typeof ACT_JOB_STATUSES];
+    status: (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES];
     meta: ActorRunMeta;
     buildId: string;
     buildNumber: string;
@@ -843,8 +844,8 @@ export interface ActorBuildOptions {
  * Options for filtering the last run of an Actor.
  */
 export interface ActorLastRunOptions {
-    status?: keyof typeof ACT_JOB_STATUSES;
-    origin?: keyof typeof META_ORIGINS;
+    status?: ValueOf<typeof ACTOR_JOB_STATUSES>;
+    origin?: ValueOf<typeof ACTOR_JOB_STATUSES>;
 }
 
 /**

@@ -385,7 +385,7 @@ describe('Actor methods', () => {
                 '%s() works',
                 async (method) => {
                     const actorId = 'some-actor-id';
-                    const requestedStatus = 'SUCCEEDED';
+                    const requestedStatus = 'TIMING-OUT';
 
                     const lastRunClient = client
                         .actor(actorId)
