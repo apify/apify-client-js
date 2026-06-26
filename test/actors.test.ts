@@ -400,7 +400,7 @@ describe('Actor methods', () => {
                         log: 'last-run-log',
                     } as const;
                     validateRequest({
-                        query: { status: requestedStatus , origin: META_ORIGINS.API },
+                        query: { status: requestedStatus, origin: META_ORIGINS.API },
                         params: { actorId },
                         endpointId: endpointIdMap[method],
                     });
