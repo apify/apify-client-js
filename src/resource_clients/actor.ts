@@ -316,7 +316,7 @@ export class ActorClient extends ResourceClient {
         }
 
         const response = await this.httpClient.call(request);
-        return pluckData<{ valid: boolean }>(response.data).valid;
+        return response.data.valid;
     }
 
     /**

@@ -359,7 +359,7 @@ describe('Actor methods', () => {
             const actorId = 'some-id';
             const input = { some: 'body' };
 
-            mockServer.setResponse({ body: { data: { valid: true } } });
+            mockServer.setResponse({ body: { valid: true } });
             const res = await client.actor(actorId).validateInput(input);
             expect(res).toBe(true);
             validateRequest({ params: { actorId }, body: input, endpointId: 'validate-input' });
@@ -374,7 +374,7 @@ describe('Actor methods', () => {
             const input = { some: 'body' };
             const build = 'beta';
 
-            mockServer.setResponse({ body: { data: { valid: true } } });
+            mockServer.setResponse({ body: { valid: true } });
             const res = await client.actor(actorId).validateInput(input, { build });
             expect(res).toBe(true);
             validateRequest({ query: { build }, params: { actorId }, body: input, endpointId: 'validate-input' });
@@ -403,7 +403,7 @@ describe('Actor methods', () => {
                 endpointId: 'validate-input',
             };
 
-            mockServer.setResponse({ body: { data: { valid: true } } });
+            mockServer.setResponse({ body: { valid: true } });
             const res = await client.actor(actorId).validateInput(input);
             expect(res).toBe(true);
             validateRequest(expectedRequestProps);
