@@ -332,6 +332,7 @@ export class ActorClient extends ResourceClient {
      * const buildClient = await client.actor('my-actor').defaultBuild({ waitForFinish: 60 });
      * const build = await buildClient.get();
      * ```
+     * @since Added in 2.12.2
      */
     async defaultBuild(options: BuildClientGetOptions = {}): Promise<BuildClient> {
         const response = await this.httpClient.call({
@@ -483,7 +484,10 @@ export interface Actor {
     stats: ActorStats;
     /** All versions of this Actor */
     versions: ActorVersion[];
-    /** Pricing information for pay-per-result or pay-per-event Actors */
+    /**
+     * Pricing information for pay-per-result or pay-per-event Actors
+     * @since Added in 2.12.4
+     */
     pricingInfos?: ActorRunPricingInfo[];
     /** Default configuration options for Actor runs */
     defaultRunOptions: ActorDefaultRunOptions;
@@ -497,19 +501,37 @@ export interface Actor {
     title?: string;
     /** Mapping of tags to specific builds (e.g., 'latest', 'beta') */
     taggedBuilds?: ActorTaggedBuilds;
-    /** SEO-optimized title for the Actor's public page */
+    /**
+     * SEO-optimized title for the Actor's public page
+     * @since Added in 2.6.1
+     */
     seoTitle?: string;
-    /** SEO-optimized description for the Actor's public page */
+    /**
+     * SEO-optimized description for the Actor's public page
+     * @since Added in 2.6.1
+     */
     seoDescription?: string;
-    /** Categories the Actor belongs to (e.g., 'ECOMMERCE', 'SCRAPING') */
+    /**
+     * Categories the Actor belongs to (e.g., 'ECOMMERCE', 'SCRAPING')
+     * @since Added in 2.6.1
+     */
     categories?: string[];
-    /** Standby mode configuration for keeping Actor warm and responsive */
+    /**
+     * Standby mode configuration for keeping Actor warm and responsive
+     * @since Added in 2.9.5
+     */
     actorStandby?: ActorStandby & {
         isEnabled: boolean;
     };
-    /** Permission level of the Actor on Apify platform */
+    /**
+     * Permission level of the Actor on Apify platform
+     * @since Added in 2.21.0
+     */
     actorPermissionLevel: ACTOR_PERMISSION_LEVEL;
-    /** A brief, LLM-generated readme summary */
+    /**
+     * A brief, LLM-generated readme summary
+     * @since Added in 2.22.1
+     */
     readmeSummary?: string;
 }
 
@@ -542,6 +564,9 @@ export interface ActorDefaultRunOptions {
     build: string;
     timeoutSecs: number;
     memoryMbytes: number;
+    /**
+     * @since Added in 2.19.0
+     */
     restartOnError?: boolean;
 }
 
@@ -595,14 +620,21 @@ export type ActorUpdateOptions = Partial<
  *
  * Standby mode keeps Actor containers warm and ready to process requests with minimal latency.
  * This is useful for Actors that need to respond quickly to incoming requests.
+ * @since Added in 2.9.5
  */
 export interface ActorStandby {
     build?: string;
     desiredRequestsPerActorRun?: number;
+    /**
+     * @since Added in 2.22.0
+     */
     disableStandbyFieldsOverride?: boolean;
     idleTimeoutSecs?: number;
     maxRequestsPerActorRun?: number;
     memoryMbytes?: number;
+    /**
+     * @since Added in 2.22.0
+     */
     shouldPassActorInput?: boolean;
 }
 
@@ -655,6 +687,7 @@ export interface ActorStartOptions {
      * It only ensures you won't be charged for more than this number of items.
      * Only works for pay-per-result Actors.
      * Value can be accessed in the Actor run using `ACTOR_MAX_PAID_DATASET_ITEMS` environment variable.
+     * @since Added in 2.7.0
      */
     maxItems?: number;
 
@@ -663,6 +696,7 @@ export interface ActorStartOptions {
      * used only for pay-per-event Actors. It allows you to limit the amount
      * charged to your subscription. You can access the maximum cost in your
      * Actor by using the `ACTOR_MAX_TOTAL_CHARGE_USD` environment variable.
+     * @since Added in 2.9.7
      */
     maxTotalChargeUsd?: number;
 
@@ -676,6 +710,7 @@ export interface ActorStartOptions {
     /**
      * Override the Actor's permissions for this run. If not set, the Actor will run with permissions configured in the
      * Actor settings.
+     * @since Added in 2.17.0
      */
     forcePermissionLevel?: ACTOR_PERMISSION_LEVEL;
 }
@@ -684,6 +719,7 @@ export interface ActorStartOptions {
  * Options for calling an Actor and waiting for it to finish.
  *
  * Extends {@link ActorStartOptions} with additional options for waiting and log streaming.
+ * @since Added in 2.6.2
  */
 export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish'> {
     /**
@@ -694,6 +730,7 @@ export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish
      * `Log` instance that should be used to redirect Actor run logs to.
      * If `undefined` or `'default'` the pre-defined `Log` will be created and used.
      * If `null`, no log redirection will occur.
+     * @since Added in 2.20.0
      */
     log?: Log | null | 'default';
 }
@@ -702,6 +739,7 @@ export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish
  * Simplified Actor run information used in list results.
  *
  * Contains basic information about a run without detailed statistics.
+ * @since Added in 2.7.0
  */
 export interface ActorRunListItem {
     id: string;
@@ -715,10 +753,19 @@ export interface ActorRunListItem {
     buildNumber: string;
     defaultKeyValueStoreId: string;
     defaultDatasetId: string;
+    /**
+     * @since Added in 2.6.1
+     */
     defaultRequestQueueId: string;
+    /**
+     * @since Added in 2.7.2
+     */
     usageTotalUsd?: number;
 }
 
+/**
+ * @since Added in 2.22.3
+ */
 export interface ActorRunStorageIds {
     /** Aliased dataset IDs for this run. */
     datasets: { default: string; [alias: string]: string };
@@ -736,18 +783,45 @@ export interface ActorRunStorageIds {
  */
 export interface ActorRun extends ActorRunListItem {
     userId: string;
+    /**
+     * @since Added in 2.6.0
+     */
     statusMessage?: string;
     stats: ActorRunStats;
     options: ActorRunOptions;
     exitCode?: number;
     containerUrl: string;
+    /**
+     * @since Added in 2.7.0
+     */
     isContainerServerReady?: boolean;
+    /**
+     * @since Added in 2.7.0
+     */
     gitBranchName?: string;
+    /**
+     * @since Added in 2.7.0
+     */
     usage?: ActorRunUsage;
+    /**
+     * @since Added in 2.7.2
+     */
     usageUsd?: ActorRunUsage;
+    /**
+     * @since Added in 2.11.1
+     */
     pricingInfo?: ActorRunPricingInfo;
+    /**
+     * @since Added in 2.11.1
+     */
     chargedEventCounts?: Record<string, number>;
+    /**
+     * @since Added in 2.12.2
+     */
     generalAccess?: RUN_GENERAL_ACCESS | null;
+    /**
+     * @since Added in 2.22.3
+     */
     storageIds?: ActorRunStorageIds;
 }
 
@@ -755,6 +829,7 @@ export interface ActorRun extends ActorRunListItem {
  * Resource usage metrics for an Actor run.
  *
  * All values represent the total consumption during the run's lifetime.
+ * @since Added in 2.7.0
  */
 export interface ActorRunUsage {
     /** Compute units consumed (combines CPU and memory usage over time) */
@@ -825,8 +900,17 @@ export interface ActorRunOptions {
     timeoutSecs: number;
     memoryMbytes: number;
     diskMbytes: number;
+    /**
+     * @since Added in 2.20.0
+     */
     maxItems?: number;
+    /**
+     * @since Added in 2.11.1
+     */
     maxTotalChargeUsd?: number;
+    /**
+     * @since Added in 2.19.0
+     */
     restartOnError?: boolean;
 }
 
@@ -853,6 +937,7 @@ export interface ActorLastRunOptions {
  *
  * Contains the Actor's configuration, input schema, and other metadata.
  * @see https://docs.apify.com/platform/actors/development/actor-definition/actor-json
+ * @since Added in 2.11.0
  */
 export interface ActorDefinition {
     actorSpecification: number;
@@ -871,6 +956,7 @@ export interface ActorDefinition {
     /**
      * Output schema for the Actor.
      * @see https://docs.apify.com/platform/actors/development/actor-definition/output-schema
+     * @since Added in 2.23.0
      */
     output?: object | null;
     changelog?: string | null;
@@ -896,6 +982,7 @@ interface CommonActorPricingInfo {
 
 /**
  * Pricing information for free Actors.
+ * @since Added in 2.11.1
  */
 export interface FreeActorPricingInfo extends CommonActorPricingInfo {
     pricingModel: 'FREE';
@@ -903,6 +990,7 @@ export interface FreeActorPricingInfo extends CommonActorPricingInfo {
 
 /**
  * Pricing information for Actors with a flat monthly subscription fee.
+ * @since Added in 2.11.1
  */
 export interface FlatPricePerMonthActorPricingInfo extends CommonActorPricingInfo {
     pricingModel: 'FLAT_PRICE_PER_MONTH';
@@ -916,6 +1004,7 @@ export interface FlatPricePerMonthActorPricingInfo extends CommonActorPricingInf
  * Pricing information for pay-per-result Actors.
  *
  * These Actors charge based on the number of items saved to the dataset.
+ * @since Added in 2.11.1
  */
 export interface PricePerDatasetItemActorPricingInfo extends CommonActorPricingInfo {
     pricingModel: 'PRICE_PER_DATASET_ITEM';
@@ -926,6 +1015,7 @@ export interface PricePerDatasetItemActorPricingInfo extends CommonActorPricingI
 
 /**
  * Definition of a chargeable event for pay-per-event Actors.
+ * @since Added in 2.11.1
  */
 export interface ActorChargeEvent {
     eventPriceUsd: number;
@@ -935,6 +1025,7 @@ export interface ActorChargeEvent {
 
 /**
  * Mapping of event names to their pricing information.
+ * @since Added in 2.11.1
  */
 export type ActorChargeEvents = Record<string, ActorChargeEvent>;
 
@@ -942,6 +1033,7 @@ export type ActorChargeEvents = Record<string, ActorChargeEvent>;
  * Pricing information for pay-per-event Actors.
  *
  * These Actors charge based on specific events (e.g., emails sent, API calls made).
+ * @since Added in 2.11.1
  */
 export interface PricePerEventActorPricingInfo extends CommonActorPricingInfo {
     pricingModel: 'PAY_PER_EVENT';
@@ -953,6 +1045,7 @@ export interface PricePerEventActorPricingInfo extends CommonActorPricingInfo {
 
 /**
  * Union type representing all possible Actor pricing models.
+ * @since Added in 2.11.1
  */
 export type ActorRunPricingInfo =
     | PricePerEventActorPricingInfo

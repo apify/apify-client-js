@@ -24,6 +24,7 @@ import type { ActorStats } from './actor';
  * ```
  *
  * @see https://docs.apify.com/platform/actors/publishing
+ * @since Added in 2.7.2
  */
 export class StoreCollectionClient extends ResourceCollectionClient {
     /**
@@ -75,10 +76,16 @@ export class StoreCollectionClient extends ResourceCollectionClient {
     }
 }
 
+/**
+ * @since Added in 2.7.2
+ */
 export interface PricingInfo {
     pricingModel: string;
 }
 
+/**
+ * @since Added in 2.7.2
+ */
 export interface ActorStoreList {
     id: string;
     name: string;
@@ -89,11 +96,20 @@ export interface ActorStoreList {
     currentPricingInfo: PricingInfo;
     pictureUrl?: string;
     userPictureUrl?: string;
+    /**
+     * @since Added in 2.8.6
+     */
     url: string;
-    /** A brief, LLM-generated readme summary */
+    /**
+     * A brief, LLM-generated readme summary
+     * @since Added in 2.22.1
+     */
     readmeSummary?: string;
 }
 
+/**
+ * @since Added in 2.7.2
+ */
 export interface StoreCollectionListOptions extends PaginationOptions {
     search?: string;
     sortBy?: string;
@@ -103,6 +119,7 @@ export interface StoreCollectionListOptions extends PaginationOptions {
     /**
      * If true, the response will include Actors that cannot be run (e.g., Actors
      * that require a linked integration account that the current user does not have).
+     * @since Added in 2.23.0
      */
     includeUnrunnableActors?: boolean;
 }

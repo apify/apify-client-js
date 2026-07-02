@@ -94,10 +94,16 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
 export interface DatasetCollectionClientListOptions extends PaginationOptions {
     unnamed?: boolean;
     desc?: boolean;
-    /** Filter by ownership: 'ownedByMe' returns only user's own datasets, 'sharedWithMe' returns only shared datasets. */
+    /**
+     * Filter by ownership: 'ownedByMe' returns only user's own datasets, 'sharedWithMe' returns only shared datasets.
+     * @since Added in 2.22.1
+     */
     ownership?: STORAGE_OWNERSHIP_FILTER;
 }
 
+/**
+ * @since Added in 2.3.0
+ */
 export interface DatasetCollectionClientGetOrCreateOptions {
     schema?: Record<string, unknown>;
 }

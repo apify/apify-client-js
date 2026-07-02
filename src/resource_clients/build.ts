@@ -98,6 +98,7 @@ export class BuildClient extends ResourceClient {
      * Deletes the Actor build.
      *
      * @see https://docs.apify.com/api/v2/actor-build-delete
+     * @since Added in 2.8.1
      */
     async delete(): Promise<void> {
         return this._delete();
@@ -108,6 +109,7 @@ export class BuildClient extends ResourceClient {
      *
      * @returns The OpenAPI definition object.
      * @see https://docs.apify.com/api/v2/actor-build-openapi-json-get
+     * @since Added in 2.11.2
      */
     async getOpenApiDefinition(): Promise<OpenApiDefinition> {
         const response = await this.httpClient.call({
@@ -172,6 +174,7 @@ export class BuildClient extends ResourceClient {
      * const log = await client.build('build-id').log().get();
      * console.log(log);
      * ```
+     * @since Added in 2.9.0
      */
     log(): LogClient {
         return new LogClient(
@@ -235,14 +238,27 @@ export interface Build {
      */
     readme?: string;
     buildNumber: string;
+    /**
+     * @since Added in 2.7.2
+     */
     usage?: BuildUsage;
+    /**
+     * @since Added in 2.7.2
+     */
     usageTotalUsd?: number;
+    /**
+     * @since Added in 2.7.2
+     */
     usageUsd?: BuildUsage;
+    /**
+     * @since Added in 2.11.0
+     */
     actorDefinition?: ActorDefinition;
 }
 
 /**
  * Resource usage for an Actor build.
+ * @since Added in 2.7.2
  */
 export interface BuildUsage {
     ACTOR_COMPUTE_UNITS?: number;
@@ -272,6 +288,7 @@ export interface BuildOptions {
  *
  * Defines the Actor's API interface in OpenAPI 3.0 format, useful for integration
  * with tools like ChatGPT plugins and other API consumers.
+ * @since Added in 2.11.2
  */
 export interface OpenApiDefinition {
     openapi: string;

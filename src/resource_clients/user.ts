@@ -57,6 +57,7 @@ export class UserClient extends ResourceClient {
      *
      * @returns The monthly usage object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/users-me-usage-monthly-get
+     * @since Added in 2.9.2
      */
     async monthlyUsage(): Promise<MonthlyUsage | undefined> {
         const requestOpts: ApifyRequestConfig = {
@@ -85,6 +86,7 @@ export class UserClient extends ResourceClient {
      *
      * @returns The account and usage limits object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/users-me-limits-get
+     * @since Added in 2.9.2
      */
     async limits(): Promise<AccountAndUsageLimits | undefined> {
         const requestOpts: ApifyRequestConfig = {
@@ -107,6 +109,7 @@ export class UserClient extends ResourceClient {
      *
      * @param options - The new limits to set.
      * @see https://docs.apify.com/api/v2/users-me-limits-put
+     * @since Added in 2.10.0
      */
     async updateLimits(options: LimitsUpdateOptions): Promise<void> {
         const requestOpts: ApifyRequestConfig = {
@@ -140,8 +143,17 @@ export interface User {
     email?: string;
     proxy?: UserProxy;
     plan?: UserPlan;
+    /**
+     * @since Added in 2.12.5
+     */
     effectivePlatformFeatures?: EffectivePlatformFeatures;
+    /**
+     * @since Added in 2.12.5
+     */
     createdAt?: Date;
+    /**
+     * @since Added in 2.12.5
+     */
     isPaying?: boolean;
 }
 
@@ -214,6 +226,9 @@ interface EffectivePlatformFeatures {
 // Response interface for /users/:userId/usage/monthly
 //
 
+/**
+ * @since Added in 2.9.2
+ */
 export interface MonthlyUsage {
     usageCycle: UsageCycle;
     monthlyServiceUsage: { [key: string]: MonthlyServiceUsageData };
@@ -222,6 +237,9 @@ export interface MonthlyUsage {
     totalUsageCreditsUsdAfterVolumeDiscount: number;
 }
 
+/**
+ * @since Added in 2.9.2
+ */
 export interface UsageCycle {
     startAt: Date;
     endAt: Date;
@@ -260,17 +278,26 @@ interface DailyServiceUsageData {
 // Response interface for /users/:userId/limits
 //
 
+/**
+ * @since Added in 2.9.2
+ */
 export interface AccountAndUsageLimits {
     monthlyUsageCycle: MonthlyUsageCycle;
     limits: Limits;
     current: Current;
 }
 
+/**
+ * @since Added in 2.9.2
+ */
 export interface MonthlyUsageCycle {
     startAt: Date;
     endAt: Date;
 }
 
+/**
+ * @since Added in 2.9.2
+ */
 export interface Limits {
     maxMonthlyUsageUsd: number;
     maxMonthlyActorComputeUnits: number;
@@ -285,8 +312,14 @@ export interface Limits {
     dataRetentionDays: number;
 }
 
+/**
+ * @since Added in 2.10.0
+ */
 export type LimitsUpdateOptions = { maxMonthlyUsageUsd: number } | { dataRetentionDays: number };
 
+/**
+ * @since Added in 2.9.2
+ */
 export interface Current {
     monthlyUsageUsd: number;
     monthlyActorComputeUnits: number;

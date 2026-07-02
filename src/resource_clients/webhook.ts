@@ -139,9 +139,21 @@ export interface Webhook {
     payloadTemplate: string;
     lastDispatch: string;
     stats: WebhookStats;
+    /**
+     * @since Added in 2.7.2
+     */
     shouldInterpolateStrings: boolean;
+    /**
+     * @since Added in 2.9.4
+     */
     isApifyIntegration?: boolean;
+    /**
+     * @since Added in 2.8.1
+     */
     headersTemplate?: string;
+    /**
+     * @since Added in 2.8.1
+     */
     description?: string;
 }
 

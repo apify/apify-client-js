@@ -84,6 +84,12 @@ export interface RunCollectionListOptions extends PaginationOptions {
     status?:
         | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES]
         | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES][];
+    /**
+     * @since Added in 2.18.0
+     */
     startedBefore?: Date | string;
+    /**
+     * @since Added in 2.18.0
+     */
     startedAfter?: Date | string;
 }

@@ -264,6 +264,7 @@ export interface PaginationOptions {
      * limit is reached or once all items from API have been fetched.
      *
      * Chunk size is usually limited by API. Minimum of those two limits will be used.
+     * @since Added in 2.21.0
      * */
     chunkSize?: number;
 }
@@ -324,6 +325,7 @@ export function asArray<T>(value: T | T[]): T[] {
  * Generic dictionary type (key-value map).
  *
  * @template T - The type of values in the dictionary
+ * @since Added in 2.0.4
  */
 export type Dictionary<T = unknown> = Record<PropertyKey, T>;
 

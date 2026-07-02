@@ -117,6 +117,7 @@ export class RunClient extends ResourceClient {
      * Deletes the Actor run.
      *
      * @see https://docs.apify.com/api/v2/actor-run-delete
+     * @since Added in 2.8.1
      */
     async delete(): Promise<void> {
         return this._delete();
@@ -201,6 +202,7 @@ export class RunClient extends ResourceClient {
      * ```javascript
      * const run = await client.run('run-id').reboot();
      * ```
+     * @since Added in 2.8.0
      */
     async reboot(): Promise<ActorRun> {
         const request: AxiosRequestConfig = {
@@ -228,6 +230,7 @@ export class RunClient extends ResourceClient {
      *   statusMessage: 'Processing items: 50/100'
      * });
      * ```
+     * @since Added in 2.6.0
      */
     async update(newFields: RunUpdateOptions): Promise<ActorRun> {
         ow(newFields, ow.object);
@@ -289,6 +292,7 @@ export class RunClient extends ResourceClient {
      * @param options.idempotencyKey - Optional key to ensure the charge is not duplicated. If not provided, one is auto-generated.
      * @returns Empty response object.
      * @see https://docs.apify.com/api/v2/post-charge-run
+     * @since Added in 2.11.0
      */
     async charge(options: RunChargeOptions): Promise<ApifyResponse<Record<string, never>>> {
         ow(
@@ -443,6 +447,7 @@ export class RunClient extends ResourceClient {
 
     /**
      * Get StreamedLog for convenient streaming of the run log and their redirection.
+     * @since Added in 2.20.0
      */
     async getStreamedLog(options: GetStreamedLogOptions = {}): Promise<StreamedLog | undefined> {
         const { fromStart = true } = options;
@@ -472,6 +477,7 @@ export class RunClient extends ResourceClient {
 
 /**
  * Options for getting a streamed log.
+ * @since Added in 2.20.0
  */
 export interface GetStreamedLogOptions {
     toLog?: Log | null | 'default';
@@ -502,10 +508,17 @@ export interface RunMetamorphOptions {
 
 /**
  * Options for updating a Run.
+ * @since Added in 2.6.0
  */
 export interface RunUpdateOptions {
     statusMessage?: string;
+    /**
+     * @since Added in 2.6.3
+     */
     isStatusMessageTerminal?: boolean;
+    /**
+     * @since Added in 2.12.2
+     */
     generalAccess?: RUN_GENERAL_ACCESS | null;
 }
 
@@ -516,13 +529,23 @@ export interface RunResurrectOptions {
     build?: string;
     memory?: number;
     timeout?: number;
+    /**
+     * @since Added in 2.12.1
+     */
     maxItems?: number;
+    /**
+     * @since Added in 2.12.1
+     */
     maxTotalChargeUsd?: number;
+    /**
+     * @since Added in 2.19.0
+     */
     restartOnError?: boolean;
 }
 
 /**
  * Options for charging events in a pay-per-event Actor run.
+ * @since Added in 2.11.0
  */
 export interface RunChargeOptions {
     /** Name of the event to charge. Must be defined in the Actor's pricing info else the API will throw. */

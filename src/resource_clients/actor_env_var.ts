@@ -25,6 +25,7 @@ import type { ActorEnvironmentVariable } from './actor_version';
  * ```
  *
  * @see https://docs.apify.com/platform/actors/development/programming-interface/environment-variables
+ * @since Added in 2.1.0
  */
 export class ActorEnvVarClient extends ResourceClient {
     /**
