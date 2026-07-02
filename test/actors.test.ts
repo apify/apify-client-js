@@ -426,9 +426,7 @@ describe('Actor methods', () => {
             await expect(client.actor(actorId).validateInput(input)).rejects.toThrow();
             validateRequest({ params: { actorId }, body: input, endpointId: 'validate-input' });
 
-            await expect(
-                page.evaluate((id, i) => client.actor(id).validateInput(i), actorId, input),
-            ).rejects.toThrow();
+            await expect(page.evaluate((id, i) => client.actor(id).validateInput(i), actorId, input)).rejects.toThrow();
             validateRequest({ params: { actorId }, body: input, endpointId: 'validate-input' });
 
             // Reset the shared mock response so the 404 status does not leak into later tests.
