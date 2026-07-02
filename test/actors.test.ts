@@ -355,6 +355,70 @@ describe('Actor methods', () => {
             validateRequest({ query: { maxItems }, params: { actorId } });
         });
 
+        test('validateInput() works', async () => {
+            const actorId = 'some-id';
+            const input = { some: 'body' };
+
+            mockServer.setResponse({ body: { data: { valid: true } } });
+            const res = await client.actor(actorId).validateInput(input);
+            expect(res).toBe(true);
+            validateRequest({ params: { actorId }, body: input, endpointId: 'validate-input' });
+
+            const browserRes = await page.evaluate((id, i) => client.actor(id).validateInput(i), actorId, input);
+            expect(browserRes).toEqual(res);
+            validateRequest({ params: { actorId }, body: input, endpointId: 'validate-input' });
+        });
+
+        test('validateInput() works with build option', async () => {
+            const actorId = 'some-id';
+            const input = { some: 'body' };
+            const build = 'beta';
+
+            mockServer.setResponse({ body: { data: { valid: true } } });
+            const res = await client.actor(actorId).validateInput(input, { build });
+            expect(res).toBe(true);
+            validateRequest({ query: { build }, params: { actorId }, body: input, endpointId: 'validate-input' });
+
+            const browserRes = await page.evaluate(
+                (id, i, opts) => client.actor(id).validateInput(i, opts),
+                actorId,
+                input,
+                { build },
+            );
+            expect(browserRes).toEqual(res);
+            validateRequest({ query: { build }, params: { actorId }, body: input, endpointId: 'validate-input' });
+        });
+
+        test('validateInput() works with custom content type', async () => {
+            const actorId = 'some-id';
+            const contentType = 'application/json; charset=utf-8';
+            const input = JSON.stringify({ some: 'body' });
+
+            mockServer.setResponse({ body: { data: { valid: true } } });
+            const res = await client.actor(actorId).validateInput(input, { contentType });
+            expect(res).toBe(true);
+            validateRequest({
+                params: { actorId },
+                body: { some: 'body' },
+                additionalHeaders: { 'content-type': contentType },
+                endpointId: 'validate-input',
+            });
+
+            const browserRes = await page.evaluate(
+                (id, i, opts) => client.actor(id).validateInput(i, opts),
+                actorId,
+                input,
+                { contentType },
+            );
+            expect(browserRes).toEqual(res);
+            validateRequest({
+                params: { actorId },
+                body: { some: 'body' },
+                additionalHeaders: { 'content-type': contentType },
+                endpointId: 'validate-input',
+            });
+        });
+
         test('build() works', async () => {
             const actorId = 'some-id';
 
