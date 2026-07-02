@@ -78,7 +78,7 @@
         "type-fest": "^4.0.0"
     },
     "devDependencies": {
-        "@apify/oxlint-config": "^0.2.5",
+        "@apify/oxlint-config": "^0.3.0",
         "@apify/tsconfig": "^0.2.0",
         "@crawlee/puppeteer": "^3.2.2",
         "@rsbuild/core": "^2.0.0",
