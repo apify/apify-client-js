@@ -7,6 +7,7 @@ import { Log } from '@apify/log';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import type { ApifyRequestConfig } from '../http_client';
 import { cast, parseDateFields, pluckData, stringifyWebhooksToBase64 } from '../utils';
 import type { ActorVersion } from './actor_version';
 import { ActorVersionClient } from './actor_version';
@@ -297,16 +298,13 @@ export class ActorClient extends ResourceClient {
             }),
         );
 
-        const request: AxiosRequestConfig = {
+        const request: ApifyRequestConfig = {
             url: this._url('validate-input'),
             method: 'POST',
             data: input,
             params: this._params({ build: options.build }),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
-            // TODO: remove this ts-expect-error once we migrate HttpClient to TS and define Apify
-            // extension of Axios configs
-            // @ts-expect-error Apify extension
             stringifyFunctions: true,
         };
         if (options.contentType) {
