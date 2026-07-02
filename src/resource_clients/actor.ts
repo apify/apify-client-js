@@ -1,4 +1,3 @@
-import type { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
@@ -160,16 +159,13 @@ export class ActorClient extends ResourceClient {
             forcePermissionLevel,
         };
 
-        const request: AxiosRequestConfig = {
+        const request: ApifyRequestConfig = {
             url: this._url('runs'),
             method: 'POST',
             data: input,
             params: this._params(params),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
-            // TODO: remove this ts-expect-error once we migrate HttpClient to TS and define Apify
-            // extension of Axios configs
-            // @ts-expect-error Apify extension
             stringifyFunctions: true,
         };
         if (options.contentType) {
