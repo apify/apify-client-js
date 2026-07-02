@@ -419,6 +419,35 @@ describe('Actor methods', () => {
             });
         });
 
+        test('validateInput() works with functions in input', async () => {
+            const actorId = 'some-id';
+            const input = {
+                foo: 'bar',
+                fn: async (a: number, b: number) => a + b,
+            };
+
+            const expectedRequestProps = {
+                params: { actorId },
+                body: { foo: 'bar', fn: input.fn.toString() },
+                additionalHeaders: { 'content-type': 'application/json' },
+                endpointId: 'validate-input',
+            };
+
+            mockServer.setResponse({ body: { data: { valid: true } } });
+            const res = await client.actor(actorId).validateInput(input);
+            expect(res).toBe(true);
+            validateRequest(expectedRequestProps);
+
+            const browserRes = await page.evaluate((id) => {
+                return client.actor(id).validateInput({
+                    foo: 'bar',
+                    fn: async (a: number, b: number) => a + b,
+                });
+            }, actorId);
+            expect(browserRes).toEqual(res);
+            validateRequest(expectedRequestProps);
+        });
+
         test('build() works', async () => {
             const actorId = 'some-id';
 
