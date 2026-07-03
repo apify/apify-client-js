@@ -1,4 +1,3 @@
-import type { AxiosRequestConfig } from 'axios';
 import ow from 'ow';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
@@ -7,6 +6,7 @@ import { Log } from '@apify/log';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import type { ApifyRequestConfig } from '../http_client';
 import { cast, parseDateFields, pluckData, stringifyWebhooksToBase64 } from '../utils';
 import type { ActorVersion } from './actor_version';
 import { ActorVersionClient } from './actor_version';
@@ -159,16 +159,13 @@ export class ActorClient extends ResourceClient {
             forcePermissionLevel,
         };
 
-        const request: AxiosRequestConfig = {
+        const request: ApifyRequestConfig = {
             url: this._url('runs'),
             method: 'POST',
             data: input,
             params: this._params(params),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
-            // TODO: remove this ts-expect-error once we migrate HttpClient to TS and define Apify
-            // extension of Axios configs
-            // @ts-expect-error Apify extension
             stringifyFunctions: true,
         };
         if (options.contentType) {
@@ -254,6 +251,66 @@ export class ActorClient extends ResourceClient {
             .finally(async () => {
                 await streamedLog?.stop();
             });
+    }
+
+    /**
+     * Validates the provided input for the Actor against its input schema.
+     *
+     * Sends the input to the API, which validates it against the Actor's input schema without
+     * starting a run. If the input is valid, the method resolves with `true`. If the input is
+     * invalid, the API responds with an error that is thrown as an `ApifyApiError` describing the
+     * validation problem.
+     *
+     * @param input - Input to validate against the Actor's input schema. Can be any JSON-serializable
+     *                value (object, array, string, number). If `contentType` is specified in options,
+     *                input should be a string or Buffer.
+     * @param options - Validation options
+     * @param options.build - Tag or number of the build whose input schema the input is validated against
+     *                         (e.g., `'latest'` or `'1.2.345'`). If not provided, uses the default build.
+     * @param options.contentType - Content type of the input. If specified, input must be a string or Buffer.
+     * @returns `true` if the input is valid. Invalid input causes the underlying API call to throw an `ApifyApiError`.
+     * @see https://docs.apify.com/api/v2/act-input-validate-post
+     *
+     * @example
+     * ```javascript
+     * // Validate input against the default build's input schema
+     * const isValid = await client.actor('my-actor').validateInput({ url: 'https://example.com' });
+     *
+     * // Validate against a specific build
+     * const isValid = await client.actor('my-actor').validateInput(
+     *   { url: 'https://example.com' },
+     *   { build: 'beta' },
+     * );
+     * ```
+     */
+    async validateInput(input?: unknown, options: ActorValidateInputOptions = {}): Promise<boolean> {
+        // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
+        // then it will process input as a buffer.
+        ow(
+            options,
+            ow.object.exactShape({
+                build: ow.optional.string,
+                contentType: ow.optional.string,
+            }),
+        );
+
+        const request: ApifyRequestConfig = {
+            url: this._url('validate-input'),
+            method: 'POST',
+            data: input,
+            params: this._params({ build: options.build }),
+            // Apify internal property. Tells the request serialization interceptor
+            // to stringify functions to JSON, instead of omitting them.
+            stringifyFunctions: true,
+        };
+        if (options.contentType) {
+            request.headers = {
+                'content-type': options.contentType,
+            };
+        }
+
+        const response = await this.httpClient.call(request);
+        return response.data.valid;
     }
 
     /**
@@ -828,6 +885,25 @@ export interface ActorRunOptions {
     maxItems?: number;
     maxTotalChargeUsd?: number;
     restartOnError?: boolean;
+}
+
+/**
+ * Options for validating an Actor input.
+ */
+export interface ActorValidateInputOptions {
+    /**
+     * Tag or number of the Actor build whose input schema the input is validated against
+     * (e.g. `beta` or `1.2.345`). If not provided, the default build is used.
+     */
+    build?: string;
+
+    /**
+     * Content type for the `input`. If not specified,
+     * `input` is expected to be an object that will be stringified to JSON and content type set to
+     * `application/json; charset=utf-8`. If `options.contentType` is specified, then `input` must be a
+     * `String` or `Buffer`.
+     */
+    contentType?: string;
 }
 
 /**

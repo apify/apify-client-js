@@ -355,6 +355,84 @@ describe('Actor methods', () => {
             validateRequest({ query: { maxItems }, params: { actorId } });
         });
 
+        test('validateInput() works', async () => {
+            const actorId = 'some-id';
+            const input = { some: 'body' };
+
+            mockServer.setResponse({ body: { valid: true } });
+            const res = await client.actor(actorId).validateInput(input);
+            expect(res).toBe(true);
+            validateRequest({ params: { actorId }, body: input, endpointId: 'validate-input' });
+
+            const browserRes = await page.evaluate((id, i) => client.actor(id).validateInput(i), actorId, input);
+            expect(browserRes).toEqual(res);
+            validateRequest({ params: { actorId }, body: input, endpointId: 'validate-input' });
+        });
+
+        test('validateInput() works with build option', async () => {
+            const actorId = 'some-id';
+            const input = { some: 'body' };
+            const build = 'beta';
+
+            mockServer.setResponse({ body: { valid: true } });
+            const res = await client.actor(actorId).validateInput(input, { build });
+            expect(res).toBe(true);
+            validateRequest({ query: { build }, params: { actorId }, body: input, endpointId: 'validate-input' });
+
+            const browserRes = await page.evaluate(
+                (id, i, opts) => client.actor(id).validateInput(i, opts),
+                actorId,
+                input,
+                { build },
+            );
+            expect(browserRes).toEqual(res);
+            validateRequest({ query: { build }, params: { actorId }, body: input, endpointId: 'validate-input' });
+        });
+
+        test('validateInput() works with functions in input', async () => {
+            const actorId = 'some-id';
+            const input = {
+                foo: 'bar',
+                fn: async (a: number, b: number) => a + b,
+            };
+
+            const expectedRequestProps = {
+                params: { actorId },
+                body: { foo: 'bar', fn: input.fn.toString() },
+                additionalHeaders: { 'content-type': 'application/json' },
+                endpointId: 'validate-input',
+            };
+
+            mockServer.setResponse({ body: { valid: true } });
+            const res = await client.actor(actorId).validateInput(input);
+            expect(res).toBe(true);
+            validateRequest(expectedRequestProps);
+
+            const browserRes = await page.evaluate((id) => {
+                return client.actor(id).validateInput({
+                    foo: 'bar',
+                    fn: async (a: number, b: number) => a + b,
+                });
+            }, actorId);
+            expect(browserRes).toEqual(res);
+            validateRequest(expectedRequestProps);
+        });
+
+        test('validateInput() throws when the API responds with an error', async () => {
+            const actorId = 'some-id';
+            const input = { some: 'body' };
+
+            mockServer.setResponse({ statusCode: 404 });
+            await expect(client.actor(actorId).validateInput(input)).rejects.toThrow();
+            validateRequest({ params: { actorId }, body: input, endpointId: 'validate-input' });
+
+            await expect(page.evaluate((id, i) => client.actor(id).validateInput(i), actorId, input)).rejects.toThrow();
+            validateRequest({ params: { actorId }, body: input, endpointId: 'validate-input' });
+
+            // Reset the shared mock response so the 404 status does not leak into later tests.
+            mockServer.setResponse(null);
+        });
+
         test('build() works', async () => {
             const actorId = 'some-id';
 

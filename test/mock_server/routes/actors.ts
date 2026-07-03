@@ -8,6 +8,7 @@ const ROUTES: MockServerRoute[] = [
     { id: 'list-actors', method: 'GET', path: '/' },
     { id: 'create-actor', method: 'POST', path: '/' },
     { id: 'update-actor', method: 'PUT', path: '/:actorId' },
+    { id: 'validate-input', method: 'POST', path: '/:actorId/validate-input', type: 'responseJsonMock' },
     { id: 'delete-actor', method: 'DELETE', path: '/:actorId' },
     { id: 'get-actor', method: 'GET', path: '/:actorId' },
     { id: 'list-runs', method: 'GET', path: '/:actorId/runs' },
