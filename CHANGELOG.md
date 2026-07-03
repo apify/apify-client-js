@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.23.5 - **not yet released**
 
+### 🚀 Features
+
+- Add `validateInput` method to `ActorClient` ([#957](https://github.com/apify/apify-client-js/pull/957)) ([3637586](https://github.com/apify/apify-client-js/commit/3637586f5a8534e86e1efc3b00711c7663463c93)) by [@Pijukatel](https://github.com/Pijukatel), closes [#425](https://github.com/apify/apify-client-js/issues/425)
+
 ### 🐛 Bug Fixes
 
 - ActorPermissionLevel was missing in ActorCollectionCreateOptions ([#940](https://github.com/apify/apify-client-js/pull/940)) ([4d8125e](https://github.com/apify/apify-client-js/commit/4d8125ebc1c6897d5cc2d1e602ef2d52468f2623)) by [@valekjo](https://github.com/valekjo)
