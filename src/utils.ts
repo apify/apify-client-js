@@ -134,8 +134,14 @@ let brotliCompressPromisified: ((arg: string | Buffer<ArrayBufferLike>) => Promi
 async function maybeBrotliValue(value: string | Buffer<ArrayBufferLike>): Promise<Buffer | undefined> {
     if (brotliCompressPromisified === undefined) {
         const { promisify } = await import('node:util');
-        const { brotliCompress } = await import('node:zlib');
-        brotliCompressPromisified = typeof brotliCompress === 'function' ? promisify(brotliCompress) : null;
+        const { brotliCompress, constants } = await import('node:zlib');
+        if (typeof brotliCompress === 'function') {
+            const compress = promisify(brotliCompress);
+            brotliCompressPromisified = async (value) =>
+                compress(value, { params: { [constants.BROTLI_PARAM_QUALITY]: 6 } });
+        } else {
+            brotliCompressPromisified = null;
+        }
     }
 
     if (brotliCompressPromisified !== null) {
