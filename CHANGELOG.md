@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### 🚀 Features
 
 - Add `validateInput` method to `ActorClient` ([#957](https://github.com/apify/apify-client-js/pull/957)) ([3637586](https://github.com/apify/apify-client-js/commit/3637586f5a8534e86e1efc3b00711c7663463c93)) by [@Pijukatel](https://github.com/Pijukatel), closes [#425](https://github.com/apify/apify-client-js/issues/425)
+- Compress requests using brotli algo ([#962](https://github.com/apify/apify-client-js/pull/962)) ([6827899](https://github.com/apify/apify-client-js/commit/68278995ccdb272f1d8bf9c3627ecf2a91d4f386)) by [@mixalturek](https://github.com/mixalturek)
 
 ### 🐛 Bug Fixes
 
