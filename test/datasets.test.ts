@@ -369,7 +369,7 @@ describe('Dataset methods', () => {
 
             const expectedHeaders = {
                 'content-type': 'application/json; charset=utf-8',
-                'content-encoding': 'gzip',
+                'content-encoding': 'br',
             };
 
             const res = await client.dataset(datasetId).pushItems(data);

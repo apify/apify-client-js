@@ -269,7 +269,7 @@ export class ActorClient extends ResourceClient {
      *                         (e.g., `'latest'` or `'1.2.345'`). If not provided, uses the default build.
      * @param options.contentType - Content type of the input. If specified, input must be a string or Buffer.
      * @returns `true` if the input is valid. Invalid input causes the underlying API call to throw an `ApifyApiError`.
-     * @see https://docs.apify.com/api/v2/act-input-validate-post
+     * @see https://docs.apify.com/api/v2/act-validate-input-post
      *
      * @example
      * ```javascript

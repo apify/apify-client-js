@@ -557,7 +557,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({ params: { storeId, key }, body: JSON.parse(value), additionalHeaders: expectedHeaders });
         });
 
-        test('setRecord() uploads gzipped buffer in node context', async () => {
+        test('setRecord() uploads compressed buffer in node context', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
             const value = [];
@@ -573,7 +573,7 @@ describe('Key-Value Store methods', () => {
                 body: value,
                 additionalHeaders: {
                     'content-type': contentType,
-                    'content-encoding': 'gzip',
+                    'content-encoding': 'br',
                 },
             });
 
