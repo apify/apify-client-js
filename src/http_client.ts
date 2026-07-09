@@ -159,7 +159,7 @@ export class HttpClient {
 
         // Works only in Node. Cannot be set in browser
         const isAtHome = !!process.env[APIFY_ENV_VARS.IS_AT_HOME];
-        let userAgent = `ApifyClient/${version} (${os.type()}; Node/${process.version}); isAtHome/${isAtHome}`;
+        let userAgent = `ApifyClient/${version} (${os.platform()}; Node/${process.version}); isAtHome/${isAtHome}`;
 
         if (this.userAgentSuffix) {
             userAgent += `; ${asArray(this.userAgentSuffix).join('; ')}`;

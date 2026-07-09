@@ -1,4 +1,5 @@
 import type { AddressInfo } from 'node:net';
+import os from 'node:os';
 
 import { ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
@@ -43,6 +44,9 @@ describe('HttpClient', () => {
         await expect(client.actor(resourceId).get()).rejects.toThrow('timeout of 1000ms exceeded');
         const ua = mockServer.getLastRequest()?.headers['user-agent'];
         expect(ua).toMatch(/ApifyClient\/\d+\.\d+\.\d+/);
+        // The OS token uses os.platform() (e.g. `linux`, `darwin`, `win32`) so it stays aligned
+        // with the Python client's `sys.platform` value.
+        expect(ua).toMatch(`(${os.platform()}; Node/${process.version})`);
         expect(ua).toMatch('isAtHome/false; SDK/3.1.1; Crawlee/3.11.5');
 
         await expect(page.evaluate((rId) => client.task(rId).get(), resourceId)).rejects.toThrow();
