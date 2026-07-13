@@ -64,6 +64,23 @@ Some actions can't be performed by the API itself, such as indefinite waiting fo
 Key-value store records can be retrieved as objects, buffers or streams via the respective options, dataset items
 can be fetched as individual objects or serialized data and we plan to add better stream support and async iterators.
 
+### Custom API URLs
+
+By default, the client talks to `https://api.apify.com`. You can point it elsewhere — e.g. a local or staging
+instance of the Apify platform — either via constructor options or environment variables:
+
+```js
+const apifyClient = new ApifyClient({
+    token: 'my-token',
+    baseUrl: 'http://localhost:8080',
+});
+```
+
+`baseUrl` also falls back to the `APIFY_API_BASE_URL` environment variable, and `publicBaseUrl` (the globally
+accessible URL, used when `baseUrl` is an internal address) falls back to `APIFY_API_PUBLIC_BASE_URL`. Precedence
+is `constructor option` > `environment variable` > `https://api.apify.com` default, and the two variables are
+independent of each other — setting one does not change the other's default.
+
 ## Usage concepts
 
 The `ApifyClient` interface follows a generic pattern that is applicable to all of its components.

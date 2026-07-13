@@ -35,6 +35,24 @@ import { Statistics } from './statistics';
 
 const DEFAULT_TIMEOUT_SECS = 360;
 
+/** Default base URL for the Apify API. Overridable via the `APIFY_API_BASE_URL` environment variable. */
+const DEFAULT_BASE_URL = 'https://api.apify.com';
+
+/** Default globally accessible base URL for the Apify API. Overridable via `APIFY_API_PUBLIC_BASE_URL`. */
+const DEFAULT_PUBLIC_BASE_URL = 'https://api.apify.com';
+
+/**
+ * Reads an environment variable in a browser-safe way.
+ *
+ * A bare `process.env.X` throws in browser bundles where `process` is not defined, so this guards
+ * both the existence of `process` and of `process.env` before reading. A blank-but-defined value
+ * (e.g. `X=''`, as can happen with CI/Docker `-e` flags) is treated as unset, so callers can safely
+ * fall back with `??`.
+ */
+function readEnvVar(name: string): string | undefined {
+    return (typeof process !== 'undefined' ? process.env?.[name] : undefined) || undefined;
+}
+
 /**
  * The official JavaScript client for the Apify API.
  *
@@ -85,8 +103,8 @@ export class ApifyClient {
         );
 
         const {
-            baseUrl = 'https://api.apify.com',
-            publicBaseUrl = 'https://api.apify.com',
+            baseUrl = readEnvVar('APIFY_API_BASE_URL') ?? DEFAULT_BASE_URL,
+            publicBaseUrl = readEnvVar('APIFY_API_PUBLIC_BASE_URL') ?? DEFAULT_PUBLIC_BASE_URL,
             maxRetries = 8,
             minDelayBetweenRetriesMillis = 500,
             requestInterceptors = [],
@@ -566,9 +584,18 @@ export class ApifyClient {
  * Configuration options for ApifyClient.
  */
 export interface ApifyClientOptions {
-    /** @default https://api.apify.com */
+    /**
+     * The URL of the Apify API server to connect to.
+     *
+     * @default process.env.APIFY_API_BASE_URL ?? 'https://api.apify.com'
+     */
     baseUrl?: string;
-    /** @default https://api.apify.com */
+    /**
+     * The globally accessible URL of the Apify API server. Should be set only if `baseUrl` is an
+     * internal URL that is not globally accessible.
+     *
+     * @default process.env.APIFY_API_PUBLIC_BASE_URL ?? 'https://api.apify.com'
+     */
     publicBaseUrl?: string;
     /** @default 8 */
     maxRetries?: number;
