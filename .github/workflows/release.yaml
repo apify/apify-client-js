@@ -139,9 +139,7 @@ jobs:
                   cd website
                   VERSION=$(jq -r '.version' ../package.json)
                   export MAJOR=$(echo $VERSION | cut -d. -f1)
-                  # We only ever keep a single "stable" snapshot (the latest release), so wipe
-                  # every existing versioned snapshot instead of just the one matching MAJOR -
-                  # otherwise every major bump would leave the previous one behind forever.
+                  # We only ever keep a single "stable" snapshot (the latest release)
                   for v in $(jq -r '.[]' versions.json); do
                       rm -rf "versioned_docs/version-$v"
                       rm -f "versioned_sidebars/version-$v-sidebars.json"
