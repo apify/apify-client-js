@@ -139,9 +139,14 @@ jobs:
                   cd website
                   VERSION=$(jq -r '.version' ../package.json)
                   export MAJOR=$(echo $VERSION | cut -d. -f1)
-                  rm -rf versioned_docs/version-$MAJOR
-                  rm -rf versioned_sidebars/version-$MAJOR-sidebars.json
-                  jq 'map(select(. != env.MAJOR))' versions.json > tmp.json && mv tmp.json versions.json
+                  # We only ever keep a single "stable" snapshot (the latest release), so wipe
+                  # every existing versioned snapshot instead of just the one matching MAJOR -
+                  # otherwise every major bump would leave the previous one behind forever.
+                  for v in $(jq -r '.[]' versions.json); do
+                      rm -rf "versioned_docs/version-$v"
+                      rm -f "versioned_sidebars/version-$v-sidebars.json"
+                  done
+                  echo '[]' > versions.json
                   pnpm exec docusaurus docs:version $MAJOR
                   pnpm exec docusaurus api:version $MAJOR
                   cd ..

@@ -4,6 +4,7 @@ const { resolve } = require('node:path');
 const { config } = require('@apify/docs-theme');
 
 const { externalLinkProcessor } = require('./tools/utils/externalLink');
+const versions = require('./versions.json');
 
 const { absoluteUrl } = config;
 /** @type {Partial<import('@docusaurus/types').DocusaurusConfig>} */
@@ -61,6 +62,17 @@ module.exports = {
                         {
                             href: 'https://github.com/apify/apify-client-js',
                             label: 'GitHub',
+                        },
+                        {
+                            type: 'docsVersionDropdown',
+                            position: 'left',
+                            className: 'navbar__item', // fixes margin around dropdown - hackish, should be fixed in theme
+                            'data-api-links': JSON.stringify([
+                                'reference/next',
+                                ...versions.map((version, i) => (i === 0 ? 'reference' : `reference/${version}`)),
+                            ]),
+                            dropdownItemsBefore: [],
+                            dropdownItemsAfter: [],
                         },
                     ],
                 },
@@ -126,6 +138,7 @@ module.exports = {
     ],
     themeConfig: {
         ...config.themeConfig,
+        versions,
         footer: {
             ...config.themeConfig.footer,
             logo: {
