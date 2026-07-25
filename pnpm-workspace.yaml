@@ -11,6 +11,8 @@ minimumReleaseAgeExclude:
   - "got-scraping"
   # Renovate security update: esbuild@0.28.1
   - esbuild@0.28.1
+  # Renovate security update: axios@1.18.0
+  - axios@1.18.0
 
 onlyBuiltDependencies:
   - "@playwright/browser-chromium"
