@@ -66,6 +66,28 @@ jobs:
             - name: Run Tests
               run: pnpm test:bundling
 
+    generated_types:
+        name: Generated types up to date
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v7
+            - name: Use Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: 24
+            - name: Install pnpm and dependencies
+              uses: apify/actions/pnpm-install@v1.4.0
+
+            - name: Type-check the generator
+              run: pnpm tsc-check-scripts
+
+            # Regenerates from the committed spec snapshot, never from docs.apify.com -- a green PR must
+            # not depend on the live spec being reachable or unchanged. Upstream spec changes arrive
+            # through the scheduled update_openapi_types workflow instead.
+            - name: Check generated types
+              run: pnpm generate:types:check
+
     lint:
         name: Lint
         runs-on: ubuntu-latest

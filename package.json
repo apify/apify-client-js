@@ -46,7 +46,8 @@
     "homepage": "https://docs.apify.com/api/client/js/",
     "files": [
         "dist",
-        "!dist/*.tsbuildinfo"
+        "!dist/*.tsbuildinfo",
+        "!dist/spec_guards.*"
     ],
     "scripts": {
         "build": "pnpm clean && pnpm build:node && pnpm build:browser",
@@ -58,10 +59,14 @@
         "lint": "oxlint --type-aware",
         "lint:fix": "oxlint --type-aware --fix",
         "tsc-check-tests": "tsc --noEmit --project test/tsconfig.json",
+        "tsc-check-scripts": "tsc --noEmit --project tsconfig.scripts.json",
         "format": "oxfmt",
         "format:check": "oxfmt --check",
         "build:node": "tsc",
-        "build:browser": "rsbuild build"
+        "build:browser": "rsbuild build",
+        "generate:types": "node scripts/generate-types.mts",
+        "generate:types:check": "node scripts/generate-types.mts --check",
+        "generate:types:fetch": "curl -fsSL https://docs.apify.com/api/openapi.json -o src/generated/openapi.json.tmp && mv src/generated/openapi.json.tmp src/generated/openapi.json && pnpm generate:types"
     },
     "dependencies": {
         "@apify/consts": "^2.50.0",
@@ -96,6 +101,7 @@
         "esbuild": "0.28.1",
         "express": "^5.0.0",
         "gen-esm-wrapper": "^1.1.2",
+        "openapi-typescript": "7.13.0",
         "oxfmt": "0.61.0",
         "oxlint": "1.75.0",
         "oxlint-tsgolint": "7.0.2001",

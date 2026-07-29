@@ -12,8 +12,11 @@ import {
     SMALL_TIMEOUT_MILLIS,
 } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
+import type { Dataset, DatasetStatistics } from '../models';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData } from '../utils';
+
+export type { Dataset, DatasetStatistics, DatasetStats, FieldStatistics } from '../models';
 
 /**
  * Client for managing a specific Dataset.
@@ -406,42 +409,6 @@ export class DatasetClient<
 }
 
 /**
- * Represents a dataset storage on the Apify platform.
- *
- * Datasets store structured data as a sequence of items (records). Each item is a JSON object.
- * Datasets are useful for storing results from web scraping, crawling, or data processing tasks.
- */
-export interface Dataset {
-    id: string;
-    name?: string;
-    title?: string;
-    userId: string;
-    username?: string;
-    createdAt: Date;
-    modifiedAt: Date;
-    accessedAt: Date;
-    itemCount: number;
-    cleanItemCount: number;
-    actId?: string;
-    actRunId?: string;
-    stats: DatasetStats;
-    fields: string[];
-    generalAccess?: STORAGE_GENERAL_ACCESS | null;
-    urlSigningSecretKey?: string | null;
-    itemsPublicUrl: string;
-}
-
-/**
- * Statistics about dataset usage and storage.
- */
-export interface DatasetStats {
-    readCount?: number;
-    writeCount?: number;
-    deleteCount?: number;
-    storageBytes?: number;
-}
-
-/**
  * Options for updating a dataset.
  */
 export interface DatasetClientUpdateOptions {
@@ -505,23 +472,4 @@ export interface DatasetClientDownloadItemsOptions extends DatasetClientListItem
     skipHeaderRow?: boolean;
     xmlRoot?: string;
     xmlRow?: string;
-}
-
-/**
- * Statistical information about dataset fields.
- *
- * Provides insights into the data structure and content of the dataset.
- */
-export interface DatasetStatistics {
-    fieldStatistics: Record<string, FieldStatistics>;
-}
-
-/**
- * Statistics for a single field in a dataset.
- */
-export interface FieldStatistics {
-    min?: number;
-    max?: number;
-    nullCount?: number;
-    emptyCount?: number;
 }

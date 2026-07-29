@@ -1,0 +1,75 @@
+# Refreshes the committed OpenAPI snapshot and the types generated from it.
+#
+# Renovate cannot see this: the spec is a live document, not an npm dependency. Without this job the
+# snapshot never changes, so none of the drift guards in src/spec_guards.ts can ever fire.
+#
+# Deliberately not automerged. A spec change can widen nullability across hundreds of fields, or fill a
+# gap that makes a *SpecGaps entry stale, and both need a human to look at the diff.
+
+name: Update OpenAPI types
+
+on:
+    schedule:
+        # Every Monday at 04:00 UTC.
+        - cron: '0 4 * * 1'
+    workflow_dispatch:
+
+permissions:
+    contents: write
+    pull-requests: write
+
+jobs:
+    update:
+        name: Regenerate from the live spec
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Use Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: 24
+
+            - name: Install pnpm and dependencies
+              uses: apify/actions/pnpm-install@v1.4.0
+
+            - name: Fetch the spec and regenerate
+              run: pnpm generate:types:fetch
+
+            - name: Stop early if nothing changed
+              id: diff
+              run: |
+                  if git diff --quiet -- src/generated; then
+                      echo "changed=false" >> "$GITHUB_OUTPUT"
+                  else
+                      echo "changed=true" >> "$GITHUB_OUTPUT"
+                  fi
+
+            # Runs before the PR is opened so the description can state whether the adapter still compiles.
+            # A failure here is the signal the guards exist for, so it must not fail the job.
+            - name: Check the adapter against the new spec
+              if: steps.diff.outputs.changed == 'true'
+              id: guards
+              continue-on-error: true
+              run: pnpm build:node
+
+            - name: Open or update the pull request
+              if: steps.diff.outputs.changed == 'true'
+              uses: peter-evans/create-pull-request@v7
+              with:
+                  branch: chore/update-openapi-types
+                  title: 'chore: update OpenAPI types'
+                  commit-message: 'chore: update OpenAPI types'
+                  labels: dependencies
+                  body: |
+                      Regenerated `src/generated/api.ts` from a fresh
+                      [`openapi.json`](https://docs.apify.com/api/openapi.json).
+
+                      Adapter build (`pnpm build:node`): **${{ steps.guards.outcome == 'success' && 'passing' || 'failing' }}**
+
+                      A failing build means a guard in `src/spec_guards.ts` caught something that needs a
+                      decision -- a field an override block replaces was dropped or renamed, a documented
+                      spec gap was filled and its `*SpecGaps` entry is now stale, or a shared
+                      `@apify/consts` enum diverged. Review `src/generated/openapi.json` in this diff to
+                      see what moved upstream.

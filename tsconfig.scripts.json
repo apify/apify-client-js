@@ -1,0 +1,14 @@
+{
+    // `scripts/` is outside the main project's `include`, so nothing type-checked it. The generator runs
+    // under Node's native type stripping rather than a build step, hence `noEmit` plus
+    // `allowImportingTsExtensions` -- the `.mts` specifiers it uses are the real runtime paths.
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "rootDir": ".",
+        "noEmit": true,
+        "allowImportingTsExtensions": true,
+        "module": "nodenext",
+        "moduleResolution": "nodenext"
+    },
+    "include": ["scripts/**/*"]
+}

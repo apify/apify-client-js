@@ -1,0 +1,4 @@
+# `generate:types:check` byte-compares src/generated/api.ts against a freshly generated file, and the
+# generator always emits LF. Without this, a clone made with core.autocrlf=true would check out CRLF and
+# fail the check for reasons unrelated to the spec.
+* text=auto eol=lf
