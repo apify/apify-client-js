@@ -119,8 +119,8 @@ async function brotliValue(value: string | Buffer<ArrayBufferLike>): Promise<Buf
         const { promisify } = await import('node:util');
         const { brotliCompress, constants } = await import('node:zlib');
         const compress = promisify(brotliCompress);
-        brotliCompressPromisified = async (value) =>
-            compress(value, { params: { [constants.BROTLI_PARAM_QUALITY]: 6 } });
+        const options = { params: { [constants.BROTLI_PARAM_QUALITY]: 6 } };
+        brotliCompressPromisified = async (input) => compress(input, options);
     }
 
     return brotliCompressPromisified(value);
@@ -144,7 +144,14 @@ export async function maybeCompressValue(value: unknown): Promise<CompressedValu
     const areDataLargeEnough = Buffer.byteLength(value) >= MIN_COMPRESS_BYTES;
     if (!areDataLargeEnough) return undefined;
 
-    return { data: await brotliValue(value), encoding: 'br' };
+    try {
+        return { data: await brotliValue(value), encoding: 'br' };
+    } catch {
+        // Same reasoning as above: compression is a best-effort optimization, so skip it instead
+        // of failing the request. Runtimes that only provide a partial `node:zlib` (bundler
+        // polyfills, edge runtimes with Node compatibility shims) may not implement brotli.
+        return undefined;
+    }
 }
 
 /**
