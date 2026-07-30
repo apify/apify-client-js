@@ -62,7 +62,7 @@ const listRequestsOptionsSchema = z
         filter: requestFilterSchema.optional(),
     })
     .strict()
-    .refine(...mutuallyExclusive('exclusiveStartId', 'cursor'));
+    .refine(...mutuallyExclusive<RequestQueueClientListRequestsOptions>('exclusiveStartId', 'cursor'));
 const paginateRequestsOptionsSchema = z
     .object({
         limit: z.number().min(0).optional(),
@@ -72,7 +72,7 @@ const paginateRequestsOptionsSchema = z
         filter: requestFilterSchema.optional(),
     })
     .strict()
-    .refine(...mutuallyExclusive('exclusiveStartId', 'cursor'));
+    .refine(...mutuallyExclusive<RequestQueueClientPaginateRequestsOptions>('exclusiveStartId', 'cursor'));
 
 /**
  * Client for managing a specific Request queue.
