@@ -6,6 +6,20 @@
     "compilerOptions": {
         "rootDir": ".",
         "noEmit": true,
+        // Type stripping erases annotations without understanding them, so whatever would need real codegen
+        // has to fail here rather than as an `ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX` at run time, which a type
+        // check alone does not catch: `erasableSyntaxOnly` rejects `enum`/`namespace`/parameter properties,
+        // and `verbatimModuleSyntax` forces `import type`, since a plain `import { SomeType }` survives
+        // stripping and then fails as a missing named export.
+        "erasableSyntaxOnly": true,
+        "verbatimModuleSyntax": true,
+        // The root config needs `DOM` for the browser bundle, but a maintainer script has no `window`, and
+        // inheriting it here would only let `document`/`localStorage` type-check. `fetch`, `Response` and
+        // `AbortSignal` come from `@types/node` instead.
+        "lib": ["ESNext"],
+        // Inherited from `@apify/tsconfig`. Left on, it writes `dist/tsconfig.scripts.tsbuildinfo`, so a bare
+        // type check would conjure up a `dist/` on a tree that was never built.
+        "incremental": false,
         // Nothing here pulls in `@types/node` transitively the way `src/` does through its dependencies, and
         // this setup gets no automatic `@types` inclusion, so the Node globals have to be asked for by name.
         "types": ["node"],

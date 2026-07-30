@@ -4,6 +4,10 @@
  * Run with `pnpm spec:fetch`. Maintainer-facing and dev-only: the snapshot is committed, so nothing in the
  * published package or in CI depends on `docs.apify.com` being reachable.
  *
+ * Needs a Node that strips types natively, so 22.18+ or 23.6+. That is above the version floor the package
+ * itself supports, and an older Node fails here while parsing this file rather than with anything that names
+ * a version, hence the note.
+ *
  * The snapshot lives outside `src/` on purpose. It is a build input, not source, and `resolveJsonModule` is
  * on, so a stray import from `src/` would otherwise emit the whole 1 MB document into `dist/` and ship it.
  *
@@ -12,11 +16,12 @@
  * formatting-only diffs even if upstream ever emits something `JSON.stringify` would render differently.
  */
 
-import { readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 
 const SPEC_URL = 'https://docs.apify.com/api/openapi.json';
-const TARGET = new URL('../spec/openapi.json', import.meta.url);
-const TEMP = new URL('../spec/openapi.json.tmp', import.meta.url);
+const SPEC_DIR = new URL('../spec/', import.meta.url);
+const TARGET = new URL('openapi.json', SPEC_DIR);
+const TEMP = new URL('openapi.json.tmp', SPEC_DIR);
 
 /** Generous for a 1 MB document on a slow link, but bounded, so a stalled connection still reports. */
 const TIMEOUT_MS = 30_000;
@@ -109,18 +114,36 @@ function report(error: unknown): string {
         return error.message;
     }
 
-    if (error instanceof Error) {
-        // Node reports network failures as `TypeError: fetch failed` with the real reason on `cause`.
-        const cause = error.cause instanceof Error ? `: ${error.cause.message}` : '';
+    // Node reports network failures as `TypeError: fetch failed` with the real reason on `cause`. That reason
+    // is the whole diagnosis and the stack above it is undici internals, so keep those to one line.
+    if (error instanceof Error && error.cause instanceof Error) {
+        return `${error.name}: ${error.message}: ${error.cause.message}`;
+    }
 
-        return `${error.name}: ${error.message}${cause}`;
+    // Nothing diagnosed what is left -- a bug in this script, or an errno nothing here anticipated -- so keep
+    // the stack, which is the only pointer to where it came from.
+    if (error instanceof Error) {
+        return error.stack ?? `${error.name}: ${error.message}`;
     }
 
     return String(error);
 }
 
+/** A missing snapshot is a normal state; anything else about reading it is not, so it must not be swallowed. */
+async function snapshotOnDisk(): Promise<Buffer | null> {
+    try {
+        return await readFile(TARGET);
+    } catch (error) {
+        if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+            return null;
+        }
+
+        throw error;
+    }
+}
+
 async function main(): Promise<void> {
-    const previous = await readFile(TARGET).catch(() => null);
+    const previous = await snapshotOnDisk();
     const response = await fetch(SPEC_URL, { signal: AbortSignal.timeout(TIMEOUT_MS) });
 
     if (!response.ok) {
@@ -135,6 +158,10 @@ async function main(): Promise<void> {
 
     // Skipped when the bytes match, so a no-op refresh leaves the file and its mtime alone.
     if (changed) {
+        // git only carries `spec/` because the snapshot is in it, so bootstrapping after the snapshot was
+        // deleted has no directory to write into.
+        await mkdir(SPEC_DIR, { recursive: true });
+
         // Temp file plus rename, so an interrupted write cannot leave a truncated snapshot behind.
         try {
             await writeFile(TEMP, bytes);
@@ -145,11 +172,8 @@ async function main(): Promise<void> {
         }
     }
 
-    let oldVersion = '<no snapshot>';
-
-    if (previous !== null) {
-        oldVersion = changed ? versionOnDisk(previous) : spec.version;
-    }
+    // No separate unchanged case: byte-identical input parses to the same `info.version`.
+    const oldVersion = previous === null ? '<no snapshot>' : versionOnDisk(previous);
 
     console.log(`spec:fetch: openapi ${spec.openapi}, ${spec.pathCount} paths, ${spec.schemaCount} schemas`);
     console.log(`spec:fetch: info.version ${oldVersion} -> ${spec.version}`);
