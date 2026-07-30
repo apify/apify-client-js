@@ -3,6 +3,8 @@
     "compilerOptions": {
         "rootDir": "../",
         "noEmit": true,
+        // This project only type-checks, so declaration-emit portability errors are irrelevant noise.
+        "declaration": false,
         "allowJs": true,
         "paths": {
             "apify-client": ["../src"]
