@@ -1,4 +1,4 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import type { WEBHOOK_EVENT_TYPES } from '@apify/consts';
 
@@ -6,7 +6,9 @@ import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
-import { cast, catchNotFoundOrThrow, parseDateFields, pluckData } from '../utils';
+import { cast, catchNotFoundOrThrow, parseDateFields, pluckData, validate } from '../utils';
+
+const webhookUpdateSchema = z.object({}).passthrough();
 import type { WebhookDispatch } from './webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection';
 
@@ -67,7 +69,7 @@ export class WebhookClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/webhook-put
      */
     async update(newFields: WebhookUpdateData): Promise<Webhook> {
-        ow(newFields, ow.object);
+        validate(webhookUpdateSchema, newFields);
 
         return this._update(newFields);
     }

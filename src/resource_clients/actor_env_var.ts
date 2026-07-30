@@ -1,8 +1,11 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import { validate } from '../utils';
 import type { ActorEnvironmentVariable } from './actor_version';
+
+const actorEnvVarSchema = z.object({}).passthrough();
 
 /**
  * Client for managing a specific Actor environment variable.
@@ -55,7 +58,7 @@ export class ActorEnvVarClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-version-env-var-put
      */
     async update(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
-        ow(actorEnvVar, ow.object);
+        validate(actorEnvVarSchema, actorEnvVar);
         return this._update(actorEnvVar);
     }
 

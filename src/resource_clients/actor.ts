@@ -1,4 +1,4 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 import { ACTOR_JOB_STATUSES, ACTOR_PERMISSION_LEVEL, META_ORIGINS } from '@apify/consts';
@@ -7,7 +7,7 @@ import { Log } from '@apify/log';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
-import { cast, parseDateFields, pluckData, stringifyWebhooksToBase64 } from '../utils';
+import { cast, parseDateFields, pluckData, stringifyWebhooksToBase64, validate } from '../utils';
 import type { ActorVersion } from './actor_version';
 import { ActorVersionClient } from './actor_version';
 import { ActorVersionCollectionClient } from './actor_version_collection';
@@ -19,6 +19,58 @@ import { RunCollectionClient } from './run_collection';
 import type { WebhookUpdateData } from './webhook';
 import { WebhookCollectionClient } from './webhook_collection';
 import type { ValueOf } from 'type-fest';
+
+const updateSchema = z.object({}).passthrough();
+const startOptionsSchema = z
+    .object({
+        build: z.string().optional(),
+        contentType: z.string().optional(),
+        memory: z.number().optional(),
+        timeout: z.number().optional(),
+        waitForFinish: z.number().optional(),
+        webhooks: z.array(z.object({}).passthrough()).optional(),
+        maxItems: z.number().min(0).optional(),
+        maxTotalChargeUsd: z.number().min(0).optional(),
+        restartOnError: z.boolean().optional(),
+        forcePermissionLevel: z.nativeEnum(ACTOR_PERMISSION_LEVEL).optional(),
+    })
+    .strict();
+const callOptionsSchema = z
+    .object({
+        build: z.string().optional(),
+        contentType: z.string().optional(),
+        memory: z.number().optional(),
+        timeout: z.number().min(0).optional(),
+        waitSecs: z.number().min(0).optional(),
+        webhooks: z.array(z.object({}).passthrough()).optional(),
+        maxItems: z.number().min(0).optional(),
+        maxTotalChargeUsd: z.number().min(0).optional(),
+        log: z.union([z.null(), z.instanceof(Log), z.literal('default')]).optional(),
+        restartOnError: z.boolean().optional(),
+        forcePermissionLevel: z.nativeEnum(ACTOR_PERMISSION_LEVEL).optional(),
+    })
+    .strict();
+const validateInputOptionsSchema = z
+    .object({
+        build: z.string().optional(),
+        contentType: z.string().optional(),
+    })
+    .strict();
+const versionNumberSchema = z.string();
+const buildOptionsSchema = z
+    .object({
+        betaPackages: z.boolean().optional(),
+        tag: z.string().optional(),
+        useCache: z.boolean().optional(),
+        waitForFinish: z.number().optional(),
+    })
+    .strict();
+const lastRunOptionsSchema = z
+    .object({
+        status: z.nativeEnum(ACTOR_JOB_STATUSES).optional(),
+        origin: z.nativeEnum(META_ORIGINS).optional(),
+    })
+    .strict();
 
 /**
  * Client for managing a specific Actor.
@@ -69,7 +121,7 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-put
      */
     async update(newFields: ActorUpdateOptions): Promise<Actor> {
-        ow(newFields, ow.object);
+        validate(updateSchema, newFields);
 
         return this._update(newFields);
     }
@@ -120,21 +172,7 @@ export class ActorClient extends ResourceClient {
     async start(input?: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
         // then it will process input as a buffer.
-        ow(
-            options,
-            ow.object.exactShape({
-                build: ow.optional.string,
-                contentType: ow.optional.string,
-                memory: ow.optional.number,
-                timeout: ow.optional.number,
-                waitForFinish: ow.optional.number,
-                webhooks: ow.optional.array.ofType(ow.object),
-                maxItems: ow.optional.number.not.negative,
-                maxTotalChargeUsd: ow.optional.number.not.negative,
-                restartOnError: ow.optional.boolean,
-                forcePermissionLevel: ow.optional.string.oneOf(Object.values(ACTOR_PERMISSION_LEVEL)),
-            }),
-        );
+        validate(startOptionsSchema, options);
 
         const {
             waitForFinish,
@@ -218,22 +256,7 @@ export class ActorClient extends ResourceClient {
     async call(input?: unknown, options: ActorCallOptions = {}): Promise<ActorRun> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
         // then it will process input as a buffer.
-        ow(
-            options,
-            ow.object.exactShape({
-                build: ow.optional.string,
-                contentType: ow.optional.string,
-                memory: ow.optional.number,
-                timeout: ow.optional.number.not.negative,
-                waitSecs: ow.optional.number.not.negative,
-                webhooks: ow.optional.array.ofType(ow.object),
-                maxItems: ow.optional.number.not.negative,
-                maxTotalChargeUsd: ow.optional.number.not.negative,
-                log: ow.optional.any(ow.null, ow.object.instanceOf(Log), ow.string.equals('default')),
-                restartOnError: ow.optional.boolean,
-                forcePermissionLevel: ow.optional.string.oneOf(Object.values(ACTOR_PERMISSION_LEVEL)),
-            }),
-        );
+        validate(callOptionsSchema, options);
 
         const { waitSecs, log, ...startOptions } = options;
         const { id } = await this.start(input, startOptions);
@@ -286,13 +309,7 @@ export class ActorClient extends ResourceClient {
     async validateInput(input?: unknown, options: ActorValidateInputOptions = {}): Promise<boolean> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
         // then it will process input as a buffer.
-        ow(
-            options,
-            ow.object.exactShape({
-                build: ow.optional.string,
-                contentType: ow.optional.string,
-            }),
-        );
+        validate(validateInputOptionsSchema, options);
 
         const request: ApifyRequestConfig = {
             url: this._url('validate-input'),
@@ -343,16 +360,8 @@ export class ActorClient extends ResourceClient {
      * ```
      */
     async build(versionNumber: string, options: ActorBuildOptions = {}): Promise<Build> {
-        ow(versionNumber, ow.string);
-        ow(
-            options,
-            ow.object.exactShape({
-                betaPackages: ow.optional.boolean,
-                tag: ow.optional.string,
-                useCache: ow.optional.boolean,
-                waitForFinish: ow.optional.number,
-            }),
-        );
+        validate(versionNumberSchema, versionNumber);
+        validate(buildOptionsSchema, options);
 
         const response = await this.httpClient.call({
             url: this._url('builds'),
@@ -426,13 +435,7 @@ export class ActorClient extends ResourceClient {
      * ```
      */
     lastRun(options: ActorLastRunOptions = {}): RunClient {
-        ow(
-            options,
-            ow.object.exactShape({
-                status: ow.optional.string.oneOf(Object.values(ACTOR_JOB_STATUSES)),
-                origin: ow.optional.string.oneOf(Object.values(META_ORIGINS)),
-            }),
-        );
+        validate(lastRunOptionsSchema, options);
 
         return new RunClient(
             this._subResourceOptions({
@@ -479,7 +482,7 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-version-get
      */
     version(versionNumber: string): ActorVersionClient {
-        ow(versionNumber, ow.string);
+        validate(versionNumberSchema, versionNumber);
         return new ActorVersionClient(
             this._subResourceOptions({
                 id: versionNumber,

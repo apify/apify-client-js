@@ -1,4 +1,4 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import { createStorageContentSignatureAsync } from '@apify/utilities';
@@ -13,7 +13,66 @@ import {
 } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
-import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData } from '../utils';
+import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData, validate } from '../utils';
+
+const itemSchema = z.object({}).passthrough();
+const updateSchema = z.object({}).passthrough();
+const listItemsOptionsSchema = z
+    .object({
+        clean: z.boolean().optional(),
+        desc: z.boolean().optional(),
+        flatten: z.array(z.string()).optional(),
+        fields: z.array(z.string()).optional(),
+        omit: z.array(z.string()).optional(),
+        limit: z.number().min(0).optional(),
+        offset: z.number().min(0).optional(),
+        chunkSize: z.number().positive().optional(),
+        skipEmpty: z.boolean().optional(),
+        skipHidden: z.boolean().optional(),
+        unwind: z.union([z.string(), z.array(z.string())]).optional(),
+        view: z.string().optional(),
+        signature: z.string().optional(),
+    })
+    .strict();
+const downloadItemsOptionsSchema = z
+    .object({
+        attachment: z.boolean().optional(),
+        bom: z.boolean().optional(),
+        clean: z.boolean().optional(),
+        delimiter: z.string().optional(),
+        desc: z.boolean().optional(),
+        flatten: z.array(z.string()).optional(),
+        fields: z.array(z.string()).optional(),
+        omit: z.array(z.string()).optional(),
+        limit: z.number().min(0).optional(),
+        offset: z.number().min(0).optional(),
+        skipEmpty: z.boolean().optional(),
+        skipHeaderRow: z.boolean().optional(),
+        skipHidden: z.boolean().optional(),
+        unwind: z.union([z.string(), z.array(z.string())]).optional(),
+        view: z.string().optional(),
+        xmlRoot: z.string().optional(),
+        xmlRow: z.string().optional(),
+        signature: z.string().optional(),
+    })
+    .strict();
+const pushItemsSchema = z.union([itemSchema, z.string(), z.array(z.union([itemSchema, z.string()]))]);
+const createItemsPublicUrlOptionsSchema = z
+    .object({
+        clean: z.boolean().optional(),
+        desc: z.boolean().optional(),
+        flatten: z.array(z.string()).optional(),
+        fields: z.array(z.string()).optional(),
+        omit: z.array(z.string()).optional(),
+        limit: z.number().min(0).optional(),
+        offset: z.number().min(0).optional(),
+        skipEmpty: z.boolean().optional(),
+        skipHidden: z.boolean().optional(),
+        unwind: z.union([z.string(), z.array(z.string())]).optional(),
+        view: z.string().optional(),
+        expiresInSecs: z.number().optional(),
+    })
+    .strict();
 
 /**
  * Client for managing a specific Dataset.
@@ -75,7 +134,7 @@ export class DatasetClient<
      * @see https://docs.apify.com/api/v2/dataset-put
      */
     async update(newFields: DatasetClientUpdateOptions): Promise<Dataset> {
-        ow(newFields, ow.object);
+        validate(updateSchema, newFields);
 
         return this._update(newFields, SMALL_TIMEOUT_MILLIS);
     }
@@ -134,24 +193,7 @@ export class DatasetClient<
      * ```
      */
     listItems(options: DatasetClientListItemOptions = {}): PaginatedIterator<Data> {
-        ow(
-            options,
-            ow.object.exactShape({
-                clean: ow.optional.boolean,
-                desc: ow.optional.boolean,
-                flatten: ow.optional.array.ofType(ow.string),
-                fields: ow.optional.array.ofType(ow.string),
-                omit: ow.optional.array.ofType(ow.string),
-                limit: ow.optional.number.not.negative,
-                offset: ow.optional.number.not.negative,
-                chunkSize: ow.optional.number.positive,
-                skipEmpty: ow.optional.boolean,
-                skipHidden: ow.optional.boolean,
-                unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
-                view: ow.optional.string,
-                signature: ow.optional.string,
-            }),
-        );
+        validate(listItemsOptionsSchema, options);
 
         const fetchItems = async (
             datasetListOptions: DatasetClientListItemOptions = {},
@@ -210,30 +252,8 @@ export class DatasetClient<
      * ```
      */
     async downloadItems(format: DownloadItemsFormat, options: DatasetClientDownloadItemsOptions = {}): Promise<Buffer> {
-        ow(format, ow.string.oneOf(validItemFormats));
-        ow(
-            options,
-            ow.object.exactShape({
-                attachment: ow.optional.boolean,
-                bom: ow.optional.boolean,
-                clean: ow.optional.boolean,
-                delimiter: ow.optional.string,
-                desc: ow.optional.boolean,
-                flatten: ow.optional.array.ofType(ow.string),
-                fields: ow.optional.array.ofType(ow.string),
-                omit: ow.optional.array.ofType(ow.string),
-                limit: ow.optional.number.not.negative,
-                offset: ow.optional.number.not.negative,
-                skipEmpty: ow.optional.boolean,
-                skipHeaderRow: ow.optional.boolean,
-                skipHidden: ow.optional.boolean,
-                unwind: ow.any(ow.optional.string, ow.optional.array.ofType(ow.string)),
-                view: ow.optional.string,
-                xmlRoot: ow.optional.string,
-                xmlRow: ow.optional.string,
-                signature: ow.optional.string,
-            }),
-        );
+        validate(itemFormatSchema, format);
+        validate(downloadItemsOptionsSchema, options);
 
         const { data } = await this.httpClient.call({
             url: this._url('items'),
@@ -282,7 +302,7 @@ export class DatasetClient<
      * ```
      */
     async pushItems(items: Data | Data[] | string | string[]): Promise<void> {
-        ow(items, ow.any(ow.object, ow.string, ow.array.ofType(ow.any(ow.object, ow.string))));
+        validate(pushItemsSchema, items);
 
         await this.httpClient.call({
             url: this._url('items'),
@@ -354,23 +374,7 @@ export class DatasetClient<
      * ```
      */
     async createItemsPublicUrl(options: DatasetClientCreateItemsUrlOptions = {}): Promise<string> {
-        ow(
-            options,
-            ow.object.exactShape({
-                clean: ow.optional.boolean,
-                desc: ow.optional.boolean,
-                flatten: ow.optional.array.ofType(ow.string),
-                fields: ow.optional.array.ofType(ow.string),
-                omit: ow.optional.array.ofType(ow.string),
-                limit: ow.optional.number.not.negative,
-                offset: ow.optional.number.not.negative,
-                skipEmpty: ow.optional.boolean,
-                skipHidden: ow.optional.boolean,
-                unwind: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
-                view: ow.optional.string,
-                expiresInSecs: ow.optional.number,
-            }),
-        );
+        validate(createItemsPublicUrlOptionsSchema, options);
 
         const dataset = await this.get();
 
@@ -492,6 +496,9 @@ export enum DownloadItemsFormat {
 }
 
 const validItemFormats = [...new Set(Object.values(DownloadItemsFormat).map((item) => item.toLowerCase()))];
+
+// Declared below `validItemFormats` because it references it at module load time.
+const itemFormatSchema = z.enum(validItemFormats as [string, ...string[]]);
 
 /**
  * Options for downloading dataset items in a specific format.

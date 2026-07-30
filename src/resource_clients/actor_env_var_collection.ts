@@ -1,9 +1,12 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
+import { validate } from '../utils';
 import type { ActorEnvironmentVariable } from './actor_version';
+
+const actorEnvVarSchema = z.object({}).passthrough().optional();
 
 /**
  * Client for managing the collection of environment variables for an Actor version.
@@ -75,7 +78,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/act-version-env-vars-post
      */
     async create(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
-        ow(actorEnvVar, ow.optional.object);
+        validate(actorEnvVarSchema, actorEnvVar);
         return this._create(actorEnvVar);
     }
 }

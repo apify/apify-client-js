@@ -1,9 +1,23 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
+import { validate } from '../utils';
 import type { ActorStats } from './actor';
+
+const listOptionsSchema = z
+    .object({
+        limit: z.number().min(0).optional(),
+        offset: z.number().min(0).optional(),
+        search: z.string().optional(),
+        sortBy: z.string().optional(),
+        category: z.string().optional(),
+        username: z.string().optional(),
+        pricingModel: z.string().optional(),
+        includeUnrunnableActors: z.boolean().optional(),
+    })
+    .strict();
 
 /**
  * Client for browsing Actors in the Apify Store.
@@ -57,19 +71,7 @@ export class StoreCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/store-get
      */
     list(options: StoreCollectionListOptions = {}): PaginatedIterator<ActorStoreList> {
-        ow(
-            options,
-            ow.object.exactShape({
-                limit: ow.optional.number.not.negative,
-                offset: ow.optional.number.not.negative,
-                search: ow.optional.string,
-                sortBy: ow.optional.string,
-                category: ow.optional.string,
-                username: ow.optional.string,
-                pricingModel: ow.optional.string,
-                includeUnrunnableActors: ow.optional.boolean,
-            }),
-        );
+        validate(listOptionsSchema, options);
 
         return this._listPaginated(options);
     }
