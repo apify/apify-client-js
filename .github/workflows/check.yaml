@@ -79,6 +79,8 @@ jobs:
             - name: Install pnpm and dependencies
               uses: apify/actions/pnpm-install@v1.4.0
             - run: pnpm lint
+            - name: Type-check tests
+              run: pnpm tsc-check-tests
             - name: Format check
               run: pnpm format:check
 
