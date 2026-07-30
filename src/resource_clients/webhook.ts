@@ -7,10 +7,10 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import { cast, catchNotFoundOrThrow, parseDateFields, pluckData, validate } from '../utils';
-
-const webhookUpdateSchema = z.object({}).passthrough();
 import type { WebhookDispatch } from './webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection';
+
+const webhookUpdateSchema = z.object({}).passthrough();
 
 /**
  * Client for managing a specific webhook.
