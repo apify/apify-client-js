@@ -81,6 +81,8 @@ jobs:
             - run: pnpm lint
             - name: Format check
               run: pnpm format:check
+            - name: Type-check maintainer scripts
+              run: pnpm tsc-check-scripts
 
     docs:
         name: Docs build

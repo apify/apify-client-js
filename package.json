@@ -58,10 +58,12 @@
         "lint": "oxlint --type-aware",
         "lint:fix": "oxlint --type-aware --fix",
         "tsc-check-tests": "tsc --noEmit --project test/tsconfig.json",
+        "tsc-check-scripts": "tsc --noEmit --project tsconfig.scripts.json",
         "format": "oxfmt",
         "format:check": "oxfmt --check",
         "build:node": "tsc",
-        "build:browser": "rsbuild build"
+        "build:browser": "rsbuild build",
+        "spec:fetch": "node scripts/fetch-spec.mts"
     },
     "dependencies": {
         "@apify/consts": "^2.50.0",

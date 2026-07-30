@@ -1,0 +1,4 @@
+# `pnpm spec:fetch` writes the upstream response body for src/generated/openapi.json verbatim, and that
+# endpoint serves LF only. Without this, a clone made with core.autocrlf=true would check the snapshot out as
+# CRLF and every refresh would rewrite all 29k lines, burying the real spec changes in line-ending churn.
+* text=auto eol=lf

@@ -28,3 +28,6 @@ crawlee_storage
 storage
 .turbo
 changelog.md
+
+# Left behind only when `pnpm spec:fetch` is killed between writing the temp file and renaming it.
+src/generated/*.tmp

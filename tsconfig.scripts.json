@@ -1,0 +1,17 @@
+{
+    // `scripts/` is outside the main project's `include`, so nothing type-checked it. These scripts run under
+    // Node's native type stripping rather than a build step, hence `noEmit`; `allowImportingTsExtensions` goes
+    // with it so a script importing another one by its real `.mts` runtime path still type-checks.
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "rootDir": ".",
+        "noEmit": true,
+        // Nothing here pulls in `@types/node` transitively the way `src/` does through its dependencies, and
+        // this setup gets no automatic `@types` inclusion, so the Node globals have to be asked for by name.
+        "types": ["node"],
+        "allowImportingTsExtensions": true,
+        "module": "nodenext",
+        "moduleResolution": "nodenext"
+    },
+    "include": ["scripts/**/*"]
+}
