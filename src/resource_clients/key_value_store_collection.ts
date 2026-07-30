@@ -1,11 +1,24 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
+import { validate } from '../utils';
 import type { KeyValueStore } from './key_value_store';
+
+const listOptionsSchema = z
+    .object({
+        unnamed: z.boolean().optional(),
+        limit: z.number().min(0).optional(),
+        offset: z.number().min(0).optional(),
+        desc: z.boolean().optional(),
+        ownership: z.nativeEnum(STORAGE_OWNERSHIP_FILTER).optional(),
+    })
+    .strict();
+const nameSchema = z.string().optional();
+const schemaSchema = z.object({}).passthrough().optional();
 
 /**
  * Client for managing the collection of Key-value stores in your account.
@@ -61,16 +74,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     list(
         options: KeyValueStoreCollectionClientListOptions = {},
     ): Promise<KeyValueStoreCollectionListResult> & AsyncIterable<KeyValueStore> {
-        ow(
-            options,
-            ow.object.exactShape({
-                unnamed: ow.optional.boolean,
-                limit: ow.optional.number.not.negative,
-                offset: ow.optional.number.not.negative,
-                desc: ow.optional.boolean,
-                ownership: ow.optional.string.oneOf(Object.values(STORAGE_OWNERSHIP_FILTER)),
-            }),
-        );
+        validate(listOptionsSchema, options);
 
         return this._listPaginated(options);
     }
@@ -87,8 +91,8 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
         name?: string,
         options?: KeyValueStoreCollectionClientGetOrCreateOptions,
     ): Promise<KeyValueStore> {
-        ow(name, ow.optional.string);
-        ow(options?.schema, ow.optional.object); // TODO: Add schema validatioon
+        validate(nameSchema, name);
+        validate(schemaSchema, options?.schema); // TODO: Add schema validatioon
 
         return this._getOrCreate(name, options);
     }

@@ -37,9 +37,6 @@ importers:
       content-type:
         specifier: ^1.0.5
         version: 1.0.5
-      ow:
-        specifier: ^0.28.2
-        version: 0.28.2
       proxy-agent:
         specifier: ^6.5.0
         version: 6.5.0
@@ -49,6 +46,9 @@ importers:
       type-fest:
         specifier: ^4.0.0
         version: 4.41.0
+      zod:
+        specifier: ^3.24.0 || ^4.0.0
+        version: 3.25.76
     devDependencies:
       '@apify/oxlint-config':
         specifier: ^0.3.0

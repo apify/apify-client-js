@@ -1,5 +1,5 @@
 import type { SetStatusMessageOptions } from '@crawlee/types';
-import ow from 'ow';
+import { z } from 'zod';
 
 import { ACTOR_ENV_VARS, ME_USER_NAME_PLACEHOLDER } from '@apify/consts';
 import type { Log } from '@apify/log';
@@ -32,8 +32,29 @@ import { WebhookCollectionClient } from './resource_clients/webhook_collection';
 import { WebhookDispatchClient } from './resource_clients/webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './resource_clients/webhook_dispatch_collection';
 import { Statistics } from './statistics';
+import { validate } from './utils';
 
 const DEFAULT_TIMEOUT_SECS = 360;
+
+const clientOptionsSchema = z
+    .object({
+        baseUrl: z.string().optional(),
+        publicBaseUrl: z.string().optional(),
+        maxRetries: z.number().optional(),
+        minDelayBetweenRetriesMillis: z.number().optional(),
+        requestInterceptors: z.array(z.unknown()).optional(),
+        timeoutSecs: z.number().optional(),
+        token: z.string().optional(),
+        userAgentSuffix: z.union([z.string(), z.array(z.string())]).optional(),
+    })
+    .strict();
+const resourceIdSchema = z.string().min(1);
+const requestQueueOptionsSchema = z
+    .object({
+        clientKey: z.string().min(1).optional(),
+        timeoutSecs: z.number().optional(),
+    })
+    .strict();
 
 /**
  * The official JavaScript client for the Apify API.
@@ -70,19 +91,7 @@ export class ApifyClient {
     httpClient: HttpClient;
 
     constructor(options: ApifyClientOptions = {}) {
-        ow(
-            options,
-            ow.object.exactShape({
-                baseUrl: ow.optional.string,
-                publicBaseUrl: ow.optional.string,
-                maxRetries: ow.optional.number,
-                minDelayBetweenRetriesMillis: ow.optional.number,
-                requestInterceptors: ow.optional.array,
-                timeoutSecs: ow.optional.number,
-                token: ow.optional.string,
-                userAgentSuffix: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
-            }),
-        );
+        validate(clientOptionsSchema, options);
 
         const {
             baseUrl = 'https://api.apify.com',
@@ -153,7 +162,7 @@ export class ApifyClient {
      * ```
      */
     actor(id: string): ActorClient {
-        ow(id, ow.string.nonEmpty);
+        validate(resourceIdSchema, id);
 
         return new ActorClient({
             id,
@@ -183,7 +192,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/actor-build-get
      */
     build(id: string): BuildClient {
-        ow(id, ow.string.nonEmpty);
+        validate(resourceIdSchema, id);
 
         return new BuildClient({
             id,
@@ -229,7 +238,7 @@ export class ApifyClient {
     dataset<Data extends Record<string | number, any> = Record<string | number, unknown>>(
         id: string,
     ): DatasetClient<Data> {
-        ow(id, ow.string.nonEmpty);
+        validate(resourceIdSchema, id);
 
         return new DatasetClient({
             id,
@@ -269,7 +278,7 @@ export class ApifyClient {
      * ```
      */
     keyValueStore(id: string): KeyValueStoreClient {
-        ow(id, ow.string.nonEmpty);
+        validate(resourceIdSchema, id);
 
         return new KeyValueStoreClient({
             id,
@@ -285,7 +294,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/log-get
      */
     log(buildOrRunId: string): LogClient {
-        ow(buildOrRunId, ow.string.nonEmpty);
+        validate(resourceIdSchema, buildOrRunId);
 
         return new LogClient({
             id: buildOrRunId,
@@ -327,14 +336,8 @@ export class ApifyClient {
      * ```
      */
     requestQueue(id: string, options: RequestQueueUserOptions = {}): RequestQueueClient {
-        ow(id, ow.string.nonEmpty);
-        ow(
-            options,
-            ow.object.exactShape({
-                clientKey: ow.optional.string.nonEmpty,
-                timeoutSecs: ow.optional.number,
-            }),
-        );
+        validate(resourceIdSchema, id);
+        validate(requestQueueOptionsSchema, options);
 
         const apiClientOptions = {
             id,
@@ -378,7 +381,7 @@ export class ApifyClient {
      * ```
      */
     run(id: string): RunClient {
-        ow(id, ow.string.nonEmpty);
+        validate(resourceIdSchema, id);
 
         return new RunClient({
             id,
@@ -414,7 +417,7 @@ export class ApifyClient {
      * ```
      */
     task(id: string): TaskClient {
-        ow(id, ow.string.nonEmpty);
+        validate(resourceIdSchema, id);
 
         return new TaskClient({
             id,
@@ -444,7 +447,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/schedule-get
      */
     schedule(id: string): ScheduleClient {
-        ow(id, ow.string.nonEmpty);
+        validate(resourceIdSchema, id);
 
         return new ScheduleClient({
             id,
@@ -462,7 +465,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/user-get
      */
     user(id = ME_USER_NAME_PLACEHOLDER): UserClient {
-        ow(id, ow.string.nonEmpty);
+        validate(resourceIdSchema, id);
 
         return new UserClient({
             id,
@@ -492,7 +495,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/webhook-get
      */
     webhook(id: string): WebhookClient {
-        ow(id, ow.string.nonEmpty);
+        validate(resourceIdSchema, id);
 
         return new WebhookClient({
             id,
@@ -520,7 +523,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/webhook-dispatch-get
      */
     webhookDispatch(id: string): WebhookDispatchClient {
-        ow(id, ow.string.nonEmpty);
+        validate(resourceIdSchema, id);
 
         return new WebhookDispatchClient({
             id,

@@ -1,9 +1,18 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
+import { validate } from '../utils';
 import type { Build } from './build';
+
+const listOptionsSchema = z
+    .object({
+        limit: z.number().min(0).optional(),
+        offset: z.number().min(0).optional(),
+        desc: z.boolean().optional(),
+    })
+    .strict();
 
 /**
  * Client for managing the collection of Actor builds.
@@ -58,14 +67,7 @@ export class BuildCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/actor-builds-get
      */
     list(options: BuildCollectionClientListOptions = {}): PaginatedIterator<BuildCollectionClientListItem> {
-        ow(
-            options,
-            ow.object.exactShape({
-                limit: ow.optional.number.not.negative,
-                offset: ow.optional.number.not.negative,
-                desc: ow.optional.boolean,
-            }),
-        );
+        validate(listOptionsSchema, options);
 
         return this._listPaginated(options);
     }

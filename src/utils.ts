@@ -1,9 +1,10 @@
 import type { Readable } from 'node:stream';
 
-import ow from 'ow';
 import type { JsonValue, TypedArray } from 'type-fest';
+import type { z } from 'zod';
 
 import type { ApifyApiError } from './apify_api_error';
+import { ArgumentValidationError } from './argument_validation_error';
 import type {
     RequestQueueClientListRequestsOptions,
     RequestQueueClientListRequestsResult,
@@ -14,6 +15,19 @@ const NOT_FOUND_STATUS_CODE = 404;
 const RECORD_NOT_FOUND_TYPE = 'record-not-found';
 const RECORD_OR_TOKEN_NOT_FOUND_TYPE = 'record-or-token-not-found';
 const MIN_COMPRESS_BYTES = 1024;
+
+/**
+ * Validates `value` against a zod `schema`, returning the parsed value, or
+ * throwing an {@link ArgumentValidationError} if it doesn't match.
+ * @internal
+ */
+export function validate<Schema extends z.ZodType>(schema: Schema, value: unknown): z.infer<Schema> {
+    const result = schema.safeParse(value);
+    if (!result.success) {
+        throw new ArgumentValidationError(result.error, value);
+    }
+    return result.data;
+}
 
 /**
  * Generic interface for objects that may contain a data property.
@@ -98,7 +112,7 @@ export function parseDateFields(
 /**
  * Helper function that converts array of webhooks to base64 string
  */
-export function stringifyWebhooksToBase64(webhooks: WebhookUpdateData[]): string | undefined {
+export function stringifyWebhooksToBase64(webhooks?: readonly WebhookUpdateData[]): string | undefined {
     if (!webhooks) return;
     const webhooksJson = JSON.stringify(webhooks);
     if (isNode()) {
@@ -209,11 +223,13 @@ export function isNode(): boolean {
 }
 
 export function isBuffer(value: unknown): value is Buffer | ArrayBuffer | TypedArray {
-    return ow.isValid(value, ow.any(ow.buffer, ow.arrayBuffer, ow.typedArray));
+    return value instanceof ArrayBuffer || ArrayBuffer.isView(value);
 }
 
 export function isStream(value: unknown): value is Readable {
-    return ow.isValid(value, ow.object.hasKeys('on', 'pipe'));
+    if (value === null || typeof value !== 'object') return false;
+    const { on, pipe } = value as Partial<Readable>;
+    return typeof on === 'function' && typeof pipe === 'function';
 }
 
 export function getVersionData(): { version: string } {
@@ -397,12 +413,11 @@ export function applyQueryParamsToUrl(
     return url;
 }
 
-export const mutuallyExclusive =
-    <T, K extends keyof T>(...keys: K[]) =>
-    (value: T) => {
-        const presentKeys = keys.filter((key) => typeof value[key] !== 'undefined');
-        return {
-            validator: presentKeys.length <= 1,
-            message: `At most one of the following fields is allowed: ${keys.join(', ')}`,
-        };
-    };
+/**
+ * Builds a zod refinement asserting that at most one of `keys` is present on the validated object.
+ * Returns the `[check, message]` pair to be spread into `.refine()`.
+ */
+export const mutuallyExclusive = (...keys: string[]): [(value: Record<string, unknown>) => boolean, string] => [
+    (value) => keys.filter((key) => typeof value[key] !== 'undefined').length <= 1,
+    `At most one of the following fields is allowed: ${keys.join(', ')}`,
+];

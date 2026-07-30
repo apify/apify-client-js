@@ -1,11 +1,23 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
+import { validate } from '../utils';
 import type { RequestQueue } from './request_queue';
+
+const listOptionsSchema = z
+    .object({
+        unnamed: z.boolean().optional(),
+        limit: z.number().min(0).optional(),
+        offset: z.number().min(0).optional(),
+        desc: z.boolean().optional(),
+        ownership: z.nativeEnum(STORAGE_OWNERSHIP_FILTER).optional(),
+    })
+    .strict();
+const nameSchema = z.string().optional();
 
 /**
  * Client for managing the collection of Request queues in your account.
@@ -61,16 +73,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
     list(
         options: RequestQueueCollectionListOptions = {},
     ): Promise<RequestQueueCollectionListResult> & AsyncIterable<RequestQueue> {
-        ow(
-            options,
-            ow.object.exactShape({
-                unnamed: ow.optional.boolean,
-                limit: ow.optional.number.not.negative,
-                offset: ow.optional.number.not.negative,
-                desc: ow.optional.boolean,
-                ownership: ow.optional.string.oneOf(Object.values(STORAGE_OWNERSHIP_FILTER)),
-            }),
-        );
+        validate(listOptionsSchema, options);
 
         return this._listPaginated(options);
     }
@@ -83,7 +86,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/request-queues-post
      */
     async getOrCreate(name?: string): Promise<RequestQueue> {
-        ow(name, ow.optional.string);
+        validate(nameSchema, name);
 
         return this._getOrCreate(name);
     }

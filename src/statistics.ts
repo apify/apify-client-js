@@ -1,4 +1,8 @@
-import ow from 'ow';
+import { z } from 'zod';
+
+import { validate } from './utils';
+
+const attemptSchema = z.number().gt(0);
 
 export class Statistics {
     /**
@@ -18,7 +22,7 @@ export class Statistics {
     rateLimitErrors: number[] = [];
 
     addRateLimitError(attempt: number): void {
-        ow(attempt, ow.number.greaterThan(0));
+        validate(attemptSchema, attempt);
         // attempt is never 0,
         // but we don't want index 0 empty
         const index = attempt - 1;

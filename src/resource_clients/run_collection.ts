@@ -1,11 +1,24 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import { ACTOR_JOB_STATUSES } from '@apify/consts';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
+import { validate } from '../utils';
 import type { ActorRunListItem } from './actor';
+
+const jobStatusSchema = z.nativeEnum(ACTOR_JOB_STATUSES);
+const listOptionsSchema = z
+    .object({
+        limit: z.number().min(0).optional(),
+        offset: z.number().min(0).optional(),
+        desc: z.boolean().optional(),
+        status: z.union([jobStatusSchema, z.array(jobStatusSchema)]).optional(),
+        startedBefore: z.union([z.date(), z.string()]).optional(),
+        startedAfter: z.union([z.date(), z.string()]).optional(),
+    })
+    .strict();
 
 /**
  * Client for managing the collection of Actor runs.
@@ -60,20 +73,7 @@ export class RunCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/actor-runs-get
      */
     list(options: RunCollectionListOptions = {}): PaginatedIterator<ActorRunListItem> {
-        ow(
-            options,
-            ow.object.exactShape({
-                limit: ow.optional.number.not.negative,
-                offset: ow.optional.number.not.negative,
-                desc: ow.optional.boolean,
-                status: ow.optional.any(
-                    ow.string.oneOf(Object.values(ACTOR_JOB_STATUSES)),
-                    ow.array.ofType(ow.string.oneOf(Object.values(ACTOR_JOB_STATUSES))),
-                ),
-                startedBefore: ow.optional.any(ow.optional.date, ow.optional.string),
-                startedAfter: ow.optional.any(ow.optional.date, ow.optional.string),
-            }),
-        );
+        validate(listOptionsSchema, options);
 
         return this._listPaginated(options);
     }
