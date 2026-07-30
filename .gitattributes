@@ -1,4 +1,9 @@
-# `pnpm spec:fetch` writes the upstream response body for src/generated/openapi.json verbatim, and that
-# endpoint serves LF only. Without this, a clone made with core.autocrlf=true would check the snapshot out as
-# CRLF and every refresh would rewrite all 29k lines, burying the real spec changes in line-ending churn.
+# `pnpm spec:fetch` writes the upstream response body for spec/openapi.json verbatim, and that endpoint
+# serves LF only. Without this, a clone made with core.autocrlf=true would check the snapshot out as CRLF and
+# every refresh would rewrite all 29k lines, burying the real spec changes in line-ending churn.
 * text=auto eol=lf
+
+# Vendored snapshot of the published API specification, so GitHub collapses it in diffs by default. What a
+# reviewer reads is the refresh script and, later, the generated types -- the snapshot is here for provenance
+# and reproducibility, one click away.
+spec/openapi.json linguist-generated=true

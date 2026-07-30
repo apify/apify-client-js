@@ -1,8 +1,11 @@
 /**
- * Refresh the vendored Apify API OpenAPI snapshot at `src/generated/openapi.json`.
+ * Refresh the vendored Apify API OpenAPI snapshot at `spec/openapi.json`.
  *
  * Run with `pnpm spec:fetch`. Maintainer-facing and dev-only: the snapshot is committed, so nothing in the
  * published package or in CI depends on `docs.apify.com` being reachable.
+ *
+ * The snapshot lives outside `src/` on purpose. It is a build input, not source, and `resolveJsonModule` is
+ * on, so a stray import from `src/` would otherwise emit the whole 1 MB document into `dist/` and ship it.
  *
  * The response bytes are written through untouched rather than re-serialized. The endpoint already
  * pretty-prints with a 2-space indent and LF, so passing the bytes straight through keeps refreshes free of
@@ -12,8 +15,8 @@
 import { readFile, rename, rm, writeFile } from 'node:fs/promises';
 
 const SPEC_URL = 'https://docs.apify.com/api/openapi.json';
-const TARGET = new URL('../src/generated/openapi.json', import.meta.url);
-const TEMP = new URL('../src/generated/openapi.json.tmp', import.meta.url);
+const TARGET = new URL('../spec/openapi.json', import.meta.url);
+const TEMP = new URL('../spec/openapi.json.tmp', import.meta.url);
 
 /** Generous for a 1 MB document on a slow link, but bounded, so a stalled connection still reports. */
 const TIMEOUT_MS = 30_000;
@@ -150,7 +153,7 @@ async function main(): Promise<void> {
 
     console.log(`spec:fetch: openapi ${spec.openapi}, ${spec.pathCount} paths, ${spec.schemaCount} schemas`);
     console.log(`spec:fetch: info.version ${oldVersion} -> ${spec.version}`);
-    console.log(`spec:fetch: src/generated/openapi.json ${changed ? 'updated' : 'unchanged'}, ${bytes.length} bytes`);
+    console.log(`spec:fetch: spec/openapi.json ${changed ? 'updated' : 'unchanged'}, ${bytes.length} bytes`);
 }
 
 try {
