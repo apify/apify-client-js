@@ -29,6 +29,15 @@ describe('ArgumentValidationError', () => {
         expect(error.message).toContain('at `groups[1].name`, got `7`');
     });
 
+    test('message lists every failed arm of a union', () => {
+        const unionSchema = z.array(z.union([z.object({}).passthrough(), z.string()]));
+        const value = [1];
+        const error = new ArgumentValidationError(unionSchema.safeParse(value).error!, value);
+
+        expect(error.message).toContain('expected object, received number at `[0]`, got `1`');
+        expect(error.message).toContain('expected string, received number at `[0]`, got `1`');
+    });
+
     test('exposes structured issues and keeps the ZodError as cause', () => {
         const value = { retries: 'lots' };
         const zodError = schema.safeParse(value).error!;
