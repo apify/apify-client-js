@@ -138,8 +138,8 @@ importers:
   website:
     dependencies:
       '@apify/docs-theme':
-        specifier: ^1.0.268
-        version: 1.0.268(ca812139c5f47b60fbbbb0a14956ee25)
+        specifier: ^1.0.269
+        version: 1.0.269(ca812139c5f47b60fbbbb0a14956ee25)
       '@apify/docusaurus-plugin-typedoc-api':
         specifier: ^5.1.16
         version: 5.1.16(875e695ddcff4a72305b12cd4c20b2a8)
@@ -358,8 +358,8 @@ packages:
       react: '> 18.0.0'
       react-dom: '> 18.0.0'
 
-  '@apify/docs-theme@1.0.268':
-    resolution: {integrity: sha512-Xh4Ijrx11oM8YCkenfVRyHWbD6uT5/VjdF79O+35pmUaOZNtMHjMRUEmxn6eQUA3Z3Zk6lxAA6qv3YGlkGuGfQ==}
+  '@apify/docs-theme@1.0.269':
+    resolution: {integrity: sha512-0CuyKcj1Lx1YICTlzScEdaebESJKU7Z/Q+kre+mspOLeHs+sQR5pkyz/Izyn+/QsVuoBqox/zDx4aFWWEsrrBw==}
     peerDependencies:
       clsx: '*'
       react: '*'
@@ -2358,6 +2358,13 @@ packages:
     peerDependencies:
       '@emnapi/core': ^2.0.0-alpha.3
       '@emnapi/runtime': ^2.0.0-alpha.3
+
+  '@napi-rs/wasm-runtime@1.2.1':
+    resolution: {integrity: sha512-KjZdi8Q1wh89gsVmghvbrMgWl6ZWmRmHV6wjB7/g4Zf0dyO+hH3neZUtuDNPO00qq5YE5RITVWvrIZKRaAmzGQ==}
+    engines: {node: ^20.19.0 || ^22.13.0 || >=23.5.0}
+    peerDependencies:
+      '@emnapi/core': ^1.7.1 || ^2.0.0-alpha.3
+      '@emnapi/runtime': ^1.7.1 || ^2.0.0-alpha.3
 
   '@noble/hashes@1.4.0':
     resolution: {integrity: sha512-V1JJ1WTRUqHHrOSh597hURcMqVKVGL/ea3kv0gSnEdsEZ0/+VyPghM1lMNGc00z7CIQorSvbKpuJkxvuHbvdbg==}
@@ -9448,7 +9455,7 @@ snapshots:
       - search-insights
       - supports-color
 
-  '@apify/docs-theme@1.0.268(ca812139c5f47b60fbbbb0a14956ee25)':
+  '@apify/docs-theme@1.0.269(ca812139c5f47b60fbbbb0a14956ee25)':
     dependencies:
       '@apify/docs-search-modal': 1.4.0(@algolia/client-search@5.56.0)(@babel/core@7.29.7)(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react-is@16.13.1)(react@19.2.8)(search-insights@2.17.3)
       '@apify/ui-icons': 1.48.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -12571,17 +12578,17 @@ snapshots:
       '@tybys/wasm-util': 0.10.3
     optional: true
 
-  '@napi-rs/wasm-runtime@1.2.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)':
-    dependencies:
-      '@emnapi/core': 1.11.1
-      '@emnapi/runtime': 1.11.1
-      '@tybys/wasm-util': 0.10.3
-    optional: true
-
   '@napi-rs/wasm-runtime@1.2.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)':
     dependencies:
       '@emnapi/core': 2.0.0-alpha.3
       '@emnapi/runtime': 2.0.0-alpha.3
+      '@tybys/wasm-util': 0.10.3
+    optional: true
+
+  '@napi-rs/wasm-runtime@1.2.1(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)':
+    dependencies:
+      '@emnapi/core': 1.11.1
+      '@emnapi/runtime': 1.11.1
       '@tybys/wasm-util': 0.10.3
     optional: true
 
@@ -13228,7 +13235,7 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.11.1
       '@emnapi/runtime': 1.11.1
-      '@napi-rs/wasm-runtime': 1.2.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)
+      '@napi-rs/wasm-runtime': 1.2.1(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)
     optional: true
 
   '@rolldown/binding-wasm32-wasi@1.2.1':
