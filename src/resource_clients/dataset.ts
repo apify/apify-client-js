@@ -15,7 +15,11 @@ import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData, validate } from '../utils';
 
-const itemSchema = z.object({}).passthrough();
+// A type-only check, since a `z.object()` arm would walk and copy every key of every pushed item.
+const itemSchema = z.custom<object>(
+    (value) => typeof value === 'object' && value !== null && !Array.isArray(value),
+    'Expected an object',
+);
 const updateSchema = z.object({}).passthrough();
 const listItemsOptionsSchema = z
     .object({
@@ -498,7 +502,7 @@ export enum DownloadItemsFormat {
 const validItemFormats = [...new Set(Object.values(DownloadItemsFormat).map((item) => item.toLowerCase()))];
 
 // Declared below `validItemFormats` because it references it at module load time.
-const itemFormatSchema = z.enum(validItemFormats as [string, ...string[]]);
+const itemFormatSchema = z.enum(validItemFormats);
 
 /**
  * Options for downloading dataset items in a specific format.
