@@ -389,8 +389,7 @@ describe('Run methods', () => {
             const res = await client.run(runId).charge({ eventName: 'some-event' });
             expect(res.status).toEqual(200);
 
-            // The exact wording comes from zod and differs between its majors, so assert on the
-            // error type and the structured issue instead.
+            // Assert on the error type and the structured issue, since zod owns the wording.
             const error = await client
                 .run(runId)
                 .charge(undefined as any)

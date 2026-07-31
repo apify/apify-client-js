@@ -60,9 +60,7 @@ const getRecordOptionsSchema = z
 const recordSchema = z
     .object({
         key: z.string(),
-        // Record values are arbitrary - plain JSON, but also buffers and streams. A `z.object()`
-        // arm would walk every own key of the value, which is prohibitive for large buffers, so
-        // this keeps the cheap "anything but `undefined`" check the `ow` predicate amounted to.
+        // Values are arbitrary, and a `z.object()` arm would walk every key of a large buffer.
         value: z.custom<JsonValue>((value) => value !== undefined, 'Expected a defined value'),
         contentType: z.string().min(1).optional(),
     })

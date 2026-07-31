@@ -17,8 +17,7 @@ describe('ArgumentValidationError', () => {
 
         expect(error).toBeInstanceOf(Error);
         expect(error.name).toBe('ArgumentValidationError');
-        // The leading sentence comes from zod and differs between its majors, the location and the
-        // received value are what this formatter adds.
+        // Only assert on the location and value, since zod owns the leading sentence.
         expect(error.message).toContain('at `countryCode`, got `CZE`');
     });
 

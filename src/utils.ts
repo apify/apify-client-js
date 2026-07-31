@@ -17,8 +17,7 @@ const RECORD_OR_TOKEN_NOT_FOUND_TYPE = 'record-or-token-not-found';
 const MIN_COMPRESS_BYTES = 1024;
 
 /**
- * Validates `value` against a zod `schema`, returning the parsed value, or
- * throwing an {@link ArgumentValidationError} if it doesn't match.
+ * Parses `value` with `schema`, throwing an {@link ArgumentValidationError} if it doesn't match.
  * @internal
  */
 export function validate<Schema extends z.ZodType>(schema: Schema, value: unknown): z.infer<Schema> {
@@ -223,10 +222,8 @@ export function isNode(): boolean {
 }
 
 export function isBuffer(value: unknown): value is Buffer | ArrayBuffer | TypedArray {
-    // `instanceof` would miss buffers originating in another realm (a worker, an iframe, a `vm`
-    // context), so the `ArrayBuffer` arm goes through the cross-realm-safe brand check instead.
-    // `ArrayBuffer.isView()` is cross-realm safe already, but it also covers `DataView`, which is
-    // not a typed array and must not be treated as raw binary content.
+    // Tag checks rather than `instanceof`, to also match buffers from another realm. `isView()`
+    // additionally covers `DataView`, which is not raw binary content.
     if (ArrayBuffer.isView(value)) return !isTagged(value, 'DataView');
     return isTagged(value, 'ArrayBuffer');
 }
@@ -423,9 +420,8 @@ export function applyQueryParamsToUrl(
 }
 
 /**
- * Builds a zod refinement asserting that at most one of `keys` is present on the validated object.
- * Returns the `[check, message]` pair to be spread into `.refine()`. Pass the options interface as
- * the type argument, so that a misspelled key - which would silently never fire - is a type error.
+ * Builds a `[check, message]` pair to spread into `.refine()`, asserting that at most one of `keys`
+ * is present. Pass the options interface as `T`, so that a misspelled key is a type error.
  */
 export const mutuallyExclusive = <T extends object>(...keys: (keyof T & string)[]): [(value: T) => boolean, string] => [
     (value) => keys.filter((key) => typeof value[key] !== 'undefined').length <= 1,
