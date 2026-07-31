@@ -126,13 +126,29 @@ async function brotliValue(value: string | Buffer<ArrayBufferLike>): Promise<Buf
     return brotliCompressPromisified(value);
 }
 
+let gzipPromisified: ((arg: string | Buffer<ArrayBufferLike>) => Promise<Buffer>) | undefined;
+
+/**
+ * Gzip-compress the provided value.
+ */
+async function gzipValue(value: string | Buffer<ArrayBufferLike>): Promise<Buffer> {
+    if (!gzipPromisified) {
+        const { promisify } = await import('node:util');
+        const { gzip } = await import('node:zlib');
+        gzipPromisified = promisify(gzip);
+    }
+
+    return gzipPromisified(value);
+}
+
 export interface CompressedValue {
     data: Buffer;
-    encoding: 'br';
+    encoding: 'br' | 'gzip';
 }
 
 /**
- * Compress the passed value using brotli. Returns undefined if the data is too small / wrong type.
+ * Compress the passed value using brotli, falling back to gzip. Returns undefined if the data is
+ * too small / wrong type, or if neither algorithm is available.
  */
 export async function maybeCompressValue(value: unknown): Promise<CompressedValue | undefined> {
     if (!isNode()) return undefined;
@@ -147,9 +163,15 @@ export async function maybeCompressValue(value: unknown): Promise<CompressedValu
     try {
         return { data: await brotliValue(value), encoding: 'br' };
     } catch {
+        // Runtimes that only provide a partial `node:zlib` (bundler polyfills, edge runtimes with
+        // Node compatibility shims) may not implement brotli, but usually do implement gzip.
+    }
+
+    try {
+        return { data: await gzipValue(value), encoding: 'gzip' };
+    } catch {
         // Same reasoning as above: compression is a best-effort optimization, so skip it instead
-        // of failing the request. Runtimes that only provide a partial `node:zlib` (bundler
-        // polyfills, edge runtimes with Node compatibility shims) may not implement brotli.
+        // of failing the request.
         return undefined;
     }
 }
