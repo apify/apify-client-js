@@ -11,8 +11,7 @@ end_of_line = lf
 max_line_length = null
 quote_type = single
 
-# `pnpm spec:fetch` writes the upstream response body verbatim, and that endpoint serves no trailing newline.
-# Without this exception, opening the snapshot in an editor and saving it would add one, and every later
-# refresh would show that as a diff.
+# `pnpm spec:fetch` writes the upstream bytes verbatim, and that endpoint serves no trailing newline. Without
+# this, saving the snapshot from an editor would add one and every later refresh would show it as a diff.
 [spec/openapi.json]
 insert_final_newline = false

@@ -1,10 +1,7 @@
-# Check every text file out with LF on every platform. Nothing in this repo is Windows-specific and all
-# tracked files are already LF, so this pins down what is true today rather than changing anything.
+# Check every text file out with LF everywhere. All tracked files are already LF, so this changes nothing today.
 * text=auto eol=lf
 
-# Vendored snapshot of the published API specification. `pnpm spec:fetch` writes the upstream response body
-# verbatim and that endpoint serves LF only, so a CRLF checkout would make every refresh rewrite all 29k
-# lines, burying the real spec changes in line-ending churn. `linguist-generated` also collapses the file in
-# diffs by default: what a reviewer reads is the refresh script and, later, the generated types -- the
-# snapshot is here for provenance and reproducibility, one click away.
+# Vendored snapshot. `pnpm spec:fetch` writes the upstream bytes verbatim and that endpoint serves LF only, so a
+# CRLF checkout would make every refresh rewrite all 29k lines. `linguist-generated` also collapses it in diffs:
+# what a reviewer reads is the refresh script and, later, the generated types.
 spec/openapi.json linguist-generated=true
