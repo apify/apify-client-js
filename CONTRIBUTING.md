@@ -16,7 +16,7 @@ Thank you for your interest in contributing to the official JavaScript/TypeScrip
 
 ### Prerequisites
 
-- Node.js 18+ (LTS recommended)
+- Node.js 18+ (LTS recommended); `npm run spec:fetch` additionally needs 22.18+, for native TypeScript support
 - npm 10+
 
 ### Installation
@@ -70,6 +70,12 @@ test/
 └── mock_server/                 # Mock API server for testing
     ├── server.ts
     └── routes/                  # Mock API routes
+
+scripts/
+└── fetch-spec.mts               # Refreshes the vendored OpenAPI snapshot
+
+spec/
+└── openapi.json                 # Vendored snapshot of the Apify API specification
 ```
 
 ### Key Patterns
@@ -99,6 +105,10 @@ npm run clean              # Remove dist directory
 # Testing
 npm test                   # Build and run vitest suite
 npm run tsc-check-tests    # TypeScript check test files
+npm run tsc-check-scripts  # TypeScript check maintainer scripts
+
+# API specification
+npm run spec:fetch         # Refresh spec/openapi.json from docs.apify.com
 
 # Linting & Formatting
 npm run lint               # ESLint check

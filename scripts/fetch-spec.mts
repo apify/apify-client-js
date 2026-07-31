@@ -4,9 +4,8 @@
  * Run with `pnpm spec:fetch`. Maintainer-facing and dev-only: the snapshot is committed, so nothing in the
  * published package or in CI depends on `docs.apify.com` being reachable.
  *
- * Needs a Node that strips types natively, so 22.18+ or 23.6+. That is above the version floor the package
- * itself supports, and an older Node fails here while parsing this file rather than with anything that names
- * a version, hence the note.
+ * Needs a Node that strips types natively, so 22.18+ or 23.6+ -- above the floor the package itself supports.
+ * An older Node fails while parsing this file, with `ERR_UNKNOWN_FILE_EXTENSION` and no mention of a version.
  *
  * The snapshot lives outside `src/` on purpose. It is a build input, not source, and `resolveJsonModule` is
  * on, so a stray import from `src/` would otherwise emit the whole 1 MB document into `dist/` and ship it.
@@ -26,7 +25,7 @@ const TEMP = new URL('openapi.json.tmp', SPEC_DIR);
 /** Generous for a 1 MB document on a slow link, but bounded, so a stalled connection still reports. */
 const TIMEOUT_MS = 30_000;
 
-/** Everything this script reads out of a spec, validated rather than asserted. */
+/** The fields this script reads out of a spec and reports on. */
 interface SpecSummary {
     openapi: string;
     version: string;
@@ -52,25 +51,13 @@ function versionIn(document: unknown): string {
     return isNonEmptyObject(info) && typeof info.version === 'string' ? info.version : '<unknown>';
 }
 
-/** The same, for the snapshot already on disk, which nothing has validated and may be hand-edited. */
-function versionOnDisk(snapshot: Buffer): string {
-    try {
-        return versionIn(JSON.parse(snapshot.toString('utf8')));
-    } catch {
-        return '<unparseable>';
-    }
-}
-
 /**
  * Reject anything that is not an OpenAPI 3.1 document with content in it, before the snapshot is touched.
  *
  * The snapshot is the input to type generation, so a docs redeploy serving an error page with a 200, a
  * response truncated mid-flight or a spec version bump has to stop the refresh here -- otherwise it lands as
  * a diff that looks like an API change. This checks shape, not substance: a well-formed spec that lost most
- * of its endpoints still passes, so the diff is still worth reading before committing.
- *
- * The summary is built from the narrowed values instead of asserting a type onto the parsed document, so
- * dropping a check below turns into a compile error rather than a crash further down.
+ * of its endpoints still passes, which is what the path and schema counts printed at the end are for.
  */
 function summarize(body: string): SpecSummary {
     let document: unknown;
@@ -109,6 +96,18 @@ function summarize(body: string): SpecSummary {
     };
 }
 
+/**
+ * The same for the snapshot already on disk, as a baseline for the transition lines. That file went through
+ * `summarize` when it was written, but it may have been hand-edited since, so a failure here is not fatal.
+ */
+function summarizeOnDisk(snapshot: Buffer): SpecSummary | null {
+    try {
+        return summarize(snapshot.toString('utf8'));
+    } catch {
+        return null;
+    }
+}
+
 function report(error: unknown): string {
     if (error instanceof SpecFetchError) {
         return error.message;
@@ -118,6 +117,12 @@ function report(error: unknown): string {
     // is the whole diagnosis and the stack above it is undici internals, so keep those to one line.
     if (error instanceof Error && error.cause instanceof Error) {
         return `${error.name}: ${error.message}: ${error.cause.message}`;
+    }
+
+    // `AbortSignal.timeout` rejects with a `DOMException` named `TimeoutError` and no `cause`, so without this
+    // an expected timeout would fall through to the stack branch and print undici internals.
+    if (error instanceof DOMException) {
+        return `${error.name}: ${error.message}`;
     }
 
     // Nothing diagnosed what is left -- a bug in this script, or an errno nothing here anticipated -- so keep
@@ -150,8 +155,9 @@ async function main(): Promise<void> {
         fail(`GET ${SPEC_URL} returned ${response.status} ${response.statusText}`);
     }
 
-    // `arrayBuffer` rather than `text`: `text` decodes and re-encodes, which strips a leading BOM and turns a
-    // non-UTF-8 body into replacement characters that would still parse as JSON.
+    // `arrayBuffer` rather than `text`, because the response bytes are what gets written. Decoding through
+    // `text` would also strip a leading BOM, so a BOM'd body would parse cleanly here and then land on disk;
+    // keeping the bytes means `JSON.parse` sees the BOM and stops the refresh instead.
     const bytes = Buffer.from(await response.arrayBuffer());
     const spec = summarize(bytes.toString('utf8'));
     const changed = previous === null || !previous.equals(bytes);
@@ -172,11 +178,17 @@ async function main(): Promise<void> {
         }
     }
 
-    // No separate unchanged case: byte-identical input parses to the same `info.version`.
-    const oldVersion = previous === null ? '<no snapshot>' : versionOnDisk(previous);
+    // Reported as transitions, because `summarize` only checks that `paths` and `components.schemas` are
+    // non-empty. A refresh that quietly drops most of the endpoints passes validation, and the snapshot is
+    // `linguist-generated`, so these counts are the only signal that anything shrank.
+    const before = previous === null ? null : summarizeOnDisk(previous);
+    const missing = previous === null ? '<no snapshot>' : '<unreadable>';
 
-    console.log(`spec:fetch: openapi ${spec.openapi}, ${spec.pathCount} paths, ${spec.schemaCount} schemas`);
-    console.log(`spec:fetch: info.version ${oldVersion} -> ${spec.version}`);
+    const paths = `${before?.pathCount ?? missing} -> ${spec.pathCount}`;
+    const schemas = `${before?.schemaCount ?? missing} -> ${spec.schemaCount}`;
+
+    console.log(`spec:fetch: openapi ${spec.openapi}, paths ${paths}, schemas ${schemas}`);
+    console.log(`spec:fetch: info.version ${before?.version ?? missing} -> ${spec.version}`);
     console.log(`spec:fetch: spec/openapi.json ${changed ? 'updated' : 'unchanged'}, ${bytes.length} bytes`);
 }
 

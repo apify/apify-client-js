@@ -10,3 +10,9 @@ end_of_line = lf
 # editorconfig-tools is unable to ignore longs strings or urls
 max_line_length = null
 quote_type = single
+
+# `pnpm spec:fetch` writes the upstream response body verbatim, and that endpoint serves no trailing newline.
+# Without this exception, opening the snapshot in an editor and saving it would add one, and every later
+# refresh would show that as a diff.
+[spec/openapi.json]
+insert_final_newline = false
