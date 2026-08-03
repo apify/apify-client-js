@@ -3,8 +3,6 @@
     "compilerOptions": {
         "allowJs": true,
         "lib": ["ES2024", "DOM"],
-        "module": "node20",
-        "moduleResolution": "nodenext",
         "target": "ES2024",
         "outDir": "dist",
         "rootDir": "src",
