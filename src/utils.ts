@@ -109,23 +109,6 @@ export function stringifyWebhooksToBase64(webhooks: WebhookUpdateData[]): string
     return btoa(String.fromCharCode(...uint8Array));
 }
 
-let brotliCompressPromisified: ((arg: string | Buffer<ArrayBufferLike>) => Promise<Buffer>) | undefined;
-
-/**
- * Brotli-compress the provided value.
- */
-async function brotliValue(value: string | Buffer<ArrayBufferLike>): Promise<Buffer> {
-    if (!brotliCompressPromisified) {
-        const { promisify } = await import('node:util');
-        const { brotliCompress, constants } = await import('node:zlib');
-        const compress = promisify(brotliCompress);
-        const options = { params: { [constants.BROTLI_PARAM_QUALITY]: 6 } };
-        brotliCompressPromisified = async (input) => compress(input, options);
-    }
-
-    return brotliCompressPromisified(value);
-}
-
 let gzipPromisified: ((arg: string | Buffer<ArrayBufferLike>) => Promise<Buffer>) | undefined;
 
 /**
@@ -141,14 +124,41 @@ async function gzipValue(value: string | Buffer<ArrayBufferLike>): Promise<Buffe
     return gzipPromisified(value);
 }
 
+// null = confirmed unavailable; undefined = not yet checked
+let brotliCompressPromisified: ((arg: string | Buffer<ArrayBufferLike>) => Promise<Buffer>) | null | undefined;
+
+/**
+ * Brotli-compress the provided value, or return undefined if brotli is unavailable
+ * (Node.js < v10.16.0), this is a strict defensive guard.
+ */
+async function maybeBrotliValue(value: string | Buffer<ArrayBufferLike>): Promise<Buffer | undefined> {
+    if (brotliCompressPromisified === undefined) {
+        const { promisify } = await import('node:util');
+        const { brotliCompress, constants } = await import('node:zlib');
+        if (typeof brotliCompress === 'function') {
+            const compress = promisify(brotliCompress);
+            brotliCompressPromisified = async (value) =>
+                compress(value, { params: { [constants.BROTLI_PARAM_QUALITY]: 6 } });
+        } else {
+            brotliCompressPromisified = null;
+        }
+    }
+
+    if (brotliCompressPromisified !== null) {
+        return brotliCompressPromisified(value);
+    }
+
+    return undefined;
+}
+
 export interface CompressedValue {
     data: Buffer;
     encoding: 'br' | 'gzip';
 }
 
 /**
- * Compress the passed value using brotli, falling back to gzip. Returns undefined if the data is
- * too small / wrong type, or if neither algorithm is available.
+ * Compress the passed value using brotli if available or using gzip as a fallback. Returns undefined
+ * if the data is too small / wrong type.
  */
 export async function maybeCompressValue(value: unknown): Promise<CompressedValue | undefined> {
     if (!isNode()) return undefined;
@@ -160,20 +170,11 @@ export async function maybeCompressValue(value: unknown): Promise<CompressedValu
     const areDataLargeEnough = Buffer.byteLength(value) >= MIN_COMPRESS_BYTES;
     if (!areDataLargeEnough) return undefined;
 
-    try {
-        return { data: await brotliValue(value), encoding: 'br' };
-    } catch {
-        // Runtimes that only provide a partial `node:zlib` (bundler polyfills, edge runtimes with
-        // Node compatibility shims) may not implement brotli, but usually do implement gzip.
-    }
+    const brotli = await maybeBrotliValue(value);
+    if (brotli) return { data: brotli, encoding: 'br' };
 
-    try {
-        return { data: await gzipValue(value), encoding: 'gzip' };
-    } catch {
-        // Same reasoning as above: compression is a best-effort optimization, so skip it instead
-        // of failing the request.
-        return undefined;
-    }
+    const gzipped = await gzipValue(value);
+    return { data: gzipped, encoding: 'gzip' };
 }
 
 /**
