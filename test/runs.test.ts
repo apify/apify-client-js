@@ -456,7 +456,9 @@ describe('Redirect run logs', () => {
             await setTimeoutNode(500);
             await expect(streamedLog?.stop()).resolves.not.toThrow();
             expect(
-                warnSpy.mock.calls.some(([msg]: [string]) => msg?.includes('Log redirection stopped due to error')),
+                warnSpy.mock.calls.some(
+                    ([msg]) => typeof msg === 'string' && msg.includes('Log redirection stopped due to error'),
+                ),
             ).toBe(true);
             warnSpy.mockRestore();
         });
