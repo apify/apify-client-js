@@ -16,7 +16,7 @@ Thank you for your interest in contributing to the official JavaScript/TypeScrip
 
 ### Prerequisites
 
-- Node.js 18+ (LTS recommended)
+- Node.js 22+ (LTS recommended)
 - pnpm 10+
 
 ### Installation
