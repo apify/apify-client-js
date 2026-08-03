@@ -24,7 +24,8 @@ function valueAtPath(root: unknown, path: readonly PropertyKey[]): unknown {
 function describeReceived(value: unknown): string | undefined {
     switch (typeof value) {
         case 'string':
-            return value;
+            // An empty string would render as bare backticks - make it visible.
+            return value === '' ? "''" : value;
         case 'number':
         case 'boolean':
         case 'bigint':
