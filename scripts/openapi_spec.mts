@@ -39,7 +39,7 @@ const VERSION_ENTRY = 'apify.openapiSpec.version';
  * left it. Bounded to the `openapiSpec` object by `[^{}]`, so a missing key fails loudly instead of hitting some
  * other `version` further down the file.
  */
-const VERSION_ENTRY_PATTERN = /("openapiSpec"\s*:\s*\{[^{}]*?"version"\s*:\s*")(?<value>[^"]*)(")/u;
+const VERSION_ENTRY_PATTERN = /("openapiSpec"\s*:\s*\{[^{}]*?"version"\s*:\s*")[^"]*(")/u;
 
 /** Generous for 1 MB on a slow link, but bounded, so a stalled connection still reports. */
 const TIMEOUT_MS = 60_000;
@@ -149,7 +149,7 @@ function describe(error: unknown): string {
     return String(error);
 }
 
-/** Download the published specification, retrying transient failures. */
+/** GETs the specification bytes, retrying transient failures. Does not write anything. */
 async function download(): Promise<Buffer> {
     let lastError = '';
 
@@ -164,11 +164,17 @@ async function download(): Promise<Buffer> {
             }
 
             lastError = `HTTP ${response.status} ${response.statusText}`;
+
+            // A rejection the client owns is not going to answer differently in five seconds. 408 and 429 are the
+            // two that will, so they stay in the retry loop.
+            if (response.status >= 400 && response.status < 500 && ![408, 429].includes(response.status)) {
+                fail(`failed to download ${SPEC_URL}: ${lastError}`);
+            }
         } catch (error) {
             lastError = describe(error);
         }
 
-        console.log(`Attempt ${attempt}/${DOWNLOAD_ATTEMPTS} to download ${SPEC_URL} failed (${lastError}).`);
+        console.error(`Attempt ${attempt}/${DOWNLOAD_ATTEMPTS} to download ${SPEC_URL} failed (${lastError}).`);
 
         if (attempt < DOWNLOAD_ATTEMPTS) {
             await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
@@ -178,7 +184,7 @@ async function download(): Promise<Buffer> {
     fail(`failed to download ${SPEC_URL} after ${DOWNLOAD_ATTEMPTS} attempts: ${lastError}`);
 }
 
-/** Read the recorded stamp, failing loudly if the entry the writer targets is gone. */
+/** Reads the recorded stamp, failing loudly if the entry the writer targets is gone. */
 async function readRecordedVersion(): Promise<string> {
     const manifest: unknown = JSON.parse(await readFile(MANIFEST_PATH, 'utf8'));
     const apify = isNonEmptyObject(manifest) ? manifest.apify : undefined;
@@ -192,7 +198,7 @@ async function readRecordedVersion(): Promise<string> {
     return version;
 }
 
-/** Download the published specification for codegen to read. */
+/** Writes the downloaded specification to `tmp/openapi.json` for the generator to read. */
 async function fetchSpec(): Promise<void> {
     const bytes = await download();
     const spec = summarize(bytes);
@@ -205,7 +211,7 @@ async function fetchSpec(): Promise<void> {
     console.log(`Specification describes ${spec.pathCount} paths and ${spec.schemaCount} schemas.`);
 }
 
-/** Record the fetched specification's version in `package.json`. */
+/** Stamps the fetched specification's version into `package.json`, leaving the rest of the file untouched. */
 async function recordVersion(): Promise<void> {
     const bytes = await readFile(SPEC_PATH).catch((error: unknown) => {
         if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
@@ -224,7 +230,7 @@ async function recordVersion(): Promise<void> {
     }
 
     const manifest = await readFile(MANIFEST_PATH, 'utf8');
-    const patched = manifest.replace(VERSION_ENTRY_PATTERN, `$1${version}$3`);
+    const patched = manifest.replace(VERSION_ENTRY_PATTERN, `$1${version}$2`);
 
     if (patched === manifest) {
         fail(`package.json has no \`${VERSION_ENTRY}\` entry - cannot record the version`);
@@ -234,7 +240,7 @@ async function recordVersion(): Promise<void> {
     console.log(`Recorded specification version in package.json: ${previous} -> ${version}.`);
 }
 
-/** Print the recorded specification version, for the regeneration workflow to read. */
+/** Prints the recorded stamp on stdout, for the regeneration workflow to capture. */
 async function printRecordedVersion(): Promise<void> {
     console.log(await readRecordedVersion());
 }

@@ -34,21 +34,25 @@ import type {
     ActorRunMetaRePointed,
     ActorRunOptionsSpecGaps,
     ActorRunRePointed,
-    ActorRunSpecNarrowings,
+    ActorRunClientNarrowings,
     ActorSourceType,
     ActorSpecGaps,
     ActorStoreListRePointed,
     ActorVersionRePointed,
     ActorVersionSourceLocation,
-    ActorVersionSpecNarrowings,
+    ActorVersionClientNarrowings,
     BuildCollectionClientListItemRePointed,
     BuildMetaRePointed,
     BuildRePointed,
+    DailyServiceUsageClientConversions,
+    DailyServiceUsageRePointed,
+    DatasetRePointed,
     DatasetSpecGaps,
     DatasetSpecNarrowings,
     DatasetStatisticsRePointed,
     DatasetStatsSpecGaps,
     KeyValueClientListKeysResultRePointed,
+    KeyValueStoreRePointed,
     KeyValueStoreSpecGaps,
     KeyValueStoreSpecNarrowings,
     MonthlyUsageRePointed,
@@ -57,23 +61,24 @@ import type {
     RequestQueueClientListAndLockHeadResultRePointed,
     RequestQueueClientListHeadResultRePointed,
     RequestQueueClientListRequestsResultRePointed,
+    RequestQueueRePointed,
     RequestQueueSpecGaps,
     RequestQueueSpecNarrowings,
     ScheduleActionRunActorRePointed,
     ScheduleActionRunActorTaskRePointed,
     ScheduleActions,
     ScheduleRePointed,
-    ScheduleSpecNarrowings,
+    ScheduleClientNarrowings,
     TaskListRePointed,
     TaskRePointed,
     TaskSpecGaps,
     TaskSpecNarrowings,
     UserPlanRePointed,
     UserRePointed,
+    UsageItemRePointed,
     UserSpecNarrowings,
     Webhook,
     WebhookConditionKey,
-    WebhookDispatch,
     WebhookDispatchRePointed,
     WebhookDispatchStatus,
     WebhookDispatchWebhookSummary,
@@ -109,14 +114,12 @@ type OverridesStillExist<Override, Generated> = Equals<keyof Override & keyof Ge
  * published one. When this fails, either drop the override and take the spec's type, or record why the
  * API really is narrower than the spec now claims.
  *
- * Optional keys are compared through a required lens, because whether a key may be absent is checked by
- * `OverridesStillExist` and reading `Pick` of an optional key would otherwise add `undefined` to both
- * sides and hide a real difference.
+ * `Pick` deliberately keeps each key's optionality: a field the spec demotes to optional stops being
+ * assignable to an override that still declares it required, so this is also where required-to-optional
+ * drift is caught. `OverridesStillExist` cannot see it -- `keyof` does not distinguish `x` from `x?`.
  */
 type OverridesStayWider<Override, Generated> =
-    Required<Pick<Generated, keyof Override & keyof Generated>> extends Required<
-        Pick<Override, keyof Override & keyof Generated>
-    >
+    Pick<Generated, keyof Override & keyof Generated> extends Pick<Override, keyof Override & keyof Generated>
         ? true
         : false;
 
@@ -171,10 +174,7 @@ export type EnumGuards = AssertAll<
  * inconsistency.
  */
 export type WebhookDispatchGuards = AssertAll<
-    [
-        Equals<WebhookDispatch['eventType'], WebhookEventType>,
-        Equals<Pick<WebhookDispatchWebhookSummary, 'requestUrl'>, Pick<Webhook, 'requestUrl'>>,
-    ]
+    [Equals<Pick<WebhookDispatchWebhookSummary, 'requestUrl'>, Pick<Webhook, 'requestUrl'>>]
 >;
 
 /**
@@ -184,13 +184,15 @@ export type WebhookDispatchGuards = AssertAll<
  */
 export type AdapterKeyGuards = AssertAll<
     [
+        OverridesStillExist<DatasetRePointed, Schemas['Dataset']>,
         OverridesStillExist<DatasetSpecNarrowings, Schemas['Dataset']>,
         OverridesStillExist<DatasetStatisticsRePointed, Schemas['DatasetStatistics']>,
         OverridesStillExist<WebhookDispatchRePointed, Schemas['WebhookDispatch']>,
+        OverridesStillExist<KeyValueStoreRePointed, Schemas['KeyValueStore']>,
         OverridesStillExist<KeyValueStoreSpecNarrowings, Schemas['KeyValueStore']>,
         OverridesStillExist<KeyValueClientListKeysResultRePointed, Schemas['ListOfKeys']>,
         OverridesStillExist<ActorVersionRePointed, Schemas['Version']>,
-        OverridesStillExist<ActorVersionSpecNarrowings, Schemas['Version']>,
+        OverridesStillExist<ActorVersionClientNarrowings, Schemas['Version']>,
         // `BaseActorVersion` drops these four by name so each union variant can reinstate the one its
         // source type implies. Unlike the override blocks, a bare key union in `Omit` is not checked by
         // the compiler at all, so losing one upstream would silently leave the variants inventing it.
@@ -208,7 +210,7 @@ export type AdapterKeyGuards = AssertAll<
         OverridesStillExist<BuildMetaRePointed, Schemas['BuildsMeta']>,
         OverridesStillExist<BuildCollectionClientListItemRePointed, Schemas['BuildShort']>,
         OverridesStillExist<ActorRunRePointed, Schemas['Run']>,
-        OverridesStillExist<ActorRunSpecNarrowings, Schemas['Run']>,
+        OverridesStillExist<ActorRunClientNarrowings, Schemas['Run']>,
         OverridesStillExist<ActorRunListItemRePointed, Schemas['RunShort']>,
         OverridesStillExist<ActorRunMetaRePointed, Schemas['RunMeta']>,
         OverridesStillExist<TaskRePointed, Schemas['Task']>,
@@ -218,14 +220,18 @@ export type AdapterKeyGuards = AssertAll<
         OverridesStillExist<WebhookRePointed, Schemas['Webhook']>,
         OverridesStillExist<WebhookLastDispatchRePointed, Schemas['ExampleWebhookDispatch']>,
         OverridesStillExist<ScheduleRePointed, Schemas['Schedule']>,
-        OverridesStillExist<ScheduleSpecNarrowings, Schemas['Schedule']>,
+        OverridesStillExist<ScheduleClientNarrowings, Schemas['Schedule']>,
         OverridesStillExist<ScheduleActionRunActorRePointed, Schemas['ScheduleActionRunActor']>,
         OverridesStillExist<ScheduleActionRunActorTaskRePointed, Schemas['ScheduleActionRunActorTask']>,
         OverridesStillExist<UserRePointed, Schemas['UserPrivateInfo']>,
         OverridesStillExist<UserSpecNarrowings, Schemas['UserPrivateInfo']>,
         OverridesStillExist<UserPlanRePointed, Schemas['Plan']>,
         OverridesStillExist<MonthlyUsageRePointed, Schemas['MonthlyUsage']>,
+        OverridesStillExist<UsageItemRePointed, Schemas['UsageItem']>,
+        OverridesStillExist<DailyServiceUsageRePointed, Schemas['DailyServiceUsages']>,
+        OverridesStillExist<DailyServiceUsageClientConversions, Schemas['DailyServiceUsages']>,
         OverridesStillExist<AccountAndUsageLimitsRePointed, Schemas['AccountLimits']>,
+        OverridesStillExist<RequestQueueRePointed, Schemas['RequestQueue']>,
         OverridesStillExist<RequestQueueSpecNarrowings, Schemas['RequestQueue']>,
         OverridesStillExist<RequestQueueClientListHeadResultRePointed, Schemas['RequestQueueHead']>,
         OverridesStillExist<RequestQueueClientListAndLockHeadResultRePointed, Schemas['LockedRequestQueueHead']>,
@@ -251,26 +257,31 @@ export type AdapterKeyGuards = AssertAll<
  * The same overrides, checked for width rather than just for existence. Split from `AdapterKeyGuards` so a
  * failure says which of the two rules broke.
  *
- * Two groups are deliberately excluded, because width is not the right question for either:
+ * Every exclusion is noted next to the entry it relates to. Two of them are here rather than inline,
+ * because width is not the right question for either:
  *
- *   - `calls`, `webhook` and `eventData` re-point at adapted types that are intentionally not the
- *     generated ones.
- *   - `status` publishes a runtime enum, and a string-literal union is never assignable to a string enum
- *     even when the members are identical. Its members are pinned by `EnumGuards` instead, against both
- *     `@apify/consts` and the spec.
+ *   - `WebhookDispatch`'s `calls`, `webhook` and `eventData` re-point at adapted types that are
+ *     intentionally not the generated ones, so only `eventType` is checked.
+ *   - `WebhookDispatch.status` and `WebhookLastDispatch.status` publish this package's runtime enum, and a
+ *     string-literal union is never assignable to a string enum even when the members are identical.
+ *     Their members are pinned by `EnumGuards` instead, against both `@apify/consts` and the spec. The
+ *     four `status` overrides typed from `ACTOR_JOB_STATUSES` are plain unions, so they are checked here.
  */
 export type AdapterWidthGuards = AssertAll<
     [
+        OverridesStayWider<DatasetRePointed, Schemas['Dataset']>,
         OverridesStayWider<DatasetSpecNarrowings, Schemas['Dataset']>,
         OverridesStayWider<DatasetStatisticsRePointed, Schemas['DatasetStatistics']>,
         OverridesStayWider<Pick<WebhookDispatchRePointed, 'eventType'>, Schemas['WebhookDispatch']>,
+        OverridesStayWider<KeyValueStoreRePointed, Schemas['KeyValueStore']>,
         OverridesStayWider<KeyValueStoreSpecNarrowings, Schemas['KeyValueStore']>,
         OverridesStayWider<KeyValueClientListKeysResultRePointed, Schemas['ListOfKeys']>,
-        // `sourceType` is excluded on purpose: dropping the spec's `null` is the one narrowing the
-        // version union rests on, and it is argued for at the declaration.
+        // `ActorVersionClientNarrowings` has no entry here on purpose: dropping the spec's
+        // `sourceType: null` is the one narrowing the version union rests on, and it is argued for at
+        // the declaration.
         OverridesStayWider<ActorVersionRePointed, Schemas['Version']>,
-        // `versions` is excluded for the same reason: it re-points at the discriminated
-        // `ActorVersion` union, which is narrower than the spec's flat `Version` by design.
+        // `versions` is excluded: it re-points at the discriminated `ActorVersion` union, which is
+        // narrower than the spec's flat `Version` by design.
         OverridesStayWider<Omit<ActorRePointed, 'versions'>, Schemas['Actor']>,
         OverridesStayWider<ActorDefaultRunOptionsRePointed, Schemas['DefaultRunOptions']>,
         OverridesStayWider<ActorDefinitionSpecNarrowings, Schemas['ActorDefinition']>,
@@ -283,9 +294,14 @@ export type AdapterWidthGuards = AssertAll<
         OverridesStayWider<BuildRePointed, Schemas['Build']>,
         OverridesStayWider<BuildMetaRePointed, Schemas['BuildsMeta']>,
         OverridesStayWider<BuildCollectionClientListItemRePointed, Schemas['BuildShort']>,
+        // `ActorRunClientNarrowings` has no entry here: narrowing the spec's storage-wide `GeneralAccess`
+        // to the three-member run-specific union is the point of that block, and it is argued for at the
+        // declaration. `EnumGuards` checks instead that the three are still a subset of the spec's four.
         OverridesStayWider<ActorRunRePointed, Schemas['Run']>,
         OverridesStayWider<ActorRunListItemRePointed, Schemas['RunShort']>,
         OverridesStayWider<ActorRunMetaRePointed, Schemas['RunMeta']>,
+        // `TaskSpecNarrowings` has no entry here: keeping the array form of `input` that the spec
+        // dropped is the point of that block, and it is argued for at the declaration.
         OverridesStayWider<TaskRePointed, Schemas['Task']>,
         OverridesStayWider<TaskListRePointed, Schemas['TaskShort']>,
         OverridesStayWider<ActorStoreListRePointed, Schemas['StoreListActor']>,
@@ -303,16 +319,42 @@ export type AdapterWidthGuards = AssertAll<
         OverridesStayWider<UserRePointed, Schemas['UserPrivateInfo']>,
         OverridesStayWider<UserSpecNarrowings, Schemas['UserPrivateInfo']>,
         OverridesStayWider<UserPlanRePointed, Schemas['Plan']>,
-        OverridesStayWider<MonthlyUsageRePointed, Schemas['MonthlyUsage']>,
+        // `dailyServiceUsages` is excluded: its element type carries the `date` conversion below, and a
+        // `string` is never assignable to the `Date` the caller is handed.
+        OverridesStayWider<Omit<MonthlyUsageRePointed, 'dailyServiceUsages'>, Schemas['MonthlyUsage']>,
+        OverridesStayWider<UsageItemRePointed, Schemas['UsageItem']>,
+        OverridesStayWider<DailyServiceUsageRePointed, Schemas['DailyServiceUsages']>,
         OverridesStayWider<AccountAndUsageLimitsRePointed, Schemas['AccountLimits']>,
+        OverridesStayWider<RequestQueueRePointed, Schemas['RequestQueue']>,
         OverridesStayWider<RequestQueueSpecNarrowings, Schemas['RequestQueue']>,
         OverridesStayWider<RequestQueueClientListHeadResultRePointed, Schemas['RequestQueueHead']>,
         OverridesStayWider<RequestQueueClientListAndLockHeadResultRePointed, Schemas['LockedRequestQueueHead']>,
         OverridesStayWider<RequestQueueClientListRequestsResultRePointed, Schemas['ListOfRequests']>,
-        // `Task.input` is excluded: keeping the array form the spec dropped is the point of that
-        // override, and it is argued for at the declaration.
-        // `ActorRun.generalAccess` is excluded: narrowing the spec's storage-wide `GeneralAccess` to the
-        // three-member run-specific union is the point of that override, and it is argued for at the
-        // declaration. `EnumGuards` checks instead that the three are still a subset of the spec's four.
     ]
 >;
+
+/**
+ * Published maps that are written out by hand rather than derived from the spec.
+ *
+ * Each is an index signature whose value type had to be re-pointed at the published entry, which
+ * `interface ... extends` cannot express, so the shape is spelled out instead. These assertions are what
+ * keeps it tied to the spec: they fail once a map stops being a plain string-keyed map of its entry
+ * schema. The two service-usage schemas are also pinned to each other, because one published
+ * `ServiceUsage` stands for both.
+ */
+export type MapShapeGuards = AssertAll<
+    [
+        Equals<Schemas['TieredPricingPerDatasetItem'], Record<string, Schemas['TieredPricingPerDatasetItemEntry']>>,
+        Equals<Schemas['TieredPricingPerEvent'], Record<string, Schemas['TieredPricingPerEventEntry']>>,
+        Equals<Schemas['ServiceUsage'], Record<string, Schemas['UsageItem']>>,
+        Equals<Schemas['MonthlyServiceUsage'], Record<string, Schemas['UsageItem']>>,
+    ]
+>;
+
+/**
+ * `DailyServiceUsage.date` is published as a `Date`, because `UserClient.monthlyUsage()` passes a matcher
+ * that converts it. The spec types the wire value as a plain string; once it marks the field as a
+ * date-time, the generator emits a `Date` of its own and the `*ClientConversions` block can be deleted.
+ * This assertion is what reports that.
+ */
+export type ClientConversionGuards = AssertAll<[Equals<Schemas['DailyServiceUsages']['date'], string>]>;

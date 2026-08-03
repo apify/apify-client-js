@@ -44,7 +44,9 @@ export type {
     PricePerDatasetItemActorPricingInfo,
     PricePerEventActorPricingInfo,
     TieredPricingPerDatasetItem,
+    TieredPricingPerDatasetItemEntry,
     TieredPricingPerEvent,
+    TieredPricingPerEventEntry,
 } from '../models';
 
 /**

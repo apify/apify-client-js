@@ -68,16 +68,19 @@ jobs:
             # Read before regeneration overwrites it, so the pull request can say whether the specification moved.
             - name: Read the recorded specification version
               id: previous-spec
-              run: echo "version=$(node scripts/openapi_spec.mts recorded-version)" >> "$GITHUB_OUTPUT"
+              run: |
+                  # Assigned first: inside `echo "...$(...)"` a failing read would be swallowed and the step
+                  # would report an empty version.
+                  version=$(node scripts/openapi_spec.mts recorded-version)
+                  echo "version=$version" >> "$GITHUB_OUTPUT"
 
             # Downloads the specification, generates from it, and records its version in `package.json`.
             - name: Regenerate types
               run: pnpm generate:types
 
-            # Gate on the generated types, not on the specification version: that stamp moves on redeploys
-            # regardless of client impact, and does not reliably move when the content does (see the pull request
-            # body step below). Compared against HEAD rather than the index, so nothing staged earlier in the job
-            # can hide a change.
+            # Gate on the generated types, not on the specification version: that stamp is a coarse marker
+            # rather than a content identity, for the reasons `scripts/openapi_spec.mts` sets out. Compared
+            # against HEAD rather than the index, so nothing staged earlier in the job can hide a change.
             - name: Check for type changes
               id: changes
               run: |
@@ -146,7 +149,7 @@ jobs:
 
                   if [[ -n "$PR_NUMBER" ]]; then
                       gh pr close "$PR_NUMBER" --delete-branch \
-                          --comment "Superseded by a newer regeneration run: ${RUN_URL}."
+                          --comment "Superseded by a newer regeneration run: ${RUN_URL}. The branch is rebuilt from master rather than appended to, so a commit pushed here by hand is not carried over - it stays reachable from this pull request and has to be re-applied on the new one."
                       echo "Closed superseded PR #${PR_NUMBER}."
                   elif git ls-remote --exit-code --heads origin "$BRANCH_NAME" >/dev/null 2>&1; then
                       git push origin --delete "$BRANCH_NAME"
@@ -177,10 +180,8 @@ jobs:
               run: |
                   SPEC_VERSION=$(node scripts/openapi_spec.mts recorded-version)
 
-                  # A moved stamp proves the specification changed; an unchanged one proves nothing, because
-                  # apify-docs bumps `components/version.yaml` in a follow-up `[skip ci]` commit and a deploy can
-                  # publish new content under the old stamp. Say which case this is instead of letting the reviewer
-                  # read it as a content identity.
+                  # A moved stamp proves the specification changed; an unchanged one proves nothing. Say which
+                  # case this is instead of letting the reviewer read it as a content identity.
                   if [[ "$SPEC_VERSION" == "$PREVIOUS_SPEC_VERSION" ]]; then
                       SPEC_LINE="- Specification version: \`${SPEC_VERSION}\` - **unchanged**, which doesn't rule out a specification change: the published stamp can lag its content by a deploy. Only the diff tells."
                   else
@@ -214,8 +215,6 @@ jobs:
         needs: regenerate-types
         if: failure() && github.event_name == 'schedule'
         runs-on: ubuntu-latest
-        permissions:
-            contents: read
 
         steps:
             - name: Build Slack payload

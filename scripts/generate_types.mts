@@ -18,6 +18,8 @@
  */
 
 import { writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import openapiTS, { astToString, COMMENT_HEADER } from 'openapi-typescript';
 
@@ -30,7 +32,7 @@ const DEFAULT_SPEC_PATH = new URL('../tmp/openapi.json', import.meta.url);
 const OUTPUT_PATH = new URL('../src/generated/api.ts', import.meta.url);
 
 const [inputPath] = process.argv.slice(2);
-const specPath = inputPath === undefined ? DEFAULT_SPEC_PATH : new URL(inputPath, `file://${process.cwd()}/`);
+const specPath = inputPath === undefined ? DEFAULT_SPEC_PATH : pathToFileURL(resolve(inputPath));
 
 const ast = await openapiTS(specPath, {
     transform: transformDateTime,
@@ -41,9 +43,9 @@ const ast = await openapiTS(specPath, {
     // through untouched -- the flag would add no forward compatibility and would silently make every property
     // typo type-check.
     emptyObjectsUnknown: true,
-    rootTypes: true,
-    rootTypesNoSchemaPrefix: true,
-    rootTypesKeepCasing: true,
+    // `rootTypes` is deliberately left off too: its `export type Dataset = components['schemas']['Dataset']`
+    // aliases would collide by name with the published models, so both consumers of this file go through
+    // `components` and the aliases would be 300-odd exported lines nothing imports.
     silent: true,
 });
 

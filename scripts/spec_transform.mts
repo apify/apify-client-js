@@ -22,7 +22,7 @@ export function transformDateTime(
     options: Pick<TransformNodeOptions, 'path'>,
 ): ts.TypeNode | undefined {
     if (schemaObject.format !== 'date-time') return undefined;
-    if (!options.path?.startsWith('#/components/schemas')) return undefined;
+    if (!options.path?.startsWith('#/components/schemas/')) return undefined;
 
     // A fresh node per call. The TypeScript factory does not support placing one node instance at several
     // positions of the same tree, and this transform is invoked once per date-time schema.

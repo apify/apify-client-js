@@ -3,18 +3,22 @@
  *
  * The generated file is never re-exported directly. Every type here is declared on top of a generated
  * schema so the compiler reports drift, and the spec is adopted as-is wherever it is trustworthy. What
- * remains is deliberately small, and each deviation falls into exactly one of four kinds:
+ * remains is deliberately small, and each deviation falls into exactly one of five kinds, one block per
+ * kind per schema:
  *
  *   - `*SpecGaps` -- fields the API returns that the spec does not describe at all. Tracked upstream;
  *     each entry disappears from here as the spec catches up, and `./spec_guards` fails the build once
  *     one is filled.
  *   - `*SpecNarrowings` -- the spec is narrower than what the API actually returns, so the wider type is
- *     kept. Narrowing makes the compiler promise something that may be false, so it needs evidence;
- *     widening does not, and is adopted freely.
- *   - Re-pointing -- a generated schema references another generated schema, and the published model has
- *     to reference the adapted version instead so the adapted fields stay reachable.
- *   - Ecosystem decisions -- `@apify/consts` stays the source of truth for the enums it declares, and a
- *     published runtime enum cannot be swapped for a bare string union.
+ *     kept. Widening needs no evidence and is adopted freely.
+ *   - `*ClientNarrowings` -- the published type is narrower than the spec on purpose. This makes the
+ *     compiler promise something the spec does not, so every entry carries its evidence.
+ *   - `*ClientConversions` -- the client rewrites the value before the caller sees it, so the published
+ *     type is the converted one rather than the wire type the spec describes.
+ *   - `*RePointed` -- the field's type is replaced by a name this package owns: an adapted model, a
+ *     `@apify/consts` union, or a published runtime enum. Left alone, the reference would render the
+ *     generated schema as an indexed access into `./generated/api`, adapted fields on it would be
+ *     unreachable, and a string union would replace an enum callers compare against.
  *
  * Backward-compatibility shims are deliberately absent. This lands in the next major, so the spec's
  * nullability and optionality are adopted rather than papered over.
@@ -73,9 +77,11 @@ export interface DatasetSpecGaps {
     username?: string;
 }
 
-export interface DatasetSpecNarrowings {
-    // Re-pointed at the adapted `DatasetStats` so its spec-gap fields stay reachable.
+export interface DatasetRePointed {
     stats?: DatasetStats;
+}
+
+export interface DatasetSpecNarrowings {
     // Spec omits the `null` the API can return for a storage that follows the owner's user setting.
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
     // Spec lists `consoleUrl` as required, but the same `Dataset` schema backs both `GET /v2/datasets` and
@@ -94,7 +100,11 @@ export interface DatasetSpecNarrowings {
  * Datasets are useful for storing results from web scraping, crawling, or data processing tasks.
  */
 export interface Dataset
-    extends Omit<Schemas['Dataset'], keyof DatasetSpecNarrowings>, DatasetSpecNarrowings, DatasetSpecGaps {}
+    extends
+        Omit<Schemas['Dataset'], keyof DatasetRePointed | keyof DatasetSpecNarrowings>,
+        DatasetRePointed,
+        DatasetSpecNarrowings,
+        DatasetSpecGaps {}
 
 /**
  * Fields the API returns in dataset stats that the OpenAPI spec does not describe yet.
@@ -118,8 +128,7 @@ type GeneratedWebhookDispatchEventData = NonNullable<Schemas['WebhookDispatch'][
 export interface DatasetStats extends GeneratedDatasetStats, DatasetStatsSpecGaps {}
 
 export interface DatasetStatisticsRePointed {
-    // Re-pointed so the published name stays `FieldStatistics` rather than the spec's
-    // `DatasetFieldStatistics`. Structurally identical either way.
+    // The published name stays `FieldStatistics` rather than the spec's `DatasetFieldStatistics`.
     /**
      * Statistics such as `min`, `max`, `nullCount` and `emptyCount` for each field of the dataset's
      * [fields schema](https://docs.apify.com/platform/actors/development/actor-definition/dataset-schema/validation).
@@ -142,13 +151,10 @@ export interface FieldStatistics extends GeneratedDatasetFieldStatistics {}
 export interface WebhookDispatchWebhookSummary extends GeneratedWebhookDispatchWebhookSummary {}
 
 export interface WebhookDispatchRePointed {
-    // Re-pointed at the adapted equivalents of the shapes the spec inlines.
     calls?: WebhookDispatchCall[];
     webhook?: WebhookDispatchWebhookSummary | null;
     eventData?: WebhookDispatchEventData | null;
-    // Sourced from `@apify/consts`, which the rest of the Apify JS ecosystem shares.
     eventType: WebhookEventType;
-    // The client publishes a runtime enum, so the generated string union cannot be adopted as-is.
     status: WebhookDispatchStatus;
 }
 
@@ -173,10 +179,11 @@ export interface KeyValueStoreSpecGaps {
     title?: string;
 }
 
-export interface KeyValueStoreSpecNarrowings {
-    // Re-pointed so the published property links to `KeyValueStoreStats` rather than resolving to the
-    // generated schema behind it, which the reference would otherwise render as an indexed access.
+export interface KeyValueStoreRePointed {
     stats?: KeyValueStoreStats;
+}
+
+export interface KeyValueStoreSpecNarrowings {
     // Spec omits the `null` the API can return for a storage that follows the owner's user setting.
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
@@ -189,7 +196,8 @@ export interface KeyValueStoreSpecNarrowings {
  */
 export interface KeyValueStore
     extends
-        Omit<Schemas['KeyValueStore'], keyof KeyValueStoreSpecNarrowings>,
+        Omit<Schemas['KeyValueStore'], keyof KeyValueStoreRePointed | keyof KeyValueStoreSpecNarrowings>,
+        KeyValueStoreRePointed,
         KeyValueStoreSpecNarrowings,
         KeyValueStoreSpecGaps {}
 
@@ -200,8 +208,7 @@ export interface KeyValueStoreStats extends GeneratedKeyValueStoreStats {}
 export interface KeyValueListItem extends GeneratedKeyValueStoreKey {}
 
 export interface KeyValueClientListKeysResultRePointed {
-    // Re-pointed so the published property links to `KeyValueListItem`, the name this client has always
-    // used for the element type the spec calls `KeyValueStoreKey`.
+    // `KeyValueListItem` is the name this client has always used for the spec's `KeyValueStoreKey`.
     items: KeyValueListItem[];
 }
 
@@ -257,11 +264,10 @@ export interface ActorVersionSourceFolder extends GeneratedSourceCodeFolder {}
 export type ActorVersionSourceLocation = 'sourceFiles' | 'gitRepoUrl' | 'tarballUrl' | 'gitHubGistUrl';
 
 export interface ActorVersionRePointed {
-    // Re-pointed at the adapted element type.
     envVars?: ActorEnvironmentVariable[] | null;
 }
 
-export interface ActorVersionSpecNarrowings {
+export interface ActorVersionClientNarrowings {
     // The spec permits `sourceType: null`. It is deliberately not adopted: the published type is a
     // union discriminated on exactly this field, and a version with no source type carries no usable
     // source location either, so accepting the `null` would only make every variant unreachable.
@@ -279,7 +285,7 @@ export interface BaseActorVersion<SourceType extends ActorSourceType>
     extends
         Omit<
             GeneratedVersion,
-            keyof ActorVersionSpecNarrowings | keyof ActorVersionRePointed | ActorVersionSourceLocation
+            keyof ActorVersionClientNarrowings | keyof ActorVersionRePointed | ActorVersionSourceLocation
         >,
         ActorVersionRePointed {
     sourceType: SourceType;
@@ -341,6 +347,8 @@ type GeneratedActorChargeEvent = Schemas['ActorChargeEvent'];
 type GeneratedActorShort = Schemas['ActorShort'];
 type GeneratedFreeActorPricingInfo = Schemas['FreeActorPricingInfo'];
 type GeneratedFlatPricePerMonthActorPricingInfo = Schemas['FlatPricePerMonthActorPricingInfo'];
+type GeneratedTieredPricingPerDatasetItemEntry = Schemas['TieredPricingPerDatasetItemEntry'];
+type GeneratedTieredPricingPerEventEntry = Schemas['TieredPricingPerEventEntry'];
 
 /** Statistics about Actor usage and activity. */
 export interface ActorStats extends GeneratedActorStats {}
@@ -358,7 +366,6 @@ export interface ActorTaggedBuild extends GeneratedTaggedBuildInfo {}
 export type ActorTaggedBuilds = Record<string, ActorTaggedBuild | null>;
 
 export interface ActorDefaultRunOptionsRePointed {
-    // Sourced from `@apify/consts`, which the rest of the Apify JS ecosystem shares.
     forcePermissionLevel?: ACTOR_PERMISSION_LEVEL | null;
 }
 
@@ -404,9 +411,6 @@ export interface ActorDefinition
         ActorDefinitionSpecGaps {}
 
 export interface ActorChargeEventRePointed {
-    // Re-pointed so the published property links to `TieredPricingPerEvent` by name, exactly as
-    // `tieredPricing` is on the price-per-dataset-item variant. Without this the field resolves to the
-    // generated schema and the reference renders it as an indexed access into `./generated/api`.
     eventTieredPricingUsd?: TieredPricingPerEvent;
 }
 
@@ -424,7 +428,6 @@ export interface FreeActorPricingInfo extends GeneratedFreeActorPricingInfo {}
 export interface FlatPricePerMonthActorPricingInfo extends GeneratedFlatPricePerMonthActorPricingInfo {}
 
 export interface PricePerDatasetItemActorPricingInfoRePointed {
-    // Re-pointed so the published property links to `TieredPricingPerDatasetItem` by name.
     tieredPricing?: TieredPricingPerDatasetItem;
 }
 
@@ -439,7 +442,6 @@ export interface PricePerDatasetItemActorPricingInfo
         PricePerDatasetItemActorPricingInfoRePointed {}
 
 export interface PricePerEventActorPricingInfoRePointed {
-    // Re-pointed so the nested map uses the published `ActorChargeEvents` name.
     pricingPerEvent: {
         actorChargeEvents?: ActorChargeEvents;
     };
@@ -463,11 +465,26 @@ export type ActorRunPricingInfo =
     | FlatPricePerMonthActorPricingInfo
     | FreeActorPricingInfo;
 
-/** Tiered price-per-dataset-item pricing, keyed by subscription tier. */
-export type TieredPricingPerDatasetItem = Schemas['TieredPricingPerDatasetItem'];
+/** One subscription tier's price per dataset item. */
+export interface TieredPricingPerDatasetItemEntry extends GeneratedTieredPricingPerDatasetItemEntry {}
 
-/** Tiered pay-per-event pricing, keyed by subscription tier. */
-export type TieredPricingPerEvent = Schemas['TieredPricingPerEvent'];
+/** One subscription tier's price for a single charge event. */
+export interface TieredPricingPerEventEntry extends GeneratedTieredPricingPerEventEntry {}
+
+/**
+ * Tiered price-per-dataset-item pricing, keyed by subscription tier such as `FREE` or `GOLD`.
+ *
+ * The spec models both tiered maps as index signatures over an entry schema, and the entry is what a
+ * caller reads, so it is published in its own right and the map points at it.
+ */
+export interface TieredPricingPerDatasetItem {
+    [tier: string]: TieredPricingPerDatasetItemEntry;
+}
+
+/** Tiered pay-per-event pricing, keyed by subscription tier such as `FREE` or `GOLD`. */
+export interface TieredPricingPerEvent {
+    [tier: string]: TieredPricingPerEventEntry;
+}
 
 /**
  * Fields the API returns on an Actor that the OpenAPI spec does not describe yet.
@@ -480,7 +497,6 @@ export interface ActorSpecGaps {
 }
 
 export interface ActorRePointed {
-    // Re-pointed at the adapted equivalents so their spec gaps and narrowings stay reachable.
     stats: ActorStats;
     versions: ActorVersion[];
     pricingInfos?: ActorRunPricingInfo[];
@@ -488,7 +504,6 @@ export interface ActorRePointed {
     exampleRunInput?: ActorExampleRunInput | null;
     taggedBuilds?: ActorTaggedBuilds | null;
     actorStandby?: ActorStandby | null;
-    // Sourced from `@apify/consts`, which the rest of the Apify JS ecosystem shares.
     actorPermissionLevel?: ACTOR_PERMISSION_LEVEL;
 }
 
@@ -518,7 +533,6 @@ export interface BuildStats extends GeneratedBuildStats {}
 export interface BuildOptions extends GeneratedBuildOptions {}
 
 export interface BuildMetaRePointed {
-    // Sourced from `@apify/consts`, which the rest of the Apify JS ecosystem shares.
     origin: ValueOf<typeof META_ORIGINS>;
 }
 
@@ -530,14 +544,12 @@ export interface BuildMetaRePointed {
 export interface BuildMeta extends Omit<Schemas['BuildsMeta'], keyof BuildMetaRePointed>, BuildMetaRePointed {}
 
 export interface BuildRePointed {
-    // Re-pointed at the adapted equivalents so their overrides stay reachable.
     meta: BuildMeta;
     stats?: BuildStats | null;
     options?: BuildOptions | null;
     usage?: BuildUsage | null;
     usageUsd?: BuildUsage | null;
     actorDefinition?: ActorDefinition | null;
-    // Sourced from `@apify/consts`, which the rest of the Apify JS ecosystem shares.
     status: ValueOf<typeof ACTOR_JOB_STATUSES>;
 }
 
@@ -556,7 +568,6 @@ export interface BuildCollectionClientListItem
         BuildCollectionClientListItemRePointed {}
 
 export interface BuildCollectionClientListItemRePointed {
-    // Re-pointed at the adapted equivalents, exactly as on the full `Build`.
     meta?: BuildMeta;
     status: ValueOf<typeof ACTOR_JOB_STATUSES>;
 }
@@ -597,7 +608,6 @@ export interface ActorRunMetamorph extends GeneratedMetamorph {}
 export interface ActorRunStorageIds extends GeneratedRunStorageIds {}
 
 export interface ActorRunMetaRePointed {
-    // Sourced from `@apify/consts`, which the rest of the Apify JS ecosystem shares.
     origin: ValueOf<typeof META_ORIGINS>;
 }
 
@@ -621,9 +631,7 @@ export interface ActorRunOptionsSpecGaps {
 export interface ActorRunOptions extends GeneratedRunOptions, ActorRunOptionsSpecGaps {}
 
 export interface ActorRunListItemRePointed {
-    // Re-pointed at the adapted equivalents so their overrides stay reachable.
     meta: ActorRunMeta;
-    // Sourced from `@apify/consts`, which the rest of the Apify JS ecosystem shares.
     status: ValueOf<typeof ACTOR_JOB_STATUSES>;
 }
 
@@ -632,7 +640,6 @@ export interface ActorRunListItem
     extends Omit<Schemas['RunShort'], keyof ActorRunListItemRePointed>, ActorRunListItemRePointed {}
 
 export interface ActorRunRePointed {
-    // Re-pointed at the adapted equivalents so their overrides stay reachable.
     meta: ActorRunMeta;
     stats: ActorRunStats;
     options: ActorRunOptions;
@@ -640,11 +647,10 @@ export interface ActorRunRePointed {
     usageUsd?: ActorRunUsage | null;
     storageIds?: ActorRunStorageIds;
     metamorphs?: ActorRunMetamorph[] | null;
-    // Sourced from `@apify/consts`, which the rest of the Apify JS ecosystem shares.
     status: ValueOf<typeof ACTOR_JOB_STATUSES>;
 }
 
-export interface ActorRunSpecNarrowings {
+export interface ActorRunClientNarrowings {
     // The spec reuses the storage-wide `GeneralAccess` schema here, which also lists
     // `ANYONE_WITH_NAME_CAN_READ`. A run has no name to be addressed by, which is exactly why
     // `@apify/consts` declares a separate three-member `RUN_GENERAL_ACCESS`, and that stays the
@@ -661,9 +667,9 @@ export interface ActorRunSpecNarrowings {
  */
 export interface ActorRun
     extends
-        Omit<Schemas['Run'], keyof ActorRunRePointed | keyof ActorRunSpecNarrowings>,
+        Omit<Schemas['Run'], keyof ActorRunRePointed | keyof ActorRunClientNarrowings>,
         ActorRunRePointed,
-        ActorRunSpecNarrowings {}
+        ActorRunClientNarrowings {}
 
 type GeneratedTaskStats = Schemas['TaskStats'];
 type GeneratedTaskOptions = Schemas['TaskOptions'];
@@ -685,7 +691,6 @@ export interface TaskSpecGaps {
 }
 
 export interface TaskRePointed {
-    // Re-pointed at the adapted equivalents so their overrides stay reachable.
     stats?: TaskStats | null;
     options?: TaskOptions | null;
     actorStandby?: ActorStandby | null;
@@ -712,7 +717,6 @@ export interface Task
         TaskSpecGaps {}
 
 export interface TaskListRePointed {
-    // Re-pointed at the adapted `TaskStats` so its overrides stay reachable.
     stats?: TaskStats | null;
 }
 
@@ -721,7 +725,6 @@ export interface TaskList
     extends Omit<Schemas['TaskShort'], keyof TaskListRePointed>, TaskListRePointed, TaskSpecGaps {}
 
 export interface ActorStoreListRePointed {
-    // Re-pointed at the adapted equivalents so their overrides stay reachable.
     stats: ActorStats;
     currentPricingInfo?: PricingInfo;
 }
@@ -781,7 +784,6 @@ export type WebhookCondition =
     | WebhookCertainRunCondition;
 
 export interface WebhookLastDispatchRePointed {
-    // The client publishes a runtime enum, so the generated string union cannot be adopted as-is.
     status: WebhookDispatchStatus;
 }
 
@@ -806,11 +808,9 @@ export interface WebhookSpecGaps {
 }
 
 export interface WebhookRePointed {
-    // Re-pointed at the adapted equivalents so their overrides stay reachable.
     condition: WebhookCondition;
     stats?: WebhookStats | null;
     lastDispatch?: WebhookLastDispatch | null;
-    // Sourced from `@apify/consts`, which the rest of the Apify JS ecosystem shares.
     eventTypes: WebhookEventType[];
 }
 
@@ -847,9 +847,7 @@ export interface ScheduledActorRunInput extends GeneratedScheduleActionRunInput 
 export interface ScheduledActorRunOptions extends GeneratedTaskOptions {}
 
 export interface ScheduleActionRunActorRePointed {
-    // The client publishes a runtime enum, so the generated string literal cannot be adopted as-is.
     type: ScheduleActions.RunActor;
-    // Re-pointed at the adapted equivalents so their overrides stay reachable.
     runInput?: ScheduledActorRunInput | null;
     runOptions?: ScheduledActorRunOptions | null;
 }
@@ -861,7 +859,6 @@ export interface ScheduleActionRunActor
         ScheduleActionRunActorRePointed {}
 
 export interface ScheduleActionRunActorTaskRePointed {
-    // The client publishes a runtime enum, so the generated string literal cannot be adopted as-is.
     type: ScheduleActions.RunActorTask;
 }
 
@@ -875,11 +872,10 @@ export interface ScheduleActionRunActorTask
 export type ScheduleAction = ScheduleActionRunActor | ScheduleActionRunActorTask;
 
 export interface ScheduleRePointed {
-    // Re-pointed at the adapted union so each action's runtime-enum `type` stays reachable.
     actions: ScheduleAction[];
 }
 
-export interface ScheduleSpecNarrowings {
+export interface ScheduleClientNarrowings {
     // The spec types the timezone as a bare `string`. The published type is the curated IANA union from
     // `./timezones`, which is also what `ScheduleCreateOrUpdateData` accepts, so widening it would drop
     // the completion and typo-checking that is the whole reason the union exists.
@@ -893,9 +889,9 @@ export interface ScheduleSpecNarrowings {
  */
 export interface Schedule
     extends
-        Omit<Schemas['Schedule'], keyof ScheduleRePointed | keyof ScheduleSpecNarrowings>,
+        Omit<Schemas['Schedule'], keyof ScheduleRePointed | keyof ScheduleClientNarrowings>,
         ScheduleRePointed,
-        ScheduleSpecNarrowings {}
+        ScheduleClientNarrowings {}
 
 type GeneratedProfile = Schemas['Profile'];
 type GeneratedProxy = Schemas['Proxy'];
@@ -904,6 +900,9 @@ type GeneratedPlan = Schemas['Plan'];
 type GeneratedEffectivePlatformFeature = Schemas['EffectivePlatformFeature'];
 type GeneratedEffectivePlatformFeatures = Schemas['EffectivePlatformFeatures'];
 type GeneratedUsageCycle = Schemas['UsageCycle'];
+type GeneratedPriceTiers = Schemas['PriceTiers'];
+type GeneratedUsageItem = Schemas['UsageItem'];
+type GeneratedDailyServiceUsages = Schemas['DailyServiceUsages'];
 type GeneratedLimits = Schemas['Limits'];
 type GeneratedCurrent = Schemas['Current'];
 
@@ -944,7 +943,6 @@ export interface EffectivePlatformFeature extends GeneratedEffectivePlatformFeat
 export interface EffectivePlatformFeatures extends GeneratedEffectivePlatformFeatures {}
 
 export interface UserPlanRePointed {
-    // Re-pointed at the adapted equivalent so its overrides stay reachable.
     availableProxyGroups: Record<string, number>;
 }
 
@@ -952,7 +950,6 @@ export interface UserPlanRePointed {
 export interface UserPlan extends Omit<GeneratedPlan, keyof UserPlanRePointed>, UserPlanRePointed {}
 
 export interface UserRePointed {
-    // Re-pointed at the adapted equivalents so their overrides stay reachable.
     profile?: UserProfile;
     proxy?: UserProxy;
 }
@@ -984,9 +981,48 @@ export interface UsageCycle extends GeneratedUsageCycle {}
 /** The start and end of a monthly billing cycle. The spec reuses its `UsageCycle` schema here. */
 export interface MonthlyUsageCycle extends GeneratedUsageCycle {}
 
+/** One tier of a volume-discounted price. The spec names this schema `PriceTiers`. */
+export interface PriceTier extends GeneratedPriceTiers {}
+
+export interface UsageItemRePointed {
+    priceTiers?: PriceTier[];
+}
+
+/** What one service cost over a period, before and after volume discounts. */
+export interface UsageItem extends Omit<GeneratedUsageItem, keyof UsageItemRePointed>, UsageItemRePointed {}
+
+/**
+ * Usage of each service, keyed by service name such as `ACTOR_COMPUTE_UNITS`.
+ *
+ * The spec names the monthly map `MonthlyServiceUsage` and the per-day one `ServiceUsage`. The two are
+ * structurally identical, so the published type stays single.
+ */
+export interface ServiceUsage {
+    [service: string]: UsageItem;
+}
+
+export interface DailyServiceUsageRePointed {
+    serviceUsage: ServiceUsage;
+}
+
+export interface DailyServiceUsageClientConversions {
+    // `UserClient.monthlyUsage()` passes a matcher that converts this field as well as the `*At` ones,
+    // so the caller is handed a `Date`. The spec types the wire value as a plain string, and the field
+    // does not end in `At`, so nothing else would reveal the conversion.
+    date: Date;
+}
+
+/** A single day's usage within a monthly cycle. The spec names this schema `DailyServiceUsages`. */
+export interface DailyServiceUsage
+    extends
+        Omit<GeneratedDailyServiceUsages, keyof DailyServiceUsageRePointed | keyof DailyServiceUsageClientConversions>,
+        DailyServiceUsageRePointed,
+        DailyServiceUsageClientConversions {}
+
 export interface MonthlyUsageRePointed {
-    // Re-pointed at the adapted `UsageCycle` so the published name is used.
     usageCycle: UsageCycle;
+    monthlyServiceUsage: ServiceUsage;
+    dailyServiceUsages: DailyServiceUsage[];
 }
 
 /** A user's platform usage over the current monthly cycle, broken down by service. */
@@ -1000,8 +1036,7 @@ export interface Limits extends GeneratedLimits {}
 export interface Current extends GeneratedCurrent {}
 
 export interface AccountAndUsageLimitsRePointed {
-    // Re-pointed at the adapted equivalents. The spec types `monthlyUsageCycle` with its `UsageCycle`
-    // schema; the published `MonthlyUsageCycle` name is kept.
+    // The spec types this with its `UsageCycle` schema; the published `MonthlyUsageCycle` name is kept.
     monthlyUsageCycle: MonthlyUsageCycle;
     limits: Limits;
     current: Current;
@@ -1037,12 +1072,16 @@ export interface RequestQueueStats extends GeneratedRequestQueueStats {}
 export interface RequestQueueSpecGaps {
     title?: string;
     username?: string;
-    expireAt?: string;
+    // A `Date`, not the `string` the wire carries: the key ends in `At`, so `parseDateFields()` converts
+    // it, and `RequestQueueShort` types it as a date-time too.
+    expireAt?: Date;
+}
+
+export interface RequestQueueRePointed {
+    stats?: RequestQueueStats;
 }
 
 export interface RequestQueueSpecNarrowings {
-    // Re-pointed at the adapted `RequestQueueStats` so its overrides stay reachable.
-    stats?: RequestQueueStats;
     // Spec omits the `null` the API can return for a storage that follows the owner's user setting.
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
     // Spec lists `consoleUrl` as required on the full resource, and the client types the items of
@@ -1059,7 +1098,8 @@ export interface RequestQueueSpecNarrowings {
  */
 export interface RequestQueue
     extends
-        Omit<Schemas['RequestQueue'], keyof RequestQueueSpecNarrowings>,
+        Omit<Schemas['RequestQueue'], keyof RequestQueueRePointed | keyof RequestQueueSpecNarrowings>,
+        RequestQueueRePointed,
         RequestQueueSpecNarrowings,
         RequestQueueSpecGaps {}
 
@@ -1070,7 +1110,6 @@ export interface RequestQueueClientListItem extends GeneratedHeadRequest {}
 export interface RequestQueueClientLockedListItem extends GeneratedLockedHeadRequest {}
 
 export interface RequestQueueClientListHeadResultRePointed {
-    // Re-pointed at the adapted element type.
     items: RequestQueueClientListItem[];
 }
 
@@ -1081,7 +1120,7 @@ export interface RequestQueueClientListHeadResult
         RequestQueueClientListHeadResultRePointed {}
 
 export interface RequestQueueClientListAndLockHeadResultRePointed {
-    // Re-pointed at the locked element type, which the plain head result does not use.
+    // The locked element type, which the plain head result does not use.
     items: RequestQueueClientLockedListItem[];
 }
 
@@ -1114,7 +1153,6 @@ export type RequestQueueClientRequestToAdd = Omit<RequestQueueClientRequestSchem
     Required<Pick<RequestQueueClientRequestSchema, 'uniqueKey' | 'url'>>;
 
 export interface RequestQueueClientListRequestsResultRePointed {
-    // Re-pointed at the adapted element type.
     items: RequestQueueClientRequestSchema[];
 }
 
