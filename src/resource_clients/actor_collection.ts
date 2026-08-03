@@ -5,11 +5,11 @@ import type { ACTOR_PERMISSION_LEVEL } from '@apify/consts';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
-import { validate } from '../utils';
+import { anyObjectSchema, validate } from '../utils';
 import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor';
 import type { ActorVersion } from './actor_version';
 
-const actorCreateSchema = z.object({}).passthrough().optional();
+const actorCreateSchema = anyObjectSchema.optional();
 
 /**
  * Client for managing the collection of Actors in your account.

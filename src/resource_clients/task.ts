@@ -7,21 +7,28 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import type { Dictionary } from '../utils';
-import { cast, catchNotFoundOrThrow, parseDateFields, pluckData, stringifyWebhooksToBase64, validate } from '../utils';
+import {
+    anyObjectSchema,
+    cast,
+    catchNotFoundOrThrow,
+    parseDateFields,
+    pluckData,
+    stringifyWebhooksToBase64,
+    validate,
+} from '../utils';
 import type { ActorLastRunOptions, ActorRun, ActorStandby, ActorStartOptions } from './actor';
 import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
 import { WebhookCollectionClient } from './webhook_collection';
 
-const updateSchema = z.object({}).passthrough();
-const inputSchema = z.object({}).passthrough().optional();
+const inputSchema = anyObjectSchema.optional();
 const startOptionsSchema = z
     .object({
         build: z.string().optional(),
         memory: z.number().optional(),
         timeout: z.number().optional(),
         waitForFinish: z.number().optional(),
-        webhooks: z.array(z.object({}).passthrough()).optional(),
+        webhooks: z.array(anyObjectSchema).optional(),
         maxItems: z.number().min(0).optional(),
         maxTotalChargeUsd: z.number().min(0).optional(),
         restartOnError: z.boolean().optional(),
@@ -33,7 +40,7 @@ const callOptionsSchema = z
         memory: z.number().optional(),
         timeout: z.number().min(0).optional(),
         waitSecs: z.number().min(0).optional(),
-        webhooks: z.array(z.object({}).passthrough()).optional(),
+        webhooks: z.array(anyObjectSchema).optional(),
         maxItems: z.number().min(0).optional(),
         maxTotalChargeUsd: z.number().min(0).optional(),
         restartOnError: z.boolean().optional(),
@@ -95,7 +102,7 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-put
      */
     async update(newFields: TaskUpdateData): Promise<Task> {
-        validate(updateSchema, newFields);
+        validate(anyObjectSchema, newFields);
 
         return this._update(newFields);
     }

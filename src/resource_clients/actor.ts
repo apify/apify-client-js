@@ -7,7 +7,7 @@ import { Log } from '@apify/log';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
-import { cast, parseDateFields, pluckData, stringifyWebhooksToBase64, validate } from '../utils';
+import { anyObjectSchema, cast, parseDateFields, pluckData, stringifyWebhooksToBase64, validate } from '../utils';
 import type { ActorVersion } from './actor_version';
 import { ActorVersionClient } from './actor_version';
 import { ActorVersionCollectionClient } from './actor_version_collection';
@@ -20,7 +20,6 @@ import type { WebhookUpdateData } from './webhook';
 import { WebhookCollectionClient } from './webhook_collection';
 import type { ValueOf } from 'type-fest';
 
-const updateSchema = z.object({}).passthrough();
 const startOptionsSchema = z
     .object({
         build: z.string().optional(),
@@ -28,7 +27,7 @@ const startOptionsSchema = z
         memory: z.number().optional(),
         timeout: z.number().optional(),
         waitForFinish: z.number().optional(),
-        webhooks: z.array(z.object({}).passthrough()).optional(),
+        webhooks: z.array(anyObjectSchema).optional(),
         maxItems: z.number().min(0).optional(),
         maxTotalChargeUsd: z.number().min(0).optional(),
         restartOnError: z.boolean().optional(),
@@ -42,7 +41,7 @@ const callOptionsSchema = z
         memory: z.number().optional(),
         timeout: z.number().min(0).optional(),
         waitSecs: z.number().min(0).optional(),
-        webhooks: z.array(z.object({}).passthrough()).optional(),
+        webhooks: z.array(anyObjectSchema).optional(),
         maxItems: z.number().min(0).optional(),
         maxTotalChargeUsd: z.number().min(0).optional(),
         log: z.union([z.null(), z.instanceof(Log), z.literal('default')]).optional(),
@@ -121,7 +120,7 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-put
      */
     async update(newFields: ActorUpdateOptions): Promise<Actor> {
-        validate(updateSchema, newFields);
+        validate(anyObjectSchema, newFields);
 
         return this._update(newFields);
     }

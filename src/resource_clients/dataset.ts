@@ -13,14 +13,13 @@ import {
 } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
-import { applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData, validate } from '../utils';
+import { anyObjectSchema, applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData, validate } from '../utils';
 
 // A type-only check, since a `z.object()` arm would walk and copy every key of every pushed item.
 const itemSchema = z.custom<object>(
     (value) => typeof value === 'object' && value !== null && !Array.isArray(value),
     'Expected an object',
 );
-const updateSchema = z.object({}).passthrough();
 const listItemsOptionsSchema = z
     .object({
         clean: z.boolean().optional(),
@@ -138,7 +137,7 @@ export class DatasetClient<
      * @see https://docs.apify.com/api/v2/dataset-put
      */
     async update(newFields: DatasetClientUpdateOptions): Promise<Dataset> {
-        validate(updateSchema, newFields);
+        validate(anyObjectSchema, newFields);
 
         return this._update(newFields, SMALL_TIMEOUT_MILLIS);
     }

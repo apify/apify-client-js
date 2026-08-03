@@ -2,11 +2,10 @@ import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
-import { validate } from '../utils';
+import { anyObjectSchema, validate } from '../utils';
 import { ActorEnvVarClient } from './actor_env_var';
 import { ActorEnvVarCollectionClient } from './actor_env_var_collection';
 
-const actorVersionSchema = z.object({}).passthrough();
 const envVarNameSchema = z.string();
 
 /**
@@ -59,7 +58,7 @@ export class ActorVersionClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-version-put
      */
     async update(newFields: ActorVersion): Promise<FinalActorVersion> {
-        validate(actorVersionSchema, newFields);
+        validate(anyObjectSchema, newFields);
 
         return this._update(newFields);
     }

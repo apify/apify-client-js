@@ -1,12 +1,10 @@
-import { z } from 'zod';
-
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
-import { validate } from '../utils';
+import { anyObjectSchema, validate } from '../utils';
 import type { ActorEnvironmentVariable } from './actor_version';
 
-const actorEnvVarSchema = z.object({}).passthrough().optional();
+const actorEnvVarSchema = anyObjectSchema.optional();
 
 /**
  * Client for managing the collection of environment variables for an Actor version.

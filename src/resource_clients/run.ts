@@ -7,7 +7,7 @@ import { LEVELS, Log } from '@apify/log';
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyResponse } from '../http_client';
-import { cast, isNode, parseDateFields, pluckData, validate } from '../utils';
+import { anyObjectSchema, cast, isNode, parseDateFields, pluckData, validate } from '../utils';
 import type { ActorRun } from './actor';
 import { DatasetClient } from './dataset';
 import { KeyValueStoreClient } from './key_value_store';
@@ -25,7 +25,6 @@ const metamorphOptionsSchema = z
         build: z.string().optional(),
     })
     .strict();
-const updateSchema = z.object({}).passthrough();
 const resurrectOptionsSchema = z
     .object({
         build: z.string().optional(),
@@ -243,7 +242,7 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async update(newFields: RunUpdateOptions): Promise<ActorRun> {
-        validate(updateSchema, newFields);
+        validate(anyObjectSchema, newFields);
 
         return this._update(newFields);
     }

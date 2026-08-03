@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
-import { validate } from '../utils';
+import { anyObjectSchema, validate } from '../utils';
 import type { Schedule, ScheduleCreateOrUpdateData } from './schedule';
 
 const listOptionsSchema = z
@@ -13,7 +13,7 @@ const listOptionsSchema = z
         desc: z.boolean().optional(),
     })
     .strict();
-const scheduleCreateSchema = z.object({}).passthrough().optional();
+const scheduleCreateSchema = anyObjectSchema.optional();
 
 /**
  * Client for managing the collection of Schedules in your account.

@@ -1,7 +1,7 @@
 import type { Readable } from 'node:stream';
 
 import type { JsonValue, TypedArray } from 'type-fest';
-import type { z } from 'zod';
+import { z } from 'zod';
 
 import type { ApifyApiError } from './apify_api_error';
 import { ArgumentValidationError } from './argument_validation_error';
@@ -27,6 +27,13 @@ export function validate<Schema extends z.ZodType>(schema: Schema, value: unknow
     }
     return result.data;
 }
+
+/**
+ * Matches any plain object, letting unknown keys through - for payloads whose shape the API
+ * validates itself.
+ * @internal
+ */
+export const anyObjectSchema = z.object({}).passthrough();
 
 /**
  * Generic interface for objects that may contain a data property.
