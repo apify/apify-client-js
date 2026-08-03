@@ -28,7 +28,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                node-version: [20, 22, 24]
+                node-version: [22, 24, 26]
 
         steps:
             - name: Checkout repository
@@ -79,6 +79,8 @@ jobs:
             - name: Install pnpm and dependencies
               uses: apify/actions/pnpm-install@v1.4.1
             - run: pnpm lint
+            - name: Type-check tests
+              run: pnpm tsc-check-tests
             - name: Format check
               run: pnpm format:check
 
