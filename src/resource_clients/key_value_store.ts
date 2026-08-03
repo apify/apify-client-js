@@ -61,7 +61,11 @@ const recordSchema = z
     .object({
         key: z.string(),
         // Values are arbitrary, and a `z.object()` arm would walk every key of a large buffer.
-        value: z.custom<JsonValue>((value) => value !== undefined, 'Expected a defined value'),
+        // Symbols and bigints are rejected because they cannot be serialized to JSON.
+        value: z.custom<JsonValue>(
+            (value) => value !== undefined && typeof value !== 'symbol' && typeof value !== 'bigint',
+            'Expected a defined, JSON-serializable value',
+        ),
         contentType: z.string().min(1).optional(),
     })
     .strict();
