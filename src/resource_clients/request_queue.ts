@@ -10,6 +10,7 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { MEDIUM_TIMEOUT_MILLIS, ResourceClient, SMALL_TIMEOUT_MILLIS } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import {
+    anyObjectSchema,
     cast,
     catchNotFoundOrThrow,
     mutuallyExclusive,
@@ -26,7 +27,6 @@ const DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS = 500;
 const DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT = 1000;
 const SAFETY_BUFFER_PERCENT = 0.01 / 100; // 0.01%
 
-const updateSchema = z.object({}).passthrough();
 const listHeadOptionsSchema = z.object({ limit: z.number().min(0).optional() }).strict();
 const listAndLockHeadOptionsSchema = z
     .object({
@@ -140,7 +140,7 @@ export class RequestQueueClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/request-queue-put
      */
     async update(newFields: RequestQueueClientUpdateOptions): Promise<RequestQueue> {
-        validate(updateSchema, newFields);
+        validate(anyObjectSchema, newFields);
 
         return this._update(newFields, SMALL_TIMEOUT_MILLIS);
     }

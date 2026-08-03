@@ -5,7 +5,7 @@ import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
-import { validate } from '../utils';
+import { anyObjectSchema, validate } from '../utils';
 import type { Dataset } from './dataset';
 
 const listOptionsSchema = z
@@ -18,7 +18,7 @@ const listOptionsSchema = z
     })
     .strict();
 const nameSchema = z.string().optional();
-const schemaSchema = z.object({}).passthrough().optional();
+const schemaSchema = anyObjectSchema.optional();
 
 /**
  * Client for managing the collection of datasets in your account.
@@ -89,7 +89,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
      */
     async getOrCreate(name?: string, options?: DatasetCollectionClientGetOrCreateOptions): Promise<Dataset> {
         validate(nameSchema, name);
-        validate(schemaSchema, options?.schema); // TODO: Add schema validatioon
+        validate(schemaSchema, options?.schema); // TODO: Add schema validation
 
         return this._getOrCreate(name, options);
     }

@@ -17,6 +17,7 @@ import {
 } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import {
+    anyObjectSchema,
     applyQueryParamsToUrl,
     cast,
     catchNotFoundOrThrow,
@@ -27,8 +28,6 @@ import {
     pluckData,
     validate,
 } from '../utils';
-
-const updateSchema = z.object({}).passthrough();
 const listKeysOptionsSchema = z
     .object({
         limit: z.number().min(0).optional(),
@@ -136,7 +135,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/key-value-store-put
      */
     async update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore> {
-        validate(updateSchema, newFields);
+        validate(anyObjectSchema, newFields);
 
         return this._update(newFields, DEFAULT_TIMEOUT_MILLIS);
     }
