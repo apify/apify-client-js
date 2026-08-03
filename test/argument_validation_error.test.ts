@@ -21,6 +21,13 @@ describe('ArgumentValidationError', () => {
         expect(error.message).toContain('at `countryCode`, got `CZE`');
     });
 
+    test('message renders an empty string visibly', () => {
+        const idSchema = z.string().min(1);
+        const error = new ArgumentValidationError(idSchema.safeParse('').error!, '');
+
+        expect(error.message).toContain("got `''`");
+    });
+
     test('message points at the offending array element', () => {
         const arraySchema = z.object({ groups: z.array(z.object({ name: z.string() })) });
         const value = { groups: [{ name: 'ok' }, { name: 7 }] };
