@@ -71,7 +71,11 @@ export class TaskClient extends ResourceClient {
      * Publishes the task on its public landing page.
      *
      * The task's Actor must be public and the task must have its public display configuration
-     * (`publicConfig`) set up via {@apilink TaskClient.update}.
+     * (`publicConfig`) set up via {@apilink TaskClient.update}. Requires write permission to
+     * both the task and its Actor.
+     *
+     * Publishing an already published task is a no-op that returns the current state, so this
+     * call is safe to retry (unlike {@apilink TaskClient.unpublish}).
      *
      * @returns The task object.
      * @see https://docs.apify.com/api/v2/actor-task-publish-post
@@ -90,7 +94,11 @@ export class TaskClient extends ResourceClient {
      * Unpublishes the task from its public landing page.
      *
      * The public display configuration (`publicConfig`) is preserved, so the task can be
-     * published again without re-entering it.
+     * published again without re-entering it. Requires write permission to both the task
+     * and its Actor.
+     *
+     * Unlike {@apilink TaskClient.publish}, this call is not idempotent: unpublishing a task
+     * that is not currently published throws an `ApifyApiError` (`cannot-unpublish-actor-task`).
      *
      * @returns The task object.
      * @see https://docs.apify.com/api/v2/actor-task-unpublish-post
@@ -373,7 +381,7 @@ export interface TaskOptions {
  */
 export type TaskUpdateData = Partial<
     Pick<Task, 'name' | 'title' | 'description' | 'options' | 'input' | 'actorStandby'>
-> & { publicConfig?: Omit<TaskPublicConfig, 'publishedAt'> | null };
+> & { publicConfig?: Omit<TaskPublicConfig, 'publishedAt'> };
 
 /**
  * Options for filtering the last run of a Task.
