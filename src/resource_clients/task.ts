@@ -378,7 +378,7 @@ export type TaskUpdateData = Partial<
 /**
  * Options for filtering the last run of a Task.
  */
-export interface TaskLastRunOptions extends ActorLastRunOptions { }
+export interface TaskLastRunOptions extends ActorLastRunOptions {}
 
 /**
  * Options for starting a Task.
