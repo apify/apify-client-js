@@ -2,6 +2,9 @@
     "name": "apify-client",
     "version": "2.24.1",
     "description": "Apify API client for JavaScript",
+    "engines": {
+        "node": ">=22.0.0"
+    },
     "main": "dist/index.js",
     "module": "dist/index.mjs",
     "types": "dist/index.d.ts",

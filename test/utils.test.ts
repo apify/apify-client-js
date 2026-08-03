@@ -1,6 +1,6 @@
 import type { WebhookUpdateData } from 'apify-client';
 import { ApifyApiError } from 'apify-client';
-import { describe, expect, test, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import * as utils from '../src/utils';
 
