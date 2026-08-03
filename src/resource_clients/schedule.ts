@@ -4,9 +4,19 @@ import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
-import type { Timezone } from '../timezones';
+import type { Schedule, ScheduleAction } from '../models';
 import type { DistributiveOptional } from '../utils';
 import { cast, catchNotFoundOrThrow, parseDateFields, pluckData } from '../utils';
+
+export type {
+    Schedule,
+    ScheduleAction,
+    ScheduleActionRunActor,
+    ScheduleActionRunActorTask,
+    ScheduledActorRunInput,
+    ScheduledActorRunOptions,
+} from '../models';
+export { ScheduleActions } from '../models';
 
 /**
  * Client for managing a specific Schedule.
@@ -97,31 +107,6 @@ export class ScheduleClient extends ResourceClient {
 }
 
 /**
- * Represents a schedule for automated Actor or Task runs.
- *
- * Schedules use cron expressions to define when Actors or Tasks should run automatically.
- */
-export interface Schedule {
-    id: string;
-    userId: string;
-    name: string;
-    title?: string;
-    cronExpression: string;
-    timezone: Timezone;
-    isEnabled: boolean;
-    isExclusive: boolean;
-    description?: string;
-    createdAt: Date;
-    modifiedAt: Date;
-    nextRunAt: string;
-    lastRunAt: string;
-    actions: ScheduleAction[];
-    notifications: {
-        email: boolean;
-    };
-}
-
-/**
  * Data for creating or updating a Schedule.
  */
 export type ScheduleCreateOrUpdateData = Partial<
@@ -132,56 +117,3 @@ export type ScheduleCreateOrUpdateData = Partial<
         actions: DistributiveOptional<ScheduleAction, 'id'>[];
     }
 >;
-
-/**
- * Types of actions that can be scheduled.
- */
-export enum ScheduleActions {
-    RunActor = 'RUN_ACTOR',
-    RunActorTask = 'RUN_ACTOR_TASK',
-}
-
-interface BaseScheduleAction<Type extends ScheduleActions> {
-    id: string;
-    type: Type;
-}
-
-/**
- * Union type representing all possible scheduled actions.
- */
-export type ScheduleAction = ScheduleActionRunActor | ScheduleActionRunActorTask;
-
-/**
- * Scheduled action to run an Actor.
- */
-export interface ScheduleActionRunActor extends BaseScheduleAction<ScheduleActions.RunActor> {
-    actorId: string;
-    runInput?: ScheduledActorRunInput;
-    runOptions?: ScheduledActorRunOptions;
-}
-
-/**
- * Input configuration for a scheduled Actor run.
- */
-export interface ScheduledActorRunInput {
-    body: string;
-    contentType: string;
-}
-
-/**
- * Run options for a scheduled Actor run.
- */
-export interface ScheduledActorRunOptions {
-    build: string;
-    timeoutSecs: number;
-    memoryMbytes: number;
-    restartOnError?: boolean;
-}
-
-/**
- * Scheduled action to run an Actor task.
- */
-export interface ScheduleActionRunActorTask extends BaseScheduleAction<ScheduleActions.RunActorTask> {
-    actorTaskId: string;
-    input?: string;
-}

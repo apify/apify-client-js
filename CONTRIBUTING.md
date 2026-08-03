@@ -53,6 +53,8 @@ src/
 ├── http_client.ts               # Low-level HTTP layer (Axios-based)
 ├── apify_api_error.ts           # Custom error class
 ├── utils.ts                     # Utility functions
+├── generated/
+│   └── api.ts                   # Types generated from the OpenAPI specification (do not edit)
 ├── base/
 │   ├── api_client.ts            # Base for all clients
 │   ├── resource_client.ts       # Base for single-resource clients
@@ -70,6 +72,11 @@ test/
 └── mock_server/                 # Mock API server for testing
     ├── server.ts
     └── routes/                  # Mock API routes
+
+scripts/
+├── openapi_spec.mts             # Downloads the published OpenAPI specification
+├── generate_types.mts           # Generates src/generated/api.ts from it
+└── spec_transform.mts           # Spec postprocessing the generator applies
 ```
 
 ### Key Patterns
@@ -99,6 +106,11 @@ npm run clean              # Remove dist directory
 # Testing
 npm test                   # Build and run vitest suite
 npm run tsc-check-tests    # TypeScript check test files
+npm run tsc-check-scripts  # TypeScript check maintainer scripts
+
+# API specification (needs Node 22.18+, for native TypeScript support)
+npm run generate:types     # Regenerate src/generated/api.ts from the published specification
+npm run spec:fetch         # Only download the specification, into git-ignored tmp/
 
 # Linting & Formatting
 npm run lint               # ESLint check

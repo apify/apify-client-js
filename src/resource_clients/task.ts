@@ -6,12 +6,15 @@ import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
+import type { Task } from '../models';
 import type { Dictionary } from '../utils';
 import { cast, catchNotFoundOrThrow, parseDateFields, pluckData, stringifyWebhooksToBase64 } from '../utils';
-import type { ActorLastRunOptions, ActorRun, ActorStandby, ActorStartOptions } from './actor';
+import type { ActorLastRunOptions, ActorRun, ActorStartOptions } from './actor';
 import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
 import { WebhookCollectionClient } from './webhook_collection';
+
+export type { Task, TaskOptions, TaskStats } from '../models';
 
 /**
  * Client for managing a specific Actor task.
@@ -271,45 +274,6 @@ export class TaskClient extends ResourceClient {
     webhooks(): WebhookCollectionClient {
         return new WebhookCollectionClient(this._subResourceOptions());
     }
-}
-
-/**
- * Represents an Actor task.
- *
- * Tasks are saved Actor configurations with input and settings that can be executed
- * repeatedly without having to specify the full input each time.
- */
-export interface Task {
-    id: string;
-    userId: string;
-    actId: string;
-    name: string;
-    title?: string;
-    description?: string;
-    username?: string;
-    createdAt: Date;
-    modifiedAt: Date;
-    stats: TaskStats;
-    options?: TaskOptions;
-    input?: Dictionary | Dictionary[];
-    actorStandby?: Partial<ActorStandby>;
-}
-
-/**
- * Statistics about Actor task usage.
- */
-export interface TaskStats {
-    totalRuns: number;
-}
-
-/**
- * Configuration options for an Actor task.
- */
-export interface TaskOptions {
-    build?: string;
-    timeoutSecs?: number;
-    memoryMbytes?: number;
-    restartOnError?: boolean;
 }
 
 /**
