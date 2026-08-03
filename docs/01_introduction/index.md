@@ -17,13 +17,13 @@ The client simplifies interaction with the Apify platform by providing:
 - Intelligent parsing of API responses and rich error messages for debugging
 - Built-in [exponential backoff](../02_concepts/02_error-handling.md#retries-with-exponential-backoff) for failed requests
 - Full TypeScript support with comprehensive type definitions
-- Cross-platform compatibility in [Node.js](https://nodejs.org/) v16+ and modern browsers
+- Cross-platform compatibility in [Node.js](https://nodejs.org/) v22+ and modern browsers
 
 All requests and responses (including errors) are encoded in JSON format with UTF-8 encoding.
 
 ## Pre-requisites
 
-`apify-client` requires Node.js version 16 or higher. Node.js is available for download on the [official website](https://nodejs.org/). Check for your current Node.js version by running:
+`apify-client` requires Node.js version 22 or higher. Node.js is available for download on the [official website](https://nodejs.org/). Check for your current Node.js version by running:
 
 ```bash
 node -v

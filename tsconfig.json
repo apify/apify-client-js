@@ -2,9 +2,8 @@
     "extends": "@apify/tsconfig",
     "compilerOptions": {
         "allowJs": true,
-        "lib": ["ESNext", "DOM"],
-        "module": "Node16",
-        "moduleResolution": "Node16",
+        "lib": ["ES2024", "DOM"],
+        "target": "ES2024",
         "outDir": "dist",
         "rootDir": "src",
         "skipLibCheck": true,
