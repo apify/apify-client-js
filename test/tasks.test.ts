@@ -97,6 +97,30 @@ describe('Task methods', () => {
             validateRequest({ query: {}, params: { taskId } });
         });
 
+        test('publish() works', async () => {
+            const taskId = 'some-task-id';
+
+            const res = await client.task(taskId).publish();
+            expect(res.id).toEqual('publish-task');
+            validateRequest({ query: {}, params: { taskId } });
+
+            const browserRes = await page.evaluate((id) => client.task(id).publish(), taskId);
+            expect(browserRes).toEqual(res);
+            validateRequest({ query: {}, params: { taskId } });
+        });
+
+        test('unpublish() works', async () => {
+            const taskId = 'some-task-id';
+
+            const res = await client.task(taskId).unpublish();
+            expect(res.id).toEqual('unpublish-task');
+            validateRequest({ query: {}, params: { taskId } });
+
+            const browserRes = await page.evaluate((id) => client.task(id).unpublish(), taskId);
+            expect(browserRes).toEqual(res);
+            validateRequest({ query: {}, params: { taskId } });
+        });
+
         test('get() works', async () => {
             const taskId = 'some-id';
 

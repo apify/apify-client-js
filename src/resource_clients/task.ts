@@ -68,6 +68,44 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
+     * Publishes the task on its public landing page.
+     *
+     * The task's Actor must be public and the task must have its public display configuration
+     * (`publicConfig`) set up via {@apilink TaskClient.update}.
+     *
+     * @returns The task object.
+     * @see https://docs.apify.com/api/v2/actor-task-publish-post
+     */
+    async publish(): Promise<Task> {
+        const response = await this.httpClient.call({
+            url: this._url('publish'),
+            method: 'POST',
+            params: this._params(),
+        });
+
+        return cast(parseDateFields(pluckData(response.data)));
+    }
+
+    /**
+     * Unpublishes the task from its public landing page.
+     *
+     * The public display configuration (`publicConfig`) is preserved, so the task can be
+     * published again without re-entering it.
+     *
+     * @returns The task object.
+     * @see https://docs.apify.com/api/v2/actor-task-unpublish-post
+     */
+    async unpublish(): Promise<Task> {
+        const response = await this.httpClient.call({
+            url: this._url('unpublish'),
+            method: 'POST',
+            params: this._params(),
+        });
+
+        return cast(parseDateFields(pluckData(response.data)));
+    }
+
+    /**
      * Deletes the Task.
      *
      * @see https://docs.apify.com/api/v2/actor-task-delete
@@ -293,6 +331,24 @@ export interface Task {
     options?: TaskOptions;
     input?: Dictionary | Dictionary[];
     actorStandby?: Partial<ActorStandby>;
+    publicConfig?: TaskPublicConfig | null;
+}
+
+/**
+ * Public-facing display configuration of a task's public landing page.
+ *
+ * The task is published when `publishedAt` is set and unpublished when it is `null`. The
+ * `publishedAt` field is read-only - use {@apilink TaskClient.publish} and
+ * {@apilink TaskClient.unpublish} to change the publication state.
+ */
+export interface TaskPublicConfig {
+    publishedAt: Date | null;
+    seoTitle?: string | null;
+    seoDescription?: string | null;
+    categorization?: string | null;
+    inputSchemaFields?: string[] | null;
+    datasetName?: string | null;
+    datasetView?: string | null;
 }
 
 /**
@@ -317,12 +373,12 @@ export interface TaskOptions {
  */
 export type TaskUpdateData = Partial<
     Pick<Task, 'name' | 'title' | 'description' | 'options' | 'input' | 'actorStandby'>
->;
+> & { publicConfig?: Omit<TaskPublicConfig, 'publishedAt'> | null };
 
 /**
  * Options for filtering the last run of a Task.
  */
-export interface TaskLastRunOptions extends ActorLastRunOptions {}
+export interface TaskLastRunOptions extends ActorLastRunOptions { }
 
 /**
  * Options for starting a Task.
