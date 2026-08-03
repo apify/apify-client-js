@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.24.1 - **not yet released**
 
+### 🐛 Bug Fixes
+
+- Fall back to gzip when brotli compression is unavailable ([#990](https://github.com/apify/apify-client-js/pull/990)) ([9bee474](https://github.com/apify/apify-client-js/commit/9bee474a60009a7cfd469340b74fa35778814569)) by [@vdusek](https://github.com/vdusek)
+
 
 <!-- git-cliff-unreleased-end -->
 ## [2.24.0](https://github.com/apify/apify-client-js/releases/tag/v2.24.0) (2026-07-30)
