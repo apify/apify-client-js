@@ -5,13 +5,12 @@ import { ACTOR_JOB_STATUSES } from '@apify/consts';
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
-import { validate } from '../utils';
+import { paginationOptionsShape, validate } from '../utils';
 import type { ActorRunListItem } from './actor';
 
 const jobStatusSchema = z.enum(ACTOR_JOB_STATUSES);
 const listOptionsSchema = z.strictObject({
-    limit: z.number().min(0).optional(),
-    offset: z.number().min(0).optional(),
+    ...paginationOptionsShape,
     desc: z.boolean().optional(),
     status: z.union([jobStatusSchema, z.array(jobStatusSchema)]).optional(),
     startedBefore: z.union([z.date(), z.string()]).optional(),

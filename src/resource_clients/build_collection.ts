@@ -3,12 +3,11 @@ import { z } from 'zod';
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
-import { validate } from '../utils';
+import { paginationOptionsShape, validate } from '../utils';
 import type { Build } from './build';
 
 const listOptionsSchema = z.strictObject({
-    limit: z.number().min(0).optional(),
-    offset: z.number().min(0).optional(),
+    ...paginationOptionsShape,
     desc: z.boolean().optional(),
 });
 

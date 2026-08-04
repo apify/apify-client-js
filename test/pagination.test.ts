@@ -14,6 +14,11 @@ const range = (start: number, end: number, step = 1) => {
     );
 };
 
+// The client caps `chunkSize` at the endpoint's page size, so that capped value is the page size the
+// iteration actually requests - and it always makes at least one request, even for an empty result.
+const expectedRequestCount = (itemCount: number, chunkSize: number | undefined, maxItemsPerPage: number) =>
+    Math.max(Math.ceil(itemCount / Math.min(chunkSize || Infinity, maxItemsPerPage)), 1);
+
 const noOptions = [
     {
         testName: 'No options',
@@ -122,12 +127,21 @@ describe('Collection clients list method as async iterable', () => {
         },
     ];
 
+    // `desc` is left out so that `store()`, which does not support it, can run this case too.
+    const chunkSizePaginationOptions = [
+        {
+            testName: 'User offset, user limit, user chunkSize',
+            userDefinedOptions: { offset: 1000, limit: 1100, chunkSize: 100 },
+            expectedItems: range(1000, 2100),
+        },
+    ];
+
     // Create valid tests cases for each client based on the pagination options it is supporting.
     const noOptionsTestCases = generateTestCases(allCollectionClients, noOptions);
 
     const commonTestCases = generateTestCases(
         allCollectionClients.slice(2), // without envVars and versions
-        [...limitPaginationOptions, ...offsetPaginationOptions],
+        [...limitPaginationOptions, ...offsetPaginationOptions, ...chunkSizePaginationOptions],
     );
     const unnamedTestCases = generateTestCases(
         [client.datasets(), client.keyValueStores(), client.requestQueues()],
@@ -192,7 +206,7 @@ describe('Collection clients list method as async iterable', () => {
                 }
                 expect(items).toEqual(expectedItems);
                 expect(mockedClient).toHaveBeenCalledTimes(
-                    Math.max(Math.ceil(expectedItems.length / maxItemsPerPage), 1),
+                    expectedRequestCount(expectedItems.length, userDefinedOptions.chunkSize, maxItemsPerPage),
                 );
             } finally {
                 mockedClient.mockRestore();
@@ -269,7 +283,7 @@ describe('DatasetClient.listItems as async iterable', () => {
             }
             expect(items).toEqual(expectedItems);
             expect(mockedClient).toHaveBeenCalledTimes(
-                Math.max(Math.ceil(expectedItems.length / (userDefinedOptions.chunkSize || maxItemsPerPage)), 1),
+                expectedRequestCount(expectedItems.length, userDefinedOptions.chunkSize, maxItemsPerPage),
             );
         } finally {
             mockedClient.mockRestore();
@@ -341,7 +355,7 @@ describe('KeyValueStoreClient.listKeys as async iterable', () => {
             }
             expect(items).toEqual(expectedItems);
             expect(mockedClient).toHaveBeenCalledTimes(
-                Math.max(Math.ceil(expectedItems.length / (userDefinedOptions.chunkSize || maxItemsPerPage)), 1),
+                expectedRequestCount(expectedItems.length, userDefinedOptions.chunkSize, maxItemsPerPage),
             );
         } finally {
             mockedClient.mockRestore();
@@ -431,4 +445,47 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
             mockedClient.mockRestore();
         }
     } as any);
+});
+
+test('chunkSize sizes each request without being sent as a query parameter', async () => {
+    const client = new ApifyClient();
+    const totalItems = 250;
+    const seenParams: Record<string, any>[] = [];
+
+    const mockedClient = vi.spyOn(client.httpClient, 'call').mockImplementation((async (request: any) => {
+        seenParams.push(request.params);
+
+        const offset = request.params.offset ?? 0;
+        const upperIndex = Math.min(offset + (request.params.limit || totalItems), totalItems);
+
+        return {
+            data: {
+                data: {
+                    total: totalItems,
+                    count: upperIndex - offset,
+                    offset,
+                    limit: upperIndex - offset,
+                    desc: false,
+                    items: range(offset, upperIndex),
+                },
+            },
+        };
+    }) as any);
+
+    try {
+        const items = [];
+        for await (const item of client.actors().list({ chunkSize: 100 })) {
+            items.push(item);
+        }
+
+        expect(items).toEqual(range(0, totalItems));
+        // Three requests, asking for 100, 100 and the remaining 50 items - so `chunkSize` did size them.
+        expect(seenParams.map((params) => params.limit)).toEqual([100, 100, 50]);
+        // It drives client-side iteration only, though, so the API must never see it.
+        for (const params of seenParams) {
+            expect(params).not.toHaveProperty('chunkSize');
+        }
+    } finally {
+        mockedClient.mockRestore();
+    }
 });

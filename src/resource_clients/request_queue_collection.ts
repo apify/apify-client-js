@@ -5,13 +5,12 @@ import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
-import { validate } from '../utils';
+import { paginationOptionsShape, validate } from '../utils';
 import type { RequestQueue } from './request_queue';
 
 const listOptionsSchema = z.strictObject({
     unnamed: z.boolean().optional(),
-    limit: z.number().min(0).optional(),
-    offset: z.number().min(0).optional(),
+    ...paginationOptionsShape,
     desc: z.boolean().optional(),
     ownership: z.enum(STORAGE_OWNERSHIP_FILTER).optional(),
 });

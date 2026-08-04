@@ -13,7 +13,15 @@ import {
 } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
-import { anyObjectSchema, applyQueryParamsToUrl, cast, catchNotFoundOrThrow, pluckData, validate } from '../utils';
+import {
+    anyObjectSchema,
+    applyQueryParamsToUrl,
+    cast,
+    catchNotFoundOrThrow,
+    paginationOptionsShape,
+    pluckData,
+    validate,
+} from '../utils';
 
 // A type-only check, since a `z.object()` arm would walk and copy every key of every pushed item.
 const itemSchema = z.custom<object>(
@@ -26,15 +34,15 @@ const listItemsOptionsSchema = z.strictObject({
     flatten: z.array(z.string()).optional(),
     fields: z.array(z.string()).optional(),
     omit: z.array(z.string()).optional(),
-    limit: z.number().min(0).optional(),
-    offset: z.number().min(0).optional(),
-    chunkSize: z.number().positive().optional(),
+    ...paginationOptionsShape,
     skipEmpty: z.boolean().optional(),
     skipHidden: z.boolean().optional(),
     unwind: z.union([z.string(), z.array(z.string())]).optional(),
     view: z.string().optional(),
     signature: z.string().optional(),
 });
+// Spells out `limit` and `offset` rather than spreading `paginationOptionsShape`: a download is a
+// single request, so `chunkSize` has nothing to size. The options type omits it to match.
 const downloadItemsOptionsSchema = z.strictObject({
     attachment: z.boolean().optional(),
     bom: z.boolean().optional(),
@@ -56,6 +64,9 @@ const downloadItemsOptionsSchema = z.strictObject({
     signature: z.string().optional(),
 });
 const pushItemsSchema = z.union([itemSchema, z.string(), z.array(z.union([itemSchema, z.string()]))]);
+// Every option here becomes a query parameter of the generated URL, so the two that would only ever
+// describe a client-side iteration are left out: `chunkSize`, and `signature` - which this method
+// produces. The options type omits both to match.
 const createItemsPublicUrlOptionsSchema = z.strictObject({
     clean: z.boolean().optional(),
     desc: z.boolean().optional(),
@@ -473,9 +484,14 @@ export interface DatasetClientListItemOptions extends PaginationOptions {
 /**
  * Options for creating a public URL to access dataset items.
  *
- * Extends {@link DatasetClientListItemOptions} with URL expiration control.
+ * Extends {@link DatasetClientListItemOptions} with URL expiration control, minus the options that do
+ * not apply: `chunkSize` only sizes the requests of a client-side iteration, and `signature` is what
+ * this method produces rather than something it accepts.
  */
-export interface DatasetClientCreateItemsUrlOptions extends DatasetClientListItemOptions {
+export interface DatasetClientCreateItemsUrlOptions extends Omit<
+    DatasetClientListItemOptions,
+    'chunkSize' | 'signature'
+> {
     expiresInSecs?: number;
 }
 
@@ -500,9 +516,10 @@ const itemFormatSchema = z.enum(validItemFormats);
 /**
  * Options for downloading dataset items in a specific format.
  *
- * Extends {@link DatasetClientListItemOptions} with format-specific options.
+ * Extends {@link DatasetClientListItemOptions} with format-specific options, minus `chunkSize`, which
+ * only sizes the requests of a client-side iteration - this downloads the whole range in one request.
  */
-export interface DatasetClientDownloadItemsOptions extends DatasetClientListItemOptions {
+export interface DatasetClientDownloadItemsOptions extends Omit<DatasetClientListItemOptions, 'chunkSize'> {
     attachment?: boolean;
     bom?: boolean;
     delimiter?: string;
