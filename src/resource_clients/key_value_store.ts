@@ -28,52 +28,42 @@ import {
     pluckData,
     validate,
 } from '../utils';
-const listKeysOptionsSchema = z
-    .object({
-        limit: z.number().min(0).optional(),
-        exclusiveStartKey: z.string().optional(),
-        collection: z.string().optional(),
-        prefix: z.string().optional(),
-        signature: z.string().optional(),
-    })
-    .strict();
+const listKeysOptionsSchema = z.strictObject({
+    limit: z.number().min(0).optional(),
+    exclusiveStartKey: z.string().optional(),
+    collection: z.string().optional(),
+    prefix: z.string().optional(),
+    signature: z.string().optional(),
+});
 const nonEmptyKeySchema = z.string().min(1);
-const createKeysPublicUrlOptionsSchema = z
-    .object({
-        limit: z.number().min(0).optional(),
-        exclusiveStartKey: z.string().optional(),
-        collection: z.string().optional(),
-        prefix: z.string().optional(),
-        expiresInSecs: z.number().optional(),
-    })
-    .strict();
+const createKeysPublicUrlOptionsSchema = z.strictObject({
+    limit: z.number().min(0).optional(),
+    exclusiveStartKey: z.string().optional(),
+    collection: z.string().optional(),
+    prefix: z.string().optional(),
+    expiresInSecs: z.number().optional(),
+});
 const keySchema = z.string();
-const getRecordOptionsSchema = z
-    .object({
-        buffer: z.boolean().optional(),
-        stream: z.boolean().optional(),
-        disableRedirect: z.boolean().optional(),
-        signature: z.string().optional(),
-    })
-    .strict();
-const recordSchema = z
-    .object({
-        key: z.string(),
-        // Values are arbitrary, and a `z.object()` arm would walk every key of a large buffer.
-        // Symbols and bigints are rejected because they cannot be serialized to JSON.
-        value: z.custom<JsonValue>(
-            (value) => value !== undefined && typeof value !== 'symbol' && typeof value !== 'bigint',
-            'Expected a defined, JSON-serializable value',
-        ),
-        contentType: z.string().min(1).optional(),
-    })
-    .strict();
-const recordOptionsSchema = z
-    .object({
-        timeoutSecs: z.number().optional(),
-        doNotRetryTimeouts: z.boolean().optional(),
-    })
-    .strict();
+const getRecordOptionsSchema = z.strictObject({
+    buffer: z.boolean().optional(),
+    stream: z.boolean().optional(),
+    disableRedirect: z.boolean().optional(),
+    signature: z.string().optional(),
+});
+const recordSchema = z.strictObject({
+    key: z.string(),
+    // Values are arbitrary, and a `z.object()` arm would walk every key of a large buffer.
+    // Symbols and bigints are rejected because they cannot be serialized to JSON.
+    value: z.custom<JsonValue>(
+        (value) => value !== undefined && typeof value !== 'symbol' && typeof value !== 'bigint',
+        'Expected a defined, JSON-serializable value',
+    ),
+    contentType: z.string().min(1).optional(),
+});
+const recordOptionsSchema = z.strictObject({
+    timeoutSecs: z.number().optional(),
+    doNotRetryTimeouts: z.boolean().optional(),
+});
 
 /**
  * Client for managing a specific key-value store.

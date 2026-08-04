@@ -91,15 +91,13 @@ export enum ActorListSortBy {
 }
 
 // Declared below `ActorListSortBy` because it references it at module load time.
-const listOptionsSchema = z
-    .object({
-        my: z.boolean().optional(),
-        limit: z.number().min(0).optional(),
-        offset: z.number().min(0).optional(),
-        desc: z.boolean().optional(),
-        sortBy: z.nativeEnum(ActorListSortBy).optional(),
-    })
-    .strict();
+const listOptionsSchema = z.strictObject({
+    my: z.boolean().optional(),
+    limit: z.number().min(0).optional(),
+    offset: z.number().min(0).optional(),
+    desc: z.boolean().optional(),
+    sortBy: z.enum(ActorListSortBy).optional(),
+});
 
 export interface ActorCollectionListOptions extends PaginationOptions {
     my?: boolean;

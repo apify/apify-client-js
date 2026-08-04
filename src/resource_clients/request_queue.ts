@@ -27,51 +27,45 @@ const DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS = 500;
 const DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT = 1000;
 const SAFETY_BUFFER_PERCENT = 0.01 / 100; // 0.01%
 
-const listHeadOptionsSchema = z.object({ limit: z.number().min(0).optional() }).strict();
-const listAndLockHeadOptionsSchema = z
-    .object({
-        lockSecs: z.number(),
-        limit: z.number().min(0).optional(),
-    })
-    .strict();
+const listHeadOptionsSchema = z.strictObject({ limit: z.number().min(0).optional() });
+const listAndLockHeadOptionsSchema = z.strictObject({
+    lockSecs: z.number(),
+    limit: z.number().min(0).optional(),
+});
 // `id` is assigned by the API - it must be absent (or explicitly `undefined`) on a new request.
-const newRequestSchema = z.object({ id: z.undefined().optional() }).passthrough();
-const forefrontOptionsSchema = z.object({ forefront: z.boolean().optional() }).strict();
+const newRequestSchema = z.looseObject({ id: z.undefined().optional() });
+const forefrontOptionsSchema = z.strictObject({ forefront: z.boolean().optional() });
 const batchAddRequestsSchema = z.array(newRequestSchema).min(1).max(REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION);
 const batchAddRequestsWithRetriesSchema = z.array(newRequestSchema).min(1);
 const optionalBooleanSchema = z.boolean().optional();
 const optionalNumberSchema = z.number().optional();
 const batchDeleteRequestsSchema = z
-    .array(z.union([z.object({ id: z.string() }).passthrough(), z.object({ uniqueKey: z.string() }).passthrough()]))
+    .array(z.union([z.looseObject({ id: z.string() }), z.looseObject({ uniqueKey: z.string() })]))
     .min(1)
     .max(REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION);
 const requestIdSchema = z.string();
-const existingRequestSchema = z.object({ id: z.string() }).passthrough();
-const prolongRequestLockOptionsSchema = z
-    .object({
-        lockSecs: z.number(),
-        forefront: z.boolean().optional(),
-    })
-    .strict();
+const existingRequestSchema = z.looseObject({ id: z.string() });
+const prolongRequestLockOptionsSchema = z.strictObject({
+    lockSecs: z.number(),
+    forefront: z.boolean().optional(),
+});
 const requestFilterSchema = z.array(z.enum(['locked', 'pending'])).min(1);
 const listRequestsOptionsSchema = z
-    .object({
+    .strictObject({
         limit: z.number().min(0).optional(),
         exclusiveStartId: z.string().optional(),
         cursor: z.string().optional(),
         filter: requestFilterSchema.optional(),
     })
-    .strict()
     .refine(...mutuallyExclusive<RequestQueueClientListRequestsOptions>('exclusiveStartId', 'cursor'));
 const paginateRequestsOptionsSchema = z
-    .object({
+    .strictObject({
         limit: z.number().min(0).optional(),
         maxPageLimit: z.number().optional(),
         exclusiveStartId: z.string().optional(),
         cursor: z.string().optional(),
         filter: requestFilterSchema.optional(),
     })
-    .strict()
     .refine(...mutuallyExclusive<RequestQueueClientPaginateRequestsOptions>('exclusiveStartId', 'cursor'));
 
 /**

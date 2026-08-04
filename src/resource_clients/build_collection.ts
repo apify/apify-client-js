@@ -6,13 +6,11 @@ import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../uti
 import { validate } from '../utils';
 import type { Build } from './build';
 
-const listOptionsSchema = z
-    .object({
-        limit: z.number().min(0).optional(),
-        offset: z.number().min(0).optional(),
-        desc: z.boolean().optional(),
-    })
-    .strict();
+const listOptionsSchema = z.strictObject({
+    limit: z.number().min(0).optional(),
+    offset: z.number().min(0).optional(),
+    desc: z.boolean().optional(),
+});
 
 /**
  * Client for managing the collection of Actor builds.

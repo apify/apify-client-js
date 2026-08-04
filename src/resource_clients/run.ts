@@ -16,33 +16,27 @@ import { RequestQueueClient } from './request_queue';
 
 const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
 
-const getOptionsSchema = z.object({ waitForFinish: z.number().optional() }).strict();
-const abortOptionsSchema = z.object({ gracefully: z.boolean().optional() }).strict();
+const getOptionsSchema = z.strictObject({ waitForFinish: z.number().optional() });
+const abortOptionsSchema = z.strictObject({ gracefully: z.boolean().optional() });
 const targetActorIdSchema = z.string();
-const metamorphOptionsSchema = z
-    .object({
-        contentType: z.string().optional(),
-        build: z.string().optional(),
-    })
-    .strict();
-const resurrectOptionsSchema = z
-    .object({
-        build: z.string().optional(),
-        memory: z.number().optional(),
-        timeout: z.number().optional(),
-        maxItems: z.number().optional(),
-        maxTotalChargeUsd: z.number().optional(),
-        restartOnError: z.boolean().optional(),
-    })
-    .strict();
-const chargeOptionsSchema = z
-    .object({
-        eventName: z.string(),
-        count: z.number().optional(),
-        idempotencyKey: z.string().optional(),
-    })
-    .strict();
-const waitForFinishOptionsSchema = z.object({ waitSecs: z.number().optional() }).strict();
+const metamorphOptionsSchema = z.strictObject({
+    contentType: z.string().optional(),
+    build: z.string().optional(),
+});
+const resurrectOptionsSchema = z.strictObject({
+    build: z.string().optional(),
+    memory: z.number().optional(),
+    timeout: z.number().optional(),
+    maxItems: z.number().optional(),
+    maxTotalChargeUsd: z.number().optional(),
+    restartOnError: z.boolean().optional(),
+});
+const chargeOptionsSchema = z.strictObject({
+    eventName: z.string(),
+    count: z.number().optional(),
+    idempotencyKey: z.string().optional(),
+});
+const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional() });
 
 /**
  * Client for managing a specific Actor run.

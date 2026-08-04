@@ -8,17 +8,15 @@ import type { PaginatedIterator, PaginationOptions } from '../utils';
 import { validate } from '../utils';
 import type { ActorRunListItem } from './actor';
 
-const jobStatusSchema = z.nativeEnum(ACTOR_JOB_STATUSES);
-const listOptionsSchema = z
-    .object({
-        limit: z.number().min(0).optional(),
-        offset: z.number().min(0).optional(),
-        desc: z.boolean().optional(),
-        status: z.union([jobStatusSchema, z.array(jobStatusSchema)]).optional(),
-        startedBefore: z.union([z.date(), z.string()]).optional(),
-        startedAfter: z.union([z.date(), z.string()]).optional(),
-    })
-    .strict();
+const jobStatusSchema = z.enum(ACTOR_JOB_STATUSES);
+const listOptionsSchema = z.strictObject({
+    limit: z.number().min(0).optional(),
+    offset: z.number().min(0).optional(),
+    desc: z.boolean().optional(),
+    status: z.union([jobStatusSchema, z.array(jobStatusSchema)]).optional(),
+    startedBefore: z.union([z.date(), z.string()]).optional(),
+    startedAfter: z.union([z.date(), z.string()]).optional(),
+});
 
 /**
  * Client for managing the collection of Actor runs.

@@ -8,15 +8,13 @@ import type { PaginatedList, PaginationOptions } from '../utils';
 import { anyObjectSchema, validate } from '../utils';
 import type { KeyValueStore } from './key_value_store';
 
-const listOptionsSchema = z
-    .object({
-        unnamed: z.boolean().optional(),
-        limit: z.number().min(0).optional(),
-        offset: z.number().min(0).optional(),
-        desc: z.boolean().optional(),
-        ownership: z.nativeEnum(STORAGE_OWNERSHIP_FILTER).optional(),
-    })
-    .strict();
+const listOptionsSchema = z.strictObject({
+    unnamed: z.boolean().optional(),
+    limit: z.number().min(0).optional(),
+    offset: z.number().min(0).optional(),
+    desc: z.boolean().optional(),
+    ownership: z.enum(STORAGE_OWNERSHIP_FILTER).optional(),
+});
 const nameSchema = z.string().optional();
 const schemaSchema = anyObjectSchema.optional();
 

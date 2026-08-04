@@ -36,25 +36,21 @@ import { validate } from './utils';
 
 const DEFAULT_TIMEOUT_SECS = 360;
 
-const clientOptionsSchema = z
-    .object({
-        baseUrl: z.string().optional(),
-        publicBaseUrl: z.string().optional(),
-        maxRetries: z.number().optional(),
-        minDelayBetweenRetriesMillis: z.number().optional(),
-        requestInterceptors: z.array(z.unknown()).optional(),
-        timeoutSecs: z.number().optional(),
-        token: z.string().optional(),
-        userAgentSuffix: z.union([z.string(), z.array(z.string())]).optional(),
-    })
-    .strict();
+const clientOptionsSchema = z.strictObject({
+    baseUrl: z.string().optional(),
+    publicBaseUrl: z.string().optional(),
+    maxRetries: z.number().optional(),
+    minDelayBetweenRetriesMillis: z.number().optional(),
+    requestInterceptors: z.array(z.unknown()).optional(),
+    timeoutSecs: z.number().optional(),
+    token: z.string().optional(),
+    userAgentSuffix: z.union([z.string(), z.array(z.string())]).optional(),
+});
 const resourceIdSchema = z.string().min(1);
-const requestQueueOptionsSchema = z
-    .object({
-        clientKey: z.string().min(1).optional(),
-        timeoutSecs: z.number().optional(),
-    })
-    .strict();
+const requestQueueOptionsSchema = z.strictObject({
+    clientKey: z.string().min(1).optional(),
+    timeoutSecs: z.number().optional(),
+});
 
 /**
  * The official JavaScript client for the Apify API.

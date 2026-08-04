@@ -6,18 +6,16 @@ import type { PaginatedIterator, PaginationOptions } from '../utils';
 import { validate } from '../utils';
 import type { ActorStats } from './actor';
 
-const listOptionsSchema = z
-    .object({
-        limit: z.number().min(0).optional(),
-        offset: z.number().min(0).optional(),
-        search: z.string().optional(),
-        sortBy: z.string().optional(),
-        category: z.string().optional(),
-        username: z.string().optional(),
-        pricingModel: z.string().optional(),
-        includeUnrunnableActors: z.boolean().optional(),
-    })
-    .strict();
+const listOptionsSchema = z.strictObject({
+    limit: z.number().min(0).optional(),
+    offset: z.number().min(0).optional(),
+    search: z.string().optional(),
+    sortBy: z.string().optional(),
+    category: z.string().optional(),
+    username: z.string().optional(),
+    pricingModel: z.string().optional(),
+    includeUnrunnableActors: z.boolean().optional(),
+});
 
 /**
  * Client for browsing Actors in the Apify Store.
