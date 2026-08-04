@@ -43,6 +43,16 @@ export function validate<Schema extends z.ZodType>(schema: Schema, value: unknow
 export const anyObjectSchema = z.looseObject({});
 
 /**
+ * Accepts the same values as {@link anyObjectSchema} - a plain object, so neither an array nor a
+ * function - but as a predicate to hand to `z.custom()`, which does not walk and copy the value the
+ * way an object schema does. Use it where a whole batch is validated at once.
+ * @internal
+ */
+export function isPlainObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
  * Generic interface for objects that may contain a data property.
  *
  * @template R - The type of the data property

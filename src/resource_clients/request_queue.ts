@@ -13,6 +13,7 @@ import {
     anyObjectSchema,
     cast,
     catchNotFoundOrThrow,
+    isPlainObject,
     mutuallyExclusive,
     parseDateFields,
     pluckData,
@@ -32,19 +33,31 @@ const listAndLockHeadOptionsSchema = z.strictObject({
     lockSecs: z.number(),
     limit: z.number().min(0).optional(),
 });
-// `id` is assigned by the API - it must be absent (or explicitly `undefined`) on a new request.
-const newRequestSchema = z.looseObject({ id: z.undefined().optional() });
+// The request schemas below are predicates rather than `z.looseObject` arms: they are applied to a
+// whole batch at a time, and an object arm would walk and copy every key of every request in it.
+// `id` is assigned by the API, so it must be absent (or explicitly `undefined`) on a new request.
+const newRequestSchema = z.custom<Omit<RequestQueueClientRequestSchema, 'id'>>(
+    (value) => isPlainObject(value) && value.id === undefined,
+    'Expected a request object without an `id`',
+);
 const forefrontOptionsSchema = z.strictObject({ forefront: z.boolean().optional() });
 const batchAddRequestsSchema = z.array(newRequestSchema).min(1).max(REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION);
 const batchAddRequestsWithRetriesSchema = z.array(newRequestSchema).min(1);
 const optionalBooleanSchema = z.boolean().optional();
 const optionalNumberSchema = z.number().optional();
+const requestToDeleteSchema = z.custom<RequestQueueClientRequestToDelete>(
+    (value) => isPlainObject(value) && (typeof value.id === 'string' || typeof value.uniqueKey === 'string'),
+    'Expected a request object with an `id` or a `uniqueKey`',
+);
 const batchDeleteRequestsSchema = z
-    .array(z.union([z.looseObject({ id: z.string() }), z.looseObject({ uniqueKey: z.string() })]))
+    .array(requestToDeleteSchema)
     .min(1)
     .max(REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION);
 const requestIdSchema = z.string();
-const existingRequestSchema = z.looseObject({ id: z.string() });
+const existingRequestSchema = z.custom<RequestQueueClientRequestSchema>(
+    (value) => isPlainObject(value) && typeof value.id === 'string',
+    'Expected a request object with an `id`',
+);
 const prolongRequestLockOptionsSchema = z.strictObject({
     lockSecs: z.number(),
     forefront: z.boolean().optional(),
