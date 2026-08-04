@@ -22,36 +22,30 @@ import { RunCollectionClient } from './run_collection';
 import { WebhookCollectionClient } from './webhook_collection';
 
 const inputSchema = anyObjectSchema.optional();
-const startOptionsSchema = z
-    .object({
-        build: z.string().optional(),
-        memory: z.number().optional(),
-        timeout: z.number().optional(),
-        waitForFinish: z.number().optional(),
-        webhooks: z.array(anyObjectSchema).optional(),
-        maxItems: z.number().min(0).optional(),
-        maxTotalChargeUsd: z.number().min(0).optional(),
-        restartOnError: z.boolean().optional(),
-    })
-    .strict();
-const callOptionsSchema = z
-    .object({
-        build: z.string().optional(),
-        memory: z.number().optional(),
-        timeout: z.number().min(0).optional(),
-        waitSecs: z.number().min(0).optional(),
-        webhooks: z.array(anyObjectSchema).optional(),
-        maxItems: z.number().min(0).optional(),
-        maxTotalChargeUsd: z.number().min(0).optional(),
-        restartOnError: z.boolean().optional(),
-    })
-    .strict();
-const lastRunOptionsSchema = z
-    .object({
-        status: z.nativeEnum(ACT_JOB_STATUSES).optional(),
-        origin: z.nativeEnum(META_ORIGINS).optional(),
-    })
-    .strict();
+const startOptionsSchema = z.strictObject({
+    build: z.string().optional(),
+    memory: z.number().optional(),
+    timeout: z.number().optional(),
+    waitForFinish: z.number().optional(),
+    webhooks: z.array(anyObjectSchema).optional(),
+    maxItems: z.number().min(0).optional(),
+    maxTotalChargeUsd: z.number().min(0).optional(),
+    restartOnError: z.boolean().optional(),
+});
+const callOptionsSchema = z.strictObject({
+    build: z.string().optional(),
+    memory: z.number().optional(),
+    timeout: z.number().min(0).optional(),
+    waitSecs: z.number().min(0).optional(),
+    webhooks: z.array(anyObjectSchema).optional(),
+    maxItems: z.number().min(0).optional(),
+    maxTotalChargeUsd: z.number().min(0).optional(),
+    restartOnError: z.boolean().optional(),
+});
+const lastRunOptionsSchema = z.strictObject({
+    status: z.enum(ACT_JOB_STATUSES).optional(),
+    origin: z.enum(META_ORIGINS).optional(),
+});
 
 /**
  * Client for managing a specific Actor task.

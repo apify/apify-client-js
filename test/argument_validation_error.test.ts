@@ -4,12 +4,10 @@ import { z } from 'zod';
 import { ArgumentValidationError } from '../src/argument_validation_error';
 
 describe('ArgumentValidationError', () => {
-    const schema = z
-        .object({
-            countryCode: z.string().regex(/^[A-Z]{2}$/),
-            retries: z.number().optional(),
-        })
-        .strict();
+    const schema = z.strictObject({
+        countryCode: z.string().regex(/^[A-Z]{2}$/),
+        retries: z.number().optional(),
+    });
 
     test('message names the offending field and the value it received', () => {
         const value = { countryCode: 'CZE' };
@@ -37,7 +35,7 @@ describe('ArgumentValidationError', () => {
     });
 
     test('message lists every failed arm of a union', () => {
-        const unionSchema = z.array(z.union([z.object({}).passthrough(), z.string()]));
+        const unionSchema = z.array(z.union([z.looseObject({}), z.string()]));
         const value = [1];
         const error = new ArgumentValidationError(unionSchema.safeParse(value).error!, value);
 

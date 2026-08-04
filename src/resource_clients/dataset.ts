@@ -20,62 +20,56 @@ const itemSchema = z.custom<object>(
     (value) => typeof value === 'object' && value !== null && !Array.isArray(value),
     'Expected an object',
 );
-const listItemsOptionsSchema = z
-    .object({
-        clean: z.boolean().optional(),
-        desc: z.boolean().optional(),
-        flatten: z.array(z.string()).optional(),
-        fields: z.array(z.string()).optional(),
-        omit: z.array(z.string()).optional(),
-        limit: z.number().min(0).optional(),
-        offset: z.number().min(0).optional(),
-        chunkSize: z.number().positive().optional(),
-        skipEmpty: z.boolean().optional(),
-        skipHidden: z.boolean().optional(),
-        unwind: z.union([z.string(), z.array(z.string())]).optional(),
-        view: z.string().optional(),
-        signature: z.string().optional(),
-    })
-    .strict();
-const downloadItemsOptionsSchema = z
-    .object({
-        attachment: z.boolean().optional(),
-        bom: z.boolean().optional(),
-        clean: z.boolean().optional(),
-        delimiter: z.string().optional(),
-        desc: z.boolean().optional(),
-        flatten: z.array(z.string()).optional(),
-        fields: z.array(z.string()).optional(),
-        omit: z.array(z.string()).optional(),
-        limit: z.number().min(0).optional(),
-        offset: z.number().min(0).optional(),
-        skipEmpty: z.boolean().optional(),
-        skipHeaderRow: z.boolean().optional(),
-        skipHidden: z.boolean().optional(),
-        unwind: z.union([z.string(), z.array(z.string())]).optional(),
-        view: z.string().optional(),
-        xmlRoot: z.string().optional(),
-        xmlRow: z.string().optional(),
-        signature: z.string().optional(),
-    })
-    .strict();
+const listItemsOptionsSchema = z.strictObject({
+    clean: z.boolean().optional(),
+    desc: z.boolean().optional(),
+    flatten: z.array(z.string()).optional(),
+    fields: z.array(z.string()).optional(),
+    omit: z.array(z.string()).optional(),
+    limit: z.number().min(0).optional(),
+    offset: z.number().min(0).optional(),
+    chunkSize: z.number().positive().optional(),
+    skipEmpty: z.boolean().optional(),
+    skipHidden: z.boolean().optional(),
+    unwind: z.union([z.string(), z.array(z.string())]).optional(),
+    view: z.string().optional(),
+    signature: z.string().optional(),
+});
+const downloadItemsOptionsSchema = z.strictObject({
+    attachment: z.boolean().optional(),
+    bom: z.boolean().optional(),
+    clean: z.boolean().optional(),
+    delimiter: z.string().optional(),
+    desc: z.boolean().optional(),
+    flatten: z.array(z.string()).optional(),
+    fields: z.array(z.string()).optional(),
+    omit: z.array(z.string()).optional(),
+    limit: z.number().min(0).optional(),
+    offset: z.number().min(0).optional(),
+    skipEmpty: z.boolean().optional(),
+    skipHeaderRow: z.boolean().optional(),
+    skipHidden: z.boolean().optional(),
+    unwind: z.union([z.string(), z.array(z.string())]).optional(),
+    view: z.string().optional(),
+    xmlRoot: z.string().optional(),
+    xmlRow: z.string().optional(),
+    signature: z.string().optional(),
+});
 const pushItemsSchema = z.union([itemSchema, z.string(), z.array(z.union([itemSchema, z.string()]))]);
-const createItemsPublicUrlOptionsSchema = z
-    .object({
-        clean: z.boolean().optional(),
-        desc: z.boolean().optional(),
-        flatten: z.array(z.string()).optional(),
-        fields: z.array(z.string()).optional(),
-        omit: z.array(z.string()).optional(),
-        limit: z.number().min(0).optional(),
-        offset: z.number().min(0).optional(),
-        skipEmpty: z.boolean().optional(),
-        skipHidden: z.boolean().optional(),
-        unwind: z.union([z.string(), z.array(z.string())]).optional(),
-        view: z.string().optional(),
-        expiresInSecs: z.number().optional(),
-    })
-    .strict();
+const createItemsPublicUrlOptionsSchema = z.strictObject({
+    clean: z.boolean().optional(),
+    desc: z.boolean().optional(),
+    flatten: z.array(z.string()).optional(),
+    fields: z.array(z.string()).optional(),
+    omit: z.array(z.string()).optional(),
+    limit: z.number().min(0).optional(),
+    offset: z.number().min(0).optional(),
+    skipEmpty: z.boolean().optional(),
+    skipHidden: z.boolean().optional(),
+    unwind: z.union([z.string(), z.array(z.string())]).optional(),
+    view: z.string().optional(),
+    expiresInSecs: z.number().optional(),
+});
 
 /**
  * Client for managing a specific Dataset.

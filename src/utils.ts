@@ -33,7 +33,7 @@ export function validate<Schema extends z.ZodType>(schema: Schema, value: unknow
  * validates itself.
  * @internal
  */
-export const anyObjectSchema = z.object({}).passthrough();
+export const anyObjectSchema = z.looseObject({});
 
 /**
  * Generic interface for objects that may contain a data property.

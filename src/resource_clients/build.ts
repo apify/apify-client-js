@@ -8,8 +8,8 @@ import { cast, parseDateFields, pluckData, validate } from '../utils';
 import type { ActorDefinition } from './actor';
 import { LogClient } from './log';
 
-const getOptionsSchema = z.object({ waitForFinish: z.number().optional() }).strict();
-const waitForFinishOptionsSchema = z.object({ waitSecs: z.number().optional() }).strict();
+const getOptionsSchema = z.strictObject({ waitForFinish: z.number().optional() });
+const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional() });
 
 /**
  * Client for managing a specific Actor build.

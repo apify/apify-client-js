@@ -6,13 +6,11 @@ import type { PaginatedIterator, PaginationOptions } from '../utils';
 import { anyObjectSchema, validate } from '../utils';
 import type { Task, TaskUpdateData } from './task';
 
-const listOptionsSchema = z
-    .object({
-        limit: z.number().min(0).optional(),
-        offset: z.number().min(0).optional(),
-        desc: z.boolean().optional(),
-    })
-    .strict();
+const listOptionsSchema = z.strictObject({
+    limit: z.number().min(0).optional(),
+    offset: z.number().min(0).optional(),
+    desc: z.boolean().optional(),
+});
 
 /**
  * Client for managing the collection of Actor tasks in your account.

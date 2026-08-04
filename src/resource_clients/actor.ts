@@ -20,56 +20,46 @@ import type { WebhookUpdateData } from './webhook';
 import { WebhookCollectionClient } from './webhook_collection';
 import type { ValueOf } from 'type-fest';
 
-const startOptionsSchema = z
-    .object({
-        build: z.string().optional(),
-        contentType: z.string().optional(),
-        memory: z.number().optional(),
-        timeout: z.number().optional(),
-        waitForFinish: z.number().optional(),
-        webhooks: z.array(anyObjectSchema).optional(),
-        maxItems: z.number().min(0).optional(),
-        maxTotalChargeUsd: z.number().min(0).optional(),
-        restartOnError: z.boolean().optional(),
-        forcePermissionLevel: z.nativeEnum(ACTOR_PERMISSION_LEVEL).optional(),
-    })
-    .strict();
-const callOptionsSchema = z
-    .object({
-        build: z.string().optional(),
-        contentType: z.string().optional(),
-        memory: z.number().optional(),
-        timeout: z.number().min(0).optional(),
-        waitSecs: z.number().min(0).optional(),
-        webhooks: z.array(anyObjectSchema).optional(),
-        maxItems: z.number().min(0).optional(),
-        maxTotalChargeUsd: z.number().min(0).optional(),
-        log: z.union([z.null(), z.instanceof(Log), z.literal('default')]).optional(),
-        restartOnError: z.boolean().optional(),
-        forcePermissionLevel: z.nativeEnum(ACTOR_PERMISSION_LEVEL).optional(),
-    })
-    .strict();
-const validateInputOptionsSchema = z
-    .object({
-        build: z.string().optional(),
-        contentType: z.string().optional(),
-    })
-    .strict();
+const startOptionsSchema = z.strictObject({
+    build: z.string().optional(),
+    contentType: z.string().optional(),
+    memory: z.number().optional(),
+    timeout: z.number().optional(),
+    waitForFinish: z.number().optional(),
+    webhooks: z.array(anyObjectSchema).optional(),
+    maxItems: z.number().min(0).optional(),
+    maxTotalChargeUsd: z.number().min(0).optional(),
+    restartOnError: z.boolean().optional(),
+    forcePermissionLevel: z.enum(ACTOR_PERMISSION_LEVEL).optional(),
+});
+const callOptionsSchema = z.strictObject({
+    build: z.string().optional(),
+    contentType: z.string().optional(),
+    memory: z.number().optional(),
+    timeout: z.number().min(0).optional(),
+    waitSecs: z.number().min(0).optional(),
+    webhooks: z.array(anyObjectSchema).optional(),
+    maxItems: z.number().min(0).optional(),
+    maxTotalChargeUsd: z.number().min(0).optional(),
+    log: z.union([z.null(), z.instanceof(Log), z.literal('default')]).optional(),
+    restartOnError: z.boolean().optional(),
+    forcePermissionLevel: z.enum(ACTOR_PERMISSION_LEVEL).optional(),
+});
+const validateInputOptionsSchema = z.strictObject({
+    build: z.string().optional(),
+    contentType: z.string().optional(),
+});
 const versionNumberSchema = z.string();
-const buildOptionsSchema = z
-    .object({
-        betaPackages: z.boolean().optional(),
-        tag: z.string().optional(),
-        useCache: z.boolean().optional(),
-        waitForFinish: z.number().optional(),
-    })
-    .strict();
-const lastRunOptionsSchema = z
-    .object({
-        status: z.nativeEnum(ACTOR_JOB_STATUSES).optional(),
-        origin: z.nativeEnum(META_ORIGINS).optional(),
-    })
-    .strict();
+const buildOptionsSchema = z.strictObject({
+    betaPackages: z.boolean().optional(),
+    tag: z.string().optional(),
+    useCache: z.boolean().optional(),
+    waitForFinish: z.number().optional(),
+});
+const lastRunOptionsSchema = z.strictObject({
+    status: z.enum(ACTOR_JOB_STATUSES).optional(),
+    origin: z.enum(META_ORIGINS).optional(),
+});
 
 /**
  * Client for managing a specific Actor.
