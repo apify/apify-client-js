@@ -3,12 +3,11 @@ import { z } from 'zod';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
-import { anyObjectSchema, validate } from '../utils';
+import { anyObjectSchema, paginationOptionsShape, validate } from '../utils';
 import type { Schedule, ScheduleCreateOrUpdateData } from './schedule';
 
 const listOptionsSchema = z.strictObject({
-    limit: z.number().min(0).optional(),
-    offset: z.number().min(0).optional(),
+    ...paginationOptionsShape,
     desc: z.boolean().optional(),
 });
 const scheduleCreateSchema = anyObjectSchema.optional();

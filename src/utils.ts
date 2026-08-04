@@ -347,6 +347,18 @@ export interface PaginationOptions {
 }
 
 /**
+ * Schema shape of {@link PaginationOptions}, to spread into the strict list options schema of every
+ * client that paginates. Keeping it in one place stops the schemas from drifting from the interface,
+ * which is how `chunkSize` came to be rejected by every one of them.
+ * @internal
+ */
+export const paginationOptionsShape = {
+    limit: z.number().min(0).optional(),
+    offset: z.number().min(0).optional(),
+    chunkSize: z.number().positive().optional(),
+};
+
+/**
  * Standard paginated response format.
  *
  * @template Data - The type of items in the response
