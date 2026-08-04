@@ -33,9 +33,8 @@ const listAndLockHeadOptionsSchema = z.strictObject({
     lockSecs: z.number(),
     limit: z.number().min(0).optional(),
 });
-// The request schemas below are predicates rather than `z.looseObject` arms: they are applied to a
-// whole batch at a time, and an object arm would walk and copy every key of every request in it.
-// `id` is assigned by the API, so it must be absent (or explicitly `undefined`) on a new request.
+// Predicates, not `z.looseObject` arms: these run over a whole batch, and an object arm would copy
+// every key of every request. `id` is assigned by the API, so a new request must not carry one.
 const newRequestSchema = z.custom<Omit<RequestQueueClientRequestSchema, 'id'>>(
     (value) => isPlainObject(value) && value.id === undefined,
     'Expected a request object without an `id`',

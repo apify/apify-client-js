@@ -14,8 +14,8 @@ const range = (start: number, end: number, step = 1) => {
     );
 };
 
-// The client caps `chunkSize` at the endpoint's page size, so that capped value is the page size the
-// iteration actually requests - and it always makes at least one request, even for an empty result.
+// The client caps `chunkSize` at the endpoint's page size, and always makes at least one request, even
+// for an empty result.
 const expectedRequestCount = (itemCount: number, chunkSize: number | undefined, maxItemsPerPage: number) =>
     Math.max(Math.ceil(itemCount / Math.min(chunkSize || Infinity, maxItemsPerPage)), 1);
 

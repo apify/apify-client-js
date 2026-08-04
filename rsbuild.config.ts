@@ -35,9 +35,9 @@ export default defineConfig({
         minify: {
             jsOptions: {
                 minimizerOptions: {
-                    // Class names are load-bearing at runtime: `ApifyApiError` and `InvalidResponseBodyError`
-                    // derive their `name` from `constructor.name`, and `ResourceClient.waitForFinish()`
-                    // parses the client name out of it.
+                    // Class names are load-bearing: `ApifyApiError` and `InvalidResponseBodyError` take
+                    // their `name` from `constructor.name`, and `ResourceClient.waitForFinish()` parses
+                    // the client name out of it.
                     compress: { keep_classnames: true },
                     mangle: { keep_classnames: true },
                 },
@@ -60,9 +60,8 @@ export default defineConfig({
                 ...config.optimization,
                 splitChunks: false,
             };
-            // A regression guard, not a target: the bundle sits around 288 kB, and it silently grew to
-            // 1439 kB once before, when tree-shaking and minification were turned off. Raising this
-            // deliberately is fine - having it grow unnoticed is not.
+            // A regression guard, not a target: the bundle sits at ~288 kB, and once silently grew to
+            // 1439 kB with tree-shaking and minification off. Raising this deliberately is fine.
             config.performance = {
                 hints: 'error',
                 maxAssetSize: MAX_BUNDLE_BYTES,

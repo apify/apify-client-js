@@ -37,7 +37,7 @@ const listKeysOptionsSchema = z.strictObject({
     signature: z.string().optional(),
 });
 const nonEmptyKeySchema = z.string().min(1);
-// `signature` is left out because this method is what produces one; the options type omits it to match.
+// `signature` is left out - this method produces one. The options type omits it to match.
 const createKeysPublicUrlOptionsSchema = z.strictObject({
     limit: z.number().min(0).optional(),
     exclusiveStartKey: z.string().optional(),
@@ -563,8 +563,8 @@ export interface KeyValueClientListKeysOptions {
 /**
  * Options for creating a public URL to list keys in a Key-Value Store.
  *
- * Extends {@link KeyValueClientListKeysOptions} with URL expiration control, minus `signature`, which
- * this method produces rather than accepts.
+ * Extends {@link KeyValueClientListKeysOptions} with URL expiration control, minus `signature` (this
+ * method produces one).
  */
 export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientListKeysOptions, 'signature'> {
     expiresInSecs?: number;
