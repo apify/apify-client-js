@@ -100,8 +100,8 @@ export abstract class ApiClient {
             return Math.min(a, b);
         };
 
-        // `chunkSize` only sizes the requests this loop makes; it is not an API parameter, so it must not
-        // travel on to `_params()` and end up in the query string.
+        // `chunkSize` only sizes this loop's requests; it is not an API parameter, so it must not reach
+        // `_params()` and the query string.
         const { chunkSize, ...listOptions } = options;
 
         const paginatedListPromise = getPaginatedList({

@@ -36,18 +36,17 @@ function describeReceived(value: unknown): string | undefined {
 }
 
 /**
- * Renders the issue's own sentence, except where zod's reads as a contradiction. A value that is of
- * the expected type but fails that type's implicit constraint is still reported as the wrong *type*:
- * `Infinity` and `NaN` are typeof `number`, and an invalid `Date` is still a `Date`, so the locale
- * produces "expected number, received number" and "expected date, received Date". Name the constraint
- * that actually failed instead.
+ * Renders the issue's own sentence, except where zod's contradicts itself: a value of the expected type
+ * that fails that type's implicit constraint is still reported as the wrong *type*, giving "expected
+ * number, received number" for `Infinity` / `NaN` and "expected date, received Date" for an invalid
+ * `Date`. Name the constraint that actually failed instead.
  */
 function describeIssue(issue: z.ZodError['issues'][number], value: unknown): string {
     if (issue.code === 'invalid_type') {
         if (issue.expected === 'number' && typeof value === 'number') {
             return 'Invalid input: expected a finite number';
         }
-        // A tag check rather than `instanceof`, to also name the constraint for a `Date` from another realm.
+        // A tag check, not `instanceof`, so a `Date` from another realm is named too.
         if (issue.expected === 'date' && Object.prototype.toString.call(value) === '[object Date]') {
             return 'Invalid input: expected a valid date';
         }

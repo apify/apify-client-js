@@ -39,8 +39,8 @@ const listItemsOptionsSchema = z.strictObject({
     view: z.string().optional(),
     signature: z.string().optional(),
 });
-// Spells out `limit` and `offset` rather than spreading `paginationOptionsShape`: a download is a
-// single request, so `chunkSize` has nothing to size. The options type omits it to match.
+// Spells out `limit` / `offset` instead of spreading `paginationOptionsShape`: a download is one
+// request, so `chunkSize` has nothing to size. The options type omits it to match.
 const downloadItemsOptionsSchema = z.strictObject({
     attachment: z.boolean().optional(),
     bom: z.boolean().optional(),
@@ -62,9 +62,8 @@ const downloadItemsOptionsSchema = z.strictObject({
     signature: z.string().optional(),
 });
 const pushItemsSchema = z.union([itemSchema, z.string(), z.array(z.union([itemSchema, z.string()]))]);
-// Every option here becomes a query parameter of the generated URL, so the two that would only ever
-// describe a client-side iteration are left out: `chunkSize`, and `signature` - which this method
-// produces. The options type omits both to match.
+// Every option becomes a query parameter of the generated URL, so `chunkSize` (client-side only) and
+// `signature` (which this method produces) are left out. The options type omits both to match.
 const createItemsPublicUrlOptionsSchema = z.strictObject({
     clean: z.boolean().optional(),
     desc: z.boolean().optional(),
@@ -482,9 +481,8 @@ export interface DatasetClientListItemOptions extends PaginationOptions {
 /**
  * Options for creating a public URL to access dataset items.
  *
- * Extends {@link DatasetClientListItemOptions} with URL expiration control, minus the options that do
- * not apply: `chunkSize` only sizes the requests of a client-side iteration, and `signature` is what
- * this method produces rather than something it accepts.
+ * Extends {@link DatasetClientListItemOptions} with URL expiration control, minus `chunkSize` (it only
+ * sizes a client-side iteration) and `signature` (this method produces one).
  */
 export interface DatasetClientCreateItemsUrlOptions extends Omit<
     DatasetClientListItemOptions,
@@ -514,8 +512,8 @@ const itemFormatSchema = z.enum(validItemFormats);
 /**
  * Options for downloading dataset items in a specific format.
  *
- * Extends {@link DatasetClientListItemOptions} with format-specific options, minus `chunkSize`, which
- * only sizes the requests of a client-side iteration - this downloads the whole range in one request.
+ * Extends {@link DatasetClientListItemOptions} with format-specific options, minus `chunkSize` - this
+ * downloads the whole range in one request, so there is nothing to size.
  */
 export interface DatasetClientDownloadItemsOptions extends Omit<DatasetClientListItemOptions, 'chunkSize'> {
     attachment?: boolean;

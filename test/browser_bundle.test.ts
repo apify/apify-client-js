@@ -4,9 +4,8 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { Browser } from './_helper';
 
 /**
- * Unlike every other test file, which imports from `src`, these run against the built
- * `dist/bundle.js` - it is tree-shaken and minified, so it can lose runtime behaviour that the
- * unbundled sources keep.
+ * Unlike every other test file, these run against the built `dist/bundle.js` - tree-shaken and
+ * minified, so it can lose runtime behaviour the unbundled sources keep.
  */
 describe('browser bundle', () => {
     const browser = new Browser();

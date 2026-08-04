@@ -16,11 +16,9 @@ const RECORD_NOT_FOUND_TYPE = 'record-not-found';
 const RECORD_OR_TOKEN_NOT_FOUND_TYPE = 'record-or-token-not-found';
 const MIN_COMPRESS_BYTES = 1024;
 
-// Zod installs its English locale as a module-level side effect of its own entry point, but ships
-// `"sideEffects": false`, so any tree-shaking bundler drops that call and every issue degrades to a
-// bare "Invalid input". Passing the locale in per parse keeps the messages intact - in the browser
-// bundle and for consumers who bundle `apify-client` themselves - and, unlike `z.config()`, without
-// reaching into the zod config shared with everything else in the process.
+// Zod installs its English locale as a module-level side effect but ships `"sideEffects": false`, so
+// any tree-shaking bundler drops it and every message degrades to a bare "Invalid input". Passing it
+// in per parse keeps them intact without reaching into the zod config the whole process shares.
 const { localeError } = z.locales.en();
 
 /**
@@ -43,9 +41,8 @@ export function validate<Schema extends z.ZodType>(schema: Schema, value: unknow
 export const anyObjectSchema = z.looseObject({});
 
 /**
- * Accepts the same values as {@link anyObjectSchema} - a plain object, so neither an array nor a
- * function - but as a predicate to hand to `z.custom()`, which does not walk and copy the value the
- * way an object schema does. Use it where a whole batch is validated at once.
+ * Accepts what {@link anyObjectSchema} does, but as a predicate for `z.custom()`, which does not copy
+ * the value the way an object schema does. Use it where a whole batch is validated at once.
  * @internal
  */
 export function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -357,9 +354,8 @@ export interface PaginationOptions {
 }
 
 /**
- * Schema shape of {@link PaginationOptions}, to spread into the strict list options schema of every
- * client that paginates. Keeping it in one place stops the schemas from drifting from the interface,
- * which is how `chunkSize` came to be rejected by every one of them.
+ * Schema shape of {@link PaginationOptions}, to spread into every paginating client's list schema. One
+ * copy stops it drifting from the interface - the drift that left `chunkSize` rejected everywhere.
  * @internal
  */
 export const paginationOptionsShape = {
