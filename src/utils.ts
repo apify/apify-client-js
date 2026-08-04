@@ -16,12 +16,19 @@ const RECORD_NOT_FOUND_TYPE = 'record-not-found';
 const RECORD_OR_TOKEN_NOT_FOUND_TYPE = 'record-or-token-not-found';
 const MIN_COMPRESS_BYTES = 1024;
 
+// Zod installs its English locale as a module-level side effect of its own entry point, but ships
+// `"sideEffects": false`, so any tree-shaking bundler drops that call and every issue degrades to a
+// bare "Invalid input". Passing the locale in per parse keeps the messages intact - in the browser
+// bundle and for consumers who bundle `apify-client` themselves - and, unlike `z.config()`, without
+// reaching into the zod config shared with everything else in the process.
+const { localeError } = z.locales.en();
+
 /**
  * Parses `value` with `schema`, throwing an {@link ArgumentValidationError} if it doesn't match.
  * @internal
  */
 export function validate<Schema extends z.ZodType>(schema: Schema, value: unknown): z.infer<Schema> {
-    const result = schema.safeParse(value);
+    const result = schema.safeParse(value, { error: localeError });
     if (!result.success) {
         throw new ArgumentValidationError(result.error, value);
     }
