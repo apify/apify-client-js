@@ -355,7 +355,7 @@ export interface PaginationOptions {
 
 /**
  * Schema shape of {@link PaginationOptions}, to spread into every paginating client's list schema. One
- * copy stops it drifting from the interface - the drift that left `chunkSize` rejected everywhere.
+ * copy stops it drifting from the interface.
  * @internal
  */
 export const paginationOptionsShape = {
