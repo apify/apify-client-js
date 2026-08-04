@@ -26,6 +26,27 @@ describe('ArgumentValidationError', () => {
         expect(error.message).toContain("got `''`");
     });
 
+    test.each([
+        { name: 'Infinity', value: Infinity },
+        { name: 'NaN', value: Number.NaN },
+    ])('message names the finiteness constraint for $name', ({ value }) => {
+        const numberSchema = z.strictObject({ timeoutSecs: z.number() });
+        const input = { timeoutSecs: value };
+        const error = new ArgumentValidationError(numberSchema.safeParse(input).error!, input);
+
+        // Zod's own sentence for these is the self-contradictory "expected number, received number".
+        expect(error.message).toBe(`Invalid input: expected a finite number at \`timeoutSecs\`, got \`${value}\``);
+    });
+
+    test('message names the validity constraint for an invalid Date', () => {
+        const dateSchema = z.strictObject({ startedBefore: z.date() });
+        const input = { startedBefore: new Date('nonsense') };
+        const error = new ArgumentValidationError(dateSchema.safeParse(input).error!, input);
+
+        // Zod's own sentence for this one is the self-contradictory "expected date, received Date".
+        expect(error.message).toBe('Invalid input: expected a valid date at `startedBefore`');
+    });
+
     test('message points at the offending array element', () => {
         const arraySchema = z.object({ groups: z.array(z.object({ name: z.string() })) });
         const value = { groups: [{ name: 'ok' }, { name: 7 }] };
