@@ -284,6 +284,9 @@ export interface Task {
     userId: string;
     actId: string;
     name: string;
+    /**
+     * @since Added in 2.6.1
+     */
     title?: string;
     description?: string;
     username?: string;
@@ -292,6 +295,9 @@ export interface Task {
     stats: TaskStats;
     options?: TaskOptions;
     input?: Dictionary | Dictionary[];
+    /**
+     * @since Added in 2.9.5
+     */
     actorStandby?: Partial<ActorStandby>;
 }
 
@@ -309,6 +315,9 @@ export interface TaskOptions {
     build?: string;
     timeoutSecs?: number;
     memoryMbytes?: number;
+    /**
+     * @since Added in 2.19.0
+     */
     restartOnError?: boolean;
 }
 
@@ -329,11 +338,13 @@ export interface TaskLastRunOptions extends ActorLastRunOptions {}
  *
  * Similar to {@link ActorStartOptions} but without contentType (Task input is predefined)
  * and forcePermissionLevel.
+ * @since Added in 2.0.4
  */
 export type TaskStartOptions = Omit<ActorStartOptions, 'contentType' | 'forcePermissionLevel'>;
 
 /**
  * Options for calling a Task and waiting for it to finish.
+ * @since Added in 2.6.2
  */
 export interface TaskCallOptions extends Omit<TaskStartOptions, 'waitForFinish'> {
     waitSecs?: number;

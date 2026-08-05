@@ -167,6 +167,7 @@ export class RequestQueueClient extends ResourceClient {
      *   await client.requestQueue('my-queue').deleteRequestLock(request.id);
      * }
      * ```
+     * @since Added in 2.4.1
      */
     async listAndLockHead(
         options: RequestQueueClientListAndLockHeadOptions,
@@ -407,6 +408,7 @@ export class RequestQueueClient extends ResourceClient {
      *   { maxUnprocessedRequestsRetries: 5, maxParallel: 10 }
      * );
      * ```
+     * @since Added in 2.1.0
      */
     async batchAddRequests(
         requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
@@ -477,6 +479,7 @@ export class RequestQueueClient extends ResourceClient {
      * @param requests - Array of requests to delete (by id or uniqueKey)
      * @returns Result containing processed and unprocessed requests
      * @see https://docs.apify.com/api/v2/request-queue-requests-batch-delete
+     * @since Added in 2.3.0
      */
     async batchDeleteRequests(
         requests: RequestQueueClientRequestToDelete[],
@@ -610,6 +613,7 @@ export class RequestQueueClient extends ResourceClient {
      * // Processing takes longer than expected, extend the lock
      * await client.requestQueue('my-queue').prolongRequestLock(request.id, { lockSecs: 120 });
      * ```
+     * @since Added in 2.4.1
      */
     async prolongRequestLock(
         id: string,
@@ -647,6 +651,7 @@ export class RequestQueueClient extends ResourceClient {
      * @param id - Request ID
      * @param options - Options such as whether to move to front
      * @see https://docs.apify.com/api/v2/request-queue-request-lock-delete
+     * @since Added in 2.4.1
      */
     async deleteRequestLock(id: string, options: RequestQueueClientDeleteRequestLockOptions = {}): Promise<void> {
         ow(id, ow.string);
@@ -677,6 +682,7 @@ export class RequestQueueClient extends ResourceClient {
      * @param options - Pagination options
      * @returns List of requests with pagination information
      * @see https://docs.apify.com/api/v2/request-queue-requests-get
+     * @since Added in 2.5.1
      */
     listRequests(
         options: RequestQueueClientListRequestsOptions = {},
@@ -752,6 +758,7 @@ export class RequestQueueClient extends ResourceClient {
      *
      * @returns Number of requests that were unlocked
      * @see https://docs.apify.com/api/v2/request-queue-requests-unlock-post
+     * @since Added in 2.12.5
      */
     async unlockRequests(): Promise<RequestQueueClientUnlockRequestsResult> {
         const response = await this.httpClient.call({
@@ -782,6 +789,7 @@ export class RequestQueueClient extends ResourceClient {
      *   items.forEach((request) => console.log(request.url));
      * }
      * ```
+     * @since Added in 2.5.1
      */
     paginateRequests(
         options: RequestQueueClientPaginateRequestsOptions = {},
@@ -821,6 +829,9 @@ export class RequestQueueClient extends ResourceClient {
  */
 export interface RequestQueueUserOptions {
     clientKey?: string;
+    /**
+     * @since Added in 2.2.0
+     */
     timeoutSecs?: number;
 }
 
@@ -833,8 +844,14 @@ export interface RequestQueueUserOptions {
 export interface RequestQueue {
     id: string;
     name?: string;
+    /**
+     * @since Added in 2.6.1
+     */
     title?: string;
     userId: string;
+    /**
+     * @since Added in 2.21.0
+     */
     username?: string;
     createdAt: Date;
     modifiedAt: Date;
@@ -847,6 +864,9 @@ export interface RequestQueue {
     actRunId?: string;
     hadMultipleClients: boolean;
     stats: RequestQueueStats;
+    /**
+     * @since Added in 2.12.2
+     */
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
@@ -866,7 +886,13 @@ export interface RequestQueueStats {
  */
 export interface RequestQueueClientUpdateOptions {
     name?: string | null;
+    /**
+     * @since Added in 2.6.1
+     */
     title?: string;
+    /**
+     * @since Added in 2.12.2
+     */
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
@@ -887,10 +913,14 @@ export interface RequestQueueClientListHeadResult {
     items: RequestQueueClientListItem[];
 }
 
+/**
+ * @since Added in 2.23.2
+ */
 export type RequestQueueListRequestsFilter = 'locked' | 'pending';
 
 /**
  * Options for listing all requests in the queue.
+ * @since Added in 2.5.1
  */
 export interface RequestQueueClientListRequestsOptions {
     limit?: number;
@@ -899,36 +929,57 @@ export interface RequestQueueClientListRequestsOptions {
      * @deprecated Use `cursor` for pagination instead.
      */
     exclusiveStartId?: string;
+    /**
+     * @since Added in 2.23.2
+     */
     cursor?: string;
+    /**
+     * @since Added in 2.23.2
+     */
     filter?: readonly RequestQueueListRequestsFilter[];
 }
 
 /**
  * Options for paginating through requests in the queue.
+ * @since Added in 2.5.1
  */
 export interface RequestQueueClientPaginateRequestsOptions {
     limit?: number;
     maxPageLimit?: number;
     /** @deprecated Use `cursor` for pagination instead. */
     exclusiveStartId?: string;
+    /**
+     * @since Added in 2.23.2
+     */
     cursor?: string;
+    /**
+     * @since Added in 2.23.2
+     */
     filter?: readonly RequestQueueListRequestsFilter[];
 }
 
 /**
  * Result of listing all requests in the queue.
+ * @since Added in 2.5.1
  */
 export interface RequestQueueClientListRequestsResult {
     limit: number;
     /** @deprecated Use `cursor` for pagination instead. */
     exclusiveStartId?: string;
+    /**
+     * @since Added in 2.23.2
+     */
     cursor?: string;
+    /**
+     * @since Added in 2.23.2
+     */
     nextCursor?: string;
     items: RequestQueueClientRequestSchema[];
 }
 
 /**
  * Options for listing and locking requests from the queue head.
+ * @since Added in 2.4.1
  */
 export interface RequestQueueClientListAndLockHeadOptions {
     lockSecs: number;
@@ -939,10 +990,17 @@ export interface RequestQueueClientListAndLockHeadOptions {
  * Result of listing and locking requests from the queue head.
  *
  * Extends {@link RequestQueueClientListHeadResult} with lock information.
+ * @since Added in 2.4.1
  */
 export interface RequestQueueClientListAndLockHeadResult extends RequestQueueClientListHeadResult {
     lockSecs: number;
+    /**
+     * @since Added in 2.11.0
+     */
     queueHasLockedRequests: boolean;
+    /**
+     * @since Added in 2.11.0
+     */
     clientKey: string;
 }
 
@@ -955,6 +1013,9 @@ export interface RequestQueueClientListItem {
     uniqueKey: string;
     url: string;
     method: AllowedHttpMethods;
+    /**
+     * @since Added in 2.4.1
+     */
     lockExpiresAt?: Date;
 }
 
@@ -962,23 +1023,38 @@ export interface RequestQueueClientAddRequestOptions {
     forefront?: boolean;
 }
 
+/**
+ * @since Added in 2.4.1
+ */
 export interface RequestQueueClientProlongRequestLockOptions {
     forefront?: boolean;
     lockSecs: number;
 }
 
+/**
+ * @since Added in 2.4.1
+ */
 export interface RequestQueueClientDeleteRequestLockOptions {
     forefront?: boolean;
 }
 
+/**
+ * @since Added in 2.4.1
+ */
 export interface RequestQueueClientProlongRequestLockResult {
     lockExpiresAt: Date;
 }
 
+/**
+ * @since Added in 2.3.0
+ */
 export interface RequestQueueClientBatchAddRequestWithRetriesOptions {
     forefront?: boolean;
     maxUnprocessedRequestsRetries?: number;
     maxParallel?: number;
+    /**
+     * @since Added in 2.4.0
+     */
     minDelayBetweenUnprocessedRequestsRetriesMillis?: number;
 }
 
@@ -1024,6 +1100,9 @@ interface UnprocessedRequest {
     method?: AllowedHttpMethods;
 }
 
+/**
+ * @since Added in 2.12.5
+ */
 export interface RequestQueueClientUnlockRequestsResult {
     unlockedCount: number;
 }
@@ -1032,12 +1111,16 @@ export interface RequestQueueClientUnlockRequestsResult {
  * Result of a batch operation on requests.
  *
  * Contains lists of successfully processed and unprocessed requests.
+ * @since Added in 2.3.0
  */
 export interface RequestQueueClientBatchRequestsOperationResult {
     processedRequests: ProcessedRequest[];
     unprocessedRequests: UnprocessedRequest[];
 }
 
+/**
+ * @since Added in 2.3.0
+ */
 export type RequestQueueClientRequestToDelete =
     | Pick<RequestQueueClientRequestSchema, 'id'>
     | Pick<RequestQueueClientRequestSchema, 'uniqueKey'>;
@@ -1049,4 +1132,7 @@ export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem
  */
 export type AllowedHttpMethods = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'TRACE' | 'OPTIONS' | 'CONNECT' | 'PATCH';
 
+/**
+ * @since Added in 2.5.1
+ */
 export type RequestQueueRequestsAsyncIterable<T> = AsyncIterable<T>;

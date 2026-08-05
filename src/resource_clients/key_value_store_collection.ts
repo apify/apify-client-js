@@ -97,10 +97,16 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
 export interface KeyValueStoreCollectionClientListOptions extends PaginationOptions {
     unnamed?: boolean;
     desc?: boolean;
-    /** Filter by ownership: 'ownedByMe' returns only user's own key-value stores, 'sharedWithMe' returns only shared key-value stores. */
+    /**
+     * Filter by ownership: 'ownedByMe' returns only user's own key-value stores, 'sharedWithMe' returns only shared key-value stores.
+     * @since Added in 2.22.1
+     */
     ownership?: STORAGE_OWNERSHIP_FILTER;
 }
 
+/**
+ * @since Added in 2.3.0
+ */
 export interface KeyValueStoreCollectionClientGetOrCreateOptions {
     schema?: Record<string, unknown>;
 }
