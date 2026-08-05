@@ -1,12 +1,10 @@
-import ow from 'ow';
-
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import type { Timezone } from '../timezones';
 import type { DistributiveOptional } from '../utils';
-import { cast, catchNotFoundOrThrow, parseDateFields, pluckData } from '../utils';
+import { anyObjectSchema, cast, catchNotFoundOrThrow, parseDateFields, pluckData, validate } from '../utils';
 
 /**
  * Client for managing a specific Schedule.
@@ -60,7 +58,7 @@ export class ScheduleClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/schedule-put
      */
     async update(newFields: ScheduleCreateOrUpdateData): Promise<Schedule> {
-        ow(newFields, ow.object);
+        validate(anyObjectSchema, newFields);
         return this._update(newFields);
     }
 

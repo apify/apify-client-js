@@ -1,7 +1,7 @@
 import type { Readable } from 'node:stream';
 
-import ow from 'ow';
 import type { JsonValue } from 'type-fest';
+import { z } from 'zod';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import log from '@apify/log';
@@ -17,6 +17,7 @@ import {
 } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import {
+    anyObjectSchema,
     applyQueryParamsToUrl,
     cast,
     catchNotFoundOrThrow,
@@ -25,7 +26,46 @@ import {
     isStream,
     parseDateFields,
     pluckData,
+    validate,
 } from '../utils';
+
+const listKeysOptionsSchema = z.strictObject({
+    limit: z.number().min(0).optional(),
+    exclusiveStartKey: z.string().optional(),
+    collection: z.string().optional(),
+    prefix: z.string().optional(),
+    signature: z.string().optional(),
+});
+const nonEmptyKeySchema = z.string().min(1);
+// `signature` is left out - this method produces one. The options type omits it to match.
+const createKeysPublicUrlOptionsSchema = z.strictObject({
+    limit: z.number().min(0).optional(),
+    exclusiveStartKey: z.string().optional(),
+    collection: z.string().optional(),
+    prefix: z.string().optional(),
+    expiresInSecs: z.number().optional(),
+});
+const keySchema = z.string();
+const getRecordOptionsSchema = z.strictObject({
+    buffer: z.boolean().optional(),
+    stream: z.boolean().optional(),
+    disableRedirect: z.boolean().optional(),
+    signature: z.string().optional(),
+});
+const recordSchema = z.strictObject({
+    key: z.string(),
+    // Values are arbitrary, and a `z.object()` arm would walk every key of a large buffer.
+    // Symbols and bigints are rejected because they cannot be serialized to JSON.
+    value: z.custom<JsonValue>(
+        (value) => value !== undefined && typeof value !== 'symbol' && typeof value !== 'bigint',
+        'Expected a defined, JSON-serializable value',
+    ),
+    contentType: z.string().min(1).optional(),
+});
+const recordOptionsSchema = z.strictObject({
+    timeoutSecs: z.number().optional(),
+    doNotRetryTimeouts: z.boolean().optional(),
+});
 
 /**
  * Client for managing a specific key-value store.
@@ -87,7 +127,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/key-value-store-put
      */
     async update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore> {
-        ow(newFields, ow.object);
+        validate(anyObjectSchema, newFields);
 
         return this._update(newFields, DEFAULT_TIMEOUT_MILLIS);
     }
@@ -139,16 +179,7 @@ export class KeyValueStoreClient extends ResourceClient {
     listKeys(
         options: KeyValueClientListKeysOptions = {},
     ): Promise<KeyValueClientListKeysResult> & AsyncIterable<KeyValueListItem> {
-        ow(
-            options,
-            ow.object.exactShape({
-                limit: ow.optional.number.not.negative,
-                exclusiveStartKey: ow.optional.string,
-                collection: ow.optional.string,
-                prefix: ow.optional.string,
-                signature: ow.optional.string,
-            }),
-        );
+        validate(listKeysOptionsSchema, options);
 
         const getPaginatedList = async (
             kvsListOptions: KeyValueClientListKeysOptions = {},
@@ -211,7 +242,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * ```
      */
     async getRecordPublicUrl(key: string): Promise<string> {
-        ow(key, ow.string.nonEmpty);
+        validate(nonEmptyKeySchema, key);
 
         const store = await this.get();
 
@@ -248,16 +279,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * ```
      */
     async createKeysPublicUrl(options: KeyValueClientCreateKeysUrlOptions = {}) {
-        ow(
-            options,
-            ow.object.exactShape({
-                limit: ow.optional.number.not.negative,
-                exclusiveStartKey: ow.optional.string,
-                collection: ow.optional.string,
-                prefix: ow.optional.string,
-                expiresInSecs: ow.optional.number,
-            }),
-        );
+        validate(createKeysPublicUrlOptionsSchema, options);
 
         const store = await this.get();
 
@@ -334,16 +356,8 @@ export class KeyValueStoreClient extends ResourceClient {
         key: string,
         options: KeyValueClientGetRecordOptions = {},
     ): Promise<KeyValueStoreRecord<unknown> | undefined> {
-        ow(key, ow.string);
-        ow(
-            options,
-            ow.object.exactShape({
-                buffer: ow.optional.boolean,
-                stream: ow.optional.boolean,
-                disableRedirect: ow.optional.boolean,
-                signature: ow.optional.string,
-            }),
-        );
+        validate(keySchema, key);
+        validate(getRecordOptionsSchema, options);
 
         if (options.stream && !isNode()) {
             throw new Error('The stream option can only be used in Node.js environment.');
@@ -431,22 +445,8 @@ export class KeyValueStoreClient extends ResourceClient {
      * ```
      */
     async setRecord(record: KeyValueStoreRecord<JsonValue>, options: KeyValueStoreRecordOptions = {}): Promise<void> {
-        ow(
-            record,
-            ow.object.exactShape({
-                key: ow.string,
-                value: ow.any(ow.null, ow.string, ow.number, ow.object, ow.boolean),
-                contentType: ow.optional.string.nonEmpty,
-            }),
-        );
-
-        ow(
-            options,
-            ow.object.exactShape({
-                timeoutSecs: ow.optional.number,
-                doNotRetryTimeouts: ow.optional.boolean,
-            }),
-        );
+        validate(recordSchema, record);
+        validate(recordOptionsSchema, options);
 
         const { key } = record;
         let { value, contentType } = record;
@@ -495,7 +495,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * ```
      */
     async deleteRecord(key: string): Promise<void> {
-        ow(key, ow.string);
+        validate(keySchema, key);
 
         await this.httpClient.call({
             url: this._url(`records/${key}`),
@@ -563,9 +563,10 @@ export interface KeyValueClientListKeysOptions {
 /**
  * Options for creating a public URL to list keys in a Key-Value Store.
  *
- * Extends {@link KeyValueClientListKeysOptions} with URL expiration control.
+ * Extends {@link KeyValueClientListKeysOptions} with URL expiration control, minus `signature` (this
+ * method produces one).
  */
-export interface KeyValueClientCreateKeysUrlOptions extends KeyValueClientListKeysOptions {
+export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientListKeysOptions, 'signature'> {
     expiresInSecs?: number;
 }
 

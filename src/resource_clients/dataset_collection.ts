@@ -1,11 +1,21 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
+import { anyObjectSchema, paginationOptionsShape, validate } from '../utils';
 import type { Dataset } from './dataset';
+
+const listOptionsSchema = z.strictObject({
+    unnamed: z.boolean().optional(),
+    ...paginationOptionsShape,
+    desc: z.boolean().optional(),
+    ownership: z.enum(STORAGE_OWNERSHIP_FILTER).optional(),
+});
+const nameSchema = z.string().optional();
+const schemaSchema = anyObjectSchema.optional();
 
 /**
  * Client for managing the collection of datasets in your account.
@@ -61,16 +71,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     list(
         options: DatasetCollectionClientListOptions = {},
     ): Promise<DatasetCollectionClientListResult> & AsyncIterable<Dataset> {
-        ow(
-            options,
-            ow.object.exactShape({
-                unnamed: ow.optional.boolean,
-                limit: ow.optional.number.not.negative,
-                offset: ow.optional.number.not.negative,
-                desc: ow.optional.boolean,
-                ownership: ow.optional.string.oneOf(Object.values(STORAGE_OWNERSHIP_FILTER)),
-            }),
-        );
+        validate(listOptionsSchema, options);
 
         return this._listPaginated(options);
     }
@@ -84,8 +85,8 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/datasets-post
      */
     async getOrCreate(name?: string, options?: DatasetCollectionClientGetOrCreateOptions): Promise<Dataset> {
-        ow(name, ow.optional.string);
-        ow(options?.schema, ow.optional.object); // TODO: Add schema validatioon
+        validate(nameSchema, name);
+        validate(schemaSchema, options?.schema); // TODO: Add schema validation
 
         return this._getOrCreate(name, options);
     }

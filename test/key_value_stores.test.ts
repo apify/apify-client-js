@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net';
 import { Readable } from 'node:stream';
 
-import { ApifyClient } from 'apify-client';
+import { ApifyClient, ArgumentValidationError } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest';
 
@@ -469,6 +469,17 @@ describe('Key-Value Store methods', () => {
             );
             expect(browserRes).toBeUndefined();
             validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
+        });
+
+        test('setRecord() rejects values that cannot be serialized to JSON', async () => {
+            const kvsClient = client.keyValueStore('some-id');
+
+            for (const value of [undefined, Symbol('nope'), 1n]) {
+                const call = kvsClient.setRecord({ key: 'some-key', value: value as any });
+
+                await expect(call).rejects.toThrow(ArgumentValidationError);
+                await expect(call).rejects.toThrow('Expected a defined, JSON-serializable value');
+            }
         });
 
         test('setRecord() works with custom timeout options', async () => {

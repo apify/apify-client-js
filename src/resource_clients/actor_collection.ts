@@ -1,12 +1,15 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import type { ACTOR_PERMISSION_LEVEL } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
+import { anyObjectSchema, paginationOptionsShape, validate } from '../utils';
 import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor';
 import type { ActorVersion } from './actor_version';
+
+const actorCreateSchema = anyObjectSchema.optional();
 
 /**
  * Client for managing the collection of Actors in your account.
@@ -63,16 +66,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/acts-get
      */
     list(options: ActorCollectionListOptions = {}): PaginatedIterator<ActorCollectionListItem> {
-        ow(
-            options,
-            ow.object.exactShape({
-                my: ow.optional.boolean,
-                limit: ow.optional.number.not.negative,
-                offset: ow.optional.number.not.negative,
-                desc: ow.optional.boolean,
-                sortBy: ow.optional.string.oneOf(Object.values(ActorListSortBy)),
-            }),
-        );
+        validate(listOptionsSchema, options);
 
         return this._listPaginated(options);
     }
@@ -85,7 +79,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/acts-post
      */
     async create(actor: ActorCollectionCreateOptions): Promise<Actor> {
-        ow(actor, ow.optional.object);
+        validate(actorCreateSchema, actor);
 
         return this._create(actor);
     }
@@ -95,6 +89,14 @@ export enum ActorListSortBy {
     CREATED_AT = 'createdAt',
     LAST_RUN_STARTED_AT = 'stats.lastRunStartedAt',
 }
+
+// Declared below `ActorListSortBy` because it references it at module load time.
+const listOptionsSchema = z.strictObject({
+    my: z.boolean().optional(),
+    ...paginationOptionsShape,
+    desc: z.boolean().optional(),
+    sortBy: z.enum(ActorListSortBy).optional(),
+});
 
 export interface ActorCollectionListOptions extends PaginationOptions {
     my?: boolean;

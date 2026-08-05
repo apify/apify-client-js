@@ -100,10 +100,14 @@ export abstract class ApiClient {
             return Math.min(a, b);
         };
 
+        // `chunkSize` only sizes this loop's requests; it is not an API parameter, so it must not reach
+        // `_params()` and the query string.
+        const { chunkSize, ...listOptions } = options;
+
         const paginatedListPromise = getPaginatedList({
-            ...options,
-            limit: minForLimitParam(options.limit, options.chunkSize),
-        });
+            ...listOptions,
+            limit: minForLimitParam(options.limit, chunkSize),
+        } as T);
 
         async function* asyncGenerator() {
             let currentPage = await paginatedListPromise;
@@ -119,10 +123,10 @@ export abstract class ApiClient {
                 remainingItems > 0
             ) {
                 const newOptions = {
-                    ...options,
-                    limit: minForLimitParam(remainingItems, options.chunkSize),
+                    ...listOptions,
+                    limit: minForLimitParam(remainingItems, chunkSize),
                     offset: currentOffset,
-                };
+                } as T;
                 currentPage = await getPaginatedList(newOptions);
                 yield* currentPage.items;
                 currentOffset += currentPage.items.length;

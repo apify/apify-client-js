@@ -1,9 +1,15 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
+import { paginationOptionsShape, validate } from '../utils';
 import type { WebhookDispatch } from './webhook_dispatch';
+
+const listOptionsSchema = z.strictObject({
+    ...paginationOptionsShape,
+    desc: z.boolean().optional(),
+});
 
 /**
  * Client for managing the collection of webhook dispatches.
@@ -55,14 +61,7 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/webhook-dispatches-get
      */
     list(options: WebhookDispatchCollectionListOptions = {}): PaginatedIterator<WebhookDispatch> {
-        ow(
-            options,
-            ow.object.exactShape({
-                limit: ow.optional.number.not.negative,
-                offset: ow.optional.number.not.negative,
-                desc: ow.optional.boolean,
-            }),
-        );
+        validate(listOptionsSchema, options);
 
         return this._listPaginated(options);
     }

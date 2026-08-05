@@ -1,5 +1,5 @@
 import type { AxiosRequestConfig } from 'axios';
-import ow from 'ow';
+import { z } from 'zod';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 import { LEVELS, Log } from '@apify/log';
@@ -7,7 +7,7 @@ import { LEVELS, Log } from '@apify/log';
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyResponse } from '../http_client';
-import { cast, isNode, parseDateFields, pluckData } from '../utils';
+import { anyObjectSchema, cast, isNode, parseDateFields, pluckData, validate } from '../utils';
 import type { ActorRun } from './actor';
 import { DatasetClient } from './dataset';
 import { KeyValueStoreClient } from './key_value_store';
@@ -15,6 +15,28 @@ import { LogClient, LoggerActorRedirect, StreamedLog } from './log';
 import { RequestQueueClient } from './request_queue';
 
 const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
+
+const getOptionsSchema = z.strictObject({ waitForFinish: z.number().optional() });
+const abortOptionsSchema = z.strictObject({ gracefully: z.boolean().optional() });
+const targetActorIdSchema = z.string();
+const metamorphOptionsSchema = z.strictObject({
+    contentType: z.string().optional(),
+    build: z.string().optional(),
+});
+const resurrectOptionsSchema = z.strictObject({
+    build: z.string().optional(),
+    memory: z.number().optional(),
+    timeout: z.number().optional(),
+    maxItems: z.number().optional(),
+    maxTotalChargeUsd: z.number().optional(),
+    restartOnError: z.boolean().optional(),
+});
+const chargeOptionsSchema = z.strictObject({
+    eventName: z.string(),
+    count: z.number().optional(),
+    idempotencyKey: z.string().optional(),
+});
+const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional() });
 
 /**
  * Client for managing a specific Actor run.
@@ -69,12 +91,7 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
-        ow(
-            options,
-            ow.object.exactShape({
-                waitForFinish: ow.optional.number,
-            }),
-        );
+        validate(getOptionsSchema, options);
 
         return this._get(options);
     }
@@ -97,12 +114,7 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async abort(options: RunAbortOptions = {}): Promise<ActorRun> {
-        ow(
-            options,
-            ow.object.exactShape({
-                gracefully: ow.optional.boolean,
-            }),
-        );
+        validate(abortOptionsSchema, options);
 
         const response = await this.httpClient.call({
             url: this._url('abort'),
@@ -148,15 +160,9 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async metamorph(targetActorId: string, input: unknown, options: RunMetamorphOptions = {}): Promise<ActorRun> {
-        ow(targetActorId, ow.string);
+        validate(targetActorIdSchema, targetActorId);
         // input can be anything, pointless to validate
-        ow(
-            options,
-            ow.object.exactShape({
-                contentType: ow.optional.string,
-                build: ow.optional.string,
-            }),
-        );
+        validate(metamorphOptionsSchema, options);
 
         const safeTargetActorId = this._toSafeId(targetActorId);
 
@@ -230,7 +236,7 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async update(newFields: RunUpdateOptions): Promise<ActorRun> {
-        ow(newFields, ow.object);
+        validate(anyObjectSchema, newFields);
 
         return this._update(newFields);
     }
@@ -259,17 +265,7 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async resurrect(options: RunResurrectOptions = {}): Promise<ActorRun> {
-        ow(
-            options,
-            ow.object.exactShape({
-                build: ow.optional.string,
-                memory: ow.optional.number,
-                timeout: ow.optional.number,
-                maxItems: ow.optional.number,
-                maxTotalChargeUsd: ow.optional.number,
-                restartOnError: ow.optional.boolean,
-            }),
-        );
+        validate(resurrectOptionsSchema, options);
 
         const response = await this.httpClient.call({
             url: this._url('resurrect'),
@@ -291,14 +287,7 @@ export class RunClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/post-charge-run
      */
     async charge(options: RunChargeOptions): Promise<ApifyResponse<Record<string, never>>> {
-        ow(
-            options,
-            ow.object.exactShape({
-                eventName: ow.string,
-                count: ow.optional.number,
-                idempotencyKey: ow.optional.string,
-            }),
-        );
+        validate(chargeOptionsSchema, options);
 
         const count = options.count ?? 1;
         /** To avoid duplicates during the same milisecond, doesn't need to by crypto-secure. */
@@ -350,12 +339,7 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async waitForFinish(options: RunWaitForFinishOptions = {}): Promise<ActorRun> {
-        ow(
-            options,
-            ow.object.exactShape({
-                waitSecs: ow.optional.number,
-            }),
-        );
+        validate(waitForFinishOptionsSchema, options);
 
         return this._waitForFinish(options);
     }

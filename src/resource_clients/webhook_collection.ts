@@ -1,9 +1,16 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
+import { anyObjectSchema, paginationOptionsShape, validate } from '../utils';
 import type { Webhook, WebhookUpdateData } from './webhook';
+
+const listOptionsSchema = z.strictObject({
+    ...paginationOptionsShape,
+    desc: z.boolean().optional(),
+});
+const webhookCreateSchema = anyObjectSchema.optional();
 
 /**
  * Client for managing the collection of Webhooks.
@@ -63,14 +70,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
     list(
         options: WebhookCollectionListOptions = {},
     ): PaginatedIterator<Omit<Webhook, 'payloadTemplate' | 'headersTemplate'>> {
-        ow(
-            options,
-            ow.object.exactShape({
-                limit: ow.optional.number.not.negative,
-                offset: ow.optional.number.not.negative,
-                desc: ow.optional.boolean,
-            }),
-        );
+        validate(listOptionsSchema, options);
 
         return this._listPaginated(options);
     }
@@ -83,7 +83,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/webhooks-post
      */
     async create(webhook?: WebhookUpdateData): Promise<Webhook> {
-        ow(webhook, ow.optional.object);
+        validate(webhookCreateSchema, webhook);
 
         return this._create(webhook);
     }
