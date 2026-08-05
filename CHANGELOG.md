@@ -3,7 +3,15 @@
 All notable changes to this project will be documented in this file.
 
 <!-- git-cliff-unreleased-start -->
-## 2.23.5 - **not yet released**
+## 2.24.1 - **not yet released**
+
+### 🐛 Bug Fixes
+
+- Fall back to gzip when brotli compression is unavailable ([#990](https://github.com/apify/apify-client-js/pull/990)) ([9bee474](https://github.com/apify/apify-client-js/commit/9bee474a60009a7cfd469340b74fa35778814569)) by [@vdusek](https://github.com/vdusek)
+
+
+<!-- git-cliff-unreleased-end -->
+## [2.24.0](https://github.com/apify/apify-client-js/releases/tag/v2.24.0) (2026-07-30)
 
 ### 🚀 Features
 
@@ -17,7 +25,6 @@ All notable changes to this project will be documented in this file.
 - Align User-Agent OS token with other Apify clients ([#964](https://github.com/apify/apify-client-js/pull/964)) ([1f0e814](https://github.com/apify/apify-client-js/commit/1f0e81477d2898145d318515c452ccdd4cd1d760)) by [@Pijukatel](https://github.com/Pijukatel)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.23.4](https://github.com/apify/apify-client-js/releases/tag/v2.23.4) (2026-06-04)
 
 ### 🐛 Bug Fixes
