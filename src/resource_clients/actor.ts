@@ -968,6 +968,8 @@ interface CommonActorPricingInfo {
     notifiedAboutFutureChangeAt?: Date;
     notifiedAboutChangeAt?: Date;
     reasonForChange?: string;
+    isPriceChangeNotificationSuppressed?: boolean;
+    forceContainsSignificantPriceChange?: boolean;
 }
 
 /**
@@ -996,17 +998,39 @@ export interface FlatPricePerMonthActorPricingInfo extends CommonActorPricingInf
 export interface PricePerDatasetItemActorPricingInfo extends CommonActorPricingInfo {
     pricingModel: 'PRICE_PER_DATASET_ITEM';
     /** Name of the unit that is being charged */
-    unitName?: string;
-    pricePerUnitUsd: number;
+    unitName: string;
+    /** Flat price per unit in USD. Mutually exclusive with `tieredPricing`. */
+    pricePerUnitUsd?: number;
+    /** Tier-keyed pricing. Mutually exclusive with `pricePerUnitUsd`. */
+    tieredPricing?: Record<string, TieredPricingPerDatasetItemEntry>;
+}
+
+/**
+ * Price per dataset item for a single pricing tier.
+ */
+export interface TieredPricingPerDatasetItemEntry {
+    tieredPricePerUnitUsd: number;
 }
 
 /**
  * Definition of a chargeable event for pay-per-event Actors.
  */
 export interface ActorChargeEvent {
-    eventPriceUsd: number;
+    /** Flat price per event in USD. Mutually exclusive with `eventTieredPricingUsd`. */
+    eventPriceUsd?: number;
+    /** Tier-keyed pricing. Mutually exclusive with `eventPriceUsd`. */
+    eventTieredPricingUsd?: Record<string, TieredPricingPerEventEntry>;
     eventTitle: string;
-    eventDescription?: string;
+    eventDescription: string;
+    isPrimaryEvent?: boolean;
+    isOneTimeEvent?: boolean;
+}
+
+/**
+ * Price per event for a single pricing tier.
+ */
+export interface TieredPricingPerEventEntry {
+    tieredEventPriceUsd: number;
 }
 
 /**
