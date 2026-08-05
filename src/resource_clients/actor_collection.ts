@@ -4,9 +4,12 @@ import type { ACTOR_PERMISSION_LEVEL } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
+import type { ActorCollectionListItem } from '../models';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor';
 import type { ActorVersion } from './actor_version';
+
+export type { ActorCollectionListItem } from '../models';
 
 /**
  * Client for managing the collection of Actors in your account.
@@ -100,14 +103,6 @@ export interface ActorCollectionListOptions extends PaginationOptions {
     my?: boolean;
     desc?: boolean;
     sortBy?: ActorListSortBy;
-}
-
-export interface ActorCollectionListItem {
-    id: string;
-    createdAt: Date;
-    modifiedAt: Date;
-    name: string;
-    username: string;
 }
 
 export type ActorCollectionListResult = PaginatedList<ActorCollectionListItem>;

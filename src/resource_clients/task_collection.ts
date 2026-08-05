@@ -2,8 +2,11 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
+import type { TaskList } from '../models';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
 import type { Task, TaskUpdateData } from './task';
+
+export type { TaskList } from '../models';
 
 /**
  * Client for managing the collection of Actor tasks in your account.
@@ -90,8 +93,6 @@ export class TaskCollectionClient extends ResourceCollectionClient {
 export interface TaskCollectionListOptions extends PaginationOptions {
     desc?: boolean;
 }
-
-export type TaskList = Omit<Task, 'options' | 'input'>;
 
 export interface TaskCreateData extends TaskUpdateData {
     actId: string;

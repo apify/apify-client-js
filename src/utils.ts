@@ -67,10 +67,15 @@ export function parseDateFields(
     shouldParseField: ((key: string) => boolean) | null = null,
     depth = 0,
 ): ReturnJsonValue {
-    // Don't go too deep to avoid stack overflows (especially if there is a circular reference). The depth of 3
-    // corresponds to obj.data.someArrayField.[x].field and should be generally enough.
+    // Don't go too deep to avoid stack overflows (especially if there is a circular reference). The depth of 4
+    // corresponds to obj.items.[x].someArrayField.[y].field, which is what a list response looks like: it
+    // nests one level deeper than the single resource it wraps, because both the item array and the nested
+    // array spend a level.
+    //
+    // It also reaches into caller-owned blobs the API stores verbatim, so a request's
+    // `userData.foo.somethingAt` comes back as a `Date` rather than the string it was written as.
     // TODO: Consider removing this limitation. It might came across as an annoying surprise as it's not communicated.
-    if (depth > 3) {
+    if (depth > 4) {
         return input as ReturnJsonValue;
     }
 

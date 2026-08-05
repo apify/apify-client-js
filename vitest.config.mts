@@ -8,7 +8,8 @@ export default defineConfig({
         globals: true,
         environment: 'node',
         testTimeout: 20_000,
-        include: ['test/**/*.test.{js,ts}'],
+        // `.mts` is here for tests that import the maintainer scripts in `scripts/`, which are ESM.
+        include: ['test/**/*.test.{js,ts,mts}'],
     },
     resolve: {
         alias: {

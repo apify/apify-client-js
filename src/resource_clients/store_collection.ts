@@ -2,8 +2,10 @@ import ow from 'ow';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
+import type { ActorStoreList } from '../models';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
-import type { ActorStats } from './actor';
+
+export type { ActorStoreList, PricingInfo } from '../models';
 
 /**
  * Client for browsing Actors in the Apify Store.
@@ -73,25 +75,6 @@ export class StoreCollectionClient extends ResourceCollectionClient {
 
         return this._listPaginated(options);
     }
-}
-
-export interface PricingInfo {
-    pricingModel: string;
-}
-
-export interface ActorStoreList {
-    id: string;
-    name: string;
-    username: string;
-    title?: string;
-    description?: string;
-    stats: ActorStats;
-    currentPricingInfo: PricingInfo;
-    pictureUrl?: string;
-    userPictureUrl?: string;
-    url: string;
-    /** A brief, LLM-generated readme summary */
-    readmeSummary?: string;
 }
 
 export interface StoreCollectionListOptions extends PaginationOptions {
