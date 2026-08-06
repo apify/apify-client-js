@@ -10,8 +10,6 @@ const ROUTES: MockServerRoute[] = [
     { id: 'update-task', method: 'PUT', path: '/:taskId' },
     { id: 'delete-task', method: 'DELETE', path: '/:taskId' },
     { id: 'get-task', method: 'GET', path: '/:taskId' },
-    { id: 'publish-task', method: 'POST', path: '/:taskId/publish' },
-    { id: 'unpublish-task', method: 'POST', path: '/:taskId/unpublish' },
     { id: 'list-runs', method: 'GET', path: '/:taskId/runs' },
     { id: 'run-task', method: 'POST', path: '/:taskId/runs', type: 'responseJsonMock' },
     { id: 'list-webhooks', method: 'GET', path: '/:taskId/webhooks' },

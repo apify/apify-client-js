@@ -99,26 +99,26 @@ describe('Task methods', () => {
 
         test('publish() works', async () => {
             const taskId = 'some-task-id';
+            const body = { isPublic: true };
 
             const res = await client.task(taskId).publish();
-            expect(res.id).toEqual('publish-task');
-            validateRequest({ query: {}, params: { taskId } });
+            validateRequest({ query: {}, params: { taskId }, body, endpointId: 'update-task' });
 
             const browserRes = await page.evaluate((id) => client.task(id).publish(), taskId);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: {}, params: { taskId } });
+            validateRequest({ query: {}, params: { taskId }, body });
         });
 
         test('unpublish() works', async () => {
             const taskId = 'some-task-id';
+            const body = { isPublic: false };
 
             const res = await client.task(taskId).unpublish();
-            expect(res.id).toEqual('unpublish-task');
-            validateRequest({ query: {}, params: { taskId } });
+            validateRequest({ query: {}, params: { taskId }, body, endpointId: 'update-task' });
 
             const browserRes = await page.evaluate((id) => client.task(id).unpublish(), taskId);
             expect(browserRes).toEqual(res);
-            validateRequest({ query: {}, params: { taskId } });
+            validateRequest({ query: {}, params: { taskId }, body });
         });
 
         test('get() works', async () => {

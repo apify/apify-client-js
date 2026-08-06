@@ -68,49 +68,33 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
-     * Publishes the task on its public landing page.
+     * Publishes the task on its public landing page, by setting `isPublic` through
+     * {@apilink TaskClient.update}.
      *
      * The task's Actor must be public and the task must have its public display configuration
-     * (`publicConfig`) set up via {@apilink TaskClient.update}. Requires write permission to
-     * both the task and its Actor.
-     *
-     * Publishing an already published task is a no-op that returns the current state, so this
-     * call is safe to retry (unlike {@apilink TaskClient.unpublish}).
+     * (`publicConfig`) set up first. Requires write permission to both the task and its Actor.
+     * Publishing an already published task does nothing.
      *
      * @returns The task object.
-     * @see https://docs.apify.com/api/v2/actor-task-publish-post
+     * @see https://docs.apify.com/api/v2/actor-task-put
      */
     async publish(): Promise<Task> {
-        const response = await this.httpClient.call({
-            url: this._url('publish'),
-            method: 'POST',
-            params: this._params(),
-        });
-
-        return cast(parseDateFields(pluckData(response.data)));
+        return this.update({ isPublic: true });
     }
 
     /**
-     * Unpublishes the task from its public landing page.
+     * Unpublishes the task from its public landing page, by setting `isPublic` through
+     * {@apilink TaskClient.update}.
      *
      * The public display configuration (`publicConfig`) is preserved, so the task can be
-     * published again without re-entering it. Requires write permission to both the task
-     * and its Actor.
-     *
-     * Unlike {@apilink TaskClient.publish}, this call is not idempotent: unpublishing a task
-     * that is not currently published throws an `ApifyApiError` (`cannot-unpublish-actor-task`).
+     * published again without re-entering it. Requires write permission to both the task and its
+     * Actor. Unpublishing a task that is not published does nothing.
      *
      * @returns The task object.
-     * @see https://docs.apify.com/api/v2/actor-task-unpublish-post
+     * @see https://docs.apify.com/api/v2/actor-task-put
      */
     async unpublish(): Promise<Task> {
-        const response = await this.httpClient.call({
-            url: this._url('unpublish'),
-            method: 'POST',
-            params: this._params(),
-        });
-
-        return cast(parseDateFields(pluckData(response.data)));
+        return this.update({ isPublic: false });
     }
 
     /**
@@ -339,6 +323,11 @@ export interface Task {
     options?: TaskOptions;
     input?: Dictionary | Dictionary[];
     actorStandby?: Partial<ActorStandby>;
+    /**
+     * Whether the task is published on its public landing page. Derived from
+     * `publicConfig.publishedAt` — set it on update to publish or unpublish the task.
+     */
+    isPublic?: boolean;
     publicConfig?: TaskPublicConfig | null;
 }
 
@@ -380,7 +369,7 @@ export interface TaskOptions {
  * Fields that can be updated when modifying a Task.
  */
 export type TaskUpdateData = Partial<
-    Pick<Task, 'name' | 'title' | 'description' | 'options' | 'input' | 'actorStandby'>
+    Pick<Task, 'name' | 'title' | 'description' | 'options' | 'input' | 'actorStandby' | 'isPublic'>
 > & { publicConfig?: Omit<TaskPublicConfig, 'publishedAt'> };
 
 /**
