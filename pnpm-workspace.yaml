@@ -32,7 +32,7 @@ onlyBuiltDependencies:
 overrides:
   "@puppeteer/browsers": "^3.0.4"
   js-yaml@4: ^5.0.0
-  markdown-it: ^14.2.0
+  markdown-it: ^15.0.0
 
 nodeLinker: hoisted
 linkWorkspacePackages: true
