@@ -15,6 +15,9 @@ on:
     # Release flow will trigger checks manually
     workflow_call:
 
+    # Allows running the checks - most importantly the integration tests - on demand.
+    workflow_dispatch:
+
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
@@ -47,6 +50,41 @@ jobs:
 
             - name: Run Tests
               run: pnpm test
+
+    integration_tests:
+        name: Integration tests (Node ${{ matrix.node-version }})
+        # These run against the live Apify API with real credentials, so they are skipped for fork PRs,
+        # where repository secrets are not available.
+        if: >-
+            ${{
+              (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner.login == 'apify') ||
+              (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
+              github.event_name == 'workflow_dispatch'
+            }}
+        runs-on: ubuntu-latest
+
+        strategy:
+            fail-fast: false
+            matrix:
+                node-version: [22, 26]
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v7
+              with:
+                  node-version: ${{ matrix.node-version }}
+
+            - name: Install pnpm and dependencies
+              uses: apify/actions/pnpm-install@v1.4.0
+
+            - name: Run integration tests
+              run: pnpm test:integration
+              env:
+                  APIFY_TEST_USER_API_TOKEN: ${{ secrets.APIFY_TEST_USER_PYTHON_SDK_API_TOKEN }}
+                  APIFY_TEST_USER_2_API_TOKEN: ${{ secrets.APIFY_TEST_USER_2_API_TOKEN }}
 
     test_bundling:
         name: Test bundler support
