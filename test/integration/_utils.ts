@@ -34,6 +34,26 @@ export async function sleep(millis: number): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, millis));
 }
 
+/**
+ * Every status a run may legitimately report right after it was started.
+ *
+ * Assert against this set - rather than a single status - whenever the test does not control the
+ * outcome of the run. Under load the platform can move a run through to a terminal state before the
+ * `start()` response is even read, and it can legitimately fail or be aborted without that meaning
+ * the client is broken. Narrow assertions belong only where the test does control the outcome, such
+ * as after `waitForFinish()` or `call()`.
+ */
+export const ANY_RUN_STATUS = [
+    'READY',
+    'RUNNING',
+    'SUCCEEDED',
+    'TIMED-OUT',
+    'TIMING-OUT',
+    'FAILED',
+    'ABORTING',
+    'ABORTED',
+] as const;
+
 export interface PollOptions {
     /** Total seconds to keep polling before giving up. */
     timeoutSecs?: number;
