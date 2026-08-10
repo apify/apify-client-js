@@ -3,7 +3,13 @@
 Plan for porting the Python client's integration tier to the JS client, matching its setup, structure and
 coverage. Target branch: `v3`.
 
-Working doc — not intended to be committed.
+Working doc — not intended to be committed. Drop it once the suite has run green against the live API a
+few times and §3 and §12 are settled.
+
+**Status: all four sub-phases are implemented.** `vitest list --project integration` reports **205 cases
+across 16 files**, matching the estimate in §8. What is still outstanding is entirely in §3 — the suite has
+never run against the live API, because the tokens do not exist yet. Until they do, the CI job is wired up
+but every case fails at `makeClient()` with the missing-env-var error, which is the intended behaviour.
 
 ## 1. Goal
 
@@ -55,7 +61,7 @@ test/
 ├── mock_server/                   # existing, untouched
 ├── *.test.ts                      # existing unit tests, untouched
 └── integration/
-    ├── _globalSetup.ts            # session-scoped cross-user fixtures (conftest.py session scope)
+    ├── _global_setup.ts           # session-scoped cross-user fixtures (conftest.py session scope)
     ├── _fixtures.ts               # client factories, env var names, token guards
     ├── _utils.ts                  # pollUntilCondition, getRandomResourceName, collectUntilPresent
     ├── apify_client.test.ts
@@ -105,7 +111,7 @@ export default defineConfig({
                     // Actor runs and builds dominate; Python allows 1800s per test.
                     testTimeout: 300_000,
                     hookTimeout: 300_000,
-                    globalSetup: ['test/integration/_globalSetup.ts'],
+                    globalSetup: ['test/integration/_global_setup.ts'],
                     // Cap concurrency so the suite does not rate-limit itself. Python uses 16 processes;
                     // start at 8 files and raise once the suite is observed to be stable.
                     maxWorkers: 8,
@@ -153,7 +159,7 @@ export function makeClient2(): ApifyClient;  // secondary user, cross-user permi
 `baseUrl` comes from `APIFY_INTEGRATION_TESTS_API_URL` when set, else the client default — same override
 Python supports, so the suite can be pointed at a staging API.
 
-### 6.2 `_globalSetup.ts` — the session-scoped cross-user resources
+### 6.2 `_global_setup.ts` — the session-scoped cross-user resources
 
 Python has two `scope='session'` fixtures — `test_dataset_of_another_user` and `test_kvs_of_another_user` —
 that create a dataset and a KVS under the *second* user, sign them, and tear them down at the end of the
@@ -162,7 +168,7 @@ session. Vitest runs each file in its own worker, so a per-file `beforeAll` woul
 The right mechanism is vitest's `globalSetup` + `provide` / `inject` (available in the pinned vitest 4.1):
 
 ```ts
-// _globalSetup.ts
+// _global_setup.ts
 export default async function setup({ provide }: GlobalSetupContext) {
     const client2 = makeClient2();
     const dataset = await client2.datasets().getOrCreate(`API-test-permissions-${randomId()}`);
@@ -285,12 +291,12 @@ fixtures to maintain, no build waits except where the test is explicitly about b
 
 Each is independently mergeable and leaves CI green.
 
-| | Scope | Files | Cases | Notes |
+| | Scope | Files | Cases (est. → actual) | Notes |
 |---|---|---|---|---|
-| **6a** | Scaffolding | config, `_fixtures`, `_utils`, `_globalSetup`, CI job, `apify_client.test.ts` | 1 | Proves the token wiring and the gating end-to-end before any bulk work. Merge this first even if the rest slips. |
-| **6b** | Storage | `dataset`, `key_value_store`, `request_queue` | ~82 | Highest value: the endpoints the platform leans on hardest, and where signatures, compression, streaming and pagination all live. Exercises the cross-user fixtures, so it validates `_globalSetup`. |
-| **6c** | Actor & run | `actor`, `run`, `build`, `actor_version`, `actor_env_var`, `log` | ~70 | Slowest by far — every case here starts a real run or build. Dominates wall-clock. |
-| **6d** | Remainder | `task`, `schedule`, `webhook`, `webhook_dispatch`, `store`, `user` | ~50 | Mostly fast CRUD. |
+| **6a** ✅ | Scaffolding | config, `_fixtures`, `_utils`, `_global_setup`, CI job, `apify_client.test.ts` | 1 → 1 | Proves the token wiring and the gating end-to-end before any bulk work. Merge this first even if the rest slips. |
+| **6b** ✅ | Storage | `dataset`, `key_value_store`, `request_queue` | ~82 → 81 | Highest value: the endpoints the platform leans on hardest, and where signatures, compression, streaming and pagination all live. Exercises the cross-user fixtures, so it validates `_global_setup`. |
+| **6c** ✅ | Actor & run | `actor`, `run`, `build`, `actor_version`, `actor_env_var`, `log` | ~70 → 70 | Slowest by far — every case here starts a real run or build. Dominates wall-clock. |
+| **6d** ✅ | Remainder | `task`, `schedule`, `webhook`, `webhook_dispatch`, `store`, `user` | ~50 → 53 | Mostly fast CRUD. |
 
 Suggested order: 6a → 6b → 6d → 6c. 6d before 6c because it is cheap and broadens endpoint coverage fast,
 while 6c is where the runtime and flakiness risk concentrates — better tackled once the helpers have been
