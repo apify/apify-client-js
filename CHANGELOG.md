@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.24.1 - **not yet released**
 
+### 🚀 Features
+
+- Add Actor task publication endpoints ([#989](https://github.com/apify/apify-client-js/pull/989)) ([2b66d43](https://github.com/apify/apify-client-js/commit/2b66d43c95f0553f861e764f0027bcd0af44295a)) by [@Janjiran](https://github.com/Janjiran)
+
 ### 🐛 Bug Fixes
 
 - Fall back to gzip when brotli compression is unavailable ([#990](https://github.com/apify/apify-client-js/pull/990)) ([9bee474](https://github.com/apify/apify-client-js/commit/9bee474a60009a7cfd469340b74fa35778814569)) by [@vdusek](https://github.com/vdusek)
