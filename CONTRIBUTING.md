@@ -97,7 +97,9 @@ npm run build:browser      # RSBuild browser/UMD bundle
 npm run clean              # Remove dist directory
 
 # Testing
-npm test                   # Build and run vitest suite
+npm test                   # Build and run the unit tests
+npm run test:integration   # Run the integration tests against the live API
+npm run test:all           # Build and run both tiers
 npm run tsc-check-tests    # TypeScript check test files
 
 # Linting & Formatting
@@ -147,16 +149,36 @@ npm run format
 
 ## Testing
 
-Tests are written using [Vitest](https://vitest.dev/) and run against a mock server.
+Tests are written using [Vitest](https://vitest.dev/) and split into two projects:
+
+- **`unit`** - everything outside `test/integration/`, run against a mock server. Offline and fast.
+- **`integration`** - `test/integration/`, run against the live Apify API with a real token.
 
 ### Running Tests
 
 ```bash
-npm test                   # Full build + test run
-npx vitest run             # Run tests only (requires prior build)
-npx vitest --watch         # Watch mode
-npx vitest run actors      # Run specific test file
+npm test                          # Full build + unit tests
+npx vitest run --project unit     # Unit tests only (requires prior build)
+npx vitest --watch                # Watch mode
+npx vitest run actors             # Run specific test file
 ```
+
+### Running the Integration Tests
+
+They create and delete real resources under a test user, so they need an API token:
+
+```bash
+export APIFY_TEST_USER_API_TOKEN=...   # Token of the user the tests run as
+npm run test:integration
+```
+
+Set `APIFY_INTEGRATION_TESTS_API_URL` to point the tier at a different deployment, such as staging.
+Without `APIFY_TEST_USER_API_TOKEN` every integration test fails in its `beforeAll` hook - run
+`npm test` instead if you only want the offline tier.
+
+In CI the tier runs on pull requests opened from this repository. It is skipped for pull requests
+from forks, where repository secrets are unavailable, and can be triggered by hand via
+`workflow_dispatch`.
 
 ### Test Structure
 
@@ -212,7 +234,8 @@ export function addMyResourceRoutes(router: Router) {
 
 ### Test Timeout
 
-Tests have a 20-second timeout configured in `vitest.config.mts`.
+Configured in `vitest.config.mts`: 20 seconds for unit tests, 300 seconds for integration tests,
+where Actor runs and builds dominate the runtime.
 
 ## Pull Request Guidelines
 
