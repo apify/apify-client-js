@@ -68,6 +68,36 @@ export class TaskClient extends ResourceClient {
     }
 
     /**
+     * Publishes the task on its public landing page, by setting `isPublic` through
+     * {@apilink TaskClient.update}.
+     *
+     * The task's Actor must be public and the task must have its public display configuration
+     * (`publicConfig`) set up first. Requires write permission to both the task and its Actor.
+     * Publishing an already published task does nothing.
+     *
+     * @returns The task object.
+     * @see https://docs.apify.com/api/v2/actor-task-put
+     */
+    async publish(): Promise<Task> {
+        return this.update({ isPublic: true });
+    }
+
+    /**
+     * Unpublishes the task from its public landing page, by setting `isPublic` through
+     * {@apilink TaskClient.update}.
+     *
+     * The public display configuration (`publicConfig`) is preserved, so the task can be
+     * published again without re-entering it. Requires write permission to both the task and its
+     * Actor. Unpublishing a task that is not published does nothing.
+     *
+     * @returns The task object.
+     * @see https://docs.apify.com/api/v2/actor-task-put
+     */
+    async unpublish(): Promise<Task> {
+        return this.update({ isPublic: false });
+    }
+
+    /**
      * Deletes the Task.
      *
      * @see https://docs.apify.com/api/v2/actor-task-delete
@@ -293,6 +323,29 @@ export interface Task {
     options?: TaskOptions;
     input?: Dictionary | Dictionary[];
     actorStandby?: Partial<ActorStandby>;
+    /**
+     * Whether the task is published on its public landing page. Derived from
+     * `publicConfig.publishedAt` — set it on update to publish or unpublish the task.
+     */
+    isPublic?: boolean;
+    publicConfig?: TaskPublicConfig | null;
+}
+
+/**
+ * Public-facing display configuration of a task's public landing page.
+ *
+ * The task is published when `publishedAt` is set and unpublished when it is `null`. The
+ * `publishedAt` field is read-only - use {@apilink TaskClient.publish} and
+ * {@apilink TaskClient.unpublish} to change the publication state.
+ */
+export interface TaskPublicConfig {
+    publishedAt: Date | null;
+    seoTitle?: string | null;
+    seoDescription?: string | null;
+    categorization?: string | null;
+    inputSchemaFields?: string[] | null;
+    datasetName?: string | null;
+    datasetView?: string | null;
 }
 
 /**
@@ -316,8 +369,8 @@ export interface TaskOptions {
  * Fields that can be updated when modifying a Task.
  */
 export type TaskUpdateData = Partial<
-    Pick<Task, 'name' | 'title' | 'description' | 'options' | 'input' | 'actorStandby'>
->;
+    Pick<Task, 'name' | 'title' | 'description' | 'options' | 'input' | 'actorStandby' | 'isPublic'>
+> & { publicConfig?: Omit<TaskPublicConfig, 'publishedAt'> };
 
 /**
  * Options for filtering the last run of a Task.
