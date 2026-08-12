@@ -342,7 +342,6 @@ export interface TaskPublicConfig {
     publishedAt: Date | null;
     seoTitle?: string | null;
     seoDescription?: string | null;
-    categorization?: string | null;
     inputSchemaFields?: string[] | null;
     datasetName?: string | null;
     datasetView?: string | null;
