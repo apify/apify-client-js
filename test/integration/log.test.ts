@@ -3,6 +3,7 @@ import { beforeAll, expect, test } from 'vitest';
 import type { ApifyClient } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
+import { NO_LOG_REDIRECT } from './_utils.js';
 
 const HELLO_WORLD_ACTOR = 'apify/hello-world';
 
@@ -13,7 +14,7 @@ beforeAll(() => {
 });
 
 test('get() returns the log of an Actor run as a string', async () => {
-    const run = await client.actor(HELLO_WORLD_ACTOR).call();
+    const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
     const runClient = client.run(run.id);
 
     try {
@@ -27,7 +28,7 @@ test('get() returns the log of an Actor run as a string', async () => {
 });
 
 test('get({ raw: true }) returns the log without the client-side processing', async () => {
-    const run = await client.actor(HELLO_WORLD_ACTOR).call();
+    const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
     const runClient = client.run(run.id);
 
     try {
@@ -44,15 +45,15 @@ test('get() returns the log of a build', async () => {
     const buildsPage = await client.actor(HELLO_WORLD_ACTOR).builds().list({ limit: 1 });
     expect(buildsPage.items.length, `${HELLO_WORLD_ACTOR} should have at least one build`).toBeGreaterThan(0);
 
-    // A build log can legitimately be empty, so this only pins that the endpoint is reachable and
-    // that the client hands back a string rather than an error.
     const log = await client.build(buildsPage.items[0].id).log().get();
 
-    expect(log === undefined || typeof log === 'string').toBe(true);
+    // A build log can legitimately be empty, so only its presence is pinned - `get()` answers with
+    // `undefined` on a 404, which is the failure this is here to catch.
+    expect(log).toBeDefined();
 });
 
 test('stream() returns a readable stream of the run log', async () => {
-    const run = await client.actor(HELLO_WORLD_ACTOR).call();
+    const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
     const runClient = client.run(run.id);
 
     try {

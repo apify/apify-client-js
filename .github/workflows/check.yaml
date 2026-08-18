@@ -66,10 +66,16 @@ jobs:
             }}
         runs-on: ubuntu-latest
 
+        env:
+            APIFY_TEST_USER_API_TOKEN: ${{ secrets.APIFY_TEST_USER_PYTHON_SDK_API_TOKEN }}
+
+        # A single Node version on purpose: these tests exercise HTTP against the live Apify API, where
+        # the Node version carries no signal, and every extra job multiplies the load on the shared
+        # test account. Version coverage is the unit tier's job.
         strategy:
             fail-fast: false
             matrix:
-                node-version: [22, 26]
+                node-version: [26]
 
         steps:
             - name: Checkout repository
@@ -83,10 +89,16 @@ jobs:
             - name: Install pnpm and dependencies
               uses: apify/actions/pnpm-install@v1.4.0
 
+            # A workflow that calls this one as a reusable workflow - the release flow does - gets no
+            # secrets unless it opts in with `secrets: inherit`, so the token can legitimately be empty.
+            # Skip rather than fail there, otherwise a missing token blocks the release.
             - name: Run integration tests
+              if: ${{ env.APIFY_TEST_USER_API_TOKEN != '' }}
               run: pnpm test:integration
-              env:
-                  APIFY_TEST_USER_API_TOKEN: ${{ secrets.APIFY_TEST_USER_PYTHON_SDK_API_TOKEN }}
+
+            - name: Report the skipped integration tests
+              if: ${{ env.APIFY_TEST_USER_API_TOKEN == '' }}
+              run: echo "::warning::APIFY_TEST_USER_API_TOKEN is empty, the integration tests did not run."
 
     test_bundling:
         name: Test bundler support

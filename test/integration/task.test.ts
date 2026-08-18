@@ -78,12 +78,13 @@ test('tasks().list() contains a freshly created task', async () => {
 
 test('tasks().list() iterates the user tasks across pages', async () => {
     const createdIds: string[] = [];
-    for (let i = 0; i < 3; i++) {
-        const task = await createTask();
-        createdIds.push(task.id);
-    }
 
     try {
+        for (let i = 0; i < 3; i++) {
+            const task = await createTask();
+            createdIds.push(task.id);
+        }
+
         const collected = await collectUntilPresent(() => client.tasks().list({ desc: true, limit: 50 }), createdIds);
         const collectedIds = new Set(collected.map((item) => item.id));
 

@@ -5,7 +5,7 @@ import { WEBHOOK_EVENT_TYPES } from '@apify/consts';
 import type { ApifyClient, Webhook, WebhookDispatch } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
-import { collectUntilPresent, pollUntilCondition } from './_utils.js';
+import { collectUntilPresent, NO_LOG_REDIRECT, pollUntilCondition } from './_utils.js';
 
 const HELLO_WORLD_ACTOR = 'apify/hello-world';
 
@@ -23,12 +23,12 @@ let finishedRunId: string;
 
 beforeAll(async () => {
     client = makeClient();
-    const run = await client.actor(HELLO_WORLD_ACTOR).call();
+    const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
     finishedRunId = run.id;
 });
 
 afterAll(async () => {
-    await client.run(finishedRunId).delete();
+    if (finishedRunId) await client.run(finishedRunId).delete();
 });
 
 async function createWebhook(runId: string, requestUrl = 'https://example.com/webhook'): Promise<Webhook> {
@@ -156,14 +156,15 @@ test('get() resolves to undefined for a webhook that never existed', async () =>
 });
 
 test('webhooks().list() iterates the user webhooks across pages', async () => {
-    // Distinct request URLs, otherwise the API dedupes webhooks by event types, run ID and URL.
     const createdIds: string[] = [];
-    for (let i = 0; i < 3; i++) {
-        const webhook = await createWebhook(finishedRunId, `https://example.com/webhook?n=${i}`);
-        createdIds.push(webhook.id);
-    }
 
     try {
+        // Distinct request URLs, otherwise the API dedupes webhooks by event types, run ID and URL.
+        for (let i = 0; i < 3; i++) {
+            const webhook = await createWebhook(finishedRunId, `https://example.com/webhook?n=${i}`);
+            createdIds.push(webhook.id);
+        }
+
         expect(new Set(createdIds).size, 'the API deduplicated the created webhooks').toBe(3);
 
         const collected = await collectUntilPresent(

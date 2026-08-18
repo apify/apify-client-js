@@ -6,7 +6,7 @@ import type { ActorRun, ActorRunListItem, ApifyClient, RunClient } from 'apify-c
 import { ApifyApiError } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
-import { pollUntilCondition } from './_utils.js';
+import { NO_LOG_REDIRECT, pollUntilCondition } from './_utils.js';
 
 const HELLO_WORLD_ACTOR = 'apify/hello-world';
 
@@ -41,15 +41,25 @@ test('runs().list() filters by a single status and by a list of statuses', async
     try {
         // One run of each status the filter is about to ask for.
         const actorClient = client.actor(HELLO_WORLD_ACTOR);
-        createdRunIds.push((await actorClient.call()).id);
-        createdRunIds.push((await actorClient.call(undefined, { timeout: 1 })).id);
+        createdRunIds.push((await actorClient.call(undefined, NO_LOG_REDIRECT)).id);
+        createdRunIds.push((await actorClient.call(undefined, { timeout: 1, ...NO_LOG_REDIRECT })).id);
 
         const runCollection = actorClient.runs();
 
-        const multipleStatusRuns = await runCollection.list({ status: ['SUCCEEDED', 'TIMED-OUT'] });
+        // A filtered page has to be non-empty for the `every` assertions below to mean anything, and a
+        // just-finished run takes a moment to reach the listing.
+        const multipleStatusRuns = await pollUntilCondition(
+            () => runCollection.list({ status: ['SUCCEEDED', 'TIMED-OUT'] }),
+            (page) => page.items.length > 0,
+        );
+        expect(multipleStatusRuns.items.length).toBeGreaterThan(0);
         expect(multipleStatusRuns.items.every((run) => ['SUCCEEDED', 'TIMED-OUT'].includes(run.status))).toBe(true);
 
-        const singleStatusRuns = await runCollection.list({ status: 'SUCCEEDED' });
+        const singleStatusRuns = await pollUntilCondition(
+            () => runCollection.list({ status: 'SUCCEEDED' }),
+            (page) => page.items.length > 0,
+        );
+        expect(singleStatusRuns.items.length).toBeGreaterThan(0);
         expect(singleStatusRuns.items.every((run) => run.status === 'SUCCEEDED')).toBe(true);
     } finally {
         for (const runId of createdRunIds) {
@@ -69,7 +79,7 @@ test('runs().list() accepts the date range both as a Date and as an ISO 8601 str
 });
 
 test('a finished run can be read back and then deleted', async () => {
-    const run = await client.actor(HELLO_WORLD_ACTOR).call();
+    const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
     const runClient = client.run(run.id);
 
     const retrievedRun = await runClient.get();
@@ -86,7 +96,7 @@ test('get() resolves to undefined for a run that does not exist', async () => {
 });
 
 test('dataset() addresses the default dataset of the run', async () => {
-    const run = await client.actor(HELLO_WORLD_ACTOR).call();
+    const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
     const runClient = client.run(run.id);
 
     try {
@@ -99,7 +109,7 @@ test('dataset() addresses the default dataset of the run', async () => {
 });
 
 test('keyValueStore() addresses the default key-value store of the run', async () => {
-    const run = await client.actor(HELLO_WORLD_ACTOR).call();
+    const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
     const runClient = client.run(run.id);
 
     try {
@@ -112,7 +122,7 @@ test('keyValueStore() addresses the default key-value store of the run', async (
 });
 
 test('requestQueue() addresses the default request queue of the run', async () => {
-    const run = await client.actor(HELLO_WORLD_ACTOR).call();
+    const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
     const runClient = client.run(run.id);
 
     try {
@@ -124,22 +134,8 @@ test('requestQueue() addresses the default request queue of the run', async () =
     }
 });
 
-test('log() returns the log the run produced', async () => {
-    const run = await client.actor(HELLO_WORLD_ACTOR).call();
-    const runClient = client.run(run.id);
-
-    try {
-        const logContent = await runClient.log().get();
-
-        expect(typeof logContent).toBe('string');
-        expect(logContent!.length).toBeGreaterThan(0);
-    } finally {
-        await runClient.delete();
-    }
-});
-
 test('getStreamedLog() streams the log of a real run', async () => {
-    const run = await client.actor(HELLO_WORLD_ACTOR).call();
+    const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
     const runClient = client.run(run.id);
 
     try {
@@ -186,7 +182,7 @@ test('abort() stops a running Actor and the run settles in a terminal state', as
 });
 
 test('update() sets the status message of a run', async () => {
-    const run = await client.actor(HELLO_WORLD_ACTOR).call();
+    const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
     const runClient = client.run(run.id);
 
     try {
@@ -202,7 +198,7 @@ test('update() sets the status message of a run', async () => {
 });
 
 test('resurrect() restarts a finished run, which then succeeds again', async () => {
-    const run = await client.actor(HELLO_WORLD_ACTOR).call();
+    const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
     expect(run.status).toBe('SUCCEEDED');
     const runClient = client.run(run.id);
 
@@ -268,7 +264,7 @@ test('reboot() restarts the container of a running Actor, keeping the run id', a
 });
 
 test('charge() reaches the API and is rejected for an Actor that is not pay-per-event', async () => {
-    const run = await client.actor(HELLO_WORLD_ACTOR).call();
+    const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
     const runClient = client.run(run.id);
 
     try {
@@ -311,6 +307,7 @@ test('runs().list() is async-iterable and yields the user runs', async () => {
         collected.push(run);
     }
 
+    expect(collected.length, 'the test account should have at least one run').toBeGreaterThanOrEqual(1);
     for (const run of collected) {
         expect(run.id).toBeTruthy();
         expect(run.actId).toBeTruthy();
@@ -318,7 +315,7 @@ test('runs().list() is async-iterable and yields the user runs', async () => {
 });
 
 test('actor.runs().list() is async-iterable and yields only that Actor runs', async () => {
-    const run = await client.actor(HELLO_WORLD_ACTOR).call();
+    const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
 
     try {
         const collected: ActorRunListItem[] = [];

@@ -73,12 +73,13 @@ test('keyValueStores().getOrCreate() creates a named store and returns the exist
 
 test('keyValueStores().list() iterates the user stores across pages', async () => {
     const createdIds: string[] = [];
-    for (let i = 0; i < 3; i++) {
-        const store = await createStore();
-        createdIds.push(store.id);
-    }
 
     try {
+        for (let i = 0; i < 3; i++) {
+            const store = await createStore();
+            createdIds.push(store.id);
+        }
+
         const collected = await collectUntilPresent(
             () => client.keyValueStores().list({ desc: true, limit: 50 }),
             createdIds,
@@ -449,7 +450,7 @@ test('createKeysPublicUrl() returns a signed URL that lists the keys', async () 
 });
 
 test('createKeysPublicUrl() returns a never-expiring signed URL', async () => {
-    const createdStore = await createStore('key-value-store');
+    const createdStore = await createStore();
     const storeClient = client.keyValueStore(createdStore.id);
 
     try {
