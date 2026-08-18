@@ -91,6 +91,9 @@ export class ActorCollectionClient extends ResourceCollectionClient {
     }
 }
 
+/**
+ * @since Added in 2.12.6
+ */
 export enum ActorListSortBy {
     CREATED_AT = 'createdAt',
     LAST_RUN_STARTED_AT = 'stats.lastRunStartedAt',
@@ -99,6 +102,9 @@ export enum ActorListSortBy {
 export interface ActorCollectionListOptions extends PaginationOptions {
     my?: boolean;
     desc?: boolean;
+    /**
+     * @since Added in 2.12.6
+     */
     sortBy?: ActorListSortBy;
 }
 
@@ -113,21 +119,45 @@ export interface ActorCollectionListItem {
 export type ActorCollectionListResult = PaginatedList<ActorCollectionListItem>;
 
 export interface ActorCollectionCreateOptions {
+    /**
+     * @since Added in 2.8.6
+     */
     categories?: string[];
+    /**
+     * @since Added in 2.8.6
+     */
     defaultRunOptions?: ActorDefaultRunOptions;
     description?: string;
+    /**
+     * @since Added in 2.8.6
+     */
     exampleRunInput?: ActorExampleRunInput;
+    /**
+     * @since Added in 2.8.6
+     */
     isDeprecated?: boolean;
     isPublic?: boolean;
     name?: string;
     /** @deprecated Use defaultRunOptions.restartOnError instead */
     restartOnError?: boolean;
+    /**
+     * @since Added in 2.8.6
+     */
     seoTitle?: string;
+    /**
+     * @since Added in 2.8.6
+     */
     seoDescription?: string;
     title?: string;
     versions?: ActorVersion[];
+    /**
+     * @since Added in 2.9.5
+     */
     actorStandby?: ActorStandby & {
         isEnabled: boolean;
     };
+    /**
+     * @since Added in next
+     */
     actorPermissionLevel?: ACTOR_PERMISSION_LEVEL;
 }

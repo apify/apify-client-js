@@ -77,6 +77,7 @@ export class TaskClient extends ResourceClient {
      *
      * @returns The task object.
      * @see https://docs.apify.com/api/v2/actor-task-put
+     * @since Added in 2.25.0
      */
     async publish(): Promise<Task> {
         return this.update({ isPublic: true });
@@ -92,6 +93,7 @@ export class TaskClient extends ResourceClient {
      *
      * @returns The task object.
      * @see https://docs.apify.com/api/v2/actor-task-put
+     * @since Added in 2.25.0
      */
     async unpublish(): Promise<Task> {
         return this.update({ isPublic: false });
@@ -314,6 +316,9 @@ export interface Task {
     userId: string;
     actId: string;
     name: string;
+    /**
+     * @since Added in 2.6.1
+     */
     title?: string;
     description?: string;
     username?: string;
@@ -322,12 +327,19 @@ export interface Task {
     stats: TaskStats;
     options?: TaskOptions;
     input?: Dictionary | Dictionary[];
+    /**
+     * @since Added in 2.9.5
+     */
     actorStandby?: Partial<ActorStandby>;
     /**
      * Whether the task is published on its public landing page. Derived from
      * `publicConfig.publishedAt` — set it on update to publish or unpublish the task.
+     * @since Added in 2.25.0
      */
     isPublic?: boolean;
+    /**
+     * @since Added in 2.25.0
+     */
     publicConfig?: TaskPublicConfig | null;
 }
 
@@ -337,6 +349,7 @@ export interface Task {
  * The task is published when `publishedAt` is set and unpublished when it is `null`. The
  * `publishedAt` field is read-only - use {@apilink TaskClient.publish} and
  * {@apilink TaskClient.unpublish} to change the publication state.
+ * @since Added in 2.25.0
  */
 export interface TaskPublicConfig {
     publishedAt: Date | null;
@@ -362,6 +375,9 @@ export interface TaskOptions {
     build?: string;
     timeoutSecs?: number;
     memoryMbytes?: number;
+    /**
+     * @since Added in 2.19.0
+     */
     restartOnError?: boolean;
 }
 
@@ -382,11 +398,13 @@ export interface TaskLastRunOptions extends ActorLastRunOptions {}
  *
  * Similar to {@link ActorStartOptions} but without contentType (Task input is predefined)
  * and forcePermissionLevel.
+ * @since Added in 2.0.4
  */
 export type TaskStartOptions = Omit<ActorStartOptions, 'contentType' | 'forcePermissionLevel'>;
 
 /**
  * Options for calling a Task and waiting for it to finish.
+ * @since Added in 2.6.2
  */
 export interface TaskCallOptions extends Omit<TaskStartOptions, 'waitForFinish'> {
     waitSecs?: number;

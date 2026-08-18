@@ -93,6 +93,9 @@ export interface TaskCollectionListOptions extends PaginationOptions {
 
 export type TaskList = Omit<Task, 'options' | 'input'>;
 
+/**
+ * @since Added in 2.3.0
+ */
 export interface TaskCreateData extends TaskUpdateData {
     actId: string;
 }

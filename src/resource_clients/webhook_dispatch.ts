@@ -51,6 +51,9 @@ export interface WebhookDispatch {
     eventType: WebhookEventType;
     calls: WebhookDispatchCall[];
     webhook: Pick<Webhook, 'requestUrl' | 'isAdHoc'>;
+    /**
+     * @since Added in 2.13.0
+     */
     eventData: WebhookDispatchEventData | null;
 }
 
@@ -68,6 +71,9 @@ export interface WebhookDispatchCall {
     responseBody: string | null;
 }
 
+/**
+ * @since Added in 2.13.0
+ */
 export interface WebhookDispatchEventData {
     actorRunId?: string;
     actorId?: string;

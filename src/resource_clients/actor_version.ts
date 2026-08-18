@@ -75,6 +75,7 @@ export class ActorVersionClient extends ResourceClient {
      * @param envVarName - Name of the environment variable.
      * @returns A client for the environment variable.
      * @see https://docs.apify.com/api/v2/act-version-env-var-get
+     * @since Added in 2.1.0
      */
     envVar(envVarName: string): ActorEnvVarClient {
         ow(envVarName, ow.string);
@@ -90,6 +91,7 @@ export class ActorVersionClient extends ResourceClient {
      *
      * @returns A client for the Actor version's environment variables.
      * @see https://docs.apify.com/api/v2/act-version-env-vars-get
+     * @since Added in 2.1.0
      */
     envVars(): ActorEnvVarCollectionClient {
         return new ActorEnvVarCollectionClient(this._subResourceOptions());
@@ -104,6 +106,9 @@ export interface BaseActorVersion<SourceType extends ActorSourceType> {
     buildTag?: string;
 }
 
+/**
+ * @since Added in 2.6.1
+ */
 export interface ActorVersionSourceFiles extends BaseActorVersion<ActorSourceType.SourceFiles> {
     sourceFiles: ActorVersionSourceFile[];
 }
