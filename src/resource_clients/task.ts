@@ -77,6 +77,7 @@ export class TaskClient extends ResourceClient {
      *
      * @returns The task object.
      * @see https://docs.apify.com/api/v2/actor-task-put
+     * @since Added in 2.25.0
      */
     async publish(): Promise<Task> {
         return this.update({ isPublic: true });
@@ -92,6 +93,7 @@ export class TaskClient extends ResourceClient {
      *
      * @returns The task object.
      * @see https://docs.apify.com/api/v2/actor-task-put
+     * @since Added in 2.25.0
      */
     async unpublish(): Promise<Task> {
         return this.update({ isPublic: false });
@@ -332,8 +334,12 @@ export interface Task {
     /**
      * Whether the task is published on its public landing page. Derived from
      * `publicConfig.publishedAt` — set it on update to publish or unpublish the task.
+     * @since Added in 2.25.0
      */
     isPublic?: boolean;
+    /**
+     * @since Added in 2.25.0
+     */
     publicConfig?: TaskPublicConfig | null;
 }
 
@@ -343,6 +349,7 @@ export interface Task {
  * The task is published when `publishedAt` is set and unpublished when it is `null`. The
  * `publishedAt` field is read-only - use {@apilink TaskClient.publish} and
  * {@apilink TaskClient.unpublish} to change the publication state.
+ * @since Added in 2.25.0
  */
 export interface TaskPublicConfig {
     publishedAt: Date | null;

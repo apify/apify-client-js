@@ -282,6 +282,7 @@ export class ActorClient extends ResourceClient {
      *   { build: 'beta' },
      * );
      * ```
+     * @since Added in 2.24.0
      */
     async validateInput(input?: unknown, options: ActorValidateInputOptions = {}): Promise<boolean> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
@@ -973,6 +974,7 @@ export interface ActorRunOptions {
 
 /**
  * Options for validating an Actor input.
+ * @since Added in 2.24.0
  */
 export interface ActorValidateInputOptions {
     /**
@@ -1005,6 +1007,9 @@ export interface ActorBuildOptions {
  */
 export interface ActorLastRunOptions {
     status?: ValueOf<typeof ACTOR_JOB_STATUSES>;
+    /**
+     * @since Added in 2.24.0
+     */
     origin?: ValueOf<typeof META_ORIGINS>;
 }
 
