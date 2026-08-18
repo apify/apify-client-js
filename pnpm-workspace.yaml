@@ -11,6 +11,8 @@ minimumReleaseAgeExclude:
   - "got-scraping"
   # Renovate security update: esbuild@0.28.1
   - esbuild@0.28.1
+  # Renovate security update: axios@1.18.0
+  - axios@1.18.0
 
 onlyBuiltDependencies:
   - "@playwright/browser-chromium"
@@ -30,7 +32,7 @@ onlyBuiltDependencies:
 overrides:
   "@puppeteer/browsers": "^3.0.4"
   js-yaml@4: ^5.0.0
-  markdown-it: ^14.2.0
+  markdown-it: ^15.0.0
 
 nodeLinker: hoisted
 linkWorkspacePackages: true

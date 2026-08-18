@@ -3,14 +3,35 @@
 All notable changes to this project will be documented in this file.
 
 <!-- git-cliff-unreleased-start -->
-## 2.23.5 - **not yet released**
+## 2.25.1 - **not yet released**
+
+
+<!-- git-cliff-unreleased-end -->
+## [2.25.0](https://github.com/apify/apify-client-js/releases/tag/v2.25.0) (2026-08-11)
+
+### 🚀 Features
+
+- Add Actor task publication endpoints ([#989](https://github.com/apify/apify-client-js/pull/989)) ([2b66d43](https://github.com/apify/apify-client-js/commit/2b66d43c95f0553f861e764f0027bcd0af44295a)) by [@Janjiran](https://github.com/Janjiran)
+
+### 🐛 Bug Fixes
+
+- Fall back to gzip when brotli compression is unavailable ([#990](https://github.com/apify/apify-client-js/pull/990)) ([9bee474](https://github.com/apify/apify-client-js/commit/9bee474a60009a7cfd469340b74fa35778814569)) by [@vdusek](https://github.com/vdusek)
+
+
+## [2.24.0](https://github.com/apify/apify-client-js/releases/tag/v2.24.0) (2026-07-30)
+
+### 🚀 Features
+
+- Add `validateInput` method to `ActorClient` ([#957](https://github.com/apify/apify-client-js/pull/957)) ([3637586](https://github.com/apify/apify-client-js/commit/3637586f5a8534e86e1efc3b00711c7663463c93)) by [@Pijukatel](https://github.com/Pijukatel), closes [#425](https://github.com/apify/apify-client-js/issues/425)
+- Compress requests using brotli algo ([#962](https://github.com/apify/apify-client-js/pull/962)) ([6827899](https://github.com/apify/apify-client-js/commit/68278995ccdb272f1d8bf9c3627ecf2a91d4f386)) by [@mixalturek](https://github.com/mixalturek)
 
 ### 🐛 Bug Fixes
 
 - ActorPermissionLevel was missing in ActorCollectionCreateOptions ([#940](https://github.com/apify/apify-client-js/pull/940)) ([4d8125e](https://github.com/apify/apify-client-js/commit/4d8125ebc1c6897d5cc2d1e602ef2d52468f2623)) by [@valekjo](https://github.com/valekjo)
+- Fix incomplete type hint of last run&#x2F;task ([#952](https://github.com/apify/apify-client-js/pull/952)) ([3924ce0](https://github.com/apify/apify-client-js/commit/3924ce0098e657c34c10dd55dca4ffd2b44c2bea)) by [@Pijukatel](https://github.com/Pijukatel)
+- Align User-Agent OS token with other Apify clients ([#964](https://github.com/apify/apify-client-js/pull/964)) ([1f0e814](https://github.com/apify/apify-client-js/commit/1f0e81477d2898145d318515c452ccdd4cd1d760)) by [@Pijukatel](https://github.com/Pijukatel)
 
 
-<!-- git-cliff-unreleased-end -->
 ## [2.23.4](https://github.com/apify/apify-client-js/releases/tag/v2.23.4) (2026-06-04)
 
 ### 🐛 Bug Fixes

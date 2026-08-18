@@ -17,7 +17,7 @@ Thank you for your interest in contributing to the official JavaScript/TypeScrip
 ### Prerequisites
 
 - Node.js 18+ (LTS recommended)
-- npm 10+
+- pnpm 10+
 
 ### Installation
 
@@ -31,18 +31,18 @@ Thank you for your interest in contributing to the official JavaScript/TypeScrip
 2. Install dependencies:
 
     ```bash
-    npm install
+    pnpm install
     ```
 
 3. Build the project:
 
     ```bash
-    npm run build
+    pnpm build
     ```
 
 4. Run the tests to verify everything works:
     ```bash
-    npm test
+    pnpm test
     ```
 
 ## Project Structure
@@ -91,20 +91,20 @@ test/
 
 ```bash
 # Build
-npm run build              # Full build (Node + browser bundle)
-npm run build:node         # TypeScript compilation only
-npm run build:browser      # RSBuild browser/UMD bundle
-npm run clean              # Remove dist directory
+pnpm build                 # Full build (Node + browser bundle)
+pnpm build:node            # TypeScript compilation only
+pnpm build:browser         # RSBuild browser/UMD bundle
+pnpm clean                 # Remove dist directory
 
 # Testing
-npm test                   # Build and run vitest suite
-npm run tsc-check-tests    # TypeScript check test files
+pnpm test                  # Build and run vitest suite
+pnpm tsc-check-tests       # TypeScript check test files
 
 # Linting & Formatting
-npm run lint               # ESLint check
-npm run lint:fix           # Auto-fix linting issues
-npm run format             # Prettier format
-npm run format:check       # Prettier check
+pnpm lint                  # Oxlint check (type-aware)
+pnpm lint:fix              # Auto-fix linting issues
+pnpm format                # oxfmt format
+pnpm format:check          # oxfmt check
 ```
 
 ### Build Output
@@ -118,13 +118,13 @@ The build produces multiple formats:
 
 ## Code Style
 
-This project uses ESLint and Prettier for code formatting and style.
+This project uses [oxlint](https://oxc.rs/docs/guide/usage/linter) and [oxfmt](https://oxc.rs/docs/guide/usage/formatter) for code linting and formatting.
 
 ### Configuration
 
 - **EditorConfig**: `.editorconfig` - 4 spaces, UTF-8, LF line endings
-- **Prettier**: `.prettierrc` - 120 char line width, 4 space tabs
-- **ESLint**: `eslint.config.mjs` - Based on `@apify/eslint-config`
+- **oxfmt**: `.oxfmtrc.json` - 120 char line width
+- **oxlint**: `oxlint.config.ts` - Based on `@apify/oxlint-config`
 
 ### Guidelines
 
@@ -134,15 +134,15 @@ This project uses ESLint and Prettier for code formatting and style.
 - Use single quotes for strings
 - Add trailing commas in multiline structures
 - Export types and interfaces alongside implementations
-- Avoid `any` types where possible (though the ESLint rule is disabled)
+- Avoid `any` types where possible (though the oxlint rule is disabled)
 
 ### Before Committing
 
 Always run:
 
 ```bash
-npm run lint:fix
-npm run format
+pnpm lint:fix
+pnpm format
 ```
 
 ## Testing
@@ -152,10 +152,10 @@ Tests are written using [Vitest](https://vitest.dev/) and run against a mock ser
 ### Running Tests
 
 ```bash
-npm test                   # Full build + test run
-npx vitest run             # Run tests only (requires prior build)
-npx vitest --watch         # Watch mode
-npx vitest run actors      # Run specific test file
+pnpm test                  # Full build + test run
+pnpm vitest run            # Run tests only (requires prior build)
+pnpm vitest --watch        # Watch mode
+pnpm vitest run actors     # Run specific test file
 ```
 
 ### Test Structure
@@ -220,9 +220,9 @@ Tests have a 20-second timeout configured in `vitest.config.mts`.
 
 1. **Fork the repository** and create a feature branch from `master`
 2. **Write/update tests** for any new functionality
-3. **Run the full test suite**: `npm test`
-4. **Run linting**: `npm run lint`
-5. **Run formatting**: `npm run format:check`
+3. **Run the full test suite**: `pnpm test`
+4. **Run linting**: `pnpm lint`
+5. **Run formatting**: `pnpm format:check`
 6. **Update TypeScript types** if you're adding/modifying API responses
 
 ### PR Title Format

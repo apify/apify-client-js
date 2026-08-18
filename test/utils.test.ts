@@ -1,6 +1,6 @@
 import type { WebhookUpdateData } from 'apify-client';
 import { ApifyApiError } from 'apify-client';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import * as utils from '../src/utils';
 
@@ -121,6 +121,34 @@ describe('utils.parseDateFields()', () => {
 
         expect(parsed.fooAt).toEqual('three days ago');
         expect(parsed.date).toEqual('30+ days');
+    });
+});
+
+describe('utils.maybeCompressValue()', () => {
+    test('returns undefined for small values', async () => {
+        expect(await utils.maybeCompressValue('small')).toBeUndefined();
+    });
+
+    test('returns undefined for non-string non-Buffer values', async () => {
+        expect(await utils.maybeCompressValue({ foo: 'bar' })).toBeUndefined();
+    });
+
+    test('compresses large string using brotli in Node.js', async () => {
+        const largeValue = 'x'.repeat(2048);
+        const result = await utils.maybeCompressValue(largeValue);
+        expect(result).not.toBeUndefined();
+        expect(result!.encoding).toBe('br');
+        expect(result!.data).toBeInstanceOf(Buffer);
+        expect(result!.data.length).toBeLessThan(Buffer.byteLength(largeValue));
+    });
+
+    test('compresses large Buffer using brotli in Node.js', async () => {
+        const largeValue = Buffer.alloc(2048, 'a');
+        const result = await utils.maybeCompressValue(largeValue);
+        expect(result).not.toBeUndefined();
+        expect(result!.encoding).toBe('br');
+        expect(result!.data).toBeInstanceOf(Buffer);
+        expect(result!.data.length).toBeLessThan(largeValue.length);
     });
 });
 

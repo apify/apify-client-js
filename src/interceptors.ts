@@ -5,7 +5,7 @@ import type { JsonObject } from 'type-fest';
 
 import { maybeParseBody } from './body_parser';
 import type { ApifyRequestConfig, ApifyResponse } from './http_client';
-import { isNode, maybeGzipValue } from './utils';
+import { isNode, maybeCompressValue } from './utils';
 
 /**
  * This error exists for the quite common situation, where only a partial JSON response is received and
@@ -78,14 +78,14 @@ function stringifyWithFunctions(obj: JsonObject) {
     });
 }
 
-async function maybeGzipRequest(config: ApifyRequestConfig): Promise<ApifyRequestConfig> {
+async function maybeCompressRequest(config: ApifyRequestConfig): Promise<ApifyRequestConfig> {
     if (config.headers?.['content-encoding']) return config;
 
-    const maybeZippedData = await maybeGzipValue(config.data);
-    if (maybeZippedData) {
+    const maybeCompressed = await maybeCompressValue(config.data);
+    if (maybeCompressed) {
         config.headers ??= {};
-        config.headers['content-encoding'] = 'gzip';
-        config.data = maybeZippedData;
+        config.headers['content-encoding'] = maybeCompressed.encoding;
+        config.data = maybeCompressed.data;
     }
 
     return config;
@@ -121,7 +121,7 @@ export type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<Apif
 export type ResponseInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyResponse>['use']>[0];
 
 export const requestInterceptors: RequestInterceptorFunction[] = [
-    maybeGzipRequest,
+    maybeCompressRequest,
     serializeRequest,
     ensureHeadersPrototype,
 ];
