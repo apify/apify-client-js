@@ -66,12 +66,13 @@ test('requestQueues().getOrCreate() creates a named queue and returns the existi
 
 test('requestQueues().list() iterates the user queues across pages', async () => {
     const createdIds: string[] = [];
-    for (let i = 0; i < 3; i++) {
-        const queue = await createQueue('rq');
-        createdIds.push(queue.id);
-    }
 
     try {
+        for (let i = 0; i < 3; i++) {
+            const queue = await createQueue('rq');
+            createdIds.push(queue.id);
+        }
+
         const collected = await collectUntilPresent(
             () => client.requestQueues().list({ desc: true, limit: 50 }),
             createdIds,
@@ -299,7 +300,7 @@ test('listRequests() with the pending filter returns the unhandled requests', as
     }
 });
 
-test('listRequests() is async-iterable and pages through the queue', async () => {
+test('listRequests() iteration stops at the requested limit', async () => {
     const createdQueue = await createQueue('rq');
     const queueClient = client.requestQueue(createdQueue.id);
 
@@ -518,13 +519,10 @@ test('unlockRequests() releases every lock held by this client', async () => {
         // Locks are acknowledged before they become visible to later reads, so unlocking straight away can
         // see fewer locks than were just taken. Locked requests drop out of the queue head, so wait until
         // the locked IDs are gone from it.
-        await pollUntilCondition(
-            async () => {
-                const head = await queueClient.listHead({ limit: 5 });
-                return head.items.every((item) => !lockedIds.has(item.id));
-            },
-            (allLocksVisible) => allLocksVisible,
-        );
+        await pollUntilCondition(async () => {
+            const head = await queueClient.listHead({ limit: 5 });
+            return head.items.every((item) => !lockedIds.has(item.id));
+        });
 
         const unlockResult = await queueClient.unlockRequests();
         expect(unlockResult.unlockedCount).toBe(3);

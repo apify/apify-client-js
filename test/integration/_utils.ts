@@ -2,8 +2,8 @@ import { randomInt } from 'node:crypto';
 
 const ID_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
-/** Generate a random object ID of the same alphabet and shape the API uses. */
-export function randomId(length = 17): string {
+/** Generate a random ID of `length` characters, drawn from the alphabet the API uses for object IDs. */
+export function randomId(length: number): string {
     let id = '';
     for (let i = 0; i < length; i++) {
         id += ID_CHARS[randomInt(ID_CHARS.length)];
@@ -54,6 +54,15 @@ export const ANY_RUN_STATUS = [
     'ABORTED',
 ] as const;
 
+/**
+ * Options that turn off the log redirection `call()` performs by default.
+ *
+ * `ActorClient.call()` streams the run log to stdout unless `log` is `null`, which costs two extra
+ * API requests per call and floods the CI output. Pass this wherever the redirected log is not what
+ * the test is checking.
+ */
+export const NO_LOG_REDIRECT = { log: null } as const;
+
 export interface PollOptions {
     /** Total seconds to keep polling before giving up. */
     timeoutSecs?: number;
@@ -91,10 +100,8 @@ export async function pollUntilCondition<T>(
     return result;
 }
 
-export interface CollectOptions {
-    maxAttempts?: number;
-    intervalSecs?: number;
-}
+const COLLECT_MAX_ATTEMPTS = 5;
+const COLLECT_INTERVAL_SECS = 1;
 
 /**
  * Drain an async-iterable listing until every expected ID is present.
@@ -110,10 +117,8 @@ export interface CollectOptions {
 export async function collectUntilPresent<T extends { id: string }>(
     iterableFactory: () => AsyncIterable<T>,
     expectedIds: Iterable<string>,
-    options: CollectOptions = {},
 ): Promise<T[]> {
-    const { maxAttempts = 5, intervalSecs = 1 } = options;
-    const expected = new Set(expectedIds);
+    const expected = [...expectedIds];
 
     const drain = async (): Promise<T[]> => {
         const collected: T[] = [];
@@ -124,10 +129,10 @@ export async function collectUntilPresent<T extends { id: string }>(
     };
 
     let collected = await drain();
-    for (let attempt = 1; attempt < maxAttempts; attempt++) {
+    for (let attempt = 1; attempt < COLLECT_MAX_ATTEMPTS; attempt++) {
         const collectedIds = new Set(collected.map((item) => item.id));
-        if ([...expected].every((id) => collectedIds.has(id))) break;
-        await sleep(intervalSecs * 1000);
+        if (expected.every((id) => collectedIds.has(id))) break;
+        await sleep(COLLECT_INTERVAL_SECS * 1000);
         collected = await drain();
     }
     return collected;

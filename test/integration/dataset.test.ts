@@ -62,12 +62,13 @@ test('datasets().getOrCreate() creates a named dataset and returns the existing 
 
 test('datasets().list() iterates the user datasets across pages', async () => {
     const createdIds: string[] = [];
-    for (let i = 0; i < 3; i++) {
-        const dataset = await createDataset();
-        createdIds.push(dataset.id);
-    }
 
     try {
+        for (let i = 0; i < 3; i++) {
+            const dataset = await createDataset();
+            createdIds.push(dataset.id);
+        }
+
         const collected = await collectUntilPresent(
             () => client.datasets().list({ desc: true, limit: 50 }),
             createdIds,

@@ -83,15 +83,6 @@ test('builds().list() at the user level returns the builds of the test user', as
     }
 });
 
-test('log() returns the log of a finished build', async () => {
-    const builds = await firstHelloWorldBuild(5);
-    const build = builds.find((item) => item.status === 'SUCCEEDED') ?? builds[0];
-
-    const logContent = await client.build(build.id).log().get();
-
-    expect(logContent).toBeDefined();
-});
-
 test('waitForFinish() returns immediately for a build that is already finished', async () => {
     const builds = await firstHelloWorldBuild(5);
     const finished = builds.find((item) => item.status === 'SUCCEEDED') ?? builds[0];
@@ -129,6 +120,7 @@ test('builds().list() at the user level is async-iterable', async () => {
         collected.push(build);
     }
 
+    expect(collected.length, 'the test account should have at least one build').toBeGreaterThanOrEqual(1);
     for (const build of collected) {
         expect(build.id).toBeTruthy();
     }

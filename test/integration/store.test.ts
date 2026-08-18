@@ -26,9 +26,10 @@ test('store().list() moves the window with offset', async () => {
     const firstPage = await client.store().list({ limit: 5, offset: 0 });
     const secondPage = await client.store().list({ limit: 5, offset: 5 });
 
-    if (firstPage.items.length === 5 && secondPage.items.length > 0) {
-        expect(secondPage.items[0].id).not.toBe(firstPage.items[0].id);
-    }
+    // The public store holds thousands of Actors, so both windows are always full.
+    expect(firstPage.items).toHaveLength(5);
+    expect(secondPage.items).toHaveLength(5);
+    expect(secondPage.items[0].id).not.toBe(firstPage.items[0].id);
 });
 
 test.for([
@@ -39,7 +40,7 @@ test.for([
 ])('store().list() filters by the $pricingModel pricing model', async ({ pricingModel }) => {
     const page = await client.store().list({ limit: 10, pricingModel });
 
-    expect(Array.isArray(page.items)).toBe(true);
+    expect(page.items.length, `the store should list Actors priced as ${pricingModel}`).toBeGreaterThan(0);
     for (const actor of page.items) {
         if (actor.currentPricingInfo?.pricingModel) {
             expect(actor.currentPricingInfo.pricingModel).toBe(pricingModel);

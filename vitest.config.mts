@@ -35,6 +35,9 @@ export default defineConfig({
                     // Fixed worker count, so the concurrency the suite puts on the live API does not
                     // scale with the core count of whatever machine runs it.
                     maxWorkers: 8,
+                    // A distinct group is required alongside `maxWorkers`: Vitest refuses to run two
+                    // projects that share a group order but resolve to different worker counts.
+                    sequence: { groupOrder: 1 },
                     // No automatic retries - flakiness is handled by polling helpers, not by rerunning.
                     retry: 0,
                 },

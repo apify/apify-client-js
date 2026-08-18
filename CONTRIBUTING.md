@@ -157,10 +157,10 @@ Tests are written using [Vitest](https://vitest.dev/) and split into two project
 ### Running Tests
 
 ```bash
-npm test                          # Full build + unit tests
-npx vitest run --project unit     # Unit tests only (requires prior build)
-npx vitest --watch                # Watch mode
-npx vitest run actors             # Run specific test file
+npm test                             # Full build + unit tests
+npx vitest run --project unit        # Unit tests only (requires prior build)
+npx vitest --watch --project unit    # Watch mode
+npx vitest run --project unit actors # Run specific test file
 ```
 
 ### Running the Integration Tests

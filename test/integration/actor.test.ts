@@ -11,7 +11,7 @@ import type {
 import { ActorListSortBy, ActorSourceType } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
-import { ANY_RUN_STATUS, getRandomResourceName } from './_utils.js';
+import { ANY_RUN_STATUS, getRandomResourceName, NO_LOG_REDIRECT } from './_utils.js';
 
 const HELLO_WORLD_ACTOR = 'apify/hello-world';
 const WEB_SCRAPER_ACTOR = 'apify/web-scraper';
@@ -47,8 +47,17 @@ async function createActor(options: { title?: string } = {}): Promise<Actor> {
  */
 type ListItemWithStats = ActorCollectionListItem & { stats?: { lastRunStartedAt?: Date } };
 
+/**
+ * Sort keys of the Actors in a listing that have actually run.
+ *
+ * An Actor that never ran carries no `lastRunStartedAt`, and where the API places those in the ordering
+ * is not part of the client's contract. Compare only the timestamps that are present, the same way the
+ * run feed assertions do.
+ */
 function lastRunSortKeys(items: ActorCollectionListItem[]): number[] {
-    return (items as ListItemWithStats[]).map((item) => item.stats?.lastRunStartedAt?.getTime() ?? 0);
+    return (items as ListItemWithStats[])
+        .map((item) => item.stats?.lastRunStartedAt?.getTime())
+        .filter((value): value is number => value !== undefined);
 }
 
 test('get() resolves a public Actor by its full name', async () => {
@@ -112,6 +121,7 @@ test('actors().list() is async-iterable and yields the user Actors', async () =>
         collected.push(actor);
     }
 
+    expect(collected.length, 'the test account should own at least one Actor').toBeGreaterThanOrEqual(1);
     for (const actor of collected) {
         expect(actor.id).toBeTruthy();
     }
@@ -191,7 +201,7 @@ test('defaultBuild() accepts waitForFinish and still returns a readable build', 
 
 test('lastRun() resolves to a readable run', async () => {
     const actorClient = client.actor(HELLO_WORLD_ACTOR);
-    const run = await actorClient.call();
+    const run = await actorClient.call(undefined, NO_LOG_REDIRECT);
 
     try {
         const lastRun = await actorClient.lastRun().get();
@@ -241,7 +251,7 @@ test('start() passes a run input through, and the run succeeds with it', async (
 test('call() waits for the run and resolves once it has SUCCEEDED', async () => {
     const run = await client
         .actor(HELLO_WORLD_ACTOR)
-        .call({ message: 'integration-test' }, { build: 'latest', memory: 256 });
+        .call({ message: 'integration-test' }, { build: 'latest', memory: 256, ...NO_LOG_REDIRECT });
 
     try {
         expect(run.status).toBe('SUCCEEDED');
