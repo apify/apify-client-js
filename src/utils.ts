@@ -45,7 +45,7 @@ export const anyObjectSchema = z.looseObject({});
  * the value the way an object schema does. Use it where a whole batch is validated at once.
  * @internal
  */
-export function isPlainObject(value: unknown): value is Record<string, unknown> {
+export function isNonArrayObject(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
@@ -454,6 +454,7 @@ export function applyQueryParamsToUrl(
 /**
  * Builds a `[check, message]` pair to spread into `.refine()`, asserting that at most one of `keys`
  * is present. Pass the options interface as `T`, so that a misspelled key is a type error.
+ * @internal
  */
 export const mutuallyExclusive = <T extends object>(...keys: (keyof T & string)[]): [(value: T) => boolean, string] => [
     (value) => keys.filter((key) => typeof value[key] !== 'undefined').length <= 1,

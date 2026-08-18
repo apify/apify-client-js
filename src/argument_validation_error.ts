@@ -20,16 +20,27 @@ function valueAtPath(root: unknown, path: readonly PropertyKey[]): unknown {
     return current;
 }
 
+/**
+ * How much of a received string the message renders. A rejected argument can be arbitrarily large - a
+ * whole JSON payload passed where an object was expected - and its full text would swamp the message.
+ */
+const MAX_RECEIVED_STRING_LENGTH = 80;
+
 /** Renders a primitive received value for an error; skips objects/Dates (noisy). */
 function describeReceived(value: unknown): string | undefined {
     switch (typeof value) {
         case 'string':
             // An empty string would render as bare backticks - make it visible.
-            return value === '' ? "''" : value;
+            if (value === '') return "''";
+            return value.length > MAX_RECEIVED_STRING_LENGTH
+                ? `${value.slice(0, MAX_RECEIVED_STRING_LENGTH)}...`
+                : value;
         case 'number':
         case 'boolean':
-        case 'bigint':
             return String(value);
+        case 'bigint':
+            // Keep the `n` suffix, so a rejected bigint is not mistaken for a number.
+            return `${value}n`;
         default:
             return undefined;
     }
@@ -54,20 +65,64 @@ function describeIssue(issue: z.ZodError['issues'][number], value: unknown): str
     return issue.message;
 }
 
-/** Renders one issue as a line each; a union expands into a line per failed arm. */
-function formatIssue(issue: z.ZodError['issues'][number], root: unknown, basePath: readonly PropertyKey[]): string[] {
+/**
+ * How many issue lines the message renders, before a closing "... and N more" line. Validating a
+ * large array - a dataset push, a request batch - can fail on every element, and rendering all of
+ * them would make the message megabytes long. The full set stays on `issues` either way.
+ */
+const MAX_RENDERED_LINES = 10;
+
+/**
+ * How deep into the value the lines for `issue` would sit, as a path length. Computed without
+ * rendering anything, so a union can weigh its arms before any string is built.
+ */
+function deepestIssueDepth(issue: z.ZodError['issues'][number], baseDepth: number): number {
+    const depth = baseDepth + issue.path.length;
+    if (issue.code === 'invalid_union') {
+        let deepest = -1;
+        for (const arm of issue.errors) {
+            for (const nested of arm) deepest = Math.max(deepest, deepestIssueDepth(nested, depth));
+        }
+        return deepest;
+    }
+    return depth;
+}
+
+/** Collects one line per issue into `lines`; a union expands into a line per deepest-failing arm. */
+function collectIssueLines(
+    issue: z.ZodError['issues'][number],
+    root: unknown,
+    basePath: readonly PropertyKey[],
+    lines: string[],
+    counter: { total: number },
+): void {
     const path = [...basePath, ...issue.path];
     // A union's own message is a bare "Invalid input" - the useful part is in `errors`,
     // whose paths are relative to the union, hence passing `path` down as the base.
     if (issue.code === 'invalid_union') {
-        return issue.errors.flatMap((arm) => arm.flatMap((nested) => formatIssue(nested, root, path)));
+        // Only the arms that reached deepest are reported. An arm that failed nearer the root rejected a
+        // shape the value never had - for `[{ ok: 1 }, 2]` against `object | string | array`, the object
+        // and string arms fail on the whole array, and only the array arm can point at `[1]`. When every
+        // arm fails at the same depth, as for an argument of an outright wrong type, they are all kept.
+        const armDepths = issue.errors.map((arm) =>
+            arm.reduce((deepest, nested) => Math.max(deepest, deepestIssueDepth(nested, path.length)), -1),
+        );
+        const deepest = Math.max(...armDepths);
+        for (const [index, arm] of issue.errors.entries()) {
+            if (armDepths[index] !== deepest) continue;
+            for (const nested of arm) collectIssueLines(nested, root, path, lines, counter);
+        }
+        return;
     }
+
+    counter.total += 1;
+    if (lines.length >= MAX_RENDERED_LINES) return;
 
     const location = path.length ? ` at \`${formatIssuePath(path)}\`` : '';
     const value = valueAtPath(root, path);
     const received = describeReceived(value);
     const got = received === undefined ? '' : `, got \`${received}\``;
-    return [`${describeIssue(issue, value)}${location}${got}`];
+    lines.push(`${describeIssue(issue, value)}${location}${got}`);
 }
 
 /**
@@ -77,7 +132,13 @@ function formatIssue(issue: z.ZodError['issues'][number], root: unknown, basePat
  * than zod's default, which omits the received value.
  */
 function formatZodError(error: z.ZodError, root: unknown): string {
-    return error.issues.flatMap((issue) => formatIssue(issue, root, [])).join('\n');
+    const lines: string[] = [];
+    const counter = { total: 0 };
+    for (const issue of error.issues) collectIssueLines(issue, root, [], lines, counter);
+
+    const hidden = counter.total - lines.length;
+    if (hidden > 0) lines.push(`... and ${hidden} more problem${hidden === 1 ? '' : 's'}`);
+    return lines.join('\n');
 }
 
 /**
@@ -88,9 +149,8 @@ function formatZodError(error: z.ZodError, root: unknown): string {
  * {@link https://zod.dev | zod} issues are available on `issues`, and the
  * original `ZodError` on `cause`, for programmatic inspection.
  *
- * This class is intentionally kept in sync with the identical copies in
- * `@crawlee/core` and the Apify SDK - `apify-client` sits below both in the
- * dependency graph, so it cannot import theirs.
+ * `apify-client` sits below `@crawlee/core` and the Apify SDK in the dependency
+ * graph, so it defines its own error type rather than importing one from them.
  */
 export class ArgumentValidationError extends Error {
     /** Structured issues from the underlying schema check. */

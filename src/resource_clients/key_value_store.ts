@@ -55,9 +55,14 @@ const getRecordOptionsSchema = z.strictObject({
 const recordSchema = z.strictObject({
     key: z.string(),
     // Values are arbitrary, and a `z.object()` arm would walk every key of a large buffer.
-    // Symbols and bigints are rejected because they cannot be serialized to JSON.
+    // Symbols, bigints and non-finite numbers are rejected because they cannot be serialized to JSON -
+    // the first two throw, and `NaN` / `Infinity` would silently become `null`.
     value: z.custom<JsonValue>(
-        (value) => value !== undefined && typeof value !== 'symbol' && typeof value !== 'bigint',
+        (value) =>
+            value !== undefined &&
+            typeof value !== 'symbol' &&
+            typeof value !== 'bigint' &&
+            (typeof value !== 'number' || Number.isFinite(value)),
         'Expected a defined, JSON-serializable value',
     ),
     contentType: z.string().min(1).optional(),

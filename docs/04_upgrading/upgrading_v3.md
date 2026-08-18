@@ -19,7 +19,7 @@ Invalid arguments now throw an <ApiLink to="class/ArgumentValidationError">`Argu
 
 ```diff
 - Expected property string `countryCode` to match `/^[A-Z]{2}$/`, got `CZE` in object   // v2 (ow)
-+ Invalid input: must match pattern /^[A-Z]{2}$/ at `countryCode`, got `CZE`             // v3 (zod)
++ Invalid string: must match pattern /^[A-Z]{2}$/ at `countryCode`, got `CZE`            // v3 (zod)
 ```
 
 The structured zod issues are available on `issues`, and the original `ZodError` on `cause`:
@@ -43,11 +43,11 @@ If you were matching on `ow`'s `ArgumentError`, switch to `ArgumentValidationErr
 
 ### Arrays and functions no longer pass where a plain object is expected
 
-`ow`'s object check let arrays and functions through wherever a plain object was expected. Zod's does not, so passing one now throws instead of reaching the API with a nonsensical body. This affects `update()` / `create()` fields, `TaskClient.start()` / `call()` input, the storage `schema` option, and `DatasetClient.pushItems()` items.
+`ow`'s object check let arrays and functions through wherever a plain object was expected. Zod's does not, so passing one now throws instead of reaching the API with a nonsensical body. This affects `update()` / `create()` fields, `TaskClient.start()` / `call()` input, the storage `schema` option, `DatasetClient.pushItems()` items, and `RequestQueueClient.addRequest()` / `batchAddRequests()` requests.
 
 ```js
 // Now throws: Invalid input: expected object, received array
-await client.dataset('my-dataset').pushItems([{ foo: 'bar' }, [1, 2, 3]]);
+await client.actor('my-actor').update([{ name: 'my-actor' }]);
 ```
 
 `Date`, `Map`, `Set` and other class instances still pass as objects, same as under `ow`.
@@ -57,17 +57,20 @@ await client.dataset('my-dataset').pushItems([{ foo: 'bar' }, [1, 2, 3]]);
 `ow` only checked the type, so `Infinity` passed as a number and an invalid `Date` passed as a date. Zod additionally requires a *finite* number and a *valid* date, so both now throw:
 
 ```js
-// Now throws: Invalid input: expected a finite number at `timeoutSecs`, got `Infinity`
-await client.actor('my-actor').call({ timeoutSecs: Infinity });
+// Now throws: Invalid input: expected a finite number at `timeout`, got `Infinity`
+await client.actor('my-actor').call(undefined, { timeout: Infinity });
 
 // Now throws: Invalid input: expected a valid date at `startedBefore`
+//             Invalid input: expected string, received Date at `startedBefore`
 await client.actor('my-actor').runs().list({ startedBefore: new Date('nonsense') });
 ```
 
-This affects numeric options such as `waitSecs`, `timeoutSecs` and `memory`, and date options such as `startedBefore` / `startedAfter`.
+The second example reports a line per arm, because `startedBefore` accepts either a `Date` or a string.
+
+This affects numeric options such as `waitSecs`, `timeout` and `memory`, and date options such as `startedBefore` / `startedAfter`. `KeyValueStoreClient.setRecord()` rejects `NaN` and `Infinity` as a record value too, since `JSON.stringify()` turns both into `null`.
 
 ### A few always-rejected options are gone from the types
 
-Some options were declared in the TypeScript types but always rejected at runtime by the API: `chunkSize` on `DatasetClient.downloadItems()` and `createItemsPublicUrl()`, and `signature` on `createItemsPublicUrl()` and `createKeysPublicUrl()`. These are no longer part of the option types, so passing them is now a compile-time error instead of a runtime throw.
+Some options were declared in the TypeScript types but always rejected by the client's own validation before a request was ever sent: `chunkSize` on `DatasetClient.downloadItems()` and `createItemsPublicUrl()`, and `signature` on `createItemsPublicUrl()` and `createKeysPublicUrl()`. These are no longer part of the option types, so passing them is now a compile-time error instead of a runtime throw.
 
-`chunkSize` still works everywhere else it always did - on every paginating `list()` method.
+The reverse also happened: `chunkSize` now works on every paginating `list()` method. In v2 only `DatasetClient.listItems()` accepted it - everywhere else it type-checked and then threw.

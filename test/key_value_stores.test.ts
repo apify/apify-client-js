@@ -471,15 +471,17 @@ describe('Key-Value Store methods', () => {
             validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
         });
 
-        test('setRecord() rejects values that cannot be serialized to JSON', async () => {
-            const kvsClient = client.keyValueStore('some-id');
+        test.each([
+            { name: 'undefined', value: undefined },
+            { name: 'a symbol', value: Symbol('nope') },
+            { name: 'a bigint', value: 1n },
+            { name: 'NaN', value: Number.NaN },
+            { name: 'Infinity', value: Infinity },
+        ])('setRecord() rejects $name, which cannot be serialized to JSON', async ({ value }) => {
+            const call = client.keyValueStore('some-id').setRecord({ key: 'some-key', value: value as any });
 
-            for (const value of [undefined, Symbol('nope'), 1n]) {
-                const call = kvsClient.setRecord({ key: 'some-key', value: value as any });
-
-                await expect(call).rejects.toThrow(ArgumentValidationError);
-                await expect(call).rejects.toThrow('Expected a defined, JSON-serializable value');
-            }
+            await expect(call).rejects.toThrow(ArgumentValidationError);
+            await expect(call).rejects.toThrow('Expected a defined, JSON-serializable value');
         });
 
         test('setRecord() works with custom timeout options', async () => {

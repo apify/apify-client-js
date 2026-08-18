@@ -60,8 +60,9 @@ export default defineConfig({
                 ...config.optimization,
                 splitChunks: false,
             };
-            // A regression guard, not a target: the bundle sits at ~288 kB, and once silently grew to
-            // 1439 kB with tree-shaking and minification off. Raising this deliberately is fine.
+            // A regression guard, not a target: the bundle sits at ~288 kB, so this only fails the
+            // build on an unnoticed jump. A `zod` minor is the likeliest cause, since it is a runtime
+            // dependency on a caret range - bumping this constant is the expected response.
             config.performance = {
                 hints: 'error',
                 maxAssetSize: MAX_BUNDLE_BYTES,

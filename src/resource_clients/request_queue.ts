@@ -13,7 +13,7 @@ import {
     anyObjectSchema,
     cast,
     catchNotFoundOrThrow,
-    isPlainObject,
+    isNonArrayObject,
     mutuallyExclusive,
     parseDateFields,
     pluckData,
@@ -36,7 +36,7 @@ const listAndLockHeadOptionsSchema = z.strictObject({
 // Predicates, not `z.looseObject` arms: these run over a whole batch, and an object arm would copy
 // every key of every request. `id` is assigned by the API, so a new request must not carry one.
 const newRequestSchema = z.custom<Omit<RequestQueueClientRequestSchema, 'id'>>(
-    (value) => isPlainObject(value) && value.id === undefined,
+    (value) => isNonArrayObject(value) && value.id === undefined,
     'Expected a request object without an `id`',
 );
 const forefrontOptionsSchema = z.strictObject({ forefront: z.boolean().optional() });
@@ -45,7 +45,7 @@ const batchAddRequestsWithRetriesSchema = z.array(newRequestSchema).min(1);
 const optionalBooleanSchema = z.boolean().optional();
 const optionalNumberSchema = z.number().optional();
 const requestToDeleteSchema = z.custom<RequestQueueClientRequestToDelete>(
-    (value) => isPlainObject(value) && (typeof value.id === 'string' || typeof value.uniqueKey === 'string'),
+    (value) => isNonArrayObject(value) && (typeof value.id === 'string' || typeof value.uniqueKey === 'string'),
     'Expected a request object with an `id` or a `uniqueKey`',
 );
 const batchDeleteRequestsSchema = z
@@ -54,7 +54,7 @@ const batchDeleteRequestsSchema = z
     .max(REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION);
 const requestIdSchema = z.string();
 const existingRequestSchema = z.custom<RequestQueueClientRequestSchema>(
-    (value) => isPlainObject(value) && typeof value.id === 'string',
+    (value) => isNonArrayObject(value) && typeof value.id === 'string',
     'Expected a request object with an `id`',
 );
 const prolongRequestLockOptionsSchema = z.strictObject({

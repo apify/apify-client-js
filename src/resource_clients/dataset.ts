@@ -18,14 +18,14 @@ import {
     applyQueryParamsToUrl,
     cast,
     catchNotFoundOrThrow,
-    isPlainObject,
+    isNonArrayObject,
     paginationOptionsShape,
     pluckData,
     validate,
 } from '../utils';
 
-// A type-only check, since a `z.object()` arm would walk and copy every key of every pushed item.
-const itemSchema = z.custom<object>(isPlainObject, 'Expected an object');
+// A predicate, not a `z.object()` arm, which would walk and copy every key of every pushed item.
+const itemSchema = z.custom<object>(isNonArrayObject, 'Expected an object');
 const listItemsOptionsSchema = z.strictObject({
     clean: z.boolean().optional(),
     desc: z.boolean().optional(),
