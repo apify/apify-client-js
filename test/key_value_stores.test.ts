@@ -475,6 +475,7 @@ describe('Key-Value Store methods', () => {
             { name: 'undefined', value: undefined },
             { name: 'a symbol', value: Symbol('nope') },
             { name: 'a bigint', value: 1n },
+            { name: 'a function', value: () => {} },
             { name: 'NaN', value: Number.NaN },
             { name: 'Infinity', value: Infinity },
         ])('setRecord() rejects $name, which cannot be serialized to JSON', async ({ value }) => {
