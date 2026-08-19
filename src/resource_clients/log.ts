@@ -102,6 +102,9 @@ export class LogClient extends ResourceClient {
     }
 }
 
+/**
+ * @since Added in 2.20.0
+ */
 export interface LogOptions {
     /** @default false */
     raw?: boolean;
@@ -109,6 +112,7 @@ export interface LogOptions {
 
 /**
  * Logger for redirected actor logs.
+ * @since Added in 2.20.0
  */
 export class LoggerActorRedirect extends Logger {
     constructor(options = {}) {
@@ -141,6 +145,7 @@ export class LoggerActorRedirect extends Logger {
 
 /**
  * Helper class for redirecting streamed Actor logs to another log.
+ * @since Added in 2.20.0
  */
 export class StreamedLog {
     private destinationLog: Log;
@@ -264,6 +269,9 @@ export class StreamedLog {
     }
 }
 
+/**
+ * @since Added in 2.20.0
+ */
 export interface StreamedLogOptions {
     /** Log client used to communicate with the Apify API. */
     logClient: LogClient;

@@ -1,6 +1,6 @@
 {
     "name": "apify-client",
-    "version": "2.24.1",
+    "version": "2.25.1",
     "description": "Apify API client for JavaScript",
     "engines": {
         "node": ">=22.0.0"
@@ -98,11 +98,11 @@
         "ajv": "^8.17.1",
         "body-parser": "^2.0.0",
         "compression": "^1.7.4",
-        "esbuild": "0.28.1",
+        "esbuild": "0.28.2",
         "express": "^5.0.0",
         "gen-esm-wrapper": "^1.1.2",
-        "oxfmt": "0.61.0",
-        "oxlint": "1.76.0",
+        "oxfmt": "0.63.0",
+        "oxlint": "1.78.0",
         "oxlint-tsgolint": "7.0.2001",
         "puppeteer": "^25.0.0",
         "rimraf": "^6.0.0",

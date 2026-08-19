@@ -247,6 +247,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * console.log(`Public URL: ${url}`);
      * // You can now share this URL or use it in a browser
      * ```
+     * @since Added in 2.14.0
      */
     async getRecordPublicUrl(key: string): Promise<string> {
         validate(nonEmptyKeySchema, key);
@@ -284,6 +285,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * });
      * console.log(`Share this URL: ${url}`);
      * ```
+     * @since Added in 2.13.0
      */
     async createKeysPublicUrl(options: KeyValueClientCreateKeysUrlOptions = {}) {
         validate(createKeysPublicUrlOptionsSchema, options);
@@ -324,6 +326,7 @@ export class KeyValueStoreClient extends ResourceClient {
      *   console.log('OUTPUT record exists');
      * }
      * ```
+     * @since Added in 2.9.0
      */
     async recordExists(key: string): Promise<boolean> {
         const requestOpts: Record<string, unknown> = {
@@ -522,8 +525,14 @@ export class KeyValueStoreClient extends ResourceClient {
 export interface KeyValueStore {
     id: string;
     name?: string;
+    /**
+     * @since Added in 2.6.1
+     */
     title?: string;
     userId: string;
+    /**
+     * @since Added in 2.21.0
+     */
     username?: string;
     createdAt: Date;
     modifiedAt: Date;
@@ -531,8 +540,17 @@ export interface KeyValueStore {
     actId?: string;
     actRunId?: string;
     stats?: KeyValueStoreStats;
+    /**
+     * @since Added in 2.12.2
+     */
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
+    /**
+     * @since Added in 2.13.0
+     */
     urlSigningSecretKey?: string | null;
+    /**
+     * @since Added in 2.13.0
+     */
     keysPublicUrl: string;
 }
 
@@ -552,7 +570,13 @@ export interface KeyValueStoreStats {
  */
 export interface KeyValueClientUpdateOptions {
     name?: string | null;
+    /**
+     * @since Added in 2.6.1
+     */
     title?: string;
+    /**
+     * @since Added in 2.12.2
+     */
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
@@ -563,7 +587,13 @@ export interface KeyValueClientListKeysOptions {
     limit?: number;
     exclusiveStartKey?: string;
     collection?: string;
+    /**
+     * @since Added in 2.12.5
+     */
     prefix?: string;
+    /**
+     * @since Added in 2.13.0
+     */
     signature?: string;
 }
 
@@ -572,6 +602,7 @@ export interface KeyValueClientListKeysOptions {
  *
  * Extends {@link KeyValueClientListKeysOptions} with URL expiration control, minus `signature` (this
  * method produces one).
+ * @since Added in 2.16.0
  */
 export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientListKeysOptions, 'signature'> {
     expiresInSecs?: number;
@@ -597,6 +628,9 @@ export interface KeyValueClientListKeysResult {
 export interface KeyValueListItem {
     key: string;
     size: number;
+    /**
+     * @since Added in 2.15.1
+     */
     recordPublicUrl: string;
 }
 
@@ -606,6 +640,9 @@ export interface KeyValueListItem {
 export interface KeyValueClientGetRecordOptions {
     buffer?: boolean;
     stream?: boolean;
+    /**
+     * @since Added in 2.18.0
+     */
     signature?: string;
 }
 
@@ -622,6 +659,7 @@ export interface KeyValueStoreRecord<T> {
 
 /**
  * Options for storing a record in a Key-Value Store.
+ * @since Added in 2.12.4
  */
 export interface KeyValueStoreRecordOptions {
     timeoutSecs?: number;
@@ -633,6 +671,7 @@ export interface KeyValueStoreRecordOptions {
  *
  * Returns Readable if stream option is true, Buffer if buffer option is true,
  * otherwise returns JsonValue.
+ * @since Added in 2.0.6
  */
 export type ReturnTypeFromOptions<Options extends KeyValueClientGetRecordOptions> = Options['stream'] extends true
     ? Readable

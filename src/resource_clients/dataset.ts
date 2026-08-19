@@ -330,6 +330,7 @@ export class DatasetClient<
      *
      * @returns Dataset statistics, or `undefined` if not available
      * @see https://docs.apify.com/api/v2/dataset-statistics-get
+     * @since Added in 2.11.2
      */
     async getStatistics(): Promise<DatasetStatistics | undefined> {
         const requestOpts: ApifyRequestConfig = {
@@ -377,6 +378,7 @@ export class DatasetClient<
      *   skipEmpty: true
      * });
      * ```
+     * @since Added in 2.13.0
      */
     async createItemsPublicUrl(options: DatasetClientCreateItemsUrlOptions = {}): Promise<string> {
         validate(createItemsPublicUrlOptionsSchema, options);
@@ -423,8 +425,14 @@ export class DatasetClient<
 export interface Dataset {
     id: string;
     name?: string;
+    /**
+     * @since Added in 2.6.1
+     */
     title?: string;
     userId: string;
+    /**
+     * @since Added in 2.21.0
+     */
     username?: string;
     createdAt: Date;
     modifiedAt: Date;
@@ -435,8 +443,17 @@ export interface Dataset {
     actRunId?: string;
     stats: DatasetStats;
     fields: string[];
+    /**
+     * @since Added in 2.12.2
+     */
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
+    /**
+     * @since Added in 2.13.0
+     */
     urlSigningSecretKey?: string | null;
+    /**
+     * @since Added in 2.13.0
+     */
     itemsPublicUrl: string;
 }
 
@@ -455,7 +472,13 @@ export interface DatasetStats {
  */
 export interface DatasetClientUpdateOptions {
     name?: string | null;
+    /**
+     * @since Added in 2.6.1
+     */
     title?: string;
+    /**
+     * @since Added in 2.12.2
+     */
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
@@ -468,13 +491,22 @@ export interface DatasetClientUpdateOptions {
 export interface DatasetClientListItemOptions extends PaginationOptions {
     clean?: boolean;
     desc?: boolean;
+    /**
+     * @since Added in 2.6.1
+     */
     flatten?: string[];
     fields?: string[];
     omit?: string[];
     skipEmpty?: boolean;
     skipHidden?: boolean;
     unwind?: string | string[]; // TODO: when doing a breaking change release, change to string[] only
+    /**
+     * @since Added in 2.2.0
+     */
     view?: string;
+    /**
+     * @since Added in 2.13.0
+     */
     signature?: string;
 }
 
@@ -483,6 +515,7 @@ export interface DatasetClientListItemOptions extends PaginationOptions {
  *
  * Extends {@link DatasetClientListItemOptions} with URL expiration control, minus `chunkSize` (it only
  * sizes a client-side iteration) and `signature` (this method produces one).
+ * @since Added in 2.16.0
  */
 export interface DatasetClientCreateItemsUrlOptions extends Omit<
     DatasetClientListItemOptions,
@@ -528,6 +561,7 @@ export interface DatasetClientDownloadItemsOptions extends Omit<DatasetClientLis
  * Statistical information about dataset fields.
  *
  * Provides insights into the data structure and content of the dataset.
+ * @since Added in 2.11.2
  */
 export interface DatasetStatistics {
     fieldStatistics: Record<string, FieldStatistics>;
@@ -535,6 +569,7 @@ export interface DatasetStatistics {
 
 /**
  * Statistics for a single field in a dataset.
+ * @since Added in 2.11.2
  */
 export interface FieldStatistics {
     min?: number;

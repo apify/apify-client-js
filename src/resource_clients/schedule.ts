@@ -103,6 +103,9 @@ export interface Schedule {
     id: string;
     userId: string;
     name: string;
+    /**
+     * @since Added in 2.6.1
+     */
     title?: string;
     cronExpression: string;
     timezone: Timezone;
@@ -114,6 +117,9 @@ export interface Schedule {
     nextRunAt: string;
     lastRunAt: string;
     actions: ScheduleAction[];
+    /**
+     * @since Added in 2.9.4
+     */
     notifications: {
         email: boolean;
     };
@@ -121,6 +127,7 @@ export interface Schedule {
 
 /**
  * Data for creating or updating a Schedule.
+ * @since Added in 2.6.2
  */
 export type ScheduleCreateOrUpdateData = Partial<
     Pick<
@@ -173,6 +180,9 @@ export interface ScheduledActorRunOptions {
     build: string;
     timeoutSecs: number;
     memoryMbytes: number;
+    /**
+     * @since Added in 2.19.0
+     */
     restartOnError?: boolean;
 }
 

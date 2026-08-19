@@ -27,6 +27,9 @@ export abstract class ApiClient {
 
     baseUrl: string;
 
+    /**
+     * @since Added in 2.17.0
+     */
     publicBaseUrl: string;
 
     resourcePath: string;

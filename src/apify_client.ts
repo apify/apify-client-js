@@ -76,6 +76,9 @@ const requestQueueOptionsSchema = z.strictObject({
 export class ApifyClient {
     baseUrl: string;
 
+    /**
+     * @since Added in 2.17.0
+     */
     publicBaseUrl: string;
 
     token?: string;
@@ -548,6 +551,7 @@ export class ApifyClient {
      * @param message - The status message to set
      * @param options - Additional options for the status message
      * @throws {Error} If `ACTOR_RUN_ID` environment variable is not set
+     * @since Added in 2.7.0
      */
     async setStatusMessage(message: string, options?: SetStatusMessageOptions): Promise<void> {
         const runId = process.env[ACTOR_ENV_VARS.RUN_ID];
@@ -567,7 +571,10 @@ export class ApifyClient {
 export interface ApifyClientOptions {
     /** @default https://api.apify.com */
     baseUrl?: string;
-    /** @default https://api.apify.com */
+    /**
+     * @default https://api.apify.com
+     * @since Added in 2.17.0
+     */
     publicBaseUrl?: string;
     /** @default 8 */
     maxRetries?: number;
@@ -578,5 +585,8 @@ export interface ApifyClientOptions {
     /** @default 360 */
     timeoutSecs?: number;
     token?: string;
+    /**
+     * @since Added in 2.10.0
+     */
     userAgentSuffix?: string | string[];
 }
