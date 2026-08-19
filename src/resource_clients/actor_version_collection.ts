@@ -1,7 +1,7 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
-import { anyObjectSchema, validate } from '../utils';
+import { anyObjectSchema, parseArgument } from '../utils';
 import type { ActorVersion, FinalActorVersion } from './actor_version';
 
 const actorVersionSchema = anyObjectSchema.optional();
@@ -74,7 +74,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/act-versions-post
      */
     async create(actorVersion: ActorVersion): Promise<FinalActorVersion> {
-        validate(actorVersionSchema, actorVersion);
+        parseArgument(actorVersion, actorVersionSchema);
 
         return this._create(actorVersion);
     }

@@ -97,6 +97,15 @@ describe('ArgumentValidationError', () => {
         expect(lines.every((line) => line.endsWith('got `42`'))).toBe(true);
     });
 
+    test('message appends the label naming the validated interface to every line', () => {
+        const value = { countryCode: 'CZE', retries: 'lots' };
+        const error = new ArgumentValidationError(schema.safeParse(value).error!, value, 'MyOptions');
+        const lines = error.message.split('\n');
+
+        expect(lines).toHaveLength(2);
+        expect(lines.every((line) => line.endsWith(' in `MyOptions`'))).toBe(true);
+    });
+
     test('message renders a bigint with its suffix', () => {
         const value = { retries: 1n };
         const error = new ArgumentValidationError(schema.safeParse(value).error!, value);

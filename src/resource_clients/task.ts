@@ -11,10 +11,10 @@ import {
     anyObjectSchema,
     cast,
     catchNotFoundOrThrow,
+    parseArgument,
     parseDateFields,
     pluckData,
     stringifyWebhooksToBase64,
-    validate,
 } from '../utils';
 import type { ActorLastRunOptions, ActorRun, ActorStandby, ActorStartOptions } from './actor';
 import { RunClient } from './run';
@@ -96,7 +96,7 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-put
      */
     async update(newFields: TaskUpdateData): Promise<Task> {
-        validate(anyObjectSchema, newFields);
+        parseArgument(newFields, anyObjectSchema);
 
         return this._update(newFields);
     }
@@ -159,17 +159,17 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-runs-post
      */
     async start(input?: Dictionary, options: TaskStartOptions = {}): Promise<ActorRun> {
-        validate(inputSchema, input);
-        validate(startOptionsSchema, options);
+        parseArgument(input, inputSchema);
+        const parsed = parseArgument(options, startOptionsSchema, 'TaskStartOptions');
 
-        const { waitForFinish, timeout, memory, build, maxItems, maxTotalChargeUsd, restartOnError } = options;
+        const { waitForFinish, timeout, memory, build, maxItems, maxTotalChargeUsd, restartOnError } = parsed;
 
         const params = {
             waitForFinish,
             timeout,
             memory,
             build,
-            webhooks: stringifyWebhooksToBase64(options.webhooks),
+            webhooks: stringifyWebhooksToBase64(parsed.webhooks),
             maxItems,
             maxTotalChargeUsd,
             restartOnError,
@@ -210,10 +210,10 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-runs-post
      */
     async call(input?: Dictionary, options: TaskCallOptions = {}): Promise<ActorRun> {
-        validate(inputSchema, input);
-        validate(callOptionsSchema, options);
+        parseArgument(input, inputSchema);
+        const parsed = parseArgument(options, callOptionsSchema, 'TaskCallOptions');
 
-        const { waitSecs, ...startOptions } = options;
+        const { waitSecs, ...startOptions } = parsed;
 
         const { id } = await this.start(input, startOptions);
 
@@ -273,12 +273,12 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-runs-last-get
      */
     lastRun(options: TaskLastRunOptions = {}): RunClient {
-        validate(lastRunOptionsSchema, options);
+        const parsed = parseArgument(options, lastRunOptionsSchema, 'TaskLastRunOptions');
 
         return new RunClient(
             this._subResourceOptions({
                 id: 'last',
-                params: this._params(options),
+                params: this._params(parsed),
                 resourcePath: 'runs',
             }),
         );

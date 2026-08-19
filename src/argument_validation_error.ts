@@ -131,14 +131,16 @@ function collectIssueLines(
  * /^[A-Z]{2}$/ at `countryCode`, got `CZE` ``) - closer to the old `ow` errors
  * than zod's default, which omits the received value.
  */
-function formatZodError(error: z.ZodError, root: unknown): string {
+function formatZodError(error: z.ZodError, root: unknown, label?: string): string {
     const lines: string[] = [];
     const counter = { total: 0 };
     for (const issue of error.issues) collectIssueLines(issue, root, [], lines, counter);
 
+    // The label names the validated interface, the way ow's errors ended with "in object `X`".
+    const rendered = label ? lines.map((line) => `${line} in \`${label}\``) : [...lines];
     const hidden = counter.total - lines.length;
-    if (hidden > 0) lines.push(`... and ${hidden} more problem${hidden === 1 ? '' : 's'}`);
-    return lines.join('\n');
+    if (hidden > 0) rendered.push(`... and ${hidden} more problem${hidden === 1 ? '' : 's'}`);
+    return rendered.join('\n');
 }
 
 /**
@@ -156,8 +158,8 @@ export class ArgumentValidationError extends Error {
     /** Structured issues from the underlying schema check. */
     readonly issues: z.ZodError['issues'];
 
-    constructor(error: z.ZodError, value: unknown) {
-        super(formatZodError(error, value), { cause: error });
+    constructor(error: z.ZodError, value: unknown, label?: string) {
+        super(formatZodError(error, value, label), { cause: error });
         this.name = 'ArgumentValidationError';
         this.issues = error.issues;
     }

@@ -5,7 +5,7 @@ import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
-import { anyObjectSchema, paginationOptionsShape, validate } from '../utils';
+import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils';
 import type { KeyValueStore } from './key_value_store';
 
 const listOptionsSchema = z.strictObject({
@@ -71,9 +71,9 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     list(
         options: KeyValueStoreCollectionClientListOptions = {},
     ): Promise<KeyValueStoreCollectionListResult> & AsyncIterable<KeyValueStore> {
-        validate(listOptionsSchema, options);
+        const parsed = parseArgument(options, listOptionsSchema, 'KeyValueStoreCollectionClientListOptions');
 
-        return this._listPaginated(options);
+        return this._listPaginated(parsed);
     }
 
     /**
@@ -88,8 +88,8 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
         name?: string,
         options?: KeyValueStoreCollectionClientGetOrCreateOptions,
     ): Promise<KeyValueStore> {
-        validate(nameSchema, name);
-        validate(schemaSchema, options?.schema); // TODO: Add schema validation
+        parseArgument(name, nameSchema);
+        parseArgument(options?.schema, schemaSchema); // TODO: Add schema validation
 
         return this._getOrCreate(name, options);
     }

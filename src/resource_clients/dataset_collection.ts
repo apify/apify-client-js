@@ -5,7 +5,7 @@ import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
-import { anyObjectSchema, paginationOptionsShape, validate } from '../utils';
+import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils';
 import type { Dataset } from './dataset';
 
 const listOptionsSchema = z.strictObject({
@@ -71,9 +71,9 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     list(
         options: DatasetCollectionClientListOptions = {},
     ): Promise<DatasetCollectionClientListResult> & AsyncIterable<Dataset> {
-        validate(listOptionsSchema, options);
+        const parsed = parseArgument(options, listOptionsSchema, 'DatasetCollectionClientListOptions');
 
-        return this._listPaginated(options);
+        return this._listPaginated(parsed);
     }
 
     /**
@@ -85,8 +85,8 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/datasets-post
      */
     async getOrCreate(name?: string, options?: DatasetCollectionClientGetOrCreateOptions): Promise<Dataset> {
-        validate(nameSchema, name);
-        validate(schemaSchema, options?.schema); // TODO: Add schema validation
+        parseArgument(name, nameSchema);
+        parseArgument(options?.schema, schemaSchema); // TODO: Add schema validation
 
         return this._getOrCreate(name, options);
     }

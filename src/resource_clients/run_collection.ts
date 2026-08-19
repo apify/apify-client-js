@@ -5,7 +5,7 @@ import { ACTOR_JOB_STATUSES } from '@apify/consts';
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
-import { paginationOptionsShape, validate } from '../utils';
+import { paginationOptionsShape, parseArgument } from '../utils';
 import type { ActorRunListItem } from './actor';
 
 const jobStatusSchema = z.enum(ACTOR_JOB_STATUSES);
@@ -70,9 +70,9 @@ export class RunCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/actor-runs-get
      */
     list(options: RunCollectionListOptions = {}): PaginatedIterator<ActorRunListItem> {
-        validate(listOptionsSchema, options);
+        const parsed = parseArgument(options, listOptionsSchema, 'RunCollectionListOptions');
 
-        return this._listPaginated(options);
+        return this._listPaginated(parsed);
     }
 }
 

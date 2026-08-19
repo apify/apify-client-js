@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
-import { paginationOptionsShape, validate } from '../utils';
+import { paginationOptionsShape, parseArgument } from '../utils';
 import type { WebhookDispatch } from './webhook_dispatch';
 
 const listOptionsSchema = z.strictObject({
@@ -61,9 +61,9 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/webhook-dispatches-get
      */
     list(options: WebhookDispatchCollectionListOptions = {}): PaginatedIterator<WebhookDispatch> {
-        validate(listOptionsSchema, options);
+        const parsed = parseArgument(options, listOptionsSchema, 'WebhookDispatchCollectionListOptions');
 
-        return this._listPaginated(options);
+        return this._listPaginated(parsed);
     }
 }
 

@@ -1,7 +1,7 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
-import { anyObjectSchema, validate } from '../utils';
+import { anyObjectSchema, parseArgument } from '../utils';
 import type { ActorEnvironmentVariable } from './actor_version';
 
 const actorEnvVarSchema = anyObjectSchema.optional();
@@ -77,7 +77,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/act-version-env-vars-post
      */
     async create(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
-        validate(actorEnvVarSchema, actorEnvVar);
+        parseArgument(actorEnvVar, actorEnvVarSchema);
         return this._create(actorEnvVar);
     }
 }

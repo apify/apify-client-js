@@ -7,7 +7,7 @@ import { LEVELS, Log } from '@apify/log';
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyResponse } from '../http_client';
-import { anyObjectSchema, cast, isNode, parseDateFields, pluckData, validate } from '../utils';
+import { anyObjectSchema, cast, isNode, parseArgument, parseDateFields, pluckData } from '../utils';
 import type { ActorRun } from './actor';
 import { DatasetClient } from './dataset';
 import { KeyValueStoreClient } from './key_value_store';
@@ -33,7 +33,7 @@ const resurrectOptionsSchema = z.strictObject({
 });
 const chargeOptionsSchema = z.strictObject({
     eventName: z.string(),
-    count: z.number().optional(),
+    count: z.number().default(1),
     idempotencyKey: z.string().optional(),
 });
 const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional() });
@@ -91,9 +91,9 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
-        validate(getOptionsSchema, options);
+        const parsed = parseArgument(options, getOptionsSchema, 'RunGetOptions');
 
-        return this._get(options);
+        return this._get(parsed);
     }
 
     /**
@@ -114,12 +114,12 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async abort(options: RunAbortOptions = {}): Promise<ActorRun> {
-        validate(abortOptionsSchema, options);
+        const parsed = parseArgument(options, abortOptionsSchema, 'RunAbortOptions');
 
         const response = await this.httpClient.call({
             url: this._url('abort'),
             method: 'POST',
-            params: this._params(options),
+            params: this._params(parsed),
         });
 
         return cast(parseDateFields(pluckData(response.data)));
@@ -161,15 +161,15 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async metamorph(targetActorId: string, input: unknown, options: RunMetamorphOptions = {}): Promise<ActorRun> {
-        validate(targetActorIdSchema, targetActorId);
+        parseArgument(targetActorId, targetActorIdSchema);
         // input can be anything, pointless to validate
-        validate(metamorphOptionsSchema, options);
+        const parsed = parseArgument(options, metamorphOptionsSchema, 'RunMetamorphOptions');
 
         const safeTargetActorId = this._toSafeId(targetActorId);
 
         const params = {
             targetActorId: safeTargetActorId,
-            build: options.build,
+            build: parsed.build,
         };
 
         const request: AxiosRequestConfig = {
@@ -184,9 +184,9 @@ export class RunClient extends ResourceClient {
             stringifyFunctions: true,
         };
 
-        if (options.contentType) {
+        if (parsed.contentType) {
             request.headers = {
-                'content-type': options.contentType,
+                'content-type': parsed.contentType,
             };
         }
 
@@ -239,7 +239,7 @@ export class RunClient extends ResourceClient {
      * @since Added in 2.6.0
      */
     async update(newFields: RunUpdateOptions): Promise<ActorRun> {
-        validate(anyObjectSchema, newFields);
+        parseArgument(newFields, anyObjectSchema);
 
         return this._update(newFields);
     }
@@ -268,12 +268,12 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async resurrect(options: RunResurrectOptions = {}): Promise<ActorRun> {
-        validate(resurrectOptionsSchema, options);
+        const parsed = parseArgument(options, resurrectOptionsSchema, 'RunResurrectOptions');
 
         const response = await this.httpClient.call({
             url: this._url('resurrect'),
             method: 'POST',
-            params: this._params(options),
+            params: this._params(parsed),
         });
 
         return cast(parseDateFields(pluckData(response.data)));
@@ -291,19 +291,21 @@ export class RunClient extends ResourceClient {
      * @since Added in 2.11.0
      */
     async charge(options: RunChargeOptions): Promise<ApifyResponse<Record<string, never>>> {
-        validate(chargeOptionsSchema, options);
+        const {
+            eventName,
+            count,
+            idempotencyKey: providedIdempotencyKey,
+        } = parseArgument(options, chargeOptionsSchema, 'RunChargeOptions');
 
-        const count = options.count ?? 1;
         /** To avoid duplicates during the same milisecond, doesn't need to by crypto-secure. */
         const randomSuffix = (Math.random() + 1).toString(36).slice(3, 8);
-        const idempotencyKey =
-            options.idempotencyKey ?? `${this.id}-${options.eventName}-${Date.now()}-${randomSuffix}`;
+        const idempotencyKey = providedIdempotencyKey ?? `${this.id}-${eventName}-${Date.now()}-${randomSuffix}`;
 
         const request: AxiosRequestConfig = {
             url: this._url('charge'),
             method: 'POST',
             data: {
-                eventName: options.eventName,
+                eventName,
                 count,
             },
             headers: {
@@ -343,9 +345,9 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async waitForFinish(options: RunWaitForFinishOptions = {}): Promise<ActorRun> {
-        validate(waitForFinishOptionsSchema, options);
+        const parsed = parseArgument(options, waitForFinishOptionsSchema, 'RunWaitForFinishOptions');
 
-        return this._waitForFinish(options);
+        return this._waitForFinish(parsed);
     }
 
     /**

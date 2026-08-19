@@ -15,11 +15,11 @@ import {
     catchNotFoundOrThrow,
     isNonArrayObject,
     mutuallyExclusive,
+    parseArgument,
     parseDateFields,
     pluckData,
     RequestQueuePaginationIterator,
     sliceArrayByByteLength,
-    validate,
 } from '../utils';
 
 const DEFAULT_PARALLEL_BATCH_ADD_REQUESTS = 5;
@@ -73,7 +73,7 @@ const listRequestsOptionsSchema = z
 const paginateRequestsOptionsSchema = z
     .strictObject({
         limit: z.number().min(0).optional(),
-        maxPageLimit: z.number().optional(),
+        maxPageLimit: z.number().default(DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT),
         exclusiveStartId: z.string().optional(),
         cursor: z.string().optional(),
         filter: requestFilterSchema.optional(),
@@ -146,7 +146,7 @@ export class RequestQueueClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/request-queue-put
      */
     async update(newFields: RequestQueueClientUpdateOptions): Promise<RequestQueue> {
-        validate(anyObjectSchema, newFields);
+        parseArgument(newFields, anyObjectSchema);
 
         return this._update(newFields, SMALL_TIMEOUT_MILLIS);
     }
@@ -171,14 +171,14 @@ export class RequestQueueClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/request-queue-head-get
      */
     async listHead(options: RequestQueueClientListHeadOptions = {}): Promise<RequestQueueClientListHeadResult> {
-        validate(listHeadOptionsSchema, options);
+        const parsed = parseArgument(options, listHeadOptionsSchema, 'RequestQueueClientListHeadOptions');
 
         const response = await this.httpClient.call({
             url: this._url('head'),
             method: 'GET',
             timeout: Math.min(SMALL_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
             params: this._params({
-                limit: options.limit,
+                limit: parsed.limit,
                 clientKey: this.clientKey,
             }),
         });
@@ -222,15 +222,15 @@ export class RequestQueueClient extends ResourceClient {
     async listAndLockHead(
         options: RequestQueueClientListAndLockHeadOptions,
     ): Promise<RequestQueueClientListAndLockHeadResult> {
-        validate(listAndLockHeadOptionsSchema, options);
+        const parsed = parseArgument(options, listAndLockHeadOptionsSchema, 'RequestQueueClientListAndLockHeadOptions');
 
         const response = await this.httpClient.call({
             url: this._url('head/lock'),
             method: 'POST',
             timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
             params: this._params({
-                limit: options.limit,
-                lockSecs: options.lockSecs,
+                limit: parsed.limit,
+                lockSecs: parsed.lockSecs,
                 clientKey: this.clientKey,
             }),
         });
@@ -280,8 +280,8 @@ export class RequestQueueClient extends ResourceClient {
         request: Omit<RequestQueueClientRequestSchema, 'id'>,
         options: RequestQueueClientAddRequestOptions = {},
     ): Promise<RequestQueueClientAddRequestResult> {
-        validate(newRequestSchema, request);
-        validate(forefrontOptionsSchema, options);
+        parseArgument(request, newRequestSchema);
+        const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientAddRequestOptions');
 
         const response = await this.httpClient.call({
             url: this._url('requests'),
@@ -289,7 +289,7 @@ export class RequestQueueClient extends ResourceClient {
             timeout: Math.min(SMALL_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
             data: request,
             params: this._params({
-                forefront: options.forefront,
+                forefront: parsed.forefront,
                 clientKey: this.clientKey,
             }),
         });
@@ -306,8 +306,8 @@ export class RequestQueueClient extends ResourceClient {
         requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
         options: RequestQueueClientAddRequestOptions = {},
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
-        validate(batchAddRequestsSchema, requests);
-        validate(forefrontOptionsSchema, options);
+        parseArgument(requests, batchAddRequestsSchema);
+        const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientAddRequestOptions');
 
         const { data } = await this.httpClient.call({
             url: this._url('requests/batch'),
@@ -315,7 +315,7 @@ export class RequestQueueClient extends ResourceClient {
             timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
             data: requests,
             params: this._params({
-                forefront: options.forefront,
+                forefront: parsed.forefront,
                 clientKey: this.clientKey,
             }),
         });
@@ -438,11 +438,11 @@ export class RequestQueueClient extends ResourceClient {
             maxParallel = DEFAULT_PARALLEL_BATCH_ADD_REQUESTS,
             minDelayBetweenUnprocessedRequestsRetriesMillis = DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS,
         } = options;
-        validate(batchAddRequestsWithRetriesSchema, requests);
-        validate(optionalBooleanSchema, forefront);
-        validate(optionalNumberSchema, maxUnprocessedRequestsRetries);
-        validate(optionalNumberSchema, maxParallel);
-        validate(optionalNumberSchema, minDelayBetweenUnprocessedRequestsRetriesMillis);
+        parseArgument(requests, batchAddRequestsWithRetriesSchema);
+        parseArgument(forefront, optionalBooleanSchema);
+        parseArgument(maxUnprocessedRequestsRetries, optionalNumberSchema);
+        parseArgument(maxParallel, optionalNumberSchema);
+        parseArgument(minDelayBetweenUnprocessedRequestsRetriesMillis, optionalNumberSchema);
 
         const executingRequests = new Set();
         const individualResults: RequestQueueClientBatchRequestsOperationResult[] = [];
@@ -493,7 +493,7 @@ export class RequestQueueClient extends ResourceClient {
     async batchDeleteRequests(
         requests: RequestQueueClientRequestToDelete[],
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
-        validate(batchDeleteRequestsSchema, requests);
+        parseArgument(requests, batchDeleteRequestsSchema);
 
         const { data } = await this.httpClient.call({
             url: this._url('requests/batch'),
@@ -516,7 +516,7 @@ export class RequestQueueClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/request-queue-request-get
      */
     async getRequest(id: string): Promise<RequestQueueClientGetRequestResult | undefined> {
-        validate(requestIdSchema, id);
+        parseArgument(id, requestIdSchema);
         const requestOpts: ApifyRequestConfig = {
             url: this._url(`requests/${id}`),
             method: 'GET',
@@ -545,8 +545,8 @@ export class RequestQueueClient extends ResourceClient {
         request: RequestQueueClientRequestSchema,
         options: RequestQueueClientAddRequestOptions = {},
     ): Promise<RequestQueueClientAddRequestResult> {
-        validate(existingRequestSchema, request);
-        validate(forefrontOptionsSchema, options);
+        parseArgument(request, existingRequestSchema);
+        const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientAddRequestOptions');
 
         const response = await this.httpClient.call({
             url: this._url(`requests/${request.id}`),
@@ -554,7 +554,7 @@ export class RequestQueueClient extends ResourceClient {
             timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
             data: request,
             params: this._params({
-                forefront: options.forefront,
+                forefront: parsed.forefront,
                 clientKey: this.clientKey,
             }),
         });
@@ -568,7 +568,7 @@ export class RequestQueueClient extends ResourceClient {
      * @param id - Request ID
      */
     async deleteRequest(id: string): Promise<void> {
-        validate(requestIdSchema, id);
+        parseArgument(id, requestIdSchema);
 
         await this.httpClient.call({
             url: this._url(`requests/${id}`),
@@ -609,16 +609,20 @@ export class RequestQueueClient extends ResourceClient {
         id: string,
         options: RequestQueueClientProlongRequestLockOptions,
     ): Promise<RequestQueueClientProlongRequestLockResult> {
-        validate(requestIdSchema, id);
-        validate(prolongRequestLockOptionsSchema, options);
+        parseArgument(id, requestIdSchema);
+        const parsed = parseArgument(
+            options,
+            prolongRequestLockOptionsSchema,
+            'RequestQueueClientProlongRequestLockOptions',
+        );
 
         const response = await this.httpClient.call({
             url: this._url(`requests/${id}/lock`),
             method: 'PUT',
             timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
             params: this._params({
-                forefront: options.forefront,
-                lockSecs: options.lockSecs,
+                forefront: parsed.forefront,
+                lockSecs: parsed.lockSecs,
                 clientKey: this.clientKey,
             }),
         });
@@ -638,15 +642,15 @@ export class RequestQueueClient extends ResourceClient {
      * @since Added in 2.4.1
      */
     async deleteRequestLock(id: string, options: RequestQueueClientDeleteRequestLockOptions = {}): Promise<void> {
-        validate(requestIdSchema, id);
-        validate(forefrontOptionsSchema, options);
+        parseArgument(id, requestIdSchema);
+        const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientDeleteRequestLockOptions');
 
         await this.httpClient.call({
             url: this._url(`requests/${id}/lock`),
             method: 'DELETE',
             timeout: Math.min(SMALL_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
             params: this._params({
-                forefront: options.forefront,
+                forefront: parsed.forefront,
                 clientKey: this.clientKey,
             }),
         });
@@ -666,7 +670,7 @@ export class RequestQueueClient extends ResourceClient {
     listRequests(
         options: RequestQueueClientListRequestsOptions = {},
     ): Promise<RequestQueueClientListRequestsResult> & AsyncIterable<RequestQueueClientRequestSchema> {
-        validate(listRequestsOptionsSchema, options);
+        const parsed = parseArgument(options, listRequestsOptionsSchema, 'RequestQueueClientListRequestsOptions');
 
         const getPaginatedList = async (
             rqListOptions: RequestQueueClientListRequestsOptions = {},
@@ -685,12 +689,12 @@ export class RequestQueueClient extends ResourceClient {
             return cast(parseDateFields(pluckData(response.data)));
         };
 
-        const paginatedListPromise = getPaginatedList(options);
+        const paginatedListPromise = getPaginatedList(parsed);
         async function* asyncGenerator() {
             let currentPage = await paginatedListPromise;
             yield* currentPage.items;
 
-            let remainingItems = options.limit ? options.limit - currentPage.items.length : undefined;
+            let remainingItems = parsed.limit ? parsed.limit - currentPage.items.length : undefined;
 
             // RQ API response does not indicate whether there are more requests left, so we have to try and in case
             // of exhausting all requests we get response with empty items which ends the loop.
@@ -700,7 +704,7 @@ export class RequestQueueClient extends ResourceClient {
                 (remainingItems === undefined || remainingItems > 0) // Continue only if the limit was not exceeded.
             ) {
                 const newOptions = {
-                    ...options,
+                    ...parsed,
                     limit: remainingItems,
                     // remove original exclusiveStartId, if there was any, and use cursor-based pagination
                     exclusiveStartId: undefined,
@@ -763,15 +767,11 @@ export class RequestQueueClient extends ResourceClient {
     paginateRequests(
         options: RequestQueueClientPaginateRequestsOptions = {},
     ): RequestQueueRequestsAsyncIterable<RequestQueueClientListRequestsResult> {
-        validate(paginateRequestsOptionsSchema, options);
-
-        const {
-            limit,
-            exclusiveStartId,
-            cursor,
-            filter,
-            maxPageLimit = DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT,
-        } = options;
+        const { limit, exclusiveStartId, cursor, filter, maxPageLimit } = parseArgument(
+            options,
+            paginateRequestsOptionsSchema,
+            'RequestQueueClientPaginateRequestsOptions',
+        );
         return new RequestQueuePaginationIterator({
             getPage: async (pageOptions) => this.listRequests({ ...pageOptions, filter }),
             limit,

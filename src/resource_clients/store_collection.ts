@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
-import { paginationOptionsShape, validate } from '../utils';
+import { paginationOptionsShape, parseArgument } from '../utils';
 import type { ActorStats } from './actor';
 
 const listOptionsSchema = z.strictObject({
@@ -69,9 +69,9 @@ export class StoreCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/store-get
      */
     list(options: StoreCollectionListOptions = {}): PaginatedIterator<ActorStoreList> {
-        validate(listOptionsSchema, options);
+        const parsed = parseArgument(options, listOptionsSchema, 'StoreCollectionListOptions');
 
-        return this._listPaginated(options);
+        return this._listPaginated(parsed);
     }
 }
 

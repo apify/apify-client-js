@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
-import { paginationOptionsShape, validate } from '../utils';
+import { paginationOptionsShape, parseArgument } from '../utils';
 import type { Build } from './build';
 
 const listOptionsSchema = z.strictObject({
@@ -64,9 +64,9 @@ export class BuildCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/actor-builds-get
      */
     list(options: BuildCollectionClientListOptions = {}): PaginatedIterator<BuildCollectionClientListItem> {
-        validate(listOptionsSchema, options);
+        const parsed = parseArgument(options, listOptionsSchema, 'BuildCollectionClientListOptions');
 
-        return this._listPaginated(options);
+        return this._listPaginated(parsed);
     }
 }
 

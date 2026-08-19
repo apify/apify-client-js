@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
-import { anyObjectSchema, paginationOptionsShape, validate } from '../utils';
+import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils';
 import type { Task, TaskUpdateData } from './task';
 
 const listOptionsSchema = z.strictObject({
@@ -67,9 +67,9 @@ export class TaskCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/actor-tasks-get
      */
     list(options: TaskCollectionListOptions = {}): PaginatedIterator<TaskList> {
-        validate(listOptionsSchema, options);
+        const parsed = parseArgument(options, listOptionsSchema, 'TaskCollectionListOptions');
 
-        return this._listPaginated(options);
+        return this._listPaginated(parsed);
     }
 
     /**
@@ -80,7 +80,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/actor-tasks-post
      */
     async create(task: TaskCreateData): Promise<Task> {
-        validate(anyObjectSchema, task);
+        parseArgument(task, anyObjectSchema);
 
         return this._create(task);
     }

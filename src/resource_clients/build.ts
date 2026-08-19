@@ -4,7 +4,7 @@ import type { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
-import { cast, parseDateFields, pluckData, validate } from '../utils';
+import { cast, parseArgument, parseDateFields, pluckData } from '../utils';
 import type { ActorDefinition } from './actor';
 import { LogClient } from './log';
 
@@ -64,9 +64,9 @@ export class BuildClient extends ResourceClient {
      * ```
      */
     async get(options: BuildClientGetOptions = {}): Promise<Build | undefined> {
-        validate(getOptionsSchema, options);
+        const parsed = parseArgument(options, getOptionsSchema, 'BuildClientGetOptions');
 
-        return this._get(options);
+        return this._get(parsed);
     }
 
     /**
@@ -150,9 +150,9 @@ export class BuildClient extends ResourceClient {
      * ```
      */
     async waitForFinish(options: BuildClientWaitForFinishOptions = {}): Promise<Build> {
-        validate(waitForFinishOptionsSchema, options);
+        const parsed = parseArgument(options, waitForFinishOptionsSchema, 'BuildClientWaitForFinishOptions');
 
-        return this._waitForFinish(options);
+        return this._waitForFinish(parsed);
     }
 
     /**

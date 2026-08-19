@@ -20,8 +20,8 @@ import {
     catchNotFoundOrThrow,
     isNonArrayObject,
     paginationOptionsShape,
+    parseArgument,
     pluckData,
-    validate,
 } from '../utils';
 
 // A predicate, not a `z.object()` arm, which would walk and copy every key of every pushed item.
@@ -139,7 +139,7 @@ export class DatasetClient<
      * @see https://docs.apify.com/api/v2/dataset-put
      */
     async update(newFields: DatasetClientUpdateOptions): Promise<Dataset> {
-        validate(anyObjectSchema, newFields);
+        parseArgument(newFields, anyObjectSchema);
 
         return this._update(newFields, SMALL_TIMEOUT_MILLIS);
     }
@@ -198,7 +198,7 @@ export class DatasetClient<
      * ```
      */
     listItems(options: DatasetClientListItemOptions = {}): PaginatedIterator<Data> {
-        validate(listItemsOptionsSchema, options);
+        const parsed = parseArgument(options, listItemsOptionsSchema, 'DatasetClientListItemOptions');
 
         const fetchItems = async (
             datasetListOptions: DatasetClientListItemOptions = {},
@@ -213,7 +213,7 @@ export class DatasetClient<
             return this._createPaginationList(response, datasetListOptions.desc ?? false);
         };
 
-        return this._listPaginatedFromCallback(fetchItems, options);
+        return this._listPaginatedFromCallback(fetchItems, parsed);
     }
 
     /**
@@ -257,15 +257,15 @@ export class DatasetClient<
      * ```
      */
     async downloadItems(format: DownloadItemsFormat, options: DatasetClientDownloadItemsOptions = {}): Promise<Buffer> {
-        validate(itemFormatSchema, format);
-        validate(downloadItemsOptionsSchema, options);
+        parseArgument(format, itemFormatSchema);
+        const parsed = parseArgument(options, downloadItemsOptionsSchema, 'DatasetClientDownloadItemsOptions');
 
         const { data } = await this.httpClient.call({
             url: this._url('items'),
             method: 'GET',
             params: this._params({
                 format,
-                ...options,
+                ...parsed,
             }),
             forceBuffer: true,
             timeout: DEFAULT_TIMEOUT_MILLIS,
@@ -307,7 +307,7 @@ export class DatasetClient<
      * ```
      */
     async pushItems(items: Data | Data[] | string | string[]): Promise<void> {
-        validate(pushItemsSchema, items);
+        parseArgument(items, pushItemsSchema);
 
         await this.httpClient.call({
             url: this._url('items'),
@@ -381,11 +381,11 @@ export class DatasetClient<
      * @since Added in 2.13.0
      */
     async createItemsPublicUrl(options: DatasetClientCreateItemsUrlOptions = {}): Promise<string> {
-        validate(createItemsPublicUrlOptionsSchema, options);
+        const parsed = parseArgument(options, createItemsPublicUrlOptionsSchema, 'DatasetClientCreateItemsUrlOptions');
 
         const dataset = await this.get();
 
-        const { expiresInSecs, ...queryOptions } = options;
+        const { expiresInSecs, ...queryOptions } = parsed;
 
         let createdItemsPublicUrl = new URL(this._publicUrl('items'));
 

@@ -5,7 +5,7 @@ import type { ACTOR_PERMISSION_LEVEL } from '@apify/consts';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
-import { anyObjectSchema, paginationOptionsShape, validate } from '../utils';
+import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils';
 import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor';
 import type { ActorVersion } from './actor_version';
 
@@ -66,9 +66,9 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/acts-get
      */
     list(options: ActorCollectionListOptions = {}): PaginatedIterator<ActorCollectionListItem> {
-        validate(listOptionsSchema, options);
+        const parsed = parseArgument(options, listOptionsSchema, 'ActorCollectionListOptions');
 
-        return this._listPaginated(options);
+        return this._listPaginated(parsed);
     }
 
     /**
@@ -79,7 +79,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/acts-post
      */
     async create(actor: ActorCollectionCreateOptions): Promise<Actor> {
-        validate(actorCreateSchema, actor);
+        parseArgument(actor, actorCreateSchema);
 
         return this._create(actor);
     }

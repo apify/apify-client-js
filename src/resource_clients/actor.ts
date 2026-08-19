@@ -7,7 +7,7 @@ import { Log } from '@apify/log';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
-import { anyObjectSchema, cast, parseDateFields, pluckData, stringifyWebhooksToBase64, validate } from '../utils';
+import { anyObjectSchema, cast, parseArgument, parseDateFields, pluckData, stringifyWebhooksToBase64 } from '../utils';
 import type { ActorVersion } from './actor_version';
 import { ActorVersionClient } from './actor_version';
 import { ActorVersionCollectionClient } from './actor_version_collection';
@@ -110,7 +110,7 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-put
      */
     async update(newFields: ActorUpdateOptions): Promise<Actor> {
-        validate(anyObjectSchema, newFields);
+        parseArgument(newFields, anyObjectSchema);
 
         return this._update(newFields);
     }
@@ -161,7 +161,7 @@ export class ActorClient extends ResourceClient {
     async start(input?: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
         // then it will process input as a buffer.
-        validate(startOptionsSchema, options);
+        const parsed = parseArgument(options, startOptionsSchema, 'ActorStartOptions');
 
         const {
             waitForFinish,
@@ -172,14 +172,14 @@ export class ActorClient extends ResourceClient {
             maxTotalChargeUsd,
             restartOnError,
             forcePermissionLevel,
-        } = options;
+        } = parsed;
 
         const params = {
             waitForFinish,
             timeout,
             memory,
             build,
-            webhooks: stringifyWebhooksToBase64(options.webhooks),
+            webhooks: stringifyWebhooksToBase64(parsed.webhooks),
             maxItems,
             maxTotalChargeUsd,
             restartOnError,
@@ -195,9 +195,9 @@ export class ActorClient extends ResourceClient {
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
         };
-        if (options.contentType) {
+        if (parsed.contentType) {
             request.headers = {
-                'content-type': options.contentType,
+                'content-type': parsed.contentType,
             };
         }
 
@@ -245,9 +245,9 @@ export class ActorClient extends ResourceClient {
     async call(input?: unknown, options: ActorCallOptions = {}): Promise<ActorRun> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
         // then it will process input as a buffer.
-        validate(callOptionsSchema, options);
+        const parsed = parseArgument(options, callOptionsSchema, 'ActorCallOptions');
 
-        const { waitSecs, log, ...startOptions } = options;
+        const { waitSecs, log, ...startOptions } = parsed;
         const { id } = await this.start(input, startOptions);
 
         // Calling root client because we need access to top level API.
@@ -255,7 +255,7 @@ export class ActorClient extends ResourceClient {
         // setting it up as a nested route under actor API.
         const newRunClient = this.apifyClient.run(id);
 
-        const streamedLog = await newRunClient.getStreamedLog({ toLog: options?.log });
+        const streamedLog = await newRunClient.getStreamedLog({ toLog: log });
         streamedLog?.start();
         return this.apifyClient
             .run(id)
@@ -299,20 +299,20 @@ export class ActorClient extends ResourceClient {
     async validateInput(input?: unknown, options: ActorValidateInputOptions = {}): Promise<boolean> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
         // then it will process input as a buffer.
-        validate(validateInputOptionsSchema, options);
+        const parsed = parseArgument(options, validateInputOptionsSchema, 'ActorValidateInputOptions');
 
         const request: ApifyRequestConfig = {
             url: this._url('validate-input'),
             method: 'POST',
             data: input,
-            params: this._params({ build: options.build }),
+            params: this._params({ build: parsed.build }),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
         };
-        if (options.contentType) {
+        if (parsed.contentType) {
             request.headers = {
-                'content-type': options.contentType,
+                'content-type': parsed.contentType,
             };
         }
 
@@ -350,15 +350,15 @@ export class ActorClient extends ResourceClient {
      * ```
      */
     async build(versionNumber: string, options: ActorBuildOptions = {}): Promise<Build> {
-        validate(versionNumberSchema, versionNumber);
-        validate(buildOptionsSchema, options);
+        parseArgument(versionNumber, versionNumberSchema);
+        const parsed = parseArgument(options, buildOptionsSchema, 'ActorBuildOptions');
 
         const response = await this.httpClient.call({
             url: this._url('builds'),
             method: 'POST',
             params: this._params({
                 version: versionNumber,
-                ...options,
+                ...parsed,
             }),
         });
 
@@ -426,12 +426,12 @@ export class ActorClient extends ResourceClient {
      * ```
      */
     lastRun(options: ActorLastRunOptions = {}): RunClient {
-        validate(lastRunOptionsSchema, options);
+        const parsed = parseArgument(options, lastRunOptionsSchema, 'ActorLastRunOptions');
 
         return new RunClient(
             this._subResourceOptions({
                 id: 'last',
-                params: this._params(options),
+                params: this._params(parsed),
                 resourcePath: 'runs',
             }),
         );
@@ -473,7 +473,7 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-version-get
      */
     version(versionNumber: string): ActorVersionClient {
-        validate(versionNumberSchema, versionNumber);
+        parseArgument(versionNumber, versionNumberSchema);
         return new ActorVersionClient(
             this._subResourceOptions({
                 id: versionNumber,

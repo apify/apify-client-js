@@ -24,9 +24,9 @@ import {
     isBuffer,
     isNode,
     isStream,
+    parseArgument,
     parseDateFields,
     pluckData,
-    validate,
 } from '../utils';
 
 const listKeysOptionsSchema = z.strictObject({
@@ -134,7 +134,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/key-value-store-put
      */
     async update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore> {
-        validate(anyObjectSchema, newFields);
+        parseArgument(newFields, anyObjectSchema);
 
         return this._update(newFields, DEFAULT_TIMEOUT_MILLIS);
     }
@@ -186,7 +186,7 @@ export class KeyValueStoreClient extends ResourceClient {
     listKeys(
         options: KeyValueClientListKeysOptions = {},
     ): Promise<KeyValueClientListKeysResult> & AsyncIterable<KeyValueListItem> {
-        validate(listKeysOptionsSchema, options);
+        const parsed = parseArgument(options, listKeysOptionsSchema, 'KeyValueClientListKeysOptions');
 
         const getPaginatedList = async (
             kvsListOptions: KeyValueClientListKeysOptions = {},
@@ -201,12 +201,12 @@ export class KeyValueStoreClient extends ResourceClient {
             return cast(parseDateFields(pluckData(response.data)));
         };
 
-        const paginatedListPromise = getPaginatedList(options);
+        const paginatedListPromise = getPaginatedList(parsed);
         async function* asyncGenerator() {
             let currentPage = await paginatedListPromise;
             yield* currentPage.items;
 
-            let remainingItems = options.limit ? options.limit - currentPage.items.length : undefined;
+            let remainingItems = parsed.limit ? parsed.limit - currentPage.items.length : undefined;
 
             while (
                 currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
@@ -214,7 +214,7 @@ export class KeyValueStoreClient extends ResourceClient {
                 (remainingItems === undefined || remainingItems > 0) // Continue only if the limit was not exceeded.
             ) {
                 const newOptions = {
-                    ...options,
+                    ...parsed,
                     limit: remainingItems,
                     exclusiveStartKey: currentPage.nextExclusiveStartKey,
                 };
@@ -250,7 +250,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @since Added in 2.14.0
      */
     async getRecordPublicUrl(key: string): Promise<string> {
-        validate(nonEmptyKeySchema, key);
+        parseArgument(key, nonEmptyKeySchema);
 
         const store = await this.get();
 
@@ -288,11 +288,11 @@ export class KeyValueStoreClient extends ResourceClient {
      * @since Added in 2.13.0
      */
     async createKeysPublicUrl(options: KeyValueClientCreateKeysUrlOptions = {}) {
-        validate(createKeysPublicUrlOptionsSchema, options);
+        const parsed = parseArgument(options, createKeysPublicUrlOptionsSchema, 'KeyValueClientCreateKeysUrlOptions');
 
         const store = await this.get();
 
-        const { expiresInSecs, ...queryOptions } = options;
+        const { expiresInSecs, ...queryOptions } = parsed;
 
         let createdPublicKeysUrl = new URL(this._publicUrl('keys'));
 
@@ -366,14 +366,14 @@ export class KeyValueStoreClient extends ResourceClient {
         key: string,
         options: KeyValueClientGetRecordOptions = {},
     ): Promise<KeyValueStoreRecord<unknown> | undefined> {
-        validate(keySchema, key);
-        validate(getRecordOptionsSchema, options);
+        parseArgument(key, keySchema);
+        const parsed = parseArgument(options, getRecordOptionsSchema, 'KeyValueClientGetRecordOptions');
 
-        if (options.stream && !isNode()) {
+        if (parsed.stream && !isNode()) {
             throw new Error('The stream option can only be used in Node.js environment.');
         }
 
-        if ('disableRedirect' in options) {
+        if ('disableRedirect' in parsed) {
             log.deprecated(
                 'The disableRedirect option for getRecord() is deprecated. ' +
                     'It has no effect and will be removed in the following major release.',
@@ -381,7 +381,7 @@ export class KeyValueStoreClient extends ResourceClient {
         }
 
         const queryParams: Record<string, string> = { attachment: 'true' };
-        if (options.signature) queryParams.signature = options.signature;
+        if (parsed.signature) queryParams.signature = parsed.signature;
 
         const requestOpts: Record<string, unknown> = {
             url: this._url(`records/${key}`),
@@ -390,8 +390,8 @@ export class KeyValueStoreClient extends ResourceClient {
             timeout: DEFAULT_TIMEOUT_MILLIS,
         };
 
-        if (options.buffer) requestOpts.forceBuffer = true;
-        if (options.stream) requestOpts.responseType = 'stream';
+        if (parsed.buffer) requestOpts.forceBuffer = true;
+        if (parsed.stream) requestOpts.responseType = 'stream';
 
         try {
             const response = await this.httpClient.call(requestOpts);
@@ -455,12 +455,12 @@ export class KeyValueStoreClient extends ResourceClient {
      * ```
      */
     async setRecord(record: KeyValueStoreRecord<JsonValue>, options: KeyValueStoreRecordOptions = {}): Promise<void> {
-        validate(recordSchema, record);
-        validate(recordOptionsSchema, options);
+        parseArgument(record, recordSchema);
+        const parsed = parseArgument(options, recordOptionsSchema, 'KeyValueStoreRecordOptions');
 
         const { key } = record;
         let { value, contentType } = record;
-        const { timeoutSecs, doNotRetryTimeouts } = options;
+        const { timeoutSecs, doNotRetryTimeouts } = parsed;
 
         const isValueStreamOrBuffer = isStream(value) || isBuffer(value);
         // To allow saving Objects to JSON without providing content type
@@ -505,7 +505,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * ```
      */
     async deleteRecord(key: string): Promise<void> {
-        validate(keySchema, key);
+        parseArgument(key, keySchema);
 
         await this.httpClient.call({
             url: this._url(`records/${key}`),

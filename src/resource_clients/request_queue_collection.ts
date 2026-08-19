@@ -5,7 +5,7 @@ import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
-import { paginationOptionsShape, validate } from '../utils';
+import { paginationOptionsShape, parseArgument } from '../utils';
 import type { RequestQueue } from './request_queue';
 
 const listOptionsSchema = z.strictObject({
@@ -70,9 +70,9 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
     list(
         options: RequestQueueCollectionListOptions = {},
     ): Promise<RequestQueueCollectionListResult> & AsyncIterable<RequestQueue> {
-        validate(listOptionsSchema, options);
+        const parsed = parseArgument(options, listOptionsSchema, 'RequestQueueCollectionListOptions');
 
-        return this._listPaginated(options);
+        return this._listPaginated(parsed);
     }
 
     /**
@@ -83,7 +83,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/request-queues-post
      */
     async getOrCreate(name?: string): Promise<RequestQueue> {
-        validate(nameSchema, name);
+        parseArgument(name, nameSchema);
 
         return this._getOrCreate(name);
     }

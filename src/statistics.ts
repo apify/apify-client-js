@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { validate } from './utils';
+import { parseArgument } from './utils';
 
 const attemptSchema = z.number().gt(0);
 
@@ -22,7 +22,7 @@ export class Statistics {
     rateLimitErrors: number[] = [];
 
     addRateLimitError(attempt: number): void {
-        validate(attemptSchema, attempt);
+        parseArgument(attempt, attemptSchema);
         // attempt is never 0,
         // but we don't want index 0 empty
         const index = attempt - 1;

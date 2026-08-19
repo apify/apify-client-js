@@ -22,32 +22,42 @@ const MIN_COMPRESS_BYTES = 1024;
 const { localeError } = z.locales.en();
 
 /**
- * Parses `value` with `schema`, throwing an {@link ArgumentValidationError} if it doesn't match.
+ * Parses `value` with `schema`, returning the typed result (with schema defaults applied).
+ * Throws {@link ArgumentValidationError} on failure.
+ *
+ * The optional `label` names the interface being validated and is appended to every error line
+ * (e.g. ``... at `memory` in `ActorStartOptions` ``).
  * @internal
  */
-export function validate<Schema extends z.ZodType>(schema: Schema, value: unknown): z.infer<Schema> {
+export function parseArgument<TValue, TSchema extends z.ZodType>(
+    value: TValue,
+    schema: TSchema,
+    label?: string,
+): TValue & z.output<TSchema> {
     const result = schema.safeParse(value, { error: localeError });
     if (!result.success) {
-        throw new ArgumentValidationError(result.error, value);
+        throw new ArgumentValidationError(result.error, value, label);
     }
-    return result.data;
+    return result.data as TValue & z.output<TSchema>;
 }
 
 /**
- * Matches any plain object, letting unknown keys through - for payloads whose shape the API
- * validates itself.
- * @internal
- */
-export const anyObjectSchema = z.looseObject({});
-
-/**
- * Accepts what {@link anyObjectSchema} does, but as a predicate for `z.custom()`, which does not copy
- * the value the way an object schema does. Use it where a whole batch is validated at once.
+ * Accepts any non-null, non-array object as a predicate for `z.custom()`.
  * @internal
  */
 export function isNonArrayObject(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
+
+/**
+ * Matches any plain object, letting unknown keys through - for payloads whose shape the API
+ * validates itself. A `z.custom()` predicate rather than an object schema, so parsing returns
+ * the value itself instead of a copy.
+ * @internal
+ */
+export const anyObjectSchema = z.custom<Record<string, unknown>>(isNonArrayObject, {
+    error: 'Invalid input: expected an object',
+});
 
 /**
  * Generic interface for objects that may contain a data property.

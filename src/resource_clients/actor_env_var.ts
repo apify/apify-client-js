@@ -1,6 +1,6 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
-import { anyObjectSchema, validate } from '../utils';
+import { anyObjectSchema, parseArgument } from '../utils';
 import type { ActorEnvironmentVariable } from './actor_version';
 
 /**
@@ -55,7 +55,7 @@ export class ActorEnvVarClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-version-env-var-put
      */
     async update(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
-        validate(anyObjectSchema, actorEnvVar);
+        parseArgument(actorEnvVar, anyObjectSchema);
         return this._update(actorEnvVar);
     }
 
