@@ -96,7 +96,7 @@
         "esbuild": "0.28.2",
         "express": "^5.0.0",
         "gen-esm-wrapper": "^1.1.2",
-        "oxfmt": "0.63.0",
+        "oxfmt": "0.64.0",
         "oxlint": "1.78.0",
         "oxlint-tsgolint": "7.0.2001",
         "puppeteer": "^25.0.0",
