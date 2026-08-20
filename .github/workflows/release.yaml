@@ -55,12 +55,12 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v7
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
             - name: Use Node.js
-              uses: actions/setup-node@v7
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
                   node-version: 24
 
@@ -71,7 +71,7 @@ jobs:
               run: pnpm version --no-git-tag-version --allow-same-version ${{ needs.release_metadata.outputs.version_number }}
 
             - name: Update CHANGELOG.md
-              uses: DamianReeves/write-file-action@master
+              uses: DamianReeves/write-file-action@{"message":"Not # master
               with:
                   path: CHANGELOG.md
                   write-mode: overwrite
@@ -93,7 +93,7 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         steps:
             - name: Create release
-              uses: softprops/action-gh-release@v3
+              uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
               with:
                   tag_name: ${{ needs.release_metadata.outputs.tag_name }}
                   name: ${{ needs.release_metadata.outputs.version_number }}
@@ -117,14 +117,14 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v7
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   ref: ${{ github.event.repository.default_branch }}
                   token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
                   fetch-depth: 0
 
             - name: Use Node.js
-              uses: actions/setup-node@v7
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
                   node-version: 24
 
