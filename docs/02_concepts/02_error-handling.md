@@ -24,6 +24,27 @@ try {
 }
 ```
 
+## Invalid arguments
+
+Before sending a request, the client validates the arguments you passed. When a value doesn't match the expected shape, the client throws an <ApiLink to="class/ArgumentValidationError">`ArgumentValidationError`</ApiLink> without reaching the API. Its `message` names the offending field and the value it received. For programmatic inspection, `issues` carries the structured [zod](https://zod.dev) issues and `cause` carries the original `ZodError`.
+
+```js
+import { ApifyClient, ArgumentValidationError } from 'apify-client';
+
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+
+try {
+    await client.dataset('my-dataset').listItems({ limit: 'ten' });
+} catch (error) {
+    if (error instanceof ArgumentValidationError) {
+        // Invalid input: expected number, received string at `limit`, got `ten`
+        console.log(error.message);
+        // [{ code: 'invalid_type', expected: 'number', path: ['limit'], ... }]
+        console.log(error.issues);
+    }
+}
+```
+
 ## Retries with exponential backoff
 
 The client automatically retries requests that fail due to network errors, Apify API internal errors (HTTP 500+), or rate limit errors (HTTP 429). By default, the client retries up to 8 times with exponential backoff starting at 500ms.

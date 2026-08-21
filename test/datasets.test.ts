@@ -1,6 +1,6 @@
 import type { AddressInfo } from 'node:net';
 
-import { ApifyClient, DownloadItemsFormat } from 'apify-client';
+import { ApifyClient, ArgumentValidationError, DownloadItemsFormat } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest';
 
@@ -343,6 +343,13 @@ describe('Dataset methods', () => {
             const browserRes = await page.evaluate((id, items) => client.dataset(id).pushItems(items), datasetId, data);
             expect(browserRes).toEqual(res);
             validateRequest({ query: {}, params: { datasetId }, body: data });
+        });
+
+        test('pushItems() rejects an array where an item object is expected', async () => {
+            const call = client.dataset('201').pushItems([{ someData: 'someValue' }, [1, 2, 3]] as any);
+
+            await expect(call).rejects.toThrow(ArgumentValidationError);
+            await expect(call).rejects.toThrow('Expected an object at `[1]`');
         });
 
         test('pushItems() works with string', async () => {

@@ -1,7 +1,7 @@
 import type { Readable } from 'node:stream';
 
-import ow from 'ow';
 import type { JsonValue } from 'type-fest';
+import { z } from 'zod';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import log from '@apify/log';
@@ -17,15 +17,62 @@ import {
 } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import {
+    anyObjectSchema,
     applyQueryParamsToUrl,
     cast,
     catchNotFoundOrThrow,
     isBuffer,
     isNode,
     isStream,
+    parseArgument,
     parseDateFields,
     pluckData,
 } from '../utils';
+
+const listKeysOptionsSchema = z.strictObject({
+    limit: z.number().min(0).optional(),
+    exclusiveStartKey: z.string().optional(),
+    collection: z.string().optional(),
+    prefix: z.string().optional(),
+    signature: z.string().optional(),
+});
+const nonEmptyKeySchema = z.string().min(1);
+// `signature` is left out - this method produces one. The options type omits it to match.
+const createKeysPublicUrlOptionsSchema = z.strictObject({
+    limit: z.number().min(0).optional(),
+    exclusiveStartKey: z.string().optional(),
+    collection: z.string().optional(),
+    prefix: z.string().optional(),
+    expiresInSecs: z.number().optional(),
+});
+const keySchema = z.string();
+const getRecordOptionsSchema = z.strictObject({
+    buffer: z.boolean().optional(),
+    stream: z.boolean().optional(),
+    disableRedirect: z.boolean().optional(),
+    signature: z.string().optional(),
+});
+const recordSchema = z.strictObject({
+    key: z.string(),
+    // Values are arbitrary, and a `z.object()` arm would walk every key of a large buffer.
+    // Symbols, bigints, functions and non-finite numbers are rejected because they cannot be serialized
+    // to JSON - symbols and bigints throw, functions stringify to `undefined` (an empty request body),
+    // and `NaN` / `Infinity` would silently become `null`.
+    value: z.custom<JsonValue>(
+        (value) =>
+            value !== undefined &&
+            typeof value !== 'symbol' &&
+            typeof value !== 'bigint' &&
+            typeof value !== 'function' &&
+            (typeof value !== 'number' || Number.isFinite(value)),
+        'Expected a defined, JSON-serializable value',
+    ),
+    contentType: z.string().min(1).optional(),
+});
+const recordOptionsSchema = z.strictObject({
+    timeoutSecs: z.number().optional(),
+    doNotRetryTimeouts: z.boolean().optional(),
+});
 
 /**
  * Client for managing a specific key-value store.
@@ -87,7 +134,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/key-value-store-put
      */
     async update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore> {
-        ow(newFields, ow.object);
+        parseArgument(newFields, anyObjectSchema);
 
         return this._update(newFields, DEFAULT_TIMEOUT_MILLIS);
     }
@@ -139,16 +186,7 @@ export class KeyValueStoreClient extends ResourceClient {
     listKeys(
         options: KeyValueClientListKeysOptions = {},
     ): Promise<KeyValueClientListKeysResult> & AsyncIterable<KeyValueListItem> {
-        ow(
-            options,
-            ow.object.exactShape({
-                limit: ow.optional.number.not.negative,
-                exclusiveStartKey: ow.optional.string,
-                collection: ow.optional.string,
-                prefix: ow.optional.string,
-                signature: ow.optional.string,
-            }),
-        );
+        const parsed = parseArgument(options, listKeysOptionsSchema, 'KeyValueClientListKeysOptions');
 
         const getPaginatedList = async (
             kvsListOptions: KeyValueClientListKeysOptions = {},
@@ -163,12 +201,12 @@ export class KeyValueStoreClient extends ResourceClient {
             return cast(parseDateFields(pluckData(response.data)));
         };
 
-        const paginatedListPromise = getPaginatedList(options);
+        const paginatedListPromise = getPaginatedList(parsed);
         async function* asyncGenerator() {
             let currentPage = await paginatedListPromise;
             yield* currentPage.items;
 
-            let remainingItems = options.limit ? options.limit - currentPage.items.length : undefined;
+            let remainingItems = parsed.limit ? parsed.limit - currentPage.items.length : undefined;
 
             while (
                 currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
@@ -176,7 +214,7 @@ export class KeyValueStoreClient extends ResourceClient {
                 (remainingItems === undefined || remainingItems > 0) // Continue only if the limit was not exceeded.
             ) {
                 const newOptions = {
-                    ...options,
+                    ...parsed,
                     limit: remainingItems,
                     exclusiveStartKey: currentPage.nextExclusiveStartKey,
                 };
@@ -212,7 +250,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @since Added in 2.14.0
      */
     async getRecordPublicUrl(key: string): Promise<string> {
-        ow(key, ow.string.nonEmpty);
+        parseArgument(key, nonEmptyKeySchema);
 
         const store = await this.get();
 
@@ -250,20 +288,11 @@ export class KeyValueStoreClient extends ResourceClient {
      * @since Added in 2.13.0
      */
     async createKeysPublicUrl(options: KeyValueClientCreateKeysUrlOptions = {}) {
-        ow(
-            options,
-            ow.object.exactShape({
-                limit: ow.optional.number.not.negative,
-                exclusiveStartKey: ow.optional.string,
-                collection: ow.optional.string,
-                prefix: ow.optional.string,
-                expiresInSecs: ow.optional.number,
-            }),
-        );
+        const parsed = parseArgument(options, createKeysPublicUrlOptionsSchema, 'KeyValueClientCreateKeysUrlOptions');
 
         const store = await this.get();
 
-        const { expiresInSecs, ...queryOptions } = options;
+        const { expiresInSecs, ...queryOptions } = parsed;
 
         let createdPublicKeysUrl = new URL(this._publicUrl('keys'));
 
@@ -337,22 +366,14 @@ export class KeyValueStoreClient extends ResourceClient {
         key: string,
         options: KeyValueClientGetRecordOptions = {},
     ): Promise<KeyValueStoreRecord<unknown> | undefined> {
-        ow(key, ow.string);
-        ow(
-            options,
-            ow.object.exactShape({
-                buffer: ow.optional.boolean,
-                stream: ow.optional.boolean,
-                disableRedirect: ow.optional.boolean,
-                signature: ow.optional.string,
-            }),
-        );
+        parseArgument(key, keySchema);
+        const parsed = parseArgument(options, getRecordOptionsSchema, 'KeyValueClientGetRecordOptions');
 
-        if (options.stream && !isNode()) {
+        if (parsed.stream && !isNode()) {
             throw new Error('The stream option can only be used in Node.js environment.');
         }
 
-        if ('disableRedirect' in options) {
+        if ('disableRedirect' in parsed) {
             log.deprecated(
                 'The disableRedirect option for getRecord() is deprecated. ' +
                     'It has no effect and will be removed in the following major release.',
@@ -360,7 +381,7 @@ export class KeyValueStoreClient extends ResourceClient {
         }
 
         const queryParams: Record<string, string> = { attachment: 'true' };
-        if (options.signature) queryParams.signature = options.signature;
+        if (parsed.signature) queryParams.signature = parsed.signature;
 
         const requestOpts: Record<string, unknown> = {
             url: this._url(`records/${key}`),
@@ -369,8 +390,8 @@ export class KeyValueStoreClient extends ResourceClient {
             timeout: DEFAULT_TIMEOUT_MILLIS,
         };
 
-        if (options.buffer) requestOpts.forceBuffer = true;
-        if (options.stream) requestOpts.responseType = 'stream';
+        if (parsed.buffer) requestOpts.forceBuffer = true;
+        if (parsed.stream) requestOpts.responseType = 'stream';
 
         try {
             const response = await this.httpClient.call(requestOpts);
@@ -434,26 +455,12 @@ export class KeyValueStoreClient extends ResourceClient {
      * ```
      */
     async setRecord(record: KeyValueStoreRecord<JsonValue>, options: KeyValueStoreRecordOptions = {}): Promise<void> {
-        ow(
-            record,
-            ow.object.exactShape({
-                key: ow.string,
-                value: ow.any(ow.null, ow.string, ow.number, ow.object, ow.boolean),
-                contentType: ow.optional.string.nonEmpty,
-            }),
-        );
-
-        ow(
-            options,
-            ow.object.exactShape({
-                timeoutSecs: ow.optional.number,
-                doNotRetryTimeouts: ow.optional.boolean,
-            }),
-        );
+        parseArgument(record, recordSchema);
+        const parsed = parseArgument(options, recordOptionsSchema, 'KeyValueStoreRecordOptions');
 
         const { key } = record;
         let { value, contentType } = record;
-        const { timeoutSecs, doNotRetryTimeouts } = options;
+        const { timeoutSecs, doNotRetryTimeouts } = parsed;
 
         const isValueStreamOrBuffer = isStream(value) || isBuffer(value);
         // To allow saving Objects to JSON without providing content type
@@ -498,7 +505,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * ```
      */
     async deleteRecord(key: string): Promise<void> {
-        ow(key, ow.string);
+        parseArgument(key, keySchema);
 
         await this.httpClient.call({
             url: this._url(`records/${key}`),
@@ -593,10 +600,11 @@ export interface KeyValueClientListKeysOptions {
 /**
  * Options for creating a public URL to list keys in a Key-Value Store.
  *
- * Extends {@link KeyValueClientListKeysOptions} with URL expiration control.
+ * Extends {@link KeyValueClientListKeysOptions} with URL expiration control, minus `signature` (this
+ * method produces one).
  * @since Added in 2.16.0
  */
-export interface KeyValueClientCreateKeysUrlOptions extends KeyValueClientListKeysOptions {
+export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientListKeysOptions, 'signature'> {
     expiresInSecs?: number;
 }
 
