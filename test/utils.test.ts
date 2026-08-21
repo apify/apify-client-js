@@ -1,3 +1,5 @@
+import { Readable } from 'node:stream';
+
 import type { WebhookUpdateData } from 'apify-client';
 import { ApifyApiError } from 'apify-client';
 import { describe, expect, test } from 'vitest';
@@ -149,6 +151,40 @@ describe('utils.maybeCompressValue()', () => {
         expect(result!.encoding).toBe('br');
         expect(result!.data).toBeInstanceOf(Buffer);
         expect(result!.data.length).toBeLessThan(largeValue.length);
+    });
+});
+
+describe('utils.isBuffer()', () => {
+    test('accepts binary values', () => {
+        expect(utils.isBuffer(Buffer.from('abc'))).toBe(true);
+        expect(utils.isBuffer(new ArrayBuffer(8))).toBe(true);
+        expect(utils.isBuffer(new Uint8Array(8))).toBe(true);
+        expect(utils.isBuffer(new Float64Array(8))).toBe(true);
+    });
+
+    test('rejects DataView and non-binary values', () => {
+        expect(utils.isBuffer(new DataView(new ArrayBuffer(8)))).toBe(false);
+        expect(utils.isBuffer('abc')).toBe(false);
+        expect(utils.isBuffer([0, 1, 2])).toBe(false);
+        expect(utils.isBuffer({})).toBe(false);
+        expect(utils.isBuffer(null)).toBe(false);
+        expect(utils.isBuffer(undefined)).toBe(false);
+    });
+});
+
+describe('utils.isStream()', () => {
+    test('accepts readable streams and stream-like objects', () => {
+        expect(utils.isStream(Readable.from(['abc']))).toBe(true);
+        expect(utils.isStream({ on: () => {}, pipe: () => {} })).toBe(true);
+    });
+
+    test('rejects objects without both stream methods', () => {
+        expect(utils.isStream({ on: () => {} })).toBe(false);
+        expect(utils.isStream({ on: true, pipe: true })).toBe(false);
+        expect(utils.isStream(Buffer.from('abc'))).toBe(false);
+        expect(utils.isStream('abc')).toBe(false);
+        expect(utils.isStream(null)).toBe(false);
+        expect(utils.isStream(undefined)).toBe(false);
     });
 });
 

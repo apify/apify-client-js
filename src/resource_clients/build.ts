@@ -1,12 +1,15 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import type { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
-import { cast, parseDateFields, pluckData } from '../utils';
+import { cast, parseArgument, parseDateFields, pluckData } from '../utils';
 import type { ActorDefinition } from './actor';
 import { LogClient } from './log';
+
+const getOptionsSchema = z.strictObject({ waitForFinish: z.number().optional() });
+const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional() });
 
 /**
  * Client for managing a specific Actor build.
@@ -61,14 +64,9 @@ export class BuildClient extends ResourceClient {
      * ```
      */
     async get(options: BuildClientGetOptions = {}): Promise<Build | undefined> {
-        ow(
-            options,
-            ow.object.exactShape({
-                waitForFinish: ow.optional.number,
-            }),
-        );
+        const parsed = parseArgument(options, getOptionsSchema, 'BuildClientGetOptions');
 
-        return this._get(options);
+        return this._get(parsed);
     }
 
     /**
@@ -152,14 +150,9 @@ export class BuildClient extends ResourceClient {
      * ```
      */
     async waitForFinish(options: BuildClientWaitForFinishOptions = {}): Promise<Build> {
-        ow(
-            options,
-            ow.object.exactShape({
-                waitSecs: ow.optional.number,
-            }),
-        );
+        const parsed = parseArgument(options, waitForFinishOptionsSchema, 'BuildClientWaitForFinishOptions');
 
-        return this._waitForFinish(options);
+        return this._waitForFinish(parsed);
     }
 
     /**

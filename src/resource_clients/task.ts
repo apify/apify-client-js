@@ -1,4 +1,4 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
 
@@ -7,11 +7,45 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import type { Dictionary } from '../utils';
-import { cast, catchNotFoundOrThrow, parseDateFields, pluckData, stringifyWebhooksToBase64 } from '../utils';
+import {
+    anyObjectSchema,
+    cast,
+    catchNotFoundOrThrow,
+    parseArgument,
+    parseDateFields,
+    pluckData,
+    stringifyWebhooksToBase64,
+} from '../utils';
 import type { ActorLastRunOptions, ActorRun, ActorStandby, ActorStartOptions } from './actor';
 import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
 import { WebhookCollectionClient } from './webhook_collection';
+
+const inputSchema = anyObjectSchema.optional();
+const startOptionsSchema = z.strictObject({
+    build: z.string().optional(),
+    memory: z.number().optional(),
+    timeout: z.number().optional(),
+    waitForFinish: z.number().optional(),
+    webhooks: z.array(anyObjectSchema).optional(),
+    maxItems: z.number().min(0).optional(),
+    maxTotalChargeUsd: z.number().min(0).optional(),
+    restartOnError: z.boolean().optional(),
+});
+const callOptionsSchema = z.strictObject({
+    build: z.string().optional(),
+    memory: z.number().optional(),
+    timeout: z.number().min(0).optional(),
+    waitSecs: z.number().min(0).optional(),
+    webhooks: z.array(anyObjectSchema).optional(),
+    maxItems: z.number().min(0).optional(),
+    maxTotalChargeUsd: z.number().min(0).optional(),
+    restartOnError: z.boolean().optional(),
+});
+const lastRunOptionsSchema = z.strictObject({
+    status: z.enum(ACT_JOB_STATUSES).optional(),
+    origin: z.enum(META_ORIGINS).optional(),
+});
 
 /**
  * Client for managing a specific Actor task.
@@ -62,7 +96,7 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-put
      */
     async update(newFields: TaskUpdateData): Promise<Task> {
-        ow(newFields, ow.object);
+        parseArgument(newFields, anyObjectSchema);
 
         return this._update(newFields);
     }
@@ -125,29 +159,17 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-runs-post
      */
     async start(input?: Dictionary, options: TaskStartOptions = {}): Promise<ActorRun> {
-        ow(input, ow.optional.object);
-        ow(
-            options,
-            ow.object.exactShape({
-                build: ow.optional.string,
-                memory: ow.optional.number,
-                timeout: ow.optional.number,
-                waitForFinish: ow.optional.number,
-                webhooks: ow.optional.array.ofType(ow.object),
-                maxItems: ow.optional.number.not.negative,
-                maxTotalChargeUsd: ow.optional.number.not.negative,
-                restartOnError: ow.optional.boolean,
-            }),
-        );
+        parseArgument(input, inputSchema);
+        const parsed = parseArgument(options, startOptionsSchema, 'TaskStartOptions');
 
-        const { waitForFinish, timeout, memory, build, maxItems, maxTotalChargeUsd, restartOnError } = options;
+        const { waitForFinish, timeout, memory, build, maxItems, maxTotalChargeUsd, restartOnError } = parsed;
 
         const params = {
             waitForFinish,
             timeout,
             memory,
             build,
-            webhooks: stringifyWebhooksToBase64(options.webhooks),
+            webhooks: stringifyWebhooksToBase64(parsed.webhooks),
             maxItems,
             maxTotalChargeUsd,
             restartOnError,
@@ -188,22 +210,10 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-runs-post
      */
     async call(input?: Dictionary, options: TaskCallOptions = {}): Promise<ActorRun> {
-        ow(input, ow.optional.object);
-        ow(
-            options,
-            ow.object.exactShape({
-                build: ow.optional.string,
-                memory: ow.optional.number,
-                timeout: ow.optional.number.not.negative,
-                waitSecs: ow.optional.number.not.negative,
-                webhooks: ow.optional.array.ofType(ow.object),
-                maxItems: ow.optional.number.not.negative,
-                maxTotalChargeUsd: ow.optional.number.not.negative,
-                restartOnError: ow.optional.boolean,
-            }),
-        );
+        parseArgument(input, inputSchema);
+        const parsed = parseArgument(options, callOptionsSchema, 'TaskCallOptions');
 
-        const { waitSecs, ...startOptions } = options;
+        const { waitSecs, ...startOptions } = parsed;
 
         const { id } = await this.start(input, startOptions);
 
@@ -263,18 +273,12 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-runs-last-get
      */
     lastRun(options: TaskLastRunOptions = {}): RunClient {
-        ow(
-            options,
-            ow.object.exactShape({
-                status: ow.optional.string.oneOf(Object.values(ACT_JOB_STATUSES)),
-                origin: ow.optional.string.oneOf(Object.values(META_ORIGINS)),
-            }),
-        );
+        const parsed = parseArgument(options, lastRunOptionsSchema, 'TaskLastRunOptions');
 
         return new RunClient(
             this._subResourceOptions({
                 id: 'last',
-                params: this._params(options),
+                params: this._params(parsed),
                 resourcePath: 'runs',
             }),
         );

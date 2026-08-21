@@ -1,9 +1,15 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
+import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils';
 import type { Task, TaskUpdateData } from './task';
+
+const listOptionsSchema = z.strictObject({
+    ...paginationOptionsShape,
+    desc: z.boolean().optional(),
+});
 
 /**
  * Client for managing the collection of Actor tasks in your account.
@@ -61,16 +67,9 @@ export class TaskCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/actor-tasks-get
      */
     list(options: TaskCollectionListOptions = {}): PaginatedIterator<TaskList> {
-        ow(
-            options,
-            ow.object.exactShape({
-                limit: ow.optional.number.not.negative,
-                offset: ow.optional.number.not.negative,
-                desc: ow.optional.boolean,
-            }),
-        );
+        const parsed = parseArgument(options, listOptionsSchema, 'TaskCollectionListOptions');
 
-        return this._listPaginated(options);
+        return this._listPaginated(parsed);
     }
 
     /**
@@ -81,7 +80,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/actor-tasks-post
      */
     async create(task: TaskCreateData): Promise<Task> {
-        ow(task, ow.object);
+        parseArgument(task, anyObjectSchema);
 
         return this._create(task);
     }
