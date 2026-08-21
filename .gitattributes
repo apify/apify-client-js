@@ -1,0 +1,7 @@
+# Check every text file out with LF everywhere. All tracked files are already LF, so this changes nothing today.
+* text=auto eol=lf
+
+# `pnpm generate:types` writes this file with LF, so a CRLF checkout would make every regeneration rewrite all 20k
+# lines. `linguist-generated` also collapses it in diffs: what a reviewer reads is `src/models.ts`, which declares
+# the published models on top of it.
+src/generated/api.ts linguist-generated=true

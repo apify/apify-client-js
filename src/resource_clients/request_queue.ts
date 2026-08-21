@@ -9,6 +9,20 @@ import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { MEDIUM_TIMEOUT_MILLIS, ResourceClient, SMALL_TIMEOUT_MILLIS } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
+import type {
+    RequestQueue,
+    RequestQueueClientAddRequestResult,
+    RequestQueueClientBatchDeleteRequestsResult,
+    RequestQueueClientBatchRequestsOperationResult,
+    RequestQueueClientListAndLockHeadResult,
+    RequestQueueClientListHeadResult,
+    RequestQueueClientListRequestsResult,
+    RequestQueueClientProlongRequestLockResult,
+    RequestQueueClientRequestSchema,
+    RequestQueueClientRequestToAdd,
+    RequestQueueClientRequestToUpdate,
+    RequestQueueClientUnlockRequestsResult,
+} from '../models';
 import {
     anyObjectSchema,
     cast,
@@ -35,7 +49,7 @@ const listAndLockHeadOptionsSchema = z.strictObject({
 });
 // Predicates, not `z.looseObject` arms: these run over a whole batch, and an object arm would copy
 // every key of every request. `id` is assigned by the API, so a new request must not carry one.
-const newRequestSchema = z.custom<Omit<RequestQueueClientRequestSchema, 'id'>>(
+const newRequestSchema = z.custom<RequestQueueClientRequestToAdd>(
     (value) => isNonArrayObject(value) && value.id === undefined,
     'Expected a request object without an `id`',
 );
@@ -53,7 +67,7 @@ const batchDeleteRequestsSchema = z
     .min(1)
     .max(REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION);
 const requestIdSchema = z.string();
-const existingRequestSchema = z.custom<RequestQueueClientRequestSchema>(
+const existingRequestSchema = z.custom<RequestQueueClientRequestToUpdate>(
     (value) => isNonArrayObject(value) && typeof value.id === 'string',
     'Expected a request object with an `id`',
 );
@@ -80,6 +94,25 @@ const paginateRequestsOptionsSchema = z
     })
     .refine(...mutuallyExclusive<RequestQueueClientPaginateRequestsOptions>('exclusiveStartId', 'cursor'));
 
+export type {
+    AllowedHttpMethods,
+    RequestQueue,
+    RequestQueueClientAddRequestResult,
+    RequestQueueClientBatchDeleteRequestsResult,
+    RequestQueueClientBatchRequestsOperationResult,
+    RequestQueueClientListAndLockHeadResult,
+    RequestQueueClientListHeadResult,
+    RequestQueueClientListItem,
+    RequestQueueClientListRequestsResult,
+    RequestQueueClientLockedListItem,
+    RequestQueueClientProlongRequestLockResult,
+    RequestQueueClientRequestSchema,
+    RequestQueueClientRequestToAdd,
+    RequestQueueClientRequestToUpdate,
+    RequestQueueClientUnlockRequestsResult,
+    RequestQueueStats,
+} from '../models';
+
 /**
  * Client for managing a specific Request queue.
  *
@@ -99,12 +132,12 @@ const paginateRequestsOptionsSchema = z
  * });
  *
  * // Get the next request from the queue
- * const request = await queueClient.listHead();
+ * const { items: [request] } = await queueClient.listHead({ limit: 1 });
  *
  * // Mark request as handled
  * await queueClient.updateRequest({
  *   id: request.id,
- *   handledAt: new Date().toISOString()
+ *   handledAt: new Date()
  * });
  * ```
  *
@@ -277,7 +310,7 @@ export class RequestQueueClient extends ResourceClient {
      * ```
      */
     async addRequest(
-        request: Omit<RequestQueueClientRequestSchema, 'id'>,
+        request: RequestQueueClientRequestToAdd,
         options: RequestQueueClientAddRequestOptions = {},
     ): Promise<RequestQueueClientAddRequestResult> {
         parseArgument(request, newRequestSchema);
@@ -303,7 +336,7 @@ export class RequestQueueClient extends ResourceClient {
      * @private
      */
     protected async _batchAddRequests(
-        requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
+        requests: RequestQueueClientRequestToAdd[],
         options: RequestQueueClientAddRequestOptions = {},
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
         parseArgument(requests, batchAddRequestsSchema);
@@ -324,7 +357,7 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     protected async _batchAddRequestsWithRetries(
-        requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
+        requests: RequestQueueClientRequestToAdd[],
         options: RequestQueueClientBatchAddRequestWithRetriesOptions = {},
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
         const {
@@ -335,10 +368,10 @@ export class RequestQueueClient extends ResourceClient {
         // Keep track of the requests that remain to be processed (in parameter format)
         let remainingRequests = requests;
         // Keep track of the requests that have been processed (in api format)
-        const processedRequests: ProcessedRequest[] = [];
+        const processedRequests: RequestQueueClientBatchRequestsOperationResult['processedRequests'] = [];
         // The requests we have not been able to process in the last call
         // ie. those we have not been able to process at all
-        let unprocessedRequests: UnprocessedRequest[] = [];
+        let unprocessedRequests: RequestQueueClientBatchRequestsOperationResult['unprocessedRequests'] = [];
         for (let i = 0; i < 1 + maxUnprocessedRequestsRetries; i++) {
             try {
                 const response = await this._batchAddRequests(remainingRequests, {
@@ -429,7 +462,7 @@ export class RequestQueueClient extends ResourceClient {
      * @since Added in 2.1.0
      */
     async batchAddRequests(
-        requests: Omit<RequestQueueClientRequestSchema, 'id'>[],
+        requests: RequestQueueClientRequestToAdd[],
         options: RequestQueueClientBatchAddRequestWithRetriesOptions = {},
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
         const {
@@ -492,7 +525,7 @@ export class RequestQueueClient extends ResourceClient {
      */
     async batchDeleteRequests(
         requests: RequestQueueClientRequestToDelete[],
-    ): Promise<RequestQueueClientBatchRequestsOperationResult> {
+    ): Promise<RequestQueueClientBatchDeleteRequestsResult> {
         parseArgument(requests, batchDeleteRequestsSchema);
 
         const { data } = await this.httpClient.call({
@@ -542,7 +575,7 @@ export class RequestQueueClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/request-queue-request-put
      */
     async updateRequest(
-        request: RequestQueueClientRequestSchema,
+        request: RequestQueueClientRequestToUpdate,
         options: RequestQueueClientAddRequestOptions = {},
     ): Promise<RequestQueueClientAddRequestResult> {
         parseArgument(request, existingRequestSchema);
@@ -794,52 +827,6 @@ export interface RequestQueueUserOptions {
 }
 
 /**
- * Represents a Request Queue storage on the Apify platform.
- *
- * Request queues store URLs (requests) to be processed by web crawlers. They provide
- * automatic deduplication, request locking for parallel processing, and persistence.
- */
-export interface RequestQueue {
-    id: string;
-    name?: string;
-    /**
-     * @since Added in 2.6.1
-     */
-    title?: string;
-    userId: string;
-    /**
-     * @since Added in 2.21.0
-     */
-    username?: string;
-    createdAt: Date;
-    modifiedAt: Date;
-    accessedAt: Date;
-    expireAt?: string;
-    totalRequestCount: number;
-    handledRequestCount: number;
-    pendingRequestCount: number;
-    actId?: string;
-    actRunId?: string;
-    hadMultipleClients: boolean;
-    stats: RequestQueueStats;
-    /**
-     * @since Added in 2.12.2
-     */
-    generalAccess?: STORAGE_GENERAL_ACCESS | null;
-}
-
-/**
- * Statistics about Request Queue usage and storage.
- */
-export interface RequestQueueStats {
-    readCount?: number;
-    writeCount?: number;
-    deleteCount?: number;
-    headItemReadCount?: number;
-    storageBytes?: number;
-}
-
-/**
  * Options for updating a Request Queue.
  */
 export interface RequestQueueClientUpdateOptions {
@@ -859,16 +846,6 @@ export interface RequestQueueClientUpdateOptions {
  */
 export interface RequestQueueClientListHeadOptions {
     limit?: number;
-}
-
-/**
- * Result of listing requests from the queue head.
- */
-export interface RequestQueueClientListHeadResult {
-    limit: number;
-    queueModifiedAt: Date;
-    hadMultipleClients: boolean;
-    items: RequestQueueClientListItem[];
 }
 
 /**
@@ -917,64 +894,12 @@ export interface RequestQueueClientPaginateRequestsOptions {
 }
 
 /**
- * Result of listing all requests in the queue.
- * @since Added in 2.5.1
- */
-export interface RequestQueueClientListRequestsResult {
-    limit: number;
-    /** @deprecated Use `cursor` for pagination instead. */
-    exclusiveStartId?: string;
-    /**
-     * @since Added in 2.23.2
-     */
-    cursor?: string;
-    /**
-     * @since Added in 2.23.2
-     */
-    nextCursor?: string;
-    items: RequestQueueClientRequestSchema[];
-}
-
-/**
  * Options for listing and locking requests from the queue head.
  * @since Added in 2.4.1
  */
 export interface RequestQueueClientListAndLockHeadOptions {
     lockSecs: number;
     limit?: number;
-}
-
-/**
- * Result of listing and locking requests from the queue head.
- *
- * Extends {@link RequestQueueClientListHeadResult} with lock information.
- * @since Added in 2.4.1
- */
-export interface RequestQueueClientListAndLockHeadResult extends RequestQueueClientListHeadResult {
-    lockSecs: number;
-    /**
-     * @since Added in 2.11.0
-     */
-    queueHasLockedRequests: boolean;
-    /**
-     * @since Added in 2.11.0
-     */
-    clientKey: string;
-}
-
-/**
- * Simplified request information used in list results.
- */
-export interface RequestQueueClientListItem {
-    id: string;
-    retryCount: number;
-    uniqueKey: string;
-    url: string;
-    method: AllowedHttpMethods;
-    /**
-     * @since Added in 2.4.1
-     */
-    lockExpiresAt?: Date;
 }
 
 export interface RequestQueueClientAddRequestOptions {
@@ -997,13 +922,6 @@ export interface RequestQueueClientDeleteRequestLockOptions {
 }
 
 /**
- * @since Added in 2.4.1
- */
-export interface RequestQueueClientProlongRequestLockResult {
-    lockExpiresAt: Date;
-}
-
-/**
  * @since Added in 2.3.0
  */
 export interface RequestQueueClientBatchAddRequestWithRetriesOptions {
@@ -1017,78 +935,20 @@ export interface RequestQueueClientBatchAddRequestWithRetriesOptions {
 }
 
 /**
- * Complete schema for a request in the queue.
- *
- * Represents a URL to be crawled along with its metadata, retry information, and custom data.
- */
-export interface RequestQueueClientRequestSchema {
-    id: string;
-    uniqueKey: string;
-    url: string;
-    method?: AllowedHttpMethods;
-    payload?: string;
-    retryCount?: number;
-    errorMessages?: string[];
-    headers?: Record<string, string>;
-    userData?: Record<string, unknown>;
-    handledAt?: string;
-    noRetry?: boolean;
-    loadedUrl?: string;
-}
-
-/**
- * Result of adding a request to the queue.
- */
-export interface RequestQueueClientAddRequestResult {
-    requestId: string;
-    wasAlreadyPresent: boolean;
-    wasAlreadyHandled: boolean;
-}
-
-interface ProcessedRequest {
-    uniqueKey: string;
-    requestId: string;
-    wasAlreadyPresent: boolean;
-    wasAlreadyHandled: boolean;
-}
-
-interface UnprocessedRequest {
-    uniqueKey: string;
-    url: string;
-    method?: AllowedHttpMethods;
-}
-
-/**
- * @since Added in 2.12.5
- */
-export interface RequestQueueClientUnlockRequestsResult {
-    unlockedCount: number;
-}
-
-/**
- * Result of a batch operation on requests.
- *
- * Contains lists of successfully processed and unprocessed requests.
- * @since Added in 2.3.0
- */
-export interface RequestQueueClientBatchRequestsOperationResult {
-    processedRequests: ProcessedRequest[];
-    unprocessedRequests: UnprocessedRequest[];
-}
-
-/**
  * @since Added in 2.3.0
  */
 export type RequestQueueClientRequestToDelete =
-    | Pick<RequestQueueClientRequestSchema, 'id'>
-    | Pick<RequestQueueClientRequestSchema, 'uniqueKey'>;
-
-export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem, 'retryCount'>;
+    // A union rather than one object with both keys optional: a deletion has to be addressed by one id
+    // or the other, and the flat shape would let `{}` through.
+    Pick<RequestQueueClientRequestSchema, 'id'> | Pick<RequestQueueClientRequestSchema, 'uniqueKey'>;
 
 /**
- * HTTP methods supported by Request Queue requests.
+ * Result of getting a single request from the queue.
+ *
+ * `GET /v2/request-queues/{queueId}/requests/{requestId}` answers with the whole request rather than
+ * a queue-head projection.
  */
-export type AllowedHttpMethods = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'TRACE' | 'OPTIONS' | 'CONNECT' | 'PATCH';
+export type RequestQueueClientGetRequestResult = RequestQueueClientRequestSchema;
 
 /**
  * @since Added in 2.5.1
