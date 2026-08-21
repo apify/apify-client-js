@@ -32,6 +32,13 @@ onlyBuiltDependencies:
 overrides:
   "@puppeteer/browsers": "^3.0.4"
   js-yaml@4: ^5.0.0
+  # Exempt @redocly/openapi-core (openapi-typescript's spec parser) from the
+  # js-yaml v5 bump above. js-yaml 5 removed the `types` export, and redocly's
+  # js-yaml wrapper reads `types.merge` at import time, so v5 makes it throw
+  # `TypeError: Cannot read properties of undefined (reading 'merge')` before
+  # it parses anything. 4.2.0 is still above the advisory floor the v4 line
+  # override was originally added for.
+  "@redocly/openapi-core>js-yaml": ^4.2.0
   markdown-it: ^15.0.0
 
 nodeLinker: hoisted
