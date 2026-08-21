@@ -1,5 +1,5 @@
 import type { AxiosRequestConfig } from 'axios';
-import ow from 'ow';
+import { z } from 'zod';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 import { LEVELS, Log } from '@apify/log';
@@ -7,7 +7,7 @@ import { LEVELS, Log } from '@apify/log';
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyResponse } from '../http_client';
-import { cast, isNode, parseDateFields, pluckData } from '../utils';
+import { anyObjectSchema, cast, isNode, parseArgument, parseDateFields, pluckData } from '../utils';
 import type { ActorRun } from './actor';
 import { DatasetClient } from './dataset';
 import { KeyValueStoreClient } from './key_value_store';
@@ -15,6 +15,28 @@ import { LogClient, LoggerActorRedirect, StreamedLog } from './log';
 import { RequestQueueClient } from './request_queue';
 
 const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
+
+const getOptionsSchema = z.strictObject({ waitForFinish: z.number().optional() });
+const abortOptionsSchema = z.strictObject({ gracefully: z.boolean().optional() });
+const targetActorIdSchema = z.string();
+const metamorphOptionsSchema = z.strictObject({
+    contentType: z.string().optional(),
+    build: z.string().optional(),
+});
+const resurrectOptionsSchema = z.strictObject({
+    build: z.string().optional(),
+    memory: z.number().optional(),
+    timeout: z.number().optional(),
+    maxItems: z.number().optional(),
+    maxTotalChargeUsd: z.number().optional(),
+    restartOnError: z.boolean().optional(),
+});
+const chargeOptionsSchema = z.strictObject({
+    eventName: z.string(),
+    count: z.number().default(1),
+    idempotencyKey: z.string().optional(),
+});
+const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional() });
 
 /**
  * Client for managing a specific Actor run.
@@ -69,14 +91,9 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
-        ow(
-            options,
-            ow.object.exactShape({
-                waitForFinish: ow.optional.number,
-            }),
-        );
+        const parsed = parseArgument(options, getOptionsSchema, 'RunGetOptions');
 
-        return this._get(options);
+        return this._get(parsed);
     }
 
     /**
@@ -97,17 +114,12 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async abort(options: RunAbortOptions = {}): Promise<ActorRun> {
-        ow(
-            options,
-            ow.object.exactShape({
-                gracefully: ow.optional.boolean,
-            }),
-        );
+        const parsed = parseArgument(options, abortOptionsSchema, 'RunAbortOptions');
 
         const response = await this.httpClient.call({
             url: this._url('abort'),
             method: 'POST',
-            params: this._params(options),
+            params: this._params(parsed),
         });
 
         return cast(parseDateFields(pluckData(response.data)));
@@ -149,21 +161,15 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async metamorph(targetActorId: string, input: unknown, options: RunMetamorphOptions = {}): Promise<ActorRun> {
-        ow(targetActorId, ow.string);
+        parseArgument(targetActorId, targetActorIdSchema);
         // input can be anything, pointless to validate
-        ow(
-            options,
-            ow.object.exactShape({
-                contentType: ow.optional.string,
-                build: ow.optional.string,
-            }),
-        );
+        const parsed = parseArgument(options, metamorphOptionsSchema, 'RunMetamorphOptions');
 
         const safeTargetActorId = this._toSafeId(targetActorId);
 
         const params = {
             targetActorId: safeTargetActorId,
-            build: options.build,
+            build: parsed.build,
         };
 
         const request: AxiosRequestConfig = {
@@ -178,9 +184,9 @@ export class RunClient extends ResourceClient {
             stringifyFunctions: true,
         };
 
-        if (options.contentType) {
+        if (parsed.contentType) {
             request.headers = {
-                'content-type': options.contentType,
+                'content-type': parsed.contentType,
             };
         }
 
@@ -233,7 +239,7 @@ export class RunClient extends ResourceClient {
      * @since Added in 2.6.0
      */
     async update(newFields: RunUpdateOptions): Promise<ActorRun> {
-        ow(newFields, ow.object);
+        parseArgument(newFields, anyObjectSchema);
 
         return this._update(newFields);
     }
@@ -262,22 +268,12 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async resurrect(options: RunResurrectOptions = {}): Promise<ActorRun> {
-        ow(
-            options,
-            ow.object.exactShape({
-                build: ow.optional.string,
-                memory: ow.optional.number,
-                timeout: ow.optional.number,
-                maxItems: ow.optional.number,
-                maxTotalChargeUsd: ow.optional.number,
-                restartOnError: ow.optional.boolean,
-            }),
-        );
+        const parsed = parseArgument(options, resurrectOptionsSchema, 'RunResurrectOptions');
 
         const response = await this.httpClient.call({
             url: this._url('resurrect'),
             method: 'POST',
-            params: this._params(options),
+            params: this._params(parsed),
         });
 
         return cast(parseDateFields(pluckData(response.data)));
@@ -295,26 +291,21 @@ export class RunClient extends ResourceClient {
      * @since Added in 2.11.0
      */
     async charge(options: RunChargeOptions): Promise<ApifyResponse<Record<string, never>>> {
-        ow(
-            options,
-            ow.object.exactShape({
-                eventName: ow.string,
-                count: ow.optional.number,
-                idempotencyKey: ow.optional.string,
-            }),
-        );
+        const {
+            eventName,
+            count,
+            idempotencyKey: providedIdempotencyKey,
+        } = parseArgument(options, chargeOptionsSchema, 'RunChargeOptions');
 
-        const count = options.count ?? 1;
         /** To avoid duplicates during the same milisecond, doesn't need to by crypto-secure. */
         const randomSuffix = (Math.random() + 1).toString(36).slice(3, 8);
-        const idempotencyKey =
-            options.idempotencyKey ?? `${this.id}-${options.eventName}-${Date.now()}-${randomSuffix}`;
+        const idempotencyKey = providedIdempotencyKey ?? `${this.id}-${eventName}-${Date.now()}-${randomSuffix}`;
 
         const request: AxiosRequestConfig = {
             url: this._url('charge'),
             method: 'POST',
             data: {
-                eventName: options.eventName,
+                eventName,
                 count,
             },
             headers: {
@@ -354,14 +345,9 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async waitForFinish(options: RunWaitForFinishOptions = {}): Promise<ActorRun> {
-        ow(
-            options,
-            ow.object.exactShape({
-                waitSecs: ow.optional.number,
-            }),
-        );
+        const parsed = parseArgument(options, waitForFinishOptionsSchema, 'RunWaitForFinishOptions');
 
-        return this._waitForFinish(options);
+        return this._waitForFinish(parsed);
     }
 
     /**
