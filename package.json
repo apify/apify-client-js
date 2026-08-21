@@ -87,7 +87,7 @@
         "@rspack/core": "^2.0.0",
         "@types/async-retry": "^1.4.5",
         "@types/compression": "^1.8.1",
-        "@types/content-type": "^1.1.5",
+        "@types/content-type": "^2.0.0",
         "@types/express": "^5.0.0",
         "@types/node": "^24.0.0",
         "ajv": "^8.17.1",
