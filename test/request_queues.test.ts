@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net';
 
 import type { Dictionary, RequestQueueClientListRequestsOptions } from 'apify-client';
-import { ApifyClient } from 'apify-client';
+import { ApifyClient, ArgumentValidationError } from 'apify-client';
 import type { Request } from 'express';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
@@ -548,6 +548,21 @@ describe('Request Queue methods', () => {
             );
             expect(browserRes).toEqual(res);
             validateRequest({ query: queryForValidation, params: { queueId } });
+        });
+
+        // `listRequests()` validates before returning its promise, so these throw synchronously.
+        test('listRequests() rejects an unknown option', () => {
+            const call = () => client.requestQueue('some-id').listRequests({ bogus: 1 } as any);
+
+            expect(call).toThrow(ArgumentValidationError);
+            expect(call).toThrow('Unrecognized key: "bogus"');
+        });
+
+        test('listRequests() rejects exclusiveStartId together with cursor', () => {
+            const call = () => client.requestQueue('some-id').listRequests({ exclusiveStartId: '123', cursor: 'abc' });
+
+            expect(call).toThrow(ArgumentValidationError);
+            expect(call).toThrow('At most one of the following fields is allowed: exclusiveStartId, cursor');
         });
 
         test('paginateRequests() works', async () => {

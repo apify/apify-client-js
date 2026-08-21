@@ -1,4 +1,4 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 import { ACTOR_JOB_STATUSES, ACTOR_PERMISSION_LEVEL, META_ORIGINS } from '@apify/consts';
@@ -7,7 +7,7 @@ import { Log } from '@apify/log';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
-import { cast, parseDateFields, pluckData, stringifyWebhooksToBase64 } from '../utils';
+import { anyObjectSchema, cast, parseArgument, parseDateFields, pluckData, stringifyWebhooksToBase64 } from '../utils';
 import type { ActorVersion } from './actor_version';
 import { ActorVersionClient } from './actor_version';
 import { ActorVersionCollectionClient } from './actor_version_collection';
@@ -19,6 +19,47 @@ import { RunCollectionClient } from './run_collection';
 import type { WebhookUpdateData } from './webhook';
 import { WebhookCollectionClient } from './webhook_collection';
 import type { ValueOf } from 'type-fest';
+
+const startOptionsSchema = z.strictObject({
+    build: z.string().optional(),
+    contentType: z.string().optional(),
+    memory: z.number().optional(),
+    timeout: z.number().optional(),
+    waitForFinish: z.number().optional(),
+    webhooks: z.array(anyObjectSchema).optional(),
+    maxItems: z.number().min(0).optional(),
+    maxTotalChargeUsd: z.number().min(0).optional(),
+    restartOnError: z.boolean().optional(),
+    forcePermissionLevel: z.enum(ACTOR_PERMISSION_LEVEL).optional(),
+});
+const callOptionsSchema = z.strictObject({
+    build: z.string().optional(),
+    contentType: z.string().optional(),
+    memory: z.number().optional(),
+    timeout: z.number().min(0).optional(),
+    waitSecs: z.number().min(0).optional(),
+    webhooks: z.array(anyObjectSchema).optional(),
+    maxItems: z.number().min(0).optional(),
+    maxTotalChargeUsd: z.number().min(0).optional(),
+    log: z.union([z.null(), z.instanceof(Log), z.literal('default')]).optional(),
+    restartOnError: z.boolean().optional(),
+    forcePermissionLevel: z.enum(ACTOR_PERMISSION_LEVEL).optional(),
+});
+const validateInputOptionsSchema = z.strictObject({
+    build: z.string().optional(),
+    contentType: z.string().optional(),
+});
+const versionNumberSchema = z.string();
+const buildOptionsSchema = z.strictObject({
+    betaPackages: z.boolean().optional(),
+    tag: z.string().optional(),
+    useCache: z.boolean().optional(),
+    waitForFinish: z.number().optional(),
+});
+const lastRunOptionsSchema = z.strictObject({
+    status: z.enum(ACTOR_JOB_STATUSES).optional(),
+    origin: z.enum(META_ORIGINS).optional(),
+});
 
 /**
  * Client for managing a specific Actor.
@@ -69,7 +110,7 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-put
      */
     async update(newFields: ActorUpdateOptions): Promise<Actor> {
-        ow(newFields, ow.object);
+        parseArgument(newFields, anyObjectSchema);
 
         return this._update(newFields);
     }
@@ -120,21 +161,7 @@ export class ActorClient extends ResourceClient {
     async start(input?: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
         // then it will process input as a buffer.
-        ow(
-            options,
-            ow.object.exactShape({
-                build: ow.optional.string,
-                contentType: ow.optional.string,
-                memory: ow.optional.number,
-                timeout: ow.optional.number,
-                waitForFinish: ow.optional.number,
-                webhooks: ow.optional.array.ofType(ow.object),
-                maxItems: ow.optional.number.not.negative,
-                maxTotalChargeUsd: ow.optional.number.not.negative,
-                restartOnError: ow.optional.boolean,
-                forcePermissionLevel: ow.optional.string.oneOf(Object.values(ACTOR_PERMISSION_LEVEL)),
-            }),
-        );
+        const parsed = parseArgument(options, startOptionsSchema, 'ActorStartOptions');
 
         const {
             waitForFinish,
@@ -145,14 +172,14 @@ export class ActorClient extends ResourceClient {
             maxTotalChargeUsd,
             restartOnError,
             forcePermissionLevel,
-        } = options;
+        } = parsed;
 
         const params = {
             waitForFinish,
             timeout,
             memory,
             build,
-            webhooks: stringifyWebhooksToBase64(options.webhooks),
+            webhooks: stringifyWebhooksToBase64(parsed.webhooks),
             maxItems,
             maxTotalChargeUsd,
             restartOnError,
@@ -168,9 +195,9 @@ export class ActorClient extends ResourceClient {
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
         };
-        if (options.contentType) {
+        if (parsed.contentType) {
             request.headers = {
-                'content-type': options.contentType,
+                'content-type': parsed.contentType,
             };
         }
 
@@ -218,24 +245,9 @@ export class ActorClient extends ResourceClient {
     async call(input?: unknown, options: ActorCallOptions = {}): Promise<ActorRun> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
         // then it will process input as a buffer.
-        ow(
-            options,
-            ow.object.exactShape({
-                build: ow.optional.string,
-                contentType: ow.optional.string,
-                memory: ow.optional.number,
-                timeout: ow.optional.number.not.negative,
-                waitSecs: ow.optional.number.not.negative,
-                webhooks: ow.optional.array.ofType(ow.object),
-                maxItems: ow.optional.number.not.negative,
-                maxTotalChargeUsd: ow.optional.number.not.negative,
-                log: ow.optional.any(ow.null, ow.object.instanceOf(Log), ow.string.equals('default')),
-                restartOnError: ow.optional.boolean,
-                forcePermissionLevel: ow.optional.string.oneOf(Object.values(ACTOR_PERMISSION_LEVEL)),
-            }),
-        );
+        const parsed = parseArgument(options, callOptionsSchema, 'ActorCallOptions');
 
-        const { waitSecs, log, ...startOptions } = options;
+        const { waitSecs, log, ...startOptions } = parsed;
         const { id } = await this.start(input, startOptions);
 
         // Calling root client because we need access to top level API.
@@ -243,7 +255,7 @@ export class ActorClient extends ResourceClient {
         // setting it up as a nested route under actor API.
         const newRunClient = this.apifyClient.run(id);
 
-        const streamedLog = await newRunClient.getStreamedLog({ toLog: options?.log });
+        const streamedLog = await newRunClient.getStreamedLog({ toLog: log });
         streamedLog?.start();
         return this.apifyClient
             .run(id)
@@ -287,26 +299,20 @@ export class ActorClient extends ResourceClient {
     async validateInput(input?: unknown, options: ActorValidateInputOptions = {}): Promise<boolean> {
         // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
         // then it will process input as a buffer.
-        ow(
-            options,
-            ow.object.exactShape({
-                build: ow.optional.string,
-                contentType: ow.optional.string,
-            }),
-        );
+        const parsed = parseArgument(options, validateInputOptionsSchema, 'ActorValidateInputOptions');
 
         const request: ApifyRequestConfig = {
             url: this._url('validate-input'),
             method: 'POST',
             data: input,
-            params: this._params({ build: options.build }),
+            params: this._params({ build: parsed.build }),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
         };
-        if (options.contentType) {
+        if (parsed.contentType) {
             request.headers = {
-                'content-type': options.contentType,
+                'content-type': parsed.contentType,
             };
         }
 
@@ -344,23 +350,15 @@ export class ActorClient extends ResourceClient {
      * ```
      */
     async build(versionNumber: string, options: ActorBuildOptions = {}): Promise<Build> {
-        ow(versionNumber, ow.string);
-        ow(
-            options,
-            ow.object.exactShape({
-                betaPackages: ow.optional.boolean,
-                tag: ow.optional.string,
-                useCache: ow.optional.boolean,
-                waitForFinish: ow.optional.number,
-            }),
-        );
+        parseArgument(versionNumber, versionNumberSchema);
+        const parsed = parseArgument(options, buildOptionsSchema, 'ActorBuildOptions');
 
         const response = await this.httpClient.call({
             url: this._url('builds'),
             method: 'POST',
             params: this._params({
                 version: versionNumber,
-                ...options,
+                ...parsed,
             }),
         });
 
@@ -428,18 +426,12 @@ export class ActorClient extends ResourceClient {
      * ```
      */
     lastRun(options: ActorLastRunOptions = {}): RunClient {
-        ow(
-            options,
-            ow.object.exactShape({
-                status: ow.optional.string.oneOf(Object.values(ACTOR_JOB_STATUSES)),
-                origin: ow.optional.string.oneOf(Object.values(META_ORIGINS)),
-            }),
-        );
+        const parsed = parseArgument(options, lastRunOptionsSchema, 'ActorLastRunOptions');
 
         return new RunClient(
             this._subResourceOptions({
                 id: 'last',
-                params: this._params(options),
+                params: this._params(parsed),
                 resourcePath: 'runs',
             }),
         );
@@ -481,7 +473,7 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-version-get
      */
     version(versionNumber: string): ActorVersionClient {
-        ow(versionNumber, ow.string);
+        parseArgument(versionNumber, versionNumberSchema);
         return new ActorVersionClient(
             this._subResourceOptions({
                 id: versionNumber,

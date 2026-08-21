@@ -1,5 +1,5 @@
 import type { SetStatusMessageOptions } from '@crawlee/types';
-import ow from 'ow';
+import { z } from 'zod';
 
 import { ACTOR_ENV_VARS, ME_USER_NAME_PLACEHOLDER } from '@apify/consts';
 import type { Log } from '@apify/log';
@@ -32,8 +32,25 @@ import { WebhookCollectionClient } from './resource_clients/webhook_collection';
 import { WebhookDispatchClient } from './resource_clients/webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './resource_clients/webhook_dispatch_collection';
 import { Statistics } from './statistics';
+import { parseArgument } from './utils';
 
 const DEFAULT_TIMEOUT_SECS = 360;
+
+const clientOptionsSchema = z.strictObject({
+    baseUrl: z.string().default('https://api.apify.com'),
+    publicBaseUrl: z.string().default('https://api.apify.com'),
+    maxRetries: z.number().default(8),
+    minDelayBetweenRetriesMillis: z.number().default(500),
+    requestInterceptors: z.array(z.unknown()).default([]),
+    timeoutSecs: z.number().default(DEFAULT_TIMEOUT_SECS),
+    token: z.string().optional(),
+    userAgentSuffix: z.union([z.string(), z.array(z.string())]).optional(),
+});
+const resourceIdSchema = z.string().min(1);
+const requestQueueOptionsSchema = z.strictObject({
+    clientKey: z.string().min(1).optional(),
+    timeoutSecs: z.number().optional(),
+});
 
 /**
  * The official JavaScript client for the Apify API.
@@ -73,29 +90,17 @@ export class ApifyClient {
     httpClient: HttpClient;
 
     constructor(options: ApifyClientOptions = {}) {
-        ow(
-            options,
-            ow.object.exactShape({
-                baseUrl: ow.optional.string,
-                publicBaseUrl: ow.optional.string,
-                maxRetries: ow.optional.number,
-                minDelayBetweenRetriesMillis: ow.optional.number,
-                requestInterceptors: ow.optional.array,
-                timeoutSecs: ow.optional.number,
-                token: ow.optional.string,
-                userAgentSuffix: ow.optional.any(ow.string, ow.array.ofType(ow.string)),
-            }),
-        );
+        const parsed = parseArgument(options, clientOptionsSchema, 'ApifyClientOptions');
 
         const {
-            baseUrl = 'https://api.apify.com',
-            publicBaseUrl = 'https://api.apify.com',
-            maxRetries = 8,
-            minDelayBetweenRetriesMillis = 500,
-            requestInterceptors = [],
-            timeoutSecs = DEFAULT_TIMEOUT_SECS,
+            baseUrl,
+            publicBaseUrl,
+            maxRetries,
+            minDelayBetweenRetriesMillis,
+            requestInterceptors,
+            timeoutSecs,
             token,
-        } = options;
+        } = parsed;
 
         const tempBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, baseUrl.length - 1) : baseUrl;
         this.baseUrl = `${tempBaseUrl}/v2`;
@@ -114,7 +119,7 @@ export class ApifyClient {
             timeoutSecs,
             logger: this.logger,
             token: this.token,
-            userAgentSuffix: options.userAgentSuffix,
+            userAgentSuffix: parsed.userAgentSuffix,
         });
     }
 
@@ -156,7 +161,7 @@ export class ApifyClient {
      * ```
      */
     actor(id: string): ActorClient {
-        ow(id, ow.string.nonEmpty);
+        parseArgument(id, resourceIdSchema);
 
         return new ActorClient({
             id,
@@ -186,7 +191,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/actor-build-get
      */
     build(id: string): BuildClient {
-        ow(id, ow.string.nonEmpty);
+        parseArgument(id, resourceIdSchema);
 
         return new BuildClient({
             id,
@@ -232,7 +237,7 @@ export class ApifyClient {
     dataset<Data extends Record<string | number, any> = Record<string | number, unknown>>(
         id: string,
     ): DatasetClient<Data> {
-        ow(id, ow.string.nonEmpty);
+        parseArgument(id, resourceIdSchema);
 
         return new DatasetClient({
             id,
@@ -272,7 +277,7 @@ export class ApifyClient {
      * ```
      */
     keyValueStore(id: string): KeyValueStoreClient {
-        ow(id, ow.string.nonEmpty);
+        parseArgument(id, resourceIdSchema);
 
         return new KeyValueStoreClient({
             id,
@@ -288,7 +293,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/log-get
      */
     log(buildOrRunId: string): LogClient {
-        ow(buildOrRunId, ow.string.nonEmpty);
+        parseArgument(buildOrRunId, resourceIdSchema);
 
         return new LogClient({
             id: buildOrRunId,
@@ -330,20 +335,14 @@ export class ApifyClient {
      * ```
      */
     requestQueue(id: string, options: RequestQueueUserOptions = {}): RequestQueueClient {
-        ow(id, ow.string.nonEmpty);
-        ow(
-            options,
-            ow.object.exactShape({
-                clientKey: ow.optional.string.nonEmpty,
-                timeoutSecs: ow.optional.number,
-            }),
-        );
+        parseArgument(id, resourceIdSchema);
+        const parsed = parseArgument(options, requestQueueOptionsSchema, 'RequestQueueUserOptions');
 
         const apiClientOptions = {
             id,
             ...this._options(),
         };
-        return new RequestQueueClient(apiClientOptions, options);
+        return new RequestQueueClient(apiClientOptions, parsed);
     }
 
     /**
@@ -381,7 +380,7 @@ export class ApifyClient {
      * ```
      */
     run(id: string): RunClient {
-        ow(id, ow.string.nonEmpty);
+        parseArgument(id, resourceIdSchema);
 
         return new RunClient({
             id,
@@ -417,7 +416,7 @@ export class ApifyClient {
      * ```
      */
     task(id: string): TaskClient {
-        ow(id, ow.string.nonEmpty);
+        parseArgument(id, resourceIdSchema);
 
         return new TaskClient({
             id,
@@ -447,7 +446,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/schedule-get
      */
     schedule(id: string): ScheduleClient {
-        ow(id, ow.string.nonEmpty);
+        parseArgument(id, resourceIdSchema);
 
         return new ScheduleClient({
             id,
@@ -465,7 +464,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/user-get
      */
     user(id = ME_USER_NAME_PLACEHOLDER): UserClient {
-        ow(id, ow.string.nonEmpty);
+        parseArgument(id, resourceIdSchema);
 
         return new UserClient({
             id,
@@ -495,7 +494,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/webhook-get
      */
     webhook(id: string): WebhookClient {
-        ow(id, ow.string.nonEmpty);
+        parseArgument(id, resourceIdSchema);
 
         return new WebhookClient({
             id,
@@ -523,7 +522,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/webhook-dispatch-get
      */
     webhookDispatch(id: string): WebhookDispatchClient {
-        ow(id, ow.string.nonEmpty);
+        parseArgument(id, resourceIdSchema);
 
         return new WebhookDispatchClient({
             id,

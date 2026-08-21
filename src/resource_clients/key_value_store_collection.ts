@@ -1,11 +1,21 @@
-import ow from 'ow';
+import { z } from 'zod';
 
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
+import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils';
 import type { KeyValueStore } from './key_value_store';
+
+const listOptionsSchema = z.strictObject({
+    unnamed: z.boolean().optional(),
+    ...paginationOptionsShape,
+    desc: z.boolean().optional(),
+    ownership: z.enum(STORAGE_OWNERSHIP_FILTER).optional(),
+});
+const nameSchema = z.string().optional();
+const schemaSchema = anyObjectSchema.optional();
 
 /**
  * Client for managing the collection of Key-value stores in your account.
@@ -61,18 +71,9 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     list(
         options: KeyValueStoreCollectionClientListOptions = {},
     ): Promise<KeyValueStoreCollectionListResult> & AsyncIterable<KeyValueStore> {
-        ow(
-            options,
-            ow.object.exactShape({
-                unnamed: ow.optional.boolean,
-                limit: ow.optional.number.not.negative,
-                offset: ow.optional.number.not.negative,
-                desc: ow.optional.boolean,
-                ownership: ow.optional.string.oneOf(Object.values(STORAGE_OWNERSHIP_FILTER)),
-            }),
-        );
+        const parsed = parseArgument(options, listOptionsSchema, 'KeyValueStoreCollectionClientListOptions');
 
-        return this._listPaginated(options);
+        return this._listPaginated(parsed);
     }
 
     /**
@@ -87,8 +88,8 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
         name?: string,
         options?: KeyValueStoreCollectionClientGetOrCreateOptions,
     ): Promise<KeyValueStore> {
-        ow(name, ow.optional.string);
-        ow(options?.schema, ow.optional.object); // TODO: Add schema validatioon
+        parseArgument(name, nameSchema);
+        parseArgument(options?.schema, schemaSchema); // TODO: Add schema validation
 
         return this._getOrCreate(name, options);
     }
