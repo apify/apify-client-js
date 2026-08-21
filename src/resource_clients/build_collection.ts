@@ -2,9 +2,11 @@ import { z } from 'zod';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
+import type { BuildCollectionClientListItem } from '../models';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import { paginationOptionsShape, parseArgument } from '../utils';
-import type { Build } from './build';
+
+export type { BuildCollectionClientListItem } from '../models';
 
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
@@ -73,8 +75,5 @@ export class BuildCollectionClient extends ResourceCollectionClient {
 export interface BuildCollectionClientListOptions extends PaginationOptions {
     desc?: boolean;
 }
-
-export type BuildCollectionClientListItem = Required<Pick<Build, 'id' | 'status' | 'startedAt' | 'finishedAt'>> &
-    Partial<Pick<Build, 'meta' | 'usageTotalUsd'>>;
 
 export type BuildCollectionClientListResult = PaginatedList<BuildCollectionClientListItem>;

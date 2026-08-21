@@ -313,7 +313,7 @@ test('listRequests() iteration stops at the requested limit', async () => {
         }
         await ensureQueueIsPopulated(queueClient, 7);
 
-        const collected: { url: string }[] = [];
+        const collected: { url?: string }[] = [];
         for await (const request of queueClient.listRequests({ limit: 3 })) {
             collected.push(request);
         }

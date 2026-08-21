@@ -16,6 +16,7 @@ import {
     SMALL_TIMEOUT_MILLIS,
 } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
+import type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore } from '../models';
 import {
     anyObjectSchema,
     applyQueryParamsToUrl,
@@ -73,6 +74,8 @@ const recordOptionsSchema = z.strictObject({
     timeoutSecs: z.number().optional(),
     doNotRetryTimeouts: z.boolean().optional(),
 });
+
+export type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore, KeyValueStoreStats } from '../models';
 
 /**
  * Client for managing a specific key-value store.
@@ -210,7 +213,9 @@ export class KeyValueStoreClient extends ResourceClient {
 
             while (
                 currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
-                currentPage.nextExclusiveStartKey !== null && // Continue only if there is some next key.
+                // Continue only if there is some next key. The API answers with `null` on the last page and
+                // omits the field entirely for a listing that was not truncated.
+                currentPage.nextExclusiveStartKey != null &&
                 (remainingItems === undefined || remainingItems > 0) // Continue only if the limit was not exceeded.
             ) {
                 const newOptions = {
@@ -517,55 +522,6 @@ export class KeyValueStoreClient extends ResourceClient {
 }
 
 /**
- * Represents a Key-Value Store storage on the Apify platform.
- *
- * Key-value stores are used to store arbitrary data records or files. Each record is identified
- * by a unique key and can contain any data - JSON objects, strings, binary files, etc.
- */
-export interface KeyValueStore {
-    id: string;
-    name?: string;
-    /**
-     * @since Added in 2.6.1
-     */
-    title?: string;
-    userId: string;
-    /**
-     * @since Added in 2.21.0
-     */
-    username?: string;
-    createdAt: Date;
-    modifiedAt: Date;
-    accessedAt: Date;
-    actId?: string;
-    actRunId?: string;
-    stats?: KeyValueStoreStats;
-    /**
-     * @since Added in 2.12.2
-     */
-    generalAccess?: STORAGE_GENERAL_ACCESS | null;
-    /**
-     * @since Added in 2.13.0
-     */
-    urlSigningSecretKey?: string | null;
-    /**
-     * @since Added in 2.13.0
-     */
-    keysPublicUrl: string;
-}
-
-/**
- * Statistics about Key-Value Store usage and storage.
- */
-export interface KeyValueStoreStats {
-    readCount?: number;
-    writeCount?: number;
-    deleteCount?: number;
-    listCount?: number;
-    storageBytes?: number;
-}
-
-/**
  * Options for updating a Key-Value Store.
  */
 export interface KeyValueClientUpdateOptions {
@@ -606,32 +562,6 @@ export interface KeyValueClientListKeysOptions {
  */
 export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientListKeysOptions, 'signature'> {
     expiresInSecs?: number;
-}
-
-/**
- * Result of listing keys in a Key-Value Store.
- *
- * Contains paginated list of keys with metadata and pagination information.
- */
-export interface KeyValueClientListKeysResult {
-    count: number;
-    limit: number;
-    exclusiveStartKey: string;
-    isTruncated: boolean;
-    nextExclusiveStartKey: string;
-    items: KeyValueListItem[];
-}
-
-/**
- * Metadata about a single key in a Key-Value Store.
- */
-export interface KeyValueListItem {
-    key: string;
-    size: number;
-    /**
-     * @since Added in 2.15.1
-     */
-    recordPublicUrl: string;
 }
 
 /**
