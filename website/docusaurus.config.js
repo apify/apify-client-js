@@ -86,6 +86,7 @@ module.exports = {
             ({
                 docs: {
                     path: '../docs',
+                    exclude: ['public-api/**'],
                     sidebarPath: './sidebars.js',
                     rehypePlugins: [externalLinkProcessor],
                     editUrl: 'https://github.com/apify/apify-client-js/edit/master/website/',
