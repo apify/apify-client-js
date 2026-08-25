@@ -60,6 +60,8 @@
         "tsc-check-tests": "tsc --noEmit --project test/tsconfig.json",
         "format": "oxfmt",
         "format:check": "oxfmt --check",
+        "api:extract": "pnpm build && pnpm dlx github:apify/api-extractor-report --packages=. --extract-command='pnpm api:extract'",
+        "api:check": "pnpm dlx github:apify/api-extractor-report --packages=. --extract-command='pnpm api:extract' --verify",
         "build:node": "tsc",
         "build:browser": "rsbuild build"
     },
