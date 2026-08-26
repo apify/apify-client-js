@@ -60,6 +60,8 @@
         "tsc-check-tests": "tsc --noEmit --project test/tsconfig.json",
         "format": "oxfmt",
         "format:check": "oxfmt --check",
+        "api:extract": "pnpm build && pnpm dlx github:apify/api-extractor-report --packages=. --extract-command='pnpm api:extract'",
+        "api:check": "pnpm dlx github:apify/api-extractor-report --packages=. --extract-command='pnpm api:extract' --verify",
         "build:node": "tsc",
         "build:browser": "rsbuild build"
     },
@@ -96,7 +98,7 @@
         "esbuild": "0.28.2",
         "express": "^5.0.0",
         "gen-esm-wrapper": "^1.1.2",
-        "oxfmt": "0.64.0",
+        "oxfmt": "0.65.0",
         "oxlint": "1.79.0",
         "oxlint-tsgolint": "7.0.2001",
         "puppeteer": "^25.0.0",
