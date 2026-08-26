@@ -2,3 +2,5 @@
 
 /docs/**/*.md @szaganek
 /docs/**/*.mdx @szaganek
+# exclude public-api reports from technical writer checks
+/docs/public-api/*.md
