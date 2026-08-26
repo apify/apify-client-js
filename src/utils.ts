@@ -408,3 +408,22 @@ export const mutuallyExclusive =
             message: `At most one of the following fields is allowed: ${keys.join(', ')}`,
         };
     };
+
+/**
+ * Percent-encodes a caller-supplied URL path segment so it cannot restructure the request path.
+ *
+ * Empty strings and dot segments are rejected instead of encoded, because URL parsers resolve
+ * dot segments after decoding - `records/%2E%2E` collapses to the parent endpoint just like `records/..`.
+ */
+export function toPathSegment(value: string): string {
+    ow(value, 'pathSegment', ow.string.nonEmpty.not.oneOf(['.', '..']));
+    return encodeURIComponent(value);
+}
+
+/**
+ * Builds a URL path from segments. A plain string is used as-is, so literal paths such as
+ * `requests/batch` keep their separators; an array has each of its segments encoded individually.
+ */
+export function toPath(path: string | string[]): string {
+    return Array.isArray(path) ? path.map(toPathSegment).join('/') : path;
+}
