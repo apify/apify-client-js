@@ -72,6 +72,30 @@ describe('User methods', () => {
             validateRequest({ query: {}, params: { userId } });
         });
 
+        test('monthlyUsage() converts the date fields to Date', async () => {
+            const body = {
+                data: {
+                    usageCycle: { startAt: '2026-08-01T00:00:00.000Z', endAt: '2026-08-31T23:59:59.999Z' },
+                    dailyServiceUsages: [
+                        { date: '2026-08-03T00:00:00.000Z', serviceUsage: {}, totalUsageCreditsUsd: 1 },
+                    ],
+                },
+            };
+            mockServer.setResponse({ body });
+
+            try {
+                const res = await client.user('some-id').monthlyUsage();
+                // `date` does not end in `At`, so the conversion rests on the matcher the method passes.
+                // Typed as `Date` rather than inferred, so a regression to the wire `string` fails the
+                // type check as well as the assertion.
+                const date: Date | undefined = res?.dailyServiceUsages[0].date;
+                expect(date).toBeInstanceOf(Date);
+                expect(res?.usageCycle.startAt).toBeInstanceOf(Date);
+            } finally {
+                mockServer.setResponse(null);
+            }
+        });
+
         test('limits() works', async () => {
             const userId = 'some-id';
 

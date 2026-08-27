@@ -6,7 +6,7 @@ export const users = express.Router();
 
 const ROUTES: MockServerRoute[] = [
     { id: 'get-user', method: 'GET', path: '/:userId' },
-    { id: 'get-monthly-usage', method: 'GET', path: '/:userId/usage/monthly' },
+    { id: 'get-monthly-usage', method: 'GET', path: '/:userId/usage/monthly', type: 'responseJsonMock' },
     { id: 'get-limits', method: 'GET', path: '/:userId/limits' },
     { id: 'update-limits', method: 'PUT', path: '/:userId/limits' },
 ];

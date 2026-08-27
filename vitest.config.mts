@@ -15,7 +15,8 @@ export default defineConfig({
                 extends: true,
                 test: {
                     name: 'unit',
-                    include: ['test/**/*.test.{js,ts}'],
+                    // `.mts` is here for tests that import the maintainer scripts in `scripts/`, which are ESM.
+                    include: ['test/**/*.test.{js,ts,mts}'],
                     exclude: [...configDefaults.exclude, 'test/integration/**'],
                     globals: true,
                     environment: 'node',

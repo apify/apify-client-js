@@ -2,9 +2,11 @@ import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
+import type { ActorStoreList } from '../models';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
 import { paginationOptionsShape, parseArgument } from '../utils';
-import type { ActorStats } from './actor';
+
+export type { ActorStoreList, PricingInfo } from '../models';
 
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
@@ -73,37 +75,6 @@ export class StoreCollectionClient extends ResourceCollectionClient {
 
         return this._listPaginated(parsed);
     }
-}
-
-/**
- * @since Added in 2.7.2
- */
-export interface PricingInfo {
-    pricingModel: string;
-}
-
-/**
- * @since Added in 2.7.2
- */
-export interface ActorStoreList {
-    id: string;
-    name: string;
-    username: string;
-    title?: string;
-    description?: string;
-    stats: ActorStats;
-    currentPricingInfo: PricingInfo;
-    pictureUrl?: string;
-    userPictureUrl?: string;
-    /**
-     * @since Added in 2.8.6
-     */
-    url: string;
-    /**
-     * A brief, LLM-generated readme summary
-     * @since Added in 2.22.1
-     */
-    readmeSummary?: string;
 }
 
 /**

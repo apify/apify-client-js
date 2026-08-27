@@ -1,7 +1,7 @@
 import { defineConfig } from '@apify/oxlint-config';
 
 export default defineConfig({
-    ignorePatterns: ['**/node_modules', '**/dist', 'coverage', 'website', '**/*.d.ts'],
+    ignorePatterns: ['**/node_modules', '**/dist', 'coverage', 'website', '**/*.d.ts', 'src/generated'],
     rules: {
         'typescript/no-explicit-any': 'off',
         'consistent-return': 'off',
@@ -15,6 +15,13 @@ export default defineConfig({
             rules: {
                 'no-console': 'off',
                 'import/no-default-export': 'off',
+            },
+        },
+        {
+            // Maintainer-facing CLI scripts, so reporting progress on stdout is the point.
+            files: ['scripts/**'],
+            rules: {
+                'no-console': 'off',
             },
         },
         {

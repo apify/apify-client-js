@@ -58,22 +58,36 @@ describe('utils.parseDateFields()', () => {
         const original = {
             data: {
                 foo: [
-                    { fooAt: date, barat: date, tooDeep: { fooAt: date } },
-                    { fooAt: date, barat: date, tooDeep: { fooAt: date } },
+                    { fooAt: date, barat: date, deep: { fooAt: date, tooDeep: { fooAt: date } } },
+                    { fooAt: date, barat: date, deep: { fooAt: date, tooDeep: { fooAt: date } } },
                 ],
             },
         };
 
         const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(original))) as utils.Dictionary<any>;
 
-        expect(parsed.data.foo[0].fooAt).toBeInstanceOf(Date);
-        expect(typeof parsed.data.foo[0].barat).toBe('string');
-        expect(typeof parsed.data.foo[0].tooDeep.fooAt).toBe('string');
-        expect(parsed.data.foo[0].fooAt).toEqual(date);
-        expect(parsed.data.foo[1].fooAt).toBeInstanceOf(Date);
-        expect(typeof parsed.data.foo[1].barat).toBe('string');
-        expect(typeof parsed.data.foo[1].tooDeep.fooAt).toBe('string');
-        expect(parsed.data.foo[1].fooAt).toEqual(date);
+        for (const item of parsed.data.foo) {
+            expect(item.fooAt).toBeInstanceOf(Date);
+            expect(typeof item.barat).toBe('string');
+            expect(item.fooAt).toEqual(date);
+            expect(item.deep.fooAt).toBeInstanceOf(Date);
+            expect(typeof item.deep.tooDeep.fooAt).toBe('string');
+        }
+    });
+
+    test('converts dates nested in an array of a list response item', () => {
+        const date = new Date('2019-12-12T07:34:14.202Z');
+        const listResponse = {
+            total: 1,
+            items: [{ id: 'a', createdAt: date, calls: [{ startedAt: date, finishedAt: date }] }],
+        };
+
+        const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(listResponse))) as utils.Dictionary<any>;
+
+        expect(parsed.items[0].createdAt).toBeInstanceOf(Date);
+        expect(parsed.items[0].calls[0].startedAt).toBeInstanceOf(Date);
+        expect(parsed.items[0].calls[0].finishedAt).toBeInstanceOf(Date);
+        expect(parsed.items[0].calls[0].startedAt).toEqual(date);
     });
 
     test('does not parse falsy values', () => {

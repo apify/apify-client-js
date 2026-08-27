@@ -1,14 +1,13 @@
 import { z } from 'zod';
 
-import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 import { ACTOR_JOB_STATUSES, ACTOR_PERMISSION_LEVEL, META_ORIGINS } from '@apify/consts';
 import { Log } from '@apify/log';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
+import type { Actor, ActorRun } from '../models';
 import { anyObjectSchema, cast, parseArgument, parseDateFields, pluckData, stringifyWebhooksToBase64 } from '../utils';
-import type { ActorVersion } from './actor_version';
 import { ActorVersionClient } from './actor_version';
 import { ActorVersionCollectionClient } from './actor_version_collection';
 import type { Build, BuildClientGetOptions } from './build';
@@ -60,6 +59,36 @@ const lastRunOptionsSchema = z.strictObject({
     status: z.enum(ACTOR_JOB_STATUSES).optional(),
     origin: z.enum(META_ORIGINS).optional(),
 });
+
+export type {
+    Actor,
+    ActorChargeEvent,
+    ActorChargeEvents,
+    ActorDefaultRunOptions,
+    ActorDefinition,
+    ActorExampleRunInput,
+    ActorRun,
+    ActorRunListItem,
+    ActorRunMeta,
+    ActorRunMetamorph,
+    ActorRunOptions,
+    ActorRunPricingInfo,
+    ActorRunStats,
+    ActorRunStorageIds,
+    ActorRunUsage,
+    ActorStandby,
+    ActorStats,
+    ActorTaggedBuild,
+    ActorTaggedBuilds,
+    FlatPricePerMonthActorPricingInfo,
+    FreeActorPricingInfo,
+    PricePerDatasetItemActorPricingInfo,
+    PricePerEventActorPricingInfo,
+    TieredPricingPerDatasetItem,
+    TieredPricingPerDatasetItemEntry,
+    TieredPricingPerEvent,
+    TieredPricingPerEventEntry,
+} from '../models';
 
 /**
  * Client for managing a specific Actor.
@@ -503,146 +532,6 @@ export class ActorClient extends ResourceClient {
 }
 
 /**
- * Represents an Actor in the Apify platform.
- *
- * Actors are serverless computing units that can perform arbitrary tasks such as web scraping,
- * data processing, automation, and more. Each Actor has versions, builds, and can be executed
- * with different configurations.
- */
-export interface Actor {
-    /** Unique Actor ID */
-    id: string;
-    /** ID of the user who owns the Actor */
-    userId: string;
-    /** Unique name of the Actor (used in API paths, e.g., 'my-actor') */
-    name: string;
-    /** Username of the Actor's owner */
-    username: string;
-    /** Detailed description of what the Actor does */
-    description?: string;
-    /** @deprecated Use defaultRunOptions.restartOnError instead */
-    restartOnError?: boolean;
-    /** Whether the Actor is publicly available in Apify Store */
-    isPublic: boolean;
-    /** Whether the Actor can be run by anonymous users without authentication */
-    isAnonymouslyRunnable?: boolean;
-    /** Timestamp when the Actor was created */
-    createdAt: Date;
-    /** Timestamp when the Actor was last modified */
-    modifiedAt: Date;
-    /** Usage and run statistics for the Actor */
-    stats: ActorStats;
-    /** All versions of this Actor */
-    versions: ActorVersion[];
-    /**
-     * Pricing information for pay-per-result or pay-per-event Actors
-     * @since Added in 2.12.4
-     */
-    pricingInfos?: ActorRunPricingInfo[];
-    /** Default configuration options for Actor runs */
-    defaultRunOptions: ActorDefaultRunOptions;
-    /** Example input to help users understand how to use the Actor */
-    exampleRunInput?: ActorExampleRunInput;
-    /** Whether the Actor is deprecated and should not be used */
-    isDeprecated?: boolean;
-    /** Deployment key used for automated deployments */
-    deploymentKey: string;
-    /** Human-readable title of the Actor (displayed in UI) */
-    title?: string;
-    /** Mapping of tags to specific builds (e.g., 'latest', 'beta') */
-    taggedBuilds?: ActorTaggedBuilds;
-    /**
-     * SEO-optimized title for the Actor's public page
-     * @since Added in 2.6.1
-     */
-    seoTitle?: string;
-    /**
-     * SEO-optimized description for the Actor's public page
-     * @since Added in 2.6.1
-     */
-    seoDescription?: string;
-    /**
-     * Categories the Actor belongs to (e.g., 'ECOMMERCE', 'SCRAPING')
-     * @since Added in 2.6.1
-     */
-    categories?: string[];
-    /**
-     * Standby mode configuration for keeping Actor warm and responsive
-     * @since Added in 2.9.5
-     */
-    actorStandby?: ActorStandby & {
-        isEnabled: boolean;
-    };
-    /**
-     * Permission level of the Actor on Apify platform
-     * @since Added in 2.21.0
-     */
-    actorPermissionLevel: ACTOR_PERMISSION_LEVEL;
-    /**
-     * A brief, LLM-generated readme summary
-     * @since Added in 2.22.1
-     */
-    readmeSummary?: string;
-}
-
-/**
- * Statistics about Actor usage and activity.
- */
-export interface ActorStats {
-    /** Total number of builds created for this Actor */
-    totalBuilds: number;
-    /** Total number of times this Actor has been run */
-    totalRuns: number;
-    /** Total number of unique users who have run this Actor */
-    totalUsers: number;
-    /** Number of unique users in the last 7 days */
-    totalUsers7Days: number;
-    /** Number of unique users in the last 30 days */
-    totalUsers30Days: number;
-    /** Number of unique users in the last 90 days */
-    totalUsers90Days: number;
-    /** Total number of times this Actor was used via metamorph */
-    totalMetamorphs: number;
-    /** Timestamp when the last run was started */
-    lastRunStartedAt: Date;
-}
-
-/**
- * Default configuration options for Actor runs.
- */
-export interface ActorDefaultRunOptions {
-    build: string;
-    timeoutSecs: number;
-    memoryMbytes: number;
-    /**
-     * @since Added in 2.19.0
-     */
-    restartOnError?: boolean;
-}
-
-/**
- * Example input data to demonstrate Actor usage.
- */
-export interface ActorExampleRunInput {
-    body: string;
-    contentType: string;
-}
-
-/**
- * Mapping of build tags (e.g., 'latest', 'beta') to their corresponding build information.
- */
-export type ActorTaggedBuilds = Record<string, ActorTaggedBuild>;
-
-/**
- * Information about a specific tagged build.
- */
-export interface ActorTaggedBuild {
-    buildId?: string;
-    buildNumber?: string;
-    finishedAt?: Date;
-}
-
-/**
  * Fields that can be updated when modifying an Actor.
  */
 export type ActorUpdateOptions = Partial<
@@ -664,29 +553,6 @@ export type ActorUpdateOptions = Partial<
         | 'taggedBuilds'
     >
 >;
-
-/**
- * Configuration for Actor standby mode.
- *
- * Standby mode keeps Actor containers warm and ready to process requests with minimal latency.
- * This is useful for Actors that need to respond quickly to incoming requests.
- * @since Added in 2.9.5
- */
-export interface ActorStandby {
-    build?: string;
-    desiredRequestsPerActorRun?: number;
-    /**
-     * @since Added in 2.22.0
-     */
-    disableStandbyFieldsOverride?: boolean;
-    idleTimeoutSecs?: number;
-    maxRequestsPerActorRun?: number;
-    memoryMbytes?: number;
-    /**
-     * @since Added in 2.22.0
-     */
-    shouldPassActorInput?: boolean;
-}
 
 export interface ActorStartOptions {
     /**
@@ -786,185 +652,6 @@ export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish
 }
 
 /**
- * Simplified Actor run information used in list results.
- *
- * Contains basic information about a run without detailed statistics.
- * @since Added in 2.7.0
- */
-export interface ActorRunListItem {
-    id: string;
-    actId: string;
-    actorTaskId?: string;
-    startedAt: Date;
-    finishedAt: Date;
-    status: (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES];
-    meta: ActorRunMeta;
-    buildId: string;
-    buildNumber: string;
-    defaultKeyValueStoreId: string;
-    defaultDatasetId: string;
-    /**
-     * @since Added in 2.6.1
-     */
-    defaultRequestQueueId: string;
-    /**
-     * @since Added in 2.7.2
-     */
-    usageTotalUsd?: number;
-}
-
-/**
- * @since Added in 2.22.3
- */
-export interface ActorRunStorageIds {
-    /** Aliased dataset IDs for this run. */
-    datasets: { default: string; [alias: string]: string };
-    /** Aliased key-value store IDs for this run. */
-    keyValueStores: { default: string; [alias: string]: string };
-    /** Aliased request queue IDs for this run. */
-    requestQueues: { default: string; [alias: string]: string };
-}
-
-/**
- * Complete Actor run information including statistics and usage details.
- *
- * Represents a single execution of an Actor with all its configuration, status,
- * and resource usage information.
- */
-export interface ActorRun extends ActorRunListItem {
-    userId: string;
-    /**
-     * @since Added in 2.6.0
-     */
-    statusMessage?: string;
-    stats: ActorRunStats;
-    options: ActorRunOptions;
-    exitCode?: number;
-    containerUrl: string;
-    /**
-     * @since Added in 2.7.0
-     */
-    isContainerServerReady?: boolean;
-    /**
-     * @since Added in 2.7.0
-     */
-    gitBranchName?: string;
-    /**
-     * @since Added in 2.7.0
-     */
-    usage?: ActorRunUsage;
-    /**
-     * @since Added in 2.7.2
-     */
-    usageUsd?: ActorRunUsage;
-    /**
-     * @since Added in 2.11.1
-     */
-    pricingInfo?: ActorRunPricingInfo;
-    /**
-     * @since Added in 2.11.1
-     */
-    chargedEventCounts?: Record<string, number>;
-    /**
-     * @since Added in 2.12.2
-     */
-    generalAccess?: RUN_GENERAL_ACCESS | null;
-    /**
-     * @since Added in 2.22.3
-     */
-    storageIds?: ActorRunStorageIds;
-}
-
-/**
- * Resource usage metrics for an Actor run.
- *
- * All values represent the total consumption during the run's lifetime.
- * @since Added in 2.7.0
- */
-export interface ActorRunUsage {
-    /** Compute units consumed (combines CPU and memory usage over time) */
-    ACTOR_COMPUTE_UNITS?: number;
-    /** Number of Dataset read operations */
-    DATASET_READS?: number;
-    /** Number of Dataset write operations */
-    DATASET_WRITES?: number;
-    /** Number of key-value store read operations */
-    KEY_VALUE_STORE_READS?: number;
-    /** Number of key-value store write operations */
-    KEY_VALUE_STORE_WRITES?: number;
-    /** Number of key-value store list operations */
-    KEY_VALUE_STORE_LISTS?: number;
-    /** Number of Request queue read operations */
-    REQUEST_QUEUE_READS?: number;
-    /** Number of Request queue write operations */
-    REQUEST_QUEUE_WRITES?: number;
-    /** Internal data transfer within Apify platform (in gigabytes) */
-    DATA_TRANSFER_INTERNAL_GBYTES?: number;
-    /** External data transfer to/from internet (in gigabytes) */
-    DATA_TRANSFER_EXTERNAL_GBYTES?: number;
-    /** Residential proxy data transfer (in gigabytes) */
-    PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number;
-    /** Number of SERP (Search Engine Results Page) proxy requests */
-    PROXY_SERPS?: number;
-}
-
-/**
- * Metadata about how an Actor run was initiated.
- */
-export interface ActorRunMeta {
-    origin: string;
-    clientIp?: string;
-    userAgent: string;
-}
-
-/**
- * Runtime statistics for an Actor run.
- *
- * Provides detailed metrics about resource consumption and performance during the run.
- */
-export interface ActorRunStats {
-    inputBodyLen: number;
-    restartCount: number;
-    resurrectCount: number;
-    memAvgBytes: number;
-    memMaxBytes: number;
-    memCurrentBytes: number;
-    cpuAvgUsage: number;
-    cpuMaxUsage: number;
-    cpuCurrentUsage: number;
-    netRxBytes: number;
-    netTxBytes: number;
-    durationMillis: number;
-    runTimeSecs: number;
-    metamorph: number;
-    computeUnits: number;
-}
-
-/**
- * Configuration options used for an Actor run.
- *
- * These are the actual options that were applied to the run (may differ from requested options).
- */
-export interface ActorRunOptions {
-    build: string;
-    timeoutSecs: number;
-    memoryMbytes: number;
-    diskMbytes: number;
-    /**
-     * @since Added in 2.20.0
-     */
-    maxItems?: number;
-    /**
-     * @since Added in 2.11.1
-     */
-    maxTotalChargeUsd?: number;
-    /**
-     * @since Added in 2.19.0
-     */
-    restartOnError?: boolean;
-}
-
-/**
  * Options for validating an Actor input.
  * @since Added in 2.24.0
  */
@@ -1004,124 +691,3 @@ export interface ActorLastRunOptions {
      */
     origin?: ValueOf<typeof META_ORIGINS>;
 }
-
-/**
- * Actor definition from the `.actor/actor.json` file.
- *
- * Contains the Actor's configuration, input schema, and other metadata.
- * @see https://docs.apify.com/platform/actors/development/actor-definition/actor-json
- * @since Added in 2.11.0
- */
-export interface ActorDefinition {
-    actorSpecification: number;
-    name: string;
-    version: string;
-    buildTag?: string;
-    environmentVariables?: Record<string, string>;
-    dockerfile?: string;
-    dockerContextDir?: string;
-    readme?: string | null;
-    /**
-     * Input schema for the Actor.
-     * @see https://docs.apify.com/platform/actors/development/actor-definition/input-schema
-     */
-    input?: object | null;
-    /**
-     * Output schema for the Actor.
-     * @see https://docs.apify.com/platform/actors/development/actor-definition/output-schema
-     * @since Added in 2.23.0
-     */
-    output?: object | null;
-    changelog?: string | null;
-    storages?: {
-        dataset?: object;
-    };
-    minMemoryMbytes?: number;
-    maxMemoryMbytes?: number;
-    usesStandbyMode?: boolean;
-}
-
-interface CommonActorPricingInfo {
-    /** In [0, 1], fraction of pricePerUnitUsd that goes to Apify */
-    apifyMarginPercentage: number;
-    /** When this pricing info record has been created */
-    createdAt: Date;
-    /** Since when is this pricing info record effective for a given Actor */
-    startedAt: Date;
-    notifiedAboutFutureChangeAt?: Date;
-    notifiedAboutChangeAt?: Date;
-    reasonForChange?: string;
-}
-
-/**
- * Pricing information for free Actors.
- * @since Added in 2.11.1
- */
-export interface FreeActorPricingInfo extends CommonActorPricingInfo {
-    pricingModel: 'FREE';
-}
-
-/**
- * Pricing information for Actors with a flat monthly subscription fee.
- * @since Added in 2.11.1
- */
-export interface FlatPricePerMonthActorPricingInfo extends CommonActorPricingInfo {
-    pricingModel: 'FLAT_PRICE_PER_MONTH';
-    /** For how long this Actor can be used for free in trial period */
-    trialMinutes?: number;
-    /** Monthly flat price in USD */
-    pricePerUnitUsd: number;
-}
-
-/**
- * Pricing information for pay-per-result Actors.
- *
- * These Actors charge based on the number of items saved to the dataset.
- * @since Added in 2.11.1
- */
-export interface PricePerDatasetItemActorPricingInfo extends CommonActorPricingInfo {
-    pricingModel: 'PRICE_PER_DATASET_ITEM';
-    /** Name of the unit that is being charged */
-    unitName?: string;
-    pricePerUnitUsd: number;
-}
-
-/**
- * Definition of a chargeable event for pay-per-event Actors.
- * @since Added in 2.11.1
- */
-export interface ActorChargeEvent {
-    eventPriceUsd: number;
-    eventTitle: string;
-    eventDescription?: string;
-}
-
-/**
- * Mapping of event names to their pricing information.
- * @since Added in 2.11.1
- */
-export type ActorChargeEvents = Record<string, ActorChargeEvent>;
-
-/**
- * Pricing information for pay-per-event Actors.
- *
- * These Actors charge based on specific events (e.g., emails sent, API calls made).
- * @since Added in 2.11.1
- */
-export interface PricePerEventActorPricingInfo extends CommonActorPricingInfo {
-    pricingModel: 'PAY_PER_EVENT';
-    pricingPerEvent: {
-        actorChargeEvents: ActorChargeEvents;
-    };
-    minimalMaxTotalChargeUsd?: number;
-}
-
-/**
- * Union type representing all possible Actor pricing models.
- * @since Added in 2.11.1
- */
-export type ActorRunPricingInfo =
-    | PricePerEventActorPricingInfo
-    | PricePerDatasetItemActorPricingInfo
-    | FlatPricePerMonthActorPricingInfo
-    | FreeActorPricingInfo;

@@ -1,15 +1,15 @@
 import { z } from 'zod';
 
-import type { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
-
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import type { Build } from '../models';
 import { cast, parseArgument, parseDateFields, pluckData } from '../utils';
-import type { ActorDefinition } from './actor';
 import { LogClient } from './log';
 
 const getOptionsSchema = z.strictObject({ waitForFinish: z.number().optional() });
 const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional() });
+
+export type { Build, BuildMeta, BuildOptions, BuildStats, BuildUsage } from '../models';
 
 /**
  * Client for managing a specific Actor build.
@@ -195,85 +195,6 @@ export interface BuildClientWaitForFinishOptions {
      * status `READY` or `RUNNING`. If `waitSecs` omitted, the function waits indefinitely.
      */
     waitSecs?: number;
-}
-
-/**
- * Metadata about how a Build was initiated.
- */
-export interface BuildMeta {
-    origin: string;
-    clientIp: string;
-    userAgent: string;
-}
-
-/**
- * Represents an Actor build.
- *
- * Builds compile Actor source code and prepare it for execution. Each build has a unique ID
- * and can be tagged (e.g., 'latest', 'beta') for easy reference.
- */
-export interface Build {
-    id: string;
-    actId: string;
-    userId: string;
-    startedAt: Date;
-    finishedAt?: Date;
-    status: (typeof ACT_JOB_TERMINAL_STATUSES)[number];
-    meta: BuildMeta;
-    stats?: BuildStats;
-    options?: BuildOptions;
-    /**
-     * @deprecated This property is deprecated in favor of `actorDefinition.input`.
-     */
-    inputSchema?: string;
-    /**
-     * @deprecated This property is deprecated in favor of `actorDefinition.readme`.
-     */
-    readme?: string;
-    buildNumber: string;
-    /**
-     * @since Added in 2.7.2
-     */
-    usage?: BuildUsage;
-    /**
-     * @since Added in 2.7.2
-     */
-    usageTotalUsd?: number;
-    /**
-     * @since Added in 2.7.2
-     */
-    usageUsd?: BuildUsage;
-    /**
-     * @since Added in 2.11.0
-     */
-    actorDefinition?: ActorDefinition;
-}
-
-/**
- * Resource usage for an Actor build.
- * @since Added in 2.7.2
- */
-export interface BuildUsage {
-    ACTOR_COMPUTE_UNITS?: number;
-}
-
-/**
- * Runtime statistics for an Actor build.
- */
-export interface BuildStats {
-    durationMillis: number;
-    runTimeSecs: number;
-    computeUnits: number;
-}
-
-/**
- * Configuration options used for an Actor build.
- */
-export interface BuildOptions {
-    useCache?: boolean;
-    betaPackages?: boolean;
-    memoryMbytes?: number;
-    diskMbytes?: number;
 }
 
 /**

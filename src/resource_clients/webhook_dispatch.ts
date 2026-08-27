@@ -1,6 +1,14 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
-import type { Webhook, WebhookEventType } from './webhook';
+import type { WebhookDispatch } from '../models';
+
+export type {
+    WebhookDispatch,
+    WebhookDispatchCall,
+    WebhookDispatchEventData,
+    WebhookDispatchWebhookSummary,
+} from '../models';
+export { WebhookDispatchStatus } from '../models';
 
 /**
  * Client for managing a specific webhook dispatch.
@@ -40,43 +48,4 @@ export class WebhookDispatchClient extends ResourceClient {
     async get(): Promise<WebhookDispatch | undefined> {
         return this._get();
     }
-}
-
-export interface WebhookDispatch {
-    id: string;
-    userId: string;
-    webhookId: string;
-    createdAt: Date;
-    status: WebhookDispatchStatus;
-    eventType: WebhookEventType;
-    calls: WebhookDispatchCall[];
-    webhook: Pick<Webhook, 'requestUrl' | 'isAdHoc'>;
-    /**
-     * @since Added in 2.13.0
-     */
-    eventData: WebhookDispatchEventData | null;
-}
-
-export enum WebhookDispatchStatus {
-    Active = 'ACTIVE',
-    Succeeded = 'SUCCEEDED',
-    Failed = 'FAILED',
-}
-
-export interface WebhookDispatchCall {
-    startedAt: Date;
-    finishedAt: Date;
-    errorMessage: string | null;
-    responseStatus: number | null;
-    responseBody: string | null;
-}
-
-/**
- * @since Added in 2.13.0
- */
-export interface WebhookDispatchEventData {
-    actorRunId?: string;
-    actorId?: string;
-    actorTaskId?: string;
-    actorBuildId?: string;
 }

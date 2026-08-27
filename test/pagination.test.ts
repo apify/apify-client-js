@@ -361,6 +361,28 @@ describe('KeyValueStoreClient.listKeys as async iterable', () => {
             mockedClient.mockRestore();
         }
     } as any);
+
+    test('stops when the API omits nextExclusiveStartKey instead of sending null', async () => {
+        // An omitted key would leave `exclusiveStartKey` undefined on the next request, so the listing
+        // would restart from the first page and iterate forever. The mock refuses a second page rather
+        // than answering one, so a regression reports that instead of running the worker out of memory.
+        const mockedClient = vi.spyOn(client.httpClient, 'call').mockImplementation((async () => {
+            if (mockedClient.mock.calls.length > 1) throw new Error('listKeys asked for a page it should not need');
+
+            return { data: { data: { items: range(0, 3), count: 3, limit: maxItemsPerPage, isTruncated: false } } };
+        }) as any);
+
+        try {
+            const items = [];
+            for await (const item of client.keyValueStore('some-id').listKeys()) {
+                items.push(item);
+            }
+            expect(items).toEqual(range(0, 3));
+            expect(mockedClient).toHaveBeenCalledTimes(1);
+        } finally {
+            mockedClient.mockRestore();
+        }
+    });
 });
 
 describe('RequestQueueClient.listKeys as async iterable', () => {
