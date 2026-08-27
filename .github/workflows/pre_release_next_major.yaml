@@ -1,0 +1,39 @@
+name: Create a next major pre-release
+
+on:
+    # Push to v3 will deploy a beta version of the next major (3.0.0-beta.N)
+    # under the next-v3 dist-tag. Unlike the pre-releases from master, this
+    # produces no changelog and no commit on the branch.
+    push:
+        branches:
+            - v3
+        tags-ignore:
+            - '**' # Ignore all tags to prevent duplicate builds when tags are pushed.
+
+concurrency:
+    group: release
+    cancel-in-progress: false
+
+jobs:
+    wait_for_checks:
+        if: "!startsWith(github.event.head_commit.message, 'docs') && !startsWith(github.event.head_commit.message, 'ci') && startsWith(github.repository, 'apify/')"
+        name: Wait for code checks to pass
+        runs-on: ubuntu-latest
+        steps:
+            - uses: lewagon/wait-on-check-action@369769072fe522a3a8a85c03c96af1e5242a1994 # v1.9.1
+              with:
+                  ref: ${{ github.ref }}
+                  repo-token: ${{ secrets.GITHUB_TOKEN }}
+                  check-regexp: (Build & Test .*|Lint|Docs build)
+                  wait-interval: 5
+
+    publish_to_npm:
+        needs: [wait_for_checks]
+        name: Publish to NPM
+        runs-on: ubuntu-latest
+        steps:
+            - name: Execute publish workflow
+              uses: apify/actions/execute-workflow@v1.4.1
+              with:
+                  workflow: publish_to_npm.yaml
+                  inputs: '{ "ref": "${{ github.sha }}", "tag": "next-v3" }'

@@ -9,28 +9,55 @@ const PKG_JSON_PATH = path.join(__dirname, '..', '..', 'package.json');
 const pkgJson = require(PKG_JSON_PATH);
 
 const PACKAGE_NAME = pkgJson.name;
-const VERSION = pkgJson.version;
 
-const nextVersion = addBetaSuffixToVersion(VERSION);
+// The npm dist-tag we publish to is passed as the first CLI argument. A tag
+// ending in `v<major>` (e.g. `next-v3`) marks a pre-major release line:
+// package.json stays on the current major (2.x) and we publish betas of the
+// *next* major (3.0.0-beta.N) under that tag. (The tag isn't a bare `v3`
+// because npm refuses dist-tags that parse as a semver range.)
+// The `rc` tag works the same way but publishes release candidates of the
+// next major (e.g. 3.0.0-rc.N).
+const distTag = process.argv[2];
+const premajorMatch = /v(\d+)$/.exec(distTag ?? '');
+const premajor = premajorMatch ? Number(premajorMatch[1]) : null;
+const preid = distTag === 'rc' ? 'rc' : 'beta';
+
+const nextVersion = computeNextPrereleaseVersion(pkgJson.version, premajor);
 console.log(`before-deploy: Setting version to ${nextVersion}`);
 pkgJson.version = nextVersion;
 
 fs.writeFileSync(PKG_JSON_PATH, `${JSON.stringify(pkgJson, null, 2)}\n`);
 
-function addBetaSuffixToVersion(version) {
-    const versionString = execSync(`npm show ${PACKAGE_NAME} versions --json`, { encoding: 'utf8' });
-    const versions = JSON.parse(versionString);
+function computeNextPrereleaseVersion(version, premajorVersion) {
+    const versionsString = execSync(`npm show ${PACKAGE_NAME} versions --json`, { encoding: 'utf8' });
+    const versions = JSON.parse(versionsString);
 
-    if (versions.some((v) => v === version)) {
+    let base = version;
+
+    if (distTag === 'rc') {
+        // Release candidates of the next major: package.json stays on the
+        // current major (e.g. 2.25.1) and we publish 3.0.0-rc.N.
+        const [major] = base.split('.').map(Number);
+        base = `${major + 1}.0.0`;
+    } else if (premajorVersion !== null) {
+        // Pre-major release line: keep package.json on the current major and
+        // publish betas of the next major (e.g. 2.25.1 -> 3.0.0-beta.N). Only
+        // the -beta.N suffix advances between publishes.
+        base = `${premajorVersion}.0.0`;
+    } else if (versions.some((v) => v === base)) {
         console.error(
-            `before-deploy: A release with version ${version} already exists. Please increment version accordingly.`,
+            `before-deploy: A release with version ${base} already exists. Please increment version accordingly.`,
         );
         process.exit(1);
     }
 
+    // Only consider the same pre-release series, so the beta and rc counters
+    // advance independently (3.0.0-rc.N must not push 3.0.0-beta.N forward).
     const prereleaseNumbers = versions
-        .filter((v) => v.startsWith(version) && v.includes('-'))
-        .map((v) => Number(v.match(/\.(\d+)$/)[1]));
+        .filter((v) => v.startsWith(`${base}-${preid}.`))
+        .map((v) => Number(v.match(/\.(\d+)$/)?.[1]))
+        .filter((n) => !Number.isNaN(n));
     const lastPrereleaseNumber = Math.max(-1, ...prereleaseNumbers);
-    return `${version}-beta.${lastPrereleaseNumber + 1}`;
+
+    return `${base}-${preid}.${lastPrereleaseNumber + 1}`;
 }
