@@ -27,6 +27,7 @@ import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 import type { ValueOf } from 'type-fest';
 import type { WEBHOOK_EVENT_TYPES } from '@apify/consts';
+import type { z } from 'zod';
 
 // @public
 export interface AccountAndUsageLimits {
@@ -611,7 +612,7 @@ abstract class ApiClient {
     protected _params<T>(endpointParams?: T): Record<string, unknown>;
     publicBaseUrl: string;
     // (undocumented)
-    protected _publicUrl(path?: string): string;
+    protected _publicUrl(path?: string | string[]): string;
     // (undocumented)
     resourcePath: string;
     // (undocumented)
@@ -623,7 +624,7 @@ abstract class ApiClient {
     // (undocumented)
     url: string;
     // (undocumented)
-    protected _url(path?: string): string;
+    protected _url(path?: string | string[]): string;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -741,6 +742,12 @@ interface ApifyRequestConfig extends AxiosRequestConfig {
 interface ApifyResponse<T = any> extends AxiosResponse<T> {
     // (undocumented)
     config: ApifyRequestConfig & InternalAxiosRequestConfig;
+}
+
+// @public
+export class ArgumentValidationError extends Error {
+    constructor(error: z.ZodError, value: unknown, label?: string);
+    readonly issues: z.ZodError['issues'];
 }
 
 // @public (undocumented)
@@ -998,13 +1005,13 @@ export class DatasetClient<Data extends Record<string | number, any> = Record<st
 }
 
 // @public
-export interface DatasetClientCreateItemsUrlOptions extends DatasetClientListItemOptions {
+export interface DatasetClientCreateItemsUrlOptions extends Omit<DatasetClientListItemOptions, 'chunkSize' | 'signature'> {
     // (undocumented)
     expiresInSecs?: number;
 }
 
 // @public
-export interface DatasetClientDownloadItemsOptions extends DatasetClientListItemOptions {
+export interface DatasetClientDownloadItemsOptions extends Omit<DatasetClientListItemOptions, 'chunkSize'> {
     // (undocumented)
     attachment?: boolean;
     // (undocumented)
@@ -1256,7 +1263,7 @@ export class InvalidResponseBodyError extends Error {
 }
 
 // @public
-export interface KeyValueClientCreateKeysUrlOptions extends KeyValueClientListKeysOptions {
+export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientListKeysOptions, 'signature'> {
     // (undocumented)
     expiresInSecs?: number;
 }

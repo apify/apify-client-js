@@ -1,6 +1,7 @@
 import type { ApifyClient } from '../apify_client';
 import type { HttpClient } from '../http_client';
 import type { PaginatedResponse, PaginationOptions } from '../utils';
+import { toPath, toPathSegment } from '../utils';
 
 /** @private */
 export interface ApiClientOptions {
@@ -50,7 +51,7 @@ export abstract class ApiClient {
         this.baseUrl = baseUrl;
         this.publicBaseUrl = publicBaseUrl;
         this.resourcePath = resourcePath;
-        this.url = id ? `${baseUrl}/${resourcePath}/${this.safeId}` : `${baseUrl}/${resourcePath}`;
+        this.url = id ? `${baseUrl}/${resourcePath}/${toPathSegment(this.safeId!)}` : `${baseUrl}/${resourcePath}`;
         this.apifyClient = apifyClient;
         this.httpClient = httpClient;
         this.params = params;
@@ -67,15 +68,15 @@ export abstract class ApiClient {
         return { ...baseOptions, ...moreOptions } as BaseOptions & T;
     }
 
-    protected _url(path?: string): string {
-        return path ? `${this.url}/${path}` : this.url;
+    protected _url(path?: string | string[]): string {
+        return path ? `${this.url}/${toPath(path)}` : this.url;
     }
 
-    protected _publicUrl(path?: string): string {
+    protected _publicUrl(path?: string | string[]): string {
         const url = this.id
-            ? `${this.publicBaseUrl}/${this.resourcePath}/${this.safeId}`
+            ? `${this.publicBaseUrl}/${this.resourcePath}/${toPathSegment(this.safeId!)}`
             : `${this.publicBaseUrl}/${this.resourcePath}`;
-        return path ? `${url}/${path}` : url;
+        return path ? `${url}/${toPath(path)}` : url;
     }
 
     protected _params<T>(endpointParams?: T): Record<string, unknown> {
@@ -83,8 +84,7 @@ export abstract class ApiClient {
     }
 
     protected _toSafeId(id: string): string {
-        // The id has the format `username/actor-name`, so we only need to replace the first `/`.
-        return id.replace('/', '~');
+        return id.replaceAll('/', '~');
     }
 
     /**

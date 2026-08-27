@@ -518,7 +518,7 @@ export class RequestQueueClient extends ResourceClient {
     async getRequest(id: string): Promise<RequestQueueClientGetRequestResult | undefined> {
         parseArgument(id, requestIdSchema);
         const requestOpts: ApifyRequestConfig = {
-            url: this._url(`requests/${id}`),
+            url: this._url(['requests', id]),
             method: 'GET',
             timeout: Math.min(SMALL_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
             params: this._params(),
@@ -549,7 +549,7 @@ export class RequestQueueClient extends ResourceClient {
         const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientAddRequestOptions');
 
         const response = await this.httpClient.call({
-            url: this._url(`requests/${request.id}`),
+            url: this._url(['requests', request.id]),
             method: 'PUT',
             timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
             data: request,
@@ -571,7 +571,7 @@ export class RequestQueueClient extends ResourceClient {
         parseArgument(id, requestIdSchema);
 
         await this.httpClient.call({
-            url: this._url(`requests/${id}`),
+            url: this._url(['requests', id]),
             method: 'DELETE',
             timeout: Math.min(SMALL_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
             params: this._params({
@@ -617,7 +617,7 @@ export class RequestQueueClient extends ResourceClient {
         );
 
         const response = await this.httpClient.call({
-            url: this._url(`requests/${id}/lock`),
+            url: this._url(['requests', id, 'lock']),
             method: 'PUT',
             timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
             params: this._params({
@@ -646,7 +646,7 @@ export class RequestQueueClient extends ResourceClient {
         const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientDeleteRequestLockOptions');
 
         await this.httpClient.call({
-            url: this._url(`requests/${id}/lock`),
+            url: this._url(['requests', id, 'lock']),
             method: 'DELETE',
             timeout: Math.min(SMALL_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
             params: this._params({
