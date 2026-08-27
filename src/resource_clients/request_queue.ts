@@ -5,10 +5,10 @@ import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import { MAX_PAYLOAD_SIZE_BYTES, REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION } from '@apify/consts';
 import log from '@apify/log';
 
-import type { ApifyApiError } from '../apify_api_error';
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { MEDIUM_TIMEOUT_MILLIS, ResourceClient, SMALL_TIMEOUT_MILLIS } from '../base/resource_client';
-import type { ApifyRequestConfig } from '../http_client';
+import type { ApifyApiError } from '../apify_api_error.js';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { MEDIUM_TIMEOUT_MILLIS, ResourceClient, SMALL_TIMEOUT_MILLIS } from '../base/resource_client.js';
+import type { ApifyRequestConfig } from '../http_client.js';
 import type {
     RequestQueue,
     RequestQueueClientAddRequestResult,
@@ -22,7 +22,7 @@ import type {
     RequestQueueClientRequestToAdd,
     RequestQueueClientRequestToUpdate,
     RequestQueueClientUnlockRequestsResult,
-} from '../models';
+} from '../models.js';
 import {
     anyObjectSchema,
     cast,
@@ -34,7 +34,7 @@ import {
     pluckData,
     RequestQueuePaginationIterator,
     sliceArrayByByteLength,
-} from '../utils';
+} from '../utils.js';
 
 const DEFAULT_PARALLEL_BATCH_ADD_REQUESTS = 5;
 const DEFAULT_UNPROCESSED_RETRIES_BATCH_ADD_REQUESTS = 3;
@@ -111,7 +111,7 @@ export type {
     RequestQueueClientRequestToUpdate,
     RequestQueueClientUnlockRequestsResult,
     RequestQueueStats,
-} from '../models';
+} from '../models.js';
 
 /**
  * Client for managing a specific Request queue.

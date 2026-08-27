@@ -3,13 +3,18 @@ import type { Readable } from 'node:stream';
 import type { JsonValue, TypedArray } from 'type-fest';
 import { z } from 'zod';
 
-import type { ApifyApiError } from './apify_api_error';
-import { ArgumentValidationError } from './argument_validation_error';
+import type { ApifyApiError } from './apify_api_error.js';
+import { ArgumentValidationError } from './argument_validation_error.js';
 import type {
     RequestQueueClientListRequestsOptions,
     RequestQueueClientListRequestsResult,
-} from './resource_clients/request_queue';
-import type { WebhookUpdateData } from './resource_clients/webhook';
+} from './resource_clients/request_queue.js';
+import type { WebhookUpdateData } from './resource_clients/webhook.js';
+
+// @ts-ignore `resolveJsonModule` stays off, so that the emitted `dist` does not grow a `src`
+// directory. The specifier is one level up from both `src/` and `dist/`, so it resolves to the
+// package root in the sources and in the published build alike.
+import packageJson from '../package.json' with { type: 'json' };
 
 const NOT_FOUND_STATUS_CODE = 404;
 const RECORD_NOT_FOUND_TYPE = 'record-not-found';
@@ -280,8 +285,7 @@ export function getVersionData(): { version: string } {
         return { version: VERSION! };
     }
 
-    // eslint-disable-next-line
-    return require('../package.json');
+    return packageJson;
 }
 
 /**

@@ -6,9 +6,9 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } fr
 
 import { WEBHOOK_EVENT_TYPES } from '@apify/consts';
 
-import { stringifyWebhooksToBase64 } from '../src/utils';
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
-import { mockServer } from './mock_server/server';
+import { stringifyWebhooksToBase64 } from '../src/utils.js';
+import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper.js';
+import { mockServer } from './mock_server/server.js';
 
 describe('Task methods', () => {
     let baseUrl: string;

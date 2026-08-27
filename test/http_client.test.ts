@@ -5,8 +5,8 @@ import { ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
-import { Browser } from './_helper';
-import { mockServer } from './mock_server/server';
+import { Browser } from './_helper.js';
+import { mockServer } from './mock_server/server.js';
 
 describe('HttpClient', () => {
     let baseUrl: string;

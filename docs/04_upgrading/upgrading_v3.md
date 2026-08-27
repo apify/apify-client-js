@@ -9,6 +9,23 @@ import ApiLink from '@theme/ApiLink';
 
 This page summarizes the breaking changes when upgrading from v2 to v3 of `apify-client`.
 
+## The package is now pure ESM
+
+`apify-client` ships as an ES module. The CommonJS build is gone, along with the `dist/index.mjs` wrapper and the `require` condition in `exports`, so `import` is the supported way to load the client.
+
+```diff
+- const { ApifyClient } = require('apify-client'); // v2
++ import { ApifyClient } from 'apify-client';     // v3
+```
+
+A CommonJS project can still `require('apify-client')` on Node.js 22.12 or newer, which loads an ES module through `require()` directly. Anywhere without that support, switch to `import`, either by adding `"type": "module"` to your `package.json` or through a dynamic `import()`:
+
+```js
+const { ApifyClient } = await import('apify-client');
+```
+
+The browser bundle moved from `dist/bundle.js` to `dist/bundle.cjs`, because a `.js` file inside an ESM package is parsed as an ES module, and the bundle is UMD. The `apify-client/browser` subpath is unchanged, so only code that pointed at the file path itself needs updating. For details, see [Bundled environments](../02_concepts/05_bundled-environments.md).
+
 ## Argument validation switched from `ow` to `zod`
 
 The client now validates the arguments you pass with [zod](https://zod.dev) instead of `ow`. This changes what gets thrown for invalid arguments, and tightens a few gaps `ow` used to let through silently.

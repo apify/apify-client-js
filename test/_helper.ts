@@ -4,7 +4,7 @@ import type { Request } from 'express';
 import type { Browser as PuppeteerBrowser } from 'puppeteer';
 import { expect } from 'vitest';
 
-import { mockServer } from './mock_server/server';
+import { mockServer } from './mock_server/server.js';
 
 export class Browser {
     private browser: PuppeteerBrowser | undefined;
@@ -22,7 +22,7 @@ export class Browser {
         const page = await this.browser.newPage();
         if (gotoUrl) await page.goto(gotoUrl);
 
-        await puppeteerUtils.injectFile(page, `${__dirname}/../dist/bundle.js`);
+        await puppeteerUtils.injectFile(page, `${import.meta.dirname}/../dist/bundle.cjs`);
 
         page.on('console', (msg) => console.log(msg.text()));
         await page.evaluate(

@@ -11,11 +11,14 @@
         // test/spec_transform.test.mts imports the generator's helpers by their real `.mts` path.
         "allowImportingTsExtensions": true,
         "paths": {
-            "apify-client": ["../src"]
+            // The entry file, not the `../src` directory: `nodenext` resolution has no directory
+            // index lookup, so a directory target falls through to the real package in
+            // `node_modules` and type-checks the tests against `dist` instead of the sources.
+            "apify-client": ["../src/index.js"]
         }
     },
     "include": [".", "../src/**/*"],
-    // `bundling` is a standalone bundler smoke test that imports the generated `dist/bundle.js`.
+    // `bundling` is a standalone bundler smoke test that imports the generated `dist/bundle.cjs`.
     // Keep build output out of the type-check program so the check does not depend on `pnpm build`.
     "exclude": ["bundling"]
 }

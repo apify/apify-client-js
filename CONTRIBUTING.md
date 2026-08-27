@@ -123,12 +123,11 @@ pnpm format:check          # oxfmt check
 
 ### Build Output
 
-The build produces multiple formats:
+The build produces:
 
-- CommonJS: `dist/index.js`
-- ES Module: `dist/index.mjs`
+- ES module: `dist/index.js`
 - TypeScript definitions: `dist/index.d.ts`
-- Browser bundle (UMD): `dist/bundle.js`
+- Browser bundle (UMD): `dist/bundle.cjs`
 
 ## Code Style
 

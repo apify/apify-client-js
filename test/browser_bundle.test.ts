@@ -1,10 +1,10 @@
 import type { Page } from 'puppeteer';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
-import { Browser } from './_helper';
+import { Browser } from './_helper.js';
 
 /**
- * Unlike every other test file, these run against the built `dist/bundle.js` - tree-shaken and
+ * Unlike every other test file, these run against the built `dist/bundle.cjs` - tree-shaken and
  * minified, so it can lose runtime behaviour the unbundled sources keep.
  */
 describe('browser bundle', () => {

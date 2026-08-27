@@ -27,7 +27,7 @@ export default defineConfig({
     },
     output: {
         distPath: { js: '.' },
-        filename: { js: 'bundle.js' },
+        filename: { js: 'bundle.cjs' },
         // filename: { js: '[name].js' },
         target: 'web',
         cleanDistPath: false,
@@ -68,7 +68,7 @@ export default defineConfig({
                 maxAssetSize: MAX_BUNDLE_BYTES,
                 maxEntrypointSize: MAX_BUNDLE_BYTES,
                 // The source map is many times the size of the bundle and ships separately.
-                assetFilter: (filename) => filename === 'bundle.js',
+                assetFilter: (filename) => filename === 'bundle.cjs',
             };
             config.plugins = [...(config.plugins ?? []), new rspack.IgnorePlugin({ resourceRegExp: nodeOnlyModules })];
             config.resolve = {

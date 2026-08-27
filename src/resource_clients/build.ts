@@ -1,15 +1,15 @@
 import { z } from 'zod';
 
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceClient } from '../base/resource_client';
-import type { Build } from '../models';
-import { cast, parseArgument, parseDateFields, pluckData } from '../utils';
-import { LogClient } from './log';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { ResourceClient } from '../base/resource_client.js';
+import type { Build } from '../models.js';
+import { cast, parseArgument, parseDateFields, pluckData } from '../utils.js';
+import { LogClient } from './log.js';
 
 const getOptionsSchema = z.strictObject({ waitForFinish: z.number().optional() });
 const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional() });
 
-export type { Build, BuildMeta, BuildOptions, BuildStats, BuildUsage } from '../models';
+export type { Build, BuildMeta, BuildOptions, BuildStats, BuildUsage } from '../models.js';
 
 /**
  * Client for managing a specific Actor build.

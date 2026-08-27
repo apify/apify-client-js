@@ -4,6 +4,12 @@
         "allowJs": true,
         "lib": ["ES2024", "DOM"],
         "target": "ES2024",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        // `src/utils.ts` reads the package version straight out of `../package.json`. Resolving it
+        // would pull a file from outside `rootDir` into the program and push the emit down into
+        // `dist/src`, so the import is left unresolved and typed by hand there instead.
+        "resolveJsonModule": false,
         "outDir": "dist",
         "rootDir": "src",
         "skipLibCheck": true,

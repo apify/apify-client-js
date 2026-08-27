@@ -1,18 +1,18 @@
 import { z } from 'zod';
 
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { TaskList } from '../models';
-import type { PaginatedIterator, PaginationOptions } from '../utils';
-import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils';
-import type { Task, TaskUpdateData } from './task';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { TaskList } from '../models.js';
+import type { PaginatedIterator, PaginationOptions } from '../utils.js';
+import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
+import type { Task, TaskUpdateData } from './task.js';
 
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
     desc: z.boolean().optional(),
 });
 
-export type { TaskList } from '../models';
+export type { TaskList } from '../models.js';
 
 /**
  * Client for managing the collection of Actor tasks in your account.
