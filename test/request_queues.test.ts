@@ -215,6 +215,21 @@ describe('Request Queue methods', () => {
             validateRequest({ query: {}, params: { queueId, requestId } });
         });
 
+        test('request ids cannot restructure the request path', async () => {
+            const queueId = 'some-id';
+            const requestId = '../../../datasets/V/items';
+
+            await client.requestQueue(queueId).getRequest(requestId);
+            validateRequest({ params: { queueId, requestId }, endpointId: 'get-request' });
+
+            await expect(client.requestQueue(queueId).getRequest('.')).rejects.toThrow(/dot segments/);
+        });
+
+        test('resource ids have every slash replaced', async () => {
+            await client.requestQueue('user/name/extra').getRequest('xxx');
+            validateRequest({ params: { queueId: 'user~name~extra', requestId: 'xxx' } });
+        });
+
         test('getRequest() respects over-ridden timeout', async () => {
             const queueId = 'some-id';
             const requestId = 'xxx';

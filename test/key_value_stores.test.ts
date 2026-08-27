@@ -242,6 +242,23 @@ describe('Key-Value Store methods', () => {
             validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
         });
 
+        test('record keys cannot restructure the request path', async () => {
+            const storeId = 'some-id';
+
+            for (const key of ['../../actor-runs/VICTIM/abort', 'foo?injected=1', 'foo#frag']) {
+                await client.keyValueStore(storeId).getRecord(key);
+                validateRequest({ query: { attachment: 'true' }, params: { storeId, key }, endpointId: 'get-record' });
+            }
+
+            const url = new URL(await client.keyValueStore(storeId).getRecordPublicUrl('a/../b'));
+            expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/records/a%2F..%2Fb`);
+        });
+
+        test.each(['..', '.', ''])('rejects record key %j', async (key) => {
+            await expect(client.keyValueStore('some-id').getRecord(key)).rejects.toThrow();
+            await expect(client.keyValueStore('some-id').deleteRecord(key)).rejects.toThrow();
+        });
+
         test('getRecord() parses JSON', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
