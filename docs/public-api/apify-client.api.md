@@ -5,7 +5,6 @@
 ```ts
 
 import type { ACT_JOB_STATUSES } from '@apify/consts';
-import type { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 import { ACTOR_JOB_STATUSES } from '@apify/consts';
 import { ACTOR_PERMISSION_LEVEL } from '@apify/consts';
 import type { AxiosInstance } from 'axios';
@@ -25,12 +24,18 @@ import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 import type { SetStatusMessageOptions } from '@crawlee/types';
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
-import type { ValueOf } from 'type-fest';
+import type { ValueOf } from '@apify/consts';
+import type { ValueOf as ValueOf_2 } from 'type-fest';
 import type { WEBHOOK_EVENT_TYPES } from '@apify/consts';
 import type { z } from 'zod';
 
 // @public
-export interface AccountAndUsageLimits {
+export interface AccountAndUsageLimits extends Omit<Schemas['AccountLimits'], keyof AccountAndUsageLimitsRePointed>, AccountAndUsageLimitsRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface AccountAndUsageLimitsRePointed {
     // (undocumented)
     current: Current;
     // (undocumented)
@@ -40,35 +45,7 @@ export interface AccountAndUsageLimits {
 }
 
 // @public
-export interface Actor {
-    actorPermissionLevel: ACTOR_PERMISSION_LEVEL;
-    actorStandby?: ActorStandby & {
-        isEnabled: boolean;
-    };
-    categories?: string[];
-    createdAt: Date;
-    defaultRunOptions: ActorDefaultRunOptions;
-    deploymentKey: string;
-    description?: string;
-    exampleRunInput?: ActorExampleRunInput;
-    id: string;
-    isAnonymouslyRunnable?: boolean;
-    isDeprecated?: boolean;
-    isPublic: boolean;
-    modifiedAt: Date;
-    name: string;
-    pricingInfos?: ActorRunPricingInfo[];
-    readmeSummary?: string;
-    // @deprecated (undocumented)
-    restartOnError?: boolean;
-    seoDescription?: string;
-    seoTitle?: string;
-    stats: ActorStats;
-    taggedBuilds?: ActorTaggedBuilds;
-    title?: string;
-    userId: string;
-    username: string;
-    versions: ActorVersion[];
+export interface Actor extends Omit<Schemas['Actor'], keyof ActorRePointed>, ActorRePointed, ActorSpecGaps {
 }
 
 // @public
@@ -90,13 +67,14 @@ export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish
 }
 
 // @public
-export interface ActorChargeEvent {
+export interface ActorChargeEvent extends Omit<Schemas['ActorChargeEvent'], keyof ActorChargeEventRePointed>, ActorChargeEventRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ActorChargeEventRePointed {
     // (undocumented)
-    eventDescription?: string;
-    // (undocumented)
-    eventPriceUsd: number;
-    // (undocumented)
-    eventTitle: string;
+    eventTieredPricingUsd?: TieredPricingPerEvent;
 }
 
 // @public
@@ -154,18 +132,15 @@ export interface ActorCollectionCreateOptions {
     versions?: ActorVersion[];
 }
 
+// @public
+export interface ActorCollectionListItem extends Omit<Schemas['ActorShort'], keyof ActorCollectionListItemRePointed>, ActorCollectionListItemRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-export interface ActorCollectionListItem {
+interface ActorCollectionListItemRePointed {
     // (undocumented)
-    createdAt: Date;
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    modifiedAt: Date;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    username: string;
+    stats?: ActorStats | null;
 }
 
 // @public (undocumented)
@@ -181,58 +156,39 @@ export interface ActorCollectionListOptions extends PaginationOptions {
 export type ActorCollectionListResult = PaginatedList<ActorCollectionListItem>;
 
 // @public
-export interface ActorDefaultRunOptions {
+export interface ActorDefaultRunOptions extends Omit<Schemas['DefaultRunOptions'], keyof ActorDefaultRunOptionsRePointed>, ActorDefaultRunOptionsRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ActorDefaultRunOptionsRePointed {
     // (undocumented)
-    build: string;
-    // (undocumented)
-    memoryMbytes: number;
-    restartOnError?: boolean;
-    // (undocumented)
-    timeoutSecs: number;
+    forcePermissionLevel?: ACTOR_PERMISSION_LEVEL | null;
 }
 
 // @public
-export interface ActorDefinition {
-    // (undocumented)
-    actorSpecification: number;
-    // (undocumented)
-    buildTag?: string;
+export interface ActorDefinition extends Omit<Schemas['ActorDefinition'], keyof ActorDefinitionSpecNarrowings>, ActorDefinitionSpecNarrowings, ActorDefinitionSpecGaps {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public
+interface ActorDefinitionSpecGaps {
+    output?: object | null;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ActorDefinitionSpecNarrowings {
     // (undocumented)
     changelog?: string | null;
     // (undocumented)
-    dockerContextDir?: string;
-    // (undocumented)
-    dockerfile?: string;
-    // (undocumented)
-    environmentVariables?: Record<string, string>;
     input?: object | null;
     // (undocumented)
-    maxMemoryMbytes?: number;
-    // (undocumented)
-    minMemoryMbytes?: number;
-    // (undocumented)
-    name: string;
-    output?: object | null;
-    // (undocumented)
     readme?: string | null;
-    // (undocumented)
-    storages?: {
-        dataset?: object;
-    };
-    // (undocumented)
-    usesStandbyMode?: boolean;
-    // (undocumented)
-    version: string;
 }
 
-// @public (undocumented)
-export interface ActorEnvironmentVariable {
-    // (undocumented)
-    isSecret?: boolean;
-    // (undocumented)
-    name?: string;
-    // (undocumented)
-    value?: string;
+// @public
+export interface ActorEnvironmentVariable extends GeneratedEnvVar {
 }
 
 // @public
@@ -260,18 +216,14 @@ export interface ActorEnvVarCollectionListOptions extends PaginationOptions {
 export type ActorEnvVarListResult = Pick<PaginatedList<ActorEnvironmentVariable>, 'total' | 'items'>;
 
 // @public
-export interface ActorExampleRunInput {
-    // (undocumented)
-    body: string;
-    // (undocumented)
-    contentType: string;
+export interface ActorExampleRunInput extends GeneratedExampleRunInput {
 }
 
 // @public
 export interface ActorLastRunOptions {
-    origin?: ValueOf<typeof META_ORIGINS>;
+    origin?: ValueOf_2<typeof META_ORIGINS>;
     // (undocumented)
-    status?: ValueOf<typeof ACTOR_JOB_STATUSES>;
+    status?: ValueOf_2<typeof ACTOR_JOB_STATUSES>;
 }
 
 // @public
@@ -282,177 +234,137 @@ export enum ActorListSortBy {
     LAST_RUN_STARTED_AT = "stats.lastRunStartedAt"
 }
 
-// @public
-export interface ActorRun extends ActorRunListItem {
-    chargedEventCounts?: Record<string, number>;
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ActorRePointed {
     // (undocumented)
-    containerUrl: string;
+    actorPermissionLevel?: ACTOR_PERMISSION_LEVEL;
     // (undocumented)
-    exitCode?: number;
-    generalAccess?: RUN_GENERAL_ACCESS | null;
-    gitBranchName?: string;
-    isContainerServerReady?: boolean;
+    actorStandby?: ActorStandby | null;
     // (undocumented)
-    options: ActorRunOptions;
-    pricingInfo?: ActorRunPricingInfo;
+    defaultRunOptions: ActorDefaultRunOptions;
     // (undocumented)
-    stats: ActorRunStats;
-    statusMessage?: string;
-    storageIds?: ActorRunStorageIds;
-    usage?: ActorRunUsage;
-    usageUsd?: ActorRunUsage;
+    exampleRunInput?: ActorExampleRunInput | null;
     // (undocumented)
-    userId: string;
+    pricingInfos?: ActorRunPricingInfo[];
+    // (undocumented)
+    stats: ActorStats;
+    // (undocumented)
+    taggedBuilds?: ActorTaggedBuilds | null;
+    // (undocumented)
+    versions: ActorVersion[];
 }
 
 // @public
-export interface ActorRunListItem {
+export interface ActorRun extends Omit<Schemas['Run'], keyof ActorRunRePointed | keyof ActorRunClientNarrowings>, ActorRunRePointed, ActorRunClientNarrowings {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ActorRunClientNarrowings {
     // (undocumented)
-    actId: string;
-    // (undocumented)
-    actorTaskId?: string;
-    // (undocumented)
-    buildId: string;
-    // (undocumented)
-    buildNumber: string;
-    // (undocumented)
-    defaultDatasetId: string;
-    // (undocumented)
-    defaultKeyValueStoreId: string;
-    defaultRequestQueueId: string;
-    // (undocumented)
-    finishedAt: Date;
-    // (undocumented)
-    id: string;
+    generalAccess?: RUN_GENERAL_ACCESS | null;
+}
+
+// @public
+export interface ActorRunListItem extends Omit<Schemas['RunShort'], keyof ActorRunListItemRePointed>, ActorRunListItemRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ActorRunListItemRePointed {
     // (undocumented)
     meta: ActorRunMeta;
     // (undocumented)
-    startedAt: Date;
-    // (undocumented)
-    status: (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES];
-    usageTotalUsd?: number;
+    status: ValueOf<typeof ACTOR_JOB_STATUSES>;
 }
 
 // @public
-export interface ActorRunMeta {
-    // (undocumented)
-    clientIp?: string;
-    // (undocumented)
-    origin: string;
-    // (undocumented)
-    userAgent: string;
+export interface ActorRunMeta extends Omit<Schemas['RunMeta'], keyof ActorRunMetaRePointed>, ActorRunMetaRePointed {
 }
 
 // @public
-export interface ActorRunOptions {
+export interface ActorRunMetamorph extends GeneratedMetamorph {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ActorRunMetaRePointed {
     // (undocumented)
-    build: string;
+    origin: ValueOf<typeof META_ORIGINS>;
+}
+
+// @public
+export interface ActorRunOptions extends GeneratedRunOptions, ActorRunOptionsSpecGaps {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public
+interface ActorRunOptionsSpecGaps {
     // (undocumented)
-    diskMbytes: number;
-    maxItems?: number;
-    maxTotalChargeUsd?: number;
-    // (undocumented)
-    memoryMbytes: number;
     restartOnError?: boolean;
-    // (undocumented)
-    timeoutSecs: number;
 }
 
 // @public
 export type ActorRunPricingInfo = PricePerEventActorPricingInfo | PricePerDatasetItemActorPricingInfo | FlatPricePerMonthActorPricingInfo | FreeActorPricingInfo;
 
-// @public
-export interface ActorRunStats {
-    // (undocumented)
-    computeUnits: number;
-    // (undocumented)
-    cpuAvgUsage: number;
-    // (undocumented)
-    cpuCurrentUsage: number;
-    // (undocumented)
-    cpuMaxUsage: number;
-    // (undocumented)
-    durationMillis: number;
-    // (undocumented)
-    inputBodyLen: number;
-    // (undocumented)
-    memAvgBytes: number;
-    // (undocumented)
-    memCurrentBytes: number;
-    // (undocumented)
-    memMaxBytes: number;
-    // (undocumented)
-    metamorph: number;
-    // (undocumented)
-    netRxBytes: number;
-    // (undocumented)
-    netTxBytes: number;
-    // (undocumented)
-    restartCount: number;
-    // (undocumented)
-    resurrectCount: number;
-    // (undocumented)
-    runTimeSecs: number;
-}
-
-// @public
-export interface ActorRunStorageIds {
-    datasets: {
-        default: string;
-        [alias: string]: string;
-    };
-    keyValueStores: {
-        default: string;
-        [alias: string]: string;
-    };
-    requestQueues: {
-        default: string;
-        [alias: string]: string;
-    };
-}
-
-// @public
-export interface ActorRunUsage {
-    ACTOR_COMPUTE_UNITS?: number;
-    DATA_TRANSFER_EXTERNAL_GBYTES?: number;
-    DATA_TRANSFER_INTERNAL_GBYTES?: number;
-    DATASET_READS?: number;
-    DATASET_WRITES?: number;
-    KEY_VALUE_STORE_LISTS?: number;
-    KEY_VALUE_STORE_READS?: number;
-    KEY_VALUE_STORE_WRITES?: number;
-    PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number;
-    PROXY_SERPS?: number;
-    REQUEST_QUEUE_READS?: number;
-    REQUEST_QUEUE_WRITES?: number;
-}
-
+// Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
+interface ActorRunRePointed {
+    // (undocumented)
+    meta: ActorRunMeta;
+    // (undocumented)
+    metamorphs?: ActorRunMetamorph[] | null;
+    // (undocumented)
+    options: ActorRunOptions;
+    // (undocumented)
+    pricingInfo?: ActorRunPricingInfo;
+    // (undocumented)
+    stats: ActorRunStats;
+    // (undocumented)
+    status: ValueOf<typeof ACTOR_JOB_STATUSES>;
+    // (undocumented)
+    storageIds?: ActorRunStorageIds;
+    // (undocumented)
+    usage?: ActorRunUsage | null;
+    // (undocumented)
+    usageUsd?: ActorRunUsage | null;
+}
+
+// @public
+export interface ActorRunStats extends GeneratedRunStats {
+}
+
+// @public
+export interface ActorRunStorageIds extends GeneratedRunStorageIds {
+}
+
+// @public
+export interface ActorRunUsage extends GeneratedRunUsage {
+}
+
+// @public
 export enum ActorSourceType {
     // (undocumented)
     GitHubGist = "GITHUB_GIST",
     // (undocumented)
     GitRepo = "GIT_REPO",
     // (undocumented)
+    SourceCode = "SOURCE_CODE",
+    // (undocumented)
     SourceFiles = "SOURCE_FILES",
     // (undocumented)
     Tarball = "TARBALL"
 }
 
+// Not exported by the entry point; reachable only as a referenced type.
 // @public
-export interface ActorStandby {
-    // (undocumented)
-    build?: string;
-    // (undocumented)
-    desiredRequestsPerActorRun?: number;
-    disableStandbyFieldsOverride?: boolean;
-    // (undocumented)
-    idleTimeoutSecs?: number;
-    // (undocumented)
-    maxRequestsPerActorRun?: number;
-    // (undocumented)
-    memoryMbytes?: number;
-    shouldPassActorInput?: boolean;
+interface ActorSpecGaps {
+    isAnonymouslyRunnable?: boolean;
+}
+
+// @public
+export interface ActorStandby extends GeneratedActorStandby {
 }
 
 // @public (undocumented)
@@ -470,53 +382,28 @@ export interface ActorStartOptions {
 }
 
 // @public
-export interface ActorStats {
-    lastRunStartedAt: Date;
-    totalBuilds: number;
-    totalMetamorphs: number;
-    totalRuns: number;
-    totalUsers: number;
-    totalUsers30Days: number;
-    totalUsers7Days: number;
-    totalUsers90Days: number;
+export interface ActorStats extends GeneratedActorStats {
 }
 
 // @public
-export interface ActorStoreList {
+export interface ActorStoreList extends Omit<Schemas['StoreListActor'], keyof ActorStoreListRePointed>, ActorStoreListRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ActorStoreListRePointed {
     // (undocumented)
-    currentPricingInfo: PricingInfo;
-    // (undocumented)
-    description?: string;
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    pictureUrl?: string;
-    readmeSummary?: string;
+    currentPricingInfo?: PricingInfo;
     // (undocumented)
     stats: ActorStats;
-    // (undocumented)
-    title?: string;
-    url: string;
-    // (undocumented)
-    username: string;
-    // (undocumented)
-    userPictureUrl?: string;
 }
 
 // @public
-export interface ActorTaggedBuild {
-    // (undocumented)
-    buildId?: string;
-    // (undocumented)
-    buildNumber?: string;
-    // (undocumented)
-    finishedAt?: Date;
+export interface ActorTaggedBuild extends GeneratedTaggedBuildInfo {
 }
 
 // @public
-export type ActorTaggedBuilds = Record<string, ActorTaggedBuild>;
+export type ActorTaggedBuilds = Record<string, ActorTaggedBuild | null>;
 
 // @public
 export type ActorUpdateOptions = Partial<Pick<Actor, 'name' | 'description' | 'isPublic' | 'isDeprecated' | 'seoTitle' | 'seoDescription' | 'title' | 'restartOnError' | 'versions' | 'categories' | 'defaultRunOptions' | 'actorStandby' | 'actorPermissionLevel' | 'taggedBuilds'>>;
@@ -527,8 +414,8 @@ export interface ActorValidateInputOptions {
     contentType?: string;
 }
 
-// @public (undocumented)
-export type ActorVersion = ActorVersionSourceFiles | ActorVersionGitRepo | ActorVersionTarball | ActorVersionGitHubGist;
+// @public
+export type ActorVersion = ActorVersionSourceFiles | ActorVersionGitRepo | ActorVersionTarball | ActorVersionGitHubGist | ActorVersionSourceCode;
 
 // @public
 export class ActorVersionClient extends ResourceClient {
@@ -538,6 +425,13 @@ export class ActorVersionClient extends ResourceClient {
     envVars(): ActorEnvVarCollectionClient;
     get(): Promise<FinalActorVersion | undefined>;
     update(newFields: ActorVersion): Promise<FinalActorVersion>;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ActorVersionClientNarrowings {
+    // (undocumented)
+    sourceType: ActorSourceType;
 }
 
 // @public
@@ -553,45 +447,58 @@ export interface ActorVersionCollectionListOptions extends PaginationOptions {
     desc?: boolean;
 }
 
-// @public (undocumented)
+// @public
 export interface ActorVersionGitHubGist extends BaseActorVersion<ActorSourceType.GitHubGist> {
     // (undocumented)
-    gitHubGistUrl: string;
+    gitHubGistUrl: NonNullable<GeneratedVersion['gitHubGistUrl']>;
 }
 
-// @public (undocumented)
+// @public
 export interface ActorVersionGitRepo extends BaseActorVersion<ActorSourceType.GitRepo> {
     // (undocumented)
-    gitRepoUrl: string;
+    gitRepoUrl: NonNullable<GeneratedVersion['gitRepoUrl']>;
 }
 
 // @public (undocumented)
 export type ActorVersionListResult = Pick<PaginatedList<FinalActorVersion>, 'total' | 'items'>;
 
+// Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-export interface ActorVersionSourceFile {
+interface ActorVersionRePointed {
     // (undocumented)
-    content: string;
-    // (undocumented)
-    format: 'TEXT' | 'BASE64';
-    // (undocumented)
-    name: string;
+    envVars?: ActorEnvironmentVariable[] | null;
+}
+
+// @public
+export interface ActorVersionSourceCode extends BaseActorVersion<ActorSourceType.SourceCode> {
+}
+
+// @public
+export interface ActorVersionSourceFile extends GeneratedSourceCodeFile {
 }
 
 // @public
 export interface ActorVersionSourceFiles extends BaseActorVersion<ActorSourceType.SourceFiles> {
     // (undocumented)
-    sourceFiles: ActorVersionSourceFile[];
-}
-
-// @public (undocumented)
-export interface ActorVersionTarball extends BaseActorVersion<ActorSourceType.Tarball> {
-    // (undocumented)
-    tarballUrl: string;
+    sourceFiles: (ActorVersionSourceFile | ActorVersionSourceFolder)[];
 }
 
 // @public
-export type AllowedHttpMethods = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'TRACE' | 'OPTIONS' | 'CONNECT' | 'PATCH';
+export interface ActorVersionSourceFolder extends GeneratedSourceCodeFolder {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public
+type ActorVersionSourceLocation = 'sourceFiles' | 'gitRepoUrl' | 'tarballUrl' | 'gitHubGistUrl';
+
+// @public
+export interface ActorVersionTarball extends BaseActorVersion<ActorSourceType.Tarball> {
+    // (undocumented)
+    tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
+}
+
+// @public
+export type AllowedHttpMethods = Schemas['HttpMethod'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -750,18 +657,10 @@ export class ArgumentValidationError extends Error {
     readonly issues: z.ZodError['issues'];
 }
 
-// @public (undocumented)
-export interface BaseActorVersion<SourceType extends ActorSourceType> {
-    // (undocumented)
-    applyEnvVarsToBuild?: boolean;
-    // (undocumented)
-    buildTag?: string;
-    // (undocumented)
-    envVars?: ActorEnvironmentVariable[];
+// @public
+export interface BaseActorVersion<SourceType extends ActorSourceType> extends Omit<GeneratedVersion, keyof ActorVersionClientNarrowings | keyof ActorVersionRePointed | ActorVersionSourceLocation>, ActorVersionRePointed {
     // (undocumented)
     sourceType: SourceType;
-    // (undocumented)
-    versionNumber?: string;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -779,45 +678,8 @@ interface BaseOptions {
     publicBaseUrl: string;
 }
 
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface BaseScheduleAction<Type extends ScheduleActions> {
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    type: Type;
-}
-
 // @public
-export interface Build {
-    // (undocumented)
-    actId: string;
-    actorDefinition?: ActorDefinition;
-    // (undocumented)
-    buildNumber: string;
-    // (undocumented)
-    finishedAt?: Date;
-    // (undocumented)
-    id: string;
-    // @deprecated (undocumented)
-    inputSchema?: string;
-    // (undocumented)
-    meta: BuildMeta;
-    // (undocumented)
-    options?: BuildOptions;
-    // @deprecated (undocumented)
-    readme?: string;
-    // (undocumented)
-    startedAt: Date;
-    // (undocumented)
-    stats?: BuildStats;
-    // (undocumented)
-    status: (typeof ACT_JOB_TERMINAL_STATUSES)[number];
-    usage?: BuildUsage;
-    usageTotalUsd?: number;
-    usageUsd?: BuildUsage;
-    // (undocumented)
-    userId: string;
+export interface Build extends Omit<Schemas['Build'], keyof BuildRePointed>, BuildRePointed {
 }
 
 // @public
@@ -848,8 +710,18 @@ export class BuildCollectionClient extends ResourceCollectionClient {
     list(options?: BuildCollectionClientListOptions): PaginatedIterator<BuildCollectionClientListItem>;
 }
 
+// @public
+export interface BuildCollectionClientListItem extends Omit<Schemas['BuildShort'], keyof BuildCollectionClientListItemRePointed>, BuildCollectionClientListItemRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-export type BuildCollectionClientListItem = Required<Pick<Build, 'id' | 'status' | 'startedAt' | 'finishedAt'>> & Partial<Pick<Build, 'meta' | 'usageTotalUsd'>>;
+interface BuildCollectionClientListItemRePointed {
+    // (undocumented)
+    meta?: BuildMeta;
+    // (undocumented)
+    status: ValueOf<typeof ACTOR_JOB_STATUSES>;
+}
 
 // @public (undocumented)
 export interface BuildCollectionClientListOptions extends PaginationOptions {
@@ -861,134 +733,1694 @@ export interface BuildCollectionClientListOptions extends PaginationOptions {
 export type BuildCollectionClientListResult = PaginatedList<BuildCollectionClientListItem>;
 
 // @public
-export interface BuildMeta {
-    // (undocumented)
-    clientIp: string;
-    // (undocumented)
-    origin: string;
-    // (undocumented)
-    userAgent: string;
-}
-
-// @public
-export interface BuildOptions {
-    // (undocumented)
-    betaPackages?: boolean;
-    // (undocumented)
-    diskMbytes?: number;
-    // (undocumented)
-    memoryMbytes?: number;
-    // (undocumented)
-    useCache?: boolean;
-}
-
-// @public
-export interface BuildStats {
-    // (undocumented)
-    computeUnits: number;
-    // (undocumented)
-    durationMillis: number;
-    // (undocumented)
-    runTimeSecs: number;
-}
-
-// @public
-export interface BuildUsage {
-    // (undocumented)
-    ACTOR_COMPUTE_UNITS?: number;
+export interface BuildMeta extends Omit<Schemas['BuildsMeta'], keyof BuildMetaRePointed>, BuildMetaRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-interface CommonActorPricingInfo {
-    apifyMarginPercentage: number;
-    createdAt: Date;
+interface BuildMetaRePointed {
     // (undocumented)
-    notifiedAboutChangeAt?: Date;
-    // (undocumented)
-    notifiedAboutFutureChangeAt?: Date;
-    // (undocumented)
-    reasonForChange?: string;
-    startedAt: Date;
+    origin: ValueOf<typeof META_ORIGINS>;
 }
 
 // @public
-export interface Current {
-    // (undocumented)
-    activeActorJobCount: number;
-    // (undocumented)
-    actorCount: number;
-    // (undocumented)
-    actorMemoryGbytes: number;
-    // (undocumented)
-    actorTaskCount: number;
-    // (undocumented)
-    monthlyActorComputeUnits: number;
-    // (undocumented)
-    monthlyExternalDataTransferGbytes: number;
-    // (undocumented)
-    monthlyProxySerps: number;
-    // (undocumented)
-    monthlyResidentialProxyGbytes: number;
-    // (undocumented)
-    monthlyUsageUsd: number;
-    // (undocumented)
-    teamAccountSeatCount: number;
+export interface BuildOptions extends GeneratedBuildOptions {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-interface DailyServiceUsage {
+interface BuildRePointed {
     // (undocumented)
-    date: Date;
+    actorDefinition?: ActorDefinition | null;
     // (undocumented)
-    serviceUsage: {
-        [key: string]: DailyServiceUsageData;
+    meta: BuildMeta;
+    // (undocumented)
+    options?: BuildOptions | null;
+    // (undocumented)
+    stats?: BuildStats | null;
+    // (undocumented)
+    status: ValueOf<typeof ACTOR_JOB_STATUSES>;
+    // (undocumented)
+    usage?: BuildUsage | null;
+    // (undocumented)
+    usageUsd?: BuildUsage | null;
+}
+
+// @public
+export interface BuildStats extends GeneratedBuildStats {
+}
+
+// @public
+export interface BuildUsage extends GeneratedBuildUsage {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface components {
+    // (undocumented)
+    headers: never;
+    // (undocumented)
+    parameters: {
+        offset: number;
+        limit: number;
+        descCreatedAt: boolean;
+        actorId: string;
+        versionNumber: string;
+        descStartedAt: boolean;
+        waitForFinishBuild: number;
+        buildIdWithDefault: string;
+        buildId: string;
+        status: string[];
+        startedAfter: string;
+        startedBefore: string;
+        timeout: number;
+        memory: number;
+        maxItems: number;
+        maxTotalChargeUsd: number;
+        restartOnError: boolean;
+        build: string;
+        waitForFinishRun: number;
+        webhooks: string;
+        outputRecordKey: string;
+        format: string;
+        clean: boolean;
+        datasetParameters_limit: number;
+        fields: string;
+        outputFields: string;
+        omit: string;
+        unwind: string;
+        flatten: string;
+        descDataset: boolean;
+        attachment: boolean;
+        delimiter: string;
+        bom: boolean;
+        xmlRoot: string;
+        xmlRow: string;
+        skipHeaderRow: boolean;
+        skipHidden: boolean;
+        skipEmpty: boolean;
+        simplified: boolean;
+        view: string;
+        skipFailedPages: boolean;
+        feedTitle: string;
+        feedDescription: string;
+        runId: string;
+        buildResurrect: string;
+        timeoutResurrect: number;
+        memoryResurrect: number;
+        restartOnErrorResurrect: boolean;
+        lastRunParameters_status: string;
+        origin: components["schemas"]["RunOrigin"];
+        signature: string;
+        "Content-Encoding": "br" | "gzip" | "deflate" | "identity";
+        exclusiveStartKey: string;
+        keyValueStoreParameters_limit: number;
+        collectionKeys: string;
+        prefixKeys: string;
+        collectionRecords: string;
+        prefixRecords: string;
+        recordKey: string;
+        keyValueStoreParameters_attachment: boolean;
+        clientKey: string;
+        exclusiveStartId: string;
+        listLimit: number;
+        cursor: string;
+        filter: ("locked" | "pending")[];
+        forefront: string;
+        contentTypeJson: "application/json";
+        requestId: string;
+        lockSecs: number;
+        lockForefront: string;
+        deleteForefront: string;
+        headLimit: number;
+        headLockLimit: number;
+        stream: boolean;
+        download: boolean;
+        raw: boolean;
+        gracefully: boolean;
+        targetActorId: string;
+        actorTaskId: string;
+        unnamed: boolean;
+        storeId: string;
+        datasetId: string;
+        queueId: string;
+        webhookId: string;
+        scheduleId: string;
+        buildOrRunId: string;
     };
     // (undocumented)
-    totalUsageCreditsUsd: number;
+    pathItems: never;
+    // (undocumented)
+    requestBodies: never;
+    // (undocumented)
+    responses: {
+        BadRequest: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        Unauthorized: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        Forbidden: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        MethodNotAllowed: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        TooManyRequests: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        PayloadTooLarge: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        UnsupportedMediaType: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        NotFound: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        PaymentRequired: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        Timeout: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+        NoContent: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content?: never;
+        };
+        Conflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+    };
+    // (undocumented)
+    schemas: {
+        PaginationResponse: {
+            total: number;
+            offset: number;
+            limit: number;
+            desc: boolean;
+            count: number;
+        };
+        ActorStats: {
+            totalBuilds?: number;
+            totalRuns?: number;
+            totalUsers?: number;
+            totalUsers7Days?: number;
+            totalUsers30Days?: number;
+            totalUsers90Days?: number;
+            totalMetamorphs?: number;
+            lastRunStartedAt?: Date;
+            actorReviewCount?: number;
+            actorReviewRating?: number;
+            bookmarkCount?: number;
+            publicActorRunStats30Days?: {
+                ABORTED?: number;
+                FAILED?: number;
+                SUCCEEDED?: number;
+                "TIMED-OUT"?: number;
+                TOTAL?: number;
+            };
+        };
+        ActorShort: {
+            id: string;
+            createdAt: Date;
+            modifiedAt: Date;
+            name: string;
+            username: string;
+            title?: string;
+            stats?: components["schemas"]["ActorStats"] | null;
+        };
+        ListOfActors: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["ActorShort"][];
+        };
+        ListOfActorsResponse: {
+            data: components["schemas"]["ListOfActors"];
+        };
+        ErrorType: "3d-secure-auth-failed" | "access-right-already-exists" | "action-not-found" | "actor-already-rented" | "actor-can-not-be-rented" | "actor-disabled" | "actor-is-not-rented" | "actor-memory-limit-exceeded" | "actor-name-exists-new-owner" | "actor-name-not-unique" | "actor-not-found" | "actor-not-github-actor" | "actor-not-public" | "actor-permission-level-not-supported-for-agentic-payments" | "actor-review-already-exists" | "actor-run-failed" | "actor-standby-not-supported-for-agentic-payments" | "actor-task-name-not-unique" | "agentic-payment-info-retrieval-error" | "agentic-payment-information-missing" | "agentic-payment-insufficient-amount" | "agentic-payment-provider-internal-error" | "agentic-payment-provider-unauthorized" | "airtable-webhook-deprecated" | "already-subscribed-to-paid-actor" | "apify-plan-required-to-use-paid-actor" | "apify-signup-not-allowed" | "auth-method-not-supported" | "authorization-server-not-found" | "auto-issue-date-invalid" | "background-check-required" | "billing-system-error" | "black-friday-plan-expired" | "braintree-error" | "braintree-not-linked" | "braintree-operation-timed-out" | "braintree-unsupported-currency" | "build-not-found" | "build-outdated" | "cannot-add-apify-events-to-ppe-actor" | "cannot-add-multiple-pricing-infos" | "cannot-add-pricing-info-that-alters-past" | "cannot-add-second-future-pricing-info" | "cannot-build-actor-from-webhook" | "cannot-change-billing-interval" | "cannot-change-owner" | "cannot-charge-apify-event" | "cannot-charge-non-pay-per-event-actor" | "cannot-comment-as-other-user" | "cannot-copy-actor-task" | "cannot-create-payout" | "cannot-create-public-actor" | "cannot-create-tax-transaction" | "cannot-delete-critical-actor" | "cannot-delete-invoice" | "cannot-delete-paid-actor" | "cannot-disable-one-time-event-for-apify-start-event" | "cannot-disable-organization-with-enabled-members" | "cannot-disable-user-with-subscription" | "cannot-link-oauth-to-unverified-email" | "cannot-metamorph-to-pay-per-result-actor" | "cannot-modify-actor-pricing-too-frequently" | "cannot-modify-actor-pricing-with-immediate-effect" | "cannot-monetize-without-payout-billing-info" | "cannot-override-paid-actor-trial" | "cannot-permanently-delete-subscription" | "cannot-publish-actor" | "cannot-reduce-last-full-token" | "cannot-reimburse-more-than-original-charge" | "cannot-reimburse-non-rental-charge" | "cannot-remove-own-actor-from-recently-used" | "cannot-remove-payment-method" | "cannot-remove-pricing-info" | "cannot-remove-running-run" | "cannot-remove-user-with-public-actors" | "cannot-remove-user-with-subscription" | "cannot-remove-user-with-unpaid-invoice" | "cannot-rename-env-var" | "cannot-rent-paid-actor" | "cannot-review-own-actor" | "cannot-set-access-rights-for-owner" | "cannot-set-is-status-message-terminal" | "cannot-unpublish-critical-actor" | "cannot-unpublish-paid-actor" | "cannot-unpublish-profile" | "cannot-update-invoice-field" | "concurrent-runs-limit-exceeded" | "concurrent-update-detected" | "conference-token-not-found" | "content-encoding-forbidden-for-html" | "coupon-already-redeemed" | "coupon-expired" | "coupon-for-new-customers" | "coupon-for-subscribed-users" | "coupon-limits-are-in-conflict-with-current-limits" | "coupon-max-number-of-redemptions-reached" | "coupon-not-found" | "coupon-not-unique" | "coupons-disabled" | "create-github-issue-not-allowed" | "creator-plan-not-available" | "cron-expression-invalid" | "daily-ai-token-limit-exceeded" | "daily-publication-limit-exceeded" | "dataset-does-not-have-fields-schema" | "dataset-does-not-have-schema" | "dataset-locked" | "dataset-schema-invalid" | "dcr-not-supported" | "default-dataset-not-found" | "deleting-default-build" | "deleting-unfinished-build" | "email-already-taken" | "email-already-taken-removed-user" | "email-domain-not-allowed-for-coupon" | "email-invalid" | "email-not-allowed" | "email-not-valid" | "email-update-too-soon" | "elevated-permissions-needed" | "env-var-already-exists" | "exchange-rate-fetch-failed" | "expired-conference-token" | "failed-to-charge-user" | "final-invoice-negative" | "full-permission-actor-blocked-for-admin" | "full-permission-actor-not-approved" | "github-branch-empty" | "github-issue-already-exists" | "github-public-key-not-found" | "github-repository-not-found" | "github-signature-does-not-match-payload" | "github-user-not-authorized-for-issues" | "gmail-not-allowed" | "id-does-not-match" | "incompatible-billing-interval" | "incomplete-payout-billing-info" | "inconsistent-currencies" | "incorrect-pricing-modifier-prefix" | "input-json-invalid-characters" | "input-json-not-object" | "input-json-too-long" | "input-update-collision" | "insufficient-permissions" | "insufficient-permissions-to-change-field" | "insufficient-security-measures" | "insufficient-tax-country-evidence" | "integration-auth-error" | "internal-server-error" | "invalid-billing-info" | "invalid-billing-period-for-payout" | "invalid-build" | "invalid-client-key" | "invalid-collection" | "invalid-conference-login-password" | "invalid-content-type-header" | "invalid-credentials" | "invalid-git-auth-token" | "invalid-github-issue-url" | "invalid-header" | "invalid-id" | "invalid-idempotency-key" | "invalid-input" | "invalid-input-schema" | "invalid-invoice" | "invalid-invoice-type" | "invalid-issue-date" | "invalid-label-params" | "invalid-main-account-user-id" | "invalid-oauth-app" | "invalid-oauth-scope" | "invalid-one-time-invoice" | "invalid-parameter" | "invalid-payout-status" | "invalid-picture-url" | "invalid-record-key" | "invalid-request" | "invalid-resource-type" | "invalid-signature" | "invalid-subscription-plan" | "invalid-tax-number" | "invalid-tax-number-format" | "invalid-token" | "invalid-token-type" | "invalid-two-factor-code" | "invalid-two-factor-code-or-recovery-code" | "invalid-two-factor-recovery-code" | "invalid-username" | "invalid-value" | "invitation-invalid-resource-type" | "invitation-no-longer-valid" | "invoice-canceled" | "invoice-cannot-be-refunded-due-to-too-high-amount" | "invoice-incomplete" | "invoice-is-draft" | "invoice-locked" | "invoice-must-be-buffer" | "invoice-not-canceled" | "invoice-not-draft" | "invoice-not-found" | "invoice-outdated" | "invoice-paid-already" | "issue-already-connected-to-github" | "issue-not-found" | "issues-bad-request" | "issuer-not-registered" | "job-finished" | "label-already-linked" | "last-api-token" | "limit-reached" | "max-items-must-be-greater-than-zero" | "max-metamorphs-exceeded" | "max-total-charge-usd-below-minimum" | "max-total-charge-usd-must-be-greater-than-zero" | "method-not-allowed" | "migration-disabled" | "missing-actor-rights" | "missing-api-token" | "missing-billing-info" | "missing-line-items" | "missing-payment-date" | "missing-payout-billing-info" | "missing-proxy-password" | "missing-reporting-fields" | "missing-resource-name" | "missing-settings" | "missing-username" | "monthly-usage-limit-too-low" | "more-than-one-update-not-allowed" | "multiple-records-found" | "must-be-admin" | "name-not-unique" | "next-runtime-computation-failed" | "no-columns-in-exported-dataset" | "no-payment-attempt-for-refund-found" | "no-payment-method-available" | "no-team-account-seats-available" | "non-temporary-email" | "not-enough-usage-to-run-paid-actor" | "not-implemented" | "not-supported-currencies" | "o-auth-service-already-connected" | "o-auth-service-not-connected" | "oauth-resource-access-failed" | "one-time-invoice-already-marked-paid" | "only-drafts-can-be-deleted" | "operation-canceled" | "operation-not-allowed" | "operation-timed-out" | "organization-cannot-own-itself" | "organization-role-not-found" | "overlapping-payout-billing-periods" | "own-token-required" | "page-not-found" | "param-not-one-of" | "parameter-required" | "parameters-mismatched" | "password-reset-email-already-sent" | "password-reset-token-expired" | "pay-as-you-go-without-monthly-interval" | "payment-attempt-status-message-required" | "payout-already-paid" | "payout-canceled" | "payout-invalid-state" | "payout-must-be-approved-to-be-marked-paid" | "payout-not-found" | "payout-number-already-exists" | "phone-number-invalid" | "phone-number-landline" | "phone-number-opted-out" | "phone-verification-disabled" | "platform-feature-disabled" | "price-overrides-validation-failed" | "pricing-model-not-supported" | "promotional-plan-not-available" | "proxy-auth-ip-not-unique" | "public-actor-disabled" | "query-timeout" | "quoted-price-outdated" | "rate-limit-exceeded" | "recaptcha-invalid" | "recaptcha-required" | "record-not-found" | "record-not-public" | "record-or-token-not-found" | "record-too-large" | "redirect-uri-mismatch" | "reduced-plan-not-available" | "rental-charge-already-reimbursed" | "rental-not-allowed" | "request-aborted-prematurely" | "request-handled-or-locked" | "request-id-invalid" | "request-queue-duplicate-requests" | "request-too-large" | "requested-dataset-view-does-not-exist" | "resume-token-expired" | "run-failed" | "run-input-body-not-valid-json" | "run-timeout-exceeded" | "russia-is-evil" | "same-user" | "schedule-actor-not-found" | "schedule-actor-task-not-found" | "schedule-name-not-unique" | "schema-validation" | "schema-validation-error" | "schema-validation-failed" | "service-worker-registration-not-allowed" | "sign-up-method-not-allowed" | "slack-integration-not-custom" | "socket-closed" | "socket-destroyed" | "store-schema-invalid" | "store-terms-not-accepted" | "stripe-enabled" | "stripe-generic-decline" | "stripe-not-enabled" | "stripe-not-enabled-for-user" | "tagged-build-required" | "tax-country-invalid" | "tax-number-invalid" | "tax-number-validation-failed" | "taxamo-call-failed" | "taxamo-request-failed" | "testing-error" | "token-not-provided" | "too-few-versions" | "too-many-actor-tasks" | "too-many-actors" | "too-many-labels-on-resource" | "too-many-mcp-connectors" | "too-many-o-auth-apps" | "too-many-organizations" | "too-many-requests" | "too-many-schedules" | "too-many-ui-access-keys" | "too-many-user-labels" | "too-many-values" | "too-many-versions" | "too-many-webhooks" | "unexpected-route" | "unknown-build-tag" | "unknown-payment-provider" | "unsubscribe-token-invalid" | "unsupported-actor-pricing-model-for-agentic-payments" | "unsupported-content-encoding" | "unsupported-file-type-for-issue" | "unsupported-file-type-image-expected" | "unsupported-file-type-text-or-json-expected" | "unsupported-permission" | "upcoming-subscription-bill-not-up-to-date" | "user-already-exists" | "user-already-verified" | "user-creates-organizations-too-fast" | "user-disabled" | "user-email-is-disposable" | "user-email-not-set" | "user-email-not-verified" | "user-has-no-subscription" | "user-integration-not-found" | "user-is-already-invited" | "user-is-already-organization-member" | "user-is-not-member-of-organization" | "user-is-not-organization" | "user-is-organization" | "user-is-organization-owner" | "user-is-removed" | "user-not-found" | "user-not-logged-in" | "user-not-verified" | "user-or-token-not-found" | "user-plan-not-allowed-for-coupon" | "user-problem-with-card" | "user-record-not-found" | "username-already-taken" | "username-missing" | "username-not-allowed" | "username-removal-forbidden" | "username-required" | "verification-email-already-sent" | "verification-token-expired" | "version-already-exists" | "versions-size-exceeded" | "weak-password" | "x402-agentic-payment-already-finalized" | "x402-agentic-payment-insufficient-amount" | "x402-agentic-payment-malformed-token" | "x402-agentic-payment-settlement-failed" | "x402-agentic-payment-settlement-in-progress" | "x402-agentic-payment-settlement-stuck" | "x402-agentic-payment-unauthorized" | "x402-payment-required" | "zero-invoice";
+        ErrorDetail: {
+            type?: components["schemas"]["ErrorType"];
+            message?: string;
+        };
+        ErrorResponse: {
+            error: components["schemas"]["ErrorDetail"];
+        };
+        VersionSourceType: "SOURCE_FILES" | "GIT_REPO" | "TARBALL" | "GITHUB_GIST" | "SOURCE_CODE";
+        EnvVar: {
+            name: string;
+            value?: string;
+            isSecret?: boolean | null;
+        };
+        SourceCodeFileFormat: "BASE64" | "TEXT";
+        SourceCodeFile: {
+            format?: components["schemas"]["SourceCodeFileFormat"];
+            content?: string;
+            name: string;
+        };
+        SourceCodeFolder: {
+            name: string;
+            folder: boolean;
+        };
+        VersionSourceFiles: (components["schemas"]["SourceCodeFile"] | components["schemas"]["SourceCodeFolder"])[];
+        Version: {
+            versionNumber: string;
+            sourceType: components["schemas"]["VersionSourceType"] | null;
+            envVars?: components["schemas"]["EnvVar"][] | null;
+            applyEnvVarsToBuild?: boolean | null;
+            buildTag?: string | null;
+            sourceFiles?: components["schemas"]["VersionSourceFiles"];
+            gitRepoUrl?: string | null;
+            tarballUrl?: string | null;
+            gitHubGistUrl?: string | null;
+        };
+        CommonActorPricingInfo: {
+            apifyMarginPercentage: number;
+            createdAt: Date;
+            startedAt: Date;
+            notifiedAboutFutureChangeAt?: Date | null;
+            notifiedAboutChangeAt?: Date | null;
+            reasonForChange?: string | null;
+            isPriceChangeNotificationSuppressed?: boolean;
+            forceContainsSignificantPriceChange?: boolean;
+        };
+        TieredPricingPerEventEntry: {
+            tieredEventPriceUsd: number;
+        };
+        TieredPricingPerEvent: {
+            [key: string]: components["schemas"]["TieredPricingPerEventEntry"];
+        };
+        ActorChargeEvent: {
+            eventTitle: string;
+            eventDescription: string;
+            eventPriceUsd?: number;
+            eventTieredPricingUsd?: components["schemas"]["TieredPricingPerEvent"];
+            isPrimaryEvent?: boolean;
+            isOneTimeEvent?: boolean;
+        };
+        PayPerEventActorPricingInfo: components["schemas"]["CommonActorPricingInfo"] & {
+            pricingModel: "PAY_PER_EVENT";
+            pricingPerEvent: {
+                actorChargeEvents?: {
+                    [key: string]: components["schemas"]["ActorChargeEvent"];
+                };
+            };
+            minimalMaxTotalChargeUsd?: number | null;
+        } & {
+            pricingModel: "PAY_PER_EVENT";
+        };
+        TieredPricingPerDatasetItemEntry: {
+            tieredPricePerUnitUsd: number;
+        };
+        TieredPricingPerDatasetItem: {
+            [key: string]: components["schemas"]["TieredPricingPerDatasetItemEntry"];
+        };
+        PricePerDatasetItemActorPricingInfo: components["schemas"]["CommonActorPricingInfo"] & {
+            pricingModel: "PRICE_PER_DATASET_ITEM";
+            unitName: string;
+            pricePerUnitUsd?: number;
+            tieredPricing?: components["schemas"]["TieredPricingPerDatasetItem"];
+        } & {
+            pricingModel: "PRICE_PER_DATASET_ITEM";
+        };
+        FlatPricePerMonthActorPricingInfo: components["schemas"]["CommonActorPricingInfo"] & {
+            pricingModel: "FLAT_PRICE_PER_MONTH";
+            trialMinutes: number;
+            pricePerUnitUsd: number;
+        } & {
+            pricingModel: "FLAT_PRICE_PER_MONTH";
+        };
+        FreeActorPricingInfo: components["schemas"]["CommonActorPricingInfo"] & {
+            pricingModel: "FREE";
+        } & {
+            pricingModel: "FREE";
+        };
+        ActorRunPricingInfo: components["schemas"]["PayPerEventActorPricingInfo"] | components["schemas"]["PricePerDatasetItemActorPricingInfo"] | components["schemas"]["FlatPricePerMonthActorPricingInfo"] | components["schemas"]["FreeActorPricingInfo"];
+        ActorPermissionLevel: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
+        DefaultRunOptions: {
+            build?: string;
+            timeoutSecs?: number;
+            memoryMbytes?: number;
+            restartOnError?: boolean;
+            maxItems?: number | null;
+            forcePermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
+        };
+        ActorStandby: {
+            isEnabled?: boolean | null;
+            desiredRequestsPerActorRun?: number | null;
+            maxRequestsPerActorRun?: number | null;
+            idleTimeoutSecs?: number | null;
+            build?: string | null;
+            memoryMbytes?: number | null;
+            disableStandbyFieldsOverride?: boolean | null;
+            shouldPassActorInput?: boolean | null;
+        };
+        ExampleRunInput: {
+            body?: string;
+            contentType?: string;
+        };
+        CreateActorRequest: {
+            name?: string | null;
+            description?: string | null;
+            title?: string | null;
+            isPublic?: boolean | null;
+            seoTitle?: string | null;
+            seoDescription?: string | null;
+            restartOnError?: boolean;
+            versions?: components["schemas"]["Version"][] | null;
+            pricingInfos?: components["schemas"]["ActorRunPricingInfo"][];
+            categories?: string[] | null;
+            defaultRunOptions?: components["schemas"]["DefaultRunOptions"];
+            actorStandby?: components["schemas"]["ActorStandby"] | null;
+            exampleRunInput?: components["schemas"]["ExampleRunInput"] | null;
+            isDeprecated?: boolean | null;
+        };
+        TaggedBuildInfo: {
+            buildId?: string;
+            buildNumber?: string | null;
+            buildNumberInt?: number;
+            finishedAt?: Date | null;
+        };
+        TaggedBuilds: {
+            [key: string]: components["schemas"]["TaggedBuildInfo"] | null;
+        };
+        ActorNotice: "NONE" | "RESIDENTIAL_PROXY_REQUIRED" | "UNDER_MAINTENANCE" | null;
+        Actor: {
+            id: string;
+            userId: string;
+            name: string;
+            username: string;
+            description?: string | null;
+            restartOnError?: boolean;
+            isPublic: boolean;
+            actorPermissionLevel?: components["schemas"]["ActorPermissionLevel"];
+            createdAt: Date;
+            modifiedAt: Date;
+            stats: components["schemas"]["ActorStats"];
+            versions: components["schemas"]["Version"][];
+            pricingInfos?: components["schemas"]["ActorRunPricingInfo"][];
+            defaultRunOptions: components["schemas"]["DefaultRunOptions"];
+            exampleRunInput?: components["schemas"]["ExampleRunInput"] | null;
+            isDeprecated?: boolean | null;
+            deploymentKey?: string;
+            title?: string | null;
+            taggedBuilds?: components["schemas"]["TaggedBuilds"] | null;
+            actorStandby?: components["schemas"]["ActorStandby"] | null;
+            readmeSummary?: string;
+            seoTitle?: string | null;
+            seoDescription?: string | null;
+            pictureUrl?: string | null;
+            standbyUrl?: string | null;
+            notice?: components["schemas"]["ActorNotice"];
+            categories?: string[];
+            isCritical?: boolean;
+            isGeneric?: boolean;
+            isSourceCodeHidden?: boolean;
+            hasNoDataset?: boolean;
+        };
+        ActorResponse: {
+            data: components["schemas"]["Actor"];
+        };
+        CreateOrUpdateVersionRequest: {
+            versionNumber?: string | null;
+            sourceType?: components["schemas"]["VersionSourceType"] | null;
+            envVars?: components["schemas"]["EnvVar"][] | null;
+            applyEnvVarsToBuild?: boolean | null;
+            buildTag?: string | null;
+            sourceFiles?: components["schemas"]["VersionSourceFiles"];
+            gitRepoUrl?: string | null;
+            tarballUrl?: string | null;
+            gitHubGistUrl?: string | null;
+        };
+        BuildTag: {
+            buildId: string;
+        } | null;
+        UpdateActorRequest: {
+            name?: string;
+            description?: string | null;
+            isPublic?: boolean;
+            actorPermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
+            seoTitle?: string | null;
+            seoDescription?: string | null;
+            title?: string | null;
+            restartOnError?: boolean;
+            versions?: components["schemas"]["CreateOrUpdateVersionRequest"][];
+            pricingInfos?: components["schemas"]["ActorRunPricingInfo"][];
+            categories?: string[] | null;
+            defaultRunOptions?: components["schemas"]["DefaultRunOptions"] | null;
+            taggedBuilds?: {
+                [key: string]: components["schemas"]["BuildTag"];
+            } | null;
+            actorStandby?: components["schemas"]["ActorStandby"] | null;
+            exampleRunInput?: components["schemas"]["ExampleRunInput"] | null;
+            isDeprecated?: boolean | null;
+        };
+        ListOfVersions: {
+            total: number;
+            items: components["schemas"]["Version"][];
+        };
+        ListOfVersionsResponse: {
+            data: components["schemas"]["ListOfVersions"];
+        };
+        VersionResponse: {
+            data: components["schemas"]["Version"];
+        };
+        ListOfEnvVars: {
+            total: number;
+            items: components["schemas"]["EnvVar"][];
+        };
+        ListOfEnvVarsResponse: {
+            data: components["schemas"]["ListOfEnvVars"];
+        };
+        EnvVarRequest: components["schemas"]["EnvVar"] & unknown;
+        EnvVarResponse: {
+            data: components["schemas"]["EnvVar"];
+        };
+        WebhookEventType: "ACTOR.BUILD.ABORTED" | "ACTOR.BUILD.CREATED" | "ACTOR.BUILD.FAILED" | "ACTOR.BUILD.SUCCEEDED" | "ACTOR.BUILD.TIMED_OUT" | "ACTOR.RUN.ABORTED" | "ACTOR.RUN.CREATED" | "ACTOR.RUN.FAILED" | "ACTOR.RUN.RESURRECTED" | "ACTOR.RUN.SUCCEEDED" | "ACTOR.RUN.TIMED_OUT" | "TEST";
+        WebhookCondition: {
+            actorId?: string | null;
+            actorTaskId?: string | null;
+            actorRunId?: string | null;
+        };
+        WebhookDispatchStatus: "ACTIVE" | "SUCCEEDED" | "FAILED";
+        ExampleWebhookDispatch: {
+            status: components["schemas"]["WebhookDispatchStatus"];
+            finishedAt?: Date | null;
+            removedAt?: Date | null;
+        };
+        WebhookStats: {
+            totalDispatches?: number;
+        };
+        WebhookShort: {
+            id: string;
+            createdAt: Date;
+            modifiedAt: Date;
+            userId: string;
+            isAdHoc?: boolean | null;
+            isApifyIntegration?: boolean;
+            isEnabled?: boolean;
+            actionType?: string;
+            shouldInterpolateStrings?: boolean | null;
+            eventTypes: components["schemas"]["WebhookEventType"][];
+            condition: components["schemas"]["WebhookCondition"];
+            ignoreSslErrors: boolean;
+            doNotRetry: boolean;
+            requestUrl: string;
+            lastDispatch?: components["schemas"]["ExampleWebhookDispatch"] | null;
+            stats?: components["schemas"]["WebhookStats"] | null;
+        };
+        ListOfWebhooks: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["WebhookShort"][];
+        };
+        ListOfWebhooksResponse: {
+            data: components["schemas"]["ListOfWebhooks"];
+        };
+        ActorJobStatus: "READY" | "RUNNING" | "SUCCEEDED" | "FAILED" | "TIMING-OUT" | "TIMED-OUT" | "ABORTING" | "ABORTED";
+        RunOrigin: "DEVELOPMENT" | "WEB" | "API" | "SCHEDULER" | "TEST" | "WEBHOOK" | "ACTOR" | "CLI" | "CI" | "STANDBY" | "MCP";
+        BuildsMeta: {
+            origin: components["schemas"]["RunOrigin"];
+            clientIp?: string;
+            userAgent?: string;
+        };
+        BuildShort: {
+            id: string;
+            actId?: string;
+            userId?: string;
+            status: components["schemas"]["ActorJobStatus"];
+            startedAt: Date;
+            finishedAt?: Date | null;
+            usageTotalUsd: number;
+            buildNumber: string;
+            buildNumberInt?: number;
+            meta?: components["schemas"]["BuildsMeta"];
+        };
+        ListOfBuilds: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["BuildShort"][];
+        };
+        ListOfBuildsResponse: {
+            data: components["schemas"]["ListOfBuilds"];
+        };
+        BuildStats: {
+            durationMillis?: number;
+            runTimeSecs?: number;
+            computeUnits?: number;
+            imageSizeBytes?: number | null;
+        };
+        BuildOptions: {
+            useCache?: boolean | null;
+            betaPackages?: boolean | null;
+            memoryMbytes?: number | null;
+            diskMbytes?: number | null;
+        };
+        BuildUsage: {
+            ACTOR_COMPUTE_UNITS?: number | null;
+        };
+        ActorDefinition: {
+            actorSpecification?: 1;
+            name?: string;
+            version?: string;
+            buildTag?: string;
+            environmentVariables?: {
+                [key: string]: string;
+            };
+            dockerfile?: string;
+            dockerContextDir?: string;
+            readme?: string;
+            input?: Record<string, unknown>;
+            changelog?: string;
+            storages?: {
+                dataset?: Record<string, unknown>;
+            };
+            defaultMemoryMbytes?: string | number;
+            minMemoryMbytes?: number;
+            maxMemoryMbytes?: number;
+            usesStandbyMode?: boolean;
+        };
+        Build: {
+            id: string;
+            actId: string;
+            userId: string;
+            startedAt: Date;
+            finishedAt?: Date | null;
+            status: components["schemas"]["ActorJobStatus"];
+            meta: components["schemas"]["BuildsMeta"];
+            stats?: components["schemas"]["BuildStats"] | null;
+            options?: components["schemas"]["BuildOptions"] | null;
+            usage?: components["schemas"]["BuildUsage"] | null;
+            usageTotalUsd?: number | null;
+            usageUsd?: components["schemas"]["BuildUsage"] | null;
+            inputSchema?: string | null;
+            readme?: string | null;
+            buildNumber: string;
+            actVersion?: {
+                sourceType?: components["schemas"]["VersionSourceType"];
+                buildTag?: string;
+                versionNumber?: string;
+                gitRepoUrl?: string;
+                sourceFiles?: components["schemas"]["SourceCodeFile"][];
+            };
+            actorDefinition?: components["schemas"]["ActorDefinition"] | null;
+        };
+        BuildResponse: {
+            data: components["schemas"]["Build"];
+        };
+        RunMeta: {
+            origin: components["schemas"]["RunOrigin"];
+            clientIp?: string | null;
+            userAgent?: string | null;
+            scheduleId?: string | null;
+            scheduledAt?: Date | null;
+        };
+        RunShort: {
+            id: string;
+            actId: string;
+            userId?: string;
+            actorTaskId?: string | null;
+            status: components["schemas"]["ActorJobStatus"];
+            startedAt: Date;
+            finishedAt?: Date | null;
+            buildId: string;
+            buildNumber?: string;
+            buildNumberInt?: number;
+            meta: components["schemas"]["RunMeta"];
+            usageTotalUsd: number;
+            defaultKeyValueStoreId: string;
+            defaultDatasetId: string;
+            defaultRequestQueueId: string;
+        };
+        ListOfRuns: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["RunShort"][];
+        };
+        ListOfRunsResponse: {
+            data: components["schemas"]["ListOfRuns"];
+        };
+        WebhookRepresentation: {
+            eventTypes: components["schemas"]["WebhookEventType"][];
+            requestUrl: string;
+            payloadTemplate?: string | null;
+            headersTemplate?: string | null;
+            shouldInterpolateStrings?: boolean | null;
+            idempotencyKey?: string | null;
+            ignoreSslErrors?: boolean | null;
+            doNotRetry?: boolean | null;
+        };
+        RunStats: {
+            inputBodyLen?: number | null;
+            migrationCount?: number;
+            rebootCount?: number;
+            restartCount?: number;
+            resurrectCount?: number;
+            memAvgBytes?: number;
+            memMaxBytes?: number;
+            memCurrentBytes?: number;
+            cpuAvgUsage?: number;
+            cpuMaxUsage?: number;
+            cpuCurrentUsage?: number;
+            netRxBytes?: number;
+            netTxBytes?: number;
+            durationMillis?: number;
+            runTimeSecs?: number;
+            metamorph?: number;
+            computeUnits?: number;
+        };
+        RunOptions: {
+            build: string;
+            timeoutSecs: number;
+            memoryMbytes: number;
+            diskMbytes: number;
+            maxItems?: number | null;
+            maxTotalChargeUsd?: number | null;
+        };
+        GeneralAccess: "ANYONE_WITH_ID_CAN_READ" | "ANYONE_WITH_NAME_CAN_READ" | "FOLLOW_USER_SETTING" | "RESTRICTED";
+        RunUsage: {
+            ACTOR_COMPUTE_UNITS?: number | null;
+            DATASET_READS?: number | null;
+            DATASET_WRITES?: number | null;
+            KEY_VALUE_STORE_READS?: number | null;
+            KEY_VALUE_STORE_WRITES?: number | null;
+            KEY_VALUE_STORE_LISTS?: number | null;
+            REQUEST_QUEUE_READS?: number | null;
+            REQUEST_QUEUE_WRITES?: number | null;
+            DATA_TRANSFER_INTERNAL_GBYTES?: number | null;
+            DATA_TRANSFER_EXTERNAL_GBYTES?: number | null;
+            PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number | null;
+            PROXY_SERPS?: number | null;
+        };
+        RunUsageUsd: {
+            ACTOR_COMPUTE_UNITS?: number | null;
+            DATASET_READS?: number | null;
+            DATASET_WRITES?: number | null;
+            KEY_VALUE_STORE_READS?: number | null;
+            KEY_VALUE_STORE_WRITES?: number | null;
+            KEY_VALUE_STORE_LISTS?: number | null;
+            REQUEST_QUEUE_READS?: number | null;
+            REQUEST_QUEUE_WRITES?: number | null;
+            DATA_TRANSFER_INTERNAL_GBYTES?: number | null;
+            DATA_TRANSFER_EXTERNAL_GBYTES?: number | null;
+            PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number | null;
+            PROXY_SERPS?: number | null;
+        };
+        Metamorph: {
+            createdAt: Date;
+            actorId: string;
+            buildId: string;
+            inputKey?: string | null;
+        };
+        Run: {
+            id: string;
+            actId: string;
+            userId: string;
+            actorTaskId?: string | null;
+            startedAt: Date;
+            finishedAt?: Date | null;
+            status: components["schemas"]["ActorJobStatus"];
+            statusMessage?: string | null;
+            isStatusMessageTerminal?: boolean | null;
+            meta: components["schemas"]["RunMeta"];
+            pricingInfo?: components["schemas"]["ActorRunPricingInfo"];
+            stats: components["schemas"]["RunStats"];
+            chargedEventCounts?: {
+                [key: string]: number;
+            };
+            options: components["schemas"]["RunOptions"];
+            buildId: string;
+            exitCode?: number | null;
+            generalAccess: components["schemas"]["GeneralAccess"];
+            defaultKeyValueStoreId: string;
+            defaultDatasetId: string;
+            defaultRequestQueueId: string;
+            storageIds?: {
+                datasets?: {
+                    default?: string;
+                } & {
+                    [key: string]: string;
+                };
+                keyValueStores?: {
+                    default?: string;
+                } & {
+                    [key: string]: string;
+                };
+                requestQueues?: {
+                    default?: string;
+                } & {
+                    [key: string]: string;
+                };
+            };
+            buildNumber?: string | null;
+            containerUrl?: string;
+            isContainerServerReady?: boolean | null;
+            gitBranchName?: string | null;
+            usage?: components["schemas"]["RunUsage"] | null;
+            usageTotalUsd?: number | null;
+            usageUsd?: components["schemas"]["RunUsageUsd"] | null;
+            metamorphs?: components["schemas"]["Metamorph"][] | null;
+            platformUsageBillingModel?: string;
+        };
+        RunResponse: {
+            data: components["schemas"]["Run"];
+        };
+        DatasetStats: {
+            readCount?: number;
+            writeCount?: number;
+            storageBytes?: number;
+            inflatedBytes?: number;
+        };
+        Dataset: {
+            id: string;
+            name?: string | null;
+            userId: string;
+            createdAt: Date;
+            modifiedAt: Date;
+            accessedAt: Date;
+            itemCount: number;
+            cleanItemCount: number;
+            actId?: string | null;
+            actRunId?: string | null;
+            fields?: string[] | null;
+            schema?: Record<string, unknown> | null;
+            consoleUrl: string;
+            itemsPublicUrl?: string;
+            urlSigningSecretKey?: string | null;
+            generalAccess?: components["schemas"]["GeneralAccess"];
+            stats?: components["schemas"]["DatasetStats"];
+        };
+        DatasetResponse: {
+            data: components["schemas"]["Dataset"];
+        };
+        UpdateDatasetRequest: {
+            name?: string | null;
+            generalAccess?: components["schemas"]["GeneralAccess"];
+        };
+        PutItemsRequest: {
+            [key: string]: unknown;
+        };
+        ValidationError: {
+            instancePath?: string;
+            schemaPath?: string;
+            keyword?: string;
+            message?: string;
+            params?: Record<string, unknown>;
+        };
+        InvalidItem: {
+            itemPosition?: number;
+            validationErrors?: components["schemas"]["ValidationError"][];
+        };
+        SchemaValidationErrorData: {
+            invalidItems: components["schemas"]["InvalidItem"][];
+        };
+        DatasetSchemaValidationError: {
+            type?: string;
+            message?: string;
+            data?: components["schemas"]["SchemaValidationErrorData"];
+        };
+        PutItemResponseError: {
+            error: components["schemas"]["DatasetSchemaValidationError"];
+        };
+        DatasetFieldStatistics: {
+            min?: number | null;
+            max?: number | null;
+            nullCount?: number | null;
+            emptyCount?: number | null;
+        };
+        DatasetStatistics: {
+            fieldStatistics?: {
+                [key: string]: components["schemas"]["DatasetFieldStatistics"];
+            } | null;
+        };
+        DatasetStatisticsResponse: {
+            data: components["schemas"]["DatasetStatistics"];
+        };
+        KeyValueStoreStats: {
+            readCount?: number;
+            writeCount?: number;
+            deleteCount?: number;
+            listCount?: number;
+            s3StorageBytes?: number;
+            storageBytes?: number;
+        };
+        KeyValueStore: {
+            id: string;
+            name?: string | null;
+            userId?: string | null;
+            username?: string | null;
+            createdAt: Date;
+            modifiedAt: Date;
+            accessedAt: Date;
+            actId?: string | null;
+            actRunId?: string | null;
+            consoleUrl?: string;
+            keysPublicUrl?: string;
+            recordsPublicUrl?: string;
+            schema?: Record<string, unknown> | null;
+            urlSigningSecretKey?: string | null;
+            generalAccess?: components["schemas"]["GeneralAccess"];
+            stats?: components["schemas"]["KeyValueStoreStats"];
+        };
+        KeyValueStoreResponse: {
+            data: components["schemas"]["KeyValueStore"];
+        };
+        UpdateStoreRequest: {
+            name?: string | null;
+            generalAccess?: components["schemas"]["GeneralAccess"];
+        };
+        KeyValueStoreKey: {
+            key: string;
+            size: number;
+            recordPublicUrl: string;
+        };
+        ListOfKeys: {
+            items: components["schemas"]["KeyValueStoreKey"][];
+            count: number;
+            limit: number;
+            exclusiveStartKey?: string | null;
+            isTruncated: boolean;
+            nextExclusiveStartKey?: string | null;
+        };
+        ListOfKeysResponse: {
+            data: components["schemas"]["ListOfKeys"];
+        };
+        RecordResponse: {
+            [key: string]: unknown;
+        };
+        PutRecordRequest: {
+            [key: string]: unknown;
+        };
+        QueueId: string;
+        QueueUserId: string;
+        QueueCreatedAt: Date;
+        QueueModifiedAt: Date;
+        QueueAccessedAt: Date;
+        TotalRequestCount: number;
+        HandledRequestCount: number;
+        PendingRequestCount: number;
+        HadMultipleClients: boolean;
+        RequestQueueStats: {
+            deleteCount?: number;
+            headItemReadCount?: number;
+            readCount?: number;
+            storageBytes?: number;
+            writeCount?: number;
+        };
+        RequestQueue: {
+            id: components["schemas"]["QueueId"];
+            name?: string | null;
+            userId: components["schemas"]["QueueUserId"];
+            actId?: string | null;
+            actRunId?: string | null;
+            createdAt: components["schemas"]["QueueCreatedAt"];
+            modifiedAt: components["schemas"]["QueueModifiedAt"];
+            accessedAt: components["schemas"]["QueueAccessedAt"];
+            totalRequestCount: components["schemas"]["TotalRequestCount"];
+            handledRequestCount: components["schemas"]["HandledRequestCount"];
+            pendingRequestCount: components["schemas"]["PendingRequestCount"];
+            hadMultipleClients: components["schemas"]["HadMultipleClients"];
+            consoleUrl: string;
+            stats?: components["schemas"]["RequestQueueStats"];
+            generalAccess?: components["schemas"]["GeneralAccess"];
+        };
+        RequestQueueResponse: {
+            data: components["schemas"]["RequestQueue"];
+        };
+        UpdateRequestQueueRequest: {
+            name?: string | null;
+            generalAccess?: components["schemas"]["GeneralAccess"];
+        };
+        UniqueKey: string;
+        RequestUrl: string;
+        HttpMethod: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH";
+        RetryCount: number;
+        RequestUserData: {
+            [key: string]: unknown;
+        };
+        RequestBase: {
+            uniqueKey?: components["schemas"]["UniqueKey"];
+            url?: components["schemas"]["RequestUrl"];
+            method?: components["schemas"]["HttpMethod"];
+            retryCount?: components["schemas"]["RetryCount"];
+            loadedUrl?: string | null;
+            payload?: string | Record<string, unknown> | null;
+            headers?: Record<string, unknown> | null;
+            userData?: components["schemas"]["RequestUserData"];
+            noRetry?: boolean | null;
+            errorMessages?: string[] | null;
+            handledAt?: Date | null;
+        };
+        RequestId: string;
+        Request: WithRequired<components["schemas"]["RequestBase"], "uniqueKey" | "url"> & {
+            id: components["schemas"]["RequestId"];
+        };
+        ListOfRequests: {
+            items: components["schemas"]["Request"][];
+            limit: number;
+            exclusiveStartId?: string;
+            cursor?: string;
+            nextCursor?: string;
+        };
+        ListOfRequestsResponse: {
+            data: components["schemas"]["ListOfRequests"];
+        };
+        WasAlreadyPresent: boolean;
+        WasAlreadyHandled: boolean;
+        RequestRegistration: {
+            requestId: components["schemas"]["RequestId"];
+            wasAlreadyPresent: components["schemas"]["WasAlreadyPresent"];
+            wasAlreadyHandled: components["schemas"]["WasAlreadyHandled"];
+        };
+        AddRequestResponse: {
+            data: components["schemas"]["RequestRegistration"];
+        };
+        AddedRequest: {
+            requestId: components["schemas"]["RequestId"];
+            uniqueKey: components["schemas"]["UniqueKey"];
+            wasAlreadyPresent: components["schemas"]["WasAlreadyPresent"];
+            wasAlreadyHandled: components["schemas"]["WasAlreadyHandled"];
+        };
+        RequestDraft: {
+            id?: components["schemas"]["RequestId"];
+            uniqueKey: components["schemas"]["UniqueKey"];
+            url: components["schemas"]["RequestUrl"];
+            method?: components["schemas"]["HttpMethod"];
+        };
+        BatchAddResult: {
+            processedRequests: components["schemas"]["AddedRequest"][];
+            unprocessedRequests: components["schemas"]["RequestDraft"][];
+        };
+        BatchAddResponse: {
+            data: components["schemas"]["BatchAddResult"];
+        };
+        RequestDraftDeleteById: {
+            id: components["schemas"]["RequestId"];
+            uniqueKey?: components["schemas"]["UniqueKey"];
+        };
+        RequestDraftDeleteByUniqueKey: {
+            id?: components["schemas"]["RequestId"];
+            uniqueKey: components["schemas"]["UniqueKey"];
+        };
+        RequestDraftDelete: components["schemas"]["RequestDraftDeleteById"] | components["schemas"]["RequestDraftDeleteByUniqueKey"];
+        DeletedRequestById: {
+            uniqueKey?: components["schemas"]["UniqueKey"];
+            id: components["schemas"]["RequestId"];
+        };
+        DeletedRequestByUniqueKey: {
+            uniqueKey: components["schemas"]["UniqueKey"];
+            id?: components["schemas"]["RequestId"];
+        };
+        DeletedRequest: components["schemas"]["DeletedRequestById"] | components["schemas"]["DeletedRequestByUniqueKey"];
+        BatchDeleteResult: {
+            processedRequests: components["schemas"]["DeletedRequest"][];
+            unprocessedRequests: components["schemas"]["RequestDraft"][];
+        };
+        BatchDeleteResponse: {
+            data: components["schemas"]["BatchDeleteResult"];
+        };
+        UnlockRequestsResult: {
+            unlockedCount: number;
+        };
+        UnlockRequestsResponse: {
+            data: components["schemas"]["UnlockRequestsResult"];
+        };
+        RequestResponse: {
+            data: components["schemas"]["Request"];
+        };
+        UpdateRequestResponse: {
+            data: components["schemas"]["RequestRegistration"];
+        };
+        LockExpiresAt: Date;
+        RequestLockInfo: {
+            lockExpiresAt: components["schemas"]["LockExpiresAt"];
+        };
+        ProlongRequestLockResponse: {
+            data: components["schemas"]["RequestLockInfo"];
+        };
+        HeadLimit: number;
+        HeadRequest: {
+            id: components["schemas"]["RequestId"];
+            uniqueKey: components["schemas"]["UniqueKey"];
+            url: components["schemas"]["RequestUrl"];
+            method?: components["schemas"]["HttpMethod"];
+            retryCount?: components["schemas"]["RetryCount"];
+        };
+        RequestQueueHead: {
+            limit: components["schemas"]["HeadLimit"];
+            queueModifiedAt: components["schemas"]["QueueModifiedAt"];
+            hadMultipleClients: components["schemas"]["HadMultipleClients"];
+            items: components["schemas"]["HeadRequest"][];
+        };
+        HeadResponse: {
+            data: components["schemas"]["RequestQueueHead"];
+        };
+        LockedHeadRequest: {
+            id: components["schemas"]["RequestId"];
+            uniqueKey: components["schemas"]["UniqueKey"];
+            url: components["schemas"]["RequestUrl"];
+            method?: components["schemas"]["HttpMethod"];
+            retryCount?: components["schemas"]["RetryCount"];
+            lockExpiresAt: components["schemas"]["LockExpiresAt"];
+        };
+        LockedRequestQueueHead: {
+            limit: components["schemas"]["HeadLimit"];
+            queueModifiedAt: components["schemas"]["QueueModifiedAt"];
+            queueHasLockedRequests?: boolean;
+            clientKey?: string;
+            hadMultipleClients: components["schemas"]["HadMultipleClients"];
+            lockSecs: number;
+            items: components["schemas"]["LockedHeadRequest"][];
+        };
+        HeadAndLockResponse: {
+            data: components["schemas"]["LockedRequestQueueHead"];
+        };
+        TaskStats: {
+            totalRuns?: number;
+        };
+        TaskShort: {
+            id: string;
+            userId: string;
+            actId: string;
+            actName?: string | null;
+            name: string;
+            username?: string | null;
+            actUsername?: string | null;
+            createdAt: Date;
+            modifiedAt: Date;
+            stats?: components["schemas"]["TaskStats"] | null;
+        };
+        ListOfTasks: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["TaskShort"][];
+        };
+        ListOfTasksResponse: {
+            data: components["schemas"]["ListOfTasks"];
+        };
+        TaskOptions: {
+            build?: string | null;
+            timeoutSecs?: number | null;
+            memoryMbytes?: number | null;
+            maxItems?: number | null;
+            maxTotalChargeUsd?: number | null;
+            restartOnError?: boolean | null;
+        };
+        TaskInput: {
+            [key: string]: unknown;
+        };
+        CreateTaskRequest: {
+            actId: string;
+            name?: string;
+            options?: components["schemas"]["TaskOptions"] | null;
+            input?: components["schemas"]["TaskInput"] | null;
+            title?: string | null;
+            actorStandby?: components["schemas"]["ActorStandby"] | null;
+        };
+        Task: {
+            id: string;
+            userId: string;
+            actId: string;
+            name: string;
+            username?: string | null;
+            createdAt: Date;
+            modifiedAt: Date;
+            removedAt?: Date | null;
+            stats?: components["schemas"]["TaskStats"] | null;
+            options?: components["schemas"]["TaskOptions"] | null;
+            input?: components["schemas"]["TaskInput"] | null;
+            title?: string | null;
+            actorStandby?: components["schemas"]["ActorStandby"] | null;
+            standbyUrl?: string | null;
+        };
+        TaskResponse: {
+            data: components["schemas"]["Task"];
+        };
+        UpdateTaskRequest: {
+            name?: string;
+            options?: components["schemas"]["TaskOptions"] | null;
+            input?: components["schemas"]["TaskInput"] | null;
+            title?: string | null;
+            actorStandby?: components["schemas"]["ActorStandby"] | null;
+        };
+        Webhook: {
+            id: string;
+            createdAt: Date;
+            modifiedAt: Date;
+            userId: string;
+            isAdHoc?: boolean | null;
+            shouldInterpolateStrings?: boolean | null;
+            eventTypes: components["schemas"]["WebhookEventType"][];
+            condition: components["schemas"]["WebhookCondition"];
+            ignoreSslErrors: boolean;
+            doNotRetry?: boolean | null;
+            requestUrl?: string | null;
+            payloadTemplate?: string | null;
+            headersTemplate?: string | null;
+            description?: string | null;
+            lastDispatch?: components["schemas"]["ExampleWebhookDispatch"] | null;
+            stats?: components["schemas"]["WebhookStats"] | null;
+        };
+        UpdateRunRequest: {
+            runId?: string;
+            statusMessage?: string;
+            isStatusMessageTerminal?: boolean;
+            generalAccess?: components["schemas"]["GeneralAccess"];
+        };
+        ChargeRunRequest: {
+            eventName: string;
+            count: number;
+        };
+        StorageOwnership: "ownedByMe" | "sharedWithMe";
+        ListOfKeyValueStores: components["schemas"]["PaginationResponse"] & {
+            unnamed?: boolean;
+            items: components["schemas"]["KeyValueStore"][];
+        };
+        ListOfKeyValueStoresResponse: {
+            data: components["schemas"]["ListOfKeyValueStores"];
+        };
+        DatasetListItem: {
+            id: string;
+            name: string;
+            userId: string;
+            createdAt: Date;
+            modifiedAt: Date;
+            accessedAt: Date;
+            itemCount: number;
+            cleanItemCount: number;
+            actId?: string | null;
+            actRunId?: string | null;
+            title?: string | null;
+            username?: string;
+            generalAccess?: components["schemas"]["GeneralAccess"];
+            stats?: components["schemas"]["DatasetStats"];
+        };
+        ListOfDatasets: components["schemas"]["PaginationResponse"] & {
+            unnamed?: boolean;
+            items: components["schemas"]["DatasetListItem"][];
+        };
+        ListOfDatasetsResponse: {
+            data: components["schemas"]["ListOfDatasets"];
+        };
+        RequestQueueShort: {
+            id: components["schemas"]["QueueId"];
+            name: string;
+            userId: components["schemas"]["QueueUserId"];
+            username: string;
+            createdAt: components["schemas"]["QueueCreatedAt"];
+            modifiedAt: components["schemas"]["QueueModifiedAt"];
+            accessedAt: components["schemas"]["QueueAccessedAt"];
+            expireAt?: Date;
+            totalRequestCount: components["schemas"]["TotalRequestCount"];
+            handledRequestCount: components["schemas"]["HandledRequestCount"];
+            pendingRequestCount: components["schemas"]["PendingRequestCount"];
+            actId?: string | null;
+            actRunId?: string | null;
+            hadMultipleClients: components["schemas"]["HadMultipleClients"];
+            generalAccess?: components["schemas"]["GeneralAccess"];
+            stats?: components["schemas"]["RequestQueueStats"];
+        };
+        ListOfRequestQueues: components["schemas"]["PaginationResponse"] & {
+            unnamed?: boolean;
+            items: components["schemas"]["RequestQueueShort"][];
+        };
+        ListOfRequestQueuesResponse: {
+            data: components["schemas"]["ListOfRequestQueues"];
+        };
+        WebhookCreate: {
+            isAdHoc?: boolean | null;
+            eventTypes: components["schemas"]["WebhookEventType"][];
+            condition: components["schemas"]["WebhookCondition"];
+            idempotencyKey?: string | null;
+            ignoreSslErrors?: boolean | null;
+            doNotRetry?: boolean | null;
+            requestUrl: string;
+            payloadTemplate?: string | null;
+            headersTemplate?: string | null;
+            description?: string | null;
+            shouldInterpolateStrings?: boolean | null;
+        };
+        WebhookResponse: {
+            data: components["schemas"]["Webhook"];
+        };
+        WebhookUpdate: {
+            isAdHoc?: boolean | null;
+            eventTypes?: components["schemas"]["WebhookEventType"][] | null;
+            condition?: components["schemas"]["WebhookCondition"] | null;
+            ignoreSslErrors?: boolean | null;
+            doNotRetry?: boolean | null;
+            requestUrl?: string | null;
+            payloadTemplate?: string | null;
+            headersTemplate?: string | null;
+            description?: string | null;
+            shouldInterpolateStrings?: boolean | null;
+        };
+        WebhookDispatchWebhookSummary: {
+            actionType?: string;
+            condition?: components["schemas"]["WebhookCondition"];
+            requestUrl?: string | null;
+            isAdHoc?: boolean;
+        };
+        WebhookDispatch: {
+            id: string;
+            userId: string;
+            webhookId: string;
+            createdAt: Date;
+            status: components["schemas"]["WebhookDispatchStatus"];
+            eventType: components["schemas"]["WebhookEventType"];
+            eventData?: {
+                actorId: string;
+                actorRunId?: string;
+                actorBuildId?: string;
+                actorTaskId?: string | null;
+            } | null;
+            webhook?: components["schemas"]["WebhookDispatchWebhookSummary"] | null;
+            calls?: {
+                startedAt?: Date | null;
+                finishedAt?: Date | null;
+                errorMessage?: string | null;
+                responseStatus?: number | null;
+                responseBody?: string | null;
+            }[];
+        };
+        TestWebhookResponse: {
+            data: components["schemas"]["WebhookDispatch"];
+        };
+        ListOfWebhookDispatches: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["WebhookDispatch"][];
+        };
+        ListOfWebhookDispatchesResponse: {
+            data: components["schemas"]["ListOfWebhookDispatches"];
+        };
+        WebhookDispatchResponse: {
+            data: components["schemas"]["WebhookDispatch"];
+        };
+        ScheduleBase: {
+            id: string;
+            userId: string;
+            name: string;
+            cronExpression: string;
+            timezone: string;
+            isEnabled: boolean;
+            isExclusive: boolean;
+            createdAt: Date;
+            modifiedAt: Date;
+            nextRunAt?: Date | null;
+            lastRunAt?: Date | null;
+        };
+        ScheduleActionShortRunActor: {
+            id: string;
+            type: "RUN_ACTOR";
+            actorId: string;
+        };
+        ScheduleActionShortRunActorTask: {
+            id: string;
+            type: "RUN_ACTOR_TASK";
+            actorTaskId: string;
+        };
+        ScheduleActionShort: components["schemas"]["ScheduleActionShortRunActor"] | components["schemas"]["ScheduleActionShortRunActorTask"];
+        ScheduleShort: components["schemas"]["ScheduleBase"] & {
+            actions: components["schemas"]["ScheduleActionShort"][];
+        };
+        ListOfSchedules: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["ScheduleShort"][];
+        };
+        ListOfSchedulesResponse: {
+            data: components["schemas"]["ListOfSchedules"];
+        };
+        ScheduleActionRunInput: {
+            body?: string | null;
+            contentType?: string | null;
+        };
+        ScheduleCreateActionRunActor: {
+            type: "RUN_ACTOR";
+            actorId: string;
+            runInput?: components["schemas"]["ScheduleActionRunInput"] | null;
+            runOptions?: components["schemas"]["TaskOptions"] | null;
+        };
+        ScheduleCreateActionRunActorTask: {
+            type: "RUN_ACTOR_TASK";
+            actorTaskId: string;
+            input?: Record<string, unknown> | null;
+        };
+        ScheduleCreateAction: components["schemas"]["ScheduleCreateActionRunActor"] | components["schemas"]["ScheduleCreateActionRunActorTask"];
+        ScheduleCreate: {
+            name?: string | null;
+            isEnabled?: boolean | null;
+            isExclusive?: boolean | null;
+            cronExpression?: string | null;
+            timezone?: string | null;
+            description?: string | null;
+            title?: string | null;
+            actions?: components["schemas"]["ScheduleCreateAction"][] | null;
+        };
+        ScheduleActionRunActor: {
+            id: string;
+            type: "RUN_ACTOR";
+            actorId: string;
+            runInput?: components["schemas"]["ScheduleActionRunInput"] | null;
+            runOptions?: components["schemas"]["TaskOptions"] | null;
+        };
+        ScheduleActionRunActorTask: {
+            id: string;
+            type: "RUN_ACTOR_TASK";
+            actorTaskId: string;
+            input?: Record<string, unknown> | null;
+        };
+        ScheduleAction: components["schemas"]["ScheduleActionRunActor"] | components["schemas"]["ScheduleActionRunActorTask"];
+        Schedule: components["schemas"]["ScheduleBase"] & {
+            description?: string | null;
+            title?: string | null;
+            notifications?: {
+                email?: boolean;
+            };
+            actions: components["schemas"]["ScheduleAction"][];
+        };
+        ScheduleResponse: {
+            data: components["schemas"]["Schedule"];
+        };
+        ScheduleInvoked: {
+            message: string;
+            level: string;
+            createdAt: Date;
+        };
+        ScheduleLogResponse: {
+            data: components["schemas"]["ScheduleInvoked"][];
+        };
+        CurrentPricingInfo: {
+            pricingModel: string;
+            apifyMarginPercentage?: number;
+            createdAt?: Date;
+            startedAt?: Date;
+            notifiedAboutChangeAt?: Date | null;
+            notifiedAboutFutureChangeAt?: Date | null;
+            isPriceChangeNotificationSuppressed?: boolean;
+            forceContainsSignificantPriceChange?: boolean;
+            isPPEPlatformUsagePaidByUser?: boolean;
+            reasonForChange?: string | null;
+            trialMinutes?: number | null;
+            unitName?: string | null;
+            pricePerUnitUsd?: number | null;
+            minimalMaxTotalChargeUsd?: number | null;
+            pricingPerEvent?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        StoreListActor: {
+            id: string;
+            title: string;
+            name: string;
+            username: string;
+            userFullName?: string | null;
+            description?: string | null;
+            categories?: string[];
+            notice?: components["schemas"]["ActorNotice"];
+            pictureUrl?: string | null;
+            userPictureUrl?: string | null;
+            url?: string | null;
+            stats: components["schemas"]["ActorStats"];
+            currentPricingInfo?: components["schemas"]["CurrentPricingInfo"];
+            isWhiteListedForAgenticPayments?: boolean | null;
+            actorReviewCount?: number;
+            actorReviewRating?: number;
+            bookmarkCount?: number;
+            badge?: string | null;
+            readmeSummary?: string;
+        };
+        ListOfStoreActors: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["StoreListActor"][];
+        };
+        ListOfActorsInStoreResponse: {
+            data: components["schemas"]["ListOfStoreActors"];
+        };
+        Profile: {
+            bio?: string | null;
+            name?: string;
+            pictureUrl?: string | null;
+            githubUsername?: string | null;
+            websiteUrl?: string | null;
+            twitterUsername?: string | null;
+        };
+        UserPublicInfo: {
+            username: string;
+            profile?: components["schemas"]["Profile"];
+        };
+        PublicUserDataResponse: {
+            data: components["schemas"]["UserPublicInfo"];
+        };
+        ProxyGroup: {
+            name: string;
+            description: string | null;
+            availableCount: number;
+        };
+        Proxy: {
+            password: string;
+            groups: components["schemas"]["ProxyGroup"][];
+        };
+        AvailableProxyGroups: {
+            [key: string]: number;
+        };
+        Plan: {
+            id?: string;
+            description?: string;
+            isEnabled?: boolean;
+            monthlyBasePriceUsd?: number;
+            monthlyUsageCreditsUsd?: number;
+            usageDiscountPercent?: number;
+            enabledPlatformFeatures?: string[];
+            maxMonthlyUsageUsd?: number;
+            maxActorMemoryGbytes?: number;
+            maxMonthlyActorComputeUnits?: number;
+            maxMonthlyResidentialProxyGbytes?: number;
+            maxMonthlyProxySerps?: number;
+            maxMonthlyExternalDataTransferGbytes?: number;
+            maxActorCount?: number;
+            maxActorTaskCount?: number;
+            dataRetentionDays?: number;
+            availableProxyGroups: components["schemas"]["AvailableProxyGroups"];
+            teamAccountSeatCount?: number;
+            supportLevel?: string;
+            availableAddOns?: string[];
+            tier?: string;
+            apiRateLimitBoosts?: number;
+            maxScheduleCount?: number;
+            maxConcurrentActorRuns?: number;
+            planPricing?: {
+                [key: string]: unknown;
+            };
+        };
+        EffectivePlatformFeature: {
+            isEnabled: boolean;
+            disabledReason: string | null;
+            disabledReasonType: string | null;
+            isTrial: boolean;
+            trialExpirationAt: Date | null;
+        };
+        EffectivePlatformFeatures: {
+            ACTORS: components["schemas"]["EffectivePlatformFeature"];
+            STORAGE: components["schemas"]["EffectivePlatformFeature"];
+            SCHEDULER: components["schemas"]["EffectivePlatformFeature"];
+            PROXY: components["schemas"]["EffectivePlatformFeature"];
+            PROXY_EXTERNAL_ACCESS: components["schemas"]["EffectivePlatformFeature"];
+            PROXY_RESIDENTIAL: components["schemas"]["EffectivePlatformFeature"];
+            PROXY_SERPS: components["schemas"]["EffectivePlatformFeature"];
+            WEBHOOKS: components["schemas"]["EffectivePlatformFeature"];
+            ACTORS_PUBLIC_ALL: components["schemas"]["EffectivePlatformFeature"];
+            ACTORS_PUBLIC_DEVELOPER: components["schemas"]["EffectivePlatformFeature"];
+        };
+        UserPrivateInfo: {
+            id?: string;
+            username: string;
+            profile?: components["schemas"]["Profile"];
+            email?: string;
+            proxy?: components["schemas"]["Proxy"];
+            plan: components["schemas"]["Plan"];
+            effectivePlatformFeatures: components["schemas"]["EffectivePlatformFeatures"];
+            createdAt?: Date;
+            isPaying: boolean;
+        };
+        PrivateUserDataResponse: {
+            data: components["schemas"]["UserPrivateInfo"];
+        };
+        UsageCycle: {
+            startAt: Date;
+            endAt: Date;
+        };
+        PriceTiers: {
+            quantityAbove: number;
+            discountPercent: number;
+            tierQuantity: number;
+            unitPriceUsd: number;
+            priceUsd: number;
+        };
+        UsageItem: {
+            quantity: number;
+            baseAmountUsd: number;
+            baseUnitPriceUsd?: number;
+            amountAfterVolumeDiscountUsd?: number;
+            priceTiers?: components["schemas"]["PriceTiers"][];
+        };
+        MonthlyServiceUsage: {
+            [key: string]: components["schemas"]["UsageItem"];
+        };
+        ServiceUsage: {
+            [key: string]: components["schemas"]["UsageItem"];
+        };
+        DailyServiceUsages: {
+            date: string;
+            serviceUsage: components["schemas"]["ServiceUsage"];
+            totalUsageCreditsUsd: number;
+        };
+        MonthlyUsage: {
+            usageCycle: components["schemas"]["UsageCycle"];
+            monthlyServiceUsage: components["schemas"]["MonthlyServiceUsage"];
+            dailyServiceUsages: components["schemas"]["DailyServiceUsages"][];
+            totalUsageCreditsUsdBeforeVolumeDiscount: number;
+            totalUsageCreditsUsdAfterVolumeDiscount: number;
+        };
+        MonthlyUsageResponse: {
+            data: components["schemas"]["MonthlyUsage"];
+        };
+        Limits: {
+            maxMonthlyUsageUsd: number;
+            maxMonthlyActorComputeUnits: number;
+            maxMonthlyExternalDataTransferGbytes: number;
+            maxMonthlyProxySerps: number;
+            maxMonthlyResidentialProxyGbytes: number;
+            maxActorMemoryGbytes: number;
+            maxActorCount: number;
+            maxActorTaskCount: number;
+            maxConcurrentActorJobs: number;
+            maxTeamAccountSeatCount: number;
+            dataRetentionDays: number;
+            maxScheduleCount?: number;
+        };
+        Current: {
+            monthlyUsageUsd: number;
+            monthlyActorComputeUnits: number;
+            monthlyExternalDataTransferGbytes: number;
+            monthlyProxySerps: number;
+            monthlyResidentialProxyGbytes: number;
+            actorMemoryGbytes: number;
+            actorCount: number;
+            actorTaskCount: number;
+            activeActorJobCount: number;
+            teamAccountSeatCount: number;
+            scheduleCount?: number;
+        };
+        AccountLimits: {
+            monthlyUsageCycle: components["schemas"]["UsageCycle"];
+            limits: components["schemas"]["Limits"];
+            current: components["schemas"]["Current"];
+        };
+        LimitsResponse: {
+            data: components["schemas"]["AccountLimits"];
+        };
+        UpdateLimitsRequest: {
+            maxMonthlyUsageUsd?: number;
+            dataRetentionDays?: number;
+        };
+        BrowserInfoResponse: {
+            method: string;
+            clientIp: string | null;
+            countryCode: string | null;
+            bodyLength: number;
+            headers?: {
+                [key: string]: string | string[];
+            };
+            rawHeaders?: string[];
+        };
+        EncodeAndSignData: {
+            encoded: string;
+        };
+        EncodeAndSignResponse: {
+            data: components["schemas"]["EncodeAndSignData"];
+        };
+        DecodeAndVerifyRequest: {
+            encoded: string;
+        };
+        DecodeAndVerifyData: {
+            decoded: unknown;
+            encodedByUserId: string | null;
+            isVerifiedUser: boolean;
+        };
+        DecodeAndVerifyResponse: {
+            data: components["schemas"]["DecodeAndVerifyData"];
+        };
+    };
+}
+
+// @public
+export interface Current extends GeneratedCurrent {
+}
+
+// @public
+export interface DailyServiceUsage extends Omit<Schemas['DailyServiceUsages'], keyof DailyServiceUsageRePointed | keyof DailyServiceUsageClientConversions>, DailyServiceUsageRePointed, DailyServiceUsageClientConversions {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface DailyServiceUsageData {
+// @public (undocumented)
+interface DailyServiceUsageClientConversions {
     // (undocumented)
-    baseAmountUsd: number;
+    date: Date;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface DailyServiceUsageRePointed {
     // (undocumented)
-    quantity: number;
+    serviceUsage: ServiceUsage;
 }
 
 // @public
-export interface Dataset {
-    // (undocumented)
-    accessedAt: Date;
-    // (undocumented)
-    actId?: string;
-    // (undocumented)
-    actRunId?: string;
-    // (undocumented)
-    cleanItemCount: number;
-    // (undocumented)
-    createdAt: Date;
-    // (undocumented)
-    fields: string[];
-    generalAccess?: STORAGE_GENERAL_ACCESS | null;
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    itemCount: number;
-    itemsPublicUrl: string;
-    // (undocumented)
-    modifiedAt: Date;
-    // (undocumented)
-    name?: string;
-    // (undocumented)
-    stats: DatasetStats;
-    title?: string;
-    urlSigningSecretKey?: string | null;
-    // (undocumented)
-    userId: string;
-    username?: string;
+export interface Dataset extends Omit<Schemas['Dataset'], keyof DatasetRePointed | keyof DatasetSpecNarrowings>, DatasetRePointed, DatasetSpecNarrowings, DatasetSpecGaps {
 }
 
 // @public
@@ -1082,22 +2514,50 @@ export type DatasetCollectionClientListResult = PaginatedList<Dataset> & {
     unnamed: boolean;
 };
 
-// @public
-export interface DatasetStatistics {
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface DatasetRePointed {
     // (undocumented)
-    fieldStatistics: Record<string, FieldStatistics>;
+    stats?: DatasetStats;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public
+interface DatasetSpecGaps {
+    // (undocumented)
+    title?: string;
+    // (undocumented)
+    username?: string;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface DatasetSpecNarrowings {
+    // (undocumented)
+    consoleUrl?: string;
+    // (undocumented)
+    generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
 // @public
-export interface DatasetStats {
+export interface DatasetStatistics extends Omit<Schemas['DatasetStatistics'], keyof DatasetStatisticsRePointed>, DatasetStatisticsRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface DatasetStatisticsRePointed {
+    fieldStatistics?: Record<string, FieldStatistics> | null;
+}
+
+// @public
+export interface DatasetStats extends GeneratedDatasetStats, DatasetStatsSpecGaps {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public
+interface DatasetStatsSpecGaps {
     // (undocumented)
     deleteCount?: number;
-    // (undocumented)
-    readCount?: number;
-    // (undocumented)
-    storageBytes?: number;
-    // (undocumented)
-    writeCount?: number;
 }
 
 // @public
@@ -1125,24 +2585,17 @@ export enum DownloadItemsFormat {
     XML = "xml"
 }
 
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface EffectivePlatformFeature {
-    // (undocumented)
-    disabledReason: string | null;
-    // (undocumented)
-    disabledReasonType: string | null;
-    // (undocumented)
-    isEnabled: boolean;
-    // (undocumented)
-    isTrial: boolean;
-    // (undocumented)
-    trialExpirationAt: Date | null;
+// @public
+export interface EffectivePlatformFeature extends GeneratedEffectivePlatformFeature {
+}
+
+// @public
+export interface EffectivePlatformFeatures extends Omit<Schemas['EffectivePlatformFeatures'], keyof EffectivePlatformFeaturesRePointed>, EffectivePlatformFeaturesRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-interface EffectivePlatformFeatures {
+interface EffectivePlatformFeaturesRePointed {
     // (undocumented)
     ACTORS: EffectivePlatformFeature;
     // (undocumented)
@@ -1166,33 +2619,213 @@ interface EffectivePlatformFeatures {
 }
 
 // @public
-export interface FieldStatistics {
-    // (undocumented)
-    emptyCount?: number;
-    // (undocumented)
-    max?: number;
-    // (undocumented)
-    min?: number;
-    // (undocumented)
-    nullCount?: number;
+export interface FieldStatistics extends GeneratedDatasetFieldStatistics {
 }
 
+// @public
+export type FinalActorVersion = ActorVersion & {
+    buildTag: NonNullable<ActorVersion['buildTag']>;
+};
+
+// @public
+export interface FlatPricePerMonthActorPricingInfo extends GeneratedFlatPricePerMonthActorPricingInfo {
+}
+
+// @public
+export interface FreeActorPricingInfo extends GeneratedFreeActorPricingInfo {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-export type FinalActorVersion = ActorVersion & Required<Pick<ActorVersion, 'versionNumber' | 'buildTag'>>;
+type GeneratedActorStandby = Schemas['ActorStandby'];
 
-// @public
-export interface FlatPricePerMonthActorPricingInfo extends CommonActorPricingInfo {
-    pricePerUnitUsd: number;
-    // (undocumented)
-    pricingModel: 'FLAT_PRICE_PER_MONTH';
-    trialMinutes?: number;
-}
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedActorStats = Schemas['ActorStats'];
 
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedBatchAddResult = Schemas['BatchAddResult'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedBatchDeleteResult = Schemas['BatchDeleteResult'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedBuildOptions = Schemas['BuildOptions'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedBuildStats = Schemas['BuildStats'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedBuildUsage = Schemas['BuildUsage'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedCurrent = Schemas['Current'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedCurrentPricingInfo = Schemas['CurrentPricingInfo'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedDatasetFieldStatistics = Schemas['DatasetFieldStatistics'];
+
+// Not exported by the entry point; reachable only as a referenced type.
 // @public
-export interface FreeActorPricingInfo extends CommonActorPricingInfo {
-    // (undocumented)
-    pricingModel: 'FREE';
-}
+type GeneratedDatasetStats = Schemas['DatasetStats'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedEffectivePlatformFeature = Schemas['EffectivePlatformFeature'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedEnvVar = Schemas['EnvVar'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedExampleRunInput = Schemas['ExampleRunInput'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedFlatPricePerMonthActorPricingInfo = Schemas['FlatPricePerMonthActorPricingInfo'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedFreeActorPricingInfo = Schemas['FreeActorPricingInfo'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedHeadRequest = Schemas['HeadRequest'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedKeyValueStoreKey = Schemas['KeyValueStoreKey'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedKeyValueStoreStats = Schemas['KeyValueStoreStats'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedLimits = Schemas['Limits'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedLockedHeadRequest = Schemas['LockedHeadRequest'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedMetamorph = Schemas['Metamorph'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedPriceTiers = Schemas['PriceTiers'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedProfile = Schemas['Profile'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedProxyGroup = Schemas['ProxyGroup'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedRequest = Schemas['Request'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedRequestLockInfo = Schemas['RequestLockInfo'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedRequestQueueStats = Schemas['RequestQueueStats'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedRequestRegistration = Schemas['RequestRegistration'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedRunOptions = Schemas['RunOptions'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedRunStats = Schemas['RunStats'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedRunStorageIds = NonNullable<Schemas['Run']['storageIds']>;
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedRunUsage = Schemas['RunUsage'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedScheduleActionRunInput = Schemas['ScheduleActionRunInput'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedSourceCodeFile = Schemas['SourceCodeFile'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedSourceCodeFolder = Schemas['SourceCodeFolder'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedTaggedBuildInfo = Schemas['TaggedBuildInfo'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedTaskOptions = Schemas['TaskOptions'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedTaskStats = Schemas['TaskStats'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedTieredPricingPerDatasetItemEntry = Schemas['TieredPricingPerDatasetItemEntry'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedTieredPricingPerEventEntry = Schemas['TieredPricingPerEventEntry'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedUnlockRequestsResult = Schemas['UnlockRequestsResult'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedUsageCycle = Schemas['UsageCycle'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedVersion = Schemas['Version'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedWebhookCondition = Schemas['WebhookCondition'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedWebhookDispatchCall = NonNullable<Schemas['WebhookDispatch']['calls']>[number];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedWebhookDispatchEventData = NonNullable<Schemas['WebhookDispatch']['eventData']>;
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedWebhookStats = Schemas['WebhookStats'];
 
 // @public
 export interface GetStreamedLogOptions {
@@ -1290,19 +2923,14 @@ export interface KeyValueClientListKeysOptions {
 }
 
 // @public
-export interface KeyValueClientListKeysResult {
-    // (undocumented)
-    count: number;
-    // (undocumented)
-    exclusiveStartKey: string;
-    // (undocumented)
-    isTruncated: boolean;
+export interface KeyValueClientListKeysResult extends Omit<Schemas['ListOfKeys'], keyof KeyValueClientListKeysResultRePointed>, KeyValueClientListKeysResultRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface KeyValueClientListKeysResultRePointed {
     // (undocumented)
     items: KeyValueListItem[];
-    // (undocumented)
-    limit: number;
-    // (undocumented)
-    nextExclusiveStartKey: string;
 }
 
 // @public
@@ -1314,39 +2942,11 @@ export interface KeyValueClientUpdateOptions {
 }
 
 // @public
-export interface KeyValueListItem {
-    // (undocumented)
-    key: string;
-    recordPublicUrl: string;
-    // (undocumented)
-    size: number;
+export interface KeyValueListItem extends GeneratedKeyValueStoreKey {
 }
 
 // @public
-export interface KeyValueStore {
-    // (undocumented)
-    accessedAt: Date;
-    // (undocumented)
-    actId?: string;
-    // (undocumented)
-    actRunId?: string;
-    // (undocumented)
-    createdAt: Date;
-    generalAccess?: STORAGE_GENERAL_ACCESS | null;
-    // (undocumented)
-    id: string;
-    keysPublicUrl: string;
-    // (undocumented)
-    modifiedAt: Date;
-    // (undocumented)
-    name?: string;
-    // (undocumented)
-    stats?: KeyValueStoreStats;
-    title?: string;
-    urlSigningSecretKey?: string | null;
-    // (undocumented)
-    userId: string;
-    username?: string;
+export interface KeyValueStore extends Omit<Schemas['KeyValueStore'], keyof KeyValueStoreRePointed | keyof KeyValueStoreSpecNarrowings>, KeyValueStoreRePointed, KeyValueStoreSpecNarrowings, KeyValueStoreSpecGaps {
 }
 
 // @public
@@ -1411,44 +3011,33 @@ export interface KeyValueStoreRecordOptions {
     timeoutSecs?: number;
 }
 
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface KeyValueStoreRePointed {
+    // (undocumented)
+    stats?: KeyValueStoreStats;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
 // @public
-export interface KeyValueStoreStats {
+interface KeyValueStoreSpecGaps {
     // (undocumented)
-    deleteCount?: number;
+    title?: string;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface KeyValueStoreSpecNarrowings {
     // (undocumented)
-    listCount?: number;
-    // (undocumented)
-    readCount?: number;
-    // (undocumented)
-    storageBytes?: number;
-    // (undocumented)
-    writeCount?: number;
+    generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
 // @public
-export interface Limits {
-    // (undocumented)
-    dataRetentionDays: number;
-    // (undocumented)
-    maxActorCount: number;
-    // (undocumented)
-    maxActorMemoryGbytes: number;
-    // (undocumented)
-    maxActorTaskCount: number;
-    // (undocumented)
-    maxConcurrentActorJobs: number;
-    // (undocumented)
-    maxMonthlyActorComputeUnits: number;
-    // (undocumented)
-    maxMonthlyExternalDataTransferGbytes: number;
-    // (undocumented)
-    maxMonthlyProxySerps: number;
-    // (undocumented)
-    maxMonthlyResidentialProxyGbytes: number;
-    // (undocumented)
-    maxMonthlyUsageUsd: number;
-    // (undocumented)
-    maxTeamAccountSeatCount: number;
+export interface KeyValueStoreStats extends GeneratedKeyValueStoreStats {
+}
+
+// @public
+export interface Limits extends GeneratedLimits {
 }
 
 // @public
@@ -1477,43 +3066,23 @@ export interface LogOptions {
     raw?: boolean;
 }
 
-// Not exported by the entry point; reachable only as a referenced type.
 // @public
-interface MonthlyServiceUsageData {
-    // (undocumented)
-    amountAfterVolumeDiscountUsd: number;
-    // (undocumented)
-    baseAmountUsd: number;
-    // (undocumented)
-    baseUnitPriceUsd: number;
-    // (undocumented)
-    priceTiers: PriceTier[];
-    // (undocumented)
-    quantity: number;
+export interface MonthlyUsage extends Omit<Schemas['MonthlyUsage'], keyof MonthlyUsageRePointed>, MonthlyUsageRePointed {
 }
 
 // @public
-export interface MonthlyUsage {
+export interface MonthlyUsageCycle extends GeneratedUsageCycle {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface MonthlyUsageRePointed {
     // (undocumented)
     dailyServiceUsages: DailyServiceUsage[];
     // (undocumented)
-    monthlyServiceUsage: {
-        [key: string]: MonthlyServiceUsageData;
-    };
-    // (undocumented)
-    totalUsageCreditsUsdAfterVolumeDiscount: number;
-    // (undocumented)
-    totalUsageCreditsUsdBeforeVolumeDiscount: number;
+    monthlyServiceUsage: ServiceUsage;
     // (undocumented)
     usageCycle: UsageCycle;
-}
-
-// @public
-export interface MonthlyUsageCycle {
-    // (undocumented)
-    endAt: Date;
-    // (undocumented)
-    startAt: Date;
 }
 
 // @public
@@ -1619,7 +3188,7 @@ interface PaginationOptions {
     offset?: number;
 }
 
-// @public (undocumented)
+// @public
 export enum PlatformFeature {
     // (undocumented)
     Actors = "ACTORS",
@@ -1638,68 +3207,39 @@ export enum PlatformFeature {
 }
 
 // @public
-export interface PricePerDatasetItemActorPricingInfo extends CommonActorPricingInfo {
+export interface PricePerDatasetItemActorPricingInfo extends Omit<Schemas['PricePerDatasetItemActorPricingInfo'], keyof PricePerDatasetItemActorPricingInfoRePointed>, PricePerDatasetItemActorPricingInfoRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface PricePerDatasetItemActorPricingInfoRePointed {
     // (undocumented)
-    pricePerUnitUsd: number;
-    // (undocumented)
-    pricingModel: 'PRICE_PER_DATASET_ITEM';
-    unitName?: string;
+    tieredPricing?: TieredPricingPerDatasetItem;
 }
 
 // @public
-export interface PricePerEventActorPricingInfo extends CommonActorPricingInfo {
-    // (undocumented)
-    minimalMaxTotalChargeUsd?: number;
-    // (undocumented)
-    pricingModel: 'PAY_PER_EVENT';
+export interface PricePerEventActorPricingInfo extends Omit<Schemas['PayPerEventActorPricingInfo'], keyof PricePerEventActorPricingInfoRePointed>, PricePerEventActorPricingInfoRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface PricePerEventActorPricingInfoRePointed {
     // (undocumented)
     pricingPerEvent: {
-        actorChargeEvents: ActorChargeEvents;
+        actorChargeEvents?: ActorChargeEvents;
     };
 }
 
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface PriceTier {
-    // (undocumented)
-    discountPercent: number;
-    // (undocumented)
-    priceUsd: number;
-    // (undocumented)
-    quantityAbove: number;
-    // (undocumented)
-    tierQuantity: number;
-    // (undocumented)
-    unitPriceUsd: number;
+// @public
+export interface PriceTier extends GeneratedPriceTiers {
 }
 
 // @public
-export interface PricingInfo {
-    // (undocumented)
-    pricingModel: string;
+export interface PricingInfo extends GeneratedCurrentPricingInfo {
 }
 
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface ProcessedRequest {
-    // (undocumented)
-    requestId: string;
-    // (undocumented)
-    uniqueKey: string;
-    // (undocumented)
-    wasAlreadyHandled: boolean;
-    // (undocumented)
-    wasAlreadyPresent: boolean;
-}
-
-// @public (undocumented)
-export interface ProxyGroup {
-    // (undocumented)
-    availableCount: number;
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    name: string;
+// @public
+export interface ProxyGroup extends GeneratedProxyGroup {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -1707,49 +3247,18 @@ export interface ProxyGroup {
 type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyRequestConfig>['use']>[0];
 
 // @public
-export interface RequestQueue {
-    // (undocumented)
-    accessedAt: Date;
-    // (undocumented)
-    actId?: string;
-    // (undocumented)
-    actRunId?: string;
-    // (undocumented)
-    createdAt: Date;
-    // (undocumented)
-    expireAt?: string;
-    generalAccess?: STORAGE_GENERAL_ACCESS | null;
-    // (undocumented)
-    hadMultipleClients: boolean;
-    // (undocumented)
-    handledRequestCount: number;
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    modifiedAt: Date;
-    // (undocumented)
-    name?: string;
-    // (undocumented)
-    pendingRequestCount: number;
-    // (undocumented)
-    stats: RequestQueueStats;
-    title?: string;
-    // (undocumented)
-    totalRequestCount: number;
-    // (undocumented)
-    userId: string;
-    username?: string;
+export interface RequestQueue extends Omit<Schemas['RequestQueue'], keyof RequestQueueRePointed | keyof RequestQueueSpecNarrowings>, RequestQueueRePointed, RequestQueueSpecNarrowings, RequestQueueSpecGaps {
 }
 
 // @public
 export class RequestQueueClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions, userOptions?: RequestQueueUserOptions);
-    addRequest(request: Omit<RequestQueueClientRequestSchema, 'id'>, options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientAddRequestResult>;
-    batchAddRequests(requests: Omit<RequestQueueClientRequestSchema, 'id'>[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
-    protected _batchAddRequests(requests: Omit<RequestQueueClientRequestSchema, 'id'>[], options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
+    addRequest(request: RequestQueueClientRequestToAdd, options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientAddRequestResult>;
+    batchAddRequests(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
+    protected _batchAddRequests(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
     // (undocumented)
-    protected _batchAddRequestsWithRetries(requests: Omit<RequestQueueClientRequestSchema, 'id'>[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
-    batchDeleteRequests(requests: RequestQueueClientRequestToDelete[]): Promise<RequestQueueClientBatchRequestsOperationResult>;
+    protected _batchAddRequestsWithRetries(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
+    batchDeleteRequests(requests: RequestQueueClientRequestToDelete[]): Promise<RequestQueueClientBatchDeleteRequestsResult>;
     delete(): Promise<void>;
     deleteRequest(id: string): Promise<void>;
     deleteRequestLock(id: string, options?: RequestQueueClientDeleteRequestLockOptions): Promise<void>;
@@ -1762,7 +3271,7 @@ export class RequestQueueClient extends ResourceClient {
     prolongRequestLock(id: string, options: RequestQueueClientProlongRequestLockOptions): Promise<RequestQueueClientProlongRequestLockResult>;
     unlockRequests(): Promise<RequestQueueClientUnlockRequestsResult>;
     update(newFields: RequestQueueClientUpdateOptions): Promise<RequestQueue>;
-    updateRequest(request: RequestQueueClientRequestSchema, options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientAddRequestResult>;
+    updateRequest(request: RequestQueueClientRequestToUpdate, options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientAddRequestResult>;
 }
 
 // @public (undocumented)
@@ -1772,13 +3281,7 @@ export interface RequestQueueClientAddRequestOptions {
 }
 
 // @public
-export interface RequestQueueClientAddRequestResult {
-    // (undocumented)
-    requestId: string;
-    // (undocumented)
-    wasAlreadyHandled: boolean;
-    // (undocumented)
-    wasAlreadyPresent: boolean;
+export interface RequestQueueClientAddRequestResult extends GeneratedRequestRegistration {
 }
 
 // @public
@@ -1793,11 +3296,11 @@ export interface RequestQueueClientBatchAddRequestWithRetriesOptions {
 }
 
 // @public
-export interface RequestQueueClientBatchRequestsOperationResult {
-    // (undocumented)
-    processedRequests: ProcessedRequest[];
-    // (undocumented)
-    unprocessedRequests: UnprocessedRequest[];
+export interface RequestQueueClientBatchDeleteRequestsResult extends GeneratedBatchDeleteResult {
+}
+
+// @public
+export interface RequestQueueClientBatchRequestsOperationResult extends GeneratedBatchAddResult {
 }
 
 // @public
@@ -1806,8 +3309,8 @@ export interface RequestQueueClientDeleteRequestLockOptions {
     forefront?: boolean;
 }
 
-// @public (undocumented)
-export type RequestQueueClientGetRequestResult = Omit<RequestQueueClientListItem, 'retryCount'>;
+// @public
+export type RequestQueueClientGetRequestResult = RequestQueueClientRequestSchema;
 
 // @public
 export interface RequestQueueClientListAndLockHeadOptions {
@@ -1818,11 +3321,14 @@ export interface RequestQueueClientListAndLockHeadOptions {
 }
 
 // @public
-export interface RequestQueueClientListAndLockHeadResult extends RequestQueueClientListHeadResult {
-    clientKey: string;
+export interface RequestQueueClientListAndLockHeadResult extends Omit<Schemas['LockedRequestQueueHead'], keyof RequestQueueClientListAndLockHeadResultRePointed>, RequestQueueClientListAndLockHeadResultRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface RequestQueueClientListAndLockHeadResultRePointed {
     // (undocumented)
-    lockSecs: number;
-    queueHasLockedRequests: boolean;
+    items: RequestQueueClientLockedListItem[];
 }
 
 // @public
@@ -1832,30 +3338,18 @@ export interface RequestQueueClientListHeadOptions {
 }
 
 // @public
-export interface RequestQueueClientListHeadResult {
-    // (undocumented)
-    hadMultipleClients: boolean;
+export interface RequestQueueClientListHeadResult extends Omit<Schemas['RequestQueueHead'], keyof RequestQueueClientListHeadResultRePointed>, RequestQueueClientListHeadResultRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface RequestQueueClientListHeadResultRePointed {
     // (undocumented)
     items: RequestQueueClientListItem[];
-    // (undocumented)
-    limit: number;
-    // (undocumented)
-    queueModifiedAt: Date;
 }
 
 // @public
-export interface RequestQueueClientListItem {
-    // (undocumented)
-    id: string;
-    lockExpiresAt?: Date;
-    // (undocumented)
-    method: AllowedHttpMethods;
-    // (undocumented)
-    retryCount: number;
-    // (undocumented)
-    uniqueKey: string;
-    // (undocumented)
-    url: string;
+export interface RequestQueueClientListItem extends GeneratedHeadRequest {
 }
 
 // @public
@@ -1869,15 +3363,18 @@ export interface RequestQueueClientListRequestsOptions {
 }
 
 // @public
-export interface RequestQueueClientListRequestsResult {
-    cursor?: string;
-    // @deprecated (undocumented)
-    exclusiveStartId?: string;
+export interface RequestQueueClientListRequestsResult extends Omit<Schemas['ListOfRequests'], keyof RequestQueueClientListRequestsResultRePointed>, RequestQueueClientListRequestsResultRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface RequestQueueClientListRequestsResultRePointed {
     // (undocumented)
     items: RequestQueueClientRequestSchema[];
-    // (undocumented)
-    limit: number;
-    nextCursor?: string;
+}
+
+// @public
+export interface RequestQueueClientLockedListItem extends GeneratedLockedHeadRequest {
 }
 
 // @public
@@ -1901,46 +3398,26 @@ export interface RequestQueueClientProlongRequestLockOptions {
 }
 
 // @public
-export interface RequestQueueClientProlongRequestLockResult {
-    // (undocumented)
-    lockExpiresAt: Date;
+export interface RequestQueueClientProlongRequestLockResult extends GeneratedRequestLockInfo {
 }
 
 // @public
-export interface RequestQueueClientRequestSchema {
-    // (undocumented)
-    errorMessages?: string[];
-    // (undocumented)
-    handledAt?: string;
-    // (undocumented)
-    headers?: Record<string, string>;
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    loadedUrl?: string;
-    // (undocumented)
-    method?: AllowedHttpMethods;
-    // (undocumented)
-    noRetry?: boolean;
-    // (undocumented)
-    payload?: string;
-    // (undocumented)
-    retryCount?: number;
-    // (undocumented)
-    uniqueKey: string;
-    // (undocumented)
-    url: string;
-    // (undocumented)
-    userData?: Record<string, unknown>;
+export interface RequestQueueClientRequestSchema extends GeneratedRequest {
+}
+
+// @public
+export interface RequestQueueClientRequestToAdd extends Omit<RequestQueueClientRequestSchema, 'id'> {
 }
 
 // @public
 export type RequestQueueClientRequestToDelete = Pick<RequestQueueClientRequestSchema, 'id'> | Pick<RequestQueueClientRequestSchema, 'uniqueKey'>;
 
 // @public
-export interface RequestQueueClientUnlockRequestsResult {
-    // (undocumented)
-    unlockedCount: number;
+export interface RequestQueueClientRequestToUpdate extends RequestQueueClientRequestSchema {
+}
+
+// @public
+export interface RequestQueueClientUnlockRequestsResult extends GeneratedUnlockRequestsResult {
 }
 
 // @public
@@ -1975,21 +3452,38 @@ export type RequestQueueCollectionListResult = PaginatedList<RequestQueue> & {
 // @public
 export type RequestQueueListRequestsFilter = 'locked' | 'pending';
 
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface RequestQueueRePointed {
+    // (undocumented)
+    stats?: RequestQueueStats;
+}
+
 // @public
 export type RequestQueueRequestsAsyncIterable<T> = AsyncIterable<T>;
 
+// Not exported by the entry point; reachable only as a referenced type.
 // @public
-export interface RequestQueueStats {
+interface RequestQueueSpecGaps {
     // (undocumented)
-    deleteCount?: number;
+    expireAt?: Date;
     // (undocumented)
-    headItemReadCount?: number;
+    title?: string;
     // (undocumented)
-    readCount?: number;
+    username?: string;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface RequestQueueSpecNarrowings {
     // (undocumented)
-    storageBytes?: number;
+    consoleUrl?: string;
     // (undocumented)
-    writeCount?: number;
+    generalAccess?: STORAGE_GENERAL_ACCESS | null;
+}
+
+// @public
+export interface RequestQueueStats extends GeneratedRequestQueueStats {
 }
 
 // @public
@@ -2117,58 +3611,36 @@ export interface RunWaitForFinishOptions {
 }
 
 // @public
-export interface Schedule {
-    // (undocumented)
-    actions: ScheduleAction[];
-    // (undocumented)
-    createdAt: Date;
-    // (undocumented)
-    cronExpression: string;
-    // (undocumented)
-    description?: string;
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    isEnabled: boolean;
-    // (undocumented)
-    isExclusive: boolean;
-    // (undocumented)
-    lastRunAt: string;
-    // (undocumented)
-    modifiedAt: Date;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    nextRunAt: string;
-    notifications: {
-        email: boolean;
-    };
-    // (undocumented)
-    timezone: Timezone;
-    title?: string;
-    // (undocumented)
-    userId: string;
+export interface Schedule extends Omit<Schemas['Schedule'], keyof ScheduleRePointed | keyof ScheduleClientNarrowings>, ScheduleRePointed, ScheduleClientNarrowings {
 }
 
 // @public
 export type ScheduleAction = ScheduleActionRunActor | ScheduleActionRunActorTask;
 
 // @public
-export interface ScheduleActionRunActor extends BaseScheduleAction<ScheduleActions.RunActor> {
+export interface ScheduleActionRunActor extends Omit<Schemas['ScheduleActionRunActor'], keyof ScheduleActionRunActorRePointed>, ScheduleActionRunActorRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ScheduleActionRunActorRePointed {
     // (undocumented)
-    actorId: string;
+    runInput?: ScheduledActorRunInput | null;
     // (undocumented)
-    runInput?: ScheduledActorRunInput;
+    runOptions?: ScheduledActorRunOptions | null;
     // (undocumented)
-    runOptions?: ScheduledActorRunOptions;
+    type: ScheduleActions.RunActor;
 }
 
 // @public
-export interface ScheduleActionRunActorTask extends BaseScheduleAction<ScheduleActions.RunActorTask> {
+export interface ScheduleActionRunActorTask extends Omit<Schemas['ScheduleActionRunActorTask'], keyof ScheduleActionRunActorTaskRePointed>, ScheduleActionRunActorTaskRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ScheduleActionRunActorTaskRePointed {
     // (undocumented)
-    actorTaskId: string;
-    // (undocumented)
-    input?: string;
+    type: ScheduleActions.RunActorTask;
 }
 
 // @public
@@ -2186,6 +3658,13 @@ export class ScheduleClient extends ResourceClient {
     get(): Promise<Schedule | undefined>;
     getLog(): Promise<string | undefined>;
     update(newFields: ScheduleCreateOrUpdateData): Promise<Schedule>;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ScheduleClientNarrowings {
+    // (undocumented)
+    timezone: Timezone;
 }
 
 // @public
@@ -2207,22 +3686,28 @@ export type ScheduleCreateOrUpdateData = Partial<Pick<Schedule, 'name' | 'title'
 }>;
 
 // @public
-export interface ScheduledActorRunInput {
-    // (undocumented)
-    body: string;
-    // (undocumented)
-    contentType: string;
+export interface ScheduledActorRunInput extends GeneratedScheduleActionRunInput {
 }
 
 // @public
-export interface ScheduledActorRunOptions {
+export interface ScheduledActorRunOptions extends GeneratedTaskOptions {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ScheduleRePointed {
     // (undocumented)
-    build: string;
+    actions: ScheduleAction[];
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type Schemas = components['schemas'];
+
+// @public
+export interface ServiceUsage {
     // (undocumented)
-    memoryMbytes: number;
-    restartOnError?: boolean;
-    // (undocumented)
-    timeoutSecs: number;
+    [service: string]: UsageItem;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -2271,33 +3756,7 @@ export interface StreamedLogOptions {
 }
 
 // @public
-export interface Task {
-    // (undocumented)
-    actId: string;
-    actorStandby?: Partial<ActorStandby>;
-    // (undocumented)
-    createdAt: Date;
-    // (undocumented)
-    description?: string;
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    input?: Dictionary | Dictionary[];
-    isPublic?: boolean;
-    // (undocumented)
-    modifiedAt: Date;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    options?: TaskOptions;
-    publicConfig?: TaskPublicConfig | null;
-    // (undocumented)
-    stats: TaskStats;
-    title?: string;
-    // (undocumented)
-    userId: string;
-    // (undocumented)
-    username?: string;
+export interface Task extends Omit<Schemas['Task'], keyof TaskRePointed | keyof TaskSpecNarrowings>, TaskRePointed, TaskSpecNarrowings, TaskSpecGaps {
 }
 
 // @public
@@ -2346,18 +3805,26 @@ export interface TaskCreateData extends TaskUpdateData {
 export interface TaskLastRunOptions extends ActorLastRunOptions {
 }
 
+// @public
+export interface TaskList extends Omit<Schemas['TaskShort'], keyof TaskListRePointed>, TaskListRePointed, TaskListSpecGaps {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-export type TaskList = Omit<Task, 'options' | 'input'>;
+interface TaskListRePointed {
+    // (undocumented)
+    stats?: TaskStats | null;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public
+interface TaskListSpecGaps {
+    // (undocumented)
+    title?: string | null;
+}
 
 // @public
-export interface TaskOptions {
-    // (undocumented)
-    build?: string;
-    // (undocumented)
-    memoryMbytes?: number;
-    restartOnError?: boolean;
-    // (undocumented)
-    timeoutSecs?: number;
+export interface TaskOptions extends GeneratedTaskOptions {
 }
 
 // @public
@@ -2378,19 +3845,64 @@ export interface TaskPublicConfig {
     seoTitle?: string | null;
 }
 
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface TaskRePointed {
+    // (undocumented)
+    actorStandby?: ActorStandby | null;
+    // (undocumented)
+    options?: TaskOptions | null;
+    // (undocumented)
+    stats?: TaskStats | null;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public
+interface TaskSpecGaps {
+    // (undocumented)
+    description?: string;
+    isPublic?: boolean;
+    publicConfig?: TaskPublicConfig | null;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface TaskSpecNarrowings {
+    // (undocumented)
+    input?: Dictionary | Dictionary[] | null;
+}
+
 // @public
 export type TaskStartOptions = Omit<ActorStartOptions, 'contentType' | 'forcePermissionLevel'>;
 
 // @public
-export interface TaskStats {
-    // (undocumented)
-    totalRuns: number;
+export interface TaskStats extends GeneratedTaskStats {
 }
 
 // @public
 export type TaskUpdateData = Partial<Pick<Task, 'name' | 'title' | 'description' | 'options' | 'input' | 'actorStandby' | 'isPublic'>> & {
     publicConfig?: Omit<TaskPublicConfig, 'publishedAt'>;
 };
+
+// @public
+export interface TieredPricingPerDatasetItem {
+    // (undocumented)
+    [tier: string]: TieredPricingPerDatasetItemEntry;
+}
+
+// @public
+export interface TieredPricingPerDatasetItemEntry extends GeneratedTieredPricingPerDatasetItemEntry {
+}
+
+// @public
+export interface TieredPricingPerEvent {
+    // (undocumented)
+    [tier: string]: TieredPricingPerEventEntry;
+}
+
+// @public
+export interface TieredPricingPerEventEntry extends GeneratedTieredPricingPerEventEntry {
+}
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -2400,49 +3912,23 @@ type Timezone = (typeof timezones)[number];
 // @public (undocumented)
 const timezones: readonly ["Africa/Abidjan", "Africa/Accra", "Africa/Addis_Ababa", "Africa/Algiers", "Africa/Asmara", "Africa/Asmera", "Africa/Bamako", "Africa/Bangui", "Africa/Banjul", "Africa/Bissau", "Africa/Blantyre", "Africa/Brazzaville", "Africa/Bujumbura", "Africa/Cairo", "Africa/Casablanca", "Africa/Ceuta", "Africa/Conakry", "Africa/Dakar", "Africa/Dar_es_Salaam", "Africa/Djibouti", "Africa/Douala", "Africa/El_Aaiun", "Africa/Freetown", "Africa/Gaborone", "Africa/Harare", "Africa/Johannesburg", "Africa/Juba", "Africa/Kampala", "Africa/Khartoum", "Africa/Kigali", "Africa/Kinshasa", "Africa/Lagos", "Africa/Libreville", "Africa/Lome", "Africa/Luanda", "Africa/Lubumbashi", "Africa/Lusaka", "Africa/Malabo", "Africa/Maputo", "Africa/Maseru", "Africa/Mbabane", "Africa/Mogadishu", "Africa/Monrovia", "Africa/Nairobi", "Africa/Ndjamena", "Africa/Niamey", "Africa/Nouakchott", "Africa/Ouagadougou", "Africa/Porto-Novo", "Africa/Sao_Tome", "Africa/Timbuktu", "Africa/Tripoli", "Africa/Tunis", "Africa/Windhoek", "America/Adak", "America/Anchorage", "America/Anguilla", "America/Antigua", "America/Araguaina", "America/Argentina/Buenos_Aires", "America/Argentina/Catamarca", "America/Argentina/ComodRivadavia", "America/Argentina/Cordoba", "America/Argentina/Jujuy", "America/Argentina/La_Rioja", "America/Argentina/Mendoza", "America/Argentina/Rio_Gallegos", "America/Argentina/Salta", "America/Argentina/San_Juan", "America/Argentina/San_Luis", "America/Argentina/Tucuman", "America/Argentina/Ushuaia", "America/Aruba", "America/Asuncion", "America/Atikokan", "America/Atka", "America/Bahia", "America/Bahia_Banderas", "America/Barbados", "America/Belem", "America/Belize", "America/Blanc-Sablon", "America/Boa_Vista", "America/Bogota", "America/Boise", "America/Buenos_Aires", "America/Cambridge_Bay", "America/Campo_Grande", "America/Cancun", "America/Caracas", "America/Catamarca", "America/Cayenne", "America/Cayman", "America/Chicago", "America/Chihuahua", "America/Coral_Harbour", "America/Cordoba", "America/Costa_Rica", "America/Creston", "America/Cuiaba", "America/Curacao", "America/Danmarkshavn", "America/Dawson", "America/Dawson_Creek", "America/Denver", "America/Detroit", "America/Dominica", "America/Edmonton", "America/Eirunepe", "America/El_Salvador", "America/Ensenada", "America/Fort_Nelson", "America/Fort_Wayne", "America/Fortaleza", "America/Glace_Bay", "America/Godthab", "America/Goose_Bay", "America/Grand_Turk", "America/Grenada", "America/Guadeloupe", "America/Guatemala", "America/Guayaquil", "America/Guyana", "America/Halifax", "America/Havana", "America/Hermosillo", "America/Indiana/Indianapolis", "America/Indiana/Knox", "America/Indiana/Marengo", "America/Indiana/Petersburg", "America/Indiana/Tell_City", "America/Indiana/Vevay", "America/Indiana/Vincennes", "America/Indiana/Winamac", "America/Indianapolis", "America/Inuvik", "America/Iqaluit", "America/Jamaica", "America/Jujuy", "America/Juneau", "America/Kentucky/Louisville", "America/Kentucky/Monticello", "America/Knox_IN", "America/Kralendijk", "America/La_Paz", "America/Lima", "America/Los_Angeles", "America/Louisville", "America/Lower_Princes", "America/Maceio", "America/Managua", "America/Manaus", "America/Marigot", "America/Martinique", "America/Matamoros", "America/Mazatlan", "America/Mendoza", "America/Menominee", "America/Merida", "America/Metlakatla", "America/Mexico_City", "America/Miquelon", "America/Moncton", "America/Monterrey", "America/Montevideo", "America/Montreal", "America/Montserrat", "America/Nassau", "America/New_York", "America/Nipigon", "America/Nome", "America/Noronha", "America/North_Dakota/Beulah", "America/North_Dakota/Center", "America/North_Dakota/New_Salem", "America/Nuuk", "America/Ojinaga", "America/Panama", "America/Pangnirtung", "America/Paramaribo", "America/Phoenix", "America/Port-au-Prince", "America/Port_of_Spain", "America/Porto_Acre", "America/Porto_Velho", "America/Puerto_Rico", "America/Punta_Arenas", "America/Rainy_River", "America/Rankin_Inlet", "America/Recife", "America/Regina", "America/Resolute", "America/Rio_Branco", "America/Rosario", "America/Santa_Isabel", "America/Santarem", "America/Santiago", "America/Santo_Domingo", "America/Sao_Paulo", "America/Scoresbysund", "America/Shiprock", "America/Sitka", "America/St_Barthelemy", "America/St_Johns", "America/St_Kitts", "America/St_Lucia", "America/St_Thomas", "America/St_Vincent", "America/Swift_Current", "America/Tegucigalpa", "America/Thule", "America/Thunder_Bay", "America/Tijuana", "America/Toronto", "America/Tortola", "America/Vancouver", "America/Virgin", "America/Whitehorse", "America/Winnipeg", "America/Yakutat", "America/Yellowknife", "Antarctica/Casey", "Antarctica/Davis", "Antarctica/DumontDUrville", "Antarctica/Macquarie", "Antarctica/Mawson", "Antarctica/McMurdo", "Antarctica/Palmer", "Antarctica/Rothera", "Antarctica/South_Pole", "Antarctica/Syowa", "Antarctica/Troll", "Antarctica/Vostok", "Arctic/Longyearbyen", "Asia/Aden", "Asia/Almaty", "Asia/Amman", "Asia/Anadyr", "Asia/Aqtau", "Asia/Aqtobe", "Asia/Ashgabat", "Asia/Ashkhabad", "Asia/Atyrau", "Asia/Baghdad", "Asia/Bahrain", "Asia/Baku", "Asia/Bangkok", "Asia/Barnaul", "Asia/Beirut", "Asia/Bishkek", "Asia/Brunei", "Asia/Calcutta", "Asia/Chita", "Asia/Choibalsan", "Asia/Chongqing", "Asia/Chungking", "Asia/Colombo", "Asia/Dacca", "Asia/Damascus", "Asia/Dhaka", "Asia/Dili", "Asia/Dubai", "Asia/Dushanbe", "Asia/Famagusta", "Asia/Gaza", "Asia/Harbin", "Asia/Hebron", "Asia/Ho_Chi_Minh", "Asia/Hong_Kong", "Asia/Hovd", "Asia/Irkutsk", "Asia/Istanbul", "Asia/Jakarta", "Asia/Jayapura", "Asia/Jerusalem", "Asia/Kabul", "Asia/Kamchatka", "Asia/Karachi", "Asia/Kashgar", "Asia/Kathmandu", "Asia/Katmandu", "Asia/Khandyga", "Asia/Kolkata", "Asia/Krasnoyarsk", "Asia/Kuala_Lumpur", "Asia/Kuching", "Asia/Kuwait", "Asia/Macao", "Asia/Macau", "Asia/Magadan", "Asia/Makassar", "Asia/Manila", "Asia/Muscat", "Asia/Nicosia", "Asia/Novokuznetsk", "Asia/Novosibirsk", "Asia/Omsk", "Asia/Oral", "Asia/Phnom_Penh", "Asia/Pontianak", "Asia/Pyongyang", "Asia/Qatar", "Asia/Qostanay", "Asia/Qyzylorda", "Asia/Rangoon", "Asia/Riyadh", "Asia/Saigon", "Asia/Sakhalin", "Asia/Samarkand", "Asia/Seoul", "Asia/Shanghai", "Asia/Singapore", "Asia/Srednekolymsk", "Asia/Taipei", "Asia/Tashkent", "Asia/Tbilisi", "Asia/Tehran", "Asia/Tel_Aviv", "Asia/Thimbu", "Asia/Thimphu", "Asia/Tokyo", "Asia/Tomsk", "Asia/Ujung_Pandang", "Asia/Ulaanbaatar", "Asia/Ulan_Bator", "Asia/Urumqi", "Asia/Ust-Nera", "Asia/Vientiane", "Asia/Vladivostok", "Asia/Yakutsk", "Asia/Yangon", "Asia/Yekaterinburg", "Asia/Yerevan", "Atlantic/Azores", "Atlantic/Bermuda", "Atlantic/Canary", "Atlantic/Cape_Verde", "Atlantic/Faeroe", "Atlantic/Faroe", "Atlantic/Jan_Mayen", "Atlantic/Madeira", "Atlantic/Reykjavik", "Atlantic/South_Georgia", "Atlantic/St_Helena", "Atlantic/Stanley", "Australia/ACT", "Australia/Adelaide", "Australia/Brisbane", "Australia/Broken_Hill", "Australia/Canberra", "Australia/Currie", "Australia/Darwin", "Australia/Eucla", "Australia/Hobart", "Australia/LHI", "Australia/Lindeman", "Australia/Lord_Howe", "Australia/Melbourne", "Australia/NSW", "Australia/North", "Australia/Perth", "Australia/Queensland", "Australia/South", "Australia/Sydney", "Australia/Tasmania", "Australia/Victoria", "Australia/West", "Australia/Yancowinna", "Brazil/Acre", "Brazil/DeNoronha", "Brazil/East", "Brazil/West", "CET", "CST6CDT", "Canada/Atlantic", "Canada/Central", "Canada/Eastern", "Canada/Mountain", "Canada/Newfoundland", "Canada/Pacific", "Canada/Saskatchewan", "Canada/Yukon", "Chile/Continental", "Chile/EasterIsland", "Cuba", "EET", "EST", "EST5EDT", "Egypt", "Eire", "Etc/GMT", "Etc/GMT+0", "Etc/GMT+1", "Etc/GMT+10", "Etc/GMT+11", "Etc/GMT+12", "Etc/GMT+2", "Etc/GMT+3", "Etc/GMT+4", "Etc/GMT+5", "Etc/GMT+6", "Etc/GMT+7", "Etc/GMT+8", "Etc/GMT+9", "Etc/GMT-0", "Etc/GMT-1", "Etc/GMT-10", "Etc/GMT-11", "Etc/GMT-12", "Etc/GMT-13", "Etc/GMT-14", "Etc/GMT-2", "Etc/GMT-3", "Etc/GMT-4", "Etc/GMT-5", "Etc/GMT-6", "Etc/GMT-7", "Etc/GMT-8", "Etc/GMT-9", "Etc/GMT0", "Etc/Greenwich", "Etc/UCT", "Etc/UTC", "Etc/Universal", "Etc/Zulu", "Europe/Amsterdam", "Europe/Andorra", "Europe/Astrakhan", "Europe/Athens", "Europe/Belfast", "Europe/Belgrade", "Europe/Berlin", "Europe/Bratislava", "Europe/Brussels", "Europe/Bucharest", "Europe/Budapest", "Europe/Busingen", "Europe/Chisinau", "Europe/Copenhagen", "Europe/Dublin", "Europe/Gibraltar", "Europe/Guernsey", "Europe/Helsinki", "Europe/Isle_of_Man", "Europe/Istanbul", "Europe/Jersey", "Europe/Kaliningrad", "Europe/Kiev", "Europe/Kirov", "Europe/Lisbon", "Europe/Ljubljana", "Europe/London", "Europe/Luxembourg", "Europe/Madrid", "Europe/Malta", "Europe/Mariehamn", "Europe/Minsk", "Europe/Monaco", "Europe/Moscow", "Europe/Nicosia", "Europe/Oslo", "Europe/Paris", "Europe/Podgorica", "Europe/Prague", "Europe/Riga", "Europe/Rome", "Europe/Samara", "Europe/San_Marino", "Europe/Sarajevo", "Europe/Saratov", "Europe/Simferopol", "Europe/Skopje", "Europe/Sofia", "Europe/Stockholm", "Europe/Tallinn", "Europe/Tirane", "Europe/Tiraspol", "Europe/Ulyanovsk", "Europe/Uzhgorod", "Europe/Vaduz", "Europe/Vatican", "Europe/Vienna", "Europe/Vilnius", "Europe/Volgograd", "Europe/Warsaw", "Europe/Zagreb", "Europe/Zaporozhye", "Europe/Zurich", "GB", "GB-Eire", "GMT", "GMT+0", "GMT-0", "GMT0", "Greenwich", "HST", "Hongkong", "Iceland", "Indian/Antananarivo", "Indian/Chagos", "Indian/Christmas", "Indian/Cocos", "Indian/Comoro", "Indian/Kerguelen", "Indian/Mahe", "Indian/Maldives", "Indian/Mauritius", "Indian/Mayotte", "Indian/Reunion", "Iran", "Israel", "Jamaica", "Japan", "Kwajalein", "Libya", "MET", "MST", "MST7MDT", "Mexico/BajaNorte", "Mexico/BajaSur", "Mexico/General", "NZ", "NZ-CHAT", "Navajo", "PRC", "PST8PDT", "Pacific/Apia", "Pacific/Auckland", "Pacific/Bougainville", "Pacific/Chatham", "Pacific/Chuuk", "Pacific/Easter", "Pacific/Efate", "Pacific/Enderbury", "Pacific/Fakaofo", "Pacific/Fiji", "Pacific/Funafuti", "Pacific/Galapagos", "Pacific/Gambier", "Pacific/Guadalcanal", "Pacific/Guam", "Pacific/Honolulu", "Pacific/Johnston", "Pacific/Kiritimati", "Pacific/Kosrae", "Pacific/Kwajalein", "Pacific/Majuro", "Pacific/Marquesas", "Pacific/Midway", "Pacific/Nauru", "Pacific/Niue", "Pacific/Norfolk", "Pacific/Noumea", "Pacific/Pago_Pago", "Pacific/Palau", "Pacific/Pitcairn", "Pacific/Pohnpei", "Pacific/Ponape", "Pacific/Port_Moresby", "Pacific/Rarotonga", "Pacific/Saipan", "Pacific/Samoa", "Pacific/Tahiti", "Pacific/Tarawa", "Pacific/Tongatapu", "Pacific/Truk", "Pacific/Wake", "Pacific/Wallis", "Pacific/Yap", "Poland", "Portugal", "ROC", "ROK", "Singapore", "Turkey", "UCT", "US/Alaska", "US/Aleutian", "US/Arizona", "US/Central", "US/East-Indiana", "US/Eastern", "US/Hawaii", "US/Indiana-Starke", "US/Michigan", "US/Mountain", "US/Pacific", "US/Samoa", "UTC", "Universal", "W-SU", "WET", "Zulu"];
 
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface UnprocessedRequest {
-    // (undocumented)
-    method?: AllowedHttpMethods;
-    // (undocumented)
-    uniqueKey: string;
-    // (undocumented)
-    url: string;
+// @public
+export interface UsageCycle extends GeneratedUsageCycle {
 }
 
 // @public
-export interface UsageCycle {
-    // (undocumented)
-    endAt: Date;
-    // (undocumented)
-    startAt: Date;
+export interface UsageItem extends Omit<Schemas['UsageItem'], keyof UsageItemRePointed>, UsageItemRePointed {
 }
 
+// Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-export interface User {
-    createdAt?: Date;
-    effectivePlatformFeatures?: EffectivePlatformFeatures;
+interface UsageItemRePointed {
     // (undocumented)
-    email?: string;
-    // (undocumented)
-    id?: string;
-    isPaying?: boolean;
-    // (undocumented)
-    plan?: UserPlan;
-    // (undocumented)
-    profile: {
-        bio?: string;
-        name?: string;
-        pictureUrl?: string;
-        githubUsername?: string;
-        websiteUrl?: string;
-        twitterUsername?: string;
-    };
-    // (undocumented)
-    proxy?: UserProxy;
-    // (undocumented)
-    username: string;
+    priceTiers?: PriceTier[];
+}
+
+// @public
+export interface User extends Omit<Schemas['UserPrivateInfo'], keyof UserRePointed | keyof UserSpecNarrowings>, UserRePointed, UserSpecNarrowings {
 }
 
 // @public
@@ -2454,56 +3940,50 @@ export class UserClient extends ResourceClient {
     updateLimits(options: LimitsUpdateOptions): Promise<void>;
 }
 
-// @public (undocumented)
-export interface UserPlan {
-    // (undocumented)
-    availableAddOns: unknown[];
-    // (undocumented)
-    availableProxyGroups: Record<string, number>;
-    // (undocumented)
-    dataRetentionDays: number;
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    enabledPlatformFeatures: PlatformFeature[];
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    isEnabled: boolean;
-    // (undocumented)
-    maxActorCount: number;
-    // (undocumented)
-    maxActorMemoryGbytes: number;
-    // (undocumented)
-    maxActorTaskCount: number;
-    // (undocumented)
-    maxMonthlyActorComputeUnits: number;
-    // (undocumented)
-    maxMonthlyExternalDataTransferGbytes: number;
-    // (undocumented)
-    maxMonthlyProxySerps: number;
-    // (undocumented)
-    maxMonthlyResidentialProxyGbytes: number;
-    // (undocumented)
-    maxMonthlyUsageUsd: number;
-    // (undocumented)
-    monthlyBasePriceUsd: number;
-    // (undocumented)
-    monthlyUsageCreditsUsd: number;
-    // (undocumented)
-    supportLevel: string;
-    // (undocumented)
-    teamAccountSeatCount: number;
-    // (undocumented)
-    usageDiscountPercent: number;
+// @public
+export interface UserPlan extends Omit<Schemas['Plan'], keyof UserPlanRePointed>, UserPlanRePointed {
 }
 
+// Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-export interface UserProxy {
+interface UserPlanRePointed {
+    // (undocumented)
+    availableProxyGroups: Record<string, number>;
+}
+
+// @public
+export interface UserProfile extends GeneratedProfile {
+}
+
+// @public
+export interface UserProxy extends Omit<Schemas['Proxy'], keyof UserProxyRePointed>, UserProxyRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface UserProxyRePointed {
     // (undocumented)
     groups: ProxyGroup[];
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface UserRePointed {
     // (undocumented)
-    password: string;
+    profile?: UserProfile;
+    // (undocumented)
+    proxy?: UserProxy;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface UserSpecNarrowings {
+    // (undocumented)
+    effectivePlatformFeatures?: EffectivePlatformFeatures;
+    // (undocumented)
+    isPaying?: boolean;
+    // (undocumented)
+    plan?: UserPlan;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -2514,55 +3994,25 @@ interface WaitForFinishOptions {
 }
 
 // @public
-export interface Webhook {
-    // (undocumented)
-    condition: WebhookCondition;
-    // (undocumented)
-    createdAt: Date;
-    description?: string;
-    // (undocumented)
-    doNotRetry: boolean;
-    // (undocumented)
-    eventTypes: WebhookEventType[];
-    headersTemplate?: string;
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    ignoreSslErrors: boolean;
-    // (undocumented)
-    isAdHoc: boolean;
-    isApifyIntegration?: boolean;
-    // (undocumented)
-    lastDispatch: string;
-    // (undocumented)
-    modifiedAt: Date;
-    // (undocumented)
-    payloadTemplate: string;
-    // (undocumented)
-    requestUrl: string;
-    shouldInterpolateStrings: boolean;
-    // (undocumented)
-    stats: WebhookStats;
-    // (undocumented)
-    userId: string;
+export interface Webhook extends Omit<Schemas['Webhook'], keyof WebhookRePointed>, WebhookRePointed, WebhookSpecGaps {
 }
 
-// @public (undocumented)
+// @public
 export interface WebhookAnyRunOfActorCondition {
     // (undocumented)
-    actorId: string;
+    actorId: NonNullable<GeneratedWebhookCondition['actorId']>;
 }
 
-// @public (undocumented)
+// @public
 export interface WebhookAnyRunOfActorTaskCondition {
     // (undocumented)
-    actorTaskId: string;
+    actorTaskId: NonNullable<GeneratedWebhookCondition['actorTaskId']>;
 }
 
-// @public (undocumented)
+// @public
 export interface WebhookCertainRunCondition {
     // (undocumented)
-    actorRunId: string;
+    actorRunId: NonNullable<GeneratedWebhookCondition['actorRunId']>;
 }
 
 // @public
@@ -2592,38 +4042,11 @@ export interface WebhookCollectionListOptions extends PaginationOptions {
 export type WebhookCondition = WebhookAnyRunOfActorCondition | WebhookAnyRunOfActorTaskCondition | WebhookCertainRunCondition;
 
 // @public (undocumented)
-export interface WebhookDispatch {
-    // (undocumented)
-    calls: WebhookDispatchCall[];
-    // (undocumented)
-    createdAt: Date;
-    eventData: WebhookDispatchEventData | null;
-    // (undocumented)
-    eventType: WebhookEventType;
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    status: WebhookDispatchStatus;
-    // (undocumented)
-    userId: string;
-    // (undocumented)
-    webhook: Pick<Webhook, 'requestUrl' | 'isAdHoc'>;
-    // (undocumented)
-    webhookId: string;
+export interface WebhookDispatch extends Omit<Schemas['WebhookDispatch'], keyof WebhookDispatchRePointed>, WebhookDispatchRePointed {
 }
 
-// @public (undocumented)
-export interface WebhookDispatchCall {
-    // (undocumented)
-    errorMessage: string | null;
-    // (undocumented)
-    finishedAt: Date;
-    // (undocumented)
-    responseBody: string | null;
-    // (undocumented)
-    responseStatus: number | null;
-    // (undocumented)
-    startedAt: Date;
+// @public
+export interface WebhookDispatchCall extends GeneratedWebhookDispatchCall {
 }
 
 // @public
@@ -2645,18 +4068,25 @@ export interface WebhookDispatchCollectionListOptions extends PaginationOptions 
 }
 
 // @public
-export interface WebhookDispatchEventData {
-    // (undocumented)
-    actorBuildId?: string;
-    // (undocumented)
-    actorId?: string;
-    // (undocumented)
-    actorRunId?: string;
-    // (undocumented)
-    actorTaskId?: string;
+export interface WebhookDispatchEventData extends GeneratedWebhookDispatchEventData {
 }
 
+// Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
+interface WebhookDispatchRePointed {
+    // (undocumented)
+    calls?: WebhookDispatchCall[];
+    // (undocumented)
+    eventData?: WebhookDispatchEventData | null;
+    // (undocumented)
+    eventType: WebhookEventType;
+    // (undocumented)
+    status: WebhookDispatchStatus;
+    // (undocumented)
+    webhook?: WebhookDispatchWebhookSummary | null;
+}
+
+// @public
 export enum WebhookDispatchStatus {
     // (undocumented)
     Active = "ACTIVE",
@@ -2664,6 +4094,17 @@ export enum WebhookDispatchStatus {
     Failed = "FAILED",
     // (undocumented)
     Succeeded = "SUCCEEDED"
+}
+
+// @public
+export interface WebhookDispatchWebhookSummary extends Omit<Schemas['WebhookDispatchWebhookSummary'], keyof WebhookDispatchWebhookSummaryRePointed>, WebhookDispatchWebhookSummaryRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface WebhookDispatchWebhookSummaryRePointed {
+    // (undocumented)
+    condition?: WebhookCondition;
 }
 
 // @public
@@ -2676,15 +4117,50 @@ export interface WebhookIdempotencyKey {
 }
 
 // @public
-export interface WebhookStats {
+export interface WebhookLastDispatch extends Omit<Schemas['ExampleWebhookDispatch'], keyof WebhookLastDispatchRePointed>, WebhookLastDispatchRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface WebhookLastDispatchRePointed {
     // (undocumented)
-    totalDispatches: number;
+    status: WebhookDispatchStatus;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface WebhookRePointed {
+    // (undocumented)
+    condition: WebhookCondition;
+    // (undocumented)
+    eventTypes: WebhookEventType[];
+    // (undocumented)
+    lastDispatch?: WebhookLastDispatch | null;
+    // (undocumented)
+    stats?: WebhookStats | null;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public
+interface WebhookSpecGaps {
+    // (undocumented)
+    isApifyIntegration?: boolean;
+}
+
+// @public
+export interface WebhookStats extends GeneratedWebhookStats {
 }
 
 // @public
 export type WebhookUpdateData = Partial<Pick<Webhook, 'isAdHoc' | 'condition' | 'ignoreSslErrors' | 'doNotRetry' | 'requestUrl' | 'payloadTemplate' | 'shouldInterpolateStrings' | 'isApifyIntegration' | 'headersTemplate' | 'description'> & {
     eventTypes: readonly WebhookEventType[];
 }> & WebhookIdempotencyKey;
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type WithRequired<T, K extends keyof T> = T & {
+    [P in K]-?: T[P];
+};
 
 // (No @packageDocumentation comment for this package)
 

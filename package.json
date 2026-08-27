@@ -49,7 +49,8 @@
     "homepage": "https://docs.apify.com/api/client/js/",
     "files": [
         "dist",
-        "!dist/*.tsbuildinfo"
+        "!dist/*.tsbuildinfo",
+        "!dist/spec_guards.*"
     ],
     "scripts": {
         "build": "pnpm clean && pnpm build:node && pnpm build:browser",
@@ -63,12 +64,20 @@
         "lint": "oxlint --type-aware",
         "lint:fix": "oxlint --type-aware --fix",
         "tsc-check-tests": "tsc --noEmit --project test/tsconfig.json",
+        "tsc-check-scripts": "tsc --noEmit --project tsconfig.scripts.json",
         "format": "oxfmt",
         "format:check": "oxfmt --check",
         "api:extract": "pnpm build && pnpm dlx github:apify/api-extractor-report --packages=. --extract-command='pnpm api:extract'",
         "api:check": "pnpm dlx github:apify/api-extractor-report --packages=. --extract-command='pnpm api:extract' --verify",
         "build:node": "tsc",
-        "build:browser": "rsbuild build"
+        "build:browser": "rsbuild build",
+        "spec:fetch": "node scripts/openapi_spec.mts fetch",
+        "generate:types": "node scripts/openapi_spec.mts fetch && node scripts/generate_types.mts && node scripts/openapi_spec.mts record-version"
+    },
+    "apify": {
+        "openapiSpec": {
+            "version": "v2-2026-08-03T111309Z"
+        }
     },
     "dependencies": {
         "@apify/consts": "^2.50.0",
@@ -103,6 +112,7 @@
         "esbuild": "0.28.2",
         "express": "^5.0.0",
         "gen-esm-wrapper": "^1.1.2",
+        "openapi-typescript": "7.13.0",
         "oxfmt": "0.65.0",
         "oxlint": "1.79.0",
         "oxlint-tsgolint": "7.0.2001",

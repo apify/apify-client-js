@@ -134,6 +134,8 @@ jobs:
             - run: pnpm lint
             - name: Type-check tests
               run: pnpm tsc-check-tests
+            - name: Type-check maintainer scripts
+              run: pnpm tsc-check-scripts
             - name: Format check
               run: pnpm format:check
 
