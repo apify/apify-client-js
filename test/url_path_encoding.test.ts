@@ -56,8 +56,8 @@ describe('URL path encoding', () => {
     });
 
     it('rejects dot segments and empty values', async () => {
-        await expect(client.keyValueStore('STORE').getRecord('..')).rejects.toThrow(/not be one of/);
-        await expect(client.requestQueue('QUEUE').getRequest('.')).rejects.toThrow(/not be one of/);
-        expect(() => client.dataset('..')).toThrow(/not be one of/);
+        await expect(client.keyValueStore('STORE').getRecord('..')).rejects.toThrow(/must not contain dot segments/);
+        await expect(client.requestQueue('QUEUE').getRequest('.')).rejects.toThrow(/must not contain dot segments/);
+        expect(() => client.dataset('..')).toThrow(/must not contain dot segments/);
     });
 });

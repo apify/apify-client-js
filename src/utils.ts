@@ -473,6 +473,11 @@ export const mutuallyExclusive = <T extends object>(...keys: (keyof T & string)[
     `At most one of the following fields is allowed: ${keys.join(', ')}`,
 ];
 
+const pathSegmentSchema = z
+    .string()
+    .nonempty()
+    .refine((v) => v !== '.' && v !== '..', { error: 'URL path must not contain dot segments' });
+
 /**
  * Percent-encodes a caller-supplied URL path segment so it cannot restructure the request path.
  *
@@ -480,8 +485,8 @@ export const mutuallyExclusive = <T extends object>(...keys: (keyof T & string)[
  * dot segments after decoding - `records/%2E%2E` collapses to the parent endpoint just like `records/..`.
  */
 export function toPathSegment(value: string): string {
-    ow(value, 'pathSegment', ow.string.nonEmpty.not.oneOf(['.', '..']));
-    return encodeURIComponent(value);
+    const valueParsed = parseArgument(value, pathSegmentSchema);
+    return encodeURIComponent(valueParsed);
 }
 
 /**
