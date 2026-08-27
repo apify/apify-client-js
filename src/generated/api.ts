@@ -35,8 +35,7 @@ export interface paths {
          * @description Creates an Actor with the settings specified in an `Actor` object passed as
          *     JSON in the POST payload.
          *
-         *     Returns the full `Actor` object, the same as the
-         *     [Get Actor](https://docs.apify.com/api/v2/actor-get) endpoint.
+         *     Returns the created `Actor` object.
          *
          *     In the HTTP request, set the `Content-Type` header to `application/json`.
          *
@@ -45,12 +44,10 @@ export interface paths {
          *     An Actor must specify at least one version of the source code.
          *     For details, see [Actor versions](https://docs.apify.com/api/v2/actors-actor-versions).
          *
-         *     ### Create a public Actor
+         *     ### Publish an Actor
          *
-         *     To make your Actor [public](https://docs.apify.com/platform/actors/publishing):
-         *     - Set `isPublic` to `true`.
-         *     - Provide `title` and `categories`. For reference, see [constants from the `apify-shared-js`
-         *     package](https://github.com/apify/apify-shared-js/blob/2d43ebc41ece9ad31cd6525bd523fb86939bf860/packages/consts/src/consts.ts#L452-L471)
+         *     To make your Actor [public](https://docs.apify.com/platform/actors/publishing),
+         *     use the [Update Actor](https://docs.apify.com/api/v2/actor-put) endpoint.
          */
         post: operations["actors_post"];
         delete?: never;
@@ -710,11 +707,11 @@ export interface paths {
         put?: never;
         /**
          * Validate Actor input
-         * @description Validates the provided input against the Actor's input schema for the specified build.
+         * @description Validates the JSON payload against the Actor's
+         *     [input schema](https://docs.apify.com/actors/development/actor-definition/input-schema)
+         *     defined in the specified build.
          *
-         *     The endpoint checks whether the JSON payload conforms to the input schema
-         *     defined in the Actor's build. If no `build` query parameter is provided,
-         *     the `latest` build tag is used by default.
+         *     If the specified build has no input schema, any input is considered valid.
          */
         post: operations["actor_validateInput_post"];
         delete?: never;
@@ -1513,6 +1510,20 @@ export interface paths {
          *     in the POST payload.
          *
          *     If the object does not define a specific property, its value is not updated.
+         *
+         *     The `publicConfig` field carries the display configuration of the task's public
+         *     landing page, and `isPublic` publishes or unpublishes the task itself. Both require
+         *     write permission to the task's Actor.
+         *
+         *     To publish a task, its Actor must be public, `publicConfig.inputSchemaFields` and
+         *     `publicConfig.datasetView` must be set, and the Actor must have fewer than 50 published
+         *     tasks. If the task isn't ready to be published, the whole update fails and none of it
+         *     is applied.
+         *
+         *     Publishing lists the task among the Actor's examples and makes its input public, so anyone
+         *     can view and copy it. The landing page itself is shown only while `publicConfig` still
+         *     validates against the Actor's current build, so a new build can stop the page from being
+         *     offered while the task stays published and copyable.
          *
          *     The response is the full task object as returned by the
          *     [Get task](https://docs.apify.com/api/v2/actor-task-get) endpoint.
@@ -4751,7 +4762,7 @@ export interface components {
          * @description Machine-processable error type identifier.
          * @enum {string}
          */
-        ErrorType: "3d-secure-auth-failed" | "access-right-already-exists" | "action-not-found" | "actor-already-rented" | "actor-can-not-be-rented" | "actor-disabled" | "actor-is-not-rented" | "actor-memory-limit-exceeded" | "actor-name-exists-new-owner" | "actor-name-not-unique" | "actor-not-found" | "actor-not-github-actor" | "actor-not-public" | "actor-permission-level-not-supported-for-agentic-payments" | "actor-review-already-exists" | "actor-run-failed" | "actor-standby-not-supported-for-agentic-payments" | "actor-task-name-not-unique" | "agentic-payment-info-retrieval-error" | "agentic-payment-information-missing" | "agentic-payment-insufficient-amount" | "agentic-payment-provider-internal-error" | "agentic-payment-provider-unauthorized" | "airtable-webhook-deprecated" | "already-subscribed-to-paid-actor" | "apify-plan-required-to-use-paid-actor" | "apify-signup-not-allowed" | "auth-method-not-supported" | "authorization-server-not-found" | "auto-issue-date-invalid" | "background-check-required" | "billing-system-error" | "black-friday-plan-expired" | "braintree-error" | "braintree-not-linked" | "braintree-operation-timed-out" | "braintree-unsupported-currency" | "build-not-found" | "build-outdated" | "cannot-add-apify-events-to-ppe-actor" | "cannot-add-multiple-pricing-infos" | "cannot-add-pricing-info-that-alters-past" | "cannot-add-second-future-pricing-info" | "cannot-build-actor-from-webhook" | "cannot-change-billing-interval" | "cannot-change-owner" | "cannot-charge-apify-event" | "cannot-charge-non-pay-per-event-actor" | "cannot-comment-as-other-user" | "cannot-copy-actor-task" | "cannot-create-payout" | "cannot-create-public-actor" | "cannot-create-tax-transaction" | "cannot-delete-critical-actor" | "cannot-delete-invoice" | "cannot-delete-paid-actor" | "cannot-disable-one-time-event-for-apify-start-event" | "cannot-disable-organization-with-enabled-members" | "cannot-disable-user-with-subscription" | "cannot-link-oauth-to-unverified-email" | "cannot-metamorph-to-pay-per-result-actor" | "cannot-modify-actor-pricing-too-frequently" | "cannot-modify-actor-pricing-with-immediate-effect" | "cannot-monetize-without-payout-billing-info" | "cannot-override-paid-actor-trial" | "cannot-permanently-delete-subscription" | "cannot-publish-actor" | "cannot-reduce-last-full-token" | "cannot-reimburse-more-than-original-charge" | "cannot-reimburse-non-rental-charge" | "cannot-remove-own-actor-from-recently-used" | "cannot-remove-payment-method" | "cannot-remove-pricing-info" | "cannot-remove-running-run" | "cannot-remove-user-with-public-actors" | "cannot-remove-user-with-subscription" | "cannot-remove-user-with-unpaid-invoice" | "cannot-rename-env-var" | "cannot-rent-paid-actor" | "cannot-review-own-actor" | "cannot-set-access-rights-for-owner" | "cannot-set-is-status-message-terminal" | "cannot-unpublish-critical-actor" | "cannot-unpublish-paid-actor" | "cannot-unpublish-profile" | "cannot-update-invoice-field" | "concurrent-runs-limit-exceeded" | "concurrent-update-detected" | "conference-token-not-found" | "content-encoding-forbidden-for-html" | "coupon-already-redeemed" | "coupon-expired" | "coupon-for-new-customers" | "coupon-for-subscribed-users" | "coupon-limits-are-in-conflict-with-current-limits" | "coupon-max-number-of-redemptions-reached" | "coupon-not-found" | "coupon-not-unique" | "coupons-disabled" | "create-github-issue-not-allowed" | "creator-plan-not-available" | "cron-expression-invalid" | "daily-ai-token-limit-exceeded" | "daily-publication-limit-exceeded" | "dataset-does-not-have-fields-schema" | "dataset-does-not-have-schema" | "dataset-locked" | "dataset-schema-invalid" | "dcr-not-supported" | "default-dataset-not-found" | "deleting-default-build" | "deleting-unfinished-build" | "email-already-taken" | "email-already-taken-removed-user" | "email-domain-not-allowed-for-coupon" | "email-invalid" | "email-not-allowed" | "email-not-valid" | "email-update-too-soon" | "elevated-permissions-needed" | "env-var-already-exists" | "exchange-rate-fetch-failed" | "expired-conference-token" | "failed-to-charge-user" | "final-invoice-negative" | "full-permission-actor-blocked-for-admin" | "full-permission-actor-not-approved" | "github-branch-empty" | "github-issue-already-exists" | "github-public-key-not-found" | "github-repository-not-found" | "github-signature-does-not-match-payload" | "github-user-not-authorized-for-issues" | "gmail-not-allowed" | "id-does-not-match" | "incompatible-billing-interval" | "incomplete-payout-billing-info" | "inconsistent-currencies" | "incorrect-pricing-modifier-prefix" | "input-json-invalid-characters" | "input-json-not-object" | "input-json-too-long" | "input-update-collision" | "insufficient-permissions" | "insufficient-permissions-to-change-field" | "insufficient-security-measures" | "insufficient-tax-country-evidence" | "integration-auth-error" | "internal-server-error" | "invalid-billing-info" | "invalid-billing-period-for-payout" | "invalid-build" | "invalid-client-key" | "invalid-collection" | "invalid-conference-login-password" | "invalid-content-type-header" | "invalid-credentials" | "invalid-git-auth-token" | "invalid-github-issue-url" | "invalid-header" | "invalid-id" | "invalid-idempotency-key" | "invalid-input" | "invalid-input-schema" | "invalid-invoice" | "invalid-invoice-type" | "invalid-issue-date" | "invalid-label-params" | "invalid-main-account-user-id" | "invalid-oauth-app" | "invalid-oauth-scope" | "invalid-one-time-invoice" | "invalid-parameter" | "invalid-payout-status" | "invalid-picture-url" | "invalid-record-key" | "invalid-request" | "invalid-resource-type" | "invalid-signature" | "invalid-subscription-plan" | "invalid-tax-number" | "invalid-tax-number-format" | "invalid-token" | "invalid-token-type" | "invalid-two-factor-code" | "invalid-two-factor-code-or-recovery-code" | "invalid-two-factor-recovery-code" | "invalid-username" | "invalid-value" | "invitation-invalid-resource-type" | "invitation-no-longer-valid" | "invoice-canceled" | "invoice-cannot-be-refunded-due-to-too-high-amount" | "invoice-incomplete" | "invoice-is-draft" | "invoice-locked" | "invoice-must-be-buffer" | "invoice-not-canceled" | "invoice-not-draft" | "invoice-not-found" | "invoice-outdated" | "invoice-paid-already" | "issue-already-connected-to-github" | "issue-not-found" | "issues-bad-request" | "issuer-not-registered" | "job-finished" | "label-already-linked" | "last-api-token" | "limit-reached" | "max-items-must-be-greater-than-zero" | "max-metamorphs-exceeded" | "max-total-charge-usd-below-minimum" | "max-total-charge-usd-must-be-greater-than-zero" | "method-not-allowed" | "migration-disabled" | "missing-actor-rights" | "missing-api-token" | "missing-billing-info" | "missing-line-items" | "missing-payment-date" | "missing-payout-billing-info" | "missing-proxy-password" | "missing-reporting-fields" | "missing-resource-name" | "missing-settings" | "missing-username" | "monthly-usage-limit-too-low" | "more-than-one-update-not-allowed" | "multiple-records-found" | "must-be-admin" | "name-not-unique" | "next-runtime-computation-failed" | "no-columns-in-exported-dataset" | "no-payment-attempt-for-refund-found" | "no-payment-method-available" | "no-team-account-seats-available" | "non-temporary-email" | "not-enough-usage-to-run-paid-actor" | "not-implemented" | "not-supported-currencies" | "o-auth-service-already-connected" | "o-auth-service-not-connected" | "oauth-resource-access-failed" | "one-time-invoice-already-marked-paid" | "only-drafts-can-be-deleted" | "operation-canceled" | "operation-not-allowed" | "operation-timed-out" | "organization-cannot-own-itself" | "organization-role-not-found" | "overlapping-payout-billing-periods" | "own-token-required" | "page-not-found" | "param-not-one-of" | "parameter-required" | "parameters-mismatched" | "password-reset-email-already-sent" | "password-reset-token-expired" | "pay-as-you-go-without-monthly-interval" | "payment-attempt-status-message-required" | "payout-already-paid" | "payout-canceled" | "payout-invalid-state" | "payout-must-be-approved-to-be-marked-paid" | "payout-not-found" | "payout-number-already-exists" | "phone-number-invalid" | "phone-number-landline" | "phone-number-opted-out" | "phone-verification-disabled" | "platform-feature-disabled" | "price-overrides-validation-failed" | "pricing-model-not-supported" | "promotional-plan-not-available" | "proxy-auth-ip-not-unique" | "public-actor-disabled" | "query-timeout" | "quoted-price-outdated" | "rate-limit-exceeded" | "recaptcha-invalid" | "recaptcha-required" | "record-not-found" | "record-not-public" | "record-or-token-not-found" | "record-too-large" | "redirect-uri-mismatch" | "reduced-plan-not-available" | "rental-charge-already-reimbursed" | "rental-not-allowed" | "request-aborted-prematurely" | "request-handled-or-locked" | "request-id-invalid" | "request-queue-duplicate-requests" | "request-too-large" | "requested-dataset-view-does-not-exist" | "resume-token-expired" | "run-failed" | "run-input-body-not-valid-json" | "run-timeout-exceeded" | "russia-is-evil" | "same-user" | "schedule-actor-not-found" | "schedule-actor-task-not-found" | "schedule-name-not-unique" | "schema-validation" | "schema-validation-error" | "schema-validation-failed" | "service-worker-registration-not-allowed" | "sign-up-method-not-allowed" | "slack-integration-not-custom" | "socket-closed" | "socket-destroyed" | "store-schema-invalid" | "store-terms-not-accepted" | "stripe-enabled" | "stripe-generic-decline" | "stripe-not-enabled" | "stripe-not-enabled-for-user" | "tagged-build-required" | "tax-country-invalid" | "tax-number-invalid" | "tax-number-validation-failed" | "taxamo-call-failed" | "taxamo-request-failed" | "testing-error" | "token-not-provided" | "too-few-versions" | "too-many-actor-tasks" | "too-many-actors" | "too-many-labels-on-resource" | "too-many-mcp-connectors" | "too-many-o-auth-apps" | "too-many-organizations" | "too-many-requests" | "too-many-schedules" | "too-many-ui-access-keys" | "too-many-user-labels" | "too-many-values" | "too-many-versions" | "too-many-webhooks" | "unexpected-route" | "unknown-build-tag" | "unknown-payment-provider" | "unsubscribe-token-invalid" | "unsupported-actor-pricing-model-for-agentic-payments" | "unsupported-content-encoding" | "unsupported-file-type-for-issue" | "unsupported-file-type-image-expected" | "unsupported-file-type-text-or-json-expected" | "unsupported-permission" | "upcoming-subscription-bill-not-up-to-date" | "user-already-exists" | "user-already-verified" | "user-creates-organizations-too-fast" | "user-disabled" | "user-email-is-disposable" | "user-email-not-set" | "user-email-not-verified" | "user-has-no-subscription" | "user-integration-not-found" | "user-is-already-invited" | "user-is-already-organization-member" | "user-is-not-member-of-organization" | "user-is-not-organization" | "user-is-organization" | "user-is-organization-owner" | "user-is-removed" | "user-not-found" | "user-not-logged-in" | "user-not-verified" | "user-or-token-not-found" | "user-plan-not-allowed-for-coupon" | "user-problem-with-card" | "user-record-not-found" | "username-already-taken" | "username-missing" | "username-not-allowed" | "username-removal-forbidden" | "username-required" | "verification-email-already-sent" | "verification-token-expired" | "version-already-exists" | "versions-size-exceeded" | "weak-password" | "x402-agentic-payment-already-finalized" | "x402-agentic-payment-insufficient-amount" | "x402-agentic-payment-malformed-token" | "x402-agentic-payment-settlement-failed" | "x402-agentic-payment-settlement-in-progress" | "x402-agentic-payment-settlement-stuck" | "x402-agentic-payment-unauthorized" | "x402-payment-required" | "zero-invoice";
+        ErrorType: "3d-secure-auth-failed" | "access-right-already-exists" | "action-not-found" | "actor-already-rented" | "actor-can-not-be-rented" | "actor-disabled" | "actor-is-not-rented" | "actor-memory-limit-exceeded" | "actor-name-exists-new-owner" | "actor-name-not-unique" | "actor-not-found" | "actor-not-github-actor" | "actor-not-public" | "actor-permission-level-not-supported-for-agentic-payments" | "actor-review-already-exists" | "actor-run-failed" | "actor-standby-not-supported-for-agentic-payments" | "actor-task-name-not-unique" | "agentic-payment-info-retrieval-error" | "agentic-payment-information-missing" | "agentic-payment-insufficient-amount" | "agentic-payment-provider-internal-error" | "agentic-payment-provider-unauthorized" | "airtable-webhook-deprecated" | "already-subscribed-to-paid-actor" | "apify-plan-required-to-use-paid-actor" | "apify-signup-not-allowed" | "auth-method-not-supported" | "authorization-server-not-found" | "auto-issue-date-invalid" | "background-check-required" | "billing-system-error" | "black-friday-plan-expired" | "braintree-error" | "braintree-not-linked" | "braintree-operation-timed-out" | "braintree-unsupported-currency" | "build-not-found" | "build-outdated" | "cannot-add-apify-events-to-ppe-actor" | "cannot-add-multiple-pricing-infos" | "cannot-add-pricing-info-that-alters-past" | "cannot-add-second-future-pricing-info" | "cannot-build-actor-from-webhook" | "cannot-change-billing-interval" | "cannot-change-owner" | "cannot-charge-apify-event" | "cannot-charge-non-pay-per-event-actor" | "cannot-comment-as-other-user" | "cannot-copy-actor-task" | "cannot-create-payout" | "cannot-create-public-actor" | "cannot-create-tax-transaction" | "cannot-delete-critical-actor" | "cannot-delete-invoice" | "cannot-delete-paid-actor" | "cannot-disable-one-time-event-for-apify-start-event" | "cannot-disable-organization-with-enabled-members" | "cannot-disable-user-with-subscription" | "cannot-link-oauth-to-unverified-email" | "cannot-metamorph-to-pay-per-result-actor" | "cannot-modify-actor-pricing-too-frequently" | "cannot-modify-actor-pricing-with-immediate-effect" | "cannot-monetize-without-payout-billing-info" | "cannot-override-paid-actor-trial" | "cannot-permanently-delete-subscription" | "cannot-publish-actor" | "cannot-publish-actor-task" | "cannot-reduce-last-full-token" | "cannot-reimburse-more-than-original-charge" | "cannot-reimburse-non-rental-charge" | "cannot-remove-own-actor-from-recently-used" | "cannot-remove-payment-method" | "cannot-remove-pricing-info" | "cannot-remove-running-run" | "cannot-remove-user-with-public-actors" | "cannot-remove-user-with-subscription" | "cannot-remove-user-with-unpaid-invoice" | "cannot-rename-env-var" | "cannot-rent-paid-actor" | "cannot-review-own-actor" | "cannot-set-access-rights-for-owner" | "cannot-set-is-status-message-terminal" | "cannot-unpublish-critical-actor" | "cannot-unpublish-paid-actor" | "cannot-unpublish-profile" | "cannot-update-invoice-field" | "concurrent-runs-limit-exceeded" | "concurrent-update-detected" | "conference-token-not-found" | "content-encoding-forbidden-for-html" | "coupon-already-redeemed" | "coupon-expired" | "coupon-for-new-customers" | "coupon-for-subscribed-users" | "coupon-limits-are-in-conflict-with-current-limits" | "coupon-max-number-of-redemptions-reached" | "coupon-not-found" | "coupon-not-unique" | "coupons-disabled" | "create-github-issue-not-allowed" | "creator-plan-not-available" | "cron-expression-invalid" | "daily-ai-token-limit-exceeded" | "daily-publication-limit-exceeded" | "dataset-does-not-have-fields-schema" | "dataset-does-not-have-schema" | "dataset-locked" | "dataset-schema-invalid" | "dcr-not-supported" | "default-dataset-not-found" | "deleting-default-build" | "deleting-unfinished-build" | "email-already-taken" | "email-already-taken-removed-user" | "email-domain-not-allowed-for-coupon" | "email-invalid" | "email-not-allowed" | "email-not-valid" | "email-update-too-soon" | "elevated-permissions-needed" | "env-var-already-exists" | "exchange-rate-fetch-failed" | "expired-conference-token" | "failed-to-charge-user" | "final-invoice-negative" | "full-permission-actor-blocked-for-admin" | "full-permission-actor-not-approved" | "github-branch-empty" | "github-issue-already-exists" | "github-public-key-not-found" | "github-repository-not-found" | "github-signature-does-not-match-payload" | "github-user-not-authorized-for-issues" | "gmail-not-allowed" | "id-does-not-match" | "incompatible-billing-interval" | "incomplete-payout-billing-info" | "inconsistent-currencies" | "incorrect-pricing-modifier-prefix" | "input-json-invalid-characters" | "input-json-not-object" | "input-json-too-long" | "input-update-collision" | "insufficient-permissions" | "insufficient-permissions-to-change-field" | "insufficient-security-measures" | "insufficient-tax-country-evidence" | "integration-auth-error" | "internal-server-error" | "invalid-billing-info" | "invalid-billing-period-for-payout" | "invalid-build" | "invalid-client-key" | "invalid-collection" | "invalid-conference-login-password" | "invalid-content-type-header" | "invalid-credentials" | "invalid-git-auth-token" | "invalid-github-issue-url" | "invalid-header" | "invalid-id" | "invalid-idempotency-key" | "invalid-input" | "invalid-input-schema" | "invalid-invoice" | "invalid-invoice-type" | "invalid-issue-date" | "invalid-label-params" | "invalid-main-account-user-id" | "invalid-oauth-app" | "invalid-oauth-scope" | "invalid-one-time-invoice" | "invalid-parameter" | "invalid-payout-status" | "invalid-picture-url" | "invalid-record-key" | "invalid-request" | "invalid-resource-type" | "invalid-signature" | "invalid-subscription-plan" | "invalid-tax-number" | "invalid-tax-number-format" | "invalid-token" | "invalid-token-type" | "invalid-two-factor-code" | "invalid-two-factor-code-or-recovery-code" | "invalid-two-factor-recovery-code" | "invalid-username" | "invalid-value" | "invitation-invalid-resource-type" | "invitation-no-longer-valid" | "invoice-canceled" | "invoice-cannot-be-refunded-due-to-too-high-amount" | "invoice-incomplete" | "invoice-is-draft" | "invoice-locked" | "invoice-must-be-buffer" | "invoice-not-canceled" | "invoice-not-draft" | "invoice-not-found" | "invoice-outdated" | "invoice-paid-already" | "issue-already-connected-to-github" | "issue-not-found" | "issues-bad-request" | "issuer-not-registered" | "job-finished" | "label-already-linked" | "last-api-token" | "limit-reached" | "max-items-must-be-greater-than-zero" | "max-metamorphs-exceeded" | "max-total-charge-usd-below-minimum" | "max-total-charge-usd-must-be-greater-than-zero" | "method-not-allowed" | "migration-disabled" | "missing-actor-rights" | "missing-api-token" | "missing-billing-info" | "missing-line-items" | "missing-payment-date" | "missing-payout-billing-info" | "missing-proxy-password" | "missing-reporting-fields" | "missing-resource-name" | "missing-settings" | "missing-username" | "monthly-usage-limit-too-low" | "more-than-one-update-not-allowed" | "multiple-records-found" | "must-be-admin" | "name-not-unique" | "next-runtime-computation-failed" | "no-columns-in-exported-dataset" | "no-payment-attempt-for-refund-found" | "no-payment-method-available" | "no-team-account-seats-available" | "non-temporary-email" | "not-enough-usage-to-run-paid-actor" | "not-implemented" | "not-supported-currencies" | "o-auth-service-already-connected" | "o-auth-service-not-connected" | "oauth-resource-access-failed" | "one-time-invoice-already-marked-paid" | "only-drafts-can-be-deleted" | "operation-canceled" | "operation-not-allowed" | "operation-timed-out" | "organization-cannot-own-itself" | "organization-role-not-found" | "overlapping-payout-billing-periods" | "own-token-required" | "page-not-found" | "param-not-one-of" | "parameter-required" | "parameters-mismatched" | "password-reset-email-already-sent" | "password-reset-token-expired" | "pay-as-you-go-without-monthly-interval" | "payment-attempt-status-message-required" | "payout-already-paid" | "payout-canceled" | "payout-invalid-state" | "payout-must-be-approved-to-be-marked-paid" | "payout-not-found" | "payout-number-already-exists" | "phone-number-invalid" | "phone-number-landline" | "phone-number-opted-out" | "phone-verification-disabled" | "platform-feature-disabled" | "price-overrides-validation-failed" | "pricing-model-not-supported" | "promotional-plan-not-available" | "proxy-auth-ip-not-unique" | "public-actor-disabled" | "query-timeout" | "quoted-price-outdated" | "rate-limit-exceeded" | "recaptcha-invalid" | "recaptcha-required" | "record-not-found" | "record-not-public" | "record-or-token-not-found" | "record-too-large" | "redirect-uri-mismatch" | "reduced-plan-not-available" | "rental-charge-already-reimbursed" | "rental-not-allowed" | "request-aborted-prematurely" | "request-handled-or-locked" | "request-id-invalid" | "request-queue-duplicate-requests" | "request-too-large" | "requested-dataset-view-does-not-exist" | "resume-token-expired" | "run-failed" | "run-input-body-not-valid-json" | "run-timeout-exceeded" | "russia-is-evil" | "same-user" | "schedule-actor-not-found" | "schedule-actor-task-not-found" | "schedule-name-not-unique" | "schema-validation" | "schema-validation-error" | "schema-validation-failed" | "service-worker-registration-not-allowed" | "sign-up-method-not-allowed" | "slack-integration-not-custom" | "socket-closed" | "socket-destroyed" | "store-schema-invalid" | "store-terms-not-accepted" | "stripe-enabled" | "stripe-generic-decline" | "stripe-not-enabled" | "stripe-not-enabled-for-user" | "tagged-build-required" | "tax-country-invalid" | "tax-number-invalid" | "tax-number-validation-failed" | "taxamo-call-failed" | "taxamo-request-failed" | "testing-error" | "token-not-provided" | "too-few-versions" | "too-many-actor-tasks" | "too-many-actors" | "too-many-labels-on-resource" | "too-many-mcp-connectors" | "too-many-o-auth-apps" | "too-many-organizations" | "too-many-requests" | "too-many-schedules" | "too-many-ui-access-keys" | "too-many-user-labels" | "too-many-values" | "too-many-versions" | "too-many-webhooks" | "unexpected-route" | "unknown-build-tag" | "unknown-payment-provider" | "unsubscribe-token-invalid" | "unsupported-actor-pricing-model-for-agentic-payments" | "unsupported-content-encoding" | "unsupported-file-type-for-issue" | "unsupported-file-type-image-expected" | "unsupported-file-type-text-or-json-expected" | "unsupported-permission" | "upcoming-subscription-bill-not-up-to-date" | "user-already-exists" | "user-already-verified" | "user-creates-organizations-too-fast" | "user-disabled" | "user-email-is-disposable" | "user-email-not-set" | "user-email-not-verified" | "user-has-no-subscription" | "user-integration-not-found" | "user-is-already-invited" | "user-is-already-organization-member" | "user-is-not-member-of-organization" | "user-is-not-organization" | "user-is-organization" | "user-is-organization-owner" | "user-is-removed" | "user-not-found" | "user-not-logged-in" | "user-not-verified" | "user-or-token-not-found" | "user-plan-not-allowed-for-coupon" | "user-problem-with-card" | "user-record-not-found" | "username-already-taken" | "username-missing" | "username-not-allowed" | "username-removal-forbidden" | "username-required" | "verification-email-already-sent" | "verification-token-expired" | "version-already-exists" | "versions-size-exceeded" | "weak-password" | "x402-agentic-payment-already-finalized" | "x402-agentic-payment-insufficient-amount" | "x402-agentic-payment-malformed-token" | "x402-agentic-payment-settlement-failed" | "x402-agentic-payment-settlement-in-progress" | "x402-agentic-payment-settlement-stuck" | "x402-agentic-payment-unauthorized" | "x402-payment-required" | "zero-invoice";
         /** ErrorDetail */
         ErrorDetail: {
             type?: components["schemas"]["ErrorType"];
@@ -4857,9 +4868,133 @@ export interface components {
             /** @description URL of the GitHub Gist to clone the source code from. Applies when the `sourceType` is `GITHUB_GIST`. */
             gitHubGistUrl?: string | null;
         };
+        /**
+         * @description Determines the permission level that the Actor requires to run. For details, see [Actor permissions](https://docs.apify.com/platform/actors/development/permissions).
+         * @example LIMITED_PERMISSIONS
+         * @enum {string}
+         */
+        ActorPermissionLevel: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
+        /**
+         * DefaultRunOptions
+         * @description The default settings applied to an Actor run. Can be overridden elsewhere.
+         */
+        DefaultRunOptions: {
+            /**
+             * @description Which build to run. Either a build tag or a version number.
+             * @example latest
+             */
+            build?: string;
+            /**
+             * @description Timeout in seconds. 0 if no timeout.
+             * @example 3600
+             */
+            timeoutSecs?: number;
+            /**
+             * @description In MB, the amount of memory allocated to the run.
+             * @example 2048
+             */
+            memoryMbytes?: number;
+            /**
+             * @description Whether to automatically restart the run if it fails.
+             * @example false
+             */
+            restartOnError?: boolean;
+            /** @description Maximum number of items the run might produce. */
+            maxItems?: number | null;
+            forcePermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
+        };
+        /** ActorStandby */
+        ActorStandby: {
+            /** @description Whether standby mode is enabled for the Actor. */
+            isEnabled?: boolean | null;
+            /** @description Target number of concurrent HTTP requests a single run is configured to handle. */
+            desiredRequestsPerActorRun?: number | null;
+            /** @description Maximum number of concurrent HTTP requests that can be routed to a single run. */
+            maxRequestsPerActorRun?: number | null;
+            /** @description In seconds, how long a run can stay idle without incoming requests before it's terminated. */
+            idleTimeoutSecs?: number | null;
+            /** @description Which build to run in standby mode. Either a build tag or a version number. */
+            build?: string | null;
+            /** @description In MB, the amount of memory allocated to the run. */
+            memoryMbytes?: number | null;
+            /** @description If `true`, prevents the standby mode configuration from being overridden elsewhere. */
+            disableStandbyFieldsOverride?: boolean | null;
+            /** @description Whether to pass the Actor's input to the standby run. If `false`, the standby runs start with no input. */
+            shouldPassActorInput?: boolean | null;
+        };
+        /** ExampleRunInput */
+        ExampleRunInput: {
+            /**
+             * @description Sample input, serialized as a string.
+             * @example { "helloWorld": 123 }
+             */
+            body?: string;
+            /**
+             * @description MIME type of `body`.
+             * @example application/json; charset=utf-8
+             */
+            contentType?: string;
+        };
+        /** CreateActorRequest */
+        CreateActorRequest: {
+            /**
+             * @description The identifier of the Actor. Use lowercase letters, numbers, and hyphens. Spaces or special characters aren't allowed. Must be unique across your account.
+             * @example instagram-scraper
+             */
+            name?: string | null;
+            /**
+             * @description Short description of the Actor, displayed in Apify Store and Console.
+             * @example This scraper extracts posts and comments from Instagram.
+             */
+            description?: string | null;
+            /**
+             * @description Human-readable name of the Actor, displayed in Apify Store and Console. Can contain spaces and capital letters. Recommended length is 40-50 characters. You can change this title without affecting the Actor's URL or SEO.
+             * @example Instagram scraper
+             */
+            title?: string | null;
+            /**
+             * @description Whether the Actor is available to users in Apify Store. If `false`, the Actor is private and only visible to you.
+             * @example false
+             */
+            isPublic?: boolean | null;
+            /**
+             * @description Name of the Actor to display by search engines such as Google. Can be different from the Actor's name displayed in Apify Store and Console. Recommended length is 40-50 characters.
+             * @example Free Instagram scraper
+             */
+            seoTitle?: string | null;
+            /**
+             * @description Description of the Actor to display by search engines such as Google. Recommended length is 140-156 characters.
+             * @example The best scraper for Instagram
+             */
+            seoDescription?: string | null;
+            /**
+             * @deprecated
+             * @example false
+             */
+            restartOnError?: boolean;
+            /** @description An array of `Version` objects. Each object represents a specific version of the Actor's source code: its location, builds, and environment configuration. */
+            versions?: components["schemas"]["Version"][] | null;
+            /**
+             * @description A list of categories that best define the Actor. Reflected in Apify Store's search and filtering options.
+             * @example [
+             *       "SOCIAL_MEDIA"
+             *     ]
+             */
+            categories?: string[] | null;
+            defaultRunOptions?: components["schemas"]["DefaultRunOptions"];
+            /** @description The configuration of the Actor's standby mode. For details, see [Standby mode](https://docs.apify.com/platform/actors/development/programming-interface/standby). */
+            actorStandby?: components["schemas"]["ActorStandby"] | null;
+            /** @description Sample input payload that demonstrates what a typical run input for an Actor looks like. Used when no explicit input for a run is provided. */
+            exampleRunInput?: components["schemas"]["ExampleRunInput"] | null;
+            /** @description Whether the Actor is deprecated. */
+            isDeprecated?: boolean | null;
+        };
         /** CommonActorPricingInfo */
         CommonActorPricingInfo: {
-            /** @description In [0, 1], fraction of pricePerUnitUsd that goes to Apify */
+            /**
+             * @description Apify's share of the revenue generated under this pricing info record, as a fraction between 0 and 1. Set by the Apify platform.
+             * @example 0.2
+             */
             apifyMarginPercentage: number;
             /**
              * Format: date-time
@@ -4993,128 +5128,6 @@ export interface components {
         };
         /** ActorRunPricingInfo */
         ActorRunPricingInfo: components["schemas"]["PayPerEventActorPricingInfo"] | components["schemas"]["PricePerDatasetItemActorPricingInfo"] | components["schemas"]["FlatPricePerMonthActorPricingInfo"] | components["schemas"]["FreeActorPricingInfo"];
-        /**
-         * @description Determines the permission level that the Actor requires to run. For details, see [Actor permissions](https://docs.apify.com/platform/actors/development/permissions).
-         * @example LIMITED_PERMISSIONS
-         * @enum {string}
-         */
-        ActorPermissionLevel: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
-        /**
-         * DefaultRunOptions
-         * @description The default settings applied to an Actor run. Can be overridden elsewhere.
-         */
-        DefaultRunOptions: {
-            /**
-             * @description Which build to run. Either a build tag or a version number.
-             * @example latest
-             */
-            build?: string;
-            /**
-             * @description Timeout in seconds. 0 if no timeout.
-             * @example 3600
-             */
-            timeoutSecs?: number;
-            /**
-             * @description In MB, the amount of memory allocated to the run.
-             * @example 2048
-             */
-            memoryMbytes?: number;
-            /**
-             * @description Whether to automatically restart the run if it fails.
-             * @example false
-             */
-            restartOnError?: boolean;
-            /** @description Maximum number of items the run might produce. */
-            maxItems?: number | null;
-            forcePermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
-        };
-        /** ActorStandby */
-        ActorStandby: {
-            /** @description Whether standby mode is enabled for the Actor. */
-            isEnabled?: boolean | null;
-            /** @description Target number of concurrent HTTP requests a single run is configured to handle. */
-            desiredRequestsPerActorRun?: number | null;
-            /** @description Maximum number of concurrent HTTP requests that can be routed to a single run. */
-            maxRequestsPerActorRun?: number | null;
-            /** @description In seconds, how long a run can stay idle without incoming requests before it's terminated. */
-            idleTimeoutSecs?: number | null;
-            /** @description Which build to run in standby mode. Either a build tag or a version number. */
-            build?: string | null;
-            /** @description In MB, the amount of memory allocated to the run. */
-            memoryMbytes?: number | null;
-            /** @description If `true`, prevents the standby mode configuration from being overridden elsewhere. */
-            disableStandbyFieldsOverride?: boolean | null;
-            /** @description Whether to pass the Actor's input to the standby run. If `false`, the standby runs start with no input. */
-            shouldPassActorInput?: boolean | null;
-        };
-        /** ExampleRunInput */
-        ExampleRunInput: {
-            /**
-             * @description Sample input, serialized as a string.
-             * @example { "helloWorld": 123 }
-             */
-            body?: string;
-            /**
-             * @description MIME type of `body`.
-             * @example application/json; charset=utf-8
-             */
-            contentType?: string;
-        };
-        /** CreateActorRequest */
-        CreateActorRequest: {
-            /**
-             * @description The identifier of the Actor. Use lowercase letters, numbers, and hyphens. Spaces or special characters aren't allowed. Must be unique across your account.
-             * @example instagram-scraper
-             */
-            name?: string | null;
-            /**
-             * @description Short description of the Actor, displayed in Apify Store and Console.
-             * @example This scraper extracts posts and comments from Instagram.
-             */
-            description?: string | null;
-            /**
-             * @description Human-readable name of the Actor, displayed in Apify Store and Console. Can contain spaces and capital letters. Recommended length is 40-50 characters. You can change this title without affecting the Actor's URL or SEO.
-             * @example Instagram scraper
-             */
-            title?: string | null;
-            /**
-             * @description Whether the Actor is available to users in Apify Store. If `false`, the Actor is private and only visible to you.
-             * @example false
-             */
-            isPublic?: boolean | null;
-            /**
-             * @description Name of the Actor to display by search engines such as Google. Can be different from the Actor's name displayed in Apify Store and Console. Recommended length is 40-50 characters.
-             * @example Free Instagram scraper
-             */
-            seoTitle?: string | null;
-            /**
-             * @description Description of the Actor to display by search engines such as Google. Recommended length is 140-156 characters.
-             * @example The best scraper for Instagram
-             */
-            seoDescription?: string | null;
-            /**
-             * @deprecated
-             * @example false
-             */
-            restartOnError?: boolean;
-            /** @description An array of `Version` objects. Each object represents a specific version of the Actor's source code: its location, builds, and environment configuration. */
-            versions?: components["schemas"]["Version"][] | null;
-            pricingInfos?: components["schemas"]["ActorRunPricingInfo"][];
-            /**
-             * @description A list of categories that best define the Actor. Reflected in Apify Store's search and filtering options.
-             * @example [
-             *       "SOCIAL_MEDIA"
-             *     ]
-             */
-            categories?: string[] | null;
-            defaultRunOptions?: components["schemas"]["DefaultRunOptions"];
-            /** @description The configuration of the Actor's standby mode. For details, see [Standby mode](https://docs.apify.com/platform/actors/development/programming-interface/standby). */
-            actorStandby?: components["schemas"]["ActorStandby"] | null;
-            /** @description Sample input payload that demonstrates what a typical run input for an Actor looks like. Used when no explicit input for a run is provided. */
-            exampleRunInput?: components["schemas"]["ExampleRunInput"] | null;
-            /** @description Whether the Actor is deprecated. */
-            isDeprecated?: boolean | null;
-        };
         /**
          * TaggedBuildInfo
          * @description Information about a tagged build.
@@ -6793,8 +6806,8 @@ export interface components {
         };
         /** RequestBase */
         RequestBase: {
-            uniqueKey?: components["schemas"]["UniqueKey"];
-            url?: components["schemas"]["RequestUrl"];
+            uniqueKey: components["schemas"]["UniqueKey"];
+            url: components["schemas"]["RequestUrl"];
             method?: components["schemas"]["HttpMethod"];
             retryCount?: components["schemas"]["RetryCount"];
             /**
@@ -6839,7 +6852,7 @@ export interface components {
          * Request
          * @description A request stored in the request queue, including its metadata and processing state.
          */
-        Request: WithRequired<components["schemas"]["RequestBase"], "uniqueKey" | "url"> & {
+        Request: components["schemas"]["RequestBase"] & {
             id: components["schemas"]["RequestId"];
         };
         /**
@@ -6920,6 +6933,11 @@ export interface components {
         ListOfRequestsResponse: {
             data: components["schemas"]["ListOfRequests"];
         };
+        /**
+         * RequestWithoutId
+         * @description A request stored in the request queue, including its metadata and processing state, without the assigned ID.
+         */
+        RequestWithoutId: components["schemas"]["RequestBase"];
         /**
          * @description Indicates whether a request with the same unique key already existed in the request queue. If true, no new request was created.
          * @example false
@@ -7328,6 +7346,46 @@ export interface components {
         TaskInput: {
             [key: string]: unknown;
         };
+        /**
+         * TaskPublicConfig
+         * @description Public-facing configuration of a published task, used by the task's public landing page.
+         *     The task's publication state is determined by `publishedAt` - a task is published when
+         *     `publishedAt` is set and unpublished when it is `null`.
+         */
+        TaskPublicConfig: {
+            /**
+             * Format: date-time
+             * @description Time when the task was published, or `null` if the task isn't published.
+             *     This field is server-controlled. To publish or unpublish a task, use the
+             *     [Update task](https://docs.apify.com/api/v2/actor-task-put) endpoint and set `isPublic`.
+             * @example 2025-06-16T09:20:45.777Z
+             */
+            readonly publishedAt?: Date | null;
+            /**
+             * @description Name of the Actor task to display by search engines such as Google. Defaults to the task
+             *     title. At most 60 characters.
+             * @example Scrape data from a website
+             */
+            seoTitle?: string | null;
+            /**
+             * @description Description of the Actor task to display by search engines such as Google. Defaults to the
+             *     task description. At most 160 characters.
+             */
+            seoDescription?: string | null;
+            /** @description Names of the task input fields displayed on the public task page. */
+            inputSchemaFields?: string[] | null;
+            /**
+             * @description Name of the dataset from the Actor's dataset schema whose results are displayed. When
+             *     `null`, the Actor's default dataset is used. That is, the only dataset the Actor declares,
+             *     or the one named `default` when it declares several.
+             */
+            datasetName?: string | null;
+            /**
+             * @description Key of the dataset view from the Actor's dataset schema used to display results. Must be
+             *     one of the views declared on the resolved dataset. You can't publish a task without it.
+             */
+            datasetView?: string | null;
+        };
         /** CreateTaskRequest */
         CreateTaskRequest: {
             /** @example asADASadYvn4mBZmm */
@@ -7338,6 +7396,11 @@ export interface components {
             input?: components["schemas"]["TaskInput"] | null;
             title?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
+            /**
+             * @description Configuration that controls how the published task appears on its public landing page.
+             *     Editing this object requires write permission to the Actor that the task belongs to.
+             */
+            publicConfig?: components["schemas"]["TaskPublicConfig"];
         };
         /** Task */
         Task: {
@@ -7370,6 +7433,12 @@ export interface components {
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             /** Format: uri */
             standbyUrl?: string | null;
+            /**
+             * @description Whether the task is published. Based on the `publicConfig.publishedAt` field.
+             * @example false
+             */
+            isPublic?: boolean;
+            publicConfig?: components["schemas"]["TaskPublicConfig"] | null;
         };
         /**
          * TaskResponse
@@ -7409,6 +7478,21 @@ export interface components {
             input?: components["schemas"]["TaskInput"] | null;
             title?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
+            /**
+             * @description Configuration that controls how the published task appears on its public landing page.
+             *     Editing this object requires write permission to the Actor that the task belongs to.
+             *
+             *     The fields you send are merged into the stored configuration, so you only need to include
+             *     the ones you're changing. To clear a field, set it to `null`. Sending `publicConfig: null`
+             *     is rejected, so the object as a whole can't be cleared.
+             */
+            publicConfig?: components["schemas"]["TaskPublicConfig"];
+            /**
+             * @description Set to `true` to publish the task on its public landing page, or `false` to unpublish it.
+             *     Sending the value the task already has does nothing.
+             * @example true
+             */
+            isPublic?: boolean;
         };
         /** Webhook */
         Webhook: {
@@ -7935,7 +8019,10 @@ export interface components {
         CurrentPricingInfo: {
             /** @example FREE */
             pricingModel: string;
-            /** @example 0.2 */
+            /**
+             * @description Apify's share of the revenue generated under this pricing info record, as a fraction between 0 and 1. Set by the Apify platform.
+             * @example 0.2
+             */
             apifyMarginPercentage?: number;
             /**
              * Format: date-time
@@ -8000,10 +8087,7 @@ export interface components {
              */
             categories?: string[];
             notice?: components["schemas"]["ActorNotice"];
-            /**
-             * Format: uri
-             * @example https://...
-             */
+            /** @example https://... */
             pictureUrl?: string | null;
             /**
              * Format: uri
@@ -9175,12 +9259,13 @@ export interface operations {
                      *       "data": {
                      *         "id": "zdc3Pyhyz3m8vjDeM",
                      *         "userId": "wRsJZtadYvn4mBZmm",
-                     *         "name": "MyActor",
+                     *         "name": "instagram-scraper",
                      *         "username": "jane35",
-                     *         "description": "My favourite Actor!",
+                     *         "description": "This scraper extracts posts and comments from Instagram.",
                      *         "isPublic": false,
                      *         "createdAt": "2019-07-08T11:27:57.401Z",
                      *         "modifiedAt": "2019-07-08T14:01:05.546Z",
+                     *         "taggedBuilds": {},
                      *         "stats": {
                      *           "totalBuilds": 9,
                      *           "totalRuns": 16,
@@ -9188,41 +9273,16 @@ export interface operations {
                      *           "totalUsers7Days": 2,
                      *           "totalUsers30Days": 6,
                      *           "totalUsers90Days": 6,
-                     *           "totalMetamorphs": 2,
-                     *           "lastRunStartedAt": "2019-07-08T14:01:05.546Z"
+                     *           "totalMetamorphs": 2
                      *         },
                      *         "versions": [
                      *           {
-                     *             "versionNumber": "0.1",
+                     *             "versionNumber": "0.0",
                      *             "envVars": null,
                      *             "sourceType": "SOURCE_FILES",
                      *             "applyEnvVarsToBuild": false,
                      *             "buildTag": "latest",
                      *             "sourceFiles": []
-                     *           },
-                     *           {
-                     *             "versionNumber": "0.2",
-                     *             "sourceType": "GIT_REPO",
-                     *             "envVars": null,
-                     *             "applyEnvVarsToBuild": false,
-                     *             "buildTag": "latest",
-                     *             "gitRepoUrl": "https://github.com/jane35/my-actor"
-                     *           },
-                     *           {
-                     *             "versionNumber": "0.3",
-                     *             "sourceType": "TARBALL",
-                     *             "envVars": null,
-                     *             "applyEnvVarsToBuild": false,
-                     *             "buildTag": "latest",
-                     *             "tarballUrl": "https://github.com/jane35/my-actor/archive/master.zip"
-                     *           },
-                     *           {
-                     *             "versionNumber": "0.4",
-                     *             "sourceType": "GITHUB_GIST",
-                     *             "envVars": null,
-                     *             "applyEnvVarsToBuild": false,
-                     *             "buildTag": "latest",
-                     *             "gitHubGistUrl": "https://gist.github.com/jane35/e51feb784yu89"
                      *           }
                      *         ],
                      *         "defaultRunOptions": {
@@ -9235,16 +9295,16 @@ export interface operations {
                      *           "body": "{ \"helloWorld\": 123 }",
                      *           "contentType": "application/json; charset=utf-8"
                      *         },
+                     *         "categories": [],
                      *         "isDeprecated": false,
-                     *         "deploymentKey": "ssh-rsa AAAA ...",
                      *         "title": "My Actor",
-                     *         "taggedBuilds": {
-                     *           "latest": {
-                     *             "buildId": "z2EryhbfhgSyqj6Hn",
-                     *             "buildNumber": "0.0.2",
-                     *             "finishedAt": "2019-06-10T11:15:49.286Z"
-                     *           }
-                     *         }
+                     *         "notice": "NONE",
+                     *         "isCritical": false,
+                     *         "isGeneric": false,
+                     *         "hasNoDataset": false,
+                     *         "isSourceCodeHidden": true,
+                     *         "standbyUrl": null,
+                     *         "actorPermissionLevel": "LIMITED_PERMISSIONS"
                      *       }
                      *     }
                      */
@@ -11111,8 +11171,8 @@ export interface operations {
         parameters: {
             query?: {
                 /**
-                 * @description Optional tag or number of the Actor build to use for input schema validation.
-                 *     By default, the `latest` build tag is used.
+                 * @description Actor build whose input schema is used for validation. Can be a build tag or build number.
+                 *     Defaults to the `latest` build tag.
                  */
                 build?: string;
             };
@@ -11123,7 +11183,12 @@ export interface operations {
             };
             cookie?: never;
         };
-        /** @description JSON input to validate against the Actor's input schema. */
+        /**
+         * @description The Actor input as a JSON object.
+         *
+         *     You can omit fields that have a `default` in the input schema. They're
+         *     filled in before validation.
+         */
         requestBody: {
             content: {
                 "application/json": Record<string, unknown>;
@@ -11136,7 +11201,10 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @description Whether the input is valid according to the Actor's input schema. */
+                        /**
+                         * @description Always `true`. The endpoint responds with `200` only when the input
+                         *     passes validation. Invalid input returns a `400` error.
+                         */
                         valid: boolean;
                     };
                 };
@@ -12170,7 +12238,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestBase"];
+                "application/json": components["schemas"]["RequestWithoutId"];
             };
         };
         responses: {
@@ -12224,7 +12292,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestBase"][];
+                "application/json": components["schemas"]["RequestWithoutId"][];
             };
         };
         responses: {
@@ -12411,7 +12479,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestBase"];
+                "application/json": components["schemas"]["RequestWithoutId"];
             };
         };
         responses: {
@@ -15558,7 +15626,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestBase"];
+                "application/json": components["schemas"]["RequestWithoutId"];
             };
         };
         responses: {
@@ -15612,7 +15680,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestBase"][];
+                "application/json": components["schemas"]["RequestWithoutId"][];
             };
         };
         responses: {
@@ -15799,7 +15867,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestBase"];
+                "application/json": components["schemas"]["RequestWithoutId"];
             };
         };
         responses: {
@@ -17242,7 +17310,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestBase"];
+                "application/json": components["schemas"]["RequestWithoutId"];
             };
         };
         responses: {
@@ -17292,7 +17360,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestBase"][];
+                "application/json": components["schemas"]["RequestWithoutId"][];
             };
         };
         responses: {
@@ -17462,7 +17530,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestBase"];
+                "application/json": components["schemas"]["RequestWithoutId"];
             };
         };
         responses: {
@@ -19134,7 +19202,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestBase"][];
+                "application/json": components["schemas"]["RequestWithoutId"][];
             };
         };
         responses: {
@@ -19322,7 +19390,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestBase"];
+                "application/json": components["schemas"]["RequestWithoutId"];
             };
         };
         responses: {
@@ -19405,7 +19473,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestBase"];
+                "application/json": components["schemas"]["RequestWithoutId"];
             };
         };
         responses: {
@@ -20038,6 +20106,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             405: components["responses"]["MethodNotAllowed"];
+            409: components["responses"]["Conflict"];
             413: components["responses"]["PayloadTooLarge"];
             415: components["responses"]["UnsupportedMediaType"];
             429: components["responses"]["TooManyRequests"];
@@ -20239,6 +20308,7 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             405: components["responses"]["MethodNotAllowed"];
             429: components["responses"]["TooManyRequests"];
@@ -20517,6 +20587,3 @@ export interface operations {
         };
     };
 }
-type WithRequired<T, K extends keyof T> = T & {
-    [P in K]-?: T[P];
-};

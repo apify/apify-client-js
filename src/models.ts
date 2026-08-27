@@ -723,6 +723,7 @@ export interface ActorRun
 
 type GeneratedTaskStats = Schemas['TaskStats'];
 type GeneratedTaskOptions = Schemas['TaskOptions'];
+type GeneratedTaskPublicConfig = Schemas['TaskPublicConfig'];
 type GeneratedCurrentPricingInfo = Schemas['CurrentPricingInfo'];
 
 /** Statistics about Actor task usage. */
@@ -739,15 +740,7 @@ export interface TaskOptions extends GeneratedTaskOptions {}
  * {@apilink TaskClient.unpublish} to change the publication state.
  * @since Added in 2.25.0
  */
-export interface TaskPublicConfig {
-    publishedAt: Date | null;
-    seoTitle?: string | null;
-    seoDescription?: string | null;
-    categorization?: string | null;
-    inputSchemaFields?: string[] | null;
-    datasetName?: string | null;
-    datasetView?: string | null;
-}
+export interface TaskPublicConfig extends GeneratedTaskPublicConfig {}
 
 /**
  * Fields the API returns on a task that the OpenAPI spec does not describe yet.
@@ -756,22 +749,13 @@ export interface TaskPublicConfig {
  */
 export interface TaskSpecGaps {
     description?: string;
-    /**
-     * Whether the task is published on its public landing page. Derived from
-     * `publicConfig.publishedAt` -- set it on update to publish or unpublish the task.
-     * @since Added in 2.25.0
-     */
-    isPublic?: boolean;
-    /**
-     * @since Added in 2.25.0
-     */
-    publicConfig?: TaskPublicConfig | null;
 }
 
 export interface TaskRePointed {
     stats?: TaskStats | null;
     options?: TaskOptions | null;
     actorStandby?: ActorStandby | null;
+    publicConfig?: TaskPublicConfig | null;
 }
 
 export interface TaskSpecNarrowings {
