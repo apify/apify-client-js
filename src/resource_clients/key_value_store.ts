@@ -254,7 +254,7 @@ export class KeyValueStoreClient extends ResourceClient {
 
         const store = await this.get();
 
-        const recordPublicUrl = new URL(this._publicUrl(`records/${key}`));
+        const recordPublicUrl = new URL(this._publicUrl(['records', key]));
 
         if (store?.urlSigningSecretKey) {
             const signature = await createHmacSignatureAsync(store.urlSigningSecretKey, key);
@@ -330,7 +330,7 @@ export class KeyValueStoreClient extends ResourceClient {
      */
     async recordExists(key: string): Promise<boolean> {
         const requestOpts: Record<string, unknown> = {
-            url: this._url(`records/${key}`),
+            url: this._url(['records', key]),
             method: 'HEAD',
             params: this._params(),
         };
@@ -384,7 +384,7 @@ export class KeyValueStoreClient extends ResourceClient {
         if (parsed.signature) queryParams.signature = parsed.signature;
 
         const requestOpts: Record<string, unknown> = {
-            url: this._url(`records/${key}`),
+            url: this._url(['records', key]),
             method: 'GET',
             params: this._params(queryParams),
             timeout: DEFAULT_TIMEOUT_MILLIS,
@@ -481,7 +481,7 @@ export class KeyValueStoreClient extends ResourceClient {
         }
 
         const uploadOpts: ApifyRequestConfig = {
-            url: this._url(`records/${key}`),
+            url: this._url(['records', key]),
             method: 'PUT',
             params: this._params(),
             data: value,
@@ -508,7 +508,7 @@ export class KeyValueStoreClient extends ResourceClient {
         parseArgument(key, keySchema);
 
         await this.httpClient.call({
-            url: this._url(`records/${key}`),
+            url: this._url(['records', key]),
             method: 'DELETE',
             params: this._params(),
             timeout: SMALL_TIMEOUT_MILLIS,
