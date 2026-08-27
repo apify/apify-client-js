@@ -8,6 +8,8 @@
         // Nothing is emitted here, so declaration-emit portability errors are not actionable.
         "declaration": false,
         "allowJs": true,
+        // test/spec_transform.test.mts imports the generator's helpers by their real `.mts` path.
+        "allowImportingTsExtensions": true,
         "paths": {
             "apify-client": ["../src"]
         }

@@ -10,6 +10,7 @@
         "**/dist",
         "coverage",
         "website",
-        "docs"
+        "docs",
+        "src/generated"
     ]
 }

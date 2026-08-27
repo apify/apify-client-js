@@ -1,12 +1,22 @@
-import type { WEBHOOK_EVENT_TYPES } from '@apify/consts';
-
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
+import type { Webhook, WebhookEventType } from '../models';
 import { anyObjectSchema, cast, catchNotFoundOrThrow, parseArgument, parseDateFields, pluckData } from '../utils';
 import type { WebhookDispatch } from './webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection';
+
+export type {
+    Webhook,
+    WebhookAnyRunOfActorCondition,
+    WebhookAnyRunOfActorTaskCondition,
+    WebhookCertainRunCondition,
+    WebhookCondition,
+    WebhookEventType,
+    WebhookLastDispatch,
+    WebhookStats,
+} from '../models';
 
 /**
  * Client for managing a specific webhook.
@@ -117,44 +127,6 @@ export class WebhookClient extends ResourceClient {
     }
 }
 
-/**
- * Represents a webhook for receiving notifications about Actor events.
- *
- * Webhooks send HTTP POST requests to specified URLs when certain events occur
- * (e.g., Actor run succeeds, fails, or times out).
- */
-export interface Webhook {
-    id: string;
-    userId: string;
-    createdAt: Date;
-    modifiedAt: Date;
-    isAdHoc: boolean;
-    eventTypes: WebhookEventType[];
-    condition: WebhookCondition;
-    ignoreSslErrors: boolean;
-    doNotRetry: boolean;
-    requestUrl: string;
-    payloadTemplate: string;
-    lastDispatch: string;
-    stats: WebhookStats;
-    /**
-     * @since Added in 2.7.2
-     */
-    shouldInterpolateStrings: boolean;
-    /**
-     * @since Added in 2.9.4
-     */
-    isApifyIntegration?: boolean;
-    /**
-     * @since Added in 2.8.1
-     */
-    headersTemplate?: string;
-    /**
-     * @since Added in 2.8.1
-     */
-    description?: string;
-}
-
 export interface WebhookIdempotencyKey {
     idempotencyKey?: string;
 }
@@ -182,35 +154,3 @@ export type WebhookUpdateData = Partial<
     }
 > &
     WebhookIdempotencyKey;
-
-/**
- * Statistics about webhook usage.
- */
-export interface WebhookStats {
-    totalDispatches: number;
-}
-
-/**
- * Event types that can trigger webhooks.
- */
-export type WebhookEventType = (typeof WEBHOOK_EVENT_TYPES)[keyof typeof WEBHOOK_EVENT_TYPES];
-
-/**
- * Condition that determines when a webhook should be triggered.
- */
-export type WebhookCondition =
-    | WebhookAnyRunOfActorCondition
-    | WebhookAnyRunOfActorTaskCondition
-    | WebhookCertainRunCondition;
-
-export interface WebhookAnyRunOfActorCondition {
-    actorId: string;
-}
-
-export interface WebhookAnyRunOfActorTaskCondition {
-    actorTaskId: string;
-}
-
-export interface WebhookCertainRunCondition {
-    actorRunId: string;
-}

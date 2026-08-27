@@ -6,6 +6,7 @@ import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
+import type { Task, TaskPublicConfig } from '../models';
 import type { Dictionary } from '../utils';
 import {
     anyObjectSchema,
@@ -16,7 +17,7 @@ import {
     pluckData,
     stringifyWebhooksToBase64,
 } from '../utils';
-import type { ActorLastRunOptions, ActorRun, ActorStandby, ActorStartOptions } from './actor';
+import type { ActorLastRunOptions, ActorRun, ActorStartOptions } from './actor';
 import { RunClient } from './run';
 import { RunCollectionClient } from './run_collection';
 import { WebhookCollectionClient } from './webhook_collection';
@@ -46,6 +47,8 @@ const lastRunOptionsSchema = z.strictObject({
     status: z.enum(ACT_JOB_STATUSES).optional(),
     origin: z.enum(META_ORIGINS).optional(),
 });
+
+export type { Task, TaskOptions, TaskPublicConfig, TaskStats } from '../models';
 
 /**
  * Client for managing a specific Actor task.
@@ -307,82 +310,6 @@ export class TaskClient extends ResourceClient {
     webhooks(): WebhookCollectionClient {
         return new WebhookCollectionClient(this._subResourceOptions());
     }
-}
-
-/**
- * Represents an Actor task.
- *
- * Tasks are saved Actor configurations with input and settings that can be executed
- * repeatedly without having to specify the full input each time.
- */
-export interface Task {
-    id: string;
-    userId: string;
-    actId: string;
-    name: string;
-    /**
-     * @since Added in 2.6.1
-     */
-    title?: string;
-    description?: string;
-    username?: string;
-    createdAt: Date;
-    modifiedAt: Date;
-    stats: TaskStats;
-    options?: TaskOptions;
-    input?: Dictionary | Dictionary[];
-    /**
-     * @since Added in 2.9.5
-     */
-    actorStandby?: Partial<ActorStandby>;
-    /**
-     * Whether the task is published on its public landing page. Derived from
-     * `publicConfig.publishedAt` — set it on update to publish or unpublish the task.
-     * @since Added in 2.25.0
-     */
-    isPublic?: boolean;
-    /**
-     * @since Added in 2.25.0
-     */
-    publicConfig?: TaskPublicConfig | null;
-}
-
-/**
- * Public-facing display configuration of a task's public landing page.
- *
- * The task is published when `publishedAt` is set and unpublished when it is `null`. The
- * `publishedAt` field is read-only - use {@apilink TaskClient.publish} and
- * {@apilink TaskClient.unpublish} to change the publication state.
- * @since Added in 2.25.0
- */
-export interface TaskPublicConfig {
-    publishedAt: Date | null;
-    seoTitle?: string | null;
-    seoDescription?: string | null;
-    categorization?: string | null;
-    inputSchemaFields?: string[] | null;
-    datasetName?: string | null;
-    datasetView?: string | null;
-}
-
-/**
- * Statistics about Actor task usage.
- */
-export interface TaskStats {
-    totalRuns: number;
-}
-
-/**
- * Configuration options for an Actor task.
- */
-export interface TaskOptions {
-    build?: string;
-    timeoutSecs?: number;
-    memoryMbytes?: number;
-    /**
-     * @since Added in 2.19.0
-     */
-    restartOnError?: boolean;
 }
 
 /**

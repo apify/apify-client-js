@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
+import type { TaskList } from '../models';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils';
 import type { Task, TaskUpdateData } from './task';
@@ -10,6 +11,8 @@ const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
     desc: z.boolean().optional(),
 });
+
+export type { TaskList } from '../models';
 
 /**
  * Client for managing the collection of Actor tasks in your account.
@@ -89,8 +92,6 @@ export class TaskCollectionClient extends ResourceCollectionClient {
 export interface TaskCollectionListOptions extends PaginationOptions {
     desc?: boolean;
 }
-
-export type TaskList = Omit<Task, 'options' | 'input'>;
 
 /**
  * @since Added in 2.3.0

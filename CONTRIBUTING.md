@@ -53,6 +53,8 @@ src/
 ├── http_client.ts               # Low-level HTTP layer (Axios-based)
 ├── apify_api_error.ts           # Custom error class
 ├── utils.ts                     # Utility functions
+├── generated/
+│   └── api.ts                   # Types generated from the OpenAPI specification (do not edit)
 ├── base/
 │   ├── api_client.ts            # Base for all clients
 │   ├── resource_client.ts       # Base for single-resource clients
@@ -70,6 +72,11 @@ test/
 └── mock_server/                 # Mock API server for testing
     ├── server.ts
     └── routes/                  # Mock API routes
+
+scripts/
+├── openapi_spec.mts             # Downloads the published OpenAPI specification
+├── generate_types.mts           # Generates src/generated/api.ts from it
+└── spec_transform.mts           # Spec postprocessing the generator applies
 ```
 
 ### Key Patterns
@@ -101,6 +108,11 @@ pnpm test                  # Build and run the unit tests
 pnpm test:integration      # Run the integration tests against the live API
 pnpm test:all              # Build and run both tiers
 pnpm tsc-check-tests       # TypeScript check test files
+pnpm tsc-check-scripts     # TypeScript check maintainer scripts
+
+# API specification (needs Node 22.18+, for native TypeScript support)
+pnpm generate:types        # Regenerate src/generated/api.ts from the published specification
+pnpm spec:fetch            # Only download the specification, into git-ignored tmp/
 
 # Linting & Formatting
 pnpm lint                  # Oxlint check (type-aware)

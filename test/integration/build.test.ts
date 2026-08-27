@@ -194,9 +194,10 @@ test('get() returns an actorDefinition version in semver-triplet form', async ()
 
     const build = await client.build(pickBuildId(actor!)).get();
     expect(build?.actorDefinition).toBeDefined();
+    expect(build!.actorDefinition!.version).toBeDefined();
 
     // Fixture-drift guard: only meaningful while the chosen build's version carries more than one dot.
-    const { version } = build!.actorDefinition!;
+    const version = build!.actorDefinition!.version!;
     expect(
         version.split('.').length - 1,
         `${SMALL_MIN_MEMORY_ACTOR} no longer publishes a multi-dot version (got ${version}) - ` +

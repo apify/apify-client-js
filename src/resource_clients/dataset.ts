@@ -12,6 +12,7 @@ import {
     SMALL_TIMEOUT_MILLIS,
 } from '../base/resource_client';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
+import type { Dataset, DatasetStatistics } from '../models';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
 import {
     anyObjectSchema,
@@ -78,6 +79,8 @@ const createItemsPublicUrlOptionsSchema = z.strictObject({
     view: z.string().optional(),
     expiresInSecs: z.number().optional(),
 });
+
+export type { Dataset, DatasetStatistics, DatasetStats, FieldStatistics } from '../models';
 
 /**
  * Client for managing a specific Dataset.
@@ -417,57 +420,6 @@ export class DatasetClient<
 }
 
 /**
- * Represents a dataset storage on the Apify platform.
- *
- * Datasets store structured data as a sequence of items (records). Each item is a JSON object.
- * Datasets are useful for storing results from web scraping, crawling, or data processing tasks.
- */
-export interface Dataset {
-    id: string;
-    name?: string;
-    /**
-     * @since Added in 2.6.1
-     */
-    title?: string;
-    userId: string;
-    /**
-     * @since Added in 2.21.0
-     */
-    username?: string;
-    createdAt: Date;
-    modifiedAt: Date;
-    accessedAt: Date;
-    itemCount: number;
-    cleanItemCount: number;
-    actId?: string;
-    actRunId?: string;
-    stats: DatasetStats;
-    fields: string[];
-    /**
-     * @since Added in 2.12.2
-     */
-    generalAccess?: STORAGE_GENERAL_ACCESS | null;
-    /**
-     * @since Added in 2.13.0
-     */
-    urlSigningSecretKey?: string | null;
-    /**
-     * @since Added in 2.13.0
-     */
-    itemsPublicUrl: string;
-}
-
-/**
- * Statistics about dataset usage and storage.
- */
-export interface DatasetStats {
-    readCount?: number;
-    writeCount?: number;
-    deleteCount?: number;
-    storageBytes?: number;
-}
-
-/**
  * Options for updating a dataset.
  */
 export interface DatasetClientUpdateOptions {
@@ -555,25 +507,4 @@ export interface DatasetClientDownloadItemsOptions extends Omit<DatasetClientLis
     skipHeaderRow?: boolean;
     xmlRoot?: string;
     xmlRow?: string;
-}
-
-/**
- * Statistical information about dataset fields.
- *
- * Provides insights into the data structure and content of the dataset.
- * @since Added in 2.11.2
- */
-export interface DatasetStatistics {
-    fieldStatistics: Record<string, FieldStatistics>;
-}
-
-/**
- * Statistics for a single field in a dataset.
- * @since Added in 2.11.2
- */
-export interface FieldStatistics {
-    min?: number;
-    max?: number;
-    nullCount?: number;
-    emptyCount?: number;
 }
