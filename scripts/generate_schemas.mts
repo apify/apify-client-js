@@ -10,8 +10,9 @@
  * deliberately stays put in that case -- it names the published specification -- so schemas generated that way
  * must not be committed.
  *
- * The same two spec-level fixes as for the types apply: a `required` next to a `$ref` is hoisted before the
- * emitter sees the document, and root-relative Markdown links in the emitted doc comments are absolutized.
+ * The same two spec-level fixes as for the types apply: a `required` an `allOf` branch cannot carry on its own is
+ * hoisted before the emitter sees the document, and root-relative Markdown links in the emitted doc comments are
+ * absolutized.
  */
 
 import { readFile, writeFile } from 'node:fs/promises';

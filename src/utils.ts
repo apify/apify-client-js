@@ -84,16 +84,7 @@ export function parseResponse<R>(
     schema: z.ZodType,
     shouldParseField: ((key: string) => boolean) | null = null,
 ): R {
-    return validateResponse(response, parseDateFields(pluckData(response.data), shouldParseField), schema);
-}
-
-/**
- * Validates `data` -- a response body that is already unwrapped and date-parsed -- against `schema`, naming
- * `response`'s request in the error. Split from {@link parseResponse} for the methods that assemble their
- * result from several responses.
- * @internal
- */
-export function validateResponse<R>(response: ApifyResponse, data: unknown, schema: z.ZodType): R {
+    const data = parseDateFields(pluckData(response.data), shouldParseField);
     const result = schema.safeParse(data, { error: localeError });
     if (!result.success) {
         const { method = 'GET', url = '' } = response.config;

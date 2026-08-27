@@ -20,6 +20,8 @@ export type {
 } from '../models';
 export { ScheduleActions } from '../models';
 
+const scheduleLogSchema = z.array(schemas.ScheduleInvoked);
+
 /**
  * Client for managing a specific Schedule.
  *
@@ -99,7 +101,7 @@ export class ScheduleClient extends ResourceClient {
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return parseResponse(response, z.array(schemas.ScheduleInvoked));
+            return parseResponse(response, scheduleLogSchema);
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }

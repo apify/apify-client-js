@@ -288,6 +288,37 @@ describe('emitSchema', () => {
         it('rejects an unsupported type', () => {
             expect(() => emitSchema({ type: 'file' })).toThrow(/Unsupported type "file"/);
         });
+
+        it('rejects a constraint that has no type to apply to', () => {
+            expect(() => emitSchema({ pattern: '^a$' })).toThrow(/"pattern" at schema has no string type/);
+            expect(() => emitSchema({ items: { type: 'string' } })).toThrow(/"items" at schema has no array type/);
+        });
+
+        it('rejects a constraint that does not apply to the declared type rather than dropping it', () => {
+            expect(() => emitSchema({ type: 'string', minimum: 1 })).toThrow(
+                /"minimum" at schema has no integer or number type/,
+            );
+            expect(() => emitSchema({ type: ['string', 'null'], minItems: 1 })).toThrow(
+                /"minItems" at schema has no array type/,
+            );
+        });
+
+        it('rejects a constraint next to an enum, a const or a union rather than dropping it', () => {
+            expect(() => emitSchema({ enum: ['a'], pattern: '^a$' })).toThrow(/enum at schema combined with "pattern"/);
+            expect(() => emitSchema({ const: 'a', minLength: 1 })).toThrow(/const at schema combined with "minLength"/);
+            expect(() => emitSchema({ oneOf: [{ type: 'string' }], properties: {} })).toThrow(
+                /oneOf at schema combined with "properties"/,
+            );
+            expect(() => emitSchema({ anyOf: [{ type: 'string' }], items: {} })).toThrow(
+                /anyOf at schema combined with "items"/,
+            );
+        });
+
+        it('rejects a required on an allOf whose first member is not an object', () => {
+            expect(() => emitSchema({ allOf: [ref('Union'), ref('Base')], required: ['name'] }, SCHEMAS)).toThrow(
+                /first member is not an object/,
+            );
+        });
     });
 });
 
@@ -303,6 +334,14 @@ describe('emitSchemas', () => {
     it('declares every schema after the ones it references', () => {
         const out = emitSchemas(
             document({ Actor: { type: 'object', properties: { tag: ref('Tag') } }, Tag: { type: 'string' } }),
+        );
+
+        expect(out.indexOf('export const Tag')).toBeLessThan(out.indexOf('export const Actor'));
+    });
+
+    it('follows a reference from a property named like a documentation keyword', () => {
+        const out = emitSchemas(
+            document({ Actor: { type: 'object', properties: { title: ref('Tag') } }, Tag: { type: 'string' } }),
         );
 
         expect(out.indexOf('export const Tag')).toBeLessThan(out.indexOf('export const Actor'));

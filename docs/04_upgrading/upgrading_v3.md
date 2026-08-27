@@ -125,9 +125,9 @@ For the full per-resource breakdown of what became optional, nullable, newly exp
 
 ## Responses are validated against the OpenAPI specification
 
-Every response the client turns into a typed value is now checked against a [zod](https://zod.dev) schema generated from the same specification the types come from, the way the Python client validates its responses with pydantic. A response that does not match - a missing required field, a different type, a value outside the documented range - throws a new <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink> (exported from `apify-client`) instead of being handed on as if it were what the type claims.
+Every response the client turns into a typed value is now checked against a [zod](https://zod.dev) schema generated from the same specification the types come from, the way the Python client validates its responses with pydantic. A response that doesn't match, whether a missing required field, a different type, or a value outside the documented range, throws a new <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink> (exported from `apify-client`) instead of being handed on as if it were what the type claims.
 
-The check is deliberately lenient about growth: fields the specification does not describe pass through untouched, and an enum value it does not list is accepted too, so a new field or status on the API side is not an error. What it catches is the API and its specification disagreeing, which previously surfaced as an `undefined` somewhere down the line. If you hit one, the specification is wrong or the API changed - please [report it](https://github.com/apify/apify-client-js/issues).
+The check is deliberately lenient about growth: fields the specification doesn't describe pass through untouched, and an enum value it doesn't list is accepted too, so a new field or status on the API side isn't an error. What it catches is the API and its specification disagreeing, which previously surfaced as an `undefined` somewhere down the line. If you hit one, the specification is wrong or the API changed, so please [report it](https://github.com/apify/apify-client-js/issues).
 
 ```js
 import { ApifyClient, ResponseValidationError } from 'apify-client';
@@ -146,9 +146,9 @@ try {
 }
 ```
 
-Bodies the specification leaves to you are not validated: dataset items, key-value store records and logs are returned as before.
+Bodies the specification leaves to you aren't validated: dataset items, key-value store records and logs are returned as before.
 
 Two return types change as a result of describing what the endpoints really return:
 
 - <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink> was typed as a `string`, even though the endpoint returns the log as a list of entries. It's now typed as <ApiLink to="interface/ScheduleInvoked">`ScheduleInvoked[]`</ApiLink>, each entry carrying `message`, `level` and `createdAt`.
-- <ApiLink to="interface/TaskPublicConfig">`TaskPublicConfig`</ApiLink> now follows the specification: `publishedAt` is optional and read-only, and `categorization`, which the API does not return, is gone.
+- <ApiLink to="interface/TaskPublicConfig">`TaskPublicConfig`</ApiLink> now follows the specification: `publishedAt` is optional and read-only, and `categorization`, which the specification doesn't describe, is gone from the type.

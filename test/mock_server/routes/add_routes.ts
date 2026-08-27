@@ -86,6 +86,11 @@ const HANDLERS = {
     },
     dummyBatchOperation() {
         return (req: Request, res: Response) => {
+            const mockServer = req.app.get('mockServer');
+            if (mockServer.response) {
+                res.status(mockServer.response.statusCode || 200).json(mockServer.response.body);
+                return;
+            }
             // Every request is reported as added, in the shape of the API's `BatchAddResult`.
             const processedRequests = (req.body as { uniqueKey: string }[]).map(({ uniqueKey }, index) => ({
                 requestId: `request-${index}`,

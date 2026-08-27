@@ -440,10 +440,24 @@ export type GeneratedSchemaGuards = AssertAll<
  * may only widen. The two `DailyServiceUsage` schemas are excluded because they are the one client
  * conversion -- `date` arrives as a `Date` there, so the spec's `string` is not meant to pass.
  */
-type OverridesRejectingTheirType = {
-    [
-        K in Exclude<keyof ResponseSchemas & keyof Schemas, 'DailyServiceUsages' | 'MonthlyUsage'>
-    ]: Schemas[K] extends z.input<ResponseSchemas[K]> ? never : K;
-}[Exclude<keyof ResponseSchemas & keyof Schemas, 'DailyServiceUsages' | 'MonthlyUsage'>];
+type UnconvertedSchemaNames = Exclude<keyof ResponseSchemas & keyof Schemas, 'DailyServiceUsages' | 'MonthlyUsage'>;
 
-export type ResponseSchemaGuards = AssertAll<[Equals<OverridesRejectingTheirType, never>]>;
+type OverridesRejectingTheirType = {
+    [K in UnconvertedSchemaNames]: Schemas[K] extends z.input<ResponseSchemas[K]> ? never : K;
+}[UnconvertedSchemaNames];
+
+/**
+ * Every key an override extends a generated object with must still exist in the specification's schema.
+ * `.extend()` with a key the specification has since dropped or renamed would quietly add it back.
+ */
+type OverridesWithUnknownKeys = {
+    [K in keyof ResponseSchemas & keyof Schemas]: ResponseSchemas[K] extends { shape: infer Shape }
+        ? Exclude<keyof Shape, keyof Schemas[K]> extends never
+            ? never
+            : K
+        : never;
+}[keyof ResponseSchemas & keyof Schemas];
+
+export type ResponseSchemaGuards = AssertAll<
+    [Equals<OverridesRejectingTheirType, never>, Equals<OverridesWithUnknownKeys, never>]
+>;

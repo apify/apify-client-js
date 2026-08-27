@@ -304,8 +304,6 @@ describe('Task methods', () => {
                 waitSecs,
             });
             expect(res).toMatchObject({ id: runId, actId, status: 'SUCCEEDED' });
-
-            expect(res).toMatchObject({ id: runId, actId, status: 'SUCCEEDED' });
             validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
             validateRequest({ query, params: { taskId }, body: { some: 'body' } });
 
@@ -344,8 +342,6 @@ describe('Task methods', () => {
                 waitSecs,
                 maxItems,
             });
-            expect(res).toMatchObject({ id: runId, actId, status: 'SUCCEEDED' });
-
             expect(res).toMatchObject({ id: runId, actId, status: 'SUCCEEDED' });
             validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
             validateRequest({ query, params: { taskId } });

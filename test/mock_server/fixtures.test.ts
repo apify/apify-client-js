@@ -1,3 +1,4 @@
+import type { JsonValue } from 'type-fest';
 import { describe, expect, it } from 'vitest';
 import type { z } from 'zod';
 
@@ -53,7 +54,7 @@ describe('mock server fixtures', () => {
         // The clients validate after `parseDateFields`, so the fixture is checked the same way -- including the
         // `date` field that `UserClient.monthlyUsage()` names for it.
         const shouldParseField = fixture === 'monthlyUsage' ? (key: string) => key === 'date' : null;
-        const value = parseDateFields((fixtures as unknown as Record<string, never>)[fixture], shouldParseField);
+        const value = parseDateFields((fixtures as unknown as Record<string, JsonValue>)[fixture], shouldParseField);
         const result = (schemas as Record<string, z.ZodType>)[schema].safeParse(value);
 
         expect(result.error?.issues).toBeUndefined();

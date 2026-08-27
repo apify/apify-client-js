@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net';
 
 import type { Dictionary, RequestQueueClientListRequestsOptions } from 'apify-client';
-import { ApifyClient, ArgumentValidationError } from 'apify-client';
+import { ApifyClient, ArgumentValidationError, ResponseValidationError } from 'apify-client';
 import type { Request } from 'express';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
@@ -38,6 +38,7 @@ describe('Request Queue methods', () => {
     });
     afterEach(async () => {
         client = null as unknown as ApifyClient;
+        mockServer.setResponse(null);
         page.close().catch(() => {});
     });
 
@@ -443,6 +444,15 @@ describe('Request Queue methods', () => {
             );
             expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: options, params: { queueId }, body: requests });
+        });
+
+        test('batchAddRequests() throws on a response that does not match the API schema', async () => {
+            mockServer.setResponse({ body: { data: { processedRequests: 'none', unprocessedRequests: [] } } });
+            const requests = [{ url: 'http://example.com/1', uniqueKey: 'key-1' }];
+
+            await expect(client.requestQueue('some-id').batchAddRequests(requests)).rejects.toBeInstanceOf(
+                ResponseValidationError,
+            );
         });
 
         test('batchDeleteRequests() works', async () => {

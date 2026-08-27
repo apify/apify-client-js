@@ -9,6 +9,7 @@ import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { MEDIUM_TIMEOUT_MILLIS, ResourceClient, SMALL_TIMEOUT_MILLIS } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
+import { ResponseValidationError } from '../response_validation_error';
 import type {
     RequestQueue,
     RequestQueueClientAddRequestResult,
@@ -399,6 +400,9 @@ export class RequestQueueClient extends ResourceClient {
                     break;
                 }
             } catch (err) {
+                // A response the specification does not describe is reported, as everywhere else: the server may well
+                // have added the batch, so calling it unprocessed would hide the mismatch behind a wrong answer.
+                if (err instanceof ResponseValidationError) throw err;
                 log.exception(err as Error, 'Request batch insert failed');
                 // When something fails and http client does not retry, the remaining requests are treated as unprocessed.
                 // This ensures that this method does not throw and keeps the signature.
@@ -490,10 +494,15 @@ export class RequestQueueClient extends ResourceClient {
             const requestsInBatch = sliceArrayByByteLength(slicedRequests, payloadSizeLimitBytes, i);
             const requestPromise = this._batchAddRequestsWithRetries(requestsInBatch, options);
             executingRequests.add(requestPromise);
-            void requestPromise.then((batchAddResult) => {
-                executingRequests.delete(requestPromise);
-                individualResults.push(batchAddResult);
-            });
+            // A rejection reaches the caller through the awaits below; this bookkeeping chain only has to avoid
+            // turning it into an unhandled one of its own.
+            void requestPromise.then(
+                (batchAddResult) => {
+                    executingRequests.delete(requestPromise);
+                    individualResults.push(batchAddResult);
+                },
+                () => undefined,
+            );
             if (executingRequests.size >= maxParallel) {
                 await Promise.race(executingRequests);
             }

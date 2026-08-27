@@ -135,7 +135,7 @@ describe('hoistAllOfRequired', () => {
         });
     });
 
-    it('leaves a required that carries no $ref alongside it alone', () => {
+    it('leaves a required that applies to the properties the branch itself declares alone', () => {
         const schema = { allOf: [{ properties: { id: {} }, required: ['id'] }] };
 
         expect(hoistAllOfRequired(schema)).toEqual(schema);

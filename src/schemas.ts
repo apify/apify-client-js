@@ -45,6 +45,8 @@ export const RequestQueueShort = generated.RequestQueueShort.extend({
 });
 export const ListOfRequestQueues = generated.ListOfRequestQueues.extend({ items: z.array(RequestQueueShort) });
 
+// The spec omits the `null` here too, and also lists the field as required, while the API leaves it out for a run
+// that follows the owner's user setting.
 export const Run = generated.Run.extend({
     generalAccess: generated.Run.shape.generalAccess.nullable().optional(),
 });

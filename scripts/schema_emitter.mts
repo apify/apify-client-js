@@ -14,8 +14,9 @@
  *     before a response is validated, and the generated types say `Date` for the same reason.
  *
  * A `default` is deliberately not applied: it says what the server fills in when a request omits the field, not
- * what a response carries, so the parsed value stays identical to the response. Every other constraint the
- * specification states -- `required`, `minimum`, `pattern`, ... -- is kept, so a response that violates the
+ * what a response carries, so the parsed value stays identical to the response. A `format` other than `date-time`
+ * (`uri`, `email`, ...) is an annotation rather than a constraint and is not enforced either. Every other constraint
+ * the specification states -- `required`, `minimum`, `pattern`, ... -- is kept, so a response that violates the
  * documented contract is reported rather than passed on.
  *
  * Only the JSON Schema vocabulary the specification actually uses is supported. Anything else fails generation
@@ -97,6 +98,22 @@ const HANDLED_KEYWORDS = new Set([
     'maxLength',
     'minItems',
     'maxItems',
+]);
+
+/** Keywords that constrain a value of a particular type, with the types each one applies to. */
+const TYPED_KEYWORDS = new Map<string, string[]>([
+    ['items', ['array']],
+    ['minItems', ['array']],
+    ['maxItems', ['array']],
+    ['format', ['string', 'integer', 'number']],
+    ['pattern', ['string']],
+    ['minLength', ['string']],
+    ['maxLength', ['string']],
+    ['minimum', ['integer', 'number']],
+    ['maximum', ['integer', 'number']],
+    ['exclusiveMinimum', ['integer', 'number']],
+    ['exclusiveMaximum', ['integer', 'number']],
+    ['multipleOf', ['integer', 'number']],
 ]);
 
 const IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
@@ -187,10 +204,21 @@ class Emitter {
         if (node.allOf) return this.allOf(node, path, indent);
         if (node.oneOf) return this.oneOf(node, path, indent);
         if (node.anyOf) return this.anyOf(node, path, indent);
-        if (node.const !== undefined) return withNullable(`z.literal(${JSON.stringify(node.const)})`, node);
-        if (node.enum) return this.enumeration(node, path);
+        if (node.const !== undefined) {
+            assertOnlyKeywords(node, path, 'const', ['const', 'type']);
+            return withNullable(`z.literal(${JSON.stringify(node.const)})`, node);
+        }
+        if (node.enum) {
+            assertOnlyKeywords(node, path, 'enum', ['enum', 'type']);
+            return this.enumeration(node, path);
+        }
 
         const types = typesOf(node);
+        for (const [keyword, applicable] of TYPED_KEYWORDS) {
+            if (keyword in node && !types.some((type) => applicable.includes(type))) {
+                throw new Error(`"${keyword}" at ${path} has no ${applicable.join(' or ')} type to apply to.`);
+            }
+        }
         if (types.length === 0) {
             if (node.properties || node.additionalProperties !== undefined) return this.object(node, path, indent);
             return isNullableType(node) ? 'z.null()' : 'z.unknown()';
@@ -222,7 +250,7 @@ class Emitter {
     private reference(node: SchemaNode, path: string): string {
         const name = refName(node.$ref!, path);
         this.schema(name, path);
-        // `hoistRefSiblingRequired()` has moved a `required` next to a `$ref` inside an `allOf` up to the parent
+        // `hoistAllOfRequired()` has moved a `required` next to a `$ref` inside an `allOf` up to the parent
         // by the time this runs. One anywhere else has no place to go, so it is an error rather than a drop.
         for (const key of Object.keys(node)) {
             if (key !== '$ref' && !IGNORED_KEYWORDS.has(key) && !key.startsWith('x-')) {
@@ -288,12 +316,7 @@ class Emitter {
         const [first, ...rest] = node.allOf!;
         if (!first) throw new Error(`Empty allOf at ${path}.`);
 
-        const forbidden = Object.keys(node).filter(
-            (key) => !['allOf', 'properties', 'required', 'type'].includes(key) && !isIgnorable(key),
-        );
-        if (forbidden.length > 0) {
-            throw new Error(`allOf at ${path} combined with "${forbidden.join('", "')}" is not supported.`);
-        }
+        assertOnlyKeywords(node, path, 'allOf', ['allOf', 'properties', 'required', 'type']);
         if (node.type !== undefined && node.type !== 'object') {
             throw new Error(`allOf at ${path} with type "${String(node.type)}" is not supported.`);
         }
@@ -305,12 +328,11 @@ class Emitter {
         if (node.properties) members.push({ member: { properties: node.properties }, path });
 
         if (!this.isObjectSchema(first)) {
+            if (required.size > 0) {
+                throw new Error(`allOf at ${path} carries a required, but its first member is not an object.`);
+            }
             const others = members.map(({ member, path: memberPath }) => this.expression(member, memberPath, indent));
-            return withRequired(
-                [out, ...others].reduce((a, b) => `z.intersection(${a}, ${b})`),
-                required,
-                path,
-            );
+            return [out, ...others].reduce((a, b) => `z.intersection(${a}, ${b})`);
         }
 
         for (const { member, path: memberPath } of members) {
@@ -334,6 +356,7 @@ class Emitter {
     }
 
     private oneOf(node: SchemaNode, path: string, indent: string): string {
+        assertOnlyKeywords(node, path, 'oneOf', ['oneOf', 'discriminator', 'type']);
         const members = node.oneOf!.map((member, index) => this.expression(member, `${path}/oneOf[${index}]`, indent));
         const discriminator = node.discriminator?.propertyName;
         if (
@@ -350,6 +373,7 @@ class Emitter {
 
     /** `anyOf: [X, { type: 'null' }]` is how the specification spells a nullable reference. */
     private anyOf(node: SchemaNode, path: string, indent: string): string {
+        assertOnlyKeywords(node, path, 'anyOf', ['anyOf', 'type']);
         const members = node.anyOf!.filter((member) => !isNullOnly(member));
         const nullable = members.length < node.anyOf!.length;
         const expressions = members.map((member, index) => this.expression(member, `${path}/anyOf[${index}]`, indent));
@@ -381,13 +405,18 @@ class Emitter {
         return (node.allOf ?? []).some((member) => this.hasConstProperty(member, name));
     }
 
-    private references(node: unknown, found = new Set<string>()): Set<string> {
+    /**
+     * The schemas `node` refers to. The keys of a `properties` map are property names, not keywords, so a property
+     * named like a documentation keyword (`title`, `default`, ...) still has its reference followed.
+     */
+    private references(node: unknown, found = new Set<string>(), isPropertyMap = false): Set<string> {
         if (Array.isArray(node)) {
             for (const item of node) this.references(item, found);
         } else if (node && typeof node === 'object') {
             for (const [key, value] of Object.entries(node)) {
-                if (key === '$ref' && typeof value === 'string') found.add(refName(value, value));
-                else if (!IGNORED_KEYWORDS.has(key)) this.references(value, found);
+                if (isPropertyMap) this.references(value, found);
+                else if (key === '$ref' && typeof value === 'string') found.add(refName(value, value));
+                else if (!IGNORED_KEYWORDS.has(key)) this.references(value, found, key === 'properties');
             }
         }
         return found;
@@ -410,6 +439,14 @@ class Emitter {
 
 function isIgnorable(key: string): boolean {
     return IGNORED_KEYWORDS.has(key) || key.startsWith('x-');
+}
+
+/** Rejects a keyword that `construct` would otherwise leave out of the emitted schema. */
+function assertOnlyKeywords(node: SchemaNode, path: string, construct: string, allowed: string[]): void {
+    const forbidden = Object.keys(node).filter((key) => !allowed.includes(key) && !isIgnorable(key));
+    if (forbidden.length > 0) {
+        throw new Error(`${construct} at ${path} combined with "${forbidden.join('", "')}" is not supported.`);
+    }
 }
 
 /** The non-null entries of `type`, which OpenAPI 3.1 may spell as an array. */
