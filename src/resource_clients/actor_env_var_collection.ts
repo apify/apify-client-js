@@ -1,6 +1,7 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
+import * as schemas from '../schemas';
 import { anyObjectSchema, parseArgument } from '../utils';
 import type { ActorEnvironmentVariable } from './actor_version';
 
@@ -66,7 +67,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     list(
         _options: ActorEnvVarCollectionListOptions = {},
     ): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
-        return this._listPaginated();
+        return this._listPaginated(schemas.ListOfEnvVars);
     }
 
     /**
@@ -78,7 +79,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      */
     async create(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
         parseArgument(actorEnvVar, actorEnvVarSchema);
-        return this._create(actorEnvVar);
+        return this._create(schemas.EnvVar, actorEnvVar);
     }
 }
 

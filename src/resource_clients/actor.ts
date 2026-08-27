@@ -7,7 +7,8 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import type { Actor, ActorRun } from '../models';
-import { anyObjectSchema, cast, parseArgument, parseDateFields, pluckData, stringifyWebhooksToBase64 } from '../utils';
+import * as schemas from '../schemas';
+import { anyObjectSchema, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils';
 import { ActorVersionClient } from './actor_version';
 import { ActorVersionCollectionClient } from './actor_version_collection';
 import type { Build, BuildClientGetOptions } from './build';
@@ -128,7 +129,7 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-get
      */
     async get(): Promise<Actor | undefined> {
-        return this._get();
+        return this._get(schemas.Actor);
     }
 
     /**
@@ -141,7 +142,7 @@ export class ActorClient extends ResourceClient {
     async update(newFields: ActorUpdateOptions): Promise<Actor> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(newFields);
+        return this._update(schemas.Actor, newFields);
     }
 
     /**
@@ -231,7 +232,7 @@ export class ActorClient extends ResourceClient {
         }
 
         const response = await this.httpClient.call(request);
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.Run);
     }
 
     /**
@@ -391,7 +392,7 @@ export class ActorClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.Build);
     }
 
     /**
@@ -426,7 +427,7 @@ export class ActorClient extends ResourceClient {
             params: this._params(options),
         });
 
-        const { id } = pluckData<Build>(response.data);
+        const { id } = parseResponse<Build>(response, schemas.Build);
 
         return new BuildClient({
             baseUrl: this.apifyClient.baseUrl,

@@ -7,7 +7,8 @@ import { LEVELS, Log } from '@apify/log';
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyResponse } from '../http_client';
-import { anyObjectSchema, cast, isNode, parseArgument, parseDateFields, pluckData } from '../utils';
+import * as schemas from '../schemas';
+import { anyObjectSchema, isNode, parseArgument, parseResponse } from '../utils';
 import type { ActorRun } from './actor';
 import { DatasetClient } from './dataset';
 import { KeyValueStoreClient } from './key_value_store';
@@ -93,7 +94,7 @@ export class RunClient extends ResourceClient {
     async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
         const parsed = parseArgument(options, getOptionsSchema, 'RunGetOptions');
 
-        return this._get(parsed);
+        return this._get(schemas.Run, parsed);
     }
 
     /**
@@ -122,7 +123,7 @@ export class RunClient extends ResourceClient {
             params: this._params(parsed),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.Run);
     }
 
     /**
@@ -191,7 +192,7 @@ export class RunClient extends ResourceClient {
         }
 
         const response = await this.httpClient.call(request);
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.Run);
     }
 
     /**
@@ -217,7 +218,7 @@ export class RunClient extends ResourceClient {
         };
 
         const response = await this.httpClient.call(request);
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.Run);
     }
 
     /**
@@ -241,7 +242,7 @@ export class RunClient extends ResourceClient {
     async update(newFields: RunUpdateOptions): Promise<ActorRun> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(newFields);
+        return this._update(schemas.Run, newFields);
     }
 
     /**
@@ -276,7 +277,7 @@ export class RunClient extends ResourceClient {
             params: this._params(parsed),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.Run);
     }
 
     /**
@@ -347,7 +348,7 @@ export class RunClient extends ResourceClient {
     async waitForFinish(options: RunWaitForFinishOptions = {}): Promise<ActorRun> {
         const parsed = parseArgument(options, waitForFinishOptionsSchema, 'RunWaitForFinishOptions');
 
-        return this._waitForFinish(parsed);
+        return this._waitForFinish(schemas.Run, parsed);
     }
 
     /**

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
+import * as schemas from '../schemas';
 import { paginationOptionsShape, parseArgument } from '../utils';
 import type { WebhookDispatch } from './webhook_dispatch';
 
@@ -63,7 +64,7 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
     list(options: WebhookDispatchCollectionListOptions = {}): PaginatedIterator<WebhookDispatch> {
         const parsed = parseArgument(options, listOptionsSchema, 'WebhookDispatchCollectionListOptions');
 
-        return this._listPaginated(parsed);
+        return this._listPaginated(schemas.ListOfWebhookDispatches, parsed);
     }
 }
 

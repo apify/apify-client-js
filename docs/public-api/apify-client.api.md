@@ -1013,7 +1013,7 @@ interface components {
         ListOfActorsResponse: {
             data: components["schemas"]["ListOfActors"];
         };
-        ErrorType: "3d-secure-auth-failed" | "access-right-already-exists" | "action-not-found" | "actor-already-rented" | "actor-can-not-be-rented" | "actor-disabled" | "actor-is-not-rented" | "actor-memory-limit-exceeded" | "actor-name-exists-new-owner" | "actor-name-not-unique" | "actor-not-found" | "actor-not-github-actor" | "actor-not-public" | "actor-permission-level-not-supported-for-agentic-payments" | "actor-review-already-exists" | "actor-run-failed" | "actor-standby-not-supported-for-agentic-payments" | "actor-task-name-not-unique" | "agentic-payment-info-retrieval-error" | "agentic-payment-information-missing" | "agentic-payment-insufficient-amount" | "agentic-payment-provider-internal-error" | "agentic-payment-provider-unauthorized" | "airtable-webhook-deprecated" | "already-subscribed-to-paid-actor" | "apify-plan-required-to-use-paid-actor" | "apify-signup-not-allowed" | "auth-method-not-supported" | "authorization-server-not-found" | "auto-issue-date-invalid" | "background-check-required" | "billing-system-error" | "black-friday-plan-expired" | "braintree-error" | "braintree-not-linked" | "braintree-operation-timed-out" | "braintree-unsupported-currency" | "build-not-found" | "build-outdated" | "cannot-add-apify-events-to-ppe-actor" | "cannot-add-multiple-pricing-infos" | "cannot-add-pricing-info-that-alters-past" | "cannot-add-second-future-pricing-info" | "cannot-build-actor-from-webhook" | "cannot-change-billing-interval" | "cannot-change-owner" | "cannot-charge-apify-event" | "cannot-charge-non-pay-per-event-actor" | "cannot-comment-as-other-user" | "cannot-copy-actor-task" | "cannot-create-payout" | "cannot-create-public-actor" | "cannot-create-tax-transaction" | "cannot-delete-critical-actor" | "cannot-delete-invoice" | "cannot-delete-paid-actor" | "cannot-disable-one-time-event-for-apify-start-event" | "cannot-disable-organization-with-enabled-members" | "cannot-disable-user-with-subscription" | "cannot-link-oauth-to-unverified-email" | "cannot-metamorph-to-pay-per-result-actor" | "cannot-modify-actor-pricing-too-frequently" | "cannot-modify-actor-pricing-with-immediate-effect" | "cannot-monetize-without-payout-billing-info" | "cannot-override-paid-actor-trial" | "cannot-permanently-delete-subscription" | "cannot-publish-actor" | "cannot-reduce-last-full-token" | "cannot-reimburse-more-than-original-charge" | "cannot-reimburse-non-rental-charge" | "cannot-remove-own-actor-from-recently-used" | "cannot-remove-payment-method" | "cannot-remove-pricing-info" | "cannot-remove-running-run" | "cannot-remove-user-with-public-actors" | "cannot-remove-user-with-subscription" | "cannot-remove-user-with-unpaid-invoice" | "cannot-rename-env-var" | "cannot-rent-paid-actor" | "cannot-review-own-actor" | "cannot-set-access-rights-for-owner" | "cannot-set-is-status-message-terminal" | "cannot-unpublish-critical-actor" | "cannot-unpublish-paid-actor" | "cannot-unpublish-profile" | "cannot-update-invoice-field" | "concurrent-runs-limit-exceeded" | "concurrent-update-detected" | "conference-token-not-found" | "content-encoding-forbidden-for-html" | "coupon-already-redeemed" | "coupon-expired" | "coupon-for-new-customers" | "coupon-for-subscribed-users" | "coupon-limits-are-in-conflict-with-current-limits" | "coupon-max-number-of-redemptions-reached" | "coupon-not-found" | "coupon-not-unique" | "coupons-disabled" | "create-github-issue-not-allowed" | "creator-plan-not-available" | "cron-expression-invalid" | "daily-ai-token-limit-exceeded" | "daily-publication-limit-exceeded" | "dataset-does-not-have-fields-schema" | "dataset-does-not-have-schema" | "dataset-locked" | "dataset-schema-invalid" | "dcr-not-supported" | "default-dataset-not-found" | "deleting-default-build" | "deleting-unfinished-build" | "email-already-taken" | "email-already-taken-removed-user" | "email-domain-not-allowed-for-coupon" | "email-invalid" | "email-not-allowed" | "email-not-valid" | "email-update-too-soon" | "elevated-permissions-needed" | "env-var-already-exists" | "exchange-rate-fetch-failed" | "expired-conference-token" | "failed-to-charge-user" | "final-invoice-negative" | "full-permission-actor-blocked-for-admin" | "full-permission-actor-not-approved" | "github-branch-empty" | "github-issue-already-exists" | "github-public-key-not-found" | "github-repository-not-found" | "github-signature-does-not-match-payload" | "github-user-not-authorized-for-issues" | "gmail-not-allowed" | "id-does-not-match" | "incompatible-billing-interval" | "incomplete-payout-billing-info" | "inconsistent-currencies" | "incorrect-pricing-modifier-prefix" | "input-json-invalid-characters" | "input-json-not-object" | "input-json-too-long" | "input-update-collision" | "insufficient-permissions" | "insufficient-permissions-to-change-field" | "insufficient-security-measures" | "insufficient-tax-country-evidence" | "integration-auth-error" | "internal-server-error" | "invalid-billing-info" | "invalid-billing-period-for-payout" | "invalid-build" | "invalid-client-key" | "invalid-collection" | "invalid-conference-login-password" | "invalid-content-type-header" | "invalid-credentials" | "invalid-git-auth-token" | "invalid-github-issue-url" | "invalid-header" | "invalid-id" | "invalid-idempotency-key" | "invalid-input" | "invalid-input-schema" | "invalid-invoice" | "invalid-invoice-type" | "invalid-issue-date" | "invalid-label-params" | "invalid-main-account-user-id" | "invalid-oauth-app" | "invalid-oauth-scope" | "invalid-one-time-invoice" | "invalid-parameter" | "invalid-payout-status" | "invalid-picture-url" | "invalid-record-key" | "invalid-request" | "invalid-resource-type" | "invalid-signature" | "invalid-subscription-plan" | "invalid-tax-number" | "invalid-tax-number-format" | "invalid-token" | "invalid-token-type" | "invalid-two-factor-code" | "invalid-two-factor-code-or-recovery-code" | "invalid-two-factor-recovery-code" | "invalid-username" | "invalid-value" | "invitation-invalid-resource-type" | "invitation-no-longer-valid" | "invoice-canceled" | "invoice-cannot-be-refunded-due-to-too-high-amount" | "invoice-incomplete" | "invoice-is-draft" | "invoice-locked" | "invoice-must-be-buffer" | "invoice-not-canceled" | "invoice-not-draft" | "invoice-not-found" | "invoice-outdated" | "invoice-paid-already" | "issue-already-connected-to-github" | "issue-not-found" | "issues-bad-request" | "issuer-not-registered" | "job-finished" | "label-already-linked" | "last-api-token" | "limit-reached" | "max-items-must-be-greater-than-zero" | "max-metamorphs-exceeded" | "max-total-charge-usd-below-minimum" | "max-total-charge-usd-must-be-greater-than-zero" | "method-not-allowed" | "migration-disabled" | "missing-actor-rights" | "missing-api-token" | "missing-billing-info" | "missing-line-items" | "missing-payment-date" | "missing-payout-billing-info" | "missing-proxy-password" | "missing-reporting-fields" | "missing-resource-name" | "missing-settings" | "missing-username" | "monthly-usage-limit-too-low" | "more-than-one-update-not-allowed" | "multiple-records-found" | "must-be-admin" | "name-not-unique" | "next-runtime-computation-failed" | "no-columns-in-exported-dataset" | "no-payment-attempt-for-refund-found" | "no-payment-method-available" | "no-team-account-seats-available" | "non-temporary-email" | "not-enough-usage-to-run-paid-actor" | "not-implemented" | "not-supported-currencies" | "o-auth-service-already-connected" | "o-auth-service-not-connected" | "oauth-resource-access-failed" | "one-time-invoice-already-marked-paid" | "only-drafts-can-be-deleted" | "operation-canceled" | "operation-not-allowed" | "operation-timed-out" | "organization-cannot-own-itself" | "organization-role-not-found" | "overlapping-payout-billing-periods" | "own-token-required" | "page-not-found" | "param-not-one-of" | "parameter-required" | "parameters-mismatched" | "password-reset-email-already-sent" | "password-reset-token-expired" | "pay-as-you-go-without-monthly-interval" | "payment-attempt-status-message-required" | "payout-already-paid" | "payout-canceled" | "payout-invalid-state" | "payout-must-be-approved-to-be-marked-paid" | "payout-not-found" | "payout-number-already-exists" | "phone-number-invalid" | "phone-number-landline" | "phone-number-opted-out" | "phone-verification-disabled" | "platform-feature-disabled" | "price-overrides-validation-failed" | "pricing-model-not-supported" | "promotional-plan-not-available" | "proxy-auth-ip-not-unique" | "public-actor-disabled" | "query-timeout" | "quoted-price-outdated" | "rate-limit-exceeded" | "recaptcha-invalid" | "recaptcha-required" | "record-not-found" | "record-not-public" | "record-or-token-not-found" | "record-too-large" | "redirect-uri-mismatch" | "reduced-plan-not-available" | "rental-charge-already-reimbursed" | "rental-not-allowed" | "request-aborted-prematurely" | "request-handled-or-locked" | "request-id-invalid" | "request-queue-duplicate-requests" | "request-too-large" | "requested-dataset-view-does-not-exist" | "resume-token-expired" | "run-failed" | "run-input-body-not-valid-json" | "run-timeout-exceeded" | "russia-is-evil" | "same-user" | "schedule-actor-not-found" | "schedule-actor-task-not-found" | "schedule-name-not-unique" | "schema-validation" | "schema-validation-error" | "schema-validation-failed" | "service-worker-registration-not-allowed" | "sign-up-method-not-allowed" | "slack-integration-not-custom" | "socket-closed" | "socket-destroyed" | "store-schema-invalid" | "store-terms-not-accepted" | "stripe-enabled" | "stripe-generic-decline" | "stripe-not-enabled" | "stripe-not-enabled-for-user" | "tagged-build-required" | "tax-country-invalid" | "tax-number-invalid" | "tax-number-validation-failed" | "taxamo-call-failed" | "taxamo-request-failed" | "testing-error" | "token-not-provided" | "too-few-versions" | "too-many-actor-tasks" | "too-many-actors" | "too-many-labels-on-resource" | "too-many-mcp-connectors" | "too-many-o-auth-apps" | "too-many-organizations" | "too-many-requests" | "too-many-schedules" | "too-many-ui-access-keys" | "too-many-user-labels" | "too-many-values" | "too-many-versions" | "too-many-webhooks" | "unexpected-route" | "unknown-build-tag" | "unknown-payment-provider" | "unsubscribe-token-invalid" | "unsupported-actor-pricing-model-for-agentic-payments" | "unsupported-content-encoding" | "unsupported-file-type-for-issue" | "unsupported-file-type-image-expected" | "unsupported-file-type-text-or-json-expected" | "unsupported-permission" | "upcoming-subscription-bill-not-up-to-date" | "user-already-exists" | "user-already-verified" | "user-creates-organizations-too-fast" | "user-disabled" | "user-email-is-disposable" | "user-email-not-set" | "user-email-not-verified" | "user-has-no-subscription" | "user-integration-not-found" | "user-is-already-invited" | "user-is-already-organization-member" | "user-is-not-member-of-organization" | "user-is-not-organization" | "user-is-organization" | "user-is-organization-owner" | "user-is-removed" | "user-not-found" | "user-not-logged-in" | "user-not-verified" | "user-or-token-not-found" | "user-plan-not-allowed-for-coupon" | "user-problem-with-card" | "user-record-not-found" | "username-already-taken" | "username-missing" | "username-not-allowed" | "username-removal-forbidden" | "username-required" | "verification-email-already-sent" | "verification-token-expired" | "version-already-exists" | "versions-size-exceeded" | "weak-password" | "x402-agentic-payment-already-finalized" | "x402-agentic-payment-insufficient-amount" | "x402-agentic-payment-malformed-token" | "x402-agentic-payment-settlement-failed" | "x402-agentic-payment-settlement-in-progress" | "x402-agentic-payment-settlement-stuck" | "x402-agentic-payment-unauthorized" | "x402-payment-required" | "zero-invoice";
+        ErrorType: "3d-secure-auth-failed" | "access-right-already-exists" | "action-not-found" | "actor-already-rented" | "actor-can-not-be-rented" | "actor-disabled" | "actor-is-not-rented" | "actor-memory-limit-exceeded" | "actor-name-exists-new-owner" | "actor-name-not-unique" | "actor-not-found" | "actor-not-github-actor" | "actor-not-public" | "actor-permission-level-not-supported-for-agentic-payments" | "actor-review-already-exists" | "actor-run-failed" | "actor-standby-not-supported-for-agentic-payments" | "actor-task-name-not-unique" | "agentic-payment-info-retrieval-error" | "agentic-payment-information-missing" | "agentic-payment-insufficient-amount" | "agentic-payment-provider-internal-error" | "agentic-payment-provider-unauthorized" | "airtable-webhook-deprecated" | "already-subscribed-to-paid-actor" | "apify-plan-required-to-use-paid-actor" | "apify-signup-not-allowed" | "auth-method-not-supported" | "authorization-server-not-found" | "auto-issue-date-invalid" | "background-check-required" | "billing-system-error" | "black-friday-plan-expired" | "braintree-error" | "braintree-not-linked" | "braintree-operation-timed-out" | "braintree-unsupported-currency" | "build-not-found" | "build-outdated" | "cannot-add-apify-events-to-ppe-actor" | "cannot-add-multiple-pricing-infos" | "cannot-add-pricing-info-that-alters-past" | "cannot-add-second-future-pricing-info" | "cannot-build-actor-from-webhook" | "cannot-change-billing-interval" | "cannot-change-owner" | "cannot-charge-apify-event" | "cannot-charge-non-pay-per-event-actor" | "cannot-comment-as-other-user" | "cannot-copy-actor-task" | "cannot-create-payout" | "cannot-create-public-actor" | "cannot-create-tax-transaction" | "cannot-delete-critical-actor" | "cannot-delete-invoice" | "cannot-delete-paid-actor" | "cannot-disable-one-time-event-for-apify-start-event" | "cannot-disable-organization-with-enabled-members" | "cannot-disable-user-with-subscription" | "cannot-link-oauth-to-unverified-email" | "cannot-metamorph-to-pay-per-result-actor" | "cannot-modify-actor-pricing-too-frequently" | "cannot-modify-actor-pricing-with-immediate-effect" | "cannot-monetize-without-payout-billing-info" | "cannot-override-paid-actor-trial" | "cannot-permanently-delete-subscription" | "cannot-publish-actor" | "cannot-publish-actor-task" | "cannot-reduce-last-full-token" | "cannot-reimburse-more-than-original-charge" | "cannot-reimburse-non-rental-charge" | "cannot-remove-own-actor-from-recently-used" | "cannot-remove-payment-method" | "cannot-remove-pricing-info" | "cannot-remove-running-run" | "cannot-remove-user-with-public-actors" | "cannot-remove-user-with-subscription" | "cannot-remove-user-with-unpaid-invoice" | "cannot-rename-env-var" | "cannot-rent-paid-actor" | "cannot-review-own-actor" | "cannot-set-access-rights-for-owner" | "cannot-set-is-status-message-terminal" | "cannot-unpublish-critical-actor" | "cannot-unpublish-paid-actor" | "cannot-unpublish-profile" | "cannot-update-invoice-field" | "concurrent-runs-limit-exceeded" | "concurrent-update-detected" | "conference-token-not-found" | "content-encoding-forbidden-for-html" | "coupon-already-redeemed" | "coupon-expired" | "coupon-for-new-customers" | "coupon-for-subscribed-users" | "coupon-limits-are-in-conflict-with-current-limits" | "coupon-max-number-of-redemptions-reached" | "coupon-not-found" | "coupon-not-unique" | "coupons-disabled" | "create-github-issue-not-allowed" | "creator-plan-not-available" | "cron-expression-invalid" | "daily-ai-token-limit-exceeded" | "daily-publication-limit-exceeded" | "dataset-does-not-have-fields-schema" | "dataset-does-not-have-schema" | "dataset-locked" | "dataset-schema-invalid" | "dcr-not-supported" | "default-dataset-not-found" | "deleting-default-build" | "deleting-unfinished-build" | "email-already-taken" | "email-already-taken-removed-user" | "email-domain-not-allowed-for-coupon" | "email-invalid" | "email-not-allowed" | "email-not-valid" | "email-update-too-soon" | "elevated-permissions-needed" | "env-var-already-exists" | "exchange-rate-fetch-failed" | "expired-conference-token" | "failed-to-charge-user" | "final-invoice-negative" | "full-permission-actor-blocked-for-admin" | "full-permission-actor-not-approved" | "github-branch-empty" | "github-issue-already-exists" | "github-public-key-not-found" | "github-repository-not-found" | "github-signature-does-not-match-payload" | "github-user-not-authorized-for-issues" | "gmail-not-allowed" | "id-does-not-match" | "incompatible-billing-interval" | "incomplete-payout-billing-info" | "inconsistent-currencies" | "incorrect-pricing-modifier-prefix" | "input-json-invalid-characters" | "input-json-not-object" | "input-json-too-long" | "input-update-collision" | "insufficient-permissions" | "insufficient-permissions-to-change-field" | "insufficient-security-measures" | "insufficient-tax-country-evidence" | "integration-auth-error" | "internal-server-error" | "invalid-billing-info" | "invalid-billing-period-for-payout" | "invalid-build" | "invalid-client-key" | "invalid-collection" | "invalid-conference-login-password" | "invalid-content-type-header" | "invalid-credentials" | "invalid-git-auth-token" | "invalid-github-issue-url" | "invalid-header" | "invalid-id" | "invalid-idempotency-key" | "invalid-input" | "invalid-input-schema" | "invalid-invoice" | "invalid-invoice-type" | "invalid-issue-date" | "invalid-label-params" | "invalid-main-account-user-id" | "invalid-oauth-app" | "invalid-oauth-scope" | "invalid-one-time-invoice" | "invalid-parameter" | "invalid-payout-status" | "invalid-picture-url" | "invalid-record-key" | "invalid-request" | "invalid-resource-type" | "invalid-signature" | "invalid-subscription-plan" | "invalid-tax-number" | "invalid-tax-number-format" | "invalid-token" | "invalid-token-type" | "invalid-two-factor-code" | "invalid-two-factor-code-or-recovery-code" | "invalid-two-factor-recovery-code" | "invalid-username" | "invalid-value" | "invitation-invalid-resource-type" | "invitation-no-longer-valid" | "invoice-canceled" | "invoice-cannot-be-refunded-due-to-too-high-amount" | "invoice-incomplete" | "invoice-is-draft" | "invoice-locked" | "invoice-must-be-buffer" | "invoice-not-canceled" | "invoice-not-draft" | "invoice-not-found" | "invoice-outdated" | "invoice-paid-already" | "issue-already-connected-to-github" | "issue-not-found" | "issues-bad-request" | "issuer-not-registered" | "job-finished" | "label-already-linked" | "last-api-token" | "limit-reached" | "max-items-must-be-greater-than-zero" | "max-metamorphs-exceeded" | "max-total-charge-usd-below-minimum" | "max-total-charge-usd-must-be-greater-than-zero" | "method-not-allowed" | "migration-disabled" | "missing-actor-rights" | "missing-api-token" | "missing-billing-info" | "missing-line-items" | "missing-payment-date" | "missing-payout-billing-info" | "missing-proxy-password" | "missing-reporting-fields" | "missing-resource-name" | "missing-settings" | "missing-username" | "monthly-usage-limit-too-low" | "more-than-one-update-not-allowed" | "multiple-records-found" | "must-be-admin" | "name-not-unique" | "next-runtime-computation-failed" | "no-columns-in-exported-dataset" | "no-payment-attempt-for-refund-found" | "no-payment-method-available" | "no-team-account-seats-available" | "non-temporary-email" | "not-enough-usage-to-run-paid-actor" | "not-implemented" | "not-supported-currencies" | "o-auth-service-already-connected" | "o-auth-service-not-connected" | "oauth-resource-access-failed" | "one-time-invoice-already-marked-paid" | "only-drafts-can-be-deleted" | "operation-canceled" | "operation-not-allowed" | "operation-timed-out" | "organization-cannot-own-itself" | "organization-role-not-found" | "overlapping-payout-billing-periods" | "own-token-required" | "page-not-found" | "param-not-one-of" | "parameter-required" | "parameters-mismatched" | "password-reset-email-already-sent" | "password-reset-token-expired" | "pay-as-you-go-without-monthly-interval" | "payment-attempt-status-message-required" | "payout-already-paid" | "payout-canceled" | "payout-invalid-state" | "payout-must-be-approved-to-be-marked-paid" | "payout-not-found" | "payout-number-already-exists" | "phone-number-invalid" | "phone-number-landline" | "phone-number-opted-out" | "phone-verification-disabled" | "platform-feature-disabled" | "price-overrides-validation-failed" | "pricing-model-not-supported" | "promotional-plan-not-available" | "proxy-auth-ip-not-unique" | "public-actor-disabled" | "query-timeout" | "quoted-price-outdated" | "rate-limit-exceeded" | "recaptcha-invalid" | "recaptcha-required" | "record-not-found" | "record-not-public" | "record-or-token-not-found" | "record-too-large" | "redirect-uri-mismatch" | "reduced-plan-not-available" | "rental-charge-already-reimbursed" | "rental-not-allowed" | "request-aborted-prematurely" | "request-handled-or-locked" | "request-id-invalid" | "request-queue-duplicate-requests" | "request-too-large" | "requested-dataset-view-does-not-exist" | "resume-token-expired" | "run-failed" | "run-input-body-not-valid-json" | "run-timeout-exceeded" | "russia-is-evil" | "same-user" | "schedule-actor-not-found" | "schedule-actor-task-not-found" | "schedule-name-not-unique" | "schema-validation" | "schema-validation-error" | "schema-validation-failed" | "service-worker-registration-not-allowed" | "sign-up-method-not-allowed" | "slack-integration-not-custom" | "socket-closed" | "socket-destroyed" | "store-schema-invalid" | "store-terms-not-accepted" | "stripe-enabled" | "stripe-generic-decline" | "stripe-not-enabled" | "stripe-not-enabled-for-user" | "tagged-build-required" | "tax-country-invalid" | "tax-number-invalid" | "tax-number-validation-failed" | "taxamo-call-failed" | "taxamo-request-failed" | "testing-error" | "token-not-provided" | "too-few-versions" | "too-many-actor-tasks" | "too-many-actors" | "too-many-labels-on-resource" | "too-many-mcp-connectors" | "too-many-o-auth-apps" | "too-many-organizations" | "too-many-requests" | "too-many-schedules" | "too-many-ui-access-keys" | "too-many-user-labels" | "too-many-values" | "too-many-versions" | "too-many-webhooks" | "unexpected-route" | "unknown-build-tag" | "unknown-payment-provider" | "unsubscribe-token-invalid" | "unsupported-actor-pricing-model-for-agentic-payments" | "unsupported-content-encoding" | "unsupported-file-type-for-issue" | "unsupported-file-type-image-expected" | "unsupported-file-type-text-or-json-expected" | "unsupported-permission" | "upcoming-subscription-bill-not-up-to-date" | "user-already-exists" | "user-already-verified" | "user-creates-organizations-too-fast" | "user-disabled" | "user-email-is-disposable" | "user-email-not-set" | "user-email-not-verified" | "user-has-no-subscription" | "user-integration-not-found" | "user-is-already-invited" | "user-is-already-organization-member" | "user-is-not-member-of-organization" | "user-is-not-organization" | "user-is-organization" | "user-is-organization-owner" | "user-is-removed" | "user-not-found" | "user-not-logged-in" | "user-not-verified" | "user-or-token-not-found" | "user-plan-not-allowed-for-coupon" | "user-problem-with-card" | "user-record-not-found" | "username-already-taken" | "username-missing" | "username-not-allowed" | "username-removal-forbidden" | "username-required" | "verification-email-already-sent" | "verification-token-expired" | "version-already-exists" | "versions-size-exceeded" | "weak-password" | "x402-agentic-payment-already-finalized" | "x402-agentic-payment-insufficient-amount" | "x402-agentic-payment-malformed-token" | "x402-agentic-payment-settlement-failed" | "x402-agentic-payment-settlement-in-progress" | "x402-agentic-payment-settlement-stuck" | "x402-agentic-payment-unauthorized" | "x402-payment-required" | "zero-invoice";
         ErrorDetail: {
             type?: components["schemas"]["ErrorType"];
             message?: string;
@@ -1048,6 +1048,44 @@ interface components {
             gitRepoUrl?: string | null;
             tarballUrl?: string | null;
             gitHubGistUrl?: string | null;
+        };
+        ActorPermissionLevel: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
+        DefaultRunOptions: {
+            build?: string;
+            timeoutSecs?: number;
+            memoryMbytes?: number;
+            restartOnError?: boolean;
+            maxItems?: number | null;
+            forcePermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
+        };
+        ActorStandby: {
+            isEnabled?: boolean | null;
+            desiredRequestsPerActorRun?: number | null;
+            maxRequestsPerActorRun?: number | null;
+            idleTimeoutSecs?: number | null;
+            build?: string | null;
+            memoryMbytes?: number | null;
+            disableStandbyFieldsOverride?: boolean | null;
+            shouldPassActorInput?: boolean | null;
+        };
+        ExampleRunInput: {
+            body?: string;
+            contentType?: string;
+        };
+        CreateActorRequest: {
+            name?: string | null;
+            description?: string | null;
+            title?: string | null;
+            isPublic?: boolean | null;
+            seoTitle?: string | null;
+            seoDescription?: string | null;
+            restartOnError?: boolean;
+            versions?: components["schemas"]["Version"][] | null;
+            categories?: string[] | null;
+            defaultRunOptions?: components["schemas"]["DefaultRunOptions"];
+            actorStandby?: components["schemas"]["ActorStandby"] | null;
+            exampleRunInput?: components["schemas"]["ExampleRunInput"] | null;
+            isDeprecated?: boolean | null;
         };
         CommonActorPricingInfo: {
             apifyMarginPercentage: number;
@@ -1111,45 +1149,6 @@ interface components {
             pricingModel: "FREE";
         };
         ActorRunPricingInfo: components["schemas"]["PayPerEventActorPricingInfo"] | components["schemas"]["PricePerDatasetItemActorPricingInfo"] | components["schemas"]["FlatPricePerMonthActorPricingInfo"] | components["schemas"]["FreeActorPricingInfo"];
-        ActorPermissionLevel: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
-        DefaultRunOptions: {
-            build?: string;
-            timeoutSecs?: number;
-            memoryMbytes?: number;
-            restartOnError?: boolean;
-            maxItems?: number | null;
-            forcePermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
-        };
-        ActorStandby: {
-            isEnabled?: boolean | null;
-            desiredRequestsPerActorRun?: number | null;
-            maxRequestsPerActorRun?: number | null;
-            idleTimeoutSecs?: number | null;
-            build?: string | null;
-            memoryMbytes?: number | null;
-            disableStandbyFieldsOverride?: boolean | null;
-            shouldPassActorInput?: boolean | null;
-        };
-        ExampleRunInput: {
-            body?: string;
-            contentType?: string;
-        };
-        CreateActorRequest: {
-            name?: string | null;
-            description?: string | null;
-            title?: string | null;
-            isPublic?: boolean | null;
-            seoTitle?: string | null;
-            seoDescription?: string | null;
-            restartOnError?: boolean;
-            versions?: components["schemas"]["Version"][] | null;
-            pricingInfos?: components["schemas"]["ActorRunPricingInfo"][];
-            categories?: string[] | null;
-            defaultRunOptions?: components["schemas"]["DefaultRunOptions"];
-            actorStandby?: components["schemas"]["ActorStandby"] | null;
-            exampleRunInput?: components["schemas"]["ExampleRunInput"] | null;
-            isDeprecated?: boolean | null;
-        };
         TaggedBuildInfo: {
             buildId?: string;
             buildNumber?: string | null;
@@ -1247,7 +1246,7 @@ interface components {
         ListOfEnvVarsResponse: {
             data: components["schemas"]["ListOfEnvVars"];
         };
-        EnvVarRequest: components["schemas"]["EnvVar"] & unknown;
+        EnvVarRequest: WithRequired<components["schemas"]["EnvVar"], "value">;
         EnvVarResponse: {
             data: components["schemas"]["EnvVar"];
         };
@@ -1708,8 +1707,8 @@ interface components {
             [key: string]: unknown;
         };
         RequestBase: {
-            uniqueKey?: components["schemas"]["UniqueKey"];
-            url?: components["schemas"]["RequestUrl"];
+            uniqueKey: components["schemas"]["UniqueKey"];
+            url: components["schemas"]["RequestUrl"];
             method?: components["schemas"]["HttpMethod"];
             retryCount?: components["schemas"]["RetryCount"];
             loadedUrl?: string | null;
@@ -1721,7 +1720,7 @@ interface components {
             handledAt?: Date | null;
         };
         RequestId: string;
-        Request: WithRequired<components["schemas"]["RequestBase"], "uniqueKey" | "url"> & {
+        Request: components["schemas"]["RequestBase"] & {
             id: components["schemas"]["RequestId"];
         };
         ListOfRequests: {
@@ -1734,6 +1733,7 @@ interface components {
         ListOfRequestsResponse: {
             data: components["schemas"]["ListOfRequests"];
         };
+        RequestWithoutId: components["schemas"]["RequestBase"];
         WasAlreadyPresent: boolean;
         WasAlreadyHandled: boolean;
         RequestRegistration: {
@@ -1876,6 +1876,14 @@ interface components {
         TaskInput: {
             [key: string]: unknown;
         };
+        TaskPublicConfig: {
+            readonly publishedAt?: Date | null;
+            seoTitle?: string | null;
+            seoDescription?: string | null;
+            inputSchemaFields?: string[] | null;
+            datasetName?: string | null;
+            datasetView?: string | null;
+        };
         CreateTaskRequest: {
             actId: string;
             name?: string;
@@ -1883,6 +1891,7 @@ interface components {
             input?: components["schemas"]["TaskInput"] | null;
             title?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
+            publicConfig?: components["schemas"]["TaskPublicConfig"];
         };
         Task: {
             id: string;
@@ -1899,6 +1908,8 @@ interface components {
             title?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             standbyUrl?: string | null;
+            isPublic?: boolean;
+            publicConfig?: components["schemas"]["TaskPublicConfig"] | null;
         };
         TaskResponse: {
             data: components["schemas"]["Task"];
@@ -1909,6 +1920,8 @@ interface components {
             input?: components["schemas"]["TaskInput"] | null;
             title?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
+            publicConfig?: components["schemas"]["TaskPublicConfig"];
+            isPublic?: boolean;
         };
         Webhook: {
             id: string;
@@ -2773,6 +2786,10 @@ type GeneratedScheduleActionRunInput = Schemas['ScheduleActionRunInput'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
+type GeneratedScheduleInvoked = Schemas['ScheduleInvoked'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
 type GeneratedSourceCodeFile = Schemas['SourceCodeFile'];
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -2786,6 +2803,10 @@ type GeneratedTaggedBuildInfo = Schemas['TaggedBuildInfo'];
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 type GeneratedTaskOptions = Schemas['TaskOptions'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedTaskPublicConfig = Schemas['TaskPublicConfig'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -3499,24 +3520,35 @@ class ResourceClient extends ApiClient {
     // (undocumented)
     protected _delete(timeoutMillis?: number): Promise<void>;
     // (undocumented)
-    protected _get<T, R>(options?: T, timeoutMillis?: number): Promise<R | undefined>;
+    protected _get<T, R>(schema: z.ZodType, options?: T, timeoutMillis?: number): Promise<R | undefined>;
     // (undocumented)
-    protected _update<T, R>(newFields: T, timeoutMillis?: number): Promise<R>;
+    protected _update<T, R>(schema: z.ZodType, newFields: T, timeoutMillis?: number): Promise<R>;
     protected _waitForFinish<R extends {
         status: (typeof ACT_JOB_STATUSES)[keyof typeof ACT_JOB_STATUSES];
-    }>(options?: WaitForFinishOptions): Promise<R>;
+    }>(schema: z.ZodType, options?: WaitForFinishOptions): Promise<R>;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
 class ResourceCollectionClient extends ApiClient {
     // (undocumented)
-    protected _create<D, R>(resource: D): Promise<R>;
+    protected _create<D, R>(schema: z.ZodType, resource: D): Promise<R>;
     // (undocumented)
-    protected _getOrCreate<D, R>(name?: string, resource?: D): Promise<R>;
+    protected _getOrCreate<D, R>(schema: z.ZodType, name?: string, resource?: D): Promise<R>;
     // (undocumented)
-    protected _list<T, R>(options?: T): Promise<R>;
-    protected _listPaginated<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(options?: T): AsyncIterable<Data> & Promise<R>;
+    protected _list<T, R>(schema: z.ZodType, options?: T): Promise<R>;
+    protected _listPaginated<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(schema: z.ZodType, options?: T): AsyncIterable<Data> & Promise<R>;
+}
+
+// @public
+export class ResponseValidationError extends Error {
+    constructor(error: z.ZodError, value: unknown, request: {
+        method: string;
+        url: string;
+    });
+    readonly issues: z.ZodError['issues'];
+    readonly method: string;
+    readonly url: string;
 }
 
 // @public
@@ -3656,7 +3688,7 @@ export class ScheduleClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     delete(): Promise<void>;
     get(): Promise<Schedule | undefined>;
-    getLog(): Promise<string | undefined>;
+    getLog(): Promise<ScheduleInvoked[] | undefined>;
     update(newFields: ScheduleCreateOrUpdateData): Promise<Schedule>;
 }
 
@@ -3691,6 +3723,10 @@ export interface ScheduledActorRunInput extends GeneratedScheduleActionRunInput 
 
 // @public
 export interface ScheduledActorRunOptions extends GeneratedTaskOptions {
+}
+
+// @public
+export interface ScheduleInvoked extends GeneratedScheduleInvoked {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3828,21 +3864,7 @@ export interface TaskOptions extends GeneratedTaskOptions {
 }
 
 // @public
-export interface TaskPublicConfig {
-    // (undocumented)
-    categorization?: string | null;
-    // (undocumented)
-    datasetName?: string | null;
-    // (undocumented)
-    datasetView?: string | null;
-    // (undocumented)
-    inputSchemaFields?: string[] | null;
-    // (undocumented)
-    publishedAt: Date | null;
-    // (undocumented)
-    seoDescription?: string | null;
-    // (undocumented)
-    seoTitle?: string | null;
+export interface TaskPublicConfig extends GeneratedTaskPublicConfig {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3853,6 +3875,8 @@ interface TaskRePointed {
     // (undocumented)
     options?: TaskOptions | null;
     // (undocumented)
+    publicConfig?: TaskPublicConfig | null;
+    // (undocumented)
     stats?: TaskStats | null;
 }
 
@@ -3861,8 +3885,6 @@ interface TaskRePointed {
 interface TaskSpecGaps {
     // (undocumented)
     description?: string;
-    isPublic?: boolean;
-    publicConfig?: TaskPublicConfig | null;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.

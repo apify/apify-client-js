@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
+import * as schemas from '../schemas';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils';
 import type { Webhook, WebhookUpdateData } from './webhook';
 
@@ -72,7 +73,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
     ): PaginatedIterator<Omit<Webhook, 'payloadTemplate' | 'headersTemplate'>> {
         const parsed = parseArgument(options, listOptionsSchema, 'WebhookCollectionListOptions');
 
-        return this._listPaginated(parsed);
+        return this._listPaginated(schemas.ListOfWebhooks, parsed);
     }
 
     /**
@@ -85,7 +86,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
     async create(webhook?: WebhookUpdateData): Promise<Webhook> {
         parseArgument(webhook, webhookCreateSchema);
 
-        return this._create(webhook);
+        return this._create(schemas.Webhook, webhook);
     }
 }
 

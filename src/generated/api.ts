@@ -5447,7 +5447,7 @@ export interface components {
             data: components["schemas"]["ListOfEnvVars"];
         };
         /** EnvVarRequest */
-        EnvVarRequest: components["schemas"]["EnvVar"] & unknown;
+        EnvVarRequest: WithRequired<components["schemas"]["EnvVar"], "value">;
         /** EnvVarResponse */
         EnvVarResponse: {
             data: components["schemas"]["EnvVar"];
@@ -20587,3 +20587,6 @@ export interface operations {
         };
     };
 }
+type WithRequired<T, K extends keyof T> = T & {
+    [P in K]-?: T[P];
+};

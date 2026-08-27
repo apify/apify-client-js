@@ -5,6 +5,8 @@ import { z } from 'zod';
 
 import type { ApifyApiError } from './apify_api_error';
 import { ArgumentValidationError } from './argument_validation_error';
+import type { ApifyResponse } from './http_client';
+import { ResponseValidationError } from './response_validation_error';
 import type {
     RequestQueueClientListRequestsOptions,
     RequestQueueClientListRequestsResult,
@@ -66,6 +68,38 @@ export const anyObjectSchema = z.custom<Record<string, unknown>>(isNonArrayObjec
  */
 export interface MaybeData<R> {
     data?: R;
+}
+
+/**
+ * Turns a JSON API response into the value a resource method returns: unwraps the `data` envelope, converts the
+ * date fields and validates the result against `schema`, one of the schemas generated from the OpenAPI
+ * specification. The validated copy is what callers get, so it is exactly what the schema accepted -- unknown
+ * fields and unknown enum values included, since the schemas let both through.
+ *
+ * Throws {@link ResponseValidationError} when the response does not match the specification.
+ * @internal
+ */
+export function parseResponse<R>(
+    response: ApifyResponse,
+    schema: z.ZodType,
+    shouldParseField: ((key: string) => boolean) | null = null,
+): R {
+    return validateResponse(response, parseDateFields(pluckData(response.data), shouldParseField), schema);
+}
+
+/**
+ * Validates `data` -- a response body that is already unwrapped and date-parsed -- against `schema`, naming
+ * `response`'s request in the error. Split from {@link parseResponse} for the methods that assemble their
+ * result from several responses.
+ * @internal
+ */
+export function validateResponse<R>(response: ApifyResponse, data: unknown, schema: z.ZodType): R {
+    const result = schema.safeParse(data, { error: localeError });
+    if (!result.success) {
+        const { method = 'GET', url = '' } = response.config;
+        throw new ResponseValidationError(result.error, data, { method, url });
+    }
+    return result.data as R;
 }
 
 /**

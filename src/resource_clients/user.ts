@@ -3,7 +3,8 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import type { AccountAndUsageLimits, MonthlyUsage, User } from '../models';
-import { cast, catchNotFoundOrThrow, parseDateFields, pluckData } from '../utils';
+import * as schemas from '../schemas';
+import { catchNotFoundOrThrow, parseResponse } from '../utils';
 
 export type {
     AccountAndUsageLimits,
@@ -71,7 +72,7 @@ export class UserClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/user-get
      */
     async get(): Promise<User> {
-        return this._get() as Promise<User>;
+        return this._get(schemas.UserPrivateInfo) as Promise<User>;
     }
 
     /**
@@ -89,13 +90,8 @@ export class UserClient extends ResourceClient {
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return cast(
-                parseDateFields(
-                    pluckData(response.data),
-                    // Convert  monthlyUsage.dailyServiceUsages[].date to Date (by default it's ignored by parseDateFields)
-                    /* shouldParseField = */ (key) => key === 'date',
-                ),
-            );
+            // `dailyServiceUsages[].date` does not end in `At`, so it has to be named for `parseDateFields`.
+            return parseResponse(response, schemas.MonthlyUsage, (key) => key === 'date');
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }
@@ -118,7 +114,7 @@ export class UserClient extends ResourceClient {
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return cast(parseDateFields(pluckData(response.data)));
+            return parseResponse(response, schemas.AccountLimits);
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }

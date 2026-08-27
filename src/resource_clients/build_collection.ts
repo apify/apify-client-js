@@ -4,6 +4,7 @@ import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_clien
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { BuildCollectionClientListItem } from '../models';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
+import * as schemas from '../schemas';
 import { paginationOptionsShape, parseArgument } from '../utils';
 
 export type { BuildCollectionClientListItem } from '../models';
@@ -68,7 +69,7 @@ export class BuildCollectionClient extends ResourceCollectionClient {
     list(options: BuildCollectionClientListOptions = {}): PaginatedIterator<BuildCollectionClientListItem> {
         const parsed = parseArgument(options, listOptionsSchema, 'BuildCollectionClientListOptions');
 
-        return this._listPaginated(parsed);
+        return this._listPaginated(schemas.ListOfBuilds, parsed);
     }
 }
 

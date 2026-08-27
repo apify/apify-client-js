@@ -1,6 +1,7 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { WebhookDispatch } from '../models';
+import * as schemas from '../schemas';
 
 export type {
     WebhookDispatch,
@@ -46,6 +47,6 @@ export class WebhookDispatchClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/webhook-dispatch-get
      */
     async get(): Promise<WebhookDispatch | undefined> {
-        return this._get();
+        return this._get(schemas.WebhookDispatch);
     }
 }

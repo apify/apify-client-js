@@ -3,7 +3,8 @@ import { z } from 'zod';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { Build } from '../models';
-import { cast, parseArgument, parseDateFields, pluckData } from '../utils';
+import * as schemas from '../schemas';
+import { parseArgument, parseResponse } from '../utils';
 import { LogClient } from './log';
 
 const getOptionsSchema = z.strictObject({ waitForFinish: z.number().optional() });
@@ -66,7 +67,7 @@ export class BuildClient extends ResourceClient {
     async get(options: BuildClientGetOptions = {}): Promise<Build | undefined> {
         const parsed = parseArgument(options, getOptionsSchema, 'BuildClientGetOptions');
 
-        return this._get(parsed);
+        return this._get(schemas.Build, parsed);
     }
 
     /**
@@ -89,7 +90,7 @@ export class BuildClient extends ResourceClient {
             params: this._params(),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.Build);
     }
 
     /**
@@ -152,7 +153,7 @@ export class BuildClient extends ResourceClient {
     async waitForFinish(options: BuildClientWaitForFinishOptions = {}): Promise<Build> {
         const parsed = parseArgument(options, waitForFinishOptionsSchema, 'BuildClientWaitForFinishOptions');
 
-        return this._waitForFinish(parsed);
+        return this._waitForFinish(schemas.Build, parsed);
     }
 
     /**

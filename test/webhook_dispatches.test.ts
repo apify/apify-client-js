@@ -4,7 +4,7 @@ import { ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
 
 describe('Webhook Dispatch methods', () => {
@@ -48,7 +48,7 @@ describe('Webhook Dispatch methods', () => {
             validateRequest({ query: opts, endpointId: 'list-dispatches' });
 
             const browserRes = await page.evaluate((options) => client.webhookDispatches().list(options), opts);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: opts, endpointId: 'list-dispatches' });
         });
     });
@@ -62,7 +62,7 @@ describe('Webhook Dispatch methods', () => {
             validateRequest({ query: {}, params: { webhookDispatchId } });
 
             const browserRes = await page.evaluate((id) => client.webhookDispatch(id).get(), webhookDispatchId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { webhookDispatchId } });
         });
 
@@ -74,7 +74,7 @@ describe('Webhook Dispatch methods', () => {
             validateRequest({ query: {}, params: { webhookDispatchId } });
 
             const browserRes = await page.evaluate((id) => client.webhookDispatch(id).get(), webhookDispatchId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { webhookDispatchId } });
         });
     });

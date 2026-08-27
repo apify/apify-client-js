@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ActorVersion, FinalActorVersion } from '../models';
+import * as schemas from '../schemas';
 import { anyObjectSchema, parseArgument } from '../utils';
 import { ActorEnvVarClient } from './actor_env_var';
 import { ActorEnvVarCollectionClient } from './actor_env_var_collection';
@@ -63,7 +64,7 @@ export class ActorVersionClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-version-get
      */
     async get(): Promise<FinalActorVersion | undefined> {
-        return this._get();
+        return this._get(schemas.Version);
     }
 
     /**
@@ -76,7 +77,7 @@ export class ActorVersionClient extends ResourceClient {
     async update(newFields: ActorVersion): Promise<FinalActorVersion> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(newFields);
+        return this._update(schemas.Version, newFields);
     }
 
     /**

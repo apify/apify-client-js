@@ -4,7 +4,7 @@ import { ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper';
 import { mockServer } from './mock_server/server';
 
 describe('Schedule methods', () => {
@@ -44,7 +44,7 @@ describe('Schedule methods', () => {
             validateRequest({ query: {}, params: {}, body: schedule, endpointId: 'create-schedule' });
 
             const browserRes = await page.evaluate((options) => client.schedules().create(options), schedule);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: {}, body: schedule });
         });
 
@@ -59,7 +59,7 @@ describe('Schedule methods', () => {
             validateRequest({ query: opts, endpointId: 'list-schedules' });
 
             const browserRes = await page.evaluate((options) => client.schedules().list(options), opts);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: opts });
         });
     });
@@ -76,7 +76,7 @@ describe('Schedule methods', () => {
             });
 
             const browserRes = await page.evaluate((id) => client.schedule(id).get(), scheduleId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { scheduleId } });
         });
 
@@ -105,7 +105,7 @@ describe('Schedule methods', () => {
             });
 
             const browserRes = await page.evaluate((id, s) => client.schedule(id).update(s), scheduleId, schedule);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { scheduleId }, body: schedule });
         });
 
@@ -131,7 +131,7 @@ describe('Schedule methods', () => {
             });
 
             const browserRes = await page.evaluate((id) => client.schedule(id).getLog(), scheduleId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { scheduleId } });
         });
     });

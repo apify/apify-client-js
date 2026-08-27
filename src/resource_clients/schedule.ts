@@ -1,10 +1,13 @@
+import { z } from 'zod';
+
 import type { ApifyApiError } from '../apify_api_error';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
-import type { Schedule, ScheduleAction } from '../models';
+import type { Schedule, ScheduleAction, ScheduleInvoked } from '../models';
 import type { DistributiveOptional } from '../utils';
-import { anyObjectSchema, cast, catchNotFoundOrThrow, parseArgument, parseDateFields, pluckData } from '../utils';
+import * as schemas from '../schemas';
+import { anyObjectSchema, catchNotFoundOrThrow, parseArgument, parseResponse } from '../utils';
 
 export type {
     Schedule,
@@ -13,6 +16,7 @@ export type {
     ScheduleActionRunActorTask,
     ScheduledActorRunInput,
     ScheduledActorRunOptions,
+    ScheduleInvoked,
 } from '../models';
 export { ScheduleActions } from '../models';
 
@@ -57,7 +61,7 @@ export class ScheduleClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/schedule-get
      */
     async get(): Promise<Schedule | undefined> {
-        return this._get();
+        return this._get(schemas.Schedule);
     }
 
     /**
@@ -69,7 +73,7 @@ export class ScheduleClient extends ResourceClient {
      */
     async update(newFields: ScheduleCreateOrUpdateData): Promise<Schedule> {
         parseArgument(newFields, anyObjectSchema);
-        return this._update(newFields);
+        return this._update(schemas.Schedule, newFields);
     }
 
     /**
@@ -84,10 +88,10 @@ export class ScheduleClient extends ResourceClient {
     /**
      * Retrieves the schedule's log.
      *
-     * @returns The schedule log as a string, or `undefined` if it does not exist.
+     * @returns The schedule log, one entry per invocation, or `undefined` if the schedule does not exist.
      * @see https://docs.apify.com/api/v2/schedule-log-get
      */
-    async getLog(): Promise<string | undefined> {
+    async getLog(): Promise<ScheduleInvoked[] | undefined> {
         const requestOpts: ApifyRequestConfig = {
             url: this._url('log'),
             method: 'GET',
@@ -95,7 +99,7 @@ export class ScheduleClient extends ResourceClient {
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return cast(parseDateFields(pluckData(response.data)));
+            return parseResponse(response, z.array(schemas.ScheduleInvoked));
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }

@@ -22,7 +22,10 @@ import type {
     WEBHOOK_DISPATCH_STATUSES,
 } from '@apify/consts';
 
+import type { z } from 'zod';
+
 import type { components } from './generated/api';
+import type * as generatedSchemas from './generated/schemas';
 import type {
     AccountAndUsageLimitsRePointed,
     ActorChargeEventRePointed,
@@ -92,8 +95,11 @@ import type {
     WebhookRePointed,
     WebhookSpecGaps,
 } from './models';
+import type * as responseSchemas from './schemas';
 
 type Schemas = components['schemas'];
+type GeneratedSchemas = typeof generatedSchemas;
+type ResponseSchemas = typeof responseSchemas;
 
 /** Resolves to `true` only for mutually assignable types, so a near-miss still fails. */
 type Equals<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
@@ -403,3 +409,41 @@ export type MapShapeGuards = AssertAll<
  * This assertion is what reports that.
  */
 export type ClientConversionGuards = AssertAll<[Equals<Schemas['DailyServiceUsages']['date'], string>]>;
+
+/**
+ * The names of every schema whose generated type is not accepted by its generated zod schema.
+ *
+ * Both are generated from the same specification, by different generators, so this is where a bug in
+ * `scripts/schema_emitter.mts` -- a dropped property, a wrong optionality, a missed `null` -- shows up as
+ * a build failure instead of as a response rejected in production. The check is one-directional on
+ * purpose: the zod schemas accept unknown fields and unknown enum values that the types do not describe,
+ * so their output is deliberately wider than the types.
+ */
+type SchemasRejectingTheirType = {
+    [K in keyof Schemas]: K extends keyof GeneratedSchemas
+        ? Schemas[K] extends z.input<GeneratedSchemas[K]>
+            ? never
+            : K
+        : K;
+}[keyof Schemas];
+
+export type GeneratedSchemaGuards = AssertAll<
+    [
+        Equals<SchemasRejectingTheirType, never>,
+        // Both generators saw the same `components.schemas`, so neither may have a schema the other lacks.
+        Equals<Exclude<keyof GeneratedSchemas, keyof Schemas>, never>,
+    ]
+>;
+
+/**
+ * Every hand-written override in `./schemas` still accepts what the specification describes: an override
+ * may only widen. The two `DailyServiceUsage` schemas are excluded because they are the one client
+ * conversion -- `date` arrives as a `Date` there, so the spec's `string` is not meant to pass.
+ */
+type OverridesRejectingTheirType = {
+    [
+        K in Exclude<keyof ResponseSchemas & keyof Schemas, 'DailyServiceUsages' | 'MonthlyUsage'>
+    ]: Schemas[K] extends z.input<ResponseSchemas[K]> ? never : K;
+}[Exclude<keyof ResponseSchemas & keyof Schemas, 'DailyServiceUsages' | 'MonthlyUsage'>];
+
+export type ResponseSchemaGuards = AssertAll<[Equals<OverridesRejectingTheirType, never>]>;

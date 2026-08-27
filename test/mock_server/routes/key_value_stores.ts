@@ -1,14 +1,15 @@
 import express from 'express';
 
+import * as fixtures from '../fixtures';
 import { addRoutes, type MockServerRoute } from './add_routes';
 
 export const keyValueStores = express.Router();
 
 const ROUTES: MockServerRoute[] = [
-    { id: 'list-stores', method: 'GET', path: '/' },
-    { id: 'get-or-create-store', method: 'POST', path: '/' },
+    { id: 'list-stores', method: 'GET', path: '/', fixture: fixtures.keyValueStoreList },
+    { id: 'get-or-create-store', method: 'POST', path: '/', fixture: fixtures.keyValueStore },
     { id: 'delete-store', method: 'DELETE', path: '/:storeId' },
-    { id: 'update-store', method: 'PUT', path: '/:storeId' },
+    { id: 'update-store', method: 'PUT', path: '/:storeId', fixture: fixtures.keyValueStore },
     { id: 'get-record', method: 'GET', path: '/:storeId/records/:key', type: 'responseJsonMock' },
     { id: 'put-record', method: 'PUT', path: '/:storeId/records/:key' },
     {
@@ -18,7 +19,7 @@ const ROUTES: MockServerRoute[] = [
         type: 'responseJsonMock',
     },
     { id: 'delete-record', method: 'DELETE', path: '/:storeId/records/:key' },
-    { id: 'list-keys', method: 'GET', path: '/:storeId/keys' },
+    { id: 'list-keys', method: 'GET', path: '/:storeId/keys', fixture: fixtures.keyList },
 ];
 
 addRoutes(keyValueStores, ROUTES);
@@ -37,6 +38,7 @@ keyValueStores.get('/:storeId', (req, res) => {
     if (storeId === 'id-with-secret-key') {
         return res.json({
             data: {
+                ...fixtures.keyValueStore,
                 id: storeId,
                 urlSigningSecretKey: 'secret-key-for-testing',
             },
@@ -47,9 +49,5 @@ keyValueStores.get('/:storeId', (req, res) => {
         return res.status(404).json({ error: { type: 'record-not-found' } });
     }
 
-    return res.json({
-        data: {
-            id: 'get-store',
-        },
-    });
+    return res.json({ data: { ...fixtures.keyValueStore, id: 'get-store' } });
 });

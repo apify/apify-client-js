@@ -1,7 +1,8 @@
 /**
  * Generates `src/generated/api.ts` from the OpenAPI specification downloaded into `tmp/openapi.json`.
  *
- * Run via `pnpm generate:types`, which downloads the specification first and records its version afterwards.
+ * Run via `pnpm generate:models`, which downloads the specification first, generates the zod schemas next to these
+ * types, and records its version afterwards.
  * Requires a Node release that strips TypeScript syntax natively (>=22.18 or >=23.6).
  *
  * A path can be passed instead, for a candidate specification that is not published yet. The recorded version
@@ -15,8 +16,9 @@
  *      runtime and documents that as a public contract, while `openapi-typescript` types those fields as `string`.
  *   2. Absolutizing root-relative Markdown links in the specification's descriptions, which are copied verbatim
  *      into JSDoc and would otherwise resolve against the docs site's API-reference `baseUrl`.
- *   3. Hoisting a `required` that the specification states next to a `$ref`, which the generator would otherwise
- *      drop. This one runs over the specification itself, before generation, rather than over its output.
+ *   3. Hoisting a `required` that the specification states next to a `$ref`, or as a bare `allOf` branch, which
+ *      the generator would otherwise drop. This one runs over the specification itself, before generation, rather
+ *      than over its output.
  */
 
 import { readFile, writeFile } from 'node:fs/promises';
@@ -26,7 +28,7 @@ import { pathToFileURL } from 'node:url';
 import type { OpenAPI3 } from 'openapi-typescript';
 import openapiTS, { astToString, COMMENT_HEADER } from 'openapi-typescript';
 
-import { absolutizeDocLinks, hoistRefSiblingRequired, transformDateTime } from './spec_transform.mts';
+import { absolutizeDocLinks, hoistAllOfRequired, transformDateTime } from './spec_transform.mts';
 
 const DEFAULT_SPEC_PATH = new URL('../tmp/openapi.json', import.meta.url);
 
@@ -39,7 +41,7 @@ const specPath = inputPath === undefined ? DEFAULT_SPEC_PATH : pathToFileURL(res
 
 // Read and rewritten here rather than handed over as a path, because the hoist has to happen before the
 // generator sees the document.
-const spec = hoistRefSiblingRequired(JSON.parse(await readFile(specPath, 'utf8')) as OpenAPI3);
+const spec = hoistAllOfRequired(JSON.parse(await readFile(specPath, 'utf8')) as OpenAPI3);
 
 // Two options are deliberately left off. `additionalProperties` is often described as the analogue of the Python
 // client's `extra_fields = "allow"`, but it is not: that setting relaxes *runtime* validation, whereas this flag

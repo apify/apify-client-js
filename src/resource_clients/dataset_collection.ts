@@ -5,6 +5,7 @@ import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
+import * as schemas from '../schemas';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils';
 import type { Dataset } from './dataset';
 
@@ -73,7 +74,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     ): Promise<DatasetCollectionClientListResult> & AsyncIterable<Dataset> {
         const parsed = parseArgument(options, listOptionsSchema, 'DatasetCollectionClientListOptions');
 
-        return this._listPaginated(parsed);
+        return this._listPaginated(schemas.ListOfDatasets, parsed);
     }
 
     /**
@@ -88,7 +89,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
         parseArgument(name, nameSchema);
         parseArgument(options?.schema, schemaSchema); // TODO: Add schema validation
 
-        return this._getOrCreate(name, options);
+        return this._getOrCreate(schemas.Dataset, name, options);
     }
 }
 

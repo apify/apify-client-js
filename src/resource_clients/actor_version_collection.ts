@@ -1,6 +1,7 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { PaginatedList, PaginationOptions } from '../utils';
+import * as schemas from '../schemas';
 import { anyObjectSchema, parseArgument } from '../utils';
 import type { ActorVersion, FinalActorVersion } from './actor_version';
 
@@ -63,7 +64,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
     list(
         _options: ActorVersionCollectionListOptions = {},
     ): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
-        return this._listPaginated();
+        return this._listPaginated(schemas.ListOfVersions);
     }
 
     /**
@@ -76,7 +77,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
     async create(actorVersion: ActorVersion): Promise<FinalActorVersion> {
         parseArgument(actorVersion, actorVersionSchema);
 
-        return this._create(actorVersion);
+        return this._create(schemas.Version, actorVersion);
     }
 }
 

@@ -949,6 +949,11 @@ export interface ScheduleActionRunActorTask
 /** Union type representing all possible scheduled actions. */
 export type ScheduleAction = ScheduleActionRunActor | ScheduleActionRunActorTask;
 
+type GeneratedScheduleInvoked = Schemas['ScheduleInvoked'];
+
+/** One entry of a schedule's log: an invocation of the schedule and how it went. */
+export interface ScheduleInvoked extends GeneratedScheduleInvoked {}
+
 export interface ScheduleRePointed {
     actions: ScheduleAction[];
 }

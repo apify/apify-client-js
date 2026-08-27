@@ -130,8 +130,9 @@ function collectIssueLines(
  * offending field *and* the value it received (e.g. ``must match pattern
  * /^[A-Z]{2}$/ at `countryCode`, got `CZE` ``) - closer to the old `ow` errors
  * than zod's default, which omits the received value.
+ * @internal
  */
-function formatZodError(error: z.ZodError, root: unknown, label?: string): string {
+export function formatZodError(error: z.ZodError, root: unknown, label?: string): string {
     const lines: string[] = [];
     const counter = { total: 0 };
     for (const issue of error.issues) collectIssueLines(issue, root, [], lines, counter);

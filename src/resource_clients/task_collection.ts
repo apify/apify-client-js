@@ -4,6 +4,7 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
 import type { TaskList } from '../models';
 import type { PaginatedIterator, PaginationOptions } from '../utils';
+import * as schemas from '../schemas';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils';
 import type { Task, TaskUpdateData } from './task';
 
@@ -72,7 +73,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
     list(options: TaskCollectionListOptions = {}): PaginatedIterator<TaskList> {
         const parsed = parseArgument(options, listOptionsSchema, 'TaskCollectionListOptions');
 
-        return this._listPaginated(parsed);
+        return this._listPaginated(schemas.ListOfTasks, parsed);
     }
 
     /**
@@ -85,7 +86,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
     async create(task: TaskCreateData): Promise<Task> {
         parseArgument(task, anyObjectSchema);
 
-        return this._create(task);
+        return this._create(schemas.Task, task);
     }
 }
 

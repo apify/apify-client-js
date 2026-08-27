@@ -23,6 +23,7 @@ import type {
     RequestQueueClientRequestToUpdate,
     RequestQueueClientUnlockRequestsResult,
 } from '../models';
+import * as schemas from '../schemas';
 import {
     anyObjectSchema,
     cast,
@@ -31,7 +32,7 @@ import {
     mutuallyExclusive,
     parseArgument,
     parseDateFields,
-    pluckData,
+    parseResponse,
     RequestQueuePaginationIterator,
     sliceArrayByByteLength,
 } from '../utils';
@@ -168,7 +169,7 @@ export class RequestQueueClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/request-queue-get
      */
     async get(): Promise<RequestQueue | undefined> {
-        return this._get({}, SMALL_TIMEOUT_MILLIS);
+        return this._get(schemas.RequestQueue, {}, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -181,7 +182,7 @@ export class RequestQueueClient extends ResourceClient {
     async update(newFields: RequestQueueClientUpdateOptions): Promise<RequestQueue> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(newFields, SMALL_TIMEOUT_MILLIS);
+        return this._update(schemas.RequestQueue, newFields, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -216,7 +217,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.RequestQueueHead);
     }
 
     /**
@@ -268,7 +269,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.LockedRequestQueueHead);
     }
 
     /**
@@ -327,7 +328,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.RequestRegistration);
     }
 
     /**
@@ -342,7 +343,7 @@ export class RequestQueueClient extends ResourceClient {
         parseArgument(requests, batchAddRequestsSchema);
         const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientAddRequestOptions');
 
-        const { data } = await this.httpClient.call({
+        const response = await this.httpClient.call({
             url: this._url('requests/batch'),
             method: 'POST',
             timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
@@ -353,7 +354,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(data)));
+        return parseResponse(response, schemas.BatchAddResult);
     }
 
     protected async _batchAddRequestsWithRetries(
@@ -528,7 +529,7 @@ export class RequestQueueClient extends ResourceClient {
     ): Promise<RequestQueueClientBatchDeleteRequestsResult> {
         parseArgument(requests, batchDeleteRequestsSchema);
 
-        const { data } = await this.httpClient.call({
+        const response = await this.httpClient.call({
             url: this._url('requests/batch'),
             method: 'DELETE',
             timeout: Math.min(SMALL_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
@@ -538,7 +539,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(data)));
+        return parseResponse(response, schemas.BatchDeleteResult);
     }
 
     /**
@@ -558,7 +559,7 @@ export class RequestQueueClient extends ResourceClient {
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return cast(parseDateFields(pluckData(response.data)));
+            return parseResponse(response, schemas.Request);
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }
@@ -592,7 +593,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.RequestRegistration);
     }
 
     /**
@@ -660,7 +661,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.RequestLockInfo);
     }
 
     /**
@@ -719,7 +720,7 @@ export class RequestQueueClient extends ResourceClient {
                 }),
             });
 
-            return cast(parseDateFields(pluckData(response.data)));
+            return parseResponse(response, schemas.ListOfRequests);
         };
 
         const paginatedListPromise = getPaginatedList(parsed);
@@ -776,7 +777,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.UnlockRequestsResult);
     }
 
     /**

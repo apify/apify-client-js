@@ -17,17 +17,16 @@ import {
 } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore } from '../models';
+import * as schemas from '../schemas';
 import {
     anyObjectSchema,
     applyQueryParamsToUrl,
-    cast,
     catchNotFoundOrThrow,
     isBuffer,
     isNode,
     isStream,
     parseArgument,
-    parseDateFields,
-    pluckData,
+    parseResponse,
 } from '../utils';
 
 const listKeysOptionsSchema = z.strictObject({
@@ -123,7 +122,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/key-value-store-get
      */
     async get(): Promise<KeyValueStore | undefined> {
-        return this._get({}, SMALL_TIMEOUT_MILLIS);
+        return this._get(schemas.KeyValueStore, {}, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -139,7 +138,7 @@ export class KeyValueStoreClient extends ResourceClient {
     async update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(newFields, DEFAULT_TIMEOUT_MILLIS);
+        return this._update(schemas.KeyValueStore, newFields, DEFAULT_TIMEOUT_MILLIS);
     }
 
     /**
@@ -201,7 +200,7 @@ export class KeyValueStoreClient extends ResourceClient {
                 timeout: MEDIUM_TIMEOUT_MILLIS,
             });
 
-            return cast(parseDateFields(pluckData(response.data)));
+            return parseResponse(response, schemas.ListOfKeys);
         };
 
         const paginatedListPromise = getPaginatedList(parsed);

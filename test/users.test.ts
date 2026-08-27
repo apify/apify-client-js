@@ -6,7 +6,8 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } fr
 
 import { ME_USER_NAME_PLACEHOLDER } from '@apify/consts';
 
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper';
+import * as fixtures from './mock_server/fixtures';
 import { mockServer } from './mock_server/server';
 
 describe('User methods', () => {
@@ -47,7 +48,7 @@ describe('User methods', () => {
             validateRequest({ query: {}, params: { userId } });
 
             const browserRes = await page.evaluate((id) => client.user(id).get(), userId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { userId } });
         });
 
@@ -57,7 +58,7 @@ describe('User methods', () => {
             validateRequest({ query: {}, params: { userId: ME_USER_NAME_PLACEHOLDER } });
 
             const browserRes = await page.evaluate((id) => client.user(id).get(), undefined);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { userId: ME_USER_NAME_PLACEHOLDER } });
         });
 
@@ -68,16 +69,17 @@ describe('User methods', () => {
             validateRequest({ query: {}, params: { userId }, endpointId: 'get-monthly-usage' });
 
             const browserRes = await page.evaluate((id) => client.user(id).monthlyUsage(), userId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { userId } });
         });
 
         test('monthlyUsage() converts the date fields to Date', async () => {
             const body = {
                 data: {
+                    ...fixtures.monthlyUsage,
                     usageCycle: { startAt: '2026-08-01T00:00:00.000Z', endAt: '2026-08-31T23:59:59.999Z' },
                     dailyServiceUsages: [
-                        { date: '2026-08-03T00:00:00.000Z', serviceUsage: {}, totalUsageCreditsUsd: 1 },
+                        { ...fixtures.monthlyUsage.dailyServiceUsages[0], date: '2026-08-03T00:00:00.000Z' },
                     ],
                 },
             };
@@ -103,7 +105,7 @@ describe('User methods', () => {
             validateRequest({ query: {}, params: { userId }, endpointId: 'get-limits' });
 
             const browserRes = await page.evaluate((id) => client.user(id).limits(), userId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { userId } });
         });
 

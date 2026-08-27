@@ -3,7 +3,8 @@ import type { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
 import type { ApifyRequestConfig } from '../http_client';
 import type { Webhook, WebhookEventType } from '../models';
-import { anyObjectSchema, cast, catchNotFoundOrThrow, parseArgument, parseDateFields, pluckData } from '../utils';
+import * as schemas from '../schemas';
+import { anyObjectSchema, catchNotFoundOrThrow, parseArgument, parseResponse } from '../utils';
 import type { WebhookDispatch } from './webhook_dispatch';
 import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection';
 
@@ -64,7 +65,7 @@ export class WebhookClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/webhook-get
      */
     async get(): Promise<Webhook | undefined> {
-        return this._get();
+        return this._get(schemas.Webhook);
     }
 
     /**
@@ -77,7 +78,7 @@ export class WebhookClient extends ResourceClient {
     async update(newFields: WebhookUpdateData): Promise<Webhook> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(newFields);
+        return this._update(schemas.Webhook, newFields);
     }
 
     /**
@@ -104,7 +105,7 @@ export class WebhookClient extends ResourceClient {
 
         try {
             const response = await this.httpClient.call(request);
-            return cast(parseDateFields(pluckData(response.data)));
+            return parseResponse(response, schemas.WebhookDispatch);
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }

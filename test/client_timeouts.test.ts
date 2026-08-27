@@ -3,6 +3,19 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { HttpClient } from '../src/http_client.js';
 
+import type * as utils from '../src/utils';
+
+// These tests drive the client with synthetic response bodies, so the schema check the resource clients run on
+// every response is skipped: the bodies are shaped for the mechanics under test, not for the API's schemas.
+vi.mock('../src/utils', async (importOriginal) => {
+    const actual = await importOriginal<typeof utils>();
+    return {
+        ...actual,
+        parseResponse: (response: { data: unknown }, _schema: unknown, shouldParseField = null) =>
+            actual.parseDateFields(actual.pluckData(response.data as never), shouldParseField),
+    };
+});
+
 // Mock for testing timeout functionality
 class MockHttpClient {
     public timeoutSecs: number;
