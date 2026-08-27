@@ -519,7 +519,7 @@ abstract class ApiClient {
     protected _params<T>(endpointParams?: T): Record<string, unknown>;
     publicBaseUrl: string;
     // (undocumented)
-    protected _publicUrl(path?: string): string;
+    protected _publicUrl(path?: string | string[]): string;
     // (undocumented)
     resourcePath: string;
     // (undocumented)
@@ -531,7 +531,7 @@ abstract class ApiClient {
     // (undocumented)
     url: string;
     // (undocumented)
-    protected _url(path?: string): string;
+    protected _url(path?: string | string[]): string;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.

@@ -478,3 +478,27 @@ export const mutuallyExclusive = <T extends object>(...keys: (keyof T & string)[
     (value) => keys.filter((key) => typeof value[key] !== 'undefined').length <= 1,
     `At most one of the following fields is allowed: ${keys.join(', ')}`,
 ];
+
+const pathSegmentSchema = z
+    .string()
+    .nonempty()
+    .refine((v) => v !== '.' && v !== '..', { error: 'URL path must not contain dot segments' });
+
+/**
+ * Percent-encodes a caller-supplied URL path segment so it cannot restructure the request path.
+ *
+ * Empty strings and dot segments are rejected instead of encoded, because URL parsers resolve
+ * dot segments after decoding - `records/%2E%2E` collapses to the parent endpoint just like `records/..`.
+ */
+export function toPathSegment(value: string): string {
+    const valueParsed = parseArgument(value, pathSegmentSchema);
+    return encodeURIComponent(valueParsed);
+}
+
+/**
+ * Builds a URL path from segments. A plain string is used as-is, so literal paths such as
+ * `requests/batch` keep their separators; an array has each of its segments encoded individually.
+ */
+export function toPath(path: string | string[]): string {
+    return Array.isArray(path) ? path.map(toPathSegment).join('/') : path;
+}
