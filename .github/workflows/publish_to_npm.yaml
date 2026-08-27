@@ -15,10 +15,12 @@ on:
                 options:
                     - latest
                     - beta
+                    - next-v3
+                    - rc
 
 permissions:
     id-token: write # Required for OIDC
-    contents: read
+    contents: write # Required to push RC git tags
 
 jobs:
     publish_to_npm:
@@ -28,6 +30,7 @@ jobs:
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   ref: ${{ inputs.ref }}
+                  token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
             - name: Use Node.js
               uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
@@ -35,10 +38,18 @@ jobs:
                   registry-url: 'https://registry.npmjs.org'
             - name: Install pnpm and dependencies
               uses: apify/actions/pnpm-install@v1.4.1
-            - name: Check version consistency and bump pre-release version (beta only)
-              if: ${{ inputs.tag == 'beta' }}
-              run: node ./.github/scripts/before-beta-release.js
+            - name: Check version consistency and bump pre-release version (pre-release tags only)
+              if: ${{ inputs.tag != 'latest' }}
+              run: node ./.github/scripts/before-beta-release.js ${{ inputs.tag }}
             - name: Build module
               run: pnpm build
             - name: Publish to NPM
               run: pnpm publish --tag ${{ inputs.tag }} --no-git-checks
+            # RC releases produce no changelog and no commit on the branch, only a git
+            # tag pointing at the released commit (the version bump lives only on npm).
+            - name: Create git tag
+              if: ${{ inputs.tag == 'rc' }}
+              run: |
+                  VERSION=$(node -p "require('./package.json').version")
+                  git tag "v$VERSION"
+                  git push origin "refs/tags/v$VERSION"
