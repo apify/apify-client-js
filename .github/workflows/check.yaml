@@ -15,6 +15,9 @@ on:
     # Release flow will trigger checks manually
     workflow_call:
 
+    # Allows running the checks - most importantly the integration tests - on demand.
+    workflow_dispatch:
+
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
@@ -28,7 +31,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                node-version: [20, 22, 24]
+                node-version: [22, 24, 26]
 
         steps:
             - name: Checkout repository
@@ -47,6 +50,55 @@ jobs:
 
             - name: Run Tests
               run: pnpm test
+
+    integration_tests:
+        name: Integration tests (Node ${{ matrix.node-version }})
+        # These run against the live Apify API with real credentials, so they are skipped for fork PRs,
+        # where repository secrets are not available.
+        if: >-
+            ${{
+              !contains(github.event.head_commit.message, '[skip ci]') &&
+              (
+                (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+                (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
+                github.event_name == 'workflow_dispatch'
+              )
+            }}
+        runs-on: ubuntu-latest
+
+        env:
+            APIFY_TEST_USER_API_TOKEN: ${{ secrets.APIFY_TEST_USER_PYTHON_SDK_API_TOKEN }}
+
+        # A single Node version on purpose: these tests exercise HTTP against the live Apify API, where
+        # the Node version carries no signal, and every extra job multiplies the load on the shared
+        # test account. Version coverage is the unit tier's job.
+        strategy:
+            fail-fast: false
+            matrix:
+                node-version: [26]
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v7
+              with:
+                  node-version: ${{ matrix.node-version }}
+
+            - name: Install pnpm and dependencies
+              uses: apify/actions/pnpm-install@v1.4.0
+
+            # A workflow that calls this one as a reusable workflow - the release flow does - gets no
+            # secrets unless it opts in with `secrets: inherit`, so the token can legitimately be empty.
+            # Skip rather than fail there, otherwise a missing token blocks the release.
+            - name: Run integration tests
+              if: ${{ env.APIFY_TEST_USER_API_TOKEN != '' }}
+              run: pnpm test:integration
+
+            - name: Report the skipped integration tests
+              if: ${{ env.APIFY_TEST_USER_API_TOKEN == '' }}
+              run: echo "::warning::APIFY_TEST_USER_API_TOKEN is empty, the integration tests did not run."
 
     test_bundling:
         name: Test bundler support
@@ -79,6 +131,8 @@ jobs:
             - name: Install pnpm and dependencies
               uses: apify/actions/pnpm-install@v1.4.1
             - run: pnpm lint
+            - name: Type-check tests
+              run: pnpm tsc-check-tests
             - name: Format check
               run: pnpm format:check
 

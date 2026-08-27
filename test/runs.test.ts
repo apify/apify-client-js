@@ -2,7 +2,7 @@ import type { AddressInfo } from 'node:net';
 import { setTimeout as setTimeoutNode } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import { ApifyClient } from 'apify-client';
+import { ApifyClient, ArgumentValidationError } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
@@ -389,10 +389,13 @@ describe('Run methods', () => {
             const res = await client.run(runId).charge({ eventName: 'some-event' });
             expect(res.status).toEqual(200);
 
-            await expect(client.run(runId).charge(undefined as any)).rejects.toThrow(
-                'Expected argument to be of type `object` but received type `undefined`\n' +
-                    'Cannot convert undefined or null to object in object',
-            );
+            // Assert on the error type and the structured issue, since zod owns the wording.
+            const error = await client
+                .run(runId)
+                .charge(undefined as any)
+                .catch((err) => err);
+            expect(error).toBeInstanceOf(ArgumentValidationError);
+            expect(error.issues).toEqual([expect.objectContaining({ code: 'invalid_type', path: [] })]);
         });
     });
 });
@@ -456,7 +459,9 @@ describe('Redirect run logs', () => {
             await setTimeoutNode(500);
             await expect(streamedLog?.stop()).resolves.not.toThrow();
             expect(
-                warnSpy.mock.calls.some(([msg]: [string]) => msg?.includes('Log redirection stopped due to error')),
+                warnSpy.mock.calls.some(
+                    ([msg]) => typeof msg === 'string' && msg.includes('Log redirection stopped due to error'),
+                ),
             ).toBe(true);
             warnSpy.mockRestore();
         });

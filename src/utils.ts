@@ -1,9 +1,10 @@
 import type { Readable } from 'node:stream';
 
-import ow from 'ow';
 import type { JsonValue, TypedArray } from 'type-fest';
+import { z } from 'zod';
 
 import type { ApifyApiError } from './apify_api_error';
+import { ArgumentValidationError } from './argument_validation_error';
 import type {
     RequestQueueClientListRequestsOptions,
     RequestQueueClientListRequestsResult,
@@ -14,6 +15,49 @@ const NOT_FOUND_STATUS_CODE = 404;
 const RECORD_NOT_FOUND_TYPE = 'record-not-found';
 const RECORD_OR_TOKEN_NOT_FOUND_TYPE = 'record-or-token-not-found';
 const MIN_COMPRESS_BYTES = 1024;
+
+// Zod installs its English locale as a module-level side effect but ships `"sideEffects": false`, so
+// any tree-shaking bundler drops it and every message degrades to a bare "Invalid input". Passing it
+// in per parse keeps them intact without reaching into the zod config the whole process shares.
+const { localeError } = z.locales.en();
+
+/**
+ * Parses `value` with `schema`, returning the typed result (with schema defaults applied).
+ * Throws {@link ArgumentValidationError} on failure.
+ *
+ * The optional `label` names the interface being validated and is appended to every error line
+ * (e.g. ``... at `memory` in `ActorStartOptions` ``).
+ * @internal
+ */
+export function parseArgument<TValue, TSchema extends z.ZodType>(
+    value: TValue,
+    schema: TSchema,
+    label?: string,
+): TValue & z.output<TSchema> {
+    const result = schema.safeParse(value, { error: localeError });
+    if (!result.success) {
+        throw new ArgumentValidationError(result.error, value, label);
+    }
+    return result.data as TValue & z.output<TSchema>;
+}
+
+/**
+ * Accepts any non-null, non-array object as a predicate for `z.custom()`.
+ * @internal
+ */
+export function isNonArrayObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Matches any plain object, letting unknown keys through - for payloads whose shape the API
+ * validates itself. A `z.custom()` predicate rather than an object schema, so parsing returns
+ * the value itself instead of a copy.
+ * @internal
+ */
+export const anyObjectSchema = z.custom<Record<string, unknown>>(isNonArrayObject, {
+    error: 'Invalid input: expected an object',
+});
 
 /**
  * Generic interface for objects that may contain a data property.
@@ -98,7 +142,7 @@ export function parseDateFields(
 /**
  * Helper function that converts array of webhooks to base64 string
  */
-export function stringifyWebhooksToBase64(webhooks: WebhookUpdateData[]): string | undefined {
+export function stringifyWebhooksToBase64(webhooks?: readonly WebhookUpdateData[]): string | undefined {
     if (!webhooks) return;
     const webhooksJson = JSON.stringify(webhooks);
     if (isNode()) {
@@ -209,11 +253,20 @@ export function isNode(): boolean {
 }
 
 export function isBuffer(value: unknown): value is Buffer | ArrayBuffer | TypedArray {
-    return ow.isValid(value, ow.any(ow.buffer, ow.arrayBuffer, ow.typedArray));
+    // Tag checks rather than `instanceof`, to also match buffers from another realm. `isView()`
+    // additionally covers `DataView`, which is not raw binary content.
+    if (ArrayBuffer.isView(value)) return !isTagged(value, 'DataView');
+    return isTagged(value, 'ArrayBuffer');
+}
+
+function isTagged(value: unknown, tag: string): boolean {
+    return Object.prototype.toString.call(value) === `[object ${tag}]`;
 }
 
 export function isStream(value: unknown): value is Readable {
-    return ow.isValid(value, ow.object.hasKeys('on', 'pipe'));
+    if (value === null || typeof value !== 'object') return false;
+    const { on, pipe } = value as Partial<Readable>;
+    return typeof on === 'function' && typeof pipe === 'function';
 }
 
 export function getVersionData(): { version: string } {
@@ -312,6 +365,17 @@ export interface PaginationOptions {
 }
 
 /**
+ * Schema shape of {@link PaginationOptions}, to spread into every paginating client's list schema. One
+ * copy stops it drifting from the interface.
+ * @internal
+ */
+export const paginationOptionsShape = {
+    limit: z.number().min(0).optional(),
+    offset: z.number().min(0).optional(),
+    chunkSize: z.number().positive().optional(),
+};
+
+/**
  * Standard paginated response format.
  *
  * @template Data - The type of items in the response
@@ -399,15 +463,15 @@ export function applyQueryParamsToUrl(
     return url;
 }
 
-export const mutuallyExclusive =
-    <T, K extends keyof T>(...keys: K[]) =>
-    (value: T) => {
-        const presentKeys = keys.filter((key) => typeof value[key] !== 'undefined');
-        return {
-            validator: presentKeys.length <= 1,
-            message: `At most one of the following fields is allowed: ${keys.join(', ')}`,
-        };
-    };
+/**
+ * Builds a `[check, message]` pair to spread into `.refine()`, asserting that at most one of `keys`
+ * is present. Pass the options interface as `T`, so that a misspelled key is a type error.
+ * @internal
+ */
+export const mutuallyExclusive = <T extends object>(...keys: (keyof T & string)[]): [(value: T) => boolean, string] => [
+    (value) => keys.filter((key) => typeof value[key] !== 'undefined').length <= 1,
+    `At most one of the following fields is allowed: ${keys.join(', ')}`,
+];
 
 /**
  * Percent-encodes a caller-supplied URL path segment so it cannot restructure the request path.

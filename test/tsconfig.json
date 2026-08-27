@@ -3,10 +3,17 @@
     "compilerOptions": {
         "rootDir": "../",
         "noEmit": true,
+        // A type-check-only project must not write build state into the published `dist` directory.
+        "incremental": false,
+        // Nothing is emitted here, so declaration-emit portability errors are not actionable.
+        "declaration": false,
         "allowJs": true,
         "paths": {
             "apify-client": ["../src"]
         }
     },
-    "include": [".", "../src/**/*"]
+    "include": [".", "../src/**/*"],
+    // `bundling` is a standalone bundler smoke test that imports the generated `dist/bundle.js`.
+    // Keep build output out of the type-check program so the check does not depend on `pnpm build`.
+    "exclude": ["bundling"]
 }
