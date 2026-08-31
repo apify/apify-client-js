@@ -11,9 +11,7 @@ import type {
 } from './resource_clients/request_queue.js';
 import type { WebhookUpdateData } from './resource_clients/webhook.js';
 
-// @ts-ignore `resolveJsonModule` stays off, so that the emitted `dist` does not grow a `src`
-// directory. The specifier is one level up from both `src/` and `dist/`, so it resolves to the
-// package root in the sources and in the published build alike.
+// @ts-ignore if we enable `resolveJsonModule`, we end up with a `src` folder in `dist`
 import packageJson from '../package.json' with { type: 'json' };
 
 const NOT_FOUND_STATUS_CODE = 404;

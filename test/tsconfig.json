@@ -11,10 +11,8 @@
         // test/spec_transform.test.mts imports the generator's helpers by their real `.mts` path.
         "allowImportingTsExtensions": true,
         "paths": {
-            // The entry file, not the `../src` directory: `nodenext` resolution has no directory
-            // index lookup, so a directory target falls through to the real package in
-            // `node_modules` and type-checks the tests against `dist` instead of the sources.
-            "apify-client": ["../src/index.js"]
+            // The entry file, not the `../src` directory: `nodenext` has no directory index lookup.
+            "apify-client": ["../src/index.ts"]
         }
     },
     "include": [".", "../src/**/*"],
