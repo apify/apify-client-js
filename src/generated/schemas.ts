@@ -449,9 +449,9 @@ export const ActorDefinition = z.looseObject({
     environmentVariables: z.record(z.string(), z.string()).optional(),
     dockerfile: z.string().optional(),
     dockerContextDir: z.string().optional(),
-    readme: z.string().optional(),
-    input: z.record(z.string(), z.unknown()).optional(),
-    changelog: z.string().optional(),
+    readme: z.string().nullable().optional(),
+    input: z.record(z.string(), z.unknown()).nullable().optional(),
+    changelog: z.string().nullable().optional(),
     storages: z.looseObject({
         dataset: z.record(z.string(), z.unknown()).optional(),
     }).optional(),
@@ -631,7 +631,7 @@ export const Run = z.looseObject({
     options: RunOptions,
     buildId: z.string(),
     exitCode: z.int().nullable().optional(),
-    generalAccess: GeneralAccess,
+    generalAccess: GeneralAccess.nullable().optional(),
     defaultKeyValueStoreId: z.string(),
     defaultDatasetId: z.string(),
     defaultRequestQueueId: z.string(),
@@ -684,7 +684,7 @@ export const Dataset = z.looseObject({
     consoleUrl: z.string(),
     itemsPublicUrl: z.string().optional(),
     urlSigningSecretKey: z.string().nullable().optional(),
-    generalAccess: GeneralAccess.optional(),
+    generalAccess: GeneralAccess.nullable().optional(),
     stats: DatasetStats.optional(),
 });
 
@@ -770,7 +770,7 @@ export const KeyValueStore = z.looseObject({
     recordsPublicUrl: z.string().optional(),
     schema: z.record(z.string(), z.unknown()).nullable().optional(),
     urlSigningSecretKey: z.string().nullable().optional(),
-    generalAccess: GeneralAccess.optional(),
+    generalAccess: GeneralAccess.nullable().optional(),
     stats: KeyValueStoreStats.optional(),
 });
 
@@ -867,7 +867,7 @@ export const RequestQueue = z.looseObject({
     hadMultipleClients: HadMultipleClients,
     consoleUrl: z.string(),
     stats: RequestQueueStats.optional(),
-    generalAccess: GeneralAccess.optional(),
+    generalAccess: GeneralAccess.nullable().optional(),
 });
 
 /** Response containing request queue data. */
@@ -1162,7 +1162,7 @@ export const CreateTaskRequest = z.looseObject({
     actId: z.string(),
     name: z.string().optional(),
     options: TaskOptions.nullable().optional(),
-    input: TaskInput.nullable().optional(),
+    input: z.union([TaskInput, z.array(TaskInput)]).nullable().optional(),
     title: z.string().nullable().optional(),
     actorStandby: ActorStandby.nullable().optional(),
     publicConfig: TaskPublicConfig.optional(),
@@ -1179,7 +1179,7 @@ export const Task = z.looseObject({
     removedAt: z.date().nullable().optional(),
     stats: TaskStats.nullable().optional(),
     options: TaskOptions.nullable().optional(),
-    input: TaskInput.nullable().optional(),
+    input: z.union([TaskInput, z.array(TaskInput)]).nullable().optional(),
     title: z.string().nullable().optional(),
     actorStandby: ActorStandby.nullable().optional(),
     standbyUrl: z.string().nullable().optional(),
@@ -1195,7 +1195,7 @@ export const TaskResponse = z.looseObject({
 export const UpdateTaskRequest = z.looseObject({
     name: z.string().optional(),
     options: TaskOptions.nullable().optional(),
-    input: TaskInput.nullable().optional(),
+    input: z.union([TaskInput, z.array(TaskInput)]).nullable().optional(),
     title: z.string().nullable().optional(),
     actorStandby: ActorStandby.nullable().optional(),
     publicConfig: TaskPublicConfig.optional(),
@@ -1257,7 +1257,7 @@ export const DatasetListItem = z.looseObject({
     actRunId: z.string().nullable().optional(),
     title: z.string().nullable().optional(),
     username: z.string().optional(),
-    generalAccess: GeneralAccess.optional(),
+    generalAccess: GeneralAccess.nullable().optional(),
     stats: DatasetStats.optional(),
 });
 
@@ -1286,7 +1286,7 @@ export const RequestQueueShort = z.looseObject({
     actId: z.string().nullable().optional(),
     actRunId: z.string().nullable().optional(),
     hadMultipleClients: HadMultipleClients,
-    generalAccess: GeneralAccess.optional(),
+    generalAccess: GeneralAccess.nullable().optional(),
     stats: RequestQueueStats.optional(),
 });
 
@@ -1630,10 +1630,10 @@ export const UserPrivateInfo = z.looseObject({
     profile: Profile.optional(),
     email: z.string().optional(),
     proxy: Proxy.optional(),
-    plan: Plan,
-    effectivePlatformFeatures: EffectivePlatformFeatures,
+    plan: Plan.optional(),
+    effectivePlatformFeatures: EffectivePlatformFeatures.optional(),
     createdAt: z.date().optional(),
-    isPaying: z.boolean(),
+    isPaying: z.boolean().optional(),
 });
 
 export const PrivateUserDataResponse = z.looseObject({
@@ -1668,7 +1668,7 @@ export const MonthlyServiceUsage = z.record(z.string(), UsageItem);
 export const ServiceUsage = z.record(z.string(), UsageItem);
 
 export const DailyServiceUsages = z.looseObject({
-    date: z.string(),
+    date: z.date(),
     serviceUsage: ServiceUsage,
     totalUsageCreditsUsd: z.number(),
 });

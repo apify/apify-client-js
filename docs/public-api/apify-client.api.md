@@ -167,24 +167,13 @@ interface ActorDefaultRunOptionsRePointed {
 }
 
 // @public
-export interface ActorDefinition extends Omit<Schemas['ActorDefinition'], keyof ActorDefinitionSpecNarrowings>, ActorDefinitionSpecNarrowings, ActorDefinitionSpecGaps {
+export interface ActorDefinition extends GeneratedActorDefinition, ActorDefinitionSpecGaps {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
 interface ActorDefinitionSpecGaps {
     output?: object | null;
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface ActorDefinitionSpecNarrowings {
-    // (undocumented)
-    changelog?: string | null;
-    // (undocumented)
-    input?: object | null;
-    // (undocumented)
-    readme?: string | null;
 }
 
 // @public
@@ -1339,9 +1328,9 @@ interface components {
             };
             dockerfile?: string;
             dockerContextDir?: string;
-            readme?: string;
-            input?: Record<string, unknown>;
-            changelog?: string;
+            readme?: string | null;
+            input?: Record<string, unknown> | null;
+            changelog?: string | null;
             storages?: {
                 dataset?: Record<string, unknown>;
             };
@@ -1499,7 +1488,7 @@ interface components {
             options: components["schemas"]["RunOptions"];
             buildId: string;
             exitCode?: number | null;
-            generalAccess: components["schemas"]["GeneralAccess"];
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
             defaultKeyValueStoreId: string;
             defaultDatasetId: string;
             defaultRequestQueueId: string;
@@ -1555,7 +1544,7 @@ interface components {
             consoleUrl: string;
             itemsPublicUrl?: string;
             urlSigningSecretKey?: string | null;
-            generalAccess?: components["schemas"]["GeneralAccess"];
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
             stats?: components["schemas"]["DatasetStats"];
         };
         DatasetResponse: {
@@ -1627,7 +1616,7 @@ interface components {
             recordsPublicUrl?: string;
             schema?: Record<string, unknown> | null;
             urlSigningSecretKey?: string | null;
-            generalAccess?: components["schemas"]["GeneralAccess"];
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
             stats?: components["schemas"]["KeyValueStoreStats"];
         };
         KeyValueStoreResponse: {
@@ -1690,7 +1679,7 @@ interface components {
             hadMultipleClients: components["schemas"]["HadMultipleClients"];
             consoleUrl: string;
             stats?: components["schemas"]["RequestQueueStats"];
-            generalAccess?: components["schemas"]["GeneralAccess"];
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
         };
         RequestQueueResponse: {
             data: components["schemas"]["RequestQueue"];
@@ -1888,7 +1877,7 @@ interface components {
             actId: string;
             name?: string;
             options?: components["schemas"]["TaskOptions"] | null;
-            input?: components["schemas"]["TaskInput"] | null;
+            input?: components["schemas"]["TaskInput"] | components["schemas"]["TaskInput"][] | null;
             title?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             publicConfig?: components["schemas"]["TaskPublicConfig"];
@@ -1904,7 +1893,7 @@ interface components {
             removedAt?: Date | null;
             stats?: components["schemas"]["TaskStats"] | null;
             options?: components["schemas"]["TaskOptions"] | null;
-            input?: components["schemas"]["TaskInput"] | null;
+            input?: components["schemas"]["TaskInput"] | components["schemas"]["TaskInput"][] | null;
             title?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             standbyUrl?: string | null;
@@ -1917,7 +1906,7 @@ interface components {
         UpdateTaskRequest: {
             name?: string;
             options?: components["schemas"]["TaskOptions"] | null;
-            input?: components["schemas"]["TaskInput"] | null;
+            input?: components["schemas"]["TaskInput"] | components["schemas"]["TaskInput"][] | null;
             title?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             publicConfig?: components["schemas"]["TaskPublicConfig"];
@@ -1972,7 +1961,7 @@ interface components {
             actRunId?: string | null;
             title?: string | null;
             username?: string;
-            generalAccess?: components["schemas"]["GeneralAccess"];
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
             stats?: components["schemas"]["DatasetStats"];
         };
         ListOfDatasets: components["schemas"]["PaginationResponse"] & {
@@ -1997,7 +1986,7 @@ interface components {
             actId?: string | null;
             actRunId?: string | null;
             hadMultipleClients: components["schemas"]["HadMultipleClients"];
-            generalAccess?: components["schemas"]["GeneralAccess"];
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
             stats?: components["schemas"]["RequestQueueStats"];
         };
         ListOfRequestQueues: components["schemas"]["PaginationResponse"] & {
@@ -2294,10 +2283,10 @@ interface components {
             profile?: components["schemas"]["Profile"];
             email?: string;
             proxy?: components["schemas"]["Proxy"];
-            plan: components["schemas"]["Plan"];
-            effectivePlatformFeatures: components["schemas"]["EffectivePlatformFeatures"];
+            plan?: components["schemas"]["Plan"];
+            effectivePlatformFeatures?: components["schemas"]["EffectivePlatformFeatures"];
             createdAt?: Date;
-            isPaying: boolean;
+            isPaying?: boolean;
         };
         PrivateUserDataResponse: {
             data: components["schemas"]["UserPrivateInfo"];
@@ -2327,7 +2316,7 @@ interface components {
             [key: string]: components["schemas"]["UsageItem"];
         };
         DailyServiceUsages: {
-            date: string;
+            date: Date;
             serviceUsage: components["schemas"]["ServiceUsage"];
             totalUsageCreditsUsd: number;
         };
@@ -2415,14 +2404,7 @@ export interface Current extends GeneratedCurrent {
 }
 
 // @public
-export interface DailyServiceUsage extends Omit<Schemas['DailyServiceUsages'], keyof DailyServiceUsageRePointed | keyof DailyServiceUsageClientConversions>, DailyServiceUsageRePointed, DailyServiceUsageClientConversions {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface DailyServiceUsageClientConversions {
-    // (undocumented)
-    date: Date;
+export interface DailyServiceUsage extends Omit<Schemas['DailyServiceUsages'], keyof DailyServiceUsageRePointed>, DailyServiceUsageRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -2531,6 +2513,8 @@ export type DatasetCollectionClientListResult = PaginatedList<Dataset> & {
 // @public (undocumented)
 interface DatasetRePointed {
     // (undocumented)
+    generalAccess?: STORAGE_GENERAL_ACCESS | null;
+    // (undocumented)
     stats?: DatasetStats;
 }
 
@@ -2548,8 +2532,6 @@ interface DatasetSpecGaps {
 interface DatasetSpecNarrowings {
     // (undocumented)
     consoleUrl?: string;
-    // (undocumented)
-    generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
 // @public
@@ -2647,6 +2629,10 @@ export interface FlatPricePerMonthActorPricingInfo extends GeneratedFlatPricePer
 // @public
 export interface FreeActorPricingInfo extends GeneratedFreeActorPricingInfo {
 }
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedActorDefinition = Schemas['ActorDefinition'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -2967,7 +2953,7 @@ export interface KeyValueListItem extends GeneratedKeyValueStoreKey {
 }
 
 // @public
-export interface KeyValueStore extends Omit<Schemas['KeyValueStore'], keyof KeyValueStoreRePointed | keyof KeyValueStoreSpecNarrowings>, KeyValueStoreRePointed, KeyValueStoreSpecNarrowings, KeyValueStoreSpecGaps {
+export interface KeyValueStore extends Omit<Schemas['KeyValueStore'], keyof KeyValueStoreRePointed>, KeyValueStoreRePointed, KeyValueStoreSpecGaps {
 }
 
 // @public
@@ -3036,6 +3022,8 @@ export interface KeyValueStoreRecordOptions {
 // @public (undocumented)
 interface KeyValueStoreRePointed {
     // (undocumented)
+    generalAccess?: STORAGE_GENERAL_ACCESS | null;
+    // (undocumented)
     stats?: KeyValueStoreStats;
 }
 
@@ -3044,13 +3032,6 @@ interface KeyValueStoreRePointed {
 interface KeyValueStoreSpecGaps {
     // (undocumented)
     title?: string;
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface KeyValueStoreSpecNarrowings {
-    // (undocumented)
-    generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
 // @public
@@ -3477,6 +3458,8 @@ export type RequestQueueListRequestsFilter = 'locked' | 'pending';
 // @public (undocumented)
 interface RequestQueueRePointed {
     // (undocumented)
+    generalAccess?: STORAGE_GENERAL_ACCESS | null;
+    // (undocumented)
     stats?: RequestQueueStats;
 }
 
@@ -3499,8 +3482,6 @@ interface RequestQueueSpecGaps {
 interface RequestQueueSpecNarrowings {
     // (undocumented)
     consoleUrl?: string;
-    // (undocumented)
-    generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
 // @public
@@ -3792,7 +3773,7 @@ export interface StreamedLogOptions {
 }
 
 // @public
-export interface Task extends Omit<Schemas['Task'], keyof TaskRePointed | keyof TaskSpecNarrowings>, TaskRePointed, TaskSpecNarrowings, TaskSpecGaps {
+export interface Task extends Omit<Schemas['Task'], keyof TaskRePointed>, TaskRePointed, TaskSpecGaps {
 }
 
 // @public
@@ -3873,6 +3854,8 @@ interface TaskRePointed {
     // (undocumented)
     actorStandby?: ActorStandby | null;
     // (undocumented)
+    input?: Dictionary | Dictionary[] | null;
+    // (undocumented)
     options?: TaskOptions | null;
     // (undocumented)
     publicConfig?: TaskPublicConfig | null;
@@ -3885,13 +3868,6 @@ interface TaskRePointed {
 interface TaskSpecGaps {
     // (undocumented)
     description?: string;
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface TaskSpecNarrowings {
-    // (undocumented)
-    input?: Dictionary | Dictionary[] | null;
 }
 
 // @public
@@ -3950,7 +3926,7 @@ interface UsageItemRePointed {
 }
 
 // @public
-export interface User extends Omit<Schemas['UserPrivateInfo'], keyof UserRePointed | keyof UserSpecNarrowings>, UserRePointed, UserSpecNarrowings {
+export interface User extends Omit<Schemas['UserPrivateInfo'], keyof UserRePointed>, UserRePointed {
 }
 
 // @public
@@ -3992,20 +3968,13 @@ interface UserProxyRePointed {
 // @public (undocumented)
 interface UserRePointed {
     // (undocumented)
+    effectivePlatformFeatures?: EffectivePlatformFeatures;
+    // (undocumented)
+    plan?: UserPlan;
+    // (undocumented)
     profile?: UserProfile;
     // (undocumented)
     proxy?: UserProxy;
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface UserSpecNarrowings {
-    // (undocumented)
-    effectivePlatformFeatures?: EffectivePlatformFeatures;
-    // (undocumented)
-    isPaying?: boolean;
-    // (undocumented)
-    plan?: UserPlan;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.

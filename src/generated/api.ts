@@ -5657,11 +5657,11 @@ export interface components {
             /** @description The path to the directory used as the Docker context when building the Actor. */
             dockerContextDir?: string;
             /** @description The path to the README file for the Actor. */
-            readme?: string;
+            readme?: string | null;
             /** @description The input schema object, the full specification can be found in [Apify docs](https://docs.apify.com/platform/actors/development/actor-definition/input-schema) */
-            input?: Record<string, unknown>;
+            input?: Record<string, unknown> | null;
             /** @description The path to the CHANGELOG file displayed in the Actor's information tab. */
-            changelog?: string;
+            changelog?: string | null;
             storages?: {
                 /** @description Defines the schema of items in your dataset, the full specification can be found in [Apify docs](https://docs.apify.com/platform/actors/development/actor-definition/dataset-schema) */
                 dataset?: Record<string, unknown>;
@@ -6159,7 +6159,7 @@ export interface components {
              */
             exitCode?: number | null;
             /** @description General access level for the Actor run. */
-            generalAccess: components["schemas"]["GeneralAccess"];
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
             /**
              * @description ID of the default key-value store for this run.
              * @example eJNzqsbPiopwJcgGQ
@@ -6337,7 +6337,7 @@ export interface components {
             itemsPublicUrl?: string;
             /** @description A secret key for generating signed public URLs. It is only provided to clients with WRITE permission for the dataset. */
             urlSigningSecretKey?: string | null;
-            generalAccess?: components["schemas"]["GeneralAccess"];
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
             stats?: components["schemas"]["DatasetStats"];
         };
         /**
@@ -6543,7 +6543,7 @@ export interface components {
             schema?: Record<string, unknown> | null;
             /** @description A secret key for generating signed public URLs. It is only provided to clients with WRITE permission for the key-value store. */
             urlSigningSecretKey?: string | null;
-            generalAccess?: components["schemas"]["GeneralAccess"];
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
             stats?: components["schemas"]["KeyValueStoreStats"];
         };
         /**
@@ -6751,7 +6751,7 @@ export interface components {
              */
             consoleUrl: string;
             stats?: components["schemas"]["RequestQueueStats"];
-            generalAccess?: components["schemas"]["GeneralAccess"];
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
         };
         /**
          * RequestQueueResponse
@@ -7393,7 +7393,7 @@ export interface components {
             /** @example my-task */
             name?: string;
             options?: components["schemas"]["TaskOptions"] | null;
-            input?: components["schemas"]["TaskInput"] | null;
+            input?: components["schemas"]["TaskInput"] | components["schemas"]["TaskInput"][] | null;
             title?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             /**
@@ -7428,7 +7428,7 @@ export interface components {
             removedAt?: Date | null;
             stats?: components["schemas"]["TaskStats"] | null;
             options?: components["schemas"]["TaskOptions"] | null;
-            input?: components["schemas"]["TaskInput"] | null;
+            input?: components["schemas"]["TaskInput"] | components["schemas"]["TaskInput"][] | null;
             title?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             /** Format: uri */
@@ -7475,7 +7475,7 @@ export interface components {
             /** @example my-task */
             name?: string;
             options?: components["schemas"]["TaskOptions"] | null;
-            input?: components["schemas"]["TaskInput"] | null;
+            input?: components["schemas"]["TaskInput"] | components["schemas"]["TaskInput"][] | null;
             title?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             /**
@@ -7610,7 +7610,7 @@ export interface components {
             title?: string | null;
             /** @example janedoe */
             username?: string;
-            generalAccess?: components["schemas"]["GeneralAccess"];
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
             stats?: components["schemas"]["DatasetStats"];
         };
         /** ListOfDatasets */
@@ -7660,7 +7660,7 @@ export interface components {
             /** @description The ID of the Actor run that created this request queue. */
             actRunId?: string | null;
             hadMultipleClients: components["schemas"]["HadMultipleClients"];
-            generalAccess?: components["schemas"]["GeneralAccess"];
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
             stats?: components["schemas"]["RequestQueueStats"];
         };
         /**
@@ -8353,15 +8353,15 @@ export interface components {
              */
             email?: string;
             proxy?: components["schemas"]["Proxy"];
-            plan: components["schemas"]["Plan"];
-            effectivePlatformFeatures: components["schemas"]["EffectivePlatformFeatures"];
+            plan?: components["schemas"]["Plan"];
+            effectivePlatformFeatures?: components["schemas"]["EffectivePlatformFeatures"];
             /**
              * Format: date-time
              * @example 2022-11-29T14:48:29.381Z
              */
             createdAt?: Date;
             /** @example true */
-            isPaying: boolean;
+            isPaying?: boolean;
         };
         /** PrivateUserDataResponse */
         PrivateUserDataResponse: {
@@ -8430,8 +8430,11 @@ export interface components {
         };
         /** DailyServiceUsages */
         DailyServiceUsages: {
-            /** @example 2022-10-02T00:00:00.000Z */
-            date: string;
+            /**
+             * Format: date-time
+             * @example 2022-10-02T00:00:00.000Z
+             */
+            date: Date;
             serviceUsage: components["schemas"]["ServiceUsage"];
             /** @example 0.0474385791970591 */
             totalUsageCreditsUsd: number;
