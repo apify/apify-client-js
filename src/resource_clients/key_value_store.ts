@@ -7,17 +7,17 @@ import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import log from '@apify/log';
 import { createHmacSignatureAsync, createStorageContentSignatureAsync } from '@apify/utilities';
 
-import type { ApifyApiError } from '../apify_api_error';
-import type { ApiClientSubResourceOptions } from '../base/api_client';
+import type { ApifyApiError } from '../apify_api_error.js';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import {
     DEFAULT_TIMEOUT_MILLIS,
     MEDIUM_TIMEOUT_MILLIS,
     ResourceClient,
     SMALL_TIMEOUT_MILLIS,
-} from '../base/resource_client';
-import type { ApifyRequestConfig } from '../http_client';
-import type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore } from '../models';
-import * as schemas from '../schemas';
+} from '../base/resource_client.js';
+import type { ApifyRequestConfig } from '../http_client.js';
+import type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore } from '../models.js';
+import * as schemas from '../schemas.js';
 import {
     anyObjectSchema,
     applyQueryParamsToUrl,
@@ -27,7 +27,7 @@ import {
     isStream,
     parseArgument,
     parseResponse,
-} from '../utils';
+} from '../utils.js';
 
 const listKeysOptionsSchema = z.strictObject({
     limit: z.number().min(0).optional(),
@@ -74,7 +74,7 @@ const recordOptionsSchema = z.strictObject({
     doNotRetryTimeouts: z.boolean().optional(),
 });
 
-export type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore, KeyValueStoreStats } from '../models';
+export type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore, KeyValueStoreStats } from '../models.js';
 
 /**
  * Client for managing a specific key-value store.

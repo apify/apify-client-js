@@ -3,18 +3,18 @@ import { z } from 'zod';
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import { createStorageContentSignatureAsync } from '@apify/utilities';
 
-import type { ApifyApiError } from '../apify_api_error';
-import type { ApiClientSubResourceOptions } from '../base/api_client';
+import type { ApifyApiError } from '../apify_api_error.js';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import {
     DEFAULT_TIMEOUT_MILLIS,
     MEDIUM_TIMEOUT_MILLIS,
     ResourceClient,
     SMALL_TIMEOUT_MILLIS,
-} from '../base/resource_client';
-import type { ApifyRequestConfig, ApifyResponse } from '../http_client';
-import type { Dataset, DatasetStatistics } from '../models';
-import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
-import * as schemas from '../schemas';
+} from '../base/resource_client.js';
+import type { ApifyRequestConfig, ApifyResponse } from '../http_client.js';
+import type { Dataset, DatasetStatistics } from '../models.js';
+import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
+import * as schemas from '../schemas.js';
 import {
     anyObjectSchema,
     applyQueryParamsToUrl,
@@ -24,7 +24,7 @@ import {
     paginationOptionsShape,
     parseArgument,
     parseResponse,
-} from '../utils';
+} from '../utils.js';
 
 // A predicate, not a `z.object()` arm, which would walk and copy every key of every pushed item.
 const itemSchema = z.custom<object>(isNonArrayObject, 'Expected an object');
@@ -81,7 +81,7 @@ const createItemsPublicUrlOptionsSchema = z.strictObject({
     expiresInSecs: z.number().optional(),
 });
 
-export type { Dataset, DatasetStatistics, DatasetStats, FieldStatistics } from '../models';
+export type { Dataset, DatasetStatistics, DatasetStats, FieldStatistics } from '../models.js';
 
 /**
  * Client for managing a specific Dataset.

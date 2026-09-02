@@ -4,8 +4,8 @@ import type { StoreCollectionListOptions } from 'apify-client';
 import { ApifyClient } from 'apify-client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
-import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper';
-import { mockServer } from './mock_server/server';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
+import { mockServer } from './mock_server/server.js';
 
 describe('Store', () => {
     let baseUrl: string | undefined;

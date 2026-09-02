@@ -111,7 +111,7 @@ scripts/
 # Build
 pnpm build                 # Full build (Node + browser bundle)
 pnpm build:node            # TypeScript compilation only
-pnpm build:browser         # RSBuild browser/UMD bundle
+pnpm build:browser         # RSBuild browser bundle (ESM)
 pnpm clean                 # Remove dist directory
 
 # Testing
@@ -134,12 +134,11 @@ pnpm format:check          # oxfmt check
 
 ### Build Output
 
-The build produces multiple formats:
+The build produces:
 
-- CommonJS: `dist/index.js`
-- ES Module: `dist/index.mjs`
+- ES module: `dist/index.js`
 - TypeScript definitions: `dist/index.d.ts`
-- Browser bundle (UMD): `dist/bundle.js`
+- Browser bundle (ESM): `dist/bundle.js`
 
 ## Code Style
 

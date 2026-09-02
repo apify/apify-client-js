@@ -24,8 +24,8 @@ import type {
 
 import type { z } from 'zod';
 
-import type { components } from './generated/api';
-import type * as generatedSchemas from './generated/schemas';
+import type { components } from './generated/api.js';
+import type * as generatedSchemas from './generated/schemas.js';
 import type {
     AccountAndUsageLimitsRePointed,
     ActorChargeEventRePointed,
@@ -89,8 +89,8 @@ import type {
     WebhookLastDispatchRePointed,
     WebhookRePointed,
     WebhookSpecGaps,
-} from './models';
-import type * as responseSchemas from './schemas';
+} from './models.js';
+import type * as responseSchemas from './schemas.js';
 
 type Schemas = components['schemas'];
 type GeneratedSchemas = typeof generatedSchemas;

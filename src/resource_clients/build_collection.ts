@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
-import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
-import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { BuildCollectionClientListItem } from '../models';
-import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
-import * as schemas from '../schemas';
-import { paginationOptionsShape, parseArgument } from '../utils';
+import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client.js';
+import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { BuildCollectionClientListItem } from '../models.js';
+import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
+import * as schemas from '../schemas.js';
+import { paginationOptionsShape, parseArgument } from '../utils.js';
 
-export type { BuildCollectionClientListItem } from '../models';
+export type { BuildCollectionClientListItem } from '../models.js';
 
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,

@@ -2,12 +2,12 @@ import { z } from 'zod';
 
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList, PaginationOptions } from '../utils';
-import * as schemas from '../schemas';
-import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils';
-import type { Dataset } from './dataset';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { PaginatedList, PaginationOptions } from '../utils.js';
+import * as schemas from '../schemas.js';
+import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
+import type { Dataset } from './dataset.js';
 
 const listOptionsSchema = z.strictObject({
     unnamed: z.boolean().optional(),

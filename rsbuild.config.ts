@@ -49,18 +49,19 @@ export default defineConfig({
         rspack(config) {
             config.output = {
                 ...config.output,
-                library: {
-                    type: 'umd', // or 'umd', 'commonjs', etc.
-                    name: 'Apify',
-                },
-                globalObject: 'globalThis',
+                module: true,
+                library: { type: 'module' },
                 asyncChunks: false,
+            };
+            config.experiments = {
+                ...config.experiments,
+                outputModule: true,
             };
             config.optimization = {
                 ...config.optimization,
                 splitChunks: false,
             };
-            // A regression guard, not a target: the bundle sits at ~328 kB, so this only fails the
+            // A regression guard, not a target: the bundle sits at ~335 kB, so this only fails the
             // build on an unnoticed jump. A `zod` minor is the likeliest cause, since it is a runtime
             // dependency on a caret range - bumping this constant is the expected response. The
             // generated response schemas growing with the OpenAPI specification is the other.

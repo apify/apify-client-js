@@ -5,8 +5,8 @@
     "engines": {
         "node": ">=22.0.0"
     },
+    "type": "module",
     "main": "dist/index.js",
-    "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
     "browser": "dist/bundle.js",
     "unpkg": "dist/bundle.js",
@@ -14,10 +14,9 @@
         "./package.json": "./package.json",
         "./browser": "./dist/bundle.js",
         ".": {
-            "import": "./dist/index.mjs",
-            "require": "./dist/index.js",
             "types": "./dist/index.d.ts",
-            "browser": "./dist/bundle.js"
+            "browser": "./dist/bundle.js",
+            "default": "./dist/index.js"
         }
     },
     "keywords": [
@@ -54,7 +53,6 @@
     ],
     "scripts": {
         "build": "pnpm clean && pnpm build:node && pnpm build:browser",
-        "postbuild": "gen-esm-wrapper dist/index.js dist/index.mjs",
         "prepublishOnly": "(test $CI || (echo \"Publishing is reserved to CI!\"; exit 1))",
         "clean": "rimraf dist tsconfig.tsbuildinfo",
         "test": "pnpm build && vitest run --project unit",
@@ -111,7 +109,6 @@
         "compression": "^1.7.4",
         "esbuild": "0.28.2",
         "express": "^5.0.0",
-        "gen-esm-wrapper": "^1.1.2",
         "openapi-typescript": "7.13.0",
         "oxfmt": "0.65.0",
         "oxlint": "1.79.0",

@@ -1,8 +1,8 @@
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceClient } from '../base/resource_client';
-import * as schemas from '../schemas';
-import { anyObjectSchema, parseArgument } from '../utils';
-import type { ActorEnvironmentVariable } from './actor_version';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { ResourceClient } from '../base/resource_client.js';
+import * as schemas from '../schemas.js';
+import { anyObjectSchema, parseArgument } from '../utils.js';
+import type { ActorEnvironmentVariable } from './actor_version.js';
 
 /**
  * Client for managing a specific Actor environment variable.

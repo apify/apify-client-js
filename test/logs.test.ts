@@ -4,8 +4,8 @@ import { ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
-import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper';
-import { mockServer } from './mock_server/server';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
+import { mockServer } from './mock_server/server.js';
 
 describe('Log methods', () => {
     let baseUrl: string;

@@ -25,9 +25,7 @@
         // Nothing here pulls in `@types/node` transitively the way `src/` does through its dependencies, and
         // this setup gets no automatic `@types` inclusion, so the Node globals have to be asked for by name.
         "types": ["node"],
-        "allowImportingTsExtensions": true,
-        "module": "nodenext",
-        "moduleResolution": "nodenext"
+        "allowImportingTsExtensions": true
     },
     "include": ["scripts/**/*"]
 }

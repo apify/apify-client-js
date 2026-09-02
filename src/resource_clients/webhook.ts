@@ -1,12 +1,12 @@
-import type { ApifyApiError } from '../apify_api_error';
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceClient } from '../base/resource_client';
-import type { ApifyRequestConfig } from '../http_client';
-import type { Webhook, WebhookEventType } from '../models';
-import * as schemas from '../schemas';
-import { anyObjectSchema, catchNotFoundOrThrow, parseArgument, parseResponse } from '../utils';
-import type { WebhookDispatch } from './webhook_dispatch';
-import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection';
+import type { ApifyApiError } from '../apify_api_error.js';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { ResourceClient } from '../base/resource_client.js';
+import type { ApifyRequestConfig } from '../http_client.js';
+import type { Webhook, WebhookEventType } from '../models.js';
+import * as schemas from '../schemas.js';
+import { anyObjectSchema, catchNotFoundOrThrow, parseArgument, parseResponse } from '../utils.js';
+import type { WebhookDispatch } from './webhook_dispatch.js';
+import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection.js';
 
 export type {
     Webhook,
@@ -17,7 +17,7 @@ export type {
     WebhookEventType,
     WebhookLastDispatch,
     WebhookStats,
-} from '../models';
+} from '../models.js';
 
 /**
  * Client for managing a specific webhook.

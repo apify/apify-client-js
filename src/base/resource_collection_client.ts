@@ -1,8 +1,8 @@
 import type { z } from 'zod';
 
-import type { PaginatedResponse, PaginationOptions } from '../utils';
-import { parseResponse } from '../utils';
-import { ApiClient } from './api_client';
+import type { PaginatedResponse, PaginationOptions } from '../utils.js';
+import { parseResponse } from '../utils.js';
+import { ApiClient } from './api_client.js';
 
 /**
  * Resource collection client.

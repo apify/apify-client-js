@@ -12,11 +12,11 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi 
 import { META_ORIGINS, WEBHOOK_EVENT_TYPES } from '@apify/consts';
 import { LEVELS, Log } from '@apify/log';
 
-import { stringifyWebhooksToBase64 } from '../src/utils';
-import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper';
-import * as fixtures from './mock_server/fixtures';
-import { createDefaultApp, mockServer } from './mock_server/server';
-import { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator } from './mock_server/test_utils';
+import { stringifyWebhooksToBase64 } from '../src/utils.js';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
+import * as fixtures from './mock_server/fixtures.js';
+import { createDefaultApp, mockServer } from './mock_server/server.js';
+import { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator } from './mock_server/test_utils.js';
 
 describe('Actor methods', () => {
     let baseUrl: string;

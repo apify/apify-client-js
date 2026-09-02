@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 
-import { formatZodError } from './argument_validation_error';
+import { formatZodError } from './argument_validation_error.js';
 
 /**
  * Thrown when an API response does not match the schema the client expects for it.

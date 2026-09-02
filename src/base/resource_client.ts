@@ -2,10 +2,10 @@ import type { ACT_JOB_STATUSES } from '@apify/consts';
 import { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 import type { z } from 'zod';
 
-import type { ApifyApiError } from '../apify_api_error';
-import type { ApifyRequestConfig } from '../http_client';
-import { catchNotFoundOrThrow, parseResponse } from '../utils';
-import { ApiClient } from './api_client';
+import type { ApifyApiError } from '../apify_api_error.js';
+import type { ApifyRequestConfig } from '../http_client.js';
+import { catchNotFoundOrThrow, parseResponse } from '../utils.js';
+import { ApiClient } from './api_client.js';
 
 /**
  * We need to supply some number for the API,

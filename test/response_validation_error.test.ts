@@ -4,9 +4,9 @@ import { ApifyClient, ResponseValidationError } from 'apify-client';
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
 import { z } from 'zod';
 
-import { DEFAULT_OPTIONS } from './_helper';
-import * as fixtures from './mock_server/fixtures';
-import { mockServer } from './mock_server/server';
+import { DEFAULT_OPTIONS } from './_helper.js';
+import * as fixtures from './mock_server/fixtures.js';
+import { mockServer } from './mock_server/server.js';
 
 describe('ResponseValidationError', () => {
     const schema = z.looseObject({ id: z.string(), status: z.string() });

@@ -12,4 +12,4 @@
  * through. Neither do client narrowings: a schema only ever accepts more than the published type.
  */
 
-export * from './generated/schemas';
+export * from './generated/schemas.js';

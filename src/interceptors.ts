@@ -3,9 +3,9 @@ import axios, { AxiosHeaders } from 'axios';
 import contentTypeParser from 'content-type';
 import type { JsonObject } from 'type-fest';
 
-import { maybeParseBody } from './body_parser';
-import type { ApifyRequestConfig, ApifyResponse } from './http_client';
-import { isNode, maybeCompressValue } from './utils';
+import { maybeParseBody } from './body_parser.js';
+import type { ApifyRequestConfig, ApifyResponse } from './http_client.js';
+import { isNode, maybeCompressValue } from './utils.js';
 
 /**
  * This error exists for the quite common situation, where only a partial JSON response is received and

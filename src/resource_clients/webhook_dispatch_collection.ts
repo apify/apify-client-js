@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedIterator, PaginationOptions } from '../utils';
-import * as schemas from '../schemas';
-import { paginationOptionsShape, parseArgument } from '../utils';
-import type { WebhookDispatch } from './webhook_dispatch';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { PaginatedIterator, PaginationOptions } from '../utils.js';
+import * as schemas from '../schemas.js';
+import { paginationOptionsShape, parseArgument } from '../utils.js';
+import type { WebhookDispatch } from './webhook_dispatch.js';
 
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,

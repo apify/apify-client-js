@@ -1,7 +1,7 @@
 import express from 'express';
 
-import * as fixtures from '../fixtures';
-import { addRoutes, type MockServerRoute } from './add_routes';
+import * as fixtures from '../fixtures.js';
+import { addRoutes, type MockServerRoute } from './add_routes.js';
 
 export const store = express.Router();
 

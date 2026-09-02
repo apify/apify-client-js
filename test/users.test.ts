@@ -6,9 +6,9 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } fr
 
 import { ME_USER_NAME_PLACEHOLDER } from '@apify/consts';
 
-import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper';
-import * as fixtures from './mock_server/fixtures';
-import { mockServer } from './mock_server/server';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
+import * as fixtures from './mock_server/fixtures.js';
+import { mockServer } from './mock_server/server.js';
 
 describe('User methods', () => {
     let baseUrl: string;

@@ -2,9 +2,9 @@ import type { JsonValue } from 'type-fest';
 import { describe, expect, it } from 'vitest';
 import type { z } from 'zod';
 
-import * as schemas from '../../src/schemas';
-import { parseDateFields } from '../../src/utils';
-import * as fixtures from './fixtures';
+import * as schemas from '../../src/schemas.js';
+import { parseDateFields } from '../../src/utils.js';
+import * as fixtures from './fixtures.js';
 
 /** Which schema each fixture stands for -- the one the resource client validates that response against. */
 const FIXTURE_SCHEMAS: Record<keyof typeof fixtures, keyof typeof schemas> = {

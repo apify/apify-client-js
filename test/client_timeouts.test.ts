@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { HttpClient } from '../src/http_client.js';
 
-import type * as utils from '../src/utils';
+import type * as utils from '../src/utils.js';
 
 // These tests drive the client with synthetic response bodies, so the schema check the resource clients run on
 // every response is skipped: the bodies are shaped for the mechanics under test, not for the API's schemas.
