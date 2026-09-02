@@ -1,7 +1,7 @@
-import type { ApifyClient } from '../apify_client';
-import type { HttpClient } from '../http_client';
-import type { PaginatedResponse, PaginationOptions } from '../utils';
-import { toPath, toPathSegment } from '../utils';
+import type { ApifyClient } from '../apify_client.js';
+import type { HttpClient } from '../http_client.js';
+import type { PaginatedResponse, PaginationOptions } from '../utils.js';
+import { toPath, toPathSegment } from '../utils.js';
 
 /** @private */
 export interface ApiClientOptions {

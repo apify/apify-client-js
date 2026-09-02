@@ -7,8 +7,8 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test 
 
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
-import { mockServer } from './mock_server/server';
+import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper.js';
+import { mockServer } from './mock_server/server.js';
 
 describe('Key-Value Store methods', () => {
     let baseUrl: string;

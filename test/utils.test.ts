@@ -4,7 +4,7 @@ import type { WebhookUpdateData } from 'apify-client';
 import { ApifyApiError } from 'apify-client';
 import { describe, expect, test } from 'vitest';
 
-import * as utils from '../src/utils';
+import * as utils from '../src/utils.js';
 
 describe('utils.pluckData()', () => {
     test('works', () => {

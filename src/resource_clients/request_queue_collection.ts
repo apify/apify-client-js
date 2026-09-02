@@ -2,11 +2,11 @@ import { z } from 'zod';
 
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList, PaginationOptions } from '../utils';
-import { paginationOptionsShape, parseArgument } from '../utils';
-import type { RequestQueue } from './request_queue';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { PaginatedList, PaginationOptions } from '../utils.js';
+import { paginationOptionsShape, parseArgument } from '../utils.js';
+import type { RequestQueue } from './request_queue.js';
 
 const listOptionsSchema = z.strictObject({
     unnamed: z.boolean().optional(),

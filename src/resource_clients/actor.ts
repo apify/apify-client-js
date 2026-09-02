@@ -3,20 +3,27 @@ import { z } from 'zod';
 import { ACTOR_JOB_STATUSES, ACTOR_PERMISSION_LEVEL, META_ORIGINS } from '@apify/consts';
 import { Log } from '@apify/log';
 
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceClient } from '../base/resource_client';
-import type { ApifyRequestConfig } from '../http_client';
-import type { Actor, ActorRun } from '../models';
-import { anyObjectSchema, cast, parseArgument, parseDateFields, pluckData, stringifyWebhooksToBase64 } from '../utils';
-import { ActorVersionClient } from './actor_version';
-import { ActorVersionCollectionClient } from './actor_version_collection';
-import type { Build, BuildClientGetOptions } from './build';
-import { BuildClient } from './build';
-import { BuildCollectionClient } from './build_collection';
-import { RunClient } from './run';
-import { RunCollectionClient } from './run_collection';
-import type { WebhookUpdateData } from './webhook';
-import { WebhookCollectionClient } from './webhook_collection';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { ResourceClient } from '../base/resource_client.js';
+import type { ApifyRequestConfig } from '../http_client.js';
+import type { Actor, ActorRun } from '../models.js';
+import {
+    anyObjectSchema,
+    cast,
+    parseArgument,
+    parseDateFields,
+    pluckData,
+    stringifyWebhooksToBase64,
+} from '../utils.js';
+import { ActorVersionClient } from './actor_version.js';
+import { ActorVersionCollectionClient } from './actor_version_collection.js';
+import type { Build, BuildClientGetOptions } from './build.js';
+import { BuildClient } from './build.js';
+import { BuildCollectionClient } from './build_collection.js';
+import { RunClient } from './run.js';
+import { RunCollectionClient } from './run_collection.js';
+import type { WebhookUpdateData } from './webhook.js';
+import { WebhookCollectionClient } from './webhook_collection.js';
 import type { ValueOf } from 'type-fest';
 
 const startOptionsSchema = z.strictObject({
@@ -88,7 +95,7 @@ export type {
     TieredPricingPerDatasetItemEntry,
     TieredPricingPerEvent,
     TieredPricingPerEventEntry,
-} from '../models';
+} from '../models.js';
 
 /**
  * Client for managing a specific Actor.
