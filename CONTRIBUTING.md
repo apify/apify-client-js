@@ -100,7 +100,7 @@ scripts/
 # Build
 pnpm build                 # Full build (Node + browser bundle)
 pnpm build:node            # TypeScript compilation only
-pnpm build:browser         # RSBuild browser/UMD bundle
+pnpm build:browser         # RSBuild browser bundle (ESM)
 pnpm clean                 # Remove dist directory
 
 # Testing
@@ -127,7 +127,7 @@ The build produces:
 
 - ES module: `dist/index.js`
 - TypeScript definitions: `dist/index.d.ts`
-- Browser bundle (UMD): `dist/bundle.cjs`
+- Browser bundle (ESM): `dist/bundle.js`
 
 ## Code Style
 

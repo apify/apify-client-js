@@ -20,7 +20,7 @@ This page summarizes the breaking changes when upgrading from v2 to v3 of `apify
 
 A CommonJS project can keep calling `require('apify-client')`: the client has no top-level `await`, and Node.js 22.12 and newer load an ES module through `require()` directly. On Node.js 22.0 to 22.11, `require()` of an ES module is still behind the `--experimental-require-module` flag, so use `import` there.
 
-The browser bundle moved from `dist/bundle.js` to `dist/bundle.cjs`, because a `.js` file inside an ESM package is parsed as an ES module, and the bundle is UMD. The `apify-client/browser` subpath is unchanged, so only code that pointed at the file path itself needs updating. For details, see [Bundled environments](../02_concepts/05_bundled-environments.md).
+The browser bundle at `dist/bundle.js` is now an ES module instead of UMD, so it no longer defines an `Apify` global. Importing it, whether through a bundler or the `apify-client/browser` subpath, is unchanged. A classic `<script>` tag that read `Apify.ApifyClient` off the global has to become a `<script type="module">` that imports it instead. For details, see [Bundled environments](../02_concepts/05_bundled-environments.md).
 
 ## Argument validation switched from `ow` to `zod`
 

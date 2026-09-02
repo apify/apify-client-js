@@ -1,4 +1,6 @@
-import { launchPuppeteer, puppeteerUtils } from '@crawlee/puppeteer';
+import { readFile } from 'node:fs/promises';
+
+import { launchPuppeteer } from '@crawlee/puppeteer';
 import type { Dictionary } from 'apify-client';
 import type { Request } from 'express';
 import type { Browser as PuppeteerBrowser } from 'puppeteer';
@@ -22,7 +24,15 @@ export class Browser {
         const page = await this.browser.newPage();
         if (gotoUrl) await page.goto(gotoUrl);
 
-        await puppeteerUtils.injectFile(page, `${import.meta.dirname}/../dist/bundle.cjs`);
+        // The bundle is an ES module, so it cannot be evaluated as a script. An inline module
+        // imports it from a data URL and exposes the namespace as `window.Apify` for the tests.
+        const bundle = await readFile(`${import.meta.dirname}/../dist/bundle.js`);
+        const bundleUrl = `data:text/javascript;base64,${bundle.toString('base64')}`;
+        await page.addScriptTag({
+            type: 'module',
+            content: `import * as Apify from '${bundleUrl}'; window.Apify = Apify;`,
+        });
+        await page.waitForFunction(() => (window as any).Apify);
 
         page.on('console', (msg) => console.log(msg.text()));
         await page.evaluate(

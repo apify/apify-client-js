@@ -8,14 +8,14 @@
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
-    "browser": "dist/bundle.cjs",
-    "unpkg": "dist/bundle.cjs",
+    "browser": "dist/bundle.js",
+    "unpkg": "dist/bundle.js",
     "exports": {
         "./package.json": "./package.json",
-        "./browser": "./dist/bundle.cjs",
+        "./browser": "./dist/bundle.js",
         ".": {
             "types": "./dist/index.d.ts",
-            "browser": "./dist/bundle.cjs",
+            "browser": "./dist/bundle.js",
             "default": "./dist/index.js"
         }
     },

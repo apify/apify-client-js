@@ -27,7 +27,7 @@ export default defineConfig({
     },
     output: {
         distPath: { js: '.' },
-        filename: { js: 'bundle.cjs' },
+        filename: { js: 'bundle.js' },
         // filename: { js: '[name].js' },
         target: 'web',
         cleanDistPath: false,
@@ -49,12 +49,13 @@ export default defineConfig({
         rspack(config) {
             config.output = {
                 ...config.output,
-                library: {
-                    type: 'umd', // or 'umd', 'commonjs', etc.
-                    name: 'Apify',
-                },
-                globalObject: 'globalThis',
+                module: true,
+                library: { type: 'module' },
                 asyncChunks: false,
+            };
+            config.experiments = {
+                ...config.experiments,
+                outputModule: true,
             };
             config.optimization = {
                 ...config.optimization,
@@ -68,7 +69,7 @@ export default defineConfig({
                 maxAssetSize: MAX_BUNDLE_BYTES,
                 maxEntrypointSize: MAX_BUNDLE_BYTES,
                 // The source map is many times the size of the bundle and ships separately.
-                assetFilter: (filename) => filename === 'bundle.cjs',
+                assetFilter: (filename) => filename === 'bundle.js',
             };
             config.plugins = [...(config.plugins ?? []), new rspack.IgnorePlugin({ resourceRegExp: nodeOnlyModules })];
             config.resolve = {
