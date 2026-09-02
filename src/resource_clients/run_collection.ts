@@ -2,11 +2,11 @@ import { z } from 'zod';
 
 import { ACTOR_JOB_STATUSES } from '@apify/consts';
 
-import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
-import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedIterator, PaginationOptions } from '../utils';
-import { paginationOptionsShape, parseArgument } from '../utils';
-import type { ActorRunListItem } from './actor';
+import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client.js';
+import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { PaginatedIterator, PaginationOptions } from '../utils.js';
+import { paginationOptionsShape, parseArgument } from '../utils.js';
+import type { ActorRunListItem } from './actor.js';
 
 const jobStatusSchema = z.enum(ACTOR_JOB_STATUSES);
 const listOptionsSchema = z.strictObject({

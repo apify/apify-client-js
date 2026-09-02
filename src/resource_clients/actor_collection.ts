@@ -2,17 +2,17 @@ import { z } from 'zod';
 
 import type { ACTOR_PERMISSION_LEVEL } from '@apify/consts';
 
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { ActorCollectionListItem } from '../models';
-import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils';
-import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils';
-import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor';
-import type { ActorVersion } from './actor_version';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { ActorCollectionListItem } from '../models.js';
+import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
+import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
+import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor.js';
+import type { ActorVersion } from './actor_version.js';
 
 const actorCreateSchema = anyObjectSchema.optional();
 
-export type { ActorCollectionListItem } from '../models';
+export type { ActorCollectionListItem } from '../models.js';
 
 /**
  * Client for managing the collection of Actors in your account.

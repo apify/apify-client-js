@@ -2,12 +2,12 @@ import { z } from 'zod';
 
 import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
 
-import type { ApifyApiError } from '../apify_api_error';
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceClient } from '../base/resource_client';
-import type { ApifyRequestConfig } from '../http_client';
-import type { Task, TaskPublicConfig } from '../models';
-import type { Dictionary } from '../utils';
+import type { ApifyApiError } from '../apify_api_error.js';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { ResourceClient } from '../base/resource_client.js';
+import type { ApifyRequestConfig } from '../http_client.js';
+import type { Task, TaskPublicConfig } from '../models.js';
+import type { Dictionary } from '../utils.js';
 import {
     anyObjectSchema,
     cast,
@@ -16,11 +16,11 @@ import {
     parseDateFields,
     pluckData,
     stringifyWebhooksToBase64,
-} from '../utils';
-import type { ActorLastRunOptions, ActorRun, ActorStartOptions } from './actor';
-import { RunClient } from './run';
-import { RunCollectionClient } from './run_collection';
-import { WebhookCollectionClient } from './webhook_collection';
+} from '../utils.js';
+import type { ActorLastRunOptions, ActorRun, ActorStartOptions } from './actor.js';
+import { RunClient } from './run.js';
+import { RunCollectionClient } from './run_collection.js';
+import { WebhookCollectionClient } from './webhook_collection.js';
 
 const inputSchema = anyObjectSchema.optional();
 const startOptionsSchema = z.strictObject({
@@ -48,7 +48,7 @@ const lastRunOptionsSchema = z.strictObject({
     origin: z.enum(META_ORIGINS).optional(),
 });
 
-export type { Task, TaskOptions, TaskPublicConfig, TaskStats } from '../models';
+export type { Task, TaskOptions, TaskPublicConfig, TaskStats } from '../models.js';
 
 /**
  * Client for managing a specific Actor task.

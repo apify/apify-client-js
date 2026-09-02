@@ -34,9 +34,9 @@ import type {
     WEBHOOK_EVENT_TYPES,
 } from '@apify/consts';
 
-import type { components } from './generated/api';
-import type { Timezone } from './timezones';
-import type { Dictionary } from './utils';
+import type { components } from './generated/api.js';
+import type { Timezone } from './timezones.js';
+import type { Dictionary } from './utils.js';
 
 type Schemas = components['schemas'];
 

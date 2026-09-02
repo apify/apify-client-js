@@ -1,8 +1,8 @@
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedList, PaginationOptions } from '../utils';
-import { anyObjectSchema, parseArgument } from '../utils';
-import type { ActorVersion, FinalActorVersion } from './actor_version';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { PaginatedList, PaginationOptions } from '../utils.js';
+import { anyObjectSchema, parseArgument } from '../utils.js';
+import type { ActorVersion, FinalActorVersion } from './actor_version.js';
 
 const actorVersionSchema = anyObjectSchema.optional();
 

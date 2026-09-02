@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { parseArgument } from './utils';
+import { parseArgument } from './utils.js';
 
 const attemptSchema = z.number().gt(0);
 

@@ -8,22 +8,22 @@ import compression from 'compression';
 import express from 'express';
 
 // Routers
-import { actors } from './routes/actors';
-import { builds } from './routes/builds';
-import { datasets } from './routes/datasets';
-import { external } from './routes/external';
-import { keyValueStores } from './routes/key_value_stores';
-import { logs } from './routes/logs';
-import { requestQueues } from './routes/request_queues';
-import { runs } from './routes/runs';
-import { schedules } from './routes/schedules';
-import { store } from './routes/store';
-import { tasks } from './routes/tasks';
-import { users } from './routes/users';
-import { webhookDispatches } from './routes/webhook_dispatches';
-import { webhooks } from './routes/webhooks';
+import { actors } from './routes/actors.js';
+import { builds } from './routes/builds.js';
+import { datasets } from './routes/datasets.js';
+import { external } from './routes/external.js';
+import { keyValueStores } from './routes/key_value_stores.js';
+import { logs } from './routes/logs.js';
+import { requestQueues } from './routes/request_queues.js';
+import { runs } from './routes/runs.js';
+import { schedules } from './routes/schedules.js';
+import { store } from './routes/store.js';
+import { tasks } from './routes/tasks.js';
+import { users } from './routes/users.js';
+import { webhookDispatches } from './routes/webhook_dispatches.js';
+import { webhooks } from './routes/webhooks.js';
 // Consts
-import { MOCKED_ACTOR_LOGS } from './test_utils';
+import { MOCKED_ACTOR_LOGS } from './test_utils.js';
 
 const defaultApp = createDefaultApp();
 
@@ -86,7 +86,7 @@ export function createDefaultApp(v2Router = express.Router()) {
     app.use(express.json({ limit: '9mb' }));
     app.use(express.urlencoded({ extended: false }));
     app.use(bodyParser.raw());
-    app.use(express.static(path.join(__dirname, 'public')));
+    app.use(express.static(path.join(import.meta.dirname, 'public')));
     app.use(compression());
     app.use('/', (req: express.Request, _: express.Response, next: express.NextFunction) => {
         mockServer.requests.push(req);

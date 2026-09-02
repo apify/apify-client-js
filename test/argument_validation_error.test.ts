@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { z } from 'zod';
 
-import { ArgumentValidationError } from '../src/argument_validation_error';
+import { ArgumentValidationError } from '../src/argument_validation_error.js';
 
 describe('ArgumentValidationError', () => {
     const schema = z.strictObject({

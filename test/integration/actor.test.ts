@@ -204,7 +204,8 @@ test('lastRun() resolves to a readable run', async () => {
     const run = await actorClient.call(undefined, NO_LOG_REDIRECT);
 
     try {
-        const lastRun = await actorClient.lastRun().get();
+        // Other test files start and delete hello-world runs concurrently, so the unfiltered "last" run can vanish.
+        const lastRun = await actorClient.lastRun({ status: 'SUCCEEDED' }).get();
 
         expect(lastRun?.id).toBeTruthy();
     } finally {

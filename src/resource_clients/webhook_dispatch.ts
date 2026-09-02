@@ -1,14 +1,14 @@
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceClient } from '../base/resource_client';
-import type { WebhookDispatch } from '../models';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { ResourceClient } from '../base/resource_client.js';
+import type { WebhookDispatch } from '../models.js';
 
 export type {
     WebhookDispatch,
     WebhookDispatchCall,
     WebhookDispatchEventData,
     WebhookDispatchWebhookSummary,
-} from '../models';
-export { WebhookDispatchStatus } from '../models';
+} from '../models.js';
+export { WebhookDispatchStatus } from '../models.js';
 
 /**
  * Client for managing a specific webhook dispatch.

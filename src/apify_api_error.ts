@@ -1,7 +1,7 @@
 import type { AxiosResponse } from 'axios';
 
-import { isomorphicBufferToString } from './body_parser';
-import { isBuffer } from './utils';
+import { isomorphicBufferToString } from './body_parser.js';
+import { isBuffer } from './utils.js';
 
 /**
  * Examples of capturing groups for "...at ActorCollectionClient._list (/Users/..."

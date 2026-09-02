@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { addRoutes, type MockServerRoute } from './add_routes';
+import { addRoutes, type MockServerRoute } from './add_routes.js';
 
 export const requestQueues = express.Router();
 

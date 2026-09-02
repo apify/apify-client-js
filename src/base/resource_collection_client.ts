@@ -1,6 +1,6 @@
-import type { PaginatedResponse, PaginationOptions } from '../utils';
-import { parseDateFields, pluckData } from '../utils';
-import { ApiClient } from './api_client';
+import type { PaginatedResponse, PaginationOptions } from '../utils.js';
+import { parseDateFields, pluckData } from '../utils.js';
+import { ApiClient } from './api_client.js';
 
 /**
  * Resource collection client.
