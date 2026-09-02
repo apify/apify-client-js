@@ -10,11 +10,11 @@ import axios, { AxiosHeaders } from 'axios';
 import { APIFY_ENV_VARS } from '@apify/consts';
 import type { Log } from '@apify/log';
 
-import { ApifyApiError } from './apify_api_error';
-import type { RequestInterceptorFunction } from './interceptors';
-import { InvalidResponseBodyError, requestInterceptors, responseInterceptors } from './interceptors';
-import type { Statistics } from './statistics';
-import { asArray, cast, getVersionData, isNode, isStream } from './utils';
+import { ApifyApiError } from './apify_api_error.js';
+import type { RequestInterceptorFunction } from './interceptors.js';
+import { InvalidResponseBodyError, requestInterceptors, responseInterceptors } from './interceptors.js';
+import type { Statistics } from './statistics.js';
+import { asArray, cast, getVersionData, isNode, isStream } from './utils.js';
 
 const { version } = getVersionData();
 

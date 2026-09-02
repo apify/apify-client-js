@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceClient } from '../base/resource_client';
-import type { ActorVersion, FinalActorVersion } from '../models';
-import { anyObjectSchema, parseArgument } from '../utils';
-import { ActorEnvVarClient } from './actor_env_var';
-import { ActorEnvVarCollectionClient } from './actor_env_var_collection';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { ResourceClient } from '../base/resource_client.js';
+import type { ActorVersion, FinalActorVersion } from '../models.js';
+import { anyObjectSchema, parseArgument } from '../utils.js';
+import { ActorEnvVarClient } from './actor_env_var.js';
+import { ActorEnvVarCollectionClient } from './actor_env_var_collection.js';
 
 const envVarNameSchema = z.string();
 
@@ -21,8 +21,8 @@ export type {
     ActorVersionTarball,
     BaseActorVersion,
     FinalActorVersion,
-} from '../models';
-export { ActorSourceType } from '../models';
+} from '../models.js';
+export { ActorSourceType } from '../models.js';
 
 /**
  * Client for managing a specific Actor version.

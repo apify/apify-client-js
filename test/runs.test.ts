@@ -6,9 +6,9 @@ import { ApifyClient, ArgumentValidationError } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper';
-import { mockServer } from './mock_server/server';
-import { MOCKED_ACTOR_LOGS_PROCESSED } from './mock_server/test_utils';
+import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper.js';
+import { mockServer } from './mock_server/server.js';
+import { MOCKED_ACTOR_LOGS_PROCESSED } from './mock_server/test_utils.js';
 
 describe('Run methods', () => {
     let baseUrl: string;

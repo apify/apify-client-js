@@ -1,12 +1,11 @@
 /* eslint-disable no-console */
-const { execSync } = require('node:child_process');
-const fs = require('node:fs');
-const path = require('node:path');
+import { execSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const PKG_JSON_PATH = path.join(__dirname, '..', '..', 'package.json');
+const PKG_JSON_PATH = path.join(import.meta.dirname, '..', '..', 'package.json');
 
-// eslint-disable-next-line import/no-dynamic-require
-const pkgJson = require(PKG_JSON_PATH);
+const pkgJson = JSON.parse(fs.readFileSync(PKG_JSON_PATH, 'utf8'));
 
 const PACKAGE_NAME = pkgJson.name;
 

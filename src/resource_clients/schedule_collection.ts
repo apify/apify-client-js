@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceCollectionClient } from '../base/resource_collection_client';
-import type { PaginatedIterator, PaginationOptions } from '../utils';
-import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils';
-import type { Schedule, ScheduleCreateOrUpdateData } from './schedule';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { PaginatedIterator, PaginationOptions } from '../utils.js';
+import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
+import type { Schedule, ScheduleCreateOrUpdateData } from './schedule.js';
 
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,

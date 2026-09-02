@@ -1,9 +1,9 @@
-import type { ApifyApiError } from '../apify_api_error';
-import type { ApiClientSubResourceOptions } from '../base/api_client';
-import { ResourceClient } from '../base/resource_client';
-import type { ApifyRequestConfig } from '../http_client';
-import type { AccountAndUsageLimits, MonthlyUsage, User } from '../models';
-import { cast, catchNotFoundOrThrow, parseDateFields, pluckData } from '../utils';
+import type { ApifyApiError } from '../apify_api_error.js';
+import type { ApiClientSubResourceOptions } from '../base/api_client.js';
+import { ResourceClient } from '../base/resource_client.js';
+import type { ApifyRequestConfig } from '../http_client.js';
+import type { AccountAndUsageLimits, MonthlyUsage, User } from '../models.js';
+import { cast, catchNotFoundOrThrow, parseDateFields, pluckData } from '../utils.js';
 
 export type {
     AccountAndUsageLimits,
@@ -23,8 +23,8 @@ export type {
     UserPlan,
     UserProfile,
     UserProxy,
-} from '../models';
-export { PlatformFeature } from '../models';
+} from '../models.js';
+export { PlatformFeature } from '../models.js';
 
 /**
  * Client for managing user account information.

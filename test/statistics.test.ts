@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { Statistics } from '../src/statistics';
+import { Statistics } from '../src/statistics.js';
 
 describe('Statistics', () => {
     test.each([

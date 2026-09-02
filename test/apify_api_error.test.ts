@@ -4,8 +4,8 @@ import type { Dictionary } from 'apify-client';
 import { ApifyApiError, ApifyClient } from 'apify-client';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
-import { Browser, DEFAULT_OPTIONS } from './_helper';
-import { mockServer } from './mock_server/server';
+import { Browser, DEFAULT_OPTIONS } from './_helper.js';
+import { mockServer } from './mock_server/server.js';
 
 describe('ApifyApiError', () => {
     let baseUrl: string;

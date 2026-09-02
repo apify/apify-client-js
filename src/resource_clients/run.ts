@@ -4,15 +4,15 @@ import { z } from 'zod';
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 import { LEVELS, Log } from '@apify/log';
 
-import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client';
-import { ResourceClient } from '../base/resource_client';
-import type { ApifyResponse } from '../http_client';
-import { anyObjectSchema, cast, isNode, parseArgument, parseDateFields, pluckData } from '../utils';
-import type { ActorRun } from './actor';
-import { DatasetClient } from './dataset';
-import { KeyValueStoreClient } from './key_value_store';
-import { LogClient, LoggerActorRedirect, StreamedLog } from './log';
-import { RequestQueueClient } from './request_queue';
+import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client.js';
+import { ResourceClient } from '../base/resource_client.js';
+import type { ApifyResponse } from '../http_client.js';
+import { anyObjectSchema, cast, isNode, parseArgument, parseDateFields, pluckData } from '../utils.js';
+import type { ActorRun } from './actor.js';
+import { DatasetClient } from './dataset.js';
+import { KeyValueStoreClient } from './key_value_store.js';
+import { LogClient, LoggerActorRedirect, StreamedLog } from './log.js';
+import { RequestQueueClient } from './request_queue.js';
 
 const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
 

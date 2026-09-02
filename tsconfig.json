@@ -3,7 +3,10 @@
     "compilerOptions": {
         "allowJs": true,
         "lib": ["ES2024", "DOM"],
-        "target": "ES2024",
+        "target": "ESNext",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "resolveJsonModule": false,
         "outDir": "dist",
         "rootDir": "src",
         "skipLibCheck": true,

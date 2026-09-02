@@ -22,7 +22,7 @@ import type {
     WEBHOOK_DISPATCH_STATUSES,
 } from '@apify/consts';
 
-import type { components } from './generated/api';
+import type { components } from './generated/api.js';
 import type {
     AccountAndUsageLimitsRePointed,
     ActorChargeEventRePointed,
@@ -91,7 +91,7 @@ import type {
     WebhookLastDispatchRePointed,
     WebhookRePointed,
     WebhookSpecGaps,
-} from './models';
+} from './models.js';
 
 type Schemas = components['schemas'];
 

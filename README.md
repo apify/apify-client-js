@@ -26,7 +26,7 @@ automatic retries and convenience functions that improve the experience of using
 ## Quick Start
 
 ```js
-const { ApifyClient } = require('apify-client');
+import { ApifyClient } from 'apify-client';
 
 const client = new ApifyClient({
     token: 'MY-APIFY-TOKEN',
@@ -72,7 +72,7 @@ resources are created. There are two types of those clients. A client for manage
 resource and a client for a collection of resources.
 
 ```js
-const { ApifyClient } = require('apify-client');
+import { ApifyClient } from 'apify-client';
 const apifyClient = new ApifyClient({ token: 'my-token' });
 
 // Collection clients do not require a parameter.

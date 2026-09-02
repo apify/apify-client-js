@@ -6,7 +6,7 @@ import { configDefaults, defineConfig } from 'vitest/config';
 export default defineConfig({
     resolve: {
         alias: {
-            'apify-client': resolve(__dirname, 'src'),
+            'apify-client': resolve(import.meta.dirname, 'src'),
         },
     },
     test: {

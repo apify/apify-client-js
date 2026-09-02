@@ -49,12 +49,13 @@ export default defineConfig({
         rspack(config) {
             config.output = {
                 ...config.output,
-                library: {
-                    type: 'umd', // or 'umd', 'commonjs', etc.
-                    name: 'Apify',
-                },
-                globalObject: 'globalThis',
+                module: true,
+                library: { type: 'module' },
                 asyncChunks: false,
+            };
+            config.experiments = {
+                ...config.experiments,
+                outputModule: true,
             };
             config.optimization = {
                 ...config.optimization,
