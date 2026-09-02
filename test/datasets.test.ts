@@ -6,7 +6,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test 
 
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper.js';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
 import { mockServer } from './mock_server/server.js';
 
 describe('Dataset methods', () => {
@@ -53,7 +53,7 @@ describe('Dataset methods', () => {
             validateRequest({ query: opts, endpointId: 'list-datasets' });
 
             const browserRes = await page.evaluate((options) => client.datasets().list(options), opts);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: opts });
         });
 
@@ -62,7 +62,7 @@ describe('Dataset methods', () => {
             validateRequest({ endpointId: 'get-or-create-dataset' });
 
             const browserRes = await page.evaluate((n) => client.datasets().getOrCreate(n), undefined);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({});
         });
 
@@ -74,7 +74,7 @@ describe('Dataset methods', () => {
             validateRequest({ query: { name }, endpointId: 'get-or-create-dataset' });
 
             const browserRes = await page.evaluate((n) => client.datasets().getOrCreate(n), name);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { name }, endpointId: 'get-or-create-dataset' });
         });
     });
@@ -91,7 +91,7 @@ describe('Dataset methods', () => {
             });
 
             const browserRes = await page.evaluate((id) => client.dataset(id).get(), datasetId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { datasetId } });
         });
 
@@ -103,7 +103,7 @@ describe('Dataset methods', () => {
             validateRequest({ query: {}, params: { datasetId } });
 
             const browserRes = await page.evaluate((id) => client.dataset(id).get(), datasetId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { datasetId } });
         });
 
@@ -114,7 +114,7 @@ describe('Dataset methods', () => {
             validateRequest({ query: {}, params: { datasetId } });
 
             const browserRes = await page.evaluate((id) => client.dataset(id).delete(), datasetId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { datasetId } });
         });
 
@@ -127,7 +127,7 @@ describe('Dataset methods', () => {
             validateRequest({ query: {}, params: { datasetId }, body: dataset });
 
             const browserRes = await page.evaluate((id, opts) => client.dataset(id).update(opts), datasetId, dataset);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { datasetId }, body: dataset });
         });
 
@@ -162,7 +162,7 @@ describe('Dataset methods', () => {
             validateRequest({ query, params: { datasetId } });
 
             const browserRes = await page.evaluate((id, opts) => client.dataset(id).listItems(opts), datasetId, query);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query, params: { datasetId } });
         });
 
@@ -230,7 +230,7 @@ describe('Dataset methods', () => {
             validateRequest({ query: qs, params: { datasetId } });
 
             const browserRes = await page.evaluate((id, opts) => client.dataset(id).listItems(opts), datasetId, qs);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: qs, params: { datasetId } });
         });
 
@@ -328,7 +328,7 @@ describe('Dataset methods', () => {
             validateRequest({ query: {}, params: { datasetId }, body: data });
 
             const browserRes = await page.evaluate((id, items) => client.dataset(id).pushItems(items), datasetId, data);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { datasetId }, body: data });
         });
 
@@ -341,7 +341,7 @@ describe('Dataset methods', () => {
             validateRequest({ query: {}, params: { datasetId }, body: data });
 
             const browserRes = await page.evaluate((id, items) => client.dataset(id).pushItems(items), datasetId, data);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { datasetId }, body: data });
         });
 
@@ -365,7 +365,7 @@ describe('Dataset methods', () => {
                 datasetId,
                 data,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ params: { datasetId }, body: JSON.parse(data) });
         });
 
@@ -395,7 +395,7 @@ describe('Dataset methods', () => {
             });
 
             const browserRes = await page.evaluate((id) => client.dataset(id).getStatistics(), datasetId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { datasetId } });
         });
 
@@ -427,7 +427,7 @@ describe('Dataset methods', () => {
                 expect(url.pathname).toBe(`/v2/datasets/${datasetId}/items`);
 
                 const browserRes = await page.evaluate((id) => client.dataset(id).createItemsPublicUrl(), datasetId);
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
             });
 
             it('should not include a signature in the URL when the caller lacks permission to access the signing secret key', async () => {
@@ -439,7 +439,7 @@ describe('Dataset methods', () => {
                 expect(url.pathname).toBe(`/v2/datasets/${datasetId}/items`);
 
                 const browserRes = await page.evaluate((id) => client.dataset(id).createItemsPublicUrl(), datasetId);
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
             });
 
             it('includes provided options (e.g., limit and prefix) as query parameters', async () => {

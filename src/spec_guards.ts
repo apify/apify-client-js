@@ -22,14 +22,16 @@ import type {
     WEBHOOK_DISPATCH_STATUSES,
 } from '@apify/consts';
 
+import type { z } from 'zod';
+
 import type { components } from './generated/api.js';
+import type * as generatedSchemas from './generated/schemas.js';
 import type {
     AccountAndUsageLimitsRePointed,
     ActorChargeEventRePointed,
     ActorCollectionListItemRePointed,
     ActorDefaultRunOptionsRePointed,
     ActorDefinitionSpecGaps,
-    ActorDefinitionSpecNarrowings,
     ActorRePointed,
     ActorRunClientNarrowings,
     ActorRunListItemRePointed,
@@ -45,7 +47,6 @@ import type {
     BuildCollectionClientListItemRePointed,
     BuildMetaRePointed,
     BuildRePointed,
-    DailyServiceUsageClientConversions,
     DailyServiceUsageRePointed,
     DatasetRePointed,
     DatasetSpecGaps,
@@ -56,7 +57,6 @@ import type {
     KeyValueClientListKeysResultRePointed,
     KeyValueStoreRePointed,
     KeyValueStoreSpecGaps,
-    KeyValueStoreSpecNarrowings,
     MonthlyUsageRePointed,
     PricePerDatasetItemActorPricingInfoRePointed,
     PricePerEventActorPricingInfoRePointed,
@@ -75,12 +75,10 @@ import type {
     TaskListSpecGaps,
     TaskRePointed,
     TaskSpecGaps,
-    TaskSpecNarrowings,
     UsageItemRePointed,
     UserPlanRePointed,
     UserProxyRePointed,
     UserRePointed,
-    UserSpecNarrowings,
     Webhook,
     WebhookConditionKey,
     WebhookDispatchRePointed,
@@ -92,8 +90,11 @@ import type {
     WebhookRePointed,
     WebhookSpecGaps,
 } from './models.js';
+import type * as responseSchemas from './schemas.js';
 
 type Schemas = components['schemas'];
+type GeneratedSchemas = typeof generatedSchemas;
+type ResponseSchemas = typeof responseSchemas;
 
 /** Resolves to `true` only for mutually assignable types, so a near-miss still fails. */
 type Equals<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
@@ -196,7 +197,6 @@ export type AdapterKeyGuards = AssertAll<
         OverridesStillExist<WebhookDispatchRePointed, Schemas['WebhookDispatch']>,
         OverridesStillExist<WebhookDispatchWebhookSummaryRePointed, Schemas['WebhookDispatchWebhookSummary']>,
         OverridesStillExist<KeyValueStoreRePointed, Schemas['KeyValueStore']>,
-        OverridesStillExist<KeyValueStoreSpecNarrowings, Schemas['KeyValueStore']>,
         OverridesStillExist<KeyValueClientListKeysResultRePointed, Schemas['ListOfKeys']>,
         OverridesStillExist<ActorVersionRePointed, Schemas['Version']>,
         OverridesStillExist<ActorVersionClientNarrowings, Schemas['Version']>,
@@ -213,7 +213,6 @@ export type AdapterKeyGuards = AssertAll<
         OverridesStillExist<ActorRePointed, Schemas['Actor']>,
         OverridesStillExist<ActorCollectionListItemRePointed, Schemas['ActorShort']>,
         OverridesStillExist<ActorDefaultRunOptionsRePointed, Schemas['DefaultRunOptions']>,
-        OverridesStillExist<ActorDefinitionSpecNarrowings, Schemas['ActorDefinition']>,
         OverridesStillExist<ActorChargeEventRePointed, Schemas['ActorChargeEvent']>,
         OverridesStillExist<
             PricePerDatasetItemActorPricingInfoRePointed,
@@ -234,7 +233,6 @@ export type AdapterKeyGuards = AssertAll<
         OverridesStillExist<ActorRunListItemRePointed, Schemas['RunShort']>,
         OverridesStillExist<ActorRunMetaRePointed, Schemas['RunMeta']>,
         OverridesStillExist<TaskRePointed, Schemas['Task']>,
-        OverridesStillExist<TaskSpecNarrowings, Schemas['Task']>,
         OverridesStillExist<TaskListRePointed, Schemas['TaskShort']>,
         OverridesStillExist<ActorStoreListRePointed, Schemas['StoreListActor']>,
         OverridesStillExist<WebhookRePointed, Schemas['Webhook']>,
@@ -244,7 +242,6 @@ export type AdapterKeyGuards = AssertAll<
         OverridesStillExist<ScheduleActionRunActorRePointed, Schemas['ScheduleActionRunActor']>,
         OverridesStillExist<ScheduleActionRunActorTaskRePointed, Schemas['ScheduleActionRunActorTask']>,
         OverridesStillExist<UserRePointed, Schemas['UserPrivateInfo']>,
-        OverridesStillExist<UserSpecNarrowings, Schemas['UserPrivateInfo']>,
         OverridesStillExist<UserProxyRePointed, Schemas['Proxy']>,
         OverridesStillExist<EffectivePlatformFeaturesRePointed, Schemas['EffectivePlatformFeatures']>,
         // `EffectivePlatformFeaturesRePointed` re-points every key of the schema, so equality rather
@@ -255,7 +252,6 @@ export type AdapterKeyGuards = AssertAll<
         OverridesStillExist<MonthlyUsageRePointed, Schemas['MonthlyUsage']>,
         OverridesStillExist<UsageItemRePointed, Schemas['UsageItem']>,
         OverridesStillExist<DailyServiceUsageRePointed, Schemas['DailyServiceUsages']>,
-        OverridesStillExist<DailyServiceUsageClientConversions, Schemas['DailyServiceUsages']>,
         OverridesStillExist<AccountAndUsageLimitsRePointed, Schemas['AccountLimits']>,
         OverridesStillExist<RequestQueueRePointed, Schemas['RequestQueue']>,
         OverridesStillExist<RequestQueueSpecNarrowings, Schemas['RequestQueue']>,
@@ -309,7 +305,6 @@ export type AdapterWidthGuards = AssertAll<
         // `WebhookDispatchWebhookSummaryRePointed` is excluded outright: its only key is the same
         // `condition` narrowing the webhook itself carries, argued at the declaration of the union.
         OverridesStayWider<KeyValueStoreRePointed, Schemas['KeyValueStore']>,
-        OverridesStayWider<KeyValueStoreSpecNarrowings, Schemas['KeyValueStore']>,
         OverridesStayWider<KeyValueClientListKeysResultRePointed, Schemas['ListOfKeys']>,
         // `ActorVersionClientNarrowings` has no entry here on purpose: dropping the spec's
         // `sourceType: null` is the one narrowing the version union rests on, and it is argued for at
@@ -320,7 +315,6 @@ export type AdapterWidthGuards = AssertAll<
         OverridesStayWider<Omit<ActorRePointed, 'versions'>, Schemas['Actor']>,
         OverridesStayWider<ActorCollectionListItemRePointed, Schemas['ActorShort']>,
         OverridesStayWider<ActorDefaultRunOptionsRePointed, Schemas['DefaultRunOptions']>,
-        OverridesStayWider<ActorDefinitionSpecNarrowings, Schemas['ActorDefinition']>,
         OverridesStayWider<ActorChargeEventRePointed, Schemas['ActorChargeEvent']>,
         OverridesStayWider<
             PricePerDatasetItemActorPricingInfoRePointed,
@@ -337,7 +331,6 @@ export type AdapterWidthGuards = AssertAll<
         OverridesStayWider<ActorRunListItemRePointed, Schemas['RunShort']>,
         OverridesStayWider<ActorRunMetaRePointed, Schemas['RunMeta']>,
         OverridesStayWider<TaskRePointed, Schemas['Task']>,
-        OverridesStayWider<TaskSpecNarrowings, Schemas['Task']>,
         OverridesStayWider<TaskListRePointed, Schemas['TaskShort']>,
         OverridesStayWider<ActorStoreListRePointed, Schemas['StoreListActor']>,
         // Two exclusions. `condition` keeps the union of single-id variants, which is narrower than the
@@ -352,14 +345,10 @@ export type AdapterWidthGuards = AssertAll<
         // union discriminates on a runtime enum, so no assignability check can hold either way.
         OverridesStayWider<Omit<ScheduleActionRunActorRePointed, 'type'>, Schemas['ScheduleActionRunActor']>,
         OverridesStayWider<UserRePointed, Schemas['UserPrivateInfo']>,
-        OverridesStayWider<UserSpecNarrowings, Schemas['UserPrivateInfo']>,
         OverridesStayWider<UserProxyRePointed, Schemas['Proxy']>,
         OverridesStayWider<EffectivePlatformFeaturesRePointed, Schemas['EffectivePlatformFeatures']>,
         OverridesStayWider<UserPlanRePointed, Schemas['Plan']>,
-        // `dailyServiceUsages` is excluded, and `DailyServiceUsageClientConversions` has no entry of its own:
-        // that block is the `date` conversion, and a `string` is never assignable to the `Date` the caller is
-        // handed. `ClientConversionGuards` pins the wire type instead.
-        OverridesStayWider<Omit<MonthlyUsageRePointed, 'dailyServiceUsages'>, Schemas['MonthlyUsage']>,
+        OverridesStayWider<MonthlyUsageRePointed, Schemas['MonthlyUsage']>,
         OverridesStayWider<UsageItemRePointed, Schemas['UsageItem']>,
         OverridesStayWider<DailyServiceUsageRePointed, Schemas['DailyServiceUsages']>,
         OverridesStayWider<AccountAndUsageLimitsRePointed, Schemas['AccountLimits']>,
@@ -397,9 +386,50 @@ export type MapShapeGuards = AssertAll<
 >;
 
 /**
- * `DailyServiceUsage.date` is published as a `Date`, because `UserClient.monthlyUsage()` passes a matcher
- * that converts it. The spec types the wire value as a plain string; once it marks the field as a
- * date-time, the generator emits a `Date` of its own and the `*ClientConversions` block can be deleted.
- * This assertion is what reports that.
+ * The names of every schema whose generated type is not accepted by its generated zod schema.
+ *
+ * Both are generated from the same specification, by different generators, so this is where a bug in
+ * `scripts/schema_emitter.mts` -- a dropped property, a wrong optionality, a missed `null` -- shows up as
+ * a build failure instead of as a response rejected in production. The check is one-directional on
+ * purpose: the zod schemas accept unknown fields and unknown enum values that the types do not describe,
+ * so their output is deliberately wider than the types.
  */
-export type ClientConversionGuards = AssertAll<[Equals<Schemas['DailyServiceUsages']['date'], string>]>;
+type SchemasRejectingTheirType = {
+    [K in keyof Schemas]: K extends keyof GeneratedSchemas
+        ? Schemas[K] extends z.input<GeneratedSchemas[K]>
+            ? never
+            : K
+        : K;
+}[keyof Schemas];
+
+export type GeneratedSchemaGuards = AssertAll<
+    [
+        Equals<SchemasRejectingTheirType, never>,
+        // Both generators saw the same `components.schemas`, so neither may have a schema the other lacks.
+        Equals<Exclude<keyof GeneratedSchemas, keyof Schemas>, never>,
+    ]
+>;
+
+/**
+ * Every hand-written override in `./schemas` still accepts what the specification describes: an override
+ * may only widen.
+ */
+type OverridesRejectingTheirType = {
+    [K in keyof ResponseSchemas & keyof Schemas]: Schemas[K] extends z.input<ResponseSchemas[K]> ? never : K;
+}[keyof ResponseSchemas & keyof Schemas];
+
+/**
+ * Every key an override extends a generated object with must still exist in the specification's schema.
+ * `.extend()` with a key the specification has since dropped or renamed would quietly add it back.
+ */
+type OverridesWithUnknownKeys = {
+    [K in keyof ResponseSchemas & keyof Schemas]: ResponseSchemas[K] extends { shape: infer Shape }
+        ? Exclude<keyof Shape, keyof Schemas[K]> extends never
+            ? never
+            : K
+        : never;
+}[keyof ResponseSchemas & keyof Schemas];
+
+export type ResponseSchemaGuards = AssertAll<
+    [Equals<OverridesRejectingTheirType, never>, Equals<OverridesWithUnknownKeys, never>]
+>;

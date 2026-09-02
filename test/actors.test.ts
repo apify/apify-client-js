@@ -13,7 +13,8 @@ import { META_ORIGINS, WEBHOOK_EVENT_TYPES } from '@apify/consts';
 import { LEVELS, Log } from '@apify/log';
 
 import { stringifyWebhooksToBase64 } from '../src/utils.js';
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper.js';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
+import * as fixtures from './mock_server/fixtures.js';
 import { createDefaultApp, mockServer } from './mock_server/server.js';
 import { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator } from './mock_server/test_utils.js';
 
@@ -64,7 +65,7 @@ describe('Actor methods', () => {
             });
 
             const browserRes = await page.evaluate((options) => client.actors().list(options), opts);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: opts });
         });
 
@@ -74,7 +75,7 @@ describe('Actor methods', () => {
             const res = await client.actors().create(actor);
             validateRequest({ query: {}, params: {}, body: actor, endpointId: 'create-actor' });
             const browserRes = await page.evaluate((opts) => client.actors().create(opts), actor);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: {}, body: actor, endpointId: 'create-actor' });
         });
     });
@@ -89,7 +90,7 @@ describe('Actor methods', () => {
             validateRequest({ query: {}, params: { actorId: 'some-user~some-id' }, body: newFields });
 
             const browserRes = await page.evaluate((id, opts) => client.actor(id).update(opts), actorId, newFields);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { actorId: 'some-user~some-id' }, body: newFields });
         });
 
@@ -101,7 +102,7 @@ describe('Actor methods', () => {
             validateRequest({ query: {}, params: { actorId } });
 
             const browserRes = await page.evaluate((id) => client.actor(id).get(), actorId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { actorId } });
         });
 
@@ -113,7 +114,7 @@ describe('Actor methods', () => {
             validateRequest({ query: {}, params: { actorId } });
 
             const browserRes = await page.evaluate((id) => client.actor(id).get(), actorId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { actorId } });
         });
 
@@ -129,7 +130,7 @@ describe('Actor methods', () => {
                 const dbc = await client.actor(id).defaultBuild();
                 return dbc.get();
             }, actorId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { buildId: 'default-build-get' } });
         });
 
@@ -167,7 +168,7 @@ describe('Actor methods', () => {
                 contentType,
                 ...query,
             });
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({
                 query,
                 params: { actorId },
@@ -192,7 +193,7 @@ describe('Actor methods', () => {
             const browserRes = await page.evaluate((id, i, opts) => client.actor(id).start(i, opts), actorId, input, {
                 contentType,
             });
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({
                 params: { actorId },
                 body: { some: 'body' },
@@ -223,7 +224,7 @@ describe('Actor methods', () => {
                     fn: async (a: number, b: number) => a + b,
                 });
             }, actorId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest(expectedRequestProps);
         });
 
@@ -247,7 +248,7 @@ describe('Actor methods', () => {
             const browserRes = await page.evaluate((id, opts) => client.actor(id).start(undefined, opts), actorId, {
                 webhooks,
             });
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { webhooks: stringifyWebhooksToBase64(webhooks) }, params: { actorId } });
         });
 
@@ -261,7 +262,7 @@ describe('Actor methods', () => {
             const browserRes = await page.evaluate((id, opts) => client.actor(id).start(undefined, opts), actorId, {
                 maxItems: 100,
             });
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { maxItems: 100 }, params: { actorId } });
         });
 
@@ -273,7 +274,7 @@ describe('Actor methods', () => {
             const memory = 256;
             const build = '1.2.0';
             const runId = 'started-run-id';
-            const data = { id: runId, actId: actorId, status: 'SUCCEEDED' };
+            const data = { ...fixtures.run, id: runId, actId: actorId, status: 'SUCCEEDED' };
             const body = { data };
             const waitSecs = 1;
 
@@ -287,7 +288,7 @@ describe('Actor methods', () => {
                 log: null,
             });
 
-            expect(res).toEqual(data);
+            expect(res).toMatchObject({ id: runId, actId: actorId, status: 'SUCCEEDED' });
             validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
             validateRequest({
                 query: {
@@ -312,7 +313,7 @@ describe('Actor methods', () => {
                     waitSecs,
                 },
             );
-            expect(callBrowserRes).toEqual(res);
+            expect(callBrowserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
             validateRequest({
                 query: {
@@ -329,7 +330,7 @@ describe('Actor methods', () => {
         test('call() works with maxItems', async () => {
             const actorId = 'some-id';
             const runId = 'started-run-id';
-            const data = { id: runId, actId: actorId, status: 'SUCCEEDED' };
+            const data = { ...fixtures.run, id: runId, actId: actorId, status: 'SUCCEEDED' };
             const body = { data };
             const waitSecs = 1;
             const maxItems = 100;
@@ -337,7 +338,7 @@ describe('Actor methods', () => {
             mockServer.setResponse({ body });
             const res = await client.actor(actorId).call(undefined, { waitSecs, maxItems, log: null });
 
-            expect(res).toEqual(data);
+            expect(res).toMatchObject({ id: runId, actId: actorId, status: 'SUCCEEDED' });
             validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
             validateRequest({ query: { maxItems }, params: { actorId } });
 
@@ -350,7 +351,7 @@ describe('Actor methods', () => {
                     maxItems,
                 },
             );
-            expect(callBrowserRes).toEqual(res);
+            expect(callBrowserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
             validateRequest({ query: { maxItems }, params: { actorId } });
         });
@@ -365,7 +366,7 @@ describe('Actor methods', () => {
             validateRequest({ params: { actorId }, body: input, endpointId: 'validate-input' });
 
             const browserRes = await page.evaluate((id, i) => client.actor(id).validateInput(i), actorId, input);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ params: { actorId }, body: input, endpointId: 'validate-input' });
         });
 
@@ -385,7 +386,7 @@ describe('Actor methods', () => {
                 input,
                 { build },
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { build }, params: { actorId }, body: input, endpointId: 'validate-input' });
         });
 
@@ -414,7 +415,7 @@ describe('Actor methods', () => {
                     fn: async (a: number, b: number) => a + b,
                 });
             }, actorId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest(expectedRequestProps);
         });
 
@@ -454,7 +455,7 @@ describe('Actor methods', () => {
                 version,
                 options,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { version, ...options }, params: { actorId } });
         });
 
@@ -492,7 +493,7 @@ describe('Actor methods', () => {
                         actorId,
                         method,
                     );
-                    expect(browserRes).toEqual(res);
+                    expect(browserRes).toEqual(asBrowserResult(res));
                     validateRequest({ query: {}, params: { actorId } });
                 },
             );
@@ -519,7 +520,7 @@ describe('Actor methods', () => {
                 actorId,
                 query,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query, params: { actorId } });
         });
 
@@ -540,7 +541,7 @@ describe('Actor methods', () => {
             });
 
             const browserRes = await page.evaluate((aId, opts) => client.actor(aId).runs().list(opts), actorId, query);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query, params: { actorId } });
         });
 
@@ -556,7 +557,7 @@ describe('Actor methods', () => {
                 });
 
                 const browserRes = await page.evaluate((id) => client.actor(id).versions().list(), actorId);
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({
                     query: {},
                     params: { actorId },
@@ -585,7 +586,7 @@ describe('Actor methods', () => {
                     actorId,
                     actorVersion,
                 );
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({ query: {}, params: { actorId }, body: actorVersion });
             });
         });
@@ -607,7 +608,7 @@ describe('Actor methods', () => {
                     actorId,
                     versionNumber,
                 );
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({ query: {}, params: { actorId, versionNumber } });
             });
 
@@ -624,7 +625,7 @@ describe('Actor methods', () => {
                     actorId,
                     versionNumber,
                 );
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({ query: {}, params: { actorId, versionNumber } });
             });
 
@@ -651,7 +652,7 @@ describe('Actor methods', () => {
                     versionNumber,
                     newFields,
                 );
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({
                     query: {},
                     params: { actorId: 'some-user~some-id', versionNumber },
@@ -672,7 +673,7 @@ describe('Actor methods', () => {
                     actorId,
                     versionNumber,
                 );
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({ query: {}, params: { actorId, versionNumber } });
             });
         });
@@ -694,7 +695,7 @@ describe('Actor methods', () => {
                     actorId,
                     versionNumber,
                 );
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({ query: {}, params: { actorId, versionNumber } });
             });
 
@@ -720,7 +721,7 @@ describe('Actor methods', () => {
                     versionNumber,
                     actorEnvVar,
                 );
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({ query: {}, params: { actorId, versionNumber }, body: actorEnvVar });
             });
         });
@@ -744,7 +745,7 @@ describe('Actor methods', () => {
                     versionNumber,
                     envVarName,
                 );
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({ query: {}, params: { actorId, versionNumber, envVarName } });
             });
 
@@ -763,7 +764,7 @@ describe('Actor methods', () => {
                     versionNumber,
                     envVarName,
                 );
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({ query: {}, params: { actorId, versionNumber, envVarName } });
             });
 
@@ -791,7 +792,7 @@ describe('Actor methods', () => {
                     envVarName,
                     envVar,
                 );
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({
                     query: {},
                     params: { actorId: 'some-user~some-id', versionNumber, envVarName },
@@ -814,7 +815,7 @@ describe('Actor methods', () => {
                     versionNumber,
                     envVarName,
                 );
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({ query: {}, params: { actorId, versionNumber, envVarName } });
             });
         });
@@ -839,7 +840,7 @@ describe('Actor methods', () => {
                 actorId,
                 query,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query, params: { actorId } });
         });
     });
@@ -859,7 +860,9 @@ describe('Run actor with redirected logs', () => {
             await setTimeout(10);
 
             const [status, statusMessage] = statusGenerator.next().value;
-            res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status, statusMessage } });
+            res.json({
+                data: { ...fixtures.run, id: 'redirect-run-id', actId: 'redirect-actor-id', status, statusMessage },
+            });
         });
         const app = createDefaultApp(router);
         const server = await mockServer.start(undefined, app);

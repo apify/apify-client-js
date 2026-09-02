@@ -27,6 +27,7 @@ export * from './resource_clients/webhook_collection.js';
 export * from './resource_clients/webhook_dispatch.js';
 export * from './resource_clients/webhook_dispatch_collection.js';
 export * from './apify_api_error.js';
-export * from './argument_validation_error.js';
+export { ArgumentValidationError } from './argument_validation_error.js';
+export * from './response_validation_error.js';
 export { InvalidResponseBodyError } from './interceptors.js';
 export type { PaginatedList, Dictionary } from './utils.js';

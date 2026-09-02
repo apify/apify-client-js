@@ -1,17 +1,18 @@
 import express from 'express';
 
+import * as fixtures from '../fixtures.js';
 import { addRoutes, type MockServerRoute } from './add_routes.js';
 
 export const datasets = express.Router();
 
 const ROUTES: MockServerRoute[] = [
-    { id: 'get-or-create-dataset', method: 'POST', path: '/' },
-    { id: 'list-datasets', method: 'GET', path: '/' },
+    { id: 'get-or-create-dataset', method: 'POST', path: '/', fixture: fixtures.dataset },
+    { id: 'list-datasets', method: 'GET', path: '/', fixture: fixtures.datasetList },
     { id: 'delete-dataset', method: 'DELETE', path: '/:datasetId' },
-    { id: 'update-dataset', method: 'PUT', path: '/:datasetId' },
+    { id: 'update-dataset', method: 'PUT', path: '/:datasetId', fixture: fixtures.dataset },
     { id: 'list-items', method: 'GET', path: '/:datasetId/items', type: 'responseJsonMock' },
     { id: 'push-items', method: 'POST', path: '/:datasetId/items' },
-    { id: 'get-statistics', method: 'GET', path: '/:datasetId/statistics' },
+    { id: 'get-statistics', method: 'GET', path: '/:datasetId/statistics', fixture: fixtures.datasetStatistics },
 ];
 
 addRoutes(datasets, ROUTES);
@@ -30,6 +31,7 @@ datasets.get('/:datasetId', (req, res) => {
     if (datasetId === 'id-with-secret-key') {
         return res.json({
             data: {
+                ...fixtures.dataset,
                 id: datasetId,
                 urlSigningSecretKey: 'secret-key-for-testing',
             },
@@ -40,9 +42,5 @@ datasets.get('/:datasetId', (req, res) => {
         return res.status(404).json({ error: { type: 'record-not-found' } });
     }
 
-    return res.json({
-        data: {
-            id: 'get-dataset',
-        },
-    });
+    return res.json({ data: { ...fixtures.dataset, id: 'get-dataset' } });
 });

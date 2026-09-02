@@ -5,7 +5,7 @@ import { ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper.js';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
 import { mockServer } from './mock_server/server.js';
 
 describe('Webhook methods', () => {
@@ -48,7 +48,7 @@ describe('Webhook methods', () => {
             });
 
             const browserRes = await page.evaluate((w) => client.webhooks().create(w), webhook);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({
                 body: webhook,
             });
@@ -68,7 +68,7 @@ describe('Webhook methods', () => {
             });
 
             const browserRes = await page.evaluate((options) => client.webhooks().list(options), opts);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({
                 query: opts,
             });
@@ -86,7 +86,7 @@ describe('Webhook methods', () => {
             });
 
             const browserRes = await page.evaluate((id) => client.webhook(id).get(), webhookId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({
                 endpointId: 'get-webhook',
                 params: { webhookId },
@@ -103,7 +103,7 @@ describe('Webhook methods', () => {
             });
 
             const browserRes = await page.evaluate((id) => client.webhook(id).get(), webhookId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({
                 params: { webhookId },
             });
@@ -124,7 +124,7 @@ describe('Webhook methods', () => {
             });
 
             const browserRes = await page.evaluate((id, w) => client.webhook(id).update(w), webhookId, webhook);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({
                 endpointId: 'update-webhook',
                 body: webhook,
@@ -143,7 +143,7 @@ describe('Webhook methods', () => {
             });
 
             const browserRes = await page.evaluate((id) => client.webhook(id).delete(), webhookId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({
                 endpointId: 'delete-webhook',
                 params: { webhookId },
@@ -160,7 +160,7 @@ describe('Webhook methods', () => {
             });
 
             const browserRes = await page.evaluate((id) => client.webhook(id).test(), webhookId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({
                 endpointId: 'test-webhook',
                 params: { webhookId },
@@ -183,7 +183,7 @@ describe('Webhook methods', () => {
             });
 
             const browserRes = await page.evaluate((id, o) => client.webhook(id).dispatches().list(o), webhookId, opts);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({
                 endpointId: 'list-dispatches',
                 params: { webhookId },

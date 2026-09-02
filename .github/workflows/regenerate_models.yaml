@@ -1,7 +1,7 @@
-# Keeps `src/generated/api.ts` in sync with the published OpenAPI specification: every night it regenerates the
-# types and opens a pull request when the result differs from master. Renovate cannot do this -- the specification
-# is a live document, not an npm dependency -- so without this job the generated types never move and none of the
-# drift guards in `src/spec_guards.ts` can ever fire.
+# Keeps `src/generated/api.ts` and `src/generated/schemas.ts` in sync with the published OpenAPI specification: every
+# night it regenerates both and opens a pull request when the result differs from master. Renovate cannot do this --
+# the specification is a live document, not an npm dependency -- so without this job the generated models never move
+# and none of the drift guards in `src/spec_guards.ts` can ever fire.
 #
 # Two invariants make it safe to run unattended:
 #   1. Generation always happens on master, so the output follows the current specification and the current codegen
@@ -16,7 +16,7 @@
 # renamed, a documented spec gap was filled, or a shared `@apify/consts` enum diverged -- and each of those needs a
 # human to decide.
 
-name: Regenerate types
+name: Regenerate models
 
 on:
     workflow_dispatch:
@@ -25,7 +25,7 @@ on:
         - cron: '0 2 * * *'
 
 concurrency:
-    group: regenerate-types
+    group: regenerate-models
     cancel-in-progress: false
 
 # Writes go through the service account token below, not through `GITHUB_TOKEN`.
@@ -34,19 +34,19 @@ permissions:
 
 env:
     NODE_VERSION: 24
-    BRANCH_NAME: ci/regenerate-types
+    BRANCH_NAME: ci/regenerate-models
     # Valid Conventional Commits, so the pull request is mergeable as-is; reviewers retitle it to `fix:`/`feat:`
     # when the diff is user-facing.
-    PR_TITLE: 'chore: regenerate types from the published OpenAPI spec'
+    PR_TITLE: 'chore: regenerate models from the published OpenAPI spec'
     ASSIGNEE: vdusek
     LABEL: t-tooling
-    # The only file the gate looks at. The recorded specification version is committed alongside it but
+    # The only files the gate looks at. The recorded specification version is committed alongside them but
     # deliberately excluded: that stamp moves on every apify-docs deploy regardless of client impact.
-    GENERATED_FILE: src/generated/api.ts
+    GENERATED_FILES: src/generated/api.ts src/generated/schemas.ts
 
 jobs:
-    regenerate-types:
-        name: Regenerate types
+    regenerate-models:
+        name: Regenerate models
         runs-on: ubuntu-latest
 
         steps:
@@ -75,27 +75,28 @@ jobs:
                   echo "version=$version" >> "$GITHUB_OUTPUT"
 
             # Downloads the specification, generates from it, and records its version in `package.json`.
-            - name: Regenerate types
-              run: pnpm generate:types
+            - name: Regenerate models
+              run: pnpm generate:models
 
-            # Gate on the generated types, not on the specification version: that stamp is a coarse marker
+            # Gate on the generated models, not on the specification version: that stamp is a coarse marker
             # rather than a content identity, for the reasons `scripts/openapi_spec.mts` sets out. Compared
             # against HEAD rather than the index, so nothing staged earlier in the job can hide a change.
-            - name: Check for type changes
+            - name: Check for model changes
               id: changes
               run: |
-                  if git diff --quiet HEAD -- "$GENERATED_FILE"; then
-                      echo "Types are already up to date with the published specification."
+                  # Unquoted on purpose: the variable holds a space-separated list of paths.
+                  if git diff --quiet HEAD -- $GENERATED_FILES; then
+                      echo "Models are already up to date with the published specification."
                       echo "has-changes=false" >> "$GITHUB_OUTPUT"
                   else
-                      git diff --stat HEAD -- "$GENERATED_FILE"
+                      git diff --stat HEAD -- $GENERATED_FILES
                       echo "has-changes=true" >> "$GITHUB_OUTPUT"
                   fi
 
-            # A previous run may already have these exact types up for review; leave it alone instead of churning
-            # an open pull request. Only the generated file is compared - the branch being behind master says
-            # nothing about whether the types on it are still the right ones.
-            - name: Check whether the types are already up for review
+            # A previous run may already have these exact models up for review; leave it alone instead of churning
+            # an open pull request. Only the generated files are compared - the branch being behind master says
+            # nothing about whether the models on it are still the right ones.
+            - name: Check whether the models are already up for review
               id: review
               if: steps.changes.outputs.has-changes == 'true'
               env:
@@ -131,8 +132,8 @@ jobs:
                   fi
 
                   git fetch origin "$BRANCH_NAME"
-                  if git diff --quiet FETCH_HEAD -- "$GENERATED_FILE"; then
-                      echo "The open pull request already carries these types - nothing to do."
+                  if git diff --quiet FETCH_HEAD -- $GENERATED_FILES; then
+                      echo "The open pull request already carries these models - nothing to do."
                       echo "is-new=false" >> "$GITHUB_OUTPUT"
                   else
                       echo "is-new=true" >> "$GITHUB_OUTPUT"
@@ -156,9 +157,9 @@ jobs:
                       echo "Deleted leftover branch $BRANCH_NAME (no open pull request)."
                   fi
 
-            # Creates the branch at the current master commit and lands the regenerated file as one signed
+            # Creates the branch at the current master commit and lands the regenerated files as one signed
             # ("Verified") commit, via GitHub's createCommitOnBranch mutation.
-            - name: Commit the regenerated types
+            - name: Commit the regenerated models
               id: commit
               if: steps.changes.outputs.has-changes == 'true' && steps.review.outputs.is-new == 'true'
               uses: apify/actions/signed-commit@v1.4.1
@@ -166,7 +167,7 @@ jobs:
                   message: ${{ env.PR_TITLE }}
                   add: >-
                       package.json
-                      ${{ env.GENERATED_FILE }}
+                      ${{ env.GENERATED_FILES }}
                   github-token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
                   branch: ${{ env.BRANCH_NAME }}
                   create-branch: 'true'
@@ -175,7 +176,7 @@ jobs:
               if: steps.commit.outputs.committed == 'true'
               env:
                   GH_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
-                  WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/regenerate_types.yaml
+                  WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/regenerate_models.yaml
                   PREVIOUS_SPEC_VERSION: ${{ steps.previous-spec.outputs.version }}
               run: |
                   SPEC_VERSION=$(node scripts/openapi_spec.mts recorded-version)
@@ -189,16 +190,16 @@ jobs:
                   fi
 
                   BODY=$(printf '%s\n' \
-                    "- Regenerates \`src/generated/api.ts\` from the [published OpenAPI specification](https://docs.apify.com/api/openapi.json), and records its version in \`package.json\`." \
+                    "- Regenerates \`src/generated/api.ts\` and \`src/generated/schemas.ts\` from the [published OpenAPI specification](https://docs.apify.com/api/openapi.json), and records its version in \`package.json\`." \
                     "${SPEC_LINE}" \
                     "" \
                     "> [!IMPORTANT]" \
                     "> Retitle this pull request to \`fix:\` or \`feat:\` when the diff is user-facing, so that it lands in the changelog and triggers a release - \`chore:\` does neither." \
                     "" \
                     "> [!NOTE]" \
-                    "> A red check here is a guard in \`src/spec_guards.ts\` doing its job: a field an override block replaces was dropped or renamed, a documented spec gap was filled and its \`*SpecGaps\` entry is now stale, or a shared \`@apify/consts\` enum diverged. Each of those is a decision, not a mechanical update." \
+                    "> A red check here is a guard in \`src/spec_guards.ts\` doing its job: a field an override block replaces was dropped or renamed, a documented spec gap was filled and its \`*SpecGaps\` entry is now stale, a shared \`@apify/consts\` enum diverged, or a generated zod schema stopped accepting its generated type. Each of those is a decision, not a mechanical update. A failing \`fixtures.test.ts\` means the specification now requires something the mock fixtures in \`test/mock_server/fixtures.ts\` do not carry." \
                     "" \
-                    "> Generated by the [Regenerate types](${WORKFLOW_URL}) workflow.")
+                    "> Generated by the [Regenerate models](${WORKFLOW_URL}) workflow.")
 
                   gh pr create \
                       --title "$PR_TITLE" \
@@ -212,7 +213,7 @@ jobs:
     # and no release waits on this workflow. Skipped on manual dispatch so ad-hoc triggers don't spam the channel.
     notify_on_failure:
         name: Notify Slack on failure
-        needs: regenerate-types
+        needs: regenerate-models
         if: failure() && github.event_name == 'schedule'
         runs-on: ubuntu-latest
 
@@ -221,7 +222,7 @@ jobs:
               env:
                   REPO: ${{ github.repository }}
                   WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-                  HEADING: ':red_circle: Nightly type regeneration failed'
+                  HEADING: ':red_circle: Nightly model regeneration failed'
               run: |
                   jq -n \
                       --arg repo "${REPO}" \
@@ -243,7 +244,7 @@ jobs:
                           },
                           {
                             type: "section",
-                            text: { type: "mrkdwn", text: "The generated API types are no longer being kept in sync with the published OpenAPI specification." }
+                            text: { type: "mrkdwn", text: "The generated API models are no longer being kept in sync with the published OpenAPI specification." }
                           }
                         ]
                       }' > slack-payload.json

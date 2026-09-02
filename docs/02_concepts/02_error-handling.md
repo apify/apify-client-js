@@ -45,6 +45,31 @@ try {
 }
 ```
 
+## Invalid responses
+
+After a request succeeds, the client validates the response against a [zod](https://zod.dev) schema generated from the [Apify OpenAPI specification](https://docs.apify.com/api/v2) before returning it. A response that doesn't match what the specification describes throws a <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink>. Its `message` names the request and every offending field, and `issues` and `cause` carry the structured detail, the same way `ArgumentValidationError` does.
+
+Fields the specification doesn't describe and enum values it doesn't list pass through, so the client keeps working when the API grows. What the check catches is the API and its specification disagreeing: a missing required field, a different type, or a value outside the documented range. Such a mismatch would otherwise surface later as an `undefined` where the types promise a value. If you run into one, please [report it](https://github.com/apify/apify-client-js/issues).
+
+```js
+import { ApifyClient, ResponseValidationError } from 'apify-client';
+
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+
+try {
+    await client.actor('my-actor').get();
+} catch (error) {
+    if (error instanceof ResponseValidationError) {
+        // Response from GET https://api.apify.com/v2/acts/my-actor does not match the API schema:
+        // Invalid input: expected string, received null at `name`
+        console.log(error.message);
+        console.log(error.issues);
+    }
+}
+```
+
+Bodies the specification leaves to you aren't validated: dataset items, key-value store records and logs are returned as they are.
+
 ## Retries with exponential backoff
 
 The client automatically retries requests that fail due to network errors, Apify API internal errors (HTTP 500+), or rate limit errors (HTTP 429). By default, the client retries up to 8 times with exponential backoff starting at 500ms.

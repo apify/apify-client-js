@@ -7,7 +7,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test 
 
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper.js';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
 import { mockServer } from './mock_server/server.js';
 
 describe('Key-Value Store methods', () => {
@@ -54,7 +54,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({ query: opts, endpointId: 'list-stores' });
 
             const browserRes = await page.evaluate((options) => client.keyValueStores().list(options), opts);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: opts, endpointId: 'list-stores' });
         });
 
@@ -64,7 +64,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({});
 
             const browserRes = await page.evaluate((n) => client.keyValueStores().getOrCreate(n), undefined);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({});
         });
 
@@ -76,7 +76,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({ query: { name } });
 
             const browserRes = await page.evaluate((n) => client.keyValueStores().getOrCreate(n), name);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { name } });
         });
     });
@@ -90,7 +90,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({ query: {}, params: { storeId } });
 
             const browserRes = await page.evaluate((id) => client.keyValueStore(id).get(), storeId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { storeId } });
         });
 
@@ -102,7 +102,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({ query: {}, params: { storeId } });
 
             const browserRes = await page.evaluate((id) => client.keyValueStore(id).get(), storeId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { storeId } });
         });
 
@@ -113,7 +113,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({ query: {}, params: { storeId } });
 
             const browserRes = await page.evaluate((id) => client.keyValueStore(id).delete(), storeId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { storeId } });
         });
 
@@ -126,7 +126,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({ query: {}, params: { storeId }, body: store });
 
             const browserRes = await page.evaluate((id, opts) => client.keyValueStore(id).update(opts), storeId, store);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { storeId }, body: store });
         });
 
@@ -148,7 +148,7 @@ describe('Key-Value Store methods', () => {
                 storeId,
                 query,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query, params: { storeId } });
         });
 
@@ -189,7 +189,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({ query: {}, params: { storeId, key } });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).recordExists(k), storeId, key);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { storeId, key } });
         });
 
@@ -212,7 +212,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({ query: {}, params: { storeId, key } });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).recordExists(k), storeId, key);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { storeId, key } });
         });
 
@@ -238,7 +238,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getRecord(k), storeId, key);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
         });
 
@@ -259,7 +259,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getRecord(k), storeId, key);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
         });
 
@@ -303,7 +303,7 @@ describe('Key-Value Store methods', () => {
                 key,
                 options,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
         });
 
@@ -342,7 +342,7 @@ describe('Key-Value Store methods', () => {
                 key,
                 {},
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
         });
 
@@ -423,7 +423,7 @@ describe('Key-Value Store methods', () => {
             validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
 
             const browserRes = await page.evaluate((id, k) => client.keyValueStore(id).getRecord(k), storeId, key);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { attachment: 'true' }, params: { storeId, key } });
         });
 
@@ -655,7 +655,7 @@ describe('Key-Value Store methods', () => {
                     storeId,
                     key,
                 );
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
             });
 
             it('should not include a signature in the URL when the caller lacks permission to access the signing secret key', async () => {
@@ -672,7 +672,7 @@ describe('Key-Value Store methods', () => {
                     storeId,
                     key,
                 );
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
             });
         });
 
@@ -705,7 +705,7 @@ describe('Key-Value Store methods', () => {
                 expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/keys`);
 
                 const browserRes = await page.evaluate((id) => client.keyValueStore(id).createKeysPublicUrl(), storeId);
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
             });
 
             it('should not include a signature in the URL when the caller lacks permission to access the signing secret key', async () => {
@@ -717,7 +717,7 @@ describe('Key-Value Store methods', () => {
                 expect(url.pathname).toBe(`/v2/key-value-stores/${storeId}/keys`);
 
                 const browserRes = await page.evaluate((id) => client.keyValueStore(id).createKeysPublicUrl(), storeId);
-                expect(browserRes).toEqual(res);
+                expect(browserRes).toEqual(asBrowserResult(res));
             });
 
             it('includes provided options (e.g., limit and prefix) as query parameters', async () => {

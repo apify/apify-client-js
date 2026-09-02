@@ -5,6 +5,7 @@ import { ACTOR_JOB_STATUSES } from '@apify/consts';
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
 import type { PaginatedIterator, PaginationOptions } from '../utils.js';
+import * as schemas from '../schemas.js';
 import { paginationOptionsShape, parseArgument } from '../utils.js';
 import type { ActorRunListItem } from './actor.js';
 
@@ -72,7 +73,7 @@ export class RunCollectionClient extends ResourceCollectionClient {
     list(options: RunCollectionListOptions = {}): PaginatedIterator<ActorRunListItem> {
         const parsed = parseArgument(options, listOptionsSchema, 'RunCollectionListOptions');
 
-        return this._listPaginated(parsed);
+        return this._listPaginated(schemas.ListOfRuns, parsed);
     }
 }
 

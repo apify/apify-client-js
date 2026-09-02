@@ -1,9 +1,10 @@
 import type { ACT_JOB_STATUSES } from '@apify/consts';
 import { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
+import type { z } from 'zod';
 
 import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApifyRequestConfig } from '../http_client.js';
-import { catchNotFoundOrThrow, parseDateFields, pluckData } from '../utils.js';
+import { catchNotFoundOrThrow, parseResponse } from '../utils.js';
 import { ApiClient } from './api_client.js';
 
 /**
@@ -22,7 +23,11 @@ export const DEFAULT_TIMEOUT_MILLIS = 360 * 1000; // 6 minutes
  * @private
  */
 export class ResourceClient extends ApiClient {
-    protected async _get<T, R>(options: T = {} as T, timeoutMillis?: number): Promise<R | undefined> {
+    protected async _get<T, R>(
+        schema: z.ZodType,
+        options: T = {} as T,
+        timeoutMillis?: number,
+    ): Promise<R | undefined> {
         const requestOpts: ApifyRequestConfig = {
             url: this._url(),
             method: 'GET',
@@ -31,7 +36,7 @@ export class ResourceClient extends ApiClient {
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return parseDateFields(pluckData(response.data)) as R;
+            return parseResponse<R>(response, schema);
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }
@@ -39,7 +44,7 @@ export class ResourceClient extends ApiClient {
         return undefined;
     }
 
-    protected async _update<T, R>(newFields: T, timeoutMillis?: number): Promise<R> {
+    protected async _update<T, R>(schema: z.ZodType, newFields: T, timeoutMillis?: number): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'PUT',
@@ -47,7 +52,7 @@ export class ResourceClient extends ApiClient {
             data: newFields,
             timeout: timeoutMillis,
         });
-        return parseDateFields(pluckData(response.data)) as R;
+        return parseResponse<R>(response, schema);
     }
 
     protected async _delete(timeoutMillis?: number): Promise<void> {
@@ -68,6 +73,7 @@ export class ResourceClient extends ApiClient {
      * here to stay DRY.
      */
     protected async _waitForFinish<R extends { status: (typeof ACT_JOB_STATUSES)[keyof typeof ACT_JOB_STATUSES] }>(
+        schema: z.ZodType,
         options: WaitForFinishOptions = {},
     ): Promise<R> {
         const { waitSecs = MAX_WAIT_FOR_FINISH } = options;
@@ -95,7 +101,7 @@ export class ResourceClient extends ApiClient {
             };
             try {
                 const response = await this.httpClient.call(requestOpts);
-                job = parseDateFields(pluckData(response.data)) as R;
+                job = parseResponse<R>(response, schema);
             } catch (err) {
                 catchNotFoundOrThrow(err as ApifyApiError);
                 job = undefined;

@@ -1,5 +1,6 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
+import * as schemas from '../schemas.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
 import type { ActorEnvironmentVariable } from './actor_version.js';
 
@@ -44,7 +45,7 @@ export class ActorEnvVarClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-version-env-var-get
      */
     async get(): Promise<ActorEnvironmentVariable | undefined> {
-        return this._get();
+        return this._get(schemas.EnvVar);
     }
 
     /**
@@ -56,7 +57,7 @@ export class ActorEnvVarClient extends ResourceClient {
      */
     async update(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
         parseArgument(actorEnvVar, anyObjectSchema);
-        return this._update(actorEnvVar);
+        return this._update(schemas.EnvVar, actorEnvVar);
     }
 
     /**

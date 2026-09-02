@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
 import type { PaginatedIterator, PaginationOptions } from '../utils.js';
+import * as schemas from '../schemas.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
 import type { Schedule, ScheduleCreateOrUpdateData } from './schedule.js';
 
@@ -70,7 +71,7 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
     list(options: ScheduleCollectionListOptions = {}): PaginatedIterator<Schedule> {
         const parsed = parseArgument(options, listOptionsSchema, 'ScheduleCollectionListOptions');
 
-        return this._listPaginated(parsed);
+        return this._listPaginated(schemas.ListOfSchedules, parsed);
     }
 
     /**
@@ -83,7 +84,7 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
     async create(schedule?: ScheduleCreateOrUpdateData): Promise<Schedule> {
         parseArgument(schedule, scheduleCreateSchema);
 
-        return this._create(schedule);
+        return this._create(schemas.Schedule, schedule);
     }
 }
 

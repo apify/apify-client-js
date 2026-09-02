@@ -1,14 +1,15 @@
 import type { AddressInfo } from 'node:net';
 
 import type { Dictionary, RequestQueueClientListRequestsOptions } from 'apify-client';
-import { ApifyClient, ArgumentValidationError } from 'apify-client';
+import { ApifyClient, ArgumentValidationError, ResponseValidationError } from 'apify-client';
 import type { Request } from 'express';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper.js';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
+import * as fixtures from './mock_server/fixtures.js';
 import { mockServer } from './mock_server/server.js';
 
 describe('Request Queue methods', () => {
@@ -37,6 +38,7 @@ describe('Request Queue methods', () => {
     });
     afterEach(async () => {
         client = null as unknown as ApifyClient;
+        mockServer.setResponse(null);
         page.close().catch(() => {});
     });
 
@@ -54,7 +56,7 @@ describe('Request Queue methods', () => {
             validateRequest({ query: opts, endpointId: 'list-queues' });
 
             const browserRes = await page.evaluate((options) => client.requestQueues().list(options), opts);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: opts });
         });
 
@@ -64,7 +66,7 @@ describe('Request Queue methods', () => {
             validateRequest({});
 
             const browserRes = await page.evaluate((n) => client.requestQueues().getOrCreate(n), undefined);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({});
         });
 
@@ -76,7 +78,7 @@ describe('Request Queue methods', () => {
             validateRequest({ query: { name } });
 
             const browserRes = await page.evaluate((n) => client.requestQueues().getOrCreate(n), name);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { name } });
         });
     });
@@ -90,7 +92,7 @@ describe('Request Queue methods', () => {
             validateRequest({ query: {}, params: { queueId } });
 
             const browserRes = await page.evaluate((id) => client.requestQueue(id).get(), queueId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { queueId } });
         });
 
@@ -126,7 +128,7 @@ describe('Request Queue methods', () => {
             validateRequest({ query: {}, params: { queueId }, body: { name: queue.name } });
 
             const browserRes = await page.evaluate((id, opts) => client.requestQueue(id).update(opts), queueId, queue);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { queueId }, body: { name: queue.name } });
         });
 
@@ -143,7 +145,7 @@ describe('Request Queue methods', () => {
             });
 
             const browserRes = await page.evaluate((id, r) => client.requestQueue(id).addRequest(r), queueId, request);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { queueId }, body: request });
         });
 
@@ -179,7 +181,7 @@ describe('Request Queue methods', () => {
                 queueId,
                 request,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { forefront }, params: { queueId }, body: request });
         });
 
@@ -194,7 +196,7 @@ describe('Request Queue methods', () => {
             });
 
             const browserRes = await page.evaluate((id) => client.requestQueue(id).unlockRequests(), queueId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { queueId } });
         });
 
@@ -211,7 +213,7 @@ describe('Request Queue methods', () => {
                 queueId,
                 requestId,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { queueId, requestId } });
         });
 
@@ -240,7 +242,7 @@ describe('Request Queue methods', () => {
                 queueId,
                 requestId,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { queueId, requestId } });
         });
 
@@ -277,7 +279,7 @@ describe('Request Queue methods', () => {
                 queueId,
                 request,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { forefront }, params: { queueId, requestId }, body: request });
         });
 
@@ -301,7 +303,7 @@ describe('Request Queue methods', () => {
                 queueId,
                 request,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { queueId, requestId }, body: request });
         });
 
@@ -330,7 +332,7 @@ describe('Request Queue methods', () => {
                 queueId,
                 options,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: options, params: { queueId } });
         });
 
@@ -440,8 +442,17 @@ describe('Request Queue methods', () => {
                 requests,
                 options,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: options, params: { queueId }, body: requests });
+        });
+
+        test('batchAddRequests() throws on a response that does not match the API schema', async () => {
+            mockServer.setResponse({ body: { data: { processedRequests: 'none', unprocessedRequests: [] } } });
+            const requests = [{ url: 'http://example.com/1', uniqueKey: 'key-1' }];
+
+            await expect(client.requestQueue('some-id').batchAddRequests(requests)).rejects.toBeInstanceOf(
+                ResponseValidationError,
+            );
         });
 
         test('batchDeleteRequests() works', async () => {
@@ -458,7 +469,7 @@ describe('Request Queue methods', () => {
                 queueId,
                 requests,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ params: { queueId }, body: requests });
         });
 
@@ -478,7 +489,7 @@ describe('Request Queue methods', () => {
                 queueId,
                 options,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: options, params: { queueId } });
         });
 
@@ -502,7 +513,7 @@ describe('Request Queue methods', () => {
                 requestId,
                 options,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: options, params: { queueId, requestId } });
         });
 
@@ -521,7 +532,7 @@ describe('Request Queue methods', () => {
                 queueId,
                 requestId,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { queueId, requestId } });
         });
 
@@ -546,7 +557,7 @@ describe('Request Queue methods', () => {
                 queueId,
                 options,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: queryForValidation, params: { queueId } });
         });
 
@@ -568,13 +579,15 @@ describe('Request Queue methods', () => {
         test('paginateRequests() works', async () => {
             const queueId = 'some-id';
             const maxPageLimit = 90;
-            const requests = new Array(1000).fill(0).map((_, i) => ({ id: i.toString() }));
+            const requests = new Array(1000).fill(0).map((_, i) => ({ ...fixtures.request, id: i.toString() }));
+            const ids = (items: { id: string }[]) => items.map(({ id }) => id);
             const mockResponse = (items: Dictionary<any>[]) => {
                 mockServer.setResponse({
                     statusCode: 200,
                     body: {
                         data: {
                             items,
+                            limit: maxPageLimit,
                             nextCursor:
                                 items.length > 0 ? `the-request-after-${items[items.length - 1].id}` : undefined,
                         },
@@ -588,7 +601,7 @@ describe('Request Queue methods', () => {
             let expectedCursor;
             mockResponse(expectedItemsInPage);
             for await (const { items } of pagination) {
-                expect(items).toEqual(expectedItemsInPage);
+                expect(ids(items)).toEqual(ids(expectedItemsInPage));
                 // Validate the request for the current iteration page
                 validateRequest({
                     query: { cursor: expectedCursor, limit: maxPageLimit },
@@ -600,7 +613,7 @@ describe('Request Queue methods', () => {
                 mockResponse(expectedItemsInPage);
             }
 
-            const browserRequests = [{ id: 'aaa' }];
+            const browserRequests = [{ ...fixtures.request, id: 'aaa' }];
             mockResponse(browserRequests);
             const browserRes = await page.evaluate(
                 async (id, mpl) => {
@@ -614,7 +627,7 @@ describe('Request Queue methods', () => {
                 queueId,
                 maxPageLimit,
             );
-            expect(browserRes?.items).toEqual(browserRequests);
+            expect(ids(browserRes?.items ?? [])).toEqual(ids(browserRequests));
             validateRequest({ query: { limit: maxPageLimit }, params: { queueId } });
         });
 

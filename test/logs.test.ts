@@ -4,7 +4,7 @@ import { ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper.js';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
 import { mockServer } from './mock_server/server.js';
 
 describe('Log methods', () => {
@@ -45,7 +45,7 @@ describe('Log methods', () => {
             validateRequest({ query: {}, params: { logId } });
 
             const browserRes = await page.evaluate((id) => client.log(id).get(), logId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { logId } });
         });
 

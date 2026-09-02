@@ -14,6 +14,7 @@ import {
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client.js';
 import type { Dataset, DatasetStatistics } from '../models.js';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
+import * as schemas from '../schemas.js';
 import {
     anyObjectSchema,
     applyQueryParamsToUrl,
@@ -22,7 +23,7 @@ import {
     isNonArrayObject,
     paginationOptionsShape,
     parseArgument,
-    pluckData,
+    parseResponse,
 } from '../utils.js';
 
 // A predicate, not a `z.object()` arm, which would walk and copy every key of every pushed item.
@@ -131,7 +132,7 @@ export class DatasetClient<
      * @see https://docs.apify.com/api/v2/dataset-get
      */
     async get(): Promise<Dataset | undefined> {
-        return this._get({}, SMALL_TIMEOUT_MILLIS);
+        return this._get(schemas.Dataset, {}, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -144,7 +145,7 @@ export class DatasetClient<
     async update(newFields: DatasetClientUpdateOptions): Promise<Dataset> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(newFields, SMALL_TIMEOUT_MILLIS);
+        return this._update(schemas.Dataset, newFields, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -344,7 +345,7 @@ export class DatasetClient<
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return cast(pluckData(response.data));
+            return parseResponse(response, schemas.DatasetStatistics);
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }

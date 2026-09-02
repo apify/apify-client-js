@@ -6,6 +6,7 @@ import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
 import type { ActorCollectionListItem } from '../models.js';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
+import * as schemas from '../schemas.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
 import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor.js';
 import type { ActorVersion } from './actor_version.js';
@@ -71,7 +72,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
     list(options: ActorCollectionListOptions = {}): PaginatedIterator<ActorCollectionListItem> {
         const parsed = parseArgument(options, listOptionsSchema, 'ActorCollectionListOptions');
 
-        return this._listPaginated(parsed);
+        return this._listPaginated(schemas.ListOfActors, parsed);
     }
 
     /**
@@ -84,7 +85,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
     async create(actor: ActorCollectionCreateOptions): Promise<Actor> {
         parseArgument(actor, actorCreateSchema);
 
-        return this._create(actor);
+        return this._create(schemas.Actor, actor);
     }
 }
 

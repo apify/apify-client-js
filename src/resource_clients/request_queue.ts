@@ -9,6 +9,7 @@ import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { MEDIUM_TIMEOUT_MILLIS, ResourceClient, SMALL_TIMEOUT_MILLIS } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_client.js';
+import { ResponseValidationError } from '../response_validation_error.js';
 import type {
     RequestQueue,
     RequestQueueClientAddRequestResult,
@@ -23,6 +24,7 @@ import type {
     RequestQueueClientRequestToUpdate,
     RequestQueueClientUnlockRequestsResult,
 } from '../models.js';
+import * as schemas from '../schemas.js';
 import {
     anyObjectSchema,
     cast,
@@ -31,7 +33,7 @@ import {
     mutuallyExclusive,
     parseArgument,
     parseDateFields,
-    pluckData,
+    parseResponse,
     RequestQueuePaginationIterator,
     sliceArrayByByteLength,
 } from '../utils.js';
@@ -168,7 +170,7 @@ export class RequestQueueClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/request-queue-get
      */
     async get(): Promise<RequestQueue | undefined> {
-        return this._get({}, SMALL_TIMEOUT_MILLIS);
+        return this._get(schemas.RequestQueue, {}, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -181,7 +183,7 @@ export class RequestQueueClient extends ResourceClient {
     async update(newFields: RequestQueueClientUpdateOptions): Promise<RequestQueue> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(newFields, SMALL_TIMEOUT_MILLIS);
+        return this._update(schemas.RequestQueue, newFields, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -216,7 +218,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.RequestQueueHead);
     }
 
     /**
@@ -268,7 +270,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.LockedRequestQueueHead);
     }
 
     /**
@@ -327,7 +329,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.RequestRegistration);
     }
 
     /**
@@ -342,7 +344,7 @@ export class RequestQueueClient extends ResourceClient {
         parseArgument(requests, batchAddRequestsSchema);
         const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientAddRequestOptions');
 
-        const { data } = await this.httpClient.call({
+        const response = await this.httpClient.call({
             url: this._url('requests/batch'),
             method: 'POST',
             timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
@@ -353,7 +355,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(data)));
+        return parseResponse(response, schemas.BatchAddResult);
     }
 
     protected async _batchAddRequestsWithRetries(
@@ -398,6 +400,9 @@ export class RequestQueueClient extends ResourceClient {
                     break;
                 }
             } catch (err) {
+                // A response the specification does not describe is reported, as everywhere else: the server may well
+                // have added the batch, so calling it unprocessed would hide the mismatch behind a wrong answer.
+                if (err instanceof ResponseValidationError) throw err;
                 log.exception(err as Error, 'Request batch insert failed');
                 // When something fails and http client does not retry, the remaining requests are treated as unprocessed.
                 // This ensures that this method does not throw and keeps the signature.
@@ -489,10 +494,15 @@ export class RequestQueueClient extends ResourceClient {
             const requestsInBatch = sliceArrayByByteLength(slicedRequests, payloadSizeLimitBytes, i);
             const requestPromise = this._batchAddRequestsWithRetries(requestsInBatch, options);
             executingRequests.add(requestPromise);
-            void requestPromise.then((batchAddResult) => {
-                executingRequests.delete(requestPromise);
-                individualResults.push(batchAddResult);
-            });
+            // A rejection reaches the caller through the awaits below; this bookkeeping chain only has to avoid
+            // turning it into an unhandled one of its own.
+            void requestPromise.then(
+                (batchAddResult) => {
+                    executingRequests.delete(requestPromise);
+                    individualResults.push(batchAddResult);
+                },
+                () => undefined,
+            );
             if (executingRequests.size >= maxParallel) {
                 await Promise.race(executingRequests);
             }
@@ -528,7 +538,7 @@ export class RequestQueueClient extends ResourceClient {
     ): Promise<RequestQueueClientBatchDeleteRequestsResult> {
         parseArgument(requests, batchDeleteRequestsSchema);
 
-        const { data } = await this.httpClient.call({
+        const response = await this.httpClient.call({
             url: this._url('requests/batch'),
             method: 'DELETE',
             timeout: Math.min(SMALL_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
@@ -538,7 +548,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(data)));
+        return parseResponse(response, schemas.BatchDeleteResult);
     }
 
     /**
@@ -558,7 +568,7 @@ export class RequestQueueClient extends ResourceClient {
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return cast(parseDateFields(pluckData(response.data)));
+            return parseResponse(response, schemas.Request);
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }
@@ -592,7 +602,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.RequestRegistration);
     }
 
     /**
@@ -660,7 +670,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.RequestLockInfo);
     }
 
     /**
@@ -719,7 +729,7 @@ export class RequestQueueClient extends ResourceClient {
                 }),
             });
 
-            return cast(parseDateFields(pluckData(response.data)));
+            return parseResponse(response, schemas.ListOfRequests);
         };
 
         const paginatedListPromise = getPaginatedList(parsed);
@@ -776,7 +786,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.UnlockRequestsResult);
     }
 
     /**
