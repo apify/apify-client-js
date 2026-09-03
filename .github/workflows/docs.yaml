@@ -33,14 +33,14 @@ jobs:
                   git config user.email 'github-actions[bot]@users.noreply.github.com'
 
             - name: Install pnpm and dependencies
-              uses: apify/actions/pnpm-install@v1.4.1
+              uses: apify/actions/pnpm-install@v1.5.0
 
             - name: Update docs theme
               run: pnpm --filter apify-client-website update @apify/docs-theme
 
             # We do this as early as possible to prevent conflicts if someone else would push something in the meantime
             - name: Commit the updated package.json and lockfile
-              uses: apify/actions/signed-commit@v1.4.1
+              uses: apify/actions/signed-commit@v1.5.0
               with:
                   message: 'chore: Automatic theme updating workflow [skip ci]'
                   add: 'website/package.json pnpm-lock.yaml'
@@ -62,7 +62,7 @@ jobs:
                   path: ./website/build
 
             - name: Deploy artifact to GitHub Pages
-              uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+              uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
             - name: Invalidate CloudFront cache
               run: |
