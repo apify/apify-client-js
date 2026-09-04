@@ -15,14 +15,14 @@ importers:
   .:
     dependencies:
       '@apify/consts':
-        specifier: ^2.50.0
-        version: 2.56.1
+        specifier: ^3.0.1
+        version: 3.0.1
       '@apify/log':
-        specifier: ^2.2.6
-        version: 2.5.47
+        specifier: ^3.0.1
+        version: 3.0.1
       '@apify/utilities':
-        specifier: ^2.23.2
-        version: 2.35.4
+        specifier: ^3.0.1
+        version: 3.0.1
       '@crawlee/types':
         specifier: ^3.3.0
         version: 3.17.0
@@ -350,6 +350,10 @@ packages:
   '@apify/consts@2.56.1':
     resolution: {integrity: sha512-ZfrnC2dcv1+XfkBr48Pxth8Z2qwbkUIETtAmnlrE+nLXi8LbYa5mNywEH1q+wiTomIdicboAkYjnZPCtWNZELA==}
 
+  '@apify/consts@3.0.1':
+    resolution: {integrity: sha512-ZPmfdb4qt143R+6/jFYVCQDoHGInl24Ntz8ltEAMW7tFHSdiXnQoZtDgydZYT06vw6gOtPa/jEXgSneq8FM+uA==}
+    engines: {node: '>=22'}
+
   '@apify/datastructures@2.0.6':
     resolution: {integrity: sha512-hI/Q5cCjXXI/g4OPwX+/xuk+JsOtXRhKNXl2wnq/nKmdrji3nYCc9vGsAEc1iXVbs16xQMZy5uRhoY3XTABovA==}
 
@@ -385,6 +389,10 @@ packages:
   '@apify/log@2.5.47':
     resolution: {integrity: sha512-mr2M0DBJuZBKbPEqwuSDpZ7101nxwSFfHbxfZiEPErJznDiRKUkb1u9tsRoC7DJVEsN2idQfYX2/a0m9Tr5FZA==}
 
+  '@apify/log@3.0.1':
+    resolution: {integrity: sha512-lZbSxqW78S5TqEtDrE9o71MtqUnpQJ96FYaEMk2RtiAPH+/ZEAf76DUaFKP5my9KxozohyQLmmg1isbySXXu0A==}
+    engines: {node: '>=22'}
+
   '@apify/oxlint-config@0.3.0':
     resolution: {integrity: sha512-njNpYIfowurrM3+TDhhb/LLADAPzozs9+hTTMB/OiRAKrUHOqF6KIsUCYI8IGZAB1hl9vXQnFmKQzTysbAJ7mA==}
     peerDependencies:
@@ -419,6 +427,10 @@ packages:
 
   '@apify/utilities@2.35.4':
     resolution: {integrity: sha512-SlgH9vQxcbFzHDrEt4LFEtpLbnGrJ1l+umvXoYEyjsmAN+Qdh6aGNG8K7fJk7fUnq/oXmyYavmG+Q45aCNuFfg==}
+
+  '@apify/utilities@3.0.1':
+    resolution: {integrity: sha512-Py701iCY26eSLvdG45T9c9uJS2+xqI4j4rHwGqG84RUOmPD8T6Zua5MflSoWwZ+GM/+ABIJtsza/gqVvyJeESg==}
+    engines: {node: '>=22'}
 
   '@babel/code-frame@7.29.7':
     resolution: {integrity: sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==}
@@ -9499,6 +9511,8 @@ snapshots:
 
   '@apify/consts@2.56.1': {}
 
+  '@apify/consts@3.0.1': {}
+
   '@apify/datastructures@2.0.6': {}
 
   '@apify/docs-search-modal@1.4.0(@algolia/client-search@5.56.0)(@babel/core@7.29.7)(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react-is@16.13.1)(react@19.2.8)(search-insights@2.17.3)':
@@ -9597,6 +9611,11 @@ snapshots:
       '@apify/consts': 2.56.1
       ansi-colors: 4.1.3
 
+  '@apify/log@3.0.1':
+    dependencies:
+      '@apify/consts': 3.0.1
+      ansi-colors: 4.1.3
+
   '@apify/oxlint-config@0.3.0(oxlint@1.79.0(oxlint-tsgolint@7.0.2001))':
     dependencies:
       oxlint: 1.79.0(oxlint-tsgolint@7.0.2001)
@@ -9659,6 +9678,11 @@ snapshots:
     dependencies:
       '@apify/consts': 2.56.1
       '@apify/log': 2.5.47
+
+  '@apify/utilities@3.0.1':
+    dependencies:
+      '@apify/consts': 3.0.1
+      '@apify/log': 3.0.1
 
   '@babel/code-frame@7.29.7':
     dependencies:
