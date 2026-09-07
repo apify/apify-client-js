@@ -4,7 +4,7 @@ import type { JsonValue, TypedArray } from 'type-fest';
 import { z } from 'zod';
 
 import type { ApifyApiError } from './apify_api_error.js';
-import { ArgumentValidationError } from './argument_validation_error.js';
+import { parseArgument } from '@apify/validations';
 import type {
     RequestQueueClientListRequestsOptions,
     RequestQueueClientListRequestsResult,
@@ -19,30 +19,7 @@ const RECORD_NOT_FOUND_TYPE = 'record-not-found';
 const RECORD_OR_TOKEN_NOT_FOUND_TYPE = 'record-or-token-not-found';
 const MIN_COMPRESS_BYTES = 1024;
 
-// Zod installs its English locale as a module-level side effect but ships `"sideEffects": false`, so
-// any tree-shaking bundler drops it and every message degrades to a bare "Invalid input". Passing it
-// in per parse keeps them intact without reaching into the zod config the whole process shares.
-const { localeError } = z.locales.en();
-
-/**
- * Parses `value` with `schema`, returning the typed result (with schema defaults applied).
- * Throws {@link ArgumentValidationError} on failure.
- *
- * The optional `label` names the interface being validated and is appended to every error line
- * (e.g. ``... at `memory` in `ActorStartOptions` ``).
- * @internal
- */
-export function parseArgument<TValue, TSchema extends z.ZodType>(
-    value: TValue,
-    schema: TSchema,
-    label?: string,
-): TValue & z.output<TSchema> {
-    const result = schema.safeParse(value, { error: localeError });
-    if (!result.success) {
-        throw new ArgumentValidationError(result.error, value, label);
-    }
-    return result.data as TValue & z.output<TSchema>;
-}
+export { parseArgument };
 
 /**
  * Accepts any non-null, non-array object as a predicate for `z.custom()`.

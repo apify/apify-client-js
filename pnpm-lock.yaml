@@ -23,6 +23,9 @@ importers:
       '@apify/utilities':
         specifier: ^3.0.1
         version: 3.0.1
+      '@apify/validations':
+        specifier: ^1.1.0
+        version: 1.1.0
       '@crawlee/types':
         specifier: ^3.3.0
         version: 3.17.0
@@ -48,8 +51,8 @@ importers:
         specifier: ^4.0.0
         version: 4.41.0
       zod:
-        specifier: ^4.0.0
-        version: 4.4.3
+        specifier: ^4.5.4
+        version: 4.5.4
     devDependencies:
       '@apify/oxlint-config':
         specifier: ^0.3.0
@@ -430,6 +433,10 @@ packages:
 
   '@apify/utilities@3.0.1':
     resolution: {integrity: sha512-Py701iCY26eSLvdG45T9c9uJS2+xqI4j4rHwGqG84RUOmPD8T6Zua5MflSoWwZ+GM/+ABIJtsza/gqVvyJeESg==}
+    engines: {node: '>=22'}
+
+  '@apify/validations@1.1.0':
+    resolution: {integrity: sha512-1rXw3YOl1rGYRJurac9zLx0NrlrRktewxjVsTL3HxcaZTSJb4e2VTi1LA8QxonCFp1O323sCkNu6CbBisRfdeg==}
     engines: {node: '>=22'}
 
   '@babel/code-frame@7.29.7':
@@ -7674,6 +7681,10 @@ packages:
     resolution: {integrity: sha512-u82N74LFzG8ca+dD8puPnplTXoGH4fTPpVGuIbt36G3qvNlkvfD0lEAZSxaly3KX8TS/L1A1gsCEmvKmBcVbkQ==}
     engines: {node: ^10 || ^12 || >=14}
 
+  postcss@8.5.28:
+    resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
+    engines: {node: ^10 || ^12 || >=14}
+
   preact@10.29.7:
     resolution: {integrity: sha512-DCHYrK/B10yUD3ZjLfhZ3WIE/9Vf9VFUODcRE2dRomTYDpJk6z6L9wecSfhfE6M9ZTHUdyQkoC46arIDhEV84Q==}
     peerDependencies:
@@ -9240,8 +9251,8 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.4.3:
-    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+  zod@4.5.4:
+    resolution: {integrity: sha512-sC95tT5iHHH9gtpj6A81kh+NEaRAUFN+qlUPDUbRfOMvNf5QCBqsb3WgvnpVtK5Y+4UfA6KqufotuTvMGiTlsA==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -9683,6 +9694,10 @@ snapshots:
     dependencies:
       '@apify/consts': 3.0.1
       '@apify/log': 3.0.1
+
+  '@apify/validations@1.1.0':
+    dependencies:
+      zod: 4.5.4
 
   '@babel/code-frame@7.29.7':
     dependencies:
@@ -19240,6 +19255,12 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
+  postcss@8.5.28:
+    dependencies:
+      nanoid: 3.3.18
+      picocolors: 1.1.1
+      source-map-js: 1.2.1
+
   preact@10.29.7: {}
 
   pretty-error@4.0.0:
@@ -20704,7 +20725,7 @@ snapshots:
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
-      postcss: 8.5.26
+      postcss: 8.5.28
       rolldown: 1.1.5
       tinyglobby: 0.2.17
     optionalDependencies:
@@ -21180,7 +21201,7 @@ snapshots:
 
   zod@3.25.76: {}
 
-  zod@4.4.3: {}
+  zod@4.5.4: {}
 
   zwitch@2.0.4: {}
 
