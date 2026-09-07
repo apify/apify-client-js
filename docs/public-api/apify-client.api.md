@@ -7,6 +7,7 @@
 import type { ACT_JOB_STATUSES } from '@apify/consts';
 import { ACTOR_JOB_STATUSES } from '@apify/consts';
 import { ACTOR_PERMISSION_LEVEL } from '@apify/consts';
+import { ArgumentValidationError } from '@apify/validations';
 import type { AxiosInstance } from 'axios';
 import type { AxiosInterceptorManager } from 'axios';
 import type { AxiosRequestConfig } from 'axios';
@@ -27,7 +28,6 @@ import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 import type { ValueOf } from '@apify/consts';
 import type { ValueOf as ValueOf_2 } from 'type-fest';
 import type { WEBHOOK_EVENT_TYPES } from '@apify/consts';
-import type { z } from 'zod';
 
 // @public
 export interface AccountAndUsageLimits extends Omit<Schemas['AccountLimits'], keyof AccountAndUsageLimitsRePointed>, AccountAndUsageLimitsRePointed {
@@ -651,11 +651,7 @@ interface ApifyResponse<T = any> extends AxiosResponse<T> {
     config: ApifyRequestConfig & InternalAxiosRequestConfig;
 }
 
-// @public
-export class ArgumentValidationError extends Error {
-    constructor(error: z.ZodError, value: unknown, label?: string);
-    readonly issues: z.ZodError['issues'];
-}
+export { ArgumentValidationError }
 
 // @public
 export interface BaseActorVersion<SourceType extends ActorSourceType> extends Omit<GeneratedVersion, keyof ActorVersionClientNarrowings | keyof ActorVersionRePointed | ActorVersionSourceLocation>, ActorVersionRePointed {
