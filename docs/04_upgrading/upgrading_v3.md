@@ -169,7 +169,7 @@ Two return types change as a result of describing what the endpoints really retu
 
 ## Actor run input is no longer `unknown`
 
-<ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink>, <ApiLink to="class/ActorClient#call">`call()`</ApiLink> and <ApiLink to="class/ActorClient#validateInput">`validateInput()`</ApiLink> took their `input` as `unknown`, so any value compiled, including ones the client can't send. The parameter is now `ActorInput`, an alias for `object | string`: a JSON-serializable object or array, or a `string` or `Buffer` sent as-is when `contentType` is set. A number, a boolean or `null` no longer compiles. To start an Actor without input, omit the argument or pass `undefined`.
+<ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink>, <ApiLink to="class/ActorClient#call">`call()`</ApiLink> and <ApiLink to="class/ActorClient#validateInput">`validateInput()`</ApiLink> took their `input` as `unknown`, so any value compiled, including ones the client can't send. The parameter is now `ActorInput`, an alias for `object | string`: a JSON-serializable object or array, or a `string` or `Buffer` sent as-is when `contentType` is set. A number, a boolean or `null` no longer compiles, and neither does a value typed `unknown`, which has to be narrowed or cast first. To start an Actor without input, omit the argument or pass `undefined`.
 
 ```diff
 - await client.actor('my-actor').call(null, { memory: 1024 }); // v2
