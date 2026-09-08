@@ -3,8 +3,7 @@
  * specification downloaded into `tmp/openapi.json`.
  *
  * Run via `pnpm generate:models`, which downloads the specification first, generates the types next to these
- * schemas, and records the specification version afterwards. Requires a Node release that strips TypeScript
- * syntax natively (>=22.18 or >=23.6).
+ * schemas, and records the specification version afterwards.
  *
  * A path can be passed instead, for a candidate specification that is not published yet. The recorded version
  * deliberately stays put in that case -- it names the published specification -- so schemas generated that way

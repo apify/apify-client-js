@@ -3,7 +3,6 @@
  *
  * Run via `pnpm generate:models`, which downloads the specification first, generates the zod schemas next to these
  * types, and records its version afterwards.
- * Requires a Node release that strips TypeScript syntax natively (>=22.18 or >=23.6).
  *
  * A path can be passed instead, for a candidate specification that is not published yet. The recorded version
  * deliberately stays put in that case -- it names the published specification -- so types generated that way must
