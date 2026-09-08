@@ -169,11 +169,13 @@ Two return types change as a result of describing what the endpoints really retu
 
 ## Actor run input is no longer `unknown`
 
-<ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink>, <ApiLink to="class/ActorClient#call">`call()`</ApiLink> and <ApiLink to="class/ActorClient#validateInput">`validateInput()`</ApiLink> took their `input` as `unknown`, so any value compiled, including ones the client can't send. The parameter is now `ActorInput`, an alias for `object | string`: a JSON-serializable object or array, or a `string` or `Buffer` sent as-is when `contentType` is set. A number, a boolean or `null` no longer compiles, and neither does a value typed `unknown`, which has to be narrowed or cast first. To start an Actor without input, omit the argument or pass `undefined`.
+<ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink>, <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, <ApiLink to="class/ActorClient#validateInput">`validateInput()`</ApiLink> and <ApiLink to="class/RunClient#metamorph">`RunClient.metamorph()`</ApiLink> took their `input` as `unknown`, so any value compiled, including ones the client can't send. The parameter is now `ActorInput`, an alias for `object | string`: a JSON-serializable object or array, or a `string` or `Buffer` sent as-is when `contentType` is set. A number, a boolean or `null` no longer compiles, and neither does a value typed `unknown`, which has to be narrowed or cast first. To start an Actor without input, omit the argument or pass `undefined`.
 
 ```diff
 - await client.actor('my-actor').call(null, { memory: 1024 }); // v2
 + await client.actor('my-actor').call(undefined, { memory: 1024 }); // v3
 ```
+
+`metamorph()`'s `input` is optional now, so `metamorph('target-actor')` compiles where it previously needed an explicit `undefined`.
 
 Nothing changes at runtime. `TaskClient.start()` and `call()` keep taking a `Dictionary`: a task's input overrides are merged into the input saved on the task, so they're always an object.

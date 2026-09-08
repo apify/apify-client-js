@@ -2,9 +2,10 @@ import type { AddressInfo } from 'node:net';
 import { setTimeout as setTimeoutNode } from 'node:timers/promises';
 
 import c from 'ansi-colors';
+import type { ActorInput } from 'apify-client';
 import { ApifyClient, ArgumentValidationError } from 'apify-client';
 import type { Page } from 'puppeteer';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
 
 import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
 import * as fixtures from './mock_server/fixtures.js';
@@ -278,6 +279,10 @@ describe('Run methods', () => {
             );
             expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest(expectedRequest);
+        });
+
+        test('metamorph() takes the same input type as the Actor run methods', () => {
+            expectTypeOf(client.run('some-run-id').metamorph).parameter(1).toEqualTypeOf<ActorInput | undefined>();
         });
 
         test('reboot() works', async () => {

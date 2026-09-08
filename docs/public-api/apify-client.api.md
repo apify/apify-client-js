@@ -3559,7 +3559,7 @@ export class RunClient extends ResourceClient {
     getStreamedLog(options?: GetStreamedLogOptions): Promise<StreamedLog | undefined>;
     keyValueStore(): KeyValueStoreClient;
     log(): LogClient;
-    metamorph(targetActorId: string, input: unknown, options?: RunMetamorphOptions): Promise<ActorRun>;
+    metamorph(targetActorId: string, input?: ActorInput, options?: RunMetamorphOptions): Promise<ActorRun>;
     reboot(): Promise<ActorRun>;
     requestQueue(): RequestQueueClient;
     resurrect(options?: RunResurrectOptions): Promise<ActorRun>;
