@@ -86,7 +86,7 @@ This affects numeric options such as `waitSecs`, `timeout` and `memory`, and dat
 
 Some options were declared in the TypeScript types but always rejected by the client's own validation before a request was ever sent: `chunkSize` on `DatasetClient.downloadItems()` and `createItemsPublicUrl()`, and `signature` on `createItemsPublicUrl()` and `createKeysPublicUrl()`. These are no longer part of the option types, so passing them is now a compile-time error instead of a runtime throw.
 
-The reverse also happened: `chunkSize` now works on every paginating `list()` method. In v2 only `DatasetClient.listItems()` accepted it - everywhere else it type-checked and then threw.
+The reverse also happened: `chunkSize` now works on every `list()` method that takes pagination options. In v2 only `DatasetClient.listItems()` accepted it - everywhere else it type-checked and then threw.
 
 ## Published types now follow the OpenAPI specification
 
@@ -169,4 +169,4 @@ Two return types change as a result of describing what the endpoints really retu
 
 ## `versions().list()` and `envVars().list()` take no options
 
-<ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> now take no arguments. The two endpoints behind them have never accepted `offset`, `limit` or `desc`, so passing them had no effect. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those options, deprecated since v2.21.0, are gone from the package. A call that passed an options object no longer compiles. Drop the argument and the call returns the same items as before.
+<ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> now take no arguments. Neither endpoint reads `offset`, `limit` or `desc`, and both return every item in one response, so `chunkSize` had nothing to size either. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those four options, deprecated since v2.21.0, are gone from the package. A call that passed an options object no longer compiles. Drop the argument and the call returns the same items as before.
