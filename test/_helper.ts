@@ -59,6 +59,19 @@ export const DEFAULT_OPTIONS = {
     token: 'default-token',
 };
 
+/**
+ * What `page.evaluate()` hands back for `value`. Puppeteer returns the result by value, and a `Date` survives
+ * that only as an empty object, so a browser result is compared against `asBrowserResult(res)` rather than `res`.
+ */
+export function asBrowserResult(value: unknown): unknown {
+    if (value instanceof Date) return {};
+    if (Array.isArray(value)) return value.map(asBrowserResult);
+    if (value && typeof value === 'object') {
+        return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, asBrowserResult(entry)]));
+    }
+    return value;
+}
+
 const getExpectedQuery = (callQuery = {}) => {
     const query = optsToQuery(callQuery);
     return {

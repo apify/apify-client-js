@@ -6,7 +6,8 @@ import { ApifyClient, ArgumentValidationError } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper.js';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
+import * as fixtures from './mock_server/fixtures.js';
 import { mockServer } from './mock_server/server.js';
 import { MOCKED_ACTOR_LOGS_PROCESSED } from './mock_server/test_utils.js';
 
@@ -52,7 +53,7 @@ describe('Run methods', () => {
             validateRequest({ query, endpointId: 'list-runs' });
 
             const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query });
         });
 
@@ -73,7 +74,7 @@ describe('Run methods', () => {
             validateRequest({ query: expectedQuery, endpointId: 'list-runs' });
 
             const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: expectedQuery, endpointId: 'list-runs' });
         });
 
@@ -93,7 +94,7 @@ describe('Run methods', () => {
             validateRequest({ query: expectedQuery, endpointId: 'list-runs' });
 
             const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: expectedQuery });
         });
 
@@ -112,7 +113,7 @@ describe('Run methods', () => {
             validateRequest({ query: expectedQuery, endpointId: 'list-runs' });
 
             const browserRes = await page.evaluate((opts) => client.runs().list(opts), query);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: expectedQuery, endpointId: 'list-runs' });
         });
     });
@@ -126,7 +127,7 @@ describe('Run methods', () => {
             validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).get(), runId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { runId } });
         });
 
@@ -138,7 +139,7 @@ describe('Run methods', () => {
             validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).get(), runId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { runId } });
         });
 
@@ -150,7 +151,7 @@ describe('Run methods', () => {
             validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).abort(), runId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { runId } });
         });
 
@@ -168,7 +169,7 @@ describe('Run methods', () => {
             validateRequest({ query: options, params: { runId } });
 
             const browserRes = await page.evaluate((rId, opts) => client.run(rId).resurrect(opts), runId, options);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: options, params: { runId } });
         });
 
@@ -207,7 +208,7 @@ describe('Run methods', () => {
                 input,
                 options,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({
                 query: actualQuery,
                 params: { runId },
@@ -242,7 +243,7 @@ describe('Run methods', () => {
                 input,
                 contentType,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest(expectedRequest);
         });
 
@@ -275,7 +276,7 @@ describe('Run methods', () => {
                 runId,
                 targetActorId,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest(expectedRequest);
         });
 
@@ -287,19 +288,19 @@ describe('Run methods', () => {
             validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).reboot(), runId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { runId } });
         });
 
         test('waitForFinish() works', async () => {
             const runId = 'some-run-id';
             const waitSecs = 0.1;
-            const data = { status: 'SUCCEEDED' };
+            const data = { ...fixtures.run, status: 'SUCCEEDED' };
             const body = { data };
 
             setTimeout(() => mockServer.setResponse({ body }), (waitSecs * 1000) / 2);
             const res = await client.run(runId).waitForFinish({ waitSecs });
-            expect(res).toEqual(data);
+            expect(res).toMatchObject({ id: fixtures.run.id, status: 'SUCCEEDED' });
             validateRequest({ query: { waitForFinish: 0 }, params: { runId } });
 
             const browserRes = await page.evaluate(
@@ -307,19 +308,19 @@ describe('Run methods', () => {
                 runId,
                 waitSecs,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { waitForFinish: 0 }, params: { runId } });
         });
 
         test('waitForFinish() resolves immediately with waitSecs: 0', async () => {
             const runId = 'some-run-id';
             const waitSecs = 0;
-            const data = { status: 'SUCCEEDED' };
+            const data = { ...fixtures.run, status: 'SUCCEEDED' };
             const body = { data };
 
             setTimeout(() => mockServer.setResponse({ body }), 10);
             const res = await client.run(runId).waitForFinish({ waitSecs });
-            expect(res).toEqual(data);
+            expect(res).toMatchObject({ id: fixtures.run.id, status: 'SUCCEEDED' });
             validateRequest({ query: { waitForFinish: 0 }, params: { runId } });
 
             const browserRes = await page.evaluate(
@@ -327,7 +328,7 @@ describe('Run methods', () => {
                 runId,
                 waitSecs,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { waitForFinish: 0 }, params: { runId } });
         });
 
@@ -340,7 +341,7 @@ describe('Run methods', () => {
             validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).dataset().get(), runId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { runId } });
         });
 
@@ -353,7 +354,7 @@ describe('Run methods', () => {
             validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).keyValueStore().get(), runId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { runId } });
         });
 
@@ -366,7 +367,7 @@ describe('Run methods', () => {
             validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).requestQueue().get(), runId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { runId } });
         });
 
@@ -379,7 +380,7 @@ describe('Run methods', () => {
             validateRequest({ query: {}, params: { runId } });
 
             const browserRes = await page.evaluate((rId) => client.run(rId).log().get(), runId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { runId } });
         });
 

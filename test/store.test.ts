@@ -4,7 +4,7 @@ import type { StoreCollectionListOptions } from 'apify-client';
 import { ApifyClient } from 'apify-client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper.js';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
 import { mockServer } from './mock_server/server.js';
 
 describe('Store', () => {
@@ -49,15 +49,14 @@ describe('Store', () => {
         };
 
         const res: any = client && (await client.store().list(opts));
-        expect(res.id).toEqual('store-list');
+        expect(res.items).toHaveLength(1);
         validateRequest({ query: opts });
 
         const browserRes: any = await page.evaluate(
             async (options: StoreCollectionListOptions) => client && client.store().list(options),
             opts,
         );
-        expect(browserRes.id).toEqual('store-list');
-        expect(browserRes).toEqual(res);
+        expect(browserRes).toEqual(asBrowserResult(res));
         validateRequest({ query: opts });
     });
 });

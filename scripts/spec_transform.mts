@@ -36,17 +36,19 @@ export function transformDateTime(
 }
 
 /**
- * Moves a `required` that sits next to a `$ref` inside an `allOf` up to the branch's parent.
+ * Moves a `required` that an `allOf` branch cannot carry on its own up to the branch's parent.
  *
- * OpenAPI 3.1 lets a `$ref` carry siblings, and the specification uses that to say which of
- * `RequestBase`'s fields a stored `Request` always carries. `openapi-typescript` drops a `required` in
- * that position, so all three arrive optional. Every branch of an `allOf` constrains the same instance
- * the parent does, so moving the list up is an equivalent rewrite -- and one the generator honours,
- * through its `WithRequired` helper.
+ * Two shapes qualify. A `required` next to a `$ref`: OpenAPI 3.1 lets a `$ref` carry siblings, and the
+ * specification uses that to say which of `RequestBase`'s fields a stored `Request` always carries, but
+ * `openapi-typescript` drops a `required` in that position, so all three arrive optional. And a branch that
+ * is nothing but a `required`, which the specification uses to make an inherited field mandatory
+ * (`EnvVarRequest`), and which `openapi-typescript` types as `unknown`. Every branch of an `allOf`
+ * constrains the same instance the parent does, so moving the list up is an equivalent rewrite -- and one
+ * the generator honours, through its `WithRequired` helper. A branch left empty by the move is dropped.
  *
- * TODO: Remove once `openapi-typescript` keeps a `required` that sits next to a `$ref`.
+ * TODO: Remove once `openapi-typescript` keeps a `required` in both positions.
  */
-export function hoistRefSiblingRequired<T>(document: T): T {
+export function hoistAllOfRequired<T>(document: T): T {
     return hoist(document) as T;
 }
 
@@ -63,12 +65,15 @@ function hoist(node: unknown): unknown {
     const required = new Set(Array.isArray(rewritten.required) ? (rewritten.required as string[]) : []);
     const sizeBefore = required.size;
 
-    rewritten.allOf = branches.map((branch: unknown) => {
-        if (branch === null || typeof branch !== 'object' || Array.isArray(branch)) return branch;
+    rewritten.allOf = branches.flatMap((branch: unknown) => {
+        if (branch === null || typeof branch !== 'object' || Array.isArray(branch)) return [branch];
         const { $ref, required: branchRequired, ...rest } = branch as Record<string, unknown>;
-        if ($ref === undefined || !Array.isArray(branchRequired)) return branch;
+        if (!Array.isArray(branchRequired)) return [branch];
+        // A branch with other constraints keeps its `required`: it applies to the properties it declares.
+        if ($ref === undefined && Object.keys(rest).length > 0) return [branch];
         for (const key of branchRequired as string[]) required.add(key);
-        return { $ref, ...rest };
+        if ($ref === undefined) return [];
+        return [{ $ref, ...rest }];
     });
 
     if (required.size > sizeBefore) rewritten.required = [...required];

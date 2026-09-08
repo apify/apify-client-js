@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
-import { absolutizeDocLinks, hoistRefSiblingRequired, transformDateTime } from '../scripts/spec_transform.mts';
+import { absolutizeDocLinks, hoistAllOfRequired, transformDateTime } from '../scripts/spec_transform.mts';
 
 const printer = ts.createPrinter();
 const blankSource = ts.createSourceFile('t.ts', '', ts.ScriptTarget.Latest);
@@ -83,13 +83,13 @@ describe('absolutizeDocLinks', () => {
     });
 });
 
-describe('hoistRefSiblingRequired', () => {
+describe('hoistAllOfRequired', () => {
     it('moves a required next to a $ref up to the parent of the allOf', () => {
         const schema = {
             allOf: [{ $ref: '#/components/schemas/RequestBase', required: ['id', 'url'] }, { properties: {} }],
         };
 
-        expect(hoistRefSiblingRequired(schema)).toEqual({
+        expect(hoistAllOfRequired(schema)).toEqual({
             allOf: [{ $ref: '#/components/schemas/RequestBase' }, { properties: {} }],
             required: ['id', 'url'],
         });
@@ -101,7 +101,7 @@ describe('hoistRefSiblingRequired', () => {
             required: ['id'],
         };
 
-        expect(hoistRefSiblingRequired(schema)).toEqual({
+        expect(hoistAllOfRequired(schema)).toEqual({
             allOf: [{ $ref: '#/components/schemas/Base' }],
             required: ['id', 'url'],
         });
@@ -110,7 +110,7 @@ describe('hoistRefSiblingRequired', () => {
     it('keeps the other siblings of the $ref where they are', () => {
         const schema = { allOf: [{ $ref: '#/components/schemas/Base', required: ['id'], description: 'a base' }] };
 
-        expect(hoistRefSiblingRequired(schema)).toEqual({
+        expect(hoistAllOfRequired(schema)).toEqual({
             allOf: [{ $ref: '#/components/schemas/Base', description: 'a base' }],
             required: ['id'],
         });
@@ -121,26 +121,35 @@ describe('hoistRefSiblingRequired', () => {
             components: { schemas: { Request: { allOf: [{ $ref: '#/x', required: ['id'] }] } } },
         };
 
-        expect(hoistRefSiblingRequired(document)).toEqual({
+        expect(hoistAllOfRequired(document)).toEqual({
             components: { schemas: { Request: { allOf: [{ $ref: '#/x' }], required: ['id'] } } },
         });
     });
 
-    it('leaves a required that carries no $ref alongside it alone', () => {
+    it('hoists a branch that is nothing but a required, and drops the emptied branch', () => {
+        const schema = { allOf: [{ $ref: '#/components/schemas/EnvVar' }, { required: ['value'] }] };
+
+        expect(hoistAllOfRequired(schema)).toEqual({
+            allOf: [{ $ref: '#/components/schemas/EnvVar' }],
+            required: ['value'],
+        });
+    });
+
+    it('leaves a required that applies to the properties the branch itself declares alone', () => {
         const schema = { allOf: [{ properties: { id: {} }, required: ['id'] }] };
 
-        expect(hoistRefSiblingRequired(schema)).toEqual(schema);
+        expect(hoistAllOfRequired(schema)).toEqual(schema);
     });
 
     it('leaves a bare $ref alone', () => {
         const schema = { allOf: [{ $ref: '#/components/schemas/Base' }] };
 
-        expect(hoistRefSiblingRequired(schema)).toEqual(schema);
+        expect(hoistAllOfRequired(schema)).toEqual(schema);
     });
 
     it('leaves a document with no allOf untouched', () => {
         const document = { components: { schemas: { Base: { type: 'object', required: ['id'] } } } };
 
-        expect(hoistRefSiblingRequired(document)).toEqual(document);
+        expect(hoistAllOfRequired(document)).toEqual(document);
     });
 });
