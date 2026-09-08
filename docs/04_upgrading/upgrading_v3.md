@@ -88,6 +88,15 @@ Some options were declared in the TypeScript types but always rejected by the cl
 
 The reverse also happened: `chunkSize` now works on every paginating `list()` method. In v2 only `DatasetClient.listItems()` accepted it - everywhere else it type-checked and then threw.
 
+## API errors are thrown as subclasses of `ApifyApiError`
+
+An error response from the API now throws the <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> subclass matching its HTTP status code: <ApiLink to="class/InvalidRequestError">`InvalidRequestError`</ApiLink> (400), <ApiLink to="class/UnauthorizedError">`UnauthorizedError`</ApiLink> (401), <ApiLink to="class/ForbiddenError">`ForbiddenError`</ApiLink> (403), <ApiLink to="class/NotFoundError">`NotFoundError`</ApiLink> (404), <ApiLink to="class/ConflictError">`ConflictError`</ApiLink> (409), <ApiLink to="class/RateLimitError">`RateLimitError`</ApiLink> (429) or <ApiLink to="class/ServerError">`ServerError`</ApiLink> (5xx). Any other status code still throws a plain `ApifyApiError`. Every subclass extends `ApifyApiError`, so existing `instanceof ApifyApiError` checks keep working. For details, see [Telling API errors apart](../02_concepts/02_error-handling.md#telling-api-errors-apart).
+
+Two things change as a result:
+
+- `error.name`, and with it the first line of the printed stack, now carries the subclass name, such as `NotFoundError: Actor task was not found` instead of `ApifyApiError: Actor task was not found`. Log tooling that matches on the `ApifyApiError` name has to match the subclass names as well.
+- Methods that swallow a 404 response, such as `get()` returning `undefined` or `delete()` succeeding silently, now swallow every 404, whatever its `type`. In v2 they swallowed only the `record-not-found` and `record-or-token-not-found` types and threw for any other 404.
+
 ## Published types now follow the OpenAPI specification
 
 Every output type the client publishes, such as <ApiLink to="interface/Dataset">`Dataset`</ApiLink>, <ApiLink to="interface/KeyValueStore">`KeyValueStore`</ApiLink>, <ApiLink to="interface/Build">`Build`</ApiLink>, <ApiLink to="interface/ActorRun">`ActorRun`</ApiLink>, <ApiLink to="interface/Webhook">`Webhook`</ApiLink>, <ApiLink to="interface/Schedule">`Schedule`</ApiLink>, <ApiLink to="interface/Task">`Task`</ApiLink>, <ApiLink to="interface/RequestQueue">`RequestQueue`</ApiLink>, and <ApiLink to="interface/User">`User`</ApiLink>, is now declared on top of a type generated from the published [OpenAPI specification](https://docs.apify.com/api/v2) instead of being hand-written. Several of the previous hand-written types were wrong, and some even contradicted the client's own runtime behavior. For example, `nextExclusiveStartKey` was typed as a required `string`, but `listKeys()` has always compared it to `null`.
