@@ -1,7 +1,7 @@
 import type { ApifyClient } from '../apify_client.js';
 import type { HttpClient } from '../http_client.js';
 import type { PaginatedResponse, PaginationOptions } from '../utils.js';
-import { toPath, toPathSegment } from '../utils.js';
+import { SCANNED_COUNT, toPath, toPathSegment } from '../utils.js';
 
 /** @private */
 export interface ApiClientOptions {
@@ -112,17 +112,24 @@ export abstract class ApiClient {
             limit: minForLimitParam(options.limit, chunkSize),
         } as T);
 
+        // A page can scan more items than it returns (see `SCANNED_COUNT`). The next offset and the stop condition
+        // follow the scanned number: advancing by `items.length` would re-scan items the previous page already
+        // returned, and stopping at an empty page would end the iteration in front of items a filter hid.
+        const scannedItems = (page: R): number =>
+            Math.max((page as { [SCANNED_COUNT]?: number })[SCANNED_COUNT] ?? 0, page.items.length);
+
         async function* asyncGenerator() {
             let currentPage = await paginatedListPromise;
             yield* currentPage.items;
             const offset = options.offset ?? 0;
             const limit = Math.min(options.limit || currentPage.total, currentPage.total);
 
-            let currentOffset = offset + currentPage.items.length;
-            let remainingItems = Math.min(currentPage.total - offset, limit) - currentPage.items.length;
+            let pageScanned = scannedItems(currentPage);
+            let currentOffset = offset + pageScanned;
+            let remainingItems = Math.min(currentPage.total - offset, limit) - pageScanned;
 
             while (
-                currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
+                pageScanned > 0 && // Continue only if the last page scanned some items.
                 remainingItems > 0
             ) {
                 const newOptions = {
@@ -132,8 +139,9 @@ export abstract class ApiClient {
                 } as T;
                 currentPage = await getPaginatedList(newOptions);
                 yield* currentPage.items;
-                currentOffset += currentPage.items.length;
-                remainingItems -= currentPage.items.length;
+                pageScanned = scannedItems(currentPage);
+                currentOffset += pageScanned;
+                remainingItems -= pageScanned;
             }
         }
 

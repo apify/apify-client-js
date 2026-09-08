@@ -24,6 +24,7 @@ import {
     paginationOptionsShape,
     parseArgument,
     parseResponse,
+    SCANNED_COUNT,
 } from '../utils.js';
 
 // A predicate, not a `z.object()` arm, which would walk and copy every key of every pushed item.
@@ -408,15 +409,21 @@ export class DatasetClient<
     }
 
     private _createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
-        return {
+        const page: PaginatedList<Data> = {
             items: response.data,
             total: Number(response.headers['x-apify-pagination-total']),
             offset: Number(response.headers['x-apify-pagination-offset']),
-            count: response.data.length, // because x-apify-pagination-count returns invalid values when hidden/empty items are skipped
+            // `x-apify-pagination-count` reports the items scanned, which a filter can leave above the items returned.
+            count: response.data.length,
             limit: Number(response.headers['x-apify-pagination-limit']), // API returns 999999999999 when no limit is used
             // TODO: Replace this once https://github.com/apify/apify-core/issues/3503 is solved
             desc: JSON.parse(response.headers['x-apify-pagination-desc'] ?? userProvidedDesc),
         };
+
+        // The offset iterator paginates by the scanned number, so it travels with the page outside its public shape.
+        return Object.defineProperty(page, SCANNED_COUNT, {
+            value: Number(response.headers['x-apify-pagination-count']) || 0,
+        });
     }
 }
 

@@ -325,12 +325,12 @@ export class RequestQueuePaginationIterator {
                 cursor: nextCursor,
                 exclusiveStartId: nextExclusiveStartId,
             });
-            // There are no more pages to iterate
-            if (page.items.length === 0) return;
-            yield page;
+            // A server-side `filter` can leave a page empty while `nextCursor` still points at more requests, so an
+            // empty page is skipped rather than taken for the end. Only a missing cursor or the reached limit ends
+            // the iteration.
+            if (page.items.length > 0) yield page;
             iterateItemCount += page.items.length;
-            // Limit reached stopping to iterate
-            if ((this.limit && iterateItemCount >= this.limit) || !page.nextCursor) return;
+            if (!page.nextCursor || (this.limit && iterateItemCount >= this.limit)) return;
 
             nextCursor = page.nextCursor;
             nextExclusiveStartId = undefined; // see comment above - delete it for any page after the first one, and paginate with cursor
@@ -413,6 +413,16 @@ export interface PaginatedList<Data> extends PaginatedResponse<Data> {
     /** Should the results be in descending order. */
     desc: boolean;
 }
+
+/**
+ * Key under which a page of dataset items carries the number of items the API scanned to produce it, as a
+ * non-enumerable property that stays out of the page's public shape. Dataset filters (`clean`, `skipEmpty`,
+ * `skipHidden`) drop items only after `offset` and `limit` have been applied, so a page can scan up to `limit` items
+ * yet return fewer, or none at all; the `x-apify-pagination-count` header reports the scanned number. The offset
+ * iterator advances and terminates by it, and falls back to `items.length` on a page without it.
+ * @internal
+ */
+export const SCANNED_COUNT = Symbol('scannedCount');
 
 /**
  * Type representing both a Promise of a paginated list and an async iterable.
