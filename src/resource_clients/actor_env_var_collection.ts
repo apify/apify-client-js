@@ -48,20 +48,19 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     /**
      * Lists all environment variables of this Actor version.
      *
-     * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
-     * items in a single API call is limited.
+     * The endpoint returns every environment variable in one response, so awaiting the return value (as you would
+     * with a Promise) gets the whole list.
      * ```javascript
-     * const paginatedList = await client.list();
-     *```
+     * const { items } = await client.list();
+     * ```
      *
-     * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
-     * retrieved.
+     * Asynchronous iteration is also supported, and yields the environment variables one by one.
      *
      * ```javascript
      * for await (const singleItem of client.list()) {...}
      * ```
      *
-     * @returns A paginated iterator of environment variables.
+     * @returns The environment variables, awaitable as a whole list or iterable one by one.
      * @see https://docs.apify.com/api/v2/act-version-env-vars-get
      */
     list(): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
