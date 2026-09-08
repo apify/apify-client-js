@@ -4,7 +4,14 @@ import { setTimeout } from 'node:timers/promises';
 
 import c from 'ansi-colors';
 import type { ActorCollectionCreateOptions } from 'apify-client';
-import { ActorListSortBy, ActorSourceType, ApifyApiError, ApifyClient, LoggerActorRedirect } from 'apify-client';
+import {
+    ActorListSortBy,
+    ActorSourceType,
+    ApifyApiError,
+    ApifyClient,
+    ArgumentValidationError,
+    LoggerActorRedirect,
+} from 'apify-client';
 import express from 'express';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
@@ -652,6 +659,14 @@ describe('Actor methods', () => {
                 validateRequest({ query: {}, params: { actorId, versionNumber } });
             });
 
+            test('rejects an empty version number', async () => {
+                // An empty ID makes `ApiClient` build the collection URL, so the client would address
+                // every version instead of one, and a 404 could no longer be read as a missing version.
+                const call = () => client.actor('some-id').version('');
+                expect(call).toThrow(ArgumentValidationError);
+                expect(call).toThrow('Too small');
+            });
+
             test('update() works', async () => {
                 const actorId = 'some-user/some-id';
                 const versionNumber = '0.0';
@@ -789,6 +804,12 @@ describe('Actor methods', () => {
                 );
                 expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({ query: {}, params: { actorId, versionNumber, envVarName } });
+            });
+
+            test('rejects an empty environment variable name', async () => {
+                const call = () => client.actor('some-id').version('0.0').envVar('');
+                expect(call).toThrow(ArgumentValidationError);
+                expect(call).toThrow('Too small');
             });
 
             test('update() works', async () => {

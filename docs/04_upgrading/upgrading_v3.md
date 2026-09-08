@@ -117,6 +117,12 @@ Lookups by key keep the old behavior, because there the 404 is about the record 
 
 A <ApiLink to="class/StreamedLog">`StreamedLog`</ApiLink> whose run no longer exists logs a warning and stops, the same way it handles any other error while streaming.
 
+### An empty string is no longer accepted as a version number or environment variable name
+
+<ApiLink to="class/ActorClient#version">`ActorClient.version()`</ApiLink>, <ApiLink to="class/ActorClient#build">`ActorClient.build()`</ApiLink> and <ApiLink to="class/ActorVersionClient#envVar">`ActorVersionClient.envVar()`</ApiLink> now throw an <ApiLink to="class/ArgumentValidationError">`ArgumentValidationError`</ApiLink> for an empty string, which is what every other resource identifier has always done.
+
+An empty identifier used to build the URL of the whole collection instead of one member, so `actor.version('')` read every version of the Actor and a 404 no longer meant a missing version. Rejecting it up front keeps the 404 rules above unambiguous.
+
 ## Published types now follow the OpenAPI specification
 
 Every output type the client publishes, such as <ApiLink to="interface/Dataset">`Dataset`</ApiLink>, <ApiLink to="interface/KeyValueStore">`KeyValueStore`</ApiLink>, <ApiLink to="interface/Build">`Build`</ApiLink>, <ApiLink to="interface/ActorRun">`ActorRun`</ApiLink>, <ApiLink to="interface/Webhook">`Webhook`</ApiLink>, <ApiLink to="interface/Schedule">`Schedule`</ApiLink>, <ApiLink to="interface/Task">`Task`</ApiLink>, <ApiLink to="interface/RequestQueue">`RequestQueue`</ApiLink>, and <ApiLink to="interface/User">`User`</ApiLink>, is now declared on top of a type generated from the published [OpenAPI specification](https://docs.apify.com/api/v2) instead of being hand-written. Several of the previous hand-written types were wrong, and some even contradicted the client's own runtime behavior. For example, `nextExclusiveStartKey` was typed as a required `string`, but `listKeys()` has always compared it to `null`.
