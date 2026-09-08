@@ -143,6 +143,7 @@ describe('ApifyApiError', () => {
             },
         });
     });
+
     describe('subclass by HTTP status', () => {
         const response = (status: number, data: unknown = { error: { type: 'some-type', message: 'Some message' } }) =>
             ({ status, data, config: { method: 'get', url: 'http://localhost/v2/acts' } }) as any;

@@ -95,7 +95,7 @@ An error response from the API now throws the <ApiLink to="class/ApifyApiError">
 Two things change as a result:
 
 - `error.name`, and with it the first line of the printed stack, now carries the subclass name, such as `NotFoundError: Actor task was not found` instead of `ApifyApiError: Actor task was not found`. Log tooling that matches on the `ApifyApiError` name has to match the subclass names as well.
-- Methods that swallow a 404 response, such as `get()` returning `undefined` or `delete()` succeeding silently, now swallow every 404, whatever its `type`. In v2 they swallowed only the `record-not-found` and `record-or-token-not-found` types and threw for any other 404.
+- Methods that swallow a 404 response, such as `get()` returning `undefined` or `delete()` succeeding silently, now swallow every 404, whatever its `type`. In v2 they swallowed only the `record-not-found` and `record-or-token-not-found` types and threw for any other 404. The same helper backs <ApiLink to="class/RunClient#waitForFinish">`waitForFinish()`</ApiLink> and <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, which read a swallowed 404 as "the run is not visible yet", so a 404 that used to throw now keeps them polling until `waitSecs` runs out.
 
 ## Published types now follow the OpenAPI specification
 

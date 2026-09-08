@@ -216,17 +216,17 @@ export class ConflictError extends ApifyApiError {}
 
 /**
  * Thrown when the Apify API responds with HTTP 429 Too Many Requests. The client retries such
- * requests, so the error surfaces only once the retries are exhausted.
+ * requests, so the error surfaces once the retries are exhausted.
  */
 export class RateLimitError extends ApifyApiError {}
 
 /**
  * Thrown when the Apify API responds with an HTTP 5xx status. The client retries such requests,
- * so the error surfaces only once the retries are exhausted.
+ * so the error surfaces once the retries are exhausted.
  */
 export class ServerError extends ApifyApiError {}
 
-const ERROR_CLASS_BY_STATUS: Record<number, typeof ApifyApiError> = {
+const ERROR_CLASS_BY_STATUS: Partial<Record<number, typeof ApifyApiError>> = {
     400: InvalidRequestError,
     401: UnauthorizedError,
     403: ForbiddenError,
