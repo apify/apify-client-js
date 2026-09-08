@@ -435,18 +435,25 @@ describe('Actor methods', () => {
         });
 
         test('start(), call() and validateInput() take the same input type', () => {
+            // An interface gets no implicit index signature, so a `Record`-based input type rejects it.
+            interface UserInput {
+                url: string;
+            }
+
             const actor = client.actor('some-id');
             expectTypeOf(actor.start).parameter(0).toEqualTypeOf<ActorInput | undefined>();
             expectTypeOf(actor.call).parameter(0).toEqualTypeOf<ActorInput | undefined>();
             expectTypeOf(actor.validateInput).parameter(0).toEqualTypeOf<ActorInput | undefined>();
 
             expectTypeOf<{ url: string }>().toExtend<ActorInput>();
+            expectTypeOf<UserInput>().toExtend<ActorInput>();
             expectTypeOf<string[]>().toExtend<ActorInput>();
             expectTypeOf<string>().toExtend<ActorInput>();
             expectTypeOf<Buffer>().toExtend<ActorInput>();
             expectTypeOf<number>().not.toExtend<ActorInput>();
             expectTypeOf<boolean>().not.toExtend<ActorInput>();
             expectTypeOf<null>().not.toExtend<ActorInput>();
+            expectTypeOf<unknown>().not.toExtend<ActorInput>();
         });
 
         test('build() works', async () => {
