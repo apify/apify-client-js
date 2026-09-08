@@ -193,13 +193,7 @@ export class ActorEnvVarClient extends ResourceClient {
 export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
     create(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable>;
-    list(_options?: ActorEnvVarCollectionListOptions): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable>;
-}
-
-// @public @deprecated (undocumented)
-export interface ActorEnvVarCollectionListOptions extends PaginationOptions {
-    // (undocumented)
-    desc?: boolean;
+    list(): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable>;
 }
 
 // @public
@@ -428,13 +422,7 @@ interface ActorVersionClientNarrowings {
 export class ActorVersionCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
     create(actorVersion: ActorVersion): Promise<FinalActorVersion>;
-    list(_options?: ActorVersionCollectionListOptions): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion>;
-}
-
-// @public @deprecated (undocumented)
-export interface ActorVersionCollectionListOptions extends PaginationOptions {
-    // (undocumented)
-    desc?: boolean;
+    list(): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion>;
 }
 
 // @public

@@ -1,6 +1,6 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
-import type { PaginatedList, PaginationOptions } from '../utils.js';
+import type { PaginatedList } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
 import type { ActorVersion, FinalActorVersion } from './actor_version.js';
@@ -61,9 +61,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      * @returns A paginated iterator of Actor versions.
      * @see https://docs.apify.com/api/v2/act-versions-get
      */
-    list(
-        _options: ActorVersionCollectionListOptions = {},
-    ): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
+    list(): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
         return this._listPaginated(schemas.ListOfVersions());
     }
 
@@ -79,14 +77,6 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
 
         return this._create(schemas.Version(), actorVersion);
     }
-}
-
-/**
- * @deprecated No options are used in the current API implementation.
- * https://github.com/apify/apify-client-js/issues/799
- */
-export interface ActorVersionCollectionListOptions extends PaginationOptions {
-    desc?: boolean;
 }
 
 export type ActorVersionListResult = Pick<PaginatedList<FinalActorVersion>, 'total' | 'items'>;

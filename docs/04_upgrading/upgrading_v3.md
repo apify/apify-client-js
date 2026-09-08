@@ -166,3 +166,7 @@ Two return types change as a result of describing what the endpoints really retu
 
 - <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink> was typed as a `string`, even though the endpoint returns the log as a list of entries. It's now typed as <ApiLink to="interface/ScheduleInvoked">`ScheduleInvoked[]`</ApiLink>, each entry carrying `message`, `level` and `createdAt`.
 - <ApiLink to="interface/TaskPublicConfig">`TaskPublicConfig`</ApiLink> now follows the specification: `publishedAt` is optional and read-only, and `categorization`, which the specification doesn't describe, is gone from the type.
+
+## `versions().list()` and `envVars().list()` take no options
+
+<ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> now take no arguments. The two endpoints behind them have never accepted `offset`, `limit` or `desc`, so passing them had no effect. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those options, deprecated since v2.21.0, are gone from the package. A call that passed an options object no longer compiles. Drop the argument and the call returns the same items as before.

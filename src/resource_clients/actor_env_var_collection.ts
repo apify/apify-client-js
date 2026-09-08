@@ -1,6 +1,6 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
-import type { PaginatedList, PaginationOptions } from '../utils.js';
+import type { PaginatedList } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
 import type { ActorEnvironmentVariable } from './actor_version.js';
@@ -64,9 +64,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      * @returns A paginated iterator of environment variables.
      * @see https://docs.apify.com/api/v2/act-version-env-vars-get
      */
-    list(
-        _options: ActorEnvVarCollectionListOptions = {},
-    ): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
+    list(): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
         return this._listPaginated(schemas.ListOfEnvVars());
     }
 
@@ -81,15 +79,6 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
         parseArgument(actorEnvVar, actorEnvVarSchema);
         return this._create(schemas.EnvVar(), actorEnvVar);
     }
-}
-
-/**
- * @deprecated No options are used in the current API implementation.
- * https://github.com/apify/apify-client-js/issues/799
- * @since Added in 2.1.0
- */
-export interface ActorEnvVarCollectionListOptions extends PaginationOptions {
-    desc?: boolean;
 }
 
 /**
