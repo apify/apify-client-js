@@ -24,6 +24,58 @@ try {
 }
 ```
 
+## Telling API errors apart
+
+The client throws the <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> subclass that matches the HTTP status code of the response, so a `catch` block can branch on `instanceof` instead of comparing status codes:
+
+| Status | Subclass |
+| --- | --- |
+| 400 | <ApiLink to="class/InvalidRequestError">`InvalidRequestError`</ApiLink> |
+| 401 | <ApiLink to="class/UnauthorizedError">`UnauthorizedError`</ApiLink> |
+| 403 | <ApiLink to="class/ForbiddenError">`ForbiddenError`</ApiLink> |
+| 404 | <ApiLink to="class/NotFoundError">`NotFoundError`</ApiLink> |
+| 409 | <ApiLink to="class/ConflictError">`ConflictError`</ApiLink> |
+| 429 | <ApiLink to="class/RateLimitError">`RateLimitError`</ApiLink> |
+| 5xx | <ApiLink to="class/ServerError">`ServerError`</ApiLink> |
+
+Any other status code throws a plain `ApifyApiError`. Every subclass extends `ApifyApiError`, so `instanceof ApifyApiError` still matches all of them.
+
+```js
+import { ApifyClient, NotFoundError, RateLimitError } from 'apify-client';
+
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+
+try {
+    await client.actor('my-actor').call({ url: 'https://example.com' });
+} catch (error) {
+    if (error instanceof NotFoundError) {
+        // The Actor doesn't exist, or the token can't see it.
+    } else if (error instanceof RateLimitError) {
+        // The retries are exhausted, so back off and try again later.
+    } else {
+        throw error;
+    }
+}
+```
+
+Errors with the same status code differ in `type`, the machine-readable identifier the API returns. The field is typed with the known values, so your editor autocompletes them:
+
+```js
+import { ApifyApiError, ApifyClient } from 'apify-client';
+
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+
+try {
+    await client.actor('my-actor').call({ url: 'https://example.com' }, { memory: 32768 });
+} catch (error) {
+    if (error instanceof ApifyApiError && error.type === 'actor-memory-limit-exceeded') {
+        // The account has no memory left for another run, so wait and start it later.
+    } else {
+        throw error;
+    }
+}
+```
+
 ## Invalid arguments
 
 Before sending a request, the client validates the arguments you passed. When a value doesn't match the expected shape, the client throws an <ApiLink to="class/ArgumentValidationError">`ArgumentValidationError`</ApiLink> without reaching the API. Its `message` names the offending field and the value it received. For programmatic inspection, `issues` carries the structured [zod](https://zod.dev) issues and `cause` carries the original `ZodError`.

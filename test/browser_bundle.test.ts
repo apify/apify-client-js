@@ -43,6 +43,7 @@ describe('browser bundle', () => {
                 run: client.run('some-run').constructor.name as string,
                 build: client.build('some-build').constructor.name as string,
                 apiError: (window as any).Apify.ApifyApiError.name as string,
+                notFoundError: (window as any).Apify.NotFoundError.name as string,
             };
         });
 
@@ -51,5 +52,6 @@ describe('browser bundle', () => {
         expect(names.run).toBe('RunClient');
         expect(names.build).toBe('BuildClient');
         expect(names.apiError).toBe('ApifyApiError');
+        expect(names.notFoundError).toBe('NotFoundError');
     });
 });
