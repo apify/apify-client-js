@@ -70,11 +70,11 @@
         "build:node": "tsc",
         "build:browser": "rsbuild build",
         "spec:fetch": "node scripts/openapi_spec.mts fetch",
-        "generate:types": "node scripts/openapi_spec.mts fetch && node scripts/generate_types.mts && node scripts/openapi_spec.mts record-version"
+        "generate:models": "node scripts/openapi_spec.mts fetch && node scripts/generate_types.mts && node scripts/generate_schemas.mts && node scripts/openapi_spec.mts record-version"
     },
     "apify": {
         "openapiSpec": {
-            "version": "v2-2026-08-03T111309Z"
+            "version": "v2-2026-08-31T125154Z"
         }
     },
     "dependencies": {

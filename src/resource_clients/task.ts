@@ -8,13 +8,13 @@ import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_client.js';
 import type { Task, TaskPublicConfig } from '../models.js';
 import type { Dictionary } from '../utils.js';
+import * as schemas from '../schemas.js';
 import {
     anyObjectSchema,
     cast,
     catchNotFoundOrThrow,
     parseArgument,
-    parseDateFields,
-    pluckData,
+    parseResponse,
     stringifyWebhooksToBase64,
 } from '../utils.js';
 import type { ActorLastRunOptions, ActorRun, ActorStartOptions } from './actor.js';
@@ -88,7 +88,7 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-get
      */
     async get(): Promise<Task | undefined> {
-        return this._get();
+        return this._get(schemas.Task);
     }
 
     /**
@@ -101,7 +101,7 @@ export class TaskClient extends ResourceClient {
     async update(newFields: TaskUpdateData): Promise<Task> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(newFields);
+        return this._update(schemas.Task, newFields);
     }
 
     /**
@@ -192,7 +192,7 @@ export class TaskClient extends ResourceClient {
         };
 
         const response = await this.httpClient.call(request);
-        return cast(parseDateFields(pluckData(response.data)));
+        return parseResponse(response, schemas.Run);
     }
 
     /**

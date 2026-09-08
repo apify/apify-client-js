@@ -5,6 +5,7 @@ import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
 import type { PaginatedList, PaginationOptions } from '../utils.js';
+import * as schemas from '../schemas.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
 import type { KeyValueStore } from './key_value_store.js';
 
@@ -73,7 +74,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     ): Promise<KeyValueStoreCollectionListResult> & AsyncIterable<KeyValueStore> {
         const parsed = parseArgument(options, listOptionsSchema, 'KeyValueStoreCollectionClientListOptions');
 
-        return this._listPaginated(parsed);
+        return this._listPaginated(schemas.ListOfKeyValueStores, parsed);
     }
 
     /**
@@ -91,7 +92,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
         parseArgument(name, nameSchema);
         parseArgument(options?.schema, schemaSchema); // TODO: Add schema validation
 
-        return this._getOrCreate(name, options);
+        return this._getOrCreate(schemas.KeyValueStore, name, options);
     }
 }
 

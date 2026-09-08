@@ -52,9 +52,15 @@ src/
 ├── apify_client.ts              # Main client class (entry point)
 ├── http_client.ts               # Low-level HTTP layer (Axios-based)
 ├── apify_api_error.ts           # Custom error class
+├── argument_validation_error.ts # Thrown for arguments that fail their zod schema
+├── response_validation_error.ts # Thrown for API responses that fail their zod schema
 ├── utils.ts                     # Utility functions
+├── models.ts                    # Published output types, declared on top of the generated ones
+├── schemas.ts                   # Response schemas the clients validate with, on top of the generated ones
+├── spec_guards.ts               # Compile-time checks tying the hand-written layers to the generated ones
 ├── generated/
-│   └── api.ts                   # Types generated from the OpenAPI specification (do not edit)
+│   ├── api.ts                   # Types generated from the OpenAPI specification (do not edit)
+│   └── schemas.ts               # Zod schemas generated from the OpenAPI specification (do not edit)
 ├── base/
 │   ├── api_client.ts            # Base for all clients
 │   ├── resource_client.ts       # Base for single-resource clients
@@ -71,12 +77,15 @@ test/
 ├── _helper.ts                   # Test utilities
 └── mock_server/                 # Mock API server for testing
     ├── server.ts
+    ├── fixtures.ts              # Spec-shaped response bodies the routes answer with
     └── routes/                  # Mock API routes
 
 scripts/
 ├── openapi_spec.mts             # Downloads the published OpenAPI specification
 ├── generate_types.mts           # Generates src/generated/api.ts from it
-└── spec_transform.mts           # Spec postprocessing the generator applies
+├── generate_schemas.mts         # Generates src/generated/schemas.ts from it
+├── schema_emitter.mts           # The OpenAPI-to-zod emitter behind generate_schemas.mts
+└── spec_transform.mts           # Spec postprocessing both generators apply
 ```
 
 ### Key Patterns
@@ -91,6 +100,8 @@ scripts/
 **Automatic Retries**: The client retries failed requests with exponential backoff (network errors, 500+, 429).
 
 **Date Parsing**: Fields ending in "At" are automatically converted to Date objects.
+
+**Response Validation**: Every response a resource method turns into a typed value is validated against the zod schema generated for it in `src/generated/schemas.ts` (via `src/schemas.ts`, which widens the few the API is known to deviate on). Unknown fields and unknown enum values pass through; anything else that does not match throws a `ResponseValidationError`. The mock server therefore answers with spec-shaped bodies from `test/mock_server/fixtures.ts`, and `fixtures.test.ts` keeps those in step with the schemas.
 
 ## Development Workflow
 
@@ -111,7 +122,7 @@ pnpm tsc-check-tests       # TypeScript check test files
 pnpm tsc-check-scripts     # TypeScript check maintainer scripts
 
 # API specification (needs Node 22.18+, for native TypeScript support)
-pnpm generate:types        # Regenerate src/generated/api.ts from the published specification
+pnpm generate:models       # Regenerate src/generated/{api,schemas}.ts from the published specification
 pnpm spec:fetch            # Only download the specification, into git-ignored tmp/
 
 # Linting & Formatting

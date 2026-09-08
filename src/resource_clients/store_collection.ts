@@ -4,6 +4,7 @@ import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
 import type { ActorStoreList } from '../models.js';
 import type { PaginatedIterator, PaginationOptions } from '../utils.js';
+import * as schemas from '../schemas.js';
 import { paginationOptionsShape, parseArgument } from '../utils.js';
 
 export type { ActorStoreList, PricingInfo } from '../models.js';
@@ -73,7 +74,7 @@ export class StoreCollectionClient extends ResourceCollectionClient {
     list(options: StoreCollectionListOptions = {}): PaginatedIterator<ActorStoreList> {
         const parsed = parseArgument(options, listOptionsSchema, 'StoreCollectionListOptions');
 
-        return this._listPaginated(parsed);
+        return this._listPaginated(schemas.ListOfStoreActors, parsed);
     }
 }
 

@@ -7,6 +7,7 @@ import bodyParser from 'body-parser';
 import compression from 'compression';
 import express from 'express';
 
+import * as fixtures from './fixtures.js';
 // Routers
 import { actors } from './routes/actors.js';
 import { builds } from './routes/builds.js';
@@ -96,14 +97,18 @@ export function createDefaultApp(v2Router = express.Router()) {
     app.use('/external', external);
 
     // Attaching V2 routers
-    v2Router.use('/actors/redirect-actor-id', async (_, res) => {
-        res.json({ data: { name: 'redirect-actor-name', id: 'redirect-run-id' } });
+    // The Actor whose name prefixes the redirected log lines, and the run that starting it yields.
+    v2Router.get('/actors/redirect-actor-id', async (_, res) => {
+        res.json({ data: { ...fixtures.actor, id: 'redirect-actor-id', name: 'redirect-actor-name' } });
+    });
+    v2Router.post('/actors/redirect-actor-id/runs', async (_, res) => {
+        res.json({ data: { ...fixtures.run, id: 'redirect-run-id', actId: 'redirect-actor-id' } });
     });
     v2Router.use('/actors', actors);
     v2Router.use('/actor-builds', builds);
     v2Router.use('/actor-runs/redirect-run-id/log', streamLogChunks);
     v2Router.use('/actor-runs/redirect-run-id', async (_, res) => {
-        res.json({ data: { id: 'redirect-run-id', actId: 'redirect-actor-id', status: 'SUCCEEDED' } });
+        res.json({ data: { ...fixtures.run, id: 'redirect-run-id', actId: 'redirect-actor-id', status: 'SUCCEEDED' } });
     });
 
     v2Router.use('/actor-runs/econnreset-run-id/log', async (req: express.Request, res: express.Response) => {
@@ -115,7 +120,9 @@ export function createDefaultApp(v2Router = express.Router()) {
         req.socket.destroy();
     });
     v2Router.use('/actor-runs/econnreset-run-id', async (_, res) => {
-        res.json({ data: { id: 'econnreset-run-id', actId: 'redirect-actor-id', status: 'SUCCEEDED' } });
+        res.json({
+            data: { ...fixtures.run, id: 'econnreset-run-id', actId: 'redirect-actor-id', status: 'SUCCEEDED' },
+        });
     });
 
     v2Router.use('/actor-runs', runs);
