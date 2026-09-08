@@ -154,6 +154,7 @@ try {
         console.log(error.message);
         // Response from GET https://api.apify.com/v2/acts/my-actor does not match the API schema:
         // Invalid input: expected string, received null at `name`
+        // The API returned something its OpenAPI specification does not describe. Please report this at https://github.com/apify/apify-client-js/issues.
         console.log(error.issues); // [{ code: 'invalid_type', expected: 'string', path: ['name'], ... }]
     }
 }

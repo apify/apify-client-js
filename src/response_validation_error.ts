@@ -1,6 +1,10 @@
 import { ArgumentValidationError } from '@apify/validations';
 import type { z } from 'zod';
 
+const REPORT_HINT =
+    'The API returned something its OpenAPI specification does not describe. ' +
+    'Please report this at https://github.com/apify/apify-client-js/issues.';
+
 /**
  * Thrown when an API response does not match the schema the client expects for it.
  *
@@ -9,7 +13,8 @@ import type { z } from 'zod';
  * outside the documented range. Unknown fields and unknown enum values are not errors: the schemas let
  * both through, so the client keeps working when the API grows.
  *
- * The `message` names the request and every offending field with the value it received. The structured
+ * The `message` names the request and every offending field with the value it received, and ends by asking for
+ * a bug report: the mismatch is in the API or its specification, not in the caller's code. The structured
  * {@link https://zod.dev | zod} issues are available on `issues`, and the original `ZodError` on `cause`,
  * for programmatic inspection.
  */
@@ -28,7 +33,9 @@ export class ResponseValidationError extends Error {
         // `@apify/validations` keeps its zod error formatter private, so the issue lines come from the
         // message of the error class it does export.
         const details = new ArgumentValidationError(error, value).message;
-        super(`Response from ${method} ${request.url} does not match the API schema:\n${details}`, { cause: error });
+        super(`Response from ${method} ${request.url} does not match the API schema:\n${details}\n${REPORT_HINT}`, {
+            cause: error,
+        });
         this.name = 'ResponseValidationError';
         this.issues = error.issues;
         this.method = method;

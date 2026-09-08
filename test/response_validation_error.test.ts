@@ -11,7 +11,7 @@ import { mockServer } from './mock_server/server.js';
 describe('ResponseValidationError', () => {
     const schema = z.looseObject({ id: z.string(), status: z.string() });
 
-    test('message names the request and the offending field with the value it received', () => {
+    test('message names the request and the offending field with the value it received, then asks for a report', () => {
         const value = { id: 'abc', status: 42 };
         const error = new ResponseValidationError(schema.safeParse(value).error!, value, {
             method: 'get',
@@ -24,7 +24,9 @@ describe('ResponseValidationError', () => {
         expect(error.url).toBe('https://api.apify.com/v2/actor-runs/abc');
         expect(error.message).toBe(
             'Response from GET https://api.apify.com/v2/actor-runs/abc does not match the API schema:\n' +
-                'Invalid input: expected string, received the number `42` at `status`',
+                'Invalid input: expected string, received the number `42` at `status`\n' +
+                'The API returned something its OpenAPI specification does not describe. ' +
+                'Please report this at https://github.com/apify/apify-client-js/issues.',
         );
     });
 
