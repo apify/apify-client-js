@@ -161,8 +161,8 @@ export class ActorClient extends ResourceClient {
      * asynchronously and this method returns immediately without waiting for completion.
      * Use the {@link call} method if you want to wait for the Actor to finish.
      *
-     * @param input - Input for the Actor. Can be any JSON-serializable value (object, array, string, number).
-     *                If `contentType` is specified in options, input should be a string or Buffer.
+     * @param input - Input for the Actor. A JSON-serializable object or array, or a `string` or `Buffer` sent
+     *                as-is when `contentType` is specified in options. Omit it to run the Actor without input.
      * @param options - Run configuration options
      * @param options.build - Tag or number of the build to run (e.g., `'beta'` or `'1.2.345'`). If not provided, uses the default build.
      * @param options.memory - Memory in megabytes allocated for the run. If not provided, uses the Actor's default memory setting.
@@ -188,9 +188,9 @@ export class ActorClient extends ResourceClient {
      * );
      * ```
      */
-    async start(input?: unknown, options: ActorStartOptions = {}): Promise<ActorRun> {
-        // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
-        // then it will process input as a buffer.
+    async start(input?: ActorInput, options: ActorStartOptions = {}): Promise<ActorRun> {
+        // The input is not validated here: the API validates it, and with a custom `contentType` it is an
+        // arbitrary body, e.g. a PDF buffer.
         const parsed = parseArgument(options, startOptionsSchema, 'ActorStartOptions');
 
         const {
@@ -242,8 +242,8 @@ export class ActorClient extends ResourceClient {
      * by polling the run status. It optionally streams logs to the console or a custom Log instance.
      * By default, it waits indefinitely unless the `waitSecs` option is provided.
      *
-     * @param input - Input for the Actor. Can be any JSON-serializable value (object, array, string, number).
-     *                If `contentType` is specified in options, input should be a string or Buffer.
+     * @param input - Input for the Actor. A JSON-serializable object or array, or a `string` or `Buffer` sent
+     *                as-is when `contentType` is specified in options. Omit it to run the Actor without input.
      * @param options - Run configuration options (extends all options from {@link start})
      * @param options.waitSecs - Maximum time to wait for the run to finish, in seconds. If omitted, waits indefinitely.
      * @param options.log - Log instance for streaming run logs. Use `'default'` for console output, `null` to disable logging, or provide a custom Log instance.
@@ -272,9 +272,9 @@ export class ActorClient extends ResourceClient {
      * const run = await client.actor('my-actor').call({ url: 'https://example.com' }, { log });
      * ```
      */
-    async call(input?: unknown, options: ActorCallOptions = {}): Promise<ActorRun> {
-        // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
-        // then it will process input as a buffer.
+    async call(input?: ActorInput, options: ActorCallOptions = {}): Promise<ActorRun> {
+        // The input is not validated here: the API validates it, and with a custom `contentType` it is an
+        // arbitrary body, e.g. a PDF buffer.
         const parsed = parseArgument(options, callOptionsSchema, 'ActorCallOptions');
 
         const { waitSecs, log, ...startOptions } = parsed;
@@ -303,9 +303,8 @@ export class ActorClient extends ResourceClient {
      * invalid, the API responds with an error that is thrown as an `ApifyApiError` describing the
      * validation problem.
      *
-     * @param input - Input to validate against the Actor's input schema. Can be any JSON-serializable
-     *                value (object, array, string, number). If `contentType` is specified in options,
-     *                input should be a string or Buffer.
+     * @param input - Input to validate against the Actor's input schema. A JSON-serializable object or
+     *                array, or a `string` or `Buffer` sent as-is when `contentType` is specified in options.
      * @param options - Validation options
      * @param options.build - Tag or number of the build whose input schema the input is validated against
      *                         (e.g., `'latest'` or `'1.2.345'`). If not provided, uses the default build.
@@ -326,9 +325,9 @@ export class ActorClient extends ResourceClient {
      * ```
      * @since Added in 2.24.0
      */
-    async validateInput(input?: unknown, options: ActorValidateInputOptions = {}): Promise<boolean> {
-        // input can be anything, so no point in validating it. E.g. if you set content-type to application/pdf
-        // then it will process input as a buffer.
+    async validateInput(input?: ActorInput, options: ActorValidateInputOptions = {}): Promise<boolean> {
+        // The input is not validated here: the API validates it, and with a custom `contentType` it is an
+        // arbitrary body, e.g. a PDF buffer.
         const parsed = parseArgument(options, validateInputOptionsSchema, 'ActorValidateInputOptions');
 
         const request: ApifyRequestConfig = {
@@ -554,6 +553,15 @@ export type ActorUpdateOptions = Partial<
         | 'taggedBuilds'
     >
 >;
+
+/**
+ * Input for an Actor run, as taken by {@link ActorClient.start}, {@link ActorClient.call} and
+ * {@link ActorClient.validateInput}.
+ *
+ * Without `contentType` in the options, the input is serialized to JSON, so it is an object or an array.
+ * With `contentType`, the input is sent as the request body as-is, so it is a `string` or a `Buffer`.
+ */
+export type ActorInput = object | string;
 
 export interface ActorStartOptions {
     /**

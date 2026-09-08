@@ -3,11 +3,11 @@ import type { AddressInfo } from 'node:net';
 import { setTimeout } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import type { ActorCollectionCreateOptions } from 'apify-client';
+import type { ActorCollectionCreateOptions, ActorInput } from 'apify-client';
 import { ActorListSortBy, ActorSourceType, ApifyClient, LoggerActorRedirect } from 'apify-client';
 import express from 'express';
 import type { Page } from 'puppeteer';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
 
 import { META_ORIGINS, WEBHOOK_EVENT_TYPES } from '@apify/consts';
 import { LEVELS, Log } from '@apify/log';
@@ -432,6 +432,21 @@ describe('Actor methods', () => {
 
             // Reset the shared mock response so the 404 status does not leak into later tests.
             mockServer.setResponse(null);
+        });
+
+        test('start(), call() and validateInput() take the same input type', () => {
+            const actor = client.actor('some-id');
+            expectTypeOf(actor.start).parameter(0).toEqualTypeOf<ActorInput | undefined>();
+            expectTypeOf(actor.call).parameter(0).toEqualTypeOf<ActorInput | undefined>();
+            expectTypeOf(actor.validateInput).parameter(0).toEqualTypeOf<ActorInput | undefined>();
+
+            expectTypeOf<{ url: string }>().toExtend<ActorInput>();
+            expectTypeOf<string[]>().toExtend<ActorInput>();
+            expectTypeOf<string>().toExtend<ActorInput>();
+            expectTypeOf<Buffer>().toExtend<ActorInput>();
+            expectTypeOf<number>().not.toExtend<ActorInput>();
+            expectTypeOf<boolean>().not.toExtend<ActorInput>();
+            expectTypeOf<null>().not.toExtend<ActorInput>();
         });
 
         test('build() works', async () => {

@@ -86,15 +86,15 @@ export class ActorClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     build(versionNumber: string, options?: ActorBuildOptions): Promise<Build>;
     builds(): BuildCollectionClient;
-    call(input?: unknown, options?: ActorCallOptions): Promise<ActorRun>;
+    call(input?: ActorInput, options?: ActorCallOptions): Promise<ActorRun>;
     defaultBuild(options?: BuildClientGetOptions): Promise<BuildClient>;
     delete(): Promise<void>;
     get(): Promise<Actor | undefined>;
     lastRun(options?: ActorLastRunOptions): RunClient;
     runs(): RunCollectionClient;
-    start(input?: unknown, options?: ActorStartOptions): Promise<ActorRun>;
+    start(input?: ActorInput, options?: ActorStartOptions): Promise<ActorRun>;
     update(newFields: ActorUpdateOptions): Promise<Actor>;
-    validateInput(input?: unknown, options?: ActorValidateInputOptions): Promise<boolean>;
+    validateInput(input?: ActorInput, options?: ActorValidateInputOptions): Promise<boolean>;
     version(versionNumber: string): ActorVersionClient;
     versions(): ActorVersionCollectionClient;
     webhooks(): WebhookCollectionClient;
@@ -208,6 +208,9 @@ export type ActorEnvVarListResult = Pick<PaginatedList<ActorEnvironmentVariable>
 // @public
 export interface ActorExampleRunInput extends GeneratedExampleRunInput {
 }
+
+// @public
+export type ActorInput = object | string;
 
 // @public
 export interface ActorLastRunOptions {

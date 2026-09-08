@@ -166,3 +166,14 @@ Two return types change as a result of describing what the endpoints really retu
 
 - <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink> was typed as a `string`, even though the endpoint returns the log as a list of entries. It's now typed as <ApiLink to="interface/ScheduleInvoked">`ScheduleInvoked[]`</ApiLink>, each entry carrying `message`, `level` and `createdAt`.
 - <ApiLink to="interface/TaskPublicConfig">`TaskPublicConfig`</ApiLink> now follows the specification: `publishedAt` is optional and read-only, and `categorization`, which the specification doesn't describe, is gone from the type.
+
+## Actor run input is no longer `unknown`
+
+<ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink>, <ApiLink to="class/ActorClient#call">`call()`</ApiLink> and <ApiLink to="class/ActorClient#validateInput">`validateInput()`</ApiLink> took their `input` as `unknown`, so any value compiled, including ones the client can't send. The parameter is now `ActorInput`, an alias for `object | string`: a JSON-serializable object or array, or a `string` or `Buffer` sent as-is when `contentType` is set. A number, a boolean or `null` no longer compiles. To start an Actor without input, omit the argument or pass `undefined`.
+
+```diff
+- await client.actor('my-actor').call(null, { memory: 1024 }); // v2
++ await client.actor('my-actor').call(undefined, { memory: 1024 }); // v3
+```
+
+Nothing changes at runtime. `TaskClient.start()` and `call()` keep taking a `Dictionary`: a task's input overrides are merged into the input saved on the task, so they're always an object.
