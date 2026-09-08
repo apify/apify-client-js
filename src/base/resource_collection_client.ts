@@ -1,5 +1,7 @@
+import type { z } from 'zod';
+
 import type { PaginatedResponse, PaginationOptions } from '../utils.js';
-import { parseDateFields, pluckData } from '../utils.js';
+import { parseResponse } from '../utils.js';
 import { ApiClient } from './api_client.js';
 
 /**
@@ -10,41 +12,45 @@ export class ResourceCollectionClient extends ApiClient {
     /**
      * @private
      */
-    protected async _list<T, R>(options: T = {} as T): Promise<R> {
+    protected async _list<T, R>(schema: z.ZodType, options: T = {} as T): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'GET',
             params: this._params(options),
         });
-        return parseDateFields(pluckData(response.data)) as R;
+        return parseResponse<R>(response, schema);
     }
 
     /**
      * Returns async iterator to iterate through all items and Promise that can be awaited to get first page of results.
      */
     protected _listPaginated<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(
+        schema: z.ZodType,
         options: T = {} as T,
     ): AsyncIterable<Data> & Promise<R> {
-        return this._listPaginatedFromCallback(this._list.bind(this)<T, R>, options);
+        return this._listPaginatedFromCallback(
+            async (listOptions?: T) => this._list<T, R>(schema, listOptions),
+            options,
+        );
     }
 
-    protected async _create<D, R>(resource: D): Promise<R> {
+    protected async _create<D, R>(schema: z.ZodType, resource: D): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'POST',
             params: this._params(),
             data: resource,
         });
-        return parseDateFields(pluckData(response.data)) as R;
+        return parseResponse<R>(response, schema);
     }
 
-    protected async _getOrCreate<D, R>(name?: string, resource?: D): Promise<R> {
+    protected async _getOrCreate<D, R>(schema: z.ZodType, name?: string, resource?: D): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'POST',
             params: this._params({ name }),
             data: resource,
         });
-        return parseDateFields(pluckData(response.data)) as R;
+        return parseResponse<R>(response, schema);
     }
 }

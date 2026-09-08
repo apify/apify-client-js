@@ -79,11 +79,10 @@ export interface DatasetSpecGaps {
 
 export interface DatasetRePointed {
     stats?: DatasetStats;
+    generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
 export interface DatasetSpecNarrowings {
-    // Spec omits the `null` the API can return for a storage that follows the owner's user setting.
-    generalAccess?: STORAGE_GENERAL_ACCESS | null;
     // Spec lists `consoleUrl` as required, but the same `Dataset` schema backs both `GET /v2/datasets` and
     // `GET /v2/datasets/{datasetId}`, and its `required` array describes only the single-resource response.
     // The spec documents that split in prose rather than in the schema -- `DatasetStats.storageBytes` says
@@ -197,10 +196,6 @@ export interface KeyValueStoreSpecGaps {
 
 export interface KeyValueStoreRePointed {
     stats?: KeyValueStoreStats;
-}
-
-export interface KeyValueStoreSpecNarrowings {
-    // Spec omits the `null` the API can return for a storage that follows the owner's user setting.
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
@@ -212,9 +207,8 @@ export interface KeyValueStoreSpecNarrowings {
  */
 export interface KeyValueStore
     extends
-        Omit<Schemas['KeyValueStore'], keyof KeyValueStoreRePointed | keyof KeyValueStoreSpecNarrowings>,
+        Omit<Schemas['KeyValueStore'], keyof KeyValueStoreRePointed>,
         KeyValueStoreRePointed,
-        KeyValueStoreSpecNarrowings,
         KeyValueStoreSpecGaps {}
 
 /** Statistics about Key-Value Store usage and storage. */
@@ -408,13 +402,7 @@ export interface ActorDefinitionSpecGaps {
     output?: object | null;
 }
 
-export interface ActorDefinitionSpecNarrowings {
-    // The spec types all three as non-nullable. The `| null` is kept because these are paths into the
-    // Actor's source tree that the API reports as `null` when the referenced file is absent.
-    readme?: string | null;
-    input?: object | null;
-    changelog?: string | null;
-}
+type GeneratedActorDefinition = Schemas['ActorDefinition'];
 
 /**
  * Actor definition from the `.actor/actor.json` file.
@@ -423,11 +411,7 @@ export interface ActorDefinitionSpecNarrowings {
  * @see https://docs.apify.com/platform/actors/development/actor-definition/actor-json
  * @since Added in 2.11.0
  */
-export interface ActorDefinition
-    extends
-        Omit<Schemas['ActorDefinition'], keyof ActorDefinitionSpecNarrowings>,
-        ActorDefinitionSpecNarrowings,
-        ActorDefinitionSpecGaps {}
+export interface ActorDefinition extends GeneratedActorDefinition, ActorDefinitionSpecGaps {}
 
 export interface ActorChargeEventRePointed {
     eventTieredPricingUsd?: TieredPricingPerEvent;
@@ -704,8 +688,7 @@ export interface ActorRunClientNarrowings {
     // The spec reuses the storage-wide `GeneralAccess` schema here, which also lists
     // `ANYONE_WITH_NAME_CAN_READ`. A run has no name to be addressed by, which is exactly why
     // `@apify/consts` declares a separate three-member `RUN_GENERAL_ACCESS`, and that stays the
-    // published type. The `| null` and the optionality the spec drops are kept for the same reason as
-    // on the storages: a run may follow the owner's user setting instead of carrying a level of its own.
+    // published type.
     generalAccess?: RUN_GENERAL_ACCESS | null;
 }
 
@@ -723,6 +706,7 @@ export interface ActorRun
 
 type GeneratedTaskStats = Schemas['TaskStats'];
 type GeneratedTaskOptions = Schemas['TaskOptions'];
+type GeneratedTaskPublicConfig = Schemas['TaskPublicConfig'];
 type GeneratedCurrentPricingInfo = Schemas['CurrentPricingInfo'];
 
 /** Statistics about Actor task usage. */
@@ -739,15 +723,7 @@ export interface TaskOptions extends GeneratedTaskOptions {}
  * {@apilink TaskClient.unpublish} to change the publication state.
  * @since Added in 2.25.0
  */
-export interface TaskPublicConfig {
-    publishedAt: Date | null;
-    seoTitle?: string | null;
-    seoDescription?: string | null;
-    categorization?: string | null;
-    inputSchemaFields?: string[] | null;
-    datasetName?: string | null;
-    datasetView?: string | null;
-}
+export interface TaskPublicConfig extends GeneratedTaskPublicConfig {}
 
 /**
  * Fields the API returns on a task that the OpenAPI spec does not describe yet.
@@ -756,28 +732,16 @@ export interface TaskPublicConfig {
  */
 export interface TaskSpecGaps {
     description?: string;
-    /**
-     * Whether the task is published on its public landing page. Derived from
-     * `publicConfig.publishedAt` -- set it on update to publish or unpublish the task.
-     * @since Added in 2.25.0
-     */
-    isPublic?: boolean;
-    /**
-     * @since Added in 2.25.0
-     */
-    publicConfig?: TaskPublicConfig | null;
 }
 
 export interface TaskRePointed {
     stats?: TaskStats | null;
     options?: TaskOptions | null;
     actorStandby?: ActorStandby | null;
-}
-
-export interface TaskSpecNarrowings {
-    // The spec models the input as a plain JSON object. The client has always accepted an array of
-    // objects here too, and this type is reused for `TaskUpdateData`, so narrowing to the spec would
-    // start rejecting `update()` calls that work today. The `| null` the spec adds is taken.
+    publicConfig?: TaskPublicConfig | null;
+    // `Dictionary` is the name this client has always published for a task input object, instead of the
+    // spec's `TaskInput`, and the field is reused for `TaskUpdateData`, so it also keeps `update()`
+    // accepting what it always has.
     input?: Dictionary | Dictionary[] | null;
 }
 
@@ -787,12 +751,7 @@ export interface TaskSpecNarrowings {
  * Tasks are saved Actor configurations with input and settings that can be executed
  * repeatedly without having to specify the full input each time.
  */
-export interface Task
-    extends
-        Omit<Schemas['Task'], keyof TaskRePointed | keyof TaskSpecNarrowings>,
-        TaskRePointed,
-        TaskSpecNarrowings,
-        TaskSpecGaps {}
+export interface Task extends Omit<Schemas['Task'], keyof TaskRePointed>, TaskRePointed, TaskSpecGaps {}
 
 export interface TaskListRePointed {
     stats?: TaskStats | null;
@@ -965,6 +924,11 @@ export interface ScheduleActionRunActorTask
 /** Union type representing all possible scheduled actions. */
 export type ScheduleAction = ScheduleActionRunActor | ScheduleActionRunActorTask;
 
+type GeneratedScheduleInvoked = Schemas['ScheduleInvoked'];
+
+/** One entry of a schedule's log: an invocation of the schedule and how it went. */
+export interface ScheduleInvoked extends GeneratedScheduleInvoked {}
+
 export interface ScheduleRePointed {
     actions: ScheduleAction[];
 }
@@ -1063,15 +1027,8 @@ export interface UserPlan extends Omit<Schemas['Plan'], keyof UserPlanRePointed>
 export interface UserRePointed {
     profile?: UserProfile;
     proxy?: UserProxy;
-}
-
-export interface UserSpecNarrowings {
-    // `plan`, `effectivePlatformFeatures` and `isPaying` are required on the spec's `UserPrivateInfo`,
-    // which is the schema this type is built on. They are optional here because the same published type
-    // also describes `GET /v2/users/{userId}`, whose `UserPublicInfo` response carries none of the three.
     plan?: UserPlan;
     effectivePlatformFeatures?: EffectivePlatformFeatures;
-    isPaying?: boolean;
 }
 
 /**
@@ -1080,11 +1037,7 @@ export interface UserSpecNarrowings {
  * The private fields are only populated for `GET /v2/users/me`, which needs a token; the public
  * endpoint returns the username and profile alone.
  */
-export interface User
-    extends
-        Omit<Schemas['UserPrivateInfo'], keyof UserRePointed | keyof UserSpecNarrowings>,
-        UserRePointed,
-        UserSpecNarrowings {}
+export interface User extends Omit<Schemas['UserPrivateInfo'], keyof UserRePointed>, UserRePointed {}
 
 /**
  * The start and end of a billing cycle.
@@ -1122,22 +1075,9 @@ export interface DailyServiceUsageRePointed {
     serviceUsage: ServiceUsage;
 }
 
-export interface DailyServiceUsageClientConversions {
-    // `UserClient.monthlyUsage()` passes a matcher that converts this field as well as the `*At` ones,
-    // so the caller is handed a `Date`. The spec types the wire value as a plain string, and the field
-    // does not end in `At`, so nothing else would reveal the conversion.
-    date: Date;
-}
-
 /** A single day's usage within a monthly cycle. The spec names this schema `DailyServiceUsages`. */
 export interface DailyServiceUsage
-    extends
-        Omit<
-            Schemas['DailyServiceUsages'],
-            keyof DailyServiceUsageRePointed | keyof DailyServiceUsageClientConversions
-        >,
-        DailyServiceUsageRePointed,
-        DailyServiceUsageClientConversions {}
+    extends Omit<Schemas['DailyServiceUsages'], keyof DailyServiceUsageRePointed>, DailyServiceUsageRePointed {}
 
 export interface MonthlyUsageRePointed {
     usageCycle: UsageCycle;
@@ -1212,11 +1152,10 @@ export interface RequestQueueSpecGaps {
 
 export interface RequestQueueRePointed {
     stats?: RequestQueueStats;
+    generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
 export interface RequestQueueSpecNarrowings {
-    // Spec omits the `null` the API can return for a storage that follows the owner's user setting.
-    generalAccess?: STORAGE_GENERAL_ACCESS | null;
     // Spec lists `consoleUrl` as required on the full resource, and the client types the items of
     // `requestQueues().list()` as this same model. The listing is described by `RequestQueueShort`, which
     // has no `consoleUrl` at all, so a required one would type-check and then be `undefined` per item.

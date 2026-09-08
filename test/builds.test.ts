@@ -4,7 +4,8 @@ import { ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
-import { Browser, DEFAULT_OPTIONS, validateRequest } from './_helper.js';
+import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
+import * as fixtures from './mock_server/fixtures.js';
 import { mockServer } from './mock_server/server.js';
 
 describe('Build methods', () => {
@@ -49,7 +50,7 @@ describe('Build methods', () => {
             validateRequest({ query, endpointId: 'list-builds' });
 
             const browserRes = await page.evaluate((opts) => client.builds().list(opts), query);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query });
         });
     });
@@ -63,7 +64,7 @@ describe('Build methods', () => {
             validateRequest({ query: {}, params: { buildId } });
 
             const browserRes = await page.evaluate((bId) => client.build(bId).get(), buildId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { buildId } });
         });
 
@@ -75,7 +76,7 @@ describe('Build methods', () => {
             validateRequest({ query: {}, params: { buildId } });
 
             const browserRes = await page.evaluate((bId) => client.build(bId).get(), buildId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { buildId } });
         });
 
@@ -87,7 +88,7 @@ describe('Build methods', () => {
             validateRequest({ query: {}, params: { buildId } });
 
             const browserRes = await page.evaluate((bId) => client.build(bId).abort(), buildId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { buildId } });
         });
 
@@ -102,19 +103,19 @@ describe('Build methods', () => {
             });
 
             const browserRes = await page.evaluate((bId) => client.build(bId).getOpenApiDefinition(), buildId);
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { buildId } });
         });
 
         test('waitForFinish() works', async () => {
             const buildId = 'some-build-id';
             const waitSecs = 0.1;
-            const data = { status: 'SUCCEEDED' };
+            const data = { ...fixtures.build, status: 'SUCCEEDED' };
             const body = { data };
 
             setTimeout(() => mockServer.setResponse({ body }), (waitSecs * 1000) / 2);
             const res = await client.build(buildId).waitForFinish({ waitSecs });
-            expect(res).toEqual(data);
+            expect(res).toMatchObject({ id: fixtures.build.id, status: 'SUCCEEDED' });
             validateRequest({ query: { waitForFinish: 0 }, params: { buildId } });
 
             const browserRes = await page.evaluate(
@@ -122,7 +123,7 @@ describe('Build methods', () => {
                 buildId,
                 waitSecs,
             );
-            expect(browserRes).toEqual(res);
+            expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { waitForFinish: 0 }, params: { buildId } });
         });
 

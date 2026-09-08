@@ -1,7 +1,7 @@
 /**
  * Fetch the published Apify API OpenAPI specification and record the version the types were generated from.
  *
- * `fetch` downloads the specification into git-ignored `tmp/`, and `pnpm generate:types` reads that one copy, so a
+ * `fetch` downloads the specification into git-ignored `tmp/`, and `pnpm generate:models` reads that one copy, so a
  * specification redeployed mid-run cannot leave the generated types describing two different inputs. The document
  * itself is never committed -- only its version is, in `apify.openapiSpec.version` in `package.json`.
  *
@@ -226,7 +226,7 @@ async function fetchSpec(): Promise<void> {
 async function recordVersion(): Promise<void> {
     const bytes = await readFile(SPEC_PATH).catch((error: unknown) => {
         if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-            fail('tmp/openapi.json is missing - run `pnpm generate:types` rather than this subcommand alone');
+            fail('tmp/openapi.json is missing - run `pnpm generate:models` rather than this subcommand alone');
         }
 
         throw error;
