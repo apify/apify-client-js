@@ -1,7 +1,17 @@
 import type { AddressInfo } from 'node:net';
 
 import type { Dictionary } from 'apify-client';
-import { ApifyApiError, ApifyClient } from 'apify-client';
+import {
+    ApifyApiError,
+    ApifyClient,
+    ConflictError,
+    ForbiddenError,
+    InvalidRequestError,
+    NotFoundError,
+    RateLimitError,
+    ServerError,
+    UnauthorizedError,
+} from 'apify-client';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
 import { Browser, DEFAULT_OPTIONS } from './_helper.js';
@@ -31,7 +41,8 @@ describe('ApifyApiError', () => {
         } catch (err: any) {
             if (!(err instanceof ApifyApiError)) throw err;
 
-            expect(err.name).toEqual('ApifyApiError');
+            expect(err).toBeInstanceOf(UnauthorizedError);
+            expect(err.name).toEqual('UnauthorizedError');
             // This does not work in v10 and lower, but we want to be able to run tests for v10,
             // because some people might still use it. They will just see clientMethod: undefined.
             if (!process.version.startsWith('v10')) {
@@ -65,7 +76,7 @@ describe('ApifyApiError', () => {
             }
         }, method);
 
-        expect(error.name).toEqual('ApifyApiError');
+        expect(error.name).toEqual('UnauthorizedError');
         expect(error.clientMethod).toBe(`ActorCollectionClient.${method}`);
         expect(error.type).toEqual('token-not-provided');
         expect(error.message).toEqual('Authentication token was not provided');
@@ -92,7 +103,8 @@ describe('ApifyApiError', () => {
         } catch (err) {
             if (!(err instanceof ApifyApiError)) throw err;
 
-            expect(err.name).toEqual('ApifyApiError');
+            expect(err).toBeInstanceOf(InvalidRequestError);
+            expect(err.name).toEqual('InvalidRequestError');
             expect(err.type).toEqual('schema-validation-error');
             expect(err.data).toEqual({
                 invalidItems: {
@@ -123,12 +135,54 @@ describe('ApifyApiError', () => {
             datasetId,
             data,
         );
-        expect(error.name).toEqual('ApifyApiError');
+        expect(error.name).toEqual('InvalidRequestError');
         expect(error.type).toEqual('schema-validation-error');
         expect(error.data).toEqual({
             invalidItems: {
                 0: [`should have required property 'name'`],
             },
+        });
+    });
+
+    describe('subclass by HTTP status', () => {
+        const response = (status: number, data: unknown = { error: { type: 'some-type', message: 'Some message' } }) =>
+            ({ status, data, config: { method: 'get', url: 'http://localhost/v2/acts' } }) as any;
+
+        test.each([
+            { status: 400, name: 'InvalidRequestError', ErrorClass: InvalidRequestError },
+            { status: 401, name: 'UnauthorizedError', ErrorClass: UnauthorizedError },
+            { status: 403, name: 'ForbiddenError', ErrorClass: ForbiddenError },
+            { status: 404, name: 'NotFoundError', ErrorClass: NotFoundError },
+            { status: 409, name: 'ConflictError', ErrorClass: ConflictError },
+            { status: 429, name: 'RateLimitError', ErrorClass: RateLimitError },
+            { status: 500, name: 'ServerError', ErrorClass: ServerError },
+            { status: 503, name: 'ServerError', ErrorClass: ServerError },
+        ])('status $status creates $name', ({ status, name, ErrorClass }) => {
+            const error = ApifyApiError.fromResponse(response(status), 1);
+
+            expect(error).toBeInstanceOf(ErrorClass);
+            expect(error).toBeInstanceOf(ApifyApiError);
+            expect(error.name).toBe(name);
+            expect(error.stack).toMatch(new RegExp(`^${name}: Some message\n`));
+            expect(error.statusCode).toBe(status);
+            expect(error.type).toBe('some-type');
+            expect(error.message).toBe('Some message');
+            expect(error.path).toBe('/v2/acts');
+        });
+
+        test('an unmapped status stays a plain ApifyApiError', () => {
+            const error = ApifyApiError.fromResponse(response(418), 1);
+
+            expect(error.constructor).toBe(ApifyApiError);
+            expect(error.name).toBe('ApifyApiError');
+            expect(error.statusCode).toBe(418);
+        });
+
+        test('an unparsable body still picks the subclass', () => {
+            const error = ApifyApiError.fromResponse(response(404, Buffer.from('<not json>')), 1);
+
+            expect(error).toBeInstanceOf(NotFoundError);
+            expect(error.type).toBeUndefined();
         });
     });
 });

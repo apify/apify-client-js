@@ -47,7 +47,9 @@ Besides greatly simplifying the process of querying the Apify API, the client pr
 Based on the endpoint, the client automatically extracts the relevant data and returns it in the
 expected format. Date strings are automatically converted to `Date` objects. For exceptions,
 we throw an `ApifyApiError`, which wraps the plain JSON errors returned by API and enriches
-them with other context for easier debugging.
+them with other context for easier debugging. The error is an instance of the subclass matching the
+HTTP status code, such as `NotFoundError` or `RateLimitError`, so a `catch` block can tell them apart
+with `instanceof`.
 
 ### Retries with exponential backoff
 

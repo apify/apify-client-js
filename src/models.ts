@@ -68,6 +68,13 @@ export enum WebhookDispatchStatus {
 }
 
 /**
+ * Machine-readable type of an error returned by the Apify API, carried by `ApifyApiError.type`.
+ *
+ * Declared here, next to the other spec-derived types, and re-exported from `./apify_api_error`.
+ */
+export type ApifyApiErrorType = Schemas['ErrorType'];
+
+/**
  * Fields the API returns on a dataset that the OpenAPI spec does not describe yet.
  *
  * TODO: Remove once the spec covers them.

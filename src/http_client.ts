@@ -224,7 +224,7 @@ export class HttpClient {
                 this.stats.addRateLimitError(attempt);
             }
 
-            const apiError = new ApifyApiError(response, attempt);
+            const apiError = ApifyApiError.fromResponse(response, attempt);
             if (this._isStatusCodeRetryable(response.status)) {
                 if (requestIsStream) {
                     this._informAboutStreamNoRetry();

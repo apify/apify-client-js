@@ -18,25 +18,15 @@ describe('utils.pluckData()', () => {
 });
 
 describe('utils.catchNotFoundOrThrow()', () => {
-    test('works', () => {
-        const recordNotFoundError = new ApifyApiError(
-            { status: 404, data: { error: { type: 'record-not-found' } } } as any,
-            0,
-        );
-        const recordOrTokenNotFoundError = new ApifyApiError(
-            {
-                status: 404,
-                data: { error: { type: 'record-or-token-not-found' } },
-            } as any,
-            0,
-        );
-        const otherError = new ApifyApiError({ status: 404, data: { error: { type: 'page-not-found' } } } as any, 0);
-        const internalError = new ApifyApiError({ status: 500, data: { error: { type: 'internal-error' } } } as any, 0);
+    test('swallows a NotFoundError and rethrows anything else', () => {
+        const response = (status: number, type: string) => ({ status, data: { error: { type } } }) as any;
+        const recordNotFoundError = ApifyApiError.fromResponse(response(404, 'record-not-found'), 0);
+        const pageNotFoundError = ApifyApiError.fromResponse(response(404, 'page-not-found'), 0);
+        const internalError = ApifyApiError.fromResponse(response(500, 'internal-error'), 0);
         const otherGenericError = new Error('blabla');
 
         expect(utils.catchNotFoundOrThrow(recordNotFoundError)).toBeUndefined();
-        expect(utils.catchNotFoundOrThrow(recordOrTokenNotFoundError)).toBeUndefined();
-        expect(() => utils.catchNotFoundOrThrow(otherError)).toThrowError(otherError);
+        expect(utils.catchNotFoundOrThrow(pageNotFoundError)).toBeUndefined();
         expect(() => utils.catchNotFoundOrThrow(internalError)).toThrowError(internalError);
         expect(() => utils.catchNotFoundOrThrow(otherGenericError as any)).toThrowError(otherGenericError);
     });

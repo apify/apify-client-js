@@ -4,6 +4,7 @@ import type { JsonValue, TypedArray } from 'type-fest';
 import { z } from 'zod';
 
 import type { ApifyApiError } from './apify_api_error.js';
+import { NotFoundError } from './apify_api_error.js';
 import { parseArgument } from '@apify/validations';
 import type { ApifyResponse } from './http_client.js';
 import { ResponseValidationError } from './response_validation_error.js';
@@ -16,9 +17,6 @@ import type { WebhookUpdateData } from './resource_clients/webhook.js';
 // @ts-ignore if we enable `resolveJsonModule`, we end up with a `src` folder in `dist`
 import packageJson from '../package.json' with { type: 'json' };
 
-const NOT_FOUND_STATUS_CODE = 404;
-const RECORD_NOT_FOUND_TYPE = 'record-not-found';
-const RECORD_OR_TOKEN_NOT_FOUND_TYPE = 'record-or-token-not-found';
 const MIN_COMPRESS_BYTES = 1024;
 
 export { parseArgument };
@@ -91,15 +89,10 @@ export function pluckData<R>(obj: MaybeData<R>): R {
 }
 
 /**
- * If given HTTP error has NOT_FOUND_STATUS_CODE status code then returns undefined.
- * Otherwise rethrows error.
+ * Swallows a 404 Not Found API error and rethrows anything else.
  */
 export function catchNotFoundOrThrow(err: ApifyApiError): void {
-    const isNotFoundStatus = err.statusCode === NOT_FOUND_STATUS_CODE;
-    const isNotFoundMessage =
-        err.type === RECORD_NOT_FOUND_TYPE || err.type === RECORD_OR_TOKEN_NOT_FOUND_TYPE || err.httpMethod === 'head';
-    const isNotFoundError = isNotFoundStatus && isNotFoundMessage;
-    if (!isNotFoundError) throw err;
+    if (!(err instanceof NotFoundError)) throw err;
 }
 
 type ReturnJsonValue = string | number | boolean | null | Date | ReturnJsonObject | ReturnJsonArray;
