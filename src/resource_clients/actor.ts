@@ -555,8 +555,8 @@ export type ActorUpdateOptions = Partial<
 >;
 
 /**
- * Input for an Actor run, as taken by {@link ActorClient.start}, {@link ActorClient.call} and
- * {@link ActorClient.validateInput}.
+ * Input for an Actor run, as taken by {@link ActorClient.start}, {@link ActorClient.call},
+ * {@link ActorClient.validateInput} and {@link RunClient.metamorph}.
  *
  * Without `contentType` in the options, the input is serialized to JSON, so it is an object or an array.
  * With `contentType`, the input is sent as the request body as-is, so it is a `string` or a `Buffer`.
