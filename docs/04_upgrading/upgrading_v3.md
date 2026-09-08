@@ -175,3 +175,41 @@ Two return types change as a result of describing what the endpoints really retu
 
 - <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink> was typed as a `string`, even though the endpoint returns the log as a list of entries. It's now typed as <ApiLink to="interface/ScheduleInvoked">`ScheduleInvoked[]`</ApiLink>, each entry carrying `message`, `level` and `createdAt`.
 - <ApiLink to="interface/TaskPublicConfig">`TaskPublicConfig`</ApiLink> now follows the specification: `publishedAt` is optional and read-only, and `categorization`, which the specification doesn't describe, is gone from the type.
+
+## URL fields are normalized
+
+Fields the specification marks as a URL, such as <ApiLink to="interface/ActorRun">`ActorRun.containerUrl`</ApiLink> or <ApiLink to="interface/Dataset">`Dataset.consoleUrl`</ApiLink>, are parsed with the [WHATWG `URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) parser as part of response validation, and the client hands back the parsed URL's serialization. In v2 you got the raw string from the API. In v3 the string can differ, most visibly by an added trailing slash. Normalization also lowercases the host, drops a default port, punycodes an internationalized host, and percent-encodes unsafe characters. Both forms denote the same URL under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-6.2.3), they're just different strings. The Python client normalizes the same fields the same way, so the two clients return the same string for the same field.
+
+```js
+// An empty path becomes '/'.
+new URL('https://abc123.runs.apify.net').href; // 'https://abc123.runs.apify.net/'
+
+// The host is lowercased.
+new URL('https://EXAMPLE.com/Path').href; // 'https://example.com/Path'
+
+// A default port is dropped.
+new URL('https://example.com:443/path').href; // 'https://example.com/path'
+
+// An internationalized host is punycoded.
+new URL('https://www.žluty.cz').href; // 'https://www.xn--luty-kbb.cz/'
+
+// Unsafe characters are percent-encoded.
+new URL('https://example.com/a b').href; // 'https://example.com/a%20b'
+```
+
+Code that compares a stored URL with a URL field has to compare normalized values:
+
+```js
+const run = await client.run('my-run-id').get();
+const storedUrl = 'https://abc123.runs.apify.net';
+
+// Before, the raw string matched the API response.
+storedUrl === run.containerUrl; // false in v3
+
+// After, normalize the stored side too.
+new URL(storedUrl).href === run.containerUrl; // true
+```
+
+The affected fields are `containerUrl`, `consoleUrl`, `standbyUrl`, `requestUrl`, `url`, `userPictureUrl`, `pictureUrl`, `websiteUrl`, and the `*PublicUrl` fields on storage models. To build a longer URL out of one, use `new URL('status', run.containerUrl)` instead of string concatenation. It gives the same result whether or not the base ends with a slash.
+
+A URL field whose value isn't a valid absolute URL now fails response validation and throws <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink>, the same as any other field that doesn't match the specification.

@@ -6,7 +6,7 @@
  * to another schema is a call of that thunk. Building all of them up front would cost more than importing zod
  * itself, so instead a schema is built once, by the first response validated against it.
  *
- * The output is meant for validating API *responses*, which shapes three choices that differ from a literal
+ * The output is meant for validating API *responses*, which shapes four choices that differ from a literal
  * translation of the specification:
  *
  *   - Every object is a `z.looseObject()`, so a field the API starts returning before the specification documents
@@ -16,11 +16,15 @@
  *     does not fail every response that carries it. This is the Python client's `Literal[...] | str`.
  *   - `format: date-time` becomes `z.date()`, because the client converts those fields into `Date` objects
  *     before a response is validated, and the generated types say `Date` for the same reason.
+ *   - `format: uri` becomes `z.url({ normalize: true })`, which parses the value as a WHATWG URL and hands back
+ *     its serialization: an empty path gains a `/`, the host is lowercased and punycoded, a default port is dropped
+ *     and unsafe characters are percent-encoded. This is the Python client's `pydantic.AnyUrl`, so both clients
+ *     return the same string for the same field.
  *
  * A `default` is deliberately not applied: it says what the server fills in when a request omits the field, not
- * what a response carries, so the parsed value stays identical to the response. A `format` other than `date-time`
- * (`uri`, `email`, ...) is an annotation rather than a constraint and is not enforced either. Every other constraint
- * the specification states -- `required`, `minimum`, `pattern`, ... -- is kept, so a response that violates the
+ * what a response carries, so the parsed value stays identical to the response. A `format` other than the two
+ * above (`email`, ...) is an annotation rather than a constraint and is not enforced. Every other constraint the
+ * specification states -- `required`, `minimum`, `pattern`, ... -- is kept, so a response that violates the
  * documented contract is reported rather than passed on.
  *
  * Only the JSON Schema vocabulary the specification actually uses is supported. Anything else fails generation
@@ -269,7 +273,7 @@ class Emitter {
     private string(node: SchemaNode, path: string): string {
         if (node.format === 'date-time') return 'z.date()';
 
-        let out = 'z.string()';
+        let out = node.format === 'uri' ? 'z.url({ normalize: true })' : 'z.string()';
         if (node.minLength !== undefined) out += `.min(${node.minLength})`;
         if (node.maxLength !== undefined) out += `.max(${node.maxLength})`;
         if (node.pattern !== undefined) out += `.regex(${regexLiteral(node.pattern, path)})`;

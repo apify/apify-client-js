@@ -104,4 +104,23 @@ describe('response validation in the client', () => {
 
         expect(res?.generalAccess).toBeNull();
     });
+
+    test('a URL field comes back normalized, the way the Python client returns it', async () => {
+        mockServer.setResponse({
+            body: { data: { ...fixtures.run, containerUrl: 'https://G8KD8KBC5GE8.runs.apify.net:443' } },
+        });
+
+        const res = await client.run('some-run-id').get();
+
+        expect(res?.containerUrl).toBe('https://g8kd8kbc5ge8.runs.apify.net/');
+    });
+
+    test('a URL field that is not a URL throws ResponseValidationError', async () => {
+        mockServer.setResponse({ body: { data: { ...fixtures.run, containerUrl: 'not a url' } } });
+
+        const call = client.run('some-run-id').get();
+
+        await expect(call).rejects.toBeInstanceOf(ResponseValidationError);
+        await expect(call).rejects.toThrow('at `containerUrl`');
+    });
 });

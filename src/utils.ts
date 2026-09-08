@@ -56,8 +56,9 @@ const { localeError } = z.locales.en();
 /**
  * Turns a JSON API response into the value a resource method returns: unwraps the `data` envelope, converts the
  * date fields and validates the result against `schema`, one of the schemas generated from the OpenAPI
- * specification. The validated copy is what callers get, so it is exactly what the schema accepted -- unknown
- * fields and unknown enum values included, since the schemas let both through.
+ * specification. The validated copy is what callers get, so it is what the schema accepted -- unknown fields and
+ * unknown enum values included, since the schemas let both through, and URL fields in the normalized form their
+ * `z.url()` hands back.
  *
  * Throws {@link ResponseValidationError} when the response does not match the specification.
  * @internal
