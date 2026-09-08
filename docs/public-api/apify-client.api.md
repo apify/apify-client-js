@@ -3927,7 +3927,7 @@ export interface User extends Omit<Schemas['UserPrivateInfo'], keyof UserRePoint
 // @public
 export class UserClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
-    get(): Promise<User>;
+    get(): Promise<User | undefined>;
     limits(): Promise<AccountAndUsageLimits>;
     monthlyUsage(): Promise<MonthlyUsage>;
     updateLimits(options: LimitsUpdateOptions): Promise<void>;

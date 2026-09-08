@@ -13,7 +13,7 @@ beforeAll(() => {
 test('user().get() returns the authenticated user', async () => {
     const user = await client.user().get();
 
-    expect(user.username).toBeTruthy();
+    expect(user?.username).toBeTruthy();
 });
 
 test('user().limits() returns the account limits and current usage', async () => {

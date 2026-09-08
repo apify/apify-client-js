@@ -67,11 +67,11 @@ export class UserClient extends ResourceClient {
      * Depending on whether ApifyClient was created with a token,
      * the method will either return public or private user data.
      *
-     * @returns The user object.
+     * @returns The user object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/user-get
      */
-    async get(): Promise<User> {
-        return this._get(schemas.UserPrivateInfo()) as Promise<User>;
+    async get(): Promise<User | undefined> {
+        return this._get(schemas.UserPrivateInfo());
     }
 
     /**

@@ -117,6 +117,17 @@ Lookups by key keep the old behavior, because there the 404 is about the record 
 
 A <ApiLink to="class/StreamedLog">`StreamedLog`</ApiLink> whose run no longer exists logs a warning and stops, the same way it handles any other error while streaming.
 
+### `UserClient.get()` declares the `undefined` it could always return
+
+<ApiLink to="class/UserClient#get">`UserClient.get()`</ApiLink> is typed `Promise<User | undefined>`. It addresses a user by ID, so it belongs with the calls that read a 404 as a missing resource, and it already resolved to `undefined` for one. Only its signature said otherwise, which left the `undefined` to surface as a runtime error somewhere further along. Every other `get()` on the client is typed this way, as is `get()` on the [Python client](https://docs.apify.com/api/client/python).
+
+```diff
+- const user = await client.user('some-id').get();
+- console.log(user.username);
++ const user = await client.user('some-id').get();
++ console.log(user?.username);
+```
+
 ### An empty string is no longer accepted as a version number or environment variable name
 
 <ApiLink to="class/ActorClient#version">`ActorClient.version()`</ApiLink>, <ApiLink to="class/ActorClient#build">`ActorClient.build()`</ApiLink> and <ApiLink to="class/ActorVersionClient#envVar">`ActorVersionClient.envVar()`</ApiLink> now throw an <ApiLink to="class/ArgumentValidationError">`ArgumentValidationError`</ApiLink> for an empty string, which is what every other resource identifier has always done.
