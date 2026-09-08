@@ -3,8 +3,10 @@ import { z } from 'zod';
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
 import type { BuildCollectionClientListItem } from '../models.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsShape } from '../timeouts.js';
 import { paginationOptionsShape, parseArgument } from '../utils.js';
 
 export type { BuildCollectionClientListItem } from '../models.js';
@@ -12,6 +14,7 @@ export type { BuildCollectionClientListItem } from '../models.js';
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
     desc: z.boolean().optional(),
+    ...timeoutOptionsShape,
 });
 
 /**
@@ -63,17 +66,18 @@ export class BuildCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination and sorting options.
+     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of Actor builds.
      * @see https://docs.apify.com/api/v2/actor-builds-get
      */
     list(options: BuildCollectionClientListOptions = {}): PaginatedIterator<BuildCollectionClientListItem> {
         const parsed = parseArgument(options, listOptionsSchema, 'BuildCollectionClientListOptions');
 
-        return this._listPaginated(schemas.ListOfBuilds(), parsed);
+        return this._listPaginated(schemas.ListOfBuilds(), parsed, 'medium');
     }
 }
 
-export interface BuildCollectionClientListOptions extends PaginationOptions {
+export interface BuildCollectionClientListOptions extends PaginationOptions, TimeoutOptions {
     desc?: boolean;
 }
 

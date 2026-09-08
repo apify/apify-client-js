@@ -2,14 +2,17 @@ import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
 import type { Schedule, ScheduleCreateOrUpdateData } from './schedule.js';
 
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
     desc: z.boolean().optional(),
+    ...timeoutOptionsShape,
 });
 const scheduleCreateSchema = anyObjectSchema.optional();
 
@@ -65,29 +68,33 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination and sorting options.
+     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of schedules.
      * @see https://docs.apify.com/api/v2/schedules-get
      */
     list(options: ScheduleCollectionListOptions = {}): PaginatedIterator<Schedule> {
         const parsed = parseArgument(options, listOptionsSchema, 'ScheduleCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfSchedules(), parsed);
+        return this._listPaginated(schemas.ListOfSchedules(), parsed, 'medium');
     }
 
     /**
      * Creates a new schedule.
      *
      * @param schedule - The schedule data.
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns The created schedule object.
      * @see https://docs.apify.com/api/v2/schedules-post
      */
-    async create(schedule?: ScheduleCreateOrUpdateData): Promise<Schedule> {
+    async create(schedule?: ScheduleCreateOrUpdateData, options: TimeoutOptions = {}): Promise<Schedule> {
         parseArgument(schedule, scheduleCreateSchema);
+        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._create(schemas.Schedule(), schedule);
+        return this._create(schemas.Schedule(), schedule, timeout);
     }
 }
 
-export interface ScheduleCollectionListOptions extends PaginationOptions {
+export interface ScheduleCollectionListOptions extends PaginationOptions, TimeoutOptions {
     desc?: boolean;
 }

@@ -1,7 +1,10 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { WebhookDispatch } from '../models.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema } from '../timeouts.js';
+import { parseArgument } from '../utils.js';
 
 export type {
     WebhookDispatch,
@@ -43,10 +46,14 @@ export class WebhookDispatchClient extends ResourceClient {
     /**
      * Retrieves the webhook dispatch.
      *
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns The webhook dispatch object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/webhook-dispatch-get
      */
-    async get(): Promise<WebhookDispatch | undefined> {
-        return this._get(schemas.WebhookDispatch());
+    async get(options: TimeoutOptions = {}): Promise<WebhookDispatch | undefined> {
+        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this._get(schemas.WebhookDispatch(), {}, timeout);
     }
 }

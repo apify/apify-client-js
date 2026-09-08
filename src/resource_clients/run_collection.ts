@@ -4,8 +4,10 @@ import { ACTOR_JOB_STATUSES } from '@apify/consts';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsShape } from '../timeouts.js';
 import { paginationOptionsShape, parseArgument } from '../utils.js';
 import type { ActorRunListItem } from './actor.js';
 
@@ -16,6 +18,7 @@ const listOptionsSchema = z.strictObject({
     status: z.union([jobStatusSchema, z.array(jobStatusSchema)]).optional(),
     startedBefore: z.union([z.date(), z.string()]).optional(),
     startedAfter: z.union([z.date(), z.string()]).optional(),
+    ...timeoutOptionsShape,
 });
 
 /**
@@ -67,17 +70,18 @@ export class RunCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination and filtering options.
+     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of Actor runs.
      * @see https://docs.apify.com/api/v2/actor-runs-get
      */
     list(options: RunCollectionListOptions = {}): PaginatedIterator<ActorRunListItem> {
         const parsed = parseArgument(options, listOptionsSchema, 'RunCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfRuns(), parsed);
+        return this._listPaginated(schemas.ListOfRuns(), parsed, 'medium');
     }
 }
 
-export interface RunCollectionListOptions extends PaginationOptions {
+export interface RunCollectionListOptions extends PaginationOptions, TimeoutOptions {
     desc?: boolean;
     status?:
         | (typeof ACTOR_JOB_STATUSES)[keyof typeof ACTOR_JOB_STATUSES]

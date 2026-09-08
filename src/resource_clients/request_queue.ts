@@ -7,7 +7,7 @@ import log from '@apify/log';
 
 import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
-import { MEDIUM_TIMEOUT_MILLIS, ResourceClient, SMALL_TIMEOUT_MILLIS } from '../base/resource_client.js';
+import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_client.js';
 import { ResponseValidationError } from '../response_validation_error.js';
 import type {
@@ -24,7 +24,9 @@ import type {
     RequestQueueClientRequestToUpdate,
     RequestQueueClientUnlockRequestsResult,
 } from '../models.js';
+import type { Timeout, TimeoutOptions, TimeoutTier } from '../timeouts.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema, timeoutOptionsShape, timeoutSchema } from '../timeouts.js';
 import {
     anyObjectSchema,
     cast,
@@ -44,10 +46,11 @@ const DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS = 500;
 const DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT = 1000;
 const SAFETY_BUFFER_PERCENT = 0.01 / 100; // 0.01%
 
-const listHeadOptionsSchema = z.strictObject({ limit: z.number().min(0).optional() });
+const listHeadOptionsSchema = z.strictObject({ limit: z.number().min(0).optional(), ...timeoutOptionsShape });
 const listAndLockHeadOptionsSchema = z.strictObject({
     lockSecs: z.number(),
     limit: z.number().min(0).optional(),
+    ...timeoutOptionsShape,
 });
 // Predicates, not `z.looseObject` arms: these run over a whole batch, and an object arm would copy
 // every key of every request. `id` is assigned by the API, so a new request must not carry one.
@@ -55,11 +58,12 @@ const newRequestSchema = z.custom<RequestQueueClientRequestToAdd>(
     (value) => isNonArrayObject(value) && value.id === undefined,
     'Expected a request object without an `id`',
 );
-const forefrontOptionsSchema = z.strictObject({ forefront: z.boolean().optional() });
+const forefrontOptionsSchema = z.strictObject({ forefront: z.boolean().optional(), ...timeoutOptionsShape });
 const batchAddRequestsSchema = z.array(newRequestSchema).min(1).max(REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION);
 const batchAddRequestsWithRetriesSchema = z.array(newRequestSchema).min(1);
 const optionalBooleanSchema = z.boolean().optional();
 const optionalNumberSchema = z.number().optional();
+const optionalTimeoutSchema = timeoutSchema.optional();
 const requestToDeleteSchema = z.custom<RequestQueueClientRequestToDelete>(
     (value) => isNonArrayObject(value) && (typeof value.id === 'string' || typeof value.uniqueKey === 'string'),
     'Expected a request object with an `id` or a `uniqueKey`',
@@ -76,6 +80,7 @@ const existingRequestSchema = z.custom<RequestQueueClientRequestToUpdate>(
 const prolongRequestLockOptionsSchema = z.strictObject({
     lockSecs: z.number(),
     forefront: z.boolean().optional(),
+    ...timeoutOptionsShape,
 });
 const requestFilterSchema = z.array(z.enum(['locked', 'pending'])).min(1);
 const listRequestsOptionsSchema = z
@@ -84,6 +89,7 @@ const listRequestsOptionsSchema = z
         exclusiveStartId: z.string().optional(),
         cursor: z.string().optional(),
         filter: requestFilterSchema.optional(),
+        ...timeoutOptionsShape,
     })
     .refine(...mutuallyExclusive<RequestQueueClientListRequestsOptions>('exclusiveStartId', 'cursor'));
 const paginateRequestsOptionsSchema = z
@@ -93,6 +99,7 @@ const paginateRequestsOptionsSchema = z
         exclusiveStartId: z.string().optional(),
         cursor: z.string().optional(),
         filter: requestFilterSchema.optional(),
+        ...timeoutOptionsShape,
     })
     .refine(...mutuallyExclusive<RequestQueueClientPaginateRequestsOptions>('exclusiveStartId', 'cursor'));
 
@@ -148,7 +155,7 @@ export type {
 export class RequestQueueClient extends ResourceClient {
     private clientKey?: string;
 
-    private timeoutMillis?: number;
+    private timeoutSecs?: number;
 
     /**
      * @hidden
@@ -160,39 +167,61 @@ export class RequestQueueClient extends ResourceClient {
         });
 
         this.clientKey = userOptions.clientKey;
-        this.timeoutMillis = userOptions.timeoutSecs ? userOptions.timeoutSecs * 1e3 : undefined;
+        this.timeoutSecs = userOptions.timeoutSecs;
+    }
+
+    /**
+     * Picks the timeout of a request: an explicit per-call `timeout` as is, otherwise the method's default
+     * tier, capped at the queue-wide `timeoutSecs` when one was given.
+     */
+    private _timeout(timeout: Timeout | undefined, defaultTier: TimeoutTier): Timeout {
+        if (timeout !== undefined) return timeout;
+        if (this.timeoutSecs === undefined) return defaultTier;
+        const tierSecs = this.httpClient.timeoutMillis[defaultTier] / 1000;
+        return tierSecs <= this.timeoutSecs ? defaultTier : this.timeoutSecs;
     }
 
     /**
      * Gets the Request queue object from the Apify API.
      *
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns The RequestQueue object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/request-queue-get
      */
-    async get(): Promise<RequestQueue | undefined> {
-        return this._get(schemas.RequestQueue(), {}, SMALL_TIMEOUT_MILLIS);
+    async get(options: TimeoutOptions = {}): Promise<RequestQueue | undefined> {
+        const { timeout } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this._get(schemas.RequestQueue(), {}, this._timeout(timeout, 'short'));
     }
 
     /**
      * Updates the Request queue with specified fields.
      *
      * @param newFields - Fields to update in the Request queue
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns The updated RequestQueue object
      * @see https://docs.apify.com/api/v2/request-queue-put
      */
-    async update(newFields: RequestQueueClientUpdateOptions): Promise<RequestQueue> {
+    async update(newFields: RequestQueueClientUpdateOptions, options: TimeoutOptions = {}): Promise<RequestQueue> {
         parseArgument(newFields, anyObjectSchema);
+        const { timeout } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._update(schemas.RequestQueue(), newFields, SMALL_TIMEOUT_MILLIS);
+        return this._update(schemas.RequestQueue(), newFields, this._timeout(timeout, 'short'));
     }
 
     /**
      * Deletes the Request queue.
      *
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/request-queue-delete
      */
-    async delete(): Promise<void> {
-        return this._delete(SMALL_TIMEOUT_MILLIS);
+    async delete(options: TimeoutOptions = {}): Promise<void> {
+        const { timeout } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this._delete(this._timeout(timeout, 'short'));
     }
 
     /**
@@ -202,6 +231,8 @@ export class RequestQueueClient extends ResourceClient {
      * inspecting what requests are waiting to be processed.
      *
      * @param options - Options for listing (e.g., limit)
+     * @param options.limit - Maximum number of requests to return.
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns List of requests from the queue head
      * @see https://docs.apify.com/api/v2/request-queue-head-get
      */
@@ -211,7 +242,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('head'),
             method: 'GET',
-            timeout: Math.min(SMALL_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
+            timeout: this._timeout(parsed.timeout, 'short'),
             params: this._params({
                 limit: parsed.limit,
                 clientKey: this.clientKey,
@@ -233,6 +264,7 @@ export class RequestQueueClient extends ResourceClient {
      * @param options - Lock configuration
      * @param options.lockSecs - **Required.** Duration in seconds to lock the requests. After this time, the locks expire and requests can be retrieved by other clients.
      * @param options.limit - Maximum number of requests to return. Default is 25.
+     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
      * @returns Object containing `items` (locked requests), `queueModifiedAt`, `hadMultipleClients`, and lock information
      * @see https://docs.apify.com/api/v2/request-queue-head-lock-post
      *
@@ -262,7 +294,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('head/lock'),
             method: 'POST',
-            timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
+            timeout: this._timeout(parsed.timeout, 'medium'),
             params: this._params({
                 limit: parsed.limit,
                 lockSecs: parsed.lockSecs,
@@ -289,6 +321,7 @@ export class RequestQueueClient extends ResourceClient {
      * @param request.payload - HTTP payload for POST/PUT requests (string).
      * @param options - Additional options
      * @param options.forefront - If `true`, adds the request to the beginning of the queue. Default is `false` (adds to the end).
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns Object with `requestId`, `wasAlreadyPresent`, and `wasAlreadyHandled` flags
      * @see https://docs.apify.com/api/v2/request-queue-requests-post
      *
@@ -321,7 +354,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('requests'),
             method: 'POST',
-            timeout: Math.min(SMALL_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
+            timeout: this._timeout(parsed.timeout, 'short'),
             data: request,
             params: this._params({
                 forefront: parsed.forefront,
@@ -347,7 +380,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url('requests/batch'),
             method: 'POST',
-            timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
+            timeout: this._timeout(parsed.timeout, 'medium'),
             data: requests,
             params: this._params({
                 forefront: parsed.forefront,
@@ -364,6 +397,7 @@ export class RequestQueueClient extends ResourceClient {
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
         const {
             forefront,
+            timeout,
             maxUnprocessedRequestsRetries = DEFAULT_UNPROCESSED_RETRIES_BATCH_ADD_REQUESTS,
             minDelayBetweenUnprocessedRequestsRetriesMillis = DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS,
         } = options;
@@ -378,6 +412,7 @@ export class RequestQueueClient extends ResourceClient {
             try {
                 const response = await this._batchAddRequests(remainingRequests, {
                     forefront,
+                    timeout,
                 });
                 processedRequests.push(...response.processedRequests);
                 unprocessedRequests = response.unprocessedRequests;
@@ -443,6 +478,7 @@ export class RequestQueueClient extends ResourceClient {
      * @param options.maxUnprocessedRequestsRetries - Maximum number of retry attempts for rate-limited requests. Default is 3.
      * @param options.maxParallel - Maximum number of parallel batch API calls. Default is 5.
      * @param options.minDelayBetweenUnprocessedRequestsRetriesMillis - Minimum delay before retrying rate-limited requests. Default is 500ms.
+     * @param options.timeout - Timeout for each batch API request. Default is `'medium'`.
      * @returns Object with `processedRequests` (successfully added) and `unprocessedRequests` (failed after all retries)
      * @see https://docs.apify.com/api/v2/request-queue-requests-batch-post
      *
@@ -472,12 +508,14 @@ export class RequestQueueClient extends ResourceClient {
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
         const {
             forefront,
+            timeout,
             maxUnprocessedRequestsRetries = DEFAULT_UNPROCESSED_RETRIES_BATCH_ADD_REQUESTS,
             maxParallel = DEFAULT_PARALLEL_BATCH_ADD_REQUESTS,
             minDelayBetweenUnprocessedRequestsRetriesMillis = DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS,
         } = options;
         parseArgument(requests, batchAddRequestsWithRetriesSchema);
         parseArgument(forefront, optionalBooleanSchema);
+        parseArgument(timeout, optionalTimeoutSchema);
         parseArgument(maxUnprocessedRequestsRetries, optionalNumberSchema);
         parseArgument(maxParallel, optionalNumberSchema);
         parseArgument(minDelayBetweenUnprocessedRequestsRetriesMillis, optionalNumberSchema);
@@ -529,19 +567,23 @@ export class RequestQueueClient extends ResourceClient {
      * Requests can be identified by either their ID or unique key.
      *
      * @param requests - Array of requests to delete (by id or uniqueKey)
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns Result containing processed and unprocessed requests
      * @see https://docs.apify.com/api/v2/request-queue-requests-batch-delete
      * @since Added in 2.3.0
      */
     async batchDeleteRequests(
         requests: RequestQueueClientRequestToDelete[],
+        options: TimeoutOptions = {},
     ): Promise<RequestQueueClientBatchDeleteRequestsResult> {
         parseArgument(requests, batchDeleteRequestsSchema);
+        const { timeout } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this._url('requests/batch'),
             method: 'DELETE',
-            timeout: Math.min(SMALL_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
+            timeout: this._timeout(timeout, 'short'),
             data: requests,
             params: this._params({
                 clientKey: this.clientKey,
@@ -555,15 +597,22 @@ export class RequestQueueClient extends ResourceClient {
      * Gets a specific request from the queue by its ID.
      *
      * @param id - Request ID
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns The request object, or `undefined` if not found
      * @see https://docs.apify.com/api/v2/request-queue-request-get
      */
-    async getRequest(id: string): Promise<RequestQueueClientGetRequestResult | undefined> {
+    async getRequest(
+        id: string,
+        options: TimeoutOptions = {},
+    ): Promise<RequestQueueClientGetRequestResult | undefined> {
         parseArgument(id, requestIdSchema);
+        const { timeout } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
         const requestOpts: ApifyRequestConfig = {
             url: this._url(['requests', id]),
             method: 'GET',
-            timeout: Math.min(SMALL_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
+            timeout: this._timeout(timeout, 'short'),
             params: this._params(),
         };
         try {
@@ -581,6 +630,8 @@ export class RequestQueueClient extends ResourceClient {
      *
      * @param request - The updated request object (must include id)
      * @param options - Update options such as whether to move to front
+     * @param options.forefront - If `true`, moves the request to the beginning of the queue. Default is `false`.
+     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
      * @returns Information about the updated request
      * @see https://docs.apify.com/api/v2/request-queue-request-put
      */
@@ -594,7 +645,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url(['requests', request.id]),
             method: 'PUT',
-            timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
+            timeout: this._timeout(parsed.timeout, 'medium'),
             data: request,
             params: this._params({
                 forefront: parsed.forefront,
@@ -610,13 +661,14 @@ export class RequestQueueClient extends ResourceClient {
      *
      * @param id - Request ID
      */
-    async deleteRequest(id: string): Promise<void> {
+    async deleteRequest(id: string, options: TimeoutOptions = {}): Promise<void> {
         parseArgument(id, requestIdSchema);
+        const { timeout } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         await this.httpClient.call({
             url: this._url(['requests', id]),
             method: 'DELETE',
-            timeout: Math.min(SMALL_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
+            timeout: this._timeout(timeout, 'short'),
             params: this._params({
                 clientKey: this.clientKey,
             }),
@@ -634,6 +686,7 @@ export class RequestQueueClient extends ResourceClient {
      * @param options - Lock extension options
      * @param options.lockSecs - **Required.** New lock duration in seconds from now.
      * @param options.forefront - If `true`, moves the request to the beginning of the queue when the lock expires. Default is `false`.
+     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
      * @returns Object with new `lockExpiresAt` timestamp
      * @see https://docs.apify.com/api/v2/request-queue-request-lock-put
      *
@@ -662,7 +715,7 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this._url(['requests', id, 'lock']),
             method: 'PUT',
-            timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
+            timeout: this._timeout(parsed.timeout, 'medium'),
             params: this._params({
                 forefront: parsed.forefront,
                 lockSecs: parsed.lockSecs,
@@ -681,6 +734,8 @@ export class RequestQueueClient extends ResourceClient {
      *
      * @param id - Request ID
      * @param options - Options such as whether to move to front
+     * @param options.forefront - If `true`, moves the request to the beginning of the queue. Default is `false`.
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/request-queue-request-lock-delete
      * @since Added in 2.4.1
      */
@@ -691,7 +746,7 @@ export class RequestQueueClient extends ResourceClient {
         await this.httpClient.call({
             url: this._url(['requests', id, 'lock']),
             method: 'DELETE',
-            timeout: Math.min(SMALL_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
+            timeout: this._timeout(parsed.timeout, 'short'),
             params: this._params({
                 forefront: parsed.forefront,
                 clientKey: this.clientKey,
@@ -706,6 +761,7 @@ export class RequestQueueClient extends ResourceClient {
      * queue contents.
      *
      * @param options - Pagination options
+     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
      * @returns List of requests with pagination information
      * @see https://docs.apify.com/api/v2/request-queue-requests-get
      * @since Added in 2.5.1
@@ -713,7 +769,13 @@ export class RequestQueueClient extends ResourceClient {
     listRequests(
         options: RequestQueueClientListRequestsOptions = {},
     ): Promise<RequestQueueClientListRequestsResult> & AsyncIterable<RequestQueueClientRequestSchema> {
-        const parsed = parseArgument(options, listRequestsOptionsSchema, 'RequestQueueClientListRequestsOptions');
+        // `timeout` times every page request; it is not an API parameter, so it must not reach the query string.
+        const { timeout, ...parsed } = parseArgument(
+            options,
+            listRequestsOptionsSchema,
+            'RequestQueueClientListRequestsOptions',
+        );
+        const pageTimeout = this._timeout(timeout, 'medium');
 
         const getPaginatedList = async (
             rqListOptions: RequestQueueClientListRequestsOptions = {},
@@ -721,7 +783,7 @@ export class RequestQueueClient extends ResourceClient {
             const response = await this.httpClient.call({
                 url: this._url('requests'),
                 method: 'GET',
-                timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
+                timeout: pageTimeout,
                 params: this._params({
                     ...rqListOptions,
                     filter: rqListOptions.filter ? rqListOptions.filter.join(',') : undefined,
@@ -772,15 +834,19 @@ export class RequestQueueClient extends ResourceClient {
      * This is useful for releasing all locks at once, for example when shutting down
      * a crawler gracefully.
      *
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'long'`.
      * @returns Number of requests that were unlocked
      * @see https://docs.apify.com/api/v2/request-queue-requests-unlock-post
      * @since Added in 2.12.5
      */
-    async unlockRequests(): Promise<RequestQueueClientUnlockRequestsResult> {
+    async unlockRequests(options: TimeoutOptions = {}): Promise<RequestQueueClientUnlockRequestsResult> {
+        const { timeout } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
         const response = await this.httpClient.call({
             url: this._url('requests/unlock'),
             method: 'POST',
-            timeout: Math.min(MEDIUM_TIMEOUT_MILLIS, this.timeoutMillis ?? Infinity),
+            timeout: this._timeout(timeout, 'long'),
             params: this._params({
                 clientKey: this.clientKey,
             }),
@@ -796,6 +862,7 @@ export class RequestQueueClient extends ResourceClient {
      * automatically handling pagination behind the scenes.
      *
      * @param options - Pagination options
+     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
      * @returns An async iterable of request pages
      * @see https://docs.apify.com/api/v2/request-queue-requests-get
      *
@@ -810,13 +877,13 @@ export class RequestQueueClient extends ResourceClient {
     paginateRequests(
         options: RequestQueueClientPaginateRequestsOptions = {},
     ): RequestQueueRequestsAsyncIterable<RequestQueueClientListRequestsResult> {
-        const { limit, exclusiveStartId, cursor, filter, maxPageLimit } = parseArgument(
+        const { limit, exclusiveStartId, cursor, filter, maxPageLimit, timeout } = parseArgument(
             options,
             paginateRequestsOptionsSchema,
             'RequestQueueClientPaginateRequestsOptions',
         );
         return new RequestQueuePaginationIterator({
-            getPage: async (pageOptions) => this.listRequests({ ...pageOptions, filter }),
+            getPage: async (pageOptions) => this.listRequests({ ...pageOptions, filter, timeout }),
             limit,
             exclusiveStartId,
             cursor,
@@ -830,6 +897,9 @@ export class RequestQueueClient extends ResourceClient {
  */
 export interface RequestQueueUserOptions {
     clientKey?: string;
+    /**
+     * Cap, in seconds, on the default timeout tier of every request this client sends. An explicit per-call
+     * `timeout` is not capped.
     /**
      * @since Added in 2.2.0
      */
@@ -854,7 +924,7 @@ export interface RequestQueueClientUpdateOptions {
 /**
  * Options for listing requests from the queue head.
  */
-export interface RequestQueueClientListHeadOptions {
+export interface RequestQueueClientListHeadOptions extends TimeoutOptions {
     limit?: number;
 }
 
@@ -867,7 +937,7 @@ export type RequestQueueListRequestsFilter = 'locked' | 'pending';
  * Options for listing all requests in the queue.
  * @since Added in 2.5.1
  */
-export interface RequestQueueClientListRequestsOptions {
+export interface RequestQueueClientListRequestsOptions extends TimeoutOptions {
     limit?: number;
     /**
      * Using id of request that does not exist in request queue leads to unpredictable results.
@@ -888,7 +958,7 @@ export interface RequestQueueClientListRequestsOptions {
  * Options for paginating through requests in the queue.
  * @since Added in 2.5.1
  */
-export interface RequestQueueClientPaginateRequestsOptions {
+export interface RequestQueueClientPaginateRequestsOptions extends TimeoutOptions {
     limit?: number;
     maxPageLimit?: number;
     /** @deprecated Use `cursor` for pagination instead. */
@@ -907,19 +977,19 @@ export interface RequestQueueClientPaginateRequestsOptions {
  * Options for listing and locking requests from the queue head.
  * @since Added in 2.4.1
  */
-export interface RequestQueueClientListAndLockHeadOptions {
+export interface RequestQueueClientListAndLockHeadOptions extends TimeoutOptions {
     lockSecs: number;
     limit?: number;
 }
 
-export interface RequestQueueClientAddRequestOptions {
+export interface RequestQueueClientAddRequestOptions extends TimeoutOptions {
     forefront?: boolean;
 }
 
 /**
  * @since Added in 2.4.1
  */
-export interface RequestQueueClientProlongRequestLockOptions {
+export interface RequestQueueClientProlongRequestLockOptions extends TimeoutOptions {
     forefront?: boolean;
     lockSecs: number;
 }
@@ -927,14 +997,14 @@ export interface RequestQueueClientProlongRequestLockOptions {
 /**
  * @since Added in 2.4.1
  */
-export interface RequestQueueClientDeleteRequestLockOptions {
+export interface RequestQueueClientDeleteRequestLockOptions extends TimeoutOptions {
     forefront?: boolean;
 }
 
 /**
  * @since Added in 2.3.0
  */
-export interface RequestQueueClientBatchAddRequestWithRetriesOptions {
+export interface RequestQueueClientBatchAddRequestWithRetriesOptions extends TimeoutOptions {
     forefront?: boolean;
     maxUnprocessedRequestsRetries?: number;
     maxParallel?: number;

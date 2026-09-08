@@ -2,14 +2,17 @@ import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
 import type { Webhook, WebhookUpdateData } from './webhook.js';
 
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
     desc: z.boolean().optional(),
+    ...timeoutOptionsShape,
 });
 const webhookCreateSchema = anyObjectSchema.optional();
 
@@ -64,6 +67,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination and sorting options.
+     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of webhooks.
      * @see https://docs.apify.com/api/v2/webhooks-get
      */
@@ -73,23 +77,26 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
     ): PaginatedIterator<Omit<Webhook, 'payloadTemplate' | 'headersTemplate'>> {
         const parsed = parseArgument(options, listOptionsSchema, 'WebhookCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfWebhooks(), parsed);
+        return this._listPaginated(schemas.ListOfWebhooks(), parsed, 'medium');
     }
 
     /**
      * Creates a new webhook.
      *
      * @param webhook - The webhook data.
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns The created webhook object.
      * @see https://docs.apify.com/api/v2/webhooks-post
      */
-    async create(webhook?: WebhookUpdateData): Promise<Webhook> {
+    async create(webhook?: WebhookUpdateData, options: TimeoutOptions = {}): Promise<Webhook> {
         parseArgument(webhook, webhookCreateSchema);
+        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._create(schemas.Webhook(), webhook);
+        return this._create(schemas.Webhook(), webhook, timeout);
     }
 }
 
-export interface WebhookCollectionListOptions extends PaginationOptions {
+export interface WebhookCollectionListOptions extends PaginationOptions, TimeoutOptions {
     desc?: boolean;
 }

@@ -149,13 +149,11 @@ describe('Actor methods', () => {
             const contentType = 'application/x-www-form-urlencoded';
             const input = 'some=body';
 
-            const query = {
-                timeout: 120,
-                memory: 256,
-                build: '1.2.0',
-            };
+            // The run timeout travels to the API as `timeout`, while the client option is `runTimeout`.
+            const options = { runTimeout: 120, memory: 256, build: '1.2.0' };
+            const query = { timeout: 120, memory: 256, build: '1.2.0' };
 
-            const res = await client.actor(actorId).start(input, { contentType, ...query });
+            const res = await client.actor(actorId).start(input, { contentType, ...options });
             expect(res.id).toEqual('run-actor');
             validateRequest({
                 query,
@@ -166,7 +164,7 @@ describe('Actor methods', () => {
 
             const browserRes = await page.evaluate((id, i, opts) => client.actor(id).start(i, opts), actorId, input, {
                 contentType,
-                ...query,
+                ...options,
             });
             expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({
@@ -270,7 +268,7 @@ describe('Actor methods', () => {
             const actorId = 'some-id';
             const contentType = 'application/x-www-form-urlencoded';
             const input = 'some=body';
-            const timeout = 120;
+            const runTimeout = 120;
             const memory = 256;
             const build = '1.2.0';
             const runId = 'started-run-id';
@@ -282,7 +280,7 @@ describe('Actor methods', () => {
             const res = await client.actor(actorId).call(input, {
                 contentType,
                 memory,
-                timeout,
+                runTimeout,
                 build,
                 waitSecs,
                 log: null,
@@ -292,7 +290,7 @@ describe('Actor methods', () => {
             validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
             validateRequest({
                 query: {
-                    timeout,
+                    timeout: runTimeout,
                     memory,
                     build,
                 },
@@ -308,7 +306,7 @@ describe('Actor methods', () => {
                 {
                     contentType,
                     memory,
-                    timeout,
+                    runTimeout,
                     build,
                     waitSecs,
                 },
@@ -317,7 +315,7 @@ describe('Actor methods', () => {
             validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
             validateRequest({
                 query: {
-                    timeout,
+                    timeout: runTimeout,
                     memory,
                     build,
                 },

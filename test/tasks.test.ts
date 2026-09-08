@@ -281,7 +281,7 @@ describe('Task methods', () => {
         test('call() works', async () => {
             const taskId = 'some-task-id';
             const input = { some: 'body' };
-            const timeout = 120;
+            const runTimeout = 120;
             const memory = 256;
             const build = '1.2.0';
             const actId = 'started-actor-id';
@@ -290,8 +290,9 @@ describe('Task methods', () => {
             const body = { data };
             const waitSecs = 1;
 
+            // The run timeout travels to the API as `timeout`, while the client option is `runTimeout`.
             const query = {
-                timeout,
+                timeout: runTimeout,
                 memory,
                 build,
             };
@@ -299,7 +300,7 @@ describe('Task methods', () => {
             mockServer.setResponse({ body });
             const res = await client.task(taskId).call(input, {
                 memory,
-                timeout,
+                runTimeout,
                 build,
                 waitSecs,
             });
@@ -309,21 +310,13 @@ describe('Task methods', () => {
 
             const callBrowserRes = await page.evaluate((id, i, opts) => client.task(id).call(i, opts), taskId, input, {
                 memory,
-                timeout,
+                runTimeout,
                 build,
                 waitSecs,
             });
             expect(callBrowserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: { waitForFinish: waitSecs }, params: { runId } });
-            validateRequest({
-                query: {
-                    timeout,
-                    memory,
-                    build,
-                },
-                params: { taskId },
-                body: { some: 'body' },
-            });
+            validateRequest({ query, params: { taskId }, body: { some: 'body' } });
         });
 
         test('call() works with maxItems', async () => {

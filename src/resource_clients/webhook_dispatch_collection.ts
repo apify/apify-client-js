@@ -2,14 +2,17 @@ import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsShape } from '../timeouts.js';
 import { paginationOptionsShape, parseArgument } from '../utils.js';
 import type { WebhookDispatch } from './webhook_dispatch.js';
 
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
     desc: z.boolean().optional(),
+    ...timeoutOptionsShape,
 });
 
 /**
@@ -58,16 +61,17 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination and sorting options.
+     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of webhook dispatches.
      * @see https://docs.apify.com/api/v2/webhook-dispatches-get
      */
     list(options: WebhookDispatchCollectionListOptions = {}): PaginatedIterator<WebhookDispatch> {
         const parsed = parseArgument(options, listOptionsSchema, 'WebhookDispatchCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfWebhookDispatches(), parsed);
+        return this._listPaginated(schemas.ListOfWebhookDispatches(), parsed, 'medium');
     }
 }
 
-export interface WebhookDispatchCollectionListOptions extends PaginationOptions {
+export interface WebhookDispatchCollectionListOptions extends PaginationOptions, TimeoutOptions {
     desc?: boolean;
 }

@@ -1,7 +1,9 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema } from '../timeouts.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
 import type { ActorEnvironmentVariable } from './actor_version.js';
 
@@ -61,25 +63,34 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      * for await (const singleItem of client.list()) {...}
      * ```
      *
+     * @param options - Request options. The API ignores pagination for this endpoint, so only `timeout` applies.
+     * @param options.timeout - Timeout for each API request. Default is `'short'`.
      * @returns A paginated iterator of environment variables.
      * @see https://docs.apify.com/api/v2/act-version-env-vars-get
      */
     list(
-        _options: ActorEnvVarCollectionListOptions = {},
+        options: ActorEnvVarCollectionListOptions = {},
     ): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
-        return this._listPaginated(schemas.ListOfEnvVars());
+        return this._listPaginated(schemas.ListOfEnvVars(), {}, options.timeout ?? 'short');
     }
 
     /**
      * Creates a new environment variable for this Actor version.
      *
      * @param actorEnvVar - The environment variable data.
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns The created environment variable object.
      * @see https://docs.apify.com/api/v2/act-version-env-vars-post
      */
-    async create(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
+    async create(
+        actorEnvVar: ActorEnvironmentVariable,
+        options: TimeoutOptions = {},
+    ): Promise<ActorEnvironmentVariable> {
         parseArgument(actorEnvVar, actorEnvVarSchema);
-        return this._create(schemas.EnvVar(), actorEnvVar);
+        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this._create(schemas.EnvVar(), actorEnvVar, timeout);
     }
 }
 
@@ -88,7 +99,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
  * https://github.com/apify/apify-client-js/issues/799
  * @since Added in 2.1.0
  */
-export interface ActorEnvVarCollectionListOptions extends PaginationOptions {
+export interface ActorEnvVarCollectionListOptions extends PaginationOptions, TimeoutOptions {
     desc?: boolean;
 }
 

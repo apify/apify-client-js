@@ -1,7 +1,9 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema } from '../timeouts.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
 import type { ActorVersion, FinalActorVersion } from './actor_version.js';
 
@@ -58,26 +60,31 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      * for await (const singleItem of client.list()) {...}
      * ```
      *
+     * @param options - Request options. The API ignores pagination for this endpoint, so only `timeout` applies.
+     * @param options.timeout - Timeout for each API request. Default is `'short'`.
      * @returns A paginated iterator of Actor versions.
      * @see https://docs.apify.com/api/v2/act-versions-get
      */
     list(
-        _options: ActorVersionCollectionListOptions = {},
+        options: ActorVersionCollectionListOptions = {},
     ): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
-        return this._listPaginated(schemas.ListOfVersions());
+        return this._listPaginated(schemas.ListOfVersions(), {}, options.timeout ?? 'short');
     }
 
     /**
      * Creates a new Actor version.
      *
      * @param actorVersion - The Actor version data.
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns The created Actor version object.
      * @see https://docs.apify.com/api/v2/act-versions-post
      */
-    async create(actorVersion: ActorVersion): Promise<FinalActorVersion> {
+    async create(actorVersion: ActorVersion, options: TimeoutOptions = {}): Promise<FinalActorVersion> {
         parseArgument(actorVersion, actorVersionSchema);
+        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._create(schemas.Version(), actorVersion);
+        return this._create(schemas.Version(), actorVersion, timeout);
     }
 }
 
@@ -85,7 +92,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
  * @deprecated No options are used in the current API implementation.
  * https://github.com/apify/apify-client-js/issues/799
  */
-export interface ActorVersionCollectionListOptions extends PaginationOptions {
+export interface ActorVersionCollectionListOptions extends PaginationOptions, TimeoutOptions {
     desc?: boolean;
 }
 

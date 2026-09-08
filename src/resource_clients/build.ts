@@ -3,12 +3,14 @@ import { z } from 'zod';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { Build } from '../models.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { parseArgument, parseResponse } from '../utils.js';
 import { LogClient } from './log.js';
 
-const getOptionsSchema = z.strictObject({ waitForFinish: z.number().optional() });
-const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional() });
+const getOptionsSchema = z.strictObject({ waitForFinish: z.number().optional(), ...timeoutOptionsShape });
+const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional(), ...timeoutOptionsShape });
 
 export type { Build, BuildMeta, BuildOptions, BuildStats, BuildUsage } from '../models.js';
 
@@ -51,6 +53,7 @@ export class BuildClient extends ResourceClient {
      *
      * @param options - Get options
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the build to finish on the API side before returning. Default is 0 (returns immediately).
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns The Build object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/actor-build-get
      *
@@ -65,9 +68,9 @@ export class BuildClient extends ResourceClient {
      * ```
      */
     async get(options: BuildClientGetOptions = {}): Promise<Build | undefined> {
-        const parsed = parseArgument(options, getOptionsSchema, 'BuildClientGetOptions');
+        const { timeout = 'short', ...params } = parseArgument(options, getOptionsSchema, 'BuildClientGetOptions');
 
-        return this._get(schemas.Build(), parsed);
+        return this._get(schemas.Build(), params, timeout);
     }
 
     /**
@@ -75,6 +78,8 @@ export class BuildClient extends ResourceClient {
      *
      * Stops the build process immediately. The build will have an `ABORTED` status.
      *
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns The updated Build object with `ABORTED` status
      * @see https://docs.apify.com/api/v2/actor-build-abort-post
      *
@@ -83,11 +88,14 @@ export class BuildClient extends ResourceClient {
      * await client.build('build-id').abort();
      * ```
      */
-    async abort(): Promise<Build> {
+    async abort(options: TimeoutOptions = {}): Promise<Build> {
+        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
         const response = await this.httpClient.call({
             url: this._url('abort'),
             method: 'POST',
             params: this._params(),
+            timeout,
         });
 
         return parseResponse(response, schemas.Build());
@@ -96,25 +104,34 @@ export class BuildClient extends ResourceClient {
     /**
      * Deletes the Actor build.
      *
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/actor-build-delete
      * @since Added in 2.8.1
      */
-    async delete(): Promise<void> {
-        return this._delete();
+    async delete(options: TimeoutOptions = {}): Promise<void> {
+        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this._delete(timeout);
     }
 
     /**
      * Retrieves the OpenAPI definition for the Actor build.
      *
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
      * @returns The OpenAPI definition object.
      * @see https://docs.apify.com/api/v2/actor-build-openapi-json-get
      * @since Added in 2.11.2
      */
-    async getOpenApiDefinition(): Promise<OpenApiDefinition> {
+    async getOpenApiDefinition(options: TimeoutOptions = {}): Promise<OpenApiDefinition> {
+        const { timeout = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
         const response = await this.httpClient.call({
             url: this._url('openapi.json'),
             method: 'GET',
             params: this._params(),
+            timeout,
         });
 
         return response.data;
@@ -135,6 +152,7 @@ export class BuildClient extends ResourceClient {
      *
      * @param options - Wait options
      * @param options.waitSecs - Maximum time to wait for the build to finish, in seconds. If omitted, waits indefinitely.
+     * @param options.timeout - Timeout for each polling API request. Default is `'noTimeout'`.
      * @returns The Build object (finished or still building if timeout was reached)
      *
      * @example
@@ -182,14 +200,14 @@ export class BuildClient extends ResourceClient {
 /**
  * Options for getting a Build.
  */
-export interface BuildClientGetOptions {
+export interface BuildClientGetOptions extends TimeoutOptions {
     waitForFinish?: number;
 }
 
 /**
  * Options for waiting for a Build to finish.
  */
-export interface BuildClientWaitForFinishOptions {
+export interface BuildClientWaitForFinishOptions extends TimeoutOptions {
     /**
      * Maximum time to wait for the build to finish, in seconds.
      * If the limit is reached, the returned promise is resolved to a build object that will have

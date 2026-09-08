@@ -4,8 +4,10 @@ import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsShape, timeoutSchema } from '../timeouts.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
 import type { KeyValueStore } from './key_value_store.js';
 
@@ -14,9 +16,11 @@ const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
     desc: z.boolean().optional(),
     ownership: z.enum(STORAGE_OWNERSHIP_FILTER).optional(),
+    ...timeoutOptionsShape,
 });
 const nameSchema = z.string().optional();
 const schemaSchema = anyObjectSchema.optional();
+const optionalTimeoutSchema = timeoutSchema.optional();
 
 /**
  * Client for managing the collection of Key-value stores in your account.
@@ -66,6 +70,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination options.
+     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of Key-value stores.
      * @see https://docs.apify.com/api/v2/key-value-stores-get
      */
@@ -74,7 +79,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     ): Promise<KeyValueStoreCollectionListResult> & AsyncIterable<KeyValueStore> {
         const parsed = parseArgument(options, listOptionsSchema, 'KeyValueStoreCollectionClientListOptions');
 
-        return this._listPaginated(schemas.ListOfKeyValueStores(), parsed);
+        return this._listPaginated(schemas.ListOfKeyValueStores(), parsed, 'medium');
     }
 
     /**
@@ -82,6 +87,8 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
      *
      * @param name - Name of the key-value store. If not provided, a default store is used.
      * @param options - Additional options like schema.
+     * @param options.schema - Schema of the key-value store.
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns The key-value store object.
      * @see https://docs.apify.com/api/v2/key-value-stores-post
      */
@@ -91,12 +98,16 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     ): Promise<KeyValueStore> {
         parseArgument(name, nameSchema);
         parseArgument(options?.schema, schemaSchema); // TODO: Add schema validation
+        parseArgument(options?.timeout, optionalTimeoutSchema);
 
-        return this._getOrCreate(schemas.KeyValueStore(), name, options);
+        // `timeout` is not part of the resource, so the body carries only the rest.
+        const { timeout = 'short', ...resource } = options ?? {};
+
+        return this._getOrCreate(schemas.KeyValueStore(), name, options ? resource : undefined, timeout);
     }
 }
 
-export interface KeyValueStoreCollectionClientListOptions extends PaginationOptions {
+export interface KeyValueStoreCollectionClientListOptions extends PaginationOptions, TimeoutOptions {
     unnamed?: boolean;
     desc?: boolean;
     /**
@@ -109,7 +120,7 @@ export interface KeyValueStoreCollectionClientListOptions extends PaginationOpti
 /**
  * @since Added in 2.3.0
  */
-export interface KeyValueStoreCollectionClientGetOrCreateOptions {
+export interface KeyValueStoreCollectionClientGetOrCreateOptions extends TimeoutOptions {
     schema?: Record<string, unknown>;
 }
 

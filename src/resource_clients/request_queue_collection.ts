@@ -4,8 +4,10 @@ import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { paginationOptionsShape, parseArgument } from '../utils.js';
 import type { RequestQueue } from './request_queue.js';
 
@@ -14,6 +16,7 @@ const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
     desc: z.boolean().optional(),
     ownership: z.enum(STORAGE_OWNERSHIP_FILTER).optional(),
+    ...timeoutOptionsShape,
 });
 const nameSchema = z.string().optional();
 
@@ -65,6 +68,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination options.
+     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of Request queues.
      * @see https://docs.apify.com/api/v2/request-queues-get
      */
@@ -73,24 +77,27 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
     ): Promise<RequestQueueCollectionListResult> & AsyncIterable<RequestQueue> {
         const parsed = parseArgument(options, listOptionsSchema, 'RequestQueueCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfRequestQueues(), parsed);
+        return this._listPaginated(schemas.ListOfRequestQueues(), parsed, 'medium');
     }
 
     /**
      * Gets or creates a Request queue with the specified name.
      *
      * @param name - Name of the Request queue. If not provided, a default queue is used.
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns The Request queue object.
      * @see https://docs.apify.com/api/v2/request-queues-post
      */
-    async getOrCreate(name?: string): Promise<RequestQueue> {
+    async getOrCreate(name?: string, options: TimeoutOptions = {}): Promise<RequestQueue> {
         parseArgument(name, nameSchema);
+        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._getOrCreate(schemas.RequestQueue(), name);
+        return this._getOrCreate(schemas.RequestQueue(), name, undefined, timeout);
     }
 }
 
-export interface RequestQueueCollectionListOptions extends PaginationOptions {
+export interface RequestQueueCollectionListOptions extends PaginationOptions, TimeoutOptions {
     unnamed?: boolean;
     desc?: boolean;
     /**

@@ -14,6 +14,7 @@ import { ApifyApiError } from './apify_api_error.js';
 import type { RequestInterceptorFunction } from './interceptors.js';
 import { InvalidResponseBodyError, requestInterceptors, responseInterceptors } from './interceptors.js';
 import type { Statistics } from './statistics.js';
+import type { Timeout, TimeoutTier } from './timeouts.js';
 import { asArray, cast, getVersionData, isNode, isStream } from './utils.js';
 
 const { version } = getVersionData();
@@ -31,7 +32,11 @@ export class HttpClient {
 
     logger: Log;
 
-    timeoutMillis: number;
+    /** Duration of each timeout tier, in milliseconds. */
+    timeoutMillis: Record<TimeoutTier, number>;
+
+    /** Cap on the timeout of a single request attempt, in milliseconds. */
+    timeoutMaxMillis: number;
 
     httpAgent?: http.Agent;
 
@@ -51,7 +56,12 @@ export class HttpClient {
         this.maxRetries = options.maxRetries;
         this.minDelayBetweenRetriesMillis = options.minDelayBetweenRetriesMillis;
         this.userProvidedRequestInterceptors = options.requestInterceptors;
-        this.timeoutMillis = options.timeoutSecs * 1000;
+        this.timeoutMillis = {
+            short: options.timeoutShortSecs * 1000,
+            medium: options.timeoutMediumSecs * 1000,
+            long: options.timeoutLongSecs * 1000,
+        };
+        this.timeoutMaxMillis = options.timeoutMaxSecs * 1000;
         this.logger = options.logger;
         this.workflowKey = options.workflowKey || process.env[APIFY_ENV_VARS.WORKFLOW_KEY];
         this.userAgentSuffix = options.userAgentSuffix;
@@ -78,7 +88,9 @@ export class HttpClient {
             transformRequest: undefined,
             transformResponse: undefined,
             responseType: 'arraybuffer',
-            timeout: this.timeoutMillis,
+            // Every request sets its own timeout in `_createRequestHandler`, so the default only backs a raw
+            // `axios.request()` call.
+            timeout: this.timeoutMaxMillis,
             // maxBodyLength needs to be Infinity, because -1 falls back to a 10 MB default
             // from an axios subdependency - 'follow-redirects'
             maxBodyLength: Infinity,
@@ -128,7 +140,7 @@ export class HttpClient {
             keepAlive: true,
             // Timeout for inactive sockets
             // Prevents socket leaks from idle connections
-            timeout: this.timeoutMillis,
+            timeout: this.timeoutMaxMillis,
             // Keep alive timeout for free sockets (15 seconds)
             // Node.js will close unused sockets after this period
             keepAliveMsecs: 15_000,
@@ -195,6 +207,8 @@ export class HttpClient {
      * retrying logic.
      */
     private _createRequestHandler(config: ApifyRequestConfig) {
+        const { timeout = 'medium', ...axiosConfig } = config;
+
         const makeRequest: RetryFunction<ApifyResponse, Error> = async (stopTrying, attempt) => {
             this.stats.requests++;
             let response: ApifyResponse;
@@ -205,16 +219,13 @@ export class HttpClient {
                     // Handling redirects is not possible without buffering - part of the stream has already been sent and can't be recovered
                     // when server sends the redirect. Therefore we need to override this in Axios config to prevent it from buffering the body.
                     // see also axios/axios#1045
-                    config = { ...config, maxRedirects: 0 };
+                    axiosConfig.maxRedirects = 0;
                 }
 
-                // Increase timeout with each attempt. Max timeout is bounded by the client timeout.
-                config.timeout = Math.min(
-                    this.timeoutMillis,
-                    (config.timeout ?? this.timeoutMillis) * 2 ** (attempt - 1),
-                );
-
-                response = await this.axios.request(config);
+                response = await this.axios.request({
+                    ...axiosConfig,
+                    timeout: this._computeTimeoutMillis(timeout, attempt),
+                });
                 if (this._isStatusOk(response.status)) return response;
             } catch (err) {
                 return cast(this._handleRequestError(err as AxiosError, config, stopTrying));
@@ -243,6 +254,29 @@ export class HttpClient {
 
     private _isStatusOk(statusCode: number) {
         return statusCode < 300;
+    }
+
+    /**
+     * Resolves `timeout` to the number of milliseconds the given attempt gets. A tier name resolves to its
+     * configured duration, a number is taken as seconds, and `'noTimeout'` becomes `0`, which axios reads as
+     * no timeout. The result doubles with each attempt and is capped at `timeoutMaxMillis`. A requested value
+     * above the cap is capped too, which warns once, since the requested value does not take effect in full.
+     */
+    private _computeTimeoutMillis(timeout: Timeout, attempt: number): number {
+        if (timeout === 'noTimeout') return 0;
+
+        const requestedMillis = typeof timeout === 'number' ? timeout * 1000 : this.timeoutMillis[timeout];
+
+        if (requestedMillis > this.timeoutMaxMillis) {
+            // `warningOnce` keys by message, so each requested value warns once rather than on every attempt.
+            this.logger.warningOnce(
+                `The requested timeout of ${requestedMillis / 1000}s exceeds timeoutMaxSecs ` +
+                    `(${this.timeoutMaxMillis / 1000}s) and is capped at it. ` +
+                    'Raise timeoutMaxSecs on the client to allow longer request timeouts.',
+            );
+        }
+
+        return Math.min(requestedMillis * 2 ** (attempt - 1), this.timeoutMaxMillis);
     }
 
     /**
@@ -322,10 +356,16 @@ export class HttpClient {
     }
 }
 
-export interface ApifyRequestConfig extends AxiosRequestConfig {
+export interface ApifyRequestConfig extends Omit<AxiosRequestConfig, 'timeout'> {
     stringifyFunctions?: boolean;
     forceBuffer?: boolean;
     doNotRetryTimeouts?: boolean;
+    /**
+     * Timeout of the request, resolved to milliseconds per attempt by the client. Unlike the axios field it
+     * replaces, a number here is a duration in seconds.
+     * @default 'medium'
+     */
+    timeout?: Timeout;
 }
 
 export interface ApifyResponse<T = any> extends AxiosResponse<T> {
@@ -337,7 +377,10 @@ export interface HttpClientOptions {
     maxRetries: number;
     minDelayBetweenRetriesMillis: number;
     requestInterceptors: RequestInterceptorFunction[];
-    timeoutSecs: number;
+    timeoutShortSecs: number;
+    timeoutMediumSecs: number;
+    timeoutLongSecs: number;
+    timeoutMaxSecs: number;
     logger: Log;
     token?: string;
     workflowKey?: string;

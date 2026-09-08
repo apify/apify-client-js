@@ -1,4 +1,3 @@
-import type { AxiosRequestConfig } from 'axios';
 import { z } from 'zod';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
@@ -6,8 +5,10 @@ import { LEVELS, Log } from '@apify/log';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyResponse } from '../http_client.js';
+import type { ApifyRequestConfig, ApifyResponse } from '../http_client.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, isNode, parseArgument, parseResponse } from '../utils.js';
 import type { ActorRun } from './actor.js';
 import { DatasetClient } from './dataset.js';
@@ -17,27 +18,30 @@ import { RequestQueueClient } from './request_queue.js';
 
 const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
 
-const getOptionsSchema = z.strictObject({ waitForFinish: z.number().optional() });
-const abortOptionsSchema = z.strictObject({ gracefully: z.boolean().optional() });
+const getOptionsSchema = z.strictObject({ waitForFinish: z.number().optional(), ...timeoutOptionsShape });
+const abortOptionsSchema = z.strictObject({ gracefully: z.boolean().optional(), ...timeoutOptionsShape });
 const targetActorIdSchema = z.string();
 const metamorphOptionsSchema = z.strictObject({
     contentType: z.string().optional(),
     build: z.string().optional(),
+    ...timeoutOptionsShape,
 });
 const resurrectOptionsSchema = z.strictObject({
     build: z.string().optional(),
     memory: z.number().optional(),
-    timeout: z.number().optional(),
+    runTimeout: z.number().optional(),
     maxItems: z.number().optional(),
     maxTotalChargeUsd: z.number().optional(),
     restartOnError: z.boolean().optional(),
+    ...timeoutOptionsShape,
 });
 const chargeOptionsSchema = z.strictObject({
     eventName: z.string(),
     count: z.number().default(1),
     idempotencyKey: z.string().optional(),
+    ...timeoutOptionsShape,
 });
-const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional() });
+const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional(), ...timeoutOptionsShape });
 
 /**
  * Client for managing a specific Actor run.
@@ -92,9 +96,9 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
-        const parsed = parseArgument(options, getOptionsSchema, 'RunGetOptions');
+        const { timeout = 'short', ...params } = parseArgument(options, getOptionsSchema, 'RunGetOptions');
 
-        return this._get(schemas.Run(), parsed);
+        return this._get(schemas.Run(), params, timeout);
     }
 
     /**
@@ -102,6 +106,7 @@ export class RunClient extends ResourceClient {
      *
      * @param options - Abort options
      * @param options.gracefully - If `true`, the Actor run will abort gracefully - it can send status messages and perform cleanup. Default is `false` (immediate abort).
+     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
      * @returns The updated ActorRun object with `ABORTING` or `ABORTED` status
      * @see https://docs.apify.com/api/v2/actor-run-abort-post
      *
@@ -115,12 +120,13 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async abort(options: RunAbortOptions = {}): Promise<ActorRun> {
-        const parsed = parseArgument(options, abortOptionsSchema, 'RunAbortOptions');
+        const { timeout = 'medium', ...params } = parseArgument(options, abortOptionsSchema, 'RunAbortOptions');
 
         const response = await this.httpClient.call({
             url: this._url('abort'),
             method: 'POST',
-            params: this._params(parsed),
+            params: this._params(params),
+            timeout,
         });
 
         return parseResponse(response, schemas.Run());
@@ -129,11 +135,15 @@ export class RunClient extends ResourceClient {
     /**
      * Deletes the Actor run.
      *
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/actor-run-delete
      * @since Added in 2.8.1
      */
-    async delete(): Promise<void> {
-        return this._delete();
+    async delete(options: TimeoutOptions = {}): Promise<void> {
+        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this._delete(timeout);
     }
 
     /**
@@ -148,6 +158,7 @@ export class RunClient extends ResourceClient {
      * @param options - Metamorph options
      * @param options.build - Tag or number of the target Actor's build to run. Default is the target Actor's default build.
      * @param options.contentType - Content type of the input. If specified, input must be a string or Buffer.
+     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
      * @returns The metamorphed ActorRun object (same ID, but now running the target Actor)
      * @see https://docs.apify.com/api/v2/actor-run-metamorph-post
      *
@@ -173,16 +184,15 @@ export class RunClient extends ResourceClient {
             build: parsed.build,
         };
 
-        const request: AxiosRequestConfig = {
+        const request: ApifyRequestConfig = {
             url: this._url('metamorph'),
             method: 'POST',
             data: input,
             params: this._params(params),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
-            // TODO: remove this ts-expect-error once we have defined custom Apify axios configs
-            // @ts-expect-error Custom Apify property
             stringifyFunctions: true,
+            timeout: parsed.timeout ?? 'medium',
         };
 
         if (parsed.contentType) {
@@ -202,6 +212,8 @@ export class RunClient extends ResourceClient {
      * This can be useful to recover from certain errors or to force the Actor to restart
      * with a fresh environment.
      *
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
      * @returns The updated ActorRun object
      * @see https://docs.apify.com/api/v2/actor-run-reboot-post
      *
@@ -211,10 +223,13 @@ export class RunClient extends ResourceClient {
      * ```
      * @since Added in 2.8.0
      */
-    async reboot(): Promise<ActorRun> {
-        const request: AxiosRequestConfig = {
+    async reboot(options: TimeoutOptions = {}): Promise<ActorRun> {
+        const { timeout = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        const request: ApifyRequestConfig = {
             url: this._url('reboot'),
             method: 'POST',
+            timeout,
         };
 
         const response = await this.httpClient.call(request);
@@ -228,6 +243,8 @@ export class RunClient extends ResourceClient {
      * @param newFields.statusMessage - Custom status message to display (e.g., "Processing page 10/100")
      * @param newFields.isStatusMessageTerminal - If `true`, the status message is final and won't be overwritten. Default is `false`.
      * @param newFields.generalAccess - General resource access level ('FOLLOW_USER_SETTING', 'ANYONE_WITH_ID_CAN_READ' or 'RESTRICTED')
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns The updated ActorRun object
      *
      * @example
@@ -239,10 +256,11 @@ export class RunClient extends ResourceClient {
      * ```
      * @since Added in 2.6.0
      */
-    async update(newFields: RunUpdateOptions): Promise<ActorRun> {
+    async update(newFields: RunUpdateOptions, options: TimeoutOptions = {}): Promise<ActorRun> {
         parseArgument(newFields, anyObjectSchema);
+        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._update(schemas.Run(), newFields);
+        return this._update(schemas.Run(), newFields, timeout);
     }
 
     /**
@@ -254,10 +272,11 @@ export class RunClient extends ResourceClient {
      * @param options - Resurrection options (override original run settings)
      * @param options.build - Tag or number of the build to use. If not provided, uses the original run's build.
      * @param options.memory - Memory in megabytes. If not provided, uses the original run's memory.
-     * @param options.timeout - Timeout in seconds. If not provided, uses the original run's timeout.
+     * @param options.runTimeout - Timeout for the resurrected run in seconds. If not provided, uses the original run's timeout.
      * @param options.maxItems - Maximum number of dataset items (pay-per-result Actors).
      * @param options.maxTotalChargeUsd - Maximum cost in USD (pay-per-event Actors).
      * @param options.restartOnError - Whether to restart on error.
+     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
      * @returns The new (resurrected) ActorRun object
      * @see https://docs.apify.com/api/v2/post-resurrect-run
      *
@@ -269,12 +288,18 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async resurrect(options: RunResurrectOptions = {}): Promise<ActorRun> {
-        const parsed = parseArgument(options, resurrectOptionsSchema, 'RunResurrectOptions');
+        const {
+            timeout = 'medium',
+            runTimeout,
+            ...params
+        } = parseArgument(options, resurrectOptionsSchema, 'RunResurrectOptions');
 
         const response = await this.httpClient.call({
             url: this._url('resurrect'),
             method: 'POST',
-            params: this._params(parsed),
+            // The API knows the run timeout as `timeout`; the client keeps that name for the request timeout.
+            params: this._params({ ...params, timeout: runTimeout }),
+            timeout,
         });
 
         return parseResponse(response, schemas.Run());
@@ -287,6 +312,7 @@ export class RunClient extends ResourceClient {
      * @param options.eventName - **Required.** Name of the event to charge for.
      * @param options.count - Number of times to charge the event. Default is 1.
      * @param options.idempotencyKey - Optional key to ensure the charge is not duplicated. If not provided, one is auto-generated.
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns Empty response object.
      * @see https://docs.apify.com/api/v2/post-charge-run
      * @since Added in 2.11.0
@@ -296,13 +322,14 @@ export class RunClient extends ResourceClient {
             eventName,
             count,
             idempotencyKey: providedIdempotencyKey,
+            timeout = 'short',
         } = parseArgument(options, chargeOptionsSchema, 'RunChargeOptions');
 
         /** To avoid duplicates during the same milisecond, doesn't need to by crypto-secure. */
         const randomSuffix = (Math.random() + 1).toString(36).slice(3, 8);
         const idempotencyKey = providedIdempotencyKey ?? `${this.id}-${eventName}-${Date.now()}-${randomSuffix}`;
 
-        const request: AxiosRequestConfig = {
+        const request: ApifyRequestConfig = {
             url: this._url('charge'),
             method: 'POST',
             data: {
@@ -312,6 +339,7 @@ export class RunClient extends ResourceClient {
             headers: {
                 [RUN_CHARGE_IDEMPOTENCY_HEADER]: idempotencyKey,
             },
+            timeout,
         };
         const response = await this.httpClient.call(request);
         return response;
@@ -330,6 +358,7 @@ export class RunClient extends ResourceClient {
      *
      * @param options - Wait options
      * @param options.waitSecs - Maximum time to wait for the run to finish, in seconds. If the limit is reached, the returned promise resolves to a run object that will have status `READY` or `RUNNING`. If omitted, waits indefinitely.
+     * @param options.timeout - Timeout for each polling API request. Default is `'noTimeout'`.
      * @returns The ActorRun object (finished or still running if timeout was reached)
      *
      * @example
@@ -434,10 +463,15 @@ export class RunClient extends ResourceClient {
 
     /**
      * Get StreamedLog for convenient streaming of the run log and their redirection.
+     *
+     * @param options - Streaming options
+     * @param options.toLog - Log instance to redirect the run log to. Use `'default'` for a preconfigured one, or `null` to disable the redirection.
+     * @param options.fromStart - If `true`, the log is streamed from its beginning. Default is `true`.
+     * @param options.timeout - Timeout for the API requests that fetch the run and its Actor. Default is `'long'`.
      * @since Added in 2.20.0
      */
     async getStreamedLog(options: GetStreamedLogOptions = {}): Promise<StreamedLog | undefined> {
-        const { fromStart = true } = options;
+        const { fromStart = true, timeout = 'long' } = options;
         let { toLog } = options;
         if (toLog === null || !isNode()) {
             // Explicitly no logging or not in Node.js
@@ -446,11 +480,11 @@ export class RunClient extends ResourceClient {
         if (toLog === undefined || toLog === 'default') {
             // Create default StreamedLog
             // Get actor name and run id
-            const runData = await this.get();
+            const runData = await this.get({ timeout });
             const runId = runData?.id ?? '';
 
             const actorId = runData?.actId ?? '';
-            const actorData = (await this.apifyClient.actor(actorId).get()) || { name: '' };
+            const actorData = (await this.apifyClient.actor(actorId).get({ timeout })) || { name: '' };
 
             const actorName = actorData?.name ?? '';
             const name = [actorName, `runId:${runId}`].filter(Boolean).join(' ');
@@ -466,7 +500,7 @@ export class RunClient extends ResourceClient {
  * Options for getting a streamed log.
  * @since Added in 2.20.0
  */
-export interface GetStreamedLogOptions {
+export interface GetStreamedLogOptions extends TimeoutOptions {
     toLog?: Log | null | 'default';
     fromStart?: boolean;
 }
@@ -474,21 +508,21 @@ export interface GetStreamedLogOptions {
 /**
  * Options for getting a Run.
  */
-export interface RunGetOptions {
+export interface RunGetOptions extends TimeoutOptions {
     waitForFinish?: number;
 }
 
 /**
  * Options for aborting a Run.
  */
-export interface RunAbortOptions {
+export interface RunAbortOptions extends TimeoutOptions {
     gracefully?: boolean;
 }
 
 /**
  * Options for metamorphing a Run into another Actor.
  */
-export interface RunMetamorphOptions {
+export interface RunMetamorphOptions extends TimeoutOptions {
     contentType?: string;
     build?: string;
 }
@@ -512,10 +546,11 @@ export interface RunUpdateOptions {
 /**
  * Options for resurrecting a finished Run.
  */
-export interface RunResurrectOptions {
+export interface RunResurrectOptions extends TimeoutOptions {
     build?: string;
     memory?: number;
-    timeout?: number;
+    /** Timeout for the resurrected run in seconds. If not provided, the run keeps its original timeout. */
+    runTimeout?: number;
     /**
      * @since Added in 2.12.1
      */
@@ -534,7 +569,7 @@ export interface RunResurrectOptions {
  * Options for charging events in a pay-per-event Actor run.
  * @since Added in 2.11.0
  */
-export interface RunChargeOptions {
+export interface RunChargeOptions extends TimeoutOptions {
     /** Name of the event to charge. Must be defined in the Actor's pricing info else the API will throw. */
     eventName: string;
     /** Defaults to 1 */
@@ -546,7 +581,7 @@ export interface RunChargeOptions {
 /**
  * Options for waiting for a Run to finish.
  */
-export interface RunWaitForFinishOptions {
+export interface RunWaitForFinishOptions extends TimeoutOptions {
     /**
      * Maximum time to wait for the run to finish, in seconds.
      * If the limit is reached, the returned promise is resolved to a run object that will have

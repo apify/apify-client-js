@@ -104,7 +104,8 @@ export abstract class ApiClient {
         };
 
         // `chunkSize` only sizes this loop's requests; it is not an API parameter, so it must not reach
-        // `_params()` and the query string.
+        // `_params()` and the query string. The same goes for `timeout`, which callers take out before
+        // calling this, since it also picks the timeout of every page request.
         const { chunkSize, ...listOptions } = options;
 
         const paginatedListPromise = getPaginatedList({

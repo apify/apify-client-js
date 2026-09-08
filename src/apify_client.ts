@@ -32,9 +32,13 @@ import { WebhookCollectionClient } from './resource_clients/webhook_collection.j
 import { WebhookDispatchClient } from './resource_clients/webhook_dispatch.js';
 import { WebhookDispatchCollectionClient } from './resource_clients/webhook_dispatch_collection.js';
 import { Statistics } from './statistics.js';
+import {
+    DEFAULT_TIMEOUT_LONG_SECS,
+    DEFAULT_TIMEOUT_MAX_SECS,
+    DEFAULT_TIMEOUT_MEDIUM_SECS,
+    DEFAULT_TIMEOUT_SHORT_SECS,
+} from './timeouts.js';
 import { parseArgument } from './utils.js';
-
-const DEFAULT_TIMEOUT_SECS = 360;
 
 const clientOptionsSchema = z.strictObject({
     baseUrl: z.string().default('https://api.apify.com'),
@@ -42,7 +46,10 @@ const clientOptionsSchema = z.strictObject({
     maxRetries: z.number().default(8),
     minDelayBetweenRetriesMillis: z.number().default(500),
     requestInterceptors: z.array(z.unknown()).default([]),
-    timeoutSecs: z.number().default(DEFAULT_TIMEOUT_SECS),
+    timeoutShortSecs: z.number().positive().default(DEFAULT_TIMEOUT_SHORT_SECS),
+    timeoutMediumSecs: z.number().positive().default(DEFAULT_TIMEOUT_MEDIUM_SECS),
+    timeoutLongSecs: z.number().positive().default(DEFAULT_TIMEOUT_LONG_SECS),
+    timeoutMaxSecs: z.number().positive().default(DEFAULT_TIMEOUT_MAX_SECS),
     token: z.string().optional(),
     userAgentSuffix: z.union([z.string(), z.array(z.string())]).optional(),
 });
@@ -98,7 +105,10 @@ export class ApifyClient {
             maxRetries,
             minDelayBetweenRetriesMillis,
             requestInterceptors,
-            timeoutSecs,
+            timeoutShortSecs,
+            timeoutMediumSecs,
+            timeoutLongSecs,
+            timeoutMaxSecs,
             token,
         } = parsed;
 
@@ -116,7 +126,10 @@ export class ApifyClient {
             maxRetries,
             minDelayBetweenRetriesMillis,
             requestInterceptors,
-            timeoutSecs,
+            timeoutShortSecs,
+            timeoutMediumSecs,
+            timeoutLongSecs,
+            timeoutMaxSecs,
             logger: this.logger,
             token: this.token,
             userAgentSuffix: parsed.userAgentSuffix,
@@ -582,8 +595,27 @@ export interface ApifyClientOptions {
     minDelayBetweenRetriesMillis?: number;
     /** @default [] */
     requestInterceptors?: RequestInterceptorFunction[];
-    /** @default 360 */
-    timeoutSecs?: number;
+    /**
+     * Duration of the `short` timeout tier, in seconds: simple metadata reads and writes.
+     * @default 5
+     */
+    timeoutShortSecs?: number;
+    /**
+     * Duration of the `medium` timeout tier, in seconds: listing, batch and trigger operations.
+     * @default 30
+     */
+    timeoutMediumSecs?: number;
+    /**
+     * Duration of the `long` timeout tier, in seconds: downloads, uploads and streaming.
+     * @default 360
+     */
+    timeoutLongSecs?: number;
+    /**
+     * Cap on the timeout of a single request attempt, in seconds. It bounds the doubling of the timeout across
+     * retries, and caps tier and per-call timeouts alike, so raise it to allow a request timeout above 360 s.
+     * @default 360
+     */
+    timeoutMaxSecs?: number;
     token?: string;
     /**
      * @since Added in 2.10.0

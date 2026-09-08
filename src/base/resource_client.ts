@@ -4,6 +4,7 @@ import type { z } from 'zod';
 
 import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApifyRequestConfig } from '../http_client.js';
+import type { Timeout, TimeoutOptions } from '../timeouts.js';
 import { catchNotFoundOrThrow, parseResponse } from '../utils.js';
 import { ApiClient } from './api_client.js';
 
@@ -14,25 +15,17 @@ import { ApiClient } from './api_client.js';
  */
 const MAX_WAIT_FOR_FINISH = 999999;
 
-export const SMALL_TIMEOUT_MILLIS = 5 * 1000; // For fast and common actions. Suitable for idempotent actions.
-export const MEDIUM_TIMEOUT_MILLIS = 30 * 1000; // For actions that may take longer.
-export const DEFAULT_TIMEOUT_MILLIS = 360 * 1000; // 6 minutes
-
 /**
  * Resource client.
  * @private
  */
 export class ResourceClient extends ApiClient {
-    protected async _get<T, R>(
-        schema: z.ZodType,
-        options: T = {} as T,
-        timeoutMillis?: number,
-    ): Promise<R | undefined> {
+    protected async _get<T, R>(schema: z.ZodType, options: T, timeout: Timeout): Promise<R | undefined> {
         const requestOpts: ApifyRequestConfig = {
             url: this._url(),
             method: 'GET',
             params: this._params(options),
-            timeout: timeoutMillis,
+            timeout,
         };
         try {
             const response = await this.httpClient.call(requestOpts);
@@ -44,24 +37,24 @@ export class ResourceClient extends ApiClient {
         return undefined;
     }
 
-    protected async _update<T, R>(schema: z.ZodType, newFields: T, timeoutMillis?: number): Promise<R> {
+    protected async _update<T, R>(schema: z.ZodType, newFields: T, timeout: Timeout): Promise<R> {
         const response = await this.httpClient.call({
             url: this._url(),
             method: 'PUT',
             params: this._params(),
             data: newFields,
-            timeout: timeoutMillis,
+            timeout,
         });
         return parseResponse<R>(response, schema);
     }
 
-    protected async _delete(timeoutMillis?: number): Promise<void> {
+    protected async _delete(timeout: Timeout): Promise<void> {
         try {
             await this.httpClient.call({
                 url: this._url(),
                 method: 'DELETE',
                 params: this._params(),
-                timeout: timeoutMillis,
+                timeout,
             });
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
@@ -76,7 +69,7 @@ export class ResourceClient extends ApiClient {
         schema: z.ZodType,
         options: WaitForFinishOptions = {},
     ): Promise<R> {
-        const { waitSecs = MAX_WAIT_FOR_FINISH } = options;
+        const { waitSecs = MAX_WAIT_FOR_FINISH, timeout = 'noTimeout' } = options;
         const waitMillis = waitSecs * 1000;
         let job: R | undefined;
 
@@ -98,6 +91,7 @@ export class ResourceClient extends ApiClient {
                 url: this._url(),
                 method: 'GET',
                 params: this._params({ waitForFinish }),
+                timeout,
             };
             try {
                 const response = await this.httpClient.call(requestOpts);
@@ -127,6 +121,6 @@ export class ResourceClient extends ApiClient {
     }
 }
 
-export interface WaitForFinishOptions {
+export interface WaitForFinishOptions extends TimeoutOptions {
     waitSecs?: number;
 }

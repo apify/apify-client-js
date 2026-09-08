@@ -175,3 +175,42 @@ Two return types change as a result of describing what the endpoints really retu
 
 - <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink> was typed as a `string`, even though the endpoint returns the log as a list of entries. It's now typed as <ApiLink to="interface/ScheduleInvoked">`ScheduleInvoked[]`</ApiLink>, each entry carrying `message`, `level` and `createdAt`.
 - <ApiLink to="interface/TaskPublicConfig">`TaskPublicConfig`</ApiLink> now follows the specification: `publishedAt` is optional and read-only, and `categorization`, which the specification doesn't describe, is gone from the type.
+
+## Timeouts come in tiers
+
+The single `timeoutSecs` option of the `ApifyClient` constructor is gone. Every method is now assigned one of three timeout tiers, `short` (5 s), `medium` (30 s) and `long` (360 s), or runs with no timeout when it polls for a job to finish. The duration of each tier is set on the constructor, together with a cap that bounds any single request attempt:
+
+```diff
+- const client = new ApifyClient({ token: 'MY-APIFY-TOKEN', timeoutSecs: 360 });          // v2
++ const client = new ApifyClient({                                                         // v3
++     token: 'MY-APIFY-TOKEN',
++     timeoutShortSecs: 5,
++     timeoutMediumSecs: 30,
++     timeoutLongSecs: 360,
++     timeoutMaxSecs: 360,
++ });
+```
+
+In v2, only the storage clients picked a timeout per method, and everything else ran with the global 360 seconds. In v3 a metadata call such as `actor.get()` gets 5 seconds and a `list()` call 30, so a call that used to wait out a slow API can now fail sooner. If your code relied on the global timeout, review the methods you use. For the full reference, see [Timeouts](../02_concepts/06_timeouts.md).
+
+Every method that sends a request now accepts a `timeout` option, which replaces the tier of the method for that call: a tier name, a number of seconds, or `'noTimeout'`. Methods that took no options gained an options parameter, and methods that take a payload gained a second one:
+
+```js
+await client.dataset('my-dataset').get({ timeout: 'long' });
+await client.dataset('my-dataset').update({ name: 'renamed' }, { timeout: 60 });
+```
+
+Two existing options are renamed as a result:
+
+- The run timeout of `ActorClient.start()` and `call()`, `TaskClient.start()` and `call()`, and `RunClient.resurrect()` is now `runTimeout`. On those methods, `timeout` means the request timeout, like everywhere else. In JavaScript, a `{ timeout: 300 }` left over from v2 still passes, and silently becomes a 300-second request timeout while the run keeps the Actor's default timeout, so search your code for these calls. TypeScript reports the stale option at compile time. A `{ timeout: 0 }`, which meant an unlimited run in v2, now throws an `ArgumentValidationError`, since zero isn't a request timeout.
+- The `timeoutSecs` option of `KeyValueStoreClient.setRecord()` is now `timeout`, and accepts a tier name as well.
+
+```diff
+- await client.actor('my-actor').call(input, { timeout: 300 });                              // v2
++ await client.actor('my-actor').call(input, { runTimeout: 300 });                           // v3
+
+- await client.keyValueStore('my-store').setRecord(record, { timeoutSecs: 60 });             // v2
++ await client.keyValueStore('my-store').setRecord(record, { timeout: 60 });                 // v3
+```
+
+The `timeoutSecs` option of `client.requestQueue(id, options)` keeps its meaning: it caps the default tier of every request the queue client sends. An explicit per-call `timeout` is not capped by it.

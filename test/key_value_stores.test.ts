@@ -496,7 +496,7 @@ describe('Key-Value Store methods', () => {
             const res = await client.keyValueStore(storeId).setRecord(
                 { key, value },
                 {
-                    timeoutSecs: 1,
+                    timeout: 1,
                     doNotRetryTimeouts: true,
                 },
             );
@@ -508,7 +508,7 @@ describe('Key-Value Store methods', () => {
                     client.keyValueStore(id).setRecord(
                         { key: k, value: v },
                         {
-                            timeoutSecs: 1,
+                            timeout: 1,
                             doNotRetryTimeouts: true,
                         },
                     ),

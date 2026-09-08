@@ -3,8 +3,10 @@ import { z } from 'zod';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
 import type { ActorStoreList } from '../models.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsShape } from '../timeouts.js';
 import { paginationOptionsShape, parseArgument } from '../utils.js';
 
 export type { ActorStoreList, PricingInfo } from '../models.js';
@@ -17,6 +19,7 @@ const listOptionsSchema = z.strictObject({
     username: z.string().optional(),
     pricingModel: z.string().optional(),
     includeUnrunnableActors: z.boolean().optional(),
+    ...timeoutOptionsShape,
 });
 
 /**
@@ -68,20 +71,21 @@ export class StoreCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Search and pagination options.
+     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of store Actors.
      * @see https://docs.apify.com/api/v2/store-get
      */
     list(options: StoreCollectionListOptions = {}): PaginatedIterator<ActorStoreList> {
         const parsed = parseArgument(options, listOptionsSchema, 'StoreCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfStoreActors(), parsed);
+        return this._listPaginated(schemas.ListOfStoreActors(), parsed, 'medium');
     }
 }
 
 /**
  * @since Added in 2.7.2
  */
-export interface StoreCollectionListOptions extends PaginationOptions {
+export interface StoreCollectionListOptions extends PaginationOptions, TimeoutOptions {
     search?: string;
     sortBy?: string;
     category?: string;
