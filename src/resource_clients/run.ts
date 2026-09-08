@@ -377,8 +377,8 @@ export class RunClient extends ResourceClient {
     /**
      * Returns a client for the default key-value store of this Actor run.
      *
-     * A 404 from this client throws an `ApifyApiError` rather than resolving to `undefined`, since the run itself
-     * may be what is missing.
+     * `get()` and `delete()` throw an `ApifyApiError` on a 404 rather than resolving to `undefined`, since the run
+     * itself may be what is missing. Record lookups such as `getRecord()` keep reading a 404 as a missing record.
      *
      * @returns A client for accessing the run's default key-value store
      * @see https://docs.apify.com/api/v2/actor-run-get
@@ -400,8 +400,8 @@ export class RunClient extends ResourceClient {
     /**
      * Returns a client for the default Request queue of this Actor run.
      *
-     * A 404 from this client throws an `ApifyApiError` rather than resolving to `undefined`, since the run itself
-     * may be what is missing.
+     * `get()` and `delete()` throw an `ApifyApiError` on a 404 rather than resolving to `undefined`, since the run
+     * itself may be what is missing. `getRequest()` keeps reading a 404 as a missing request.
      *
      * @returns A client for accessing the run's default Request queue
      * @see https://docs.apify.com/api/v2/actor-run-get
@@ -462,8 +462,8 @@ export class RunClient extends ResourceClient {
             const runId = runData?.id ?? '';
 
             const actorId = runData?.actId ?? '';
-            const actorData = (await this.apifyClient.actor(actorId).get()) || { name: '' };
-
+            // `apifyClient.actor()` rejects an empty ID, which is what a run that could not be read leaves here.
+            const actorData = actorId ? await this.apifyClient.actor(actorId).get() : undefined;
             const actorName = actorData?.name ?? '';
             const name = [actorName, `runId:${runId}`].filter(Boolean).join(' ');
 

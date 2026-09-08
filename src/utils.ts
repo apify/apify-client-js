@@ -111,7 +111,7 @@ export function catchNotFoundOrThrow(err: ApifyApiError): void {
  * @internal
  */
 export function catchNotFoundForResourceOrThrow(err: ApifyApiError, resourceId: string | undefined): void {
-    if (resourceId === undefined) throw err;
+    if (!resourceId) throw err;
     catchNotFoundOrThrow(err);
 }
 

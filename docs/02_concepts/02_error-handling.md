@@ -26,7 +26,7 @@ try {
 
 ## Missing resources
 
-When you address a resource by ID, `get()` resolves to `undefined` on a 404 instead of throwing, and `delete()` resolves without error. <ApiLink to="class/KeyValueStoreClient#getRecord">`getRecord()`</ApiLink> and <ApiLink to="class/RequestQueueClient#getRequest">`getRequest()`</ApiLink> do the same for a missing record or request.
+When you address a resource by ID, `get()` resolves to `undefined` on a 404 instead of throwing, and `delete()` resolves without error. <ApiLink to="class/KeyValueStoreClient#getRecord">`getRecord()`</ApiLink> and <ApiLink to="class/RequestQueueClient#getRequest">`getRequest()`</ApiLink> do the same for a missing record or request, <ApiLink to="class/KeyValueStoreClient#recordExists">`recordExists()`</ApiLink> answers `false`, and `lastRun()` resolves to `undefined` for an Actor or task with no matching run.
 
 Everywhere else a 404 throws an <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> with `statusCode` set to `404`. That covers clients chained off a run or build without an ID, such as `client.run('run-id').dataset()` or `client.build('build-id').log()`, where the missing resource may be the parent rather than the sub-resource. It also covers fixed sub-paths such as `getStatistics()`, `monthlyUsage()`, `limits()`, `getLog()`, `getInput()` and `test()`, where a 404 means the parent is gone.
 

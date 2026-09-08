@@ -2,11 +2,9 @@ import type { AddressInfo } from 'node:net';
 import { setTimeout as setTimeoutNode } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import { ApifyApiError, ApifyClient, ArgumentValidationError, LoggerActorRedirect, StreamedLog } from 'apify-client';
+import { ApifyApiError, ApifyClient, ArgumentValidationError } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
-
-import { LEVELS, Log } from '@apify/log';
 
 import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
 import * as fixtures from './mock_server/fixtures.js';
@@ -478,10 +476,9 @@ describe('Redirect run logs', () => {
     describe('run.getStreamedLog missing run', () => {
         test('logs warning instead of throwing when the run log answers 404', async () => {
             const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-            const toLog = new Log({ level: LEVELS.DEBUG, prefix: 'missing -> ', logger: new LoggerActorRedirect() });
-            const streamedLog = new StreamedLog({ logClient: client.run('404').log(), toLog, fromStart: true });
-            streamedLog.start();
-            await expect(streamedLog.stop()).resolves.not.toThrow();
+            const streamedLog = await client.run('404').getStreamedLog({ fromStart: true });
+            streamedLog?.start();
+            await expect(streamedLog?.stop()).resolves.not.toThrow();
             expect(
                 warnSpy.mock.calls.some(
                     ([msg]) => typeof msg === 'string' && msg.includes('Log redirection stopped due to error'),

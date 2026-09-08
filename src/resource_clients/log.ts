@@ -76,8 +76,9 @@ export class LogClient extends ResourceClient {
      *
      * @param options - Log retrieval options.
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
-     * @returns The log content as a Readable stream, or `undefined` if it does not exist. A chained client such as
-     * `run.log()` throws an `ApifyApiError` on a 404 instead, since the run itself may be what is missing.
+     * @returns The log content as a Readable stream. A 404 throws an `ApifyApiError` rather than resolving to
+     * `undefined`, whichever client this is: a streamed response body is never parsed, so the error carries no type
+     * for the not-found check to match on.
      * @see https://docs.apify.com/api/v2/log-get
      */
     async stream(options: LogOptions = {}): Promise<Readable | undefined> {

@@ -1,6 +1,6 @@
 import type { AddressInfo } from 'node:net';
 
-import { ApifyClient } from 'apify-client';
+import { ApifyApiError, ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
@@ -75,6 +75,17 @@ describe('Log methods', () => {
             }
             const id = Buffer.concat(chunks).toString();
             expect(id).toBe('get-log');
+            validateRequest({ query: { stream: true }, params: { logId } });
+        });
+
+        test('stream() throws on 404 status code', async () => {
+            const logId = '404';
+
+            // A streamed response body is never parsed, so the error carries no type for the not-found check to
+            // match on. The 404 propagates even though the log is addressed by ID.
+            const call = client.log(logId).stream();
+            await expect(call).rejects.toThrow(ApifyApiError);
+            await expect(call).rejects.toMatchObject({ statusCode: 404 });
             validateRequest({ query: { stream: true }, params: { logId } });
         });
     });
