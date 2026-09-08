@@ -2,9 +2,11 @@ import type { AddressInfo } from 'node:net';
 import { setTimeout as setTimeoutNode } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import { ApifyClient, ArgumentValidationError } from 'apify-client';
+import { ApifyApiError, ApifyClient, ArgumentValidationError, LoggerActorRedirect, StreamedLog } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+
+import { LEVELS, Log } from '@apify/log';
 
 import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
 import * as fixtures from './mock_server/fixtures.js';
@@ -384,6 +386,27 @@ describe('Run methods', () => {
             validateRequest({ query: {}, params: { runId } });
         });
 
+        test.each(['dataset', 'keyValueStore', 'requestQueue', 'log'] as const)(
+            '%s().get() throws on 404 status code',
+            async (method) => {
+                const runId = '404';
+
+                const call = client.run(runId)[method]().get();
+                await expect(call).rejects.toThrow(ApifyApiError);
+                await expect(call).rejects.toMatchObject({ statusCode: 404 });
+
+                await expect(page.evaluate((rId, m) => client.run(rId)[m]().get(), runId, method)).rejects.toThrow();
+            },
+        );
+
+        test('dataset().delete() throws on 404 status code', async () => {
+            const runId = '404';
+
+            const call = client.run(runId).dataset().delete();
+            await expect(call).rejects.toThrow(ApifyApiError);
+            await expect(call).rejects.toMatchObject({ statusCode: 404 });
+        });
+
         test('charge() works', async () => {
             const runId = 'some-run-id';
 
@@ -449,6 +472,22 @@ describe('Redirect run logs', () => {
             const loggerPrefix = c.cyan('redirect-actor-name runId:redirect-run-id -> ');
             expect(logSpy.mock.calls).toEqual(expected.map((item) => [loggerPrefix + item]));
             logSpy.mockRestore();
+        });
+    });
+
+    describe('run.getStreamedLog missing run', () => {
+        test('logs warning instead of throwing when the run log answers 404', async () => {
+            const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            const toLog = new Log({ level: LEVELS.DEBUG, prefix: 'missing -> ', logger: new LoggerActorRedirect() });
+            const streamedLog = new StreamedLog({ logClient: client.run('404').log(), toLog, fromStart: true });
+            streamedLog.start();
+            await expect(streamedLog.stop()).resolves.not.toThrow();
+            expect(
+                warnSpy.mock.calls.some(
+                    ([msg]) => typeof msg === 'string' && msg.includes('Log redirection stopped due to error'),
+                ),
+            ).toBe(true);
+            warnSpy.mockRestore();
         });
     });
 

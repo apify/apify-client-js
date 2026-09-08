@@ -10,7 +10,7 @@ import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_client.js';
-import { cast, catchNotFoundOrThrow } from '../utils.js';
+import { cast, catchNotFoundForResourceOrThrow } from '../utils.js';
 
 /**
  * Client for accessing Actor run or build logs.
@@ -50,7 +50,8 @@ export class LogClient extends ResourceClient {
      *
      * @param options - Log retrieval options.
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
-     * @returns The log content as a string, or `undefined` if it does not exist.
+     * @returns The log content as a string, or `undefined` if it does not exist. A chained client such as
+     * `run.log()` throws an `ApifyApiError` on a 404 instead, since the run itself may be what is missing.
      * @see https://docs.apify.com/api/v2/log-get
      */
     async get(options: LogOptions = {}): Promise<string | undefined> {
@@ -64,7 +65,7 @@ export class LogClient extends ResourceClient {
             const response = await this.httpClient.call(requestOpts);
             return cast(response.data);
         } catch (err) {
-            catchNotFoundOrThrow(err as ApifyApiError);
+            catchNotFoundForResourceOrThrow(err as ApifyApiError, this.id);
         }
 
         return undefined;
@@ -75,7 +76,8 @@ export class LogClient extends ResourceClient {
      *
      * @param options - Log retrieval options.
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
-     * @returns The log content as a Readable stream, or `undefined` if it does not exist.
+     * @returns The log content as a Readable stream, or `undefined` if it does not exist. A chained client such as
+     * `run.log()` throws an `ApifyApiError` on a 404 instead, since the run itself may be what is missing.
      * @see https://docs.apify.com/api/v2/log-get
      */
     async stream(options: LogOptions = {}): Promise<Readable | undefined> {
@@ -95,7 +97,7 @@ export class LogClient extends ResourceClient {
             const response = await this.httpClient.call(requestOpts);
             return cast(response.data);
         } catch (err) {
-            catchNotFoundOrThrow(err as ApifyApiError);
+            catchNotFoundForResourceOrThrow(err as ApifyApiError, this.id);
         }
 
         return undefined;
@@ -198,11 +200,11 @@ export class StreamedLog {
      * Get log stream from response and redirect it to another log.
      */
     private async streamLog(): Promise<void> {
-        const logStream = await this.logClient.stream({ raw: true });
-        if (!logStream) {
-            return;
-        }
         try {
+            const logStream = await this.logClient.stream({ raw: true });
+            if (!logStream) {
+                return;
+            }
             const lastChunkRemainder = await this.logStreamChunks(logStream);
             // Process whatever is left when exiting. Maybe it is incomplete, maybe it is last log without EOL.
             const lastMessage = Buffer.from(lastChunkRemainder).toString().trim();

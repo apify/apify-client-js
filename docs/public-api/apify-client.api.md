@@ -2422,7 +2422,7 @@ export class DatasetClient<Data extends Record<string | number, any> = Record<st
     delete(): Promise<void>;
     downloadItems(format: DownloadItemsFormat, options?: DatasetClientDownloadItemsOptions): Promise<Buffer>;
     get(): Promise<Dataset | undefined>;
-    getStatistics(): Promise<DatasetStatistics | undefined>;
+    getStatistics(): Promise<DatasetStatistics>;
     listItems(options?: DatasetClientListItemOptions): PaginatedIterator<Data>;
     pushItems(items: Data | Data[] | string | string[]): Promise<void>;
     update(newFields: DatasetClientUpdateOptions): Promise<Dataset>;
@@ -3495,9 +3495,7 @@ export interface RequestQueueUserOptions {
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
 class ResourceClient extends ApiClient {
-    // (undocumented)
     protected _delete(timeoutMillis?: number): Promise<void>;
-    // (undocumented)
     protected _get<T, R>(schema: z.ZodType, options?: T, timeoutMillis?: number): Promise<R | undefined>;
     // (undocumented)
     protected _update<T, R>(schema: z.ZodType, newFields: T, timeoutMillis?: number): Promise<R>;
@@ -3666,7 +3664,7 @@ export class ScheduleClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     delete(): Promise<void>;
     get(): Promise<Schedule | undefined>;
-    getLog(): Promise<ScheduleInvoked[] | undefined>;
+    getLog(): Promise<ScheduleInvoked[]>;
     update(newFields: ScheduleCreateOrUpdateData): Promise<Schedule>;
 }
 
@@ -3785,7 +3783,7 @@ export class TaskClient extends ResourceClient {
     call(input?: Dictionary, options?: TaskCallOptions): Promise<ActorRun>;
     delete(): Promise<void>;
     get(): Promise<Task | undefined>;
-    getInput(): Promise<Dictionary | Dictionary[] | undefined>;
+    getInput(): Promise<Dictionary | Dictionary[]>;
     lastRun(options?: TaskLastRunOptions): RunClient;
     publish(): Promise<Task>;
     runs(): RunCollectionClient;
@@ -3930,8 +3928,8 @@ export interface User extends Omit<Schemas['UserPrivateInfo'], keyof UserRePoint
 export class UserClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     get(): Promise<User>;
-    limits(): Promise<AccountAndUsageLimits | undefined>;
-    monthlyUsage(): Promise<MonthlyUsage | undefined>;
+    limits(): Promise<AccountAndUsageLimits>;
+    monthlyUsage(): Promise<MonthlyUsage>;
     updateLimits(options: LimitsUpdateOptions): Promise<void>;
 }
 
@@ -4009,7 +4007,7 @@ export class WebhookClient extends ResourceClient {
     delete(): Promise<void>;
     dispatches(): WebhookDispatchCollectionClient;
     get(): Promise<Webhook | undefined>;
-    test(): Promise<WebhookDispatch | undefined>;
+    test(): Promise<WebhookDispatch>;
     update(newFields: WebhookUpdateData): Promise<Webhook>;
 }
 

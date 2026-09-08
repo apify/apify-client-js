@@ -4,7 +4,7 @@ import { setTimeout } from 'node:timers/promises';
 
 import c from 'ansi-colors';
 import type { ActorCollectionCreateOptions } from 'apify-client';
-import { ActorListSortBy, ActorSourceType, ApifyClient, LoggerActorRedirect } from 'apify-client';
+import { ActorListSortBy, ActorSourceType, ApifyApiError, ApifyClient, LoggerActorRedirect } from 'apify-client';
 import express from 'express';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
@@ -460,6 +460,29 @@ describe('Actor methods', () => {
         });
 
         describe('lastRun()', () => {
+            test('get() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
+                const actorId = '404';
+
+                const res = await client.actor(actorId).lastRun().get();
+                expect(res).toBeUndefined();
+                validateRequest({ query: {}, params: { actorId } });
+
+                const browserRes = await page.evaluate((aId) => client.actor(aId).lastRun().get(), actorId);
+                expect(browserRes).toBeUndefined();
+            });
+
+            test('dataset().get() throws on 404 status code', async () => {
+                const actorId = '404';
+
+                const call = client.actor(actorId).lastRun().dataset().get();
+                await expect(call).rejects.toThrow(ApifyApiError);
+                await expect(call).rejects.toMatchObject({ statusCode: 404 });
+
+                await expect(
+                    page.evaluate((aId) => client.actor(aId).lastRun().dataset().get(), actorId),
+                ).rejects.toThrow();
+            });
+
             test.each(['get', 'dataset', 'keyValueStore', 'requestQueue', 'log'] as const)(
                 '%s() works',
                 async (method) => {

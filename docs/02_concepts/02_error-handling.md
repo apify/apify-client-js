@@ -24,6 +24,28 @@ try {
 }
 ```
 
+## Missing resources
+
+When you address a resource by ID, `get()` resolves to `undefined` on a 404 instead of throwing, and `delete()` resolves without error. <ApiLink to="class/KeyValueStoreClient#getRecord">`getRecord()`</ApiLink> and <ApiLink to="class/RequestQueueClient#getRequest">`getRequest()`</ApiLink> do the same for a missing record or request.
+
+Everywhere else a 404 throws an <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> with `statusCode` set to `404`. That covers clients chained off a run or build without an ID, such as `client.run('run-id').dataset()` or `client.build('build-id').log()`, where the missing resource may be the parent rather than the sub-resource. It also covers fixed sub-paths such as `getStatistics()`, `monthlyUsage()`, `limits()`, `getLog()`, `getInput()` and `test()`, where a 404 means the parent is gone.
+
+```js
+import { ApifyApiError, ApifyClient } from 'apify-client';
+
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+
+const actor = await client.actor('missing-actor').get(); // undefined
+
+try {
+    await client.run('missing-run').dataset().get();
+} catch (error) {
+    if (error instanceof ApifyApiError && error.statusCode === 404) {
+        // Either the run or its default dataset does not exist.
+    }
+}
+```
+
 ## Invalid arguments
 
 Before sending a request, the client validates the arguments you passed. When a value doesn't match the expected shape, the client throws an <ApiLink to="class/ArgumentValidationError">`ArgumentValidationError`</ApiLink> without reaching the API. Its `message` names the offending field and the value it received. For programmatic inspection, `issues` carries the structured [zod](https://zod.dev) issues and `cause` carries the original `ZodError`.

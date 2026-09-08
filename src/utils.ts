@@ -102,6 +102,19 @@ export function catchNotFoundOrThrow(err: ApifyApiError): void {
     if (!isNotFoundError) throw err;
 }
 
+/**
+ * Like `catchNotFoundOrThrow()`, but swallows the 404 only when the client names its resource by ID.
+ *
+ * A chained client without an ID, such as `run.dataset()` or `run.log()`, requests a path where a 404 can mean either
+ * the parent or the default sub-resource is missing. The response cannot tell the two apart, so the error propagates
+ * instead of collapsing into `undefined`.
+ * @internal
+ */
+export function catchNotFoundForResourceOrThrow(err: ApifyApiError, resourceId: string | undefined): void {
+    if (resourceId === undefined) throw err;
+    catchNotFoundOrThrow(err);
+}
+
 type ReturnJsonValue = string | number | boolean | null | Date | ReturnJsonObject | ReturnJsonArray;
 type ReturnJsonObject = { [Key in string]?: ReturnJsonValue };
 type ReturnJsonArray = ReturnJsonValue[];

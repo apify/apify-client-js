@@ -354,6 +354,9 @@ export class RunClient extends ResourceClient {
     /**
      * Returns a client for the default dataset of this Actor run.
      *
+     * A 404 from this client throws an `ApifyApiError` rather than resolving to `undefined`, since the run itself
+     * may be what is missing.
+     *
      * @returns A client for accessing the run's default dataset
      * @see https://docs.apify.com/api/v2/actor-run-get
      *
@@ -373,6 +376,9 @@ export class RunClient extends ResourceClient {
 
     /**
      * Returns a client for the default key-value store of this Actor run.
+     *
+     * A 404 from this client throws an `ApifyApiError` rather than resolving to `undefined`, since the run itself
+     * may be what is missing.
      *
      * @returns A client for accessing the run's default key-value store
      * @see https://docs.apify.com/api/v2/actor-run-get
@@ -394,6 +400,9 @@ export class RunClient extends ResourceClient {
     /**
      * Returns a client for the default Request queue of this Actor run.
      *
+     * A 404 from this client throws an `ApifyApiError` rather than resolving to `undefined`, since the run itself
+     * may be what is missing.
+     *
      * @returns A client for accessing the run's default Request queue
      * @see https://docs.apify.com/api/v2/actor-run-get
      *
@@ -413,6 +422,9 @@ export class RunClient extends ResourceClient {
 
     /**
      * Returns a client for accessing the log of this Actor run.
+     *
+     * A 404 from this client throws an `ApifyApiError` rather than resolving to `undefined`, since the run itself
+     * may be what is missing.
      *
      * @returns A client for accessing the run's log
      * @see https://docs.apify.com/api/v2/actor-run-get

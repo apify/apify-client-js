@@ -88,6 +88,33 @@ Some options were declared in the TypeScript types but always rejected by the cl
 
 The reverse also happened: `chunkSize` now works on every paginating `list()` method. In v2 only `DatasetClient.listItems()` accepted it - everywhere else it type-checked and then threw.
 
+## A 404 throws where it used to resolve to `undefined`
+
+Fetching a resource by ID still resolves to `undefined` when the API answers 404, and `delete()` on such a client still resolves without error. The change affects endpoints where a 404 can't be pinned to one resource: the missing thing may be the parent or the sub-resource, and the response doesn't say which. Those now throw an <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> with `statusCode` 404 instead of hiding the cause behind `undefined`.
+
+```js
+import { ApifyApiError, ApifyClient } from 'apify-client';
+
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+
+// v2: resolved to undefined on 404. v3: throws.
+let dataset;
+try {
+    dataset = await client.run('run-id').dataset().get();
+} catch (error) {
+    if (!(error instanceof ApifyApiError) || error.statusCode !== 404) throw error;
+}
+```
+
+Affected calls:
+
+- Clients chained off a run or build without an ID: `run.dataset()`, `run.keyValueStore()`, `run.requestQueue()`, `run.log()` and `build.log()`. Their `get()` and `delete()` throw on a 404, and so do `log().get()` and `log().stream()`. `client.log(id)` keeps resolving to `undefined`.
+- Singleton endpoints at a fixed path under a resource: <ApiLink to="class/DatasetClient#getStatistics">`DatasetClient.getStatistics()`</ApiLink>, <ApiLink to="class/UserClient#monthlyUsage">`UserClient.monthlyUsage()`</ApiLink>, <ApiLink to="class/UserClient#limits">`UserClient.limits()`</ApiLink>, <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink>, <ApiLink to="class/TaskClient#getInput">`TaskClient.getInput()`</ApiLink> and <ApiLink to="class/WebhookClient#test">`WebhookClient.test()`</ApiLink>. A 404 there means the parent resource is gone, so these throw as well, and their return types drop `| undefined`.
+
+Lookups by key keep the old behavior, because there the 404 is about the record itself: <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink> and <ApiLink to="class/RequestQueueClient#getRequest">`RequestQueueClient.getRequest()`</ApiLink> still resolve to `undefined`.
+
+A <ApiLink to="class/StreamedLog">`StreamedLog`</ApiLink> whose run no longer exists logs a warning and stops, the same way it handles any other error while streaming.
+
 ## Published types now follow the OpenAPI specification
 
 Every output type the client publishes, such as <ApiLink to="interface/Dataset">`Dataset`</ApiLink>, <ApiLink to="interface/KeyValueStore">`KeyValueStore`</ApiLink>, <ApiLink to="interface/Build">`Build`</ApiLink>, <ApiLink to="interface/ActorRun">`ActorRun`</ApiLink>, <ApiLink to="interface/Webhook">`Webhook`</ApiLink>, <ApiLink to="interface/Schedule">`Schedule`</ApiLink>, <ApiLink to="interface/Task">`Task`</ApiLink>, <ApiLink to="interface/RequestQueue">`RequestQueue`</ApiLink>, and <ApiLink to="interface/User">`User`</ApiLink>, is now declared on top of a type generated from the published [OpenAPI specification](https://docs.apify.com/api/v2) instead of being hand-written. Several of the previous hand-written types were wrong, and some even contradicted the client's own runtime behavior. For example, `nextExclusiveStartKey` was typed as a required `string`, but `listKeys()` has always compared it to `null`.
