@@ -73,7 +73,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
     list(options: TaskCollectionListOptions = {}): PaginatedIterator<TaskList> {
         const parsed = parseArgument(options, listOptionsSchema, 'TaskCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfTasks, parsed);
+        return this._listPaginated(schemas.ListOfTasks(), parsed);
     }
 
     /**
@@ -86,7 +86,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
     async create(task: TaskCreateData): Promise<Task> {
         parseArgument(task, anyObjectSchema);
 
-        return this._create(schemas.Task, task);
+        return this._create(schemas.Task(), task);
     }
 }
 

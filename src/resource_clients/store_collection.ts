@@ -74,7 +74,7 @@ export class StoreCollectionClient extends ResourceCollectionClient {
     list(options: StoreCollectionListOptions = {}): PaginatedIterator<ActorStoreList> {
         const parsed = parseArgument(options, listOptionsSchema, 'StoreCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfStoreActors, parsed);
+        return this._listPaginated(schemas.ListOfStoreActors(), parsed);
     }
 }
 

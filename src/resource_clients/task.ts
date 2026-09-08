@@ -88,7 +88,7 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-get
      */
     async get(): Promise<Task | undefined> {
-        return this._get(schemas.Task);
+        return this._get(schemas.Task());
     }
 
     /**
@@ -101,7 +101,7 @@ export class TaskClient extends ResourceClient {
     async update(newFields: TaskUpdateData): Promise<Task> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(schemas.Task, newFields);
+        return this._update(schemas.Task(), newFields);
     }
 
     /**
@@ -192,7 +192,7 @@ export class TaskClient extends ResourceClient {
         };
 
         const response = await this.httpClient.call(request);
-        return parseResponse(response, schemas.Run);
+        return parseResponse(response, schemas.Run());
     }
 
     /**

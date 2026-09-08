@@ -5,17 +5,19 @@
 
 import { z } from 'zod';
 
+import { lazySchema } from '../lazy_schema.js';
+
 /** Common pagination fields for list responses. */
-export const PaginationResponse = z.looseObject({
+export const PaginationResponse = lazySchema(() => z.looseObject({
     total: z.int().min(0),
     offset: z.int().min(0),
     limit: z.int().min(1),
     desc: z.boolean(),
     count: z.int().min(0),
-});
+}));
 
 /** Usage statistics and Apify Store metrics for the Actor. */
-export const ActorStats = z.looseObject({
+export const ActorStats = lazySchema(() => z.looseObject({
     totalBuilds: z.int().optional(),
     totalRuns: z.int().optional(),
     totalUsers: z.int().optional(),
@@ -34,92 +36,92 @@ export const ActorStats = z.looseObject({
         "TIMED-OUT": z.int().optional(),
         TOTAL: z.int().optional(),
     }).optional(),
-});
+}));
 
-export const ActorShort = z.looseObject({
+export const ActorShort = lazySchema(() => z.looseObject({
     id: z.string(),
     createdAt: z.date(),
     modifiedAt: z.date(),
     name: z.string(),
     username: z.string(),
     title: z.string().optional(),
-    stats: ActorStats.nullable().optional(),
-});
+    stats: ActorStats().nullable().optional(),
+}));
 
-export const ListOfActors = PaginationResponse.extend({
-    items: z.array(ActorShort),
-});
+export const ListOfActors = lazySchema(() => PaginationResponse().extend({
+    items: z.array(ActorShort()),
+}));
 
-export const ListOfActorsResponse = z.looseObject({
-    data: ListOfActors,
-});
+export const ListOfActorsResponse = lazySchema(() => z.looseObject({
+    data: ListOfActors(),
+}));
 
 /** Machine-processable error type identifier. */
-export const ErrorType = z.enum(["3d-secure-auth-failed", "access-right-already-exists", "action-not-found", "actor-already-rented", "actor-can-not-be-rented", "actor-disabled", "actor-is-not-rented", "actor-memory-limit-exceeded", "actor-name-exists-new-owner", "actor-name-not-unique", "actor-not-found", "actor-not-github-actor", "actor-not-public", "actor-permission-level-not-supported-for-agentic-payments", "actor-review-already-exists", "actor-run-failed", "actor-standby-not-supported-for-agentic-payments", "actor-task-name-not-unique", "agentic-payment-info-retrieval-error", "agentic-payment-information-missing", "agentic-payment-insufficient-amount", "agentic-payment-provider-internal-error", "agentic-payment-provider-unauthorized", "airtable-webhook-deprecated", "already-subscribed-to-paid-actor", "apify-plan-required-to-use-paid-actor", "apify-signup-not-allowed", "auth-method-not-supported", "authorization-server-not-found", "auto-issue-date-invalid", "background-check-required", "billing-system-error", "black-friday-plan-expired", "braintree-error", "braintree-not-linked", "braintree-operation-timed-out", "braintree-unsupported-currency", "build-not-found", "build-outdated", "cannot-add-apify-events-to-ppe-actor", "cannot-add-multiple-pricing-infos", "cannot-add-pricing-info-that-alters-past", "cannot-add-second-future-pricing-info", "cannot-build-actor-from-webhook", "cannot-change-billing-interval", "cannot-change-owner", "cannot-charge-apify-event", "cannot-charge-non-pay-per-event-actor", "cannot-comment-as-other-user", "cannot-copy-actor-task", "cannot-create-payout", "cannot-create-public-actor", "cannot-create-tax-transaction", "cannot-delete-critical-actor", "cannot-delete-invoice", "cannot-delete-paid-actor", "cannot-disable-one-time-event-for-apify-start-event", "cannot-disable-organization-with-enabled-members", "cannot-disable-user-with-subscription", "cannot-link-oauth-to-unverified-email", "cannot-metamorph-to-pay-per-result-actor", "cannot-modify-actor-pricing-too-frequently", "cannot-modify-actor-pricing-with-immediate-effect", "cannot-monetize-without-payout-billing-info", "cannot-override-paid-actor-trial", "cannot-permanently-delete-subscription", "cannot-publish-actor", "cannot-publish-actor-task", "cannot-reduce-last-full-token", "cannot-reimburse-more-than-original-charge", "cannot-reimburse-non-rental-charge", "cannot-remove-own-actor-from-recently-used", "cannot-remove-payment-method", "cannot-remove-pricing-info", "cannot-remove-running-run", "cannot-remove-user-with-public-actors", "cannot-remove-user-with-subscription", "cannot-remove-user-with-unpaid-invoice", "cannot-rename-env-var", "cannot-rent-paid-actor", "cannot-review-own-actor", "cannot-set-access-rights-for-owner", "cannot-set-is-status-message-terminal", "cannot-unpublish-critical-actor", "cannot-unpublish-paid-actor", "cannot-unpublish-profile", "cannot-update-invoice-field", "concurrent-runs-limit-exceeded", "concurrent-update-detected", "conference-token-not-found", "content-encoding-forbidden-for-html", "coupon-already-redeemed", "coupon-expired", "coupon-for-new-customers", "coupon-for-subscribed-users", "coupon-limits-are-in-conflict-with-current-limits", "coupon-max-number-of-redemptions-reached", "coupon-not-found", "coupon-not-unique", "coupons-disabled", "create-github-issue-not-allowed", "creator-plan-not-available", "cron-expression-invalid", "daily-ai-token-limit-exceeded", "daily-publication-limit-exceeded", "dataset-does-not-have-fields-schema", "dataset-does-not-have-schema", "dataset-locked", "dataset-schema-invalid", "dcr-not-supported", "default-dataset-not-found", "deleting-default-build", "deleting-unfinished-build", "email-already-taken", "email-already-taken-removed-user", "email-domain-not-allowed-for-coupon", "email-invalid", "email-not-allowed", "email-not-valid", "email-update-too-soon", "elevated-permissions-needed", "env-var-already-exists", "exchange-rate-fetch-failed", "expired-conference-token", "failed-to-charge-user", "final-invoice-negative", "full-permission-actor-blocked-for-admin", "full-permission-actor-not-approved", "github-branch-empty", "github-issue-already-exists", "github-public-key-not-found", "github-repository-not-found", "github-signature-does-not-match-payload", "github-user-not-authorized-for-issues", "gmail-not-allowed", "id-does-not-match", "incompatible-billing-interval", "incomplete-payout-billing-info", "inconsistent-currencies", "incorrect-pricing-modifier-prefix", "input-json-invalid-characters", "input-json-not-object", "input-json-too-long", "input-update-collision", "insufficient-permissions", "insufficient-permissions-to-change-field", "insufficient-security-measures", "insufficient-tax-country-evidence", "integration-auth-error", "internal-server-error", "invalid-billing-info", "invalid-billing-period-for-payout", "invalid-build", "invalid-client-key", "invalid-collection", "invalid-conference-login-password", "invalid-content-type-header", "invalid-credentials", "invalid-git-auth-token", "invalid-github-issue-url", "invalid-header", "invalid-id", "invalid-idempotency-key", "invalid-input", "invalid-input-schema", "invalid-invoice", "invalid-invoice-type", "invalid-issue-date", "invalid-label-params", "invalid-main-account-user-id", "invalid-oauth-app", "invalid-oauth-scope", "invalid-one-time-invoice", "invalid-parameter", "invalid-payout-status", "invalid-picture-url", "invalid-record-key", "invalid-request", "invalid-resource-type", "invalid-signature", "invalid-subscription-plan", "invalid-tax-number", "invalid-tax-number-format", "invalid-token", "invalid-token-type", "invalid-two-factor-code", "invalid-two-factor-code-or-recovery-code", "invalid-two-factor-recovery-code", "invalid-username", "invalid-value", "invitation-invalid-resource-type", "invitation-no-longer-valid", "invoice-canceled", "invoice-cannot-be-refunded-due-to-too-high-amount", "invoice-incomplete", "invoice-is-draft", "invoice-locked", "invoice-must-be-buffer", "invoice-not-canceled", "invoice-not-draft", "invoice-not-found", "invoice-outdated", "invoice-paid-already", "issue-already-connected-to-github", "issue-not-found", "issues-bad-request", "issuer-not-registered", "job-finished", "label-already-linked", "last-api-token", "limit-reached", "max-items-must-be-greater-than-zero", "max-metamorphs-exceeded", "max-total-charge-usd-below-minimum", "max-total-charge-usd-must-be-greater-than-zero", "method-not-allowed", "migration-disabled", "missing-actor-rights", "missing-api-token", "missing-billing-info", "missing-line-items", "missing-payment-date", "missing-payout-billing-info", "missing-proxy-password", "missing-reporting-fields", "missing-resource-name", "missing-settings", "missing-username", "monthly-usage-limit-too-low", "more-than-one-update-not-allowed", "multiple-records-found", "must-be-admin", "name-not-unique", "next-runtime-computation-failed", "no-columns-in-exported-dataset", "no-payment-attempt-for-refund-found", "no-payment-method-available", "no-team-account-seats-available", "non-temporary-email", "not-enough-usage-to-run-paid-actor", "not-implemented", "not-supported-currencies", "o-auth-service-already-connected", "o-auth-service-not-connected", "oauth-resource-access-failed", "one-time-invoice-already-marked-paid", "only-drafts-can-be-deleted", "operation-canceled", "operation-not-allowed", "operation-timed-out", "organization-cannot-own-itself", "organization-role-not-found", "overlapping-payout-billing-periods", "own-token-required", "page-not-found", "param-not-one-of", "parameter-required", "parameters-mismatched", "password-reset-email-already-sent", "password-reset-token-expired", "pay-as-you-go-without-monthly-interval", "payment-attempt-status-message-required", "payout-already-paid", "payout-canceled", "payout-invalid-state", "payout-must-be-approved-to-be-marked-paid", "payout-not-found", "payout-number-already-exists", "phone-number-invalid", "phone-number-landline", "phone-number-opted-out", "phone-verification-disabled", "platform-feature-disabled", "price-overrides-validation-failed", "pricing-model-not-supported", "promotional-plan-not-available", "proxy-auth-ip-not-unique", "public-actor-disabled", "query-timeout", "quoted-price-outdated", "rate-limit-exceeded", "recaptcha-invalid", "recaptcha-required", "record-not-found", "record-not-public", "record-or-token-not-found", "record-too-large", "redirect-uri-mismatch", "reduced-plan-not-available", "rental-charge-already-reimbursed", "rental-not-allowed", "request-aborted-prematurely", "request-handled-or-locked", "request-id-invalid", "request-queue-duplicate-requests", "request-too-large", "requested-dataset-view-does-not-exist", "resume-token-expired", "run-failed", "run-input-body-not-valid-json", "run-timeout-exceeded", "russia-is-evil", "same-user", "schedule-actor-not-found", "schedule-actor-task-not-found", "schedule-name-not-unique", "schema-validation", "schema-validation-error", "schema-validation-failed", "service-worker-registration-not-allowed", "sign-up-method-not-allowed", "slack-integration-not-custom", "socket-closed", "socket-destroyed", "store-schema-invalid", "store-terms-not-accepted", "stripe-enabled", "stripe-generic-decline", "stripe-not-enabled", "stripe-not-enabled-for-user", "tagged-build-required", "tax-country-invalid", "tax-number-invalid", "tax-number-validation-failed", "taxamo-call-failed", "taxamo-request-failed", "testing-error", "token-not-provided", "too-few-versions", "too-many-actor-tasks", "too-many-actors", "too-many-labels-on-resource", "too-many-mcp-connectors", "too-many-o-auth-apps", "too-many-organizations", "too-many-requests", "too-many-schedules", "too-many-ui-access-keys", "too-many-user-labels", "too-many-values", "too-many-versions", "too-many-webhooks", "unexpected-route", "unknown-build-tag", "unknown-payment-provider", "unsubscribe-token-invalid", "unsupported-actor-pricing-model-for-agentic-payments", "unsupported-content-encoding", "unsupported-file-type-for-issue", "unsupported-file-type-image-expected", "unsupported-file-type-text-or-json-expected", "unsupported-permission", "upcoming-subscription-bill-not-up-to-date", "user-already-exists", "user-already-verified", "user-creates-organizations-too-fast", "user-disabled", "user-email-is-disposable", "user-email-not-set", "user-email-not-verified", "user-has-no-subscription", "user-integration-not-found", "user-is-already-invited", "user-is-already-organization-member", "user-is-not-member-of-organization", "user-is-not-organization", "user-is-organization", "user-is-organization-owner", "user-is-removed", "user-not-found", "user-not-logged-in", "user-not-verified", "user-or-token-not-found", "user-plan-not-allowed-for-coupon", "user-problem-with-card", "user-record-not-found", "username-already-taken", "username-missing", "username-not-allowed", "username-removal-forbidden", "username-required", "verification-email-already-sent", "verification-token-expired", "version-already-exists", "versions-size-exceeded", "weak-password", "x402-agentic-payment-already-finalized", "x402-agentic-payment-insufficient-amount", "x402-agentic-payment-malformed-token", "x402-agentic-payment-settlement-failed", "x402-agentic-payment-settlement-in-progress", "x402-agentic-payment-settlement-stuck", "x402-agentic-payment-unauthorized", "x402-payment-required", "zero-invoice"]).or(z.string());
+export const ErrorType = lazySchema(() => z.enum(["3d-secure-auth-failed", "access-right-already-exists", "action-not-found", "actor-already-rented", "actor-can-not-be-rented", "actor-disabled", "actor-is-not-rented", "actor-memory-limit-exceeded", "actor-name-exists-new-owner", "actor-name-not-unique", "actor-not-found", "actor-not-github-actor", "actor-not-public", "actor-permission-level-not-supported-for-agentic-payments", "actor-review-already-exists", "actor-run-failed", "actor-standby-not-supported-for-agentic-payments", "actor-task-name-not-unique", "agentic-payment-info-retrieval-error", "agentic-payment-information-missing", "agentic-payment-insufficient-amount", "agentic-payment-provider-internal-error", "agentic-payment-provider-unauthorized", "airtable-webhook-deprecated", "already-subscribed-to-paid-actor", "apify-plan-required-to-use-paid-actor", "apify-signup-not-allowed", "auth-method-not-supported", "authorization-server-not-found", "auto-issue-date-invalid", "background-check-required", "billing-system-error", "black-friday-plan-expired", "braintree-error", "braintree-not-linked", "braintree-operation-timed-out", "braintree-unsupported-currency", "build-not-found", "build-outdated", "cannot-add-apify-events-to-ppe-actor", "cannot-add-multiple-pricing-infos", "cannot-add-pricing-info-that-alters-past", "cannot-add-second-future-pricing-info", "cannot-build-actor-from-webhook", "cannot-change-billing-interval", "cannot-change-owner", "cannot-charge-apify-event", "cannot-charge-non-pay-per-event-actor", "cannot-comment-as-other-user", "cannot-copy-actor-task", "cannot-create-payout", "cannot-create-public-actor", "cannot-create-tax-transaction", "cannot-delete-critical-actor", "cannot-delete-invoice", "cannot-delete-paid-actor", "cannot-disable-one-time-event-for-apify-start-event", "cannot-disable-organization-with-enabled-members", "cannot-disable-user-with-subscription", "cannot-link-oauth-to-unverified-email", "cannot-metamorph-to-pay-per-result-actor", "cannot-modify-actor-pricing-too-frequently", "cannot-modify-actor-pricing-with-immediate-effect", "cannot-monetize-without-payout-billing-info", "cannot-override-paid-actor-trial", "cannot-permanently-delete-subscription", "cannot-publish-actor", "cannot-publish-actor-task", "cannot-reduce-last-full-token", "cannot-reimburse-more-than-original-charge", "cannot-reimburse-non-rental-charge", "cannot-remove-own-actor-from-recently-used", "cannot-remove-payment-method", "cannot-remove-pricing-info", "cannot-remove-running-run", "cannot-remove-user-with-public-actors", "cannot-remove-user-with-subscription", "cannot-remove-user-with-unpaid-invoice", "cannot-rename-env-var", "cannot-rent-paid-actor", "cannot-review-own-actor", "cannot-set-access-rights-for-owner", "cannot-set-is-status-message-terminal", "cannot-unpublish-critical-actor", "cannot-unpublish-paid-actor", "cannot-unpublish-profile", "cannot-update-invoice-field", "concurrent-runs-limit-exceeded", "concurrent-update-detected", "conference-token-not-found", "content-encoding-forbidden-for-html", "coupon-already-redeemed", "coupon-expired", "coupon-for-new-customers", "coupon-for-subscribed-users", "coupon-limits-are-in-conflict-with-current-limits", "coupon-max-number-of-redemptions-reached", "coupon-not-found", "coupon-not-unique", "coupons-disabled", "create-github-issue-not-allowed", "creator-plan-not-available", "cron-expression-invalid", "daily-ai-token-limit-exceeded", "daily-publication-limit-exceeded", "dataset-does-not-have-fields-schema", "dataset-does-not-have-schema", "dataset-locked", "dataset-schema-invalid", "dcr-not-supported", "default-dataset-not-found", "deleting-default-build", "deleting-unfinished-build", "email-already-taken", "email-already-taken-removed-user", "email-domain-not-allowed-for-coupon", "email-invalid", "email-not-allowed", "email-not-valid", "email-update-too-soon", "elevated-permissions-needed", "env-var-already-exists", "exchange-rate-fetch-failed", "expired-conference-token", "failed-to-charge-user", "final-invoice-negative", "full-permission-actor-blocked-for-admin", "full-permission-actor-not-approved", "github-branch-empty", "github-issue-already-exists", "github-public-key-not-found", "github-repository-not-found", "github-signature-does-not-match-payload", "github-user-not-authorized-for-issues", "gmail-not-allowed", "id-does-not-match", "incompatible-billing-interval", "incomplete-payout-billing-info", "inconsistent-currencies", "incorrect-pricing-modifier-prefix", "input-json-invalid-characters", "input-json-not-object", "input-json-too-long", "input-update-collision", "insufficient-permissions", "insufficient-permissions-to-change-field", "insufficient-security-measures", "insufficient-tax-country-evidence", "integration-auth-error", "internal-server-error", "invalid-billing-info", "invalid-billing-period-for-payout", "invalid-build", "invalid-client-key", "invalid-collection", "invalid-conference-login-password", "invalid-content-type-header", "invalid-credentials", "invalid-git-auth-token", "invalid-github-issue-url", "invalid-header", "invalid-id", "invalid-idempotency-key", "invalid-input", "invalid-input-schema", "invalid-invoice", "invalid-invoice-type", "invalid-issue-date", "invalid-label-params", "invalid-main-account-user-id", "invalid-oauth-app", "invalid-oauth-scope", "invalid-one-time-invoice", "invalid-parameter", "invalid-payout-status", "invalid-picture-url", "invalid-record-key", "invalid-request", "invalid-resource-type", "invalid-signature", "invalid-subscription-plan", "invalid-tax-number", "invalid-tax-number-format", "invalid-token", "invalid-token-type", "invalid-two-factor-code", "invalid-two-factor-code-or-recovery-code", "invalid-two-factor-recovery-code", "invalid-username", "invalid-value", "invitation-invalid-resource-type", "invitation-no-longer-valid", "invoice-canceled", "invoice-cannot-be-refunded-due-to-too-high-amount", "invoice-incomplete", "invoice-is-draft", "invoice-locked", "invoice-must-be-buffer", "invoice-not-canceled", "invoice-not-draft", "invoice-not-found", "invoice-outdated", "invoice-paid-already", "issue-already-connected-to-github", "issue-not-found", "issues-bad-request", "issuer-not-registered", "job-finished", "label-already-linked", "last-api-token", "limit-reached", "max-items-must-be-greater-than-zero", "max-metamorphs-exceeded", "max-total-charge-usd-below-minimum", "max-total-charge-usd-must-be-greater-than-zero", "method-not-allowed", "migration-disabled", "missing-actor-rights", "missing-api-token", "missing-billing-info", "missing-line-items", "missing-payment-date", "missing-payout-billing-info", "missing-proxy-password", "missing-reporting-fields", "missing-resource-name", "missing-settings", "missing-username", "monthly-usage-limit-too-low", "more-than-one-update-not-allowed", "multiple-records-found", "must-be-admin", "name-not-unique", "next-runtime-computation-failed", "no-columns-in-exported-dataset", "no-payment-attempt-for-refund-found", "no-payment-method-available", "no-team-account-seats-available", "non-temporary-email", "not-enough-usage-to-run-paid-actor", "not-implemented", "not-supported-currencies", "o-auth-service-already-connected", "o-auth-service-not-connected", "oauth-resource-access-failed", "one-time-invoice-already-marked-paid", "only-drafts-can-be-deleted", "operation-canceled", "operation-not-allowed", "operation-timed-out", "organization-cannot-own-itself", "organization-role-not-found", "overlapping-payout-billing-periods", "own-token-required", "page-not-found", "param-not-one-of", "parameter-required", "parameters-mismatched", "password-reset-email-already-sent", "password-reset-token-expired", "pay-as-you-go-without-monthly-interval", "payment-attempt-status-message-required", "payout-already-paid", "payout-canceled", "payout-invalid-state", "payout-must-be-approved-to-be-marked-paid", "payout-not-found", "payout-number-already-exists", "phone-number-invalid", "phone-number-landline", "phone-number-opted-out", "phone-verification-disabled", "platform-feature-disabled", "price-overrides-validation-failed", "pricing-model-not-supported", "promotional-plan-not-available", "proxy-auth-ip-not-unique", "public-actor-disabled", "query-timeout", "quoted-price-outdated", "rate-limit-exceeded", "recaptcha-invalid", "recaptcha-required", "record-not-found", "record-not-public", "record-or-token-not-found", "record-too-large", "redirect-uri-mismatch", "reduced-plan-not-available", "rental-charge-already-reimbursed", "rental-not-allowed", "request-aborted-prematurely", "request-handled-or-locked", "request-id-invalid", "request-queue-duplicate-requests", "request-too-large", "requested-dataset-view-does-not-exist", "resume-token-expired", "run-failed", "run-input-body-not-valid-json", "run-timeout-exceeded", "russia-is-evil", "same-user", "schedule-actor-not-found", "schedule-actor-task-not-found", "schedule-name-not-unique", "schema-validation", "schema-validation-error", "schema-validation-failed", "service-worker-registration-not-allowed", "sign-up-method-not-allowed", "slack-integration-not-custom", "socket-closed", "socket-destroyed", "store-schema-invalid", "store-terms-not-accepted", "stripe-enabled", "stripe-generic-decline", "stripe-not-enabled", "stripe-not-enabled-for-user", "tagged-build-required", "tax-country-invalid", "tax-number-invalid", "tax-number-validation-failed", "taxamo-call-failed", "taxamo-request-failed", "testing-error", "token-not-provided", "too-few-versions", "too-many-actor-tasks", "too-many-actors", "too-many-labels-on-resource", "too-many-mcp-connectors", "too-many-o-auth-apps", "too-many-organizations", "too-many-requests", "too-many-schedules", "too-many-ui-access-keys", "too-many-user-labels", "too-many-values", "too-many-versions", "too-many-webhooks", "unexpected-route", "unknown-build-tag", "unknown-payment-provider", "unsubscribe-token-invalid", "unsupported-actor-pricing-model-for-agentic-payments", "unsupported-content-encoding", "unsupported-file-type-for-issue", "unsupported-file-type-image-expected", "unsupported-file-type-text-or-json-expected", "unsupported-permission", "upcoming-subscription-bill-not-up-to-date", "user-already-exists", "user-already-verified", "user-creates-organizations-too-fast", "user-disabled", "user-email-is-disposable", "user-email-not-set", "user-email-not-verified", "user-has-no-subscription", "user-integration-not-found", "user-is-already-invited", "user-is-already-organization-member", "user-is-not-member-of-organization", "user-is-not-organization", "user-is-organization", "user-is-organization-owner", "user-is-removed", "user-not-found", "user-not-logged-in", "user-not-verified", "user-or-token-not-found", "user-plan-not-allowed-for-coupon", "user-problem-with-card", "user-record-not-found", "username-already-taken", "username-missing", "username-not-allowed", "username-removal-forbidden", "username-required", "verification-email-already-sent", "verification-token-expired", "version-already-exists", "versions-size-exceeded", "weak-password", "x402-agentic-payment-already-finalized", "x402-agentic-payment-insufficient-amount", "x402-agentic-payment-malformed-token", "x402-agentic-payment-settlement-failed", "x402-agentic-payment-settlement-in-progress", "x402-agentic-payment-settlement-stuck", "x402-agentic-payment-unauthorized", "x402-payment-required", "zero-invoice"]).or(z.string()));
 
-export const ErrorDetail = z.looseObject({
-    type: ErrorType.optional(),
+export const ErrorDetail = lazySchema(() => z.looseObject({
+    type: ErrorType().optional(),
     message: z.string().optional(),
-});
+}));
 
-export const ErrorResponse = z.looseObject({
-    error: ErrorDetail,
-});
+export const ErrorResponse = lazySchema(() => z.looseObject({
+    error: ErrorDetail(),
+}));
 
-export const VersionSourceType = z.enum(["SOURCE_FILES", "GIT_REPO", "TARBALL", "GITHUB_GIST", "SOURCE_CODE"]).or(z.string());
+export const VersionSourceType = lazySchema(() => z.enum(["SOURCE_FILES", "GIT_REPO", "TARBALL", "GITHUB_GIST", "SOURCE_CODE"]).or(z.string()));
 
-export const EnvVar = z.looseObject({
+export const EnvVar = lazySchema(() => z.looseObject({
     name: z.string(),
     value: z.string().optional(),
     isSecret: z.boolean().nullable().optional(),
-});
+}));
 
-export const SourceCodeFileFormat = z.enum(["BASE64", "TEXT"]).or(z.string());
+export const SourceCodeFileFormat = lazySchema(() => z.enum(["BASE64", "TEXT"]).or(z.string()));
 
 /** Represents a single file in the Actor's source code. */
-export const SourceCodeFile = z.looseObject({
-    format: SourceCodeFileFormat.optional(),
+export const SourceCodeFile = lazySchema(() => z.looseObject({
+    format: SourceCodeFileFormat().optional(),
     content: z.string().optional(),
     name: z.string(),
-});
+}));
 
 /**
  * Represents a folder in the Actor's source code structure. Distinguished from
  * SourceCodeFile by the presence of the `folder` property set to `true`.
  */
-export const SourceCodeFolder = z.looseObject({
+export const SourceCodeFolder = lazySchema(() => z.looseObject({
     name: z.string(),
     folder: z.boolean(),
-});
+}));
 
-export const VersionSourceFiles = z.array(z.union([SourceCodeFile, SourceCodeFolder]));
+export const VersionSourceFiles = lazySchema(() => z.array(z.union([SourceCodeFile(), SourceCodeFolder()])));
 
-export const Version = z.looseObject({
+export const Version = lazySchema(() => z.looseObject({
     versionNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])$/),
-    sourceType: VersionSourceType.nullable(),
-    envVars: z.array(EnvVar).nullable().optional(),
+    sourceType: VersionSourceType().nullable(),
+    envVars: z.array(EnvVar()).nullable().optional(),
     applyEnvVarsToBuild: z.boolean().nullable().optional(),
     buildTag: z.string().nullable().optional(),
-    sourceFiles: VersionSourceFiles.optional(),
+    sourceFiles: VersionSourceFiles().optional(),
     gitRepoUrl: z.string().nullable().optional(),
     tarballUrl: z.string().nullable().optional(),
     gitHubGistUrl: z.string().nullable().optional(),
-});
+}));
 
 /** Determines the permission level that the Actor requires to run. For details, see [Actor permissions](https://docs.apify.com/platform/actors/development/permissions). */
-export const ActorPermissionLevel = z.enum(["LIMITED_PERMISSIONS", "FULL_PERMISSIONS"]).or(z.string());
+export const ActorPermissionLevel = lazySchema(() => z.enum(["LIMITED_PERMISSIONS", "FULL_PERMISSIONS"]).or(z.string()));
 
 /** The default settings applied to an Actor run. Can be overridden elsewhere. */
-export const DefaultRunOptions = z.looseObject({
+export const DefaultRunOptions = lazySchema(() => z.looseObject({
     build: z.string().optional(),
     timeoutSecs: z.int().optional(),
     memoryMbytes: z.int().optional(),
     restartOnError: z.boolean().optional(),
     maxItems: z.int().nullable().optional(),
-    forcePermissionLevel: ActorPermissionLevel.nullable().optional(),
-});
+    forcePermissionLevel: ActorPermissionLevel().nullable().optional(),
+}));
 
-export const ActorStandby = z.looseObject({
+export const ActorStandby = lazySchema(() => z.looseObject({
     isEnabled: z.boolean().nullable().optional(),
     desiredRequestsPerActorRun: z.int().nullable().optional(),
     maxRequestsPerActorRun: z.int().nullable().optional(),
@@ -128,14 +130,14 @@ export const ActorStandby = z.looseObject({
     memoryMbytes: z.int().nullable().optional(),
     disableStandbyFieldsOverride: z.boolean().nullable().optional(),
     shouldPassActorInput: z.boolean().nullable().optional(),
-});
+}));
 
-export const ExampleRunInput = z.looseObject({
+export const ExampleRunInput = lazySchema(() => z.looseObject({
     body: z.string().optional(),
     contentType: z.string().optional(),
-});
+}));
 
-export const CreateActorRequest = z.looseObject({
+export const CreateActorRequest = lazySchema(() => z.looseObject({
     name: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
     title: z.string().nullable().optional(),
@@ -143,15 +145,15 @@ export const CreateActorRequest = z.looseObject({
     seoTitle: z.string().nullable().optional(),
     seoDescription: z.string().nullable().optional(),
     restartOnError: z.boolean().optional(),
-    versions: z.array(Version).nullable().optional(),
+    versions: z.array(Version()).nullable().optional(),
     categories: z.array(z.string()).nullable().optional(),
-    defaultRunOptions: DefaultRunOptions.optional(),
-    actorStandby: ActorStandby.nullable().optional(),
-    exampleRunInput: ExampleRunInput.nullable().optional(),
+    defaultRunOptions: DefaultRunOptions().optional(),
+    actorStandby: ActorStandby().nullable().optional(),
+    exampleRunInput: ExampleRunInput().nullable().optional(),
     isDeprecated: z.boolean().nullable().optional(),
-});
+}));
 
-export const CommonActorPricingInfo = z.looseObject({
+export const CommonActorPricingInfo = lazySchema(() => z.looseObject({
     apifyMarginPercentage: z.number(),
     createdAt: z.date(),
     startedAt: z.date(),
@@ -160,85 +162,85 @@ export const CommonActorPricingInfo = z.looseObject({
     reasonForChange: z.string().nullable().optional(),
     isPriceChangeNotificationSuppressed: z.boolean().optional(),
     forceContainsSignificantPriceChange: z.boolean().optional(),
-});
+}));
 
 /** A single tier's price-per-event entry. */
-export const TieredPricingPerEventEntry = z.looseObject({
+export const TieredPricingPerEventEntry = lazySchema(() => z.looseObject({
     tieredEventPriceUsd: z.number(),
-});
+}));
 
 /**
  * Tiered price-per-event pricing for a single charge event, keyed by subscription tier (e.g. `FREE`, `BRONZE`,
  * `SILVER`, `GOLD`, `PLATINUM`, `DIAMOND`). The actual price applied is resolved from the user's tier.
  */
-export const TieredPricingPerEvent = z.record(z.string(), TieredPricingPerEventEntry);
+export const TieredPricingPerEvent = lazySchema(() => z.record(z.string(), TieredPricingPerEventEntry()));
 
 /**
  * Definition of a single chargeable event for a pay-per-event Actor. Each event is either flat-priced
  * (`eventPriceUsd` is set) or tier-priced (`eventTieredPricingUsd` is set); the two are mutually exclusive.
  */
-export const ActorChargeEvent = z.looseObject({
+export const ActorChargeEvent = lazySchema(() => z.looseObject({
     eventTitle: z.string(),
     eventDescription: z.string(),
     eventPriceUsd: z.number().optional(),
-    eventTieredPricingUsd: TieredPricingPerEvent.optional(),
+    eventTieredPricingUsd: TieredPricingPerEvent().optional(),
     isPrimaryEvent: z.boolean().optional(),
     isOneTimeEvent: z.boolean().optional(),
-});
+}));
 
-export const PayPerEventActorPricingInfo = CommonActorPricingInfo.extend({
+export const PayPerEventActorPricingInfo = lazySchema(() => CommonActorPricingInfo().extend({
     pricingModel: z.literal("PAY_PER_EVENT"),
     pricingPerEvent: z.looseObject({
-        actorChargeEvents: z.record(z.string(), ActorChargeEvent).optional(),
+        actorChargeEvents: z.record(z.string(), ActorChargeEvent()).optional(),
     }),
     minimalMaxTotalChargeUsd: z.number().nullable().optional(),
-});
+}));
 
 /** A single tier's price-per-dataset-item entry. */
-export const TieredPricingPerDatasetItemEntry = z.looseObject({
+export const TieredPricingPerDatasetItemEntry = lazySchema(() => z.looseObject({
     tieredPricePerUnitUsd: z.number(),
-});
+}));
 
 /**
  * Tiered price-per-dataset-item pricing, keyed by subscription tier (e.g. `FREE`, `BRONZE`, `SILVER`, `GOLD`,
  * `PLATINUM`, `DIAMOND`). The actual price applied to a run is resolved from the user's tier.
  */
-export const TieredPricingPerDatasetItem = z.record(z.string(), TieredPricingPerDatasetItemEntry);
+export const TieredPricingPerDatasetItem = lazySchema(() => z.record(z.string(), TieredPricingPerDatasetItemEntry()));
 
-export const PricePerDatasetItemActorPricingInfo = CommonActorPricingInfo.extend({
+export const PricePerDatasetItemActorPricingInfo = lazySchema(() => CommonActorPricingInfo().extend({
     pricingModel: z.literal("PRICE_PER_DATASET_ITEM"),
     unitName: z.string(),
     pricePerUnitUsd: z.number().optional(),
-    tieredPricing: TieredPricingPerDatasetItem.optional(),
-});
+    tieredPricing: TieredPricingPerDatasetItem().optional(),
+}));
 
-export const FlatPricePerMonthActorPricingInfo = CommonActorPricingInfo.extend({
+export const FlatPricePerMonthActorPricingInfo = lazySchema(() => CommonActorPricingInfo().extend({
     pricingModel: z.literal("FLAT_PRICE_PER_MONTH"),
     trialMinutes: z.int(),
     pricePerUnitUsd: z.number(),
-});
+}));
 
-export const FreeActorPricingInfo = CommonActorPricingInfo.extend({
+export const FreeActorPricingInfo = lazySchema(() => CommonActorPricingInfo().extend({
     pricingModel: z.literal("FREE"),
-});
+}));
 
-export const ActorRunPricingInfo = z.discriminatedUnion("pricingModel", [PayPerEventActorPricingInfo, PricePerDatasetItemActorPricingInfo, FlatPricePerMonthActorPricingInfo, FreeActorPricingInfo]);
+export const ActorRunPricingInfo = lazySchema(() => z.discriminatedUnion("pricingModel", [PayPerEventActorPricingInfo(), PricePerDatasetItemActorPricingInfo(), FlatPricePerMonthActorPricingInfo(), FreeActorPricingInfo()]));
 
 /** Information about a tagged build. */
-export const TaggedBuildInfo = z.looseObject({
+export const TaggedBuildInfo = lazySchema(() => z.looseObject({
     buildId: z.string().optional(),
     buildNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])(\.[1-9][0-9]{0,4})$/).nullable().optional(),
     buildNumberInt: z.int().optional(),
     finishedAt: z.date().nullable().optional(),
-});
+}));
 
 /** A dictionary mapping build tag names (e.g., "latest", "beta") to their build information. */
-export const TaggedBuilds = z.record(z.string(), TaggedBuildInfo.nullable());
+export const TaggedBuilds = lazySchema(() => z.record(z.string(), TaggedBuildInfo().nullable()));
 
 /** A warning displayed on the Actor's page in Apify Store and Console. Can be set by the Actor's developer or automatically by Apify's quality checks. */
-export const ActorNotice = z.enum(["NONE", "RESIDENTIAL_PROXY_REQUIRED", "UNDER_MAINTENANCE"]).or(z.string()).nullable();
+export const ActorNotice = lazySchema(() => z.enum(["NONE", "RESIDENTIAL_PROXY_REQUIRED", "UNDER_MAINTENANCE"]).or(z.string()).nullable());
 
-export const Actor = z.looseObject({
+export const Actor = lazySchema(() => z.looseObject({
     id: z.string(),
     userId: z.string(),
     name: z.string(),
@@ -246,124 +248,124 @@ export const Actor = z.looseObject({
     description: z.string().nullable().optional(),
     restartOnError: z.boolean().optional(),
     isPublic: z.boolean(),
-    actorPermissionLevel: ActorPermissionLevel.optional(),
+    actorPermissionLevel: ActorPermissionLevel().optional(),
     createdAt: z.date(),
     modifiedAt: z.date(),
-    stats: ActorStats,
-    versions: z.array(Version),
-    pricingInfos: z.array(ActorRunPricingInfo).optional(),
-    defaultRunOptions: DefaultRunOptions,
-    exampleRunInput: ExampleRunInput.nullable().optional(),
+    stats: ActorStats(),
+    versions: z.array(Version()),
+    pricingInfos: z.array(ActorRunPricingInfo()).optional(),
+    defaultRunOptions: DefaultRunOptions(),
+    exampleRunInput: ExampleRunInput().nullable().optional(),
     isDeprecated: z.boolean().nullable().optional(),
     deploymentKey: z.string().optional(),
     title: z.string().nullable().optional(),
-    taggedBuilds: TaggedBuilds.nullable().optional(),
-    actorStandby: ActorStandby.nullable().optional(),
+    taggedBuilds: TaggedBuilds().nullable().optional(),
+    actorStandby: ActorStandby().nullable().optional(),
     readmeSummary: z.string().optional(),
     seoTitle: z.string().nullable().optional(),
     seoDescription: z.string().nullable().optional(),
     pictureUrl: z.string().nullable().optional(),
     standbyUrl: z.string().nullable().optional(),
-    notice: ActorNotice.optional(),
+    notice: ActorNotice().optional(),
     categories: z.array(z.string()).optional(),
     isCritical: z.boolean().optional(),
     isGeneric: z.boolean().optional(),
     isSourceCodeHidden: z.boolean().optional(),
     hasNoDataset: z.boolean().optional(),
-});
+}));
 
 /** Response containing Actor data. */
-export const ActorResponse = z.looseObject({
-    data: Actor,
-});
+export const ActorResponse = lazySchema(() => z.looseObject({
+    data: Actor(),
+}));
 
-export const CreateOrUpdateVersionRequest = z.looseObject({
+export const CreateOrUpdateVersionRequest = lazySchema(() => z.looseObject({
     versionNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])$/).nullable().optional(),
-    sourceType: VersionSourceType.nullable().optional(),
-    envVars: z.array(EnvVar).nullable().optional(),
+    sourceType: VersionSourceType().nullable().optional(),
+    envVars: z.array(EnvVar()).nullable().optional(),
     applyEnvVarsToBuild: z.boolean().nullable().optional(),
     buildTag: z.string().nullable().optional(),
-    sourceFiles: VersionSourceFiles.optional(),
+    sourceFiles: VersionSourceFiles().optional(),
     gitRepoUrl: z.string().nullable().optional(),
     tarballUrl: z.string().nullable().optional(),
     gitHubGistUrl: z.string().nullable().optional(),
-});
+}));
 
 /** The name of the build tag. */
-export const BuildTag = z.looseObject({
+export const BuildTag = lazySchema(() => z.looseObject({
     buildId: z.string(),
-}).nullable();
+}).nullable());
 
-export const UpdateActorRequest = z.looseObject({
+export const UpdateActorRequest = lazySchema(() => z.looseObject({
     name: z.string().optional(),
     description: z.string().nullable().optional(),
     isPublic: z.boolean().optional(),
-    actorPermissionLevel: ActorPermissionLevel.nullable().optional(),
+    actorPermissionLevel: ActorPermissionLevel().nullable().optional(),
     seoTitle: z.string().nullable().optional(),
     seoDescription: z.string().nullable().optional(),
     title: z.string().nullable().optional(),
     restartOnError: z.boolean().optional(),
-    versions: z.array(CreateOrUpdateVersionRequest).optional(),
-    pricingInfos: z.array(ActorRunPricingInfo).optional(),
+    versions: z.array(CreateOrUpdateVersionRequest()).optional(),
+    pricingInfos: z.array(ActorRunPricingInfo()).optional(),
     categories: z.array(z.string()).nullable().optional(),
-    defaultRunOptions: DefaultRunOptions.nullable().optional(),
-    taggedBuilds: z.record(z.string(), BuildTag).nullable().optional(),
-    actorStandby: ActorStandby.nullable().optional(),
-    exampleRunInput: ExampleRunInput.nullable().optional(),
+    defaultRunOptions: DefaultRunOptions().nullable().optional(),
+    taggedBuilds: z.record(z.string(), BuildTag()).nullable().optional(),
+    actorStandby: ActorStandby().nullable().optional(),
+    exampleRunInput: ExampleRunInput().nullable().optional(),
     isDeprecated: z.boolean().nullable().optional(),
-});
+}));
 
-export const ListOfVersions = z.looseObject({
+export const ListOfVersions = lazySchema(() => z.looseObject({
     total: z.int(),
-    items: z.array(Version),
-});
+    items: z.array(Version()),
+}));
 
-export const ListOfVersionsResponse = z.looseObject({
-    data: ListOfVersions,
-});
+export const ListOfVersionsResponse = lazySchema(() => z.looseObject({
+    data: ListOfVersions(),
+}));
 
-export const VersionResponse = z.looseObject({
-    data: Version,
-});
+export const VersionResponse = lazySchema(() => z.looseObject({
+    data: Version(),
+}));
 
-export const ListOfEnvVars = z.looseObject({
+export const ListOfEnvVars = lazySchema(() => z.looseObject({
     total: z.int(),
-    items: z.array(EnvVar),
-});
+    items: z.array(EnvVar()),
+}));
 
-export const ListOfEnvVarsResponse = z.looseObject({
-    data: ListOfEnvVars,
-});
+export const ListOfEnvVarsResponse = lazySchema(() => z.looseObject({
+    data: ListOfEnvVars(),
+}));
 
-export const EnvVarRequest = EnvVar.required({ value: true });
+export const EnvVarRequest = lazySchema(() => EnvVar().required({ value: true }));
 
-export const EnvVarResponse = z.looseObject({
-    data: EnvVar,
-});
+export const EnvVarResponse = lazySchema(() => z.looseObject({
+    data: EnvVar(),
+}));
 
 /** Type of event that triggers the webhook. */
-export const WebhookEventType = z.enum(["ACTOR.BUILD.ABORTED", "ACTOR.BUILD.CREATED", "ACTOR.BUILD.FAILED", "ACTOR.BUILD.SUCCEEDED", "ACTOR.BUILD.TIMED_OUT", "ACTOR.RUN.ABORTED", "ACTOR.RUN.CREATED", "ACTOR.RUN.FAILED", "ACTOR.RUN.RESURRECTED", "ACTOR.RUN.SUCCEEDED", "ACTOR.RUN.TIMED_OUT", "TEST"]).or(z.string());
+export const WebhookEventType = lazySchema(() => z.enum(["ACTOR.BUILD.ABORTED", "ACTOR.BUILD.CREATED", "ACTOR.BUILD.FAILED", "ACTOR.BUILD.SUCCEEDED", "ACTOR.BUILD.TIMED_OUT", "ACTOR.RUN.ABORTED", "ACTOR.RUN.CREATED", "ACTOR.RUN.FAILED", "ACTOR.RUN.RESURRECTED", "ACTOR.RUN.SUCCEEDED", "ACTOR.RUN.TIMED_OUT", "TEST"]).or(z.string()));
 
-export const WebhookCondition = z.looseObject({
+export const WebhookCondition = lazySchema(() => z.looseObject({
     actorId: z.string().nullable().optional(),
     actorTaskId: z.string().nullable().optional(),
     actorRunId: z.string().nullable().optional(),
-});
+}));
 
 /** Status of the webhook dispatch indicating whether the HTTP request was successful. */
-export const WebhookDispatchStatus = z.enum(["ACTIVE", "SUCCEEDED", "FAILED"]).or(z.string());
+export const WebhookDispatchStatus = lazySchema(() => z.enum(["ACTIVE", "SUCCEEDED", "FAILED"]).or(z.string()));
 
-export const ExampleWebhookDispatch = z.looseObject({
-    status: WebhookDispatchStatus,
+export const ExampleWebhookDispatch = lazySchema(() => z.looseObject({
+    status: WebhookDispatchStatus(),
     finishedAt: z.date().nullable().optional(),
     removedAt: z.date().nullable().optional(),
-});
+}));
 
-export const WebhookStats = z.looseObject({
+export const WebhookStats = lazySchema(() => z.looseObject({
     totalDispatches: z.int().optional(),
-});
+}));
 
-export const WebhookShort = z.looseObject({
+export const WebhookShort = lazySchema(() => z.looseObject({
     id: z.string(),
     createdAt: z.date(),
     modifiedAt: z.date(),
@@ -373,75 +375,75 @@ export const WebhookShort = z.looseObject({
     isEnabled: z.boolean().optional(),
     actionType: z.string().optional(),
     shouldInterpolateStrings: z.boolean().nullable().optional(),
-    eventTypes: z.array(WebhookEventType),
-    condition: WebhookCondition,
+    eventTypes: z.array(WebhookEventType()),
+    condition: WebhookCondition(),
     ignoreSslErrors: z.boolean(),
     doNotRetry: z.boolean(),
     requestUrl: z.string(),
-    lastDispatch: ExampleWebhookDispatch.nullable().optional(),
-    stats: WebhookStats.nullable().optional(),
-});
+    lastDispatch: ExampleWebhookDispatch().nullable().optional(),
+    stats: WebhookStats().nullable().optional(),
+}));
 
-export const ListOfWebhooks = PaginationResponse.extend({
-    items: z.array(WebhookShort),
-});
+export const ListOfWebhooks = lazySchema(() => PaginationResponse().extend({
+    items: z.array(WebhookShort()),
+}));
 
-export const ListOfWebhooksResponse = z.looseObject({
-    data: ListOfWebhooks,
-});
+export const ListOfWebhooksResponse = lazySchema(() => z.looseObject({
+    data: ListOfWebhooks(),
+}));
 
 /** Status of an Actor job (run or build). */
-export const ActorJobStatus = z.enum(["READY", "RUNNING", "SUCCEEDED", "FAILED", "TIMING-OUT", "TIMED-OUT", "ABORTING", "ABORTED"]).or(z.string());
+export const ActorJobStatus = lazySchema(() => z.enum(["READY", "RUNNING", "SUCCEEDED", "FAILED", "TIMING-OUT", "TIMED-OUT", "ABORTING", "ABORTED"]).or(z.string()));
 
-export const RunOrigin = z.enum(["DEVELOPMENT", "WEB", "API", "SCHEDULER", "TEST", "WEBHOOK", "ACTOR", "CLI", "CI", "STANDBY", "MCP"]).or(z.string());
+export const RunOrigin = lazySchema(() => z.enum(["DEVELOPMENT", "WEB", "API", "SCHEDULER", "TEST", "WEBHOOK", "ACTOR", "CLI", "CI", "STANDBY", "MCP"]).or(z.string()));
 
-export const BuildsMeta = z.looseObject({
-    origin: RunOrigin,
+export const BuildsMeta = lazySchema(() => z.looseObject({
+    origin: RunOrigin(),
     clientIp: z.string().optional(),
     userAgent: z.string().optional(),
-});
+}));
 
-export const BuildShort = z.looseObject({
+export const BuildShort = lazySchema(() => z.looseObject({
     id: z.string(),
     actId: z.string().optional(),
     userId: z.string().optional(),
-    status: ActorJobStatus,
+    status: ActorJobStatus(),
     startedAt: z.date(),
     finishedAt: z.date().nullable().optional(),
     usageTotalUsd: z.number(),
     buildNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])(\.[1-9][0-9]{0,4})$/),
     buildNumberInt: z.int().optional(),
-    meta: BuildsMeta.optional(),
-});
+    meta: BuildsMeta().optional(),
+}));
 
-export const ListOfBuilds = PaginationResponse.extend({
-    items: z.array(BuildShort),
-});
+export const ListOfBuilds = lazySchema(() => PaginationResponse().extend({
+    items: z.array(BuildShort()),
+}));
 
-export const ListOfBuildsResponse = z.looseObject({
-    data: ListOfBuilds,
-});
+export const ListOfBuildsResponse = lazySchema(() => z.looseObject({
+    data: ListOfBuilds(),
+}));
 
-export const BuildStats = z.looseObject({
+export const BuildStats = lazySchema(() => z.looseObject({
     durationMillis: z.int().optional(),
     runTimeSecs: z.number().optional(),
     computeUnits: z.number().optional(),
     imageSizeBytes: z.int().nullable().optional(),
-});
+}));
 
-export const BuildOptions = z.looseObject({
+export const BuildOptions = lazySchema(() => z.looseObject({
     useCache: z.boolean().nullable().optional(),
     betaPackages: z.boolean().nullable().optional(),
     memoryMbytes: z.int().nullable().optional(),
     diskMbytes: z.int().nullable().optional(),
-});
+}));
 
-export const BuildUsage = z.looseObject({
+export const BuildUsage = lazySchema(() => z.looseObject({
     ACTOR_COMPUTE_UNITS: z.number().nullable().optional(),
-});
+}));
 
 /** The definition of the Actor, the full specification of this field can be found in [Apify docs](https://docs.apify.com/platform/actors/development/actor-definition/actor-json) */
-export const ActorDefinition = z.looseObject({
+export const ActorDefinition = lazySchema(() => z.looseObject({
     actorSpecification: z.literal(1).optional(),
     name: z.string().optional(),
     version: z.string().regex(/^[0-9]+(\.[0-9]+)+$/).optional(),
@@ -459,80 +461,80 @@ export const ActorDefinition = z.looseObject({
     minMemoryMbytes: z.int().min(128).optional(),
     maxMemoryMbytes: z.int().min(128).optional(),
     usesStandbyMode: z.boolean().optional(),
-});
+}));
 
-export const Build = z.looseObject({
+export const Build = lazySchema(() => z.looseObject({
     id: z.string(),
     actId: z.string(),
     userId: z.string(),
     startedAt: z.date(),
     finishedAt: z.date().nullable().optional(),
-    status: ActorJobStatus,
-    meta: BuildsMeta,
-    stats: BuildStats.nullable().optional(),
-    options: BuildOptions.nullable().optional(),
-    usage: BuildUsage.nullable().optional(),
+    status: ActorJobStatus(),
+    meta: BuildsMeta(),
+    stats: BuildStats().nullable().optional(),
+    options: BuildOptions().nullable().optional(),
+    usage: BuildUsage().nullable().optional(),
     usageTotalUsd: z.number().nullable().optional(),
-    usageUsd: BuildUsage.nullable().optional(),
+    usageUsd: BuildUsage().nullable().optional(),
     inputSchema: z.string().nullable().optional(),
     readme: z.string().nullable().optional(),
     buildNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])(\.[1-9][0-9]{0,4})$/),
     actVersion: z.looseObject({
-        sourceType: VersionSourceType.optional(),
+        sourceType: VersionSourceType().optional(),
         buildTag: z.string().optional(),
         versionNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])$/).optional(),
         gitRepoUrl: z.string().optional(),
-        sourceFiles: z.array(SourceCodeFile).optional(),
+        sourceFiles: z.array(SourceCodeFile()).optional(),
     }).optional(),
-    actorDefinition: ActorDefinition.nullable().optional(),
-});
+    actorDefinition: ActorDefinition().nullable().optional(),
+}));
 
 /** Response containing Actor build data. */
-export const BuildResponse = z.looseObject({
-    data: Build,
-});
+export const BuildResponse = lazySchema(() => z.looseObject({
+    data: Build(),
+}));
 
-export const RunMeta = z.looseObject({
-    origin: RunOrigin,
+export const RunMeta = lazySchema(() => z.looseObject({
+    origin: RunOrigin(),
     clientIp: z.string().nullable().optional(),
     userAgent: z.string().nullable().optional(),
     scheduleId: z.string().nullable().optional(),
     scheduledAt: z.date().nullable().optional(),
-});
+}));
 
-export const RunShort = z.looseObject({
+export const RunShort = lazySchema(() => z.looseObject({
     id: z.string(),
     actId: z.string(),
     userId: z.string().optional(),
     actorTaskId: z.string().nullable().optional(),
-    status: ActorJobStatus,
+    status: ActorJobStatus(),
     startedAt: z.date(),
     finishedAt: z.date().nullable().optional(),
     buildId: z.string(),
     buildNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])(\.[1-9][0-9]{0,4})$/).optional(),
     buildNumberInt: z.int().optional(),
-    meta: RunMeta,
+    meta: RunMeta(),
     usageTotalUsd: z.number(),
     defaultKeyValueStoreId: z.string(),
     defaultDatasetId: z.string(),
     defaultRequestQueueId: z.string(),
-});
+}));
 
-export const ListOfRuns = PaginationResponse.extend({
-    items: z.array(RunShort),
-});
+export const ListOfRuns = lazySchema(() => PaginationResponse().extend({
+    items: z.array(RunShort()),
+}));
 
-export const ListOfRunsResponse = z.looseObject({
-    data: ListOfRuns,
-});
+export const ListOfRunsResponse = lazySchema(() => z.looseObject({
+    data: ListOfRuns(),
+}));
 
 /**
  * Minimal representation of an ad-hoc webhook attached to a single Actor run or build via the
  * `webhooks` query parameter. The query parameter value is a Base64-encoded JSON array whose
  * items match this schema. Persistent webhook fields (e.g. `condition`) are not used here.
  */
-export const WebhookRepresentation = z.looseObject({
-    eventTypes: z.array(WebhookEventType),
+export const WebhookRepresentation = lazySchema(() => z.looseObject({
+    eventTypes: z.array(WebhookEventType()),
     requestUrl: z.string(),
     payloadTemplate: z.string().nullable().optional(),
     headersTemplate: z.string().nullable().optional(),
@@ -540,9 +542,9 @@ export const WebhookRepresentation = z.looseObject({
     idempotencyKey: z.string().nullable().optional(),
     ignoreSslErrors: z.boolean().nullable().optional(),
     doNotRetry: z.boolean().nullable().optional(),
-});
+}));
 
-export const RunStats = z.looseObject({
+export const RunStats = lazySchema(() => z.looseObject({
     inputBodyLen: z.int().min(0).nullable().optional(),
     migrationCount: z.int().min(0).optional(),
     rebootCount: z.int().min(0).optional(),
@@ -560,21 +562,21 @@ export const RunStats = z.looseObject({
     runTimeSecs: z.number().min(0).optional(),
     metamorph: z.int().min(0).optional(),
     computeUnits: z.number().min(0).optional(),
-});
+}));
 
-export const RunOptions = z.looseObject({
+export const RunOptions = lazySchema(() => z.looseObject({
     build: z.string(),
     timeoutSecs: z.int().min(0),
     memoryMbytes: z.int().min(128).max(32768),
     diskMbytes: z.int().min(0),
     maxItems: z.int().min(0).nullable().optional(),
     maxTotalChargeUsd: z.number().min(0).nullable().optional(),
-});
+}));
 
 /** Defines the general access level for the resource. */
-export const GeneralAccess = z.enum(["ANYONE_WITH_ID_CAN_READ", "ANYONE_WITH_NAME_CAN_READ", "FOLLOW_USER_SETTING", "RESTRICTED"]).or(z.string());
+export const GeneralAccess = lazySchema(() => z.enum(["ANYONE_WITH_ID_CAN_READ", "ANYONE_WITH_NAME_CAN_READ", "FOLLOW_USER_SETTING", "RESTRICTED"]).or(z.string()));
 
-export const RunUsage = z.looseObject({
+export const RunUsage = lazySchema(() => z.looseObject({
     ACTOR_COMPUTE_UNITS: z.number().nullable().optional(),
     DATASET_READS: z.int().nullable().optional(),
     DATASET_WRITES: z.int().nullable().optional(),
@@ -587,10 +589,10 @@ export const RunUsage = z.looseObject({
     DATA_TRANSFER_EXTERNAL_GBYTES: z.number().nullable().optional(),
     PROXY_RESIDENTIAL_TRANSFER_GBYTES: z.number().nullable().optional(),
     PROXY_SERPS: z.int().nullable().optional(),
-});
+}));
 
 /** Resource usage costs in USD. All values are monetary amounts in US dollars. */
-export const RunUsageUsd = z.looseObject({
+export const RunUsageUsd = lazySchema(() => z.looseObject({
     ACTOR_COMPUTE_UNITS: z.number().nullable().optional(),
     DATASET_READS: z.number().nullable().optional(),
     DATASET_WRITES: z.number().nullable().optional(),
@@ -603,35 +605,35 @@ export const RunUsageUsd = z.looseObject({
     DATA_TRANSFER_EXTERNAL_GBYTES: z.number().nullable().optional(),
     PROXY_RESIDENTIAL_TRANSFER_GBYTES: z.number().nullable().optional(),
     PROXY_SERPS: z.number().nullable().optional(),
-});
+}));
 
 /** Information about a metamorph event that occurred during the run. */
-export const Metamorph = z.looseObject({
+export const Metamorph = lazySchema(() => z.looseObject({
     createdAt: z.date(),
     actorId: z.string(),
     buildId: z.string(),
     inputKey: z.string().nullable().optional(),
-});
+}));
 
 /** Represents an Actor run and its associated data. */
-export const Run = z.looseObject({
+export const Run = lazySchema(() => z.looseObject({
     id: z.string(),
     actId: z.string(),
     userId: z.string(),
     actorTaskId: z.string().nullable().optional(),
     startedAt: z.date(),
     finishedAt: z.date().nullable().optional(),
-    status: ActorJobStatus,
+    status: ActorJobStatus(),
     statusMessage: z.string().nullable().optional(),
     isStatusMessageTerminal: z.boolean().nullable().optional(),
-    meta: RunMeta,
-    pricingInfo: ActorRunPricingInfo.optional(),
-    stats: RunStats,
+    meta: RunMeta(),
+    pricingInfo: ActorRunPricingInfo().optional(),
+    stats: RunStats(),
     chargedEventCounts: z.record(z.string(), z.int()).optional(),
-    options: RunOptions,
+    options: RunOptions(),
     buildId: z.string(),
     exitCode: z.int().nullable().optional(),
-    generalAccess: GeneralAccess.nullable().optional(),
+    generalAccess: GeneralAccess().nullable().optional(),
     defaultKeyValueStoreId: z.string(),
     defaultDatasetId: z.string(),
     defaultRequestQueueId: z.string(),
@@ -650,25 +652,25 @@ export const Run = z.looseObject({
     containerUrl: z.string().optional(),
     isContainerServerReady: z.boolean().nullable().optional(),
     gitBranchName: z.string().nullable().optional(),
-    usage: RunUsage.nullable().optional(),
+    usage: RunUsage().nullable().optional(),
     usageTotalUsd: z.number().nullable().optional(),
-    usageUsd: RunUsageUsd.nullable().optional(),
-    metamorphs: z.array(Metamorph).nullable().optional(),
+    usageUsd: RunUsageUsd().nullable().optional(),
+    metamorphs: z.array(Metamorph()).nullable().optional(),
     platformUsageBillingModel: z.string().optional(),
-});
+}));
 
-export const RunResponse = z.looseObject({
-    data: Run,
-});
+export const RunResponse = lazySchema(() => z.looseObject({
+    data: Run(),
+}));
 
-export const DatasetStats = z.looseObject({
+export const DatasetStats = lazySchema(() => z.looseObject({
     readCount: z.int().optional(),
     writeCount: z.int().optional(),
     storageBytes: z.int().optional(),
     inflatedBytes: z.int().optional(),
-});
+}));
 
-export const Dataset = z.looseObject({
+export const Dataset = lazySchema(() => z.looseObject({
     id: z.string(),
     name: z.string().nullable().optional(),
     userId: z.string(),
@@ -684,78 +686,78 @@ export const Dataset = z.looseObject({
     consoleUrl: z.string(),
     itemsPublicUrl: z.string().optional(),
     urlSigningSecretKey: z.string().nullable().optional(),
-    generalAccess: GeneralAccess.nullable().optional(),
-    stats: DatasetStats.optional(),
-});
+    generalAccess: GeneralAccess().nullable().optional(),
+    stats: DatasetStats().optional(),
+}));
 
 /** Response containing dataset metadata. */
-export const DatasetResponse = z.looseObject({
-    data: Dataset,
-});
+export const DatasetResponse = lazySchema(() => z.looseObject({
+    data: Dataset(),
+}));
 
-export const UpdateDatasetRequest = z.looseObject({
+export const UpdateDatasetRequest = lazySchema(() => z.looseObject({
     name: z.string().nullable().optional(),
-    generalAccess: GeneralAccess.optional(),
-});
+    generalAccess: GeneralAccess().optional(),
+}));
 
 /**
  * The request body containing the item(s) to add to the dataset. Can be a single
  * object or an array of objects. Each object represents one dataset item.
  */
-export const PutItemsRequest = z.record(z.string(), z.unknown());
+export const PutItemsRequest = lazySchema(() => z.record(z.string(), z.unknown()));
 
-export const ValidationError = z.looseObject({
+export const ValidationError = lazySchema(() => z.looseObject({
     instancePath: z.string().optional(),
     schemaPath: z.string().optional(),
     keyword: z.string().optional(),
     message: z.string().optional(),
     params: z.record(z.string(), z.unknown()).optional(),
-});
+}));
 
-export const InvalidItem = z.looseObject({
+export const InvalidItem = lazySchema(() => z.looseObject({
     itemPosition: z.int().optional(),
-    validationErrors: z.array(ValidationError).optional(),
-});
+    validationErrors: z.array(ValidationError()).optional(),
+}));
 
-export const SchemaValidationErrorData = z.looseObject({
-    invalidItems: z.array(InvalidItem),
-});
+export const SchemaValidationErrorData = lazySchema(() => z.looseObject({
+    invalidItems: z.array(InvalidItem()),
+}));
 
-export const DatasetSchemaValidationError = z.looseObject({
+export const DatasetSchemaValidationError = lazySchema(() => z.looseObject({
     type: z.string().optional(),
     message: z.string().optional(),
-    data: SchemaValidationErrorData.optional(),
-});
+    data: SchemaValidationErrorData().optional(),
+}));
 
-export const PutItemResponseError = z.looseObject({
-    error: DatasetSchemaValidationError,
-});
+export const PutItemResponseError = lazySchema(() => z.looseObject({
+    error: DatasetSchemaValidationError(),
+}));
 
-export const DatasetFieldStatistics = z.looseObject({
+export const DatasetFieldStatistics = lazySchema(() => z.looseObject({
     min: z.number().nullable().optional(),
     max: z.number().nullable().optional(),
     nullCount: z.int().nullable().optional(),
     emptyCount: z.int().nullable().optional(),
-});
+}));
 
-export const DatasetStatistics = z.looseObject({
-    fieldStatistics: z.record(z.string(), DatasetFieldStatistics).nullable().optional(),
-});
+export const DatasetStatistics = lazySchema(() => z.looseObject({
+    fieldStatistics: z.record(z.string(), DatasetFieldStatistics()).nullable().optional(),
+}));
 
-export const DatasetStatisticsResponse = z.looseObject({
-    data: DatasetStatistics,
-});
+export const DatasetStatisticsResponse = lazySchema(() => z.looseObject({
+    data: DatasetStatistics(),
+}));
 
-export const KeyValueStoreStats = z.looseObject({
+export const KeyValueStoreStats = lazySchema(() => z.looseObject({
     readCount: z.int().optional(),
     writeCount: z.int().optional(),
     deleteCount: z.int().optional(),
     listCount: z.int().optional(),
     s3StorageBytes: z.int().optional(),
     storageBytes: z.int().optional(),
-});
+}));
 
-export const KeyValueStore = z.looseObject({
+export const KeyValueStore = lazySchema(() => z.looseObject({
     id: z.string(),
     name: z.string().nullable().optional(),
     userId: z.string().nullable().optional(),
@@ -770,345 +772,345 @@ export const KeyValueStore = z.looseObject({
     recordsPublicUrl: z.string().optional(),
     schema: z.record(z.string(), z.unknown()).nullable().optional(),
     urlSigningSecretKey: z.string().nullable().optional(),
-    generalAccess: GeneralAccess.nullable().optional(),
-    stats: KeyValueStoreStats.optional(),
-});
+    generalAccess: GeneralAccess().nullable().optional(),
+    stats: KeyValueStoreStats().optional(),
+}));
 
 /** Response containing key-value store data. */
-export const KeyValueStoreResponse = z.looseObject({
-    data: KeyValueStore,
-});
+export const KeyValueStoreResponse = lazySchema(() => z.looseObject({
+    data: KeyValueStore(),
+}));
 
-export const UpdateStoreRequest = z.looseObject({
+export const UpdateStoreRequest = lazySchema(() => z.looseObject({
     name: z.string().nullable().optional(),
-    generalAccess: GeneralAccess.optional(),
-});
+    generalAccess: GeneralAccess().optional(),
+}));
 
-export const KeyValueStoreKey = z.looseObject({
+export const KeyValueStoreKey = lazySchema(() => z.looseObject({
     key: z.string(),
     size: z.int(),
     recordPublicUrl: z.string(),
-});
+}));
 
-export const ListOfKeys = z.looseObject({
-    items: z.array(KeyValueStoreKey),
+export const ListOfKeys = lazySchema(() => z.looseObject({
+    items: z.array(KeyValueStoreKey()),
     count: z.int(),
     limit: z.int(),
     exclusiveStartKey: z.string().nullable().optional(),
     isTruncated: z.boolean(),
     nextExclusiveStartKey: z.string().nullable().optional(),
-});
+}));
 
-export const ListOfKeysResponse = z.looseObject({
-    data: ListOfKeys,
-});
+export const ListOfKeysResponse = lazySchema(() => z.looseObject({
+    data: ListOfKeys(),
+}));
 
 /**
  * The response body contains the value of the record. The content type of the response
  * is determined by the Content-Type header stored with the record.
  */
-export const RecordResponse = z.record(z.string(), z.unknown());
+export const RecordResponse = lazySchema(() => z.record(z.string(), z.unknown()));
 
 /**
  * The request body contains the value to store in the record. The content type
  * should be specified in the Content-Type header.
  */
-export const PutRecordRequest = z.record(z.string(), z.unknown());
+export const PutRecordRequest = lazySchema(() => z.record(z.string(), z.unknown()));
 
 /** A unique identifier assigned to the request queue. */
-export const QueueId = z.string();
+export const QueueId = lazySchema(() => z.string());
 
 /** The ID of the user who owns the request queue. */
-export const QueueUserId = z.string();
+export const QueueUserId = lazySchema(() => z.string());
 
 /** The timestamp when the request queue was created. */
-export const QueueCreatedAt = z.date();
+export const QueueCreatedAt = lazySchema(() => z.date());
 
 /** The timestamp when the request queue was last modified. Modifications include adding, updating, or removing requests, as well as locking or unlocking requests in the request queue. */
-export const QueueModifiedAt = z.date();
+export const QueueModifiedAt = lazySchema(() => z.date());
 
 /** The timestamp when the request queue was last accessed. */
-export const QueueAccessedAt = z.date();
+export const QueueAccessedAt = lazySchema(() => z.date());
 
 /** The total number of requests in the request queue. */
-export const TotalRequestCount = z.int().min(0);
+export const TotalRequestCount = lazySchema(() => z.int().min(0));
 
 /** The number of requests that have been handled. */
-export const HandledRequestCount = z.int().min(0);
+export const HandledRequestCount = lazySchema(() => z.int().min(0));
 
 /** The number of requests that are pending and have not been handled yet. */
-export const PendingRequestCount = z.int();
+export const PendingRequestCount = lazySchema(() => z.int());
 
 /** Whether the request queue has been accessed by multiple different clients. */
-export const HadMultipleClients = z.boolean();
+export const HadMultipleClients = lazySchema(() => z.boolean());
 
 /** Statistics about request queue operations and storage. */
-export const RequestQueueStats = z.looseObject({
+export const RequestQueueStats = lazySchema(() => z.looseObject({
     deleteCount: z.int().optional(),
     headItemReadCount: z.int().optional(),
     readCount: z.int().optional(),
     storageBytes: z.int().optional(),
     writeCount: z.int().optional(),
-});
+}));
 
 /** A request queue object containing metadata and statistics. */
-export const RequestQueue = z.looseObject({
-    id: QueueId,
+export const RequestQueue = lazySchema(() => z.looseObject({
+    id: QueueId(),
     name: z.string().nullable().optional(),
-    userId: QueueUserId,
+    userId: QueueUserId(),
     actId: z.string().nullable().optional(),
     actRunId: z.string().nullable().optional(),
-    createdAt: QueueCreatedAt,
-    modifiedAt: QueueModifiedAt,
-    accessedAt: QueueAccessedAt,
-    totalRequestCount: TotalRequestCount,
-    handledRequestCount: HandledRequestCount,
-    pendingRequestCount: PendingRequestCount,
-    hadMultipleClients: HadMultipleClients,
+    createdAt: QueueCreatedAt(),
+    modifiedAt: QueueModifiedAt(),
+    accessedAt: QueueAccessedAt(),
+    totalRequestCount: TotalRequestCount(),
+    handledRequestCount: HandledRequestCount(),
+    pendingRequestCount: PendingRequestCount(),
+    hadMultipleClients: HadMultipleClients(),
     consoleUrl: z.string(),
-    stats: RequestQueueStats.optional(),
-    generalAccess: GeneralAccess.nullable().optional(),
-});
+    stats: RequestQueueStats().optional(),
+    generalAccess: GeneralAccess().nullable().optional(),
+}));
 
 /** Response containing request queue data. */
-export const RequestQueueResponse = z.looseObject({
-    data: RequestQueue,
-});
+export const RequestQueueResponse = lazySchema(() => z.looseObject({
+    data: RequestQueue(),
+}));
 
 /** Request object for updating a request queue. */
-export const UpdateRequestQueueRequest = z.looseObject({
+export const UpdateRequestQueueRequest = lazySchema(() => z.looseObject({
     name: z.string().nullable().optional(),
-    generalAccess: GeneralAccess.optional(),
-});
+    generalAccess: GeneralAccess().optional(),
+}));
 
 /** A unique key used for request de-duplication. Requests with the same unique key are considered identical. */
-export const UniqueKey = z.string();
+export const UniqueKey = lazySchema(() => z.string());
 
 /** The URL of the request. */
-export const RequestUrl = z.string();
+export const RequestUrl = lazySchema(() => z.string());
 
-export const HttpMethod = z.enum(["GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH"]).or(z.string());
+export const HttpMethod = lazySchema(() => z.enum(["GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH"]).or(z.string()));
 
 /** The number of times this request has been retried. */
-export const RetryCount = z.int();
+export const RetryCount = lazySchema(() => z.int());
 
 /** Custom user data attached to the request. Can contain arbitrary fields. */
-export const RequestUserData = z.record(z.string(), z.unknown());
+export const RequestUserData = lazySchema(() => z.record(z.string(), z.unknown()));
 
-export const RequestBase = z.looseObject({
-    uniqueKey: UniqueKey,
-    url: RequestUrl,
-    method: HttpMethod.optional(),
-    retryCount: RetryCount.optional(),
+export const RequestBase = lazySchema(() => z.looseObject({
+    uniqueKey: UniqueKey(),
+    url: RequestUrl(),
+    method: HttpMethod().optional(),
+    retryCount: RetryCount().optional(),
     loadedUrl: z.string().nullable().optional(),
     payload: z.union([z.string(), z.record(z.string(), z.unknown())]).nullable().optional(),
     headers: z.record(z.string(), z.unknown()).nullable().optional(),
-    userData: RequestUserData.optional(),
+    userData: RequestUserData().optional(),
     noRetry: z.boolean().nullable().optional(),
     errorMessages: z.array(z.string()).nullable().optional(),
     handledAt: z.date().nullable().optional(),
-});
+}));
 
 /** A unique identifier assigned to the request. */
-export const RequestId = z.string();
+export const RequestId = lazySchema(() => z.string());
 
 /** A request stored in the request queue, including its metadata and processing state. */
-export const Request = RequestBase.extend({
-    id: RequestId.optional(),
-}).required({ id: true });
+export const Request = lazySchema(() => RequestBase().extend({
+    id: RequestId().optional(),
+}).required({ id: true }));
 
 /** A paginated list of requests from the request queue. */
-export const ListOfRequests = z.looseObject({
-    items: z.array(Request),
+export const ListOfRequests = lazySchema(() => z.looseObject({
+    items: z.array(Request()),
     limit: z.int(),
     exclusiveStartId: z.string().optional(),
     cursor: z.string().optional(),
     nextCursor: z.string().optional(),
-});
+}));
 
 /** Response containing a list of requests from the request queue. */
-export const ListOfRequestsResponse = z.looseObject({
-    data: ListOfRequests,
-});
+export const ListOfRequestsResponse = lazySchema(() => z.looseObject({
+    data: ListOfRequests(),
+}));
 
 /** A request stored in the request queue, including its metadata and processing state, without the assigned ID. */
-export const RequestWithoutId = RequestBase;
+export const RequestWithoutId = lazySchema(() => RequestBase());
 
 /** Indicates whether a request with the same unique key already existed in the request queue. If true, no new request was created. */
-export const WasAlreadyPresent = z.boolean();
+export const WasAlreadyPresent = lazySchema(() => z.boolean());
 
 /** Indicates whether a request with the same unique key has already been processed by the request queue. */
-export const WasAlreadyHandled = z.boolean();
+export const WasAlreadyHandled = lazySchema(() => z.boolean());
 
 /** Result of registering a request in the request queue, either by adding a new request or updating an existing one. */
-export const RequestRegistration = z.looseObject({
-    requestId: RequestId,
-    wasAlreadyPresent: WasAlreadyPresent,
-    wasAlreadyHandled: WasAlreadyHandled,
-});
+export const RequestRegistration = lazySchema(() => z.looseObject({
+    requestId: RequestId(),
+    wasAlreadyPresent: WasAlreadyPresent(),
+    wasAlreadyHandled: WasAlreadyHandled(),
+}));
 
 /** Response containing the result of adding a request to the request queue. */
-export const AddRequestResponse = z.looseObject({
-    data: RequestRegistration,
-});
+export const AddRequestResponse = lazySchema(() => z.looseObject({
+    data: RequestRegistration(),
+}));
 
 /** Information about a request that was successfully added to a request queue. */
-export const AddedRequest = z.looseObject({
-    requestId: RequestId,
-    uniqueKey: UniqueKey,
-    wasAlreadyPresent: WasAlreadyPresent,
-    wasAlreadyHandled: WasAlreadyHandled,
-});
+export const AddedRequest = lazySchema(() => z.looseObject({
+    requestId: RequestId(),
+    uniqueKey: UniqueKey(),
+    wasAlreadyPresent: WasAlreadyPresent(),
+    wasAlreadyHandled: WasAlreadyHandled(),
+}));
 
 /** A request that failed to be processed during a request queue operation and can be retried. */
-export const RequestDraft = z.looseObject({
-    id: RequestId.optional(),
-    uniqueKey: UniqueKey,
-    url: RequestUrl,
-    method: HttpMethod.optional(),
-});
+export const RequestDraft = lazySchema(() => z.looseObject({
+    id: RequestId().optional(),
+    uniqueKey: UniqueKey(),
+    url: RequestUrl(),
+    method: HttpMethod().optional(),
+}));
 
 /** Result of a batch add operation containing successfully processed and failed requests. */
-export const BatchAddResult = z.looseObject({
-    processedRequests: z.array(AddedRequest),
-    unprocessedRequests: z.array(RequestDraft),
-});
+export const BatchAddResult = lazySchema(() => z.looseObject({
+    processedRequests: z.array(AddedRequest()),
+    unprocessedRequests: z.array(RequestDraft()),
+}));
 
 /** Response containing the result of a batch add operation. */
-export const BatchAddResponse = z.looseObject({
-    data: BatchAddResult,
-});
+export const BatchAddResponse = lazySchema(() => z.looseObject({
+    data: BatchAddResult(),
+}));
 
 /** A request that should be deleted, identified by its ID. */
-export const RequestDraftDeleteById = z.looseObject({
-    id: RequestId,
-    uniqueKey: UniqueKey.optional(),
-});
+export const RequestDraftDeleteById = lazySchema(() => z.looseObject({
+    id: RequestId(),
+    uniqueKey: UniqueKey().optional(),
+}));
 
 /** A request that should be deleted, identified by its unique key. */
-export const RequestDraftDeleteByUniqueKey = z.looseObject({
-    id: RequestId.optional(),
-    uniqueKey: UniqueKey,
-});
+export const RequestDraftDeleteByUniqueKey = lazySchema(() => z.looseObject({
+    id: RequestId().optional(),
+    uniqueKey: UniqueKey(),
+}));
 
 /** A request that should be deleted. */
-export const RequestDraftDelete = z.union([RequestDraftDeleteById, RequestDraftDeleteByUniqueKey]);
+export const RequestDraftDelete = lazySchema(() => z.union([RequestDraftDeleteById(), RequestDraftDeleteByUniqueKey()]));
 
 /** Confirmation of a request that was successfully deleted, identified by its ID. */
-export const DeletedRequestById = z.looseObject({
-    uniqueKey: UniqueKey.optional(),
-    id: RequestId,
-});
+export const DeletedRequestById = lazySchema(() => z.looseObject({
+    uniqueKey: UniqueKey().optional(),
+    id: RequestId(),
+}));
 
 /** Confirmation of a request that was successfully deleted, identified by its unique key. */
-export const DeletedRequestByUniqueKey = z.looseObject({
-    uniqueKey: UniqueKey,
-    id: RequestId.optional(),
-});
+export const DeletedRequestByUniqueKey = lazySchema(() => z.looseObject({
+    uniqueKey: UniqueKey(),
+    id: RequestId().optional(),
+}));
 
 /** Confirmation of a request that was successfully deleted from a request queue. */
-export const DeletedRequest = z.union([DeletedRequestById, DeletedRequestByUniqueKey]);
+export const DeletedRequest = lazySchema(() => z.union([DeletedRequestById(), DeletedRequestByUniqueKey()]));
 
 /** Result of a batch delete operation containing successfully deleted and failed requests. */
-export const BatchDeleteResult = z.looseObject({
-    processedRequests: z.array(DeletedRequest),
-    unprocessedRequests: z.array(RequestDraft),
-});
+export const BatchDeleteResult = lazySchema(() => z.looseObject({
+    processedRequests: z.array(DeletedRequest()),
+    unprocessedRequests: z.array(RequestDraft()),
+}));
 
 /** Response containing the result of a batch delete operation. */
-export const BatchDeleteResponse = z.looseObject({
-    data: BatchDeleteResult,
-});
+export const BatchDeleteResponse = lazySchema(() => z.looseObject({
+    data: BatchDeleteResult(),
+}));
 
 /** Result of unlocking requests in the request queue. */
-export const UnlockRequestsResult = z.looseObject({
+export const UnlockRequestsResult = lazySchema(() => z.looseObject({
     unlockedCount: z.int(),
-});
+}));
 
 /** Response containing the result of unlocking requests. */
-export const UnlockRequestsResponse = z.looseObject({
-    data: UnlockRequestsResult,
-});
+export const UnlockRequestsResponse = lazySchema(() => z.looseObject({
+    data: UnlockRequestsResult(),
+}));
 
 /** Response containing a single request from the request queue. */
-export const RequestResponse = z.looseObject({
-    data: Request,
-});
+export const RequestResponse = lazySchema(() => z.looseObject({
+    data: Request(),
+}));
 
 /** Response containing the result of updating a request in the request queue. */
-export const UpdateRequestResponse = z.looseObject({
-    data: RequestRegistration,
-});
+export const UpdateRequestResponse = lazySchema(() => z.looseObject({
+    data: RequestRegistration(),
+}));
 
 /** The timestamp when the lock on this request expires. */
-export const LockExpiresAt = z.date();
+export const LockExpiresAt = lazySchema(() => z.date());
 
 /** Information about a request lock. */
-export const RequestLockInfo = z.looseObject({
-    lockExpiresAt: LockExpiresAt,
-});
+export const RequestLockInfo = lazySchema(() => z.looseObject({
+    lockExpiresAt: LockExpiresAt(),
+}));
 
 /** Response containing updated lock information after prolonging a request lock. */
-export const ProlongRequestLockResponse = z.looseObject({
-    data: RequestLockInfo,
-});
+export const ProlongRequestLockResponse = lazySchema(() => z.looseObject({
+    data: RequestLockInfo(),
+}));
 
 /** The maximum number of requests returned. */
-export const HeadLimit = z.int();
+export const HeadLimit = lazySchema(() => z.int());
 
 /** A request from the request queue head without lock information. */
-export const HeadRequest = z.looseObject({
-    id: RequestId,
-    uniqueKey: UniqueKey,
-    url: RequestUrl,
-    method: HttpMethod.optional(),
-    retryCount: RetryCount.optional(),
-});
+export const HeadRequest = lazySchema(() => z.looseObject({
+    id: RequestId(),
+    uniqueKey: UniqueKey(),
+    url: RequestUrl(),
+    method: HttpMethod().optional(),
+    retryCount: RetryCount().optional(),
+}));
 
 /** A batch of requests from the request queue head without locking. */
-export const RequestQueueHead = z.looseObject({
-    limit: HeadLimit,
-    queueModifiedAt: QueueModifiedAt,
-    hadMultipleClients: HadMultipleClients,
-    items: z.array(HeadRequest),
-});
+export const RequestQueueHead = lazySchema(() => z.looseObject({
+    limit: HeadLimit(),
+    queueModifiedAt: QueueModifiedAt(),
+    hadMultipleClients: HadMultipleClients(),
+    items: z.array(HeadRequest()),
+}));
 
 /** Response containing requests from the request queue head without locking. */
-export const HeadResponse = z.looseObject({
-    data: RequestQueueHead,
-});
+export const HeadResponse = lazySchema(() => z.looseObject({
+    data: RequestQueueHead(),
+}));
 
 /** A request from the request queue head that has been locked for processing. */
-export const LockedHeadRequest = z.looseObject({
-    id: RequestId,
-    uniqueKey: UniqueKey,
-    url: RequestUrl,
-    method: HttpMethod.optional(),
-    retryCount: RetryCount.optional(),
-    lockExpiresAt: LockExpiresAt,
-});
+export const LockedHeadRequest = lazySchema(() => z.looseObject({
+    id: RequestId(),
+    uniqueKey: UniqueKey(),
+    url: RequestUrl(),
+    method: HttpMethod().optional(),
+    retryCount: RetryCount().optional(),
+    lockExpiresAt: LockExpiresAt(),
+}));
 
 /** A batch of locked requests from the request queue head. */
-export const LockedRequestQueueHead = z.looseObject({
-    limit: HeadLimit,
-    queueModifiedAt: QueueModifiedAt,
+export const LockedRequestQueueHead = lazySchema(() => z.looseObject({
+    limit: HeadLimit(),
+    queueModifiedAt: QueueModifiedAt(),
     queueHasLockedRequests: z.boolean().optional(),
     clientKey: z.string().optional(),
-    hadMultipleClients: HadMultipleClients,
+    hadMultipleClients: HadMultipleClients(),
     lockSecs: z.int(),
-    items: z.array(LockedHeadRequest),
-});
+    items: z.array(LockedHeadRequest()),
+}));
 
 /** Response containing locked requests from the request queue head. */
-export const HeadAndLockResponse = z.looseObject({
-    data: LockedRequestQueueHead,
-});
+export const HeadAndLockResponse = lazySchema(() => z.looseObject({
+    data: LockedRequestQueueHead(),
+}));
 
-export const TaskStats = z.looseObject({
+export const TaskStats = lazySchema(() => z.looseObject({
     totalRuns: z.int().optional(),
-});
+}));
 
-export const TaskShort = z.looseObject({
+export const TaskShort = lazySchema(() => z.looseObject({
     id: z.string(),
     userId: z.string(),
     actId: z.string(),
@@ -1118,57 +1120,57 @@ export const TaskShort = z.looseObject({
     actUsername: z.string().nullable().optional(),
     createdAt: z.date(),
     modifiedAt: z.date(),
-    stats: TaskStats.nullable().optional(),
-});
+    stats: TaskStats().nullable().optional(),
+}));
 
-export const ListOfTasks = PaginationResponse.extend({
-    items: z.array(TaskShort),
-});
+export const ListOfTasks = lazySchema(() => PaginationResponse().extend({
+    items: z.array(TaskShort()),
+}));
 
-export const ListOfTasksResponse = z.looseObject({
-    data: ListOfTasks,
-});
+export const ListOfTasksResponse = lazySchema(() => z.looseObject({
+    data: ListOfTasks(),
+}));
 
-export const TaskOptions = z.looseObject({
+export const TaskOptions = lazySchema(() => z.looseObject({
     build: z.string().nullable().optional(),
     timeoutSecs: z.int().nullable().optional(),
     memoryMbytes: z.int().nullable().optional(),
     maxItems: z.int().nullable().optional(),
     maxTotalChargeUsd: z.number().nullable().optional(),
     restartOnError: z.boolean().nullable().optional(),
-});
+}));
 
 /**
  * The input configuration for the Actor task. This is a user-defined JSON object
  * that will be passed to the Actor when the task is run.
  */
-export const TaskInput = z.record(z.string(), z.unknown());
+export const TaskInput = lazySchema(() => z.record(z.string(), z.unknown()));
 
 /**
  * Public-facing configuration of a published task, used by the task's public landing page.
  * The task's publication state is determined by `publishedAt` - a task is published when
  * `publishedAt` is set and unpublished when it is `null`.
  */
-export const TaskPublicConfig = z.looseObject({
+export const TaskPublicConfig = lazySchema(() => z.looseObject({
     publishedAt: z.date().nullable().optional(),
     seoTitle: z.string().max(60).nullable().optional(),
     seoDescription: z.string().max(160).nullable().optional(),
     inputSchemaFields: z.array(z.string()).nullable().optional(),
     datasetName: z.string().nullable().optional(),
     datasetView: z.string().nullable().optional(),
-});
+}));
 
-export const CreateTaskRequest = z.looseObject({
+export const CreateTaskRequest = lazySchema(() => z.looseObject({
     actId: z.string(),
     name: z.string().optional(),
-    options: TaskOptions.nullable().optional(),
-    input: z.union([TaskInput, z.array(TaskInput)]).nullable().optional(),
+    options: TaskOptions().nullable().optional(),
+    input: z.union([TaskInput(), z.array(TaskInput())]).nullable().optional(),
     title: z.string().nullable().optional(),
-    actorStandby: ActorStandby.nullable().optional(),
-    publicConfig: TaskPublicConfig.optional(),
-});
+    actorStandby: ActorStandby().nullable().optional(),
+    publicConfig: TaskPublicConfig().optional(),
+}));
 
-export const Task = z.looseObject({
+export const Task = lazySchema(() => z.looseObject({
     id: z.string(),
     userId: z.string(),
     actId: z.string(),
@@ -1177,74 +1179,74 @@ export const Task = z.looseObject({
     createdAt: z.date(),
     modifiedAt: z.date(),
     removedAt: z.date().nullable().optional(),
-    stats: TaskStats.nullable().optional(),
-    options: TaskOptions.nullable().optional(),
-    input: z.union([TaskInput, z.array(TaskInput)]).nullable().optional(),
+    stats: TaskStats().nullable().optional(),
+    options: TaskOptions().nullable().optional(),
+    input: z.union([TaskInput(), z.array(TaskInput())]).nullable().optional(),
     title: z.string().nullable().optional(),
-    actorStandby: ActorStandby.nullable().optional(),
+    actorStandby: ActorStandby().nullable().optional(),
     standbyUrl: z.string().nullable().optional(),
     isPublic: z.boolean().optional(),
-    publicConfig: TaskPublicConfig.nullable().optional(),
-});
+    publicConfig: TaskPublicConfig().nullable().optional(),
+}));
 
 /** Response containing Actor task data. */
-export const TaskResponse = z.looseObject({
-    data: Task,
-});
+export const TaskResponse = lazySchema(() => z.looseObject({
+    data: Task(),
+}));
 
-export const UpdateTaskRequest = z.looseObject({
+export const UpdateTaskRequest = lazySchema(() => z.looseObject({
     name: z.string().optional(),
-    options: TaskOptions.nullable().optional(),
-    input: z.union([TaskInput, z.array(TaskInput)]).nullable().optional(),
+    options: TaskOptions().nullable().optional(),
+    input: z.union([TaskInput(), z.array(TaskInput())]).nullable().optional(),
     title: z.string().nullable().optional(),
-    actorStandby: ActorStandby.nullable().optional(),
-    publicConfig: TaskPublicConfig.optional(),
+    actorStandby: ActorStandby().nullable().optional(),
+    publicConfig: TaskPublicConfig().optional(),
     isPublic: z.boolean().optional(),
-});
+}));
 
-export const Webhook = z.looseObject({
+export const Webhook = lazySchema(() => z.looseObject({
     id: z.string(),
     createdAt: z.date(),
     modifiedAt: z.date(),
     userId: z.string(),
     isAdHoc: z.boolean().nullable().optional(),
     shouldInterpolateStrings: z.boolean().nullable().optional(),
-    eventTypes: z.array(WebhookEventType),
-    condition: WebhookCondition,
+    eventTypes: z.array(WebhookEventType()),
+    condition: WebhookCondition(),
     ignoreSslErrors: z.boolean(),
     doNotRetry: z.boolean().nullable().optional(),
     requestUrl: z.string().nullable().optional(),
     payloadTemplate: z.string().nullable().optional(),
     headersTemplate: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
-    lastDispatch: ExampleWebhookDispatch.nullable().optional(),
-    stats: WebhookStats.nullable().optional(),
-});
+    lastDispatch: ExampleWebhookDispatch().nullable().optional(),
+    stats: WebhookStats().nullable().optional(),
+}));
 
-export const UpdateRunRequest = z.looseObject({
+export const UpdateRunRequest = lazySchema(() => z.looseObject({
     runId: z.string().optional(),
     statusMessage: z.string().optional(),
     isStatusMessageTerminal: z.boolean().optional(),
-    generalAccess: GeneralAccess.optional(),
-});
+    generalAccess: GeneralAccess().optional(),
+}));
 
-export const ChargeRunRequest = z.looseObject({
+export const ChargeRunRequest = lazySchema(() => z.looseObject({
     eventName: z.string(),
     count: z.int(),
-});
+}));
 
-export const StorageOwnership = z.enum(["ownedByMe", "sharedWithMe"]).or(z.string());
+export const StorageOwnership = lazySchema(() => z.enum(["ownedByMe", "sharedWithMe"]).or(z.string()));
 
-export const ListOfKeyValueStores = PaginationResponse.extend({
+export const ListOfKeyValueStores = lazySchema(() => PaginationResponse().extend({
     unnamed: z.boolean().optional(),
-    items: z.array(KeyValueStore),
-});
+    items: z.array(KeyValueStore()),
+}));
 
-export const ListOfKeyValueStoresResponse = z.looseObject({
-    data: ListOfKeyValueStores,
-});
+export const ListOfKeyValueStoresResponse = lazySchema(() => z.looseObject({
+    data: ListOfKeyValueStores(),
+}));
 
-export const DatasetListItem = z.looseObject({
+export const DatasetListItem = lazySchema(() => z.looseObject({
     id: z.string(),
     name: z.string(),
     userId: z.string(),
@@ -1257,54 +1259,54 @@ export const DatasetListItem = z.looseObject({
     actRunId: z.string().nullable().optional(),
     title: z.string().nullable().optional(),
     username: z.string().optional(),
-    generalAccess: GeneralAccess.nullable().optional(),
-    stats: DatasetStats.optional(),
-});
+    generalAccess: GeneralAccess().nullable().optional(),
+    stats: DatasetStats().optional(),
+}));
 
-export const ListOfDatasets = PaginationResponse.extend({
+export const ListOfDatasets = lazySchema(() => PaginationResponse().extend({
     unnamed: z.boolean().optional(),
-    items: z.array(DatasetListItem),
-});
+    items: z.array(DatasetListItem()),
+}));
 
-export const ListOfDatasetsResponse = z.looseObject({
-    data: ListOfDatasets,
-});
+export const ListOfDatasetsResponse = lazySchema(() => z.looseObject({
+    data: ListOfDatasets(),
+}));
 
 /** A shortened request queue object for list responses. */
-export const RequestQueueShort = z.looseObject({
-    id: QueueId,
+export const RequestQueueShort = lazySchema(() => z.looseObject({
+    id: QueueId(),
     name: z.string(),
-    userId: QueueUserId,
+    userId: QueueUserId(),
     username: z.string(),
-    createdAt: QueueCreatedAt,
-    modifiedAt: QueueModifiedAt,
-    accessedAt: QueueAccessedAt,
+    createdAt: QueueCreatedAt(),
+    modifiedAt: QueueModifiedAt(),
+    accessedAt: QueueAccessedAt(),
     expireAt: z.date().optional(),
-    totalRequestCount: TotalRequestCount,
-    handledRequestCount: HandledRequestCount,
-    pendingRequestCount: PendingRequestCount,
+    totalRequestCount: TotalRequestCount(),
+    handledRequestCount: HandledRequestCount(),
+    pendingRequestCount: PendingRequestCount(),
     actId: z.string().nullable().optional(),
     actRunId: z.string().nullable().optional(),
-    hadMultipleClients: HadMultipleClients,
-    generalAccess: GeneralAccess.nullable().optional(),
-    stats: RequestQueueStats.optional(),
-});
+    hadMultipleClients: HadMultipleClients(),
+    generalAccess: GeneralAccess().nullable().optional(),
+    stats: RequestQueueStats().optional(),
+}));
 
 /** A paginated list of request queues. */
-export const ListOfRequestQueues = PaginationResponse.extend({
+export const ListOfRequestQueues = lazySchema(() => PaginationResponse().extend({
     unnamed: z.boolean().optional(),
-    items: z.array(RequestQueueShort),
-});
+    items: z.array(RequestQueueShort()),
+}));
 
 /** Response containing a list of request queues. */
-export const ListOfRequestQueuesResponse = z.looseObject({
-    data: ListOfRequestQueues,
-});
+export const ListOfRequestQueuesResponse = lazySchema(() => z.looseObject({
+    data: ListOfRequestQueues(),
+}));
 
-export const WebhookCreate = z.looseObject({
+export const WebhookCreate = lazySchema(() => z.looseObject({
     isAdHoc: z.boolean().nullable().optional(),
-    eventTypes: z.array(WebhookEventType),
-    condition: WebhookCondition,
+    eventTypes: z.array(WebhookEventType()),
+    condition: WebhookCondition(),
     idempotencyKey: z.string().nullable().optional(),
     ignoreSslErrors: z.boolean().nullable().optional(),
     doNotRetry: z.boolean().nullable().optional(),
@@ -1313,17 +1315,17 @@ export const WebhookCreate = z.looseObject({
     headersTemplate: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
     shouldInterpolateStrings: z.boolean().nullable().optional(),
-});
+}));
 
 /** Response containing webhook data. */
-export const WebhookResponse = z.looseObject({
-    data: Webhook,
-});
+export const WebhookResponse = lazySchema(() => z.looseObject({
+    data: Webhook(),
+}));
 
-export const WebhookUpdate = z.looseObject({
+export const WebhookUpdate = lazySchema(() => z.looseObject({
     isAdHoc: z.boolean().nullable().optional(),
-    eventTypes: z.array(WebhookEventType).nullable().optional(),
-    condition: WebhookCondition.nullable().optional(),
+    eventTypes: z.array(WebhookEventType()).nullable().optional(),
+    condition: WebhookCondition().nullable().optional(),
     ignoreSslErrors: z.boolean().nullable().optional(),
     doNotRetry: z.boolean().nullable().optional(),
     requestUrl: z.string().nullable().optional(),
@@ -1331,30 +1333,30 @@ export const WebhookUpdate = z.looseObject({
     headersTemplate: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
     shouldInterpolateStrings: z.boolean().nullable().optional(),
-});
+}));
 
 /** A summary of the webhook that triggered this dispatch. */
-export const WebhookDispatchWebhookSummary = z.looseObject({
+export const WebhookDispatchWebhookSummary = lazySchema(() => z.looseObject({
     actionType: z.string().optional(),
-    condition: WebhookCondition.optional(),
+    condition: WebhookCondition().optional(),
     requestUrl: z.string().nullable().optional(),
     isAdHoc: z.boolean().optional(),
-});
+}));
 
-export const WebhookDispatch = z.looseObject({
+export const WebhookDispatch = lazySchema(() => z.looseObject({
     id: z.string(),
     userId: z.string(),
     webhookId: z.string(),
     createdAt: z.date(),
-    status: WebhookDispatchStatus,
-    eventType: WebhookEventType,
+    status: WebhookDispatchStatus(),
+    eventType: WebhookEventType(),
     eventData: z.looseObject({
         actorId: z.string(),
         actorRunId: z.string().optional(),
         actorBuildId: z.string().optional(),
         actorTaskId: z.string().nullable().optional(),
     }).nullable().optional(),
-    webhook: WebhookDispatchWebhookSummary.nullable().optional(),
+    webhook: WebhookDispatchWebhookSummary().nullable().optional(),
     calls: z.array(z.looseObject({
         startedAt: z.date().nullable().optional(),
         finishedAt: z.date().nullable().optional(),
@@ -1362,25 +1364,25 @@ export const WebhookDispatch = z.looseObject({
         responseStatus: z.int().nullable().optional(),
         responseBody: z.string().nullable().optional(),
     })).optional(),
-});
+}));
 
-export const TestWebhookResponse = z.looseObject({
-    data: WebhookDispatch,
-});
+export const TestWebhookResponse = lazySchema(() => z.looseObject({
+    data: WebhookDispatch(),
+}));
 
-export const ListOfWebhookDispatches = PaginationResponse.extend({
-    items: z.array(WebhookDispatch),
-});
+export const ListOfWebhookDispatches = lazySchema(() => PaginationResponse().extend({
+    items: z.array(WebhookDispatch()),
+}));
 
-export const ListOfWebhookDispatchesResponse = z.looseObject({
-    data: ListOfWebhookDispatches,
-});
+export const ListOfWebhookDispatchesResponse = lazySchema(() => z.looseObject({
+    data: ListOfWebhookDispatches(),
+}));
 
-export const WebhookDispatchResponse = z.looseObject({
-    data: WebhookDispatch,
-});
+export const WebhookDispatchResponse = lazySchema(() => z.looseObject({
+    data: WebhookDispatch(),
+}));
 
-export const ScheduleBase = z.looseObject({
+export const ScheduleBase = lazySchema(() => z.looseObject({
     id: z.string(),
     userId: z.string(),
     name: z.string(),
@@ -1392,55 +1394,55 @@ export const ScheduleBase = z.looseObject({
     modifiedAt: z.date(),
     nextRunAt: z.date().nullable().optional(),
     lastRunAt: z.date().nullable().optional(),
-});
+}));
 
-export const ScheduleActionShortRunActor = z.looseObject({
+export const ScheduleActionShortRunActor = lazySchema(() => z.looseObject({
     id: z.string(),
     type: z.literal("RUN_ACTOR"),
     actorId: z.string(),
-});
+}));
 
-export const ScheduleActionShortRunActorTask = z.looseObject({
+export const ScheduleActionShortRunActorTask = lazySchema(() => z.looseObject({
     id: z.string(),
     type: z.literal("RUN_ACTOR_TASK"),
     actorTaskId: z.string(),
-});
+}));
 
-export const ScheduleActionShort = z.discriminatedUnion("type", [ScheduleActionShortRunActor, ScheduleActionShortRunActorTask]);
+export const ScheduleActionShort = lazySchema(() => z.discriminatedUnion("type", [ScheduleActionShortRunActor(), ScheduleActionShortRunActorTask()]));
 
-export const ScheduleShort = ScheduleBase.extend({
-    actions: z.array(ScheduleActionShort),
-});
+export const ScheduleShort = lazySchema(() => ScheduleBase().extend({
+    actions: z.array(ScheduleActionShort()),
+}));
 
-export const ListOfSchedules = PaginationResponse.extend({
-    items: z.array(ScheduleShort),
-});
+export const ListOfSchedules = lazySchema(() => PaginationResponse().extend({
+    items: z.array(ScheduleShort()),
+}));
 
-export const ListOfSchedulesResponse = z.looseObject({
-    data: ListOfSchedules,
-});
+export const ListOfSchedulesResponse = lazySchema(() => z.looseObject({
+    data: ListOfSchedules(),
+}));
 
-export const ScheduleActionRunInput = z.looseObject({
+export const ScheduleActionRunInput = lazySchema(() => z.looseObject({
     body: z.string().nullable().optional(),
     contentType: z.string().nullable().optional(),
-});
+}));
 
-export const ScheduleCreateActionRunActor = z.looseObject({
+export const ScheduleCreateActionRunActor = lazySchema(() => z.looseObject({
     type: z.literal("RUN_ACTOR"),
     actorId: z.string(),
-    runInput: ScheduleActionRunInput.nullable().optional(),
-    runOptions: TaskOptions.nullable().optional(),
-});
+    runInput: ScheduleActionRunInput().nullable().optional(),
+    runOptions: TaskOptions().nullable().optional(),
+}));
 
-export const ScheduleCreateActionRunActorTask = z.looseObject({
+export const ScheduleCreateActionRunActorTask = lazySchema(() => z.looseObject({
     type: z.literal("RUN_ACTOR_TASK"),
     actorTaskId: z.string(),
     input: z.record(z.string(), z.unknown()).nullable().optional(),
-});
+}));
 
-export const ScheduleCreateAction = z.discriminatedUnion("type", [ScheduleCreateActionRunActor, ScheduleCreateActionRunActorTask]);
+export const ScheduleCreateAction = lazySchema(() => z.discriminatedUnion("type", [ScheduleCreateActionRunActor(), ScheduleCreateActionRunActorTask()]));
 
-export const ScheduleCreate = z.looseObject({
+export const ScheduleCreate = lazySchema(() => z.looseObject({
     name: z.string().nullable().optional(),
     isEnabled: z.boolean().nullable().optional(),
     isExclusive: z.boolean().nullable().optional(),
@@ -1448,50 +1450,50 @@ export const ScheduleCreate = z.looseObject({
     timezone: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
     title: z.string().nullable().optional(),
-    actions: z.array(ScheduleCreateAction).nullable().optional(),
-});
+    actions: z.array(ScheduleCreateAction()).nullable().optional(),
+}));
 
-export const ScheduleActionRunActor = z.looseObject({
+export const ScheduleActionRunActor = lazySchema(() => z.looseObject({
     id: z.string(),
     type: z.literal("RUN_ACTOR"),
     actorId: z.string(),
-    runInput: ScheduleActionRunInput.nullable().optional(),
-    runOptions: TaskOptions.nullable().optional(),
-});
+    runInput: ScheduleActionRunInput().nullable().optional(),
+    runOptions: TaskOptions().nullable().optional(),
+}));
 
-export const ScheduleActionRunActorTask = z.looseObject({
+export const ScheduleActionRunActorTask = lazySchema(() => z.looseObject({
     id: z.string(),
     type: z.literal("RUN_ACTOR_TASK"),
     actorTaskId: z.string(),
     input: z.record(z.string(), z.unknown()).nullable().optional(),
-});
+}));
 
-export const ScheduleAction = z.discriminatedUnion("type", [ScheduleActionRunActor, ScheduleActionRunActorTask]);
+export const ScheduleAction = lazySchema(() => z.discriminatedUnion("type", [ScheduleActionRunActor(), ScheduleActionRunActorTask()]));
 
-export const Schedule = ScheduleBase.extend({
+export const Schedule = lazySchema(() => ScheduleBase().extend({
     description: z.string().nullable().optional(),
     title: z.string().nullable().optional(),
     notifications: z.looseObject({
         email: z.boolean().optional(),
     }).optional(),
-    actions: z.array(ScheduleAction),
-});
+    actions: z.array(ScheduleAction()),
+}));
 
-export const ScheduleResponse = z.looseObject({
-    data: Schedule,
-});
+export const ScheduleResponse = lazySchema(() => z.looseObject({
+    data: Schedule(),
+}));
 
-export const ScheduleInvoked = z.looseObject({
+export const ScheduleInvoked = lazySchema(() => z.looseObject({
     message: z.string(),
     level: z.string(),
     createdAt: z.date(),
-});
+}));
 
-export const ScheduleLogResponse = z.looseObject({
-    data: z.array(ScheduleInvoked),
-});
+export const ScheduleLogResponse = lazySchema(() => z.looseObject({
+    data: z.array(ScheduleInvoked()),
+}));
 
-export const CurrentPricingInfo = z.looseObject({
+export const CurrentPricingInfo = lazySchema(() => z.looseObject({
     pricingModel: z.string(),
     apifyMarginPercentage: z.number().optional(),
     createdAt: z.date().optional(),
@@ -1507,9 +1509,9 @@ export const CurrentPricingInfo = z.looseObject({
     pricePerUnitUsd: z.number().nullable().optional(),
     minimalMaxTotalChargeUsd: z.number().nullable().optional(),
     pricingPerEvent: z.record(z.string(), z.unknown()).nullable().optional(),
-});
+}));
 
-export const StoreListActor = z.looseObject({
+export const StoreListActor = lazySchema(() => z.looseObject({
     id: z.string(),
     title: z.string(),
     name: z.string(),
@@ -1517,65 +1519,65 @@ export const StoreListActor = z.looseObject({
     userFullName: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
     categories: z.array(z.string()).optional(),
-    notice: ActorNotice.optional(),
+    notice: ActorNotice().optional(),
     pictureUrl: z.string().nullable().optional(),
     userPictureUrl: z.string().nullable().optional(),
     url: z.string().nullable().optional(),
-    stats: ActorStats,
-    currentPricingInfo: CurrentPricingInfo.optional(),
+    stats: ActorStats(),
+    currentPricingInfo: CurrentPricingInfo().optional(),
     isWhiteListedForAgenticPayments: z.boolean().nullable().optional(),
     actorReviewCount: z.int().optional(),
     actorReviewRating: z.number().optional(),
     bookmarkCount: z.int().optional(),
     badge: z.string().nullable().optional(),
     readmeSummary: z.string().optional(),
-});
+}));
 
-export const ListOfStoreActors = PaginationResponse.extend({
-    items: z.array(StoreListActor),
-});
+export const ListOfStoreActors = lazySchema(() => PaginationResponse().extend({
+    items: z.array(StoreListActor()),
+}));
 
-export const ListOfActorsInStoreResponse = z.looseObject({
-    data: ListOfStoreActors,
-});
+export const ListOfActorsInStoreResponse = lazySchema(() => z.looseObject({
+    data: ListOfStoreActors(),
+}));
 
-export const Profile = z.looseObject({
+export const Profile = lazySchema(() => z.looseObject({
     bio: z.string().nullable().optional(),
     name: z.string().optional(),
     pictureUrl: z.string().nullable().optional(),
     githubUsername: z.string().nullable().optional(),
     websiteUrl: z.string().nullable().optional(),
     twitterUsername: z.string().nullable().optional(),
-});
+}));
 
-export const UserPublicInfo = z.looseObject({
+export const UserPublicInfo = lazySchema(() => z.looseObject({
     username: z.string(),
-    profile: Profile.optional(),
-});
+    profile: Profile().optional(),
+}));
 
-export const PublicUserDataResponse = z.looseObject({
-    data: UserPublicInfo,
-});
+export const PublicUserDataResponse = lazySchema(() => z.looseObject({
+    data: UserPublicInfo(),
+}));
 
-export const ProxyGroup = z.looseObject({
+export const ProxyGroup = lazySchema(() => z.looseObject({
     name: z.string(),
     description: z.string().nullable(),
     availableCount: z.int(),
-});
+}));
 
-export const Proxy = z.looseObject({
+export const Proxy = lazySchema(() => z.looseObject({
     password: z.string(),
-    groups: z.array(ProxyGroup),
-});
+    groups: z.array(ProxyGroup()),
+}));
 
 /**
  * A dictionary mapping proxy group names to the number of available proxies in each group.
  * The keys are proxy group names (e.g., "RESIDENTIAL", "DATACENTER") and values are
  * the count of available proxies.
  */
-export const AvailableProxyGroups = z.record(z.string(), z.int());
+export const AvailableProxyGroups = lazySchema(() => z.record(z.string(), z.int()));
 
-export const Plan = z.looseObject({
+export const Plan = lazySchema(() => z.looseObject({
     id: z.string().optional(),
     description: z.string().optional(),
     isEnabled: z.boolean().optional(),
@@ -1592,7 +1594,7 @@ export const Plan = z.looseObject({
     maxActorCount: z.int().optional(),
     maxActorTaskCount: z.int().optional(),
     dataRetentionDays: z.int().optional(),
-    availableProxyGroups: AvailableProxyGroups,
+    availableProxyGroups: AvailableProxyGroups(),
     teamAccountSeatCount: z.int().optional(),
     supportLevel: z.string().optional(),
     availableAddOns: z.array(z.string()).optional(),
@@ -1601,91 +1603,91 @@ export const Plan = z.looseObject({
     maxScheduleCount: z.int().optional(),
     maxConcurrentActorRuns: z.int().optional(),
     planPricing: z.record(z.string(), z.unknown()).optional(),
-});
+}));
 
-export const EffectivePlatformFeature = z.looseObject({
+export const EffectivePlatformFeature = lazySchema(() => z.looseObject({
     isEnabled: z.boolean(),
     disabledReason: z.string().nullable(),
     disabledReasonType: z.string().nullable(),
     isTrial: z.boolean(),
     trialExpirationAt: z.date().nullable(),
-});
+}));
 
-export const EffectivePlatformFeatures = z.looseObject({
-    ACTORS: EffectivePlatformFeature,
-    STORAGE: EffectivePlatformFeature,
-    SCHEDULER: EffectivePlatformFeature,
-    PROXY: EffectivePlatformFeature,
-    PROXY_EXTERNAL_ACCESS: EffectivePlatformFeature,
-    PROXY_RESIDENTIAL: EffectivePlatformFeature,
-    PROXY_SERPS: EffectivePlatformFeature,
-    WEBHOOKS: EffectivePlatformFeature,
-    ACTORS_PUBLIC_ALL: EffectivePlatformFeature,
-    ACTORS_PUBLIC_DEVELOPER: EffectivePlatformFeature,
-});
+export const EffectivePlatformFeatures = lazySchema(() => z.looseObject({
+    ACTORS: EffectivePlatformFeature(),
+    STORAGE: EffectivePlatformFeature(),
+    SCHEDULER: EffectivePlatformFeature(),
+    PROXY: EffectivePlatformFeature(),
+    PROXY_EXTERNAL_ACCESS: EffectivePlatformFeature(),
+    PROXY_RESIDENTIAL: EffectivePlatformFeature(),
+    PROXY_SERPS: EffectivePlatformFeature(),
+    WEBHOOKS: EffectivePlatformFeature(),
+    ACTORS_PUBLIC_ALL: EffectivePlatformFeature(),
+    ACTORS_PUBLIC_DEVELOPER: EffectivePlatformFeature(),
+}));
 
-export const UserPrivateInfo = z.looseObject({
+export const UserPrivateInfo = lazySchema(() => z.looseObject({
     id: z.string().optional(),
     username: z.string(),
-    profile: Profile.optional(),
+    profile: Profile().optional(),
     email: z.string().optional(),
-    proxy: Proxy.optional(),
-    plan: Plan.optional(),
-    effectivePlatformFeatures: EffectivePlatformFeatures.optional(),
+    proxy: Proxy().optional(),
+    plan: Plan().optional(),
+    effectivePlatformFeatures: EffectivePlatformFeatures().optional(),
     createdAt: z.date().optional(),
     isPaying: z.boolean().optional(),
-});
+}));
 
-export const PrivateUserDataResponse = z.looseObject({
-    data: UserPrivateInfo,
-});
+export const PrivateUserDataResponse = lazySchema(() => z.looseObject({
+    data: UserPrivateInfo(),
+}));
 
-export const UsageCycle = z.looseObject({
+export const UsageCycle = lazySchema(() => z.looseObject({
     startAt: z.date(),
     endAt: z.date(),
-});
+}));
 
-export const PriceTiers = z.looseObject({
+export const PriceTiers = lazySchema(() => z.looseObject({
     quantityAbove: z.number(),
     discountPercent: z.number(),
     tierQuantity: z.number(),
     unitPriceUsd: z.number(),
     priceUsd: z.number(),
-});
+}));
 
-export const UsageItem = z.looseObject({
+export const UsageItem = lazySchema(() => z.looseObject({
     quantity: z.number(),
     baseAmountUsd: z.number(),
     baseUnitPriceUsd: z.number().optional(),
     amountAfterVolumeDiscountUsd: z.number().optional(),
-    priceTiers: z.array(PriceTiers).optional(),
-});
+    priceTiers: z.array(PriceTiers()).optional(),
+}));
 
 /** A map of usage item names (e.g., ACTOR_COMPUTE_UNITS) to their usage details. */
-export const MonthlyServiceUsage = z.record(z.string(), UsageItem);
+export const MonthlyServiceUsage = lazySchema(() => z.record(z.string(), UsageItem()));
 
 /** A map of service usage item names to their usage details. */
-export const ServiceUsage = z.record(z.string(), UsageItem);
+export const ServiceUsage = lazySchema(() => z.record(z.string(), UsageItem()));
 
-export const DailyServiceUsages = z.looseObject({
+export const DailyServiceUsages = lazySchema(() => z.looseObject({
     date: z.date(),
-    serviceUsage: ServiceUsage,
+    serviceUsage: ServiceUsage(),
     totalUsageCreditsUsd: z.number(),
-});
+}));
 
-export const MonthlyUsage = z.looseObject({
-    usageCycle: UsageCycle,
-    monthlyServiceUsage: MonthlyServiceUsage,
-    dailyServiceUsages: z.array(DailyServiceUsages),
+export const MonthlyUsage = lazySchema(() => z.looseObject({
+    usageCycle: UsageCycle(),
+    monthlyServiceUsage: MonthlyServiceUsage(),
+    dailyServiceUsages: z.array(DailyServiceUsages()),
     totalUsageCreditsUsdBeforeVolumeDiscount: z.number(),
     totalUsageCreditsUsdAfterVolumeDiscount: z.number(),
-});
+}));
 
-export const MonthlyUsageResponse = z.looseObject({
-    data: MonthlyUsage,
-});
+export const MonthlyUsageResponse = lazySchema(() => z.looseObject({
+    data: MonthlyUsage(),
+}));
 
-export const Limits = z.looseObject({
+export const Limits = lazySchema(() => z.looseObject({
     maxMonthlyUsageUsd: z.number(),
     maxMonthlyActorComputeUnits: z.number(),
     maxMonthlyExternalDataTransferGbytes: z.number(),
@@ -1698,9 +1700,9 @@ export const Limits = z.looseObject({
     maxTeamAccountSeatCount: z.int(),
     dataRetentionDays: z.int(),
     maxScheduleCount: z.int().optional(),
-});
+}));
 
-export const Current = z.looseObject({
+export const Current = lazySchema(() => z.looseObject({
     monthlyUsageUsd: z.number(),
     monthlyActorComputeUnits: z.number(),
     monthlyExternalDataTransferGbytes: z.number(),
@@ -1712,50 +1714,50 @@ export const Current = z.looseObject({
     activeActorJobCount: z.int(),
     teamAccountSeatCount: z.int(),
     scheduleCount: z.int().optional(),
-});
+}));
 
-export const AccountLimits = z.looseObject({
-    monthlyUsageCycle: UsageCycle,
-    limits: Limits,
-    current: Current,
-});
+export const AccountLimits = lazySchema(() => z.looseObject({
+    monthlyUsageCycle: UsageCycle(),
+    limits: Limits(),
+    current: Current(),
+}));
 
-export const LimitsResponse = z.looseObject({
-    data: AccountLimits,
-});
+export const LimitsResponse = lazySchema(() => z.looseObject({
+    data: AccountLimits(),
+}));
 
-export const UpdateLimitsRequest = z.looseObject({
+export const UpdateLimitsRequest = lazySchema(() => z.looseObject({
     maxMonthlyUsageUsd: z.number().optional(),
     dataRetentionDays: z.int().optional(),
-});
+}));
 
-export const BrowserInfoResponse = z.looseObject({
+export const BrowserInfoResponse = lazySchema(() => z.looseObject({
     method: z.string(),
     clientIp: z.string().nullable(),
     countryCode: z.string().nullable(),
     bodyLength: z.int(),
     headers: z.record(z.string(), z.union([z.string(), z.array(z.string())])).optional(),
     rawHeaders: z.array(z.string()).optional(),
-});
+}));
 
-export const EncodeAndSignData = z.looseObject({
+export const EncodeAndSignData = lazySchema(() => z.looseObject({
     encoded: z.string(),
-});
+}));
 
-export const EncodeAndSignResponse = z.looseObject({
-    data: EncodeAndSignData,
-});
+export const EncodeAndSignResponse = lazySchema(() => z.looseObject({
+    data: EncodeAndSignData(),
+}));
 
-export const DecodeAndVerifyRequest = z.looseObject({
+export const DecodeAndVerifyRequest = lazySchema(() => z.looseObject({
     encoded: z.string(),
-});
+}));
 
-export const DecodeAndVerifyData = z.looseObject({
+export const DecodeAndVerifyData = lazySchema(() => z.looseObject({
     decoded: z.unknown(),
     encodedByUserId: z.string().nullable(),
     isVerifiedUser: z.boolean(),
-});
+}));
 
-export const DecodeAndVerifyResponse = z.looseObject({
-    data: DecodeAndVerifyData,
-});
+export const DecodeAndVerifyResponse = lazySchema(() => z.looseObject({
+    data: DecodeAndVerifyData(),
+}));

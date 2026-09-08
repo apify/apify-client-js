@@ -71,7 +71,7 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
     list(options: ScheduleCollectionListOptions = {}): PaginatedIterator<Schedule> {
         const parsed = parseArgument(options, listOptionsSchema, 'ScheduleCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfSchedules, parsed);
+        return this._listPaginated(schemas.ListOfSchedules(), parsed);
     }
 
     /**
@@ -84,7 +84,7 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
     async create(schedule?: ScheduleCreateOrUpdateData): Promise<Schedule> {
         parseArgument(schedule, scheduleCreateSchema);
 
-        return this._create(schemas.Schedule, schedule);
+        return this._create(schemas.Schedule(), schedule);
     }
 }
 

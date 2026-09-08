@@ -64,7 +64,7 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
     list(options: WebhookDispatchCollectionListOptions = {}): PaginatedIterator<WebhookDispatch> {
         const parsed = parseArgument(options, listOptionsSchema, 'WebhookDispatchCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfWebhookDispatches, parsed);
+        return this._listPaginated(schemas.ListOfWebhookDispatches(), parsed);
     }
 }
 

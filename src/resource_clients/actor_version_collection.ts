@@ -64,7 +64,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
     list(
         _options: ActorVersionCollectionListOptions = {},
     ): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
-        return this._listPaginated(schemas.ListOfVersions);
+        return this._listPaginated(schemas.ListOfVersions());
     }
 
     /**
@@ -77,7 +77,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
     async create(actorVersion: ActorVersion): Promise<FinalActorVersion> {
         parseArgument(actorVersion, actorVersionSchema);
 
-        return this._create(schemas.Version, actorVersion);
+        return this._create(schemas.Version(), actorVersion);
     }
 }
 

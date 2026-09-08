@@ -74,7 +74,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     ): Promise<KeyValueStoreCollectionListResult> & AsyncIterable<KeyValueStore> {
         const parsed = parseArgument(options, listOptionsSchema, 'KeyValueStoreCollectionClientListOptions');
 
-        return this._listPaginated(schemas.ListOfKeyValueStores, parsed);
+        return this._listPaginated(schemas.ListOfKeyValueStores(), parsed);
     }
 
     /**
@@ -92,7 +92,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
         parseArgument(name, nameSchema);
         parseArgument(options?.schema, schemaSchema); // TODO: Add schema validation
 
-        return this._getOrCreate(schemas.KeyValueStore, name, options);
+        return this._getOrCreate(schemas.KeyValueStore(), name, options);
     }
 }
 

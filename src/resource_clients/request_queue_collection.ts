@@ -73,7 +73,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
     ): Promise<RequestQueueCollectionListResult> & AsyncIterable<RequestQueue> {
         const parsed = parseArgument(options, listOptionsSchema, 'RequestQueueCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfRequestQueues, parsed);
+        return this._listPaginated(schemas.ListOfRequestQueues(), parsed);
     }
 
     /**
@@ -86,7 +86,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
     async getOrCreate(name?: string): Promise<RequestQueue> {
         parseArgument(name, nameSchema);
 
-        return this._getOrCreate(schemas.RequestQueue, name);
+        return this._getOrCreate(schemas.RequestQueue(), name);
     }
 }
 

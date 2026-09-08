@@ -20,7 +20,7 @@ export type {
 } from '../models.js';
 export { ScheduleActions } from '../models.js';
 
-const scheduleLogSchema = z.array(schemas.ScheduleInvoked);
+const scheduleLogSchema = z.array(schemas.ScheduleInvoked());
 
 /**
  * Client for managing a specific Schedule.
@@ -63,7 +63,7 @@ export class ScheduleClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/schedule-get
      */
     async get(): Promise<Schedule | undefined> {
-        return this._get(schemas.Schedule);
+        return this._get(schemas.Schedule());
     }
 
     /**
@@ -75,7 +75,7 @@ export class ScheduleClient extends ResourceClient {
      */
     async update(newFields: ScheduleCreateOrUpdateData): Promise<Schedule> {
         parseArgument(newFields, anyObjectSchema);
-        return this._update(schemas.Schedule, newFields);
+        return this._update(schemas.Schedule(), newFields);
     }
 
     /**

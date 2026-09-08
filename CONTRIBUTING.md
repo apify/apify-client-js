@@ -57,6 +57,7 @@ src/
 ├── utils.ts                     # Utility functions
 ├── models.ts                    # Published output types, declared on top of the generated ones
 ├── schemas.ts                   # Response schemas the clients validate with, on top of the generated ones
+├── lazy_schema.ts               # The memoized thunk every response schema is exported as
 ├── spec_guards.ts               # Compile-time checks tying the hand-written layers to the generated ones
 ├── generated/
 │   ├── api.ts                   # Types generated from the OpenAPI specification (do not edit)

@@ -72,7 +72,7 @@ export class UserClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/user-get
      */
     async get(): Promise<User> {
-        return this._get(schemas.UserPrivateInfo) as Promise<User>;
+        return this._get(schemas.UserPrivateInfo()) as Promise<User>;
     }
 
     /**
@@ -91,7 +91,7 @@ export class UserClient extends ResourceClient {
         try {
             const response = await this.httpClient.call(requestOpts);
             // `dailyServiceUsages[].date` does not end in `At`, so it has to be named for `parseDateFields`.
-            return parseResponse(response, schemas.MonthlyUsage, (key) => key === 'date');
+            return parseResponse(response, schemas.MonthlyUsage(), (key) => key === 'date');
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }
@@ -114,7 +114,7 @@ export class UserClient extends ResourceClient {
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return parseResponse(response, schemas.AccountLimits);
+            return parseResponse(response, schemas.AccountLimits());
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }

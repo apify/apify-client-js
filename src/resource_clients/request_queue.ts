@@ -170,7 +170,7 @@ export class RequestQueueClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/request-queue-get
      */
     async get(): Promise<RequestQueue | undefined> {
-        return this._get(schemas.RequestQueue, {}, SMALL_TIMEOUT_MILLIS);
+        return this._get(schemas.RequestQueue(), {}, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -183,7 +183,7 @@ export class RequestQueueClient extends ResourceClient {
     async update(newFields: RequestQueueClientUpdateOptions): Promise<RequestQueue> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(schemas.RequestQueue, newFields, SMALL_TIMEOUT_MILLIS);
+        return this._update(schemas.RequestQueue(), newFields, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -218,7 +218,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return parseResponse(response, schemas.RequestQueueHead);
+        return parseResponse(response, schemas.RequestQueueHead());
     }
 
     /**
@@ -270,7 +270,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return parseResponse(response, schemas.LockedRequestQueueHead);
+        return parseResponse(response, schemas.LockedRequestQueueHead());
     }
 
     /**
@@ -329,7 +329,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return parseResponse(response, schemas.RequestRegistration);
+        return parseResponse(response, schemas.RequestRegistration());
     }
 
     /**
@@ -355,7 +355,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return parseResponse(response, schemas.BatchAddResult);
+        return parseResponse(response, schemas.BatchAddResult());
     }
 
     protected async _batchAddRequestsWithRetries(
@@ -548,7 +548,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return parseResponse(response, schemas.BatchDeleteResult);
+        return parseResponse(response, schemas.BatchDeleteResult());
     }
 
     /**
@@ -568,7 +568,7 @@ export class RequestQueueClient extends ResourceClient {
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return parseResponse(response, schemas.Request);
+            return parseResponse(response, schemas.Request());
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }
@@ -602,7 +602,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return parseResponse(response, schemas.RequestRegistration);
+        return parseResponse(response, schemas.RequestRegistration());
     }
 
     /**
@@ -670,7 +670,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return parseResponse(response, schemas.RequestLockInfo);
+        return parseResponse(response, schemas.RequestLockInfo());
     }
 
     /**
@@ -729,7 +729,7 @@ export class RequestQueueClient extends ResourceClient {
                 }),
             });
 
-            return parseResponse(response, schemas.ListOfRequests);
+            return parseResponse(response, schemas.ListOfRequests());
         };
 
         const paginatedListPromise = getPaginatedList(parsed);
@@ -786,7 +786,7 @@ export class RequestQueueClient extends ResourceClient {
             }),
         });
 
-        return parseResponse(response, schemas.UnlockRequestsResult);
+        return parseResponse(response, schemas.UnlockRequestsResult());
     }
 
     /**

@@ -129,7 +129,7 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-get
      */
     async get(): Promise<Actor | undefined> {
-        return this._get(schemas.Actor);
+        return this._get(schemas.Actor());
     }
 
     /**
@@ -142,7 +142,7 @@ export class ActorClient extends ResourceClient {
     async update(newFields: ActorUpdateOptions): Promise<Actor> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(schemas.Actor, newFields);
+        return this._update(schemas.Actor(), newFields);
     }
 
     /**
@@ -232,7 +232,7 @@ export class ActorClient extends ResourceClient {
         }
 
         const response = await this.httpClient.call(request);
-        return parseResponse(response, schemas.Run);
+        return parseResponse(response, schemas.Run());
     }
 
     /**
@@ -392,7 +392,7 @@ export class ActorClient extends ResourceClient {
             }),
         });
 
-        return parseResponse(response, schemas.Build);
+        return parseResponse(response, schemas.Build());
     }
 
     /**
@@ -427,7 +427,7 @@ export class ActorClient extends ResourceClient {
             params: this._params(options),
         });
 
-        const { id } = parseResponse<Build>(response, schemas.Build);
+        const { id } = parseResponse<Build>(response, schemas.Build());
 
         return new BuildClient({
             baseUrl: this.apifyClient.baseUrl,

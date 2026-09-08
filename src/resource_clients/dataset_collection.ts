@@ -74,7 +74,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     ): Promise<DatasetCollectionClientListResult> & AsyncIterable<Dataset> {
         const parsed = parseArgument(options, listOptionsSchema, 'DatasetCollectionClientListOptions');
 
-        return this._listPaginated(schemas.ListOfDatasets, parsed);
+        return this._listPaginated(schemas.ListOfDatasets(), parsed);
     }
 
     /**
@@ -89,7 +89,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
         parseArgument(name, nameSchema);
         parseArgument(options?.schema, schemaSchema); // TODO: Add schema validation
 
-        return this._getOrCreate(schemas.Dataset, name, options);
+        return this._getOrCreate(schemas.Dataset(), name, options);
     }
 }
 

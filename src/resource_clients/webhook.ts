@@ -65,7 +65,7 @@ export class WebhookClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/webhook-get
      */
     async get(): Promise<Webhook | undefined> {
-        return this._get(schemas.Webhook);
+        return this._get(schemas.Webhook());
     }
 
     /**
@@ -78,7 +78,7 @@ export class WebhookClient extends ResourceClient {
     async update(newFields: WebhookUpdateData): Promise<Webhook> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(schemas.Webhook, newFields);
+        return this._update(schemas.Webhook(), newFields);
     }
 
     /**
@@ -105,7 +105,7 @@ export class WebhookClient extends ResourceClient {
 
         try {
             const response = await this.httpClient.call(request);
-            return parseResponse(response, schemas.WebhookDispatch);
+            return parseResponse(response, schemas.WebhookDispatch());
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }

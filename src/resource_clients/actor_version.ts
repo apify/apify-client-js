@@ -64,7 +64,7 @@ export class ActorVersionClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-version-get
      */
     async get(): Promise<FinalActorVersion | undefined> {
-        return this._get(schemas.Version);
+        return this._get(schemas.Version());
     }
 
     /**
@@ -77,7 +77,7 @@ export class ActorVersionClient extends ResourceClient {
     async update(newFields: ActorVersion): Promise<FinalActorVersion> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(schemas.Version, newFields);
+        return this._update(schemas.Version(), newFields);
     }
 
     /**

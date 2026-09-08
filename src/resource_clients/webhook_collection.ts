@@ -73,7 +73,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
     ): PaginatedIterator<Omit<Webhook, 'payloadTemplate' | 'headersTemplate'>> {
         const parsed = parseArgument(options, listOptionsSchema, 'WebhookCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfWebhooks, parsed);
+        return this._listPaginated(schemas.ListOfWebhooks(), parsed);
     }
 
     /**
@@ -86,7 +86,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
     async create(webhook?: WebhookUpdateData): Promise<Webhook> {
         parseArgument(webhook, webhookCreateSchema);
 
-        return this._create(schemas.Webhook, webhook);
+        return this._create(schemas.Webhook(), webhook);
     }
 }
 

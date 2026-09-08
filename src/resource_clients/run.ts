@@ -94,7 +94,7 @@ export class RunClient extends ResourceClient {
     async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
         const parsed = parseArgument(options, getOptionsSchema, 'RunGetOptions');
 
-        return this._get(schemas.Run, parsed);
+        return this._get(schemas.Run(), parsed);
     }
 
     /**
@@ -123,7 +123,7 @@ export class RunClient extends ResourceClient {
             params: this._params(parsed),
         });
 
-        return parseResponse(response, schemas.Run);
+        return parseResponse(response, schemas.Run());
     }
 
     /**
@@ -192,7 +192,7 @@ export class RunClient extends ResourceClient {
         }
 
         const response = await this.httpClient.call(request);
-        return parseResponse(response, schemas.Run);
+        return parseResponse(response, schemas.Run());
     }
 
     /**
@@ -218,7 +218,7 @@ export class RunClient extends ResourceClient {
         };
 
         const response = await this.httpClient.call(request);
-        return parseResponse(response, schemas.Run);
+        return parseResponse(response, schemas.Run());
     }
 
     /**
@@ -242,7 +242,7 @@ export class RunClient extends ResourceClient {
     async update(newFields: RunUpdateOptions): Promise<ActorRun> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(schemas.Run, newFields);
+        return this._update(schemas.Run(), newFields);
     }
 
     /**
@@ -277,7 +277,7 @@ export class RunClient extends ResourceClient {
             params: this._params(parsed),
         });
 
-        return parseResponse(response, schemas.Run);
+        return parseResponse(response, schemas.Run());
     }
 
     /**
@@ -348,7 +348,7 @@ export class RunClient extends ResourceClient {
     async waitForFinish(options: RunWaitForFinishOptions = {}): Promise<ActorRun> {
         const parsed = parseArgument(options, waitForFinishOptionsSchema, 'RunWaitForFinishOptions');
 
-        return this._waitForFinish(schemas.Run, parsed);
+        return this._waitForFinish(schemas.Run(), parsed);
     }
 
     /**

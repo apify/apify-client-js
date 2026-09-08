@@ -67,7 +67,7 @@ export class BuildClient extends ResourceClient {
     async get(options: BuildClientGetOptions = {}): Promise<Build | undefined> {
         const parsed = parseArgument(options, getOptionsSchema, 'BuildClientGetOptions');
 
-        return this._get(schemas.Build, parsed);
+        return this._get(schemas.Build(), parsed);
     }
 
     /**
@@ -90,7 +90,7 @@ export class BuildClient extends ResourceClient {
             params: this._params(),
         });
 
-        return parseResponse(response, schemas.Build);
+        return parseResponse(response, schemas.Build());
     }
 
     /**
@@ -153,7 +153,7 @@ export class BuildClient extends ResourceClient {
     async waitForFinish(options: BuildClientWaitForFinishOptions = {}): Promise<Build> {
         const parsed = parseArgument(options, waitForFinishOptionsSchema, 'BuildClientWaitForFinishOptions');
 
-        return this._waitForFinish(schemas.Build, parsed);
+        return this._waitForFinish(schemas.Build(), parsed);
     }
 
     /**

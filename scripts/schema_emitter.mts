@@ -2,6 +2,10 @@
  * Turns the `components.schemas` of the OpenAPI specification into zod schemas, one exported constant per named
  * schema, as TypeScript source. Pure, so it can be unit tested; `generate_schemas.mts` is the CLI around it.
  *
+ * Each constant is a `lazySchema()` thunk that builds its schema on the first call and keeps it, and a reference
+ * to another schema is a call of that thunk. Building all of them up front would cost more than importing zod
+ * itself, so instead a schema is built once, by the first response validated against it.
+ *
  * The output is meant for validating API *responses*, which shapes three choices that differ from a literal
  * translation of the specification:
  *
@@ -119,7 +123,7 @@ const TYPED_KEYWORDS = new Map<string, string[]>([
 const IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
 /** Names the generated module already uses, which a schema cannot take without shadowing them. */
-const RESERVED_NAMES = new Set(['z']);
+const RESERVED_NAMES = new Set(['z', 'lazySchema']);
 
 const INDENT = '    ';
 
@@ -130,9 +134,11 @@ export const COMMENT_HEADER = `/**
 
 `;
 
+const IMPORTS = `import { z } from 'zod';\n\nimport { lazySchema } from '../lazy_schema.js';\n\n`;
+
 /**
- * Emits the whole module: header, the zod import and one `export const` per schema, in dependency order so
- * that every reference names a constant declared above it.
+ * Emits the whole module: header, imports and one `export const` per schema, in dependency order so that the
+ * module reads top-down. The thunks would tolerate any order, since a reference is only followed on the first call.
  */
 export function emitSchemas(document: OpenApiDocument): string {
     const schemas = document.components?.schemas;
@@ -149,7 +155,7 @@ export function emitSchemas(document: OpenApiDocument): string {
     const emitter = new Emitter(schemas);
     const declarations = emitter.orderedNames().map((name) => emitter.declaration(name));
 
-    return `${COMMENT_HEADER}import { z } from 'zod';\n\n${declarations.join('\n\n')}\n`;
+    return `${COMMENT_HEADER}${IMPORTS}${declarations.join('\n\n')}\n`;
 }
 
 /**
@@ -194,7 +200,7 @@ class Emitter {
     declaration(name: string): string {
         const node = this.schema(name, name);
         const doc = node.description ? `${docComment(node.description)}\n` : '';
-        return `${doc}export const ${name} = ${this.expression(node, name, '')};`;
+        return `${doc}export const ${name} = lazySchema(() => ${this.expression(node, name, '')});`;
     }
 
     expression(node: SchemaNode, path: string, indent: string): string {
@@ -257,7 +263,7 @@ class Emitter {
                 throw new Error(`A $ref at ${path} carries "${key}", which cannot be applied to a reference.`);
             }
         }
-        return name;
+        return `${name}()`;
     }
 
     private string(node: SchemaNode, path: string): string {

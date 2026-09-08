@@ -58,7 +58,7 @@ describe('emitSchema', () => {
                 'z.record(z.string(), z.string())',
             );
             expect(emitSchema({ type: 'object', additionalProperties: ref('Tag') }, SCHEMAS)).toBe(
-                'z.record(z.string(), Tag)',
+                'z.record(z.string(), Tag())',
             );
         });
 
@@ -148,7 +148,7 @@ describe('emitSchema', () => {
         });
 
         it('reads anyOf with a null member as nullable', () => {
-            expect(emitSchema({ anyOf: [ref('Base'), { type: 'null' }] }, SCHEMAS)).toBe('Base.nullable()');
+            expect(emitSchema({ anyOf: [ref('Base'), { type: 'null' }] }, SCHEMAS)).toBe('Base().nullable()');
             expect(emitSchema({ anyOf: [{ type: 'array', items: { type: 'string' } }, { type: 'null' }] })).toBe(
                 'z.array(z.string()).nullable()',
             );
@@ -176,7 +176,7 @@ describe('emitSchema', () => {
     describe('arrays', () => {
         it('emits the item schema and the size constraints', () => {
             expect(emitSchema({ type: 'array', items: ref('Tag'), minItems: 1, maxItems: 3 }, SCHEMAS)).toBe(
-                'z.array(Tag).min(1).max(3)',
+                'z.array(Tag()).min(1).max(3)',
             );
         });
 
@@ -186,8 +186,8 @@ describe('emitSchema', () => {
     });
 
     describe('references', () => {
-        it('emits a reference as the name of the referenced constant', () => {
-            expect(emitSchema(ref('Base'), SCHEMAS)).toBe('Base');
+        it('emits a reference as a call of the referenced thunk', () => {
+            expect(emitSchema(ref('Base'), SCHEMAS)).toBe('Base()');
         });
 
         it('rejects a reference to an unknown schema', () => {
@@ -205,7 +205,7 @@ describe('emitSchema', () => {
         });
 
         it('tolerates a description next to a $ref', () => {
-            expect(emitSchema({ ...ref('Base'), description: 'the base' }, SCHEMAS)).toBe('Base');
+            expect(emitSchema({ ...ref('Base'), description: 'the base' }, SCHEMAS)).toBe('Base()');
         });
     });
 
@@ -221,28 +221,30 @@ describe('emitSchema', () => {
                 SCHEMAS,
             );
 
-            expect(out).toBe('Base.extend({\n    count: z.int(),\n})');
+            expect(out).toBe('Base().extend({\n    count: z.int(),\n})');
         });
 
         it('extends with the shape of a referenced member', () => {
-            expect(emitSchema({ allOf: [ref('Base'), ref('RunActor')] }, SCHEMAS)).toBe('Base.extend(RunActor.shape)');
+            expect(emitSchema({ allOf: [ref('Base'), ref('RunActor')] }, SCHEMAS)).toBe(
+                'Base().extend(RunActor().shape)',
+            );
         });
 
         it('applies a required that names fields of the base with .required()', () => {
             expect(emitSchema({ allOf: [ref('Base')], required: ['name'] }, SCHEMAS)).toBe(
-                'Base.required({ name: true })',
+                'Base().required({ name: true })',
             );
             expect(emitSchema({ allOf: [ref('Base'), { required: ['name'] }] }, SCHEMAS)).toBe(
-                'Base.required({ name: true })',
+                'Base().required({ name: true })',
             );
         });
 
         it('emits a single-member allOf as the member itself', () => {
-            expect(emitSchema({ allOf: [ref('Base')] }, SCHEMAS)).toBe('Base');
+            expect(emitSchema({ allOf: [ref('Base')] }, SCHEMAS)).toBe('Base()');
         });
 
         it('falls back to an intersection when the first member is not an object', () => {
-            expect(emitSchema({ allOf: [ref('Union'), ref('Base')] }, SCHEMAS)).toBe('z.intersection(Union, Base)');
+            expect(emitSchema({ allOf: [ref('Union'), ref('Base')] }, SCHEMAS)).toBe('z.intersection(Union(), Base())');
         });
 
         it('emits a discriminated union when every member declares the discriminator as a const', () => {
@@ -251,7 +253,7 @@ describe('emitSchema', () => {
                 SCHEMAS,
             );
 
-            expect(out).toBe('z.discriminatedUnion("type", [RunActor, RunTask])');
+            expect(out).toBe('z.discriminatedUnion("type", [RunActor(), RunTask()])');
         });
 
         it('emits a plain union when a member lacks the discriminator const', () => {
@@ -260,14 +262,14 @@ describe('emitSchema', () => {
                 SCHEMAS,
             );
 
-            expect(out).toBe('z.union([RunActor, Base])');
+            expect(out).toBe('z.union([RunActor(), Base()])');
         });
 
         it('emits oneOf and anyOf without a discriminator as unions', () => {
             expect(emitSchema({ oneOf: [{ type: 'string' }, { type: 'integer' }] })).toBe(
                 'z.union([z.string(), z.int()])',
             );
-            expect(emitSchema({ anyOf: [ref('Base'), ref('Tag')] }, SCHEMAS)).toBe('z.union([Base, Tag])');
+            expect(emitSchema({ anyOf: [ref('Base'), ref('Tag')] }, SCHEMAS)).toBe('z.union([Base(), Tag()])');
         });
     });
 
@@ -325,10 +327,13 @@ describe('emitSchema', () => {
 describe('emitSchemas', () => {
     const document = (schemas: Record<string, SchemaNode>) => ({ components: { schemas } });
 
-    it('emits the header, the zod import and one export per schema', () => {
+    it('emits the header, the imports and one lazySchema thunk per schema', () => {
         const out = emitSchemas(document({ Tag: { type: 'string' } }));
 
-        expect(out).toBe(`${COMMENT_HEADER}import { z } from 'zod';\n\nexport const Tag = z.string();\n`);
+        expect(out).toBe(
+            `${COMMENT_HEADER}import { z } from 'zod';\n\nimport { lazySchema } from '../lazy_schema.js';\n\n` +
+                'export const Tag = lazySchema(() => z.string());\n',
+        );
     });
 
     it('declares every schema after the ones it references', () => {
@@ -364,6 +369,7 @@ describe('emitSchemas', () => {
     it('rejects a schema name that cannot be an exported identifier', () => {
         expect(() => emitSchemas(document({ 'My-Schema': { type: 'string' } }))).toThrow(/not usable/);
         expect(() => emitSchemas(document({ z: { type: 'string' } }))).toThrow(/not usable/);
+        expect(() => emitSchemas(document({ lazySchema: { type: 'string' } }))).toThrow(/not usable/);
     });
 
     it('rejects a document without schemas', () => {

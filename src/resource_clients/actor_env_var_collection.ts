@@ -67,7 +67,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     list(
         _options: ActorEnvVarCollectionListOptions = {},
     ): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
-        return this._listPaginated(schemas.ListOfEnvVars);
+        return this._listPaginated(schemas.ListOfEnvVars());
     }
 
     /**
@@ -79,7 +79,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      */
     async create(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
         parseArgument(actorEnvVar, actorEnvVarSchema);
-        return this._create(schemas.EnvVar, actorEnvVar);
+        return this._create(schemas.EnvVar(), actorEnvVar);
     }
 }
 

@@ -93,8 +93,11 @@ import type {
 import type * as responseSchemas from './schemas.js';
 
 type Schemas = components['schemas'];
-type GeneratedSchemas = typeof generatedSchemas;
-type ResponseSchemas = typeof responseSchemas;
+
+/** The schema each `lazySchema()` thunk of a module builds, so the guards below can look at the schemas themselves. */
+type BuiltSchemas<Thunks> = { [K in keyof Thunks]: Thunks[K] extends () => infer S ? S : never };
+type GeneratedSchemas = BuiltSchemas<typeof generatedSchemas>;
+type ResponseSchemas = BuiltSchemas<typeof responseSchemas>;
 
 /** Resolves to `true` only for mutually assignable types, so a near-miss still fails. */
 type Equals<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;

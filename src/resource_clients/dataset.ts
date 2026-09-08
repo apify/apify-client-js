@@ -132,7 +132,7 @@ export class DatasetClient<
      * @see https://docs.apify.com/api/v2/dataset-get
      */
     async get(): Promise<Dataset | undefined> {
-        return this._get(schemas.Dataset, {}, SMALL_TIMEOUT_MILLIS);
+        return this._get(schemas.Dataset(), {}, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -145,7 +145,7 @@ export class DatasetClient<
     async update(newFields: DatasetClientUpdateOptions): Promise<Dataset> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(schemas.Dataset, newFields, SMALL_TIMEOUT_MILLIS);
+        return this._update(schemas.Dataset(), newFields, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -345,7 +345,7 @@ export class DatasetClient<
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return parseResponse(response, schemas.DatasetStatistics);
+            return parseResponse(response, schemas.DatasetStatistics());
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }
