@@ -21,8 +21,8 @@ export interface HttpAgents {
 
 /**
  * The runtime-specific part of the client. `#runtime` resolves to the Node.js implementation under the `node`
- * export condition and to the Web API one everywhere else (see the `imports` field of `package.json`), so a
- * bundler targeting a browser or an edge runtime never sees the Node.js built-ins the Node.js one uses.
+ * condition and to the Web API one everywhere else (see the `imports` field of `package.json`), so a bundler
+ * targeting a browser or an edge runtime never sees the Node.js built-ins the Node.js one uses.
  * @internal
  */
 export interface Runtime {

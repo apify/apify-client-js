@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import http from 'node:http';
 import os from 'node:os';
 import { resolve } from 'node:path';
@@ -49,9 +50,10 @@ describe('#runtime resolution', () => {
     const root = resolve(import.meta.dirname, '..');
 
     /**
-     * Bundles the built package the way a bundler for the given target would and returns the modules it pulled
-     * in. Dependencies stay external, and with them the Node.js built-ins that `@apify/log` and
-     * `@apify/utilities` still import.
+     * Bundles the ES module build for the given target and returns the modules it pulled in. The entry point is
+     * `dist/index.js` rather than the package name, because the `browser` condition of the `exports` field
+     * resolves to the pre-built bundle instead. Dependencies stay external, and with them the Node.js built-ins
+     * that `@apify/log` and `@apify/utilities` still import.
      */
     async function bundleClient(options: { platform: 'browser' | 'node'; conditions?: string[] }) {
         const { metafile } = await build({
@@ -95,5 +97,12 @@ describe('#runtime resolution', () => {
             input.imports.filter((i) => i.path.startsWith('node:')).map((i) => `${path} -> ${i.path}`),
         );
         expect(builtins).toEqual([]);
+    });
+
+    test('the pre-built browser bundle got the Web API implementation', async () => {
+        const bundle = await readFile(resolve(root, 'dist/bundle.js'), 'utf8');
+        // A property access no other module makes, and one a minifier keeps. rsbuild resolves `#runtime` through
+        // an alias, so a resolution regression there would otherwise only show up as a bundle size jump.
+        expect(bundle).not.toContain('BROTLI_PARAM_QUALITY');
     });
 });

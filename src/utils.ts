@@ -20,6 +20,7 @@ import type { WebhookUpdateData } from './resource_clients/webhook.js';
 import packageJson from '../package.json' with { type: 'json' };
 
 const MIN_COMPRESS_BYTES = 1024;
+const textEncoder = new TextEncoder();
 
 export { parseArgument };
 
@@ -155,7 +156,7 @@ export function parseDateFields(
  */
 export function stringifyWebhooksToBase64(webhooks?: readonly WebhookUpdateData[]): string | undefined {
     if (!webhooks) return;
-    return bytesToBase64(new TextEncoder().encode(JSON.stringify(webhooks)));
+    return bytesToBase64(textEncoder.encode(JSON.stringify(webhooks)));
 }
 
 /**
@@ -190,7 +191,7 @@ export function concatBytes(chunks: Uint8Array[]): Uint8Array {
  * - a stream, a `Blob`, form data - is `undefined`.
  */
 function toBytes(value: unknown): Uint8Array | undefined {
-    if (typeof value === 'string') return new TextEncoder().encode(value);
+    if (typeof value === 'string') return textEncoder.encode(value);
     if (ArrayBuffer.isView(value)) return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
     if (value instanceof ArrayBuffer) return new Uint8Array(value);
     return undefined;
@@ -220,7 +221,7 @@ export function getEnv(name: string): string | undefined {
  * Helper function slice the items from array to fit the max byte length.
  */
 export function sliceArrayByByteLength<T>(array: T[], maxByteLength: number, startIndex: number): T[] {
-    const stringByteLength = (str: string) => new TextEncoder().encode(str).byteLength;
+    const stringByteLength = (str: string) => textEncoder.encode(str).byteLength;
     const arrayByteLength = stringByteLength(JSON.stringify(array));
     if (arrayByteLength < maxByteLength) return array;
 

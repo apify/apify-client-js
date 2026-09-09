@@ -43,8 +43,6 @@ export class HttpClient {
 
     private httpAgentsPromise?: Promise<void>;
 
-    private userAgentSuffix?: string | string[];
-
     constructor(options: HttpClientOptions) {
         const { token } = options;
         this.stats = options.apifyClientStats;
@@ -54,7 +52,6 @@ export class HttpClient {
         this.timeoutMillis = options.timeoutSecs * 1000;
         this.logger = options.logger;
         this.workflowKey = options.workflowKey || getEnv(APIFY_ENV_VARS.WORKFLOW_KEY);
-        this.userAgentSuffix = options.userAgentSuffix;
         this._onRequestRetry = this._onRequestRetry.bind(this);
 
         this.axios = axios.create({
@@ -105,8 +102,8 @@ export class HttpClient {
             const isAtHome = !!getEnv(APIFY_ENV_VARS.IS_AT_HOME);
             let userAgent = `ApifyClient/${version} (${runtime.platform}); isAtHome/${isAtHome}`;
 
-            if (this.userAgentSuffix) {
-                userAgent += `; ${asArray(this.userAgentSuffix).join('; ')}`;
+            if (options.userAgentSuffix) {
+                userAgent += `; ${asArray(options.userAgentSuffix).join('; ')}`;
             }
 
             this.axios.defaults.headers['User-Agent'] = userAgent;

@@ -6,13 +6,8 @@ import { brotliCompress, constants, gzip } from 'node:zlib';
 
 import type { Runtime } from './types.js';
 
-const brotliCompressAsync = promisify(brotliCompress);
-const gzipAsync = promisify(gzip);
-
-const BROTLI_OPTIONS = { params: { [constants.BROTLI_PARAM_QUALITY]: 6 } };
-
 /**
- * The Node.js implementation of {@link Runtime}. Deno and Bun resolve the `node` export condition too and
+ * The Node.js implementation of {@link Runtime}. Deno and Bun resolve the `node` condition too and
  * provide the built-ins it uses.
  */
 export const runtime: Runtime = {
@@ -22,14 +17,18 @@ export const runtime: Runtime = {
 
     async compress(data) {
         try {
-            return { data: await brotliCompressAsync(data, BROTLI_OPTIONS), encoding: 'br' };
+            // Everything brotli needs belongs inside the fallback chain: `promisify()` throws for a missing
+            // function and `constants` need not carry the brotli parameters. At module scope either would fail
+            // the whole import instead of falling through to gzip.
+            const options = { params: { [constants.BROTLI_PARAM_QUALITY]: 6 } };
+            return { data: await promisify(brotliCompress)(data, options), encoding: 'br' };
         } catch {
             // Runtimes that only provide a partial `node:zlib` (Node.js compatibility shims) may not implement
             // brotli, but usually do implement gzip.
         }
 
         try {
-            return { data: await gzipAsync(data), encoding: 'gzip' };
+            return { data: await promisify(gzip)(data), encoding: 'gzip' };
         } catch {
             return undefined;
         }
@@ -41,11 +40,6 @@ export const runtime: Runtime = {
         const { ProxyAgent } = await import('proxy-agent');
 
         // We want to keep sockets alive for better performance.
-        // Enhanced agent configuration based on agentkeepalive best practices:
-        // - Nagle's algorithm disabled for lower latency
-        // - Free socket timeout to prevent socket leaks
-        // - LIFO scheduling to reuse recent sockets
-        // - Socket TTL for connection freshness
         const agentOptions: http.AgentOptions & { scheduling?: 'lifo' | 'fifo' } = {
             keepAlive: true,
             // Timeout for inactive sockets
