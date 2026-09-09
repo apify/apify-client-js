@@ -59,8 +59,9 @@ const { localeError } = z.locales.en();
 /**
  * Turns a JSON API response into the value a resource method returns: unwraps the `data` envelope, converts the
  * date fields and validates the result against `schema`, one of the schemas generated from the OpenAPI
- * specification. The validated copy is what callers get, so it is exactly what the schema accepted -- unknown
- * fields and unknown enum values included, since the schemas let both through.
+ * specification. The validated copy is what callers get, so it is the schema's output -- unknown fields and unknown
+ * enum values included, since the schemas let both through, and URL fields normalized, since `z.url()` hands back
+ * the parsed URL's serialization.
  *
  * Throws {@link ResponseValidationError} when the response does not match the specification.
  * @internal
@@ -267,7 +268,7 @@ export function getVersionData(): { version: string } {
 }
 
 /**
- * Helper class to create async iterators from paginated list endpoints with exclusive start key.
+ * Helper class to create async iterators from paginated list endpoints.
  */
 export class RequestQueuePaginationIterator {
     private readonly maxPageLimit: number;
@@ -278,22 +279,17 @@ export class RequestQueuePaginationIterator {
 
     private readonly limit?: number;
 
-    private readonly exclusiveStartId?: string;
     private readonly cursor?: string;
 
     constructor(options: RequestQueuePaginationIteratorOptions) {
         this.maxPageLimit = options.maxPageLimit;
         this.limit = options.limit;
-        this.exclusiveStartId = options.exclusiveStartId;
         this.cursor = options.cursor;
         this.getPage = options.getPage;
     }
 
     async *[Symbol.asyncIterator](): AsyncIterator<RequestQueueClientListRequestsResult> {
         let nextCursor = this.cursor;
-        // allow using exclusiveStartId for the first page, but then we'll delete it to avoid using it for any later page
-        let nextExclusiveStartId = this.exclusiveStartId;
-
         let iterateItemCount = 0;
         while (true) {
             const pageLimit = this.limit
@@ -303,7 +299,6 @@ export class RequestQueuePaginationIterator {
             const page: RequestQueueClientListRequestsResult = await this.getPage({
                 limit: pageLimit,
                 cursor: nextCursor,
-                exclusiveStartId: nextExclusiveStartId,
             });
             // There are no more pages to iterate
             if (page.items.length === 0) return;
@@ -313,7 +308,6 @@ export class RequestQueuePaginationIterator {
             if ((this.limit && iterateItemCount >= this.limit) || !page.nextCursor) return;
 
             nextCursor = page.nextCursor;
-            nextExclusiveStartId = undefined; // see comment above - delete it for any page after the first one, and paginate with cursor
         }
     }
 }
@@ -325,7 +319,6 @@ export interface RequestQueuePaginationIteratorOptions {
     maxPageLimit: number;
     getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<RequestQueueClientListRequestsResult>;
     limit?: number;
-    exclusiveStartId?: string;
     cursor?: string;
 }
 
@@ -445,16 +438,6 @@ export function applyQueryParamsToUrl(
     }
     return url;
 }
-
-/**
- * Builds a `[check, message]` pair to spread into `.refine()`, asserting that at most one of `keys`
- * is present. Pass the options interface as `T`, so that a misspelled key is a type error.
- * @internal
- */
-export const mutuallyExclusive = <T extends object>(...keys: (keyof T & string)[]): [(value: T) => boolean, string] => [
-    (value) => keys.filter((key) => typeof value[key] !== 'undefined').length <= 1,
-    `At most one of the following fields is allowed: ${keys.join(', ')}`,
-];
 
 const pathSegmentSchema = z
     .string()
