@@ -42,12 +42,6 @@ async function createActor(options: { title?: string } = {}): Promise<Actor> {
 }
 
 /**
- * The listing endpoint returns `stats`, but `ActorCollectionListItem` does not declare it yet. Read it
- * through this shape so the sorting assertions stay honest until the type catches up.
- */
-type ListItemWithStats = ActorCollectionListItem & { stats?: { lastRunStartedAt?: Date } };
-
-/**
  * Sort keys of the Actors in a listing that have actually run.
  *
  * An Actor that never ran carries no `lastRunStartedAt`, and where the API places those in the ordering
@@ -55,7 +49,7 @@ type ListItemWithStats = ActorCollectionListItem & { stats?: { lastRunStartedAt?
  * run feed assertions do.
  */
 function lastRunSortKeys(items: ActorCollectionListItem[]): number[] {
-    return (items as ListItemWithStats[])
+    return items
         .map((item) => item.stats?.lastRunStartedAt?.getTime())
         .filter((value): value is number => value !== undefined);
 }

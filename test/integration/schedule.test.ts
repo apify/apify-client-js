@@ -136,9 +136,7 @@ test('getLog() works on a schedule that has never run', async () => {
         const log = await scheduleClient.getLog();
 
         // The API answers with an array of log entries, empty for a schedule that never fired.
-        // `getLog` declares `Promise<string | undefined>`, which does not match, hence the cast.
-        expect(Array.isArray(log as unknown)).toBe(true);
-        expect(log as unknown as unknown[]).toHaveLength(0);
+        expect(log).toEqual([]);
     } finally {
         await scheduleClient.delete();
     }
