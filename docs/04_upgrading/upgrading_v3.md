@@ -103,7 +103,7 @@ Every output type the client publishes, such as <ApiLink to="interface/Dataset">
 
 For most consumers, the change only surfaces as new compiler errors. Many fields that were typed as required are now optional (`field?: T`) or nullable (`field: T | null`) to match what the API can actually return. Recompile your project and add the null and undefined checks the compiler points out. These type corrections don't change what the client returns at runtime, only what TypeScript claimed about it before.
 
-A few fields went the other way and became required. `ActorVersion.versionNumber` is one, and `ActorVersion` is what <ApiLink to="class/ActorVersionCollectionClient#create">`create()`</ApiLink> takes, so a call that omitted the version number no longer compiles. <ApiLink to="class/ActorVersionClient#update">`update()`</ApiLink> is unaffected. It takes `ActorVersionUpdateData`, where every field is optional, matching an endpoint that leaves untouched whatever the payload doesn't mention.
+A few fields went the other way and became required. `ActorVersion.versionNumber` is one, and `ActorVersion` is what <ApiLink to="class/ActorVersionCollectionClient#create">`create()`</ApiLink> takes, so a call that omitted the version number no longer compiles.
 
 A handful of fields and return types also change entirely to match the client's actual behavior:
 
@@ -131,18 +131,11 @@ The specification describes a full resource and its list item as two different s
 
 An Actor version's `sourceFiles` is a flat list that mixes files and folders, so its element type is now <ApiLink to="interface/ActorVersionSourceFile">`ActorVersionSourceFile`</ApiLink> or the new <ApiLink to="interface/ActorVersionSourceFolder">`ActorVersionSourceFolder`</ApiLink>. Code that reads `content` or `format` off an element has to tell the two apart first, by the `folder` flag only a folder carries. The `ActorVersion` union also gains a fifth variant for `SOURCE_CODE`, <ApiLink to="interface/ActorVersionSourceCode">`ActorVersionSourceCode`</ApiLink>, so an exhaustive `switch` over `sourceType` no longer compiles.
 
-### Enum-typed inputs take plain strings
+### Source types and scheduled-action types are plain strings
 
-Four positions that took a published enum now take that enum's values as plain string literals:
+`ActorVersion.sourceType` is typed as `'SOURCE_FILES' | 'GIT_REPO' | 'TARBALL' | 'GITHUB_GIST' | 'SOURCE_CODE'` instead of the `ActorSourceType` enum, and a scheduled action's `type` as `'RUN_ACTOR' | 'RUN_ACTOR_TASK'` instead of `ScheduleActions`. Both enums stay published and their members stay assignable, so code that writes `sourceType: ActorSourceType.GitRepo`, or switches over the enum's members, still compiles.
 
-- `ActorVersion.sourceType`, and with it <ApiLink to="class/ActorVersionCollectionClient#create">`create()`</ApiLink> and <ApiLink to="class/ActorVersionClient#update">`update()`</ApiLink>, takes `'SOURCE_FILES' | 'GIT_REPO' | 'TARBALL' | 'GITHUB_GIST' | 'SOURCE_CODE'` instead of `ActorSourceType`.
-- A scheduled action's `type`, and with it <ApiLink to="class/ScheduleCollectionClient#create">`create()`</ApiLink> and <ApiLink to="class/ScheduleClient#update">`update()`</ApiLink>, takes `'RUN_ACTOR' | 'RUN_ACTOR_TASK'` instead of `ScheduleActions`.
-- <ApiLink to="interface/ActorCollectionListOptions">`ActorCollectionListOptions.sortBy`</ApiLink> takes `'createdAt' | 'stats.lastRunStartedAt'` instead of `ActorListSortBy`.
-- <ApiLink to="class/DatasetClient#downloadItems">`downloadItems()`</ApiLink> takes `'json' | 'jsonl' | 'xml' | 'html' | 'csv' | 'xlsx' | 'rss'` instead of `DownloadItemsFormat`.
-
-All four enums stay published and their members stay assignable, so `sourceType: ActorSourceType.GitRepo` still works, and `sourceType: 'GIT_REPO'` now compiles without a cast.
-
-The other direction breaks where the value is also read back. `const type: ActorSourceType = version.sourceType` no longer compiles. Annotate it as `ActorVersion['sourceType']` instead, or leave it to inference.
+What breaks is reading the value back into a variable or parameter annotated with the enum. `const type: ActorSourceType = version.sourceType` no longer compiles. Annotate it as `ActorVersion['sourceType']` instead, or leave it to inference.
 
 ### The request-queue head splits into two item types
 
