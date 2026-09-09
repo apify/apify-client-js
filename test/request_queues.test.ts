@@ -712,9 +712,12 @@ describe('Request Queue methods', () => {
                 uniqueKey: 'key-big',
             };
             const requestsWithBigRequest: typeof requests = [...requests, bigRequest];
+            const firedRequestCount = mockServer.requests.length;
             await expect(client.requestQueue(queueId).batchAddRequests(requestsWithBigRequest)).rejects.toThrow(
                 `RequestQueueClient.batchAddRequests: The size of the request with index: ${requestsWithBigRequest.length - 1}`,
             );
+            // The oversized request is rejected before any of the batches around it goes out.
+            expect(mockServer.requests).toHaveLength(firedRequestCount);
             validateRequest({ query: {}, params: { queueId }, body: false });
         });
     });
