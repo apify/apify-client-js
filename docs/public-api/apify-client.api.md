@@ -26,6 +26,7 @@ import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 import type { SetStatusMessageOptions } from '@crawlee/types';
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
+import type { TypedArray } from 'type-fest';
 import type { ValueOf } from '@apify/consts';
 import type { ValueOf as ValueOf_2 } from 'type-fest';
 import type { WEBHOOK_EVENT_TYPES } from '@apify/consts';
@@ -407,14 +408,14 @@ export class ActorVersionClient extends ResourceClient {
     envVar(envVarName: string): ActorEnvVarClient;
     envVars(): ActorEnvVarCollectionClient;
     get(): Promise<FinalActorVersion | undefined>;
-    update(newFields: ActorVersion): Promise<FinalActorVersion>;
+    update(newFields: ActorVersionUpdateData): Promise<FinalActorVersion>;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 interface ActorVersionClientNarrowings {
     // (undocumented)
-    sourceType: ActorSourceType;
+    sourceType: `${ActorSourceType}`;
 }
 
 // @public
@@ -425,13 +426,13 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
 }
 
 // @public
-export interface ActorVersionGitHubGist extends BaseActorVersion<ActorSourceType.GitHubGist> {
+export interface ActorVersionGitHubGist extends BaseActorVersion<`${ActorSourceType.GitHubGist}`> {
     // (undocumented)
     gitHubGistUrl: NonNullable<GeneratedVersion['gitHubGistUrl']>;
 }
 
 // @public
-export interface ActorVersionGitRepo extends BaseActorVersion<ActorSourceType.GitRepo> {
+export interface ActorVersionGitRepo extends BaseActorVersion<`${ActorSourceType.GitRepo}`> {
     // (undocumented)
     gitRepoUrl: NonNullable<GeneratedVersion['gitRepoUrl']>;
 }
@@ -447,7 +448,7 @@ interface ActorVersionRePointed {
 }
 
 // @public
-export interface ActorVersionSourceCode extends BaseActorVersion<ActorSourceType.SourceCode> {
+export interface ActorVersionSourceCode extends BaseActorVersion<`${ActorSourceType.SourceCode}`> {
 }
 
 // @public
@@ -455,7 +456,7 @@ export interface ActorVersionSourceFile extends GeneratedSourceCodeFile {
 }
 
 // @public
-export interface ActorVersionSourceFiles extends BaseActorVersion<ActorSourceType.SourceFiles> {
+export interface ActorVersionSourceFiles extends BaseActorVersion<`${ActorSourceType.SourceFiles}`> {
     // (undocumented)
     sourceFiles: (ActorVersionSourceFile | ActorVersionSourceFolder)[];
 }
@@ -469,10 +470,13 @@ export interface ActorVersionSourceFolder extends GeneratedSourceCodeFolder {
 type ActorVersionSourceLocation = 'sourceFiles' | 'gitRepoUrl' | 'tarballUrl' | 'gitHubGistUrl';
 
 // @public
-export interface ActorVersionTarball extends BaseActorVersion<ActorSourceType.Tarball> {
+export interface ActorVersionTarball extends BaseActorVersion<`${ActorSourceType.Tarball}`> {
     // (undocumented)
     tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
 }
+
+// @public
+export type ActorVersionUpdateData = Partial<ActorVersion>;
 
 // @public
 export type AllowedHttpMethods = Schemas['HttpMethod'];
@@ -635,7 +639,7 @@ interface ApifyResponse<T = any> extends AxiosResponse<T> {
 export { ArgumentValidationError }
 
 // @public
-export interface BaseActorVersion<SourceType extends ActorSourceType> extends Omit<GeneratedVersion, keyof ActorVersionClientNarrowings | keyof ActorVersionRePointed | ActorVersionSourceLocation>, ActorVersionRePointed {
+export interface BaseActorVersion<SourceType extends `${ActorSourceType}`> extends Omit<GeneratedVersion, keyof ActorVersionClientNarrowings | keyof ActorVersionRePointed | ActorVersionSourceLocation>, ActorVersionRePointed {
     // (undocumented)
     sourceType: SourceType;
 }
@@ -2969,7 +2973,7 @@ export class KeyValueStoreClient extends ResourceClient {
     getRecordPublicUrl(key: string): Promise<string>;
     listKeys(options?: KeyValueClientListKeysOptions): Promise<KeyValueClientListKeysResult> & AsyncIterable<KeyValueListItem>;
     recordExists(key: string): Promise<boolean>;
-    setRecord(record: KeyValueStoreRecord<JsonValue>, options?: KeyValueStoreRecordOptions): Promise<void>;
+    setRecord(record: KeyValueStoreRecord<KeyValueStoreRecordValue>, options?: KeyValueStoreRecordOptions): Promise<void>;
     update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore>;
 }
 
@@ -3017,6 +3021,9 @@ export interface KeyValueStoreRecordOptions {
     // (undocumented)
     timeoutSecs?: number;
 }
+
+// @public
+export type KeyValueStoreRecordValue = JsonValue | Buffer | ArrayBuffer | TypedArray | Readable;
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)

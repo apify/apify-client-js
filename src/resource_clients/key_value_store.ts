@@ -1,6 +1,6 @@
 import type { Readable } from 'node:stream';
 
-import type { JsonValue } from 'type-fest';
+import type { JsonValue, TypedArray } from 'type-fest';
 import { z } from 'zod';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
@@ -58,7 +58,7 @@ const recordSchema = z.strictObject({
     // Symbols, bigints, functions and non-finite numbers are rejected because they cannot be serialized
     // to JSON - symbols and bigints throw, functions stringify to `undefined` (an empty request body),
     // and `NaN` / `Infinity` would silently become `null`.
-    value: z.custom<JsonValue>(
+    value: z.custom<KeyValueStoreRecordValue>(
         (value) =>
             value !== undefined &&
             typeof value !== 'symbol' &&
@@ -458,7 +458,10 @@ export class KeyValueStoreClient extends ResourceClient {
      * });
      * ```
      */
-    async setRecord(record: KeyValueStoreRecord<JsonValue>, options: KeyValueStoreRecordOptions = {}): Promise<void> {
+    async setRecord(
+        record: KeyValueStoreRecord<KeyValueStoreRecordValue>,
+        options: KeyValueStoreRecordOptions = {},
+    ): Promise<void> {
         parseArgument(record, recordSchema);
         const parsed = parseArgument(options, recordOptionsSchema, 'KeyValueStoreRecordOptions');
 
@@ -574,6 +577,15 @@ export interface KeyValueClientGetRecordOptions {
      */
     signature?: string;
 }
+
+/**
+ * A value that `setRecord` accepts.
+ *
+ * Anything JSON-serializable, or raw bytes passed through to the API untouched: a `Buffer`, an
+ * `ArrayBuffer`, a typed array, or a readable stream. Those are the same shapes `getRecord` hands
+ * back, depending on its `buffer` and `stream` options.
+ */
+export type KeyValueStoreRecordValue = JsonValue | Buffer | ArrayBuffer | TypedArray | Readable;
 
 /**
  * Represents a record (key-value pair) in a Key-Value Store.

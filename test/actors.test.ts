@@ -589,6 +589,31 @@ describe('Actor methods', () => {
                 expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({ query: {}, params: { actorId }, body: actorVersion });
             });
+
+            test('create() accepts a source type spelled as a plain string', async () => {
+                const actorId = 'some-id';
+                const actorVersion = {
+                    versionNumber: '0.0',
+                    gitRepoUrl: 'https://github.com/user/repo.git',
+                    sourceType: 'GIT_REPO',
+                } as const;
+
+                const res = await client.actor(actorId).versions().create(actorVersion);
+                validateRequest({
+                    query: {},
+                    params: { actorId },
+                    body: actorVersion,
+                    endpointId: 'create-actor-version',
+                });
+
+                const browserRes = await page.evaluate(
+                    (id, opts) => client.actor(id).versions().create(opts),
+                    actorId,
+                    actorVersion,
+                );
+                expect(browserRes).toEqual(asBrowserResult(res));
+                validateRequest({ query: {}, params: { actorId }, body: actorVersion });
+            });
         });
 
         describe('version()', () => {
@@ -658,6 +683,29 @@ describe('Actor methods', () => {
                     params: { actorId: 'some-user~some-id', versionNumber },
                     body: newFields,
                 });
+            });
+
+            test('update() works with a subset of the version fields', async () => {
+                const actorId = 'some-id';
+                const versionNumber = '0.0';
+                const newFields = { buildTag: 'latest' } as const;
+
+                const res = await client.actor(actorId).version(versionNumber).update(newFields);
+                validateRequest({
+                    query: {},
+                    params: { actorId, versionNumber },
+                    body: newFields,
+                    endpointId: 'update-actor-version',
+                });
+
+                const browserRes = await page.evaluate(
+                    (id, vn, nf) => client.actor(id).version(vn).update(nf),
+                    actorId,
+                    versionNumber,
+                    newFields,
+                );
+                expect(browserRes).toEqual(asBrowserResult(res));
+                validateRequest({ query: {}, params: { actorId, versionNumber }, body: newFields });
             });
 
             test('delete() works', async () => {

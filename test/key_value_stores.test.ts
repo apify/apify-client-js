@@ -529,7 +529,7 @@ describe('Key-Value Store methods', () => {
                 'content-type': 'application/octet-stream',
             };
 
-            const res = await client.keyValueStore(storeId).setRecord({ key, value: value as any });
+            const res = await client.keyValueStore(storeId).setRecord({ key, value });
             expect(res).toBeUndefined();
             validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
 
@@ -537,7 +537,7 @@ describe('Key-Value Store methods', () => {
                 async (id, k, d) => {
                     const encoder = new TextEncoder();
                     const v = encoder.encode(d);
-                    return client.keyValueStore(id).setRecord({ key: k, value: v } as any);
+                    return client.keyValueStore(id).setRecord({ key: k, value: v });
                 },
                 storeId,
                 key,

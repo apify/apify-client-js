@@ -103,7 +103,7 @@ Every output type the client publishes, such as <ApiLink to="interface/Dataset">
 
 For most consumers, the change only surfaces as new compiler errors. Many fields that were typed as required are now optional (`field?: T`) or nullable (`field: T | null`) to match what the API can actually return. Recompile your project and add the null and undefined checks the compiler points out. These type corrections don't change what the client returns at runtime, only what TypeScript claimed about it before.
 
-A few fields went the other way and became required. `ActorVersion.versionNumber` is one, and `ActorVersion` is also what <ApiLink to="class/ActorVersionClient#update">`update()`</ApiLink> and <ApiLink to="class/ActorVersionCollectionClient#create">`create()`</ApiLink> take, so a call that omitted the version number no longer compiles.
+A few fields went the other way and became required. `ActorVersion.versionNumber` is one, and `ActorVersion` is what <ApiLink to="class/ActorVersionCollectionClient#create">`create()`</ApiLink> takes, so a call that omitted the version number no longer compiles. <ApiLink to="class/ActorVersionClient#update">`update()`</ApiLink> is unaffected. It takes `ActorVersionUpdateData`, where every field is optional, matching an endpoint that leaves untouched whatever the payload doesn't mention.
 
 A handful of fields and return types also change entirely to match the client's actual behavior:
 
@@ -130,6 +130,10 @@ The specification describes a full resource and its list item as two different s
 ### An Actor version's source files can be folders
 
 An Actor version's `sourceFiles` is a flat list that mixes files and folders, so its element type is now <ApiLink to="interface/ActorVersionSourceFile">`ActorVersionSourceFile`</ApiLink> or the new <ApiLink to="interface/ActorVersionSourceFolder">`ActorVersionSourceFolder`</ApiLink>. Code that reads `content` or `format` off an element has to tell the two apart first, by the `folder` flag only a folder carries. The `ActorVersion` union also gains a fifth variant for `SOURCE_CODE`, <ApiLink to="interface/ActorVersionSourceCode">`ActorVersionSourceCode`</ApiLink>, so an exhaustive `switch` over `sourceType` no longer compiles.
+
+### An Actor version's source type is a plain string
+
+Fields that carry a source type, such as `ActorVersion.sourceType`, are typed as the string literals `'SOURCE_FILES' | 'GIT_REPO' | 'TARBALL' | 'GITHUB_GIST' | 'SOURCE_CODE'` rather than as the `ActorSourceType` enum. The enum stays published and its members stay assignable, so `sourceType: ActorSourceType.GitRepo` still works, and `sourceType: 'GIT_REPO'` now compiles without a cast. The other direction breaks: a variable annotated as `ActorSourceType` no longer accepts a version's `sourceType`. Annotate it as `ActorVersion['sourceType']` instead, or leave it to inference.
 
 ### The request-queue head splits into two item types
 
