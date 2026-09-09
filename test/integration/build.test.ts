@@ -22,9 +22,6 @@ const SMALL_MIN_MEMORY_ACTOR = 'apify/instagram-profile-scraper';
  */
 const CI_ORIGIN_ACTOR = 'apify/cheerio-scraper';
 
-/** The listing endpoint returns `actId`, but `BuildCollectionClientListItem` does not declare it yet. */
-type ListItemWithActorId = BuildCollectionClientListItem & { actId?: string };
-
 let client: ApifyClient;
 
 beforeAll(() => {
@@ -55,7 +52,7 @@ test('builds().list() returns the builds of a public Actor', async () => {
     const buildsPage = await client.actor(HELLO_WORLD_ACTOR).builds().list({ limit: 10 });
 
     expect(buildsPage.items.length).toBeGreaterThan(0);
-    const firstBuild = buildsPage.items[0] as ListItemWithActorId;
+    const firstBuild = buildsPage.items[0];
     expect(firstBuild.id).toBeTruthy();
     expect(firstBuild.actId).toBeTruthy();
 });
@@ -108,7 +105,7 @@ test('builds().list() is async-iterable and yields the builds of an Actor', asyn
     }
 
     expect(collected.length).toBeGreaterThanOrEqual(1);
-    for (const build of collected as ListItemWithActorId[]) {
+    for (const build of collected) {
         expect(build.id).toBeTruthy();
         expect(build.actId).toBeTruthy();
     }
