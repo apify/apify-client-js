@@ -216,6 +216,43 @@ A trailing slash appears only on a field the API returns without a path, so on `
 
 A URL field whose value isn't a valid absolute URL now fails response validation and throws <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink>, the same as any other field that doesn't match the specification.
 
+## `batchAddRequests()` serializes each request once
+
+<ApiLink to="class/RequestQueueClient#batchAddRequests">`batchAddRequests()`</ApiLink> stringified every request twice, once to measure which batch it belonged to and once to send it. Each request is now serialized once, and the same strings are joined into the batch body. The bytes on the wire are the same. Three things around them changed.
+
+### An oversized request is rejected before any batch is sent
+
+A request too large for the payload limit still throws, and the message still names its index. What changed is when the check runs. In v2 each batch was measured as it came up, so every batch before the oversized request had already been sent by the time the call threw. v3 measures the whole input up front, so the call throws without sending anything.
+
+```js
+// In v2 the four batches before the oversized request had already been sent.
+// In v3 nothing is sent.
+await client.requestQueue('my-queue').batchAddRequests([...hundredRequests, oversizedRequest]);
+```
+
+Code that treated the throw as "some of these landed" and reconciled the queue afterwards can drop the reconciliation.
+
+### A string labelled `application/json` is sent as it is
+
+A string body sent with an explicit `application/json` content type now goes out verbatim. Axios used to parse it to check that it was valid JSON, and wrapped it in a JSON string literal when it wasn't.
+
+<ApiLink to="class/KeyValueStoreClient#setRecord">`setRecord()`</ApiLink> is where you'd notice. Storing a non-JSON string under `contentType: 'application/json'` used to save `"my value"`, quotes included, and now saves `my value`, which <ApiLink to="class/KeyValueStoreClient#getRecord">`getRecord()`</ApiLink> can't parse back:
+
+```js
+// v2 stored `"my value"`, v3 stores `my value`.
+await client.keyValueStore('my-store').setRecord({
+    key: 'my-key',
+    value: 'my value',
+    contentType: 'application/json',
+});
+```
+
+Give a record a content type matching what it holds, such as `text/plain`, or pass the value as an object and let the client serialize it.
+
+### The protected batch helpers take serialized requests
+
+`_batchAddRequests()` and `_batchAddRequestsWithRetries()` take the serialized entries instead of the plain requests, and `_batchAddRequests()` no longer re-validates a batch the public method already validated. Both are protected, so only a subclass that overrides or calls them is affected.
+
 ## `versions().list()` and `envVars().list()` take no options
 
 <ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> now take no arguments. Neither endpoint reads `offset`, `limit` or `desc`, and both return every item in one response, so `chunkSize` had nothing to size either. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those four options, deprecated since v2.21.0, are gone from the package. A call that passed an options object no longer compiles. Drop the argument and the call returns the same items as before.
