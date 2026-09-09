@@ -178,9 +178,11 @@ Two return types change as a result of describing what the endpoints really retu
 
 ## The client's own code no longer needs Node.js
 
-The client's own code runs on Web APIs. The parts that need Node.js built-ins, the keep-alive HTTP agents with proxy support and request body compression, live in a module that the `#runtime` entry of the package's `imports` field selects at bundle time. The `node` condition gets the Node.js implementation, and every other target gets the Web API one, so a bundler targeting a browser or an edge runtime no longer pulls `node:zlib`, `node:os`, `node:net`, or `proxy-agent` out of the client. Two dependencies still import Node.js built-ins, so bundling the ES module build for a non-Node.js target still needs a few polyfills. For details, see [Bundled environments](../02_concepts/05_bundled-environments.md).
+The client's own code runs on Web APIs. The parts that need Node.js built-ins, the keep-alive HTTP agents with proxy support and request body compression, live in a module that the `#runtime` entry of the package's `imports` field selects at bundle time. The `node` condition gets the Node.js implementation, and every other target gets the Web API one, so a bundler targeting a browser or an edge runtime no longer pulls `node:zlib`, `node:os`, `node:util`, or `proxy-agent` out of the client. Two dependencies still import Node.js built-ins, so bundling the ES module build for a non-Node.js target still needs a few polyfills. For details, see [Bundled environments](../02_concepts/05_bundled-environments.md).
 
 On Node.js nothing changes. The features that need it, log streaming and the `stream` record option, proxy support and request compression, work as before.
+
+The pick happens when the import is resolved rather than at runtime, so a Node.js application bundled for a browser or a neutral target gets the Web API implementation and loses those features. The client used to sniff the runtime and recover. The bundler's target now decides.
 
 ### Response bodies are decoded by `TextDecoder`
 
