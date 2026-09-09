@@ -86,7 +86,7 @@ This affects numeric options such as `waitSecs`, `timeout` and `memory`, and dat
 
 Some options were declared in the TypeScript types but always rejected by the client's own validation before a request was ever sent: `chunkSize` on `DatasetClient.downloadItems()` and `createItemsPublicUrl()`, and `signature` on `createItemsPublicUrl()` and `createKeysPublicUrl()`. These are no longer part of the option types, so passing them is now a compile-time error instead of a runtime throw.
 
-The reverse also happened: `chunkSize` now works on every paginating `list()` method. In v2 only `DatasetClient.listItems()` accepted it - everywhere else it type-checked and then threw.
+The reverse also happened: `chunkSize` now works on every `list()` method that takes pagination options. In v2 only `DatasetClient.listItems()` accepted it - everywhere else it type-checked and then threw.
 
 ## API errors are thrown as subclasses of `ApifyApiError`
 
@@ -215,3 +215,15 @@ The affected fields are `ActorRun.containerUrl`, `Task.standbyUrl`, `Webhook.req
 A trailing slash appears only on a field the API returns without a path, so on `containerUrl`, `standbyUrl`, `websiteUrl`, and a `Webhook.requestUrl` you registered without one. The rest already carry a path, and normalization leaves it alone. To append to a URL field, use `new URL('status', run.containerUrl)` only when the field ends with a slash: a relative reference replaces the base's last path segment, so on `consoleUrl` it would drop the resource ID.
 
 A URL field whose value isn't a valid absolute URL now fails response validation and throws <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink>, the same as any other field that doesn't match the specification.
+
+## `versions().list()` and `envVars().list()` take no options
+
+<ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> now take no arguments. Neither endpoint reads `offset`, `limit` or `desc`, and both return every item in one response, so `chunkSize` had nothing to size either. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those four options, deprecated since v2.21.0, are gone from the package. A call that passed an options object no longer compiles. Drop the argument and the call returns the same items as before.
+
+## The last deprecated options are gone
+
+Two options that carried a `@deprecated` marker throughout v2 have been removed.
+
+`restartOnError` is gone from <ApiLink to="interface/ActorCollectionCreateOptions">`ActorCollectionCreateOptions`</ApiLink>, so <ApiLink to="class/ActorCollectionClient#create">`ActorCollectionClient.create()`</ApiLink> no longer accepts it at the top level. Pass it inside `defaultRunOptions` instead, as the deprecation notice advised.
+
+`exclusiveStartId` is gone from <ApiLink to="class/RequestQueueClient#listRequests">`listRequests()`</ApiLink> and <ApiLink to="class/RequestQueueClient#paginateRequests">`paginateRequests()`</ApiLink>. Both paginate by `cursor` alone now, and passing `exclusiveStartId` throws an `ArgumentValidationError` about an unrecognized key. In v2 the two were mutually exclusive, so the error about combining them is gone as well. Responses are unaffected, since the API still echoes `exclusiveStartId` back in the request listing.
