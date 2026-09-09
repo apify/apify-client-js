@@ -15,6 +15,7 @@ import { mockServer } from './mock_server/server.js';
 describe('Request Queue methods', () => {
     let baseUrl: string;
     const browser = new Browser();
+    const jsonHeaders = { 'content-type': 'application/json' };
 
     beforeAll(async () => {
         const server = await mockServer.start();
@@ -432,7 +433,7 @@ describe('Request Queue methods', () => {
                 .map((_, i) => ({ url: `http://example.com/${i}`, uniqueKey: `key-${i}` }));
 
             const res = await client.requestQueue(queueId).batchAddRequests(requests, options);
-            validateRequest({ query: options, params: { queueId }, body: requests });
+            validateRequest({ query: options, params: { queueId }, body: requests, additionalHeaders: jsonHeaders });
 
             const browserRes = await page.evaluate(
                 (id, req, opts) => {
@@ -443,7 +444,27 @@ describe('Request Queue methods', () => {
                 options,
             );
             expect(browserRes).toEqual(asBrowserResult(res));
-            validateRequest({ query: options, params: { queueId }, body: requests });
+            validateRequest({ query: options, params: { queueId }, body: requests, additionalHeaders: jsonHeaders });
+        });
+
+        test('batchAddRequests() serializes each request only once', async () => {
+            const requestsLength = 60;
+            const serializations = new Array(requestsLength).fill(0);
+            const requests = new Array(requestsLength).fill(0).map((_, i) => {
+                const request = { url: `http://example.com/${i}`, uniqueKey: `key-${i}` };
+                // `JSON.stringify` invokes `toJSON` on every object it serializes, alone or as an array item.
+                Object.defineProperty(request, 'toJSON', {
+                    value: () => {
+                        serializations[i]++;
+                        return { ...request };
+                    },
+                });
+                return request;
+            });
+
+            await client.requestQueue('some-id').batchAddRequests(requests);
+
+            expect(serializations).toEqual(new Array(requestsLength).fill(1));
         });
 
         test('batchAddRequests() throws on a response that does not match the API schema', async () => {

@@ -230,30 +230,39 @@ export async function maybeCompressValue(value: unknown): Promise<CompressedValu
 }
 
 /**
- * Helper function slice the items from array to fit the max byte length.
+ * Returns the UTF-8 byte length of a string.
  */
-export function sliceArrayByByteLength<T>(array: T[], maxByteLength: number, startIndex: number): T[] {
-    const stringByteLength = (str: string) => (isNode() ? Buffer.byteLength(str) : new Blob([str]).size);
-    const arrayByteLength = stringByteLength(JSON.stringify(array));
-    if (arrayByteLength < maxByteLength) return array;
+export function utf8ByteLength(value: string): number {
+    return isNode() ? Buffer.byteLength(value) : new Blob([value]).size;
+}
 
-    const slicedArray: T[] = [];
-    let byteLength = 2; // 2 bytes for the empty array []
-    for (let i = 0; i < array.length; i++) {
-        const item = array[i];
-        const itemByteSize = stringByteLength(JSON.stringify(item));
-        if (itemByteSize > maxByteLength) {
-            throw new Error(
-                `RequestQueueClient.batchAddRequests: The size of the request with index: ${startIndex + i} ` +
-                    `exceeds the maximum allowed size (${maxByteLength} bytes).`,
-            );
+/**
+ * Splits JSON-serialized items into consecutive batches of at most `maxCount` items, each of which fits into a JSON
+ * array body - the items joined by commas between brackets - of at most `maxByteLength` bytes. The `byteLength` of an
+ * item is the UTF-8 byte length of its serialization. An item too large for a body of its own still gets one, so a
+ * caller that cannot send such an item has to reject it beforehand.
+ */
+export function splitIntoJsonArrayBatches<T extends { byteLength: number }>(
+    items: readonly T[],
+    { maxCount, maxByteLength }: { maxCount: number; maxByteLength: number },
+): T[][] {
+    const batches: T[][] = [];
+    let batch: T[] = [];
+    // One byte for the opening bracket; each item then adds its own bytes plus one for the comma or the closing
+    // bracket that follows it.
+    let byteLength = 1;
+    for (const item of items) {
+        if (batch.length > 0 && (batch.length >= maxCount || byteLength + item.byteLength + 1 > maxByteLength)) {
+            batches.push(batch);
+            batch = [];
+            byteLength = 1;
         }
-        if (byteLength + itemByteSize >= maxByteLength) break;
-        byteLength += itemByteSize;
-        slicedArray.push(item);
+        batch.push(item);
+        byteLength += item.byteLength + 1;
     }
+    if (batch.length > 0) batches.push(batch);
 
-    return slicedArray;
+    return batches;
 }
 
 export function isNode(): boolean {
