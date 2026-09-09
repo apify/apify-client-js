@@ -3023,7 +3023,7 @@ export interface KeyValueStoreRecordOptions {
 }
 
 // @public
-export type KeyValueStoreRecordValue = JsonValue | Buffer | ArrayBuffer | TypedArray | Readable;
+export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Readable;
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
