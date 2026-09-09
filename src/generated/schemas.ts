@@ -379,7 +379,7 @@ export const WebhookShort = lazySchema(() => z.looseObject({
     condition: WebhookCondition(),
     ignoreSslErrors: z.boolean(),
     doNotRetry: z.boolean(),
-    requestUrl: z.string(),
+    requestUrl: z.url({ normalize: true }),
     lastDispatch: ExampleWebhookDispatch().nullable().optional(),
     stats: WebhookStats().nullable().optional(),
 }));
@@ -649,7 +649,7 @@ export const Run = lazySchema(() => z.looseObject({
         }).catchall(z.string()).optional(),
     }).optional(),
     buildNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])(\.[1-9][0-9]{0,4})$/).nullable().optional(),
-    containerUrl: z.string().optional(),
+    containerUrl: z.url({ normalize: true }).optional(),
     isContainerServerReady: z.boolean().nullable().optional(),
     gitBranchName: z.string().nullable().optional(),
     usage: RunUsage().nullable().optional(),
@@ -683,8 +683,8 @@ export const Dataset = lazySchema(() => z.looseObject({
     actRunId: z.string().nullable().optional(),
     fields: z.array(z.string()).nullable().optional(),
     schema: z.record(z.string(), z.unknown()).nullable().optional(),
-    consoleUrl: z.string(),
-    itemsPublicUrl: z.string().optional(),
+    consoleUrl: z.url({ normalize: true }),
+    itemsPublicUrl: z.url({ normalize: true }).optional(),
     urlSigningSecretKey: z.string().nullable().optional(),
     generalAccess: GeneralAccess().nullable().optional(),
     stats: DatasetStats().optional(),
@@ -767,9 +767,9 @@ export const KeyValueStore = lazySchema(() => z.looseObject({
     accessedAt: z.date(),
     actId: z.string().nullable().optional(),
     actRunId: z.string().nullable().optional(),
-    consoleUrl: z.string().optional(),
-    keysPublicUrl: z.string().optional(),
-    recordsPublicUrl: z.string().optional(),
+    consoleUrl: z.url({ normalize: true }).optional(),
+    keysPublicUrl: z.url({ normalize: true }).optional(),
+    recordsPublicUrl: z.url({ normalize: true }).optional(),
     schema: z.record(z.string(), z.unknown()).nullable().optional(),
     urlSigningSecretKey: z.string().nullable().optional(),
     generalAccess: GeneralAccess().nullable().optional(),
@@ -789,7 +789,7 @@ export const UpdateStoreRequest = lazySchema(() => z.looseObject({
 export const KeyValueStoreKey = lazySchema(() => z.looseObject({
     key: z.string(),
     size: z.int(),
-    recordPublicUrl: z.string(),
+    recordPublicUrl: z.url({ normalize: true }),
 }));
 
 export const ListOfKeys = lazySchema(() => z.looseObject({
@@ -867,7 +867,7 @@ export const RequestQueue = lazySchema(() => z.looseObject({
     handledRequestCount: HandledRequestCount(),
     pendingRequestCount: PendingRequestCount(),
     hadMultipleClients: HadMultipleClients(),
-    consoleUrl: z.string(),
+    consoleUrl: z.url({ normalize: true }),
     stats: RequestQueueStats().optional(),
     generalAccess: GeneralAccess().nullable().optional(),
 }));
@@ -1184,7 +1184,7 @@ export const Task = lazySchema(() => z.looseObject({
     input: z.union([TaskInput(), z.array(TaskInput())]).nullable().optional(),
     title: z.string().nullable().optional(),
     actorStandby: ActorStandby().nullable().optional(),
-    standbyUrl: z.string().nullable().optional(),
+    standbyUrl: z.url({ normalize: true }).nullable().optional(),
     isPublic: z.boolean().optional(),
     publicConfig: TaskPublicConfig().nullable().optional(),
 }));
@@ -1215,7 +1215,7 @@ export const Webhook = lazySchema(() => z.looseObject({
     condition: WebhookCondition(),
     ignoreSslErrors: z.boolean(),
     doNotRetry: z.boolean().nullable().optional(),
-    requestUrl: z.string().nullable().optional(),
+    requestUrl: z.url({ normalize: true }).nullable().optional(),
     payloadTemplate: z.string().nullable().optional(),
     headersTemplate: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
@@ -1328,7 +1328,7 @@ export const WebhookUpdate = lazySchema(() => z.looseObject({
     condition: WebhookCondition().nullable().optional(),
     ignoreSslErrors: z.boolean().nullable().optional(),
     doNotRetry: z.boolean().nullable().optional(),
-    requestUrl: z.string().nullable().optional(),
+    requestUrl: z.url({ normalize: true }).nullable().optional(),
     payloadTemplate: z.string().nullable().optional(),
     headersTemplate: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
@@ -1339,7 +1339,7 @@ export const WebhookUpdate = lazySchema(() => z.looseObject({
 export const WebhookDispatchWebhookSummary = lazySchema(() => z.looseObject({
     actionType: z.string().optional(),
     condition: WebhookCondition().optional(),
-    requestUrl: z.string().nullable().optional(),
+    requestUrl: z.url({ normalize: true }).nullable().optional(),
     isAdHoc: z.boolean().optional(),
 }));
 
@@ -1521,8 +1521,8 @@ export const StoreListActor = lazySchema(() => z.looseObject({
     categories: z.array(z.string()).optional(),
     notice: ActorNotice().optional(),
     pictureUrl: z.string().nullable().optional(),
-    userPictureUrl: z.string().nullable().optional(),
-    url: z.string().nullable().optional(),
+    userPictureUrl: z.url({ normalize: true }).nullable().optional(),
+    url: z.url({ normalize: true }).nullable().optional(),
     stats: ActorStats(),
     currentPricingInfo: CurrentPricingInfo().optional(),
     isWhiteListedForAgenticPayments: z.boolean().nullable().optional(),
@@ -1544,9 +1544,9 @@ export const ListOfActorsInStoreResponse = lazySchema(() => z.looseObject({
 export const Profile = lazySchema(() => z.looseObject({
     bio: z.string().nullable().optional(),
     name: z.string().optional(),
-    pictureUrl: z.string().nullable().optional(),
+    pictureUrl: z.url({ normalize: true }).nullable().optional(),
     githubUsername: z.string().nullable().optional(),
-    websiteUrl: z.string().nullable().optional(),
+    websiteUrl: z.url({ normalize: true }).nullable().optional(),
     twitterUsername: z.string().nullable().optional(),
 }));
 

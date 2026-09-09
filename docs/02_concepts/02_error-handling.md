@@ -123,6 +123,8 @@ try {
 
 Bodies the specification leaves to you aren't validated: dataset items, key-value store records and logs are returned as they are.
 
+Validation also normalizes URL fields, such as <ApiLink to="interface/ActorRun">`ActorRun.containerUrl`</ApiLink> or <ApiLink to="interface/Dataset">`Dataset.consoleUrl`</ApiLink>. The value is parsed as a URL and you get back its serialization, so an empty path gains a trailing slash and the host is lowercased. For the full list of changes and how to compare such a field with a stored string, see [URL fields are normalized](../04_upgrading/upgrading_v3.md#url-fields-are-normalized).
+
 ## Retries with exponential backoff
 
 The client automatically retries requests that fail due to network errors, Apify API internal errors (HTTP 500+), or rate limit errors (HTTP 429). By default, the client retries up to 8 times with exponential backoff starting at 500ms.
