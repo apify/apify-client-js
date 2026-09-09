@@ -178,7 +178,7 @@ Two return types change as a result of describing what the endpoints really retu
 
 ## URL fields are normalized
 
-Fields the specification marks as a URL, such as <ApiLink to="interface/ActorRun">`ActorRun.containerUrl`</ApiLink> or <ApiLink to="interface/Dataset">`Dataset.consoleUrl`</ApiLink>, are parsed with the [WHATWG `URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) parser as part of response validation, and the client hands back the parsed URL's serialization. In v2 you got the raw string from the API. In v3 the string can differ, most visibly by an added trailing slash. Normalization also lowercases the host, drops a default port, punycodes an internationalized host, and percent-encodes unsafe characters. Both forms denote the same URL under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-6.2.3), they're just different strings. The Python client normalizes the same fields the same way, so the two clients return the same string for the same field.
+Fields the specification marks as a URL, such as <ApiLink to="interface/ActorRun">`ActorRun.containerUrl`</ApiLink> or <ApiLink to="interface/Dataset">`Dataset.consoleUrl`</ApiLink>, are parsed with the [WHATWG `URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) parser as part of response validation, and the client hands back the parsed URL's serialization. In v2 you got the raw string from the API. In v3 the string can differ, most visibly by an added trailing slash. Normalization also lowercases the host, drops a default port, punycodes an internationalized host, and percent-encodes unsafe characters. Both forms denote the same URL under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-6.2). They're just different strings. The Python client normalizes the same fields the same way, so the two clients return the same string for the same field.
 
 ```js
 // An empty path becomes '/'.
@@ -203,13 +203,15 @@ Code that compares a stored URL with a URL field has to compare normalized value
 const run = await client.run('my-run-id').get();
 const storedUrl = 'https://abc123.runs.apify.net';
 
-// Before, the raw string matched the API response.
-storedUrl === run.containerUrl; // false in v3
+// The raw string no longer matches.
+storedUrl === run.containerUrl; // false
 
-// After, normalize the stored side too.
+// Normalize the stored side too.
 new URL(storedUrl).href === run.containerUrl; // true
 ```
 
-The affected fields are `containerUrl`, `consoleUrl`, `standbyUrl`, `requestUrl`, `url`, `userPictureUrl`, `pictureUrl`, `websiteUrl`, and the `*PublicUrl` fields on storage models. To build a longer URL out of one, use `new URL('status', run.containerUrl)` instead of string concatenation. It gives the same result whether or not the base ends with a slash.
+The affected fields are `ActorRun.containerUrl`, `Task.standbyUrl`, `Webhook.requestUrl` (on the full webhook, on a list item, and on the webhook summary a dispatch carries), `Dataset.consoleUrl`, `Dataset.itemsPublicUrl`, `KeyValueStore.consoleUrl`, `KeyValueStore.keysPublicUrl`, `KeyValueStore.recordsPublicUrl`, `KeyValueListItem.recordPublicUrl`, `RequestQueue.consoleUrl`, `ActorStoreList.url`, `ActorStoreList.userPictureUrl`, `UserProfile.pictureUrl`, and `UserProfile.websiteUrl`. Whether a field is normalized depends on its model. The specification doesn't mark `Actor.standbyUrl`, `Actor.pictureUrl`, `ActorStoreList.pictureUrl`, or the `url` of a request queue request as URLs, so those come back exactly as the API sent them.
+
+A trailing slash appears only on a field the API returns without a path, so on `containerUrl`, `standbyUrl`, `websiteUrl`, and a `Webhook.requestUrl` you registered without one. The rest already carry a path, and normalization leaves it alone. To append to a URL field, use `new URL('status', run.containerUrl)` only when the field ends with a slash: a relative reference replaces the base's last path segment, so on `consoleUrl` it would drop the resource ID.
 
 A URL field whose value isn't a valid absolute URL now fails response validation and throws <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink>, the same as any other field that doesn't match the specification.

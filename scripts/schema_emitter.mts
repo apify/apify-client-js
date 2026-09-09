@@ -18,8 +18,8 @@
  *     before a response is validated, and the generated types say `Date` for the same reason.
  *   - `format: uri` becomes `z.url({ normalize: true })`, which parses the value as a WHATWG URL and hands back
  *     its serialization: an empty path gains a `/`, the host is lowercased and punycoded, a default port is dropped
- *     and unsafe characters are percent-encoded. This is the Python client's `pydantic.AnyUrl`, so both clients
- *     return the same string for the same field.
+ *     and unsafe characters are percent-encoded. A value that is not a valid absolute URL is rejected. This is the
+ *     Python client's `pydantic.AnyUrl`, so both clients return the same string for the same field.
  *
  * A `default` is deliberately not applied: it says what the server fills in when a request omits the field, not
  * what a response carries, so the parsed value stays identical to the response. A `format` other than the two
