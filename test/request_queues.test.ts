@@ -467,6 +467,37 @@ describe('Request Queue methods', () => {
             expect(serializations).toEqual(new Array(requestsLength).fill(1));
         });
 
+        test('batchAddRequests() retries only the requests the API left unprocessed', async () => {
+            const requests = new Array(3)
+                .fill(0)
+                .map((_, i) => ({ url: `http://example.com/${i}`, uniqueKey: `key-${i}` }));
+            mockServer.setResponse({
+                body: {
+                    data: {
+                        processedRequests: [
+                            {
+                                requestId: 'request-0',
+                                uniqueKey: 'key-0',
+                                wasAlreadyPresent: false,
+                                wasAlreadyHandled: false,
+                            },
+                        ],
+                        unprocessedRequests: [{ url: requests[1].url, uniqueKey: 'key-1' }],
+                    },
+                },
+            });
+
+            await client.requestQueue('some-id').batchAddRequests(requests, {
+                maxUnprocessedRequestsRetries: 1,
+                minDelayBetweenUnprocessedRequestsRetriesMillis: 0,
+            });
+
+            const uniqueKeys = (req: Request) => req.body.map(({ uniqueKey }: { uniqueKey: string }) => uniqueKey);
+            const [firstAttempt, secondAttempt] = mockServer.getLastRequests(2);
+            expect(uniqueKeys(firstAttempt)).toEqual(['key-0', 'key-1', 'key-2']);
+            expect(uniqueKeys(secondAttempt)).toEqual(['key-1', 'key-2']);
+        });
+
         test('batchAddRequests() throws on a response that does not match the API schema', async () => {
             mockServer.setResponse({ body: { data: { processedRequests: 'none', unprocessedRequests: [] } } });
             const requests = [{ url: 'http://example.com/1', uniqueKey: 'key-1' }];
