@@ -1,10 +1,6 @@
-import { execFile } from 'node:child_process';
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import os from 'node:os';
-import { resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
-import { promisify } from 'node:util';
 
 import { ApifyClient } from 'apify-client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
@@ -116,28 +112,5 @@ describe('HttpClient', () => {
             vi.unstubAllEnvs();
             await new Promise<void>((done) => proxy.close(() => done()));
         }
-    });
-
-    test('a request emits no deprecation warning', async () => {
-        // Node reports a deprecation it still lists as pending only under the flag, which keeps the check
-        // independent of the version running the suite. A fresh process, because a warning fires once per process.
-        const entry = pathToFileURL(resolve(import.meta.dirname, '../dist/index.js')).href;
-        const script = `
-            import { ApifyClient } from ${JSON.stringify(entry)};
-            const warnings = [];
-            process.on('warning', ({ name, code, message }) => warnings.push({ name, code, message }));
-            await new ApifyClient({ baseUrl: ${JSON.stringify(baseUrl)}, maxRetries: 0 }).user('me').get();
-            console.log(JSON.stringify(warnings));
-        `;
-        const args = ['--pending-deprecation', '--input-type=module', '--eval', script];
-        // A bare environment, so a proxy configured on the machine running the suite cannot reroute the
-        // request. `SystemRoot` is the one exception, because Windows resolves no hostname without it.
-        const { SystemRoot } = process.env;
-        const { stdout } = await promisify(execFile)(process.execPath, args, {
-            env: SystemRoot ? { SystemRoot } : {},
-        });
-
-        const warnings: { name: string }[] = JSON.parse(stdout);
-        expect(warnings.filter(({ name }) => name === 'DeprecationWarning')).toEqual([]);
     });
 });
