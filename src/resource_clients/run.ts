@@ -8,7 +8,8 @@ import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_clien
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyResponse } from '../http_client.js';
 import * as schemas from '../schemas.js';
-import { anyObjectSchema, isNode, parseArgument, parseResponse } from '../utils.js';
+import { runtime } from '#runtime';
+import { anyObjectSchema, parseArgument, parseResponse } from '../utils.js';
 import type { ActorRun } from './actor.js';
 import { DatasetClient } from './dataset.js';
 import { KeyValueStoreClient } from './key_value_store.js';
@@ -439,7 +440,7 @@ export class RunClient extends ResourceClient {
     async getStreamedLog(options: GetStreamedLogOptions = {}): Promise<StreamedLog | undefined> {
         const { fromStart = true } = options;
         let { toLog } = options;
-        if (toLog === null || !isNode()) {
+        if (toLog === null || !runtime.isNode) {
             // Explicitly no logging or not in Node.js
             return undefined;
         }

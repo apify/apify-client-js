@@ -5,7 +5,7 @@ import type { JsonObject } from 'type-fest';
 
 import { maybeParseBody } from './body_parser.js';
 import type { ApifyRequestConfig, ApifyResponse } from './http_client.js';
-import { isNode, maybeCompressValue } from './utils.js';
+import { maybeCompressValue } from './utils.js';
 
 /**
  * This error exists for the quite common situation, where only a partial JSON response is received and
@@ -100,8 +100,8 @@ function parseResponseData(response: ApifyResponse): ApifyResponse {
         return response;
     }
 
-    const isBufferEmpty = isNode() ? !response.data.length : !response.data.byteLength;
-    if (isBufferEmpty) {
+    // A `Buffer` from the Node.js adapter and an `ArrayBuffer` from the browser ones both carry `byteLength`.
+    if (!response.data.byteLength) {
         // undefined is better than an empty buffer
         response.data = undefined;
         return response;

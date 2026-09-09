@@ -11,7 +11,12 @@
         "rootDir": "src",
         "skipLibCheck": true,
         "declarationMap": false,
-        "sourceMap": false
+        "sourceMap": false,
+        "paths": {
+            // `#runtime` is a package.json subpath import that Node.js and bundlers resolve to `dist`. Type-checking
+            // goes straight to the source of the Node.js implementation; the Web API one implements the same interface.
+            "#runtime": ["./src/runtime/node.ts"]
+        }
     },
     "include": ["./src/**/*"]
 }

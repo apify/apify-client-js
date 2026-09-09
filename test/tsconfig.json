@@ -12,7 +12,8 @@
         "allowImportingTsExtensions": true,
         "paths": {
             // The entry file, not the `../src` directory: `nodenext` has no directory index lookup.
-            "apify-client": ["../src/index.ts"]
+            "apify-client": ["../src/index.ts"],
+            "#runtime": ["../src/runtime/node.ts"]
         }
     },
     "include": [".", "../src/**/*"],
