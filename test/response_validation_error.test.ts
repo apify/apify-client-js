@@ -115,6 +115,15 @@ describe('response validation in the client', () => {
         expect(res?.containerUrl).toBe('https://g8kd8kbc5ge8.runs.apify.net/');
     });
 
+    test('normalization leaves the path and the query of a URL field alone, so a signature survives it', async () => {
+        const url = 'https://g8kd8kbc5ge8.runs.apify.net/Items?signature=a+b%2Fc%3D';
+        mockServer.setResponse({ body: { data: { ...fixtures.run, containerUrl: url } } });
+
+        const res = await client.run('some-run-id').get();
+
+        expect(res?.containerUrl).toBe(url);
+    });
+
     test('a URL field that is not a URL throws ResponseValidationError', async () => {
         mockServer.setResponse({ body: { data: { ...fixtures.run, containerUrl: 'not a url' } } });
 
