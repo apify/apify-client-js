@@ -57,7 +57,7 @@ describe('HttpClient', () => {
         // expect(err.message).toMatch('timeout of 1000ms exceeded');
     });
 
-    test('requests go through the proxy named in HTTP_PROXY', async () => {
+    test('requests go through the proxy named in HTTP_PROXY, and skip it for hosts in NO_PROXY', async () => {
         const proxied: string[] = [];
         // A forward proxy: the agent puts the absolute target URL on the request line, so relay it as it is.
         const proxy = http.createServer((req, res) => {
@@ -78,6 +78,37 @@ describe('HttpClient', () => {
             const res = await client.user('me').get();
             expect(res.id).toBe('get-user');
             expect(proxied).toEqual([`${baseUrl}/v2/users/me`]);
+
+            // A fresh client for the exempted host, because the first one keeps its socket to the proxy alive
+            // and would reuse it without consulting the environment again.
+            for (const name of ['NO_PROXY', 'no_proxy']) vi.stubEnv(name, 'localhost');
+            const direct = await new ApifyClient({ baseUrl, timeoutSecs: 1, maxRetries: 0 }).user('me').get();
+            expect(direct.id).toBe('get-user');
+            expect(proxied).toHaveLength(1);
+        } finally {
+            vi.unstubAllEnvs();
+            await new Promise<void>((done) => proxy.close(() => done()));
+        }
+    });
+
+    test('an https request tunnels through the proxy named in HTTPS_PROXY', async () => {
+        const tunneled: string[] = [];
+        // The tunnel is answered by dropping the socket: reaching for it at all is what separates an https
+        // origin from the plain forward-proxy path above, while speaking through it would need a certificate.
+        const proxy = http.createServer();
+        proxy.on('connect', (req, socket) => {
+            tunneled.push(req.url!);
+            socket.destroy();
+        });
+        await new Promise<void>((done) => proxy.listen(0, '127.0.0.1', done));
+        const proxyUrl = `http://127.0.0.1:${(proxy.address() as AddressInfo).port}`;
+        for (const name of ['HTTPS_PROXY', 'https_proxy']) vi.stubEnv(name, proxyUrl);
+        for (const name of ['NO_PROXY', 'no_proxy']) vi.stubEnv(name, '');
+
+        try {
+            const secure = new ApifyClient({ baseUrl: 'https://api.apify.test', timeoutSecs: 1, maxRetries: 0 });
+            await expect(secure.user('me').get()).rejects.toThrow();
+            expect(tunneled).toEqual(['api.apify.test:443']);
         } finally {
             vi.unstubAllEnvs();
             await new Promise<void>((done) => proxy.close(() => done()));
