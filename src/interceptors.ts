@@ -5,7 +5,7 @@ import type { JsonObject } from 'type-fest';
 
 import { maybeParseBody } from './body_parser.js';
 import type { ApifyRequestConfig, ApifyResponse } from './http_client.js';
-import { isNode, maybeCompressValue } from './utils.js';
+import { isCompressibleContentType, isNode, maybeCompressValue } from './utils.js';
 
 /**
  * This error exists for the quite common situation, where only a partial JSON response is received and
@@ -79,7 +79,11 @@ function stringifyWithFunctions(obj: JsonObject) {
 }
 
 async function maybeCompressRequest(config: ApifyRequestConfig): Promise<ApifyRequestConfig> {
+    // A caller-supplied encoding means the body is already encoded and the header describes it, so leave both alone.
     if (config.headers?.['content-encoding']) return config;
+
+    const contentTypeHeader = config.headers?.['Content-Type'] || config.headers?.['content-type'];
+    if (!isCompressibleContentType(contentTypeHeader)) return config;
 
     const maybeCompressed = await maybeCompressValue(config.data);
     if (maybeCompressed) {
