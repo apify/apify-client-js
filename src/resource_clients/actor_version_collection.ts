@@ -1,6 +1,6 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
-import type { PaginatedList, PaginationOptions } from '../utils.js';
+import type { PaginatedList } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
 import type { ActorVersion, FinalActorVersion } from './actor_version.js';
@@ -45,25 +45,22 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
     /**
      * Lists all Actor versions.
      *
-     * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
-     * items in a single API call is limited.
+     * The endpoint returns every version in one response, so awaiting the return value (as you would with a Promise)
+     * gets the whole list.
      * ```javascript
-     * const paginatedList = await client.list();
-     *```
+     * const { items } = await client.list();
+     * ```
      *
-     * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
-     * retrieved.
+     * Asynchronous iteration is also supported, and yields the versions one by one.
      *
      * ```javascript
      * for await (const singleItem of client.list()) {...}
      * ```
      *
-     * @returns A paginated iterator of Actor versions.
+     * @returns The Actor versions, awaitable as a whole list or iterable one by one.
      * @see https://docs.apify.com/api/v2/act-versions-get
      */
-    list(
-        _options: ActorVersionCollectionListOptions = {},
-    ): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
+    list(): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
         return this._listPaginated(schemas.ListOfVersions());
     }
 
@@ -79,14 +76,6 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
 
         return this._create(schemas.Version(), actorVersion);
     }
-}
-
-/**
- * @deprecated No options are used in the current API implementation.
- * https://github.com/apify/apify-client-js/issues/799
- */
-export interface ActorVersionCollectionListOptions extends PaginationOptions {
-    desc?: boolean;
 }
 
 export type ActorVersionListResult = Pick<PaginatedList<FinalActorVersion>, 'total' | 'items'>;
