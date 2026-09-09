@@ -124,8 +124,6 @@ export interface ActorCollectionCreateOptions {
     isPublic?: boolean;
     // (undocumented)
     name?: string;
-    // @deprecated (undocumented)
-    restartOnError?: boolean;
     seoDescription?: string;
     seoTitle?: string;
     // (undocumented)
@@ -194,13 +192,7 @@ export class ActorEnvVarClient extends ResourceClient {
 export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
     create(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable>;
-    list(_options?: ActorEnvVarCollectionListOptions): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable>;
-}
-
-// @public @deprecated (undocumented)
-export interface ActorEnvVarCollectionListOptions extends PaginationOptions {
-    // (undocumented)
-    desc?: boolean;
+    list(): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable>;
 }
 
 // @public
@@ -429,13 +421,7 @@ interface ActorVersionClientNarrowings {
 export class ActorVersionCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
     create(actorVersion: ActorVersion): Promise<FinalActorVersion>;
-    list(_options?: ActorVersionCollectionListOptions): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion>;
-}
-
-// @public @deprecated (undocumented)
-export interface ActorVersionCollectionListOptions extends PaginationOptions {
-    // (undocumented)
-    desc?: boolean;
+    list(): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion>;
 }
 
 // @public
@@ -3379,8 +3365,6 @@ export interface RequestQueueClientListItem extends GeneratedHeadRequest {
 // @public
 export interface RequestQueueClientListRequestsOptions {
     cursor?: string;
-    // @deprecated
-    exclusiveStartId?: string;
     filter?: readonly RequestQueueListRequestsFilter[];
     // (undocumented)
     limit?: number;
@@ -3404,8 +3388,6 @@ export interface RequestQueueClientLockedListItem extends GeneratedLockedHeadReq
 // @public
 export interface RequestQueueClientPaginateRequestsOptions {
     cursor?: string;
-    // @deprecated (undocumented)
-    exclusiveStartId?: string;
     filter?: readonly RequestQueueListRequestsFilter[];
     // (undocumented)
     limit?: number;
