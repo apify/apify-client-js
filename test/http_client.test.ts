@@ -66,6 +66,8 @@ describe('HttpClient', () => {
                 res.writeHead(r.statusCode!, r.headers);
                 r.pipe(res);
             });
+            // An unhandled 'error' here would take the worker down instead of failing the test.
+            upstream.on('error', () => res.destroy());
             req.pipe(upstream);
         });
         await new Promise<void>((done) => proxy.listen(0, '127.0.0.1', done));
@@ -116,8 +118,8 @@ describe('HttpClient', () => {
     });
 
     test('a request emits no deprecation warning', async () => {
-        // A deprecation Node still lists as pending only surfaces with the flag, so the check does not depend on
-        // the Node version running the suite. Each warning fires once per process, hence a fresh one.
+        // Node reports a deprecation it still lists as pending only under the flag, which keeps the check
+        // independent of the version running the suite. A fresh process, because a warning fires once per process.
         const entry = pathToFileURL(resolve(import.meta.dirname, '../dist/index.js')).href;
         const script = `
             import { ApifyClient } from ${JSON.stringify(entry)};
@@ -127,7 +129,12 @@ describe('HttpClient', () => {
             console.log(JSON.stringify(warnings));
         `;
         const args = ['--pending-deprecation', '--input-type=module', '--eval', script];
-        const { stdout } = await promisify(execFile)(process.execPath, args, { env: {} });
+        // A bare environment, so a proxy configured on the machine running the suite cannot reroute the
+        // request. `SystemRoot` is the one exception, because Windows resolves no hostname without it.
+        const { SystemRoot } = process.env;
+        const { stdout } = await promisify(execFile)(process.execPath, args, {
+            env: SystemRoot ? { SystemRoot } : {},
+        });
 
         const warnings: { name: string }[] = JSON.parse(stdout);
         expect(warnings.filter(({ name }) => name === 'DeprecationWarning')).toEqual([]);
