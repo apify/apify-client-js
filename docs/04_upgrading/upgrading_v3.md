@@ -175,3 +175,23 @@ Two return types change as a result of describing what the endpoints really retu
 
 - <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink> was typed as a `string`, even though the endpoint returns the log as a list of entries. It's now typed as <ApiLink to="interface/ScheduleInvoked">`ScheduleInvoked[]`</ApiLink>, each entry carrying `message`, `level` and `createdAt`.
 - <ApiLink to="interface/TaskPublicConfig">`TaskPublicConfig`</ApiLink> now follows the specification: `publishedAt` is optional and read-only, and `categorization`, which the specification doesn't describe, is gone from the type.
+
+## The client's own code no longer needs Node.js
+
+The client's own code runs on Web APIs. The parts that need Node.js built-ins, the keep-alive HTTP agents with proxy support and request body compression, live in a module that the `#runtime` entry of the package's `imports` field selects at bundle time. The `node` condition gets the Node.js implementation, and every other target gets the Web API one, so a bundler targeting a browser or an edge runtime no longer pulls `node:zlib`, `node:os`, `node:net`, or `proxy-agent` out of the client. Two dependencies still import Node.js built-ins, so bundling the ES module build for a non-Node.js target still needs a few polyfills. For details, see [Bundled environments](../02_concepts/05_bundled-environments.md).
+
+On Node.js nothing changes. The features that need it, log streaming and the `stream` record option, proxy support and request compression, work as before.
+
+### Response bodies are decoded by `TextDecoder`
+
+The client used to decode a response body with `Buffer` in Node.js and with `TextDecoder` in the browser, and now uses `TextDecoder` everywhere. The two support different charsets, so a `content-type` header carrying one the other doesn't know is handled differently:
+
+- A charset `TextDecoder` knows and `Buffer` doesn't, such as `iso-8859-1`, now decodes to a string. It used to be handed back as raw bytes.
+- A charset `Buffer` knows and `TextDecoder` doesn't, such as `hex` or `base64`, is now handed back as raw bytes. It used to be decoded as if the body were in that encoding, which mangled it.
+- A leading UTF-8 byte order mark is stripped, so a JSON body carrying one parses instead of throwing.
+
+Bodies with no charset, or with a UTF-8 one, are unaffected, which covers everything the Apify API sends.
+
+### Request compression accepts more body types
+
+Request bodies were compressed only when they were a string or a `Buffer`. A `Uint8Array`, another typed array, or an `ArrayBuffer` is now compressed too, so a request that carries one gains a `content-encoding` header it didn't have before. The API has always accepted both encodings the client sends, `br` and `gzip`.
