@@ -105,7 +105,7 @@ describe('response validation in the client', () => {
         expect(res?.generalAccess).toBeNull();
     });
 
-    test('a URL field comes back normalized, the way the Python client returns it', async () => {
+    test('a URL field comes back normalized, with a lowercased host and a default port dropped', async () => {
         mockServer.setResponse({
             body: { data: { ...fixtures.run, containerUrl: 'https://G8KD8KBC5GE8.runs.apify.net:443' } },
         });
