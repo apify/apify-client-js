@@ -1,13 +1,6 @@
 import { afterEach, beforeAll, expect, test, vi } from 'vitest';
 
-import type {
-    Actor,
-    ActorChargeEvent,
-    ActorCollectionListItem,
-    ApifyClient,
-    PricePerDatasetItemActorPricingInfo,
-    PricePerEventActorPricingInfo,
-} from 'apify-client';
+import type { Actor, ActorCollectionListItem, ApifyClient } from 'apify-client';
 import { ActorListSortBy, ActorSourceType } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
@@ -269,27 +262,12 @@ test('webhooks().list() is empty for a newly created Actor', async () => {
     }
 });
 
-/**
- * The tiered pricing shapes below are not declared on the v3 types yet, so the assertions read them
- * through these local shapes. Pinning the field names here is what would catch an alias being
- * dropped once the types do declare them.
- */
-type TieredPricePerDatasetItem = PricePerDatasetItemActorPricingInfo & {
-    tieredPricing?: Record<string, { tieredPricePerUnitUsd: number }>;
-};
-
-type TieredChargeEvent = ActorChargeEvent & {
-    eventTieredPricingUsd?: Record<string, unknown>;
-    isPrimaryEvent?: boolean;
-    isOneTimeEvent?: boolean;
-};
-
 test('get() returns tiered PRICE_PER_DATASET_ITEM pricing with its tiers intact', async () => {
     const actor = await client.actor(ALL_PRICING_VARIANTS_ACTOR).get();
     expect(actor?.pricingInfos?.length).toBeGreaterThan(0);
 
     const tieredEntries = (actor!.pricingInfos ?? [])
-        .filter((info): info is TieredPricePerDatasetItem => info.pricingModel === 'PRICE_PER_DATASET_ITEM')
+        .filter((info) => info.pricingModel === 'PRICE_PER_DATASET_ITEM')
         .filter((info) => info.tieredPricing !== undefined);
 
     expect(
@@ -322,8 +300,8 @@ test('get() returns tiered PAY_PER_EVENT charge events with their flags intact',
     expect(actor?.pricingInfos?.length).toBeGreaterThan(0);
 
     const tieredEvents = (actor!.pricingInfos ?? [])
-        .filter((info): info is PricePerEventActorPricingInfo => info.pricingModel === 'PAY_PER_EVENT')
-        .flatMap((info) => Object.values(info.pricingPerEvent.actorChargeEvents ?? {}) as TieredChargeEvent[])
+        .filter((info) => info.pricingModel === 'PAY_PER_EVENT')
+        .flatMap((info) => Object.values(info.pricingPerEvent.actorChargeEvents ?? {}))
         .filter((event) => event.eventTieredPricingUsd !== undefined);
 
     expect(
