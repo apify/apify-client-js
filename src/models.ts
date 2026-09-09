@@ -252,8 +252,8 @@ type GeneratedEnvVar = Schemas['EnvVar'];
  * import path are unchanged.
  *
  * The fields that carry a source type are typed as `` `${ActorSourceType}` ``, the enum's values as
- * plain string literals, rather than as the enum itself. A member stays assignable to that, so
- * `ActorSourceType.GitRepo` keeps working, while `'GIT_REPO'` no longer needs a cast.
+ * plain string literals, rather than as the enum itself. Both spellings are therefore accepted:
+ * `ActorSourceType.GitRepo` and the plain `'GIT_REPO'`.
  */
 export enum ActorSourceType {
     SourceFiles = 'SOURCE_FILES',
@@ -894,6 +894,10 @@ type GeneratedScheduleActionRunInput = Schemas['ScheduleActionRunInput'];
  * Declared here rather than in `./resource_clients/schedule` so that the action types can reference it
  * without closing an import cycle. It is re-exported from there, so the public name and import path are
  * unchanged.
+ *
+ * An action's `type` is typed as `` `${ScheduleActions}` ``, the enum's values as plain string literals,
+ * rather than as the enum itself. Both spellings are therefore accepted: `ScheduleActions.RunActor` and
+ * the plain `'RUN_ACTOR'`.
  */
 export enum ScheduleActions {
     RunActor = 'RUN_ACTOR',
@@ -911,7 +915,7 @@ export interface ScheduledActorRunInput extends GeneratedScheduleActionRunInput 
 export interface ScheduledActorRunOptions extends GeneratedTaskOptions {}
 
 export interface ScheduleActionRunActorRePointed {
-    type: ScheduleActions.RunActor;
+    type: `${ScheduleActions.RunActor}`;
     runInput?: ScheduledActorRunInput | null;
     runOptions?: ScheduledActorRunOptions | null;
 }
@@ -923,7 +927,7 @@ export interface ScheduleActionRunActor
         ScheduleActionRunActorRePointed {}
 
 export interface ScheduleActionRunActorTaskRePointed {
-    type: ScheduleActions.RunActorTask;
+    type: `${ScheduleActions.RunActorTask}`;
 }
 
 /** Scheduled action to run an Actor task. */

@@ -122,7 +122,7 @@ export class ActorVersionClient extends ResourceClient {
  * Fields that can be changed on an existing Actor version.
  *
  * All of them are optional, because the endpoint leaves untouched whatever the payload does not
- * mention. What the version union still enforces is the pairing: a `sourceType` can only be sent
- * next to the source location it implies, never next to one of the other three.
+ * mention. The version union enforces the pairing: a `sourceType` can only be sent next to the
+ * source location it implies, never next to one of the other three.
  */
 export type ActorVersionUpdateData = Partial<ActorVersion>;

@@ -3,7 +3,7 @@ import type { AddressInfo } from 'node:net';
 import { setTimeout } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import type { ActorCollectionCreateOptions } from 'apify-client';
+import type { ActorCollectionCreateOptions, ActorCollectionListOptions, ActorVersion } from 'apify-client';
 import { ActorListSortBy, ActorSourceType, ApifyClient, LoggerActorRedirect } from 'apify-client';
 import express from 'express';
 import type { Page } from 'puppeteer';
@@ -55,8 +55,11 @@ describe('Actor methods', () => {
                 offset: 3,
                 desc: true,
                 my: true,
-                sortBy: ActorListSortBy.CREATED_AT,
+                sortBy: 'createdAt' as const,
             };
+            // Both spellings compile, and the enum member holds the same value.
+            const withEnumMember: ActorCollectionListOptions = { ...opts, sortBy: ActorListSortBy.CREATED_AT };
+            expect(withEnumMember).toEqual(opts);
 
             const res = await client.actors().list(opts);
             validateRequest({
@@ -565,38 +568,17 @@ describe('Actor methods', () => {
                 });
             });
 
-            test('create() works', async () => {
-                const actorId = 'some-id';
-                const actorVersion = {
-                    versionNumber: '0.0',
-                    gitRepoUrl: 'https://github.com/user/repo.git',
-                    sourceType: ActorSourceType.GitRepo,
-                } as const;
-
-                const res = await client.actor(actorId).versions().create(actorVersion);
-                validateRequest({
-                    query: {},
-                    params: { actorId },
-                    body: actorVersion,
-                    endpointId: 'create-actor-version',
-                });
-
-                const browserRes = await page.evaluate(
-                    (id, opts) => client.actor(id).versions().create(opts),
-                    actorId,
-                    actorVersion,
-                );
-                expect(browserRes).toEqual(asBrowserResult(res));
-                validateRequest({ query: {}, params: { actorId }, body: actorVersion });
-            });
-
-            test('create() accepts a source type spelled as a plain string', async () => {
+            test('create() works with a source type given as a plain string or an enum member', async () => {
                 const actorId = 'some-id';
                 const actorVersion = {
                     versionNumber: '0.0',
                     gitRepoUrl: 'https://github.com/user/repo.git',
                     sourceType: 'GIT_REPO',
                 } as const;
+                // Both spellings compile, and the enum member holds the same value, so one round-trip
+                // covers them both.
+                const withEnumMember: ActorVersion = { ...actorVersion, sourceType: ActorSourceType.GitRepo };
+                expect(withEnumMember).toEqual(actorVersion);
 
                 const res = await client.actor(actorId).versions().create(actorVersion);
                 validateRequest({

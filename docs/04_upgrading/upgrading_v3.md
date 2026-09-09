@@ -131,9 +131,18 @@ The specification describes a full resource and its list item as two different s
 
 An Actor version's `sourceFiles` is a flat list that mixes files and folders, so its element type is now <ApiLink to="interface/ActorVersionSourceFile">`ActorVersionSourceFile`</ApiLink> or the new <ApiLink to="interface/ActorVersionSourceFolder">`ActorVersionSourceFolder`</ApiLink>. Code that reads `content` or `format` off an element has to tell the two apart first, by the `folder` flag only a folder carries. The `ActorVersion` union also gains a fifth variant for `SOURCE_CODE`, <ApiLink to="interface/ActorVersionSourceCode">`ActorVersionSourceCode`</ApiLink>, so an exhaustive `switch` over `sourceType` no longer compiles.
 
-### An Actor version's source type is a plain string
+### Enum-typed inputs take plain strings
 
-Fields that carry a source type, such as `ActorVersion.sourceType`, are typed as the string literals `'SOURCE_FILES' | 'GIT_REPO' | 'TARBALL' | 'GITHUB_GIST' | 'SOURCE_CODE'` rather than as the `ActorSourceType` enum. The enum stays published and its members stay assignable, so `sourceType: ActorSourceType.GitRepo` still works, and `sourceType: 'GIT_REPO'` now compiles without a cast. The other direction breaks: a variable annotated as `ActorSourceType` no longer accepts a version's `sourceType`. Annotate it as `ActorVersion['sourceType']` instead, or leave it to inference.
+Four positions that took a published enum now take that enum's values as plain string literals:
+
+- `ActorVersion.sourceType`, and with it <ApiLink to="class/ActorVersionCollectionClient#create">`create()`</ApiLink> and <ApiLink to="class/ActorVersionClient#update">`update()`</ApiLink>, takes `'SOURCE_FILES' | 'GIT_REPO' | 'TARBALL' | 'GITHUB_GIST' | 'SOURCE_CODE'` instead of `ActorSourceType`.
+- A scheduled action's `type`, and with it <ApiLink to="class/ScheduleCollectionClient#create">`create()`</ApiLink> and <ApiLink to="class/ScheduleClient#update">`update()`</ApiLink>, takes `'RUN_ACTOR' | 'RUN_ACTOR_TASK'` instead of `ScheduleActions`.
+- <ApiLink to="interface/ActorCollectionListOptions">`ActorCollectionListOptions.sortBy`</ApiLink> takes `'createdAt' | 'stats.lastRunStartedAt'` instead of `ActorListSortBy`.
+- <ApiLink to="class/DatasetClient#downloadItems">`downloadItems()`</ApiLink> takes `'json' | 'jsonl' | 'xml' | 'html' | 'csv' | 'xlsx' | 'rss'` instead of `DownloadItemsFormat`.
+
+All four enums stay published and their members stay assignable, so `sourceType: ActorSourceType.GitRepo` still works, and `sourceType: 'GIT_REPO'` now compiles without a cast.
+
+The other direction breaks where the value is also read back. `const type: ActorSourceType = version.sourceType` no longer compiles. Annotate it as `ActorVersion['sourceType']` instead, or leave it to inference.
 
 ### The request-queue head splits into two item types
 

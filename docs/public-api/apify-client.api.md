@@ -150,7 +150,7 @@ export interface ActorCollectionListOptions extends PaginationOptions {
     desc?: boolean;
     // (undocumented)
     my?: boolean;
-    sortBy?: ActorListSortBy;
+    sortBy?: `${ActorListSortBy}`;
 }
 
 // @public (undocumented)
@@ -2419,7 +2419,7 @@ export class DatasetClient<Data extends Record<string | number, any> = Record<st
     constructor(options: ApiClientSubResourceOptions);
     createItemsPublicUrl(options?: DatasetClientCreateItemsUrlOptions): Promise<string>;
     delete(): Promise<void>;
-    downloadItems(format: DownloadItemsFormat, options?: DatasetClientDownloadItemsOptions): Promise<Buffer>;
+    downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Buffer>;
     get(): Promise<Dataset | undefined>;
     getStatistics(): Promise<DatasetStatistics | undefined>;
     listItems(options?: DatasetClientListItemOptions): PaginatedIterator<Data>;
@@ -3653,7 +3653,7 @@ interface ScheduleActionRunActorRePointed {
     // (undocumented)
     runOptions?: ScheduledActorRunOptions | null;
     // (undocumented)
-    type: ScheduleActions.RunActor;
+    type: `${ScheduleActions.RunActor}`;
 }
 
 // @public
@@ -3664,7 +3664,7 @@ export interface ScheduleActionRunActorTask extends Omit<Schemas['ScheduleAction
 // @public (undocumented)
 interface ScheduleActionRunActorTaskRePointed {
     // (undocumented)
-    type: ScheduleActions.RunActorTask;
+    type: `${ScheduleActions.RunActorTask}`;
 }
 
 // @public
