@@ -7,7 +7,6 @@ import { pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
 
 import { ApifyClient } from 'apify-client';
-import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { Browser } from './_helper.js';
@@ -28,9 +27,7 @@ describe('HttpClient', () => {
     });
 
     let client: ApifyClient;
-    let page: Page;
-    beforeEach(async () => {
-        page = await browser.getInjectedPage(baseUrl, { timeoutSecs: 1 });
+    beforeEach(() => {
         client = new ApifyClient({
             baseUrl,
             timeoutSecs: 1,
@@ -38,9 +35,8 @@ describe('HttpClient', () => {
             userAgentSuffix: ['SDK/3.1.1', 'Crawlee/3.11.5'],
         });
     });
-    afterEach(async () => {
+    afterEach(() => {
         client = null as unknown as ApifyClient;
-        page.close().catch(() => {});
     });
     test('requests timeout after timeoutSecs', async () => {
         const context = { delayMillis: 3000 };
@@ -52,9 +48,14 @@ describe('HttpClient', () => {
         expect(ua).toMatch(`(${os.platform()}; Node/${process.version})`);
         expect(ua).toMatch('isAtHome/false; SDK/3.1.1; Crawlee/3.11.5');
 
-        await expect(page.evaluate((rId) => client.task(rId).get(), resourceId)).rejects.toThrow();
-        // this is failing after axios upgrade, the error is returned with a wrong name and message
-        // expect(err.message).toMatch('timeout of 1000ms exceeded');
+        const page = await browser.getInjectedPage(baseUrl, { timeoutSecs: 1 });
+        try {
+            await expect(page.evaluate((rId) => client.task(rId).get(), resourceId)).rejects.toThrow();
+            // this is failing after axios upgrade, the error is returned with a wrong name and message
+            // expect(err.message).toMatch('timeout of 1000ms exceeded');
+        } finally {
+            page.close().catch(() => {});
+        }
     });
 
     test('requests go through the proxy named in HTTP_PROXY, and skip it for hosts in NO_PROXY', async () => {
