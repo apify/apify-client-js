@@ -2,7 +2,6 @@ import type { AddressInfo } from 'node:net';
 import { setTimeout as setTimeoutNode } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import type { ActorInput } from 'apify-client';
 import { ApifyClient, ArgumentValidationError } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
@@ -281,8 +280,17 @@ describe('Run methods', () => {
             validateRequest(expectedRequest);
         });
 
-        test('metamorph() takes the same input type as the Actor run methods', () => {
-            expectTypeOf(client.run('some-run-id').metamorph).parameter(1).toEqualTypeOf<ActorInput | undefined>();
+        test('metamorph() does not compile with a raw body and no contentType', () => {
+            const run = client.run('some-run-id');
+
+            expectTypeOf(run.metamorph).toBeCallableWith('target-actor');
+            expectTypeOf(run.metamorph).toBeCallableWith('target-actor', { url: 'https://example.com' });
+            expectTypeOf(run.metamorph).toBeCallableWith('target-actor', 'some=body', {
+                contentType: 'application/x-www-form-urlencoded',
+            });
+
+            // @ts-expect-error a raw body has to be paired with a contentType
+            expectTypeOf(run.metamorph).toBeCallableWith('target-actor', 'some=body');
         });
 
         test('reboot() works', async () => {

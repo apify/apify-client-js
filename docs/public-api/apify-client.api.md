@@ -87,14 +87,23 @@ export class ActorClient extends ResourceClient {
     build(versionNumber: string, options?: ActorBuildOptions): Promise<Build>;
     builds(): BuildCollectionClient;
     call(input?: ActorInput, options?: ActorCallOptions): Promise<ActorRun>;
+    call(input: ActorRawInput, options: ActorCallOptions & {
+        contentType: string;
+    }): Promise<ActorRun>;
     defaultBuild(options?: BuildClientGetOptions): Promise<BuildClient>;
     delete(): Promise<void>;
     get(): Promise<Actor | undefined>;
     lastRun(options?: ActorLastRunOptions): RunClient;
     runs(): RunCollectionClient;
     start(input?: ActorInput, options?: ActorStartOptions): Promise<ActorRun>;
+    start(input: ActorRawInput, options: ActorStartOptions & {
+        contentType: string;
+    }): Promise<ActorRun>;
     update(newFields: ActorUpdateOptions): Promise<Actor>;
     validateInput(input?: ActorInput, options?: ActorValidateInputOptions): Promise<boolean>;
+    validateInput(input: ActorRawInput, options: ActorValidateInputOptions & {
+        contentType: string;
+    }): Promise<boolean>;
     version(versionNumber: string): ActorVersionClient;
     versions(): ActorVersionCollectionClient;
     webhooks(): WebhookCollectionClient;
@@ -210,7 +219,7 @@ export interface ActorExampleRunInput extends GeneratedExampleRunInput {
 }
 
 // @public
-export type ActorInput = object | string;
+export type ActorInput = object;
 
 // @public
 export interface ActorLastRunOptions {
@@ -226,6 +235,9 @@ export enum ActorListSortBy {
     // (undocumented)
     LAST_RUN_STARTED_AT = "stats.lastRunStartedAt"
 }
+
+// @public
+export type ActorRawInput = string | Buffer;
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -3560,6 +3572,9 @@ export class RunClient extends ResourceClient {
     keyValueStore(): KeyValueStoreClient;
     log(): LogClient;
     metamorph(targetActorId: string, input?: ActorInput, options?: RunMetamorphOptions): Promise<ActorRun>;
+    metamorph(targetActorId: string, input: ActorRawInput, options: RunMetamorphOptions & {
+        contentType: string;
+    }): Promise<ActorRun>;
     reboot(): Promise<ActorRun>;
     requestQueue(): RequestQueueClient;
     resurrect(options?: RunResurrectOptions): Promise<ActorRun>;

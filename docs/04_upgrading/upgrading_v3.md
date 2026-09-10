@@ -169,13 +169,24 @@ Two return types change as a result of describing what the endpoints really retu
 
 ## Actor run input is no longer `unknown`
 
-<ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink>, <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, <ApiLink to="class/ActorClient#validateInput">`validateInput()`</ApiLink> and <ApiLink to="class/RunClient#metamorph">`RunClient.metamorph()`</ApiLink> took their `input` as `unknown`, so any value compiled, including ones the client can't send. The parameter is now `ActorInput`, an alias for `object | string`: a JSON-serializable object or array, or a `string` or `Buffer` sent as-is when `contentType` is set. A number, a boolean or `null` no longer compiles, and neither does a value typed `unknown`, which has to be narrowed or cast first. To start an Actor without input, omit the argument or pass `undefined`.
+<ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink>, <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, <ApiLink to="class/ActorClient#validateInput">`validateInput()`</ApiLink> and <ApiLink to="class/RunClient#metamorph">`RunClient.metamorph()`</ApiLink> took their `input` as `unknown`, so any value compiled, including ones the client cannot send.
+
+An input the client serializes to JSON is now typed `ActorInput`, an alias for `object`. A number, a boolean or `null` stops compiling, and so does a value typed `unknown`, which has to be narrowed or cast first. To run an Actor without input, omit the argument or pass `undefined`.
 
 ```diff
 - await client.actor('my-actor').call(null, { memory: 1024 }); // v2
 + await client.actor('my-actor').call(undefined, { memory: 1024 }); // v3
 ```
 
+A body the client passes through untouched is typed `ActorRawInput`, a `string` or a `Buffer`, and each of the four methods takes it through a second overload that also requires `contentType`. In v2 a raw body without a `contentType` compiled, and the API then stored it under the default `application/json; charset=utf-8`, which a form body or a PDF is not:
+
+```diff
+- await client.actor('my-actor').start('some=body'); // v2
++ await client.actor('my-actor').start('some=body', { // v3
++     contentType: 'application/x-www-form-urlencoded',
++ });
+```
+
 `metamorph()`'s `input` is optional now, so `metamorph('target-actor')` compiles where it previously needed an explicit `undefined`.
 
-Nothing changes at runtime. `TaskClient.start()` and `call()` keep taking a `Dictionary`: a task's input overrides are merged into the input saved on the task, so they're always an object.
+Nothing changes at runtime. `TaskClient.start()` and `call()` keep taking a `Dictionary`: a task's input overrides are merged into the input saved on the task, so they are always an object.
