@@ -182,7 +182,9 @@ describe('Dataset methods', () => {
             mockServer.setResponse({ body, headers });
             const qs = { bom: 0, format: 'csv', delimiter: ';', fields: 'a,b', omit: 'c,d' };
 
-            const format = DownloadItemsFormat.CSV;
+            // Both spellings compile, and the enum member holds the same value.
+            const format = 'csv' as const;
+            expect(format).toEqual(DownloadItemsFormat.CSV);
             const options = {
                 bom: false,
                 fields: ['a', 'b'],

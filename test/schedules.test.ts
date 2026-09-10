@@ -1,6 +1,7 @@
 import type { AddressInfo } from 'node:net';
 
-import { ApifyApiError, ApifyClient } from 'apify-client';
+import type { ScheduleCreateOrUpdateData } from 'apify-client';
+import { ApifyApiError, ApifyClient, ScheduleActions } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
@@ -38,7 +39,17 @@ describe('Schedule methods', () => {
 
     describe('schedules()', () => {
         test('create() works', async () => {
-            const schedule = { name: 'my-schedule', cronExpression: '0 0 * * *' };
+            const schedule: ScheduleCreateOrUpdateData = {
+                name: 'my-schedule',
+                cronExpression: '0 0 * * *',
+                actions: [{ type: 'RUN_ACTOR', actorId: 'some-actor-id' }],
+            };
+            // Both spellings compile, and the enum member holds the same value.
+            const withEnumMember: ScheduleCreateOrUpdateData = {
+                ...schedule,
+                actions: [{ type: ScheduleActions.RunActor, actorId: 'some-actor-id' }],
+            };
+            expect(withEnumMember).toEqual(schedule);
 
             const res = await client.schedules().create(schedule);
             validateRequest({ query: {}, params: {}, body: schedule, endpointId: 'create-schedule' });
