@@ -311,8 +311,10 @@ export abstract class HttpClient {
      * @param request - The request to send, with the headers merged, the body serialized and the query encoded.
      * @returns The response, with the body unread when `request.stream` is set and as raw bytes otherwise.
      */
-    async sendRequest(_request: HttpRequest): Promise<HttpResponse> {
-        throw new Error('Implement sendRequest() to provide a transport, or override call() entirely.');
+    async sendRequest(request: HttpRequest): Promise<HttpResponse> {
+        throw new Error(
+            `Implement sendRequest() to send ${request.method} ${request.url}, or override call() entirely.`,
+        );
     }
 
     /**
