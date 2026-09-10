@@ -25,6 +25,55 @@ const textEncoder = new TextEncoder();
 // Only the version, so a bundler can drop the rest of the manifest.
 export const { version } = packageJson;
 
+/** Media type prefixes whose payloads carry their own compression, so compressing the request body is wasted work. */
+const ALREADY_COMPRESSED_MEDIA_TYPE_PREFIXES = ['audio/', 'image/', 'video/'];
+
+/** Exact media types whose payloads carry their own compression. */
+const ALREADY_COMPRESSED_MEDIA_TYPES = new Set([
+    'application/epub+zip',
+    'application/gzip',
+    'application/java-archive',
+    'application/vnd.android.package-archive',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.rar',
+    'application/x-7z-compressed',
+    'application/x-bzip',
+    'application/x-bzip2',
+    'application/x-gzip',
+    'application/x-rar-compressed',
+    'application/x-xz',
+    'application/x-zip-compressed',
+    'application/zip',
+    'application/zstd',
+    'font/woff',
+    'font/woff2',
+]);
+
+/** Uncompressed media types that sit under an already-compressed prefix, so compressing them still pays off. */
+const COMPRESSIBLE_MEDIA_TYPES = new Set([
+    'audio/aiff',
+    'audio/basic',
+    'audio/l16',
+    'audio/l24',
+    'audio/midi',
+    'audio/vnd.wave',
+    'audio/wav',
+    'audio/wave',
+    'audio/x-aiff',
+    'audio/x-wav',
+    'image/bmp',
+    'image/tiff',
+    'image/vnd.adobe.photoshop',
+    'image/vnd.microsoft.icon',
+    'image/x-icon',
+    'image/x-ms-bmp',
+]);
+
+/** Structured syntax suffixes marking a media type as text even under an already-compressed prefix (`image/svg+xml`). */
+const COMPRESSIBLE_MEDIA_TYPE_SUFFIXES = ['+json', '+xml'];
+
 export { parseArgument };
 
 /**
@@ -211,6 +260,28 @@ function toBytes(value: unknown): Uint8Array | undefined {
     if (ArrayBuffer.isView(value)) return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
     if (value instanceof ArrayBuffer) return new Uint8Array(value);
     return undefined;
+}
+
+/**
+ * Decides whether a request body with the given content type is worth compressing.
+ *
+ * Images, audio, video and archives already carry their own compression. Running them through brotli or gzip
+ * burns CPU, holds a second full copy of the body in memory, and usually produces output slightly larger than
+ * the input. Formats that are raw despite such a media type, for example `image/bmp` or `audio/wav`, are still
+ * compressed. A body with no content type is assumed to be compressible.
+ * @internal
+ */
+export function isCompressibleContentType(contentType?: string): boolean {
+    if (!contentType) return true;
+
+    // `Content-Type` is case-insensitive and may carry parameters, for example `text/plain; charset=utf-8`.
+    const mediaType = contentType.split(';', 1)[0].trim().toLowerCase();
+
+    if (COMPRESSIBLE_MEDIA_TYPES.has(mediaType)) return true;
+    if (COMPRESSIBLE_MEDIA_TYPE_SUFFIXES.some((suffix) => mediaType.endsWith(suffix))) return true;
+
+    if (ALREADY_COMPRESSED_MEDIA_TYPES.has(mediaType)) return false;
+    return !ALREADY_COMPRESSED_MEDIA_TYPE_PREFIXES.some((prefix) => mediaType.startsWith(prefix));
 }
 
 /**

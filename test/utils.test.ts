@@ -192,6 +192,40 @@ describe('utils.getEnv()', () => {
     });
 });
 
+describe('utils.isCompressibleContentType()', () => {
+    test.each([
+        { name: 'a missing content type', contentType: undefined, compressible: true },
+        { name: 'an empty content type', contentType: '', compressible: true },
+        { name: 'JSON', contentType: 'application/json', compressible: true },
+        { name: 'text with parameters', contentType: 'text/plain; charset=utf-8', compressible: true },
+        { name: 'unknown binary', contentType: 'application/octet-stream', compressible: true },
+        { name: 'a structured JSON suffix', contentType: 'application/vnd.api+json', compressible: true },
+        { name: 'SVG under a compressed prefix', contentType: 'image/svg+xml', compressible: true },
+        { name: 'SVG uppercase with parameters', contentType: 'IMAGE/SVG+XML; charset=utf-8', compressible: true },
+        { name: 'a raw bitmap under a compressed prefix', contentType: 'image/bmp', compressible: true },
+        { name: 'TIFF under a compressed prefix', contentType: 'image/tiff', compressible: true },
+        { name: 'raw audio under a compressed prefix', contentType: 'audio/wav', compressible: true },
+        { name: 'raw PCM audio in its registered casing', contentType: 'audio/L24', compressible: true },
+        { name: 'MIDI event data under a compressed prefix', contentType: 'audio/midi', compressible: true },
+        { name: 'the image prefix', contentType: 'image/png', compressible: false },
+        { name: 'the video prefix', contentType: 'video/mp4', compressible: false },
+        { name: 'the audio prefix', contentType: 'audio/mpeg', compressible: false },
+        { name: 'an archive', contentType: 'application/zip', compressible: false },
+        { name: 'a gzip archive', contentType: 'application/x-gzip', compressible: false },
+        { name: 'a windows zip archive', contentType: 'application/x-zip-compressed', compressible: false },
+        { name: 'a zip container with a suffix', contentType: 'application/epub+zip', compressible: false },
+        {
+            name: 'an office open xml document',
+            contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            compressible: false,
+        },
+        { name: 'a web font', contentType: 'font/woff2', compressible: false },
+        { name: 'surrounding whitespace and mixed case', contentType: '  Image/PNG  ', compressible: false },
+    ])('reports $name as compressible: $compressible', ({ contentType, compressible }) => {
+        expect(utils.isCompressibleContentType(contentType)).toBe(compressible);
+    });
+});
+
 describe('utils.isBuffer()', () => {
     test('accepts binary values', () => {
         expect(utils.isBuffer(Buffer.from('abc'))).toBe(true);
