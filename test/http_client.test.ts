@@ -1,9 +1,9 @@
+import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import os from 'node:os';
 
 import { ApifyClient } from 'apify-client';
 import type { InternalAxiosRequestConfig } from 'axios';
-import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { Browser } from './_helper.js';
@@ -27,9 +27,7 @@ describe('HttpClient', () => {
     const delayedResourceId = (delayMillis: number) => Buffer.from(JSON.stringify({ delayMillis })).toString('hex');
 
     let client: ApifyClient;
-    let page: Page;
-    beforeEach(async () => {
-        page = await browser.getInjectedPage(baseUrl, { timeoutShortSecs: 1 });
+    beforeEach(() => {
         client = new ApifyClient({
             baseUrl,
             timeoutShortSecs: 1,
@@ -37,9 +35,8 @@ describe('HttpClient', () => {
             userAgentSuffix: ['SDK/3.1.1', 'Crawlee/3.11.5'],
         });
     });
-    afterEach(async () => {
+    afterEach(() => {
         client = null as unknown as ApifyClient;
-        page.close().catch(() => {});
     });
     test('requests time out after the duration configured for their tier', async () => {
         const resourceId = delayedResourceId(3000);
@@ -51,9 +48,14 @@ describe('HttpClient', () => {
         expect(ua).toMatch(`(${os.platform()}; Node/${process.version})`);
         expect(ua).toMatch('isAtHome/false; SDK/3.1.1; Crawlee/3.11.5');
 
-        await expect(page.evaluate((rId) => client.task(rId).get(), resourceId)).rejects.toThrow();
-        // this is failing after axios upgrade, the error is returned with a wrong name and message
-        // expect(err.message).toMatch('timeout of 1000ms exceeded');
+        const page = await browser.getInjectedPage(baseUrl, { timeoutShortSecs: 1 });
+        try {
+            await expect(page.evaluate((rId) => client.task(rId).get(), resourceId)).rejects.toThrow();
+            // this is failing after axios upgrade, the error is returned with a wrong name and message
+            // expect(err.message).toMatch('timeout of 1000ms exceeded');
+        } finally {
+            page.close().catch(() => {});
+        }
     });
 
     test('a per-call timeout replaces the tier of the method', async () => {
@@ -84,6 +86,66 @@ describe('HttpClient', () => {
             'The requested timeout of 10s exceeds timeoutMaxSecs (1s) and is capped at it. Raise timeoutMaxSecs on the client to allow longer request timeouts.',
             'The requested timeout of 5s exceeds timeoutMaxSecs (1s) and is capped at it. Raise timeoutMaxSecs on the client to allow longer request timeouts.',
         ]);
+    });
+
+    test('requests go through the proxy named in HTTP_PROXY, and skip it for hosts in NO_PROXY', async () => {
+        const proxied: string[] = [];
+        // A forward proxy: the agent puts the absolute target URL on the request line, so relay it as it is.
+        const proxy = http.createServer((req, res) => {
+            proxied.push(req.url!);
+            const upstream = http.request(new URL(req.url!), { method: req.method, headers: req.headers }, (r) => {
+                res.writeHead(r.statusCode!, r.headers);
+                r.pipe(res);
+            });
+            // An unhandled 'error' here would take the worker down instead of failing the test.
+            upstream.on('error', () => res.destroy());
+            req.pipe(upstream);
+        });
+        await new Promise<void>((done) => proxy.listen(0, '127.0.0.1', done));
+        const proxyUrl = `http://127.0.0.1:${(proxy.address() as AddressInfo).port}`;
+        // `proxy-from-env` reads the lowercase name first, and a developer machine may exempt localhost in NO_PROXY.
+        for (const name of ['HTTP_PROXY', 'http_proxy']) vi.stubEnv(name, proxyUrl);
+        for (const name of ['NO_PROXY', 'no_proxy']) vi.stubEnv(name, '');
+
+        try {
+            const res = await client.user('me').get();
+            expect(res?.id).toBe('get-user');
+            expect(proxied).toEqual([`${baseUrl}/v2/users/me`]);
+
+            // A fresh client for the exempted host, because the first one keeps its socket to the proxy alive
+            // and would reuse it without consulting the environment again.
+            for (const name of ['NO_PROXY', 'no_proxy']) vi.stubEnv(name, 'localhost');
+            const direct = await new ApifyClient({ baseUrl, timeoutShortSecs: 1, maxRetries: 0 }).user('me').get();
+            expect(direct?.id).toBe('get-user');
+            expect(proxied).toHaveLength(1);
+        } finally {
+            vi.unstubAllEnvs();
+            await new Promise<void>((done) => proxy.close(() => done()));
+        }
+    });
+
+    test('an https request tunnels through the proxy named in HTTPS_PROXY', async () => {
+        const tunneled: string[] = [];
+        // The tunnel is answered by dropping the socket: reaching for it at all is what separates an https
+        // origin from the plain forward-proxy path above, while speaking through it would need a certificate.
+        const proxy = http.createServer();
+        proxy.on('connect', (req, socket) => {
+            tunneled.push(req.url!);
+            socket.destroy();
+        });
+        await new Promise<void>((done) => proxy.listen(0, '127.0.0.1', done));
+        const proxyUrl = `http://127.0.0.1:${(proxy.address() as AddressInfo).port}`;
+        for (const name of ['HTTPS_PROXY', 'https_proxy']) vi.stubEnv(name, proxyUrl);
+        for (const name of ['NO_PROXY', 'no_proxy']) vi.stubEnv(name, '');
+
+        try {
+            const secure = new ApifyClient({ baseUrl: 'https://api.apify.test', timeoutShortSecs: 1, maxRetries: 0 });
+            await expect(secure.user('me').get()).rejects.toThrow();
+            expect(tunneled).toEqual(['api.apify.test:443']);
+        } finally {
+            vi.unstubAllEnvs();
+            await new Promise<void>((done) => proxy.close(() => done()));
+        }
     });
 
     describe('timeout across retries', () => {
