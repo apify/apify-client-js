@@ -13,5 +13,5 @@ beforeAll(() => {
 test('the client authenticates against the live API and resolves the current user', async () => {
     const me = await client.user('me').get();
 
-    expect(me.username).toBeTruthy();
+    expect(me?.username).toBeTruthy();
 });

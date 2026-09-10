@@ -86,7 +86,7 @@ interface ListOptions {
     unnamed?: boolean;
     chunkSize?: number;
     exclusiveStartKey?: string;
-    exclusiveStartId?: string;
+    cursor?: string;
 }
 
 interface TestOption {
@@ -474,12 +474,7 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
     const client = new ApifyClient();
     const maxItemsPerPage = 10000;
 
-    const exclusiveStartIdPaginationOptions = [
-        {
-            testName: 'exclusiveStartId',
-            userDefinedOptions: { exclusiveStartId: '1000' },
-            expectedItems: range(1001, 2500),
-        },
+    const cursorPaginationOptions = [
         {
             testName: 'cursor',
             userDefinedOptions: { cursor: 'cursor:1000' },
@@ -489,7 +484,7 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
 
     const testCases = generateTestCases(
         [client.requestQueue('some-id')],
-        [...limitPaginationOptions, ...exclusiveStartIdPaginationOptions],
+        [...limitPaginationOptions, ...cursorPaginationOptions],
     );
     test.each(testCases as any)('$testName', async function handler({
         resourceClient,
@@ -508,13 +503,8 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
                 throw new Error('Limit must be non-negative');
             }
 
-            if (request.params.exclusiveStartId && request.params.cursor) {
-                throw new Error('exclusiveStartId and cursor cannot be used together');
-            }
             let effectiveStartIndex = 0;
-            if (request.params.exclusiveStartId) {
-                effectiveStartIndex = Number(request.params.exclusiveStartId) + 1;
-            } else if (request.params.cursor) {
+            if (request.params.cursor) {
                 effectiveStartIndex = Number(request.params.cursor.split(':')[1]);
             }
 
@@ -528,7 +518,6 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
                         items,
                         count: items.length,
                         limit: limit || maxItemsPerPage,
-                        exclusiveStartId: request.params.exclusiveStartId,
                         cursor: request.params.cursor,
                         nextCursor: items.length < maxItemsPerPage ? undefined : `cursor:${upperIndex}`,
                     },

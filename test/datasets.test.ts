@@ -1,6 +1,6 @@
 import type { AddressInfo } from 'node:net';
 
-import { ApifyClient, ArgumentValidationError, DownloadItemsFormat } from 'apify-client';
+import { ApifyApiError, ApifyClient, ArgumentValidationError, DownloadItemsFormat } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest';
 
@@ -118,6 +118,13 @@ describe('Dataset methods', () => {
             validateRequest({ query: {}, params: { datasetId } });
         });
 
+        test('delete() resolves on 404 status code (RECORD_NOT_FOUND)', async () => {
+            const datasetId = '404';
+
+            await expect(client.dataset(datasetId).delete()).resolves.toBeUndefined();
+            validateRequest({ query: {}, params: { datasetId } });
+        });
+
         test('update() works', async () => {
             const datasetId = 'some-id';
             const dataset = { name: 'my-name' };
@@ -175,7 +182,9 @@ describe('Dataset methods', () => {
             mockServer.setResponse({ body, headers });
             const qs = { bom: 0, format: 'csv', delimiter: ';', fields: 'a,b', omit: 'c,d' };
 
-            const format = DownloadItemsFormat.CSV;
+            // Both spellings compile, and the enum member holds the same value.
+            const format = 'csv' as const;
+            expect(format).toEqual(DownloadItemsFormat.CSV);
             const options = {
                 bom: false,
                 fields: ['a', 'b'],
@@ -397,6 +406,16 @@ describe('Dataset methods', () => {
             const browserRes = await page.evaluate((id) => client.dataset(id).getStatistics(), datasetId);
             expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { datasetId } });
+        });
+
+        test('getStatistics() throws on 404 status code', async () => {
+            const datasetId = '404';
+
+            const call = client.dataset(datasetId).getStatistics();
+            await expect(call).rejects.toThrow(ApifyApiError);
+            await expect(call).rejects.toMatchObject({ statusCode: 404 });
+
+            await expect(page.evaluate((id) => client.dataset(id).getStatistics(), datasetId)).rejects.toThrow();
         });
 
         describe('createItemsPublicUrl()', () => {

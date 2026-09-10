@@ -2,7 +2,7 @@ import type { AddressInfo } from 'node:net';
 import { setTimeout as setTimeoutNode } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import { ApifyClient, ArgumentValidationError } from 'apify-client';
+import { ApifyApiError, ApifyClient, ArgumentValidationError } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
@@ -176,14 +176,10 @@ describe('Run methods', () => {
         test('metamorph() works', async () => {
             const runId = 'some-run-id';
             const targetActorId = 'some-target-id';
-            const contentType = 'application/x-www-form-urlencoded';
-            const input = 'some=body';
+            const input = { some: 'body' };
             const build = '1.2.0';
 
-            const options = {
-                build,
-                contentType,
-            };
+            const options = { build };
 
             const actualQuery = {
                 targetActorId,
@@ -195,8 +191,7 @@ describe('Run methods', () => {
                 endpointId: 'metamorph-run',
                 query: actualQuery,
                 params: { runId },
-                body: { some: 'body' },
-                additionalHeaders: { 'content-type': contentType },
+                body: input,
             });
 
             const browserRes = await page.evaluate(
@@ -212,16 +207,15 @@ describe('Run methods', () => {
             validateRequest({
                 query: actualQuery,
                 params: { runId },
-                body: { some: 'body' },
-                additionalHeaders: { 'content-type': contentType },
+                body: input,
             });
         });
 
-        test('metamorph() works with pre-stringified JSON input', async () => {
+        test('metamorph() passes contentType through as the request header', async () => {
             const runId = 'some-run-id';
             const targetActorId = 'some-target-id';
             const contentType = 'application/json; charset=utf-8';
-            const input = JSON.stringify({ foo: 'bar' });
+            const input = { foo: 'bar' };
 
             const expectedRequest = {
                 query: { targetActorId },
@@ -384,6 +378,27 @@ describe('Run methods', () => {
             validateRequest({ query: {}, params: { runId } });
         });
 
+        test.each(['dataset', 'keyValueStore', 'requestQueue', 'log'] as const)(
+            '%s().get() throws on 404 status code',
+            async (method) => {
+                const runId = '404';
+
+                const call = client.run(runId)[method]().get();
+                await expect(call).rejects.toThrow(ApifyApiError);
+                await expect(call).rejects.toMatchObject({ statusCode: 404 });
+
+                await expect(page.evaluate((rId, m) => client.run(rId)[m]().get(), runId, method)).rejects.toThrow();
+            },
+        );
+
+        test('dataset().delete() throws on 404 status code', async () => {
+            const runId = '404';
+
+            const call = client.run(runId).dataset().delete();
+            await expect(call).rejects.toThrow(ApifyApiError);
+            await expect(call).rejects.toMatchObject({ statusCode: 404 });
+        });
+
         test('charge() works', async () => {
             const runId = 'some-run-id';
 
@@ -449,6 +464,21 @@ describe('Redirect run logs', () => {
             const loggerPrefix = c.cyan('redirect-actor-name runId:redirect-run-id -> ');
             expect(logSpy.mock.calls).toEqual(expected.map((item) => [loggerPrefix + item]));
             logSpy.mockRestore();
+        });
+    });
+
+    describe('run.getStreamedLog missing run', () => {
+        test('logs warning instead of throwing when the run log answers 404', async () => {
+            const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            const streamedLog = await client.run('404').getStreamedLog({ fromStart: true });
+            streamedLog?.start();
+            await expect(streamedLog?.stop()).resolves.not.toThrow();
+            expect(
+                warnSpy.mock.calls.some(
+                    ([msg]) => typeof msg === 'string' && msg.includes('Log redirection stopped due to error'),
+                ),
+            ).toBe(true);
+            warnSpy.mockRestore();
         });
     });
 

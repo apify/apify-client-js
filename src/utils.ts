@@ -19,6 +19,55 @@ import packageJson from '../package.json' with { type: 'json' };
 
 const MIN_COMPRESS_BYTES = 1024;
 
+/** Media type prefixes whose payloads carry their own compression, so compressing the request body is wasted work. */
+const ALREADY_COMPRESSED_MEDIA_TYPE_PREFIXES = ['audio/', 'image/', 'video/'];
+
+/** Exact media types whose payloads carry their own compression. */
+const ALREADY_COMPRESSED_MEDIA_TYPES = new Set([
+    'application/epub+zip',
+    'application/gzip',
+    'application/java-archive',
+    'application/vnd.android.package-archive',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.rar',
+    'application/x-7z-compressed',
+    'application/x-bzip',
+    'application/x-bzip2',
+    'application/x-gzip',
+    'application/x-rar-compressed',
+    'application/x-xz',
+    'application/x-zip-compressed',
+    'application/zip',
+    'application/zstd',
+    'font/woff',
+    'font/woff2',
+]);
+
+/** Uncompressed media types that sit under an already-compressed prefix, so compressing them still pays off. */
+const COMPRESSIBLE_MEDIA_TYPES = new Set([
+    'audio/aiff',
+    'audio/basic',
+    'audio/l16',
+    'audio/l24',
+    'audio/midi',
+    'audio/vnd.wave',
+    'audio/wav',
+    'audio/wave',
+    'audio/x-aiff',
+    'audio/x-wav',
+    'image/bmp',
+    'image/tiff',
+    'image/vnd.adobe.photoshop',
+    'image/vnd.microsoft.icon',
+    'image/x-icon',
+    'image/x-ms-bmp',
+]);
+
+/** Structured syntax suffixes marking a media type as text even under an already-compressed prefix (`image/svg+xml`). */
+const COMPRESSIBLE_MEDIA_TYPE_SUFFIXES = ['+json', '+xml'];
+
 export { parseArgument };
 
 /**
@@ -56,8 +105,9 @@ const { localeError } = z.locales.en();
 /**
  * Turns a JSON API response into the value a resource method returns: unwraps the `data` envelope, converts the
  * date fields and validates the result against `schema`, one of the schemas generated from the OpenAPI
- * specification. The validated copy is what callers get, so it is exactly what the schema accepted -- unknown
- * fields and unknown enum values included, since the schemas let both through.
+ * specification. The validated copy is what callers get, so it is the schema's output -- unknown fields and unknown
+ * enum values included, since the schemas let both through, and URL fields normalized, since `z.url()` hands back
+ * the parsed URL's serialization.
  *
  * Throws {@link ResponseValidationError} when the response does not match the specification.
  * @internal
@@ -93,6 +143,18 @@ export function pluckData<R>(obj: MaybeData<R>): R {
  */
 export function catchNotFoundOrThrow(err: ApifyApiError): void {
     if (!(err instanceof NotFoundError)) throw err;
+}
+
+/**
+ * Like `catchNotFoundOrThrow()`, but swallows the 404 only when the client names its resource by ID.
+ *
+ * A chained client without an ID, such as `run.dataset()` or `run.log()`, requests a path where a 404 can mean either
+ * the parent or the default sub-resource is missing. The response cannot tell the two apart, so the error propagates.
+ * @internal
+ */
+export function catchNotFoundForResourceOrThrow(err: ApifyApiError, resourceId: string | undefined): void {
+    if (!resourceId) throw err;
+    catchNotFoundOrThrow(err);
 }
 
 type ReturnJsonValue = string | number | boolean | null | Date | ReturnJsonObject | ReturnJsonArray;
@@ -200,6 +262,28 @@ export interface CompressedValue {
 }
 
 /**
+ * Decides whether a request body with the given content type is worth compressing.
+ *
+ * Images, audio, video and archives already carry their own compression. Running them through brotli or gzip
+ * burns CPU, holds a second full copy of the body in memory, and usually produces output slightly larger than
+ * the input. Formats that are raw despite such a media type, for example `image/bmp` or `audio/wav`, are still
+ * compressed. A body with no content type is assumed to be compressible.
+ * @internal
+ */
+export function isCompressibleContentType(contentType?: string): boolean {
+    if (!contentType) return true;
+
+    // `Content-Type` is case-insensitive and may carry parameters, for example `text/plain; charset=utf-8`.
+    const mediaType = contentType.split(';', 1)[0].trim().toLowerCase();
+
+    if (COMPRESSIBLE_MEDIA_TYPES.has(mediaType)) return true;
+    if (COMPRESSIBLE_MEDIA_TYPE_SUFFIXES.some((suffix) => mediaType.endsWith(suffix))) return true;
+
+    if (ALREADY_COMPRESSED_MEDIA_TYPES.has(mediaType)) return false;
+    return !ALREADY_COMPRESSED_MEDIA_TYPE_PREFIXES.some((prefix) => mediaType.startsWith(prefix));
+}
+
+/**
  * Compress the passed value using brotli, falling back to gzip. Returns undefined if the data is
  * too small / wrong type, or if neither algorithm is available.
  */
@@ -287,7 +371,7 @@ export function getVersionData(): { version: string } {
 }
 
 /**
- * Helper class to create async iterators from paginated list endpoints with exclusive start key.
+ * Helper class to create async iterators from paginated list endpoints.
  */
 export class RequestQueuePaginationIterator {
     private readonly maxPageLimit: number;
@@ -298,22 +382,17 @@ export class RequestQueuePaginationIterator {
 
     private readonly limit?: number;
 
-    private readonly exclusiveStartId?: string;
     private readonly cursor?: string;
 
     constructor(options: RequestQueuePaginationIteratorOptions) {
         this.maxPageLimit = options.maxPageLimit;
         this.limit = options.limit;
-        this.exclusiveStartId = options.exclusiveStartId;
         this.cursor = options.cursor;
         this.getPage = options.getPage;
     }
 
     async *[Symbol.asyncIterator](): AsyncIterator<RequestQueueClientListRequestsResult> {
         let nextCursor = this.cursor;
-        // allow using exclusiveStartId for the first page, but then we'll delete it to avoid using it for any later page
-        let nextExclusiveStartId = this.exclusiveStartId;
-
         let iterateItemCount = 0;
         while (true) {
             const pageLimit = this.limit
@@ -323,7 +402,6 @@ export class RequestQueuePaginationIterator {
             const page: RequestQueueClientListRequestsResult = await this.getPage({
                 limit: pageLimit,
                 cursor: nextCursor,
-                exclusiveStartId: nextExclusiveStartId,
             });
             // There are no more pages to iterate
             if (page.items.length === 0) return;
@@ -333,7 +411,6 @@ export class RequestQueuePaginationIterator {
             if ((this.limit && iterateItemCount >= this.limit) || !page.nextCursor) return;
 
             nextCursor = page.nextCursor;
-            nextExclusiveStartId = undefined; // see comment above - delete it for any page after the first one, and paginate with cursor
         }
     }
 }
@@ -350,7 +427,6 @@ export interface RequestQueuePaginationIteratorOptions {
     maxPageLimit: number;
     getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<RequestQueueClientListRequestsResult>;
     limit?: number;
-    exclusiveStartId?: string;
     cursor?: string;
 }
 
@@ -481,16 +557,6 @@ export function applyQueryParamsToUrl(
     }
     return url;
 }
-
-/**
- * Builds a `[check, message]` pair to spread into `.refine()`, asserting that at most one of `keys`
- * is present. Pass the options interface as `T`, so that a misspelled key is a type error.
- * @internal
- */
-export const mutuallyExclusive = <T extends object>(...keys: (keyof T & string)[]): [(value: T) => boolean, string] => [
-    (value) => keys.filter((key) => typeof value[key] !== 'undefined').length <= 1,
-    `At most one of the following fields is allowed: ${keys.join(', ')}`,
-];
 
 const pathSegmentSchema = z
     .string()
