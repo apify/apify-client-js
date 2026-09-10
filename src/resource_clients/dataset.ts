@@ -482,10 +482,6 @@ export interface DatasetClientCreateItemsUrlOptions extends Omit<
 
 /**
  * Supported formats for downloading dataset items.
- *
- * `downloadItems()` takes `` `${DownloadItemsFormat}` ``, the enum's values as plain string literals,
- * rather than the enum itself. Both spellings are therefore accepted: `DownloadItemsFormat.CSV` and the
- * plain `'csv'`.
  */
 export enum DownloadItemsFormat {
     JSON = 'json',

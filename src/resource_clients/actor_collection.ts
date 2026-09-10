@@ -92,10 +92,6 @@ export class ActorCollectionClient extends ResourceCollectionClient {
 /**
  * Field to order a list of Actors by.
  *
- * `ActorCollectionListOptions.sortBy` is typed as `` `${ActorListSortBy}` ``, the enum's values as plain
- * string literals, rather than as the enum itself. Both spellings are therefore accepted:
- * `ActorListSortBy.CREATED_AT` and the plain `'createdAt'`.
- *
  * @since Added in 2.12.6
  */
 export enum ActorListSortBy {

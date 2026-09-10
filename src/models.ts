@@ -250,10 +250,6 @@ type GeneratedEnvVar = Schemas['EnvVar'];
  * Declared here rather than in `./resource_clients/actor_version` so that the version types can
  * reference it without closing an import cycle. It is re-exported from there, so the public name and
  * import path are unchanged.
- *
- * The fields that carry a source type are typed as `` `${ActorSourceType}` ``, the enum's values as
- * plain string literals, rather than as the enum itself. Both spellings are therefore accepted:
- * `ActorSourceType.GitRepo` and the plain `'GIT_REPO'`.
  */
 export enum ActorSourceType {
     SourceFiles = 'SOURCE_FILES',
@@ -894,10 +890,6 @@ type GeneratedScheduleActionRunInput = Schemas['ScheduleActionRunInput'];
  * Declared here rather than in `./resource_clients/schedule` so that the action types can reference it
  * without closing an import cycle. It is re-exported from there, so the public name and import path are
  * unchanged.
- *
- * An action's `type` is typed as `` `${ScheduleActions}` ``, the enum's values as plain string literals,
- * rather than as the enum itself. Both spellings are therefore accepted: `ScheduleActions.RunActor` and
- * the plain `'RUN_ACTOR'`.
  */
 export enum ScheduleActions {
     RunActor = 'RUN_ACTOR',
