@@ -288,15 +288,18 @@ On Node.js nothing changes. The features that need it, log streaming and the `st
 
 The pick happens when the import is resolved rather than at runtime, so a Node.js application bundled for a browser or a neutral target gets the Web API implementation and loses those features. The client used to sniff the runtime and recover. The bundler's target now decides.
 
+A test runner that resolves the `browser` condition decides the same way. Jest's `jsdom` environment resolves it, so a Node.js test suite running under it gets the Web API implementation unless you set `testEnvironmentOptions.customExportConditions` to `['node']`.
+
 ### Response bodies are decoded by `TextDecoder`
 
-The client used to decode a response body with `Buffer` in Node.js and with `TextDecoder` in the browser, and now uses `TextDecoder` everywhere. The two support different charsets, so a `content-type` header carrying one the other doesn't know is handled differently:
+The client used to decode a response body with `Buffer` in Node.js and with `TextDecoder` in the browser, and now uses `TextDecoder` everywhere. The two don't agree on which charsets they support, or on what a few of the shared ones mean, so a `content-type` header carrying a charset can be handled differently:
 
 - A charset `TextDecoder` knows and `Buffer` doesn't, such as `iso-8859-1`, now decodes to a string. It used to be handed back as raw bytes.
 - A charset `Buffer` knows and `TextDecoder` doesn't, such as `hex` or `base64`, is now handed back as raw bytes. It used to be decoded as if the body were in that encoding, which mangled it.
-- A leading UTF-8 byte order mark is stripped, so a JSON body carrying one parses instead of throwing.
+- `ascii` is a label both of them know but read differently. `Buffer` masked every byte down to seven bits, and `TextDecoder` treats the label as an alias for `windows-1252`, so a byte above `0x7F` now decodes to the character that encoding gives it.
+- A leading UTF-8 byte order mark is stripped from every decoded body. A JSON body carrying one now parses instead of throwing, and a `text/*` record such as a BOM-prefixed CSV comes back without it.
 
-Bodies with no charset, or with a UTF-8 one, are unaffected, which covers everything the Apify API sends.
+Apart from the byte order mark, a body with no charset or with a UTF-8 one is unaffected, and that covers everything the Apify API sends.
 
 ### Request compression accepts more body types
 

@@ -34,7 +34,7 @@ Two dependencies still import Node.js built-ins:
 - `@apify/log` imports `node:events` and reads `process.env`.
 - `@apify/utilities` imports `node:stream` and `node:crypto`, and uses `Buffer`.
 
-Until [apify/apify-shared-js#537](https://github.com/apify/apify-shared-js/issues/537) removes them, bundling the ES module build for a non-Node.js target needs polyfills for `events`, `process`, `stream`, and `buffer`. The `node:crypto` import can resolve to an empty module, because only deprecated functions the client doesn't call use it. On Cloudflare Workers, the [`nodejs_compat`](https://developers.cloudflare.com/workers/runtime-apis/nodejs/) compatibility flag provides all of them.
+Until [apify/apify-shared-js#537](https://github.com/apify/apify-shared-js/issues/537) removes them, bundling the ES module build for a non-Node.js target needs polyfills for `events`, `process`, `stream`, and `buffer`. The `node:crypto` import can resolve to an empty module, because the client only calls the helpers that `@apify/utilities` builds on Web Crypto. On Cloudflare Workers, the [`nodejs_compat`](https://developers.cloudflare.com/workers/runtime-apis/nodejs/) compatibility flag provides all of them.
 
 ## Features that need Node.js
 
