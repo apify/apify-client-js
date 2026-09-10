@@ -462,6 +462,11 @@ export class KeyValueStoreClient extends ResourceClient {
      *                             - Objects: `'application/json; charset=utf-8'`
      *                             - Strings: `'text/plain; charset=utf-8'`
      *                             - Binary values and streams: `'application/octet-stream'`
+     *
+     *                             Worth setting for media and archives: the client skips compressing a body
+     *                             whose content type already carries its own compression. The
+     *                             `'application/octet-stream'` fallback is treated as compressible, because
+     *                             it could hold any binary data.
      * @param options - Storage options
      * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @param options.doNotRetryTimeouts - If `true`, don't retry on timeout errors. Default is `false`.
