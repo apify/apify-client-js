@@ -90,7 +90,7 @@ export class AxiosHttpClient extends HttpClient {
      */
     override isRetryableTransportError(error: unknown): boolean {
         if (!axios.isAxiosError(error)) return false;
-        return typeof error.request === 'object' && error.request !== null && typeof error.config === 'object';
+        return typeof error.request === 'object' && error.request !== null && error.config != null;
     }
 
     /**
@@ -98,7 +98,8 @@ export class AxiosHttpClient extends HttpClient {
      * has nothing to close.
      */
     override async close(): Promise<void> {
-        await this.nodeInitPromise;
+        // A failed initialization left nothing to release, and its error belongs to the request that hit it.
+        await this.nodeInitPromise?.catch(() => {});
         this.httpAgent?.destroy();
         this.httpsAgent?.destroy();
     }
