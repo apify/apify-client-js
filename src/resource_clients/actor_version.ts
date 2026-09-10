@@ -74,7 +74,7 @@ export class ActorVersionClient extends ResourceClient {
      * @returns The updated Actor version object.
      * @see https://docs.apify.com/api/v2/act-version-put
      */
-    async update(newFields: ActorVersion): Promise<FinalActorVersion> {
+    async update(newFields: ActorVersionUpdateData): Promise<FinalActorVersion> {
         parseArgument(newFields, anyObjectSchema);
 
         return this._update(schemas.Version(), newFields);
@@ -117,3 +117,12 @@ export class ActorVersionClient extends ResourceClient {
         return new ActorEnvVarCollectionClient(this._subResourceOptions());
     }
 }
+
+/**
+ * Fields that can be changed on an existing Actor version.
+ *
+ * All of them are optional, because the endpoint leaves untouched whatever the payload does not
+ * mention. The version union enforces the pairing: a `sourceType` can only be sent next to the
+ * source location it implies, never next to one of the other three.
+ */
+export type ActorVersionUpdateData = Partial<ActorVersion>;

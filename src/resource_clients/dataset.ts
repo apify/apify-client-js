@@ -260,7 +260,10 @@ export class DatasetClient<
      * });
      * ```
      */
-    async downloadItems(format: DownloadItemsFormat, options: DatasetClientDownloadItemsOptions = {}): Promise<Buffer> {
+    async downloadItems(
+        format: `${DownloadItemsFormat}`,
+        options: DatasetClientDownloadItemsOptions = {},
+    ): Promise<Buffer> {
         parseArgument(format, itemFormatSchema);
         const parsed = parseArgument(options, downloadItemsOptionsSchema, 'DatasetClientDownloadItemsOptions');
 
