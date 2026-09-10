@@ -70,9 +70,7 @@ export default defineConfig({
         },
     },
     mode: 'production',
-    // The client's own code needs no polyfills. These are for `@apify/log` (`node:events`, `process.env`)
-    // and `@apify/utilities` (`node:stream`, `Buffer`), see https://github.com/apify/apify-shared-js/issues/537.
-    // `@apify/utilities` also imports `node:crypto`, but the client only calls the helpers it builds on
-    // Web Crypto, so the import resolves to an empty module instead of a polyfill.
+    // The client's own code needs no polyfills, so these cover its dependencies. `node:crypto` is excluded,
+    // because the client only calls the helpers built on Web Crypto.
     plugins: [pluginNodePolyfill({ overrides: { crypto: false } })],
 });

@@ -73,8 +73,8 @@ describe('#runtime resolution', () => {
     /**
      * Bundles the ES module build for the given target and returns the modules it pulled in. The entry point is
      * `dist/index.js` rather than the package name, because the `browser` condition of the `exports` field
-     * resolves to the pre-built bundle instead. Dependencies stay external, and with them the Node.js built-ins
-     * that `@apify/log` and `@apify/utilities` still import.
+     * resolves to the pre-built bundle instead. Dependencies stay external, so the inputs cover the client's
+     * own code alone.
      */
     async function bundleClient(options: { platform: 'browser' | 'neutral' | 'node'; conditions?: string[] }) {
         const { metafile } = await build({

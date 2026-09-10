@@ -21,20 +21,13 @@ The package ships a pre-built browser bundle at `dist/bundle.js`. A bundler that
 import { ApifyClient } from 'apify-client/browser';
 ```
 
-The bundle includes polyfills for the Node.js built-ins the client's dependencies import, so it needs no polyfill configuration.
+The bundle is self-contained and needs no polyfill configuration.
 
 ## Bundling the ES module build yourself
 
 The client's own code runs on Web APIs. The parts that need Node.js built-ins, the keep-alive HTTP agents with proxy support and request body compression, live in a single module that the `#runtime` entry of the package's `imports` field selects at bundle time. The `node` condition gets the Node.js implementation, every other target gets the Web API one. A bundler targeting a browser, Cloudflare Workers, or another edge runtime therefore never sees `node:zlib`, `node:os`, `node:util`, or `proxy-agent`.
 
 Reaching the ES module build takes a bundler that doesn't set the `browser` condition, which resolves `apify-client` to the pre-built bundle. esbuild's `neutral` platform sets no conditions, and webpack and Vite let you list them through `resolve.conditionNames` and `resolve.conditions`.
-
-Two dependencies still import Node.js built-ins:
-
-- `@apify/log` imports `node:events` and reads `process.env`.
-- `@apify/utilities` imports `node:stream` and `node:crypto`, and uses `Buffer`.
-
-Until [apify/apify-shared-js#537](https://github.com/apify/apify-shared-js/issues/537) removes them, bundling the ES module build for a non-Node.js target needs polyfills for `events`, `process`, `stream`, and `buffer`. The `node:crypto` import can resolve to an empty module, because the client only calls the helpers that `@apify/utilities` builds on Web Crypto. On Cloudflare Workers, the [`nodejs_compat`](https://developers.cloudflare.com/workers/runtime-apis/nodejs/) compatibility flag provides all of them.
 
 ## Features that need Node.js
 

@@ -153,8 +153,6 @@ import { ApifyClient } from 'apify-client/browser';
 
 Only two parts of the client need Node.js built-ins: the HTTP agents and request compression. The `node` condition selects the Node.js implementation of those, and every other target gets one built on Web APIs. Log streaming, proxy support, and request compression are only available in Node.js.
 
-When you bundle the ES module build yourself, the `@apify/log` and `@apify/utilities` dependencies still need polyfills for `events`, `process`, `stream`, and `buffer`. On Cloudflare Workers, the `nodejs_compat` compatibility flag provides them.
-
 For details, see [Bundled environments](https://docs.apify.com/api/client/js/docs/concepts/bundled-environments).
 
 ## API Reference
