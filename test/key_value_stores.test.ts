@@ -648,6 +648,43 @@ describe('Key-Value Store methods', () => {
             });
         });
 
+        test.each([
+            { name: 'a PNG', contentType: 'image/png' },
+            { name: 'a ZIP archive', contentType: 'application/zip' },
+            { name: 'a web font', contentType: 'font/woff2' },
+        ])('setRecord() sends $name uncompressed', async ({ contentType }) => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            // Well above the 1 KiB compression threshold and trivially compressible, so an unchanged
+            // content length is proof the body was not run through the compressor.
+            const value = Buffer.alloc(4096, 'a');
+
+            const res = await client.keyValueStore(storeId).setRecord({ key, value, contentType });
+            expect(res).toBeUndefined();
+
+            const request = mockServer.getLastRequest();
+            expect(request?.headers['content-type']).toBe(contentType);
+            expect(request?.headers['content-encoding']).toBeUndefined();
+            expect(request?.headers['content-length']).toBe(String(value.length));
+        });
+
+        test.each([
+            { name: 'SVG under a compressed prefix', contentType: 'image/svg+xml' },
+            { name: 'a raw bitmap under a compressed prefix', contentType: 'image/bmp' },
+            { name: 'unknown binary', contentType: 'application/octet-stream' },
+        ])('setRecord() compresses $name', async ({ contentType }) => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const value = Buffer.alloc(4096, 'a');
+
+            const res = await client.keyValueStore(storeId).setRecord({ key, value, contentType });
+            expect(res).toBeUndefined();
+
+            const request = mockServer.getLastRequest();
+            expect(request?.headers['content-type']).toBe(contentType);
+            expect(request?.headers['content-encoding']).toBe('br');
+        });
+
         test('deleteRecord() works', async () => {
             const key = 'some-key';
             const storeId = '204';
