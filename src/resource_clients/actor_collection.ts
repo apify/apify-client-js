@@ -75,7 +75,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
     list(options: ActorCollectionListOptions = {}): PaginatedIterator<ActorCollectionListItem> {
         const parsed = parseArgument(options, listOptionsSchema, 'ActorCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfActors(), parsed, 'medium');
+        return this.listResourcesPaginated(schemas.ListOfActors(), parsed, 'medium');
     }
 
     /**
@@ -91,7 +91,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
         parseArgument(actor, actorCreateSchema);
         const { timeout = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._create(schemas.Actor(), actor, timeout);
+        return this.createResource(schemas.Actor(), actor, timeout);
     }
 }
 

@@ -77,7 +77,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
     ): PaginatedIterator<Omit<Webhook, 'payloadTemplate' | 'headersTemplate'>> {
         const parsed = parseArgument(options, listOptionsSchema, 'WebhookCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfWebhooks(), parsed, 'medium');
+        return this.listResourcesPaginated(schemas.ListOfWebhooks(), parsed, 'medium');
     }
 
     /**
@@ -93,7 +93,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
         parseArgument(webhook, webhookCreateSchema);
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._create(schemas.Webhook(), webhook, timeout);
+        return this.createResource(schemas.Webhook(), webhook, timeout);
     }
 }
 

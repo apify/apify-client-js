@@ -126,7 +126,7 @@ export class KeyValueStoreClient extends ResourceClient {
     async get(options: TimeoutOptions = {}): Promise<KeyValueStore | undefined> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._get(schemas.KeyValueStore(), {}, timeout);
+        return this.getResource(schemas.KeyValueStore(), {}, timeout);
     }
 
     /**
@@ -145,7 +145,7 @@ export class KeyValueStoreClient extends ResourceClient {
         parseArgument(newFields, anyObjectSchema);
         const { timeout = 'long' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._update(schemas.KeyValueStore(), newFields, timeout);
+        return this.updateResource(schemas.KeyValueStore(), newFields, timeout);
     }
 
     /**
@@ -158,7 +158,7 @@ export class KeyValueStoreClient extends ResourceClient {
     async delete(options: TimeoutOptions = {}): Promise<void> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._delete(timeout);
+        return this.deleteResource(timeout);
     }
 
     /**
@@ -210,9 +210,9 @@ export class KeyValueStoreClient extends ResourceClient {
             kvsListOptions: KeyValueClientListKeysOptions = {},
         ): Promise<KeyValueClientListKeysResult> => {
             const response = await this.httpClient.call({
-                url: this._url('keys'),
+                url: this.buildUrl('keys'),
                 method: 'GET',
-                params: this._params(kvsListOptions),
+                params: this.buildParams(kvsListOptions),
                 timeout,
             });
 
@@ -277,7 +277,7 @@ export class KeyValueStoreClient extends ResourceClient {
 
         const store = await this.get({ timeout });
 
-        const recordPublicUrl = new URL(this._publicUrl(['records', key]));
+        const recordPublicUrl = new URL(this.buildPublicUrl(['records', key]));
 
         if (store?.urlSigningSecretKey) {
             const signature = await createHmacSignatureAsync(store.urlSigningSecretKey, key);
@@ -320,7 +320,7 @@ export class KeyValueStoreClient extends ResourceClient {
 
         const store = await this.get({ timeout });
 
-        let createdPublicKeysUrl = new URL(this._publicUrl('keys'));
+        let createdPublicKeysUrl = new URL(this.buildPublicUrl('keys'));
 
         if (store?.urlSigningSecretKey) {
             const signature = await createStorageContentSignatureAsync({
@@ -360,9 +360,9 @@ export class KeyValueStoreClient extends ResourceClient {
         const { timeout = 'long' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const requestOpts: ApifyRequestConfig = {
-            url: this._url(['records', key]),
+            url: this.buildUrl(['records', key]),
             method: 'HEAD',
-            params: this._params(),
+            params: this.buildParams(),
             timeout,
         };
 
@@ -421,9 +421,9 @@ export class KeyValueStoreClient extends ResourceClient {
         if (parsed.signature) queryParams.signature = parsed.signature;
 
         const requestOpts: ApifyRequestConfig = {
-            url: this._url(['records', key]),
+            url: this.buildUrl(['records', key]),
             method: 'GET',
-            params: this._params(queryParams),
+            params: this.buildParams(queryParams),
             timeout: parsed.timeout ?? 'long',
         };
 
@@ -521,9 +521,9 @@ export class KeyValueStoreClient extends ResourceClient {
         }
 
         const uploadOpts: ApifyRequestConfig = {
-            url: this._url(['records', key]),
+            url: this.buildUrl(['records', key]),
             method: 'PUT',
-            params: this._params(),
+            params: this.buildParams(),
             data: value,
             headers: contentType ? { 'content-type': contentType } : undefined,
             doNotRetryTimeouts,
@@ -551,9 +551,9 @@ export class KeyValueStoreClient extends ResourceClient {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         await this.httpClient.call({
-            url: this._url(['records', key]),
+            url: this.buildUrl(['records', key]),
             method: 'DELETE',
-            params: this._params(),
+            params: this.buildParams(),
             timeout,
         });
     }

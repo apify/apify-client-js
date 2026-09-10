@@ -75,7 +75,7 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
     list(options: ScheduleCollectionListOptions = {}): PaginatedIterator<Schedule> {
         const parsed = parseArgument(options, listOptionsSchema, 'ScheduleCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfSchedules(), parsed, 'medium');
+        return this.listResourcesPaginated(schemas.ListOfSchedules(), parsed, 'medium');
     }
 
     /**
@@ -91,7 +91,7 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
         parseArgument(schedule, scheduleCreateSchema);
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._create(schemas.Schedule(), schedule, timeout);
+        return this.createResource(schemas.Schedule(), schedule, timeout);
     }
 }
 

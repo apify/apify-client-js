@@ -70,7 +70,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     list(options: TimeoutOptions = {}): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._listPaginated(schemas.ListOfEnvVars(), {}, timeout);
+        return this.listResourcesPaginated(schemas.ListOfEnvVars(), {}, timeout);
     }
 
     /**
@@ -89,7 +89,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
         parseArgument(actorEnvVar, actorEnvVarSchema);
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._create(schemas.EnvVar(), actorEnvVar, timeout);
+        return this.createResource(schemas.EnvVar(), actorEnvVar, timeout);
     }
 }
 

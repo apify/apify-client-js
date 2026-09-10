@@ -77,7 +77,7 @@ export class UserClient extends ResourceClient {
     async get(options: TimeoutOptions = {}): Promise<User | undefined> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._get(schemas.UserPrivateInfo(), {}, timeout);
+        return this.getResource(schemas.UserPrivateInfo(), {}, timeout);
     }
 
     /**
@@ -93,9 +93,9 @@ export class UserClient extends ResourceClient {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('usage/monthly'),
+            url: this.buildUrl('usage/monthly'),
             method: 'GET',
-            params: this._params(),
+            params: this.buildParams(),
             timeout,
         });
         // `dailyServiceUsages[].date` does not end in `At`, so it has to be named for `parseDateFields`.
@@ -115,9 +115,9 @@ export class UserClient extends ResourceClient {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('limits'),
+            url: this.buildUrl('limits'),
             method: 'GET',
-            params: this._params(),
+            params: this.buildParams(),
             timeout,
         });
         return parseResponse(response, schemas.AccountLimits());
@@ -136,9 +136,9 @@ export class UserClient extends ResourceClient {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const requestOpts: ApifyRequestConfig = {
-            url: this._url('limits'),
+            url: this.buildUrl('limits'),
             method: 'PUT',
-            params: this._params(),
+            params: this.buildParams(),
             data: newLimits,
             timeout,
         };

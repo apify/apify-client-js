@@ -100,7 +100,11 @@ export class RunClient extends ResourceClient {
     async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
         const { timeout, ...params } = parseArgument(options, getOptionsSchema, 'RunGetOptions');
 
-        return this._get(schemas.Run(), params, this._timeoutForWaitForFinish(timeout, 'short', params.waitForFinish));
+        return this.getResource(
+            schemas.Run(),
+            params,
+            this.timeoutForWaitForFinish(timeout, 'short', params.waitForFinish),
+        );
     }
 
     /**
@@ -125,9 +129,9 @@ export class RunClient extends ResourceClient {
         const { timeout = 'medium', ...params } = parseArgument(options, abortOptionsSchema, 'RunAbortOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('abort'),
+            url: this.buildUrl('abort'),
             method: 'POST',
-            params: this._params(params),
+            params: this.buildParams(params),
             timeout,
         });
 
@@ -145,7 +149,7 @@ export class RunClient extends ResourceClient {
     async delete(options: TimeoutOptions = {}): Promise<void> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._delete(timeout);
+        return this.deleteResource(timeout);
     }
 
     /**
@@ -177,7 +181,7 @@ export class RunClient extends ResourceClient {
         parseArgument(targetActorId, targetActorIdSchema);
         const parsed = parseArgument(options, metamorphOptionsSchema, 'RunMetamorphOptions');
 
-        const safeTargetActorId = this._toSafeId(targetActorId);
+        const safeTargetActorId = this.toSafeId(targetActorId);
 
         const params = {
             targetActorId: safeTargetActorId,
@@ -185,10 +189,10 @@ export class RunClient extends ResourceClient {
         };
 
         const request: ApifyRequestConfig = {
-            url: this._url('metamorph'),
+            url: this.buildUrl('metamorph'),
             method: 'POST',
             data: input,
-            params: this._params(params),
+            params: this.buildParams(params),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
@@ -227,7 +231,7 @@ export class RunClient extends ResourceClient {
         const { timeout = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const request: ApifyRequestConfig = {
-            url: this._url('reboot'),
+            url: this.buildUrl('reboot'),
             method: 'POST',
             timeout,
         };
@@ -260,7 +264,7 @@ export class RunClient extends ResourceClient {
         parseArgument(newFields, anyObjectSchema);
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._update(schemas.Run(), newFields, timeout);
+        return this.updateResource(schemas.Run(), newFields, timeout);
     }
 
     /**
@@ -295,10 +299,10 @@ export class RunClient extends ResourceClient {
         } = parseArgument(options, resurrectOptionsSchema, 'RunResurrectOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('resurrect'),
+            url: this.buildUrl('resurrect'),
             method: 'POST',
             // The API knows the run timeout as `timeout`; the client keeps that name for the request timeout.
-            params: this._params({ ...params, timeout: runTimeout }),
+            params: this.buildParams({ ...params, timeout: runTimeout }),
             timeout,
         });
 
@@ -330,7 +334,7 @@ export class RunClient extends ResourceClient {
         const idempotencyKey = providedIdempotencyKey ?? `${this.id}-${eventName}-${Date.now()}-${randomSuffix}`;
 
         const request: ApifyRequestConfig = {
-            url: this._url('charge'),
+            url: this.buildUrl('charge'),
             method: 'POST',
             data: {
                 eventName,
@@ -377,7 +381,7 @@ export class RunClient extends ResourceClient {
     async waitForFinish(options: RunWaitForFinishOptions = {}): Promise<ActorRun> {
         const parsed = parseArgument(options, waitForFinishOptionsSchema, 'RunWaitForFinishOptions');
 
-        return this._waitForFinish(schemas.Run(), parsed);
+        return this.waitForJobFinish(schemas.Run(), parsed);
     }
 
     /**
@@ -396,7 +400,7 @@ export class RunClient extends ResourceClient {
      */
     dataset(): DatasetClient {
         return new DatasetClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'dataset',
             }),
         );
@@ -419,7 +423,7 @@ export class RunClient extends ResourceClient {
      */
     keyValueStore(): KeyValueStoreClient {
         return new KeyValueStoreClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'key-value-store',
             }),
         );
@@ -442,7 +446,7 @@ export class RunClient extends ResourceClient {
      */
     requestQueue(): RequestQueueClient {
         return new RequestQueueClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'request-queue',
             }),
         );
@@ -465,7 +469,7 @@ export class RunClient extends ResourceClient {
      */
     log(): LogClient {
         return new LogClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'log',
             }),
         );

@@ -88,7 +88,7 @@ export class TaskClient extends ResourceClient {
     async get(options: TimeoutOptions = {}): Promise<Task | undefined> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._get(schemas.Task(), {}, timeout);
+        return this.getResource(schemas.Task(), {}, timeout);
     }
 
     /**
@@ -104,7 +104,7 @@ export class TaskClient extends ResourceClient {
         parseArgument(newFields, anyObjectSchema);
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._update(schemas.Task(), newFields, timeout);
+        return this.updateResource(schemas.Task(), newFields, timeout);
     }
 
     /**
@@ -153,7 +153,7 @@ export class TaskClient extends ResourceClient {
     async delete(options: TimeoutOptions = {}): Promise<void> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._delete(timeout);
+        return this.deleteResource(timeout);
     }
 
     /**
@@ -194,17 +194,17 @@ export class TaskClient extends ResourceClient {
         };
 
         const request: ApifyRequestConfig = {
-            url: this._url('runs'),
+            url: this.buildUrl('runs'),
             method: 'POST',
             data: input,
-            params: this._params(params),
+            params: this.buildParams(params),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
             headers: {
                 'Content-Type': 'application/json',
             },
-            timeout: this._timeoutForWaitForFinish(timeout, 'medium', waitForFinish),
+            timeout: this.timeoutForWaitForFinish(timeout, 'medium', waitForFinish),
         };
 
         const response = await this.httpClient.call(request);
@@ -255,9 +255,9 @@ export class TaskClient extends ResourceClient {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('input'),
+            url: this.buildUrl('input'),
             method: 'GET',
-            params: this._params(),
+            params: this.buildParams(),
             timeout,
         });
         return cast(response.data);
@@ -279,9 +279,9 @@ export class TaskClient extends ResourceClient {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('input'),
+            url: this.buildUrl('input'),
             method: 'PUT',
-            params: this._params(),
+            params: this.buildParams(),
             data: newFields,
             timeout,
         });
@@ -302,9 +302,9 @@ export class TaskClient extends ResourceClient {
         const parsed = parseArgument(options, lastRunOptionsSchema, 'TaskLastRunOptions');
 
         return new RunClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 id: 'last',
-                params: this._params(parsed),
+                params: this.buildParams(parsed),
                 resourcePath: 'runs',
             }),
         );
@@ -318,7 +318,7 @@ export class TaskClient extends ResourceClient {
      */
     runs(): RunCollectionClient {
         return new RunCollectionClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'runs',
             }),
         );
@@ -331,7 +331,7 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-webhooks-get
      */
     webhooks(): WebhookCollectionClient {
-        return new WebhookCollectionClient(this._subResourceOptions());
+        return new WebhookCollectionClient(this.subResourceOptions());
     }
 }
 

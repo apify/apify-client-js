@@ -67,7 +67,7 @@ export class ScheduleClient extends ResourceClient {
     async get(options: TimeoutOptions = {}): Promise<Schedule | undefined> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._get(schemas.Schedule(), {}, timeout);
+        return this.getResource(schemas.Schedule(), {}, timeout);
     }
 
     /**
@@ -83,7 +83,7 @@ export class ScheduleClient extends ResourceClient {
         parseArgument(newFields, anyObjectSchema);
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._update(schemas.Schedule(), newFields, timeout);
+        return this.updateResource(schemas.Schedule(), newFields, timeout);
     }
 
     /**
@@ -96,7 +96,7 @@ export class ScheduleClient extends ResourceClient {
     async delete(options: TimeoutOptions = {}): Promise<void> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._delete(timeout);
+        return this.deleteResource(timeout);
     }
 
     /**
@@ -111,9 +111,9 @@ export class ScheduleClient extends ResourceClient {
         const { timeout = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('log'),
+            url: this.buildUrl('log'),
             method: 'GET',
-            params: this._params(),
+            params: this.buildParams(),
             timeout,
         });
         return parseResponse(response, scheduleLogSchema);

@@ -51,7 +51,7 @@ export class ActorEnvVarClient extends ResourceClient {
     async get(options: TimeoutOptions = {}): Promise<ActorEnvironmentVariable | undefined> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._get(schemas.EnvVar(), {}, timeout);
+        return this.getResource(schemas.EnvVar(), {}, timeout);
     }
 
     /**
@@ -70,7 +70,7 @@ export class ActorEnvVarClient extends ResourceClient {
         parseArgument(actorEnvVar, anyObjectSchema);
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._update(schemas.EnvVar(), actorEnvVar, timeout);
+        return this.updateResource(schemas.EnvVar(), actorEnvVar, timeout);
     }
 
     /**
@@ -83,6 +83,6 @@ export class ActorEnvVarClient extends ResourceClient {
     async delete(options: TimeoutOptions = {}): Promise<void> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._delete(timeout);
+        return this.deleteResource(timeout);
     }
 }

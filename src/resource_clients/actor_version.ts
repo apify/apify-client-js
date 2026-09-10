@@ -70,7 +70,7 @@ export class ActorVersionClient extends ResourceClient {
     async get(options: TimeoutOptions = {}): Promise<FinalActorVersion | undefined> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._get(schemas.Version(), {}, timeout);
+        return this.getResource(schemas.Version(), {}, timeout);
     }
 
     /**
@@ -86,7 +86,7 @@ export class ActorVersionClient extends ResourceClient {
         parseArgument(newFields, anyObjectSchema);
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._update(schemas.Version(), newFields, timeout);
+        return this.updateResource(schemas.Version(), newFields, timeout);
     }
 
     /**
@@ -99,7 +99,7 @@ export class ActorVersionClient extends ResourceClient {
     async delete(options: TimeoutOptions = {}): Promise<void> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._delete(timeout);
+        return this.deleteResource(timeout);
     }
 
     /**
@@ -113,7 +113,7 @@ export class ActorVersionClient extends ResourceClient {
     envVar(envVarName: string): ActorEnvVarClient {
         parseArgument(envVarName, envVarNameSchema);
         return new ActorEnvVarClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 id: envVarName,
             }),
         );
@@ -127,7 +127,7 @@ export class ActorVersionClient extends ResourceClient {
      * @since Added in 2.1.0
      */
     envVars(): ActorEnvVarCollectionClient {
-        return new ActorEnvVarCollectionClient(this._subResourceOptions());
+        return new ActorEnvVarCollectionClient(this.subResourceOptions());
     }
 }
 

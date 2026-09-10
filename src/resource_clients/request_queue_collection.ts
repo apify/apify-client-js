@@ -77,7 +77,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
     ): Promise<RequestQueueCollectionListResult> & AsyncIterable<RequestQueue> {
         const parsed = parseArgument(options, listOptionsSchema, 'RequestQueueCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfRequestQueues(), parsed, 'medium');
+        return this.listResourcesPaginated(schemas.ListOfRequestQueues(), parsed, 'medium');
     }
 
     /**
@@ -93,7 +93,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
         parseArgument(name, nameSchema);
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._getOrCreate(schemas.RequestQueue(), name, undefined, timeout);
+        return this.getOrCreateResource(schemas.RequestQueue(), name, undefined, timeout);
     }
 }
 

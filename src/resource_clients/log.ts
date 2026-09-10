@@ -64,9 +64,9 @@ export class LogClient extends ResourceClient {
         const { timeout = 'long', ...params } = parseArgument(options, logOptionsSchema, 'LogOptions');
 
         const requestOpts: ApifyRequestConfig = {
-            url: this._url(),
+            url: this.buildUrl(),
             method: 'GET',
-            params: this._params(params),
+            params: this.buildParams(params),
             timeout,
         };
 
@@ -99,9 +99,9 @@ export class LogClient extends ResourceClient {
         };
 
         const requestOpts: ApifyRequestConfig = {
-            url: this._url(),
+            url: this.buildUrl(),
             method: 'GET',
-            params: this._params(params),
+            params: this.buildParams(params),
             responseType: 'stream',
             timeout,
         };

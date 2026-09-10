@@ -71,10 +71,10 @@ export class BuildClient extends ResourceClient {
     async get(options: BuildClientGetOptions = {}): Promise<Build | undefined> {
         const { timeout, ...params } = parseArgument(options, getOptionsSchema, 'BuildClientGetOptions');
 
-        return this._get(
+        return this.getResource(
             schemas.Build(),
             params,
-            this._timeoutForWaitForFinish(timeout, 'short', params.waitForFinish),
+            this.timeoutForWaitForFinish(timeout, 'short', params.waitForFinish),
         );
     }
 
@@ -97,9 +97,9 @@ export class BuildClient extends ResourceClient {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('abort'),
+            url: this.buildUrl('abort'),
             method: 'POST',
-            params: this._params(),
+            params: this.buildParams(),
             timeout,
         });
 
@@ -117,7 +117,7 @@ export class BuildClient extends ResourceClient {
     async delete(options: TimeoutOptions = {}): Promise<void> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._delete(timeout);
+        return this.deleteResource(timeout);
     }
 
     /**
@@ -133,9 +133,9 @@ export class BuildClient extends ResourceClient {
         const { timeout = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('openapi.json'),
+            url: this.buildUrl('openapi.json'),
             method: 'GET',
-            params: this._params(),
+            params: this.buildParams(),
             timeout,
         });
 
@@ -176,7 +176,7 @@ export class BuildClient extends ResourceClient {
     async waitForFinish(options: BuildClientWaitForFinishOptions = {}): Promise<Build> {
         const parsed = parseArgument(options, waitForFinishOptionsSchema, 'BuildClientWaitForFinishOptions');
 
-        return this._waitForFinish(schemas.Build(), parsed);
+        return this.waitForJobFinish(schemas.Build(), parsed);
     }
 
     /**
@@ -197,7 +197,7 @@ export class BuildClient extends ResourceClient {
      */
     log(): LogClient {
         return new LogClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'log',
             }),
         );

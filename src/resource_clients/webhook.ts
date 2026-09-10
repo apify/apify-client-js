@@ -69,7 +69,7 @@ export class WebhookClient extends ResourceClient {
     async get(options: TimeoutOptions = {}): Promise<Webhook | undefined> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._get(schemas.Webhook(), {}, timeout);
+        return this.getResource(schemas.Webhook(), {}, timeout);
     }
 
     /**
@@ -85,7 +85,7 @@ export class WebhookClient extends ResourceClient {
         parseArgument(newFields, anyObjectSchema);
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._update(schemas.Webhook(), newFields, timeout);
+        return this.updateResource(schemas.Webhook(), newFields, timeout);
     }
 
     /**
@@ -98,7 +98,7 @@ export class WebhookClient extends ResourceClient {
     async delete(options: TimeoutOptions = {}): Promise<void> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._delete(timeout);
+        return this.deleteResource(timeout);
     }
 
     /**
@@ -113,9 +113,9 @@ export class WebhookClient extends ResourceClient {
         const { timeout = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('test'),
+            url: this.buildUrl('test'),
             method: 'POST',
-            params: this._params(),
+            params: this.buildParams(),
             timeout,
         });
         return parseResponse(response, schemas.WebhookDispatch());
@@ -129,7 +129,7 @@ export class WebhookClient extends ResourceClient {
      */
     dispatches(): WebhookDispatchCollectionClient {
         return new WebhookDispatchCollectionClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'dispatches',
             }),
         );

@@ -54,6 +54,6 @@ export class WebhookDispatchClient extends ResourceClient {
     async get(options: TimeoutOptions = {}): Promise<WebhookDispatch | undefined> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._get(schemas.WebhookDispatch(), {}, timeout);
+        return this.getResource(schemas.WebhookDispatch(), {}, timeout);
     }
 }

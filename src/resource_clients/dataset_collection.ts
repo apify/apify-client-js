@@ -78,7 +78,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     ): Promise<DatasetCollectionClientListResult> & AsyncIterable<Dataset> {
         const parsed = parseArgument(options, listOptionsSchema, 'DatasetCollectionClientListOptions');
 
-        return this._listPaginated(schemas.ListOfDatasets(), parsed, 'medium');
+        return this.listResourcesPaginated(schemas.ListOfDatasets(), parsed, 'medium');
     }
 
     /**
@@ -101,7 +101,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
         const { timeout = 'short', ...resource } = options ?? {};
         const hasResource = Object.keys(resource).length > 0;
 
-        return this._getOrCreate(schemas.Dataset(), name, hasResource ? resource : undefined, timeout);
+        return this.getOrCreateResource(schemas.Dataset(), name, hasResource ? resource : undefined, timeout);
     }
 }
 

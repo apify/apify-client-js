@@ -77,7 +77,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
     list(options: TaskCollectionListOptions = {}): PaginatedIterator<TaskList> {
         const parsed = parseArgument(options, listOptionsSchema, 'TaskCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfTasks(), parsed, 'medium');
+        return this.listResourcesPaginated(schemas.ListOfTasks(), parsed, 'medium');
     }
 
     /**
@@ -93,7 +93,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
         parseArgument(task, anyObjectSchema);
         const { timeout = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._create(schemas.Task(), task, timeout);
+        return this.createResource(schemas.Task(), task, timeout);
     }
 }
 

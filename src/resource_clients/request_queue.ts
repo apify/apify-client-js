@@ -166,7 +166,7 @@ export class RequestQueueClient extends ResourceClient {
      * Picks the timeout of a request: an explicit per-call `timeout` as is, otherwise the method's default
      * tier, capped at the queue-wide `timeoutSecs` when one was given.
      */
-    private _timeout(timeout: Timeout | undefined, defaultTier: TimeoutTier): Timeout {
+    private resolveTimeout(timeout: Timeout | undefined, defaultTier: TimeoutTier): Timeout {
         if (timeout !== undefined) return timeout;
         if (this.timeoutSecs === undefined) return defaultTier;
         const tierSecs = this.httpClient.timeoutMillis[defaultTier] / 1000;
@@ -184,7 +184,7 @@ export class RequestQueueClient extends ResourceClient {
     async get(options: TimeoutOptions = {}): Promise<RequestQueue | undefined> {
         const { timeout } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._get(schemas.RequestQueue(), {}, this._timeout(timeout, 'short'));
+        return this.getResource(schemas.RequestQueue(), {}, this.resolveTimeout(timeout, 'short'));
     }
 
     /**
@@ -200,7 +200,7 @@ export class RequestQueueClient extends ResourceClient {
         parseArgument(newFields, anyObjectSchema);
         const { timeout } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._update(schemas.RequestQueue(), newFields, this._timeout(timeout, 'short'));
+        return this.updateResource(schemas.RequestQueue(), newFields, this.resolveTimeout(timeout, 'short'));
     }
 
     /**
@@ -213,7 +213,7 @@ export class RequestQueueClient extends ResourceClient {
     async delete(options: TimeoutOptions = {}): Promise<void> {
         const { timeout } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._delete(this._timeout(timeout, 'short'));
+        return this.deleteResource(this.resolveTimeout(timeout, 'short'));
     }
 
     /**
@@ -232,10 +232,10 @@ export class RequestQueueClient extends ResourceClient {
         const parsed = parseArgument(options, listHeadOptionsSchema, 'RequestQueueClientListHeadOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('head'),
+            url: this.buildUrl('head'),
             method: 'GET',
-            timeout: this._timeout(parsed.timeout, 'short'),
-            params: this._params({
+            timeout: this.resolveTimeout(parsed.timeout, 'short'),
+            params: this.buildParams({
                 limit: parsed.limit,
                 clientKey: this.clientKey,
             }),
@@ -284,10 +284,10 @@ export class RequestQueueClient extends ResourceClient {
         const parsed = parseArgument(options, listAndLockHeadOptionsSchema, 'RequestQueueClientListAndLockHeadOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('head/lock'),
+            url: this.buildUrl('head/lock'),
             method: 'POST',
-            timeout: this._timeout(parsed.timeout, 'medium'),
-            params: this._params({
+            timeout: this.resolveTimeout(parsed.timeout, 'medium'),
+            params: this.buildParams({
                 limit: parsed.limit,
                 lockSecs: parsed.lockSecs,
                 clientKey: this.clientKey,
@@ -344,11 +344,11 @@ export class RequestQueueClient extends ResourceClient {
         const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientAddRequestOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('requests'),
+            url: this.buildUrl('requests'),
             method: 'POST',
-            timeout: this._timeout(parsed.timeout, 'short'),
+            timeout: this.resolveTimeout(parsed.timeout, 'short'),
             data: request,
-            params: this._params({
+            params: this.buildParams({
                 forefront: parsed.forefront,
                 clientKey: this.clientKey,
             }),
@@ -362,7 +362,7 @@ export class RequestQueueClient extends ResourceClient {
      *
      * @private
      */
-    protected async _batchAddRequests(
+    protected async addRequestBatch(
         requests: RequestQueueClientRequestToAdd[],
         options: RequestQueueClientAddRequestOptions = {},
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
@@ -370,11 +370,11 @@ export class RequestQueueClient extends ResourceClient {
         const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientAddRequestOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('requests/batch'),
+            url: this.buildUrl('requests/batch'),
             method: 'POST',
-            timeout: this._timeout(parsed.timeout, 'medium'),
+            timeout: this.resolveTimeout(parsed.timeout, 'medium'),
             data: requests,
-            params: this._params({
+            params: this.buildParams({
                 forefront: parsed.forefront,
                 clientKey: this.clientKey,
             }),
@@ -383,7 +383,7 @@ export class RequestQueueClient extends ResourceClient {
         return parseResponse(response, schemas.BatchAddResult());
     }
 
-    protected async _batchAddRequestsWithRetries(
+    protected async addRequestBatchWithRetries(
         requests: RequestQueueClientRequestToAdd[],
         options: RequestQueueClientBatchAddRequestWithRetriesOptions = {},
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
@@ -402,7 +402,7 @@ export class RequestQueueClient extends ResourceClient {
         let unprocessedRequests: RequestQueueClientBatchRequestsOperationResult['unprocessedRequests'] = [];
         for (let i = 0; i < 1 + maxUnprocessedRequestsRetries; i++) {
             try {
-                const response = await this._batchAddRequests(remainingRequests, {
+                const response = await this.addRequestBatch(remainingRequests, {
                     forefront,
                     timeout,
                 });
@@ -522,7 +522,7 @@ export class RequestQueueClient extends ResourceClient {
         while (i < requests.length) {
             const slicedRequests = requests.slice(i, i + REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION);
             const requestsInBatch = sliceArrayByByteLength(slicedRequests, payloadSizeLimitBytes, i);
-            const requestPromise = this._batchAddRequestsWithRetries(requestsInBatch, options);
+            const requestPromise = this.addRequestBatchWithRetries(requestsInBatch, options);
             executingRequests.add(requestPromise);
             // A rejection reaches the caller through the awaits below; this bookkeeping chain only has to avoid
             // turning it into an unhandled one of its own.
@@ -573,11 +573,11 @@ export class RequestQueueClient extends ResourceClient {
         const { timeout } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('requests/batch'),
+            url: this.buildUrl('requests/batch'),
             method: 'DELETE',
-            timeout: this._timeout(timeout, 'short'),
+            timeout: this.resolveTimeout(timeout, 'short'),
             data: requests,
-            params: this._params({
+            params: this.buildParams({
                 clientKey: this.clientKey,
             }),
         });
@@ -602,10 +602,10 @@ export class RequestQueueClient extends ResourceClient {
         const { timeout } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const requestOpts: ApifyRequestConfig = {
-            url: this._url(['requests', id]),
+            url: this.buildUrl(['requests', id]),
             method: 'GET',
-            timeout: this._timeout(timeout, 'short'),
-            params: this._params(),
+            timeout: this.resolveTimeout(timeout, 'short'),
+            params: this.buildParams(),
         };
         try {
             const response = await this.httpClient.call(requestOpts);
@@ -635,11 +635,11 @@ export class RequestQueueClient extends ResourceClient {
         const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientAddRequestOptions');
 
         const response = await this.httpClient.call({
-            url: this._url(['requests', request.id]),
+            url: this.buildUrl(['requests', request.id]),
             method: 'PUT',
-            timeout: this._timeout(parsed.timeout, 'medium'),
+            timeout: this.resolveTimeout(parsed.timeout, 'medium'),
             data: request,
-            params: this._params({
+            params: this.buildParams({
                 forefront: parsed.forefront,
                 clientKey: this.clientKey,
             }),
@@ -660,10 +660,10 @@ export class RequestQueueClient extends ResourceClient {
         const { timeout } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         await this.httpClient.call({
-            url: this._url(['requests', id]),
+            url: this.buildUrl(['requests', id]),
             method: 'DELETE',
-            timeout: this._timeout(timeout, 'short'),
-            params: this._params({
+            timeout: this.resolveTimeout(timeout, 'short'),
+            params: this.buildParams({
                 clientKey: this.clientKey,
             }),
         });
@@ -707,10 +707,10 @@ export class RequestQueueClient extends ResourceClient {
         );
 
         const response = await this.httpClient.call({
-            url: this._url(['requests', id, 'lock']),
+            url: this.buildUrl(['requests', id, 'lock']),
             method: 'PUT',
-            timeout: this._timeout(parsed.timeout, 'medium'),
-            params: this._params({
+            timeout: this.resolveTimeout(parsed.timeout, 'medium'),
+            params: this.buildParams({
                 forefront: parsed.forefront,
                 lockSecs: parsed.lockSecs,
                 clientKey: this.clientKey,
@@ -738,10 +738,10 @@ export class RequestQueueClient extends ResourceClient {
         const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientDeleteRequestLockOptions');
 
         await this.httpClient.call({
-            url: this._url(['requests', id, 'lock']),
+            url: this.buildUrl(['requests', id, 'lock']),
             method: 'DELETE',
-            timeout: this._timeout(parsed.timeout, 'short'),
-            params: this._params({
+            timeout: this.resolveTimeout(parsed.timeout, 'short'),
+            params: this.buildParams({
                 forefront: parsed.forefront,
                 clientKey: this.clientKey,
             }),
@@ -769,16 +769,16 @@ export class RequestQueueClient extends ResourceClient {
             listRequestsOptionsSchema,
             'RequestQueueClientListRequestsOptions',
         );
-        const pageTimeout = this._timeout(timeout, 'medium');
+        const pageTimeout = this.resolveTimeout(timeout, 'medium');
 
         const getPaginatedList = async (
             rqListOptions: RequestQueueClientListRequestsOptions = {},
         ): Promise<RequestQueueClientListRequestsResult> => {
             const response = await this.httpClient.call({
-                url: this._url('requests'),
+                url: this.buildUrl('requests'),
                 method: 'GET',
                 timeout: pageTimeout,
-                params: this._params({
+                params: this.buildParams({
                     ...rqListOptions,
                     filter: rqListOptions.filter ? rqListOptions.filter.join(',') : undefined,
                     clientKey: this.clientKey,
@@ -836,10 +836,10 @@ export class RequestQueueClient extends ResourceClient {
         const { timeout } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('requests/unlock'),
+            url: this.buildUrl('requests/unlock'),
             method: 'POST',
-            timeout: this._timeout(timeout, 'long'),
-            params: this._params({
+            timeout: this.resolveTimeout(timeout, 'long'),
+            params: this.buildParams({
                 clientKey: this.clientKey,
             }),
         });

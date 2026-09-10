@@ -69,7 +69,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
     list(options: TimeoutOptions = {}): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._listPaginated(schemas.ListOfVersions(), {}, timeout);
+        return this.listResourcesPaginated(schemas.ListOfVersions(), {}, timeout);
     }
 
     /**
@@ -85,7 +85,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
         parseArgument(actorVersion, actorVersionSchema);
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._create(schemas.Version(), actorVersion, timeout);
+        return this.createResource(schemas.Version(), actorVersion, timeout);
     }
 }
 

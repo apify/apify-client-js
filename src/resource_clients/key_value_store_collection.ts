@@ -78,7 +78,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     ): Promise<KeyValueStoreCollectionListResult> & AsyncIterable<KeyValueStore> {
         const parsed = parseArgument(options, listOptionsSchema, 'KeyValueStoreCollectionClientListOptions');
 
-        return this._listPaginated(schemas.ListOfKeyValueStores(), parsed, 'medium');
+        return this.listResourcesPaginated(schemas.ListOfKeyValueStores(), parsed, 'medium');
     }
 
     /**
@@ -104,7 +104,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
         const { timeout = 'short', ...resource } = options ?? {};
         const hasResource = Object.keys(resource).length > 0;
 
-        return this._getOrCreate(schemas.KeyValueStore(), name, hasResource ? resource : undefined, timeout);
+        return this.getOrCreateResource(schemas.KeyValueStore(), name, hasResource ? resource : undefined, timeout);
     }
 }
 
