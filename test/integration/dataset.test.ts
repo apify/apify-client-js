@@ -370,8 +370,7 @@ test('getStatistics() returns per-field statistics', async () => {
 
         const statistics = await datasetClient.getStatistics();
 
-        expect(statistics).toBeDefined();
-        expect(statistics!.fieldStatistics).toBeTypeOf('object');
+        expect(statistics.fieldStatistics).toBeTypeOf('object');
     } finally {
         await datasetClient.delete();
     }

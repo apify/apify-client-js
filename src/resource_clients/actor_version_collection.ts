@@ -25,6 +25,8 @@ const actorVersionSchema = anyObjectSchema.optional();
  * // Create a new version
  * const newVersion = await versionsClient.create({
  *   versionNumber: '0.2',
+ *   sourceType: 'GIT_REPO',
+ *   gitRepoUrl: 'https://github.com/my-account/my-actor',
  *   buildTag: 'latest'
  * });
  * ```

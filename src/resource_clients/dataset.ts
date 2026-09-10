@@ -3,7 +3,6 @@ import { z } from 'zod';
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import { createStorageContentSignatureAsync } from '@apify/utilities';
 
-import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import {
     DEFAULT_TIMEOUT_MILLIS,
@@ -11,7 +10,7 @@ import {
     ResourceClient,
     SMALL_TIMEOUT_MILLIS,
 } from '../base/resource_client.js';
-import type { ApifyRequestConfig, ApifyResponse } from '../http_client.js';
+import type { ApifyResponse } from '../http_client.js';
 import type { Dataset, DatasetStatistics } from '../models.js';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
@@ -19,7 +18,6 @@ import {
     anyObjectSchema,
     applyQueryParamsToUrl,
     cast,
-    catchNotFoundOrThrow,
     isNonArrayObject,
     paginationOptionsShape,
     parseArgument,
@@ -260,7 +258,10 @@ export class DatasetClient<
      * });
      * ```
      */
-    async downloadItems(format: DownloadItemsFormat, options: DatasetClientDownloadItemsOptions = {}): Promise<Buffer> {
+    async downloadItems(
+        format: `${DownloadItemsFormat}`,
+        options: DatasetClientDownloadItemsOptions = {},
+    ): Promise<Buffer> {
         parseArgument(format, itemFormatSchema);
         const parsed = parseArgument(options, downloadItemsOptionsSchema, 'DatasetClientDownloadItemsOptions');
 
@@ -332,24 +333,18 @@ export class DatasetClient<
      * Returns statistics for each field in the dataset, including information about
      * data types, null counts, and value ranges.
      *
-     * @returns Dataset statistics, or `undefined` if not available
+     * @returns Dataset statistics
      * @see https://docs.apify.com/api/v2/dataset-statistics-get
      * @since Added in 2.11.2
      */
-    async getStatistics(): Promise<DatasetStatistics | undefined> {
-        const requestOpts: ApifyRequestConfig = {
+    async getStatistics(): Promise<DatasetStatistics> {
+        const response = await this.httpClient.call({
             url: this._url('statistics'),
             method: 'GET',
             params: this._params(),
             timeout: SMALL_TIMEOUT_MILLIS,
-        };
-        try {
-            const response = await this.httpClient.call(requestOpts);
-            return parseResponse(response, schemas.DatasetStatistics());
-        } catch (err) {
-            catchNotFoundOrThrow(err as ApifyApiError);
-        }
-        return undefined;
+        });
+        return parseResponse(response, schemas.DatasetStatistics());
     }
 
     /**
