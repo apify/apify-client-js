@@ -70,8 +70,8 @@ await client.actor('my-actor').update([{ name: 'my-actor' }]);
 `ow` only checked the type, so `Infinity` passed as a number and an invalid `Date` passed as a date. Zod additionally requires a *finite* number and a *valid* date, so both now throw:
 
 ```js
-// Now throws: Invalid input: expected a finite number at `timeout`, got `Infinity`
-await client.actor('my-actor').call(undefined, { timeout: Infinity });
+// Now throws: Invalid input: expected a finite number at `runTimeoutSecs`, got `Infinity`
+await client.actor('my-actor').call(undefined, { runTimeoutSecs: Infinity });
 
 // Now throws: Invalid input: expected a valid date at `startedBefore`
 //             Invalid input: expected string, received Date at `startedBefore`
@@ -80,7 +80,7 @@ await client.actor('my-actor').runs().list({ startedBefore: new Date('nonsense')
 
 The second example reports a line per arm, because `startedBefore` accepts either a `Date` or a string.
 
-This affects numeric options such as `waitSecs`, `timeout` and `memory`, and date options such as `startedBefore` / `startedAfter`. `KeyValueStoreClient.setRecord()` rejects `NaN` and `Infinity` as a record value too, since `JSON.stringify()` turns both into `null`.
+This affects numeric options such as `waitSecs`, `runTimeoutSecs` and `memory`, and date options such as `startedBefore` / `startedAfter`. `KeyValueStoreClient.setRecord()` rejects `NaN` and `Infinity` as a record value too, since `JSON.stringify()` turns both into `null`.
 
 ### A few always-rejected options are gone from the types
 
@@ -285,29 +285,28 @@ The `timeoutSecs` option of the <ApiLink to="class/ApifyClient">`ApifyClient`</A
 
 For what each tier covers and which one a method is assigned, see [Timeouts](../02_concepts/06_timeouts.md).
 
-In v2 only the dataset, key-value store and request queue clients picked a timeout per method, and everything else ran with the global 360 seconds. A metadata call such as `actor.get()` now gets the 5 seconds of the `short` tier and a `list()` call the 30 of `medium`, so a call that used to wait out a slow API can fail sooner. <ApiLink to="class/RequestQueueClient#unlockRequests">`RequestQueueClient.unlockRequests()`</ApiLink> moves the other way, from 30 seconds to 360. Where you need a different duration, every method that sends a request takes a `timeout` option, which replaces the tier of the method for that call:
+In v2 only the dataset, key-value store and request queue clients picked a timeout per method, and everything else ran with the global 360 seconds. A metadata call such as `actor.get()` now gets the 5 seconds of the `short` tier and a `list()` call the 30 of `medium`, so a call that used to wait out a slow API can fail sooner. <ApiLink to="class/RequestQueueClient#unlockRequests">`RequestQueueClient.unlockRequests()`</ApiLink> moves the other way, from 30 seconds to 360. Where you need a different duration, every method that sends a request takes a `timeoutSecs` option, which replaces the tier of the method for that call:
 
 ```js
-await client.actor('my-actor').get({ timeout: 'long' });
+await client.actor('my-actor').get({ timeoutSecs: 'long' });
 ```
 
-Since `timeout` means the request timeout everywhere, two options are renamed. The run timeout of <ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink> and <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, <ApiLink to="class/TaskClient#start">`TaskClient.start()`</ApiLink> and <ApiLink to="class/TaskClient#call">`call()`</ApiLink>, and <ApiLink to="class/RunClient#resurrect">`RunClient.resurrect()`</ApiLink> becomes `runTimeout`, and the `timeoutSecs` option of <ApiLink to="class/KeyValueStoreClient#setRecord">`KeyValueStoreClient.setRecord()`</ApiLink> becomes `timeout`:
+`timeoutSecs` means the request timeout on every method, so the run timeout of <ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink> and <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, <ApiLink to="class/TaskClient#start">`TaskClient.start()`</ApiLink> and <ApiLink to="class/TaskClient#call">`call()`</ApiLink>, and <ApiLink to="class/RunClient#resurrect">`RunClient.resurrect()`</ApiLink> is renamed:
 
 ```diff
-- await client.actor('my-actor').call(input, { timeout: 300 });                  // v2
-+ await client.actor('my-actor').call(input, { runTimeout: 300 });               // v3
-
-- await client.keyValueStore('my-store').setRecord(record, { timeoutSecs: 60 }); // v2
-+ await client.keyValueStore('my-store').setRecord(record, { timeout: 60 });     // v3
+- await client.actor('my-actor').call(input, { timeout: 300 });        // v2
++ await client.actor('my-actor').call(input, { runTimeoutSecs: 300 }); // v3
 ```
 
-TypeScript reports a leftover `timeout` on the run methods at compile time. In JavaScript it passes without an error and becomes a 300-second request timeout, while the run falls back to the Actor's default timeout, so search your code for these calls. A `{ timeout: 0 }`, which asked for an unlimited run in v2, throws an `ArgumentValidationError`, since zero is not a request timeout. `runTimeout: 0` still means no limit.
+TypeScript reports a leftover `timeout` at compile time, and in JavaScript the option schemas reject it as an unrecognized key, so the call throws an `ArgumentValidationError` instead of silently dropping the run limit. `{ timeout: 0 }`, which asked for an unlimited run in v2, becomes `{ runTimeoutSecs: 0 }`.
 
-`client.httpClient.call()` reads its `timeout` in seconds, where the axios field it replaces took milliseconds. A direct call that passed `timeout: 30000` asks for 30000 seconds, which the client caps at `timeoutMaxSecs`.
+The `timeoutSecs` option of <ApiLink to="class/KeyValueStoreClient#setRecord">`KeyValueStoreClient.setRecord()`</ApiLink> keeps its name and its meaning for a number of seconds, and now takes a tier name or `'noTimeout'` as well. The same goes for `client.requestQueue(id, { timeoutSecs })`, which caps the tier of every request that queue client sends rather than timing each one at the given value.
+
+`client.httpClient.call()` takes `timeoutSecs` where it read the axios `timeout` in milliseconds. A direct call that passed `timeout: 30000` has to become `timeoutSecs: 30`.
 
 ## `versions().list()` and `envVars().list()` lose their pagination options
 
-<ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> accept only the `timeout` option. Neither endpoint reads `offset`, `limit` or `desc`, and both return every item in one response, so `chunkSize` had nothing to size either. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those four options, deprecated since v2.21.0, are gone from the package. A call that passed any of them no longer compiles, and throws an `ArgumentValidationError` about an unrecognized key in JavaScript. Drop them and the call returns the same items as before.
+<ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> accept only the `timeoutSecs` option. Neither endpoint reads `offset`, `limit` or `desc`, and both return every item in one response, so `chunkSize` had nothing to size either. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those four options, deprecated since v2.21.0, are gone from the package. A call that passed any of them no longer compiles, and throws an `ArgumentValidationError` about an unrecognized key in JavaScript. Drop them and the call returns the same items as before.
 
 ## The last deprecated options are gone
 

@@ -68,7 +68,7 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination and sorting options.
-     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
+     * @param options.timeoutSecs - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of schedules.
      * @see https://docs.apify.com/api/v2/schedules-get
      */
@@ -83,15 +83,15 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
      *
      * @param schedule - The schedule data.
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The created schedule object.
      * @see https://docs.apify.com/api/v2/schedules-post
      */
     async create(schedule?: ScheduleCreateOrUpdateData, options: TimeoutOptions = {}): Promise<Schedule> {
         parseArgument(schedule, scheduleCreateSchema);
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.createResource(schemas.Schedule(), schedule, timeout);
+        return this.createResource(schemas.Schedule(), schedule, timeoutSecs);
     }
 }
 

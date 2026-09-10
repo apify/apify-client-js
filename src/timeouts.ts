@@ -40,7 +40,7 @@ export interface TimeoutOptions {
      * Timeout for the API request: a tier name (`'short'`, `'medium'`, `'long'`), a number of seconds, or
      * `'noTimeout'`. Defaults to the tier the method is assigned, which its documentation names.
      */
-    timeout?: Timeout;
+    timeoutSecs?: Timeout;
 }
 
 /**
@@ -49,7 +49,7 @@ export interface TimeoutOptions {
 const timeoutSchema = z.union([z.enum(['short', 'medium', 'long', 'noTimeout']), z.number().positive()]);
 
 /**
- * Schema of {@link Timeout}, optional, for the methods that validate `timeout` on its own.
+ * Schema of {@link Timeout}, optional, for the methods that validate `timeoutSecs` on its own.
  * @internal
  */
 export const optionalTimeoutSchema = timeoutSchema.optional();
@@ -60,7 +60,7 @@ export const optionalTimeoutSchema = timeoutSchema.optional();
  * @internal
  */
 export const timeoutOptionsShape = {
-    timeout: optionalTimeoutSchema,
+    timeoutSecs: optionalTimeoutSchema,
 };
 
 /**

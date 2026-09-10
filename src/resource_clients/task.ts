@@ -20,7 +20,7 @@ const inputSchema = anyObjectSchema.optional();
 const startOptionsSchema = z.strictObject({
     build: z.string().optional(),
     memory: z.number().optional(),
-    runTimeout: z.number().min(0).optional(),
+    runTimeoutSecs: z.number().min(0).optional(),
     waitForFinish: z.number().optional(),
     webhooks: z.array(anyObjectSchema).optional(),
     maxItems: z.number().min(0).optional(),
@@ -31,7 +31,7 @@ const startOptionsSchema = z.strictObject({
 const callOptionsSchema = z.strictObject({
     build: z.string().optional(),
     memory: z.number().optional(),
-    runTimeout: z.number().min(0).optional(),
+    runTimeoutSecs: z.number().min(0).optional(),
     waitSecs: z.number().min(0).optional(),
     webhooks: z.array(anyObjectSchema).optional(),
     maxItems: z.number().min(0).optional(),
@@ -81,14 +81,14 @@ export class TaskClient extends ResourceClient {
      * Retrieves the Actor task.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The task object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/actor-task-get
      */
     async get(options: TimeoutOptions = {}): Promise<Task | undefined> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Task(), {}, timeout);
+        return this.getResource(schemas.Task(), {}, timeoutSecs);
     }
 
     /**
@@ -96,15 +96,15 @@ export class TaskClient extends ResourceClient {
      *
      * @param newFields - Fields to update.
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The updated task object.
      * @see https://docs.apify.com/api/v2/actor-task-put
      */
     async update(newFields: TaskUpdateData, options: TimeoutOptions = {}): Promise<Task> {
         parseArgument(newFields, anyObjectSchema);
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Task(), newFields, timeout);
+        return this.updateResource(schemas.Task(), newFields, timeoutSecs);
     }
 
     /**
@@ -116,7 +116,7 @@ export class TaskClient extends ResourceClient {
      * Publishing an already published task does nothing.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The task object.
      * @see https://docs.apify.com/api/v2/actor-task-put
      * @since Added in 2.25.0
@@ -134,7 +134,7 @@ export class TaskClient extends ResourceClient {
      * Actor. Unpublishing a task that is not published does nothing.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The task object.
      * @see https://docs.apify.com/api/v2/actor-task-put
      * @since Added in 2.25.0
@@ -147,13 +147,13 @@ export class TaskClient extends ResourceClient {
      * Deletes the Task.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/actor-task-delete
      */
     async delete(options: TimeoutOptions = {}): Promise<void> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(timeout);
+        return this.deleteResource(timeoutSecs);
     }
 
     /**
@@ -163,13 +163,13 @@ export class TaskClient extends ResourceClient {
      * @param options - Run options.
      * @param options.build - Tag or number of the Actor build to run (e.g., `'beta'` or `'1.2.345'`).
      * @param options.memory - Memory in megabytes allocated for the run.
-     * @param options.runTimeout - Timeout for the run in seconds. Zero means no timeout.
+     * @param options.runTimeoutSecs - Timeout for the run in seconds. Zero means no timeout.
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the run to finish before returning.
      * @param options.webhooks - Webhooks to trigger for specific Actor run events.
      * @param options.maxItems - Maximum number of dataset items (for pay-per-result Actors).
      * @param options.maxTotalChargeUsd - Maximum cost in USD (for pay-per-event Actors).
      * @param options.restartOnError - Whether to restart the run on error.
-     * @param options.timeout - Timeout for the API request. Default is `'medium'`, extended to cover `waitForFinish`
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`, extended to cover `waitForFinish`
      * when the API is asked to hold the response.
      * @returns The Actor Run object.
      * @see https://docs.apify.com/api/v2/actor-task-runs-post
@@ -178,13 +178,21 @@ export class TaskClient extends ResourceClient {
         parseArgument(input, inputSchema);
         const parsed = parseArgument(options, startOptionsSchema, 'TaskStartOptions');
 
-        const { waitForFinish, runTimeout, memory, build, maxItems, maxTotalChargeUsd, restartOnError, timeout } =
-            parsed;
+        const {
+            waitForFinish,
+            runTimeoutSecs,
+            memory,
+            build,
+            maxItems,
+            maxTotalChargeUsd,
+            restartOnError,
+            timeoutSecs,
+        } = parsed;
 
-        // The API knows the run timeout as `timeout`; the client keeps that name for the request timeout.
+        // The API's `timeout` parameter bounds the run, not the request.
         const params = {
             waitForFinish,
-            timeout: runTimeout,
+            timeout: runTimeoutSecs,
             memory,
             build,
             webhooks: stringifyWebhooksToBase64(parsed.webhooks),
@@ -204,7 +212,7 @@ export class TaskClient extends ResourceClient {
             headers: {
                 'Content-Type': 'application/json',
             },
-            timeout: this.timeoutForWaitForFinish(timeout, 'medium', waitForFinish),
+            timeoutSecs: this.timeoutForWaitForFinish(timeoutSecs, 'medium', waitForFinish),
         };
 
         const response = await this.httpClient.call(request);
@@ -219,13 +227,13 @@ export class TaskClient extends ResourceClient {
      * @param options - Run and wait options.
      * @param options.build - Tag or number of the Actor build to run.
      * @param options.memory - Memory in megabytes allocated for the run.
-     * @param options.runTimeout - Timeout for the run in seconds.
+     * @param options.runTimeoutSecs - Timeout for the run in seconds.
      * @param options.waitSecs - Maximum time to wait for the run to finish, in seconds. If omitted, waits indefinitely.
      * @param options.webhooks - Webhooks to trigger for specific Actor run events.
      * @param options.maxItems - Maximum number of dataset items (for pay-per-result Actors).
      * @param options.maxTotalChargeUsd - Maximum cost in USD (for pay-per-event Actors).
      * @param options.restartOnError - Whether to restart the run on error.
-     * @param options.timeout - Timeout for each API request, the start and every poll alike. Default is `'noTimeout'`.
+     * @param options.timeoutSecs - Timeout for each API request, the start and every poll alike. Default is `'noTimeout'`.
      * @returns The Actor run object.
      * @see https://docs.apify.com/api/v2/actor-task-runs-post
      */
@@ -233,32 +241,32 @@ export class TaskClient extends ResourceClient {
         parseArgument(input, inputSchema);
         const parsed = parseArgument(options, callOptionsSchema, 'TaskCallOptions');
 
-        const { waitSecs, timeout = 'noTimeout', ...startOptions } = parsed;
+        const { waitSecs, timeoutSecs = 'noTimeout', ...startOptions } = parsed;
 
-        const { id } = await this.start(input, { ...startOptions, timeout });
+        const { id } = await this.start(input, { ...startOptions, timeoutSecs });
 
         // Calling root client because we need access to top level API.
         // Creating a new instance of RunClient here would only allow
         // setting it up as a nested route under task API.
-        return this.apifyClient.run(id).waitForFinish({ waitSecs, timeout });
+        return this.apifyClient.run(id).waitForFinish({ waitSecs, timeoutSecs });
     }
 
     /**
      * Retrieves the Actor task's input object.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The Task's input.
      * @see https://docs.apify.com/api/v2/actor-task-input-get
      */
     async getInput(options: TimeoutOptions = {}): Promise<Dictionary | Dictionary[]> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('input'),
             method: 'GET',
             params: this.buildParams(),
-            timeout,
+            timeoutSecs,
         });
         return cast(response.data);
     }
@@ -268,7 +276,7 @@ export class TaskClient extends ResourceClient {
      *
      * @param newFields - New input data for the task.
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The updated task input.
      * @see https://docs.apify.com/api/v2/actor-task-input-put
      */
@@ -276,14 +284,14 @@ export class TaskClient extends ResourceClient {
         newFields: Dictionary | Dictionary[],
         options: TimeoutOptions = {},
     ): Promise<Dictionary | Dictionary[]> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('input'),
             method: 'PUT',
             params: this.buildParams(),
             data: newFields,
-            timeout,
+            timeoutSecs,
         });
 
         return cast(response.data);

@@ -61,7 +61,7 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination and sorting options.
-     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
+     * @param options.timeoutSecs - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of webhook dispatches.
      * @see https://docs.apify.com/api/v2/webhook-dispatches-get
      */

@@ -55,19 +55,19 @@ export class LogClient extends ResourceClient {
      *
      * @param options - Log retrieval options.
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
-     * @param options.timeout - Timeout for the API request. Default is `'long'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @returns The log content as a string, or `undefined` if it does not exist. A chained client such as
      * `run.log()` throws an `ApifyApiError` on a 404, since the run itself may be what is missing.
      * @see https://docs.apify.com/api/v2/log-get
      */
     async get(options: LogOptions = {}): Promise<string | undefined> {
-        const { timeout = 'long', ...params } = parseArgument(options, logOptionsSchema, 'LogOptions');
+        const { timeoutSecs = 'long', ...params } = parseArgument(options, logOptionsSchema, 'LogOptions');
 
         const requestOpts: ApifyRequestConfig = {
             url: this.buildUrl(),
             method: 'GET',
             params: this.buildParams(params),
-            timeout,
+            timeoutSecs,
         };
 
         try {
@@ -85,13 +85,13 @@ export class LogClient extends ResourceClient {
      *
      * @param options - Log retrieval options.
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
-     * @param options.timeout - Timeout for the API request. Default is `'long'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @returns The log content as a Readable stream, or `undefined` if it does not exist. A chained client such as
      * `run.log()` throws an `ApifyApiError` on a 404, since the run itself may be what is missing.
      * @see https://docs.apify.com/api/v2/log-get
      */
     async stream(options: LogOptions = {}): Promise<Readable | undefined> {
-        const { timeout = 'long', raw } = parseArgument(options, logOptionsSchema, 'LogOptions');
+        const { timeoutSecs = 'long', raw } = parseArgument(options, logOptionsSchema, 'LogOptions');
 
         const params = {
             stream: true,
@@ -103,7 +103,7 @@ export class LogClient extends ResourceClient {
             method: 'GET',
             params: this.buildParams(params),
             responseType: 'stream',
-            timeout,
+            timeoutSecs,
         };
 
         try {

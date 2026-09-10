@@ -47,13 +47,13 @@ export class WebhookDispatchClient extends ResourceClient {
      * Retrieves the webhook dispatch.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The webhook dispatch object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/webhook-dispatch-get
      */
     async get(options: TimeoutOptions = {}): Promise<WebhookDispatch | undefined> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.WebhookDispatch(), {}, timeout);
+        return this.getResource(schemas.WebhookDispatch(), {}, timeoutSecs);
     }
 }

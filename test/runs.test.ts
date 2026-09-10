@@ -158,8 +158,8 @@ describe('Run methods', () => {
         test('resurrect() works', async () => {
             const runId = 'some-run-id';
 
-            // The run timeout travels to the API as `timeout`, while the client option is `runTimeout`.
-            const options = { build: 'some-build', memory: 1024, runTimeout: 400 };
+            // The run timeout travels to the API as `timeout`, while the client option is `runTimeoutSecs`.
+            const options = { build: 'some-build', memory: 1024, runTimeoutSecs: 400 };
             const query = { build: 'some-build', memory: 1024, timeout: 400 };
 
             const res = await client.run(runId).resurrect(options);

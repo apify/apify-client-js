@@ -68,7 +68,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination options.
-     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
+     * @param options.timeoutSecs - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of Actors.
      * @see https://docs.apify.com/api/v2/acts-get
      */
@@ -83,15 +83,15 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      *
      * @param actor - The Actor data.
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
      * @returns The created Actor object.
      * @see https://docs.apify.com/api/v2/acts-post
      */
     async create(actor: ActorCollectionCreateOptions, options: TimeoutOptions = {}): Promise<Actor> {
         parseArgument(actor, actorCreateSchema);
-        const { timeout = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.createResource(schemas.Actor(), actor, timeout);
+        return this.createResource(schemas.Actor(), actor, timeoutSecs);
     }
 }
 

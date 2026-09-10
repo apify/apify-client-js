@@ -22,7 +22,7 @@ const DEFAULT_RESPONSE_DATA = { id: 'test-id', status: 'SUCCEEDED' };
 
 /**
  * Stands in for `HttpClient`: records every request config and answers with a canned body, so the tests can
- * read the `timeout` each method asks for without a server.
+ * read the `timeoutSecs` each method asks for without a server.
  */
 class MockHttpClient {
     public timeoutMillis: Record<TimeoutTier, number>;
@@ -84,11 +84,11 @@ const CLIENTS: Record<string, ClientFactory> = {
 interface TimeoutCase {
     client: keyof typeof CLIENTS;
     method: string;
-    /** The tier the method is assigned, and so the `timeout` it asks the HTTP client for. */
+    /** The tier the method is assigned, and so the `timeoutSecs` it asks the HTTP client for. */
     tier: Timeout;
     /** Arguments of the call ahead of its options object. */
     args?: unknown[];
-    /** The options object the call needs, when the defaults do not do; a `timeout` override is merged into it. */
+    /** The options object the call needs, when the defaults do not do; a `timeoutSecs` override is merged into it. */
     options?: object;
     /** A response body the method needs to complete, when the default one does not fit its shape. */
     responseData?: unknown;
@@ -253,33 +253,33 @@ describe('Client timeouts', () => {
             test(`asks for the ${String(tier)} tier by default`, async () => {
                 await resourceClient(clientName)[method](...args, ...(options ? [options] : []));
 
-                expect(mockHttpClient.lastCall.timeout).toBe(tier);
+                expect(mockHttpClient.lastCall.timeoutSecs).toBe(tier);
             });
 
             test('sends an explicit per-call timeout instead', async () => {
-                await resourceClient(clientName)[method](...args, { ...options, timeout: 42 });
+                await resourceClient(clientName)[method](...args, { ...options, timeoutSecs: 42 });
 
-                expect(mockHttpClient.lastCall.timeout).toBe(42);
+                expect(mockHttpClient.lastCall.timeoutSecs).toBe(42);
             });
         },
     );
 
     test('the timeout never reaches the query string', async () => {
-        await resourceClient('DatasetClient').listItems({ limit: 5, timeout: 'short' });
+        await resourceClient('DatasetClient').listItems({ limit: 5, timeoutSecs: 'short' });
         expect(mockHttpClient.lastCall.params).toEqual({ limit: 5 });
 
-        await resourceClient('RunCollectionClient').list({ desc: true, timeout: 'short' });
+        await resourceClient('RunCollectionClient').list({ desc: true, timeoutSecs: 'short' });
         expect(mockHttpClient.lastCall.params).toEqual({ desc: true });
 
-        await resourceClient('DatasetCollectionClient').getOrCreate('name', { schema: { a: 1 }, timeout: 'long' });
+        await resourceClient('DatasetCollectionClient').getOrCreate('name', { schema: { a: 1 }, timeoutSecs: 'long' });
         expect(mockHttpClient.lastCall.data).toEqual({ schema: { a: 1 } });
         expect(mockHttpClient.lastCall.params).toEqual({ name: 'name' });
     });
 
     test('call() passes its timeout to the start request and to every poll', async () => {
-        await resourceClient('ActorClient').call(undefined, { log: null, timeout: 7 });
+        await resourceClient('ActorClient').call(undefined, { log: null, timeoutSecs: 7 });
 
-        expect(mockHttpClient.callHistory.map((config) => config.timeout)).toEqual([7, 7]);
+        expect(mockHttpClient.callHistory.map((config) => config.timeoutSecs)).toEqual([7, 7]);
     });
 
     describe('a waitForFinish the API holds the response for', () => {
@@ -295,47 +295,47 @@ describe('Client timeouts', () => {
             async ({ client: clientName, method, args, expected }) => {
                 await resourceClient(clientName)[method](...args, { waitForFinish: 60 });
 
-                expect(mockHttpClient.lastCall.timeout).toBe(expected);
+                expect(mockHttpClient.lastCall.timeoutSecs).toBe(expected);
             },
         );
 
         test('asks for no more than the minute the API holds', async () => {
             await resourceClient('RunClient').get({ waitForFinish: 600 });
 
-            expect(mockHttpClient.lastCall.timeout).toBe(65);
+            expect(mockHttpClient.lastCall.timeoutSecs).toBe(65);
         });
 
         test('leaves an explicit per-call timeout alone', async () => {
-            await resourceClient('ActorClient').start(undefined, { waitForFinish: 60, timeout: 'short' });
+            await resourceClient('ActorClient').start(undefined, { waitForFinish: 60, timeoutSecs: 'short' });
 
-            expect(mockHttpClient.lastCall.timeout).toBe('short');
+            expect(mockHttpClient.lastCall.timeoutSecs).toBe('short');
         });
     });
 
-    test('runTimeout is what the API receives as the run `timeout`', async () => {
-        await resourceClient('ActorClient').start(undefined, { runTimeout: 120, timeout: 'long' });
+    test('runTimeoutSecs is what the API receives as the run `timeout`', async () => {
+        await resourceClient('ActorClient').start(undefined, { runTimeoutSecs: 120, timeoutSecs: 'long' });
         expect(mockHttpClient.lastCall.params).toMatchObject({ timeout: 120 });
-        expect(mockHttpClient.lastCall.timeout).toBe('long');
+        expect(mockHttpClient.lastCall.timeoutSecs).toBe('long');
 
-        await resourceClient('RunClient').resurrect({ runTimeout: 60 });
+        await resourceClient('RunClient').resurrect({ runTimeoutSecs: 60 });
         expect(mockHttpClient.lastCall.params).toMatchObject({ timeout: 60 });
-        expect(mockHttpClient.lastCall.timeout).toBe('medium');
+        expect(mockHttpClient.lastCall.timeoutSecs).toBe('medium');
     });
 
     test.each([
-        { timeout: 0, reason: 'zero' },
-        { timeout: -1, reason: 'a negative number' },
-        { timeout: 'fast', reason: 'an unknown tier' },
-        { timeout: null, reason: 'null' },
-    ])('rejects $reason as a timeout', async ({ timeout }) => {
-        await expect(resourceClient('DatasetClient').get({ timeout })).rejects.toThrow(ArgumentValidationError);
+        { timeoutSecs: 0, reason: 'zero' },
+        { timeoutSecs: -1, reason: 'a negative number' },
+        { timeoutSecs: 'fast', reason: 'an unknown tier' },
+        { timeoutSecs: null, reason: 'null' },
+    ])('rejects $reason as a timeout', async ({ timeoutSecs }) => {
+        await expect(resourceClient('DatasetClient').get({ timeoutSecs })).rejects.toThrow(ArgumentValidationError);
     });
 
     test('the list methods whose other options the API ignores still validate the timeout', () => {
-        expect(() => resourceClient('ActorEnvVarCollectionClient').list({ timeout: 0 })).toThrow(
+        expect(() => resourceClient('ActorEnvVarCollectionClient').list({ timeoutSecs: 0 })).toThrow(
             ArgumentValidationError,
         );
-        expect(() => resourceClient('ActorVersionCollectionClient').list({ timeout: 'fast' })).toThrow(
+        expect(() => resourceClient('ActorVersionCollectionClient').list({ timeoutSecs: 'fast' })).toThrow(
             ArgumentValidationError,
         );
     });
@@ -347,10 +347,10 @@ describe('Client timeouts', () => {
             const queueClient = queue as unknown as ReturnType<ApifyClient['requestQueue']>;
 
             await queueClient.get();
-            expect(mockHttpClient.lastCall.timeout).toBe(2);
+            expect(mockHttpClient.lastCall.timeoutSecs).toBe(2);
 
             await queueClient.unlockRequests();
-            expect(mockHttpClient.lastCall.timeout).toBe(2);
+            expect(mockHttpClient.lastCall.timeoutSecs).toBe(2);
         });
 
         test('leaves a tier below the cap alone', async () => {
@@ -359,10 +359,10 @@ describe('Client timeouts', () => {
             const queueClient = queue as unknown as ReturnType<ApifyClient['requestQueue']>;
 
             await queueClient.get();
-            expect(mockHttpClient.lastCall.timeout).toBe('short');
+            expect(mockHttpClient.lastCall.timeoutSecs).toBe('short');
 
             await queueClient.unlockRequests();
-            expect(mockHttpClient.lastCall.timeout).toBe(60);
+            expect(mockHttpClient.lastCall.timeoutSecs).toBe(60);
         });
 
         test('does not cap an explicit per-call timeout', async () => {
@@ -370,11 +370,11 @@ describe('Client timeouts', () => {
             queue.httpClient = mockHttpClient;
             const queueClient = queue as unknown as ReturnType<ApifyClient['requestQueue']>;
 
-            await queueClient.get({ timeout: 'long' });
-            expect(mockHttpClient.lastCall.timeout).toBe('long');
+            await queueClient.get({ timeoutSecs: 'long' });
+            expect(mockHttpClient.lastCall.timeoutSecs).toBe('long');
 
-            await queueClient.getRequest('x', { timeout: 30 });
-            expect(mockHttpClient.lastCall.timeout).toBe(30);
+            await queueClient.getRequest('x', { timeoutSecs: 30 });
+            expect(mockHttpClient.lastCall.timeoutSecs).toBe(30);
         });
 
         test('compares against the tier durations configured on the client', async () => {
@@ -385,7 +385,7 @@ describe('Client timeouts', () => {
             const queueClient = queue as unknown as ReturnType<ApifyClient['requestQueue']>;
 
             await queueClient.get();
-            expect(mockHttpClient.lastCall.timeout).toBe('short');
+            expect(mockHttpClient.lastCall.timeoutSecs).toBe('short');
         });
 
         test.each([

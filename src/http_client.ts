@@ -207,7 +207,7 @@ export class HttpClient {
      * retrying logic.
      */
     private createRequestHandler(config: ApifyRequestConfig) {
-        const { timeout = 'medium', ...axiosConfig } = config;
+        const { timeoutSecs = 'medium', ...axiosConfig } = config;
 
         const makeRequest: RetryFunction<ApifyResponse, Error> = async (stopTrying, attempt) => {
             this.stats.requests++;
@@ -224,7 +224,7 @@ export class HttpClient {
 
                 response = await this.axios.request({
                     ...axiosConfig,
-                    timeout: this.computeTimeoutMillis(timeout, attempt),
+                    timeout: this.computeTimeoutMillis(timeoutSecs, attempt),
                 });
                 if (this.isStatusOk(response.status)) return response;
             } catch (err) {
@@ -257,15 +257,15 @@ export class HttpClient {
     }
 
     /**
-     * Resolves `timeout` to the number of milliseconds the given attempt gets. A tier name resolves to its
-     * configured duration, a number is taken as seconds, and `'noTimeout'` becomes `0`, which axios reads as
-     * no timeout. The result doubles with each attempt and is capped at `timeoutMaxMillis`. A requested value
-     * above the cap is capped too, which warns once, since the requested value does not take effect in full.
+     * Resolves `timeoutSecs` to the number of milliseconds the given attempt gets. A tier name resolves to
+     * its configured duration, a number is taken as seconds, and `'noTimeout'` becomes `0`, which axios reads
+     * as no timeout. The result doubles with each attempt and is capped at `timeoutMaxMillis`. A requested
+     * value above the cap is capped too, which warns once, since it does not take effect in full.
      */
-    private computeTimeoutMillis(timeout: Timeout, attempt: number): number {
-        if (timeout === 'noTimeout') return 0;
+    private computeTimeoutMillis(timeoutSecs: Timeout, attempt: number): number {
+        if (timeoutSecs === 'noTimeout') return 0;
 
-        const requestedMillis = typeof timeout === 'number' ? timeout * 1000 : this.timeoutMillis[timeout];
+        const requestedMillis = typeof timeoutSecs === 'number' ? timeoutSecs * 1000 : this.timeoutMillis[timeoutSecs];
 
         if (requestedMillis > this.timeoutMaxMillis) {
             // `warningOnce` keys by message, so each requested value warns once.
@@ -361,12 +361,12 @@ export interface ApifyRequestConfig extends Omit<AxiosRequestConfig, 'timeout'> 
     forceBuffer?: boolean;
     doNotRetryTimeouts?: boolean;
     /**
-     * Timeout of the request, resolved to milliseconds per attempt by the client. Unlike the axios field it
-     * replaces, a number here is a duration in seconds. The resolution happens before axios runs its
-     * interceptors, so a request interceptor already sees a number of milliseconds.
+     * Timeout of the request: a tier name, a number of seconds, or `'noTimeout'`. The client resolves it to
+     * the axios `timeout` in milliseconds for each attempt, before axios runs its interceptors, so a request
+     * interceptor already sees a number of milliseconds.
      * @default 'medium'
      */
-    timeout?: Timeout;
+    timeoutSecs?: Timeout;
 }
 
 export interface ApifyResponse<T = any> extends AxiosResponse<T> {

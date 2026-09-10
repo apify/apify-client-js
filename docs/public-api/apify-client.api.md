@@ -363,7 +363,7 @@ export interface ActorStartOptions extends TimeoutOptions {
     maxTotalChargeUsd?: number;
     memory?: number;
     restartOnError?: boolean;
-    runTimeout?: number;
+    runTimeoutSecs?: number;
     waitForFinish?: number;
     webhooks?: readonly WebhookUpdateData[];
 }
@@ -633,7 +633,7 @@ interface ApifyRequestConfig extends Omit<AxiosRequestConfig, 'timeout'> {
     forceBuffer?: boolean;
     // (undocumented)
     stringifyFunctions?: boolean;
-    timeout?: Timeout;
+    timeoutSecs?: Timeout;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3520,11 +3520,11 @@ export interface RequestQueueUserOptions {
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
 class ResourceClient extends ApiClient {
-    protected deleteResource(timeout: Timeout): Promise<void>;
-    protected getResource<T, R>(schema: z.ZodType, options: T, timeout: Timeout): Promise<R | undefined>;
-    protected timeoutForWaitForFinish(timeout: Timeout | undefined, tier: TimeoutTier, waitForFinishSecs: number | undefined): Timeout;
+    protected deleteResource(timeoutSecs: Timeout): Promise<void>;
+    protected getResource<T, R>(schema: z.ZodType, options: T, timeoutSecs: Timeout): Promise<R | undefined>;
+    protected timeoutForWaitForFinish(timeoutSecs: Timeout | undefined, tier: TimeoutTier, waitForFinishSecs: number | undefined): Timeout;
     // (undocumented)
-    protected updateResource<T, R>(schema: z.ZodType, newFields: T, timeout: Timeout): Promise<R>;
+    protected updateResource<T, R>(schema: z.ZodType, newFields: T, timeoutSecs: Timeout): Promise<R>;
     protected waitForJobFinish<R extends {
         status: (typeof ACT_JOB_STATUSES)[keyof typeof ACT_JOB_STATUSES];
     }>(schema: z.ZodType, options?: WaitForFinishOptions): Promise<R>;
@@ -3534,12 +3534,12 @@ class ResourceClient extends ApiClient {
 // @public
 class ResourceCollectionClient extends ApiClient {
     // (undocumented)
-    protected createResource<D, R>(schema: z.ZodType, resource: D, timeout: Timeout): Promise<R>;
+    protected createResource<D, R>(schema: z.ZodType, resource: D, timeoutSecs: Timeout): Promise<R>;
     // (undocumented)
-    protected getOrCreateResource<D, R>(schema: z.ZodType, name: string | undefined, resource: D | undefined, timeout: Timeout): Promise<R>;
+    protected getOrCreateResource<D, R>(schema: z.ZodType, name: string | undefined, resource: D | undefined, timeoutSecs: Timeout): Promise<R>;
     // (undocumented)
-    protected listResources<T, R>(schema: z.ZodType, options: T | undefined, timeout: Timeout): Promise<R>;
-    protected listResourcesPaginated<T extends PaginationOptions & TimeoutOptions, Data, R extends PaginatedResponse<Data>>(schema: z.ZodType, options: T, defaultTimeout: Timeout): AsyncIterable<Data> & Promise<R>;
+    protected listResources<T, R>(schema: z.ZodType, options: T | undefined, timeoutSecs: Timeout): Promise<R>;
+    protected listResourcesPaginated<T extends PaginationOptions & TimeoutOptions, Data, R extends PaginatedResponse<Data>>(schema: z.ZodType, options: T, defaultTimeoutSecs: Timeout): AsyncIterable<Data> & Promise<R>;
 }
 
 // @public
@@ -3626,7 +3626,7 @@ export interface RunResurrectOptions extends TimeoutOptions {
     // (undocumented)
     memory?: number;
     restartOnError?: boolean;
-    runTimeout?: number;
+    runTimeoutSecs?: number;
 }
 
 // @public
@@ -3930,7 +3930,7 @@ export type Timeout = TimeoutTier | 'noTimeout' | number;
 
 // @public
 export interface TimeoutOptions {
-    timeout?: Timeout;
+    timeoutSecs?: Timeout;
 }
 
 // @public

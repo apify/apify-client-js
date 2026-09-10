@@ -68,7 +68,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination options.
-     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
+     * @param options.timeoutSecs - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of Request queues.
      * @see https://docs.apify.com/api/v2/request-queues-get
      */
@@ -85,15 +85,15 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
      *
      * @param name - Name of the Request queue. If not provided, a default queue is used.
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The Request queue object.
      * @see https://docs.apify.com/api/v2/request-queues-post
      */
     async getOrCreate(name?: string, options: TimeoutOptions = {}): Promise<RequestQueue> {
         parseArgument(name, nameSchema);
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getOrCreateResource(schemas.RequestQueue(), name, undefined, timeout);
+        return this.getOrCreateResource(schemas.RequestQueue(), name, undefined, timeoutSecs);
     }
 }
 

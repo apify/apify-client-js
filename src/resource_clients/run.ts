@@ -29,7 +29,7 @@ const metamorphOptionsSchema = z.strictObject({
 const resurrectOptionsSchema = z.strictObject({
     build: z.string().optional(),
     memory: z.number().optional(),
-    runTimeout: z.number().optional(),
+    runTimeoutSecs: z.number().optional(),
     maxItems: z.number().optional(),
     maxTotalChargeUsd: z.number().optional(),
     restartOnError: z.boolean().optional(),
@@ -82,7 +82,7 @@ export class RunClient extends ResourceClient {
      *
      * @param options - Get options
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the run to finish on the API side before returning. Default is 0 (returns immediately).
-     * @param options.timeout - Timeout for the API request. Default is `'short'`, extended to cover `waitForFinish`
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`, extended to cover `waitForFinish`
      * when the API is asked to hold the response.
      * @returns The ActorRun object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/actor-run-get
@@ -98,12 +98,12 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
-        const { timeout, ...params } = parseArgument(options, getOptionsSchema, 'RunGetOptions');
+        const { timeoutSecs, ...params } = parseArgument(options, getOptionsSchema, 'RunGetOptions');
 
         return this.getResource(
             schemas.Run(),
             params,
-            this.timeoutForWaitForFinish(timeout, 'short', params.waitForFinish),
+            this.timeoutForWaitForFinish(timeoutSecs, 'short', params.waitForFinish),
         );
     }
 
@@ -112,7 +112,7 @@ export class RunClient extends ResourceClient {
      *
      * @param options - Abort options
      * @param options.gracefully - If `true`, the Actor run will abort gracefully - it can send status messages and perform cleanup. Default is `false` (immediate abort).
-     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
      * @returns The updated ActorRun object with `ABORTING` or `ABORTED` status
      * @see https://docs.apify.com/api/v2/actor-run-abort-post
      *
@@ -126,13 +126,13 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async abort(options: RunAbortOptions = {}): Promise<ActorRun> {
-        const { timeout = 'medium', ...params } = parseArgument(options, abortOptionsSchema, 'RunAbortOptions');
+        const { timeoutSecs = 'medium', ...params } = parseArgument(options, abortOptionsSchema, 'RunAbortOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('abort'),
             method: 'POST',
             params: this.buildParams(params),
-            timeout,
+            timeoutSecs,
         });
 
         return parseResponse(response, schemas.Run());
@@ -142,14 +142,14 @@ export class RunClient extends ResourceClient {
      * Deletes the Actor run.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/actor-run-delete
      * @since Added in 2.8.1
      */
     async delete(options: TimeoutOptions = {}): Promise<void> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(timeout);
+        return this.deleteResource(timeoutSecs);
     }
 
     /**
@@ -163,7 +163,7 @@ export class RunClient extends ResourceClient {
      * @param input - Input for the target Actor, serialized to JSON. Omit it to metamorph without input.
      * @param options - Metamorph options
      * @param options.build - Tag or number of the target Actor's build to run. Default is the target Actor's default build.
-     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
      * @returns The metamorphed ActorRun object (same ID, but now running the target Actor)
      * @see https://docs.apify.com/api/v2/actor-run-metamorph-post
      *
@@ -196,7 +196,7 @@ export class RunClient extends ResourceClient {
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
-            timeout: parsed.timeout ?? 'medium',
+            timeoutSecs: parsed.timeoutSecs ?? 'medium',
         };
 
         if (parsed.contentType) {
@@ -217,7 +217,7 @@ export class RunClient extends ResourceClient {
      * with a fresh environment.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
      * @returns The updated ActorRun object
      * @see https://docs.apify.com/api/v2/actor-run-reboot-post
      *
@@ -228,12 +228,12 @@ export class RunClient extends ResourceClient {
      * @since Added in 2.8.0
      */
     async reboot(options: TimeoutOptions = {}): Promise<ActorRun> {
-        const { timeout = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const request: ApifyRequestConfig = {
             url: this.buildUrl('reboot'),
             method: 'POST',
-            timeout,
+            timeoutSecs,
         };
 
         const response = await this.httpClient.call(request);
@@ -248,7 +248,7 @@ export class RunClient extends ResourceClient {
      * @param newFields.isStatusMessageTerminal - If `true`, the status message is final and won't be overwritten. Default is `false`.
      * @param newFields.generalAccess - General resource access level ('FOLLOW_USER_SETTING', 'ANYONE_WITH_ID_CAN_READ' or 'RESTRICTED')
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The updated ActorRun object
      *
      * @example
@@ -262,9 +262,9 @@ export class RunClient extends ResourceClient {
      */
     async update(newFields: RunUpdateOptions, options: TimeoutOptions = {}): Promise<ActorRun> {
         parseArgument(newFields, anyObjectSchema);
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Run(), newFields, timeout);
+        return this.updateResource(schemas.Run(), newFields, timeoutSecs);
     }
 
     /**
@@ -276,11 +276,11 @@ export class RunClient extends ResourceClient {
      * @param options - Resurrection options (override original run settings)
      * @param options.build - Tag or number of the build to use. If not provided, uses the original run's build.
      * @param options.memory - Memory in megabytes. If not provided, uses the original run's memory.
-     * @param options.runTimeout - Timeout for the resurrected run in seconds. If not provided, uses the original run's timeout.
+     * @param options.runTimeoutSecs - Timeout for the resurrected run in seconds. If not provided, uses the original run's timeout.
      * @param options.maxItems - Maximum number of dataset items (pay-per-result Actors).
      * @param options.maxTotalChargeUsd - Maximum cost in USD (pay-per-event Actors).
      * @param options.restartOnError - Whether to restart on error.
-     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
      * @returns The new (resurrected) ActorRun object
      * @see https://docs.apify.com/api/v2/post-resurrect-run
      *
@@ -293,17 +293,17 @@ export class RunClient extends ResourceClient {
      */
     async resurrect(options: RunResurrectOptions = {}): Promise<ActorRun> {
         const {
-            timeout = 'medium',
-            runTimeout,
+            timeoutSecs = 'medium',
+            runTimeoutSecs,
             ...params
         } = parseArgument(options, resurrectOptionsSchema, 'RunResurrectOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('resurrect'),
             method: 'POST',
-            // The API knows the run timeout as `timeout`; the client keeps that name for the request timeout.
-            params: this.buildParams({ ...params, timeout: runTimeout }),
-            timeout,
+            // The API's `timeout` parameter bounds the run, not the request.
+            params: this.buildParams({ ...params, timeout: runTimeoutSecs }),
+            timeoutSecs,
         });
 
         return parseResponse(response, schemas.Run());
@@ -316,7 +316,7 @@ export class RunClient extends ResourceClient {
      * @param options.eventName - **Required.** Name of the event to charge for.
      * @param options.count - Number of times to charge the event. Default is 1.
      * @param options.idempotencyKey - Optional key to ensure the charge is not duplicated. If not provided, one is auto-generated.
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns Empty response object.
      * @see https://docs.apify.com/api/v2/post-charge-run
      * @since Added in 2.11.0
@@ -326,7 +326,7 @@ export class RunClient extends ResourceClient {
             eventName,
             count,
             idempotencyKey: providedIdempotencyKey,
-            timeout = 'short',
+            timeoutSecs = 'short',
         } = parseArgument(options, chargeOptionsSchema, 'RunChargeOptions');
 
         /** To avoid duplicates during the same milisecond, doesn't need to by crypto-secure. */
@@ -343,7 +343,7 @@ export class RunClient extends ResourceClient {
             headers: {
                 [RUN_CHARGE_IDEMPOTENCY_HEADER]: idempotencyKey,
             },
-            timeout,
+            timeoutSecs,
         };
         const response = await this.httpClient.call(request);
         return response;
@@ -362,8 +362,8 @@ export class RunClient extends ResourceClient {
      *
      * @param options - Wait options
      * @param options.waitSecs - Maximum time to wait for the run to finish, in seconds. If the limit is reached, the returned promise resolves to a run object that will have status `READY` or `RUNNING`. If omitted, waits indefinitely.
-     * @param options.timeout - Timeout for each polling API request. Default is `'noTimeout'`.
-     * @returns The ActorRun object (finished or still running if timeout was reached)
+     * @param options.timeoutSecs - Timeout for each polling API request. Default is `'noTimeout'`.
+     * @returns The ActorRun object (finished or still running if the timeout was reached)
      *
      * @example
      * ```javascript
@@ -481,13 +481,13 @@ export class RunClient extends ResourceClient {
      * @param options - Streaming options
      * @param options.toLog - Log instance to redirect the run log to. Use `'default'` for a preconfigured one, or `null` to disable the redirection.
      * @param options.fromStart - If `true`, the log is streamed from its beginning. Default is `true`.
-     * @param options.timeout - Timeout for the API requests that fetch the run and its Actor. Default is `'long'`.
+     * @param options.timeoutSecs - Timeout for the API requests that fetch the run and its Actor. Default is `'long'`.
      * @since Added in 2.20.0
      */
     async getStreamedLog(options: GetStreamedLogOptions = {}): Promise<StreamedLog | undefined> {
-        parseArgument(options.timeout, optionalTimeoutSchema);
+        parseArgument(options.timeoutSecs, optionalTimeoutSchema);
 
-        const { fromStart = true, timeout = 'long' } = options;
+        const { fromStart = true, timeoutSecs = 'long' } = options;
         let { toLog } = options;
         if (toLog === null || !isNode()) {
             // Explicitly no logging or not in Node.js
@@ -496,12 +496,12 @@ export class RunClient extends ResourceClient {
         if (toLog === undefined || toLog === 'default') {
             // Create default StreamedLog
             // Get actor name and run id
-            const runData = await this.get({ timeout });
+            const runData = await this.get({ timeoutSecs });
             const runId = runData?.id ?? '';
 
             const actorId = runData?.actId ?? '';
             // `apifyClient.actor()` rejects an empty ID, which is what a run that could not be read leaves here.
-            const actorData = actorId ? await this.apifyClient.actor(actorId).get({ timeout }) : undefined;
+            const actorData = actorId ? await this.apifyClient.actor(actorId).get({ timeoutSecs }) : undefined;
             const actorName = actorData?.name ?? '';
             const name = [actorName, `runId:${runId}`].filter(Boolean).join(' ');
 
@@ -571,7 +571,7 @@ export interface RunResurrectOptions extends TimeoutOptions {
     build?: string;
     memory?: number;
     /** Timeout for the resurrected run in seconds. If not provided, the run keeps its original timeout. */
-    runTimeout?: number;
+    runTimeoutSecs?: number;
     /**
      * @since Added in 2.12.1
      */

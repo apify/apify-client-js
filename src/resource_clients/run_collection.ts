@@ -70,7 +70,7 @@ export class RunCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination and filtering options.
-     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
+     * @param options.timeoutSecs - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of Actor runs.
      * @see https://docs.apify.com/api/v2/actor-runs-get
      */

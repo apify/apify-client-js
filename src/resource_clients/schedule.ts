@@ -60,14 +60,14 @@ export class ScheduleClient extends ResourceClient {
      * Retrieves the schedule.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The schedule object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/schedule-get
      */
     async get(options: TimeoutOptions = {}): Promise<Schedule | undefined> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Schedule(), {}, timeout);
+        return this.getResource(schemas.Schedule(), {}, timeoutSecs);
     }
 
     /**
@@ -75,46 +75,46 @@ export class ScheduleClient extends ResourceClient {
      *
      * @param newFields - Fields to update.
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The updated schedule object.
      * @see https://docs.apify.com/api/v2/schedule-put
      */
     async update(newFields: ScheduleCreateOrUpdateData, options: TimeoutOptions = {}): Promise<Schedule> {
         parseArgument(newFields, anyObjectSchema);
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Schedule(), newFields, timeout);
+        return this.updateResource(schemas.Schedule(), newFields, timeoutSecs);
     }
 
     /**
      * Deletes the schedule.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/schedule-delete
      */
     async delete(options: TimeoutOptions = {}): Promise<void> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(timeout);
+        return this.deleteResource(timeoutSecs);
     }
 
     /**
      * Retrieves the schedule's log.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
      * @returns The schedule log, one entry per invocation.
      * @see https://docs.apify.com/api/v2/schedule-log-get
      */
     async getLog(options: TimeoutOptions = {}): Promise<ScheduleInvoked[]> {
-        const { timeout = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('log'),
             method: 'GET',
             params: this.buildParams(),
-            timeout,
+            timeoutSecs,
         });
         return parseResponse(response, scheduleLogSchema);
     }

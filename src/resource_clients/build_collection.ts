@@ -66,7 +66,7 @@ export class BuildCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination and sorting options.
-     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
+     * @param options.timeoutSecs - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of Actor builds.
      * @see https://docs.apify.com/api/v2/actor-builds-get
      */

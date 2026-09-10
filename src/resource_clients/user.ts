@@ -70,33 +70,33 @@ export class UserClient extends ResourceClient {
      * the method will either return public or private user data.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The user object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/user-get
      */
     async get(options: TimeoutOptions = {}): Promise<User | undefined> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.UserPrivateInfo(), {}, timeout);
+        return this.getResource(schemas.UserPrivateInfo(), {}, timeoutSecs);
     }
 
     /**
      * Retrieves the user's monthly usage data.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The monthly usage object.
      * @see https://docs.apify.com/api/v2/users-me-usage-monthly-get
      * @since Added in 2.9.2
      */
     async monthlyUsage(options: TimeoutOptions = {}): Promise<MonthlyUsage> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('usage/monthly'),
             method: 'GET',
             params: this.buildParams(),
-            timeout,
+            timeoutSecs,
         });
         // `dailyServiceUsages[].date` does not end in `At`, so it has to be named for `parseDateFields`.
         return parseResponse(response, schemas.MonthlyUsage(), (key) => key === 'date');
@@ -106,19 +106,19 @@ export class UserClient extends ResourceClient {
      * Retrieves the user's account and usage limits.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The account and usage limits object.
      * @see https://docs.apify.com/api/v2/users-me-limits-get
      * @since Added in 2.9.2
      */
     async limits(options: TimeoutOptions = {}): Promise<AccountAndUsageLimits> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('limits'),
             method: 'GET',
             params: this.buildParams(),
-            timeout,
+            timeoutSecs,
         });
         return parseResponse(response, schemas.AccountLimits());
     }
@@ -128,19 +128,19 @@ export class UserClient extends ResourceClient {
      *
      * @param newLimits - The new limits to set.
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/users-me-limits-put
      * @since Added in 2.10.0
      */
     async updateLimits(newLimits: LimitsUpdateOptions, options: TimeoutOptions = {}): Promise<void> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const requestOpts: ApifyRequestConfig = {
             url: this.buildUrl('limits'),
             method: 'PUT',
             params: this.buildParams(),
             data: newLimits,
-            timeout,
+            timeoutSecs,
         };
         await this.httpClient.call(requestOpts);
     }

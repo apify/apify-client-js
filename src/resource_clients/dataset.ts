@@ -61,7 +61,7 @@ const downloadItemsOptionsSchema = z.strictObject({
     ...timeoutOptionsShape,
 });
 const pushItemsSchema = z.union([itemSchema, z.string(), z.array(z.union([itemSchema, z.string()]))]);
-// Apart from `timeout` and `expiresInSecs`, every option becomes a query parameter of the generated URL, so
+// Apart from `timeoutSecs` and `expiresInSecs`, every option becomes a query parameter of the generated URL, so
 // `chunkSize` (client-side only) and `signature` (which this method produces) are left out. The options type
 // omits both to match.
 const createItemsPublicUrlOptionsSchema = z.strictObject({
@@ -128,14 +128,14 @@ export class DatasetClient<
      * Gets the dataset object from the Apify API.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The Dataset object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/dataset-get
      */
     async get(options: TimeoutOptions = {}): Promise<Dataset | undefined> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Dataset(), {}, timeout);
+        return this.getResource(schemas.Dataset(), {}, timeoutSecs);
     }
 
     /**
@@ -143,28 +143,28 @@ export class DatasetClient<
      *
      * @param newFields - Fields to update in the dataset
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The updated Dataset object
      * @see https://docs.apify.com/api/v2/dataset-put
      */
     async update(newFields: DatasetClientUpdateOptions, options: TimeoutOptions = {}): Promise<Dataset> {
         parseArgument(newFields, anyObjectSchema);
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Dataset(), newFields, timeout);
+        return this.updateResource(schemas.Dataset(), newFields, timeoutSecs);
     }
 
     /**
      * Deletes the dataset.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/dataset-delete
      */
     async delete(options: TimeoutOptions = {}): Promise<void> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(timeout);
+        return this.deleteResource(timeoutSecs);
     }
 
     /**
@@ -187,7 +187,7 @@ export class DatasetClient<
      * @param options.flatten - Array of field names to flatten. Nested objects are converted to dot notation (e.g., `obj.field`).
      * @param options.unwind - Field name or array of field names to unwind. Each array value creates a separate item.
      * @param options.view - Name of a predefined view to use for field selection.
-     * @param options.timeout - Timeout for each API request. Default is `'long'`.
+     * @param options.timeoutSecs - Timeout for each API request. Default is `'long'`.
      * @returns A paginated list with `items`, `total` count, `offset`, `count`, and `limit`
      * @see https://docs.apify.com/api/v2/dataset-items-get
      *
@@ -213,7 +213,7 @@ export class DatasetClient<
      * ```
      */
     listItems(options: DatasetClientListItemOptions = {}): PaginatedIterator<Data> {
-        const { timeout = 'long', ...listOptions } = parseArgument(
+        const { timeoutSecs = 'long', ...listOptions } = parseArgument(
             options,
             listItemsOptionsSchema,
             'DatasetClientListItemOptions',
@@ -226,7 +226,7 @@ export class DatasetClient<
                 url: this.buildUrl('items'),
                 method: 'GET',
                 params: this.buildParams(datasetListOptions),
-                timeout,
+                timeoutSecs,
             });
 
             return this.createPaginationList(response, datasetListOptions.desc ?? false);
@@ -252,7 +252,7 @@ export class DatasetClient<
      * @param options.xmlRow - Name of the XML element for each item. Default is `'item'`.
      * @param options.fields - Array of field names to include in the export.
      * @param options.omit - Array of field names to exclude from the export.
-     * @param options.timeout - Timeout for the API request. Default is `'long'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @returns Buffer containing the serialized data in the specified format
      * @see https://docs.apify.com/api/v2/dataset-items-get
      *
@@ -281,7 +281,7 @@ export class DatasetClient<
         options: DatasetClientDownloadItemsOptions = {},
     ): Promise<Buffer> {
         parseArgument(format, itemFormatSchema);
-        const { timeout = 'long', ...query } = parseArgument(
+        const { timeoutSecs = 'long', ...query } = parseArgument(
             options,
             downloadItemsOptionsSchema,
             'DatasetClientDownloadItemsOptions',
@@ -295,7 +295,7 @@ export class DatasetClient<
                 ...query,
             }),
             forceBuffer: true,
-            timeout,
+            timeoutSecs,
         });
 
         return cast(data);
@@ -312,7 +312,7 @@ export class DatasetClient<
      * @param items - A single item (object or string) or an array of items to store.
      *                Objects are automatically stringified to JSON. Strings are stored as-is.
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
      * @see https://docs.apify.com/api/v2/dataset-items-post
      *
      * @example
@@ -337,7 +337,7 @@ export class DatasetClient<
      */
     async pushItems(items: Data | Data[] | string | string[], options: TimeoutOptions = {}): Promise<void> {
         parseArgument(items, pushItemsSchema);
-        const { timeout = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         await this.httpClient.call({
             url: this.buildUrl('items'),
@@ -347,8 +347,8 @@ export class DatasetClient<
             },
             data: items,
             params: this.buildParams(),
-            doNotRetryTimeouts: true, // see timeout handling in http-client
-            timeout,
+            doNotRetryTimeouts: true, // see timeoutSecs handling in http-client
+            timeoutSecs,
         });
     }
 
@@ -359,19 +359,19 @@ export class DatasetClient<
      * data types, null counts, and value ranges.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns Dataset statistics
      * @see https://docs.apify.com/api/v2/dataset-statistics-get
      * @since Added in 2.11.2
      */
     async getStatistics(options: TimeoutOptions = {}): Promise<DatasetStatistics> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('statistics'),
             method: 'GET',
             params: this.buildParams(),
-            timeout,
+            timeoutSecs,
         });
         return parseResponse(response, schemas.DatasetStatistics());
     }
@@ -388,7 +388,7 @@ export class DatasetClient<
      * @param options.fields - Array of field names to include in the response.
      * @param options.limit - Maximum number of items to return.
      * @param options.offset - Number of items to skip.
-     * @param options.timeout - Timeout for the API request that fetches the dataset. Default is `'long'`.
+     * @param options.timeoutSecs - Timeout for the API request that fetches the dataset. Default is `'long'`.
      * @returns A public URL string for accessing the dataset items
      *
      * @example
@@ -411,12 +411,12 @@ export class DatasetClient<
      */
     async createItemsPublicUrl(options: DatasetClientCreateItemsUrlOptions = {}): Promise<string> {
         const {
-            timeout = 'long',
+            timeoutSecs = 'long',
             expiresInSecs,
             ...queryOptions
         } = parseArgument(options, createItemsPublicUrlOptionsSchema, 'DatasetClientCreateItemsUrlOptions');
 
-        const dataset = await this.get({ timeout });
+        const dataset = await this.get({ timeoutSecs });
 
         let createdItemsPublicUrl = new URL(this.buildPublicUrl('items'));
 

@@ -63,14 +63,14 @@ export class ActorVersionClient extends ResourceClient {
      * Retrieves the Actor version.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The Actor version object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/act-version-get
      */
     async get(options: TimeoutOptions = {}): Promise<FinalActorVersion | undefined> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Version(), {}, timeout);
+        return this.getResource(schemas.Version(), {}, timeoutSecs);
     }
 
     /**
@@ -78,28 +78,28 @@ export class ActorVersionClient extends ResourceClient {
      *
      * @param newFields - Fields to update.
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The updated Actor version object.
      * @see https://docs.apify.com/api/v2/act-version-put
      */
     async update(newFields: ActorVersionUpdateData, options: TimeoutOptions = {}): Promise<FinalActorVersion> {
         parseArgument(newFields, anyObjectSchema);
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Version(), newFields, timeout);
+        return this.updateResource(schemas.Version(), newFields, timeoutSecs);
     }
 
     /**
      * Deletes the Actor version.
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/act-version-delete
      */
     async delete(options: TimeoutOptions = {}): Promise<void> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(timeout);
+        return this.deleteResource(timeoutSecs);
     }
 
     /**

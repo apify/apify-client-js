@@ -69,7 +69,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination options.
-     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
+     * @param options.timeoutSecs - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of Datasets.
      * @see https://docs.apify.com/api/v2/datasets-get
      */
@@ -87,21 +87,21 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
      * @param name - Name of the dataset. If not provided, a default dataset is used.
      * @param options - Additional options like schema.
      * @param options.schema - Schema of the dataset.
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The dataset object.
      * @see https://docs.apify.com/api/v2/datasets-post
      */
     async getOrCreate(name?: string, options?: DatasetCollectionClientGetOrCreateOptions): Promise<Dataset> {
         parseArgument(name, nameSchema);
         parseArgument(options?.schema, schemaSchema); // TODO: Add schema validation
-        parseArgument(options?.timeout, optionalTimeoutSchema);
+        parseArgument(options?.timeoutSecs, optionalTimeoutSchema);
 
-        // `timeout` is not part of the resource, so the body carries only the rest, and stays absent when
+        // `timeoutSecs` is not part of the resource, so the body carries only the rest, and stays absent when
         // there is nothing else to send.
-        const { timeout = 'short', ...resource } = options ?? {};
+        const { timeoutSecs = 'short', ...resource } = options ?? {};
         const hasResource = Object.keys(resource).length > 0;
 
-        return this.getOrCreateResource(schemas.Dataset(), name, hasResource ? resource : undefined, timeout);
+        return this.getOrCreateResource(schemas.Dataset(), name, hasResource ? resource : undefined, timeoutSecs);
     }
 }
 

@@ -62,14 +62,14 @@ describe('HttpClient', () => {
         const resourceId = delayedResourceId(1500);
 
         // Another tier, with its own duration, and an explicit number of seconds.
-        await expect(client.actor(resourceId).get({ timeout: 'medium' })).resolves.toBeDefined();
-        await expect(client.actor(resourceId).get({ timeout: 0.5 })).rejects.toThrow('timeout of 500ms exceeded');
+        await expect(client.actor(resourceId).get({ timeoutSecs: 'medium' })).resolves.toBeDefined();
+        await expect(client.actor(resourceId).get({ timeoutSecs: 0.5 })).rejects.toThrow('timeout of 500ms exceeded');
     });
 
     test("'noTimeout' lets a request run past every tier", async () => {
         const resourceId = delayedResourceId(1500);
 
-        await expect(client.actor(resourceId).get({ timeout: 'noTimeout' })).resolves.toBeDefined();
+        await expect(client.actor(resourceId).get({ timeoutSecs: 'noTimeout' })).resolves.toBeDefined();
     });
 
     test('a timeout above timeoutMaxSecs is capped at it, with a warning', async () => {
@@ -77,10 +77,12 @@ describe('HttpClient', () => {
         const warningOnce = vi.spyOn(cappedClient.logger, 'warningOnce');
         const resourceId = delayedResourceId(1500);
 
-        await expect(cappedClient.actor(resourceId).get({ timeout: 'long' })).rejects.toThrow(
+        await expect(cappedClient.actor(resourceId).get({ timeoutSecs: 'long' })).rejects.toThrow(
             'timeout of 1000ms exceeded',
         );
-        await expect(cappedClient.actor(resourceId).get({ timeout: 5 })).rejects.toThrow('timeout of 1000ms exceeded');
+        await expect(cappedClient.actor(resourceId).get({ timeoutSecs: 5 })).rejects.toThrow(
+            'timeout of 1000ms exceeded',
+        );
 
         expect(warningOnce.mock.calls.map(([message]) => message)).toEqual([
             'The requested timeout of 10s exceeds timeoutMaxSecs (1s) and is capped at it. Raise timeoutMaxSecs on the client to allow longer request timeouts.',
@@ -181,7 +183,7 @@ describe('HttpClient', () => {
             });
             const timeouts = recordAttemptTimeouts(retryingClient, 3);
 
-            await retryingClient.httpClient.call({ url: `${baseUrl}/v2/x`, method: 'GET', timeout: 'short' });
+            await retryingClient.httpClient.call({ url: `${baseUrl}/v2/x`, method: 'GET', timeoutSecs: 'short' });
 
             expect(timeouts).toEqual([5000, 10000, 12000, 12000]);
         });
@@ -190,7 +192,7 @@ describe('HttpClient', () => {
             const retryingClient = new ApifyClient({ baseUrl, maxRetries: 2, minDelayBetweenRetriesMillis: 1 });
             const timeouts = recordAttemptTimeouts(retryingClient, 2);
 
-            await retryingClient.httpClient.call({ url: `${baseUrl}/v2/x`, method: 'GET', timeout: 2 });
+            await retryingClient.httpClient.call({ url: `${baseUrl}/v2/x`, method: 'GET', timeoutSecs: 2 });
 
             expect(timeouts).toEqual([2000, 4000, 8000]);
         });
@@ -199,7 +201,7 @@ describe('HttpClient', () => {
             const retryingClient = new ApifyClient({ baseUrl, maxRetries: 2, minDelayBetweenRetriesMillis: 1 });
             const timeouts = recordAttemptTimeouts(retryingClient, 2);
 
-            await retryingClient.httpClient.call({ url: `${baseUrl}/v2/x`, method: 'GET', timeout: 'noTimeout' });
+            await retryingClient.httpClient.call({ url: `${baseUrl}/v2/x`, method: 'GET', timeoutSecs: 'noTimeout' });
 
             expect(timeouts).toEqual([0, 0, 0]);
         });

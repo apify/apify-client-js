@@ -62,14 +62,14 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The Actor versions, awaitable as a whole list or iterable one by one.
      * @see https://docs.apify.com/api/v2/act-versions-get
      */
     list(options: TimeoutOptions = {}): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.listResourcesPaginated(schemas.ListOfVersions(), {}, timeout);
+        return this.listResourcesPaginated(schemas.ListOfVersions(), {}, timeoutSecs);
     }
 
     /**
@@ -77,15 +77,15 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      *
      * @param actorVersion - The Actor version data.
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The created Actor version object.
      * @see https://docs.apify.com/api/v2/act-versions-post
      */
     async create(actorVersion: ActorVersion, options: TimeoutOptions = {}): Promise<FinalActorVersion> {
         parseArgument(actorVersion, actorVersionSchema);
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.createResource(schemas.Version(), actorVersion, timeout);
+        return this.createResource(schemas.Version(), actorVersion, timeoutSecs);
     }
 }
 

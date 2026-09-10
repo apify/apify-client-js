@@ -63,14 +63,14 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The environment variables, awaitable as a whole list or iterable one by one.
      * @see https://docs.apify.com/api/v2/act-version-env-vars-get
      */
     list(options: TimeoutOptions = {}): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.listResourcesPaginated(schemas.ListOfEnvVars(), {}, timeout);
+        return this.listResourcesPaginated(schemas.ListOfEnvVars(), {}, timeoutSecs);
     }
 
     /**
@@ -78,7 +78,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      *
      * @param actorEnvVar - The environment variable data.
      * @param options - Request options
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The created environment variable object.
      * @see https://docs.apify.com/api/v2/act-version-env-vars-post
      */
@@ -87,9 +87,9 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
         options: TimeoutOptions = {},
     ): Promise<ActorEnvironmentVariable> {
         parseArgument(actorEnvVar, actorEnvVarSchema);
-        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.createResource(schemas.EnvVar(), actorEnvVar, timeout);
+        return this.createResource(schemas.EnvVar(), actorEnvVar, timeoutSecs);
     }
 }
 

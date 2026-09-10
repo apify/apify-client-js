@@ -13,41 +13,41 @@ export class ResourceCollectionClient extends ApiClient {
     /**
      * @private
      */
-    protected async listResources<T, R>(schema: z.ZodType, options: T | undefined, timeout: Timeout): Promise<R> {
+    protected async listResources<T, R>(schema: z.ZodType, options: T | undefined, timeoutSecs: Timeout): Promise<R> {
         const response = await this.httpClient.call({
             url: this.buildUrl(),
             method: 'GET',
             params: this.buildParams(options),
-            timeout,
+            timeoutSecs,
         });
         return parseResponse<R>(response, schema);
     }
 
     /**
      * Returns async iterator to iterate through all items and Promise that can be awaited to get first page of results.
-     * `defaultTimeout` applies to every page request unless `options.timeout` overrides it.
+     * `defaultTimeoutSecs` applies to every page request unless `options.timeoutSecs` overrides it.
      */
     protected listResourcesPaginated<
         T extends PaginationOptions & TimeoutOptions,
         Data,
         R extends PaginatedResponse<Data>,
-    >(schema: z.ZodType, options: T, defaultTimeout: Timeout): AsyncIterable<Data> & Promise<R> {
-        // `timeout` only times the page requests; it is not an API parameter, so it must not reach the query string.
-        const { timeout = defaultTimeout, ...listOptions } = options;
+    >(schema: z.ZodType, options: T, defaultTimeoutSecs: Timeout): AsyncIterable<Data> & Promise<R> {
+        // `timeoutSecs` only times the page requests; it is not an API parameter, so it must not reach the query string.
+        const { timeoutSecs = defaultTimeoutSecs, ...listOptions } = options;
 
         return this.listPaginatedFromCallback(
-            async (pageOptions?: T) => this.listResources<T, R>(schema, pageOptions, timeout),
+            async (pageOptions?: T) => this.listResources<T, R>(schema, pageOptions, timeoutSecs),
             listOptions as T,
         );
     }
 
-    protected async createResource<D, R>(schema: z.ZodType, resource: D, timeout: Timeout): Promise<R> {
+    protected async createResource<D, R>(schema: z.ZodType, resource: D, timeoutSecs: Timeout): Promise<R> {
         const response = await this.httpClient.call({
             url: this.buildUrl(),
             method: 'POST',
             params: this.buildParams(),
             data: resource,
-            timeout,
+            timeoutSecs,
         });
         return parseResponse<R>(response, schema);
     }
@@ -56,14 +56,14 @@ export class ResourceCollectionClient extends ApiClient {
         schema: z.ZodType,
         name: string | undefined,
         resource: D | undefined,
-        timeout: Timeout,
+        timeoutSecs: Timeout,
     ): Promise<R> {
         const response = await this.httpClient.call({
             url: this.buildUrl(),
             method: 'POST',
             params: this.buildParams({ name }),
             data: resource,
-            timeout,
+            timeoutSecs,
         });
         return parseResponse<R>(response, schema);
     }

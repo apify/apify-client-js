@@ -71,7 +71,7 @@ export class StoreCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Search and pagination options.
-     * @param options.timeout - Timeout for each API request. Default is `'medium'`.
+     * @param options.timeoutSecs - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of store Actors.
      * @see https://docs.apify.com/api/v2/store-get
      */
