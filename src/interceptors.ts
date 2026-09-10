@@ -5,7 +5,7 @@ import type { JsonObject } from 'type-fest';
 
 import { maybeParseBody } from './body_parser';
 import type { ApifyRequestConfig, ApifyResponse } from './http_client';
-import { isNode, maybeCompressValue } from './utils';
+import { isCompressibleContentType, isNode, maybeCompressValue } from './utils';
 
 /**
  * This error exists for the quite common situation, where only a partial JSON response is received and
@@ -42,9 +42,9 @@ function serializeRequest(config: ApifyRequestConfig): ApifyRequestConfig {
     // it's a small price to pay. The axios default transform does a lot
     // of body type checks and we would have to copy all of them to the resource clients.
     if (config.stringifyFunctions) {
-        const contentTypeHeader = config.headers?.['Content-Type'] || config.headers?.['content-type'];
+        const contentTypeHeader = getHeader(config, 'content-type');
         try {
-            const { type } = contentTypeParser.parse(contentTypeHeader);
+            const type = contentTypeHeader ? contentTypeParser.parse(contentTypeHeader).type : undefined;
             if (type === 'application/json' && typeof config.data === 'object') {
                 config.data = stringifyWithFunctions(config.data);
             } else {
@@ -78,8 +78,23 @@ function stringifyWithFunctions(obj: JsonObject) {
     });
 }
 
+/**
+ * Reads a request header regardless of the casing it was set with, since HTTP header names are case-insensitive
+ * while the config keeps whatever casing the caller used.
+ */
+function getHeader(config: ApifyRequestConfig, name: string): string | undefined {
+    const wanted = name.toLowerCase();
+    const key = Object.keys(config.headers ?? {}).find((candidate) => candidate.toLowerCase() === wanted);
+    const value = key === undefined ? undefined : config.headers?.[key];
+
+    return typeof value === 'string' ? value : undefined;
+}
+
 async function maybeCompressRequest(config: ApifyRequestConfig): Promise<ApifyRequestConfig> {
-    if (config.headers?.['content-encoding']) return config;
+    // A caller-supplied encoding means the body is already encoded and the header describes it, so leave both alone.
+    if (getHeader(config, 'content-encoding')) return config;
+
+    if (!isCompressibleContentType(getHeader(config, 'content-type'))) return config;
 
     const maybeCompressed = await maybeCompressValue(config.data);
     if (maybeCompressed) {
