@@ -317,27 +317,37 @@ export HTTPS_PROXY=http://proxy.example.com:3128
 
 The same `proxy-agent` upgrade removes the `[DEP0169] DeprecationWarning` about `url.parse()` that Node.js 24 and newer printed on the client's first request.
 
-## The client's own code no longer needs Node.js
+## Node.js-only features follow the bundler's target
 
-The client's own code runs on Web APIs. The parts that need Node.js built-ins, the keep-alive HTTP agents with proxy support and request body compression, live in a module that the `#runtime` entry of the package's `imports` field selects at bundle time. The `node` condition gets the Node.js implementation, and every other target gets the Web API one, so a bundler targeting a browser or an edge runtime no longer pulls `node:zlib`, `node:os`, `node:util`, or `proxy-agent` out of the client. Two dependencies still import Node.js built-ins, so bundling the ES module build for a non-Node.js target still needs a few polyfills. For details, see [Bundled environments](../02_concepts/05_bundled-environments.md).
+Four features need Node.js APIs: log streaming with <ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> and <ApiLink to="class/RunClient#getStreamedLog">`RunClient.getStreamedLog()`</ApiLink>, the `stream` option of <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink>, proxy support, and request body compression.
 
-On Node.js nothing changes. The features that need it, log streaming and the `stream` record option, proxy support and request compression, work as before.
+In v2 the client detected the runtime when one of them was used, so a Node.js application bundled for a browser or a neutral target kept them all. In v3 the implementation is picked when the import is resolved, so the bundler's conditions decide. Without the `node` condition, `getRecord({ stream: true })` throws, `getStreamedLog()` returns `undefined`, and requests go out unproxied, uncompressed, and without the client's `User-Agent` header.
 
-The pick happens when the import is resolved rather than at runtime, so a Node.js application bundled for a browser or a neutral target gets the Web API implementation and loses those features. The client used to sniff the runtime and recover. The bundler's target now decides.
+Enable the `node` condition when you bundle for Node.js. esbuild sets it through `platform: 'node'`, webpack through `resolve.conditionNames`, and Vite through `resolve.conditions`.
 
-A test runner that resolves the `browser` condition decides the same way. Jest's `jsdom` environment resolves it, so a Node.js test suite running under it gets the Web API implementation unless you set `testEnvironmentOptions.customExportConditions` to `['node']`.
+A test runner that resolves the `browser` condition decides the same way. Jest's `jsdom` environment resolves it, so a Node.js test suite running under it loses them unless you list the `node` condition:
+
+```js
+// jest.config.js
+export default {
+    testEnvironment: 'jsdom',
+    testEnvironmentOptions: { customExportConditions: ['node'] },
+};
+```
+
+Running on Node.js without a bundler is unaffected, and the pre-built browser bundle behaves as it did in v2. For what bundling for a non-Node.js target takes, see [Bundled environments](../02_concepts/05_bundled-environments.md).
 
 ### Response bodies are decoded by `TextDecoder`
 
-The client used to decode a response body with `Buffer` in Node.js and with `TextDecoder` in the browser, and now uses `TextDecoder` everywhere. The two don't agree on which charsets they support, or on what a few of the shared ones mean, so a `content-type` header carrying a charset can be handled differently:
+In Node.js, v2 decoded response bodies with `Buffer` and v3 decodes them with `TextDecoder`. The two support different charsets, so a `content-type` header carrying one can be handled differently:
 
-- A charset `TextDecoder` knows and `Buffer` doesn't, such as `iso-8859-1`, now decodes to a string. It used to be handed back as raw bytes.
-- A charset `Buffer` knows and `TextDecoder` doesn't, such as `hex` or `base64`, is now handed back as raw bytes. It used to be decoded as if the body were in that encoding, which mangled it.
-- `ascii` is a label both of them know but read differently. `Buffer` masked every byte down to seven bits, and `TextDecoder` treats the label as an alias for `windows-1252`, so a byte above `0x7F` now decodes to the character that encoding gives it.
-- A leading UTF-8 byte order mark is stripped from every decoded body. A JSON body carrying one now parses instead of throwing, and a `text/*` record such as a BOM-prefixed CSV comes back without it.
+- `iso-8859-1` and other charsets only `TextDecoder` knows decode to a string, where v2 handed back raw bytes.
+- `hex` and `base64`, which only `Buffer` knows, come back as raw bytes, where v2 decoded the body as if it were in that encoding.
+- `ascii` is read as an alias for `windows-1252`, so a byte above `0x7F` decodes to the character that encoding gives it, where v2 masked the byte down to seven bits.
+- A leading UTF-8 byte order mark is stripped from every decoded body, so a JSON body carrying one parses instead of throwing, and a `text/*` record such as a BOM-prefixed CSV comes back without it.
 
-Apart from the byte order mark, a body with no charset or with a UTF-8 one is unaffected, and that covers everything the Apify API sends.
+Code that depended on one of these has to convert the value itself. A body with no charset or with a UTF-8 one is unaffected, apart from the byte order mark, and that covers everything the Apify API sends.
 
-### Request compression accepts more body types
+### Request compression covers more body types
 
-Request bodies were compressed only when they were a string or a `Buffer`. A `Uint8Array`, another typed array, or an `ArrayBuffer` is now compressed too, so a request that carries one gains a `content-encoding` header it didn't have before. The API has always accepted both encodings the client sends, `br` and `gzip`.
+v2 compressed a request body only when it was a string or a `Buffer`. A `Uint8Array`, another typed array, or an `ArrayBuffer` is compressed as well once it reaches the same 1 kB threshold, so a request carrying one gains a `content-encoding` header. The API accepts both encodings the client sends, `br` and `gzip`, so nothing needs to change on your side.
