@@ -88,15 +88,15 @@ export class ActorClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     build(versionNumber: string, options?: ActorBuildOptions): Promise<Build>;
     builds(): BuildCollectionClient;
-    call(input?: unknown, options?: ActorCallOptions): Promise<ActorRun>;
+    call(input?: ActorInput, options?: ActorCallOptions): Promise<ActorRun>;
     defaultBuild(options?: BuildClientGetOptions): Promise<BuildClient>;
     delete(options?: TimeoutOptions): Promise<void>;
     get(options?: TimeoutOptions): Promise<Actor | undefined>;
     lastRun(options?: ActorLastRunOptions): RunClient;
     runs(): RunCollectionClient;
-    start(input?: unknown, options?: ActorStartOptions): Promise<ActorRun>;
+    start(input?: ActorInput, options?: ActorStartOptions): Promise<ActorRun>;
     update(newFields: ActorUpdateOptions, options?: TimeoutOptions): Promise<Actor>;
-    validateInput(input?: unknown, options?: ActorValidateInputOptions): Promise<boolean>;
+    validateInput(input?: ActorInput, options?: ActorValidateInputOptions): Promise<boolean>;
     version(versionNumber: string): ActorVersionClient;
     versions(): ActorVersionCollectionClient;
     webhooks(): WebhookCollectionClient;
@@ -202,6 +202,9 @@ export type ActorEnvVarListResult = Pick<PaginatedList<ActorEnvironmentVariable>
 // @public
 export interface ActorExampleRunInput extends GeneratedExampleRunInput {
 }
+
+// @public
+export type ActorInput = object;
 
 // @public
 export interface ActorLastRunOptions {
@@ -3577,7 +3580,7 @@ export class RunClient extends ResourceClient {
     getStreamedLog(options?: GetStreamedLogOptions): Promise<StreamedLog | undefined>;
     keyValueStore(): KeyValueStoreClient;
     log(): LogClient;
-    metamorph(targetActorId: string, input: unknown, options?: RunMetamorphOptions): Promise<ActorRun>;
+    metamorph(targetActorId: string, input?: ActorInput, options?: RunMetamorphOptions): Promise<ActorRun>;
     reboot(options?: TimeoutOptions): Promise<ActorRun>;
     requestQueue(): RequestQueueClient;
     resurrect(options?: RunResurrectOptions): Promise<ActorRun>;
@@ -3611,7 +3614,6 @@ export interface RunGetOptions extends TimeoutOptions {
 export interface RunMetamorphOptions extends TimeoutOptions {
     // (undocumented)
     build?: string;
-    // (undocumented)
     contentType?: string;
 }
 
