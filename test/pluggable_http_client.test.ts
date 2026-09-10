@@ -203,6 +203,16 @@ describe('pluggable HTTP client', () => {
             client.httpClient = httpClient;
 
             expect(client.httpClient).toBe(httpClient);
+            expect(client.stats).toBe(httpClient.stats);
+        });
+
+        test('applies the token to a client set through the setter', async () => {
+            const client = new ApifyClient({ token: 'outer_token' });
+
+            client.httpClient = new NodeHttpClient();
+            await client.httpClient.call({ url: `${baseUrl}/echo`, method: 'GET' });
+
+            expect(received[0].headers.authorization).toBe('Bearer outer_token');
         });
     });
 

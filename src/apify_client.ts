@@ -167,16 +167,17 @@ export class ApifyClient {
         );
 
         const client = new ApifyClient(rest);
-        if (rest.token) httpClient.setDefaultAuthorization(rest.token);
         client.httpClient = httpClient;
-        client.stats = httpClient.stats;
         return client;
     }
 
     /**
      * The HTTP client the requests go through: the custom one when set through
      * {@link ApifyClient.withCustomHttpClient}, and otherwise an {@link AxiosHttpClient} configured from the
-     * constructor options, created on first access.
+     * constructor options, created on first access. Assigning a client applies {@link token} to it through
+     * {@link HttpClient.setDefaultAuthorization} and points {@link stats} at its statistics, so the counters keep
+     * tracking the calls the client actually makes. Resource clients hold on to the HTTP client they were created
+     * with, so assign before reaching for them.
      */
     get httpClient(): HttpClient {
         this._httpClient ??= new AxiosHttpClient(this._httpClientOptions);
@@ -184,7 +185,9 @@ export class ApifyClient {
     }
 
     set httpClient(httpClient: HttpClient) {
+        if (this.token) httpClient.setDefaultAuthorization(this.token);
         this._httpClient = httpClient;
+        this.stats = httpClient.stats;
     }
 
     private _options() {
