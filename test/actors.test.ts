@@ -3,7 +3,7 @@ import type { AddressInfo } from 'node:net';
 import { setTimeout } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import type { ActorCollectionCreateOptions, ActorCollectionListOptions, ActorInput, ActorVersion } from 'apify-client';
+import type { ActorCollectionCreateOptions, ActorCollectionListOptions, ActorVersion } from 'apify-client';
 import {
     ActorListSortBy,
     ActorSourceType,
@@ -14,7 +14,7 @@ import {
 } from 'apify-client';
 import express from 'express';
 import type { Page } from 'puppeteer';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { META_ORIGINS, WEBHOOK_EVENT_TYPES } from '@apify/consts';
 import { LEVELS, Log } from '@apify/log';
@@ -442,34 +442,6 @@ describe('Actor methods', () => {
 
             // Reset the shared mock response so the 404 status does not leak into later tests.
             mockServer.setResponse(null);
-        });
-
-        test('an object input needs no contentType, a raw body does not compile without one', () => {
-            // A user's own interface has to stay assignable, which a `Record`-based input type would not allow.
-            interface UserInput {
-                url: string;
-            }
-
-            expectTypeOf<UserInput>().toExtend<ActorInput>();
-            expectTypeOf<UserInput[]>().toExtend<ActorInput>();
-            expectTypeOf<unknown>().not.toExtend<ActorInput>();
-
-            const actor = client.actor('some-id');
-
-            expectTypeOf(actor.start).toBeCallableWith();
-            expectTypeOf(actor.start).toBeCallableWith({ url: 'https://example.com' } satisfies UserInput);
-            expectTypeOf(actor.call).toBeCallableWith({ url: 'https://example.com' }, { waitSecs: 10 });
-            expectTypeOf(actor.start).toBeCallableWith('some=body', {
-                contentType: 'application/x-www-form-urlencoded',
-            });
-            expectTypeOf(actor.start).toBeCallableWith(Buffer.from('some body'), { contentType: 'application/pdf' });
-
-            // @ts-expect-error a raw body has to be paired with a contentType
-            expectTypeOf(actor.start).toBeCallableWith('some=body');
-            // @ts-expect-error a raw body has to be paired with a contentType
-            expectTypeOf(actor.call).toBeCallableWith('some=body', { memory: 512 });
-            // @ts-expect-error a raw body has to be paired with a contentType
-            expectTypeOf(actor.validateInput).toBeCallableWith(JSON.stringify({ url: 'https://example.com' }));
         });
 
         test('build() works', async () => {

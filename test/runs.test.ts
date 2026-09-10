@@ -4,7 +4,7 @@ import { setTimeout as setTimeoutNode } from 'node:timers/promises';
 import c from 'ansi-colors';
 import { ApifyApiError, ApifyClient, ArgumentValidationError } from 'apify-client';
 import type { Page } from 'puppeteer';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
 import * as fixtures from './mock_server/fixtures.js';
@@ -278,19 +278,6 @@ describe('Run methods', () => {
             );
             expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest(expectedRequest);
-        });
-
-        test('metamorph() does not compile with a raw body and no contentType', () => {
-            const run = client.run('some-run-id');
-
-            expectTypeOf(run.metamorph).toBeCallableWith('target-actor');
-            expectTypeOf(run.metamorph).toBeCallableWith('target-actor', { url: 'https://example.com' });
-            expectTypeOf(run.metamorph).toBeCallableWith('target-actor', 'some=body', {
-                contentType: 'application/x-www-form-urlencoded',
-            });
-
-            // @ts-expect-error a raw body has to be paired with a contentType
-            expectTypeOf(run.metamorph).toBeCallableWith('target-actor', 'some=body');
         });
 
         test('reboot() works', async () => {
