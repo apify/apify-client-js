@@ -160,7 +160,10 @@ export interface HttpClientOptions {
     token?: string;
     /** @default 8 */
     maxRetries?: number;
-    /** Delay before the first retry in milliseconds. It doubles with every further retry. @default 500 */
+    /**
+     * Lower bound for the delay before the first retry in milliseconds. It doubles with every further retry.
+     * @default 500
+     */
     minDelayBetweenRetriesMillis?: number;
     /** Upper bound for the timeout of a single attempt, in seconds. @default 360 */
     timeoutSecs?: number;
@@ -218,7 +221,7 @@ export abstract class HttpClient {
     /** How many times a failed request is retried at most. */
     maxRetries: number;
 
-    /** Delay before the first retry in milliseconds. It doubles with every further retry. */
+    /** Lower bound for the delay before the first retry in milliseconds. It doubles with every further retry. */
     minDelayBetweenRetriesMillis: number;
 
     /** Upper bound for the timeout of a single attempt, in milliseconds. */
@@ -396,8 +399,8 @@ export abstract class HttpClient {
     }
 
     /**
-     * Retries `fn` with exponential backoff until it resolves, `stopRetrying()` was called before it threw, or the
-     * retries are exhausted. The last attempt's error propagates as it is.
+     * Retries `fn` with randomized exponential backoff until it resolves, `stopRetrying()` was called before it
+     * threw, or the retries are exhausted. The last attempt's error propagates as it is.
      */
     private async _retryWithExpBackoff<T>(fn: (stopRetrying: () => void, attempt: number) => Promise<T>): Promise<T> {
         let retry = true;
@@ -413,8 +416,11 @@ export abstract class HttpClient {
                 this._onRequestRetry(err, attempt);
             }
 
+            // The delay doubles with every attempt and is spread over a random factor between 1 and 2, so that
+            // callers that failed together do not come back at the API in lockstep on every retry.
+            const delayMillis = this.minDelayBetweenRetriesMillis * 2 ** (attempt - 1) * (1 + Math.random());
             await new Promise((resolve) => {
-                setTimeout(resolve, this.minDelayBetweenRetriesMillis * 2 ** (attempt - 1));
+                setTimeout(resolve, delayMillis);
             });
         }
 
