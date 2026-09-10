@@ -316,15 +316,15 @@ export class MyResourceClient extends ResourceClient {
     }
 
     async get(): Promise<MyResource | undefined> {
-        return this._get();
+        return this.getResource();
     }
 
     async update(newFields: MyResourceUpdate): Promise<MyResource> {
-        return this._update(newFields);
+        return this.updateResource(newFields);
     }
 
     async delete(): Promise<void> {
-        return this._delete();
+        return this.deleteResource();
     }
 }
 ```
@@ -346,11 +346,11 @@ export class MyResourceCollectionClient extends ResourceCollectionClient {
     }
 
     async list(options?: MyResourceListOptions): Promise<PaginatedList<MyResource>> {
-        return this._list(options);
+        return this.listResources(options);
     }
 
     async create(resource: MyResourceCreate): Promise<MyResource> {
-        return this._create(resource);
+        return this.createResource(resource);
     }
 }
 ```
@@ -360,11 +360,11 @@ export class MyResourceCollectionClient extends ResourceCollectionClient {
 ```typescript
 // In src/apify_client.ts
 myResource(id: string): MyResourceClient {
-    return new MyResourceClient(this._subResourceOptions({ id }));
+    return new MyResourceClient(this.subResourceOptions({ id }));
 }
 
 myResources(): MyResourceCollectionClient {
-    return new MyResourceCollectionClient(this._options());
+    return new MyResourceCollectionClient(this.subClientOptions());
 }
 ```
 

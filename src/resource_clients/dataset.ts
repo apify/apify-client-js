@@ -130,7 +130,7 @@ export class DatasetClient<
      * @see https://docs.apify.com/api/v2/dataset-get
      */
     async get(): Promise<Dataset | undefined> {
-        return this._get(schemas.Dataset(), {}, SMALL_TIMEOUT_MILLIS);
+        return this.getResource(schemas.Dataset(), {}, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -143,7 +143,7 @@ export class DatasetClient<
     async update(newFields: DatasetClientUpdateOptions): Promise<Dataset> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(schemas.Dataset(), newFields, SMALL_TIMEOUT_MILLIS);
+        return this.updateResource(schemas.Dataset(), newFields, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -152,7 +152,7 @@ export class DatasetClient<
      * @see https://docs.apify.com/api/v2/dataset-delete
      */
     async delete(): Promise<void> {
-        return this._delete(SMALL_TIMEOUT_MILLIS);
+        return this.deleteResource(SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -206,16 +206,16 @@ export class DatasetClient<
             datasetListOptions: DatasetClientListItemOptions = {},
         ): Promise<PaginatedList<Data>> => {
             const response = await this.httpClient.call({
-                url: this._url('items'),
+                url: this.buildUrl('items'),
                 method: 'GET',
-                params: this._params(datasetListOptions),
+                params: this.buildParams(datasetListOptions),
                 timeout: DEFAULT_TIMEOUT_MILLIS,
             });
 
-            return this._createPaginationList(response, datasetListOptions.desc ?? false);
+            return this.createPaginationList(response, datasetListOptions.desc ?? false);
         };
 
-        return this._listPaginatedFromCallback(fetchItems, parsed);
+        return this.listPaginatedFromCallback(fetchItems, parsed);
     }
 
     /**
@@ -266,9 +266,9 @@ export class DatasetClient<
         const parsed = parseArgument(options, downloadItemsOptionsSchema, 'DatasetClientDownloadItemsOptions');
 
         const { data } = await this.httpClient.call({
-            url: this._url('items'),
+            url: this.buildUrl('items'),
             method: 'GET',
-            params: this._params({
+            params: this.buildParams({
                 format,
                 ...parsed,
             }),
@@ -315,13 +315,13 @@ export class DatasetClient<
         parseArgument(items, pushItemsSchema);
 
         await this.httpClient.call({
-            url: this._url('items'),
+            url: this.buildUrl('items'),
             method: 'POST',
             headers: {
                 'content-type': 'application/json; charset=utf-8',
             },
             data: items,
-            params: this._params(),
+            params: this.buildParams(),
             doNotRetryTimeouts: true, // see timeout handling in http-client
             timeout: MEDIUM_TIMEOUT_MILLIS,
         });
@@ -339,9 +339,9 @@ export class DatasetClient<
      */
     async getStatistics(): Promise<DatasetStatistics> {
         const response = await this.httpClient.call({
-            url: this._url('statistics'),
+            url: this.buildUrl('statistics'),
             method: 'GET',
-            params: this._params(),
+            params: this.buildParams(),
             timeout: SMALL_TIMEOUT_MILLIS,
         });
         return parseResponse(response, schemas.DatasetStatistics());
@@ -386,7 +386,7 @@ export class DatasetClient<
 
         const { expiresInSecs, ...queryOptions } = parsed;
 
-        let createdItemsPublicUrl = new URL(this._publicUrl('items'));
+        let createdItemsPublicUrl = new URL(this.buildPublicUrl('items'));
 
         if (dataset?.urlSigningSecretKey) {
             const signature = await createStorageContentSignatureAsync({
@@ -402,7 +402,7 @@ export class DatasetClient<
         return createdItemsPublicUrl.toString();
     }
 
-    private _createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
+    private createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
         return {
             items: response.data,
             total: Number(response.headers['x-apify-pagination-total']),

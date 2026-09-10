@@ -64,7 +64,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/act-version-env-vars-get
      */
     list(): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
-        return this._listPaginated(schemas.ListOfEnvVars());
+        return this.listResourcesPaginated(schemas.ListOfEnvVars());
     }
 
     /**
@@ -76,7 +76,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      */
     async create(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
         parseArgument(actorEnvVar, actorEnvVarSchema);
-        return this._create(schemas.EnvVar(), actorEnvVar);
+        return this.createResource(schemas.EnvVar(), actorEnvVar);
     }
 }
 

@@ -12,11 +12,11 @@ export class ResourceCollectionClient extends ApiClient {
     /**
      * @private
      */
-    protected async _list<T, R>(schema: z.ZodType, options: T = {} as T): Promise<R> {
+    protected async listResources<T, R>(schema: z.ZodType, options: T = {} as T): Promise<R> {
         const response = await this.httpClient.call({
-            url: this._url(),
+            url: this.buildUrl(),
             method: 'GET',
-            params: this._params(options),
+            params: this.buildParams(options),
         });
         return parseResponse<R>(response, schema);
     }
@@ -24,31 +24,31 @@ export class ResourceCollectionClient extends ApiClient {
     /**
      * Returns async iterator to iterate through all items and Promise that can be awaited to get first page of results.
      */
-    protected _listPaginated<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(
+    protected listResourcesPaginated<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(
         schema: z.ZodType,
         options: T = {} as T,
     ): AsyncIterable<Data> & Promise<R> {
-        return this._listPaginatedFromCallback(
-            async (listOptions?: T) => this._list<T, R>(schema, listOptions),
+        return this.listPaginatedFromCallback(
+            async (listOptions?: T) => this.listResources<T, R>(schema, listOptions),
             options,
         );
     }
 
-    protected async _create<D, R>(schema: z.ZodType, resource: D): Promise<R> {
+    protected async createResource<D, R>(schema: z.ZodType, resource: D): Promise<R> {
         const response = await this.httpClient.call({
-            url: this._url(),
+            url: this.buildUrl(),
             method: 'POST',
-            params: this._params(),
+            params: this.buildParams(),
             data: resource,
         });
         return parseResponse<R>(response, schema);
     }
 
-    protected async _getOrCreate<D, R>(schema: z.ZodType, name?: string, resource?: D): Promise<R> {
+    protected async getOrCreateResource<D, R>(schema: z.ZodType, name?: string, resource?: D): Promise<R> {
         const response = await this.httpClient.call({
-            url: this._url(),
+            url: this.buildUrl(),
             method: 'POST',
-            params: this._params({ name }),
+            params: this.buildParams({ name }),
             data: resource,
         });
         return parseResponse<R>(response, schema);

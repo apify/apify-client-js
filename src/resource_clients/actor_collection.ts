@@ -72,7 +72,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
     list(options: ActorCollectionListOptions = {}): PaginatedIterator<ActorCollectionListItem> {
         const parsed = parseArgument(options, listOptionsSchema, 'ActorCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfActors(), parsed);
+        return this.listResourcesPaginated(schemas.ListOfActors(), parsed);
     }
 
     /**
@@ -85,7 +85,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
     async create(actor: ActorCollectionCreateOptions): Promise<Actor> {
         parseArgument(actor, actorCreateSchema);
 
-        return this._create(schemas.Actor(), actor);
+        return this.createResource(schemas.Actor(), actor);
     }
 }
 

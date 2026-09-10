@@ -63,7 +63,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/act-versions-get
      */
     list(): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
-        return this._listPaginated(schemas.ListOfVersions());
+        return this.listResourcesPaginated(schemas.ListOfVersions());
     }
 
     /**
@@ -76,7 +76,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
     async create(actorVersion: ActorVersion): Promise<FinalActorVersion> {
         parseArgument(actorVersion, actorVersionSchema);
 
-        return this._create(schemas.Version(), actorVersion);
+        return this.createResource(schemas.Version(), actorVersion);
     }
 }
 

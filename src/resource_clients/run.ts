@@ -94,7 +94,7 @@ export class RunClient extends ResourceClient {
     async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
         const parsed = parseArgument(options, getOptionsSchema, 'RunGetOptions');
 
-        return this._get(schemas.Run(), parsed);
+        return this.getResource(schemas.Run(), parsed);
     }
 
     /**
@@ -118,9 +118,9 @@ export class RunClient extends ResourceClient {
         const parsed = parseArgument(options, abortOptionsSchema, 'RunAbortOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('abort'),
+            url: this.buildUrl('abort'),
             method: 'POST',
-            params: this._params(parsed),
+            params: this.buildParams(parsed),
         });
 
         return parseResponse(response, schemas.Run());
@@ -133,7 +133,7 @@ export class RunClient extends ResourceClient {
      * @since Added in 2.8.1
      */
     async delete(): Promise<void> {
-        return this._delete();
+        return this.deleteResource();
     }
 
     /**
@@ -164,7 +164,7 @@ export class RunClient extends ResourceClient {
         parseArgument(targetActorId, targetActorIdSchema);
         const parsed = parseArgument(options, metamorphOptionsSchema, 'RunMetamorphOptions');
 
-        const safeTargetActorId = this._toSafeId(targetActorId);
+        const safeTargetActorId = this.toSafeId(targetActorId);
 
         const params = {
             targetActorId: safeTargetActorId,
@@ -172,10 +172,10 @@ export class RunClient extends ResourceClient {
         };
 
         const request: AxiosRequestConfig = {
-            url: this._url('metamorph'),
+            url: this.buildUrl('metamorph'),
             method: 'POST',
             data: input,
-            params: this._params(params),
+            params: this.buildParams(params),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             // TODO: remove this ts-expect-error once we have defined custom Apify axios configs
@@ -211,7 +211,7 @@ export class RunClient extends ResourceClient {
      */
     async reboot(): Promise<ActorRun> {
         const request: AxiosRequestConfig = {
-            url: this._url('reboot'),
+            url: this.buildUrl('reboot'),
             method: 'POST',
         };
 
@@ -240,7 +240,7 @@ export class RunClient extends ResourceClient {
     async update(newFields: RunUpdateOptions): Promise<ActorRun> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(schemas.Run(), newFields);
+        return this.updateResource(schemas.Run(), newFields);
     }
 
     /**
@@ -270,9 +270,9 @@ export class RunClient extends ResourceClient {
         const parsed = parseArgument(options, resurrectOptionsSchema, 'RunResurrectOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('resurrect'),
+            url: this.buildUrl('resurrect'),
             method: 'POST',
-            params: this._params(parsed),
+            params: this.buildParams(parsed),
         });
 
         return parseResponse(response, schemas.Run());
@@ -301,7 +301,7 @@ export class RunClient extends ResourceClient {
         const idempotencyKey = providedIdempotencyKey ?? `${this.id}-${eventName}-${Date.now()}-${randomSuffix}`;
 
         const request: AxiosRequestConfig = {
-            url: this._url('charge'),
+            url: this.buildUrl('charge'),
             method: 'POST',
             data: {
                 eventName,
@@ -346,7 +346,7 @@ export class RunClient extends ResourceClient {
     async waitForFinish(options: RunWaitForFinishOptions = {}): Promise<ActorRun> {
         const parsed = parseArgument(options, waitForFinishOptionsSchema, 'RunWaitForFinishOptions');
 
-        return this._waitForFinish(schemas.Run(), parsed);
+        return this.waitForJobFinish(schemas.Run(), parsed);
     }
 
     /**
@@ -365,7 +365,7 @@ export class RunClient extends ResourceClient {
      */
     dataset(): DatasetClient {
         return new DatasetClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'dataset',
             }),
         );
@@ -388,7 +388,7 @@ export class RunClient extends ResourceClient {
      */
     keyValueStore(): KeyValueStoreClient {
         return new KeyValueStoreClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'key-value-store',
             }),
         );
@@ -411,7 +411,7 @@ export class RunClient extends ResourceClient {
      */
     requestQueue(): RequestQueueClient {
         return new RequestQueueClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'request-queue',
             }),
         );
@@ -434,7 +434,7 @@ export class RunClient extends ResourceClient {
      */
     log(): LogClient {
         return new LogClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'log',
             }),
         );

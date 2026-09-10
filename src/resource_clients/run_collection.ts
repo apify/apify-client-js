@@ -73,7 +73,7 @@ export class RunCollectionClient extends ResourceCollectionClient {
     list(options: RunCollectionListOptions = {}): PaginatedIterator<ActorRunListItem> {
         const parsed = parseArgument(options, listOptionsSchema, 'RunCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfRuns(), parsed);
+        return this.listResourcesPaginated(schemas.ListOfRuns(), parsed);
     }
 }
 

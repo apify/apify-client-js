@@ -27,15 +27,15 @@ export class ResourceClient extends ApiClient {
      * A 404 resolves to `undefined` only when the client names its resource by ID. A chained client without one, such
      * as `run.dataset()`, throws it instead (see `catchNotFoundForResourceOrThrow()`).
      */
-    protected async _get<T, R>(
+    protected async getResource<T, R>(
         schema: z.ZodType,
         options: T = {} as T,
         timeoutMillis?: number,
     ): Promise<R | undefined> {
         const requestOpts: ApifyRequestConfig = {
-            url: this._url(),
+            url: this.buildUrl(),
             method: 'GET',
-            params: this._params(options),
+            params: this.buildParams(options),
             timeout: timeoutMillis,
         };
         try {
@@ -48,11 +48,11 @@ export class ResourceClient extends ApiClient {
         return undefined;
     }
 
-    protected async _update<T, R>(schema: z.ZodType, newFields: T, timeoutMillis?: number): Promise<R> {
+    protected async updateResource<T, R>(schema: z.ZodType, newFields: T, timeoutMillis?: number): Promise<R> {
         const response = await this.httpClient.call({
-            url: this._url(),
+            url: this.buildUrl(),
             method: 'PUT',
-            params: this._params(),
+            params: this.buildParams(),
             data: newFields,
             timeout: timeoutMillis,
         });
@@ -63,12 +63,12 @@ export class ResourceClient extends ApiClient {
      * A 404 is swallowed, keeping the DELETE idempotent, only when the client names its resource by ID. A chained client
      * without one throws it instead (see `catchNotFoundForResourceOrThrow()`).
      */
-    protected async _delete(timeoutMillis?: number): Promise<void> {
+    protected async deleteResource(timeoutMillis?: number): Promise<void> {
         try {
             await this.httpClient.call({
-                url: this._url(),
+                url: this.buildUrl(),
                 method: 'DELETE',
-                params: this._params(),
+                params: this.buildParams(),
                 timeout: timeoutMillis,
             });
         } catch (err) {
@@ -80,7 +80,7 @@ export class ResourceClient extends ApiClient {
      * This function is used in Build and Run endpoints so it's kept
      * here to stay DRY.
      */
-    protected async _waitForFinish<R extends { status: (typeof ACT_JOB_STATUSES)[keyof typeof ACT_JOB_STATUSES] }>(
+    protected async waitForJobFinish<R extends { status: (typeof ACT_JOB_STATUSES)[keyof typeof ACT_JOB_STATUSES] }>(
         schema: z.ZodType,
         options: WaitForFinishOptions = {},
     ): Promise<R> {
@@ -103,9 +103,9 @@ export class ResourceClient extends ApiClient {
             const waitForFinish = Math.max(0, remainingWaitSeconds);
 
             const requestOpts: ApifyRequestConfig = {
-                url: this._url(),
+                url: this.buildUrl(),
                 method: 'GET',
-                params: this._params({ waitForFinish }),
+                params: this.buildParams({ waitForFinish }),
             };
             try {
                 const response = await this.httpClient.call(requestOpts);

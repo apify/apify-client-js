@@ -122,7 +122,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/key-value-store-get
      */
     async get(): Promise<KeyValueStore | undefined> {
-        return this._get(schemas.KeyValueStore(), {}, SMALL_TIMEOUT_MILLIS);
+        return this.getResource(schemas.KeyValueStore(), {}, SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -138,7 +138,7 @@ export class KeyValueStoreClient extends ResourceClient {
     async update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(schemas.KeyValueStore(), newFields, DEFAULT_TIMEOUT_MILLIS);
+        return this.updateResource(schemas.KeyValueStore(), newFields, DEFAULT_TIMEOUT_MILLIS);
     }
 
     /**
@@ -147,7 +147,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/key-value-store-delete
      */
     async delete(): Promise<void> {
-        return this._delete(SMALL_TIMEOUT_MILLIS);
+        return this.deleteResource(SMALL_TIMEOUT_MILLIS);
     }
 
     /**
@@ -194,9 +194,9 @@ export class KeyValueStoreClient extends ResourceClient {
             kvsListOptions: KeyValueClientListKeysOptions = {},
         ): Promise<KeyValueClientListKeysResult> => {
             const response = await this.httpClient.call({
-                url: this._url('keys'),
+                url: this.buildUrl('keys'),
                 method: 'GET',
-                params: this._params(kvsListOptions),
+                params: this.buildParams(kvsListOptions),
                 timeout: MEDIUM_TIMEOUT_MILLIS,
             });
 
@@ -258,7 +258,7 @@ export class KeyValueStoreClient extends ResourceClient {
 
         const store = await this.get();
 
-        const recordPublicUrl = new URL(this._publicUrl(['records', key]));
+        const recordPublicUrl = new URL(this.buildPublicUrl(['records', key]));
 
         if (store?.urlSigningSecretKey) {
             const signature = await createHmacSignatureAsync(store.urlSigningSecretKey, key);
@@ -298,7 +298,7 @@ export class KeyValueStoreClient extends ResourceClient {
 
         const { expiresInSecs, ...queryOptions } = parsed;
 
-        let createdPublicKeysUrl = new URL(this._publicUrl('keys'));
+        let createdPublicKeysUrl = new URL(this.buildPublicUrl('keys'));
 
         if (store?.urlSigningSecretKey) {
             const signature = await createStorageContentSignatureAsync({
@@ -334,9 +334,9 @@ export class KeyValueStoreClient extends ResourceClient {
      */
     async recordExists(key: string): Promise<boolean> {
         const requestOpts: Record<string, unknown> = {
-            url: this._url(['records', key]),
+            url: this.buildUrl(['records', key]),
             method: 'HEAD',
-            params: this._params(),
+            params: this.buildParams(),
         };
 
         try {
@@ -388,9 +388,9 @@ export class KeyValueStoreClient extends ResourceClient {
         if (parsed.signature) queryParams.signature = parsed.signature;
 
         const requestOpts: Record<string, unknown> = {
-            url: this._url(['records', key]),
+            url: this.buildUrl(['records', key]),
             method: 'GET',
-            params: this._params(queryParams),
+            params: this.buildParams(queryParams),
             timeout: DEFAULT_TIMEOUT_MILLIS,
         };
 
@@ -493,9 +493,9 @@ export class KeyValueStoreClient extends ResourceClient {
         }
 
         const uploadOpts: ApifyRequestConfig = {
-            url: this._url(['records', key]),
+            url: this.buildUrl(['records', key]),
             method: 'PUT',
-            params: this._params(),
+            params: this.buildParams(),
             data: value,
             headers: contentType ? { 'content-type': contentType } : undefined,
             doNotRetryTimeouts,
@@ -520,9 +520,9 @@ export class KeyValueStoreClient extends ResourceClient {
         parseArgument(key, keySchema);
 
         await this.httpClient.call({
-            url: this._url(['records', key]),
+            url: this.buildUrl(['records', key]),
             method: 'DELETE',
-            params: this._params(),
+            params: this.buildParams(),
             timeout: SMALL_TIMEOUT_MILLIS,
         });
     }

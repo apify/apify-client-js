@@ -64,7 +64,7 @@ export class ActorVersionClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-version-get
      */
     async get(): Promise<FinalActorVersion | undefined> {
-        return this._get(schemas.Version());
+        return this.getResource(schemas.Version());
     }
 
     /**
@@ -77,7 +77,7 @@ export class ActorVersionClient extends ResourceClient {
     async update(newFields: ActorVersionUpdateData): Promise<FinalActorVersion> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(schemas.Version(), newFields);
+        return this.updateResource(schemas.Version(), newFields);
     }
 
     /**
@@ -86,7 +86,7 @@ export class ActorVersionClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-version-delete
      */
     async delete(): Promise<void> {
-        return this._delete();
+        return this.deleteResource();
     }
 
     /**
@@ -100,7 +100,7 @@ export class ActorVersionClient extends ResourceClient {
     envVar(envVarName: string): ActorEnvVarClient {
         parseArgument(envVarName, envVarNameSchema);
         return new ActorEnvVarClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 id: envVarName,
             }),
         );
@@ -114,7 +114,7 @@ export class ActorVersionClient extends ResourceClient {
      * @since Added in 2.1.0
      */
     envVars(): ActorEnvVarCollectionClient {
-        return new ActorEnvVarCollectionClient(this._subResourceOptions());
+        return new ActorEnvVarCollectionClient(this.subResourceOptions());
     }
 }
 

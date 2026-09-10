@@ -80,7 +80,7 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-get
      */
     async get(): Promise<Task | undefined> {
-        return this._get(schemas.Task());
+        return this.getResource(schemas.Task());
     }
 
     /**
@@ -93,7 +93,7 @@ export class TaskClient extends ResourceClient {
     async update(newFields: TaskUpdateData): Promise<Task> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(schemas.Task(), newFields);
+        return this.updateResource(schemas.Task(), newFields);
     }
 
     /**
@@ -134,7 +134,7 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-delete
      */
     async delete(): Promise<void> {
-        return this._delete();
+        return this.deleteResource();
     }
 
     /**
@@ -171,10 +171,10 @@ export class TaskClient extends ResourceClient {
         };
 
         const request: ApifyRequestConfig = {
-            url: this._url('runs'),
+            url: this.buildUrl('runs'),
             method: 'POST',
             data: input,
-            params: this._params(params),
+            params: this.buildParams(params),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
@@ -226,9 +226,9 @@ export class TaskClient extends ResourceClient {
      */
     async getInput(): Promise<Dictionary | Dictionary[]> {
         const response = await this.httpClient.call({
-            url: this._url('input'),
+            url: this.buildUrl('input'),
             method: 'GET',
-            params: this._params(),
+            params: this.buildParams(),
         });
         return cast(response.data);
     }
@@ -242,9 +242,9 @@ export class TaskClient extends ResourceClient {
      */
     async updateInput(newFields: Dictionary | Dictionary[]): Promise<Dictionary | Dictionary[]> {
         const response = await this.httpClient.call({
-            url: this._url('input'),
+            url: this.buildUrl('input'),
             method: 'PUT',
-            params: this._params(),
+            params: this.buildParams(),
             data: newFields,
         });
 
@@ -264,9 +264,9 @@ export class TaskClient extends ResourceClient {
         const parsed = parseArgument(options, lastRunOptionsSchema, 'TaskLastRunOptions');
 
         return new RunClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 id: 'last',
-                params: this._params(parsed),
+                params: this.buildParams(parsed),
                 resourcePath: 'runs',
             }),
         );
@@ -280,7 +280,7 @@ export class TaskClient extends ResourceClient {
      */
     runs(): RunCollectionClient {
         return new RunCollectionClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'runs',
             }),
         );
@@ -293,7 +293,7 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-webhooks-get
      */
     webhooks(): WebhookCollectionClient {
-        return new WebhookCollectionClient(this._subResourceOptions());
+        return new WebhookCollectionClient(this.subResourceOptions());
     }
 }
 

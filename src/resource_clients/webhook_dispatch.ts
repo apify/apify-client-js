@@ -47,6 +47,6 @@ export class WebhookDispatchClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/webhook-dispatch-get
      */
     async get(): Promise<WebhookDispatch | undefined> {
-        return this._get(schemas.WebhookDispatch());
+        return this.getResource(schemas.WebhookDispatch());
     }
 }
