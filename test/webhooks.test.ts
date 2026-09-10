@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net';
 
 import type { WebhookUpdateData } from 'apify-client';
-import { ApifyClient } from 'apify-client';
+import { ApifyApiError, ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
@@ -165,6 +165,16 @@ describe('Webhook methods', () => {
                 endpointId: 'test-webhook',
                 params: { webhookId },
             });
+        });
+
+        test('test() throws on 404 status code', async () => {
+            const webhookId = '404';
+
+            const call = client.webhook(webhookId).test();
+            await expect(call).rejects.toThrow(ApifyApiError);
+            await expect(call).rejects.toMatchObject({ statusCode: 404 });
+
+            await expect(page.evaluate((id) => client.webhook(id).test(), webhookId)).rejects.toThrow();
         });
 
         test('listDispatches() works', async () => {
