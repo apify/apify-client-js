@@ -176,14 +176,10 @@ describe('Run methods', () => {
         test('metamorph() works', async () => {
             const runId = 'some-run-id';
             const targetActorId = 'some-target-id';
-            const contentType = 'application/x-www-form-urlencoded';
-            const input = 'some=body';
+            const input = { some: 'body' };
             const build = '1.2.0';
 
-            const options = {
-                build,
-                contentType,
-            };
+            const options = { build };
 
             const actualQuery = {
                 targetActorId,
@@ -195,8 +191,7 @@ describe('Run methods', () => {
                 endpointId: 'metamorph-run',
                 query: actualQuery,
                 params: { runId },
-                body: { some: 'body' },
-                additionalHeaders: { 'content-type': contentType },
+                body: input,
             });
 
             const browserRes = await page.evaluate(
@@ -212,16 +207,15 @@ describe('Run methods', () => {
             validateRequest({
                 query: actualQuery,
                 params: { runId },
-                body: { some: 'body' },
-                additionalHeaders: { 'content-type': contentType },
+                body: input,
             });
         });
 
-        test('metamorph() works with pre-stringified JSON input', async () => {
+        test('metamorph() passes contentType through as the request header', async () => {
             const runId = 'some-run-id';
             const targetActorId = 'some-target-id';
             const contentType = 'application/json; charset=utf-8';
-            const input = JSON.stringify({ foo: 'bar' });
+            const input = { foo: 'bar' };
 
             const expectedRequest = {
                 query: { targetActorId },
