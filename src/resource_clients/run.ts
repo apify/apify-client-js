@@ -9,7 +9,7 @@ import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyResponse } from '../http_client.js';
 import * as schemas from '../schemas.js';
 import { anyObjectSchema, isNode, parseArgument, parseResponse } from '../utils.js';
-import type { ActorInput, ActorRawInput, ActorRun } from './actor.js';
+import type { ActorInput, ActorRun } from './actor.js';
 import { DatasetClient } from './dataset.js';
 import { KeyValueStoreClient } from './key_value_store.js';
 import { LogClient, LoggerActorRedirect, StreamedLog } from './log.js';
@@ -160,31 +160,8 @@ export class RunClient extends ResourceClient {
      * console.log(`Run ${metamorphedRun.id} is now running ${metamorphedRun.actId}`);
      * ```
      */
-    async metamorph(targetActorId: string, input?: ActorInput, options?: RunMetamorphOptions): Promise<ActorRun>;
-
-    /**
-     * Transforms the Actor run into a run of another Actor with a raw request body as its input.
-     *
-     * @param targetActorId - ID or username/name of the target Actor
-     * @param input - Body to send as the target Actor's `INPUT`, passed through untouched.
-     * @param options - Metamorph options, the same as for an object input
-     * @param options.contentType - Content type of the body, e.g. `'application/pdf'`. Required for a raw body.
-     * @returns The metamorphed ActorRun object (same ID, but now running the target Actor)
-     * @see https://docs.apify.com/api/v2/actor-run-metamorph-post
-     */
-    async metamorph(
-        targetActorId: string,
-        input: ActorRawInput,
-        options: RunMetamorphOptions & { contentType: string },
-    ): Promise<ActorRun>;
-
-    async metamorph(
-        targetActorId: string,
-        input?: ActorInput | ActorRawInput,
-        options: RunMetamorphOptions = {},
-    ): Promise<ActorRun> {
+    async metamorph(targetActorId: string, input?: ActorInput, options: RunMetamorphOptions = {}): Promise<ActorRun> {
         parseArgument(targetActorId, targetActorIdSchema);
-        // The API validates the input, and with a custom `contentType` it is an arbitrary body.
         const parsed = parseArgument(options, metamorphOptionsSchema, 'RunMetamorphOptions');
 
         const safeTargetActorId = this._toSafeId(targetActorId);

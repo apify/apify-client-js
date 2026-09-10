@@ -284,20 +284,18 @@ Two options that carried a `@deprecated` marker throughout v2 have been removed.
 
 <ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink>, <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, <ApiLink to="class/ActorClient#validateInput">`validateInput()`</ApiLink> and <ApiLink to="class/RunClient#metamorph">`RunClient.metamorph()`</ApiLink> took their `input` as `unknown`, so any value compiled, including ones the client cannot send.
 
-An input the client serializes to JSON is now typed `ActorInput`, an alias for `object`. A number, a boolean or `null` stops compiling, and so does a value typed `unknown`, which has to be narrowed or cast first. To run an Actor without input, omit the argument or pass `undefined`.
+The input is now typed `ActorInput`, an alias for `object`: the client serializes it to JSON, so it is an object or an array. Any other value stops compiling, including a value typed `unknown`, which has to be narrowed or cast first. To run an Actor without input, omit the argument or pass `undefined`.
 
 ```diff
 - await client.actor('my-actor').call(null, { memory: 1024 }); // v2
 + await client.actor('my-actor').call(undefined, { memory: 1024 }); // v3
 ```
 
-A body the client passes through untouched is typed `ActorRawInput`, a `string` or a `Buffer`, and each of the four methods takes it through a second overload that also requires `contentType`. In v2 a raw body without a `contentType` compiled, and the API then stored it under the default `application/json; charset=utf-8`, which a form body or a PDF is not:
+A raw `string` body stops compiling too, with or without a `contentType`. Pass the input as an object and let the client serialize it:
 
 ```diff
-- await client.actor('my-actor').start('some=body'); // v2
-+ await client.actor('my-actor').start('some=body', { // v3
-+     contentType: 'application/x-www-form-urlencoded',
-+ });
+- await client.actor('my-actor').start('some=body', { contentType: 'application/x-www-form-urlencoded' }); // v2
++ await client.actor('my-actor').start({ some: 'body' }); // v3
 ```
 
 `metamorph()`'s `input` is optional now, so `metamorph('target-actor')` compiles where it previously needed an explicit `undefined`.

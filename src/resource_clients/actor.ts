@@ -186,38 +186,7 @@ export class ActorClient extends ResourceClient {
      * );
      * ```
      */
-    async start(input?: ActorInput, options?: ActorStartOptions): Promise<ActorRun>;
-
-    /**
-     * Starts the Actor with a raw request body and immediately returns the Run object.
-     *
-     * @param input - Body to send as the Actor's `INPUT`, passed through untouched.
-     * @param options - Run configuration options, the same as for an object input
-     * @param options.contentType - Content type of the body, e.g. `'application/pdf'`. Required for a raw body.
-     * @returns The Actor run object with status, usage, and storage IDs
-     * @see https://docs.apify.com/api/v2/act-runs-post
-     *
-     * @example
-     * ```javascript
-     * const run = await client.actor('my-actor').start('some=body', {
-     *   contentType: 'application/x-www-form-urlencoded',
-     * });
-     * ```
-     */
-    async start(input: ActorRawInput, options: ActorStartOptions & { contentType: string }): Promise<ActorRun>;
-
-    async start(input?: ActorInput | ActorRawInput, options: ActorStartOptions = {}): Promise<ActorRun> {
-        return this._startRun(input, options);
-    }
-
-    /**
-     * The body behind the {@link start} overloads, also used by {@link call}.
-     */
-    private async _startRun(
-        input: ActorInput | ActorRawInput | undefined,
-        options: ActorStartOptions,
-    ): Promise<ActorRun> {
-        // The API validates the input, and with a custom `contentType` it is an arbitrary body.
+    async start(input?: ActorInput, options: ActorStartOptions = {}): Promise<ActorRun> {
         const parsed = parseArgument(options, startOptionsSchema, 'ActorStartOptions');
 
         const {
@@ -298,32 +267,11 @@ export class ActorClient extends ResourceClient {
      * const run = await client.actor('my-actor').call({ url: 'https://example.com' }, { log });
      * ```
      */
-    async call(input?: ActorInput, options?: ActorCallOptions): Promise<ActorRun>;
-
-    /**
-     * Starts the Actor with a raw request body and waits for it to finish before returning the Run object.
-     *
-     * @param input - Body to send as the Actor's `INPUT`, passed through untouched.
-     * @param options - Run configuration options, the same as for an object input
-     * @param options.contentType - Content type of the body, e.g. `'application/pdf'`. Required for a raw body.
-     * @returns The finished Actor run object with final status (`SUCCEEDED`, `FAILED`, `ABORTED`, or `TIMED-OUT`)
-     * @see https://docs.apify.com/api/v2/act-runs-post
-     *
-     * @example
-     * ```javascript
-     * const run = await client.actor('my-actor').call('some=body', {
-     *   contentType: 'application/x-www-form-urlencoded',
-     * });
-     * ```
-     */
-    async call(input: ActorRawInput, options: ActorCallOptions & { contentType: string }): Promise<ActorRun>;
-
-    async call(input?: ActorInput | ActorRawInput, options: ActorCallOptions = {}): Promise<ActorRun> {
-        // The API validates the input, and with a custom `contentType` it is an arbitrary body.
+    async call(input?: ActorInput, options: ActorCallOptions = {}): Promise<ActorRun> {
         const parsed = parseArgument(options, callOptionsSchema, 'ActorCallOptions');
 
         const { waitSecs, log, ...startOptions } = parsed;
-        const { id } = await this._startRun(input, startOptions);
+        const { id } = await this.start(input, startOptions);
 
         // Calling root client because we need access to top level API.
         // Creating a new instance of RunClient here would only allow
@@ -368,25 +316,7 @@ export class ActorClient extends ResourceClient {
      * ```
      * @since Added in 2.24.0
      */
-    async validateInput(input?: ActorInput, options?: ActorValidateInputOptions): Promise<boolean>;
-
-    /**
-     * Validates a raw request body against the Actor's input schema.
-     *
-     * @param input - Body to validate, passed through untouched.
-     * @param options - Validation options, the same as for an object input
-     * @param options.contentType - Content type of the body, e.g. `'application/pdf'`. Required for a raw body.
-     * @returns `true` if the input is valid. Invalid input causes the underlying API call to throw an `ApifyApiError`.
-     * @see https://docs.apify.com/api/v2/act-validate-input-post
-     * @since Added in 2.24.0
-     */
-    async validateInput(
-        input: ActorRawInput,
-        options: ActorValidateInputOptions & { contentType: string },
-    ): Promise<boolean>;
-
-    async validateInput(input?: ActorInput | ActorRawInput, options: ActorValidateInputOptions = {}): Promise<boolean> {
-        // The API validates the input, and with a custom `contentType` it is an arbitrary body.
+    async validateInput(input?: ActorInput, options: ActorValidateInputOptions = {}): Promise<boolean> {
         const parsed = parseArgument(options, validateInputOptionsSchema, 'ActorValidateInputOptions');
 
         const request: ApifyRequestConfig = {
@@ -617,19 +547,9 @@ export type ActorUpdateOptions = Partial<
  * Input for an Actor run, as taken by {@link ActorClient.start}, {@link ActorClient.call},
  * {@link ActorClient.validateInput} and {@link RunClient.metamorph}.
  *
- * The client serializes it to JSON, so it is an object or an array. To send a body the client should pass
- * through untouched, use an {@link ActorRawInput} instead.
+ * The client serializes it to JSON, so it is an object or an array.
  */
 export type ActorInput = object;
-
-/**
- * A raw Actor run input, sent as the request body untouched.
- *
- * It has to be paired with a `contentType`, which becomes the body's `Content-Type` header and the content
- * type of the run's `INPUT` record. Without one the API stores the body under the default
- * `application/json; charset=utf-8`, which a raw body generally is not.
- */
-export type ActorRawInput = string | Buffer;
 
 export interface ActorStartOptions {
     /**
@@ -640,8 +560,7 @@ export interface ActorStartOptions {
 
     /**
      * Content type of the request body, which becomes the content type of the run's `INPUT` record.
-     * Defaults to `application/json; charset=utf-8`, matching the JSON an object input is serialized to.
-     * Required when passing a raw `string` or `Buffer` body.
+     * Defaults to `application/json; charset=utf-8`, matching the JSON the input is serialized to.
      */
     contentType?: string;
 
@@ -740,8 +659,7 @@ export interface ActorValidateInputOptions {
 
     /**
      * Content type of the request body, which becomes the content type of the run's `INPUT` record.
-     * Defaults to `application/json; charset=utf-8`, matching the JSON an object input is serialized to.
-     * Required when passing a raw `string` or `Buffer` body.
+     * Defaults to `application/json; charset=utf-8`, matching the JSON the input is serialized to.
      */
     contentType?: string;
 }
