@@ -150,7 +150,7 @@ describe('Dataset methods', () => {
                 'content-type': 'application/json; chartset=utf-8',
                 'x-apify-pagination-total': '0',
                 'x-apify-pagination-offset': '0',
-                'x-apify-pagination-count': '1', // wrong on purpose to check that it's not used
+                'x-apify-pagination-count': '1', // the scanned rows; `count` reports the items returned, so it stays 0
                 'x-apify-pagination-limit': '100000',
                 // TODO: https://github.com/apify/apify-core/issues/3503
                 'x-apify-pagination-desc': false,
