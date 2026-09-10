@@ -1,7 +1,11 @@
 import type { AxiosResponse } from 'axios';
+import type { LiteralUnion } from 'type-fest';
 
 import { isomorphicBufferToString } from './body_parser.js';
+import type { ApifyApiErrorType } from './models.js';
 import { isBuffer } from './utils.js';
+
+export type { ApifyApiErrorType } from './models.js';
 
 /**
  * Examples of capturing groups for "...at ActorCollectionClient._list (/Users/..."
@@ -20,6 +24,13 @@ const CLIENT_METHOD_REGEX = /at( async)? ([A-Za-z]+(Collection)?Client)\._?([A-Z
  * errors and internal errors, which are automatically retried, or validation
  * errors, which are thrown immediately, because a correction by the user is
  * needed.
+ *
+ * The thrown error is an instance of the subclass matching the HTTP status code of the response:
+ * {@link InvalidRequestError} (400), {@link UnauthorizedError} (401), {@link ForbiddenError} (403),
+ * {@link NotFoundError} (404), {@link ConflictError} (409), {@link RateLimitError} (429) or
+ * {@link ServerError} (5xx). Any other status code is thrown as a plain `ApifyApiError`. Every
+ * subclass extends `ApifyApiError`, so `instanceof ApifyApiError` matches all of them. Errors that
+ * share a status code are told apart by their `type`.
  */
 export class ApifyApiError extends Error {
     override name: string;
@@ -36,9 +47,10 @@ export class ApifyApiError extends Error {
     statusCode: number;
 
     /**
-     * The type of the error, as returned by the API.
+     * The type of the error, as returned by the API. Typed as the known {@link ApifyApiErrorType}
+     * values for autocompletion, while still accepting any string the API may return.
      */
-    type?: string;
+    type?: LiteralUnion<ApifyApiErrorType, string>;
 
     /**
      * Number of the API call attempt.
@@ -117,6 +129,16 @@ export class ApifyApiError extends Error {
         this.data = errorData;
     }
 
+    /**
+     * Creates the error for a failed response as an instance of the subclass matching its HTTP status code.
+     * @hidden
+     */
+    static fromResponse(response: AxiosResponse, attempt: number): ApifyApiError {
+        const ErrorClass =
+            ERROR_CLASS_BY_STATUS[response.status] ?? (response.status >= 500 ? ServerError : ApifyApiError);
+        return new ErrorClass(response, attempt);
+    }
+
     private _safelyParsePathFromResponse(response: AxiosResponse) {
         const urlString = response.config?.url;
         let url;
@@ -140,7 +162,7 @@ export class ApifyApiError extends Error {
      *
      * Example:
      *
-     * ApifyApiError: Actor task was not found
+     * NotFoundError: Actor task was not found
      *   clientMethod: TaskClient.start
      *   statusCode: 404
      *   type: record-not-found
@@ -163,3 +185,52 @@ export class ApifyApiError extends Error {
         return `${name}: ${this.message}\n${stack}`;
     }
 }
+
+/**
+ * Thrown when the Apify API responds with HTTP 400 Bad Request, typically because the request
+ * failed validation.
+ */
+export class InvalidRequestError extends ApifyApiError {}
+
+/**
+ * Thrown when the Apify API responds with HTTP 401 Unauthorized, because the token is missing
+ * or invalid.
+ */
+export class UnauthorizedError extends ApifyApiError {}
+
+/**
+ * Thrown when the Apify API responds with HTTP 403 Forbidden, because the token lacks the
+ * permission for the operation.
+ */
+export class ForbiddenError extends ApifyApiError {}
+
+/**
+ * Thrown when the Apify API responds with HTTP 404 Not Found.
+ */
+export class NotFoundError extends ApifyApiError {}
+
+/**
+ * Thrown when the Apify API responds with HTTP 409 Conflict.
+ */
+export class ConflictError extends ApifyApiError {}
+
+/**
+ * Thrown when the Apify API responds with HTTP 429 Too Many Requests. The client retries such
+ * requests, so the error surfaces once the retries are exhausted.
+ */
+export class RateLimitError extends ApifyApiError {}
+
+/**
+ * Thrown when the Apify API responds with an HTTP 5xx status. The client retries such requests,
+ * so the error surfaces once the retries are exhausted.
+ */
+export class ServerError extends ApifyApiError {}
+
+const ERROR_CLASS_BY_STATUS: Partial<Record<number, typeof ApifyApiError>> = {
+    400: InvalidRequestError,
+    401: UnauthorizedError,
+    403: ForbiddenError,
+    404: NotFoundError,
+    409: ConflictError,
+    429: RateLimitError,
+};

@@ -115,8 +115,15 @@ describe('emitSchema', () => {
             expect(emitSchema({ type: ['string', 'null'], format: 'date-time' })).toBe('z.date().nullable()');
         });
 
+        it('emits uri as a normalizing z.url(), so a URL comes back the way the Python client returns it', () => {
+            expect(emitSchema({ type: 'string', format: 'uri' })).toBe('z.url({ normalize: true })');
+            expect(emitSchema({ type: ['string', 'null'], format: 'uri' })).toBe(
+                'z.url({ normalize: true }).nullable()',
+            );
+        });
+
         it('leaves other string formats as plain strings', () => {
-            expect(emitSchema({ type: 'string', format: 'uri' })).toBe('z.string()');
+            expect(emitSchema({ type: 'string', format: 'email' })).toBe('z.string()');
         });
 
         it('emits boolean, null and a schema without a type', () => {

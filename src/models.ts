@@ -68,6 +68,13 @@ export enum WebhookDispatchStatus {
 }
 
 /**
+ * Machine-readable type of an error returned by the Apify API, carried by `ApifyApiError.type`.
+ *
+ * Declared here, next to the other spec-derived types, and re-exported from `./apify_api_error`.
+ */
+export type ApifyApiErrorType = Schemas['ErrorType'];
+
+/**
  * Fields the API returns on a dataset that the OpenAPI spec does not describe yet.
  *
  * TODO: Remove once the spec covers them.
@@ -281,7 +288,7 @@ export interface ActorVersionClientNarrowings {
     // The spec permits `sourceType: null`. It is deliberately not adopted: the published type is a
     // union discriminated on exactly this field, and a version with no source type carries no usable
     // source location either, so accepting the `null` would only make every variant unreachable.
-    sourceType: ActorSourceType;
+    sourceType: `${ActorSourceType}`;
 }
 
 /**
@@ -291,7 +298,7 @@ export interface ActorVersionClientNarrowings {
  * keeps a union discriminated on `sourceType` instead, because that narrows the source location down
  * to the single field which applies -- so the four are dropped here and reinstated per variant.
  */
-export interface BaseActorVersion<SourceType extends ActorSourceType>
+export interface BaseActorVersion<SourceType extends `${ActorSourceType}`>
     extends
         Omit<
             GeneratedVersion,
@@ -305,22 +312,22 @@ export interface BaseActorVersion<SourceType extends ActorSourceType>
  * An Actor version whose source code is stored on the Apify platform.
  * @since Added in 2.6.1
  */
-export interface ActorVersionSourceFiles extends BaseActorVersion<ActorSourceType.SourceFiles> {
+export interface ActorVersionSourceFiles extends BaseActorVersion<`${ActorSourceType.SourceFiles}`> {
     sourceFiles: (ActorVersionSourceFile | ActorVersionSourceFolder)[];
 }
 
 /** An Actor version built from a Git repository. */
-export interface ActorVersionGitRepo extends BaseActorVersion<ActorSourceType.GitRepo> {
+export interface ActorVersionGitRepo extends BaseActorVersion<`${ActorSourceType.GitRepo}`> {
     gitRepoUrl: NonNullable<GeneratedVersion['gitRepoUrl']>;
 }
 
 /** An Actor version built from a downloadable tarball or ZIP archive. */
-export interface ActorVersionTarball extends BaseActorVersion<ActorSourceType.Tarball> {
+export interface ActorVersionTarball extends BaseActorVersion<`${ActorSourceType.Tarball}`> {
     tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
 }
 
 /** An Actor version built from a GitHub Gist. */
-export interface ActorVersionGitHubGist extends BaseActorVersion<ActorSourceType.GitHubGist> {
+export interface ActorVersionGitHubGist extends BaseActorVersion<`${ActorSourceType.GitHubGist}`> {
     gitHubGistUrl: NonNullable<GeneratedVersion['gitHubGistUrl']>;
 }
 
@@ -330,7 +337,7 @@ export interface ActorVersionGitHubGist extends BaseActorVersion<ActorSourceType
  * It carries no source location of its own, so it adds nothing to `BaseActorVersion`; the variant
  * exists so that `SOURCE_CODE`, which both the spec and `@apify/consts` list, is representable.
  */
-export interface ActorVersionSourceCode extends BaseActorVersion<ActorSourceType.SourceCode> {}
+export interface ActorVersionSourceCode extends BaseActorVersion<`${ActorSourceType.SourceCode}`> {}
 
 /** A version of an Actor, discriminated on where its source code comes from. */
 export type ActorVersion =
@@ -900,7 +907,7 @@ export interface ScheduledActorRunInput extends GeneratedScheduleActionRunInput 
 export interface ScheduledActorRunOptions extends GeneratedTaskOptions {}
 
 export interface ScheduleActionRunActorRePointed {
-    type: ScheduleActions.RunActor;
+    type: `${ScheduleActions.RunActor}`;
     runInput?: ScheduledActorRunInput | null;
     runOptions?: ScheduledActorRunOptions | null;
 }
@@ -912,7 +919,7 @@ export interface ScheduleActionRunActor
         ScheduleActionRunActorRePointed {}
 
 export interface ScheduleActionRunActorTaskRePointed {
-    type: ScheduleActions.RunActorTask;
+    type: `${ScheduleActions.RunActorTask}`;
 }
 
 /** Scheduled action to run an Actor task. */

@@ -92,7 +92,7 @@ test('test() creates a dispatch carrying a dummy payload', async () => {
     try {
         const dispatch = await webhookClient.test();
 
-        expect(dispatch?.id).toBeTruthy();
+        expect(dispatch.id).toBeTruthy();
     } finally {
         await webhookClient.delete();
     }

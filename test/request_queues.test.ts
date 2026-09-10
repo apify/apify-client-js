@@ -542,8 +542,8 @@ describe('Request Queue methods', () => {
             [['pending', 'locked'], 'pending,locked'],
         ] as const)('listRequests() works', async (filter, filterInQuery) => {
             const queueId = 'some-id';
-            const options = { limit: 5, exclusiveStartId: '123' } as RequestQueueClientListRequestsOptions;
-            const queryForValidation = { limit: '5', exclusiveStartId: '123' } as Record<string, string>;
+            const options = { limit: 5, cursor: 'abc' } as RequestQueueClientListRequestsOptions;
+            const queryForValidation = { limit: '5', cursor: 'abc' } as Record<string, string>;
             if (filter) {
                 options.filter = filter;
                 queryForValidation.filter = filterInQuery;
@@ -569,11 +569,11 @@ describe('Request Queue methods', () => {
             expect(call).toThrow('Unrecognized key: "bogus"');
         });
 
-        test('listRequests() rejects exclusiveStartId together with cursor', () => {
-            const call = () => client.requestQueue('some-id').listRequests({ exclusiveStartId: '123', cursor: 'abc' });
+        test('listRequests() rejects the removed exclusiveStartId option', () => {
+            const call = () => client.requestQueue('some-id').listRequests({ exclusiveStartId: '123' } as any);
 
             expect(call).toThrow(ArgumentValidationError);
-            expect(call).toThrow('At most one of the following fields is allowed: exclusiveStartId, cursor');
+            expect(call).toThrow('Unrecognized key: "exclusiveStartId"');
         });
 
         test('paginateRequests() works', async () => {

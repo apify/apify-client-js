@@ -16,6 +16,7 @@ import type http from 'node:http';
 import type https from 'node:https';
 import type { InternalAxiosRequestConfig } from 'axios';
 import type { JsonValue } from 'type-fest';
+import type { LiteralUnion } from 'type-fest';
 import { Log } from '@apify/log';
 import { Logger } from '@apify/log';
 import { LogLevel } from '@apify/log';
@@ -25,6 +26,7 @@ import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 import type { SetStatusMessageOptions } from '@crawlee/types';
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
+import type { TypedArray } from 'type-fest';
 import type { ValueOf } from '@apify/consts';
 import type { ValueOf as ValueOf_2 } from 'type-fest';
 import type { WEBHOOK_EVENT_TYPES } from '@apify/consts';
@@ -132,8 +134,6 @@ export interface ActorCollectionCreateOptions {
     isPublic?: boolean;
     // (undocumented)
     name?: string;
-    // @deprecated (undocumented)
-    restartOnError?: boolean;
     seoDescription?: string;
     seoTitle?: string;
     // (undocumented)
@@ -159,7 +159,7 @@ export interface ActorCollectionListOptions extends PaginationOptions {
     desc?: boolean;
     // (undocumented)
     my?: boolean;
-    sortBy?: ActorListSortBy;
+    sortBy?: `${ActorListSortBy}`;
 }
 
 // @public (undocumented)
@@ -202,13 +202,7 @@ export class ActorEnvVarClient extends ResourceClient {
 export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
     create(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable>;
-    list(_options?: ActorEnvVarCollectionListOptions): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable>;
-}
-
-// @public @deprecated (undocumented)
-export interface ActorEnvVarCollectionListOptions extends PaginationOptions {
-    // (undocumented)
-    desc?: boolean;
+    list(): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable>;
 }
 
 // @public
@@ -429,37 +423,31 @@ export class ActorVersionClient extends ResourceClient {
     envVar(envVarName: string): ActorEnvVarClient;
     envVars(): ActorEnvVarCollectionClient;
     get(): Promise<FinalActorVersion | undefined>;
-    update(newFields: ActorVersion): Promise<FinalActorVersion>;
+    update(newFields: ActorVersionUpdateData): Promise<FinalActorVersion>;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 interface ActorVersionClientNarrowings {
     // (undocumented)
-    sourceType: ActorSourceType;
+    sourceType: `${ActorSourceType}`;
 }
 
 // @public
 export class ActorVersionCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
     create(actorVersion: ActorVersion): Promise<FinalActorVersion>;
-    list(_options?: ActorVersionCollectionListOptions): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion>;
-}
-
-// @public @deprecated (undocumented)
-export interface ActorVersionCollectionListOptions extends PaginationOptions {
-    // (undocumented)
-    desc?: boolean;
+    list(): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion>;
 }
 
 // @public
-export interface ActorVersionGitHubGist extends BaseActorVersion<ActorSourceType.GitHubGist> {
+export interface ActorVersionGitHubGist extends BaseActorVersion<`${ActorSourceType.GitHubGist}`> {
     // (undocumented)
     gitHubGistUrl: NonNullable<GeneratedVersion['gitHubGistUrl']>;
 }
 
 // @public
-export interface ActorVersionGitRepo extends BaseActorVersion<ActorSourceType.GitRepo> {
+export interface ActorVersionGitRepo extends BaseActorVersion<`${ActorSourceType.GitRepo}`> {
     // (undocumented)
     gitRepoUrl: NonNullable<GeneratedVersion['gitRepoUrl']>;
 }
@@ -475,7 +463,7 @@ interface ActorVersionRePointed {
 }
 
 // @public
-export interface ActorVersionSourceCode extends BaseActorVersion<ActorSourceType.SourceCode> {
+export interface ActorVersionSourceCode extends BaseActorVersion<`${ActorSourceType.SourceCode}`> {
 }
 
 // @public
@@ -483,7 +471,7 @@ export interface ActorVersionSourceFile extends GeneratedSourceCodeFile {
 }
 
 // @public
-export interface ActorVersionSourceFiles extends BaseActorVersion<ActorSourceType.SourceFiles> {
+export interface ActorVersionSourceFiles extends BaseActorVersion<`${ActorSourceType.SourceFiles}`> {
     // (undocumented)
     sourceFiles: (ActorVersionSourceFile | ActorVersionSourceFolder)[];
 }
@@ -497,10 +485,13 @@ export interface ActorVersionSourceFolder extends GeneratedSourceCodeFolder {
 type ActorVersionSourceLocation = 'sourceFiles' | 'gitRepoUrl' | 'tarballUrl' | 'gitHubGistUrl';
 
 // @public
-export interface ActorVersionTarball extends BaseActorVersion<ActorSourceType.Tarball> {
+export interface ActorVersionTarball extends BaseActorVersion<`${ActorSourceType.Tarball}`> {
     // (undocumented)
     tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
 }
+
+// @public
+export type ActorVersionUpdateData = Partial<ActorVersion>;
 
 // @public
 export type AllowedHttpMethods = Schemas['HttpMethod'];
@@ -575,14 +566,18 @@ export class ApifyApiError extends Error {
     attempt: number;
     clientMethod: string;
     data?: Record<string, unknown>;
+    static fromResponse(response: AxiosResponse, attempt: number): ApifyApiError;
     httpMethod?: string;
     // (undocumented)
     name: string;
     originalStack: string;
     path?: string;
     statusCode: number;
-    type?: string;
+    type?: LiteralUnion<ApifyApiErrorType, string>;
 }
+
+// @public
+export type ApifyApiErrorType = Schemas['ErrorType'];
 
 // @public
 export class ApifyClient {
@@ -659,7 +654,7 @@ interface ApifyResponse<T = any> extends AxiosResponse<T> {
 export { ArgumentValidationError }
 
 // @public
-export interface BaseActorVersion<SourceType extends ActorSourceType> extends Omit<GeneratedVersion, keyof ActorVersionClientNarrowings | keyof ActorVersionRePointed | ActorVersionSourceLocation>, ActorVersionRePointed {
+export interface BaseActorVersion<SourceType extends `${ActorSourceType}`> extends Omit<GeneratedVersion, keyof ActorVersionClientNarrowings | keyof ActorVersionRePointed | ActorVersionSourceLocation>, ActorVersionRePointed {
     // (undocumented)
     sourceType: SourceType;
 }
@@ -2412,6 +2407,10 @@ interface components {
 }
 
 // @public
+export class ConflictError extends ApifyApiError {
+}
+
+// @public
 export interface Current extends GeneratedCurrent {
 }
 
@@ -2435,9 +2434,9 @@ export class DatasetClient<Data extends Record<string | number, any> = Record<st
     constructor(options: ApiClientSubResourceOptions);
     createItemsPublicUrl(options?: DatasetClientCreateItemsUrlOptions): Promise<string>;
     delete(): Promise<void>;
-    downloadItems(format: DownloadItemsFormat, options?: DatasetClientDownloadItemsOptions): Promise<Buffer>;
+    downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Buffer>;
     get(): Promise<Dataset | undefined>;
-    getStatistics(): Promise<DatasetStatistics | undefined>;
+    getStatistics(): Promise<DatasetStatistics>;
     listItems(options?: DatasetClientListItemOptions): PaginatedIterator<Data>;
     pushItems(items: Data | Data[] | string | string[]): Promise<void>;
     update(newFields: DatasetClientUpdateOptions): Promise<Dataset>;
@@ -2636,6 +2635,10 @@ export type FinalActorVersion = ActorVersion & {
 
 // @public
 export interface FlatPricePerMonthActorPricingInfo extends GeneratedFlatPricePerMonthActorPricingInfo {
+}
+
+// @public
+export class ForbiddenError extends ApifyApiError {
 }
 
 // @public
@@ -2904,6 +2907,10 @@ interface HttpClientOptions {
 }
 
 // @public
+export class InvalidRequestError extends ApifyApiError {
+}
+
+// @public
 export class InvalidResponseBodyError extends Error {
     constructor(response: AxiosResponse, cause: Error);
     // (undocumented)
@@ -2981,7 +2988,7 @@ export class KeyValueStoreClient extends ResourceClient {
     getRecordPublicUrl(key: string): Promise<string>;
     listKeys(options?: KeyValueClientListKeysOptions): Promise<KeyValueClientListKeysResult> & AsyncIterable<KeyValueListItem>;
     recordExists(key: string): Promise<boolean>;
-    setRecord(record: KeyValueStoreRecord<JsonValue>, options?: KeyValueStoreRecordOptions): Promise<void>;
+    setRecord(record: KeyValueStoreRecord<KeyValueStoreRecordValue>, options?: KeyValueStoreRecordOptions): Promise<void>;
     update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore>;
 }
 
@@ -3029,6 +3036,9 @@ export interface KeyValueStoreRecordOptions {
     // (undocumented)
     timeoutSecs?: number;
 }
+
+// @public
+export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Readable;
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -3097,6 +3107,10 @@ interface MonthlyUsageRePointed {
     monthlyServiceUsage: ServiceUsage;
     // (undocumented)
     usageCycle: UsageCycle;
+}
+
+// @public
+export class NotFoundError extends ApifyApiError {
 }
 
 // @public
@@ -3256,6 +3270,10 @@ export interface PricingInfo extends GeneratedCurrentPricingInfo {
 export interface ProxyGroup extends GeneratedProxyGroup {
 }
 
+// @public
+export class RateLimitError extends ApifyApiError {
+}
+
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyRequestConfig>['use']>[0];
@@ -3369,8 +3387,6 @@ export interface RequestQueueClientListItem extends GeneratedHeadRequest {
 // @public
 export interface RequestQueueClientListRequestsOptions {
     cursor?: string;
-    // @deprecated
-    exclusiveStartId?: string;
     filter?: readonly RequestQueueListRequestsFilter[];
     // (undocumented)
     limit?: number;
@@ -3394,8 +3410,6 @@ export interface RequestQueueClientLockedListItem extends GeneratedLockedHeadReq
 // @public
 export interface RequestQueueClientPaginateRequestsOptions {
     cursor?: string;
-    // @deprecated (undocumented)
-    exclusiveStartId?: string;
     filter?: readonly RequestQueueListRequestsFilter[];
     // (undocumented)
     limit?: number;
@@ -3510,9 +3524,7 @@ export interface RequestQueueUserOptions {
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
 class ResourceClient extends ApiClient {
-    // (undocumented)
     protected _delete(timeoutMillis?: number): Promise<void>;
-    // (undocumented)
     protected _get<T, R>(schema: z.ZodType, options?: T, timeoutMillis?: number): Promise<R | undefined>;
     // (undocumented)
     protected _update<T, R>(schema: z.ZodType, newFields: T, timeoutMillis?: number): Promise<R>;
@@ -3657,7 +3669,7 @@ interface ScheduleActionRunActorRePointed {
     // (undocumented)
     runOptions?: ScheduledActorRunOptions | null;
     // (undocumented)
-    type: ScheduleActions.RunActor;
+    type: `${ScheduleActions.RunActor}`;
 }
 
 // @public
@@ -3668,7 +3680,7 @@ export interface ScheduleActionRunActorTask extends Omit<Schemas['ScheduleAction
 // @public (undocumented)
 interface ScheduleActionRunActorTaskRePointed {
     // (undocumented)
-    type: ScheduleActions.RunActorTask;
+    type: `${ScheduleActions.RunActorTask}`;
 }
 
 // @public
@@ -3684,7 +3696,7 @@ export class ScheduleClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     delete(): Promise<void>;
     get(): Promise<Schedule | undefined>;
-    getLog(): Promise<ScheduleInvoked[] | undefined>;
+    getLog(): Promise<ScheduleInvoked[]>;
     update(newFields: ScheduleCreateOrUpdateData): Promise<Schedule>;
 }
 
@@ -3735,6 +3747,10 @@ interface ScheduleRePointed {
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 type Schemas = components['schemas'];
+
+// @public
+export class ServerError extends ApifyApiError {
+}
 
 // @public
 export interface ServiceUsage {
@@ -3803,7 +3819,7 @@ export class TaskClient extends ResourceClient {
     call(input?: Dictionary, options?: TaskCallOptions): Promise<ActorRun>;
     delete(): Promise<void>;
     get(): Promise<Task | undefined>;
-    getInput(): Promise<Dictionary | Dictionary[] | undefined>;
+    getInput(): Promise<Dictionary | Dictionary[]>;
     lastRun(options?: TaskLastRunOptions): RunClient;
     publish(): Promise<Task>;
     runs(): RunCollectionClient;
@@ -3926,6 +3942,10 @@ type Timezone = (typeof timezones)[number];
 const timezones: readonly ["Africa/Abidjan", "Africa/Accra", "Africa/Addis_Ababa", "Africa/Algiers", "Africa/Asmara", "Africa/Asmera", "Africa/Bamako", "Africa/Bangui", "Africa/Banjul", "Africa/Bissau", "Africa/Blantyre", "Africa/Brazzaville", "Africa/Bujumbura", "Africa/Cairo", "Africa/Casablanca", "Africa/Ceuta", "Africa/Conakry", "Africa/Dakar", "Africa/Dar_es_Salaam", "Africa/Djibouti", "Africa/Douala", "Africa/El_Aaiun", "Africa/Freetown", "Africa/Gaborone", "Africa/Harare", "Africa/Johannesburg", "Africa/Juba", "Africa/Kampala", "Africa/Khartoum", "Africa/Kigali", "Africa/Kinshasa", "Africa/Lagos", "Africa/Libreville", "Africa/Lome", "Africa/Luanda", "Africa/Lubumbashi", "Africa/Lusaka", "Africa/Malabo", "Africa/Maputo", "Africa/Maseru", "Africa/Mbabane", "Africa/Mogadishu", "Africa/Monrovia", "Africa/Nairobi", "Africa/Ndjamena", "Africa/Niamey", "Africa/Nouakchott", "Africa/Ouagadougou", "Africa/Porto-Novo", "Africa/Sao_Tome", "Africa/Timbuktu", "Africa/Tripoli", "Africa/Tunis", "Africa/Windhoek", "America/Adak", "America/Anchorage", "America/Anguilla", "America/Antigua", "America/Araguaina", "America/Argentina/Buenos_Aires", "America/Argentina/Catamarca", "America/Argentina/ComodRivadavia", "America/Argentina/Cordoba", "America/Argentina/Jujuy", "America/Argentina/La_Rioja", "America/Argentina/Mendoza", "America/Argentina/Rio_Gallegos", "America/Argentina/Salta", "America/Argentina/San_Juan", "America/Argentina/San_Luis", "America/Argentina/Tucuman", "America/Argentina/Ushuaia", "America/Aruba", "America/Asuncion", "America/Atikokan", "America/Atka", "America/Bahia", "America/Bahia_Banderas", "America/Barbados", "America/Belem", "America/Belize", "America/Blanc-Sablon", "America/Boa_Vista", "America/Bogota", "America/Boise", "America/Buenos_Aires", "America/Cambridge_Bay", "America/Campo_Grande", "America/Cancun", "America/Caracas", "America/Catamarca", "America/Cayenne", "America/Cayman", "America/Chicago", "America/Chihuahua", "America/Coral_Harbour", "America/Cordoba", "America/Costa_Rica", "America/Creston", "America/Cuiaba", "America/Curacao", "America/Danmarkshavn", "America/Dawson", "America/Dawson_Creek", "America/Denver", "America/Detroit", "America/Dominica", "America/Edmonton", "America/Eirunepe", "America/El_Salvador", "America/Ensenada", "America/Fort_Nelson", "America/Fort_Wayne", "America/Fortaleza", "America/Glace_Bay", "America/Godthab", "America/Goose_Bay", "America/Grand_Turk", "America/Grenada", "America/Guadeloupe", "America/Guatemala", "America/Guayaquil", "America/Guyana", "America/Halifax", "America/Havana", "America/Hermosillo", "America/Indiana/Indianapolis", "America/Indiana/Knox", "America/Indiana/Marengo", "America/Indiana/Petersburg", "America/Indiana/Tell_City", "America/Indiana/Vevay", "America/Indiana/Vincennes", "America/Indiana/Winamac", "America/Indianapolis", "America/Inuvik", "America/Iqaluit", "America/Jamaica", "America/Jujuy", "America/Juneau", "America/Kentucky/Louisville", "America/Kentucky/Monticello", "America/Knox_IN", "America/Kralendijk", "America/La_Paz", "America/Lima", "America/Los_Angeles", "America/Louisville", "America/Lower_Princes", "America/Maceio", "America/Managua", "America/Manaus", "America/Marigot", "America/Martinique", "America/Matamoros", "America/Mazatlan", "America/Mendoza", "America/Menominee", "America/Merida", "America/Metlakatla", "America/Mexico_City", "America/Miquelon", "America/Moncton", "America/Monterrey", "America/Montevideo", "America/Montreal", "America/Montserrat", "America/Nassau", "America/New_York", "America/Nipigon", "America/Nome", "America/Noronha", "America/North_Dakota/Beulah", "America/North_Dakota/Center", "America/North_Dakota/New_Salem", "America/Nuuk", "America/Ojinaga", "America/Panama", "America/Pangnirtung", "America/Paramaribo", "America/Phoenix", "America/Port-au-Prince", "America/Port_of_Spain", "America/Porto_Acre", "America/Porto_Velho", "America/Puerto_Rico", "America/Punta_Arenas", "America/Rainy_River", "America/Rankin_Inlet", "America/Recife", "America/Regina", "America/Resolute", "America/Rio_Branco", "America/Rosario", "America/Santa_Isabel", "America/Santarem", "America/Santiago", "America/Santo_Domingo", "America/Sao_Paulo", "America/Scoresbysund", "America/Shiprock", "America/Sitka", "America/St_Barthelemy", "America/St_Johns", "America/St_Kitts", "America/St_Lucia", "America/St_Thomas", "America/St_Vincent", "America/Swift_Current", "America/Tegucigalpa", "America/Thule", "America/Thunder_Bay", "America/Tijuana", "America/Toronto", "America/Tortola", "America/Vancouver", "America/Virgin", "America/Whitehorse", "America/Winnipeg", "America/Yakutat", "America/Yellowknife", "Antarctica/Casey", "Antarctica/Davis", "Antarctica/DumontDUrville", "Antarctica/Macquarie", "Antarctica/Mawson", "Antarctica/McMurdo", "Antarctica/Palmer", "Antarctica/Rothera", "Antarctica/South_Pole", "Antarctica/Syowa", "Antarctica/Troll", "Antarctica/Vostok", "Arctic/Longyearbyen", "Asia/Aden", "Asia/Almaty", "Asia/Amman", "Asia/Anadyr", "Asia/Aqtau", "Asia/Aqtobe", "Asia/Ashgabat", "Asia/Ashkhabad", "Asia/Atyrau", "Asia/Baghdad", "Asia/Bahrain", "Asia/Baku", "Asia/Bangkok", "Asia/Barnaul", "Asia/Beirut", "Asia/Bishkek", "Asia/Brunei", "Asia/Calcutta", "Asia/Chita", "Asia/Choibalsan", "Asia/Chongqing", "Asia/Chungking", "Asia/Colombo", "Asia/Dacca", "Asia/Damascus", "Asia/Dhaka", "Asia/Dili", "Asia/Dubai", "Asia/Dushanbe", "Asia/Famagusta", "Asia/Gaza", "Asia/Harbin", "Asia/Hebron", "Asia/Ho_Chi_Minh", "Asia/Hong_Kong", "Asia/Hovd", "Asia/Irkutsk", "Asia/Istanbul", "Asia/Jakarta", "Asia/Jayapura", "Asia/Jerusalem", "Asia/Kabul", "Asia/Kamchatka", "Asia/Karachi", "Asia/Kashgar", "Asia/Kathmandu", "Asia/Katmandu", "Asia/Khandyga", "Asia/Kolkata", "Asia/Krasnoyarsk", "Asia/Kuala_Lumpur", "Asia/Kuching", "Asia/Kuwait", "Asia/Macao", "Asia/Macau", "Asia/Magadan", "Asia/Makassar", "Asia/Manila", "Asia/Muscat", "Asia/Nicosia", "Asia/Novokuznetsk", "Asia/Novosibirsk", "Asia/Omsk", "Asia/Oral", "Asia/Phnom_Penh", "Asia/Pontianak", "Asia/Pyongyang", "Asia/Qatar", "Asia/Qostanay", "Asia/Qyzylorda", "Asia/Rangoon", "Asia/Riyadh", "Asia/Saigon", "Asia/Sakhalin", "Asia/Samarkand", "Asia/Seoul", "Asia/Shanghai", "Asia/Singapore", "Asia/Srednekolymsk", "Asia/Taipei", "Asia/Tashkent", "Asia/Tbilisi", "Asia/Tehran", "Asia/Tel_Aviv", "Asia/Thimbu", "Asia/Thimphu", "Asia/Tokyo", "Asia/Tomsk", "Asia/Ujung_Pandang", "Asia/Ulaanbaatar", "Asia/Ulan_Bator", "Asia/Urumqi", "Asia/Ust-Nera", "Asia/Vientiane", "Asia/Vladivostok", "Asia/Yakutsk", "Asia/Yangon", "Asia/Yekaterinburg", "Asia/Yerevan", "Atlantic/Azores", "Atlantic/Bermuda", "Atlantic/Canary", "Atlantic/Cape_Verde", "Atlantic/Faeroe", "Atlantic/Faroe", "Atlantic/Jan_Mayen", "Atlantic/Madeira", "Atlantic/Reykjavik", "Atlantic/South_Georgia", "Atlantic/St_Helena", "Atlantic/Stanley", "Australia/ACT", "Australia/Adelaide", "Australia/Brisbane", "Australia/Broken_Hill", "Australia/Canberra", "Australia/Currie", "Australia/Darwin", "Australia/Eucla", "Australia/Hobart", "Australia/LHI", "Australia/Lindeman", "Australia/Lord_Howe", "Australia/Melbourne", "Australia/NSW", "Australia/North", "Australia/Perth", "Australia/Queensland", "Australia/South", "Australia/Sydney", "Australia/Tasmania", "Australia/Victoria", "Australia/West", "Australia/Yancowinna", "Brazil/Acre", "Brazil/DeNoronha", "Brazil/East", "Brazil/West", "CET", "CST6CDT", "Canada/Atlantic", "Canada/Central", "Canada/Eastern", "Canada/Mountain", "Canada/Newfoundland", "Canada/Pacific", "Canada/Saskatchewan", "Canada/Yukon", "Chile/Continental", "Chile/EasterIsland", "Cuba", "EET", "EST", "EST5EDT", "Egypt", "Eire", "Etc/GMT", "Etc/GMT+0", "Etc/GMT+1", "Etc/GMT+10", "Etc/GMT+11", "Etc/GMT+12", "Etc/GMT+2", "Etc/GMT+3", "Etc/GMT+4", "Etc/GMT+5", "Etc/GMT+6", "Etc/GMT+7", "Etc/GMT+8", "Etc/GMT+9", "Etc/GMT-0", "Etc/GMT-1", "Etc/GMT-10", "Etc/GMT-11", "Etc/GMT-12", "Etc/GMT-13", "Etc/GMT-14", "Etc/GMT-2", "Etc/GMT-3", "Etc/GMT-4", "Etc/GMT-5", "Etc/GMT-6", "Etc/GMT-7", "Etc/GMT-8", "Etc/GMT-9", "Etc/GMT0", "Etc/Greenwich", "Etc/UCT", "Etc/UTC", "Etc/Universal", "Etc/Zulu", "Europe/Amsterdam", "Europe/Andorra", "Europe/Astrakhan", "Europe/Athens", "Europe/Belfast", "Europe/Belgrade", "Europe/Berlin", "Europe/Bratislava", "Europe/Brussels", "Europe/Bucharest", "Europe/Budapest", "Europe/Busingen", "Europe/Chisinau", "Europe/Copenhagen", "Europe/Dublin", "Europe/Gibraltar", "Europe/Guernsey", "Europe/Helsinki", "Europe/Isle_of_Man", "Europe/Istanbul", "Europe/Jersey", "Europe/Kaliningrad", "Europe/Kiev", "Europe/Kirov", "Europe/Lisbon", "Europe/Ljubljana", "Europe/London", "Europe/Luxembourg", "Europe/Madrid", "Europe/Malta", "Europe/Mariehamn", "Europe/Minsk", "Europe/Monaco", "Europe/Moscow", "Europe/Nicosia", "Europe/Oslo", "Europe/Paris", "Europe/Podgorica", "Europe/Prague", "Europe/Riga", "Europe/Rome", "Europe/Samara", "Europe/San_Marino", "Europe/Sarajevo", "Europe/Saratov", "Europe/Simferopol", "Europe/Skopje", "Europe/Sofia", "Europe/Stockholm", "Europe/Tallinn", "Europe/Tirane", "Europe/Tiraspol", "Europe/Ulyanovsk", "Europe/Uzhgorod", "Europe/Vaduz", "Europe/Vatican", "Europe/Vienna", "Europe/Vilnius", "Europe/Volgograd", "Europe/Warsaw", "Europe/Zagreb", "Europe/Zaporozhye", "Europe/Zurich", "GB", "GB-Eire", "GMT", "GMT+0", "GMT-0", "GMT0", "Greenwich", "HST", "Hongkong", "Iceland", "Indian/Antananarivo", "Indian/Chagos", "Indian/Christmas", "Indian/Cocos", "Indian/Comoro", "Indian/Kerguelen", "Indian/Mahe", "Indian/Maldives", "Indian/Mauritius", "Indian/Mayotte", "Indian/Reunion", "Iran", "Israel", "Jamaica", "Japan", "Kwajalein", "Libya", "MET", "MST", "MST7MDT", "Mexico/BajaNorte", "Mexico/BajaSur", "Mexico/General", "NZ", "NZ-CHAT", "Navajo", "PRC", "PST8PDT", "Pacific/Apia", "Pacific/Auckland", "Pacific/Bougainville", "Pacific/Chatham", "Pacific/Chuuk", "Pacific/Easter", "Pacific/Efate", "Pacific/Enderbury", "Pacific/Fakaofo", "Pacific/Fiji", "Pacific/Funafuti", "Pacific/Galapagos", "Pacific/Gambier", "Pacific/Guadalcanal", "Pacific/Guam", "Pacific/Honolulu", "Pacific/Johnston", "Pacific/Kiritimati", "Pacific/Kosrae", "Pacific/Kwajalein", "Pacific/Majuro", "Pacific/Marquesas", "Pacific/Midway", "Pacific/Nauru", "Pacific/Niue", "Pacific/Norfolk", "Pacific/Noumea", "Pacific/Pago_Pago", "Pacific/Palau", "Pacific/Pitcairn", "Pacific/Pohnpei", "Pacific/Ponape", "Pacific/Port_Moresby", "Pacific/Rarotonga", "Pacific/Saipan", "Pacific/Samoa", "Pacific/Tahiti", "Pacific/Tarawa", "Pacific/Tongatapu", "Pacific/Truk", "Pacific/Wake", "Pacific/Wallis", "Pacific/Yap", "Poland", "Portugal", "ROC", "ROK", "Singapore", "Turkey", "UCT", "US/Alaska", "US/Aleutian", "US/Arizona", "US/Central", "US/East-Indiana", "US/Eastern", "US/Hawaii", "US/Indiana-Starke", "US/Michigan", "US/Mountain", "US/Pacific", "US/Samoa", "UTC", "Universal", "W-SU", "WET", "Zulu"];
 
 // @public
+export class UnauthorizedError extends ApifyApiError {
+}
+
+// @public
 export interface UsageCycle extends GeneratedUsageCycle {
 }
 
@@ -3947,9 +3967,9 @@ export interface User extends Omit<Schemas['UserPrivateInfo'], keyof UserRePoint
 // @public
 export class UserClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
-    get(): Promise<User>;
-    limits(): Promise<AccountAndUsageLimits | undefined>;
-    monthlyUsage(): Promise<MonthlyUsage | undefined>;
+    get(): Promise<User | undefined>;
+    limits(): Promise<AccountAndUsageLimits>;
+    monthlyUsage(): Promise<MonthlyUsage>;
     updateLimits(options: LimitsUpdateOptions): Promise<void>;
 }
 
@@ -4027,7 +4047,7 @@ export class WebhookClient extends ResourceClient {
     delete(): Promise<void>;
     dispatches(): WebhookDispatchCollectionClient;
     get(): Promise<Webhook | undefined>;
-    test(): Promise<WebhookDispatch | undefined>;
+    test(): Promise<WebhookDispatch>;
     update(newFields: WebhookUpdateData): Promise<Webhook>;
 }
 

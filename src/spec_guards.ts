@@ -341,12 +341,11 @@ export type AdapterWidthGuards = AssertAll<
         // type whose `status` is the published runtime enum, and a string-literal union is never
         // assignable to a string enum even when the members match -- `EnumGuards` pins those instead.
         OverridesStayWider<Omit<WebhookRePointed, 'condition' | 'lastDispatch'>, Schemas['Webhook']>,
-        // `type` is excluded on both action variants, and `timezone` on the schedule: the first two
-        // publish a runtime enum, and the third narrows the spec's bare `string` to the curated IANA
-        // union on purpose. `EnumGuards` pins the two `type` constants instead. `Schedule.actions` is
-        // excluded for the same reason as the two `type` constants it carries: the re-pointed element
-        // union discriminates on a runtime enum, so no assignability check can hold either way.
-        OverridesStayWider<Omit<ScheduleActionRunActorRePointed, 'type'>, Schemas['ScheduleActionRunActor']>,
+        OverridesStayWider<ScheduleRePointed, Schemas['Schedule']>,
+        OverridesStayWider<ScheduleActionRunActorRePointed, Schemas['ScheduleActionRunActor']>,
+        OverridesStayWider<ScheduleActionRunActorTaskRePointed, Schemas['ScheduleActionRunActorTask']>,
+        // `timezone` is excluded: it narrows the spec's bare `string` to the curated IANA union on
+        // purpose, argued for at the declaration.
         OverridesStayWider<UserRePointed, Schemas['UserPrivateInfo']>,
         OverridesStayWider<UserProxyRePointed, Schemas['Proxy']>,
         OverridesStayWider<EffectivePlatformFeaturesRePointed, Schemas['EffectivePlatformFeatures']>,
