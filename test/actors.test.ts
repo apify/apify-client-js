@@ -3,8 +3,15 @@ import type { AddressInfo } from 'node:net';
 import { setTimeout } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import type { ActorCollectionCreateOptions } from 'apify-client';
-import { ActorListSortBy, ActorSourceType, ApifyClient, LoggerActorRedirect } from 'apify-client';
+import type { ActorCollectionCreateOptions, ActorCollectionListOptions, ActorVersion } from 'apify-client';
+import {
+    ActorListSortBy,
+    ActorSourceType,
+    ApifyApiError,
+    ApifyClient,
+    ArgumentValidationError,
+    LoggerActorRedirect,
+} from 'apify-client';
 import express from 'express';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
@@ -55,8 +62,11 @@ describe('Actor methods', () => {
                 offset: 3,
                 desc: true,
                 my: true,
-                sortBy: ActorListSortBy.CREATED_AT,
-            };
+                sortBy: 'createdAt',
+            } satisfies ActorCollectionListOptions;
+            // Both spellings compile, and the enum member holds the same value.
+            const withEnumMember: ActorCollectionListOptions = { ...opts, sortBy: ActorListSortBy.CREATED_AT };
+            expect(withEnumMember).toEqual(opts);
 
             const res = await client.actors().list(opts);
             validateRequest({
@@ -458,6 +468,29 @@ describe('Actor methods', () => {
         });
 
         describe('lastRun()', () => {
+            test('get() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
+                const actorId = '404';
+
+                const res = await client.actor(actorId).lastRun().get();
+                expect(res).toBeUndefined();
+                validateRequest({ query: {}, params: { actorId } });
+
+                const browserRes = await page.evaluate((aId) => client.actor(aId).lastRun().get(), actorId);
+                expect(browserRes).toBeUndefined();
+            });
+
+            test('dataset().get() throws on 404 status code', async () => {
+                const actorId = '404';
+
+                const call = client.actor(actorId).lastRun().dataset().get();
+                await expect(call).rejects.toThrow(ApifyApiError);
+                await expect(call).rejects.toMatchObject({ statusCode: 404 });
+
+                await expect(
+                    page.evaluate((aId) => client.actor(aId).lastRun().dataset().get(), actorId),
+                ).rejects.toThrow();
+            });
+
             test.each(['get', 'dataset', 'keyValueStore', 'requestQueue', 'log'] as const)(
                 '%s() works',
                 async (method) => {
@@ -563,13 +596,17 @@ describe('Actor methods', () => {
                 });
             });
 
-            test('create() works', async () => {
+            test('create() works with a source type given as a plain string or an enum member', async () => {
                 const actorId = 'some-id';
                 const actorVersion = {
                     versionNumber: '0.0',
                     gitRepoUrl: 'https://github.com/user/repo.git',
-                    sourceType: ActorSourceType.GitRepo,
+                    sourceType: 'GIT_REPO',
                 } as const;
+                // Both spellings compile, and the enum member holds the same value, so one round-trip
+                // covers them both.
+                const withEnumMember: ActorVersion = { ...actorVersion, sourceType: ActorSourceType.GitRepo };
+                expect(withEnumMember).toEqual(actorVersion);
 
                 const res = await client.actor(actorId).versions().create(actorVersion);
                 validateRequest({
@@ -627,6 +664,14 @@ describe('Actor methods', () => {
                 validateRequest({ query: {}, params: { actorId, versionNumber } });
             });
 
+            test('rejects an empty version number', async () => {
+                // An empty ID makes `ApiClient` build the collection URL, so the client would address
+                // every version instead of one, and a 404 could not be read as a missing version.
+                const call = () => client.actor('some-id').version('');
+                expect(call).toThrow(ArgumentValidationError);
+                expect(call).toThrow('Too small');
+            });
+
             test('update() works', async () => {
                 const actorId = 'some-user/some-id';
                 const versionNumber = '0.0';
@@ -656,6 +701,29 @@ describe('Actor methods', () => {
                     params: { actorId: 'some-user~some-id', versionNumber },
                     body: newFields,
                 });
+            });
+
+            test('update() works with a subset of the version fields', async () => {
+                const actorId = 'some-id';
+                const versionNumber = '0.0';
+                const newFields = { buildTag: 'latest' };
+
+                const res = await client.actor(actorId).version(versionNumber).update(newFields);
+                validateRequest({
+                    query: {},
+                    params: { actorId, versionNumber },
+                    body: newFields,
+                    endpointId: 'update-actor-version',
+                });
+
+                const browserRes = await page.evaluate(
+                    (id, vn, nf) => client.actor(id).version(vn).update(nf),
+                    actorId,
+                    versionNumber,
+                    newFields,
+                );
+                expect(browserRes).toEqual(asBrowserResult(res));
+                validateRequest({ query: {}, params: { actorId, versionNumber }, body: newFields });
             });
 
             test('delete() works', async () => {
@@ -764,6 +832,12 @@ describe('Actor methods', () => {
                 );
                 expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({ query: {}, params: { actorId, versionNumber, envVarName } });
+            });
+
+            test('rejects an empty environment variable name', async () => {
+                const call = () => client.actor('some-id').version('0.0').envVar('');
+                expect(call).toThrow(ArgumentValidationError);
+                expect(call).toThrow('Too small');
             });
 
             test('update() works', async () => {

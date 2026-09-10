@@ -1,6 +1,6 @@
 import { beforeAll, expect, test } from 'vitest';
 
-import type { ApifyClient, RequestQueue, RequestQueueClient, RequestQueueClientGetRequestResult } from 'apify-client';
+import type { ApifyClient, RequestQueue, RequestQueueClient } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
 import { collectUntilPresent, getRandomResourceName, pollUntilCondition, randomId } from './_utils.js';
@@ -14,12 +14,6 @@ beforeAll(() => {
 async function createQueue(label = 'queue'): Promise<RequestQueue> {
     return client.requestQueues().getOrCreate(getRandomResourceName(label));
 }
-
-/**
- * `getRequest()` returns `userData`, but `RequestQueueClientGetRequestResult` does not declare it.
- * Read it through this shape so the round-trip assertion stays honest until the type catches up.
- */
-type RequestWithUserData = RequestQueueClientGetRequestResult & { userData?: Record<string, unknown> };
 
 /**
  * Poll the queue until `expectedCount` requests are visible.
@@ -181,10 +175,10 @@ test('updateRequest() changes the method and user data of an existing request', 
         });
         expect(updateResult.requestId).toBe(addResult.requestId);
 
-        const updatedRequest = (await pollUntilCondition(
+        const updatedRequest = await pollUntilCondition(
             () => queueClient.getRequest(addResult.requestId),
             (result) => result?.method === 'POST',
-        )) as RequestWithUserData | undefined;
+        );
         expect(updatedRequest?.method).toBe('POST');
         expect(updatedRequest?.userData).toEqual({ updated: true });
     } finally {

@@ -32,7 +32,6 @@ import {
     cast,
     catchNotFoundOrThrow,
     isNonArrayObject,
-    mutuallyExclusive,
     parseArgument,
     parseDateFields,
     parseResponse,
@@ -82,25 +81,19 @@ const prolongRequestLockOptionsSchema = z.strictObject({
     ...timeoutOptionsShape,
 });
 const requestFilterSchema = z.array(z.enum(['locked', 'pending'])).min(1);
-const listRequestsOptionsSchema = z
-    .strictObject({
-        limit: z.number().min(0).optional(),
-        exclusiveStartId: z.string().optional(),
-        cursor: z.string().optional(),
-        filter: requestFilterSchema.optional(),
-        ...timeoutOptionsShape,
-    })
-    .refine(...mutuallyExclusive<RequestQueueClientListRequestsOptions>('exclusiveStartId', 'cursor'));
-const paginateRequestsOptionsSchema = z
-    .strictObject({
-        limit: z.number().min(0).optional(),
-        maxPageLimit: z.number().default(DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT),
-        exclusiveStartId: z.string().optional(),
-        cursor: z.string().optional(),
-        filter: requestFilterSchema.optional(),
-        ...timeoutOptionsShape,
-    })
-    .refine(...mutuallyExclusive<RequestQueueClientPaginateRequestsOptions>('exclusiveStartId', 'cursor'));
+const listRequestsOptionsSchema = z.strictObject({
+    limit: z.number().min(0).optional(),
+    cursor: z.string().optional(),
+    filter: requestFilterSchema.optional(),
+    ...timeoutOptionsShape,
+});
+const paginateRequestsOptionsSchema = z.strictObject({
+    limit: z.number().min(0).optional(),
+    maxPageLimit: z.number().default(DEFAULT_REQUEST_QUEUE_REQUEST_PAGE_LIMIT),
+    cursor: z.string().optional(),
+    filter: requestFilterSchema.optional(),
+    ...timeoutOptionsShape,
+});
 
 export type {
     AllowedHttpMethods,
@@ -812,8 +805,6 @@ export class RequestQueueClient extends ResourceClient {
                 const newOptions = {
                     ...parsed,
                     limit: remainingItems,
-                    // remove original exclusiveStartId, if there was any, and use cursor-based pagination
-                    exclusiveStartId: undefined,
                     cursor: currentPage.nextCursor,
                 };
                 currentPage = await getPaginatedList(newOptions);
@@ -878,7 +869,7 @@ export class RequestQueueClient extends ResourceClient {
     paginateRequests(
         options: RequestQueueClientPaginateRequestsOptions = {},
     ): RequestQueueRequestsAsyncIterable<RequestQueueClientListRequestsResult> {
-        const { limit, exclusiveStartId, cursor, filter, maxPageLimit, timeout } = parseArgument(
+        const { limit, cursor, filter, maxPageLimit, timeout } = parseArgument(
             options,
             paginateRequestsOptionsSchema,
             'RequestQueueClientPaginateRequestsOptions',
@@ -886,7 +877,6 @@ export class RequestQueueClient extends ResourceClient {
         return new RequestQueuePaginationIterator({
             getPage: async (pageOptions) => this.listRequests({ ...pageOptions, filter, timeout }),
             limit,
-            exclusiveStartId,
             cursor,
             maxPageLimit,
         });
@@ -940,11 +930,6 @@ export type RequestQueueListRequestsFilter = 'locked' | 'pending';
 export interface RequestQueueClientListRequestsOptions extends TimeoutOptions {
     limit?: number;
     /**
-     * Using id of request that does not exist in request queue leads to unpredictable results.
-     * @deprecated Use `cursor` for pagination instead.
-     */
-    exclusiveStartId?: string;
-    /**
      * @since Added in 2.23.2
      */
     cursor?: string;
@@ -961,8 +946,6 @@ export interface RequestQueueClientListRequestsOptions extends TimeoutOptions {
 export interface RequestQueueClientPaginateRequestsOptions extends TimeoutOptions {
     limit?: number;
     maxPageLimit?: number;
-    /** @deprecated Use `cursor` for pagination instead. */
-    exclusiveStartId?: string;
     /**
      * @since Added in 2.23.2
      */

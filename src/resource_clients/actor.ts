@@ -54,7 +54,7 @@ const validateInputOptionsSchema = z.strictObject({
     contentType: z.string().optional(),
     ...timeoutOptionsShape,
 });
-const versionNumberSchema = z.string();
+const versionNumberSchema = z.string().min(1);
 const buildOptionsSchema = z.strictObject({
     betaPackages: z.boolean().optional(),
     tag: z.string().optional(),

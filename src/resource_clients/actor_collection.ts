@@ -96,6 +96,8 @@ export class ActorCollectionClient extends ResourceCollectionClient {
 }
 
 /**
+ * Field to order a list of Actors by.
+ *
  * @since Added in 2.12.6
  */
 export enum ActorListSortBy {
@@ -118,7 +120,7 @@ export interface ActorCollectionListOptions extends PaginationOptions, TimeoutOp
     /**
      * @since Added in 2.12.6
      */
-    sortBy?: ActorListSortBy;
+    sortBy?: `${ActorListSortBy}`;
 }
 
 export type ActorCollectionListResult = PaginatedList<ActorCollectionListItem>;
@@ -143,8 +145,6 @@ export interface ActorCollectionCreateOptions {
     isDeprecated?: boolean;
     isPublic?: boolean;
     name?: string;
-    /** @deprecated Use defaultRunOptions.restartOnError instead */
-    restartOnError?: boolean;
     /**
      * @since Added in 2.8.6
      */

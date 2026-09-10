@@ -1,15 +1,13 @@
 import { z } from 'zod';
 
-import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyRequestConfig } from '../http_client.js';
 import type { Schedule, ScheduleAction, ScheduleInvoked } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import type { DistributiveOptional } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema } from '../timeouts.js';
-import { anyObjectSchema, catchNotFoundOrThrow, parseArgument, parseResponse } from '../utils.js';
+import { anyObjectSchema, parseArgument, parseResponse } from '../utils.js';
 
 export type {
     Schedule,
@@ -106,26 +104,19 @@ export class ScheduleClient extends ResourceClient {
      *
      * @param options - Request options
      * @param options.timeout - Timeout for the API request. Default is `'medium'`.
-     * @returns The schedule log, one entry per invocation, or `undefined` if the schedule does not exist.
+     * @returns The schedule log, one entry per invocation.
      * @see https://docs.apify.com/api/v2/schedule-log-get
      */
-    async getLog(options: TimeoutOptions = {}): Promise<ScheduleInvoked[] | undefined> {
+    async getLog(options: TimeoutOptions = {}): Promise<ScheduleInvoked[]> {
         const { timeout = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        const requestOpts: ApifyRequestConfig = {
+        const response = await this.httpClient.call({
             url: this._url('log'),
             method: 'GET',
             params: this._params(),
             timeout,
-        };
-        try {
-            const response = await this.httpClient.call(requestOpts);
-            return parseResponse(response, scheduleLogSchema);
-        } catch (err) {
-            catchNotFoundOrThrow(err as ApifyApiError);
-        }
-
-        return undefined;
+        });
+        return parseResponse(response, scheduleLogSchema);
     }
 }
 

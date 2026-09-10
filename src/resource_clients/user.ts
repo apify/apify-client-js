@@ -1,4 +1,3 @@
-import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_client.js';
@@ -6,7 +5,7 @@ import type { AccountAndUsageLimits, MonthlyUsage, User } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema } from '../timeouts.js';
-import { catchNotFoundOrThrow, parseArgument, parseResponse } from '../utils.js';
+import { parseArgument, parseResponse } from '../utils.js';
 
 export type {
     AccountAndUsageLimits,
@@ -72,13 +71,13 @@ export class UserClient extends ResourceClient {
      *
      * @param options - Request options
      * @param options.timeout - Timeout for the API request. Default is `'short'`.
-     * @returns The user object.
+     * @returns The user object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/user-get
      */
-    async get(options: TimeoutOptions = {}): Promise<User> {
+    async get(options: TimeoutOptions = {}): Promise<User | undefined> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._get(schemas.UserPrivateInfo(), {}, timeout) as Promise<User>;
+        return this._get(schemas.UserPrivateInfo(), {}, timeout);
     }
 
     /**
@@ -86,28 +85,21 @@ export class UserClient extends ResourceClient {
      *
      * @param options - Request options
      * @param options.timeout - Timeout for the API request. Default is `'short'`.
-     * @returns The monthly usage object, or `undefined` if it does not exist.
+     * @returns The monthly usage object.
      * @see https://docs.apify.com/api/v2/users-me-usage-monthly-get
      * @since Added in 2.9.2
      */
-    async monthlyUsage(options: TimeoutOptions = {}): Promise<MonthlyUsage | undefined> {
+    async monthlyUsage(options: TimeoutOptions = {}): Promise<MonthlyUsage> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        const requestOpts: ApifyRequestConfig = {
+        const response = await this.httpClient.call({
             url: this._url('usage/monthly'),
             method: 'GET',
             params: this._params(),
             timeout,
-        };
-        try {
-            const response = await this.httpClient.call(requestOpts);
-            // `dailyServiceUsages[].date` does not end in `At`, so it has to be named for `parseDateFields`.
-            return parseResponse(response, schemas.MonthlyUsage(), (key) => key === 'date');
-        } catch (err) {
-            catchNotFoundOrThrow(err as ApifyApiError);
-        }
-
-        return undefined;
+        });
+        // `dailyServiceUsages[].date` does not end in `At`, so it has to be named for `parseDateFields`.
+        return parseResponse(response, schemas.MonthlyUsage(), (key) => key === 'date');
     }
 
     /**
@@ -115,27 +107,20 @@ export class UserClient extends ResourceClient {
      *
      * @param options - Request options
      * @param options.timeout - Timeout for the API request. Default is `'short'`.
-     * @returns The account and usage limits object, or `undefined` if it does not exist.
+     * @returns The account and usage limits object.
      * @see https://docs.apify.com/api/v2/users-me-limits-get
      * @since Added in 2.9.2
      */
-    async limits(options: TimeoutOptions = {}): Promise<AccountAndUsageLimits | undefined> {
+    async limits(options: TimeoutOptions = {}): Promise<AccountAndUsageLimits> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        const requestOpts: ApifyRequestConfig = {
+        const response = await this.httpClient.call({
             url: this._url('limits'),
             method: 'GET',
             params: this._params(),
             timeout,
-        };
-        try {
-            const response = await this.httpClient.call(requestOpts);
-            return parseResponse(response, schemas.AccountLimits());
-        } catch (err) {
-            catchNotFoundOrThrow(err as ApifyApiError);
-        }
-
-        return undefined;
+        });
+        return parseResponse(response, schemas.AccountLimits());
     }
 
     /**

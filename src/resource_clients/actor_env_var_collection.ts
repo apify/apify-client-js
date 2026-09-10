@@ -1,9 +1,9 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
 import type { TimeoutOptions } from '../timeouts.js';
-import type { PaginatedList, PaginationOptions } from '../utils.js';
+import type { PaginatedList } from '../utils.js';
 import * as schemas from '../schemas.js';
-import { optionalTimeoutSchema, timeoutOptionsSchema } from '../timeouts.js';
+import { timeoutOptionsSchema } from '../timeouts.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
 import type { ActorEnvironmentVariable } from './actor_version.js';
 
@@ -50,30 +50,27 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     /**
      * Lists all environment variables of this Actor version.
      *
-     * Awaiting the return value (as you would with a Promise) will result in a single API call. The amount of fetched
-     * items in a single API call is limited.
+     * The endpoint returns every environment variable in one response, so awaiting the return value (as you would
+     * with a Promise) gets the whole list.
      * ```javascript
-     * const paginatedList = await client.list();
-     *```
+     * const { items } = await client.list();
+     * ```
      *
-     * Asynchronous iteration is also supported. This will fetch additional pages if needed until all items are
-     * retrieved.
+     * Asynchronous iteration is also supported, and yields the environment variables one by one.
      *
      * ```javascript
      * for await (const singleItem of client.list()) {...}
      * ```
      *
-     * @param options - Request options. The API ignores pagination for this endpoint, so only `timeout` applies.
-     * @param options.timeout - Timeout for each API request. Default is `'short'`.
-     * @returns A paginated iterator of environment variables.
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @returns The environment variables, awaitable as a whole list or iterable one by one.
      * @see https://docs.apify.com/api/v2/act-version-env-vars-get
      */
-    list(
-        options: ActorEnvVarCollectionListOptions = {},
-    ): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
-        parseArgument(options.timeout, optionalTimeoutSchema);
+    list(options: TimeoutOptions = {}): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
+        const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._listPaginated(schemas.ListOfEnvVars(), {}, options.timeout ?? 'short');
+        return this._listPaginated(schemas.ListOfEnvVars(), {}, timeout);
     }
 
     /**
@@ -94,15 +91,6 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
 
         return this._create(schemas.EnvVar(), actorEnvVar, timeout);
     }
-}
-
-/**
- * @deprecated No options are used in the current API implementation.
- * https://github.com/apify/apify-client-js/issues/799
- * @since Added in 2.1.0
- */
-export interface ActorEnvVarCollectionListOptions extends PaginationOptions, TimeoutOptions {
-    desc?: boolean;
 }
 
 /**

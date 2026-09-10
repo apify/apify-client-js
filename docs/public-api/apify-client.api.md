@@ -26,6 +26,7 @@ import type { RUN_GENERAL_ACCESS } from '@apify/consts';
 import type { SetStatusMessageOptions } from '@crawlee/types';
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
+import type { TypedArray } from 'type-fest';
 import type { ValueOf } from '@apify/consts';
 import type { ValueOf as ValueOf_2 } from 'type-fest';
 import type { WEBHOOK_EVENT_TYPES } from '@apify/consts';
@@ -124,8 +125,6 @@ export interface ActorCollectionCreateOptions {
     isPublic?: boolean;
     // (undocumented)
     name?: string;
-    // @deprecated (undocumented)
-    restartOnError?: boolean;
     seoDescription?: string;
     seoTitle?: string;
     // (undocumented)
@@ -151,7 +150,7 @@ export interface ActorCollectionListOptions extends PaginationOptions, TimeoutOp
     desc?: boolean;
     // (undocumented)
     my?: boolean;
-    sortBy?: ActorListSortBy;
+    sortBy?: `${ActorListSortBy}`;
 }
 
 // @public (undocumented)
@@ -194,13 +193,7 @@ export class ActorEnvVarClient extends ResourceClient {
 export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
     create(actorEnvVar: ActorEnvironmentVariable, options?: TimeoutOptions): Promise<ActorEnvironmentVariable>;
-    list(options?: ActorEnvVarCollectionListOptions): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable>;
-}
-
-// @public @deprecated (undocumented)
-export interface ActorEnvVarCollectionListOptions extends PaginationOptions, TimeoutOptions {
-    // (undocumented)
-    desc?: boolean;
+    list(options?: TimeoutOptions): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable>;
 }
 
 // @public
@@ -415,37 +408,31 @@ export class ActorVersionClient extends ResourceClient {
     envVar(envVarName: string): ActorEnvVarClient;
     envVars(): ActorEnvVarCollectionClient;
     get(options?: TimeoutOptions): Promise<FinalActorVersion | undefined>;
-    update(newFields: ActorVersion, options?: TimeoutOptions): Promise<FinalActorVersion>;
+    update(newFields: ActorVersionUpdateData, options?: TimeoutOptions): Promise<FinalActorVersion>;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 interface ActorVersionClientNarrowings {
     // (undocumented)
-    sourceType: ActorSourceType;
+    sourceType: `${ActorSourceType}`;
 }
 
 // @public
 export class ActorVersionCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
     create(actorVersion: ActorVersion, options?: TimeoutOptions): Promise<FinalActorVersion>;
-    list(options?: ActorVersionCollectionListOptions): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion>;
-}
-
-// @public @deprecated (undocumented)
-export interface ActorVersionCollectionListOptions extends PaginationOptions, TimeoutOptions {
-    // (undocumented)
-    desc?: boolean;
+    list(options?: TimeoutOptions): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion>;
 }
 
 // @public
-export interface ActorVersionGitHubGist extends BaseActorVersion<ActorSourceType.GitHubGist> {
+export interface ActorVersionGitHubGist extends BaseActorVersion<`${ActorSourceType.GitHubGist}`> {
     // (undocumented)
     gitHubGistUrl: NonNullable<GeneratedVersion['gitHubGistUrl']>;
 }
 
 // @public
-export interface ActorVersionGitRepo extends BaseActorVersion<ActorSourceType.GitRepo> {
+export interface ActorVersionGitRepo extends BaseActorVersion<`${ActorSourceType.GitRepo}`> {
     // (undocumented)
     gitRepoUrl: NonNullable<GeneratedVersion['gitRepoUrl']>;
 }
@@ -461,7 +448,7 @@ interface ActorVersionRePointed {
 }
 
 // @public
-export interface ActorVersionSourceCode extends BaseActorVersion<ActorSourceType.SourceCode> {
+export interface ActorVersionSourceCode extends BaseActorVersion<`${ActorSourceType.SourceCode}`> {
 }
 
 // @public
@@ -469,7 +456,7 @@ export interface ActorVersionSourceFile extends GeneratedSourceCodeFile {
 }
 
 // @public
-export interface ActorVersionSourceFiles extends BaseActorVersion<ActorSourceType.SourceFiles> {
+export interface ActorVersionSourceFiles extends BaseActorVersion<`${ActorSourceType.SourceFiles}`> {
     // (undocumented)
     sourceFiles: (ActorVersionSourceFile | ActorVersionSourceFolder)[];
 }
@@ -483,10 +470,13 @@ export interface ActorVersionSourceFolder extends GeneratedSourceCodeFolder {
 type ActorVersionSourceLocation = 'sourceFiles' | 'gitRepoUrl' | 'tarballUrl' | 'gitHubGistUrl';
 
 // @public
-export interface ActorVersionTarball extends BaseActorVersion<ActorSourceType.Tarball> {
+export interface ActorVersionTarball extends BaseActorVersion<`${ActorSourceType.Tarball}`> {
     // (undocumented)
     tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
 }
+
+// @public
+export type ActorVersionUpdateData = Partial<ActorVersion>;
 
 // @public
 export type AllowedHttpMethods = Schemas['HttpMethod'];
@@ -653,7 +643,7 @@ interface ApifyResponse<T = any> extends AxiosResponse<T> {
 export { ArgumentValidationError }
 
 // @public
-export interface BaseActorVersion<SourceType extends ActorSourceType> extends Omit<GeneratedVersion, keyof ActorVersionClientNarrowings | keyof ActorVersionRePointed | ActorVersionSourceLocation>, ActorVersionRePointed {
+export interface BaseActorVersion<SourceType extends `${ActorSourceType}`> extends Omit<GeneratedVersion, keyof ActorVersionClientNarrowings | keyof ActorVersionRePointed | ActorVersionSourceLocation>, ActorVersionRePointed {
     // (undocumented)
     sourceType: SourceType;
 }
@@ -2433,9 +2423,9 @@ export class DatasetClient<Data extends Record<string | number, any> = Record<st
     constructor(options: ApiClientSubResourceOptions);
     createItemsPublicUrl(options?: DatasetClientCreateItemsUrlOptions): Promise<string>;
     delete(options?: TimeoutOptions): Promise<void>;
-    downloadItems(format: DownloadItemsFormat, options?: DatasetClientDownloadItemsOptions): Promise<Buffer>;
+    downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Buffer>;
     get(options?: TimeoutOptions): Promise<Dataset | undefined>;
-    getStatistics(options?: TimeoutOptions): Promise<DatasetStatistics | undefined>;
+    getStatistics(options?: TimeoutOptions): Promise<DatasetStatistics>;
     listItems(options?: DatasetClientListItemOptions): PaginatedIterator<Data>;
     pushItems(items: Data | Data[] | string | string[], options?: TimeoutOptions): Promise<void>;
     update(newFields: DatasetClientUpdateOptions, options?: TimeoutOptions): Promise<Dataset>;
@@ -2993,7 +2983,7 @@ export class KeyValueStoreClient extends ResourceClient {
     getRecordPublicUrl(key: string, options?: TimeoutOptions): Promise<string>;
     listKeys(options?: KeyValueClientListKeysOptions): Promise<KeyValueClientListKeysResult> & AsyncIterable<KeyValueListItem>;
     recordExists(key: string, options?: TimeoutOptions): Promise<boolean>;
-    setRecord(record: KeyValueStoreRecord<JsonValue>, options?: KeyValueStoreRecordOptions): Promise<void>;
+    setRecord(record: KeyValueStoreRecord<KeyValueStoreRecordValue>, options?: KeyValueStoreRecordOptions): Promise<void>;
     update(newFields: KeyValueClientUpdateOptions, options?: TimeoutOptions): Promise<KeyValueStore>;
 }
 
@@ -3039,6 +3029,9 @@ export interface KeyValueStoreRecordOptions extends TimeoutOptions {
     // (undocumented)
     doNotRetryTimeouts?: boolean;
 }
+
+// @public
+export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Readable;
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -3387,8 +3380,6 @@ export interface RequestQueueClientListItem extends GeneratedHeadRequest {
 // @public
 export interface RequestQueueClientListRequestsOptions extends TimeoutOptions {
     cursor?: string;
-    // @deprecated
-    exclusiveStartId?: string;
     filter?: readonly RequestQueueListRequestsFilter[];
     // (undocumented)
     limit?: number;
@@ -3412,8 +3403,6 @@ export interface RequestQueueClientLockedListItem extends GeneratedLockedHeadReq
 // @public
 export interface RequestQueueClientPaginateRequestsOptions extends TimeoutOptions {
     cursor?: string;
-    // @deprecated (undocumented)
-    exclusiveStartId?: string;
     filter?: readonly RequestQueueListRequestsFilter[];
     // (undocumented)
     limit?: number;
@@ -3528,9 +3517,7 @@ export interface RequestQueueUserOptions {
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
 class ResourceClient extends ApiClient {
-    // (undocumented)
     protected _delete(timeout: Timeout): Promise<void>;
-    // (undocumented)
     protected _get<T, R>(schema: z.ZodType, options: T, timeout: Timeout): Promise<R | undefined>;
     // (undocumented)
     protected _update<T, R>(schema: z.ZodType, newFields: T, timeout: Timeout): Promise<R>;
@@ -3671,7 +3658,7 @@ interface ScheduleActionRunActorRePointed {
     // (undocumented)
     runOptions?: ScheduledActorRunOptions | null;
     // (undocumented)
-    type: ScheduleActions.RunActor;
+    type: `${ScheduleActions.RunActor}`;
 }
 
 // @public
@@ -3682,7 +3669,7 @@ export interface ScheduleActionRunActorTask extends Omit<Schemas['ScheduleAction
 // @public (undocumented)
 interface ScheduleActionRunActorTaskRePointed {
     // (undocumented)
-    type: ScheduleActions.RunActorTask;
+    type: `${ScheduleActions.RunActorTask}`;
 }
 
 // @public
@@ -3698,7 +3685,7 @@ export class ScheduleClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     delete(options?: TimeoutOptions): Promise<void>;
     get(options?: TimeoutOptions): Promise<Schedule | undefined>;
-    getLog(options?: TimeoutOptions): Promise<ScheduleInvoked[] | undefined>;
+    getLog(options?: TimeoutOptions): Promise<ScheduleInvoked[]>;
     update(newFields: ScheduleCreateOrUpdateData, options?: TimeoutOptions): Promise<Schedule>;
 }
 
@@ -3821,7 +3808,7 @@ export class TaskClient extends ResourceClient {
     call(input?: Dictionary, options?: TaskCallOptions): Promise<ActorRun>;
     delete(options?: TimeoutOptions): Promise<void>;
     get(options?: TimeoutOptions): Promise<Task | undefined>;
-    getInput(options?: TimeoutOptions): Promise<Dictionary | Dictionary[] | undefined>;
+    getInput(options?: TimeoutOptions): Promise<Dictionary | Dictionary[]>;
     lastRun(options?: TaskLastRunOptions): RunClient;
     publish(options?: TimeoutOptions): Promise<Task>;
     runs(): RunCollectionClient;
@@ -3980,9 +3967,9 @@ export interface User extends Omit<Schemas['UserPrivateInfo'], keyof UserRePoint
 // @public
 export class UserClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
-    get(options?: TimeoutOptions): Promise<User>;
-    limits(options?: TimeoutOptions): Promise<AccountAndUsageLimits | undefined>;
-    monthlyUsage(options?: TimeoutOptions): Promise<MonthlyUsage | undefined>;
+    get(options?: TimeoutOptions): Promise<User | undefined>;
+    limits(options?: TimeoutOptions): Promise<AccountAndUsageLimits>;
+    monthlyUsage(options?: TimeoutOptions): Promise<MonthlyUsage>;
     updateLimits(newLimits: LimitsUpdateOptions, options?: TimeoutOptions): Promise<void>;
 }
 
@@ -4060,7 +4047,7 @@ export class WebhookClient extends ResourceClient {
     delete(options?: TimeoutOptions): Promise<void>;
     dispatches(): WebhookDispatchCollectionClient;
     get(options?: TimeoutOptions): Promise<Webhook | undefined>;
-    test(options?: TimeoutOptions): Promise<WebhookDispatch | undefined>;
+    test(options?: TimeoutOptions): Promise<WebhookDispatch>;
     update(newFields: WebhookUpdateData, options?: TimeoutOptions): Promise<Webhook>;
 }
 

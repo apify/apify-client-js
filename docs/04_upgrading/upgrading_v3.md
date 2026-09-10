@@ -86,7 +86,7 @@ This affects numeric options such as `waitSecs`, `timeout` and `memory`, and dat
 
 Some options were declared in the TypeScript types but always rejected by the client's own validation before a request was ever sent: `chunkSize` on `DatasetClient.downloadItems()` and `createItemsPublicUrl()`, and `signature` on `createItemsPublicUrl()` and `createKeysPublicUrl()`. These are no longer part of the option types, so passing them is now a compile-time error instead of a runtime throw.
 
-The reverse also happened: `chunkSize` now works on every paginating `list()` method. In v2 only `DatasetClient.listItems()` accepted it - everywhere else it type-checked and then threw.
+The reverse also happened: `chunkSize` now works on every `list()` method that takes pagination options. In v2 only `DatasetClient.listItems()` accepted it - everywhere else it type-checked and then threw.
 
 ## API errors are thrown as subclasses of `ApifyApiError`
 
@@ -97,13 +97,59 @@ Two things change as a result:
 - `error.name`, and with it the first line of the printed stack, now carries the subclass name, such as `NotFoundError: Actor task was not found` instead of `ApifyApiError: Actor task was not found`. Log tooling that matches on the `ApifyApiError` name has to match the subclass names as well.
 - Methods that swallow a 404 response, such as `get()` returning `undefined` or `delete()` succeeding silently, now swallow every 404, whatever its `type`. In v2 they swallowed only the `record-not-found` and `record-or-token-not-found` types and threw for any other 404. The same helper backs <ApiLink to="class/RunClient#waitForFinish">`waitForFinish()`</ApiLink> and <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, which read a swallowed 404 as "the run is not visible yet", so a 404 that used to throw now keeps them polling until `waitSecs` runs out.
 
+## A 404 throws where it used to resolve to `undefined`
+
+Fetching a resource by ID still resolves to `undefined` when the API answers 404, and `delete()` on such a client still resolves without error. The change affects endpoints where a 404 can't be pinned to one resource: the missing thing may be the parent or the sub-resource, and the response doesn't say which. Those now throw an <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> with `statusCode` 404 instead of hiding the cause behind `undefined`.
+
+```js
+import { ApifyApiError, ApifyClient } from 'apify-client';
+
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+
+// v2: resolved to undefined on 404. v3: throws.
+let dataset;
+try {
+    dataset = await client.run('run-id').dataset().get();
+} catch (error) {
+    if (!(error instanceof ApifyApiError) || error.statusCode !== 404) throw error;
+}
+```
+
+Affected calls:
+
+- Clients chained off a run or build without an ID: `run.dataset()`, `run.keyValueStore()`, `run.requestQueue()`, `run.log()` and `build.log()`. Their `get()` and `delete()` throw on a 404, and so does `log().get()`. `client.log(id).get()` keeps resolving to `undefined`.
+- Singleton endpoints at a fixed path under a resource: <ApiLink to="class/DatasetClient#getStatistics">`DatasetClient.getStatistics()`</ApiLink>, <ApiLink to="class/UserClient#monthlyUsage">`UserClient.monthlyUsage()`</ApiLink>, <ApiLink to="class/UserClient#limits">`UserClient.limits()`</ApiLink>, <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink>, <ApiLink to="class/TaskClient#getInput">`TaskClient.getInput()`</ApiLink> and <ApiLink to="class/WebhookClient#test">`WebhookClient.test()`</ApiLink>. A 404 there means the parent resource is gone, so these throw as well, and their return types drop `| undefined`.
+
+Lookups by key keep the old behavior, because there the 404 is about the record itself: <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink> and <ApiLink to="class/RequestQueueClient#getRequest">`RequestQueueClient.getRequest()`</ApiLink> still resolve to `undefined`, and <ApiLink to="class/KeyValueStoreClient#recordExists">`KeyValueStoreClient.recordExists()`</ApiLink> still answers `false`. <ApiLink to="class/ActorClient#lastRun">`ActorClient.lastRun()`</ApiLink> and <ApiLink to="class/TaskClient#lastRun">`TaskClient.lastRun()`</ApiLink> also keep resolving to `undefined`, where having no run yet is an ordinary outcome.
+
+<ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> follows the same rule as `get()`: `client.log(id).stream()` resolves to `undefined` on a 404, `run.log().stream()` throws.
+
+A <ApiLink to="class/StreamedLog">`StreamedLog`</ApiLink> whose run no longer exists logs a warning and stops, the same way it handles any other error while streaming.
+
+### `UserClient.get()` declares the `undefined` it could always return
+
+<ApiLink to="class/UserClient#get">`UserClient.get()`</ApiLink> is typed `Promise<User | undefined>`. It addresses a user by ID, so it belongs with the calls that read a 404 as a missing resource, and it already resolved to `undefined` for one. Only its signature said otherwise, which left the `undefined` to surface as a runtime error somewhere further along. Every other `get()` on the client is typed this way, as is `get()` on the [Python client](https://docs.apify.com/api/client/python).
+
+```diff
+- const user = await client.user('some-id').get();
+- console.log(user.username);
++ const user = await client.user('some-id').get();
++ console.log(user?.username);
+```
+
+### An empty string is no longer accepted as a version number or environment variable name
+
+<ApiLink to="class/ActorClient#version">`ActorClient.version()`</ApiLink>, <ApiLink to="class/ActorClient#build">`ActorClient.build()`</ApiLink> and <ApiLink to="class/ActorVersionClient#envVar">`ActorVersionClient.envVar()`</ApiLink> now throw an <ApiLink to="class/ArgumentValidationError">`ArgumentValidationError`</ApiLink> for an empty string, which is what every other resource identifier has always done.
+
+An empty identifier used to build the URL of the whole collection instead of one member, so `actor.version('')` read every version of the Actor and a 404 no longer meant a missing version. Rejecting it up front keeps the 404 rules above unambiguous.
+
 ## Published types now follow the OpenAPI specification
 
 Every output type the client publishes, such as <ApiLink to="interface/Dataset">`Dataset`</ApiLink>, <ApiLink to="interface/KeyValueStore">`KeyValueStore`</ApiLink>, <ApiLink to="interface/Build">`Build`</ApiLink>, <ApiLink to="interface/ActorRun">`ActorRun`</ApiLink>, <ApiLink to="interface/Webhook">`Webhook`</ApiLink>, <ApiLink to="interface/Schedule">`Schedule`</ApiLink>, <ApiLink to="interface/Task">`Task`</ApiLink>, <ApiLink to="interface/RequestQueue">`RequestQueue`</ApiLink>, and <ApiLink to="interface/User">`User`</ApiLink>, is now declared on top of a type generated from the published [OpenAPI specification](https://docs.apify.com/api/v2) instead of being hand-written. Several of the previous hand-written types were wrong, and some even contradicted the client's own runtime behavior. For example, `nextExclusiveStartKey` was typed as a required `string`, but `listKeys()` has always compared it to `null`.
 
 For most consumers, the change only surfaces as new compiler errors. Many fields that were typed as required are now optional (`field?: T`) or nullable (`field: T | null`) to match what the API can actually return. Recompile your project and add the null and undefined checks the compiler points out. These type corrections don't change what the client returns at runtime, only what TypeScript claimed about it before.
 
-A few fields went the other way and became required. `ActorVersion.versionNumber` is one, and `ActorVersion` is also what <ApiLink to="class/ActorVersionClient#update">`update()`</ApiLink> and <ApiLink to="class/ActorVersionCollectionClient#create">`create()`</ApiLink> take, so a call that omitted the version number no longer compiles.
+A few fields went the other way and became required. `ActorVersion.versionNumber` is one, and `ActorVersion` is what <ApiLink to="class/ActorVersionCollectionClient#create">`create()`</ApiLink> takes, so a call that omitted the version number no longer compiles.
 
 A handful of fields and return types also change entirely to match the client's actual behavior:
 
@@ -130,6 +176,12 @@ The specification describes a full resource and its list item as two different s
 ### An Actor version's source files can be folders
 
 An Actor version's `sourceFiles` is a flat list that mixes files and folders, so its element type is now <ApiLink to="interface/ActorVersionSourceFile">`ActorVersionSourceFile`</ApiLink> or the new <ApiLink to="interface/ActorVersionSourceFolder">`ActorVersionSourceFolder`</ApiLink>. Code that reads `content` or `format` off an element has to tell the two apart first, by the `folder` flag only a folder carries. The `ActorVersion` union also gains a fifth variant for `SOURCE_CODE`, <ApiLink to="interface/ActorVersionSourceCode">`ActorVersionSourceCode`</ApiLink>, so an exhaustive `switch` over `sourceType` no longer compiles.
+
+### Source types and scheduled-action types are plain strings
+
+`ActorVersion.sourceType` is typed as `'SOURCE_FILES' | 'GIT_REPO' | 'TARBALL' | 'GITHUB_GIST' | 'SOURCE_CODE'` instead of the `ActorSourceType` enum, and a scheduled action's `type` as `'RUN_ACTOR' | 'RUN_ACTOR_TASK'` instead of `ScheduleActions`. Both enums stay published and their members stay assignable, so code that writes `sourceType: ActorSourceType.GitRepo`, or switches over the enum's members, still compiles.
+
+What breaks is reading the value back into a variable or parameter annotated with the enum. `const type: ActorSourceType = version.sourceType` no longer compiles. Annotate it as `ActorVersion['sourceType']` instead, or leave it to inference.
 
 ### The request-queue head splits into two item types
 
@@ -176,6 +228,46 @@ Two return types change as a result of describing what the endpoints really retu
 - <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink> was typed as a `string`, even though the endpoint returns the log as a list of entries. It's now typed as <ApiLink to="interface/ScheduleInvoked">`ScheduleInvoked[]`</ApiLink>, each entry carrying `message`, `level` and `createdAt`.
 - <ApiLink to="interface/TaskPublicConfig">`TaskPublicConfig`</ApiLink> now follows the specification: `publishedAt` is optional and read-only, and `categorization`, which the specification doesn't describe, is gone from the type.
 
+## URL fields are normalized
+
+Fields the specification marks as a URL, such as <ApiLink to="interface/ActorRun">`ActorRun.containerUrl`</ApiLink> or <ApiLink to="interface/Dataset">`Dataset.consoleUrl`</ApiLink>, are parsed with the [WHATWG `URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) parser as part of response validation, and the client hands back the parsed URL's serialization. In v2 you got the raw string from the API. In v3 the string can differ, most visibly by an added trailing slash. Normalization also lowercases the host, drops a default port, punycodes an internationalized host, and percent-encodes unsafe characters. Both forms denote the same URL under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-6.2). They're just different strings.
+
+```js
+// An empty path becomes '/'.
+new URL('https://abc123.runs.apify.net').href; // 'https://abc123.runs.apify.net/'
+
+// The host is lowercased.
+new URL('https://EXAMPLE.com/Path').href; // 'https://example.com/Path'
+
+// A default port is dropped.
+new URL('https://example.com:443/path').href; // 'https://example.com/path'
+
+// An internationalized host is punycoded.
+new URL('https://www.žluty.cz').href; // 'https://www.xn--luty-kbb.cz/'
+
+// Unsafe characters are percent-encoded.
+new URL('https://example.com/a b').href; // 'https://example.com/a%20b'
+```
+
+Code that compares a stored URL with a URL field has to compare normalized values:
+
+```js
+const run = await client.run('my-run-id').get();
+const storedUrl = 'https://abc123.runs.apify.net';
+
+// The raw string no longer matches.
+storedUrl === run.containerUrl; // false
+
+// Normalize the stored side too.
+new URL(storedUrl).href === run.containerUrl; // true
+```
+
+The affected fields are `ActorRun.containerUrl`, `Task.standbyUrl`, `Webhook.requestUrl` (on the full webhook, on a list item, and on the webhook summary a dispatch carries), `Dataset.consoleUrl`, `Dataset.itemsPublicUrl`, `KeyValueStore.consoleUrl`, `KeyValueStore.keysPublicUrl`, `KeyValueStore.recordsPublicUrl`, `KeyValueListItem.recordPublicUrl`, `RequestQueue.consoleUrl`, `ActorStoreList.url`, `ActorStoreList.userPictureUrl`, `UserProfile.pictureUrl`, and `UserProfile.websiteUrl`. Whether a field is normalized depends on its model. The specification doesn't mark `Actor.standbyUrl`, `Actor.pictureUrl`, `ActorStoreList.pictureUrl`, or the `url` of a request queue request as URLs, so those come back exactly as the API sent them.
+
+A trailing slash appears only on a field the API returns without a path, so on `containerUrl`, `standbyUrl`, `websiteUrl`, and a `Webhook.requestUrl` you registered without one. The rest already carry a path, and normalization leaves it alone. To append to a URL field, use `new URL('status', run.containerUrl)` only when the field ends with a slash: a relative reference replaces the base's last path segment, so on `consoleUrl` it would drop the resource ID.
+
+A URL field whose value isn't a valid absolute URL now fails response validation and throws <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink>, the same as any other field that doesn't match the specification.
+
 ## Timeouts come in tiers
 
 The single `timeoutSecs` option of the `ApifyClient` constructor is gone. Every method is now assigned one of three timeout tiers, `short` (5 s), `medium` (30 s) and `long` (360 s), or runs with no timeout when it polls for a job to finish. The duration of each tier is set on the constructor, together with a cap that bounds any single request attempt:
@@ -214,3 +306,15 @@ Two existing options are renamed as a result:
 ```
 
 The `timeoutSecs` option of `client.requestQueue(id, options)` keeps its meaning: it caps the default tier of every request the queue client sends. An explicit per-call `timeout` is not capped by it.
+
+## `versions().list()` and `envVars().list()` lose their pagination options
+
+<ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> accept only the `timeout` option. Neither endpoint reads `offset`, `limit` or `desc`, and both return every item in one response, so `chunkSize` had nothing to size either. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those four options, deprecated since v2.21.0, are gone from the package. A call that passed any of them no longer compiles, and throws an `ArgumentValidationError` about an unrecognized key in JavaScript. Drop them and the call returns the same items as before.
+
+## The last deprecated options are gone
+
+Two options that carried a `@deprecated` marker throughout v2 have been removed.
+
+`restartOnError` is gone from <ApiLink to="interface/ActorCollectionCreateOptions">`ActorCollectionCreateOptions`</ApiLink>, so <ApiLink to="class/ActorCollectionClient#create">`ActorCollectionClient.create()`</ApiLink> no longer accepts it at the top level. Pass it inside `defaultRunOptions` instead, as the deprecation notice advised.
+
+`exclusiveStartId` is gone from <ApiLink to="class/RequestQueueClient#listRequests">`listRequests()`</ApiLink> and <ApiLink to="class/RequestQueueClient#paginateRequests">`paginateRequests()`</ApiLink>. Both paginate by `cursor` alone now, and passing `exclusiveStartId` throws an `ArgumentValidationError` about an unrecognized key. In v2 the two were mutually exclusive, so the error about combining them is gone as well. Responses are unaffected, since the API still echoes `exclusiveStartId` back in the request listing.

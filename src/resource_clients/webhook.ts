@@ -1,12 +1,10 @@
-import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyRequestConfig } from '../http_client.js';
 import type { Webhook, WebhookEventType } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema } from '../timeouts.js';
-import { anyObjectSchema, catchNotFoundOrThrow, parseArgument, parseResponse } from '../utils.js';
+import { anyObjectSchema, parseArgument, parseResponse } from '../utils.js';
 import type { WebhookDispatch } from './webhook_dispatch.js';
 import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection.js';
 
@@ -108,27 +106,19 @@ export class WebhookClient extends ResourceClient {
      *
      * @param options - Request options
      * @param options.timeout - Timeout for the API request. Default is `'medium'`.
-     * @returns The webhook dispatch object, or `undefined` if the test fails.
+     * @returns The webhook dispatch object.
      * @see https://docs.apify.com/api/v2/webhook-test-post
      */
-    async test(options: TimeoutOptions = {}): Promise<WebhookDispatch | undefined> {
+    async test(options: TimeoutOptions = {}): Promise<WebhookDispatch> {
         const { timeout = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        const request: ApifyRequestConfig = {
+        const response = await this.httpClient.call({
             url: this._url('test'),
             method: 'POST',
             params: this._params(),
             timeout,
-        };
-
-        try {
-            const response = await this.httpClient.call(request);
-            return parseResponse(response, schemas.WebhookDispatch());
-        } catch (err) {
-            catchNotFoundOrThrow(err as ApifyApiError);
-        }
-
-        return undefined;
+        });
+        return parseResponse(response, schemas.WebhookDispatch());
     }
 
     /**

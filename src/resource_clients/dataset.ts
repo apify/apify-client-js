@@ -3,10 +3,9 @@ import { z } from 'zod';
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import { createStorageContentSignatureAsync } from '@apify/utilities';
 
-import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyRequestConfig, ApifyResponse } from '../http_client.js';
+import type { ApifyResponse } from '../http_client.js';
 import type { Dataset, DatasetStatistics } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
@@ -16,7 +15,6 @@ import {
     anyObjectSchema,
     applyQueryParamsToUrl,
     cast,
-    catchNotFoundOrThrow,
     isNonArrayObject,
     paginationOptionsShape,
     parseArgument,
@@ -278,7 +276,10 @@ export class DatasetClient<
      * });
      * ```
      */
-    async downloadItems(format: DownloadItemsFormat, options: DatasetClientDownloadItemsOptions = {}): Promise<Buffer> {
+    async downloadItems(
+        format: `${DownloadItemsFormat}`,
+        options: DatasetClientDownloadItemsOptions = {},
+    ): Promise<Buffer> {
         parseArgument(format, itemFormatSchema);
         const { timeout = 'long', ...query } = parseArgument(
             options,
@@ -359,26 +360,20 @@ export class DatasetClient<
      *
      * @param options - Request options
      * @param options.timeout - Timeout for the API request. Default is `'short'`.
-     * @returns Dataset statistics, or `undefined` if not available
+     * @returns Dataset statistics
      * @see https://docs.apify.com/api/v2/dataset-statistics-get
      * @since Added in 2.11.2
      */
-    async getStatistics(options: TimeoutOptions = {}): Promise<DatasetStatistics | undefined> {
+    async getStatistics(options: TimeoutOptions = {}): Promise<DatasetStatistics> {
         const { timeout = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        const requestOpts: ApifyRequestConfig = {
+        const response = await this.httpClient.call({
             url: this._url('statistics'),
             method: 'GET',
             params: this._params(),
             timeout,
-        };
-        try {
-            const response = await this.httpClient.call(requestOpts);
-            return parseResponse(response, schemas.DatasetStatistics());
-        } catch (err) {
-            catchNotFoundOrThrow(err as ApifyApiError);
-        }
-        return undefined;
+        });
+        return parseResponse(response, schemas.DatasetStatistics());
     }
 
     /**

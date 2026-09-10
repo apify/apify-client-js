@@ -1,6 +1,6 @@
 import type { AddressInfo } from 'node:net';
 
-import { ApifyClient } from 'apify-client';
+import { ApifyApiError, ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
@@ -378,6 +378,16 @@ describe('Task methods', () => {
             const browserRes = await page.evaluate((id) => client.task(id).getInput(), taskId);
             expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { taskId } });
+        });
+
+        test('getInput() throws on 404 status code', async () => {
+            const taskId = '404';
+
+            const call = client.task(taskId).getInput();
+            await expect(call).rejects.toThrow(ApifyApiError);
+            await expect(call).rejects.toMatchObject({ statusCode: 404 });
+
+            await expect(page.evaluate((id) => client.task(id).getInput(), taskId)).rejects.toThrow();
         });
 
         test('updateInput() works', async () => {
