@@ -399,6 +399,33 @@ describe('pluggable HTTP client', () => {
             expect(received[0].body).toBe('plain text');
         });
 
+        test('sends a URLSearchParams body form-encoded', async () => {
+            const httpClient = new NodeHttpClient();
+
+            await httpClient.call({
+                url: `${baseUrl}/echo`,
+                method: 'POST',
+                data: new URLSearchParams({ a: '1', b: 'two words' }),
+            });
+
+            expect(received[0].headers['content-type']).toBe('application/x-www-form-urlencoded;charset=utf-8');
+            expect(received[0].body).toBe('a=1&b=two+words');
+        });
+
+        test.each([
+            { name: 'a Blob', data: new Blob([Buffer.from([1, 2, 3])]) },
+            { name: 'a FormData', data: new FormData() },
+            { name: 'a ReadableStream', data: new ReadableStream() },
+        ])('throws instead of sending $name as an empty JSON body', async ({ data }) => {
+            const httpClient = new NodeHttpClient();
+
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'POST', data });
+
+            await expect(call).rejects.toThrow(TypeError);
+            await expect(call).rejects.toThrow(`Unsupported request body type: ${data.constructor.name}`);
+            expect(received).toHaveLength(0);
+        });
+
         test('lets per-request headers override the defaults regardless of casing', async () => {
             const httpClient = new NodeHttpClient({ token: 'default_token', headers: { 'X-Custom': 'default' } });
 

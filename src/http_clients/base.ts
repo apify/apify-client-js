@@ -32,6 +32,9 @@ const CONTENT_TYPE_JSON = 'application/json';
 
 const CONTENT_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded';
 
+/** Objects whose payload does not live in their own enumerable keys, so JSON serialization loses it. */
+const UNSERIALIZABLE_OBJECT_TAGS = new Set(['Blob', 'File', 'FormData', 'ReadableStream']);
+
 /**
  * HTTP methods the Apify API accepts.
  */
@@ -81,7 +84,9 @@ export interface ApifyRequestConfig {
     /**
      * Request body. A plain object or array is serialized to JSON and sent as `application/json`, or form-encoded
      * when a `Content-Type: application/x-www-form-urlencoded` header asks for it. A string, binary value
-     * (`Buffer`, `ArrayBuffer`, typed array) or `Readable` is sent as it is.
+     * (`Buffer`, `ArrayBuffer`, typed array) or `Readable` is sent as it is, and `URLSearchParams` is sent
+     * form-encoded. A `Blob`, `File`, `FormData` or web `ReadableStream` is rejected with a `TypeError`, since
+     * serializing one would send an empty body.
      */
     data?: unknown;
     /**
@@ -618,6 +623,19 @@ function serializeBody(
     }
 
     if (typeof data === 'object') {
+        if (data instanceof URLSearchParams) {
+            if (getHeader(headers, 'content-type') === undefined) {
+                headers['Content-Type'] = `${CONTENT_TYPE_FORM_URLENCODED};charset=utf-8`;
+            }
+            return data.toString();
+        }
+
+        // Refusing these is louder than the empty body the JSON fallback below would send.
+        const tag = objectTag(data);
+        if (UNSERIALIZABLE_OBJECT_TAGS.has(tag)) {
+            throw new TypeError(`Unsupported request body type: ${tag}`);
+        }
+
         if (getHeader(headers, 'content-type') === undefined) headers['Content-Type'] = CONTENT_TYPE_JSON;
         const contentType = getHeader(headers, 'content-type');
         if (mediaType(contentType) === CONTENT_TYPE_FORM_URLENCODED) return toFormUrlEncoded(data);
@@ -626,6 +644,10 @@ function serializeBody(
     }
 
     throw new TypeError(`Unsupported request body type: ${typeof data}`);
+}
+
+function objectTag(value: object): string {
+    return Object.prototype.toString.call(value).slice('[object '.length, -1);
 }
 
 function stringifyFunctionReplacer(_key: string, value: unknown): unknown {
