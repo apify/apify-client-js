@@ -14,7 +14,7 @@ import { ApifyApiError } from './apify_api_error.js';
 import type { RequestInterceptorFunction } from './interceptors.js';
 import { InvalidResponseBodyError, requestInterceptors, responseInterceptors } from './interceptors.js';
 import type { Statistics } from './statistics.js';
-import { asArray, cast, getVersionData, isNode, isStream } from './utils.js';
+import { asArray, cast, getVersionData, isNode, isStream, streamToBuffer } from './utils.js';
 
 const { version } = getVersionData();
 
@@ -216,6 +216,12 @@ export class HttpClient {
 
                 response = await this.axios.request(config);
                 if (this._isStatusOk(response.status)) return response;
+
+                // A failed request with `responseType: 'stream'` carries the API error body in the stream. Read it
+                // so that `ApifyApiError` can parse it like any other error body.
+                if (isStream(response.data)) {
+                    response.data = await streamToBuffer(response.data);
+                }
             } catch (err) {
                 return cast(this._handleRequestError(err as AxiosError, config, stopTrying));
             }

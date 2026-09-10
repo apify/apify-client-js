@@ -86,6 +86,23 @@ describe('ApifyApiError', () => {
         expect(error.attempt).toEqual(1);
     });
 
+    test('should carry the API error of a failed streaming request', async () => {
+        const client = new ApifyClient({ baseUrl, maxRetries: 0, ...DEFAULT_OPTIONS });
+
+        // A chained `run.log()` rethrows the 404, so the error itself is observable. Streams are Node-only, so
+        // there is no browser leg here.
+        const call = client.run('404').log().stream();
+        await expect(call).rejects.toThrow(NotFoundError);
+        await expect(call).rejects.toMatchObject({
+            name: 'NotFoundError',
+            statusCode: 404,
+            type: 'record-not-found',
+            message: 'Record with this name was not found',
+            httpMethod: 'get',
+            path: '/v2/actor-runs/404/log',
+        });
+    });
+
     test('should carry additional error data if provided', async () => {
         const datasetId = '400'; // check add_routes.js to see details of this mock
         const data = JSON.stringify([{ someData: 'someValue' }, { someData: 'someValue' }]);

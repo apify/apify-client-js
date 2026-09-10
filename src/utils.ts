@@ -291,6 +291,17 @@ export function isStream(value: unknown): value is Readable {
     return typeof on === 'function' && typeof pipe === 'function';
 }
 
+/**
+ * Reads a binary stream to its end and returns the whole content as one buffer.
+ */
+export async function streamToBuffer(stream: Readable): Promise<Buffer> {
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream) {
+        chunks.push(chunk);
+    }
+    return Buffer.concat(chunks);
+}
+
 export function getVersionData(): { version: string } {
     if (typeof BROWSER_BUILD !== 'undefined') {
         return { version: VERSION! };

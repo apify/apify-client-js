@@ -87,8 +87,8 @@ export class ApifyApiError extends Error {
         let responseData = response.data;
         let errorData: Record<string, unknown> | undefined;
 
-        // Some methods (e.g. downloadItems) set up forceBuffer on request response. If this request failed
-        // the body buffer needs to parse to get the correct error.
+        // A `forceBuffer` request (e.g. `downloadItems()`) and a failed streaming request, whose body `HttpClient`
+        // has read into a buffer, both arrive unparsed. Parse the body here to get at the error.
         if (isBuffer(responseData)) {
             try {
                 responseData = JSON.parse(isomorphicBufferToString(response.data, 'utf-8'));
