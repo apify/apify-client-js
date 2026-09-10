@@ -8,7 +8,7 @@ import { anyObjectSchema, parseArgument } from '../utils.js';
 import { ActorEnvVarClient } from './actor_env_var.js';
 import { ActorEnvVarCollectionClient } from './actor_env_var_collection.js';
 
-const envVarNameSchema = z.string();
+const envVarNameSchema = z.string().min(1);
 
 export type {
     ActorEnvironmentVariable,

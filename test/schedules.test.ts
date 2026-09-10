@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net';
 
 import type { ScheduleCreateOrUpdateData } from 'apify-client';
-import { ApifyClient, ScheduleActions } from 'apify-client';
+import { ApifyApiError, ApifyClient, ScheduleActions } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
@@ -144,6 +144,16 @@ describe('Schedule methods', () => {
             const browserRes = await page.evaluate((id) => client.schedule(id).getLog(), scheduleId);
             expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { scheduleId } });
+        });
+
+        test('getLog() throws on 404 status code', async () => {
+            const scheduleId = '404';
+
+            const call = client.schedule(scheduleId).getLog();
+            await expect(call).rejects.toThrow(ApifyApiError);
+            await expect(call).rejects.toMatchObject({ statusCode: 404 });
+
+            await expect(page.evaluate((id) => client.schedule(id).getLog(), scheduleId)).rejects.toThrow();
         });
     });
 });

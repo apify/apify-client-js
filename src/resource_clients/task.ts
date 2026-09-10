@@ -2,21 +2,13 @@ import { z } from 'zod';
 
 import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
 
-import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_client.js';
 import type { Task, TaskPublicConfig } from '../models.js';
 import type { Dictionary } from '../utils.js';
 import * as schemas from '../schemas.js';
-import {
-    anyObjectSchema,
-    cast,
-    catchNotFoundOrThrow,
-    parseArgument,
-    parseResponse,
-    stringifyWebhooksToBase64,
-} from '../utils.js';
+import { anyObjectSchema, cast, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
 import type { ActorLastRunOptions, ActorRun, ActorStartOptions } from './actor.js';
 import { RunClient } from './run.js';
 import { RunCollectionClient } from './run_collection.js';
@@ -229,23 +221,16 @@ export class TaskClient extends ResourceClient {
     /**
      * Retrieves the Actor task's input object.
      *
-     * @returns The Task's input, or `undefined` if it does not exist.
+     * @returns The Task's input.
      * @see https://docs.apify.com/api/v2/actor-task-input-get
      */
-    async getInput(): Promise<Dictionary | Dictionary[] | undefined> {
-        const requestOpts: ApifyRequestConfig = {
+    async getInput(): Promise<Dictionary | Dictionary[]> {
+        const response = await this.httpClient.call({
             url: this._url('input'),
             method: 'GET',
             params: this._params(),
-        };
-        try {
-            const response = await this.httpClient.call(requestOpts);
-            return cast(response.data);
-        } catch (err) {
-            catchNotFoundOrThrow(err as ApifyApiError);
-        }
-
-        return undefined;
+        });
+        return cast(response.data);
     }
 
     /**

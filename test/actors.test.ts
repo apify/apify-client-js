@@ -4,7 +4,14 @@ import { setTimeout } from 'node:timers/promises';
 
 import c from 'ansi-colors';
 import type { ActorCollectionCreateOptions, ActorCollectionListOptions, ActorVersion } from 'apify-client';
-import { ActorListSortBy, ActorSourceType, ApifyClient, LoggerActorRedirect } from 'apify-client';
+import {
+    ActorListSortBy,
+    ActorSourceType,
+    ApifyApiError,
+    ApifyClient,
+    ArgumentValidationError,
+    LoggerActorRedirect,
+} from 'apify-client';
 import express from 'express';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
@@ -463,6 +470,29 @@ describe('Actor methods', () => {
         });
 
         describe('lastRun()', () => {
+            test('get() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
+                const actorId = '404';
+
+                const res = await client.actor(actorId).lastRun().get();
+                expect(res).toBeUndefined();
+                validateRequest({ query: {}, params: { actorId } });
+
+                const browserRes = await page.evaluate((aId) => client.actor(aId).lastRun().get(), actorId);
+                expect(browserRes).toBeUndefined();
+            });
+
+            test('dataset().get() throws on 404 status code', async () => {
+                const actorId = '404';
+
+                const call = client.actor(actorId).lastRun().dataset().get();
+                await expect(call).rejects.toThrow(ApifyApiError);
+                await expect(call).rejects.toMatchObject({ statusCode: 404 });
+
+                await expect(
+                    page.evaluate((aId) => client.actor(aId).lastRun().dataset().get(), actorId),
+                ).rejects.toThrow();
+            });
+
             test.each(['get', 'dataset', 'keyValueStore', 'requestQueue', 'log'] as const)(
                 '%s() works',
                 async (method) => {
@@ -636,6 +666,14 @@ describe('Actor methods', () => {
                 validateRequest({ query: {}, params: { actorId, versionNumber } });
             });
 
+            test('rejects an empty version number', async () => {
+                // An empty ID makes `ApiClient` build the collection URL, so the client would address
+                // every version instead of one, and a 404 could not be read as a missing version.
+                const call = () => client.actor('some-id').version('');
+                expect(call).toThrow(ArgumentValidationError);
+                expect(call).toThrow('Too small');
+            });
+
             test('update() works', async () => {
                 const actorId = 'some-user/some-id';
                 const versionNumber = '0.0';
@@ -796,6 +834,12 @@ describe('Actor methods', () => {
                 );
                 expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({ query: {}, params: { actorId, versionNumber, envVarName } });
+            });
+
+            test('rejects an empty environment variable name', async () => {
+                const call = () => client.actor('some-id').version('0.0').envVar('');
+                expect(call).toThrow(ArgumentValidationError);
+                expect(call).toThrow('Too small');
             });
 
             test('update() works', async () => {
