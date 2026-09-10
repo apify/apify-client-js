@@ -86,7 +86,16 @@ This affects numeric options such as `waitSecs`, `timeout` and `memory`, and dat
 
 Some options were declared in the TypeScript types but always rejected by the client's own validation before a request was ever sent: `chunkSize` on `DatasetClient.downloadItems()` and `createItemsPublicUrl()`, and `signature` on `createItemsPublicUrl()` and `createKeysPublicUrl()`. These are no longer part of the option types, so passing them is now a compile-time error instead of a runtime throw.
 
-The reverse also happened: `chunkSize` now works on every paginating `list()` method. In v2 only `DatasetClient.listItems()` accepted it - everywhere else it type-checked and then threw.
+The reverse also happened: `chunkSize` now works on every `list()` method that takes pagination options. In v2 only `DatasetClient.listItems()` accepted it - everywhere else it type-checked and then threw.
+
+## API errors are thrown as subclasses of `ApifyApiError`
+
+An error response from the API now throws the <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> subclass matching its HTTP status code: <ApiLink to="class/InvalidRequestError">`InvalidRequestError`</ApiLink> (400), <ApiLink to="class/UnauthorizedError">`UnauthorizedError`</ApiLink> (401), <ApiLink to="class/ForbiddenError">`ForbiddenError`</ApiLink> (403), <ApiLink to="class/NotFoundError">`NotFoundError`</ApiLink> (404), <ApiLink to="class/ConflictError">`ConflictError`</ApiLink> (409), <ApiLink to="class/RateLimitError">`RateLimitError`</ApiLink> (429) or <ApiLink to="class/ServerError">`ServerError`</ApiLink> (5xx). Any other status code still throws a plain `ApifyApiError`. Every subclass extends `ApifyApiError`, so existing `instanceof ApifyApiError` checks keep working. For details, see [Telling API errors apart](../02_concepts/02_error-handling.md#telling-api-errors-apart).
+
+Two things change as a result:
+
+- `error.name`, and with it the first line of the printed stack, now carries the subclass name, such as `NotFoundError: Actor task was not found` instead of `ApifyApiError: Actor task was not found`. Log tooling that matches on the `ApifyApiError` name has to match the subclass names as well.
+- Methods that swallow a 404 response, such as `get()` returning `undefined` or `delete()` succeeding silently, now swallow every 404, whatever its `type`. In v2 they swallowed only the `record-not-found` and `record-or-token-not-found` types and threw for any other 404. The same helper backs <ApiLink to="class/RunClient#waitForFinish">`waitForFinish()`</ApiLink> and <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, which read a swallowed 404 as "the run is not visible yet", so a 404 that used to throw now keeps them polling until `waitSecs` runs out.
 
 ## A 404 throws where it used to resolve to `undefined`
 
@@ -113,7 +122,7 @@ Affected calls:
 
 Lookups by key keep the old behavior, because there the 404 is about the record itself: <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink> and <ApiLink to="class/RequestQueueClient#getRequest">`RequestQueueClient.getRequest()`</ApiLink> still resolve to `undefined`, and <ApiLink to="class/KeyValueStoreClient#recordExists">`KeyValueStoreClient.recordExists()`</ApiLink> still answers `false`. <ApiLink to="class/ActorClient#lastRun">`ActorClient.lastRun()`</ApiLink> and <ApiLink to="class/TaskClient#lastRun">`TaskClient.lastRun()`</ApiLink> also keep resolving to `undefined`, where having no run yet is an ordinary outcome.
 
-<ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> is not part of the change. A 404 has always thrown there, on every client, because a streamed error body is not parsed and the not-found check has no error type to match on.
+<ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> follows the same rule as `get()`: `client.log(id).stream()` resolves to `undefined` on a 404, `run.log().stream()` throws.
 
 A <ApiLink to="class/StreamedLog">`StreamedLog`</ApiLink> whose run no longer exists logs a warning and stops, the same way it handles any other error while streaming.
 
@@ -212,3 +221,55 @@ Two return types change as a result of describing what the endpoints really retu
 
 - <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink> was typed as a `string`, even though the endpoint returns the log as a list of entries. It's now typed as <ApiLink to="interface/ScheduleInvoked">`ScheduleInvoked[]`</ApiLink>, each entry carrying `message`, `level` and `createdAt`.
 - <ApiLink to="interface/TaskPublicConfig">`TaskPublicConfig`</ApiLink> now follows the specification: `publishedAt` is optional and read-only, and `categorization`, which the specification doesn't describe, is gone from the type.
+
+## URL fields are normalized
+
+Fields the specification marks as a URL, such as <ApiLink to="interface/ActorRun">`ActorRun.containerUrl`</ApiLink> or <ApiLink to="interface/Dataset">`Dataset.consoleUrl`</ApiLink>, are parsed with the [WHATWG `URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) parser as part of response validation, and the client hands back the parsed URL's serialization. In v2 you got the raw string from the API. In v3 the string can differ, most visibly by an added trailing slash. Normalization also lowercases the host, drops a default port, punycodes an internationalized host, and percent-encodes unsafe characters. Both forms denote the same URL under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-6.2). They're just different strings.
+
+```js
+// An empty path becomes '/'.
+new URL('https://abc123.runs.apify.net').href; // 'https://abc123.runs.apify.net/'
+
+// The host is lowercased.
+new URL('https://EXAMPLE.com/Path').href; // 'https://example.com/Path'
+
+// A default port is dropped.
+new URL('https://example.com:443/path').href; // 'https://example.com/path'
+
+// An internationalized host is punycoded.
+new URL('https://www.žluty.cz').href; // 'https://www.xn--luty-kbb.cz/'
+
+// Unsafe characters are percent-encoded.
+new URL('https://example.com/a b').href; // 'https://example.com/a%20b'
+```
+
+Code that compares a stored URL with a URL field has to compare normalized values:
+
+```js
+const run = await client.run('my-run-id').get();
+const storedUrl = 'https://abc123.runs.apify.net';
+
+// The raw string no longer matches.
+storedUrl === run.containerUrl; // false
+
+// Normalize the stored side too.
+new URL(storedUrl).href === run.containerUrl; // true
+```
+
+The affected fields are `ActorRun.containerUrl`, `Task.standbyUrl`, `Webhook.requestUrl` (on the full webhook, on a list item, and on the webhook summary a dispatch carries), `Dataset.consoleUrl`, `Dataset.itemsPublicUrl`, `KeyValueStore.consoleUrl`, `KeyValueStore.keysPublicUrl`, `KeyValueStore.recordsPublicUrl`, `KeyValueListItem.recordPublicUrl`, `RequestQueue.consoleUrl`, `ActorStoreList.url`, `ActorStoreList.userPictureUrl`, `UserProfile.pictureUrl`, and `UserProfile.websiteUrl`. Whether a field is normalized depends on its model. The specification doesn't mark `Actor.standbyUrl`, `Actor.pictureUrl`, `ActorStoreList.pictureUrl`, or the `url` of a request queue request as URLs, so those come back exactly as the API sent them.
+
+A trailing slash appears only on a field the API returns without a path, so on `containerUrl`, `standbyUrl`, `websiteUrl`, and a `Webhook.requestUrl` you registered without one. The rest already carry a path, and normalization leaves it alone. To append to a URL field, use `new URL('status', run.containerUrl)` only when the field ends with a slash: a relative reference replaces the base's last path segment, so on `consoleUrl` it would drop the resource ID.
+
+A URL field whose value isn't a valid absolute URL now fails response validation and throws <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink>, the same as any other field that doesn't match the specification.
+
+## `versions().list()` and `envVars().list()` take no options
+
+<ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> now take no arguments. Neither endpoint reads `offset`, `limit` or `desc`, and both return every item in one response, so `chunkSize` had nothing to size either. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those four options, deprecated since v2.21.0, are gone from the package. A call that passed an options object no longer compiles. Drop the argument and the call returns the same items as before.
+
+## The last deprecated options are gone
+
+Two options that carried a `@deprecated` marker throughout v2 have been removed.
+
+`restartOnError` is gone from <ApiLink to="interface/ActorCollectionCreateOptions">`ActorCollectionCreateOptions`</ApiLink>, so <ApiLink to="class/ActorCollectionClient#create">`ActorCollectionClient.create()`</ApiLink> no longer accepts it at the top level. Pass it inside `defaultRunOptions` instead, as the deprecation notice advised.
+
+`exclusiveStartId` is gone from <ApiLink to="class/RequestQueueClient#listRequests">`listRequests()`</ApiLink> and <ApiLink to="class/RequestQueueClient#paginateRequests">`paginateRequests()`</ApiLink>. Both paginate by `cursor` alone now, and passing `exclusiveStartId` throws an `ArgumentValidationError` about an unrecognized key. In v2 the two were mutually exclusive, so the error about combining them is gone as well. Responses are unaffected, since the API still echoes `exclusiveStartId` back in the request listing.

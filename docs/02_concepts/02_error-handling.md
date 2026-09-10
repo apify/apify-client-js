@@ -24,14 +24,66 @@ try {
 }
 ```
 
+## Telling API errors apart
+
+The client throws the <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> subclass that matches the HTTP status code of the response, so a `catch` block can branch on `instanceof` instead of comparing status codes:
+
+| Status | Subclass |
+| --- | --- |
+| 400 | <ApiLink to="class/InvalidRequestError">`InvalidRequestError`</ApiLink> |
+| 401 | <ApiLink to="class/UnauthorizedError">`UnauthorizedError`</ApiLink> |
+| 403 | <ApiLink to="class/ForbiddenError">`ForbiddenError`</ApiLink> |
+| 404 | <ApiLink to="class/NotFoundError">`NotFoundError`</ApiLink> |
+| 409 | <ApiLink to="class/ConflictError">`ConflictError`</ApiLink> |
+| 429 | <ApiLink to="class/RateLimitError">`RateLimitError`</ApiLink> |
+| 5xx | <ApiLink to="class/ServerError">`ServerError`</ApiLink> |
+
+Any other status code throws a plain `ApifyApiError`. Every subclass extends `ApifyApiError`, so `instanceof ApifyApiError` still matches all of them.
+
+```js
+import { ApifyClient, NotFoundError, RateLimitError } from 'apify-client';
+
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+
+try {
+    await client.actor('my-actor').call({ url: 'https://example.com' });
+} catch (error) {
+    if (error instanceof NotFoundError) {
+        // The Actor doesn't exist, or the token can't see it.
+    } else if (error instanceof RateLimitError) {
+        // The retries are exhausted, so back off and try again later.
+    } else {
+        throw error;
+    }
+}
+```
+
+Errors with the same status code differ in `type`, the machine-readable identifier the API returns. The field is typed with the known values, so your editor autocompletes them:
+
+```js
+import { ApifyApiError, ApifyClient } from 'apify-client';
+
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
+
+try {
+    await client.actor('my-actor').call({ url: 'https://example.com' }, { memory: 32768 });
+} catch (error) {
+    if (error instanceof ApifyApiError && error.type === 'actor-memory-limit-exceeded') {
+        // The account has no memory left for another run, so wait and start it later.
+    } else {
+        throw error;
+    }
+}
+```
+
 ## Missing resources
 
 When you address a resource by ID, `get()` resolves to `undefined` on a 404 instead of throwing, and `delete()` resolves without error. <ApiLink to="class/KeyValueStoreClient#getRecord">`getRecord()`</ApiLink> and <ApiLink to="class/RequestQueueClient#getRequest">`getRequest()`</ApiLink> do the same for a missing record or request, <ApiLink to="class/KeyValueStoreClient#recordExists">`recordExists()`</ApiLink> answers `false`, and `lastRun()` resolves to `undefined` for an Actor or task with no matching run.
 
-Everywhere else a 404 throws an <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> with `statusCode` set to `404`. That covers clients chained off a run or build without an ID, such as `client.run('run-id').dataset()` or `client.build('build-id').log()`, where the missing resource may be the parent rather than the sub-resource. It also covers fixed sub-paths such as `getStatistics()`, `monthlyUsage()`, `limits()`, `getLog()`, `getInput()` and `test()`, where a 404 means the parent is gone.
+Everywhere else a 404 throws a <ApiLink to="class/NotFoundError">`NotFoundError`</ApiLink>. That covers clients chained off a run or build without an ID, such as `client.run('run-id').dataset()` or `client.build('build-id').log()`, where the missing resource may be the parent rather than the sub-resource. It also covers fixed sub-paths such as `getStatistics()`, `monthlyUsage()`, `limits()`, `getLog()`, `getInput()` and `test()`, where a 404 means the parent is gone.
 
 ```js
-import { ApifyApiError, ApifyClient } from 'apify-client';
+import { ApifyClient, NotFoundError } from 'apify-client';
 
 const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
@@ -40,7 +92,7 @@ const actor = await client.actor('missing-actor').get(); // undefined
 try {
     await client.run('missing-run').dataset().get();
 } catch (error) {
-    if (error instanceof ApifyApiError && error.statusCode === 404) {
+    if (error instanceof NotFoundError) {
         // Either the run or its default dataset does not exist.
     }
 }
@@ -92,6 +144,8 @@ try {
 ```
 
 Bodies the specification leaves to you aren't validated: dataset items, key-value store records and logs are returned as they are.
+
+Validation also normalizes URL fields, such as <ApiLink to="interface/ActorRun">`ActorRun.containerUrl`</ApiLink> or <ApiLink to="interface/Dataset">`Dataset.consoleUrl`</ApiLink>. The value is parsed as a URL and you get back its serialization, so an empty path gains a trailing slash and the host is lowercased. For the full list of changes and how to compare such a field with a stored string, see [URL fields are normalized](../04_upgrading/upgrading_v3.md#url-fields-are-normalized).
 
 ## Retries with exponential backoff
 

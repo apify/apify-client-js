@@ -135,8 +135,7 @@ test('getLog() works on a schedule that has never run', async () => {
     try {
         const log = await scheduleClient.getLog();
 
-        // The API answers with an array of log entries, empty for a schedule that never fired.
-        expect(log).toHaveLength(0);
+        expect(log).toEqual([]);
     } finally {
         await scheduleClient.delete();
     }

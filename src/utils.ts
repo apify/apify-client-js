@@ -4,6 +4,7 @@ import type { JsonValue, TypedArray } from 'type-fest';
 import { z } from 'zod';
 
 import type { ApifyApiError } from './apify_api_error.js';
+import { NotFoundError } from './apify_api_error.js';
 import { parseArgument } from '@apify/validations';
 import type { ApifyResponse } from './http_client.js';
 import { ResponseValidationError } from './response_validation_error.js';
@@ -16,9 +17,6 @@ import type { WebhookUpdateData } from './resource_clients/webhook.js';
 // @ts-ignore if we enable `resolveJsonModule`, we end up with a `src` folder in `dist`
 import packageJson from '../package.json' with { type: 'json' };
 
-const NOT_FOUND_STATUS_CODE = 404;
-const RECORD_NOT_FOUND_TYPE = 'record-not-found';
-const RECORD_OR_TOKEN_NOT_FOUND_TYPE = 'record-or-token-not-found';
 const MIN_COMPRESS_BYTES = 1024;
 
 export { parseArgument };
@@ -58,8 +56,9 @@ const { localeError } = z.locales.en();
 /**
  * Turns a JSON API response into the value a resource method returns: unwraps the `data` envelope, converts the
  * date fields and validates the result against `schema`, one of the schemas generated from the OpenAPI
- * specification. The validated copy is what callers get, so it is exactly what the schema accepted -- unknown
- * fields and unknown enum values included, since the schemas let both through.
+ * specification. The validated copy is what callers get, so it is the schema's output -- unknown fields and unknown
+ * enum values included, since the schemas let both through, and URL fields normalized, since `z.url()` hands back
+ * the parsed URL's serialization.
  *
  * Throws {@link ResponseValidationError} when the response does not match the specification.
  * @internal
@@ -91,15 +90,10 @@ export function pluckData<R>(obj: MaybeData<R>): R {
 }
 
 /**
- * If given HTTP error has NOT_FOUND_STATUS_CODE status code then returns undefined.
- * Otherwise rethrows error.
+ * Swallows a 404 Not Found API error and rethrows anything else.
  */
 export function catchNotFoundOrThrow(err: ApifyApiError): void {
-    const isNotFoundStatus = err.statusCode === NOT_FOUND_STATUS_CODE;
-    const isNotFoundMessage =
-        err.type === RECORD_NOT_FOUND_TYPE || err.type === RECORD_OR_TOKEN_NOT_FOUND_TYPE || err.httpMethod === 'head';
-    const isNotFoundError = isNotFoundStatus && isNotFoundMessage;
-    if (!isNotFoundError) throw err;
+    if (!(err instanceof NotFoundError)) throw err;
 }
 
 /**
@@ -307,7 +301,7 @@ export function getVersionData(): { version: string } {
 }
 
 /**
- * Helper class to create async iterators from paginated list endpoints with exclusive start key.
+ * Helper class to create async iterators from paginated list endpoints.
  */
 export class RequestQueuePaginationIterator {
     private readonly maxPageLimit: number;
@@ -318,22 +312,17 @@ export class RequestQueuePaginationIterator {
 
     private readonly limit?: number;
 
-    private readonly exclusiveStartId?: string;
     private readonly cursor?: string;
 
     constructor(options: RequestQueuePaginationIteratorOptions) {
         this.maxPageLimit = options.maxPageLimit;
         this.limit = options.limit;
-        this.exclusiveStartId = options.exclusiveStartId;
         this.cursor = options.cursor;
         this.getPage = options.getPage;
     }
 
     async *[Symbol.asyncIterator](): AsyncIterator<RequestQueueClientListRequestsResult> {
         let nextCursor = this.cursor;
-        // allow using exclusiveStartId for the first page, but then we'll delete it to avoid using it for any later page
-        let nextExclusiveStartId = this.exclusiveStartId;
-
         let iterateItemCount = 0;
         while (true) {
             const pageLimit = this.limit
@@ -343,7 +332,6 @@ export class RequestQueuePaginationIterator {
             const page: RequestQueueClientListRequestsResult = await this.getPage({
                 limit: pageLimit,
                 cursor: nextCursor,
-                exclusiveStartId: nextExclusiveStartId,
             });
             // There are no more pages to iterate
             if (page.items.length === 0) return;
@@ -353,7 +341,6 @@ export class RequestQueuePaginationIterator {
             if ((this.limit && iterateItemCount >= this.limit) || !page.nextCursor) return;
 
             nextCursor = page.nextCursor;
-            nextExclusiveStartId = undefined; // see comment above - delete it for any page after the first one, and paginate with cursor
         }
     }
 }
@@ -370,7 +357,6 @@ export interface RequestQueuePaginationIteratorOptions {
     maxPageLimit: number;
     getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<RequestQueueClientListRequestsResult>;
     limit?: number;
-    exclusiveStartId?: string;
     cursor?: string;
 }
 
@@ -490,16 +476,6 @@ export function applyQueryParamsToUrl(
     }
     return url;
 }
-
-/**
- * Builds a `[check, message]` pair to spread into `.refine()`, asserting that at most one of `keys`
- * is present. Pass the options interface as `T`, so that a misspelled key is a type error.
- * @internal
- */
-export const mutuallyExclusive = <T extends object>(...keys: (keyof T & string)[]): [(value: T) => boolean, string] => [
-    (value) => keys.filter((key) => typeof value[key] !== 'undefined').length <= 1,
-    `At most one of the following fields is allowed: ${keys.join(', ')}`,
-];
 
 const pathSegmentSchema = z
     .string()
