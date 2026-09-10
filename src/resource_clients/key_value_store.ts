@@ -432,8 +432,8 @@ export class KeyValueStoreClient extends ResourceClient {
      *
      *                             Worth setting for media and archives: the client skips compressing a body
      *                             whose content type already carries its own compression. The
-     *                             `'application/octet-stream'` fallback is still compressed, because it
-     *                             could be any binary data.
+     *                             `'application/octet-stream'` fallback is treated as compressible, because
+     *                             it could hold any binary data.
      * @param options - Storage options
      * @param options.timeoutSecs - Timeout for the upload in seconds. Default varies by value size.
      * @param options.doNotRetryTimeouts - If `true`, don't retry on timeout errors. Default is `false`.
