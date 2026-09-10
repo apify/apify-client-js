@@ -159,8 +159,7 @@ export class BuildClient extends ResourceClient {
     /**
      * Returns a client for accessing the log of this Actor build.
      *
-     * A 404 from this client throws an `ApifyApiError` rather than resolving to `undefined`, since the build itself
-     * may be what is missing.
+     * A 404 from this client throws an `ApifyApiError`, since the build itself may be what is missing.
      *
      * @returns A client for accessing the build's log
      * @see https://docs.apify.com/api/v2/actor-build-log-get

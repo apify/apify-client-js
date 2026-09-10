@@ -661,7 +661,7 @@ describe('Actor methods', () => {
 
             test('rejects an empty version number', async () => {
                 // An empty ID makes `ApiClient` build the collection URL, so the client would address
-                // every version instead of one, and a 404 could no longer be read as a missing version.
+                // every version instead of one, and a 404 could not be read as a missing version.
                 const call = () => client.actor('some-id').version('');
                 expect(call).toThrow(ArgumentValidationError);
                 expect(call).toThrow('Too small');
