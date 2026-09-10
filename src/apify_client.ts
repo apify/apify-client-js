@@ -5,6 +5,7 @@ import { ACTOR_ENV_VARS, ME_USER_NAME_PLACEHOLDER } from '@apify/consts';
 import type { Log } from '@apify/log';
 import logger from '@apify/log';
 
+import { AxiosHttpClient } from './http_clients/axios.js';
 import type { HttpClientOptions } from './http_clients/base.js';
 import {
     DEFAULT_MAX_RETRIES,
@@ -12,7 +13,6 @@ import {
     DEFAULT_TIMEOUT_SECS,
     HttpClient,
 } from './http_clients/base.js';
-import { AxiosHttpClient } from './http_clients/index.js';
 import { ActorClient } from './resource_clients/actor.js';
 import { ActorCollectionClient } from './resource_clients/actor_collection.js';
 import { BuildClient } from './resource_clients/build.js';

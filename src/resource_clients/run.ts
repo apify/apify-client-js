@@ -175,8 +175,7 @@ export class RunClient extends ResourceClient {
             method: 'POST',
             data: input,
             params: this._params(params),
-            // Apify internal property. Tells the request serialization interceptor
-            // to stringify functions to JSON, instead of omitting them.
+            // Actor input may carry page functions, which plain JSON serialization would drop.
             stringifyFunctions: true,
         };
 

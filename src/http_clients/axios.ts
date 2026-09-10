@@ -36,10 +36,13 @@ export class AxiosHttpClient extends HttpClient {
     /** The axios instance the requests go through. */
     axios: AxiosInstance;
 
-    /** Keep-alive agent for plain HTTP, created with the first request in Node.js. */
+    /**
+     * Keep-alive agent for plain HTTP, created with the first request in Node.js. It is the same `ProxyAgent` as
+     * {@link httpsAgent}, so the socket pool is shared across both schemes.
+     */
     httpAgent?: http.Agent;
 
-    /** Keep-alive agent for HTTPS, created with the first request in Node.js. */
+    /** Keep-alive agent for HTTPS. The same instance as {@link httpAgent}. */
     httpsAgent?: https.Agent;
 
     private nodeInitPromise?: Promise<void>;
@@ -72,12 +75,14 @@ export class AxiosHttpClient extends HttpClient {
     }
 
     /**
-     * A timeout is an axios error with the `ECONNABORTED` code, or `ETIMEDOUT` when axios is set to clarify them,
-     * besides the `TimeoutError` the base class recognizes.
+     * A timeout is an axios error coded `ECONNABORTED` or `ETIMEDOUT`, besides the `TimeoutError` the base class
+     * recognizes.
      */
     override isTimeoutError(error: unknown): boolean {
         if (super.isTimeoutError(error)) return true;
-        // Axios aborts the request on a timeout, so the error code is ECONNABORTED unless `clarifyTimeoutError` is on.
+        // Axios aborts the request when its own timeout fires, which gives ECONNABORTED, or ETIMEDOUT under
+        // `clarifyTimeoutError`. ETIMEDOUT also arrives straight from the socket, when the connection itself
+        // times out.
         return (
             axios.isAxiosError(error) && (error.code === AxiosError.ECONNABORTED || error.code === AxiosError.ETIMEDOUT)
         );
@@ -141,35 +146,24 @@ export class AxiosHttpClient extends HttpClient {
     private async initNode(): Promise<void> {
         const { ProxyAgent } = await import('proxy-agent');
 
-        // We want to keep sockets alive for better performance.
-        // Enhanced agent configuration based on agentkeepalive best practices:
-        // - Nagle's algorithm disabled for lower latency
-        // - Free socket timeout to prevent socket leaks
-        // - LIFO scheduling to reuse recent sockets
-        // - Socket TTL for connection freshness
+        // Sockets are pooled and reused, which is what makes a burst of API calls cheap.
         const agentOptions: http.AgentOptions & { scheduling?: 'lifo' | 'fifo' } = {
             keepAlive: true,
-            // Timeout for inactive sockets
-            // Prevents socket leaks from idle connections
+            // An idle socket that is never claimed again would leak, so cap how long one may sit unused.
             timeout: this.timeoutMillis,
-            // Keep alive timeout for free sockets (15 seconds)
-            // Node.js will close unused sockets after this period
             keepAliveMsecs: 15_000,
-            // Maximum number of sockets per host
             maxSockets: 256,
             maxFreeSockets: 256,
-            // LIFO scheduling - reuse most recently used sockets for better performance
+            // Reusing the most recently used socket keeps the rest of the pool free to expire.
             scheduling: 'lifo',
         };
 
-        // Use ProxyAgent which automatically detects proxy from environment variables
-        // and supports CONNECT tunneling
+        // `ProxyAgent` reads the proxy environment variables itself and tunnels over CONNECT when needed.
         const proxyAgent = new ProxyAgent(agentOptions);
         this.httpAgent = proxyAgent;
         this.httpsAgent = proxyAgent;
 
-        // Disable Nagle's algorithm for lower latency
-        // This sends data immediately instead of buffering small packets
+        // API calls are small and latency-sensitive, so send each write out instead of waiting for a full packet.
         const setNoDelay = (socket: Socket) => {
             socket.setNoDelay(true);
         };

@@ -322,7 +322,7 @@ export class DatasetClient<
             },
             data: items,
             params: this._params(),
-            doNotRetryTimeouts: true, // see timeout handling in http-client
+            doNotRetryTimeouts: true, // see the timeout handling in HttpClient
             timeout: MEDIUM_TIMEOUT_MILLIS,
         });
     }

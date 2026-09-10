@@ -631,7 +631,6 @@ export interface ApifyRequestConfig {
     data?: unknown;
     doNotRetryTimeouts?: boolean;
     headers?: Record<string, string>;
-    // (undocumented)
     method: HttpMethod;
     params?: Record<string, unknown>;
     responseType?: ApifyResponseType;
@@ -644,7 +643,6 @@ export interface ApifyRequestConfig {
 export interface ApifyResponse<T = any> {
     config: ApifyRequestConfig;
     data: T;
-    // (undocumented)
     headers: HttpResponseHeaders;
     status: number;
 }
@@ -2892,7 +2890,7 @@ export abstract class HttpClient {
         headers: Record<string, string>;
         body: HttpRequestBody | undefined;
     }>;
-    sendRequest(_request: HttpRequest): Promise<HttpResponse>;
+    sendRequest(request: HttpRequest): Promise<HttpResponse>;
     setDefaultAuthorization(token: string): void;
     stats: Statistics;
     timeoutMillis: number;
@@ -2901,9 +2899,7 @@ export abstract class HttpClient {
 // @public
 export interface HttpClientOptions {
     headers?: Record<string, string>;
-    // (undocumented)
     logger?: Log;
-    // (undocumented)
     maxRetries?: number;
     minDelayBetweenRetriesMillis?: number;
     stats?: Statistics;

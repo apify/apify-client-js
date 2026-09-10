@@ -75,6 +75,7 @@ export type ApifyResponseType = 'parsed' | 'buffer' | 'stream';
 export interface ApifyRequestConfig {
     /** Full URL of the endpoint, without the query string. */
     url: string;
+    /** HTTP method. */
     method: HttpMethod;
     /**
      * Query parameters. `undefined` values are dropped, booleans are sent as `1` and `0`, `Date` values as ISO 8601
@@ -115,6 +116,7 @@ export interface ApifyRequestConfig {
 export interface ApifyResponse<T = any> {
     /** HTTP status code. */
     status: number;
+    /** Response headers keyed by lowercase header name. */
     headers: HttpResponseHeaders;
     /** The response body, decoded according to the request's {@link ApifyRequestConfig.responseType}. */
     data: T;
@@ -158,7 +160,7 @@ export interface HttpResponse {
 export interface HttpClientOptions {
     /** Apify API token, sent as a `Bearer` token in the `Authorization` header. */
     token?: string;
-    /** @default 8 */
+    /** How many times a failed request is retried at most. @default 8 */
     maxRetries?: number;
     /**
      * Lower bound for the delay before the first retry in milliseconds. It doubles with every further retry.
@@ -171,6 +173,7 @@ export interface HttpClientOptions {
     headers?: Record<string, string>;
     /** Statistics the client records its calls into. Created when omitted. */
     stats?: Statistics;
+    /** Logger for the retry warnings. Defaults to a child of the `@apify/log` default with an `ApifyClient` prefix. */
     logger?: Log;
     /** Value of the `X-Apify-Workflow-Key` header. Defaults to the `APIFY_WORKFLOW_KEY` environment variable. */
     workflowKey?: string;
@@ -205,6 +208,11 @@ export interface HttpClientOptions {
  *             headers: Object.fromEntries(response.headers),
  *             body: Buffer.from(await response.arrayBuffer()),
  *         };
+ *     }
+ *
+ *     isRetryableTransportError(error) {
+ *         // Without this the client gives up on the first connection failure.
+ *         return this.isTimeoutError(error) || error instanceof TypeError;
  *     }
  * }
  *
