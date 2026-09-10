@@ -1,5 +1,7 @@
+import { randomBytes } from 'node:crypto';
 import type { AddressInfo } from 'node:net';
 import os from 'node:os';
+import { gzipSync } from 'node:zlib';
 
 import { ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
@@ -50,5 +52,49 @@ describe('HttpClient', () => {
         await expect(page.evaluate((rId) => client.task(rId).get(), resourceId)).rejects.toThrow();
         // this is failing after axios upgrade, the error is returned with a wrong name and message
         // expect(err.message).toMatch('timeout of 1000ms exceeded');
+    });
+
+    test.each([
+        { name: 'lowercase', header: 'content-encoding' },
+        { name: 'canonical casing', header: 'Content-Encoding' },
+        { name: 'uppercase', header: 'CONTENT-ENCODING' },
+    ])('forwards a body pre-encoded with a $name header as it is', async ({ header }) => {
+        // Gzipped random bytes: incompressible, and above the 1 KiB threshold that would otherwise
+        // send the body through the compressor.
+        const payload = randomBytes(8192);
+        const encoded = gzipSync(payload);
+
+        await client.httpClient.call({
+            url: `${baseUrl}/v2/key-value-stores/some-id/records/some-key`,
+            method: 'PUT',
+            data: encoded,
+            headers: { 'content-type': 'application/octet-stream', [header]: 'gzip' },
+        });
+
+        const request = mockServer.getLastRequest();
+        expect(request?.headers['content-encoding']).toBe('gzip');
+        expect(request?.headers['content-length']).toBe(String(encoded.length));
+        expect(request?.body).toEqual(payload);
+    });
+
+    test.each([
+        { name: 'lowercase', header: 'content-type' },
+        { name: 'canonical casing', header: 'Content-Type' },
+        { name: 'uppercase', header: 'CONTENT-TYPE' },
+    ])('skips compression for an already-compressed type sent with a $name header', async ({ header }) => {
+        // Trivially compressible and well above the 1 KiB threshold, so an unchanged content length
+        // is proof the body was not run through the compressor.
+        const payload = Buffer.alloc(4096, 'a');
+
+        await client.httpClient.call({
+            url: `${baseUrl}/v2/key-value-stores/some-id/records/some-key`,
+            method: 'PUT',
+            data: payload,
+            headers: { [header]: 'image/png' },
+        });
+
+        const request = mockServer.getLastRequest();
+        expect(request?.headers['content-encoding']).toBeUndefined();
+        expect(request?.headers['content-length']).toBe(String(payload.length));
     });
 });
