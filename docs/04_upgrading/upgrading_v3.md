@@ -303,3 +303,16 @@ Dropping the `contentType` sends the body as JSON, so the run's `INPUT` record c
 `metamorph()`'s `input` is optional now, so `metamorph('target-actor')` compiles where it previously needed an explicit `undefined`.
 
 Nothing changes at runtime. `TaskClient.start()` and `call()` keep taking a `Dictionary`: a task's input overrides are merged into the input saved on the task, so they are always an object.
+
+## Proxy settings from npm config are no longer read
+
+The client sends its requests through the proxy named in the standard environment variables: `HTTP_PROXY` or `HTTPS_PROXY` for the request's scheme, `ALL_PROXY` as the fallback, and `NO_PROXY` for hosts to reach directly. Those variables work as they did in v2.
+
+The `proxy` and `https-proxy` settings in `.npmrc` no longer reach the client. When a script runs under `npm run`, npm exports them as `npm_config_proxy` and `npm_config_https_proxy`, and v2 read those two variables as well. `proxy-from-env`, the package that resolves the proxy for the client's `proxy-agent`, dropped the npm lookups in the major that v3 pulls in. A proxy configured only in `.npmrc` therefore stops applying to the client's requests, and nothing warns about it. Set the standard variables instead:
+
+```bash
+export HTTP_PROXY=http://proxy.example.com:3128
+export HTTPS_PROXY=http://proxy.example.com:3128
+```
+
+The same `proxy-agent` upgrade removes the `[DEP0169] DeprecationWarning` about `url.parse()` that Node.js 24 and newer printed on the client's first request.
