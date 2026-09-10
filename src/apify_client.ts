@@ -45,7 +45,7 @@ const DEFAULT_API_URL = 'https://api.apify.com';
 const clientOptionsSchema = z.strictObject({
     baseUrl: z.string().default(DEFAULT_API_URL),
     publicBaseUrl: z.string().default(DEFAULT_API_URL),
-    maxRetries: z.number().default(DEFAULT_MAX_RETRIES),
+    maxRetries: z.number().int().nonnegative().default(DEFAULT_MAX_RETRIES),
     minDelayBetweenRetriesMillis: z.number().default(DEFAULT_MIN_DELAY_BETWEEN_RETRIES_MILLIS),
     timeoutSecs: z.number().default(DEFAULT_TIMEOUT_SECS),
     token: z.string().optional(),
