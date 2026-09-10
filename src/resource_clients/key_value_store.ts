@@ -1,6 +1,6 @@
 import type { Readable } from 'node:stream';
 
-import type { JsonValue } from 'type-fest';
+import type { JsonValue, TypedArray } from 'type-fest';
 import { z } from 'zod';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
@@ -58,14 +58,14 @@ const recordSchema = z.strictObject({
     // Symbols, bigints, functions and non-finite numbers are rejected because they cannot be serialized
     // to JSON - symbols and bigints throw, functions stringify to `undefined` (an empty request body),
     // and `NaN` / `Infinity` would silently become `null`.
-    value: z.custom<JsonValue>(
+    value: z.custom<KeyValueStoreRecordValue>(
         (value) =>
             value !== undefined &&
             typeof value !== 'symbol' &&
             typeof value !== 'bigint' &&
             typeof value !== 'function' &&
             (typeof value !== 'number' || Number.isFinite(value)),
-        'Expected a defined, JSON-serializable value',
+        'Expected a JSON-serializable value, binary data, or a stream',
     ),
     contentType: z.string().min(1).optional(),
 });
@@ -424,11 +424,11 @@ export class KeyValueStoreClient extends ResourceClient {
      *
      * @param record - The record to store
      * @param record.key - Record key (unique identifier)
-     * @param record.value - Record value (object, string, Buffer, or Stream)
+     * @param record.value - Record value (a JSON-serializable value, Buffer, ArrayBuffer, typed array, or Readable)
      * @param record.contentType - Optional MIME type. Auto-detected if not provided:
      *                             - Objects: `'application/json; charset=utf-8'`
      *                             - Strings: `'text/plain; charset=utf-8'`
-     *                             - Buffers/Streams: `'application/octet-stream'`
+     *                             - Binary values and streams: `'application/octet-stream'`
      * @param options - Storage options
      * @param options.timeoutSecs - Timeout for the upload in seconds. Default varies by value size.
      * @param options.doNotRetryTimeouts - If `true`, don't retry on timeout errors. Default is `false`.
@@ -458,7 +458,10 @@ export class KeyValueStoreClient extends ResourceClient {
      * });
      * ```
      */
-    async setRecord(record: KeyValueStoreRecord<JsonValue>, options: KeyValueStoreRecordOptions = {}): Promise<void> {
+    async setRecord(
+        record: KeyValueStoreRecord<KeyValueStoreRecordValue>,
+        options: KeyValueStoreRecordOptions = {},
+    ): Promise<void> {
         parseArgument(record, recordSchema);
         const parsed = parseArgument(options, recordOptionsSchema, 'KeyValueStoreRecordOptions');
 
@@ -574,6 +577,15 @@ export interface KeyValueClientGetRecordOptions {
      */
     signature?: string;
 }
+
+/**
+ * A value that `setRecord` accepts.
+ *
+ * Anything JSON-serializable, or binary content the client uploads as bytes instead of JSON-encoding
+ * it: a `Buffer`, an `ArrayBuffer`, a typed array, or a readable stream. `Buffer` is a `Uint8Array`, so
+ * `TypedArray` covers it.
+ */
+export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Readable;
 
 /**
  * Represents a record (key-value pair) in a Key-Value Store.

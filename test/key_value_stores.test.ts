@@ -482,7 +482,7 @@ describe('Key-Value Store methods', () => {
             const call = client.keyValueStore('some-id').setRecord({ key: 'some-key', value: value as any });
 
             await expect(call).rejects.toThrow(ArgumentValidationError);
-            await expect(call).rejects.toThrow('Expected a defined, JSON-serializable value');
+            await expect(call).rejects.toThrow('Expected a JSON-serializable value, binary data, or a stream');
         });
 
         test('setRecord() works with custom timeout options', async () => {
@@ -529,7 +529,7 @@ describe('Key-Value Store methods', () => {
                 'content-type': 'application/octet-stream',
             };
 
-            const res = await client.keyValueStore(storeId).setRecord({ key, value: value as any });
+            const res = await client.keyValueStore(storeId).setRecord({ key, value });
             expect(res).toBeUndefined();
             validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
 
@@ -537,7 +537,7 @@ describe('Key-Value Store methods', () => {
                 async (id, k, d) => {
                     const encoder = new TextEncoder();
                     const v = encoder.encode(d);
-                    return client.keyValueStore(id).setRecord({ key: k, value: v } as any);
+                    return client.keyValueStore(id).setRecord({ key: k, value: v });
                 },
                 storeId,
                 key,
@@ -545,6 +545,47 @@ describe('Key-Value Store methods', () => {
             );
             expect(browserRes).toBeUndefined();
             validateRequest({ params: { storeId, key }, body: value, additionalHeaders: expectedHeaders });
+        });
+
+        test('setRecord() works with an ArrayBuffer', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const data = 'special chars \u{1F916}\u2705';
+            const value = new TextEncoder().encode(data);
+            const expectedHeaders = {
+                'content-type': 'application/octet-stream',
+            };
+
+            const res = await client.keyValueStore(storeId).setRecord({ key, value: value.buffer });
+            expect(res).toBeUndefined();
+            validateRequest({ params: { storeId, key }, body: Buffer.from(data), additionalHeaders: expectedHeaders });
+
+            const browserRes = await page.evaluate(
+                async (id, k, d) => {
+                    const encoded = new TextEncoder().encode(d);
+                    return client.keyValueStore(id).setRecord({ key: k, value: encoded.buffer });
+                },
+                storeId,
+                key,
+                data,
+            );
+            expect(browserRes).toBeUndefined();
+            validateRequest({ params: { storeId, key }, body: Buffer.from(data), additionalHeaders: expectedHeaders });
+        });
+
+        test('setRecord() works with a readable stream', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const data = 'special chars \u{1F916}\u2705';
+            const value = Readable.from([Buffer.from(data)]);
+            const expectedHeaders = {
+                'content-type': 'application/octet-stream',
+            };
+
+            // Streams are Node-only, so there is no browser leg here.
+            const res = await client.keyValueStore(storeId).setRecord({ key, value });
+            expect(res).toBeUndefined();
+            validateRequest({ params: { storeId, key }, body: Buffer.from(data), additionalHeaders: expectedHeaders });
         });
 
         test('setRecord() works with pre-stringified JSON', async () => {
