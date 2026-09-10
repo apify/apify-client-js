@@ -268,13 +268,13 @@ A trailing slash appears only on a field the API returns without a path, so on `
 
 A URL field whose value isn't a valid absolute URL now fails response validation and throws <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink>, the same as any other field that doesn't match the specification.
 
-## Timeouts come in tiers
+## Timeouts are configured per tier
 
-The single `timeoutSecs` option of the `ApifyClient` constructor is gone. Every method is now assigned one of three timeout tiers, `short` (5 s), `medium` (30 s) and `long` (360 s), or runs with no timeout when it polls for a job to finish. The duration of each tier is set on the constructor, together with a cap that bounds any single request attempt:
+The `timeoutSecs` option of the <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor is gone. Every method takes its timeout from one of three tiers, and the constructor sets the duration of each tier, along with a cap on any single request attempt:
 
 ```diff
-- const client = new ApifyClient({ token: 'MY-APIFY-TOKEN', timeoutSecs: 360 });          // v2
-+ const client = new ApifyClient({                                                         // v3
+- const client = new ApifyClient({ token: 'MY-APIFY-TOKEN', timeoutSecs: 360 });   // v2
++ const client = new ApifyClient({                                                 // v3
 +     token: 'MY-APIFY-TOKEN',
 +     timeoutShortSecs: 5,
 +     timeoutMediumSecs: 30,
@@ -283,31 +283,27 @@ The single `timeoutSecs` option of the `ApifyClient` constructor is gone. Every 
 + });
 ```
 
-In v2, only the storage clients picked a timeout per method, and everything else ran with the global 360 seconds. In v3 a metadata call such as `actor.get()` gets 5 seconds and a `list()` call 30, so a call that used to wait out a slow API can now fail sooner. `RequestQueueClient.unlockRequests()` moves the other way, from 30 seconds to the 360 of the `long` tier. If your code relied on the global timeout, review the methods you use. For the full reference, see [Timeouts](../02_concepts/06_timeouts.md).
+For what each tier covers and which one a method is assigned, see [Timeouts](../02_concepts/06_timeouts.md).
 
-Every method that sends a request now accepts a `timeout` option, which replaces the tier of the method for that call: a tier name, a number of seconds, or `'noTimeout'`. Methods that took no options gained an options parameter, and methods that take a payload gained a second one:
+In v2 only the dataset, key-value store and request queue clients picked a timeout per method, and everything else ran with the global 360 seconds. A metadata call such as `actor.get()` now gets the 5 seconds of the `short` tier and a `list()` call the 30 of `medium`, so a call that used to wait out a slow API can fail sooner. <ApiLink to="class/RequestQueueClient#unlockRequests">`RequestQueueClient.unlockRequests()`</ApiLink> moves the other way, from 30 seconds to 360. Where you need a different duration, every method that sends a request takes a `timeout` option, which replaces the tier of the method for that call:
 
 ```js
-await client.dataset('my-dataset').get({ timeout: 'long' });
-await client.dataset('my-dataset').update({ name: 'renamed' }, { timeout: 60 });
+await client.actor('my-actor').get({ timeout: 'long' });
 ```
 
-Two existing options are renamed as a result:
-
-- The run timeout of `ActorClient.start()` and `call()`, `TaskClient.start()` and `call()`, and `RunClient.resurrect()` is now `runTimeout`. On those methods, `timeout` means the request timeout, like everywhere else. In JavaScript, a `{ timeout: 300 }` left over from v2 still passes, and silently becomes a 300-second request timeout while the run keeps the Actor's default timeout, so search your code for these calls. TypeScript reports the stale option at compile time. A `{ timeout: 0 }`, which meant an unlimited run in v2, now throws an `ArgumentValidationError`, since zero isn't a request timeout.
-- The `timeoutSecs` option of `KeyValueStoreClient.setRecord()` is now `timeout`, and accepts a tier name as well.
+Since `timeout` means the request timeout everywhere, two options are renamed. The run timeout of <ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink> and <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, <ApiLink to="class/TaskClient#start">`TaskClient.start()`</ApiLink> and <ApiLink to="class/TaskClient#call">`call()`</ApiLink>, and <ApiLink to="class/RunClient#resurrect">`RunClient.resurrect()`</ApiLink> becomes `runTimeout`, and the `timeoutSecs` option of <ApiLink to="class/KeyValueStoreClient#setRecord">`KeyValueStoreClient.setRecord()`</ApiLink> becomes `timeout`:
 
 ```diff
-- await client.actor('my-actor').call(input, { timeout: 300 });                              // v2
-+ await client.actor('my-actor').call(input, { runTimeout: 300 });                           // v3
+- await client.actor('my-actor').call(input, { timeout: 300 });                  // v2
++ await client.actor('my-actor').call(input, { runTimeout: 300 });               // v3
 
-- await client.keyValueStore('my-store').setRecord(record, { timeoutSecs: 60 });             // v2
-+ await client.keyValueStore('my-store').setRecord(record, { timeout: 60 });                 // v3
+- await client.keyValueStore('my-store').setRecord(record, { timeoutSecs: 60 }); // v2
++ await client.keyValueStore('my-store').setRecord(record, { timeout: 60 });     // v3
 ```
 
-The `timeoutSecs` option of `client.requestQueue(id, options)` keeps its meaning: it caps the default tier of every request the queue client sends. An explicit per-call `timeout` is not capped by it.
+TypeScript reports a leftover `timeout` on the run methods at compile time. In JavaScript it passes without an error and becomes a 300-second request timeout, while the run falls back to the Actor's default timeout, so search your code for these calls. A `{ timeout: 0 }`, which asked for an unlimited run in v2, throws an `ArgumentValidationError`, since zero is not a request timeout. `runTimeout: 0` still means no limit.
 
-`client.httpClient.call()` reads its `timeout` the same way as the resource clients, so a number there is a count of seconds, where the axios field it replaces took milliseconds. A direct call that passed `timeout: 30000` asks for 30000 seconds, which the client caps at `timeoutMaxSecs`.
+`client.httpClient.call()` reads its `timeout` in seconds, where the axios field it replaces took milliseconds. A direct call that passed `timeout: 30000` asks for 30000 seconds, which the client caps at `timeoutMaxSecs`.
 
 ## `versions().list()` and `envVars().list()` lose their pagination options
 

@@ -38,6 +38,8 @@ const client = new ApifyClient({
 });
 ```
 
+A single request queue client can be held to a shorter budget with `client.requestQueue(id, { timeoutSecs })`, which caps the default tier of every request that client sends. A per-call `timeout` is not capped by it.
+
 ## Per-call overrides
 
 Every method that sends a request accepts a `timeout` option, which replaces the tier of the method for that call. Pass a number of seconds for an exact duration, a tier name to switch tiers, or `'noTimeout'` to let the request run for as long as it takes. For the type, see <ApiLink to="interface/TimeoutOptions">`TimeoutOptions`</ApiLink>.
