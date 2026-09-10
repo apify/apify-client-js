@@ -4,7 +4,7 @@ import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyRequestConfig } from '../http_client.js';
+import type { ApifyRequestConfig } from '../http_clients/index.js';
 import type { Task, TaskPublicConfig } from '../models.js';
 import type { Dictionary } from '../utils.js';
 import * as schemas from '../schemas.js';

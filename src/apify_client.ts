@@ -5,8 +5,14 @@ import { ACTOR_ENV_VARS, ME_USER_NAME_PLACEHOLDER } from '@apify/consts';
 import type { Log } from '@apify/log';
 import logger from '@apify/log';
 
-import { HttpClient } from './http_client.js';
-import type { RequestInterceptorFunction } from './interceptors.js';
+import type { HttpClientOptions } from './http_clients/base.js';
+import {
+    DEFAULT_MAX_RETRIES,
+    DEFAULT_MIN_DELAY_BETWEEN_RETRIES_MILLIS,
+    DEFAULT_TIMEOUT_SECS,
+    HttpClient,
+} from './http_clients/base.js';
+import { AxiosHttpClient } from './http_clients/index.js';
 import { ActorClient } from './resource_clients/actor.js';
 import { ActorCollectionClient } from './resource_clients/actor_collection.js';
 import { BuildClient } from './resource_clients/build.js';
@@ -34,17 +40,22 @@ import { WebhookDispatchCollectionClient } from './resource_clients/webhook_disp
 import { Statistics } from './statistics.js';
 import { parseArgument } from './utils.js';
 
-const DEFAULT_TIMEOUT_SECS = 360;
+const DEFAULT_API_URL = 'https://api.apify.com';
 
 const clientOptionsSchema = z.strictObject({
-    baseUrl: z.string().default('https://api.apify.com'),
-    publicBaseUrl: z.string().default('https://api.apify.com'),
-    maxRetries: z.number().default(8),
-    minDelayBetweenRetriesMillis: z.number().default(500),
-    requestInterceptors: z.array(z.unknown()).default([]),
+    baseUrl: z.string().default(DEFAULT_API_URL),
+    publicBaseUrl: z.string().default(DEFAULT_API_URL),
+    maxRetries: z.number().default(DEFAULT_MAX_RETRIES),
+    minDelayBetweenRetriesMillis: z.number().default(DEFAULT_MIN_DELAY_BETWEEN_RETRIES_MILLIS),
     timeoutSecs: z.number().default(DEFAULT_TIMEOUT_SECS),
     token: z.string().optional(),
     userAgentSuffix: z.union([z.string(), z.array(z.string())]).optional(),
+});
+const customHttpClientOptionsSchema = z.strictObject({
+    baseUrl: z.string().default(DEFAULT_API_URL),
+    publicBaseUrl: z.string().default(DEFAULT_API_URL),
+    token: z.string().optional(),
+    httpClient: z.instanceof(HttpClient),
 });
 const resourceIdSchema = z.string().min(1);
 const requestQueueOptionsSchema = z.strictObject({
@@ -83,24 +94,26 @@ export class ApifyClient {
 
     token?: string;
 
+    /**
+     * Statistics of the API calls made through the client. With a custom HTTP client, this is the client's own
+     * `stats` object, so it only reflects what that client records.
+     */
     stats: Statistics;
 
     logger: Log;
 
-    httpClient: HttpClient;
+    private _httpClient?: HttpClient;
 
+    /** Configuration of the default HTTP client, applied when no custom one is set. */
+    private readonly _httpClientOptions: HttpClientOptions;
+
+    /**
+     * To use a custom HTTP client, use {@link ApifyClient.withCustomHttpClient} instead.
+     */
     constructor(options: ApifyClientOptions = {}) {
         const parsed = parseArgument(options, clientOptionsSchema, 'ApifyClientOptions');
 
-        const {
-            baseUrl,
-            publicBaseUrl,
-            maxRetries,
-            minDelayBetweenRetriesMillis,
-            requestInterceptors,
-            timeoutSecs,
-            token,
-        } = parsed;
+        const { baseUrl, publicBaseUrl, maxRetries, minDelayBetweenRetriesMillis, timeoutSecs, token } = parsed;
 
         const tempBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, baseUrl.length - 1) : baseUrl;
         this.baseUrl = `${tempBaseUrl}/v2`;
@@ -111,16 +124,67 @@ export class ApifyClient {
         this.token = token;
         this.stats = new Statistics();
         this.logger = logger.child({ prefix: 'ApifyClient' });
-        this.httpClient = new HttpClient({
-            apifyClientStats: this.stats,
+        this._httpClientOptions = {
+            stats: this.stats,
             maxRetries,
             minDelayBetweenRetriesMillis,
-            requestInterceptors,
             timeoutSecs,
             logger: this.logger,
             token: this.token,
             userAgentSuffix: parsed.userAgentSuffix,
-        });
+        };
+    }
+
+    /**
+     * Creates an `ApifyClient` that sends its requests through a custom HTTP client.
+     *
+     * The custom client owns its transport configuration: retries, timeouts, default headers and whatever its
+     * transport needs are set on the client itself. This is also how the built-in {@link AxiosHttpClient} is
+     * configured beyond what the constructor options offer, for example with axios request interceptors. The
+     * token is set as the client's `Authorization` header, unless the client already has one configured.
+     *
+     * @param options - The token, the API URLs and the HTTP client to use.
+     * @returns A client whose {@link httpClient} is the given one.
+     *
+     * @example
+     * ```javascript
+     * import { ApifyClient, HttpClient } from 'apify-client';
+     *
+     * class MyHttpClient extends HttpClient {
+     *     async sendRequest({ method, url, headers, body, timeoutMillis, stream }) {
+     *         // Send the request with the HTTP library of your choice and return { status, headers, body }.
+     *     }
+     * }
+     *
+     * const client = ApifyClient.withCustomHttpClient({ token: 'my-token', httpClient: new MyHttpClient() });
+     * ```
+     */
+    static withCustomHttpClient(options: ApifyClientCustomHttpClientOptions): ApifyClient {
+        const { httpClient, ...rest } = parseArgument(
+            options,
+            customHttpClientOptionsSchema,
+            'ApifyClientCustomHttpClientOptions',
+        );
+
+        const client = new ApifyClient(rest);
+        if (rest.token) httpClient.setDefaultAuthorization(rest.token);
+        client.httpClient = httpClient;
+        client.stats = httpClient.stats;
+        return client;
+    }
+
+    /**
+     * The HTTP client the requests go through: the custom one when set through
+     * {@link ApifyClient.withCustomHttpClient}, and otherwise an {@link AxiosHttpClient} configured from the
+     * constructor options, created on first access.
+     */
+    get httpClient(): HttpClient {
+        this._httpClient ??= new AxiosHttpClient(this._httpClientOptions);
+        return this._httpClient;
+    }
+
+    set httpClient(httpClient: HttpClient) {
+        this._httpClient = httpClient;
     }
 
     private _options() {
@@ -580,8 +644,6 @@ export interface ApifyClientOptions {
     maxRetries?: number;
     /** @default 500 */
     minDelayBetweenRetriesMillis?: number;
-    /** @default [] */
-    requestInterceptors?: RequestInterceptorFunction[];
     /** @default 360 */
     timeoutSecs?: number;
     token?: string;
@@ -589,4 +651,19 @@ export interface ApifyClientOptions {
      * @since Added in 2.10.0
      */
     userAgentSuffix?: string | string[];
+}
+
+/**
+ * Configuration options for {@link ApifyClient.withCustomHttpClient}. Retries, timeouts and headers are configured
+ * on the HTTP client itself.
+ */
+export interface ApifyClientCustomHttpClientOptions {
+    /** @default https://api.apify.com */
+    baseUrl?: string;
+    /** @default https://api.apify.com */
+    publicBaseUrl?: string;
+    /** Set as the HTTP client's `Authorization` header, unless it already has one. */
+    token?: string;
+    /** The HTTP client to send the requests through. */
+    httpClient: HttpClient;
 }

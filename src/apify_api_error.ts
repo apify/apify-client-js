@@ -1,7 +1,7 @@
-import type { AxiosResponse } from 'axios';
 import type { LiteralUnion } from 'type-fest';
 
 import { isomorphicBufferToString } from './body_parser.js';
+import type { ApifyResponse } from './http_clients/base.js';
 import type { ApifyApiErrorType } from './models.js';
 import { isBuffer } from './utils.js';
 
@@ -14,9 +14,12 @@ export type { ApifyApiErrorType } from './models.js';
  * 2: "ActorCollectionClient"
  * 3: undefined
  * 4: "list"
+ *
+ * The frames of the HTTP client, where the error is created, sit above the resource client's in the stack and are
+ * skipped by the lookahead.
  * @private
  */
-const CLIENT_METHOD_REGEX = /at( async)? ([A-Za-z]+(Collection)?Client)\._?([A-Za-z]+) \(/;
+const CLIENT_METHOD_REGEX = /at( async)? (?![A-Za-z]*HttpClient\.)([A-Za-z]+(Collection)?Client)\._?([A-Za-z]+) \(/;
 
 /**
  * An `ApifyApiError` is thrown for successful HTTP requests that reach the API,
@@ -81,14 +84,14 @@ export class ApifyApiError extends Error {
     /**
      * @hidden
      */
-    constructor(response: AxiosResponse, attempt: number) {
+    constructor(response: ApifyResponse, attempt: number) {
         let message!: string;
         let type: string | undefined;
         let responseData = response.data;
         let errorData: Record<string, unknown> | undefined;
 
-        // Some methods (e.g. downloadItems) set up forceBuffer on request response. If this request failed
-        // the body buffer needs to parse to get the correct error.
+        // Some methods (e.g. downloadItems) ask for the raw body with `responseType: 'buffer'`. If such a request
+        // failed, the body buffer needs to be parsed to get the correct error.
         if (isBuffer(responseData)) {
             try {
                 responseData = JSON.parse(isomorphicBufferToString(response.data, 'utf-8'));
@@ -133,13 +136,13 @@ export class ApifyApiError extends Error {
      * Creates the error for a failed response as an instance of the subclass matching its HTTP status code.
      * @hidden
      */
-    static fromResponse(response: AxiosResponse, attempt: number): ApifyApiError {
+    static fromResponse(response: ApifyResponse, attempt: number): ApifyApiError {
         const ErrorClass =
             ERROR_CLASS_BY_STATUS[response.status] ?? (response.status >= 500 ? ServerError : ApifyApiError);
         return new ErrorClass(response, attempt);
     }
 
-    private _safelyParsePathFromResponse(response: AxiosResponse) {
+    private _safelyParsePathFromResponse(response: ApifyResponse) {
         const urlString = response.config?.url;
         let url;
         try {
@@ -167,7 +170,7 @@ export class ApifyApiError extends Error {
      *   statusCode: 404
      *   type: record-not-found
      *   attempt: 1
-     *   httpMethod: post
+     *   httpMethod: POST
      *   path: /v2/actor-tasks/user~my-task/runs
      */
     private _createApiStack() {

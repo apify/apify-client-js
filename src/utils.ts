@@ -6,7 +6,7 @@ import { z } from 'zod';
 import type { ApifyApiError } from './apify_api_error.js';
 import { NotFoundError } from './apify_api_error.js';
 import { parseArgument } from '@apify/validations';
-import type { ApifyResponse } from './http_client.js';
+import type { ApifyResponse } from './http_clients/index.js';
 import { ResponseValidationError } from './response_validation_error.js';
 import type {
     RequestQueueClientListRequestsOptions,

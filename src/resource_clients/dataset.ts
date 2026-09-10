@@ -10,7 +10,7 @@ import {
     ResourceClient,
     SMALL_TIMEOUT_MILLIS,
 } from '../base/resource_client.js';
-import type { ApifyResponse } from '../http_client.js';
+import type { ApifyResponse } from '../http_clients/index.js';
 import type { Dataset, DatasetStatistics } from '../models.js';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
@@ -272,7 +272,7 @@ export class DatasetClient<
                 format,
                 ...parsed,
             }),
-            forceBuffer: true,
+            responseType: 'buffer',
             timeout: DEFAULT_TIMEOUT_MILLIS,
         });
 
@@ -403,6 +403,7 @@ export class DatasetClient<
     }
 
     private _createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
+        const descHeader = response.headers['x-apify-pagination-desc'];
         return {
             items: response.data,
             total: Number(response.headers['x-apify-pagination-total']),
@@ -410,7 +411,7 @@ export class DatasetClient<
             count: response.data.length, // because x-apify-pagination-count returns invalid values when hidden/empty items are skipped
             limit: Number(response.headers['x-apify-pagination-limit']), // API returns 999999999999 when no limit is used
             // TODO: Replace this once https://github.com/apify/apify-core/issues/3503 is solved
-            desc: JSON.parse(response.headers['x-apify-pagination-desc'] ?? userProvidedDesc),
+            desc: typeof descHeader === 'string' ? JSON.parse(descHeader) : userProvidedDesc,
         };
     }
 }

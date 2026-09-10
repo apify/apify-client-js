@@ -1,7 +1,7 @@
 import { ApifyClient, type Dictionary } from 'apify-client';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { HttpClient } from '../src/http_client.js';
+import type { HttpClient } from 'apify-client';
 
 import type * as utils from '../src/utils.js';
 

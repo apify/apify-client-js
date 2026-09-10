@@ -1,6 +1,6 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyRequestConfig } from '../http_client.js';
+import type { ApifyRequestConfig } from '../http_clients/index.js';
 import type { AccountAndUsageLimits, MonthlyUsage, User } from '../models.js';
 import * as schemas from '../schemas.js';
 import { parseResponse } from '../utils.js';
