@@ -1,3 +1,4 @@
+import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 
 import type { Dictionary } from 'apify-client';
@@ -103,6 +104,41 @@ describe('ApifyApiError', () => {
         });
     });
 
+    test('should not invent a message for a failed streaming request with an empty body', async () => {
+        const client = new ApifyClient({ baseUrl, maxRetries: 0, ...DEFAULT_OPTIONS });
+
+        await expect(client.run('500').log().stream()).rejects.toMatchObject({
+            name: 'ServerError',
+            statusCode: 500,
+            message: '',
+        });
+    });
+
+    test('should keep the status code of a streaming request whose error body breaks mid-read', async () => {
+        // The connection drops after the headers, so the body read rejects. Without that rejection being
+        // swallowed, the 500 would surface as a network error instead.
+        const server = createServer((_req, res) => {
+            res.writeHead(500, { 'content-type': 'application/json' });
+            res.write('{"error":', () => res.socket?.destroy());
+        });
+        await new Promise<void>((resolve) => server.listen(0, resolve));
+        const client = new ApifyClient({
+            baseUrl: `http://localhost:${(server.address() as AddressInfo).port}`,
+            maxRetries: 0,
+            ...DEFAULT_OPTIONS,
+        });
+
+        try {
+            await expect(client.run('500').log().stream()).rejects.toMatchObject({
+                name: 'ServerError',
+                statusCode: 500,
+            });
+        } finally {
+            server.closeAllConnections();
+            await new Promise((resolve) => server.close(resolve));
+        }
+    });
+
     test('should carry additional error data if provided', async () => {
         const datasetId = '400'; // check add_routes.js to see details of this mock
         const data = JSON.stringify([{ someData: 'someValue' }, { someData: 'someValue' }]);
@@ -200,6 +236,7 @@ describe('ApifyApiError', () => {
 
             expect(error).toBeInstanceOf(NotFoundError);
             expect(error.type).toBeUndefined();
+            expect(error.message).toBe('Unexpected error: "<not json>"');
         });
     });
 });

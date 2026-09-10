@@ -90,10 +90,12 @@ export class ApifyApiError extends Error {
         // A `forceBuffer` request (e.g. `downloadItems()`) and a failed streaming request, whose body `HttpClient`
         // has read into a buffer, both arrive unparsed. Parse the body here to get at the error.
         if (isBuffer(responseData)) {
+            const body = isomorphicBufferToString(response.data, 'utf-8');
             try {
-                responseData = JSON.parse(isomorphicBufferToString(response.data, 'utf-8'));
+                responseData = JSON.parse(body);
             } catch {
-                // This can happen. The data in the response body are malformed.
+                // A body that is not JSON at all, such as an HTML error page from a proxy, is kept as text.
+                responseData = body;
             }
         }
 
