@@ -3605,7 +3605,6 @@ export interface RunGetOptions {
 export interface RunMetamorphOptions {
     // (undocumented)
     build?: string;
-    // (undocumented)
     contentType?: string;
 }
 
