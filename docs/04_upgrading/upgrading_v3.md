@@ -280,6 +280,30 @@ Two options that carried a `@deprecated` marker throughout v2 have been removed.
 
 `exclusiveStartId` is gone from <ApiLink to="class/RequestQueueClient#listRequests">`listRequests()`</ApiLink> and <ApiLink to="class/RequestQueueClient#paginateRequests">`paginateRequests()`</ApiLink>. Both paginate by `cursor` alone now, and passing `exclusiveStartId` throws an `ArgumentValidationError` about an unrecognized key. In v2 the two were mutually exclusive, so the error about combining them is gone as well. Responses are unaffected, since the API still echoes `exclusiveStartId` back in the request listing.
 
+## Actor run input is no longer `unknown`
+
+<ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink>, <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, <ApiLink to="class/ActorClient#validateInput">`validateInput()`</ApiLink> and <ApiLink to="class/RunClient#metamorph">`RunClient.metamorph()`</ApiLink> took their `input` as `unknown`, so any value compiled, including ones the client cannot send.
+
+The input is now typed `ActorInput`, an alias for `object`, so it's an object or an array that the client serializes into the request body. Any other value stops compiling, including a value typed `unknown`, which has to be narrowed or cast first. To run an Actor without input, omit the argument or pass `undefined`.
+
+```diff
+- await client.actor('my-actor').call(null, { memory: 1024 }); // v2
++ await client.actor('my-actor').call(undefined, { memory: 1024 }); // v3
+```
+
+A raw `string` body stops compiling too, with or without a `contentType`. Pass the input as an object and let the client serialize it:
+
+```diff
+- await client.actor('my-actor').start('some=body', { contentType: 'application/x-www-form-urlencoded' }); // v2
++ await client.actor('my-actor').start({ some: 'body' }); // v3
+```
+
+Dropping the `contentType` sends the body as JSON, so the run's `INPUT` record changes content type with it. To keep the form encoding, pass the object and the option together: the client form-encodes an object whenever `contentType` is `application/x-www-form-urlencoded`.
+
+`metamorph()`'s `input` is optional now, so `metamorph('target-actor')` compiles where it previously needed an explicit `undefined`.
+
+Nothing changes at runtime. `TaskClient.start()` and `call()` keep taking a `Dictionary`: a task's input overrides are merged into the input saved on the task, so they are always an object.
+
 ## The client's own code no longer needs Node.js
 
 The client's own code runs on Web APIs. The parts that need Node.js built-ins, the keep-alive HTTP agents with proxy support and request body compression, live in a module that the `#runtime` entry of the package's `imports` field selects at bundle time. The `node` condition gets the Node.js implementation, and every other target gets the Web API one, so a bundler targeting a browser or an edge runtime no longer pulls `node:zlib`, `node:os`, `node:util`, or `proxy-agent` out of the client. Two dependencies still import Node.js built-ins, so bundling the ES module build for a non-Node.js target still needs a few polyfills. For details, see [Bundled environments](../02_concepts/05_bundled-environments.md).

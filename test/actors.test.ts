@@ -156,8 +156,7 @@ describe('Actor methods', () => {
 
         test('start() works', async () => {
             const actorId = 'some-id';
-            const contentType = 'application/x-www-form-urlencoded';
-            const input = 'some=body';
+            const input = { some: 'body' };
 
             const query = {
                 timeout: 120,
@@ -165,10 +164,28 @@ describe('Actor methods', () => {
                 build: '1.2.0',
             };
 
-            const res = await client.actor(actorId).start(input, { contentType, ...query });
+            const res = await client.actor(actorId).start(input, query);
+            expect(res.id).toEqual('run-actor');
+            validateRequest({ query, params: { actorId }, body: input });
+
+            const browserRes = await page.evaluate(
+                (id, i, opts) => client.actor(id).start(i, opts),
+                actorId,
+                input,
+                query,
+            );
+            expect(browserRes).toEqual(asBrowserResult(res));
+            validateRequest({ query, params: { actorId }, body: input });
+        });
+
+        test('start() passes contentType through as the request header', async () => {
+            const actorId = 'some-id';
+            const contentType = 'application/json; charset=utf-8';
+            const input = { some: 'body' };
+
+            const res = await client.actor(actorId).start(input, { contentType });
             expect(res.id).toEqual('run-actor');
             validateRequest({
-                query,
                 params: { actorId },
                 body: { some: 'body' },
                 additionalHeaders: { 'content-type': contentType },
@@ -176,24 +193,23 @@ describe('Actor methods', () => {
 
             const browserRes = await page.evaluate((id, i, opts) => client.actor(id).start(i, opts), actorId, input, {
                 contentType,
-                ...query,
             });
             expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({
-                query,
                 params: { actorId },
                 body: { some: 'body' },
                 additionalHeaders: { 'content-type': contentType },
             });
         });
 
-        test('start() works with pre-stringified JSON', async () => {
+        test('start() encodes the input for a non-JSON contentType', async () => {
             const actorId = 'some-id';
-            const contentType = 'application/json; charset=utf-8';
-            const input = JSON.stringify({ some: 'body' });
+            const contentType = 'application/x-www-form-urlencoded';
+            const input = { some: 'body' };
 
             const res = await client.actor(actorId).start(input, { contentType });
             expect(res.id).toEqual('run-actor');
+            // The mock server parses the form-encoded body back into an object.
             validateRequest({
                 params: { actorId },
                 body: { some: 'body' },
@@ -278,8 +294,7 @@ describe('Actor methods', () => {
 
         test('call() works', async () => {
             const actorId = 'some-id';
-            const contentType = 'application/x-www-form-urlencoded';
-            const input = 'some=body';
+            const input = { some: 'body' };
             const timeout = 120;
             const memory = 256;
             const build = '1.2.0';
@@ -290,7 +305,6 @@ describe('Actor methods', () => {
 
             mockServer.setResponse({ body });
             const res = await client.actor(actorId).call(input, {
-                contentType,
                 memory,
                 timeout,
                 build,
@@ -307,8 +321,7 @@ describe('Actor methods', () => {
                     build,
                 },
                 params: { actorId },
-                body: { some: 'body' },
-                additionalHeaders: { 'content-type': contentType },
+                body: input,
             });
 
             const callBrowserRes = await page.evaluate(
@@ -316,7 +329,6 @@ describe('Actor methods', () => {
                 actorId,
                 input,
                 {
-                    contentType,
                     memory,
                     timeout,
                     build,
@@ -332,8 +344,7 @@ describe('Actor methods', () => {
                     build,
                 },
                 params: { actorId },
-                body: { some: 'body' },
-                additionalHeaders: { 'content-type': contentType },
+                body: input,
             });
         });
 

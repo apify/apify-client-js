@@ -10,7 +10,7 @@ import type { ApifyResponse } from '../http_client.js';
 import * as schemas from '../schemas.js';
 import { runtime } from '#runtime';
 import { anyObjectSchema, parseArgument, parseResponse } from '../utils.js';
-import type { ActorRun } from './actor.js';
+import type { ActorInput, ActorRun } from './actor.js';
 import { DatasetClient } from './dataset.js';
 import { KeyValueStoreClient } from './key_value_store.js';
 import { LogClient, LoggerActorRedirect, StreamedLog } from './log.js';
@@ -145,10 +145,9 @@ export class RunClient extends ResourceClient {
      * This is useful for chaining Actor executions or implementing complex workflows.
      *
      * @param targetActorId - ID or username/name of the target Actor
-     * @param input - Input for the target Actor. Can be any JSON-serializable value.
+     * @param input - Input for the target Actor, serialized to JSON. Omit it to metamorph without input.
      * @param options - Metamorph options
      * @param options.build - Tag or number of the target Actor's build to run. Default is the target Actor's default build.
-     * @param options.contentType - Content type of the input. If specified, input must be a string or Buffer.
      * @returns The metamorphed ActorRun object (same ID, but now running the target Actor)
      * @see https://docs.apify.com/api/v2/actor-run-metamorph-post
      *
@@ -162,9 +161,8 @@ export class RunClient extends ResourceClient {
      * console.log(`Run ${metamorphedRun.id} is now running ${metamorphedRun.actId}`);
      * ```
      */
-    async metamorph(targetActorId: string, input: unknown, options: RunMetamorphOptions = {}): Promise<ActorRun> {
+    async metamorph(targetActorId: string, input?: ActorInput, options: RunMetamorphOptions = {}): Promise<ActorRun> {
         parseArgument(targetActorId, targetActorIdSchema);
-        // input can be anything, pointless to validate
         const parsed = parseArgument(options, metamorphOptionsSchema, 'RunMetamorphOptions');
 
         const safeTargetActorId = this._toSafeId(targetActorId);
@@ -500,6 +498,11 @@ export interface RunAbortOptions {
  * Options for metamorphing a Run into another Actor.
  */
 export interface RunMetamorphOptions {
+    /**
+     * Content type of the request body, which becomes the content type of the run's `INPUT` record.
+     * Without it, an input is serialized to JSON and sent as `application/json`. Pairing an object
+     * with `application/x-www-form-urlencoded` form-encodes it instead.
+     */
     contentType?: string;
     build?: string;
 }
