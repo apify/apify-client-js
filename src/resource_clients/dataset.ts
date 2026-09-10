@@ -413,7 +413,8 @@ export class DatasetClient<
             items: response.data,
             total: Number(response.headers['x-apify-pagination-total']),
             offset: Number(response.headers['x-apify-pagination-offset']),
-            // `x-apify-pagination-count` reports the items scanned, which a filter can leave above the items returned.
+            // `x-apify-pagination-count` reports the rows scanned, which filters and `unwind` can leave above or below
+            // the items returned.
             count: response.data.length,
             limit: Number(response.headers['x-apify-pagination-limit']), // API returns 999999999999 when no limit is used
             // TODO: Replace this once https://github.com/apify/apify-core/issues/3503 is solved

@@ -112,11 +112,12 @@ export abstract class ApiClient {
             limit: minForLimitParam(options.limit, chunkSize),
         } as T);
 
-        // A page can scan more items than it returns (see `SCANNED_COUNT`). The next offset and the stop condition
-        // follow the scanned number: advancing by `items.length` would re-scan items the previous page already
-        // returned, and stopping at an empty page would end the iteration in front of items a filter hid.
-        const scannedItems = (page: R): number =>
-            Math.max((page as { [SCANNED_COUNT]?: number })[SCANNED_COUNT] ?? 0, page.items.length);
+        // A page can return more or fewer items than the rows it scanned (see `SCANNED_COUNT`). The next offset and
+        // the stop condition follow the scanned number alone: advancing by `items.length` would re-scan rows after a
+        // filter dropped some and skip rows after `unwind` multiplied them, and stopping at an empty page would end
+        // the iteration in front of rows a filter hid.
+        const scannedRows = (page: R): number =>
+            (page as { [SCANNED_COUNT]?: number })[SCANNED_COUNT] ?? page.items.length;
 
         async function* asyncGenerator() {
             let currentPage = await paginatedListPromise;
@@ -124,12 +125,12 @@ export abstract class ApiClient {
             const offset = options.offset ?? 0;
             const limit = Math.min(options.limit || currentPage.total, currentPage.total);
 
-            let pageScanned = scannedItems(currentPage);
+            let pageScanned = scannedRows(currentPage);
             let currentOffset = offset + pageScanned;
             let remainingItems = Math.min(currentPage.total - offset, limit) - pageScanned;
 
             while (
-                pageScanned > 0 && // Continue only if the last page scanned some items.
+                pageScanned > 0 && // Continue only if the last page scanned some rows.
                 remainingItems > 0
             ) {
                 const newOptions = {
@@ -139,7 +140,7 @@ export abstract class ApiClient {
                 } as T;
                 currentPage = await getPaginatedList(newOptions);
                 yield* currentPage.items;
-                pageScanned = scannedItems(currentPage);
+                pageScanned = scannedRows(currentPage);
                 currentOffset += pageScanned;
                 remainingItems -= pageScanned;
             }
