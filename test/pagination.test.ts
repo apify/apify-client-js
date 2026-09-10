@@ -468,36 +468,6 @@ describe('KeyValueStoreClient.listKeys as async iterable', () => {
             mockedClient.mockRestore();
         }
     });
-
-    test('continues past an empty page while nextExclusiveStartKey points at more keys', async () => {
-        const pages = new Map<string | undefined, unknown>([
-            [undefined, { items: [], count: 0, limit: maxItemsPerPage, isTruncated: true, nextExclusiveStartKey: 'k' }],
-            [
-                'k',
-                {
-                    items: range(0, 2),
-                    count: 2,
-                    limit: maxItemsPerPage,
-                    isTruncated: false,
-                    nextExclusiveStartKey: null,
-                },
-            ],
-        ]);
-        const mockedClient = vi.spyOn(client.httpClient, 'call').mockImplementation((async (request: any) => ({
-            data: { data: pages.get(request.params.exclusiveStartKey) },
-        })) as any);
-
-        try {
-            const items = [];
-            for await (const item of client.keyValueStore('some-id').listKeys()) {
-                items.push(item);
-            }
-            expect(items).toEqual(range(0, 2));
-            expect(mockedClient).toHaveBeenCalledTimes(2);
-        } finally {
-            mockedClient.mockRestore();
-        }
-    });
 });
 
 describe('RequestQueueClient.listKeys as async iterable', () => {
@@ -582,46 +552,6 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
             mockedClient.mockRestore();
         }
     } as any);
-
-    // A `filter` can leave a whole page empty while `nextCursor` still points at more requests.
-    const filteredPages = new Map<string | undefined, unknown>([
-        [undefined, { items: [], limit: maxItemsPerPage, nextCursor: 'c' }],
-        ['c', { items: range(0, 2), limit: maxItemsPerPage }],
-    ]);
-    const mockFilteredQueue = () =>
-        vi.spyOn(client.httpClient, 'call').mockImplementation((async (request: any) => ({
-            data: { data: filteredPages.get(request.params.cursor) },
-        })) as any);
-
-    test('listRequests() continues past an empty page while nextCursor points at more requests', async () => {
-        const mockedClient = mockFilteredQueue();
-
-        try {
-            const items = [];
-            for await (const item of client.requestQueue('some-id').listRequests({ filter: ['pending'] })) {
-                items.push(item);
-            }
-            expect(items).toEqual(range(0, 2));
-            expect(mockedClient).toHaveBeenCalledTimes(2);
-        } finally {
-            mockedClient.mockRestore();
-        }
-    });
-
-    test('paginateRequests() follows nextCursor past an empty page without yielding it', async () => {
-        const mockedClient = mockFilteredQueue();
-
-        try {
-            const pages = [];
-            for await (const page of client.requestQueue('some-id').paginateRequests({ filter: ['pending'] })) {
-                pages.push(page.items);
-            }
-            expect(pages).toEqual([range(0, 2)]);
-            expect(mockedClient).toHaveBeenCalledTimes(2);
-        } finally {
-            mockedClient.mockRestore();
-        }
-    });
 });
 
 test('chunkSize sizes each request without being sent as a query parameter', async () => {

@@ -210,8 +210,8 @@ export class KeyValueStoreClient extends ResourceClient {
 
             let remainingItems = parsed.limit ? parsed.limit - currentPage.items.length : undefined;
 
-            // An empty page alone does not end the listing; only a missing next key does.
             while (
+                currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
                 // Continue only if there is some next key. The API answers with `null` on the last page and
                 // omits the field entirely for a listing that was not truncated.
                 currentPage.nextExclusiveStartKey != null &&

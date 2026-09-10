@@ -739,9 +739,10 @@ export class RequestQueueClient extends ResourceClient {
 
             let remainingItems = parsed.limit ? parsed.limit - currentPage.items.length : undefined;
 
-            // A server-side `filter` can leave a page empty while `nextCursor` still points at more requests, so an
-            // empty page alone does not end the listing.
+            // RQ API response does not indicate whether there are more requests left, so we have to try and in case
+            // of exhausting all requests we get response with empty items which ends the loop.
             while (
+                currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
                 currentPage.nextCursor && // Continue only if the API returned a cursor for the next page.
                 (remainingItems === undefined || remainingItems > 0) // Continue only if the limit was not exceeded.
             ) {

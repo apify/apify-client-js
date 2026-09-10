@@ -325,12 +325,12 @@ export class RequestQueuePaginationIterator {
                 cursor: nextCursor,
                 exclusiveStartId: nextExclusiveStartId,
             });
-            // A server-side `filter` can leave a page empty while `nextCursor` still points at more requests, so an
-            // empty page is skipped rather than taken for the end. Only a missing cursor or the reached limit ends
-            // the iteration.
-            if (page.items.length > 0) yield page;
+            // There are no more pages to iterate
+            if (page.items.length === 0) return;
+            yield page;
             iterateItemCount += page.items.length;
-            if (!page.nextCursor || (this.limit && iterateItemCount >= this.limit)) return;
+            // Limit reached stopping to iterate
+            if ((this.limit && iterateItemCount >= this.limit) || !page.nextCursor) return;
 
             nextCursor = page.nextCursor;
             nextExclusiveStartId = undefined; // see comment above - delete it for any page after the first one, and paginate with cursor
