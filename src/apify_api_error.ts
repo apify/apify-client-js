@@ -15,11 +15,13 @@ export type { ApifyApiErrorType } from './models.js';
  * 3: undefined
  * 4: "list"
  *
- * The frames of the HTTP client, where the error is created, sit above the resource client's in the stack and are
- * skipped by the lookahead.
+ * The error is created inside the HTTP client's pipeline, whose frames sit above the resource client's. V8 names
+ * them after the transport class, which a custom client can call anything, so the second lookahead skips them by
+ * method name as well: no resource client has a method of either name.
  * @private
  */
-const CLIENT_METHOD_REGEX = /at( async)? (?![A-Za-z]*HttpClient\.)([A-Za-z]+(Collection)?Client)\._?([A-Za-z]+) \(/;
+const CLIENT_METHOD_REGEX =
+    /at( async)? (?![A-Za-z]*HttpClient\.)([A-Za-z]+(Collection)?Client)\._?(?!makeRequest|retryWithExpBackoff)([A-Za-z]+) \(/;
 
 /**
  * An `ApifyApiError` is thrown for successful HTTP requests that reach the API,

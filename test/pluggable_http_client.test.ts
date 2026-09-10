@@ -87,7 +87,7 @@ describe('pluggable HTTP client', () => {
                 } else if (path === '/broken-json' && failuresLeft-- > 0) {
                     res.writeHead(200, { 'content-type': 'application/json' });
                     res.end('{"data": ');
-                } else if (path === '/missing') {
+                } else if (path === '/missing' || path.endsWith('/records/missing')) {
                     json(404, { error: { type: 'record-not-found', message: 'Not there.' } });
                 } else if (path === '/binary') {
                     res.writeHead(200, { 'content-type': 'application/octet-stream' });
@@ -270,6 +270,18 @@ describe('pluggable HTTP client', () => {
             await expect(call).rejects.toThrow(NotFoundError);
             await expect(call).rejects.toMatchObject({ statusCode: 404, type: 'record-not-found', httpMethod: 'GET' });
             expect(received).toHaveLength(1);
+        });
+
+        test('attributes the error to the resource client, not to the transport', async () => {
+            // The class name ends in `Client` without ending in `HttpClient`, so `ApifyApiError` can only tell
+            // the pipeline frames apart from a resource client's by the method names they carry.
+            class PipelineClient extends NodeHttpClient {}
+
+            const client = ApifyClient.withCustomHttpClient({ baseUrl, httpClient: new PipelineClient() });
+
+            const call = client.keyValueStore('my-store').deleteRecord('missing');
+
+            await expect(call).rejects.toMatchObject({ clientMethod: 'KeyValueStoreClient.deleteRecord' });
         });
 
         test('gives up on a transport error the client does not classify as retryable', async () => {
