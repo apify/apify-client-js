@@ -95,7 +95,8 @@ interface TimeoutCase {
 }
 
 // One entry per method that sends a request, with the default tier each is assigned. The tiers mirror the
-// Python client, which is what makes the two clients interchangeable in this respect.
+// Python client method for method. The effective timeout can still differ: only this client extends it to
+// cover a `waitForFinish` hold.
 const TIMEOUT_CASES: TimeoutCase[] = [
     { client: 'ActorClient', method: 'get', tier: 'short' },
     { client: 'ActorClient', method: 'update', tier: 'short', args: [{ name: 'x' }] },
@@ -279,6 +280,36 @@ describe('Client timeouts', () => {
         await resourceClient('ActorClient').call(undefined, { log: null, timeout: 7 });
 
         expect(mockHttpClient.callHistory.map((config) => config.timeout)).toEqual([7, 7]);
+    });
+
+    describe('a waitForFinish the API holds the response for', () => {
+        test.each([
+            { client: 'ActorClient', method: 'start', args: [undefined], expected: 90 },
+            { client: 'ActorClient', method: 'build', args: ['0.0'], expected: 90 },
+            { client: 'ActorClient', method: 'defaultBuild', args: [], expected: 65 },
+            { client: 'TaskClient', method: 'start', args: [undefined], expected: 90 },
+            { client: 'RunClient', method: 'get', args: [], expected: 65 },
+            { client: 'BuildClient', method: 'get', args: [], expected: 65 },
+        ] satisfies { client: keyof typeof CLIENTS; method: string; args: unknown[]; expected: number }[])(
+            'extends the timeout of $client $method() past its tier',
+            async ({ client: clientName, method, args, expected }) => {
+                await resourceClient(clientName)[method](...args, { waitForFinish: 60 });
+
+                expect(mockHttpClient.lastCall.timeout).toBe(expected);
+            },
+        );
+
+        test('asks for no more than the minute the API holds', async () => {
+            await resourceClient('RunClient').get({ waitForFinish: 600 });
+
+            expect(mockHttpClient.lastCall.timeout).toBe(65);
+        });
+
+        test('leaves an explicit per-call timeout alone', async () => {
+            await resourceClient('ActorClient').start(undefined, { waitForFinish: 60, timeout: 'short' });
+
+            expect(mockHttpClient.lastCall.timeout).toBe('short');
+        });
     });
 
     test('runTimeout is what the API receives as the run `timeout`', async () => {

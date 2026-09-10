@@ -3519,6 +3519,7 @@ export interface RequestQueueUserOptions {
 class ResourceClient extends ApiClient {
     protected _delete(timeout: Timeout): Promise<void>;
     protected _get<T, R>(schema: z.ZodType, options: T, timeout: Timeout): Promise<R | undefined>;
+    protected _timeoutForWaitForFinish(timeout: Timeout | undefined, tier: TimeoutTier, waitForFinishSecs: number | undefined): Timeout;
     // (undocumented)
     protected _update<T, R>(schema: z.ZodType, newFields: T, timeout: Timeout): Promise<R>;
     protected _waitForFinish<R extends {

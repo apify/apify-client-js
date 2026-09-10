@@ -190,7 +190,8 @@ export class ActorClient extends ResourceClient {
      * @param options.maxItems - Maximum number of dataset items that will be charged (only for pay-per-result Actors).
      * @param options.maxTotalChargeUsd - Maximum cost in USD (only for pay-per-event Actors).
      * @param options.contentType - Content type of the input. If specified, input must be a string or Buffer.
-     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
+     * @param options.timeout - Timeout for the API request. Default is `'medium'`, extended to cover `waitForFinish`
+     * when the API is asked to hold the response.
      * @returns The Actor run object with status, usage, and storage IDs
      * @see https://docs.apify.com/api/v2/act-runs-post
      *
@@ -221,7 +222,7 @@ export class ActorClient extends ResourceClient {
             maxTotalChargeUsd,
             restartOnError,
             forcePermissionLevel,
-            timeout = 'medium',
+            timeout,
         } = parsed;
 
         // The API knows the run timeout as `timeout`; the client keeps that name for the request timeout.
@@ -245,7 +246,7 @@ export class ActorClient extends ResourceClient {
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
-            timeout,
+            timeout: this._timeoutForWaitForFinish(timeout, 'medium', waitForFinish),
         };
         if (parsed.contentType) {
             request.headers = {
@@ -387,7 +388,8 @@ export class ActorClient extends ResourceClient {
      * @param options.tag - Tag to be applied to the build (e.g., `'latest'`, `'beta'`). Existing tag with the same name will be replaced.
      * @param options.useCache - If `false`, Docker build cache will be ignored. Default is `true`.
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the build to finish on the API side before returning. Default is 0 (returns immediately).
-     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
+     * @param options.timeout - Timeout for the API request. Default is `'medium'`, extended to cover `waitForFinish`
+     * when the API is asked to hold the response.
      * @returns The Build object with status and build details
      * @see https://docs.apify.com/api/v2/act-builds-post
      *
@@ -407,7 +409,7 @@ export class ActorClient extends ResourceClient {
      */
     async build(versionNumber: string, options: ActorBuildOptions = {}): Promise<Build> {
         parseArgument(versionNumber, versionNumberSchema);
-        const { timeout = 'medium', ...params } = parseArgument(options, buildOptionsSchema, 'ActorBuildOptions');
+        const { timeout, ...params } = parseArgument(options, buildOptionsSchema, 'ActorBuildOptions');
 
         const response = await this.httpClient.call({
             url: this._url('builds'),
@@ -416,7 +418,7 @@ export class ActorClient extends ResourceClient {
                 version: versionNumber,
                 ...params,
             }),
-            timeout,
+            timeout: this._timeoutForWaitForFinish(timeout, 'medium', params.waitForFinish),
         });
 
         return parseResponse(response, schemas.Build());
@@ -431,7 +433,8 @@ export class ActorClient extends ResourceClient {
      *
      * @param options - Options for getting the default build
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the build to finish on the API side before returning. Default is 0 (returns immediately).
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeout - Timeout for the API request. Default is `'short'`, extended to cover `waitForFinish`
+     * when the API is asked to hold the response.
      * @returns A client for the default build
      * @see https://docs.apify.com/api/v2/act-build-default-get
      *
@@ -449,17 +452,13 @@ export class ActorClient extends ResourceClient {
      * @since Added in 2.12.2
      */
     async defaultBuild(options: BuildClientGetOptions = {}): Promise<BuildClient> {
-        const { timeout = 'short', ...params } = parseArgument(
-            options,
-            defaultBuildOptionsSchema,
-            'BuildClientGetOptions',
-        );
+        const { timeout, ...params } = parseArgument(options, defaultBuildOptionsSchema, 'BuildClientGetOptions');
 
         const response = await this.httpClient.call({
             url: this._url('builds/default'),
             method: 'GET',
             params: this._params(params),
-            timeout,
+            timeout: this._timeoutForWaitForFinish(timeout, 'short', params.waitForFinish),
         });
 
         const { id } = parseResponse<Build>(response, schemas.Build());

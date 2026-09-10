@@ -4,7 +4,7 @@ import type { z } from 'zod';
 
 import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApifyRequestConfig } from '../http_client.js';
-import type { Timeout, TimeoutOptions } from '../timeouts.js';
+import type { Timeout, TimeoutOptions, TimeoutTier } from '../timeouts.js';
 import { catchNotFoundForResourceOrThrow, catchNotFoundOrThrow, parseResponse } from '../utils.js';
 import { ApiClient } from './api_client.js';
 
@@ -15,11 +15,34 @@ import { ApiClient } from './api_client.js';
  */
 const MAX_WAIT_FOR_FINISH = 999999;
 
+/** The API holds a `waitForFinish` response for at most a minute, however long the parameter asks for. */
+const MAX_WAIT_FOR_FINISH_HOLD_SECS = 60;
+
 /**
  * Resource client.
  * @private
  */
 export class ResourceClient extends ApiClient {
+    /**
+     * Picks the timeout of a request that asks the API to hold its response with `waitForFinish`. The request
+     * gets the hold the caller asked for plus the round trip its tier allows, so the client does not abort a
+     * request while the API is still holding it - which for `start()` and `build()` would retry a call that
+     * creates a resource. An explicit per-call `timeout` is used as given.
+     */
+    protected _timeoutForWaitForFinish(
+        timeout: Timeout | undefined,
+        tier: TimeoutTier,
+        waitForFinishSecs: number | undefined,
+    ): Timeout {
+        if (timeout !== undefined) return timeout;
+        if (waitForFinishSecs === undefined) return tier;
+
+        const holdSecs = Math.min(waitForFinishSecs, MAX_WAIT_FOR_FINISH_HOLD_SECS);
+        if (holdSecs <= 0) return tier;
+
+        return holdSecs + this.httpClient.timeoutMillis[tier] / 1000;
+    }
+
     /**
      * A 404 resolves to `undefined` only when the client names its resource by ID. A chained client without one, such
      * as `run.dataset()`, throws it instead (see `catchNotFoundForResourceOrThrow()`).

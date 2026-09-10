@@ -307,6 +307,8 @@ Two existing options are renamed as a result:
 
 The `timeoutSecs` option of `client.requestQueue(id, options)` keeps its meaning: it caps the default tier of every request the queue client sends. An explicit per-call `timeout` is not capped by it.
 
+`client.httpClient.call()` reads its `timeout` the same way as the resource clients, so a number there is a count of seconds, where the axios field it replaces took milliseconds. A direct call that passed `timeout: 30000` asks for 30000 seconds, which the client caps at `timeoutMaxSecs`.
+
 ## `versions().list()` and `envVars().list()` lose their pagination options
 
 <ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> accept only the `timeout` option. Neither endpoint reads `offset`, `limit` or `desc`, and both return every item in one response, so `chunkSize` had nothing to size either. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those four options, deprecated since v2.21.0, are gone from the package. A call that passed any of them no longer compiles, and throws an `ArgumentValidationError` about an unrecognized key in JavaScript. Drop them and the call returns the same items as before.

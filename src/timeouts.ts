@@ -45,9 +45,8 @@ export interface TimeoutOptions {
 
 /**
  * Schema of {@link Timeout}. Zero is rejected on purpose - `'noTimeout'` is the explicit way to run without one.
- * @internal
  */
-export const timeoutSchema = z.union([z.enum(['short', 'medium', 'long', 'noTimeout']), z.number().positive()]);
+const timeoutSchema = z.union([z.enum(['short', 'medium', 'long', 'noTimeout']), z.number().positive()]);
 
 /**
  * Schema of {@link Timeout}, optional, for the methods that validate `timeout` on its own.

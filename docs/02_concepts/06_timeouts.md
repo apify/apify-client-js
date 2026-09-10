@@ -18,6 +18,10 @@ The client gives every API request a timeout from one of three tiers, each with 
 
 Every client method is assigned the tier that matches the expected duration of its request. The reference of each method names its tier. You don't need to change the tiers unless you work with unusually large payloads or a slow network.
 
+The client never aborts a request that runs without a timeout, so a connection that stalls is not retried either. <ApiLink to="class/ActorClient#call">`ActorClient.call()`</ApiLink> and <ApiLink to="class/RunClient#waitForFinish">`RunClient.waitForFinish()`</ApiLink> poll until the job ends; an explicit `timeout` bounds the requests they send, and has to leave room for the minute the API may hold each poll.
+
+Methods such as <ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink> and <ApiLink to="class/RunClient#get">`RunClient.get()`</ApiLink> take a `waitForFinish` parameter, which asks the API to hold the response until the job finishes, for up to a minute. Such a request gets the requested wait on top of its tier, so the client doesn't abort it while the API is still holding it.
+
 ## Configuring the tiers
 
 Set the duration of each tier on the <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor. The `timeoutMaxSecs` option caps the timeout of any single request attempt. It bounds the growth of the timeout across retries, and it caps tier and per-call timeouts alike, so raise it whenever you need a request timeout longer than the default 360 seconds. A tier configured above the cap is capped too, and the client logs a warning to make the cut-off visible.

@@ -53,7 +53,8 @@ export class BuildClient extends ResourceClient {
      *
      * @param options - Get options
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the build to finish on the API side before returning. Default is 0 (returns immediately).
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeout - Timeout for the API request. Default is `'short'`, extended to cover `waitForFinish`
+     * when the API is asked to hold the response.
      * @returns The Build object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/actor-build-get
      *
@@ -68,9 +69,13 @@ export class BuildClient extends ResourceClient {
      * ```
      */
     async get(options: BuildClientGetOptions = {}): Promise<Build | undefined> {
-        const { timeout = 'short', ...params } = parseArgument(options, getOptionsSchema, 'BuildClientGetOptions');
+        const { timeout, ...params } = parseArgument(options, getOptionsSchema, 'BuildClientGetOptions');
 
-        return this._get(schemas.Build(), params, timeout);
+        return this._get(
+            schemas.Build(),
+            params,
+            this._timeoutForWaitForFinish(timeout, 'short', params.waitForFinish),
+        );
     }
 
     /**

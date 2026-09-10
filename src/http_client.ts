@@ -268,7 +268,7 @@ export class HttpClient {
         const requestedMillis = typeof timeout === 'number' ? timeout * 1000 : this.timeoutMillis[timeout];
 
         if (requestedMillis > this.timeoutMaxMillis) {
-            // `warningOnce` keys by message, so each requested value warns once rather than on every attempt.
+            // `warningOnce` keys by message, so each requested value warns once.
             this.logger.warningOnce(
                 `The requested timeout of ${requestedMillis / 1000}s exceeds timeoutMaxSecs ` +
                     `(${this.timeoutMaxMillis / 1000}s) and is capped at it. ` +

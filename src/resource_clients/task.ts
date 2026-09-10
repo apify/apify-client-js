@@ -169,7 +169,8 @@ export class TaskClient extends ResourceClient {
      * @param options.maxItems - Maximum number of dataset items (for pay-per-result Actors).
      * @param options.maxTotalChargeUsd - Maximum cost in USD (for pay-per-event Actors).
      * @param options.restartOnError - Whether to restart the run on error.
-     * @param options.timeout - Timeout for the API request. Default is `'medium'`.
+     * @param options.timeout - Timeout for the API request. Default is `'medium'`, extended to cover `waitForFinish`
+     * when the API is asked to hold the response.
      * @returns The Actor Run object.
      * @see https://docs.apify.com/api/v2/actor-task-runs-post
      */
@@ -177,16 +178,8 @@ export class TaskClient extends ResourceClient {
         parseArgument(input, inputSchema);
         const parsed = parseArgument(options, startOptionsSchema, 'TaskStartOptions');
 
-        const {
-            waitForFinish,
-            runTimeout,
-            memory,
-            build,
-            maxItems,
-            maxTotalChargeUsd,
-            restartOnError,
-            timeout = 'medium',
-        } = parsed;
+        const { waitForFinish, runTimeout, memory, build, maxItems, maxTotalChargeUsd, restartOnError, timeout } =
+            parsed;
 
         // The API knows the run timeout as `timeout`; the client keeps that name for the request timeout.
         const params = {
@@ -211,7 +204,7 @@ export class TaskClient extends ResourceClient {
             headers: {
                 'Content-Type': 'application/json',
             },
-            timeout,
+            timeout: this._timeoutForWaitForFinish(timeout, 'medium', waitForFinish),
         };
 
         const response = await this.httpClient.call(request);

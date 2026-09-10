@@ -82,7 +82,8 @@ export class RunClient extends ResourceClient {
      *
      * @param options - Get options
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the run to finish on the API side before returning. Default is 0 (returns immediately).
-     * @param options.timeout - Timeout for the API request. Default is `'short'`.
+     * @param options.timeout - Timeout for the API request. Default is `'short'`, extended to cover `waitForFinish`
+     * when the API is asked to hold the response.
      * @returns The ActorRun object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/actor-run-get
      *
@@ -97,9 +98,9 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
-        const { timeout = 'short', ...params } = parseArgument(options, getOptionsSchema, 'RunGetOptions');
+        const { timeout, ...params } = parseArgument(options, getOptionsSchema, 'RunGetOptions');
 
-        return this._get(schemas.Run(), params, timeout);
+        return this._get(schemas.Run(), params, this._timeoutForWaitForFinish(timeout, 'short', params.waitForFinish));
     }
 
     /**
