@@ -2,9 +2,11 @@ import { readFile } from 'node:fs/promises';
 import http from 'node:http';
 import os from 'node:os';
 import { resolve } from 'node:path';
+import type * as Zlib from 'node:zlib';
+import { gunzipSync } from 'node:zlib';
 
 import { build } from 'esbuild';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import { runtime as nodeRuntime } from '../src/runtime/node.js';
 import { runtime as webRuntime } from '../src/runtime/web.js';
@@ -20,6 +22,25 @@ describe('Node.js runtime', () => {
         const compressed = await nodeRuntime.compress(data);
         expect(compressed?.encoding).toBe('br');
         expect(compressed!.data.byteLength).toBeLessThan(data.byteLength);
+    });
+
+    test('falls back to gzip where `node:zlib` does not implement brotli', async () => {
+        vi.resetModules();
+        vi.doMock('node:zlib', async () => {
+            const zlib = await vi.importActual<typeof Zlib>('node:zlib');
+            return { ...zlib, brotliCompress: undefined };
+        });
+
+        try {
+            const { runtime } = await import('../src/runtime/node.js');
+            const data = new TextEncoder().encode('x'.repeat(2048));
+            const compressed = await runtime.compress(data);
+            expect(compressed?.encoding).toBe('gzip');
+            expect(gunzipSync(compressed!.data)).toEqual(Buffer.from(data));
+        } finally {
+            vi.doUnmock('node:zlib');
+            vi.resetModules();
+        }
     });
 
     test('creates one keep-alive agent for both http and https', async () => {
@@ -55,7 +76,7 @@ describe('#runtime resolution', () => {
      * resolves to the pre-built bundle instead. Dependencies stay external, and with them the Node.js built-ins
      * that `@apify/log` and `@apify/utilities` still import.
      */
-    async function bundleClient(options: { platform: 'browser' | 'node'; conditions?: string[] }) {
+    async function bundleClient(options: { platform: 'browser' | 'neutral' | 'node'; conditions?: string[] }) {
         const { metafile } = await build({
             absWorkingDir: root,
             entryPoints: ['dist/index.js'],
@@ -74,7 +95,12 @@ describe('#runtime resolution', () => {
         return metafile.inputs;
     }
 
-    const targets: { target: string; platform: 'browser' | 'node'; conditions?: string[]; expected: string }[] = [
+    const targets: {
+        target: string;
+        platform: 'browser' | 'neutral' | 'node';
+        conditions?: string[];
+        expected: string;
+    }[] = [
         { target: 'a browser', platform: 'browser', expected: 'web' },
         {
             target: 'Cloudflare Workers',
@@ -82,6 +108,8 @@ describe('#runtime resolution', () => {
             conditions: ['workerd', 'worker', 'browser'],
             expected: 'web',
         },
+        // The target the documentation points at for reaching the ES module build, since it sets no conditions.
+        { target: 'a neutral runtime', platform: 'neutral', expected: 'web' },
         { target: 'Node.js', platform: 'node', expected: 'node' },
     ];
 

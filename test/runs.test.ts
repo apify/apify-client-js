@@ -384,6 +384,11 @@ describe('Run methods', () => {
             validateRequest({ query: {}, params: { runId } });
         });
 
+        test('getStreamedLog() returns undefined outside Node.js', async () => {
+            const browserRes = await page.evaluate((rId) => client.run(rId).getStreamedLog(), 'redirect-run-id');
+            expect(browserRes).toBeUndefined();
+        });
+
         test.each(['dataset', 'keyValueStore', 'requestQueue', 'log'] as const)(
             '%s().get() throws on 404 status code',
             async (method) => {

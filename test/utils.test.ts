@@ -2,7 +2,7 @@ import { Readable } from 'node:stream';
 
 import type { WebhookUpdateData } from 'apify-client';
 import { ApifyApiError } from 'apify-client';
-import { describe, expect, test, vi } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import * as utils from '../src/utils.js';
 
@@ -181,11 +181,14 @@ describe('utils.concatBytes()', () => {
 });
 
 describe('utils.getEnv()', () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
     test('reads an environment variable', () => {
+        expect(utils.getEnv('APIFY_CLIENT_TEST_VARIABLE')).toBeUndefined();
         vi.stubEnv('APIFY_CLIENT_TEST_VARIABLE', 'value');
         expect(utils.getEnv('APIFY_CLIENT_TEST_VARIABLE')).toBe('value');
-        vi.unstubAllEnvs();
-        expect(utils.getEnv('APIFY_CLIENT_TEST_VARIABLE')).toBeUndefined();
     });
 });
 
