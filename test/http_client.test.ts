@@ -75,14 +75,14 @@ describe('HttpClient', () => {
 
         try {
             const res = await client.user('me').get();
-            expect(res.id).toBe('get-user');
+            expect(res?.id).toBe('get-user');
             expect(proxied).toEqual([`${baseUrl}/v2/users/me`]);
 
             // A fresh client for the exempted host, because the first one keeps its socket to the proxy alive
             // and would reuse it without consulting the environment again.
             for (const name of ['NO_PROXY', 'no_proxy']) vi.stubEnv(name, 'localhost');
             const direct = await new ApifyClient({ baseUrl, timeoutSecs: 1, maxRetries: 0 }).user('me').get();
-            expect(direct.id).toBe('get-user');
+            expect(direct?.id).toBe('get-user');
             expect(proxied).toHaveLength(1);
         } finally {
             vi.unstubAllEnvs();

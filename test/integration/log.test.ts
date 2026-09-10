@@ -47,8 +47,7 @@ test('get() returns the log of a build', async () => {
 
     const log = await client.build(buildsPage.items[0].id).log().get();
 
-    // A build log can legitimately be empty, so only its presence is pinned - `get()` answers with
-    // `undefined` on a 404, which is the failure this is here to catch.
+    // A build log can legitimately be empty, so only its presence is pinned.
     expect(log).toBeDefined();
 });
 

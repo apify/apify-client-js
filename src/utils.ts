@@ -56,8 +56,9 @@ const { localeError } = z.locales.en();
 /**
  * Turns a JSON API response into the value a resource method returns: unwraps the `data` envelope, converts the
  * date fields and validates the result against `schema`, one of the schemas generated from the OpenAPI
- * specification. The validated copy is what callers get, so it is exactly what the schema accepted -- unknown
- * fields and unknown enum values included, since the schemas let both through.
+ * specification. The validated copy is what callers get, so it is the schema's output -- unknown fields and unknown
+ * enum values included, since the schemas let both through, and URL fields normalized, since `z.url()` hands back
+ * the parsed URL's serialization.
  *
  * Throws {@link ResponseValidationError} when the response does not match the specification.
  * @internal
@@ -93,6 +94,18 @@ export function pluckData<R>(obj: MaybeData<R>): R {
  */
 export function catchNotFoundOrThrow(err: ApifyApiError): void {
     if (!(err instanceof NotFoundError)) throw err;
+}
+
+/**
+ * Like `catchNotFoundOrThrow()`, but swallows the 404 only when the client names its resource by ID.
+ *
+ * A chained client without an ID, such as `run.dataset()` or `run.log()`, requests a path where a 404 can mean either
+ * the parent or the default sub-resource is missing. The response cannot tell the two apart, so the error propagates.
+ * @internal
+ */
+export function catchNotFoundForResourceOrThrow(err: ApifyApiError, resourceId: string | undefined): void {
+    if (!resourceId) throw err;
+    catchNotFoundOrThrow(err);
 }
 
 type ReturnJsonValue = string | number | boolean | null | Date | ReturnJsonObject | ReturnJsonArray;
