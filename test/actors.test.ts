@@ -202,6 +202,31 @@ describe('Actor methods', () => {
             });
         });
 
+        test('start() encodes the input for a non-JSON contentType', async () => {
+            const actorId = 'some-id';
+            const contentType = 'application/x-www-form-urlencoded';
+            const input = { some: 'body' };
+
+            const res = await client.actor(actorId).start(input, { contentType });
+            expect(res.id).toEqual('run-actor');
+            // The mock server parses the form-encoded body back into an object.
+            validateRequest({
+                params: { actorId },
+                body: { some: 'body' },
+                additionalHeaders: { 'content-type': contentType },
+            });
+
+            const browserRes = await page.evaluate((id, i, opts) => client.actor(id).start(i, opts), actorId, input, {
+                contentType,
+            });
+            expect(browserRes).toEqual(asBrowserResult(res));
+            validateRequest({
+                params: { actorId },
+                body: { some: 'body' },
+                additionalHeaders: { 'content-type': contentType },
+            });
+        });
+
         test('start() works with functions in input', async () => {
             const actorId = 'some-id';
             const input = {
