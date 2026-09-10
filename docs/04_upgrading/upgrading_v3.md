@@ -304,6 +304,19 @@ Dropping the `contentType` sends the body as JSON, so the run's `INPUT` record c
 
 Nothing changes at runtime. `TaskClient.start()` and `call()` keep taking a `Dictionary`: a task's input overrides are merged into the input saved on the task, so they are always an object.
 
+## Proxy settings from npm config are no longer read
+
+The client sends its requests through the proxy named in the standard environment variables: `HTTP_PROXY` or `HTTPS_PROXY` for the request's scheme, `ALL_PROXY` as the fallback, and `NO_PROXY` for hosts to reach directly. Those variables work as they did in v2.
+
+The `proxy` and `https-proxy` settings in `.npmrc` no longer reach the client. When a script runs under `npm run`, npm exports them as `npm_config_proxy` and `npm_config_https_proxy`, and v2 read those two variables as well. `proxy-from-env`, the package that resolves the proxy for the client's `proxy-agent`, dropped the npm lookups in the major that v3 pulls in. A proxy configured only in `.npmrc` therefore stops applying to the client's requests, and nothing warns about it. Set the standard variables instead:
+
+```bash
+export HTTP_PROXY=http://proxy.example.com:3128
+export HTTPS_PROXY=http://proxy.example.com:3128
+```
+
+The same `proxy-agent` upgrade removes the `[DEP0169] DeprecationWarning` about `url.parse()` that Node.js 24 and newer printed on the client's first request.
+
 ## The client's own code no longer needs Node.js
 
 The client's own code runs on Web APIs. The parts that need Node.js built-ins, the keep-alive HTTP agents with proxy support and request body compression, live in a module that the `#runtime` entry of the package's `imports` field selects at bundle time. The `node` condition gets the Node.js implementation, and every other target gets the Web API one, so a bundler targeting a browser or an edge runtime no longer pulls `node:zlib`, `node:os`, `node:util`, or `proxy-agent` out of the client. Two dependencies still import Node.js built-ins, so bundling the ES module build for a non-Node.js target still needs a few polyfills. For details, see [Bundled environments](../02_concepts/05_bundled-environments.md).
