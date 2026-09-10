@@ -3,7 +3,7 @@ import { ResourceCollectionClient } from '../base/resource_collection_client.js'
 import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
-import { timeoutOptionsSchema } from '../timeouts.js';
+import { optionalTimeoutSchema, timeoutOptionsSchema } from '../timeouts.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
 import type { ActorEnvironmentVariable } from './actor_version.js';
 
@@ -71,6 +71,8 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     list(
         options: ActorEnvVarCollectionListOptions = {},
     ): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
+        parseArgument(options.timeout, optionalTimeoutSchema);
+
         return this._listPaginated(schemas.ListOfEnvVars(), {}, options.timeout ?? 'short');
     }
 

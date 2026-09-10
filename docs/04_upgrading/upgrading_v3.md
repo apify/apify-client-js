@@ -191,7 +191,7 @@ The single `timeoutSecs` option of the `ApifyClient` constructor is gone. Every 
 + });
 ```
 
-In v2, only the storage clients picked a timeout per method, and everything else ran with the global 360 seconds. In v3 a metadata call such as `actor.get()` gets 5 seconds and a `list()` call 30, so a call that used to wait out a slow API can now fail sooner. If your code relied on the global timeout, review the methods you use. For the full reference, see [Timeouts](../02_concepts/06_timeouts.md).
+In v2, only the storage clients picked a timeout per method, and everything else ran with the global 360 seconds. In v3 a metadata call such as `actor.get()` gets 5 seconds and a `list()` call 30, so a call that used to wait out a slow API can now fail sooner. `RequestQueueClient.unlockRequests()` moves the other way, from 30 seconds to the 360 of the `long` tier. If your code relied on the global timeout, review the methods you use. For the full reference, see [Timeouts](../02_concepts/06_timeouts.md).
 
 Every method that sends a request now accepts a `timeout` option, which replaces the tier of the method for that call: a tier name, a number of seconds, or `'noTimeout'`. Methods that took no options gained an options parameter, and methods that take a payload gained a second one:
 

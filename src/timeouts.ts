@@ -27,6 +27,8 @@ export type TimeoutTier = 'short' | 'medium' | 'long';
  * an exact duration in seconds, and `'noTimeout'` lets the request run for as long as it takes. A tier or an
  * explicit duration above `timeoutMaxSecs` is capped at it, and the client logs a warning when that happens.
  * The timeout applies to each attempt separately, and doubles with every retry up to the same cap.
+ *
+ * With `'noTimeout'` the client never aborts the request, so a connection that stalls is not retried either.
  */
 export type Timeout = TimeoutTier | 'noTimeout' | number;
 
@@ -48,12 +50,18 @@ export interface TimeoutOptions {
 export const timeoutSchema = z.union([z.enum(['short', 'medium', 'long', 'noTimeout']), z.number().positive()]);
 
 /**
+ * Schema of {@link Timeout}, optional, for the methods that validate `timeout` on its own.
+ * @internal
+ */
+export const optionalTimeoutSchema = timeoutSchema.optional();
+
+/**
  * Schema shape of {@link TimeoutOptions}, to spread into the option schema of every method that sends a
  * request. One copy stops it drifting from the interface.
  * @internal
  */
 export const timeoutOptionsShape = {
-    timeout: timeoutSchema.optional(),
+    timeout: optionalTimeoutSchema,
 };
 
 /**

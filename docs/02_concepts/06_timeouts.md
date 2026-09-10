@@ -7,7 +7,7 @@ description: 'Configure the tiered timeouts that bound how long API requests mad
 
 import ApiLink from '@theme/ApiLink';
 
-The client bounds every API request with a timeout from one of three tiers. Each tier has a default duration suited to the kind of request it covers:
+The client gives every API request a timeout from one of three tiers, each with a default duration suited to the kind of request it covers. Methods that poll for a job to finish run without one:
 
 | Tier | Default | Purpose |
 | --- | --- | --- |

@@ -26,7 +26,7 @@ import type {
 } from '../models.js';
 import type { Timeout, TimeoutOptions, TimeoutTier } from '../timeouts.js';
 import * as schemas from '../schemas.js';
-import { timeoutOptionsSchema, timeoutOptionsShape, timeoutSchema } from '../timeouts.js';
+import { optionalTimeoutSchema, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import {
     anyObjectSchema,
     cast,
@@ -63,7 +63,6 @@ const batchAddRequestsSchema = z.array(newRequestSchema).min(1).max(REQUEST_QUEU
 const batchAddRequestsWithRetriesSchema = z.array(newRequestSchema).min(1);
 const optionalBooleanSchema = z.boolean().optional();
 const optionalNumberSchema = z.number().optional();
-const optionalTimeoutSchema = timeoutSchema.optional();
 const requestToDeleteSchema = z.custom<RequestQueueClientRequestToDelete>(
     (value) => isNonArrayObject(value) && (typeof value.id === 'string' || typeof value.uniqueKey === 'string'),
     'Expected a request object with an `id` or a `uniqueKey`',
@@ -660,6 +659,8 @@ export class RequestQueueClient extends ResourceClient {
      * Deletes a specific request from the queue.
      *
      * @param id - Request ID
+     * @param options - Request options
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      */
     async deleteRequest(id: string, options: TimeoutOptions = {}): Promise<void> {
         parseArgument(id, requestIdSchema);
@@ -900,7 +901,6 @@ export interface RequestQueueUserOptions {
     /**
      * Cap, in seconds, on the default timeout tier of every request this client sends. An explicit per-call
      * `timeout` is not capped.
-    /**
      * @since Added in 2.2.0
      */
     timeoutSecs?: number;

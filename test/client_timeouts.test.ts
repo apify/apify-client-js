@@ -300,6 +300,15 @@ describe('Client timeouts', () => {
         await expect(resourceClient('DatasetClient').get({ timeout })).rejects.toThrow(ArgumentValidationError);
     });
 
+    test('the list methods whose other options the API ignores still validate the timeout', () => {
+        expect(() => resourceClient('ActorEnvVarCollectionClient').list({ timeout: 0 })).toThrow(
+            ArgumentValidationError,
+        );
+        expect(() => resourceClient('ActorVersionCollectionClient').list({ timeout: 'fast' })).toThrow(
+            ArgumentValidationError,
+        );
+    });
+
     describe('RequestQueueClient with a queue-wide timeoutSecs', () => {
         test('caps the default tier of every request', async () => {
             const queue = client.requestQueue('test-id', { timeoutSecs: 2 }) as unknown as Record<string, unknown>;
@@ -346,6 +355,13 @@ describe('Client timeouts', () => {
 
             await queueClient.get();
             expect(mockHttpClient.lastCall.timeout).toBe('short');
+        });
+
+        test.each([
+            { timeoutSecs: 0, reason: 'zero' },
+            { timeoutSecs: -1, reason: 'a negative number' },
+        ])('rejects $reason as the cap', ({ timeoutSecs }) => {
+            expect(() => client.requestQueue('test-id', { timeoutSecs })).toThrow(ArgumentValidationError);
         });
     });
 });

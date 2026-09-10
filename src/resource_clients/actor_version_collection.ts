@@ -3,7 +3,7 @@ import { ResourceCollectionClient } from '../base/resource_collection_client.js'
 import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
-import { timeoutOptionsSchema } from '../timeouts.js';
+import { optionalTimeoutSchema, timeoutOptionsSchema } from '../timeouts.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
 import type { ActorVersion, FinalActorVersion } from './actor_version.js';
 
@@ -68,6 +68,8 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
     list(
         options: ActorVersionCollectionListOptions = {},
     ): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
+        parseArgument(options.timeout, optionalTimeoutSchema);
+
         return this._listPaginated(schemas.ListOfVersions(), {}, options.timeout ?? 'short');
     }
 

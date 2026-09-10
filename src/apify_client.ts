@@ -56,7 +56,7 @@ const clientOptionsSchema = z.strictObject({
 const resourceIdSchema = z.string().min(1);
 const requestQueueOptionsSchema = z.strictObject({
     clientKey: z.string().min(1).optional(),
-    timeoutSecs: z.number().optional(),
+    timeoutSecs: z.number().positive().optional(),
 });
 
 /**

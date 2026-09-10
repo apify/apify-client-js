@@ -7,7 +7,7 @@ import { ResourceCollectionClient } from '../base/resource_collection_client.js'
 import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
-import { timeoutOptionsShape, timeoutSchema } from '../timeouts.js';
+import { optionalTimeoutSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
 import type { Dataset } from './dataset.js';
 
@@ -20,7 +20,6 @@ const listOptionsSchema = z.strictObject({
 });
 const nameSchema = z.string().optional();
 const schemaSchema = anyObjectSchema.optional();
-const optionalTimeoutSchema = timeoutSchema.optional();
 
 /**
  * Client for managing the collection of datasets in your account.
@@ -97,10 +96,12 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
         parseArgument(options?.schema, schemaSchema); // TODO: Add schema validation
         parseArgument(options?.timeout, optionalTimeoutSchema);
 
-        // `timeout` is not part of the resource, so the body carries only the rest.
+        // `timeout` is not part of the resource, so the body carries only the rest, and stays absent when
+        // there is nothing else to send.
         const { timeout = 'short', ...resource } = options ?? {};
+        const hasResource = Object.keys(resource).length > 0;
 
-        return this._getOrCreate(schemas.Dataset(), name, options ? resource : undefined, timeout);
+        return this._getOrCreate(schemas.Dataset(), name, hasResource ? resource : undefined, timeout);
     }
 }
 

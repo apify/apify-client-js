@@ -8,7 +8,7 @@ import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_client.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
-import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
+import { optionalTimeoutSchema, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, isNode, parseArgument, parseResponse } from '../utils.js';
 import type { ActorRun } from './actor.js';
 import { DatasetClient } from './dataset.js';
@@ -82,6 +82,7 @@ export class RunClient extends ResourceClient {
      *
      * @param options - Get options
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the run to finish on the API side before returning. Default is 0 (returns immediately).
+     * @param options.timeout - Timeout for the API request. Default is `'short'`.
      * @returns The ActorRun object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/actor-run-get
      *
@@ -471,6 +472,8 @@ export class RunClient extends ResourceClient {
      * @since Added in 2.20.0
      */
     async getStreamedLog(options: GetStreamedLogOptions = {}): Promise<StreamedLog | undefined> {
+        parseArgument(options.timeout, optionalTimeoutSchema);
+
         const { fromStart = true, timeout = 'long' } = options;
         let { toLog } = options;
         if (toLog === null || !isNode()) {

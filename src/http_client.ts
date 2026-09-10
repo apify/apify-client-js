@@ -362,7 +362,8 @@ export interface ApifyRequestConfig extends Omit<AxiosRequestConfig, 'timeout'> 
     doNotRetryTimeouts?: boolean;
     /**
      * Timeout of the request, resolved to milliseconds per attempt by the client. Unlike the axios field it
-     * replaces, a number here is a duration in seconds.
+     * replaces, a number here is a duration in seconds. The resolution happens before axios runs its
+     * interceptors, so a request interceptor already sees a number of milliseconds.
      * @default 'medium'
      */
     timeout?: Timeout;
