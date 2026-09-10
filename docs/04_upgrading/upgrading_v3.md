@@ -284,7 +284,7 @@ Two options that carried a `@deprecated` marker throughout v2 have been removed.
 
 <ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink>, <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, <ApiLink to="class/ActorClient#validateInput">`validateInput()`</ApiLink> and <ApiLink to="class/RunClient#metamorph">`RunClient.metamorph()`</ApiLink> took their `input` as `unknown`, so any value compiled, including ones the client cannot send.
 
-The input is now typed `ActorInput`, an alias for `object`: the client serializes it to JSON, so it is an object or an array. Any other value stops compiling, including a value typed `unknown`, which has to be narrowed or cast first. To run an Actor without input, omit the argument or pass `undefined`.
+The input is now typed `ActorInput`, an alias for `object`, so it's an object or an array that the client serializes into the request body. Any other value stops compiling, including a value typed `unknown`, which has to be narrowed or cast first. To run an Actor without input, omit the argument or pass `undefined`.
 
 ```diff
 - await client.actor('my-actor').call(null, { memory: 1024 }); // v2
@@ -297,6 +297,8 @@ A raw `string` body stops compiling too, with or without a `contentType`. Pass t
 - await client.actor('my-actor').start('some=body', { contentType: 'application/x-www-form-urlencoded' }); // v2
 + await client.actor('my-actor').start({ some: 'body' }); // v3
 ```
+
+Dropping the `contentType` sends the body as JSON, so the run's `INPUT` record changes content type with it. To keep the form encoding, pass the object and the option together: the client form-encodes an object whenever `contentType` is `application/x-www-form-urlencoded`.
 
 `metamorph()`'s `input` is optional now, so `metamorph('target-actor')` compiles where it previously needed an explicit `undefined`.
 

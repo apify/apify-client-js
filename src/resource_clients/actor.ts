@@ -547,7 +547,8 @@ export type ActorUpdateOptions = Partial<
  * Input for an Actor run, as taken by {@link ActorClient.start}, {@link ActorClient.call},
  * {@link ActorClient.validateInput} and {@link RunClient.metamorph}.
  *
- * The client serializes it to JSON, so it is an object or an array.
+ * An object or an array. Declared as `object` rather than an index-signature type such as
+ * `Dictionary`, which would reject a caller's own `interface`.
  */
 export type ActorInput = object;
 
@@ -560,7 +561,8 @@ export interface ActorStartOptions {
 
     /**
      * Content type of the request body, which becomes the content type of the run's `INPUT` record.
-     * Defaults to `application/json; charset=utf-8`, matching the JSON the input is serialized to.
+     * Without it, an input is serialized to JSON and sent as `application/json`. Pairing an object
+     * with `application/x-www-form-urlencoded` form-encodes it instead.
      */
     contentType?: string;
 
@@ -658,8 +660,9 @@ export interface ActorValidateInputOptions {
     build?: string;
 
     /**
-     * Content type of the request body, which becomes the content type of the run's `INPUT` record.
-     * Defaults to `application/json; charset=utf-8`, matching the JSON the input is serialized to.
+     * Content type of the request body carrying the input to validate. Without it, the input is
+     * serialized to JSON and sent as `application/json`. Pairing an object with
+     * `application/x-www-form-urlencoded` form-encodes it instead.
      */
     contentType?: string;
 }

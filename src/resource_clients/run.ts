@@ -497,6 +497,11 @@ export interface RunAbortOptions {
  * Options for metamorphing a Run into another Actor.
  */
 export interface RunMetamorphOptions {
+    /**
+     * Content type of the request body, which becomes the content type of the run's `INPUT` record.
+     * Without it, an input is serialized to JSON and sent as `application/json`. Pairing an object
+     * with `application/x-www-form-urlencoded` form-encodes it instead.
+     */
     contentType?: string;
     build?: string;
 }
