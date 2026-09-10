@@ -306,6 +306,7 @@ When adding support for a new API resource:
 // src/resource_clients/my_resource.ts
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import * as schemas from '../schemas';
 
 export class MyResourceClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions) {
@@ -316,11 +317,11 @@ export class MyResourceClient extends ResourceClient {
     }
 
     async get(): Promise<MyResource | undefined> {
-        return this.getResource();
+        return this.getResource(schemas.MyResource());
     }
 
     async update(newFields: MyResourceUpdate): Promise<MyResource> {
-        return this.updateResource(newFields);
+        return this.updateResource(schemas.MyResource(), newFields);
     }
 
     async delete(): Promise<void> {
@@ -335,6 +336,7 @@ export class MyResourceClient extends ResourceClient {
 // src/resource_clients/my_resource_collection.ts
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
+import * as schemas from '../schemas';
 import { PaginatedList } from '../utils';
 
 export class MyResourceCollectionClient extends ResourceCollectionClient {
@@ -346,11 +348,11 @@ export class MyResourceCollectionClient extends ResourceCollectionClient {
     }
 
     async list(options?: MyResourceListOptions): Promise<PaginatedList<MyResource>> {
-        return this.listResources(options);
+        return this.listResources(schemas.ListOfMyResources(), options);
     }
 
     async create(resource: MyResourceCreate): Promise<MyResource> {
-        return this.createResource(resource);
+        return this.createResource(schemas.MyResource(), resource);
     }
 }
 ```
@@ -360,7 +362,7 @@ export class MyResourceCollectionClient extends ResourceCollectionClient {
 ```typescript
 // In src/apify_client.ts
 myResource(id: string): MyResourceClient {
-    return new MyResourceClient(this.subResourceOptions({ id }));
+    return new MyResourceClient({ id, ...this.subClientOptions() });
 }
 
 myResources(): MyResourceCollectionClient {
