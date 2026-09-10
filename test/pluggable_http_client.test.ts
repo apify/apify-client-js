@@ -399,6 +399,32 @@ describe('pluggable HTTP client', () => {
             expect(received[0].body).toBe('plain text');
         });
 
+        test('form-encodes an object body under a form content type', async () => {
+            const httpClient = new NodeHttpClient();
+
+            await httpClient.call({
+                url: `${baseUrl}/echo`,
+                method: 'POST',
+                data: {
+                    plain: 'value',
+                    flat: ['a', 'b'],
+                    startUrls: [{ url: 'https://example.com' }],
+                    nested: { deep: 1 },
+                    blob: Buffer.from([1, 2, 3, 4]),
+                    at: new Date(0),
+                    skipped: undefined,
+                    nulled: null,
+                },
+                headers: { 'content-type': 'application/x-www-form-urlencoded' },
+            });
+
+            // Items of an array of objects need their own index, otherwise they merge into one on parsing.
+            expect(decodeURIComponent(received[0].body)).toBe(
+                'plain=value&flat[]=a&flat[]=b&startUrls[0][url]=https://example.com' +
+                    '&nested[deep]=1&blob=AQIDBA==&at=1970-01-01T00:00:00.000Z',
+            );
+        });
+
         test('sends a URLSearchParams body form-encoded', async () => {
             const httpClient = new NodeHttpClient();
 

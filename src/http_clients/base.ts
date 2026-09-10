@@ -1,5 +1,7 @@
 import type { Readable } from 'node:stream';
 
+import type { TypedArray } from 'type-fest';
+
 import { APIFY_ENV_VARS } from '@apify/consts';
 import type { Log } from '@apify/log';
 import log from '@apify/log';
@@ -655,19 +657,37 @@ function stringifyFunctionReplacer(_key: string, value: unknown): unknown {
 }
 
 /**
- * Form-encodes an object the way HTML forms and axios do: nested objects as `key[sub]`, arrays as repeated `key[]`,
- * dates in ISO 8601, and `null` and `undefined` fields left out.
+ * Form-encodes an object the way HTML forms and axios do: nested objects as `key[sub]`, arrays of plain values as
+ * repeated `key[]`, arrays holding objects or arrays as indexed `key[0]`, binary values base64-encoded, dates in
+ * ISO 8601, and `null` and `undefined` fields left out.
  */
 function toFormUrlEncoded(data: object): string {
     const params = new URLSearchParams();
     const append = (key: string, value: unknown) => {
         if (value === undefined || value === null) return;
         if (value instanceof Date) params.append(key, value.toISOString());
-        else if (Array.isArray(value)) value.forEach((item) => append(`${key}[]`, item));
-        else if (typeof value === 'object') {
+        else if (isBuffer(value)) params.append(key, binaryToBase64(value));
+        else if (Array.isArray(value)) {
+            // An item spanning several fields needs its own index, otherwise the items merge into one on the
+            // receiving side: `list[]=` twice reads back as a single object with an array-valued field.
+            const indexed = value.some(spansSeveralFields);
+            value.forEach((item, index) => append(indexed ? `${key}[${index}]` : `${key}[]`, item));
+        } else if (typeof value === 'object') {
             Object.entries(value).forEach(([sub, item]) => append(`${key}[${sub}]`, item));
         } else params.append(key, String(value));
     };
     Object.entries(data).forEach(([key, value]) => append(key, value));
     return params.toString();
+}
+
+function spansSeveralFields(value: unknown): boolean {
+    if (Array.isArray(value)) return true;
+    return typeof value === 'object' && value !== null && !(value instanceof Date) && !isBuffer(value);
+}
+
+function binaryToBase64(value: Buffer | ArrayBuffer | TypedArray): string {
+    const buffer = ArrayBuffer.isView(value)
+        ? Buffer.from(value.buffer, value.byteOffset, value.byteLength)
+        : Buffer.from(value);
+    return buffer.toString('base64');
 }
