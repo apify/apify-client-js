@@ -27,7 +27,8 @@ export interface HttpAgents {
  */
 export interface Runtime {
     /**
-     * Whether the client runs on Node.js, or on a runtime that provides its API such as Deno or Bun. The
+     * Whether the Node.js implementation was selected, which the `node` condition settles when `#runtime` is
+     * resolved - so a Node.js application bundled for a browser or a neutral target reports `false`. The
      * features that need a Node.js `Readable` response - log streaming and the `stream` record option - are
      * gated on it.
      */

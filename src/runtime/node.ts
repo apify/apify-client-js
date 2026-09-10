@@ -17,9 +17,9 @@ export const runtime: Runtime = {
 
     async compress(data) {
         try {
-            // Everything brotli needs belongs inside the fallback chain: `promisify()` throws for a missing
-            // function and `constants` need not carry the brotli parameters. At module scope either would fail
-            // the whole import instead of falling through to gzip.
+            // `promisify()` belongs inside the fallback chain: a partial `node:zlib` can export
+            // `brotliCompress` without implementing it, and `promisify(undefined)` throws. At module scope
+            // that would fail the whole import instead of falling through to gzip.
             const options = { params: { [constants.BROTLI_PARAM_QUALITY]: 6 } };
             return { data: await promisify(brotliCompress)(data, options), encoding: 'br' };
         } catch {

@@ -14,7 +14,10 @@
         "sourceMap": false,
         "paths": {
             // `#runtime` is a package.json subpath import that Node.js and bundlers resolve to `dist`. Type-checking
-            // goes straight to the source of the Node.js implementation; the Web API one implements the same interface.
+            // goes straight to the source of the Node.js implementation, and the Web API one implements the same
+            // interface. A bundler that reads this mapping picks the Node.js implementation whatever it targets, and
+            // some do so by default, so bundling the client from inside this repository has to override it: see
+            // `aliasStrategy` in `rsbuild.config.ts` and `tsconfigRaw` in `test/runtime.test.ts`.
             "#runtime": ["./src/runtime/node.ts"]
         }
     },
