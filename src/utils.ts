@@ -22,6 +22,9 @@ import packageJson from '../package.json' with { type: 'json' };
 const MIN_COMPRESS_BYTES = 1024;
 const textEncoder = new TextEncoder();
 
+// Only the version, so a bundler can drop the rest of the manifest.
+export const { version } = packageJson;
+
 export { parseArgument };
 
 /**
@@ -272,11 +275,6 @@ export function isStream(value: unknown): value is Readable {
     if (value === null || typeof value !== 'object') return false;
     const { on, pipe } = value as Partial<Readable>;
     return typeof on === 'function' && typeof pipe === 'function';
-}
-
-export function getVersionData(): { version: string } {
-    // Only the version, so a bundler can drop the rest of the manifest.
-    return { version: packageJson.version };
 }
 
 /**

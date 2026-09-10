@@ -14,9 +14,7 @@ import type { RequestInterceptorFunction } from './interceptors.js';
 import { InvalidResponseBodyError, requestInterceptors, responseInterceptors } from './interceptors.js';
 import { runtime } from '#runtime';
 import type { Statistics } from './statistics.js';
-import { asArray, cast, getEnv, getVersionData, isStream } from './utils.js';
-
-const { version } = getVersionData();
+import { asArray, cast, getEnv, isStream, version } from './utils.js';
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 
