@@ -1,6 +1,6 @@
 import type { AddressInfo } from 'node:net';
 
-import { ApifyClient } from 'apify-client';
+import { ApifyApiError, ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
@@ -137,6 +137,16 @@ describe('Build methods', () => {
             const browserRes = await page.evaluate((id) => client.build(id).log().get(), buildId);
             expect(browserRes).toEqual('build-log');
             validateRequest({ query: {}, params: { buildId } });
+        });
+
+        test('log().get() throws on 404 status code', async () => {
+            const buildId = '404';
+
+            const call = client.build(buildId).log().get();
+            await expect(call).rejects.toThrow(ApifyApiError);
+            await expect(call).rejects.toMatchObject({ statusCode: 404 });
+
+            await expect(page.evaluate((id) => client.build(id).log().get(), buildId)).rejects.toThrow();
         });
     });
 });

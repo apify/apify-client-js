@@ -1,13 +1,11 @@
 import { z } from 'zod';
 
-import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyRequestConfig } from '../http_client.js';
 import type { Schedule, ScheduleAction, ScheduleInvoked } from '../models.js';
 import type { DistributiveOptional } from '../utils.js';
 import * as schemas from '../schemas.js';
-import { anyObjectSchema, catchNotFoundOrThrow, parseArgument, parseResponse } from '../utils.js';
+import { anyObjectSchema, parseArgument, parseResponse } from '../utils.js';
 
 export type {
     Schedule,
@@ -90,23 +88,16 @@ export class ScheduleClient extends ResourceClient {
     /**
      * Retrieves the schedule's log.
      *
-     * @returns The schedule log, one entry per invocation, or `undefined` if the schedule does not exist.
+     * @returns The schedule log, one entry per invocation.
      * @see https://docs.apify.com/api/v2/schedule-log-get
      */
-    async getLog(): Promise<ScheduleInvoked[] | undefined> {
-        const requestOpts: ApifyRequestConfig = {
+    async getLog(): Promise<ScheduleInvoked[]> {
+        const response = await this.httpClient.call({
             url: this._url('log'),
             method: 'GET',
             params: this._params(),
-        };
-        try {
-            const response = await this.httpClient.call(requestOpts);
-            return parseResponse(response, scheduleLogSchema);
-        } catch (err) {
-            catchNotFoundOrThrow(err as ApifyApiError);
-        }
-
-        return undefined;
+        });
+        return parseResponse(response, scheduleLogSchema);
     }
 }
 

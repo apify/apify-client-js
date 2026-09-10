@@ -49,6 +49,17 @@ describe('Log methods', () => {
             validateRequest({ query: {}, params: { logId } });
         });
 
+        test('get() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
+            const logId = '404';
+
+            const res = await client.log(logId).get();
+            expect(res).toBeUndefined();
+            validateRequest({ query: {}, params: { logId } });
+
+            const browserRes = await page.evaluate((id) => client.log(id).get(), logId);
+            expect(browserRes).toBeUndefined();
+        });
+
         test('stream() works', async () => {
             const logId = 'some-id';
 
@@ -64,6 +75,14 @@ describe('Log methods', () => {
             }
             const id = Buffer.concat(chunks).toString();
             expect(id).toBe('get-log');
+            validateRequest({ query: { stream: true }, params: { logId } });
+        });
+
+        test('stream() returns undefined on 404 status code', async () => {
+            const logId = '404';
+
+            const res = await client.log(logId).stream();
+            expect(res).toBeUndefined();
             validateRequest({ query: { stream: true }, params: { logId } });
         });
     });

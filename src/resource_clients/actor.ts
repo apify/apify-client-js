@@ -49,7 +49,7 @@ const validateInputOptionsSchema = z.strictObject({
     build: z.string().optional(),
     contentType: z.string().optional(),
 });
-const versionNumberSchema = z.string();
+const versionNumberSchema = z.string().min(1);
 const buildOptionsSchema = z.strictObject({
     betaPackages: z.boolean().optional(),
     tag: z.string().optional(),

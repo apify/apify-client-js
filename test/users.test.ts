@@ -1,6 +1,6 @@
 import type { AddressInfo } from 'node:net';
 
-import { ApifyClient } from 'apify-client';
+import { ApifyApiError, ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
@@ -44,7 +44,7 @@ describe('User methods', () => {
             const userId = 'some-id';
 
             const res = await client.user(userId).get();
-            expect(res.id).toEqual('get-user');
+            expect(res?.id).toEqual('get-user');
             validateRequest({ query: {}, params: { userId } });
 
             const browserRes = await page.evaluate((id) => client.user(id).get(), userId);
@@ -54,7 +54,7 @@ describe('User methods', () => {
 
         test('get() with no userId', async () => {
             const res = await client.user().get();
-            expect(res.id).toEqual('get-user');
+            expect(res?.id).toEqual('get-user');
             validateRequest({ query: {}, params: { userId: ME_USER_NAME_PLACEHOLDER } });
 
             const browserRes = await page.evaluate((id) => client.user(id).get(), undefined);
@@ -107,6 +107,16 @@ describe('User methods', () => {
             const browserRes = await page.evaluate((id) => client.user(id).limits(), userId);
             expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { userId } });
+        });
+
+        test.each(['monthlyUsage', 'limits'] as const)('%s() throws on 404 status code', async (method) => {
+            const userId = '404';
+
+            const call = client.user(userId)[method]();
+            await expect(call).rejects.toThrow(ApifyApiError);
+            await expect(call).rejects.toMatchObject({ statusCode: 404 });
+
+            await expect(page.evaluate((id, m) => client.user(id)[m](), userId, method)).rejects.toThrow();
         });
 
         test('updateLimits() works', async () => {

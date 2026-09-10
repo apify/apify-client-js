@@ -1,10 +1,8 @@
-import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyRequestConfig } from '../http_client.js';
 import type { Webhook, WebhookEventType } from '../models.js';
 import * as schemas from '../schemas.js';
-import { anyObjectSchema, catchNotFoundOrThrow, parseArgument, parseResponse } from '../utils.js';
+import { anyObjectSchema, parseArgument, parseResponse } from '../utils.js';
 import type { WebhookDispatch } from './webhook_dispatch.js';
 import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection.js';
 
@@ -93,24 +91,16 @@ export class WebhookClient extends ResourceClient {
     /**
      * Tests the webhook by dispatching a test event.
      *
-     * @returns The webhook dispatch object, or `undefined` if the test fails.
+     * @returns The webhook dispatch object.
      * @see https://docs.apify.com/api/v2/webhook-test-post
      */
-    async test(): Promise<WebhookDispatch | undefined> {
-        const request: ApifyRequestConfig = {
+    async test(): Promise<WebhookDispatch> {
+        const response = await this.httpClient.call({
             url: this._url('test'),
             method: 'POST',
             params: this._params(),
-        };
-
-        try {
-            const response = await this.httpClient.call(request);
-            return parseResponse(response, schemas.WebhookDispatch());
-        } catch (err) {
-            catchNotFoundOrThrow(err as ApifyApiError);
-        }
-
-        return undefined;
+        });
+        return parseResponse(response, schemas.WebhookDispatch());
     }
 
     /**

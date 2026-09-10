@@ -4,7 +4,7 @@ import type { z } from 'zod';
 
 import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApifyRequestConfig } from '../http_client.js';
-import { catchNotFoundOrThrow, parseResponse } from '../utils.js';
+import { catchNotFoundForResourceOrThrow, catchNotFoundOrThrow, parseResponse } from '../utils.js';
 import { ApiClient } from './api_client.js';
 
 /**
@@ -23,6 +23,10 @@ export const DEFAULT_TIMEOUT_MILLIS = 360 * 1000; // 6 minutes
  * @private
  */
 export class ResourceClient extends ApiClient {
+    /**
+     * A 404 resolves to `undefined` only when the client names its resource by ID. A chained client without one, such
+     * as `run.dataset()`, throws it instead (see `catchNotFoundForResourceOrThrow()`).
+     */
     protected async _get<T, R>(
         schema: z.ZodType,
         options: T = {} as T,
@@ -38,7 +42,7 @@ export class ResourceClient extends ApiClient {
             const response = await this.httpClient.call(requestOpts);
             return parseResponse<R>(response, schema);
         } catch (err) {
-            catchNotFoundOrThrow(err as ApifyApiError);
+            catchNotFoundForResourceOrThrow(err as ApifyApiError, this.id);
         }
 
         return undefined;
@@ -55,6 +59,10 @@ export class ResourceClient extends ApiClient {
         return parseResponse<R>(response, schema);
     }
 
+    /**
+     * A 404 is swallowed, keeping the DELETE idempotent, only when the client names its resource by ID. A chained client
+     * without one throws it instead (see `catchNotFoundForResourceOrThrow()`).
+     */
     protected async _delete(timeoutMillis?: number): Promise<void> {
         try {
             await this.httpClient.call({
@@ -64,7 +72,7 @@ export class ResourceClient extends ApiClient {
                 timeout: timeoutMillis,
             });
         } catch (err) {
-            catchNotFoundOrThrow(err as ApifyApiError);
+            catchNotFoundForResourceOrThrow(err as ApifyApiError, this.id);
         }
     }
 
