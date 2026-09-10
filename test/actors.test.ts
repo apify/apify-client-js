@@ -55,8 +55,8 @@ describe('Actor methods', () => {
                 offset: 3,
                 desc: true,
                 my: true,
-                sortBy: 'createdAt' as const,
-            };
+                sortBy: 'createdAt',
+            } satisfies ActorCollectionListOptions;
             // Both spellings compile, and the enum member holds the same value.
             const withEnumMember: ActorCollectionListOptions = { ...opts, sortBy: ActorListSortBy.CREATED_AT };
             expect(withEnumMember).toEqual(opts);
@@ -670,7 +670,7 @@ describe('Actor methods', () => {
             test('update() works with a subset of the version fields', async () => {
                 const actorId = 'some-id';
                 const versionNumber = '0.0';
-                const newFields = { buildTag: 'latest' } as const;
+                const newFields = { buildTag: 'latest' };
 
                 const res = await client.actor(actorId).version(versionNumber).update(newFields);
                 validateRequest({
