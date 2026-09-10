@@ -1,5 +1,6 @@
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
+import { Readable } from 'node:stream';
 
 import type { ApifyRequestConfig, ApifyResponse, HttpRequest, HttpResponse } from 'apify-client';
 import {
@@ -483,6 +484,31 @@ describe('pluggable HTTP client', () => {
             const response = await httpClient.call({ url: `${baseUrl}/binary`, method: 'GET', responseType: 'buffer' });
 
             expect(response.data).toEqual(Buffer.from([1, 2, 3]));
+        });
+
+        test('gives up on a request whose body is a stream, since part of it is already consumed', async () => {
+            const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 1 });
+            const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockRejectedValue(new Error('socket hang up'));
+            const warningOnce = vi.spyOn(httpClient.logger, 'warningOnce');
+
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'POST', data: Readable.from(['chunk']) });
+
+            await expect(call).rejects.toThrow('socket hang up');
+            expect(sendRequest).toHaveBeenCalledTimes(1);
+            expect(warningOnce).toHaveBeenCalled();
+        });
+
+        test('hands back the body unread for responseType stream', async () => {
+            const httpClient = new NodeHttpClient();
+            const body = Readable.from(['streamed']);
+            const sendRequest = vi
+                .spyOn(httpClient, 'sendRequest')
+                .mockResolvedValue({ status: 200, headers: {}, body });
+
+            const response = await httpClient.call({ url: `${baseUrl}/echo`, method: 'GET', responseType: 'stream' });
+
+            expect(response.data).toBe(body);
+            expect(sendRequest.mock.calls[0][0].stream).toBe(true);
         });
 
         test('resolves an empty body to undefined', async () => {
