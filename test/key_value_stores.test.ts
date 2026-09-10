@@ -669,9 +669,10 @@ describe('Key-Value Store methods', () => {
         });
 
         test.each([
-            { name: 'SVG', contentType: 'image/svg+xml' },
-            { name: 'a raw bitmap', contentType: 'image/bmp' },
-        ])('setRecord() compresses $name despite its already-compressed prefix', async ({ contentType }) => {
+            { name: 'SVG under a compressed prefix', contentType: 'image/svg+xml' },
+            { name: 'a raw bitmap under a compressed prefix', contentType: 'image/bmp' },
+            { name: 'unknown binary', contentType: 'application/octet-stream' },
+        ])('setRecord() compresses $name', async ({ contentType }) => {
             const key = 'some-key';
             const storeId = 'some-id';
             const value = Buffer.alloc(4096, 'a');
