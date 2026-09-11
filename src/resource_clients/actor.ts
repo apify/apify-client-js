@@ -5,7 +5,7 @@ import { Log } from '@apify/log';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyRequestConfig } from '../http_client.js';
+import type { ApifyRequestConfig } from '../http_clients/index.js';
 import type { Actor, ActorRun } from '../models.js';
 import * as schemas from '../schemas.js';
 import { anyObjectSchema, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
@@ -217,8 +217,7 @@ export class ActorClient extends ResourceClient {
             method: 'POST',
             data: input,
             params: this._params(params),
-            // Apify internal property. Tells the request serialization interceptor
-            // to stringify functions to JSON, instead of omitting them.
+            // Actor input may carry page functions, which plain JSON serialization would drop.
             stringifyFunctions: true,
         };
         if (parsed.contentType) {
@@ -324,8 +323,7 @@ export class ActorClient extends ResourceClient {
             method: 'POST',
             data: input,
             params: this._params({ build: parsed.build }),
-            // Apify internal property. Tells the request serialization interceptor
-            // to stringify functions to JSON, instead of omitting them.
+            // Actor input may carry page functions, which plain JSON serialization would drop.
             stringifyFunctions: true,
         };
         if (parsed.contentType) {

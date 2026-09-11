@@ -332,3 +332,66 @@ export HTTPS_PROXY=http://proxy.example.com:3128
 ```
 
 The same `proxy-agent` upgrade removes the `[DEP0169] DeprecationWarning` about `url.parse()` that Node.js 24 and newer printed on the client's first request.
+
+## The HTTP client is pluggable
+
+`ApifyClient` sends its requests through an HTTP client you can replace. <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> is now the abstract base holding the shared request pipeline, and the axios-based client the `ApifyClient` uses by default is <ApiLink to="class/AxiosHttpClient">`AxiosHttpClient`</ApiLink>. A custom client extends `HttpClient`, implements `sendRequest()` and is plugged in with <ApiLink to="class/ApifyClient#withCustomHttpClient">`ApifyClient.withCustomHttpClient()`</ApiLink>. See [HTTP clients](../02_concepts/06_http-clients.md) for the contract. Decoupling the pipeline from axios changes a few details of the public surface.
+
+### `requestInterceptors` moved to `AxiosHttpClient`
+
+Axios request interceptors are a feature of the axios transport, so the option left `ApifyClientOptions`. Pass it to an `AxiosHttpClient` instead, and plug that in. The retry and timeout options move along with it:
+
+```diff
+- import { ApifyClient } from 'apify-client';
++ import { ApifyClient, AxiosHttpClient } from 'apify-client';
+
+- const client = new ApifyClient({
+-     token: 'MY-APIFY-TOKEN',
+-     maxRetries: 4,
+-     requestInterceptors: [addRequestId],
+- });
++ const client = ApifyClient.withCustomHttpClient({
++     token: 'MY-APIFY-TOKEN',
++     httpClient: new AxiosHttpClient({ maxRetries: 4, requestInterceptors: [addRequestId] }),
++ });
+```
+
+An interceptor now sees the request as the shared pipeline prepared it: the headers merged, and the body already serialized to a string or `Buffer` and compressed. Under v2 the interceptors ran before serialization and saw the original object.
+
+### `ApifyRequestConfig` and `ApifyResponse` no longer extend the axios types
+
+The request `httpClient.call()` takes and the response it resolves to, which `RunClient.charge()` also returns, are now transport-neutral. `ApifyResponse` carries `status`, `headers`, `data` and `config`, without the `statusText`, `request` and axios-specific `config` fields. `ApifyRequestConfig` accepts `url`, `method`, `params`, `headers`, `data`, `timeout`, `responseType`, `stringifyFunctions` and `doNotRetryTimeouts`, so an axios-only option such as `maxRedirects` is rejected by the types. The `forceBuffer` flag became `responseType: 'buffer'`, and `responseType` takes `'parsed'`, `'buffer'` or `'stream'` instead of the axios values.
+
+### `InvalidResponseBodyError.response` is the transport's response
+
+The `response` property carries the <ApiLink to="interface/HttpResponse">`HttpResponse`</ApiLink> the transport returned, with the unparsed bytes in `body`, in place of the axios response with the failed body in `data`.
+
+### `ApifyApiError.httpMethod` is uppercase
+
+The method is reported as the client sent it, so `POST` where v2 reported axios's lowercased `post`. <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink> takes its method from the same place, so its message is uppercase too.
+
+### A `Blob`, `File` or `FormData` body is no longer sent
+
+Under v2 axios recognized these types and streamed them, taking the `Content-Type` and `Content-Length`, or the multipart boundary, from the value itself. The pipeline serializes bodies on its own now and doesn't handle them, so passing one throws a `TypeError` naming the type. Read a `Blob` or a `File` into a `Buffer` or an `ArrayBuffer` first. A `FormData` body has to be encoded to a `Buffer` or a string with a matching `Content-Type` header. A web `ReadableStream` is refused the same way, where a `Readable` and a `URLSearchParams` both still go through.
+
+### A form-encoded object body is encoded by the client
+
+Pairing an object with `Content-Type: application/x-www-form-urlencoded`, which the `contentType` option of `ActorClient.start()`, `TaskClient.start()` and `RunClient.metamorph()` sets, no longer goes through axios. Binary values are base64-encoded wherever they sit in the object, so an `ArrayBuffer` or a typed-array field arrives intact instead of coerced to UTF-8, and a binary field nested under another key keeps its full path instead of losing it. Arrays nested below the top level are sent as `key[]` rather than `key[0]`, which decodes to the same structure.
+
+### The error thrown after the retries are exhausted is the last one
+
+`ApifyClient` reports the failure of the final attempt. In v2 `async-retry` reported the error whose message occurred most often across the attempts, so a call that hit five HTTP 500s and then four connection resets threw the `ServerError` rather than the reset. Code that branches on `instanceof ApifyApiError` for a call that fails in more than one way may see a different error type than it did before.
+
+### The per-attempt timeout grows on a fixed schedule
+
+Each attempt gets the request's timeout doubled once per retry, capped at `timeoutSecs`. In v2 the doubling compounded, because every attempt overwrote the request's timeout with the value it had just computed. A request starting at 5 seconds got 5, 10, 40 and 320 seconds; it now gets 5, 10, 20 and 40. Requests whose timeout is already `timeoutSecs`, which is most of them, are unaffected.
+
+### Retry delays are randomized
+
+The wait before a retry is `minDelayBetweenRetriesMillis` doubled once per attempt and then spread over a random factor between one and two, so clients that failed together don't come back at the API in lockstep. The option is a lower bound now rather than the delay itself. At the defaults, a call that burns through all eight retries sleeps 128 to 255 seconds in total, where v2 always slept 128.
+
+### `HttpClient` no longer exposes the axios instance
+
+The `axios`, `httpAgent` and `httpsAgent` properties, the `userProvidedRequestInterceptors` array and the `workflowKey` moved to `AxiosHttpClient` or became internal. Reach them through `client.httpClient` after narrowing it with `instanceof AxiosHttpClient`.
+
+The instance itself is bare: the pipeline merges the default headers and serializes the bodies per request, so `AxiosHttpClient.axios` no longer carries the `Authorization`, `X-Apify-Workflow-Key` and `User-Agent` defaults nor the serialization interceptors. A request sent through it directly reaches the API unauthenticated. Go through <ApiLink to="class/HttpClient#call">`httpClient.call()`</ApiLink> for an ad-hoc API request.

@@ -1,4 +1,3 @@
-import type { AxiosRequestConfig } from 'axios';
 import { z } from 'zod';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
@@ -6,7 +5,7 @@ import { LEVELS, Log } from '@apify/log';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyResponse } from '../http_client.js';
+import type { ApifyRequestConfig, ApifyResponse } from '../http_clients/index.js';
 import * as schemas from '../schemas.js';
 import { anyObjectSchema, isNode, parseArgument, parseResponse } from '../utils.js';
 import type { ActorInput, ActorRun } from './actor.js';
@@ -171,15 +170,12 @@ export class RunClient extends ResourceClient {
             build: parsed.build,
         };
 
-        const request: AxiosRequestConfig = {
+        const request: ApifyRequestConfig = {
             url: this._url('metamorph'),
             method: 'POST',
             data: input,
             params: this._params(params),
-            // Apify internal property. Tells the request serialization interceptor
-            // to stringify functions to JSON, instead of omitting them.
-            // TODO: remove this ts-expect-error once we have defined custom Apify axios configs
-            // @ts-expect-error Custom Apify property
+            // Actor input may carry page functions, which plain JSON serialization would drop.
             stringifyFunctions: true,
         };
 
@@ -210,7 +206,7 @@ export class RunClient extends ResourceClient {
      * @since Added in 2.8.0
      */
     async reboot(): Promise<ActorRun> {
-        const request: AxiosRequestConfig = {
+        const request: ApifyRequestConfig = {
             url: this._url('reboot'),
             method: 'POST',
         };
@@ -300,7 +296,7 @@ export class RunClient extends ResourceClient {
         const randomSuffix = (Math.random() + 1).toString(36).slice(3, 8);
         const idempotencyKey = providedIdempotencyKey ?? `${this.id}-${eventName}-${Date.now()}-${randomSuffix}`;
 
-        const request: AxiosRequestConfig = {
+        const request: ApifyRequestConfig = {
             url: this._url('charge'),
             method: 'POST',
             data: {

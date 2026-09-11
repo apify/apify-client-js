@@ -3,7 +3,7 @@ import { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 import type { z } from 'zod';
 
 import type { ApifyApiError } from '../apify_api_error.js';
-import type { ApifyRequestConfig } from '../http_client.js';
+import type { ApifyRequestConfig } from '../http_clients/index.js';
 import { catchNotFoundForResourceOrThrow, catchNotFoundOrThrow, parseResponse } from '../utils.js';
 import { ApiClient } from './api_client.js';
 

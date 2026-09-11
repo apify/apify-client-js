@@ -15,7 +15,7 @@ import {
     ResourceClient,
     SMALL_TIMEOUT_MILLIS,
 } from '../base/resource_client.js';
-import type { ApifyRequestConfig } from '../http_client.js';
+import type { ApifyRequestConfig } from '../http_clients/index.js';
 import type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore } from '../models.js';
 import * as schemas from '../schemas.js';
 import {
@@ -333,7 +333,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @since Added in 2.9.0
      */
     async recordExists(key: string): Promise<boolean> {
-        const requestOpts: Record<string, unknown> = {
+        const requestOpts: ApifyRequestConfig = {
             url: this._url(['records', key]),
             method: 'HEAD',
             params: this._params(),
@@ -387,14 +387,14 @@ export class KeyValueStoreClient extends ResourceClient {
         const queryParams: Record<string, string> = { attachment: 'true' };
         if (parsed.signature) queryParams.signature = parsed.signature;
 
-        const requestOpts: Record<string, unknown> = {
+        const requestOpts: ApifyRequestConfig = {
             url: this._url(['records', key]),
             method: 'GET',
             params: this._params(queryParams),
             timeout: DEFAULT_TIMEOUT_MILLIS,
         };
 
-        if (parsed.buffer) requestOpts.forceBuffer = true;
+        if (parsed.buffer) requestOpts.responseType = 'buffer';
         if (parsed.stream) requestOpts.responseType = 'stream';
 
         try {

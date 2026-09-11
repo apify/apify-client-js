@@ -4,7 +4,7 @@ import { ACT_JOB_STATUSES, META_ORIGINS } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyRequestConfig } from '../http_client.js';
+import type { ApifyRequestConfig } from '../http_clients/index.js';
 import type { Task, TaskPublicConfig } from '../models.js';
 import type { Dictionary } from '../utils.js';
 import * as schemas from '../schemas.js';
@@ -175,8 +175,7 @@ export class TaskClient extends ResourceClient {
             method: 'POST',
             data: input,
             params: this._params(params),
-            // Apify internal property. Tells the request serialization interceptor
-            // to stringify functions to JSON, instead of omitting them.
+            // Actor input may carry page functions, which plain JSON serialization would drop.
             stringifyFunctions: true,
             headers: {
                 'Content-Type': 'application/json',
