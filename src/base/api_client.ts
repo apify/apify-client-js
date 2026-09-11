@@ -1,7 +1,7 @@
 import type { ApifyClient } from '../apify_client.js';
 import type { HttpClient } from '../http_client.js';
 import type { PaginatedResponse, PaginationOptions } from '../utils.js';
-import { toPath, toPathSegment } from '../utils.js';
+import { SCANNED_COUNT, toPath, toPathSegment } from '../utils.js';
 
 /** @private */
 export interface ApiClientOptions {
@@ -112,17 +112,25 @@ export abstract class ApiClient {
             limit: minForLimitParam(options.limit, chunkSize),
         } as T);
 
+        // A page can return more or fewer items than the rows it scanned (see `SCANNED_COUNT`). The next offset and
+        // the stop condition follow the scanned number alone: advancing by `items.length` would re-scan rows after a
+        // filter dropped some and skip rows after `unwind` multiplied them, and stopping at an empty page would end
+        // the iteration in front of rows a filter hid.
+        const scannedRows = (page: R): number =>
+            (page as { [SCANNED_COUNT]?: number })[SCANNED_COUNT] ?? page.items.length;
+
         async function* asyncGenerator() {
             let currentPage = await paginatedListPromise;
             yield* currentPage.items;
             const offset = options.offset ?? 0;
             const limit = Math.min(options.limit || currentPage.total, currentPage.total);
 
-            let currentOffset = offset + currentPage.items.length;
-            let remainingItems = Math.min(currentPage.total - offset, limit) - currentPage.items.length;
+            let pageScanned = scannedRows(currentPage);
+            let currentOffset = offset + pageScanned;
+            let remainingItems = Math.min(currentPage.total - offset, limit) - pageScanned;
 
             while (
-                currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
+                pageScanned > 0 && // Continue only if the last page scanned some rows.
                 remainingItems > 0
             ) {
                 const newOptions = {
@@ -132,8 +140,9 @@ export abstract class ApiClient {
                 } as T;
                 currentPage = await getPaginatedList(newOptions);
                 yield* currentPage.items;
-                currentOffset += currentPage.items.length;
-                remainingItems -= currentPage.items.length;
+                pageScanned = scannedRows(currentPage);
+                currentOffset += pageScanned;
+                remainingItems -= pageScanned;
             }
         }
 
