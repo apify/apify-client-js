@@ -302,6 +302,78 @@ describe('DatasetClient.listItems as async iterable', () => {
             mockedClient.mockRestore();
         }
     } as any);
+
+    // Mimics the API on a dataset whose rows are reshaped before they are returned: `offset` and `limit` pick the
+    // scanned window over all rows first, `transform` (a filter, an `unwind`) then decides what gets returned, and
+    // `x-apify-pagination-count` still reports the whole window.
+    const mockTransformedDataset = (totalRows: number, transform: (rows: ReturnType<typeof range>) => unknown[]) =>
+        vi.spyOn(client.httpClient, 'call').mockImplementation((async (request: any) => {
+            const offset = request.params.offset ?? 0;
+            const scanned = range(offset, Math.min(offset + (request.params.limit || totalRows), totalRows));
+
+            return {
+                data: transform(scanned),
+                headers: {
+                    'x-apify-pagination-total': String(totalRows),
+                    'x-apify-pagination-offset': String(offset),
+                    'x-apify-pagination-count': String(scanned.length),
+                    'x-apify-pagination-limit': String(request.params.limit),
+                    'x-apify-pagination-desc': 'false',
+                },
+            };
+        }) as any);
+
+    test('continues past a page whose items were all filtered out', async () => {
+        // The first chunk scans 1000 rows and returns none of them; the items behind it must still be yielded.
+        const mockedClient = mockTransformedDataset(2000, (rows) => rows.filter(({ id }) => Number(id) >= 1000));
+
+        try {
+            const items = [];
+            for await (const item of client.dataset('some-id').listItems({ clean: true, chunkSize: 1000 })) {
+                items.push(item);
+            }
+            expect(items).toEqual(range(1000, 2000));
+            expect(mockedClient.mock.calls.map(([request]: any) => request.params.offset)).toEqual([undefined, 1000]);
+        } finally {
+            mockedClient.mockRestore();
+        }
+    });
+
+    test('advances the offset by the rows scanned rather than the items returned', async () => {
+        // Every chunk of two rows returns one. Advancing by `items.length` would make the next page re-scan, and
+        // re-yield, a row the previous page already returned.
+        const mockedClient = mockTransformedDataset(4, (rows) => rows.filter(({ id }) => Number(id) % 2 === 0));
+
+        try {
+            const items = [];
+            for await (const item of client.dataset('some-id').listItems({ clean: true, chunkSize: 2 })) {
+                items.push(item);
+            }
+            expect(items).toEqual([...range(0, 1), ...range(2, 3)]);
+            expect(mockedClient.mock.calls.map(([request]: any) => request.params.offset)).toEqual([undefined, 2]);
+        } finally {
+            mockedClient.mockRestore();
+        }
+    });
+
+    test('advances the offset by the rows scanned when unwind returns more items than rows', async () => {
+        // Every row unwinds into three items. Advancing by `items.length` would push the offset past rows the next
+        // page has not scanned yet, and skip them.
+        const unwind = (rows: ReturnType<typeof range>) =>
+            rows.flatMap((row) => ['a', 'b', 'c'].map((part) => ({ ...row, part })));
+        const mockedClient = mockTransformedDataset(4, unwind);
+
+        try {
+            const items = [];
+            for await (const item of client.dataset('some-id').listItems({ unwind: 'parts', chunkSize: 2 })) {
+                items.push(item);
+            }
+            expect(items).toEqual(unwind(range(0, 4)));
+            expect(mockedClient.mock.calls.map(([request]: any) => request.params.offset)).toEqual([undefined, 2]);
+        } finally {
+            mockedClient.mockRestore();
+        }
+    });
 });
 
 describe('KeyValueStoreClient.listKeys as async iterable', () => {
