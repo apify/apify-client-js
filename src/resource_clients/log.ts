@@ -2,6 +2,7 @@
 import type { Readable } from 'node:stream';
 
 import c from 'ansi-colors';
+import { z } from 'zod';
 
 import type { Log } from '@apify/log';
 import log, { Logger, LogLevel } from '@apify/log';
@@ -10,7 +11,11 @@ import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_client.js';
-import { cast, catchNotFoundForResourceOrThrow } from '../utils.js';
+import type { TimeoutOptions } from '../timeouts.js';
+import { timeoutOptionsShape } from '../timeouts.js';
+import { cast, catchNotFoundForResourceOrThrow, parseArgument } from '../utils.js';
+
+const logOptionsSchema = z.strictObject({ raw: z.boolean().optional(), ...timeoutOptionsShape });
 
 /**
  * Client for accessing Actor run or build logs.
@@ -50,15 +55,19 @@ export class LogClient extends ResourceClient {
      *
      * @param options - Log retrieval options.
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @returns The log content as a string, or `undefined` if it does not exist. A chained client such as
      * `run.log()` throws an `ApifyApiError` on a 404, since the run itself may be what is missing.
      * @see https://docs.apify.com/api/v2/log-get
      */
     async get(options: LogOptions = {}): Promise<string | undefined> {
+        const { timeoutSecs = 'long', ...params } = parseArgument(options, logOptionsSchema, 'LogOptions');
+
         const requestOpts: ApifyRequestConfig = {
-            url: this._url(),
+            url: this.buildUrl(),
             method: 'GET',
-            params: this._params(options),
+            params: this.buildParams(params),
+            timeoutSecs,
         };
 
         try {
@@ -76,21 +85,25 @@ export class LogClient extends ResourceClient {
      *
      * @param options - Log retrieval options.
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @returns The log content as a Readable stream, or `undefined` if it does not exist. A chained client such as
      * `run.log()` throws an `ApifyApiError` on a 404, since the run itself may be what is missing.
      * @see https://docs.apify.com/api/v2/log-get
      */
     async stream(options: LogOptions = {}): Promise<Readable | undefined> {
+        const { timeoutSecs = 'long', raw } = parseArgument(options, logOptionsSchema, 'LogOptions');
+
         const params = {
             stream: true,
-            raw: options.raw,
+            raw,
         };
 
         const requestOpts: ApifyRequestConfig = {
-            url: this._url(),
+            url: this.buildUrl(),
             method: 'GET',
-            params: this._params(params),
+            params: this.buildParams(params),
             responseType: 'stream',
+            timeoutSecs,
         };
 
         try {
@@ -107,7 +120,7 @@ export class LogClient extends ResourceClient {
 /**
  * @since Added in 2.20.0
  */
-export interface LogOptions {
+export interface LogOptions extends TimeoutOptions {
     /** @default false */
     raw?: boolean;
 }

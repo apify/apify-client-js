@@ -47,7 +47,7 @@ export abstract class ApiClient {
         const { baseUrl, publicBaseUrl, apifyClient, httpClient, resourcePath, id, params = {} } = options;
 
         this.id = id;
-        this.safeId = id && this._toSafeId(id);
+        this.safeId = id && this.toSafeId(id);
         this.baseUrl = baseUrl;
         this.publicBaseUrl = publicBaseUrl;
         this.resourcePath = resourcePath;
@@ -57,40 +57,40 @@ export abstract class ApiClient {
         this.params = params;
     }
 
-    protected _subResourceOptions<T>(moreOptions?: T): BaseOptions & T {
+    protected subResourceOptions<T>(moreOptions?: T): BaseOptions & T {
         const baseOptions: BaseOptions = {
-            baseUrl: this._url(),
+            baseUrl: this.buildUrl(),
             publicBaseUrl: this.publicBaseUrl,
             apifyClient: this.apifyClient,
             httpClient: this.httpClient,
-            params: this._params(),
+            params: this.buildParams(),
         };
         return { ...baseOptions, ...moreOptions } as BaseOptions & T;
     }
 
-    protected _url(path?: string | string[]): string {
+    protected buildUrl(path?: string | string[]): string {
         return path ? `${this.url}/${toPath(path)}` : this.url;
     }
 
-    protected _publicUrl(path?: string | string[]): string {
+    protected buildPublicUrl(path?: string | string[]): string {
         const url = this.id
             ? `${this.publicBaseUrl}/${this.resourcePath}/${toPathSegment(this.safeId!)}`
             : `${this.publicBaseUrl}/${this.resourcePath}`;
         return path ? `${url}/${toPath(path)}` : url;
     }
 
-    protected _params<T>(endpointParams?: T): Record<string, unknown> {
+    protected buildParams<T>(endpointParams?: T): Record<string, unknown> {
         return { ...this.params, ...endpointParams };
     }
 
-    protected _toSafeId(id: string): string {
+    protected toSafeId(id: string): string {
         return id.replaceAll('/', '~');
     }
 
     /**
      * Returns async iterator to iterate through all items and Promise that can be awaited to get first page of results.
      */
-    protected _listPaginatedFromCallback<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(
+    protected listPaginatedFromCallback<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(
         getPaginatedList: (options?: T) => Promise<R>,
         options: T = {} as T,
     ): AsyncIterable<Data> & Promise<R> {
@@ -104,7 +104,8 @@ export abstract class ApiClient {
         };
 
         // `chunkSize` only sizes this loop's requests; it is not an API parameter, so it must not reach
-        // `_params()` and the query string.
+        // `buildParams()` and the query string. The same goes for `timeoutSecs`, which callers take out before
+        // calling this, since it also picks the timeout of every page request.
         const { chunkSize, ...listOptions } = options;
 
         const paginatedListPromise = getPaginatedList({

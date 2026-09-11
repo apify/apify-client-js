@@ -179,7 +179,7 @@ test('call() applies the build and memory overrides it is given', async () => {
     const taskClient = client.task(createdTask.id);
 
     try {
-        const run = await taskClient.call(undefined, { build: 'latest', memory: 256, timeout: 120 });
+        const run = await taskClient.call(undefined, { build: 'latest', memory: 256, runTimeoutSecs: 120 });
         expect(run.status).toBe('SUCCEEDED');
         expect(run.options.memoryMbytes).toBe(256);
 

@@ -9,15 +9,12 @@ import { createHmacSignatureAsync, createStorageContentSignatureAsync } from '@a
 
 import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
-import {
-    DEFAULT_TIMEOUT_MILLIS,
-    MEDIUM_TIMEOUT_MILLIS,
-    ResourceClient,
-    SMALL_TIMEOUT_MILLIS,
-} from '../base/resource_client.js';
+import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_client.js';
 import type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore } from '../models.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import {
     anyObjectSchema,
     applyQueryParamsToUrl,
@@ -35,6 +32,7 @@ const listKeysOptionsSchema = z.strictObject({
     collection: z.string().optional(),
     prefix: z.string().optional(),
     signature: z.string().optional(),
+    ...timeoutOptionsShape,
 });
 const nonEmptyKeySchema = z.string().min(1);
 // `signature` is left out - this method produces one. The options type omits it to match.
@@ -44,6 +42,7 @@ const createKeysPublicUrlOptionsSchema = z.strictObject({
     collection: z.string().optional(),
     prefix: z.string().optional(),
     expiresInSecs: z.number().optional(),
+    ...timeoutOptionsShape,
 });
 const keySchema = z.string();
 const getRecordOptionsSchema = z.strictObject({
@@ -51,6 +50,7 @@ const getRecordOptionsSchema = z.strictObject({
     stream: z.boolean().optional(),
     disableRedirect: z.boolean().optional(),
     signature: z.string().optional(),
+    ...timeoutOptionsShape,
 });
 const recordSchema = z.strictObject({
     key: z.string(),
@@ -70,7 +70,7 @@ const recordSchema = z.strictObject({
     contentType: z.string().min(1).optional(),
 });
 const recordOptionsSchema = z.strictObject({
-    timeoutSecs: z.number().optional(),
+    ...timeoutOptionsShape,
     doNotRetryTimeouts: z.boolean().optional(),
 });
 
@@ -118,11 +118,15 @@ export class KeyValueStoreClient extends ResourceClient {
     /**
      * Gets the key-value store object from the Apify API.
      *
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The KeyValueStore object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/key-value-store-get
      */
-    async get(): Promise<KeyValueStore | undefined> {
-        return this._get(schemas.KeyValueStore(), {}, SMALL_TIMEOUT_MILLIS);
+    async get(options: TimeoutOptions = {}): Promise<KeyValueStore | undefined> {
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this.getResource(schemas.KeyValueStore(), {}, timeoutSecs);
     }
 
     /**
@@ -132,22 +136,29 @@ export class KeyValueStoreClient extends ResourceClient {
      * @param newFields.name - New name for the store
      * @param newFields.title - New title for the store
      * @param newFields.generalAccess - General resource access level ('FOLLOW_USER_SETTING', 'ANYONE_WITH_ID_CAN_READ' or 'RESTRICTED')
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @returns The updated KeyValueStore object
      * @see https://docs.apify.com/api/v2/key-value-store-put
      */
-    async update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore> {
+    async update(newFields: KeyValueClientUpdateOptions, options: TimeoutOptions = {}): Promise<KeyValueStore> {
         parseArgument(newFields, anyObjectSchema);
+        const { timeoutSecs = 'long' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._update(schemas.KeyValueStore(), newFields, DEFAULT_TIMEOUT_MILLIS);
+        return this.updateResource(schemas.KeyValueStore(), newFields, timeoutSecs);
     }
 
     /**
      * Deletes the key-value store.
      *
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/key-value-store-delete
      */
-    async delete(): Promise<void> {
-        return this._delete(SMALL_TIMEOUT_MILLIS);
+    async delete(options: TimeoutOptions = {}): Promise<void> {
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this.deleteResource(timeoutSecs);
     }
 
     /**
@@ -161,6 +172,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @param options.exclusiveStartKey - Key to start listing from (for pagination). The listing starts with the next key after this one.
      * @param options.collection - Filter keys by collection name.
      * @param options.prefix - Filter keys that start with this prefix.
+     * @param options.timeoutSecs - Timeout for each API request. Default is `'medium'`.
      * @returns Object containing `items` array of key metadata, pagination info (`count`, `limit`, `isTruncated`, `nextExclusiveStartKey`)
      * @see https://docs.apify.com/api/v2/key-value-store-keys-get
      *
@@ -188,16 +200,20 @@ export class KeyValueStoreClient extends ResourceClient {
     listKeys(
         options: KeyValueClientListKeysOptions = {},
     ): Promise<KeyValueClientListKeysResult> & AsyncIterable<KeyValueListItem> {
-        const parsed = parseArgument(options, listKeysOptionsSchema, 'KeyValueClientListKeysOptions');
+        const { timeoutSecs = 'medium', ...parsed } = parseArgument(
+            options,
+            listKeysOptionsSchema,
+            'KeyValueClientListKeysOptions',
+        );
 
         const getPaginatedList = async (
             kvsListOptions: KeyValueClientListKeysOptions = {},
         ): Promise<KeyValueClientListKeysResult> => {
             const response = await this.httpClient.call({
-                url: this._url('keys'),
+                url: this.buildUrl('keys'),
                 method: 'GET',
-                params: this._params(kvsListOptions),
-                timeout: MEDIUM_TIMEOUT_MILLIS,
+                params: this.buildParams(kvsListOptions),
+                timeoutSecs,
             });
 
             return parseResponse(response, schemas.ListOfKeys());
@@ -243,6 +259,8 @@ export class KeyValueStoreClient extends ResourceClient {
      * requiring an API token.
      *
      * @param key - The record key
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request that fetches the store. Default is `'long'`.
      * @returns A public URL string for accessing the record
      *
      * @example
@@ -253,12 +271,13 @@ export class KeyValueStoreClient extends ResourceClient {
      * ```
      * @since Added in 2.14.0
      */
-    async getRecordPublicUrl(key: string): Promise<string> {
+    async getRecordPublicUrl(key: string, options: TimeoutOptions = {}): Promise<string> {
         parseArgument(key, nonEmptyKeySchema);
+        const { timeoutSecs = 'long' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        const store = await this.get();
+        const store = await this.get({ timeoutSecs });
 
-        const recordPublicUrl = new URL(this._publicUrl(['records', key]));
+        const recordPublicUrl = new URL(this.buildPublicUrl(['records', key]));
 
         if (store?.urlSigningSecretKey) {
             const signature = await createHmacSignatureAsync(store.urlSigningSecretKey, key);
@@ -278,6 +297,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * @param options.expiresInSecs - Number of seconds until the signed URL expires. If omitted, the URL never expires.
      * @param options.limit - Maximum number of keys to return.
      * @param options.prefix - Filter keys by prefix.
+     * @param options.timeoutSecs - Timeout for the API request that fetches the store. Default is `'long'`.
      * @returns A public URL string for accessing the keys list
      *
      * @example
@@ -292,13 +312,15 @@ export class KeyValueStoreClient extends ResourceClient {
      * @since Added in 2.13.0
      */
     async createKeysPublicUrl(options: KeyValueClientCreateKeysUrlOptions = {}) {
-        const parsed = parseArgument(options, createKeysPublicUrlOptionsSchema, 'KeyValueClientCreateKeysUrlOptions');
+        const {
+            timeoutSecs = 'long',
+            expiresInSecs,
+            ...queryOptions
+        } = parseArgument(options, createKeysPublicUrlOptionsSchema, 'KeyValueClientCreateKeysUrlOptions');
 
-        const store = await this.get();
+        const store = await this.get({ timeoutSecs });
 
-        const { expiresInSecs, ...queryOptions } = parsed;
-
-        let createdPublicKeysUrl = new URL(this._publicUrl('keys'));
+        let createdPublicKeysUrl = new URL(this.buildPublicUrl('keys'));
 
         if (store?.urlSigningSecretKey) {
             const signature = await createStorageContentSignatureAsync({
@@ -320,6 +342,8 @@ export class KeyValueStoreClient extends ResourceClient {
      * This is more efficient than {@link getRecord} when you only need to check for existence.
      *
      * @param key - The record key to check
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @returns `true` if the record exists, `false` if it does not
      * @see https://docs.apify.com/api/v2/key-value-store-record-get
      *
@@ -332,11 +356,14 @@ export class KeyValueStoreClient extends ResourceClient {
      * ```
      * @since Added in 2.9.0
      */
-    async recordExists(key: string): Promise<boolean> {
-        const requestOpts: Record<string, unknown> = {
-            url: this._url(['records', key]),
+    async recordExists(key: string, options: TimeoutOptions = {}): Promise<boolean> {
+        const { timeoutSecs = 'long' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        const requestOpts: ApifyRequestConfig = {
+            url: this.buildUrl(['records', key]),
             method: 'HEAD',
-            params: this._params(),
+            params: this.buildParams(),
+            timeoutSecs,
         };
 
         try {
@@ -357,6 +384,12 @@ export class KeyValueStoreClient extends ResourceClient {
      * When the record does not exist, the function resolves to `undefined`. It does
      * NOT resolve to a `KeyValueStore` record with an `undefined` value.
      *
+     * @param key - The record key
+     * @param options - Retrieval options
+     * @param options.buffer - If `true`, the value is returned as a Buffer (Node.js) or ArrayBuffer (browser).
+     * @param options.stream - If `true`, the value is returned as a Readable stream. Node.js only.
+     * @param options.signature - Signature of a public URL, for reading a record without a token.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @see https://docs.apify.com/api/v2/key-value-store-record-get
      */
     async getRecord(key: string): Promise<KeyValueStoreRecord<JsonValue> | undefined>;
@@ -387,11 +420,11 @@ export class KeyValueStoreClient extends ResourceClient {
         const queryParams: Record<string, string> = { attachment: 'true' };
         if (parsed.signature) queryParams.signature = parsed.signature;
 
-        const requestOpts: Record<string, unknown> = {
-            url: this._url(['records', key]),
+        const requestOpts: ApifyRequestConfig = {
+            url: this.buildUrl(['records', key]),
             method: 'GET',
-            params: this._params(queryParams),
-            timeout: DEFAULT_TIMEOUT_MILLIS,
+            params: this.buildParams(queryParams),
+            timeoutSecs: parsed.timeoutSecs ?? 'long',
         };
 
         if (parsed.buffer) requestOpts.forceBuffer = true;
@@ -435,7 +468,7 @@ export class KeyValueStoreClient extends ResourceClient {
      *                             `'application/octet-stream'` fallback is treated as compressible, because
      *                             it could hold any binary data.
      * @param options - Storage options
-     * @param options.timeoutSecs - Timeout for the upload in seconds. Default varies by value size.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @param options.doNotRetryTimeouts - If `true`, don't retry on timeout errors. Default is `false`.
      * @see https://docs.apify.com/api/v2/key-value-store-record-put
      *
@@ -472,7 +505,7 @@ export class KeyValueStoreClient extends ResourceClient {
 
         const { key } = record;
         let { value, contentType } = record;
-        const { timeoutSecs, doNotRetryTimeouts } = parsed;
+        const { timeoutSecs = 'long', doNotRetryTimeouts } = parsed;
 
         const isValueStreamOrBuffer = isStream(value) || isBuffer(value);
         // To allow saving Objects to JSON without providing content type
@@ -493,13 +526,13 @@ export class KeyValueStoreClient extends ResourceClient {
         }
 
         const uploadOpts: ApifyRequestConfig = {
-            url: this._url(['records', key]),
+            url: this.buildUrl(['records', key]),
             method: 'PUT',
-            params: this._params(),
+            params: this.buildParams(),
             data: value,
             headers: contentType ? { 'content-type': contentType } : undefined,
             doNotRetryTimeouts,
-            timeout: timeoutSecs !== undefined ? timeoutSecs * 1000 : DEFAULT_TIMEOUT_MILLIS,
+            timeoutSecs,
         };
 
         await this.httpClient.call(uploadOpts);
@@ -509,6 +542,8 @@ export class KeyValueStoreClient extends ResourceClient {
      * Deletes a record from the key-value store.
      *
      * @param key - The record key to delete
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/key-value-store-record-delete
      *
      * @example
@@ -516,14 +551,15 @@ export class KeyValueStoreClient extends ResourceClient {
      * await client.keyValueStore('my-store').deleteRecord('temp-data');
      * ```
      */
-    async deleteRecord(key: string): Promise<void> {
+    async deleteRecord(key: string, options: TimeoutOptions = {}): Promise<void> {
         parseArgument(key, keySchema);
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         await this.httpClient.call({
-            url: this._url(['records', key]),
+            url: this.buildUrl(['records', key]),
             method: 'DELETE',
-            params: this._params(),
-            timeout: SMALL_TIMEOUT_MILLIS,
+            params: this.buildParams(),
+            timeoutSecs,
         });
     }
 }
@@ -546,7 +582,7 @@ export interface KeyValueClientUpdateOptions {
 /**
  * Options for listing keys in a Key-Value Store.
  */
-export interface KeyValueClientListKeysOptions {
+export interface KeyValueClientListKeysOptions extends TimeoutOptions {
     limit?: number;
     exclusiveStartKey?: string;
     collection?: string;
@@ -574,7 +610,7 @@ export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientL
 /**
  * Options for retrieving a record from a Key-Value Store.
  */
-export interface KeyValueClientGetRecordOptions {
+export interface KeyValueClientGetRecordOptions extends TimeoutOptions {
     buffer?: boolean;
     stream?: boolean;
     /**
@@ -607,8 +643,7 @@ export interface KeyValueStoreRecord<T> {
  * Options for storing a record in a Key-Value Store.
  * @since Added in 2.12.4
  */
-export interface KeyValueStoreRecordOptions {
-    timeoutSecs?: number;
+export interface KeyValueStoreRecordOptions extends TimeoutOptions {
     doNotRetryTimeouts?: boolean;
 }
 

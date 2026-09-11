@@ -3,7 +3,9 @@ import { z } from 'zod';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ActorVersion, FinalActorVersion } from '../models.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema } from '../timeouts.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
 import { ActorEnvVarClient } from './actor_env_var.js';
 import { ActorEnvVarCollectionClient } from './actor_env_var_collection.js';
@@ -60,33 +62,44 @@ export class ActorVersionClient extends ResourceClient {
     /**
      * Retrieves the Actor version.
      *
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The Actor version object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/act-version-get
      */
-    async get(): Promise<FinalActorVersion | undefined> {
-        return this._get(schemas.Version());
+    async get(options: TimeoutOptions = {}): Promise<FinalActorVersion | undefined> {
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this.getResource(schemas.Version(), {}, timeoutSecs);
     }
 
     /**
      * Updates the Actor version with the specified fields.
      *
      * @param newFields - Fields to update.
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The updated Actor version object.
      * @see https://docs.apify.com/api/v2/act-version-put
      */
-    async update(newFields: ActorVersionUpdateData): Promise<FinalActorVersion> {
+    async update(newFields: ActorVersionUpdateData, options: TimeoutOptions = {}): Promise<FinalActorVersion> {
         parseArgument(newFields, anyObjectSchema);
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._update(schemas.Version(), newFields);
+        return this.updateResource(schemas.Version(), newFields, timeoutSecs);
     }
 
     /**
      * Deletes the Actor version.
      *
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/act-version-delete
      */
-    async delete(): Promise<void> {
-        return this._delete();
+    async delete(options: TimeoutOptions = {}): Promise<void> {
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this.deleteResource(timeoutSecs);
     }
 
     /**
@@ -100,7 +113,7 @@ export class ActorVersionClient extends ResourceClient {
     envVar(envVarName: string): ActorEnvVarClient {
         parseArgument(envVarName, envVarNameSchema);
         return new ActorEnvVarClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 id: envVarName,
             }),
         );
@@ -114,7 +127,7 @@ export class ActorVersionClient extends ResourceClient {
      * @since Added in 2.1.0
      */
     envVars(): ActorEnvVarCollectionClient {
-        return new ActorEnvVarCollectionClient(this._subResourceOptions());
+        return new ActorEnvVarCollectionClient(this.subResourceOptions());
     }
 }
 

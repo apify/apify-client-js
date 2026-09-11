@@ -158,19 +158,17 @@ describe('Run methods', () => {
         test('resurrect() works', async () => {
             const runId = 'some-run-id';
 
-            const options = {
-                build: 'some-build',
-                memory: 1024,
-                timeout: 400,
-            };
+            // The run timeout travels to the API as `timeout`, while the client option is `runTimeoutSecs`.
+            const options = { build: 'some-build', memory: 1024, runTimeoutSecs: 400 };
+            const query = { build: 'some-build', memory: 1024, timeout: 400 };
 
             const res = await client.run(runId).resurrect(options);
             expect(res.id).toEqual('resurrect-run');
-            validateRequest({ query: options, params: { runId } });
+            validateRequest({ query, params: { runId } });
 
             const browserRes = await page.evaluate((rId, opts) => client.run(rId).resurrect(opts), runId, options);
             expect(browserRes).toEqual(asBrowserResult(res));
-            validateRequest({ query: options, params: { runId } });
+            validateRequest({ query, params: { runId } });
         });
 
         test('metamorph() works', async () => {

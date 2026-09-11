@@ -42,7 +42,7 @@ test('runs().list() filters by a single status and by a list of statuses', async
         // One run of each status the filter is about to ask for.
         const actorClient = client.actor(HELLO_WORLD_ACTOR);
         createdRunIds.push((await actorClient.call(undefined, NO_LOG_REDIRECT)).id);
-        createdRunIds.push((await actorClient.call(undefined, { timeout: 1, ...NO_LOG_REDIRECT })).id);
+        createdRunIds.push((await actorClient.call(undefined, { runTimeoutSecs: 1, ...NO_LOG_REDIRECT })).id);
 
         const runCollection = actorClient.runs();
 

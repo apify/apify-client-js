@@ -5,8 +5,10 @@ import type { ACTOR_PERMISSION_LEVEL } from '@apify/consts';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
 import type { ActorCollectionListItem } from '../models.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
 import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor.js';
 import type { ActorVersion } from './actor_version.js';
@@ -66,26 +68,30 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination options.
+     * @param options.timeoutSecs - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of Actors.
      * @see https://docs.apify.com/api/v2/acts-get
      */
     list(options: ActorCollectionListOptions = {}): PaginatedIterator<ActorCollectionListItem> {
         const parsed = parseArgument(options, listOptionsSchema, 'ActorCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfActors(), parsed);
+        return this.listResourcesPaginated(schemas.ListOfActors(), parsed, 'medium');
     }
 
     /**
      * Creates a new Actor.
      *
      * @param actor - The Actor data.
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
      * @returns The created Actor object.
      * @see https://docs.apify.com/api/v2/acts-post
      */
-    async create(actor: ActorCollectionCreateOptions): Promise<Actor> {
+    async create(actor: ActorCollectionCreateOptions, options: TimeoutOptions = {}): Promise<Actor> {
         parseArgument(actor, actorCreateSchema);
+        const { timeoutSecs = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._create(schemas.Actor(), actor);
+        return this.createResource(schemas.Actor(), actor, timeoutSecs);
     }
 }
 
@@ -105,9 +111,10 @@ const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
     desc: z.boolean().optional(),
     sortBy: z.enum(ActorListSortBy).optional(),
+    ...timeoutOptionsShape,
 });
 
-export interface ActorCollectionListOptions extends PaginationOptions {
+export interface ActorCollectionListOptions extends PaginationOptions, TimeoutOptions {
     my?: boolean;
     desc?: boolean;
     /**
