@@ -308,6 +308,22 @@ The `timeoutSecs` option of <ApiLink to="class/KeyValueStoreClient#setRecord">`K
 
 <ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> accept only the `timeoutSecs` option. Neither endpoint reads `offset`, `limit` or `desc`, and both return every item in one response, so `chunkSize` had nothing to size either. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those four options, deprecated since v2.21.0, are gone from the package. A call that passed any of them no longer compiles, and throws an `ArgumentValidationError` about an unrecognized key in JavaScript. Drop them and the call returns the same items as before.
 
+## `limit` counts scanned rows when iterating `listItems()`
+
+Iterating <ApiLink to="class/DatasetClient#listItems">`DatasetClient.listItems()`</ApiLink> with `for await` pages through the dataset by `offset` and `limit`. The API applies both to the dataset's rows before `clean`, `skipEmpty`, `skipHidden` and `unwind` reshape them, so a page can return fewer items than the rows it covered, or more. v2 advanced the offset and counted down `limit` by the items each page returned. A filter made the next page re-read rows the previous one had covered, `unwind` made it skip rows, and a page that came back empty ended the loop even when rows remained behind it.
+
+v3 advances and stops by the number of rows the API scanned, taken from the `x-apify-pagination-count` header. `limit` therefore caps the rows scanned, the same way it does on a single awaited `listItems()` call and in the API itself. With a filter set, the loop can yield fewer than `limit` items, each of them once. In v2 the same call made up the difference with items it had already yielded, or stopped early. With `unwind`, the loop can yield more than `limit` items. To collect a fixed number of items from a filtered dataset, count them in the loop:
+
+```js
+const items = [];
+for await (const item of client.dataset('dataset-id').listItems({ clean: true, chunkSize: 100 })) {
+    items.push(item);
+    if (items.length === 100) break;
+}
+```
+
+`PaginatedList.count` keeps reporting the items returned on the page. The cursor-based iterators, `listKeys()`, `listRequests()` and `paginateRequests()`, are unchanged.
+
 ## The last deprecated options are gone
 
 Two options that carried a `@deprecated` marker throughout v2 have been removed.
