@@ -3275,9 +3275,9 @@ export class RequestQueueClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions, userOptions?: RequestQueueUserOptions);
     addRequest(request: RequestQueueClientRequestToAdd, options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientAddRequestResult>;
     batchAddRequests(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
-    protected _batchAddRequests(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
+    protected _batchAddRequests(requests: SerializedRequestToAdd[], options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
     // (undocumented)
-    protected _batchAddRequestsWithRetries(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
+    protected _batchAddRequestsWithRetries(requests: SerializedRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
     batchDeleteRequests(requests: RequestQueueClientRequestToDelete[]): Promise<RequestQueueClientBatchDeleteRequestsResult>;
     delete(): Promise<void>;
     deleteRequest(id: string): Promise<void>;
@@ -3731,6 +3731,17 @@ interface ScheduleRePointed {
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 type Schemas = components['schemas'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public
+interface SerializedRequestToAdd {
+    // (undocumented)
+    byteLength: number;
+    // (undocumented)
+    json: string;
+    // (undocumented)
+    request: RequestQueueClientRequestToAdd;
+}
 
 // @public
 export class ServerError extends ApifyApiError {

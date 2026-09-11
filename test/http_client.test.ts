@@ -159,4 +159,19 @@ describe('HttpClient', () => {
         expect(request?.headers['content-encoding']).toBeUndefined();
         expect(request?.headers['content-length']).toBe(String(payload.length));
     });
+
+    test('sends a string body with an explicit content type as it is', async () => {
+        // The axios default transform would re-parse the body to validate it and trim this whitespace away.
+        const body = ' [{"uniqueKey": "key-1", "url": "http://example.com/1"}] ';
+
+        const response = await client.httpClient.call({
+            url: `${baseUrl}/v2/request-queues/some-id/requests/batch`,
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            data: body,
+        });
+
+        expect(response.config.data).toBe(body);
+        expect(mockServer.getLastRequest()?.body).toEqual(JSON.parse(body));
+    });
 });

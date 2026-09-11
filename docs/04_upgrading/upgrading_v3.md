@@ -268,6 +268,37 @@ A trailing slash appears only on a field the API returns without a path, so on `
 
 A URL field whose value isn't a valid absolute URL now fails response validation and throws <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink>, the same as any other field that doesn't match the specification.
 
+## `batchAddRequests()` rejects an oversized request before sending anything
+
+<ApiLink to="class/RequestQueueClient#batchAddRequests">`batchAddRequests()`</ApiLink> now measures the whole input before it sends the first batch. A request too large for the payload limit still throws the same error, and the message still names the request's index. What changed is that nothing has been sent by the time it throws. In v2 each batch was measured as it came up, so every batch before the oversized request had already gone out.
+
+```js
+// In v2 the four batches before the oversized request had already been sent.
+// In v3 nothing is sent.
+await client.requestQueue('my-queue').batchAddRequests([...hundredRequests, oversizedRequest]);
+```
+
+Code that treated the throw as "some of these landed" and reconciled the queue afterwards can drop the reconciliation.
+
+## A string body with a JSON content type is sent as it is
+
+A string body sent with an explicit `application/json` content type now goes out verbatim. Axios used to parse it to check that it was valid JSON, and wrapped it in a JSON string literal when it wasn't. The client skips that step so that `batchAddRequests()` can send a body it has already serialized.
+
+<ApiLink to="class/KeyValueStoreClient#setRecord">`setRecord()`</ApiLink> is where you'd notice. Storing a non-JSON string under `contentType: 'application/json'` used to save `"my value"`, quotes included, and now saves `my value`, which <ApiLink to="class/KeyValueStoreClient#getRecord">`getRecord()`</ApiLink> can't parse back:
+
+```js
+// v2 stored `"my value"`, v3 stores `my value`.
+await client.keyValueStore('my-store').setRecord({
+    key: 'my-key',
+    value: 'my value',
+    contentType: 'application/json',
+});
+```
+
+Give a record a content type matching what it holds, such as `text/plain`, or pass the value as an object and let the client serialize it.
+
+The same applies to a string input passed together with a `contentType` to <ApiLink to="class/ActorClient#start">`start()`</ApiLink>, <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, or <ApiLink to="class/RunClient#metamorph">`metamorph()`</ApiLink>. v2 handed the API the string wrapped in quotes, v3 hands it over as it is.
+
 ## `versions().list()` and `envVars().list()` take no options
 
 <ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> now take no arguments. Neither endpoint reads `offset`, `limit` or `desc`, and both return every item in one response, so `chunkSize` had nothing to size either. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those four options, deprecated since v2.21.0, are gone from the package. A call that passed an options object no longer compiles. Drop the argument and the call returns the same items as before.

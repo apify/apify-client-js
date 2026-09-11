@@ -242,3 +242,48 @@ describe('utils.stringifyWebhooksToBase64()', () => {
         expect(JSON.parse(Buffer.from(base64String, 'base64').toString('utf8'))).toStrictEqual(webhooks);
     });
 });
+
+describe('utils.utf8ByteLength()', () => {
+    test('counts UTF-8 bytes, not characters', () => {
+        expect(utils.utf8ByteLength('')).toBe(0);
+        expect(utils.utf8ByteLength('abc')).toBe(3);
+        expect(utils.utf8ByteLength('ž')).toBe(2);
+        expect(utils.utf8ByteLength('😀')).toBe(4);
+    });
+});
+
+describe('utils.splitIntoJsonArrayBatches()', () => {
+    const items = (...byteLengths: number[]) => byteLengths.map((byteLength) => ({ byteLength }));
+
+    test('fills a batch up to the byte length of its JSON array body, brackets and commas included', () => {
+        // `[` + three 5-byte items + two commas + `]` is 19 bytes, so three items fit into 19 bytes but not into 18.
+        expect(utils.splitIntoJsonArrayBatches(items(5, 5, 5, 5), { maxCount: 25, maxByteLength: 19 })).toEqual([
+            items(5, 5, 5),
+            items(5),
+        ]);
+        expect(utils.splitIntoJsonArrayBatches(items(5, 5, 5, 5), { maxCount: 25, maxByteLength: 18 })).toEqual([
+            items(5, 5),
+            items(5, 5),
+        ]);
+    });
+
+    test('caps a batch at maxCount items', () => {
+        expect(utils.splitIntoJsonArrayBatches(items(1, 1, 1, 1, 1), { maxCount: 2, maxByteLength: 1000 })).toEqual([
+            items(1, 1),
+            items(1, 1),
+            items(1),
+        ]);
+    });
+
+    test('gives an item that does not fit into a body of its own a batch of its own', () => {
+        expect(utils.splitIntoJsonArrayBatches(items(1, 50, 1), { maxCount: 25, maxByteLength: 10 })).toEqual([
+            items(1),
+            items(50),
+            items(1),
+        ]);
+    });
+
+    test('returns no batches for no items', () => {
+        expect(utils.splitIntoJsonArrayBatches([], { maxCount: 25, maxByteLength: 10 })).toEqual([]);
+    });
+});
