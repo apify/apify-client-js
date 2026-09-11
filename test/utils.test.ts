@@ -2,7 +2,7 @@ import { Readable } from 'node:stream';
 
 import type { WebhookUpdateData } from 'apify-client';
 import { ApifyApiError } from 'apify-client';
-import { describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import * as utils from '../src/utils.js';
 
@@ -135,8 +135,9 @@ describe('utils.maybeCompressValue()', () => {
         expect(await utils.maybeCompressValue('small')).toBeUndefined();
     });
 
-    test('returns undefined for non-string non-Buffer values', async () => {
+    test('returns undefined for non-string non-binary values', async () => {
         expect(await utils.maybeCompressValue({ foo: 'bar' })).toBeUndefined();
+        expect(await utils.maybeCompressValue(Readable.from(['x'.repeat(2048)]))).toBeUndefined();
     });
 
     test('compresses large string using brotli in Node.js', async () => {
@@ -144,17 +145,50 @@ describe('utils.maybeCompressValue()', () => {
         const result = await utils.maybeCompressValue(largeValue);
         expect(result).not.toBeUndefined();
         expect(result!.encoding).toBe('br');
-        expect(result!.data).toBeInstanceOf(Buffer);
-        expect(result!.data.length).toBeLessThan(Buffer.byteLength(largeValue));
+        expect(result!.data).toBeInstanceOf(Uint8Array);
+        expect(result!.data.byteLength).toBeLessThan(Buffer.byteLength(largeValue));
     });
 
-    test('compresses large Buffer using brotli in Node.js', async () => {
-        const largeValue = Buffer.alloc(2048, 'a');
-        const result = await utils.maybeCompressValue(largeValue);
+    test.each([
+        { kind: 'Buffer', value: Buffer.alloc(2048, 'a') },
+        { kind: 'Uint8Array', value: new Uint8Array(2048).fill(0x61) },
+        { kind: 'ArrayBuffer', value: new Uint8Array(2048).fill(0x61).buffer },
+    ])('compresses a large $kind using brotli in Node.js', async ({ value }) => {
+        const result = await utils.maybeCompressValue(value);
         expect(result).not.toBeUndefined();
         expect(result!.encoding).toBe('br');
-        expect(result!.data).toBeInstanceOf(Buffer);
-        expect(result!.data.length).toBeLessThan(largeValue.length);
+        expect(result!.data).toBeInstanceOf(Uint8Array);
+        expect(result!.data.byteLength).toBeLessThan(2048);
+    });
+});
+
+describe('utils.bytesToBase64()', () => {
+    test('matches the Node.js encoding for an input longer than one slice', () => {
+        const bytes = new Uint8Array(100_000).map((_, i) => i * 7919);
+        expect(utils.bytesToBase64(bytes)).toBe(Buffer.from(bytes).toString('base64'));
+    });
+
+    test('encodes an empty input', () => {
+        expect(utils.bytesToBase64(new Uint8Array())).toBe('');
+    });
+});
+
+describe('utils.concatBytes()', () => {
+    test('joins the chunks in order', () => {
+        const chunks = [new Uint8Array([1, 2]), new Uint8Array(), new Uint8Array([3])];
+        expect(utils.concatBytes(chunks)).toEqual(new Uint8Array([1, 2, 3]));
+    });
+});
+
+describe('utils.getEnv()', () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    test('reads an environment variable', () => {
+        expect(utils.getEnv('APIFY_CLIENT_TEST_VARIABLE')).toBeUndefined();
+        vi.stubEnv('APIFY_CLIENT_TEST_VARIABLE', 'value');
+        expect(utils.getEnv('APIFY_CLIENT_TEST_VARIABLE')).toBe('value');
     });
 });
 
@@ -240,5 +274,12 @@ describe('utils.stringifyWebhooksToBase64()', () => {
 
         expect(base64String).toBe(Buffer.from(JSON.stringify(webhooks), 'utf8').toString('base64'));
         expect(JSON.parse(Buffer.from(base64String, 'base64').toString('utf8'))).toStrictEqual(webhooks);
+    });
+
+    test('encodes multi-byte characters in a payload longer than one base64 slice', () => {
+        const webhooks: WebhookUpdateData[] = [{ description: 'Příliš žluťoučký kůň '.repeat(4000) }];
+        const base64String = utils.stringifyWebhooksToBase64(webhooks)!;
+
+        expect(base64String).toBe(Buffer.from(JSON.stringify(webhooks), 'utf8').toString('base64'));
     });
 });

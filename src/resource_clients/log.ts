@@ -10,7 +10,7 @@ import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_client.js';
-import { cast, catchNotFoundForResourceOrThrow } from '../utils.js';
+import { cast, catchNotFoundForResourceOrThrow, concatBytes } from '../utils.js';
 
 /**
  * Client for accessing Actor run or build logs.
@@ -151,7 +151,8 @@ export class LoggerActorRedirect extends Logger {
  */
 export class StreamedLog {
     private destinationLog: Log;
-    private streamBuffer: Buffer[] = [];
+    private streamBuffer: Uint8Array[] = [];
+    private decoder = new TextDecoder();
     private splitMarker = /(?:\n|^)(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)/g;
     private relevancyTimeLimit: Date | null;
 
@@ -207,7 +208,7 @@ export class StreamedLog {
             }
             const lastChunkRemainder = await this.logStreamChunks(logStream);
             // Process whatever is left when exiting. Maybe it is incomplete, maybe it is last log without EOL.
-            const lastMessage = Buffer.from(lastChunkRemainder).toString().trim();
+            const lastMessage = this.decoder.decode(lastChunkRemainder).trim();
             if (lastMessage.length) {
                 this.destinationLog.info(lastMessage);
             }
@@ -231,7 +232,7 @@ export class StreamedLog {
             previousChunkRemainder = chunkWithPreviousRemainder.slice(lastCompleteMessageIndex);
 
             // Push complete part of the chunk to the buffer
-            this.streamBuffer.push(Buffer.from(chunkWithPreviousRemainder.slice(0, lastCompleteMessageIndex)));
+            this.streamBuffer.push(chunkWithPreviousRemainder.slice(0, lastCompleteMessageIndex));
             this.logBufferContent();
 
             // Keep processing the new data until stopped
@@ -246,7 +247,7 @@ export class StreamedLog {
      * Parse the buffer and log complete messages.
      */
     private logBufferContent(): void {
-        const allParts = Buffer.concat(this.streamBuffer).toString().split(this.splitMarker).slice(1);
+        const allParts = this.decoder.decode(concatBytes(this.streamBuffer)).split(this.splitMarker).slice(1);
         // Parse the buffer parts into complete messages
         const messageMarkers = allParts.filter((_, i) => i % 2 === 0);
         const messageContents = allParts.filter((_, i) => i % 2 !== 0);

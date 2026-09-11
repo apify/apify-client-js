@@ -32,7 +32,7 @@ import { WebhookCollectionClient } from './resource_clients/webhook_collection.j
 import { WebhookDispatchClient } from './resource_clients/webhook_dispatch.js';
 import { WebhookDispatchCollectionClient } from './resource_clients/webhook_dispatch_collection.js';
 import { Statistics } from './statistics.js';
-import { parseArgument } from './utils.js';
+import { getEnv, parseArgument } from './utils.js';
 
 const DEFAULT_TIMEOUT_SECS = 360;
 
@@ -554,7 +554,7 @@ export class ApifyClient {
      * @since Added in 2.7.0
      */
     async setStatusMessage(message: string, options?: SetStatusMessageOptions): Promise<void> {
-        const runId = process.env[ACTOR_ENV_VARS.RUN_ID];
+        const runId = getEnv(ACTOR_ENV_VARS.RUN_ID);
         if (!runId) {
             throw new Error(`Environment variable ${ACTOR_ENV_VARS.RUN_ID} is not set!`);
         }

@@ -332,3 +332,38 @@ export HTTPS_PROXY=http://proxy.example.com:3128
 ```
 
 The same `proxy-agent` upgrade removes the `[DEP0169] DeprecationWarning` about `url.parse()` that Node.js 24 and newer printed on the client's first request.
+
+## Node.js-only features follow the bundler's target
+
+Four features need Node.js APIs: log streaming with <ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> and <ApiLink to="class/RunClient#getStreamedLog">`RunClient.getStreamedLog()`</ApiLink>, the `stream` option of <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink>, proxy support, and request body compression.
+
+In v2 the client detected the runtime when one of them was used, so a Node.js application bundled for a browser or a neutral target kept them all. In v3 the implementation is picked when the import is resolved, so the bundler's conditions decide. Without the `node` condition, `getRecord({ stream: true })` throws, `getStreamedLog()` returns `undefined`, and requests go out unproxied, uncompressed, and without the client's `User-Agent` header.
+
+Enable the `node` condition when you bundle for Node.js. esbuild sets it through `platform: 'node'`, webpack through `resolve.conditionNames`, and Vite through `resolve.conditions`.
+
+A test runner that resolves the `browser` condition decides the same way. Jest's `jsdom` environment resolves it, so a Node.js test suite running under it loses them unless you list the `node` condition:
+
+```js
+// jest.config.js
+export default {
+    testEnvironment: 'jsdom',
+    testEnvironmentOptions: { customExportConditions: ['node'] },
+};
+```
+
+Running on Node.js without a bundler is unaffected, and the pre-built browser bundle behaves as it did in v2. For what bundling for a non-Node.js target takes, see [Bundled environments](../02_concepts/05_bundled-environments.md).
+
+### Response bodies are decoded by `TextDecoder`
+
+In Node.js, v2 decoded response bodies with `Buffer` and v3 decodes them with `TextDecoder`. The two support different charsets, so a `content-type` header carrying one can be handled differently:
+
+- `iso-8859-1` and other charsets only `TextDecoder` knows decode to a string, where v2 handed back raw bytes.
+- `hex` and `base64`, which only `Buffer` knows, come back as raw bytes, where v2 decoded the body as if it were in that encoding.
+- `ascii` is read as an alias for `windows-1252`, so a byte above `0x7F` decodes to the character that encoding gives it, where v2 masked the byte down to seven bits.
+- A leading UTF-8 byte order mark is stripped from every decoded body, so a JSON body carrying one parses instead of throwing, and a `text/*` record such as a BOM-prefixed CSV comes back without it.
+
+Code that depended on one of these has to convert the value itself. A body with no charset or with a UTF-8 one is unaffected, apart from the byte order mark, and that covers everything the Apify API sends.
+
+### Request compression covers more body types
+
+v2 compressed a request body only when it was a string or a `Buffer`. A `Uint8Array`, another typed array, or an `ArrayBuffer` is compressed as well once it reaches the same 1 kB threshold, so a request carrying one gains a `content-encoding` header. The API accepts both encodings the client sends, `br` and `gzip`, so nothing needs to change on your side.

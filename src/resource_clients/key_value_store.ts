@@ -18,12 +18,12 @@ import {
 import type { ApifyRequestConfig } from '../http_client.js';
 import type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore } from '../models.js';
 import * as schemas from '../schemas.js';
+import { runtime } from '#runtime';
 import {
     anyObjectSchema,
     applyQueryParamsToUrl,
     catchNotFoundOrThrow,
     isBuffer,
-    isNode,
     isStream,
     parseArgument,
     parseResponse,
@@ -373,7 +373,7 @@ export class KeyValueStoreClient extends ResourceClient {
         parseArgument(key, keySchema);
         const parsed = parseArgument(options, getRecordOptionsSchema, 'KeyValueClientGetRecordOptions');
 
-        if (parsed.stream && !isNode()) {
+        if (parsed.stream && !runtime.isNode) {
             throw new Error('The stream option can only be used in Node.js environment.');
         }
 

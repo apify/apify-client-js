@@ -145,13 +145,15 @@ property to get only a subset of results. Other props are also available, depend
 
 ## Bundled environments
 
-The package includes a pre-built browser bundle that is automatically resolved by bundlers targeting browser environments. You can also import it explicitly via
+The package includes a pre-built browser bundle that bundlers targeting browsers resolve automatically. You can also import it explicitly:
 
 ```typescript
 import { ApifyClient } from 'apify-client/browser';
 ```
 
-For edge runtimes like Cloudflare Workers, you may need to enable Node compatibility (e.g. `node_compat = true` in `wrangler.toml`). Note that some Node-specific features (streaming, proxy support) are not available in the bundle.
+Only two parts of the client need Node.js built-ins: the HTTP agents and request compression. The `node` condition selects the Node.js implementation of those, and every other target gets one built on Web APIs. Log streaming, proxy support, and request compression are only available in Node.js.
+
+For details, see [Bundled environments](https://docs.apify.com/api/client/js/docs/concepts/bundled-environments).
 
 ## API Reference
 

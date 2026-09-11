@@ -1,7 +1,6 @@
 import type { AxiosResponse } from 'axios';
 import type { LiteralUnion } from 'type-fest';
 
-import { isomorphicBufferToString } from './body_parser.js';
 import type { ApifyApiErrorType } from './models.js';
 import { isBuffer } from './utils.js';
 
@@ -91,7 +90,7 @@ export class ApifyApiError extends Error {
         // the body buffer needs to parse to get the correct error.
         if (isBuffer(responseData)) {
             try {
-                responseData = JSON.parse(isomorphicBufferToString(response.data, 'utf-8'));
+                responseData = JSON.parse(new TextDecoder().decode(response.data));
             } catch {
                 // This can happen. The data in the response body are malformed.
             }
