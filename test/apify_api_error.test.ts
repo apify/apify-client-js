@@ -1,3 +1,4 @@
+import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 
 import type { Dictionary } from 'apify-client';
@@ -84,6 +85,58 @@ describe('ApifyApiError', () => {
         expect(error.path).toMatch(`/v2/${error.resourcePath}`);
         expect(error.httpMethod).toEqual('get');
         expect(error.attempt).toEqual(1);
+    });
+
+    test('should carry the API error of a failed streaming request', async () => {
+        const client = new ApifyClient({ baseUrl, maxRetries: 0, ...DEFAULT_OPTIONS });
+
+        // A chained `run.log()` rethrows the 404, so the error itself is observable. Streams are Node-only, so
+        // there is no browser leg here.
+        const call = client.run('404').log().stream();
+        await expect(call).rejects.toThrow(NotFoundError);
+        await expect(call).rejects.toMatchObject({
+            name: 'NotFoundError',
+            statusCode: 404,
+            type: 'record-not-found',
+            message: 'Record with this name was not found',
+            httpMethod: 'get',
+            path: '/v2/actor-runs/404/log',
+        });
+    });
+
+    test('should not invent a message for a failed streaming request with an empty body', async () => {
+        const client = new ApifyClient({ baseUrl, maxRetries: 0, ...DEFAULT_OPTIONS });
+
+        await expect(client.run('500').log().stream()).rejects.toMatchObject({
+            name: 'ServerError',
+            statusCode: 500,
+            message: '',
+        });
+    });
+
+    test('should keep the status code of a streaming request whose error body breaks mid-read', async () => {
+        // The connection drops after the headers, so the body read rejects. Without that rejection being
+        // swallowed, the 500 would surface as a network error instead.
+        const server = createServer((_req, res) => {
+            res.writeHead(500, { 'content-type': 'application/json' });
+            res.write('{"error":', () => res.socket?.destroy());
+        });
+        await new Promise<void>((resolve) => server.listen(0, resolve));
+        const client = new ApifyClient({
+            baseUrl: `http://localhost:${(server.address() as AddressInfo).port}`,
+            maxRetries: 0,
+            ...DEFAULT_OPTIONS,
+        });
+
+        try {
+            await expect(client.run('500').log().stream()).rejects.toMatchObject({
+                name: 'ServerError',
+                statusCode: 500,
+            });
+        } finally {
+            server.closeAllConnections();
+            await new Promise((resolve) => server.close(resolve));
+        }
     });
 
     test('should carry additional error data if provided', async () => {
@@ -183,6 +236,7 @@ describe('ApifyApiError', () => {
 
             expect(error).toBeInstanceOf(NotFoundError);
             expect(error.type).toBeUndefined();
+            expect(error.message).toBe('Unexpected error: "<not json>"');
         });
     });
 });

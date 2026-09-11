@@ -9,6 +9,7 @@ import axios, { AxiosHeaders } from 'axios';
 
 import { APIFY_ENV_VARS } from '@apify/consts';
 import type { Log } from '@apify/log';
+import { concatStreamToBuffer } from '@apify/utilities';
 
 import { ApifyApiError } from './apify_api_error.js';
 import type { RequestInterceptorFunction } from './interceptors.js';
@@ -216,6 +217,13 @@ export class HttpClient {
 
                 response = await this.axios.request(config);
                 if (this._isStatusOk(response.status)) return response;
+
+                // A failed request with `responseType: 'stream'` carries the API error body in the stream. Read
+                // it so that `ApifyApiError` can parse it like any other error body. A body that cannot be read
+                // leaves the error without a message, which beats losing the status code to a stream error.
+                if (isStream(response.data)) {
+                    response.data = await concatStreamToBuffer(response.data).catch(() => undefined);
+                }
             } catch (err) {
                 return cast(this._handleRequestError(err as AxiosError, config, stopTrying));
             }
