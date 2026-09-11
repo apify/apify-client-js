@@ -71,7 +71,7 @@ export class UserClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/user-get
      */
     async get(): Promise<User | undefined> {
-        return this._get(schemas.UserPrivateInfo());
+        return this.getResource(schemas.UserPrivateInfo());
     }
 
     /**
@@ -83,9 +83,9 @@ export class UserClient extends ResourceClient {
      */
     async monthlyUsage(): Promise<MonthlyUsage> {
         const response = await this.httpClient.call({
-            url: this._url('usage/monthly'),
+            url: this.buildUrl('usage/monthly'),
             method: 'GET',
-            params: this._params(),
+            params: this.buildParams(),
         });
         // `dailyServiceUsages[].date` does not end in `At`, so it has to be named for `parseDateFields`.
         return parseResponse(response, schemas.MonthlyUsage(), (key) => key === 'date');
@@ -100,9 +100,9 @@ export class UserClient extends ResourceClient {
      */
     async limits(): Promise<AccountAndUsageLimits> {
         const response = await this.httpClient.call({
-            url: this._url('limits'),
+            url: this.buildUrl('limits'),
             method: 'GET',
-            params: this._params(),
+            params: this.buildParams(),
         });
         return parseResponse(response, schemas.AccountLimits());
     }
@@ -116,9 +116,9 @@ export class UserClient extends ResourceClient {
      */
     async updateLimits(options: LimitsUpdateOptions): Promise<void> {
         const requestOpts: ApifyRequestConfig = {
-            url: this._url('limits'),
+            url: this.buildUrl('limits'),
             method: 'PUT',
-            params: this._params(),
+            params: this.buildParams(),
             data: options,
         };
         await this.httpClient.call(requestOpts);

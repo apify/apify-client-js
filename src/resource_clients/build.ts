@@ -67,7 +67,7 @@ export class BuildClient extends ResourceClient {
     async get(options: BuildClientGetOptions = {}): Promise<Build | undefined> {
         const parsed = parseArgument(options, getOptionsSchema, 'BuildClientGetOptions');
 
-        return this._get(schemas.Build(), parsed);
+        return this.getResource(schemas.Build(), parsed);
     }
 
     /**
@@ -85,9 +85,9 @@ export class BuildClient extends ResourceClient {
      */
     async abort(): Promise<Build> {
         const response = await this.httpClient.call({
-            url: this._url('abort'),
+            url: this.buildUrl('abort'),
             method: 'POST',
-            params: this._params(),
+            params: this.buildParams(),
         });
 
         return parseResponse(response, schemas.Build());
@@ -100,7 +100,7 @@ export class BuildClient extends ResourceClient {
      * @since Added in 2.8.1
      */
     async delete(): Promise<void> {
-        return this._delete();
+        return this.deleteResource();
     }
 
     /**
@@ -112,9 +112,9 @@ export class BuildClient extends ResourceClient {
      */
     async getOpenApiDefinition(): Promise<OpenApiDefinition> {
         const response = await this.httpClient.call({
-            url: this._url('openapi.json'),
+            url: this.buildUrl('openapi.json'),
             method: 'GET',
-            params: this._params(),
+            params: this.buildParams(),
         });
 
         return response.data;
@@ -153,7 +153,7 @@ export class BuildClient extends ResourceClient {
     async waitForFinish(options: BuildClientWaitForFinishOptions = {}): Promise<Build> {
         const parsed = parseArgument(options, waitForFinishOptionsSchema, 'BuildClientWaitForFinishOptions');
 
-        return this._waitForFinish(schemas.Build(), parsed);
+        return this.waitForJobFinish(schemas.Build(), parsed);
     }
 
     /**
@@ -174,7 +174,7 @@ export class BuildClient extends ResourceClient {
      */
     log(): LogClient {
         return new LogClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'log',
             }),
         );

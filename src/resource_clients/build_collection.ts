@@ -69,7 +69,7 @@ export class BuildCollectionClient extends ResourceCollectionClient {
     list(options: BuildCollectionClientListOptions = {}): PaginatedIterator<BuildCollectionClientListItem> {
         const parsed = parseArgument(options, listOptionsSchema, 'BuildCollectionClientListOptions');
 
-        return this._listPaginated(schemas.ListOfBuilds(), parsed);
+        return this.listResourcesPaginated(schemas.ListOfBuilds(), parsed);
     }
 }
 

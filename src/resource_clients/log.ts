@@ -56,9 +56,9 @@ export class LogClient extends ResourceClient {
      */
     async get(options: LogOptions = {}): Promise<string | undefined> {
         const requestOpts: ApifyRequestConfig = {
-            url: this._url(),
+            url: this.buildUrl(),
             method: 'GET',
-            params: this._params(options),
+            params: this.buildParams(options),
         };
 
         try {
@@ -87,9 +87,9 @@ export class LogClient extends ResourceClient {
         };
 
         const requestOpts: ApifyRequestConfig = {
-            url: this._url(),
+            url: this.buildUrl(),
             method: 'GET',
-            params: this._params(params),
+            params: this.buildParams(params),
             responseType: 'stream',
         };
 

@@ -26,7 +26,7 @@ export class Statistics {
         // attempt is never 0,
         // but we don't want index 0 empty
         const index = attempt - 1;
-        this._fillBlanksWithZeroes(index);
+        this.fillBlanksWithZeroes(index);
         this.rateLimitErrors[index]++;
     }
 
@@ -35,7 +35,7 @@ export class Statistics {
      * number of zeroes by dynamically filling the empty indexes
      * when necessary.
      */
-    private _fillBlanksWithZeroes(inclusiveIndex: number) {
+    private fillBlanksWithZeroes(inclusiveIndex: number) {
         if (this.rateLimitErrors.length <= inclusiveIndex) {
             for (let k = 0; k <= inclusiveIndex; k++) {
                 if (typeof this.rateLimitErrors[k] !== 'number') {

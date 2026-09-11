@@ -123,7 +123,7 @@ export class ApifyClient {
         });
     }
 
-    private _options() {
+    private subClientOptions() {
         return {
             baseUrl: this.baseUrl,
             publicBaseUrl: this.publicBaseUrl,
@@ -141,7 +141,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/acts-get
      */
     actors(): ActorCollectionClient {
-        return new ActorCollectionClient(this._options());
+        return new ActorCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -165,7 +165,7 @@ export class ApifyClient {
 
         return new ActorClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -178,7 +178,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/actor-builds-get
      */
     builds(): BuildCollectionClient {
-        return new BuildCollectionClient(this._options());
+        return new BuildCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -195,7 +195,7 @@ export class ApifyClient {
 
         return new BuildClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -208,7 +208,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/datasets-get
      */
     datasets(): DatasetCollectionClient {
-        return new DatasetCollectionClient(this._options());
+        return new DatasetCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -241,7 +241,7 @@ export class ApifyClient {
 
         return new DatasetClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -254,7 +254,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/key-value-stores-get
      */
     keyValueStores(): KeyValueStoreCollectionClient {
-        return new KeyValueStoreCollectionClient(this._options());
+        return new KeyValueStoreCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -281,7 +281,7 @@ export class ApifyClient {
 
         return new KeyValueStoreClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -297,7 +297,7 @@ export class ApifyClient {
 
         return new LogClient({
             id: buildOrRunId,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -310,7 +310,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/request-queues-get
      */
     requestQueues(): RequestQueueCollectionClient {
-        return new RequestQueueCollectionClient(this._options());
+        return new RequestQueueCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -340,7 +340,7 @@ export class ApifyClient {
 
         const apiClientOptions = {
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         };
         return new RequestQueueClient(apiClientOptions, parsed);
     }
@@ -355,7 +355,7 @@ export class ApifyClient {
      */
     runs(): RunCollectionClient {
         return new RunCollectionClient({
-            ...this._options(),
+            ...this.subClientOptions(),
             resourcePath: 'actor-runs',
         });
     }
@@ -384,7 +384,7 @@ export class ApifyClient {
 
         return new RunClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -397,7 +397,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/actor-tasks-get
      */
     tasks(): TaskCollectionClient {
-        return new TaskCollectionClient(this._options());
+        return new TaskCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -420,7 +420,7 @@ export class ApifyClient {
 
         return new TaskClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -433,7 +433,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/schedules-get
      */
     schedules(): ScheduleCollectionClient {
-        return new ScheduleCollectionClient(this._options());
+        return new ScheduleCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -450,7 +450,7 @@ export class ApifyClient {
 
         return new ScheduleClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -468,7 +468,7 @@ export class ApifyClient {
 
         return new UserClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -481,7 +481,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/webhooks-get
      */
     webhooks(): WebhookCollectionClient {
-        return new WebhookCollectionClient(this._options());
+        return new WebhookCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -498,7 +498,7 @@ export class ApifyClient {
 
         return new WebhookClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -511,7 +511,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/webhook-dispatches-get
      */
     webhookDispatches(): WebhookDispatchCollectionClient {
-        return new WebhookDispatchCollectionClient(this._options());
+        return new WebhookDispatchCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -526,7 +526,7 @@ export class ApifyClient {
 
         return new WebhookDispatchClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -539,7 +539,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/store-get
      */
     store(): StoreCollectionClient {
-        return new StoreCollectionClient(this._options());
+        return new StoreCollectionClient(this.subClientOptions());
     }
 
     /**

@@ -129,7 +129,7 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-get
      */
     async get(): Promise<Actor | undefined> {
-        return this._get(schemas.Actor());
+        return this.getResource(schemas.Actor());
     }
 
     /**
@@ -142,7 +142,7 @@ export class ActorClient extends ResourceClient {
     async update(newFields: ActorUpdateOptions): Promise<Actor> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(schemas.Actor(), newFields);
+        return this.updateResource(schemas.Actor(), newFields);
     }
 
     /**
@@ -151,7 +151,7 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-delete
      */
     async delete(): Promise<void> {
-        return this._delete();
+        return this.deleteResource();
     }
 
     /**
@@ -213,10 +213,10 @@ export class ActorClient extends ResourceClient {
         };
 
         const request: ApifyRequestConfig = {
-            url: this._url('runs'),
+            url: this.buildUrl('runs'),
             method: 'POST',
             data: input,
-            params: this._params(params),
+            params: this.buildParams(params),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
@@ -320,10 +320,10 @@ export class ActorClient extends ResourceClient {
         const parsed = parseArgument(options, validateInputOptionsSchema, 'ActorValidateInputOptions');
 
         const request: ApifyRequestConfig = {
-            url: this._url('validate-input'),
+            url: this.buildUrl('validate-input'),
             method: 'POST',
             data: input,
-            params: this._params({ build: parsed.build }),
+            params: this.buildParams({ build: parsed.build }),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
@@ -372,9 +372,9 @@ export class ActorClient extends ResourceClient {
         const parsed = parseArgument(options, buildOptionsSchema, 'ActorBuildOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('builds'),
+            url: this.buildUrl('builds'),
             method: 'POST',
-            params: this._params({
+            params: this.buildParams({
                 version: versionNumber,
                 ...parsed,
             }),
@@ -410,9 +410,9 @@ export class ActorClient extends ResourceClient {
      */
     async defaultBuild(options: BuildClientGetOptions = {}): Promise<BuildClient> {
         const response = await this.httpClient.call({
-            url: this._url('builds/default'),
+            url: this.buildUrl('builds/default'),
             method: 'GET',
-            params: this._params(options),
+            params: this.buildParams(options),
         });
 
         const { id } = parseResponse<Build>(response, schemas.Build());
@@ -447,9 +447,9 @@ export class ActorClient extends ResourceClient {
         const parsed = parseArgument(options, lastRunOptionsSchema, 'ActorLastRunOptions');
 
         return new RunClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 id: 'last',
-                params: this._params(parsed),
+                params: this.buildParams(parsed),
                 resourcePath: 'runs',
             }),
         );
@@ -463,7 +463,7 @@ export class ActorClient extends ResourceClient {
      */
     builds(): BuildCollectionClient {
         return new BuildCollectionClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'builds',
             }),
         );
@@ -477,7 +477,7 @@ export class ActorClient extends ResourceClient {
      */
     runs(): RunCollectionClient {
         return new RunCollectionClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'runs',
             }),
         );
@@ -493,7 +493,7 @@ export class ActorClient extends ResourceClient {
     version(versionNumber: string): ActorVersionClient {
         parseArgument(versionNumber, versionNumberSchema);
         return new ActorVersionClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 id: versionNumber,
             }),
         );
@@ -506,7 +506,7 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-versions-get
      */
     versions(): ActorVersionCollectionClient {
-        return new ActorVersionCollectionClient(this._subResourceOptions());
+        return new ActorVersionCollectionClient(this.subResourceOptions());
     }
 
     /**
@@ -516,7 +516,7 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-webhooks-get
      */
     webhooks(): WebhookCollectionClient {
-        return new WebhookCollectionClient(this._subResourceOptions());
+        return new WebhookCollectionClient(this.subResourceOptions());
     }
 }
 

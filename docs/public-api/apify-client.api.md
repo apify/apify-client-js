@@ -493,29 +493,29 @@ abstract class ApiClient {
     // (undocumented)
     baseUrl: string;
     // (undocumented)
+    protected buildParams<T>(endpointParams?: T): Record<string, unknown>;
+    // (undocumented)
+    protected buildPublicUrl(path?: string | string[]): string;
+    // (undocumented)
+    protected buildUrl(path?: string | string[]): string;
+    // (undocumented)
     httpClient: HttpClient;
     // (undocumented)
     id?: string;
-    protected _listPaginatedFromCallback<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(getPaginatedList: (options?: T) => Promise<R>, options?: T): AsyncIterable<Data> & Promise<R>;
+    protected listPaginatedFromCallback<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(getPaginatedList: (options?: T) => Promise<R>, options?: T): AsyncIterable<Data> & Promise<R>;
     // (undocumented)
     params?: Record<string, unknown>;
-    // (undocumented)
-    protected _params<T>(endpointParams?: T): Record<string, unknown>;
     publicBaseUrl: string;
-    // (undocumented)
-    protected _publicUrl(path?: string | string[]): string;
     // (undocumented)
     resourcePath: string;
     // (undocumented)
     safeId?: string;
     // (undocumented)
-    protected _subResourceOptions<T>(moreOptions?: T): BaseOptions & T;
+    protected subResourceOptions<T>(moreOptions?: T): BaseOptions & T;
     // (undocumented)
-    protected _toSafeId(id: string): string;
+    protected toSafeId(id: string): string;
     // (undocumented)
     url: string;
-    // (undocumented)
-    protected _url(path?: string | string[]): string;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3274,10 +3274,10 @@ export interface RequestQueue extends Omit<Schemas['RequestQueue'], keyof Reques
 export class RequestQueueClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions, userOptions?: RequestQueueUserOptions);
     addRequest(request: RequestQueueClientRequestToAdd, options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientAddRequestResult>;
-    batchAddRequests(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
-    protected _batchAddRequests(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
+    protected addRequestBatch(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
     // (undocumented)
-    protected _batchAddRequestsWithRetries(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
+    protected addRequestBatchWithRetries(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
+    batchAddRequests(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
     batchDeleteRequests(requests: RequestQueueClientRequestToDelete[]): Promise<RequestQueueClientBatchDeleteRequestsResult>;
     delete(): Promise<void>;
     deleteRequest(id: string): Promise<void>;
@@ -3512,11 +3512,11 @@ export interface RequestQueueUserOptions {
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
 class ResourceClient extends ApiClient {
-    protected _delete(timeoutMillis?: number): Promise<void>;
-    protected _get<T, R>(schema: z.ZodType, options?: T, timeoutMillis?: number): Promise<R | undefined>;
+    protected deleteResource(timeoutMillis?: number): Promise<void>;
+    protected getResource<T, R>(schema: z.ZodType, options?: T, timeoutMillis?: number): Promise<R | undefined>;
     // (undocumented)
-    protected _update<T, R>(schema: z.ZodType, newFields: T, timeoutMillis?: number): Promise<R>;
-    protected _waitForFinish<R extends {
+    protected updateResource<T, R>(schema: z.ZodType, newFields: T, timeoutMillis?: number): Promise<R>;
+    protected waitForJobFinish<R extends {
         status: (typeof ACT_JOB_STATUSES)[keyof typeof ACT_JOB_STATUSES];
     }>(schema: z.ZodType, options?: WaitForFinishOptions): Promise<R>;
 }
@@ -3525,12 +3525,12 @@ class ResourceClient extends ApiClient {
 // @public
 class ResourceCollectionClient extends ApiClient {
     // (undocumented)
-    protected _create<D, R>(schema: z.ZodType, resource: D): Promise<R>;
+    protected createResource<D, R>(schema: z.ZodType, resource: D): Promise<R>;
     // (undocumented)
-    protected _getOrCreate<D, R>(schema: z.ZodType, name?: string, resource?: D): Promise<R>;
+    protected getOrCreateResource<D, R>(schema: z.ZodType, name?: string, resource?: D): Promise<R>;
     // (undocumented)
-    protected _list<T, R>(schema: z.ZodType, options?: T): Promise<R>;
-    protected _listPaginated<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(schema: z.ZodType, options?: T): AsyncIterable<Data> & Promise<R>;
+    protected listResources<T, R>(schema: z.ZodType, options?: T): Promise<R>;
+    protected listResourcesPaginated<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(schema: z.ZodType, options?: T): AsyncIterable<Data> & Promise<R>;
 }
 
 // @public

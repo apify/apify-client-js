@@ -63,7 +63,7 @@ export class WebhookClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/webhook-get
      */
     async get(): Promise<Webhook | undefined> {
-        return this._get(schemas.Webhook());
+        return this.getResource(schemas.Webhook());
     }
 
     /**
@@ -76,7 +76,7 @@ export class WebhookClient extends ResourceClient {
     async update(newFields: WebhookUpdateData): Promise<Webhook> {
         parseArgument(newFields, anyObjectSchema);
 
-        return this._update(schemas.Webhook(), newFields);
+        return this.updateResource(schemas.Webhook(), newFields);
     }
 
     /**
@@ -85,7 +85,7 @@ export class WebhookClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/webhook-delete
      */
     async delete(): Promise<void> {
-        return this._delete();
+        return this.deleteResource();
     }
 
     /**
@@ -96,9 +96,9 @@ export class WebhookClient extends ResourceClient {
      */
     async test(): Promise<WebhookDispatch> {
         const response = await this.httpClient.call({
-            url: this._url('test'),
+            url: this.buildUrl('test'),
             method: 'POST',
-            params: this._params(),
+            params: this.buildParams(),
         });
         return parseResponse(response, schemas.WebhookDispatch());
     }
@@ -111,7 +111,7 @@ export class WebhookClient extends ResourceClient {
      */
     dispatches(): WebhookDispatchCollectionClient {
         return new WebhookDispatchCollectionClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'dispatches',
             }),
         );

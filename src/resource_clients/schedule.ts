@@ -61,7 +61,7 @@ export class ScheduleClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/schedule-get
      */
     async get(): Promise<Schedule | undefined> {
-        return this._get(schemas.Schedule());
+        return this.getResource(schemas.Schedule());
     }
 
     /**
@@ -73,7 +73,7 @@ export class ScheduleClient extends ResourceClient {
      */
     async update(newFields: ScheduleCreateOrUpdateData): Promise<Schedule> {
         parseArgument(newFields, anyObjectSchema);
-        return this._update(schemas.Schedule(), newFields);
+        return this.updateResource(schemas.Schedule(), newFields);
     }
 
     /**
@@ -82,7 +82,7 @@ export class ScheduleClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/schedule-delete
      */
     async delete(): Promise<void> {
-        return this._delete();
+        return this.deleteResource();
     }
 
     /**
@@ -93,9 +93,9 @@ export class ScheduleClient extends ResourceClient {
      */
     async getLog(): Promise<ScheduleInvoked[]> {
         const response = await this.httpClient.call({
-            url: this._url('log'),
+            url: this.buildUrl('log'),
             method: 'GET',
-            params: this._params(),
+            params: this.buildParams(),
         });
         return parseResponse(response, scheduleLogSchema);
     }
