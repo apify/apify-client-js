@@ -207,7 +207,7 @@ test('validateInput() accepts an empty input for apify/hello-world', async () =>
 test('start() applies the build, memory and timeout overrides it is given', async () => {
     const run = await client
         .actor(HELLO_WORLD_ACTOR)
-        .start(undefined, { build: 'latest', memory: 256, timeout: 120, waitForFinish: 60 });
+        .start(undefined, { build: 'latest', memory: 256, runTimeoutSecs: 120, waitForFinish: 60 });
     const runClient = client.run(run.id);
 
     try {

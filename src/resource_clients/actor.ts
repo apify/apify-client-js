@@ -7,7 +7,9 @@ import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_client.js';
 import type { Actor, ActorRun } from '../models.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
 import { ActorVersionClient } from './actor_version.js';
 import { ActorVersionCollectionClient } from './actor_version_collection.js';
@@ -24,19 +26,20 @@ const startOptionsSchema = z.strictObject({
     build: z.string().optional(),
     contentType: z.string().optional(),
     memory: z.number().optional(),
-    timeout: z.number().optional(),
+    runTimeoutSecs: z.number().min(0).optional(),
     waitForFinish: z.number().optional(),
     webhooks: z.array(anyObjectSchema).optional(),
     maxItems: z.number().min(0).optional(),
     maxTotalChargeUsd: z.number().min(0).optional(),
     restartOnError: z.boolean().optional(),
     forcePermissionLevel: z.enum(ACTOR_PERMISSION_LEVEL).optional(),
+    ...timeoutOptionsShape,
 });
 const callOptionsSchema = z.strictObject({
     build: z.string().optional(),
     contentType: z.string().optional(),
     memory: z.number().optional(),
-    timeout: z.number().min(0).optional(),
+    runTimeoutSecs: z.number().min(0).optional(),
     waitSecs: z.number().min(0).optional(),
     webhooks: z.array(anyObjectSchema).optional(),
     maxItems: z.number().min(0).optional(),
@@ -44,10 +47,12 @@ const callOptionsSchema = z.strictObject({
     log: z.union([z.null(), z.instanceof(Log), z.literal('default')]).optional(),
     restartOnError: z.boolean().optional(),
     forcePermissionLevel: z.enum(ACTOR_PERMISSION_LEVEL).optional(),
+    ...timeoutOptionsShape,
 });
 const validateInputOptionsSchema = z.strictObject({
     build: z.string().optional(),
     contentType: z.string().optional(),
+    ...timeoutOptionsShape,
 });
 const versionNumberSchema = z.string().min(1);
 const buildOptionsSchema = z.strictObject({
@@ -55,7 +60,9 @@ const buildOptionsSchema = z.strictObject({
     tag: z.string().optional(),
     useCache: z.boolean().optional(),
     waitForFinish: z.number().optional(),
+    ...timeoutOptionsShape,
 });
+const defaultBuildOptionsSchema = z.strictObject({ waitForFinish: z.number().optional(), ...timeoutOptionsShape });
 const lastRunOptionsSchema = z.strictObject({
     status: z.enum(ACTOR_JOB_STATUSES).optional(),
     origin: z.enum(META_ORIGINS).optional(),
@@ -125,33 +132,44 @@ export class ActorClient extends ResourceClient {
     /**
      * Gets the Actor object from the Apify API.
      *
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The Actor object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/act-get
      */
-    async get(): Promise<Actor | undefined> {
-        return this._get(schemas.Actor());
+    async get(options: TimeoutOptions = {}): Promise<Actor | undefined> {
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this.getResource(schemas.Actor(), {}, timeoutSecs);
     }
 
     /**
      * Updates the Actor with specified fields.
      *
      * @param newFields - Fields to update in the Actor
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The updated Actor object
      * @see https://docs.apify.com/api/v2/act-put
      */
-    async update(newFields: ActorUpdateOptions): Promise<Actor> {
+    async update(newFields: ActorUpdateOptions, options: TimeoutOptions = {}): Promise<Actor> {
         parseArgument(newFields, anyObjectSchema);
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._update(schemas.Actor(), newFields);
+        return this.updateResource(schemas.Actor(), newFields, timeoutSecs);
     }
 
     /**
      * Deletes the Actor.
      *
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/act-delete
      */
-    async delete(): Promise<void> {
-        return this._delete();
+    async delete(options: TimeoutOptions = {}): Promise<void> {
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this.deleteResource(timeoutSecs);
     }
 
     /**
@@ -165,11 +183,13 @@ export class ActorClient extends ResourceClient {
      * @param options - Run configuration options
      * @param options.build - Tag or number of the build to run (e.g., `'beta'` or `'1.2.345'`). If not provided, uses the default build.
      * @param options.memory - Memory in megabytes allocated for the run. If not provided, uses the Actor's default memory setting.
-     * @param options.timeout - Timeout for the run in seconds. Zero means no timeout. If not provided, uses the Actor's default timeout.
+     * @param options.runTimeoutSecs - Timeout for the run in seconds. Zero means no timeout. If not provided, uses the Actor's default timeout.
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the run to finish on the API side before returning. Default is 0 (returns immediately).
      * @param options.webhooks - Webhooks to trigger when the Actor run reaches a specific state (e.g., `SUCCEEDED`, `FAILED`).
      * @param options.maxItems - Maximum number of dataset items that will be charged (only for pay-per-result Actors).
      * @param options.maxTotalChargeUsd - Maximum cost in USD (only for pay-per-event Actors).
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`, extended to cover `waitForFinish`
+     * when the API is asked to hold the response.
      * @returns The Actor run object with status, usage, and storage IDs
      * @see https://docs.apify.com/api/v2/act-runs-post
      *
@@ -182,7 +202,7 @@ export class ActorClient extends ResourceClient {
      * // Start Actor with specific build and memory
      * const run = await client.actor('my-actor').start(
      *   { url: 'https://example.com' },
-     *   { build: '0.1.2', memory: 512, timeout: 300 }
+     *   { build: '0.1.2', memory: 512, runTimeoutSecs: 300 }
      * );
      * ```
      */
@@ -191,18 +211,20 @@ export class ActorClient extends ResourceClient {
 
         const {
             waitForFinish,
-            timeout,
+            runTimeoutSecs,
             memory,
             build,
             maxItems,
             maxTotalChargeUsd,
             restartOnError,
             forcePermissionLevel,
+            timeoutSecs,
         } = parsed;
 
+        // The API's `timeout` parameter bounds the run, not the request.
         const params = {
             waitForFinish,
-            timeout,
+            timeout: runTimeoutSecs,
             memory,
             build,
             webhooks: stringifyWebhooksToBase64(parsed.webhooks),
@@ -213,13 +235,14 @@ export class ActorClient extends ResourceClient {
         };
 
         const request: ApifyRequestConfig = {
-            url: this._url('runs'),
+            url: this.buildUrl('runs'),
             method: 'POST',
             data: input,
-            params: this._params(params),
+            params: this.buildParams(params),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
+            timeoutSecs: this.timeoutForWaitForFinish(timeoutSecs, 'medium', waitForFinish),
         };
         if (parsed.contentType) {
             request.headers = {
@@ -244,7 +267,8 @@ export class ActorClient extends ResourceClient {
      * @param options.log - Log instance for streaming run logs. Use `'default'` for console output, `null` to disable logging, or provide a custom Log instance.
      * @param options.build - Tag or number of the build to run (e.g., `'beta'` or `'1.2.345'`).
      * @param options.memory - Memory in megabytes allocated for the run.
-     * @param options.timeout - Maximum run duration in seconds.
+     * @param options.runTimeoutSecs - Maximum run duration in seconds.
+     * @param options.timeoutSecs - Timeout for each API request, the start and every poll alike. Default is `'noTimeout'`.
      * @returns The finished Actor run object with final status (`SUCCEEDED`, `FAILED`, `ABORTED`, or `TIMED-OUT`)
      * @see https://docs.apify.com/api/v2/act-runs-post
      *
@@ -270,8 +294,8 @@ export class ActorClient extends ResourceClient {
     async call(input?: ActorInput, options: ActorCallOptions = {}): Promise<ActorRun> {
         const parsed = parseArgument(options, callOptionsSchema, 'ActorCallOptions');
 
-        const { waitSecs, log, ...startOptions } = parsed;
-        const { id } = await this.start(input, startOptions);
+        const { waitSecs, log, timeoutSecs = 'noTimeout', ...startOptions } = parsed;
+        const { id } = await this.start(input, { ...startOptions, timeoutSecs });
 
         // Calling root client because we need access to top level API.
         // Creating a new instance of RunClient here would only allow
@@ -282,7 +306,7 @@ export class ActorClient extends ResourceClient {
         streamedLog?.start();
         return this.apifyClient
             .run(id)
-            .waitForFinish({ waitSecs })
+            .waitForFinish({ waitSecs, timeoutSecs })
             .finally(async () => {
                 await streamedLog?.stop();
             });
@@ -300,6 +324,7 @@ export class ActorClient extends ResourceClient {
      * @param options - Validation options
      * @param options.build - Tag or number of the build whose input schema the input is validated against
      *                         (e.g., `'latest'` or `'1.2.345'`). If not provided, uses the default build.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns `true` if the input is valid. Invalid input causes the underlying API call to throw an `ApifyApiError`.
      * @see https://docs.apify.com/api/v2/act-validate-input-post
      *
@@ -320,13 +345,14 @@ export class ActorClient extends ResourceClient {
         const parsed = parseArgument(options, validateInputOptionsSchema, 'ActorValidateInputOptions');
 
         const request: ApifyRequestConfig = {
-            url: this._url('validate-input'),
+            url: this.buildUrl('validate-input'),
             method: 'POST',
             data: input,
-            params: this._params({ build: parsed.build }),
+            params: this.buildParams({ build: parsed.build }),
             // Apify internal property. Tells the request serialization interceptor
             // to stringify functions to JSON, instead of omitting them.
             stringifyFunctions: true,
+            timeoutSecs: parsed.timeoutSecs ?? 'short',
         };
         if (parsed.contentType) {
             request.headers = {
@@ -350,6 +376,8 @@ export class ActorClient extends ResourceClient {
      * @param options.tag - Tag to be applied to the build (e.g., `'latest'`, `'beta'`). Existing tag with the same name will be replaced.
      * @param options.useCache - If `false`, Docker build cache will be ignored. Default is `true`.
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the build to finish on the API side before returning. Default is 0 (returns immediately).
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`, extended to cover `waitForFinish`
+     * when the API is asked to hold the response.
      * @returns The Build object with status and build details
      * @see https://docs.apify.com/api/v2/act-builds-post
      *
@@ -369,15 +397,16 @@ export class ActorClient extends ResourceClient {
      */
     async build(versionNumber: string, options: ActorBuildOptions = {}): Promise<Build> {
         parseArgument(versionNumber, versionNumberSchema);
-        const parsed = parseArgument(options, buildOptionsSchema, 'ActorBuildOptions');
+        const { timeoutSecs, ...params } = parseArgument(options, buildOptionsSchema, 'ActorBuildOptions');
 
         const response = await this.httpClient.call({
-            url: this._url('builds'),
+            url: this.buildUrl('builds'),
             method: 'POST',
-            params: this._params({
+            params: this.buildParams({
                 version: versionNumber,
-                ...parsed,
+                ...params,
             }),
+            timeoutSecs: this.timeoutForWaitForFinish(timeoutSecs, 'medium', params.waitForFinish),
         });
 
         return parseResponse(response, schemas.Build());
@@ -392,6 +421,8 @@ export class ActorClient extends ResourceClient {
      *
      * @param options - Options for getting the default build
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the build to finish on the API side before returning. Default is 0 (returns immediately).
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`, extended to cover `waitForFinish`
+     * when the API is asked to hold the response.
      * @returns A client for the default build
      * @see https://docs.apify.com/api/v2/act-build-default-get
      *
@@ -409,10 +440,13 @@ export class ActorClient extends ResourceClient {
      * @since Added in 2.12.2
      */
     async defaultBuild(options: BuildClientGetOptions = {}): Promise<BuildClient> {
+        const { timeoutSecs, ...params } = parseArgument(options, defaultBuildOptionsSchema, 'BuildClientGetOptions');
+
         const response = await this.httpClient.call({
-            url: this._url('builds/default'),
+            url: this.buildUrl('builds/default'),
             method: 'GET',
-            params: this._params(options),
+            params: this.buildParams(params),
+            timeoutSecs: this.timeoutForWaitForFinish(timeoutSecs, 'short', params.waitForFinish),
         });
 
         const { id } = parseResponse<Build>(response, schemas.Build());
@@ -447,9 +481,9 @@ export class ActorClient extends ResourceClient {
         const parsed = parseArgument(options, lastRunOptionsSchema, 'ActorLastRunOptions');
 
         return new RunClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 id: 'last',
-                params: this._params(parsed),
+                params: this.buildParams(parsed),
                 resourcePath: 'runs',
             }),
         );
@@ -463,7 +497,7 @@ export class ActorClient extends ResourceClient {
      */
     builds(): BuildCollectionClient {
         return new BuildCollectionClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'builds',
             }),
         );
@@ -477,7 +511,7 @@ export class ActorClient extends ResourceClient {
      */
     runs(): RunCollectionClient {
         return new RunCollectionClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'runs',
             }),
         );
@@ -493,7 +527,7 @@ export class ActorClient extends ResourceClient {
     version(versionNumber: string): ActorVersionClient {
         parseArgument(versionNumber, versionNumberSchema);
         return new ActorVersionClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 id: versionNumber,
             }),
         );
@@ -506,7 +540,7 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-versions-get
      */
     versions(): ActorVersionCollectionClient {
-        return new ActorVersionCollectionClient(this._subResourceOptions());
+        return new ActorVersionCollectionClient(this.subResourceOptions());
     }
 
     /**
@@ -516,7 +550,7 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-webhooks-get
      */
     webhooks(): WebhookCollectionClient {
-        return new WebhookCollectionClient(this._subResourceOptions());
+        return new WebhookCollectionClient(this.subResourceOptions());
     }
 }
 
@@ -552,7 +586,7 @@ export type ActorUpdateOptions = Partial<
  */
 export type ActorInput = object;
 
-export interface ActorStartOptions {
+export interface ActorStartOptions extends TimeoutOptions {
     /**
      * Tag or number of the Actor build to run (e.g. `beta` or `1.2.345`).
      * If not provided, the run uses build tag or number from the default Actor run configuration (typically `latest`).
@@ -573,9 +607,9 @@ export interface ActorStartOptions {
     memory?: number;
     /**
      * Timeout for the Actor run in seconds. Zero value means there is no timeout.
-     * If not provided, the run uses timeout of the default Actor run configuration.
+     * If not provided, the run uses the timeout of the default Actor run configuration.
      */
-    timeout?: number;
+    runTimeoutSecs?: number;
 
     /**
      * Maximum time to wait for the Actor run to finish, in seconds.
@@ -652,7 +686,7 @@ export interface ActorCallOptions extends Omit<ActorStartOptions, 'waitForFinish
  * Options for validating an Actor input.
  * @since Added in 2.24.0
  */
-export interface ActorValidateInputOptions {
+export interface ActorValidateInputOptions extends TimeoutOptions {
     /**
      * Tag or number of the Actor build whose input schema the input is validated against
      * (e.g. `beta` or `1.2.345`). If not provided, the default build is used.
@@ -670,7 +704,7 @@ export interface ActorValidateInputOptions {
 /**
  * Options for building an Actor.
  */
-export interface ActorBuildOptions {
+export interface ActorBuildOptions extends TimeoutOptions {
     betaPackages?: boolean;
     tag?: string;
     useCache?: boolean;

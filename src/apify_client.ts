@@ -32,9 +32,13 @@ import { WebhookCollectionClient } from './resource_clients/webhook_collection.j
 import { WebhookDispatchClient } from './resource_clients/webhook_dispatch.js';
 import { WebhookDispatchCollectionClient } from './resource_clients/webhook_dispatch_collection.js';
 import { Statistics } from './statistics.js';
+import {
+    DEFAULT_TIMEOUT_LONG_SECS,
+    DEFAULT_TIMEOUT_MAX_SECS,
+    DEFAULT_TIMEOUT_MEDIUM_SECS,
+    DEFAULT_TIMEOUT_SHORT_SECS,
+} from './timeouts.js';
 import { parseArgument } from './utils.js';
-
-const DEFAULT_TIMEOUT_SECS = 360;
 
 const clientOptionsSchema = z.strictObject({
     baseUrl: z.string().default('https://api.apify.com'),
@@ -42,14 +46,17 @@ const clientOptionsSchema = z.strictObject({
     maxRetries: z.number().default(8),
     minDelayBetweenRetriesMillis: z.number().default(500),
     requestInterceptors: z.array(z.unknown()).default([]),
-    timeoutSecs: z.number().default(DEFAULT_TIMEOUT_SECS),
+    timeoutShortSecs: z.number().positive().default(DEFAULT_TIMEOUT_SHORT_SECS),
+    timeoutMediumSecs: z.number().positive().default(DEFAULT_TIMEOUT_MEDIUM_SECS),
+    timeoutLongSecs: z.number().positive().default(DEFAULT_TIMEOUT_LONG_SECS),
+    timeoutMaxSecs: z.number().positive().default(DEFAULT_TIMEOUT_MAX_SECS),
     token: z.string().optional(),
     userAgentSuffix: z.union([z.string(), z.array(z.string())]).optional(),
 });
 const resourceIdSchema = z.string().min(1);
 const requestQueueOptionsSchema = z.strictObject({
     clientKey: z.string().min(1).optional(),
-    timeoutSecs: z.number().optional(),
+    timeoutSecs: z.number().positive().optional(),
 });
 
 /**
@@ -98,7 +105,10 @@ export class ApifyClient {
             maxRetries,
             minDelayBetweenRetriesMillis,
             requestInterceptors,
-            timeoutSecs,
+            timeoutShortSecs,
+            timeoutMediumSecs,
+            timeoutLongSecs,
+            timeoutMaxSecs,
             token,
         } = parsed;
 
@@ -116,14 +126,17 @@ export class ApifyClient {
             maxRetries,
             minDelayBetweenRetriesMillis,
             requestInterceptors,
-            timeoutSecs,
+            timeoutShortSecs,
+            timeoutMediumSecs,
+            timeoutLongSecs,
+            timeoutMaxSecs,
             logger: this.logger,
             token: this.token,
             userAgentSuffix: parsed.userAgentSuffix,
         });
     }
 
-    private _options() {
+    private subClientOptions() {
         return {
             baseUrl: this.baseUrl,
             publicBaseUrl: this.publicBaseUrl,
@@ -141,7 +154,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/acts-get
      */
     actors(): ActorCollectionClient {
-        return new ActorCollectionClient(this._options());
+        return new ActorCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -165,7 +178,7 @@ export class ApifyClient {
 
         return new ActorClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -178,7 +191,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/actor-builds-get
      */
     builds(): BuildCollectionClient {
-        return new BuildCollectionClient(this._options());
+        return new BuildCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -195,7 +208,7 @@ export class ApifyClient {
 
         return new BuildClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -208,7 +221,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/datasets-get
      */
     datasets(): DatasetCollectionClient {
-        return new DatasetCollectionClient(this._options());
+        return new DatasetCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -241,7 +254,7 @@ export class ApifyClient {
 
         return new DatasetClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -254,7 +267,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/key-value-stores-get
      */
     keyValueStores(): KeyValueStoreCollectionClient {
-        return new KeyValueStoreCollectionClient(this._options());
+        return new KeyValueStoreCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -281,7 +294,7 @@ export class ApifyClient {
 
         return new KeyValueStoreClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -297,7 +310,7 @@ export class ApifyClient {
 
         return new LogClient({
             id: buildOrRunId,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -310,7 +323,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/request-queues-get
      */
     requestQueues(): RequestQueueCollectionClient {
-        return new RequestQueueCollectionClient(this._options());
+        return new RequestQueueCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -340,7 +353,7 @@ export class ApifyClient {
 
         const apiClientOptions = {
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         };
         return new RequestQueueClient(apiClientOptions, parsed);
     }
@@ -355,7 +368,7 @@ export class ApifyClient {
      */
     runs(): RunCollectionClient {
         return new RunCollectionClient({
-            ...this._options(),
+            ...this.subClientOptions(),
             resourcePath: 'actor-runs',
         });
     }
@@ -384,7 +397,7 @@ export class ApifyClient {
 
         return new RunClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -397,7 +410,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/actor-tasks-get
      */
     tasks(): TaskCollectionClient {
-        return new TaskCollectionClient(this._options());
+        return new TaskCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -420,7 +433,7 @@ export class ApifyClient {
 
         return new TaskClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -433,7 +446,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/schedules-get
      */
     schedules(): ScheduleCollectionClient {
-        return new ScheduleCollectionClient(this._options());
+        return new ScheduleCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -450,7 +463,7 @@ export class ApifyClient {
 
         return new ScheduleClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -468,7 +481,7 @@ export class ApifyClient {
 
         return new UserClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -481,7 +494,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/webhooks-get
      */
     webhooks(): WebhookCollectionClient {
-        return new WebhookCollectionClient(this._options());
+        return new WebhookCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -498,7 +511,7 @@ export class ApifyClient {
 
         return new WebhookClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -511,7 +524,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/webhook-dispatches-get
      */
     webhookDispatches(): WebhookDispatchCollectionClient {
-        return new WebhookDispatchCollectionClient(this._options());
+        return new WebhookDispatchCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -526,7 +539,7 @@ export class ApifyClient {
 
         return new WebhookDispatchClient({
             id,
-            ...this._options(),
+            ...this.subClientOptions(),
         });
     }
 
@@ -539,7 +552,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/store-get
      */
     store(): StoreCollectionClient {
-        return new StoreCollectionClient(this._options());
+        return new StoreCollectionClient(this.subClientOptions());
     }
 
     /**
@@ -582,8 +595,27 @@ export interface ApifyClientOptions {
     minDelayBetweenRetriesMillis?: number;
     /** @default [] */
     requestInterceptors?: RequestInterceptorFunction[];
-    /** @default 360 */
-    timeoutSecs?: number;
+    /**
+     * Duration of the `short` timeout tier, in seconds: simple metadata reads and writes.
+     * @default 5
+     */
+    timeoutShortSecs?: number;
+    /**
+     * Duration of the `medium` timeout tier, in seconds: listing, batch and trigger operations.
+     * @default 30
+     */
+    timeoutMediumSecs?: number;
+    /**
+     * Duration of the `long` timeout tier, in seconds: downloads, uploads and streaming.
+     * @default 360
+     */
+    timeoutLongSecs?: number;
+    /**
+     * Cap on the timeout of a single request attempt, in seconds. It bounds the doubling of the timeout across
+     * retries, and caps tier and per-call timeouts alike, so raise it to allow a request timeout above 360 s.
+     * @default 360
+     */
+    timeoutMaxSecs?: number;
     token?: string;
     /**
      * @since Added in 2.10.0

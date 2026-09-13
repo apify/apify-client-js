@@ -1,7 +1,9 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedList } from '../utils.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema } from '../timeouts.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
 import type { ActorVersion, FinalActorVersion } from './actor_version.js';
 
@@ -59,24 +61,31 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      * for await (const singleItem of client.list()) {...}
      * ```
      *
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The Actor versions, awaitable as a whole list or iterable one by one.
      * @see https://docs.apify.com/api/v2/act-versions-get
      */
-    list(): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
-        return this._listPaginated(schemas.ListOfVersions());
+    list(options: TimeoutOptions = {}): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this.listResourcesPaginated(schemas.ListOfVersions(), {}, timeoutSecs);
     }
 
     /**
      * Creates a new Actor version.
      *
      * @param actorVersion - The Actor version data.
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The created Actor version object.
      * @see https://docs.apify.com/api/v2/act-versions-post
      */
-    async create(actorVersion: ActorVersion): Promise<FinalActorVersion> {
+    async create(actorVersion: ActorVersion, options: TimeoutOptions = {}): Promise<FinalActorVersion> {
         parseArgument(actorVersion, actorVersionSchema);
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._create(schemas.Version(), actorVersion);
+        return this.createResource(schemas.Version(), actorVersion, timeoutSecs);
     }
 }
 

@@ -52,7 +52,7 @@ export interface Actor extends Omit<Schemas['Actor'], keyof ActorRePointed>, Act
 }
 
 // @public
-export interface ActorBuildOptions {
+export interface ActorBuildOptions extends TimeoutOptions {
     // (undocumented)
     betaPackages?: boolean;
     // (undocumented)
@@ -90,12 +90,12 @@ export class ActorClient extends ResourceClient {
     builds(): BuildCollectionClient;
     call(input?: ActorInput, options?: ActorCallOptions): Promise<ActorRun>;
     defaultBuild(options?: BuildClientGetOptions): Promise<BuildClient>;
-    delete(): Promise<void>;
-    get(): Promise<Actor | undefined>;
+    delete(options?: TimeoutOptions): Promise<void>;
+    get(options?: TimeoutOptions): Promise<Actor | undefined>;
     lastRun(options?: ActorLastRunOptions): RunClient;
     runs(): RunCollectionClient;
     start(input?: ActorInput, options?: ActorStartOptions): Promise<ActorRun>;
-    update(newFields: ActorUpdateOptions): Promise<Actor>;
+    update(newFields: ActorUpdateOptions, options?: TimeoutOptions): Promise<Actor>;
     validateInput(input?: ActorInput, options?: ActorValidateInputOptions): Promise<boolean>;
     version(versionNumber: string): ActorVersionClient;
     versions(): ActorVersionCollectionClient;
@@ -105,7 +105,7 @@ export class ActorClient extends ResourceClient {
 // @public
 export class ActorCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
-    create(actor: ActorCollectionCreateOptions): Promise<Actor>;
+    create(actor: ActorCollectionCreateOptions, options?: TimeoutOptions): Promise<Actor>;
     list(options?: ActorCollectionListOptions): PaginatedIterator<ActorCollectionListItem>;
 }
 
@@ -145,7 +145,7 @@ interface ActorCollectionListItemRePointed {
 }
 
 // @public (undocumented)
-export interface ActorCollectionListOptions extends PaginationOptions {
+export interface ActorCollectionListOptions extends PaginationOptions, TimeoutOptions {
     // (undocumented)
     desc?: boolean;
     // (undocumented)
@@ -184,16 +184,16 @@ export interface ActorEnvironmentVariable extends GeneratedEnvVar {
 // @public
 export class ActorEnvVarClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
-    delete(): Promise<void>;
-    get(): Promise<ActorEnvironmentVariable | undefined>;
-    update(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable>;
+    delete(options?: TimeoutOptions): Promise<void>;
+    get(options?: TimeoutOptions): Promise<ActorEnvironmentVariable | undefined>;
+    update(actorEnvVar: ActorEnvironmentVariable, options?: TimeoutOptions): Promise<ActorEnvironmentVariable>;
 }
 
 // @public
 export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
-    create(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable>;
-    list(): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable>;
+    create(actorEnvVar: ActorEnvironmentVariable, options?: TimeoutOptions): Promise<ActorEnvironmentVariable>;
+    list(options?: TimeoutOptions): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable>;
 }
 
 // @public
@@ -355,7 +355,7 @@ export interface ActorStandby extends GeneratedActorStandby {
 }
 
 // @public (undocumented)
-export interface ActorStartOptions {
+export interface ActorStartOptions extends TimeoutOptions {
     build?: string;
     contentType?: string;
     forcePermissionLevel?: ACTOR_PERMISSION_LEVEL;
@@ -363,7 +363,7 @@ export interface ActorStartOptions {
     maxTotalChargeUsd?: number;
     memory?: number;
     restartOnError?: boolean;
-    timeout?: number;
+    runTimeoutSecs?: number;
     waitForFinish?: number;
     webhooks?: readonly WebhookUpdateData[];
 }
@@ -396,7 +396,7 @@ export type ActorTaggedBuilds = Record<string, ActorTaggedBuild | null>;
 export type ActorUpdateOptions = Partial<Pick<Actor, 'name' | 'description' | 'isPublic' | 'isDeprecated' | 'seoTitle' | 'seoDescription' | 'title' | 'restartOnError' | 'versions' | 'categories' | 'defaultRunOptions' | 'actorStandby' | 'actorPermissionLevel' | 'taggedBuilds'>>;
 
 // @public
-export interface ActorValidateInputOptions {
+export interface ActorValidateInputOptions extends TimeoutOptions {
     build?: string;
     contentType?: string;
 }
@@ -407,11 +407,11 @@ export type ActorVersion = ActorVersionSourceFiles | ActorVersionGitRepo | Actor
 // @public
 export class ActorVersionClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
-    delete(): Promise<void>;
+    delete(options?: TimeoutOptions): Promise<void>;
     envVar(envVarName: string): ActorEnvVarClient;
     envVars(): ActorEnvVarCollectionClient;
-    get(): Promise<FinalActorVersion | undefined>;
-    update(newFields: ActorVersionUpdateData): Promise<FinalActorVersion>;
+    get(options?: TimeoutOptions): Promise<FinalActorVersion | undefined>;
+    update(newFields: ActorVersionUpdateData, options?: TimeoutOptions): Promise<FinalActorVersion>;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -424,8 +424,8 @@ interface ActorVersionClientNarrowings {
 // @public
 export class ActorVersionCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
-    create(actorVersion: ActorVersion): Promise<FinalActorVersion>;
-    list(): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion>;
+    create(actorVersion: ActorVersion, options?: TimeoutOptions): Promise<FinalActorVersion>;
+    list(options?: TimeoutOptions): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion>;
 }
 
 // @public
@@ -493,29 +493,29 @@ abstract class ApiClient {
     // (undocumented)
     baseUrl: string;
     // (undocumented)
+    protected buildParams<T>(endpointParams?: T): Record<string, unknown>;
+    // (undocumented)
+    protected buildPublicUrl(path?: string | string[]): string;
+    // (undocumented)
+    protected buildUrl(path?: string | string[]): string;
+    // (undocumented)
     httpClient: HttpClient;
     // (undocumented)
     id?: string;
-    protected _listPaginatedFromCallback<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(getPaginatedList: (options?: T) => Promise<R>, options?: T): AsyncIterable<Data> & Promise<R>;
+    protected listPaginatedFromCallback<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(getPaginatedList: (options?: T) => Promise<R>, options?: T): AsyncIterable<Data> & Promise<R>;
     // (undocumented)
     params?: Record<string, unknown>;
-    // (undocumented)
-    protected _params<T>(endpointParams?: T): Record<string, unknown>;
     publicBaseUrl: string;
-    // (undocumented)
-    protected _publicUrl(path?: string | string[]): string;
     // (undocumented)
     resourcePath: string;
     // (undocumented)
     safeId?: string;
     // (undocumented)
-    protected _subResourceOptions<T>(moreOptions?: T): BaseOptions & T;
+    protected subResourceOptions<T>(moreOptions?: T): BaseOptions & T;
     // (undocumented)
-    protected _toSafeId(id: string): string;
+    protected toSafeId(id: string): string;
     // (undocumented)
     url: string;
-    // (undocumented)
-    protected _url(path?: string | string[]): string;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -615,7 +615,10 @@ export interface ApifyClientOptions {
     minDelayBetweenRetriesMillis?: number;
     publicBaseUrl?: string;
     requestInterceptors?: RequestInterceptorFunction[];
-    timeoutSecs?: number;
+    timeoutLongSecs?: number;
+    timeoutMaxSecs?: number;
+    timeoutMediumSecs?: number;
+    timeoutShortSecs?: number;
     // (undocumented)
     token?: string;
     userAgentSuffix?: string | string[];
@@ -623,13 +626,14 @@ export interface ApifyClientOptions {
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-interface ApifyRequestConfig extends AxiosRequestConfig {
+interface ApifyRequestConfig extends Omit<AxiosRequestConfig, 'timeout'> {
     // (undocumented)
     doNotRetryTimeouts?: boolean;
     // (undocumented)
     forceBuffer?: boolean;
     // (undocumented)
     stringifyFunctions?: boolean;
+    timeoutSecs?: Timeout;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -669,22 +673,22 @@ export interface Build extends Omit<Schemas['Build'], keyof BuildRePointed>, Bui
 // @public
 export class BuildClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
-    abort(): Promise<Build>;
-    delete(): Promise<void>;
+    abort(options?: TimeoutOptions): Promise<Build>;
+    delete(options?: TimeoutOptions): Promise<void>;
     get(options?: BuildClientGetOptions): Promise<Build | undefined>;
-    getOpenApiDefinition(): Promise<OpenApiDefinition>;
+    getOpenApiDefinition(options?: TimeoutOptions): Promise<OpenApiDefinition>;
     log(): LogClient;
     waitForFinish(options?: BuildClientWaitForFinishOptions): Promise<Build>;
 }
 
 // @public
-export interface BuildClientGetOptions {
+export interface BuildClientGetOptions extends TimeoutOptions {
     // (undocumented)
     waitForFinish?: number;
 }
 
 // @public
-export interface BuildClientWaitForFinishOptions {
+export interface BuildClientWaitForFinishOptions extends TimeoutOptions {
     waitSecs?: number;
 }
 
@@ -708,7 +712,7 @@ interface BuildCollectionClientListItemRePointed {
 }
 
 // @public (undocumented)
-export interface BuildCollectionClientListOptions extends PaginationOptions {
+export interface BuildCollectionClientListOptions extends PaginationOptions, TimeoutOptions {
     // (undocumented)
     desc?: boolean;
 }
@@ -2421,13 +2425,13 @@ export interface Dataset extends Omit<Schemas['Dataset'], keyof DatasetRePointed
 export class DatasetClient<Data extends Record<string | number, any> = Record<string | number, unknown>> extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     createItemsPublicUrl(options?: DatasetClientCreateItemsUrlOptions): Promise<string>;
-    delete(): Promise<void>;
+    delete(options?: TimeoutOptions): Promise<void>;
     downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Buffer>;
-    get(): Promise<Dataset | undefined>;
-    getStatistics(): Promise<DatasetStatistics>;
+    get(options?: TimeoutOptions): Promise<Dataset | undefined>;
+    getStatistics(options?: TimeoutOptions): Promise<DatasetStatistics>;
     listItems(options?: DatasetClientListItemOptions): PaginatedIterator<Data>;
-    pushItems(items: Data | Data[] | string | string[]): Promise<void>;
-    update(newFields: DatasetClientUpdateOptions): Promise<Dataset>;
+    pushItems(items: Data | Data[] | string | string[], options?: TimeoutOptions): Promise<void>;
+    update(newFields: DatasetClientUpdateOptions, options?: TimeoutOptions): Promise<Dataset>;
 }
 
 // @public
@@ -2453,7 +2457,7 @@ export interface DatasetClientDownloadItemsOptions extends Omit<DatasetClientLis
 }
 
 // @public
-export interface DatasetClientListItemOptions extends PaginationOptions {
+export interface DatasetClientListItemOptions extends PaginationOptions, TimeoutOptions {
     // (undocumented)
     clean?: boolean;
     // (undocumented)
@@ -2489,13 +2493,13 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
 }
 
 // @public
-export interface DatasetCollectionClientGetOrCreateOptions {
+export interface DatasetCollectionClientGetOrCreateOptions extends TimeoutOptions {
     // (undocumented)
     schema?: Record<string, unknown>;
 }
 
 // @public (undocumented)
-export interface DatasetCollectionClientListOptions extends PaginationOptions {
+export interface DatasetCollectionClientListOptions extends PaginationOptions, TimeoutOptions {
     // (undocumented)
     desc?: boolean;
     ownership?: STORAGE_OWNERSHIP_FILTER;
@@ -2838,7 +2842,7 @@ type GeneratedWebhookDispatchEventData = NonNullable<Schemas['WebhookDispatch'][
 type GeneratedWebhookStats = Schemas['WebhookStats'];
 
 // @public
-export interface GetStreamedLogOptions {
+export interface GetStreamedLogOptions extends TimeoutOptions {
     // (undocumented)
     fromStart?: boolean;
     // (undocumented)
@@ -2865,8 +2869,8 @@ class HttpClient {
     minDelayBetweenRetriesMillis: number;
     // (undocumented)
     stats: Statistics;
-    // (undocumented)
-    timeoutMillis: number;
+    timeoutMaxMillis: number;
+    timeoutMillis: Record<TimeoutTier, number>;
     // (undocumented)
     userProvidedRequestInterceptors: RequestInterceptorFunction[];
     // (undocumented)
@@ -2887,7 +2891,13 @@ interface HttpClientOptions {
     // (undocumented)
     requestInterceptors: RequestInterceptorFunction[];
     // (undocumented)
-    timeoutSecs: number;
+    timeoutLongSecs: number;
+    // (undocumented)
+    timeoutMaxSecs: number;
+    // (undocumented)
+    timeoutMediumSecs: number;
+    // (undocumented)
+    timeoutShortSecs: number;
     // (undocumented)
     token?: string;
     // (undocumented)
@@ -2916,7 +2926,7 @@ export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientL
 }
 
 // @public
-export interface KeyValueClientGetRecordOptions {
+export interface KeyValueClientGetRecordOptions extends TimeoutOptions {
     // (undocumented)
     buffer?: boolean;
     signature?: string;
@@ -2925,7 +2935,7 @@ export interface KeyValueClientGetRecordOptions {
 }
 
 // @public
-export interface KeyValueClientListKeysOptions {
+export interface KeyValueClientListKeysOptions extends TimeoutOptions {
     // (undocumented)
     collection?: string;
     // (undocumented)
@@ -2967,17 +2977,17 @@ export interface KeyValueStore extends Omit<Schemas['KeyValueStore'], keyof KeyV
 export class KeyValueStoreClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     createKeysPublicUrl(options?: KeyValueClientCreateKeysUrlOptions): Promise<string>;
-    delete(): Promise<void>;
-    deleteRecord(key: string): Promise<void>;
-    get(): Promise<KeyValueStore | undefined>;
+    delete(options?: TimeoutOptions): Promise<void>;
+    deleteRecord(key: string, options?: TimeoutOptions): Promise<void>;
+    get(options?: TimeoutOptions): Promise<KeyValueStore | undefined>;
     getRecord(key: string): Promise<KeyValueStoreRecord<JsonValue> | undefined>;
     // (undocumented)
     getRecord<Options extends KeyValueClientGetRecordOptions = KeyValueClientGetRecordOptions>(key: string, options: Options): Promise<KeyValueStoreRecord<ReturnTypeFromOptions<Options>> | undefined>;
-    getRecordPublicUrl(key: string): Promise<string>;
+    getRecordPublicUrl(key: string, options?: TimeoutOptions): Promise<string>;
     listKeys(options?: KeyValueClientListKeysOptions): Promise<KeyValueClientListKeysResult> & AsyncIterable<KeyValueListItem>;
-    recordExists(key: string): Promise<boolean>;
+    recordExists(key: string, options?: TimeoutOptions): Promise<boolean>;
     setRecord(record: KeyValueStoreRecord<KeyValueStoreRecordValue>, options?: KeyValueStoreRecordOptions): Promise<void>;
-    update(newFields: KeyValueClientUpdateOptions): Promise<KeyValueStore>;
+    update(newFields: KeyValueClientUpdateOptions, options?: TimeoutOptions): Promise<KeyValueStore>;
 }
 
 // @public
@@ -2988,13 +2998,13 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
 }
 
 // @public
-export interface KeyValueStoreCollectionClientGetOrCreateOptions {
+export interface KeyValueStoreCollectionClientGetOrCreateOptions extends TimeoutOptions {
     // (undocumented)
     schema?: Record<string, unknown>;
 }
 
 // @public (undocumented)
-export interface KeyValueStoreCollectionClientListOptions extends PaginationOptions {
+export interface KeyValueStoreCollectionClientListOptions extends PaginationOptions, TimeoutOptions {
     // (undocumented)
     desc?: boolean;
     ownership?: STORAGE_OWNERSHIP_FILTER;
@@ -3018,11 +3028,9 @@ export interface KeyValueStoreRecord<T> {
 }
 
 // @public
-export interface KeyValueStoreRecordOptions {
+export interface KeyValueStoreRecordOptions extends TimeoutOptions {
     // (undocumented)
     doNotRetryTimeouts?: boolean;
-    // (undocumented)
-    timeoutSecs?: number;
 }
 
 // @public
@@ -3074,7 +3082,7 @@ export class LoggerActorRedirect extends Logger {
 }
 
 // @public
-export interface LogOptions {
+export interface LogOptions extends TimeoutOptions {
     raw?: boolean;
 }
 
@@ -3274,28 +3282,28 @@ export interface RequestQueue extends Omit<Schemas['RequestQueue'], keyof Reques
 export class RequestQueueClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions, userOptions?: RequestQueueUserOptions);
     addRequest(request: RequestQueueClientRequestToAdd, options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientAddRequestResult>;
-    batchAddRequests(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
-    protected _batchAddRequests(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
+    protected addRequestBatch(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
     // (undocumented)
-    protected _batchAddRequestsWithRetries(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
-    batchDeleteRequests(requests: RequestQueueClientRequestToDelete[]): Promise<RequestQueueClientBatchDeleteRequestsResult>;
-    delete(): Promise<void>;
-    deleteRequest(id: string): Promise<void>;
+    protected addRequestBatchWithRetries(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
+    batchAddRequests(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
+    batchDeleteRequests(requests: RequestQueueClientRequestToDelete[], options?: TimeoutOptions): Promise<RequestQueueClientBatchDeleteRequestsResult>;
+    delete(options?: TimeoutOptions): Promise<void>;
+    deleteRequest(id: string, options?: TimeoutOptions): Promise<void>;
     deleteRequestLock(id: string, options?: RequestQueueClientDeleteRequestLockOptions): Promise<void>;
-    get(): Promise<RequestQueue | undefined>;
-    getRequest(id: string): Promise<RequestQueueClientGetRequestResult | undefined>;
+    get(options?: TimeoutOptions): Promise<RequestQueue | undefined>;
+    getRequest(id: string, options?: TimeoutOptions): Promise<RequestQueueClientGetRequestResult | undefined>;
     listAndLockHead(options: RequestQueueClientListAndLockHeadOptions): Promise<RequestQueueClientListAndLockHeadResult>;
     listHead(options?: RequestQueueClientListHeadOptions): Promise<RequestQueueClientListHeadResult>;
     listRequests(options?: RequestQueueClientListRequestsOptions): Promise<RequestQueueClientListRequestsResult> & AsyncIterable<RequestQueueClientRequestSchema>;
     paginateRequests(options?: RequestQueueClientPaginateRequestsOptions): RequestQueueRequestsAsyncIterable<RequestQueueClientListRequestsResult>;
     prolongRequestLock(id: string, options: RequestQueueClientProlongRequestLockOptions): Promise<RequestQueueClientProlongRequestLockResult>;
-    unlockRequests(): Promise<RequestQueueClientUnlockRequestsResult>;
-    update(newFields: RequestQueueClientUpdateOptions): Promise<RequestQueue>;
+    unlockRequests(options?: TimeoutOptions): Promise<RequestQueueClientUnlockRequestsResult>;
+    update(newFields: RequestQueueClientUpdateOptions, options?: TimeoutOptions): Promise<RequestQueue>;
     updateRequest(request: RequestQueueClientRequestToUpdate, options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientAddRequestResult>;
 }
 
 // @public (undocumented)
-export interface RequestQueueClientAddRequestOptions {
+export interface RequestQueueClientAddRequestOptions extends TimeoutOptions {
     // (undocumented)
     forefront?: boolean;
 }
@@ -3305,7 +3313,7 @@ export interface RequestQueueClientAddRequestResult extends GeneratedRequestRegi
 }
 
 // @public
-export interface RequestQueueClientBatchAddRequestWithRetriesOptions {
+export interface RequestQueueClientBatchAddRequestWithRetriesOptions extends TimeoutOptions {
     // (undocumented)
     forefront?: boolean;
     // (undocumented)
@@ -3324,7 +3332,7 @@ export interface RequestQueueClientBatchRequestsOperationResult extends Generate
 }
 
 // @public
-export interface RequestQueueClientDeleteRequestLockOptions {
+export interface RequestQueueClientDeleteRequestLockOptions extends TimeoutOptions {
     // (undocumented)
     forefront?: boolean;
 }
@@ -3333,7 +3341,7 @@ export interface RequestQueueClientDeleteRequestLockOptions {
 export type RequestQueueClientGetRequestResult = RequestQueueClientRequestSchema;
 
 // @public
-export interface RequestQueueClientListAndLockHeadOptions {
+export interface RequestQueueClientListAndLockHeadOptions extends TimeoutOptions {
     // (undocumented)
     limit?: number;
     // (undocumented)
@@ -3352,7 +3360,7 @@ interface RequestQueueClientListAndLockHeadResultRePointed {
 }
 
 // @public
-export interface RequestQueueClientListHeadOptions {
+export interface RequestQueueClientListHeadOptions extends TimeoutOptions {
     // (undocumented)
     limit?: number;
 }
@@ -3373,7 +3381,7 @@ export interface RequestQueueClientListItem extends GeneratedHeadRequest {
 }
 
 // @public
-export interface RequestQueueClientListRequestsOptions {
+export interface RequestQueueClientListRequestsOptions extends TimeoutOptions {
     cursor?: string;
     filter?: readonly RequestQueueListRequestsFilter[];
     // (undocumented)
@@ -3396,7 +3404,7 @@ export interface RequestQueueClientLockedListItem extends GeneratedLockedHeadReq
 }
 
 // @public
-export interface RequestQueueClientPaginateRequestsOptions {
+export interface RequestQueueClientPaginateRequestsOptions extends TimeoutOptions {
     cursor?: string;
     filter?: readonly RequestQueueListRequestsFilter[];
     // (undocumented)
@@ -3406,7 +3414,7 @@ export interface RequestQueueClientPaginateRequestsOptions {
 }
 
 // @public
-export interface RequestQueueClientProlongRequestLockOptions {
+export interface RequestQueueClientProlongRequestLockOptions extends TimeoutOptions {
     // (undocumented)
     forefront?: boolean;
     // (undocumented)
@@ -3447,12 +3455,12 @@ export interface RequestQueueClientUpdateOptions {
 // @public
 export class RequestQueueCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
-    getOrCreate(name?: string): Promise<RequestQueue>;
+    getOrCreate(name?: string, options?: TimeoutOptions): Promise<RequestQueue>;
     list(options?: RequestQueueCollectionListOptions): Promise<RequestQueueCollectionListResult> & AsyncIterable<RequestQueue>;
 }
 
 // @public (undocumented)
-export interface RequestQueueCollectionListOptions extends PaginationOptions {
+export interface RequestQueueCollectionListOptions extends PaginationOptions, TimeoutOptions {
     // (undocumented)
     desc?: boolean;
     ownership?: STORAGE_OWNERSHIP_FILTER;
@@ -3512,11 +3520,12 @@ export interface RequestQueueUserOptions {
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
 class ResourceClient extends ApiClient {
-    protected _delete(timeoutMillis?: number): Promise<void>;
-    protected _get<T, R>(schema: z.ZodType, options?: T, timeoutMillis?: number): Promise<R | undefined>;
+    protected deleteResource(timeoutSecs: Timeout): Promise<void>;
+    protected getResource<T, R>(schema: z.ZodType, options: T, timeoutSecs: Timeout): Promise<R | undefined>;
+    protected timeoutForWaitForFinish(timeoutSecs: Timeout | undefined, tier: TimeoutTier, waitForFinishSecs: number | undefined): Timeout;
     // (undocumented)
-    protected _update<T, R>(schema: z.ZodType, newFields: T, timeoutMillis?: number): Promise<R>;
-    protected _waitForFinish<R extends {
+    protected updateResource<T, R>(schema: z.ZodType, newFields: T, timeoutSecs: Timeout): Promise<R>;
+    protected waitForJobFinish<R extends {
         status: (typeof ACT_JOB_STATUSES)[keyof typeof ACT_JOB_STATUSES];
     }>(schema: z.ZodType, options?: WaitForFinishOptions): Promise<R>;
 }
@@ -3525,12 +3534,12 @@ class ResourceClient extends ApiClient {
 // @public
 class ResourceCollectionClient extends ApiClient {
     // (undocumented)
-    protected _create<D, R>(schema: z.ZodType, resource: D): Promise<R>;
+    protected createResource<D, R>(schema: z.ZodType, resource: D, timeoutSecs: Timeout): Promise<R>;
     // (undocumented)
-    protected _getOrCreate<D, R>(schema: z.ZodType, name?: string, resource?: D): Promise<R>;
+    protected getOrCreateResource<D, R>(schema: z.ZodType, name: string | undefined, resource: D | undefined, timeoutSecs: Timeout): Promise<R>;
     // (undocumented)
-    protected _list<T, R>(schema: z.ZodType, options?: T): Promise<R>;
-    protected _listPaginated<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(schema: z.ZodType, options?: T): AsyncIterable<Data> & Promise<R>;
+    protected listResources<T, R>(schema: z.ZodType, options: T | undefined, timeoutSecs: Timeout): Promise<R>;
+    protected listResourcesPaginated<T extends PaginationOptions & TimeoutOptions, Data, R extends PaginatedResponse<Data>>(schema: z.ZodType, options: T, defaultTimeoutSecs: Timeout): AsyncIterable<Data> & Promise<R>;
 }
 
 // @public
@@ -3548,13 +3557,13 @@ export class ResponseValidationError extends Error {
 export type ReturnTypeFromOptions<Options extends KeyValueClientGetRecordOptions> = Options['stream'] extends true ? Readable : Options['buffer'] extends true ? Buffer : JsonValue;
 
 // @public
-export interface RunAbortOptions {
+export interface RunAbortOptions extends TimeoutOptions {
     // (undocumented)
     gracefully?: boolean;
 }
 
 // @public
-export interface RunChargeOptions {
+export interface RunChargeOptions extends TimeoutOptions {
     count?: number;
     eventName: string;
     idempotencyKey?: string;
@@ -3566,16 +3575,16 @@ export class RunClient extends ResourceClient {
     abort(options?: RunAbortOptions): Promise<ActorRun>;
     charge(options: RunChargeOptions): Promise<ApifyResponse<Record<string, never>>>;
     dataset(): DatasetClient;
-    delete(): Promise<void>;
+    delete(options?: TimeoutOptions): Promise<void>;
     get(options?: RunGetOptions): Promise<ActorRun | undefined>;
     getStreamedLog(options?: GetStreamedLogOptions): Promise<StreamedLog | undefined>;
     keyValueStore(): KeyValueStoreClient;
     log(): LogClient;
     metamorph(targetActorId: string, input?: ActorInput, options?: RunMetamorphOptions): Promise<ActorRun>;
-    reboot(): Promise<ActorRun>;
+    reboot(options?: TimeoutOptions): Promise<ActorRun>;
     requestQueue(): RequestQueueClient;
     resurrect(options?: RunResurrectOptions): Promise<ActorRun>;
-    update(newFields: RunUpdateOptions): Promise<ActorRun>;
+    update(newFields: RunUpdateOptions, options?: TimeoutOptions): Promise<ActorRun>;
     waitForFinish(options?: RunWaitForFinishOptions): Promise<ActorRun>;
 }
 
@@ -3586,7 +3595,7 @@ export class RunCollectionClient extends ResourceCollectionClient {
 }
 
 // @public (undocumented)
-export interface RunCollectionListOptions extends PaginationOptions {
+export interface RunCollectionListOptions extends PaginationOptions, TimeoutOptions {
     // (undocumented)
     desc?: boolean;
     startedAfter?: Date | string;
@@ -3596,20 +3605,20 @@ export interface RunCollectionListOptions extends PaginationOptions {
 }
 
 // @public
-export interface RunGetOptions {
+export interface RunGetOptions extends TimeoutOptions {
     // (undocumented)
     waitForFinish?: number;
 }
 
 // @public
-export interface RunMetamorphOptions {
+export interface RunMetamorphOptions extends TimeoutOptions {
     // (undocumented)
     build?: string;
     contentType?: string;
 }
 
 // @public
-export interface RunResurrectOptions {
+export interface RunResurrectOptions extends TimeoutOptions {
     // (undocumented)
     build?: string;
     maxItems?: number;
@@ -3617,8 +3626,7 @@ export interface RunResurrectOptions {
     // (undocumented)
     memory?: number;
     restartOnError?: boolean;
-    // (undocumented)
-    timeout?: number;
+    runTimeoutSecs?: number;
 }
 
 // @public
@@ -3630,7 +3638,7 @@ export interface RunUpdateOptions {
 }
 
 // @public
-export interface RunWaitForFinishOptions {
+export interface RunWaitForFinishOptions extends TimeoutOptions {
     waitSecs?: number;
 }
 
@@ -3678,10 +3686,10 @@ export enum ScheduleActions {
 // @public
 export class ScheduleClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
-    delete(): Promise<void>;
-    get(): Promise<Schedule | undefined>;
-    getLog(): Promise<ScheduleInvoked[]>;
-    update(newFields: ScheduleCreateOrUpdateData): Promise<Schedule>;
+    delete(options?: TimeoutOptions): Promise<void>;
+    get(options?: TimeoutOptions): Promise<Schedule | undefined>;
+    getLog(options?: TimeoutOptions): Promise<ScheduleInvoked[]>;
+    update(newFields: ScheduleCreateOrUpdateData, options?: TimeoutOptions): Promise<Schedule>;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3694,12 +3702,12 @@ interface ScheduleClientNarrowings {
 // @public
 export class ScheduleCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
-    create(schedule?: ScheduleCreateOrUpdateData): Promise<Schedule>;
+    create(schedule?: ScheduleCreateOrUpdateData, options?: TimeoutOptions): Promise<Schedule>;
     list(options?: ScheduleCollectionListOptions): PaginatedIterator<Schedule>;
 }
 
 // @public (undocumented)
-export interface ScheduleCollectionListOptions extends PaginationOptions {
+export interface ScheduleCollectionListOptions extends PaginationOptions, TimeoutOptions {
     // (undocumented)
     desc?: boolean;
 }
@@ -3759,7 +3767,7 @@ export class StoreCollectionClient extends ResourceCollectionClient {
 }
 
 // @public
-export interface StoreCollectionListOptions extends PaginationOptions {
+export interface StoreCollectionListOptions extends PaginationOptions, TimeoutOptions {
     // (undocumented)
     category?: string;
     includeUnrunnableActors?: boolean;
@@ -3801,28 +3809,28 @@ export interface TaskCallOptions extends Omit<TaskStartOptions, 'waitForFinish'>
 export class TaskClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     call(input?: Dictionary, options?: TaskCallOptions): Promise<ActorRun>;
-    delete(): Promise<void>;
-    get(): Promise<Task | undefined>;
-    getInput(): Promise<Dictionary | Dictionary[]>;
+    delete(options?: TimeoutOptions): Promise<void>;
+    get(options?: TimeoutOptions): Promise<Task | undefined>;
+    getInput(options?: TimeoutOptions): Promise<Dictionary | Dictionary[]>;
     lastRun(options?: TaskLastRunOptions): RunClient;
-    publish(): Promise<Task>;
+    publish(options?: TimeoutOptions): Promise<Task>;
     runs(): RunCollectionClient;
     start(input?: Dictionary, options?: TaskStartOptions): Promise<ActorRun>;
-    unpublish(): Promise<Task>;
-    update(newFields: TaskUpdateData): Promise<Task>;
-    updateInput(newFields: Dictionary | Dictionary[]): Promise<Dictionary | Dictionary[]>;
+    unpublish(options?: TimeoutOptions): Promise<Task>;
+    update(newFields: TaskUpdateData, options?: TimeoutOptions): Promise<Task>;
+    updateInput(newFields: Dictionary | Dictionary[], options?: TimeoutOptions): Promise<Dictionary | Dictionary[]>;
     webhooks(): WebhookCollectionClient;
 }
 
 // @public
 export class TaskCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
-    create(task: TaskCreateData): Promise<Task>;
+    create(task: TaskCreateData, options?: TimeoutOptions): Promise<Task>;
     list(options?: TaskCollectionListOptions): PaginatedIterator<TaskList>;
 }
 
 // @public (undocumented)
-export interface TaskCollectionListOptions extends PaginationOptions {
+export interface TaskCollectionListOptions extends PaginationOptions, TimeoutOptions {
     // (undocumented)
     desc?: boolean;
 }
@@ -3917,6 +3925,17 @@ export interface TieredPricingPerEvent {
 export interface TieredPricingPerEventEntry extends GeneratedTieredPricingPerEventEntry {
 }
 
+// @public
+export type Timeout = TimeoutTier | 'noTimeout' | number;
+
+// @public
+export interface TimeoutOptions {
+    timeoutSecs?: Timeout;
+}
+
+// @public
+export type TimeoutTier = 'short' | 'medium' | 'long';
+
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 type Timezone = (typeof timezones)[number];
@@ -3951,10 +3970,10 @@ export interface User extends Omit<Schemas['UserPrivateInfo'], keyof UserRePoint
 // @public
 export class UserClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
-    get(): Promise<User | undefined>;
-    limits(): Promise<AccountAndUsageLimits>;
-    monthlyUsage(): Promise<MonthlyUsage>;
-    updateLimits(options: LimitsUpdateOptions): Promise<void>;
+    get(options?: TimeoutOptions): Promise<User | undefined>;
+    limits(options?: TimeoutOptions): Promise<AccountAndUsageLimits>;
+    monthlyUsage(options?: TimeoutOptions): Promise<MonthlyUsage>;
+    updateLimits(newLimits: LimitsUpdateOptions, options?: TimeoutOptions): Promise<void>;
 }
 
 // @public
@@ -3998,7 +4017,7 @@ interface UserRePointed {
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-interface WaitForFinishOptions {
+interface WaitForFinishOptions extends TimeoutOptions {
     // (undocumented)
     waitSecs?: number;
 }
@@ -4028,22 +4047,22 @@ export interface WebhookCertainRunCondition {
 // @public
 export class WebhookClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
-    delete(): Promise<void>;
+    delete(options?: TimeoutOptions): Promise<void>;
     dispatches(): WebhookDispatchCollectionClient;
-    get(): Promise<Webhook | undefined>;
-    test(): Promise<WebhookDispatch>;
-    update(newFields: WebhookUpdateData): Promise<Webhook>;
+    get(options?: TimeoutOptions): Promise<Webhook | undefined>;
+    test(options?: TimeoutOptions): Promise<WebhookDispatch>;
+    update(newFields: WebhookUpdateData, options?: TimeoutOptions): Promise<Webhook>;
 }
 
 // @public
 export class WebhookCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
-    create(webhook?: WebhookUpdateData): Promise<Webhook>;
+    create(webhook?: WebhookUpdateData, options?: TimeoutOptions): Promise<Webhook>;
     list(options?: WebhookCollectionListOptions): PaginatedIterator<Omit<Webhook, 'payloadTemplate' | 'headersTemplate'>>;
 }
 
 // @public (undocumented)
-export interface WebhookCollectionListOptions extends PaginationOptions {
+export interface WebhookCollectionListOptions extends PaginationOptions, TimeoutOptions {
     // (undocumented)
     desc?: boolean;
 }
@@ -4062,7 +4081,7 @@ export interface WebhookDispatchCall extends GeneratedWebhookDispatchCall {
 // @public
 export class WebhookDispatchClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
-    get(): Promise<WebhookDispatch | undefined>;
+    get(options?: TimeoutOptions): Promise<WebhookDispatch | undefined>;
 }
 
 // @public
@@ -4072,7 +4091,7 @@ export class WebhookDispatchCollectionClient extends ResourceCollectionClient {
 }
 
 // @public (undocumented)
-export interface WebhookDispatchCollectionListOptions extends PaginationOptions {
+export interface WebhookDispatchCollectionListOptions extends PaginationOptions, TimeoutOptions {
     // (undocumented)
     desc?: boolean;
 }

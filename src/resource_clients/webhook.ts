@@ -1,7 +1,9 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { Webhook, WebhookEventType } from '../models.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema } from '../timeouts.js';
 import { anyObjectSchema, parseArgument, parseResponse } from '../utils.js';
 import type { WebhookDispatch } from './webhook_dispatch.js';
 import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection.js';
@@ -59,46 +61,62 @@ export class WebhookClient extends ResourceClient {
     /**
      * Retrieves the webhook.
      *
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The webhook object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/webhook-get
      */
-    async get(): Promise<Webhook | undefined> {
-        return this._get(schemas.Webhook());
+    async get(options: TimeoutOptions = {}): Promise<Webhook | undefined> {
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this.getResource(schemas.Webhook(), {}, timeoutSecs);
     }
 
     /**
      * Updates the webhook with the specified fields.
      *
      * @param newFields - Fields to update.
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The updated webhook object.
      * @see https://docs.apify.com/api/v2/webhook-put
      */
-    async update(newFields: WebhookUpdateData): Promise<Webhook> {
+    async update(newFields: WebhookUpdateData, options: TimeoutOptions = {}): Promise<Webhook> {
         parseArgument(newFields, anyObjectSchema);
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._update(schemas.Webhook(), newFields);
+        return this.updateResource(schemas.Webhook(), newFields, timeoutSecs);
     }
 
     /**
      * Deletes the webhook.
      *
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/webhook-delete
      */
-    async delete(): Promise<void> {
-        return this._delete();
+    async delete(options: TimeoutOptions = {}): Promise<void> {
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this.deleteResource(timeoutSecs);
     }
 
     /**
      * Tests the webhook by dispatching a test event.
      *
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
      * @returns The webhook dispatch object.
      * @see https://docs.apify.com/api/v2/webhook-test-post
      */
-    async test(): Promise<WebhookDispatch> {
+    async test(options: TimeoutOptions = {}): Promise<WebhookDispatch> {
+        const { timeoutSecs = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
         const response = await this.httpClient.call({
-            url: this._url('test'),
+            url: this.buildUrl('test'),
             method: 'POST',
-            params: this._params(),
+            params: this.buildParams(),
+            timeoutSecs,
         });
         return parseResponse(response, schemas.WebhookDispatch());
     }
@@ -111,7 +129,7 @@ export class WebhookClient extends ResourceClient {
      */
     dispatches(): WebhookDispatchCollectionClient {
         return new WebhookDispatchCollectionClient(
-            this._subResourceOptions({
+            this.subResourceOptions({
                 resourcePath: 'dispatches',
             }),
         );

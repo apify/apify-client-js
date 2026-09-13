@@ -1,7 +1,9 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedList } from '../utils.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema } from '../timeouts.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
 import type { ActorEnvironmentVariable } from './actor_version.js';
 
@@ -60,23 +62,34 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      * for await (const singleItem of client.list()) {...}
      * ```
      *
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The environment variables, awaitable as a whole list or iterable one by one.
      * @see https://docs.apify.com/api/v2/act-version-env-vars-get
      */
-    list(): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
-        return this._listPaginated(schemas.ListOfEnvVars());
+    list(options: TimeoutOptions = {}): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this.listResourcesPaginated(schemas.ListOfEnvVars(), {}, timeoutSecs);
     }
 
     /**
      * Creates a new environment variable for this Actor version.
      *
      * @param actorEnvVar - The environment variable data.
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The created environment variable object.
      * @see https://docs.apify.com/api/v2/act-version-env-vars-post
      */
-    async create(actorEnvVar: ActorEnvironmentVariable): Promise<ActorEnvironmentVariable> {
+    async create(
+        actorEnvVar: ActorEnvironmentVariable,
+        options: TimeoutOptions = {},
+    ): Promise<ActorEnvironmentVariable> {
         parseArgument(actorEnvVar, actorEnvVarSchema);
-        return this._create(schemas.EnvVar(), actorEnvVar);
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this.createResource(schemas.EnvVar(), actorEnvVar, timeoutSecs);
     }
 }
 

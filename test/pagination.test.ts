@@ -1,3 +1,4 @@
+import type { TimeoutOptions } from 'apify-client';
 import { ApifyClient } from 'apify-client';
 import { describe, expect, test, vi } from 'vitest';
 
@@ -79,7 +80,7 @@ const descPaginationOptions = [
     },
 ];
 
-interface ListOptions {
+interface ListOptions extends TimeoutOptions {
     offset?: number;
     limit?: number;
     desc?: boolean;
