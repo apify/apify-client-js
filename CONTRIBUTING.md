@@ -159,6 +159,7 @@ This project uses [oxlint](https://oxc.rs/docs/guide/usage/linter) and [oxfmt](h
 - Use single quotes for strings
 - Add trailing commas in multiline structures
 - Export types and interfaces alongside implementations
+- Declare private members as `#private` identifiers, and use `protected` only for helpers that subclasses call
 - Avoid `any` types where possible (though the oxlint rule is disabled)
 
 ### Before Committing

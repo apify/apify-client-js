@@ -397,3 +397,7 @@ A helper got a suffix wherever the bare name would collide with a public method 
 <ApiLink to="class/LoggerActorRedirect">`LoggerActorRedirect`</ApiLink> keeps `_log()`, since it overrides the method of that name on the `Logger` base class in `@apify/log`.
 
 The `clientMethod` field on <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> still names the public method you called, such as `ActorCollectionClient.list`, so what an error reports doesn't change.
+
+### Private members are private at runtime
+
+Members that v2 declared `private` are declared with a `#` in v3, so the JavaScript runtime enforces the boundary, where v2 relied on the type checker. Code that reached one of them through a cast, such as `(client.httpClient as any).nodeInitPromise`, throws a `TypeError` in v3. They also don't appear when you spread an instance, iterate `Object.keys()` on it, or pass it to `JSON.stringify()`. The `protected` helpers in the table keep the `protected` keyword, so a subclass can call them.

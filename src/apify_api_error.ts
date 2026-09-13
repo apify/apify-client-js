@@ -131,17 +131,17 @@ export class ApifyApiError extends Error {
         super(message);
 
         this.name = this.constructor.name;
-        this.clientMethod = this.extractClientAndMethodFromStack();
+        this.clientMethod = this.#extractClientAndMethodFromStack();
         this.statusCode = response.status;
         this.type = type;
         this.attempt = attempt;
         this.httpMethod = response.config?.method;
-        this.path = this.safelyParsePathFromResponse(response);
+        this.path = this.#safelyParsePathFromResponse(response);
 
         const stack = this.stack!;
 
         this.originalStack = stack.slice(stack.indexOf('\n'));
-        this.stack = this.createApiStack();
+        this.stack = this.#createApiStack();
 
         this.data = errorData;
     }
@@ -156,7 +156,7 @@ export class ApifyApiError extends Error {
         return new ErrorClass(response, attempt);
     }
 
-    private safelyParsePathFromResponse(response: AxiosResponse) {
+    #safelyParsePathFromResponse(response: AxiosResponse) {
         const urlString = response.config?.url;
         let url;
         try {
@@ -167,7 +167,7 @@ export class ApifyApiError extends Error {
         return url.pathname + url.search;
     }
 
-    private extractClientAndMethodFromStack() {
+    #extractClientAndMethodFromStack() {
         const match = this.stack!.match(CLIENT_METHOD_REGEX);
         if (!match) return 'unknown';
         return `${match[2]}.${PUBLIC_METHOD_BY_HELPER[match[4]] ?? match[4]}`;
@@ -187,7 +187,7 @@ export class ApifyApiError extends Error {
      *   httpMethod: post
      *   path: /v2/actor-tasks/user~my-task/runs
      */
-    private createApiStack() {
+    #createApiStack() {
         const { name, ...props } = this;
 
         const stack = Object.entries(props)
