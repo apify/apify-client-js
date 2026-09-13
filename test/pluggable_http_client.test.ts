@@ -308,15 +308,15 @@ describe('pluggable HTTP client', () => {
             expect(sendRequest).toHaveBeenCalledTimes(3);
         });
 
-        test('grows the timeout with every attempt, capped at the client timeout', async () => {
-            const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 1, timeoutSecs: 5 });
+        test('grows the timeout with every attempt, capped at timeoutMaxSecs', async () => {
+            const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 1, timeoutMaxSecs: 5 });
             const sendRequest = vi
                 .spyOn(httpClient, 'sendRequest')
                 .mockRejectedValueOnce(new Error('nope'))
                 .mockRejectedValueOnce(new Error('nope'))
                 .mockResolvedValueOnce(okResponse());
 
-            await httpClient.call({ url: `${baseUrl}/echo`, method: 'GET', timeout: 2000 });
+            await httpClient.call({ url: `${baseUrl}/echo`, method: 'GET', timeoutSecs: 2 });
 
             expect(sendRequest.mock.calls.map(([request]) => request.timeoutMillis)).toEqual([2000, 4000, 5000]);
         });

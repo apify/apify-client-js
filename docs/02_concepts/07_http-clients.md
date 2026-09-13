@@ -14,7 +14,7 @@ The Apify API client uses a pluggable HTTP layer. It ships with an [axios](https
 When you create an <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink>, it sends its requests through the built-in <ApiLink to="class/AxiosHttpClient">`AxiosHttpClient`</ApiLink>. This default client provides:
 
 - Automatic retries with exponential backoff for network errors, HTTP 429 and HTTP 5xx responses.
-- Configurable timeouts that grow with every retry.
+- Configurable [timeout tiers](./06_timeouts.md) that grow with every retry.
 - Request compression and preparation of API-compatible bodies, query parameters and headers, including authentication.
 - Keep-alive connections and proxy support through the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables in Node.js.
 - API error handling and request statistics.
@@ -28,7 +28,7 @@ const client = new ApifyClient({
     token: 'MY-APIFY-TOKEN',
     maxRetries: 4,
     minDelayBetweenRetriesMillis: 500,
-    timeoutSecs: 360,
+    timeoutMediumSecs: 60,
 });
 ```
 

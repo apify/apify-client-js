@@ -10,6 +10,13 @@ import { ApifyApiError } from '../apify_api_error.js';
 import { maybeParseBody } from '../body_parser.js';
 import { InvalidResponseBodyError } from '../invalid_response_body_error.js';
 import { Statistics } from '../statistics.js';
+import type { Timeout, TimeoutTier } from '../timeouts.js';
+import {
+    DEFAULT_TIMEOUT_LONG_SECS,
+    DEFAULT_TIMEOUT_MAX_SECS,
+    DEFAULT_TIMEOUT_MEDIUM_SECS,
+    DEFAULT_TIMEOUT_SHORT_SECS,
+} from '../timeouts.js';
 import {
     asArray,
     getVersionData,
@@ -25,8 +32,6 @@ const { version } = getVersionData();
 export const DEFAULT_MAX_RETRIES = 8;
 
 export const DEFAULT_MIN_DELAY_BETWEEN_RETRIES_MILLIS = 500;
-
-export const DEFAULT_TIMEOUT_SECS = 360;
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 
@@ -93,10 +98,11 @@ export interface ApifyRequestConfig {
      */
     data?: unknown;
     /**
-     * Timeout of the first attempt in milliseconds. Each retry doubles it, and every attempt is capped at the
-     * client-wide timeout. Defaults to the client-wide timeout.
+     * Timeout of the request: a tier name, a number of seconds, or `'noTimeout'`. The client resolves it to the
+     * timeout of each attempt in milliseconds, doubling it with every retry up to `timeoutMaxSecs`.
+     * @default 'medium'
      */
-    timeout?: number;
+    timeoutSecs?: Timeout;
     /** @default 'parsed' */
     responseType?: ApifyResponseType;
     /**
@@ -167,8 +173,14 @@ export interface HttpClientOptions {
      * @default 500
      */
     minDelayBetweenRetriesMillis?: number;
+    /** Duration of the `short` timeout tier, in seconds. @default 5 */
+    timeoutShortSecs?: number;
+    /** Duration of the `medium` timeout tier, in seconds. @default 30 */
+    timeoutMediumSecs?: number;
+    /** Duration of the `long` timeout tier, in seconds. @default 360 */
+    timeoutLongSecs?: number;
     /** Upper bound for the timeout of a single attempt, in seconds. @default 360 */
-    timeoutSecs?: number;
+    timeoutMaxSecs?: number;
     /** Additional headers sent with every request. They win over the built-in defaults. */
     headers?: Record<string, string>;
     /** Statistics the client records its calls into. Created when omitted. */
@@ -232,8 +244,11 @@ export abstract class HttpClient {
     /** Lower bound for the delay before the first retry in milliseconds. It doubles with every further retry. */
     minDelayBetweenRetriesMillis: number;
 
+    /** Duration of each timeout tier, in milliseconds. */
+    timeoutMillis: Record<TimeoutTier, number>;
+
     /** Upper bound for the timeout of a single attempt, in milliseconds. */
-    timeoutMillis: number;
+    timeoutMaxMillis: number;
 
     /**
      * Headers sent with every request: the `Authorization` header built from the token, the `User-Agent` (Node.js
@@ -248,7 +263,12 @@ export abstract class HttpClient {
         this.maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
         this.minDelayBetweenRetriesMillis =
             options.minDelayBetweenRetriesMillis ?? DEFAULT_MIN_DELAY_BETWEEN_RETRIES_MILLIS;
-        this.timeoutMillis = (options.timeoutSecs ?? DEFAULT_TIMEOUT_SECS) * 1000;
+        this.timeoutMillis = {
+            short: (options.timeoutShortSecs ?? DEFAULT_TIMEOUT_SHORT_SECS) * 1000,
+            medium: (options.timeoutMediumSecs ?? DEFAULT_TIMEOUT_MEDIUM_SECS) * 1000,
+            long: (options.timeoutLongSecs ?? DEFAULT_TIMEOUT_LONG_SECS) * 1000,
+        };
+        this.timeoutMaxMillis = (options.timeoutMaxSecs ?? DEFAULT_TIMEOUT_MAX_SECS) * 1000;
 
         const defaults: Record<string, string> = {};
 
@@ -398,14 +418,29 @@ export abstract class HttpClient {
     }
 
     /**
-     * Computes the timeout of an attempt: the request's own timeout doubled with every retry, capped at the
-     * client-wide timeout.
+     * Resolves `timeoutSecs` to the number of milliseconds the given attempt gets. A tier name resolves to its
+     * configured duration, a number is taken as seconds, and `'noTimeout'` becomes `0`, which the transports read
+     * as no timeout. The result doubles with each attempt and is capped at `timeoutMaxMillis`. A requested value
+     * above the cap is capped too, which warns once, since it does not take effect in full.
      *
-     * @param timeoutMillis - The request's timeout for the first attempt. Defaults to the client-wide timeout.
+     * @param timeoutSecs - The request's timeout. Defaults to the `medium` tier.
      * @param attempt - Current attempt number, starting at 1.
      */
-    protected _computeTimeoutMillis(timeoutMillis: number | undefined, attempt: number): number {
-        return Math.min(this.timeoutMillis, (timeoutMillis ?? this.timeoutMillis) * 2 ** (attempt - 1));
+    protected _computeTimeoutMillis(timeoutSecs: Timeout = 'medium', attempt: number): number {
+        if (timeoutSecs === 'noTimeout') return 0;
+
+        const requestedMillis = typeof timeoutSecs === 'number' ? timeoutSecs * 1000 : this.timeoutMillis[timeoutSecs];
+
+        if (requestedMillis > this.timeoutMaxMillis) {
+            // `warningOnce` keys by message, so each requested value warns once.
+            this.logger.warningOnce(
+                `The requested timeout of ${requestedMillis / 1000}s exceeds timeoutMaxSecs ` +
+                    `(${this.timeoutMaxMillis / 1000}s) and is capped at it. ` +
+                    'Raise timeoutMaxSecs on the client to allow longer request timeouts.',
+            );
+        }
+
+        return Math.min(requestedMillis * 2 ** (attempt - 1), this.timeoutMaxMillis);
     }
 
     /**
@@ -462,7 +497,7 @@ export abstract class HttpClient {
                 url,
                 headers,
                 body,
-                timeoutMillis: this._computeTimeoutMillis(config.timeout, attempt),
+                timeoutMillis: this._computeTimeoutMillis(config.timeoutSecs, attempt),
                 stream: config.responseType === 'stream',
             });
         } catch (err) {

@@ -160,8 +160,9 @@ const client = new ApifyClient({
     token: 'MY-APIFY-TOKEN',
     maxRetries: 8,
     minDelayBetweenRetriesMillis: 500, // 0.5s
-    timeoutSecs: 360, // 6 mins
 });
 ```
 
-Which transport errors count as retryable is decided by the HTTP client the requests go through. The built-in axios client retries every network failure, timeouts included. A custom client classifies its own errors, see [HTTP clients](./06_http-clients.md).
+Which transport errors count as retryable is decided by the HTTP client the requests go through. The built-in axios client retries every network failure, timeouts included. A custom client classifies its own errors, see [HTTP clients](./07_http-clients.md).
+
+A request that times out is retried the same way, with a longer timeout on each attempt. For how the timeouts are set, see [Timeouts](./06_timeouts.md).

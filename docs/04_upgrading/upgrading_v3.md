@@ -70,8 +70,8 @@ await client.actor('my-actor').update([{ name: 'my-actor' }]);
 `ow` only checked the type, so `Infinity` passed as a number and an invalid `Date` passed as a date. Zod additionally requires a *finite* number and a *valid* date, so both now throw:
 
 ```js
-// Now throws: Invalid input: expected a finite number at `timeout`, got `Infinity`
-await client.actor('my-actor').call(undefined, { timeout: Infinity });
+// Now throws: Invalid input: expected a finite number at `runTimeoutSecs`, got `Infinity`
+await client.actor('my-actor').call(undefined, { runTimeoutSecs: Infinity });
 
 // Now throws: Invalid input: expected a valid date at `startedBefore`
 //             Invalid input: expected string, received Date at `startedBefore`
@@ -80,7 +80,7 @@ await client.actor('my-actor').runs().list({ startedBefore: new Date('nonsense')
 
 The second example reports a line per arm, because `startedBefore` accepts either a `Date` or a string.
 
-This affects numeric options such as `waitSecs`, `timeout` and `memory`, and date options such as `startedBefore` / `startedAfter`. `KeyValueStoreClient.setRecord()` rejects `NaN` and `Infinity` as a record value too, since `JSON.stringify()` turns both into `null`.
+This affects numeric options such as `waitSecs`, `runTimeoutSecs` and `memory`, and date options such as `startedBefore` / `startedAfter`. `KeyValueStoreClient.setRecord()` rejects `NaN` and `Infinity` as a record value too, since `JSON.stringify()` turns both into `null`.
 
 ### A few always-rejected options are gone from the types
 
@@ -268,9 +268,45 @@ A trailing slash appears only on a field the API returns without a path, so on `
 
 A URL field whose value isn't a valid absolute URL now fails response validation and throws <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink>, the same as any other field that doesn't match the specification.
 
-## `versions().list()` and `envVars().list()` take no options
+## Timeouts are configured per tier
 
-<ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> now take no arguments. Neither endpoint reads `offset`, `limit` or `desc`, and both return every item in one response, so `chunkSize` had nothing to size either. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those four options, deprecated since v2.21.0, are gone from the package. A call that passed an options object no longer compiles. Drop the argument and the call returns the same items as before.
+The `timeoutSecs` option of the <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor is gone. Every method takes its timeout from one of three tiers, and the constructor sets the duration of each tier, along with a cap on any single request attempt:
+
+```diff
+- const client = new ApifyClient({ token: 'MY-APIFY-TOKEN', timeoutSecs: 360 });   // v2
++ const client = new ApifyClient({                                                 // v3
++     token: 'MY-APIFY-TOKEN',
++     timeoutShortSecs: 5,
++     timeoutMediumSecs: 30,
++     timeoutLongSecs: 360,
++     timeoutMaxSecs: 360,
++ });
+```
+
+For what each tier covers and which one a method is assigned, see [Timeouts](../02_concepts/06_timeouts.md).
+
+In v2 only the dataset, key-value store and request queue clients picked a timeout per method, and everything else ran with the global 360 seconds. A metadata call such as `actor.get()` now gets the 5 seconds of the `short` tier and a `list()` call the 30 of `medium`, so a call that used to wait out a slow API can fail sooner. <ApiLink to="class/RequestQueueClient#unlockRequests">`RequestQueueClient.unlockRequests()`</ApiLink> moves the other way, from 30 seconds to 360. Where you need a different duration, every method that sends a request takes a `timeoutSecs` option, which replaces the tier of the method for that call:
+
+```js
+await client.actor('my-actor').get({ timeoutSecs: 'long' });
+```
+
+`timeoutSecs` means the request timeout on every method, so the run timeout of <ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink> and <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, <ApiLink to="class/TaskClient#start">`TaskClient.start()`</ApiLink> and <ApiLink to="class/TaskClient#call">`call()`</ApiLink>, and <ApiLink to="class/RunClient#resurrect">`RunClient.resurrect()`</ApiLink> is renamed:
+
+```diff
+- await client.actor('my-actor').call(input, { timeout: 300 });        // v2
++ await client.actor('my-actor').call(input, { runTimeoutSecs: 300 }); // v3
+```
+
+TypeScript reports a leftover `timeout` at compile time, and in JavaScript the option schemas reject it as an unrecognized key, so the call throws an `ArgumentValidationError` instead of silently dropping the run limit. `{ timeout: 0 }`, which asked for an unlimited run in v2, becomes `{ runTimeoutSecs: 0 }`.
+
+The `timeoutSecs` option of <ApiLink to="class/KeyValueStoreClient#setRecord">`KeyValueStoreClient.setRecord()`</ApiLink> keeps its name and its meaning for a number of seconds, and now takes a tier name or `'noTimeout'` as well. The same goes for `client.requestQueue(id, { timeoutSecs })`, which caps the tier of every request that queue client sends rather than timing each one at the given value.
+
+`client.httpClient.call()` takes `timeoutSecs` where it read the axios `timeout` in milliseconds. A direct call that passed `timeout: 30000` has to become `timeoutSecs: 30`.
+
+## `versions().list()` and `envVars().list()` lose their pagination options
+
+<ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> accept only the `timeoutSecs` option. Neither endpoint reads `offset`, `limit` or `desc`, and both return every item in one response, so `chunkSize` had nothing to size either. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those four options, deprecated since v2.21.0, are gone from the package. A call that passed any of them no longer compiles, and throws an `ArgumentValidationError` about an unrecognized key in JavaScript. Drop them and the call returns the same items as before.
 
 ## `limit` counts scanned rows when iterating `listItems()`
 
@@ -335,7 +371,7 @@ The same `proxy-agent` upgrade removes the `[DEP0169] DeprecationWarning` about 
 
 ## The HTTP client is pluggable
 
-`ApifyClient` sends its requests through an HTTP client you can replace. <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> is now the abstract base holding the shared request pipeline, and the axios-based client the `ApifyClient` uses by default is <ApiLink to="class/AxiosHttpClient">`AxiosHttpClient`</ApiLink>. A custom client extends `HttpClient`, implements `sendRequest()` and is plugged in with <ApiLink to="class/ApifyClient#withCustomHttpClient">`ApifyClient.withCustomHttpClient()`</ApiLink>. See [HTTP clients](../02_concepts/06_http-clients.md) for the contract. Decoupling the pipeline from axios changes a few details of the public surface.
+`ApifyClient` sends its requests through an HTTP client you can replace. <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> is now the abstract base holding the shared request pipeline, and the axios-based client the `ApifyClient` uses by default is <ApiLink to="class/AxiosHttpClient">`AxiosHttpClient`</ApiLink>. A custom client extends `HttpClient`, implements `sendRequest()` and is plugged in with <ApiLink to="class/ApifyClient#withCustomHttpClient">`ApifyClient.withCustomHttpClient()`</ApiLink>. See [HTTP clients](../02_concepts/07_http-clients.md) for the contract. Decoupling the pipeline from axios changes a few details of the public surface.
 
 ### `requestInterceptors` moved to `AxiosHttpClient`
 
@@ -360,7 +396,7 @@ An interceptor now sees the request as the shared pipeline prepared it: the head
 
 ### `ApifyRequestConfig` and `ApifyResponse` no longer extend the axios types
 
-The request `httpClient.call()` takes and the response it resolves to, which `RunClient.charge()` also returns, are now transport-neutral. `ApifyResponse` carries `status`, `headers`, `data` and `config`, without the `statusText`, `request` and axios-specific `config` fields. `ApifyRequestConfig` accepts `url`, `method`, `params`, `headers`, `data`, `timeout`, `responseType`, `stringifyFunctions` and `doNotRetryTimeouts`, so an axios-only option such as `maxRedirects` is rejected by the types. The `forceBuffer` flag became `responseType: 'buffer'`, and `responseType` takes `'parsed'`, `'buffer'` or `'stream'` instead of the axios values.
+The request `httpClient.call()` takes and the response it resolves to, which `RunClient.charge()` also returns, are now transport-neutral. `ApifyResponse` carries `status`, `headers`, `data` and `config`, without the `statusText`, `request` and axios-specific `config` fields. `ApifyRequestConfig` accepts `url`, `method`, `params`, `headers`, `data`, `timeoutSecs`, `responseType`, `stringifyFunctions` and `doNotRetryTimeouts`, so an axios-only option such as `maxRedirects` is rejected by the types. The `forceBuffer` flag became `responseType: 'buffer'`, and `responseType` takes `'parsed'`, `'buffer'` or `'stream'` instead of the axios values.
 
 ### `InvalidResponseBodyError.response` is the transport's response
 
@@ -384,7 +420,7 @@ Pairing an object with `Content-Type: application/x-www-form-urlencoded`, which 
 
 ### The per-attempt timeout grows on a fixed schedule
 
-Each attempt gets the request's timeout doubled once per retry, capped at `timeoutSecs`. In v2 the doubling compounded, because every attempt overwrote the request's timeout with the value it had just computed. A request starting at 5 seconds got 5, 10, 40 and 320 seconds; it now gets 5, 10, 20 and 40. Requests whose timeout is already `timeoutSecs`, which is most of them, are unaffected.
+Each attempt gets the request's timeout doubled once per retry, capped at `timeoutMaxSecs`. In v2 the doubling compounded, because every attempt overwrote the request's timeout with the value it had just computed. A request starting at 5 seconds got 5, 10, 40 and 320 seconds; it now gets 5, 10, 20 and 40. Requests whose timeout is already `timeoutMaxSecs` are unaffected.
 
 ### Retry delays are randomized
 

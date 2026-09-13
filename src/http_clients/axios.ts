@@ -150,7 +150,7 @@ export class AxiosHttpClient extends HttpClient {
         const agentOptions: http.AgentOptions & { scheduling?: 'lifo' | 'fifo' } = {
             keepAlive: true,
             // An idle socket that is never claimed again would leak, so cap how long one may sit unused.
-            timeout: this.timeoutMillis,
+            timeout: this.timeoutMaxMillis,
             keepAliveMsecs: 15_000,
             maxSockets: 256,
             maxFreeSockets: 256,

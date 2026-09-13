@@ -9,7 +9,7 @@ import ApiLink from '@theme/ApiLink';
 
 This guide implements a custom <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> over the global `fetch`, which Node.js 22 and browsers provide. It shows the three hooks a transport fills in and how a foreign response API is adapted to the <ApiLink to="interface/HttpResponse">`HttpResponse`</ApiLink> shape the pipeline expects.
 
-For an overview of the architecture and the built-in axios client, see [HTTP clients](../02_concepts/06_http-clients.md).
+For an overview of the architecture and the built-in axios client, see [HTTP clients](../02_concepts/07_http-clients.md).
 
 ## Implementation
 
@@ -54,14 +54,14 @@ class FetchHttpClient extends HttpClient {
 
 const client = ApifyClient.withCustomHttpClient({
     token: 'MY-APIFY-TOKEN',
-    httpClient: new FetchHttpClient({ maxRetries: 4, timeoutSecs: 60 }),
+    httpClient: new FetchHttpClient({ maxRetries: 4, timeoutLongSecs: 60 }),
 });
 
 const user = await client.user('me').get();
 console.log(user.username);
 ```
 
-The constructor options of <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> configure the inherited pipeline: retries, the timeout cap, default headers and statistics. A transport with a connection pool of its own also overrides `close()` to release it.
+The constructor options of <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> configure the inherited pipeline: retries, the [timeout tiers](../02_concepts/06_timeouts.md) and their cap, default headers and statistics. A transport with a connection pool of its own also overrides `close()` to release it.
 
 :::warning
 This example is a compact integration, not a replacement for all built-in client behavior. A production custom client should account for transport-specific details such as proxy configuration, TLS settings, redirects and response resource cleanup. Timeout semantics differ per transport too: `AbortSignal.timeout()` bounds the whole request, headers and body included, while the timeout of the built-in axios client fires after that long without socket activity, so a response whose body keeps trickling in can outlast it.
