@@ -1,4 +1,3 @@
-import type { JsonObject } from 'type-fest';
 import { z } from 'zod';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
@@ -29,11 +28,9 @@ import * as schemas from '../schemas.js';
 import { optionalTimeoutSchema, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import {
     anyObjectSchema,
-    cast,
     catchNotFoundOrThrow,
     isNonArrayObject,
     parseArgument,
-    parseDateFields,
     parseResponse,
     RequestQueuePaginationIterator,
     sliceArrayByByteLength,
@@ -450,9 +447,7 @@ export class RequestQueueClient extends ResourceClient {
             });
         }
 
-        const result = { processedRequests, unprocessedRequests } as unknown as JsonObject;
-
-        return cast(parseDateFields(result));
+        return { processedRequests, unprocessedRequests };
     }
 
     /**

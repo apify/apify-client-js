@@ -1,6 +1,6 @@
 import type { Readable } from 'node:stream';
 
-import type { JsonValue, TypedArray } from 'type-fest';
+import type { TypedArray } from 'type-fest';
 import { z } from 'zod';
 
 import type { ApifyApiError } from './apify_api_error.js';
@@ -103,21 +103,17 @@ export interface MaybeData<R> {
 const { localeError } = z.locales.en();
 
 /**
- * Turns a JSON API response into the value a resource method returns: unwraps the `data` envelope, converts the
- * date fields and validates the result against `schema`, one of the schemas generated from the OpenAPI
- * specification. The validated copy is what callers get, so it is the schema's output -- unknown fields and unknown
- * enum values included, since the schemas let both through, and URL fields normalized, since `z.url()` hands back
- * the parsed URL's serialization.
+ * Turns a JSON API response into the value a resource method returns: unwraps the `data` envelope and validates the
+ * result against `schema`, one of the schemas generated from the OpenAPI specification. The validated copy is what
+ * callers get, so it is the schema's output -- unknown fields and unknown enum values included, since the schemas let
+ * both through, date-time fields turned into `Date` objects, and URL fields normalized, since `z.url()` hands back the
+ * parsed URL's serialization.
  *
  * Throws {@link ResponseValidationError} when the response does not match the specification.
  * @internal
  */
-export function parseResponse<R>(
-    response: ApifyResponse,
-    schema: z.ZodType,
-    shouldParseField: ((key: string) => boolean) | null = null,
-): R {
-    const data = parseDateFields(pluckData(response.data), shouldParseField);
+export function parseResponse<R>(response: ApifyResponse, schema: z.ZodType): R {
+    const data = pluckData(response.data);
     const result = schema.safeParse(data, { error: localeError });
     if (!result.success) {
         const { method = 'GET', url = '' } = response.config;
@@ -155,59 +151,6 @@ export function catchNotFoundOrThrow(err: ApifyApiError): void {
 export function catchNotFoundForResourceOrThrow(err: ApifyApiError, resourceId: string | undefined): void {
     if (!resourceId) throw err;
     catchNotFoundOrThrow(err);
-}
-
-type ReturnJsonValue = string | number | boolean | null | Date | ReturnJsonObject | ReturnJsonArray;
-type ReturnJsonObject = { [Key in string]?: ReturnJsonValue };
-type ReturnJsonArray = ReturnJsonValue[];
-
-/**
- * Traverses JSON structure and converts fields that end with "At" to a Date object (fields such as "modifiedAt" or
- * "createdAt").
- *
- * If you want parse other fields as well, you can provide a custom matcher function shouldParseField(). This
- * admittedly awkward approach allows this function to be reused for various purposes without introducing potential
- * breaking changes.
- *
- * If the field cannot be converted to Date, it is left as is.
- */
-export function parseDateFields(
-    input: JsonValue,
-    shouldParseField: ((key: string) => boolean) | null = null,
-    depth = 0,
-): ReturnJsonValue {
-    // Don't go too deep to avoid stack overflows (especially if there is a circular reference). The depth of 4
-    // corresponds to obj.items.[x].someArrayField.[y].field, which is what a list response looks like: it
-    // nests one level deeper than the single resource it wraps, because both the item array and the nested
-    // array spend a level.
-    //
-    // In a list response it also reaches one level into caller-owned blobs the API stores verbatim, so a
-    // listed request's `userData.foo.somethingAt` comes back as a `Date` rather than the string it was
-    // written as.
-    // TODO: Consider removing this limitation. It might came across as an annoying surprise as it's not communicated.
-    if (depth > 4) {
-        return input as ReturnJsonValue;
-    }
-
-    if (Array.isArray(input)) return input.map((child) => parseDateFields(child, shouldParseField, depth + 1));
-    if (!input || typeof input !== 'object') return input;
-
-    return Object.entries(input).reduce((output, [k, v]) => {
-        const isValObject = !!v && typeof v === 'object';
-        if (k.endsWith('At') || (shouldParseField && shouldParseField(k))) {
-            if (v) {
-                const d = new Date(v as string);
-                output[k] = Number.isNaN(d.getTime()) ? (v as string) : d;
-            } else {
-                output[k] = v;
-            }
-        } else if (isValObject || Array.isArray(v)) {
-            output[k] = parseDateFields(v!, shouldParseField, depth + 1);
-        } else {
-            output[k] = v;
-        }
-        return output;
-    }, {} as ReturnJsonObject);
 }
 
 /**

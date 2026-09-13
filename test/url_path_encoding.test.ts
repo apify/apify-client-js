@@ -12,8 +12,7 @@ vi.mock('../src/utils', async (importOriginal) => {
     const actual = await importOriginal<typeof utils>();
     return {
         ...actual,
-        parseResponse: (response: { data: unknown }, _schema: unknown, shouldParseField = null) =>
-            actual.parseDateFields(actual.pluckData(response.data as never), shouldParseField),
+        parseResponse: (response: { data: unknown }) => actual.pluckData(response.data as never),
     };
 });
 

@@ -1152,8 +1152,8 @@ export interface RequestQueueStats extends GeneratedRequestQueueStats {}
 export interface RequestQueueSpecGaps {
     title?: string;
     username?: string;
-    // A `Date`, not the `string` the wire carries: the key ends in `At`, so `parseDateFields()` converts
-    // it, and `RequestQueueShort` types it as a date-time too.
+    // A `Date`, not the `string` the wire carries: `RequestQueueShort` types it as a date-time, and the
+    // `RequestQueue` override in `schemas.ts` converts it like any other date-time.
     expireAt?: Date;
 }
 
