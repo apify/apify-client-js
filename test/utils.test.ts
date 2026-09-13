@@ -1,6 +1,12 @@
 import { Readable } from 'node:stream';
 
-import type { PaginatedList, RequestQueueClientRequestSchema, WebhookDispatch, WebhookUpdateData } from 'apify-client';
+import type {
+    PaginatedList,
+    RequestQueue,
+    RequestQueueClientRequestSchema,
+    WebhookDispatch,
+    WebhookUpdateData,
+} from 'apify-client';
 import { ApifyApiError, ResponseValidationError } from 'apify-client';
 import { describe, expect, test } from 'vitest';
 
@@ -61,12 +67,50 @@ describe('utils.parseResponse()', () => {
         expect(parsed.userData).toEqual(userData);
     });
 
+    test('accepts a date-time that carries a time-zone offset instead of a `Z`', () => {
+        const parsed = utils.parseResponse<RequestQueueClientRequestSchema>(
+            response({ ...fixtures.request, handledAt: '2019-06-16T12:23:31.607+02:00' }),
+            schemas.Request(),
+        );
+
+        expect(parsed.handledAt).toEqual(new Date('2019-06-16T10:23:31.607Z'));
+    });
+
+    test('converts a date-time a published model declares where the specification omits it', () => {
+        const expireAt = '2019-06-02T17:15:06.751Z';
+        const parsed = utils.parseResponse<RequestQueue>(
+            response({ ...fixtures.requestQueue, expireAt }),
+            schemas.RequestQueue(),
+        );
+
+        expect(parsed.expireAt).toEqual(new Date(expireAt));
+    });
+
     test('rejects a date-time field that does not carry an ISO 8601 date', () => {
         const call = () =>
             utils.parseResponse(response({ ...fixtures.request, handledAt: 'three days ago' }), schemas.Request());
 
         expect(call).toThrow(ResponseValidationError);
         expect(call).toThrow('at `handledAt`');
+    });
+
+    test('rejects a date-time that names no time zone, which a bare `new Date()` would read as local time', () => {
+        const call = () =>
+            utils.parseResponse(
+                response({ ...fixtures.request, handledAt: '2019-06-16T10:23:31.607' }),
+                schemas.Request(),
+            );
+
+        expect(call).toThrow(ResponseValidationError);
+        expect(call).toThrow('at `handledAt`');
+    });
+
+    test('rejects a null in a date-time field the specification requires', () => {
+        const call = () =>
+            utils.parseResponse(response({ ...fixtures.requestQueue, createdAt: null }), schemas.RequestQueue());
+
+        expect(call).toThrow(ResponseValidationError);
+        expect(call).toThrow('at `createdAt`');
     });
 });
 
