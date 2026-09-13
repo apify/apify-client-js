@@ -227,7 +227,7 @@ Two return types change as a result of describing what the endpoints really retu
 The `Date` conversion moved into the schemas. A field the specification declares as a `date-time` comes back as a `Date`, wherever it sits in the response, and nothing else is touched. v2 walked every response and converted any field whose name ends in `At`, three levels deep, and passed the field on as a string when it didn't parse as a date.
 
 - Date strings inside the bodies the API stores for you stay strings. A `somethingAt` in a request's `userData` or in a task's `input` is returned as written, so parse it yourself where you need a `Date`.
-- A `date-time` field that carries anything other than an ISO 8601 date throws a `ResponseValidationError`, where v2 handed the string on.
+- A `date-time` field that carries anything other than an ISO 8601 date-time with a `Z` or a time-zone offset throws a `ResponseValidationError`, where v2 handed the string on.
 - The field name no longer matters. `dailyServiceUsages[].date` on <ApiLink to="class/UserClient#monthlyUsage">`UserClient.monthlyUsage()`</ApiLink> is converted because the specification says so.
 - Nothing is skipped for depth. `webhook.dispatches().list()` returns `calls[].startedAt` as a `Date` on every listed dispatch, where v2 left it a string for sitting one level too deep.
 
