@@ -6,7 +6,7 @@
  * deviation never sends a resource client reaching into `./generated` directly. An override shadows the generated
  * export of the same name and takes the same form, a `lazySchema()` thunk built on the generated schema it replaces.
  * Every schema that embeds an overridden one has to be rebuilt on top of it, and `spec_guards.ts` checks that each
- * override still accepts what the specification describes, so one cannot narrow by accident.
+ * override still produces what the specification describes, so one cannot narrow by accident.
  *
  * Most spec gaps need no override: the generated objects are loose, so a field the specification omits passes
  * through. Neither do client narrowings: a schema only ever accepts more than the published type. The exception is a
@@ -23,10 +23,11 @@ export * from './generated/schemas.js';
 
 /**
  * `RequestQueueSpecGaps` declares `expireAt` on the full request queue as a `Date`, and the specification describes
- * it as a date-time on `RequestQueueShort` alone, so the generated schema would leave it the string on the wire.
+ * it as a date-time on `RequestQueueShort` alone, so the generated schema would leave it the string on the wire. The
+ * field is borrowed from `RequestQueueShort`, so the two share one declaration.
  */
 export const RequestQueue = lazySchema(() =>
-    generated.RequestQueue().extend({ expireAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).optional() }),
+    generated.RequestQueue().extend({ expireAt: generated.RequestQueueShort().shape.expireAt }),
 );
 
 /** Wraps the `RequestQueue` override, as the generated response schema wraps the generated resource. */
