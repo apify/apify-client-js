@@ -3,14 +3,17 @@ import { z } from 'zod';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
 import type { TaskList } from '../models.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
+import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
 import type { Task, TaskUpdateData } from './task.js';
 
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
     desc: z.boolean().optional(),
+    ...timeoutOptionsShape,
 });
 
 export type { TaskList } from '../models.js';
@@ -67,30 +70,34 @@ export class TaskCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination and sorting options.
+     * @param options.timeoutSecs - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of tasks.
      * @see https://docs.apify.com/api/v2/actor-tasks-get
      */
     list(options: TaskCollectionListOptions = {}): PaginatedIterator<TaskList> {
         const parsed = parseArgument(options, listOptionsSchema, 'TaskCollectionListOptions');
 
-        return this._listPaginated(schemas.ListOfTasks(), parsed);
+        return this.listResourcesPaginated(schemas.ListOfTasks(), parsed, 'medium');
     }
 
     /**
      * Creates a new task.
      *
      * @param task - The task data.
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
      * @returns The created task object.
      * @see https://docs.apify.com/api/v2/actor-tasks-post
      */
-    async create(task: TaskCreateData): Promise<Task> {
+    async create(task: TaskCreateData, options: TimeoutOptions = {}): Promise<Task> {
         parseArgument(task, anyObjectSchema);
+        const { timeoutSecs = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this._create(schemas.Task(), task);
+        return this.createResource(schemas.Task(), task, timeoutSecs);
     }
 }
 
-export interface TaskCollectionListOptions extends PaginationOptions {
+export interface TaskCollectionListOptions extends PaginationOptions, TimeoutOptions {
     desc?: boolean;
 }
 
