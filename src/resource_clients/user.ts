@@ -2,8 +2,10 @@ import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_client.js';
 import type { AccountAndUsageLimits, MonthlyUsage, User } from '../models.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
-import { parseResponse } from '../utils.js';
+import { timeoutOptionsSchema } from '../timeouts.js';
+import { parseArgument, parseResponse } from '../utils.js';
 
 export type {
     AccountAndUsageLimits,
@@ -67,25 +69,34 @@ export class UserClient extends ResourceClient {
      * Depending on whether ApifyClient was created with a token,
      * the method will either return public or private user data.
      *
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The user object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/user-get
      */
-    async get(): Promise<User | undefined> {
-        return this._get(schemas.UserPrivateInfo());
+    async get(options: TimeoutOptions = {}): Promise<User | undefined> {
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
+        return this.getResource(schemas.UserPrivateInfo(), {}, timeoutSecs);
     }
 
     /**
      * Retrieves the user's monthly usage data.
      *
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The monthly usage object.
      * @see https://docs.apify.com/api/v2/users-me-usage-monthly-get
      * @since Added in 2.9.2
      */
-    async monthlyUsage(): Promise<MonthlyUsage> {
+    async monthlyUsage(options: TimeoutOptions = {}): Promise<MonthlyUsage> {
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
         const response = await this.httpClient.call({
-            url: this._url('usage/monthly'),
+            url: this.buildUrl('usage/monthly'),
             method: 'GET',
-            params: this._params(),
+            params: this.buildParams(),
+            timeoutSecs,
         });
         // `dailyServiceUsages[].date` does not end in `At`, so it has to be named for `parseDateFields`.
         return parseResponse(response, schemas.MonthlyUsage(), (key) => key === 'date');
@@ -94,15 +105,20 @@ export class UserClient extends ResourceClient {
     /**
      * Retrieves the user's account and usage limits.
      *
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The account and usage limits object.
      * @see https://docs.apify.com/api/v2/users-me-limits-get
      * @since Added in 2.9.2
      */
-    async limits(): Promise<AccountAndUsageLimits> {
+    async limits(options: TimeoutOptions = {}): Promise<AccountAndUsageLimits> {
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
         const response = await this.httpClient.call({
-            url: this._url('limits'),
+            url: this.buildUrl('limits'),
             method: 'GET',
-            params: this._params(),
+            params: this.buildParams(),
+            timeoutSecs,
         });
         return parseResponse(response, schemas.AccountLimits());
     }
@@ -110,16 +126,21 @@ export class UserClient extends ResourceClient {
     /**
      * Updates the user's account and usage limits.
      *
-     * @param options - The new limits to set.
+     * @param newLimits - The new limits to set.
+     * @param options - Request options
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @see https://docs.apify.com/api/v2/users-me-limits-put
      * @since Added in 2.10.0
      */
-    async updateLimits(options: LimitsUpdateOptions): Promise<void> {
+    async updateLimits(newLimits: LimitsUpdateOptions, options: TimeoutOptions = {}): Promise<void> {
+        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+
         const requestOpts: ApifyRequestConfig = {
-            url: this._url('limits'),
+            url: this.buildUrl('limits'),
             method: 'PUT',
-            params: this._params(),
-            data: options,
+            params: this.buildParams(),
+            data: newLimits,
+            timeoutSecs,
         };
         await this.httpClient.call(requestOpts);
     }

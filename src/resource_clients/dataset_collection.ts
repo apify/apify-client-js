@@ -4,8 +4,10 @@ import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
+import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
+import { optionalTimeoutSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
 import type { Dataset } from './dataset.js';
 
@@ -14,6 +16,7 @@ const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
     desc: z.boolean().optional(),
     ownership: z.enum(STORAGE_OWNERSHIP_FILTER).optional(),
+    ...timeoutOptionsShape,
 });
 const nameSchema = z.string().optional();
 const schemaSchema = anyObjectSchema.optional();
@@ -66,6 +69,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
      * ```
      *
      * @param options - Pagination options.
+     * @param options.timeoutSecs - Timeout for each API request. Default is `'medium'`.
      * @returns A paginated iterator of Datasets.
      * @see https://docs.apify.com/api/v2/datasets-get
      */
@@ -74,7 +78,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
     ): Promise<DatasetCollectionClientListResult> & AsyncIterable<Dataset> {
         const parsed = parseArgument(options, listOptionsSchema, 'DatasetCollectionClientListOptions');
 
-        return this._listPaginated(schemas.ListOfDatasets(), parsed);
+        return this.listResourcesPaginated(schemas.ListOfDatasets(), parsed, 'medium');
     }
 
     /**
@@ -82,18 +86,26 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
      *
      * @param name - Name of the dataset. If not provided, a default dataset is used.
      * @param options - Additional options like schema.
+     * @param options.schema - Schema of the dataset.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns The dataset object.
      * @see https://docs.apify.com/api/v2/datasets-post
      */
     async getOrCreate(name?: string, options?: DatasetCollectionClientGetOrCreateOptions): Promise<Dataset> {
         parseArgument(name, nameSchema);
         parseArgument(options?.schema, schemaSchema); // TODO: Add schema validation
+        parseArgument(options?.timeoutSecs, optionalTimeoutSchema);
 
-        return this._getOrCreate(schemas.Dataset(), name, options);
+        // `timeoutSecs` is not part of the resource, so the body carries only the rest, and stays absent when
+        // there is nothing else to send.
+        const { timeoutSecs = 'short', ...resource } = options ?? {};
+        const hasResource = Object.keys(resource).length > 0;
+
+        return this.getOrCreateResource(schemas.Dataset(), name, hasResource ? resource : undefined, timeoutSecs);
     }
 }
 
-export interface DatasetCollectionClientListOptions extends PaginationOptions {
+export interface DatasetCollectionClientListOptions extends PaginationOptions, TimeoutOptions {
     unnamed?: boolean;
     desc?: boolean;
     /**
@@ -106,7 +118,7 @@ export interface DatasetCollectionClientListOptions extends PaginationOptions {
 /**
  * @since Added in 2.3.0
  */
-export interface DatasetCollectionClientGetOrCreateOptions {
+export interface DatasetCollectionClientGetOrCreateOptions extends TimeoutOptions {
     schema?: Record<string, unknown>;
 }
 
