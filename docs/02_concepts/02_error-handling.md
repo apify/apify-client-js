@@ -160,6 +160,7 @@ const client = new ApifyClient({
     token: 'MY-APIFY-TOKEN',
     maxRetries: 8,
     minDelayBetweenRetriesMillis: 500, // 0.5s
-    timeoutSecs: 360, // 6 mins
 });
 ```
+
+A request that times out is retried the same way, with a longer timeout on each attempt. For how the timeouts are set, see [Timeouts](./06_timeouts.md).

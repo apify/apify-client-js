@@ -31,3 +31,4 @@ export { ArgumentValidationError } from '@apify/validations';
 export * from './response_validation_error.js';
 export { InvalidResponseBodyError } from './interceptors.js';
 export type { PaginatedList, Dictionary } from './utils.js';
+export type { Timeout, TimeoutOptions, TimeoutTier } from './timeouts.js';

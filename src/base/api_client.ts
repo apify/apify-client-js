@@ -1,7 +1,7 @@
 import type { ApifyClient } from '../apify_client.js';
 import type { HttpClient } from '../http_client.js';
 import type { PaginatedResponse, PaginationOptions } from '../utils.js';
-import { toPath, toPathSegment } from '../utils.js';
+import { SCANNED_COUNT, toPath, toPathSegment } from '../utils.js';
 
 /** @private */
 export interface ApiClientOptions {
@@ -47,7 +47,7 @@ export abstract class ApiClient {
         const { baseUrl, publicBaseUrl, apifyClient, httpClient, resourcePath, id, params = {} } = options;
 
         this.id = id;
-        this.safeId = id && this._toSafeId(id);
+        this.safeId = id && this.toSafeId(id);
         this.baseUrl = baseUrl;
         this.publicBaseUrl = publicBaseUrl;
         this.resourcePath = resourcePath;
@@ -57,40 +57,40 @@ export abstract class ApiClient {
         this.params = params;
     }
 
-    protected _subResourceOptions<T>(moreOptions?: T): BaseOptions & T {
+    protected subResourceOptions<T>(moreOptions?: T): BaseOptions & T {
         const baseOptions: BaseOptions = {
-            baseUrl: this._url(),
+            baseUrl: this.buildUrl(),
             publicBaseUrl: this.publicBaseUrl,
             apifyClient: this.apifyClient,
             httpClient: this.httpClient,
-            params: this._params(),
+            params: this.buildParams(),
         };
         return { ...baseOptions, ...moreOptions } as BaseOptions & T;
     }
 
-    protected _url(path?: string | string[]): string {
+    protected buildUrl(path?: string | string[]): string {
         return path ? `${this.url}/${toPath(path)}` : this.url;
     }
 
-    protected _publicUrl(path?: string | string[]): string {
+    protected buildPublicUrl(path?: string | string[]): string {
         const url = this.id
             ? `${this.publicBaseUrl}/${this.resourcePath}/${toPathSegment(this.safeId!)}`
             : `${this.publicBaseUrl}/${this.resourcePath}`;
         return path ? `${url}/${toPath(path)}` : url;
     }
 
-    protected _params<T>(endpointParams?: T): Record<string, unknown> {
+    protected buildParams<T>(endpointParams?: T): Record<string, unknown> {
         return { ...this.params, ...endpointParams };
     }
 
-    protected _toSafeId(id: string): string {
+    protected toSafeId(id: string): string {
         return id.replaceAll('/', '~');
     }
 
     /**
      * Returns async iterator to iterate through all items and Promise that can be awaited to get first page of results.
      */
-    protected _listPaginatedFromCallback<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(
+    protected listPaginatedFromCallback<T extends PaginationOptions, Data, R extends PaginatedResponse<Data>>(
         getPaginatedList: (options?: T) => Promise<R>,
         options: T = {} as T,
     ): AsyncIterable<Data> & Promise<R> {
@@ -104,7 +104,8 @@ export abstract class ApiClient {
         };
 
         // `chunkSize` only sizes this loop's requests; it is not an API parameter, so it must not reach
-        // `_params()` and the query string.
+        // `buildParams()` and the query string. The same goes for `timeoutSecs`, which callers take out before
+        // calling this, since it also picks the timeout of every page request.
         const { chunkSize, ...listOptions } = options;
 
         const paginatedListPromise = getPaginatedList({
@@ -112,17 +113,25 @@ export abstract class ApiClient {
             limit: minForLimitParam(options.limit, chunkSize),
         } as T);
 
+        // A page can return more or fewer items than the rows it scanned (see `SCANNED_COUNT`). The next offset and
+        // the stop condition follow the scanned number alone: advancing by `items.length` would re-scan rows after a
+        // filter dropped some and skip rows after `unwind` multiplied them, and stopping at an empty page would end
+        // the iteration in front of rows a filter hid.
+        const scannedRows = (page: R): number =>
+            (page as { [SCANNED_COUNT]?: number })[SCANNED_COUNT] ?? page.items.length;
+
         async function* asyncGenerator() {
             let currentPage = await paginatedListPromise;
             yield* currentPage.items;
             const offset = options.offset ?? 0;
             const limit = Math.min(options.limit || currentPage.total, currentPage.total);
 
-            let currentOffset = offset + currentPage.items.length;
-            let remainingItems = Math.min(currentPage.total - offset, limit) - currentPage.items.length;
+            let pageScanned = scannedRows(currentPage);
+            let currentOffset = offset + pageScanned;
+            let remainingItems = Math.min(currentPage.total - offset, limit) - pageScanned;
 
             while (
-                currentPage.items.length > 0 && // Continue only if at least some items were returned in the last page.
+                pageScanned > 0 && // Continue only if the last page scanned some rows.
                 remainingItems > 0
             ) {
                 const newOptions = {
@@ -132,8 +141,9 @@ export abstract class ApiClient {
                 } as T;
                 currentPage = await getPaginatedList(newOptions);
                 yield* currentPage.items;
-                currentOffset += currentPage.items.length;
-                remainingItems -= currentPage.items.length;
+                pageScanned = scannedRows(currentPage);
+                currentOffset += pageScanned;
+                remainingItems -= pageScanned;
             }
         }
 
