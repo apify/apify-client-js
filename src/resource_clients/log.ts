@@ -163,73 +163,73 @@ export class LoggerActorRedirect extends Logger {
  * @since Added in 2.20.0
  */
 export class StreamedLog {
-    private destinationLog: Log;
-    private streamBuffer: Buffer[] = [];
-    private splitMarker = /(?:\n|^)(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)/g;
-    private relevancyTimeLimit: Date | null;
+    #destinationLog: Log;
+    #streamBuffer: Buffer[] = [];
+    #splitMarker = /(?:\n|^)(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)/g;
+    #relevancyTimeLimit: Date | null;
 
-    private logClient: LogClient;
-    private streamingTask: Promise<void> | null = null;
-    private stopLogging = false;
+    #logClient: LogClient;
+    #streamingTask: Promise<void> | null = null;
+    #stopLogging = false;
 
     constructor(options: StreamedLogOptions) {
         const { toLog, logClient, fromStart = true } = options;
-        this.destinationLog = toLog;
-        this.logClient = logClient;
-        this.relevancyTimeLimit = fromStart ? null : new Date();
+        this.#destinationLog = toLog;
+        this.#logClient = logClient;
+        this.#relevancyTimeLimit = fromStart ? null : new Date();
     }
 
     /**
      * Start log redirection.
      */
     public start(): void {
-        if (this.streamingTask) {
+        if (this.#streamingTask) {
             throw new Error('Streaming task already active');
         }
-        this.stopLogging = false;
-        this.streamingTask = this.streamLog();
+        this.#stopLogging = false;
+        this.#streamingTask = this.#streamLog();
     }
 
     /**
      * Stop log redirection.
      */
     public async stop(): Promise<void> {
-        if (!this.streamingTask) {
+        if (!this.#streamingTask) {
             throw new Error('Streaming task is not active');
         }
-        this.stopLogging = true;
+        this.#stopLogging = true;
         try {
-            await this.streamingTask;
+            await this.#streamingTask;
         } catch (err) {
             if (!(err instanceof Error && err.name === 'AbortError')) {
                 throw err;
             }
         } finally {
-            this.streamingTask = null;
+            this.#streamingTask = null;
         }
     }
 
     /**
      * Get log stream from response and redirect it to another log.
      */
-    private async streamLog(): Promise<void> {
+    async #streamLog(): Promise<void> {
         try {
-            const logStream = await this.logClient.stream({ raw: true });
+            const logStream = await this.#logClient.stream({ raw: true });
             if (!logStream) {
                 return;
             }
-            const lastChunkRemainder = await this.logStreamChunks(logStream);
+            const lastChunkRemainder = await this.#logStreamChunks(logStream);
             // Process whatever is left when exiting. Maybe it is incomplete, maybe it is last log without EOL.
             const lastMessage = Buffer.from(lastChunkRemainder).toString().trim();
             if (lastMessage.length) {
-                this.destinationLog.info(lastMessage);
+                this.#destinationLog.info(lastMessage);
             }
         } catch (err) {
             log.warning(`Log redirection stopped due to error`, err as Error);
         }
     }
 
-    private async logStreamChunks(logStream: Readable): Promise<Uint8Array> {
+    async #logStreamChunks(logStream: Readable): Promise<Uint8Array> {
         // Chunk may be incomplete. Keep remainder for next chunk.
         let previousChunkRemainder: Uint8Array = new Uint8Array();
 
@@ -244,11 +244,11 @@ export class StreamedLog {
             previousChunkRemainder = chunkWithPreviousRemainder.slice(lastCompleteMessageIndex);
 
             // Push complete part of the chunk to the buffer
-            this.streamBuffer.push(Buffer.from(chunkWithPreviousRemainder.slice(0, lastCompleteMessageIndex)));
-            this.logBufferContent();
+            this.#streamBuffer.push(Buffer.from(chunkWithPreviousRemainder.slice(0, lastCompleteMessageIndex)));
+            this.#logBufferContent();
 
             // Keep processing the new data until stopped
-            if (this.stopLogging) {
+            if (this.#stopLogging) {
                 break;
             }
         }
@@ -258,20 +258,20 @@ export class StreamedLog {
     /**
      * Parse the buffer and log complete messages.
      */
-    private logBufferContent(): void {
-        const allParts = Buffer.concat(this.streamBuffer).toString().split(this.splitMarker).slice(1);
+    #logBufferContent(): void {
+        const allParts = Buffer.concat(this.#streamBuffer).toString().split(this.#splitMarker).slice(1);
         // Parse the buffer parts into complete messages
         const messageMarkers = allParts.filter((_, i) => i % 2 === 0);
         const messageContents = allParts.filter((_, i) => i % 2 !== 0);
-        this.streamBuffer = [];
+        this.#streamBuffer = [];
 
         messageMarkers.forEach((marker, index) => {
             const decodedMarker = marker;
             const decodedContent = messageContents[index];
-            if (this.relevancyTimeLimit) {
+            if (this.#relevancyTimeLimit) {
                 // Log only relevant messages. Ignore too old log messages.
                 const logTime = new Date(decodedMarker);
-                if (logTime < this.relevancyTimeLimit) {
+                if (logTime < this.#relevancyTimeLimit) {
                     return;
                 }
             }
@@ -279,7 +279,7 @@ export class StreamedLog {
 
             // Original log level information is not available. Log all on info level. Log level could be guessed for
             // some logs, but for any multiline logs such guess would be probably correct only for the first line.
-            this.destinationLog.info(message.trim());
+            this.#destinationLog.info(message.trim());
         });
     }
 }

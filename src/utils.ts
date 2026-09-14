@@ -374,32 +374,30 @@ export function getVersionData(): { version: string } {
  * Helper class to create async iterators from paginated list endpoints.
  */
 export class RequestQueuePaginationIterator {
-    private readonly maxPageLimit: number;
+    readonly #maxPageLimit: number;
 
-    private readonly getPage: (
-        opts: RequestQueueClientListRequestsOptions,
-    ) => Promise<RequestQueueClientListRequestsResult>;
+    readonly #getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<RequestQueueClientListRequestsResult>;
 
-    private readonly limit?: number;
+    readonly #limit?: number;
 
-    private readonly cursor?: string;
+    readonly #cursor?: string;
 
     constructor(options: RequestQueuePaginationIteratorOptions) {
-        this.maxPageLimit = options.maxPageLimit;
-        this.limit = options.limit;
-        this.cursor = options.cursor;
-        this.getPage = options.getPage;
+        this.#maxPageLimit = options.maxPageLimit;
+        this.#limit = options.limit;
+        this.#cursor = options.cursor;
+        this.#getPage = options.getPage;
     }
 
     async *[Symbol.asyncIterator](): AsyncIterator<RequestQueueClientListRequestsResult> {
-        let nextCursor = this.cursor;
+        let nextCursor = this.#cursor;
         let iterateItemCount = 0;
         while (true) {
-            const pageLimit = this.limit
-                ? Math.min(this.maxPageLimit, this.limit - iterateItemCount)
-                : this.maxPageLimit;
+            const pageLimit = this.#limit
+                ? Math.min(this.#maxPageLimit, this.#limit - iterateItemCount)
+                : this.#maxPageLimit;
 
-            const page: RequestQueueClientListRequestsResult = await this.getPage({
+            const page: RequestQueueClientListRequestsResult = await this.#getPage({
                 limit: pageLimit,
                 cursor: nextCursor,
             });
@@ -408,7 +406,7 @@ export class RequestQueuePaginationIterator {
             yield page;
             iterateItemCount += page.items.length;
             // Limit reached stopping to iterate
-            if ((this.limit && iterateItemCount >= this.limit) || !page.nextCursor) return;
+            if ((this.#limit && iterateItemCount >= this.#limit) || !page.nextCursor) return;
 
             nextCursor = page.nextCursor;
         }

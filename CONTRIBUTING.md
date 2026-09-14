@@ -159,6 +159,7 @@ This project uses [oxlint](https://oxc.rs/docs/guide/usage/linter) and [oxfmt](h
 - Use single quotes for strings
 - Add trailing commas in multiline structures
 - Export types and interfaces alongside implementations
+- Declare private members as `#private` identifiers, and use `protected` only for helpers that subclasses call
 - Avoid `any` types where possible (though the oxlint rule is disabled)
 
 ### Before Committing
@@ -306,6 +307,7 @@ When adding support for a new API resource:
 // src/resource_clients/my_resource.ts
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceClient } from '../base/resource_client';
+import * as schemas from '../schemas';
 
 export class MyResourceClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions) {
@@ -316,15 +318,15 @@ export class MyResourceClient extends ResourceClient {
     }
 
     async get(): Promise<MyResource | undefined> {
-        return this._get();
+        return this.getResource(schemas.MyResource());
     }
 
     async update(newFields: MyResourceUpdate): Promise<MyResource> {
-        return this._update(newFields);
+        return this.updateResource(schemas.MyResource(), newFields);
     }
 
     async delete(): Promise<void> {
-        return this._delete();
+        return this.deleteResource();
     }
 }
 ```
@@ -335,6 +337,7 @@ export class MyResourceClient extends ResourceClient {
 // src/resource_clients/my_resource_collection.ts
 import { ApiClientSubResourceOptions } from '../base/api_client';
 import { ResourceCollectionClient } from '../base/resource_collection_client';
+import * as schemas from '../schemas';
 import { PaginatedList } from '../utils';
 
 export class MyResourceCollectionClient extends ResourceCollectionClient {
@@ -346,11 +349,11 @@ export class MyResourceCollectionClient extends ResourceCollectionClient {
     }
 
     async list(options?: MyResourceListOptions): Promise<PaginatedList<MyResource>> {
-        return this._list(options);
+        return this.listResources(schemas.ListOfMyResources(), options);
     }
 
     async create(resource: MyResourceCreate): Promise<MyResource> {
-        return this._create(resource);
+        return this.createResource(schemas.MyResource(), resource);
     }
 }
 ```
@@ -360,11 +363,11 @@ export class MyResourceCollectionClient extends ResourceCollectionClient {
 ```typescript
 // In src/apify_client.ts
 myResource(id: string): MyResourceClient {
-    return new MyResourceClient(this._subResourceOptions({ id }));
+    return new MyResourceClient({ id, ...this.subClientOptions() });
 }
 
 myResources(): MyResourceCollectionClient {
-    return new MyResourceCollectionClient(this._options());
+    return new MyResourceCollectionClient(this.subClientOptions());
 }
 ```
 

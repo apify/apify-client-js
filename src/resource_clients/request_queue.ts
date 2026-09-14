@@ -145,9 +145,9 @@ export type {
  * @see https://docs.apify.com/platform/storage/request-queue
  */
 export class RequestQueueClient extends ResourceClient {
-    private clientKey?: string;
+    #clientKey?: string;
 
-    private timeoutSecs?: number;
+    #timeoutSecs?: number;
 
     /**
      * @hidden
@@ -158,19 +158,19 @@ export class RequestQueueClient extends ResourceClient {
             ...options,
         });
 
-        this.clientKey = userOptions.clientKey;
-        this.timeoutSecs = userOptions.timeoutSecs;
+        this.#clientKey = userOptions.clientKey;
+        this.#timeoutSecs = userOptions.timeoutSecs;
     }
 
     /**
      * Picks the timeout of a request: an explicit per-call `timeoutSecs` as is, otherwise the method's default
      * tier, capped at the queue-wide `timeoutSecs` when one was given.
      */
-    private resolveTimeout(timeoutSecs: Timeout | undefined, defaultTier: TimeoutTier): Timeout {
+    #resolveTimeout(timeoutSecs: Timeout | undefined, defaultTier: TimeoutTier): Timeout {
         if (timeoutSecs !== undefined) return timeoutSecs;
-        if (this.timeoutSecs === undefined) return defaultTier;
+        if (this.#timeoutSecs === undefined) return defaultTier;
         const tierSecs = this.httpClient.timeoutMillis[defaultTier] / 1000;
-        return tierSecs <= this.timeoutSecs ? defaultTier : this.timeoutSecs;
+        return tierSecs <= this.#timeoutSecs ? defaultTier : this.#timeoutSecs;
     }
 
     /**
@@ -184,7 +184,7 @@ export class RequestQueueClient extends ResourceClient {
     async get(options: TimeoutOptions = {}): Promise<RequestQueue | undefined> {
         const { timeoutSecs } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.RequestQueue(), {}, this.resolveTimeout(timeoutSecs, 'short'));
+        return this.getResource(schemas.RequestQueue(), {}, this.#resolveTimeout(timeoutSecs, 'short'));
     }
 
     /**
@@ -200,7 +200,7 @@ export class RequestQueueClient extends ResourceClient {
         parseArgument(newFields, anyObjectSchema);
         const { timeoutSecs } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.RequestQueue(), newFields, this.resolveTimeout(timeoutSecs, 'short'));
+        return this.updateResource(schemas.RequestQueue(), newFields, this.#resolveTimeout(timeoutSecs, 'short'));
     }
 
     /**
@@ -213,7 +213,7 @@ export class RequestQueueClient extends ResourceClient {
     async delete(options: TimeoutOptions = {}): Promise<void> {
         const { timeoutSecs } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(this.resolveTimeout(timeoutSecs, 'short'));
+        return this.deleteResource(this.#resolveTimeout(timeoutSecs, 'short'));
     }
 
     /**
@@ -234,10 +234,10 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this.buildUrl('head'),
             method: 'GET',
-            timeoutSecs: this.resolveTimeout(parsed.timeoutSecs, 'short'),
+            timeoutSecs: this.#resolveTimeout(parsed.timeoutSecs, 'short'),
             params: this.buildParams({
                 limit: parsed.limit,
-                clientKey: this.clientKey,
+                clientKey: this.#clientKey,
             }),
         });
 
@@ -286,11 +286,11 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this.buildUrl('head/lock'),
             method: 'POST',
-            timeoutSecs: this.resolveTimeout(parsed.timeoutSecs, 'medium'),
+            timeoutSecs: this.#resolveTimeout(parsed.timeoutSecs, 'medium'),
             params: this.buildParams({
                 limit: parsed.limit,
                 lockSecs: parsed.lockSecs,
-                clientKey: this.clientKey,
+                clientKey: this.#clientKey,
             }),
         });
 
@@ -346,11 +346,11 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this.buildUrl('requests'),
             method: 'POST',
-            timeoutSecs: this.resolveTimeout(parsed.timeoutSecs, 'short'),
+            timeoutSecs: this.#resolveTimeout(parsed.timeoutSecs, 'short'),
             data: request,
             params: this.buildParams({
                 forefront: parsed.forefront,
-                clientKey: this.clientKey,
+                clientKey: this.#clientKey,
             }),
         });
 
@@ -372,11 +372,11 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this.buildUrl('requests/batch'),
             method: 'POST',
-            timeoutSecs: this.resolveTimeout(parsed.timeoutSecs, 'medium'),
+            timeoutSecs: this.#resolveTimeout(parsed.timeoutSecs, 'medium'),
             data: requests,
             params: this.buildParams({
                 forefront: parsed.forefront,
-                clientKey: this.clientKey,
+                clientKey: this.#clientKey,
             }),
         });
 
@@ -575,10 +575,10 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this.buildUrl('requests/batch'),
             method: 'DELETE',
-            timeoutSecs: this.resolveTimeout(timeoutSecs, 'short'),
+            timeoutSecs: this.#resolveTimeout(timeoutSecs, 'short'),
             data: requests,
             params: this.buildParams({
-                clientKey: this.clientKey,
+                clientKey: this.#clientKey,
             }),
         });
 
@@ -604,7 +604,7 @@ export class RequestQueueClient extends ResourceClient {
         const requestOpts: ApifyRequestConfig = {
             url: this.buildUrl(['requests', id]),
             method: 'GET',
-            timeoutSecs: this.resolveTimeout(timeoutSecs, 'short'),
+            timeoutSecs: this.#resolveTimeout(timeoutSecs, 'short'),
             params: this.buildParams(),
         };
         try {
@@ -637,11 +637,11 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this.buildUrl(['requests', request.id]),
             method: 'PUT',
-            timeoutSecs: this.resolveTimeout(parsed.timeoutSecs, 'medium'),
+            timeoutSecs: this.#resolveTimeout(parsed.timeoutSecs, 'medium'),
             data: request,
             params: this.buildParams({
                 forefront: parsed.forefront,
-                clientKey: this.clientKey,
+                clientKey: this.#clientKey,
             }),
         });
 
@@ -662,9 +662,9 @@ export class RequestQueueClient extends ResourceClient {
         await this.httpClient.call({
             url: this.buildUrl(['requests', id]),
             method: 'DELETE',
-            timeoutSecs: this.resolveTimeout(timeoutSecs, 'short'),
+            timeoutSecs: this.#resolveTimeout(timeoutSecs, 'short'),
             params: this.buildParams({
-                clientKey: this.clientKey,
+                clientKey: this.#clientKey,
             }),
         });
     }
@@ -709,11 +709,11 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this.buildUrl(['requests', id, 'lock']),
             method: 'PUT',
-            timeoutSecs: this.resolveTimeout(parsed.timeoutSecs, 'medium'),
+            timeoutSecs: this.#resolveTimeout(parsed.timeoutSecs, 'medium'),
             params: this.buildParams({
                 forefront: parsed.forefront,
                 lockSecs: parsed.lockSecs,
-                clientKey: this.clientKey,
+                clientKey: this.#clientKey,
             }),
         });
 
@@ -740,10 +740,10 @@ export class RequestQueueClient extends ResourceClient {
         await this.httpClient.call({
             url: this.buildUrl(['requests', id, 'lock']),
             method: 'DELETE',
-            timeoutSecs: this.resolveTimeout(parsed.timeoutSecs, 'short'),
+            timeoutSecs: this.#resolveTimeout(parsed.timeoutSecs, 'short'),
             params: this.buildParams({
                 forefront: parsed.forefront,
-                clientKey: this.clientKey,
+                clientKey: this.#clientKey,
             }),
         });
     }
@@ -769,7 +769,7 @@ export class RequestQueueClient extends ResourceClient {
             listRequestsOptionsSchema,
             'RequestQueueClientListRequestsOptions',
         );
-        const pageTimeout = this.resolveTimeout(timeoutSecs, 'medium');
+        const pageTimeout = this.#resolveTimeout(timeoutSecs, 'medium');
 
         const getPaginatedList = async (
             rqListOptions: RequestQueueClientListRequestsOptions = {},
@@ -781,7 +781,7 @@ export class RequestQueueClient extends ResourceClient {
                 params: this.buildParams({
                     ...rqListOptions,
                     filter: rqListOptions.filter ? rqListOptions.filter.join(',') : undefined,
-                    clientKey: this.clientKey,
+                    clientKey: this.#clientKey,
                 }),
             });
 
@@ -838,9 +838,9 @@ export class RequestQueueClient extends ResourceClient {
         const response = await this.httpClient.call({
             url: this.buildUrl('requests/unlock'),
             method: 'POST',
-            timeoutSecs: this.resolveTimeout(timeoutSecs, 'long'),
+            timeoutSecs: this.#resolveTimeout(timeoutSecs, 'long'),
             params: this.buildParams({
-                clientKey: this.clientKey,
+                clientKey: this.#clientKey,
             }),
         });
 
