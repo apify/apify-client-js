@@ -2430,7 +2430,7 @@ export class DatasetClient<Data extends Record<string | number, any> = Record<st
     get(options?: TimeoutOptions): Promise<Dataset | undefined>;
     getStatistics(options?: TimeoutOptions): Promise<DatasetStatistics>;
     listItems(options?: DatasetClientListItemOptions): PaginatedIterator<Data>;
-    pushItems(items: Data | Data[] | string | string[], options?: TimeoutOptions): Promise<void>;
+    pushItems(items: Data | Data[] | string, options?: TimeoutOptions): Promise<void>;
     update(newFields: DatasetClientUpdateOptions, options?: TimeoutOptions): Promise<Dataset>;
 }
 
