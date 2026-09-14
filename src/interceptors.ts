@@ -43,6 +43,17 @@ function getHeader(config: ApifyRequestConfig, name: string): string | undefined
     return typeof value === 'string' ? value : undefined;
 }
 
+/** Removes a request header regardless of the casing it was set with. */
+function deleteHeader(config: ApifyRequestConfig, name: string): void {
+    const { headers } = config;
+    if (!headers) return;
+
+    const wanted = name.toLowerCase();
+    for (const key of Object.keys(headers)) {
+        if (key.toLowerCase() === wanted) delete headers[key];
+    }
+}
+
 function serializeRequest(config: ApifyRequestConfig): ApifyRequestConfig {
     const [defaultTransform] = axios.defaults.transformRequest as AxiosRequestTransformer[];
 
@@ -94,11 +105,12 @@ function stringifyWithFunctions(obj: JsonObject) {
 /**
  * Compresses the request body with the client's compressor and labels it with the compressor's `Content-Encoding`.
  *
- * Runs after `serializeRequest`, so a JSON body is already a string here. The body is sent as it is when it is not
- * a string or a `Buffer`, when it is smaller than `MIN_COMPRESS_BYTES`, when its content type says the payload is
- * already compressed, or when the caller set a `Content-Encoding` of their own. That header is forwarded verbatim,
- * which is how a pre-encoded body is uploaded, and `Content-Encoding: identity` opts a single request out of
- * compression. Browsers have no `node:zlib`, so there the body is always sent as it is.
+ * Runs after `serializeRequest`, so a JSON body is already a string here. A caller-set `Content-Encoding` is
+ * forwarded verbatim, which is how a pre-encoded body is uploaded, and `Content-Encoding: identity` opts a single
+ * request out of compression. Browsers have no `node:zlib`, so there the body is always sent as it is.
+ *
+ * Compressing changes the body length, so any `Content-Length` the caller set describes the wrong body and has to
+ * go. Axios keeps a caller-set one over the size it computes, which would stall the request until it times out.
  */
 async function maybeCompressRequest(
     config: ApifyRequestConfig,
@@ -117,6 +129,7 @@ async function maybeCompressRequest(
     config.data = await compressor.compress(typeof data === 'string' ? Buffer.from(data) : data);
     config.headers ??= {};
     config.headers['content-encoding'] = compressor.contentEncoding;
+    deleteHeader(config, 'content-length');
 
     return config;
 }

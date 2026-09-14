@@ -125,6 +125,26 @@ describe('ApifyClient compression option', () => {
         expect(request?.body).toEqual(largeBody);
     });
 
+    test('replaces a caller-set content-length with the size of the compressed body', async () => {
+        const client = new ApifyClient({ baseUrl, maxRetries: 0 });
+        const body = JSON.stringify(largeBody);
+
+        await client.httpClient.call({
+            url: `${baseUrl}/v2/key-value-stores/some-id/records/some-key`,
+            method: 'PUT',
+            data: body,
+            headers: { 'content-type': 'application/json', 'content-length': String(Buffer.byteLength(body)) },
+            // A stale content-length leaves the server waiting for bytes that never arrive, so a short timeout
+            // turns that into a fast failure instead of a hang.
+            timeoutSecs: 5,
+        });
+
+        const request = mockServer.getLastRequest();
+        expect(request?.headers['content-encoding']).toBe('br');
+        expect(Number(request?.headers['content-length'])).toBeLessThan(Buffer.byteLength(body));
+        expect(request?.body).toEqual(largeBody);
+    });
+
     test('sends a large body through a custom compressor and labels it with its content encoding', async () => {
         const compressor = new IdentityCompressor();
         const compress = vi.spyOn(compressor, 'compress');
