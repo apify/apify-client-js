@@ -84,9 +84,10 @@ export class HttpClient {
                 return new URLSearchParams(formattedParams).toString();
             },
             validateStatus: null,
-            // Using interceptors for this functionality.
-            transformRequest: undefined,
-            transformResponse: undefined,
+            // Interceptors serialize requests and parse responses instead. Empty arrays rather than `undefined`,
+            // which axios fills in with its default transforms.
+            transformRequest: [],
+            transformResponse: [],
             responseType: 'arraybuffer',
             // Every request sets its own timeout in `createRequestHandler`, so the default only backs a raw
             // `axios.request()` call.
