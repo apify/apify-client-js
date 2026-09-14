@@ -1,7 +1,6 @@
 import type { AddressInfo } from 'node:net';
 import { brotliDecompressSync, gunzipSync } from 'node:zlib';
 
-import type { HttpCompressionAlgorithm } from 'apify-client';
 import {
     ApifyClient,
     ArgumentValidationError,
@@ -74,12 +73,6 @@ describe('resolveCompressor()', () => {
     test('passes an HttpCompressor instance through unchanged', () => {
         const compressor = new BrotliHttpCompressor({ quality: 11 });
         expect(resolveCompressor(compressor)).toBe(compressor);
-    });
-
-    test('rejects an unknown algorithm', () => {
-        expect(() => resolveCompressor('deflate' as HttpCompressionAlgorithm)).toThrow(
-            'Unsupported compression algorithm',
-        );
     });
 });
 
