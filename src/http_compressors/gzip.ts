@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { runtime } from '#runtime';
 import { parseArgument } from '../utils.js';
 import { HttpCompressor } from './base.js';
 
@@ -19,7 +20,7 @@ const optionsSchema = z.strictObject({
 /**
  * Compresses request bodies using gzip.
  *
- * Uses the `node:zlib` module, so it works wherever the client runs on Node.js.
+ * Built on the `node:zlib` module, so it works wherever the client runs on Node.js.
  *
  * @example
  * ```javascript
@@ -44,11 +45,7 @@ export class GzipHttpCompressor extends HttpCompressor {
     }
 
     async compress(data: Buffer): Promise<Buffer> {
-        const { gzip } = await import('node:zlib');
-
-        return new Promise((resolve, reject) => {
-            gzip(data, { level: this.#quality }, (error, result) => (error ? reject(error) : resolve(result)));
-        });
+        return runtime.compress(data, { algorithm: 'gzip', quality: this.#quality });
     }
 }
 

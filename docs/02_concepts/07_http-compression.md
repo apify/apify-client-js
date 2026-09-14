@@ -13,7 +13,7 @@ The client compresses request bodies before sending them to the API. Compression
 
 The client compresses request bodies with the compressor configured via the `compression` option of the <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor, brotli by default. The API accepts both brotli and gzip and decompresses the body transparently. A body is compressed only when it's large enough to benefit, its content type isn't already compressed, and the request carries no `Content-Encoding` of its own. For details, see [Minimum body size](#minimum-body-size), [Already-compressed payloads](#already-compressed-payloads), and [Pre-compressed bodies](#pre-compressed-bodies).
 
-Compression runs on Node.js only. In a browser, the client sends every body as it is, and the `compression` option has no effect.
+Compression needs `node:zlib`, so it runs where the client resolves its Node.js implementation. In a browser or an edge runtime it sends every body as it is, and the `compression` option has no effect. See [Bundled environments](./05_bundled-environments.md) for what decides which implementation a bundle gets.
 
 ## Minimum body size
 

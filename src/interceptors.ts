@@ -6,7 +6,8 @@ import type { JsonObject } from 'type-fest';
 import { maybeParseBody } from './body_parser.js';
 import type { ApifyRequestConfig, ApifyResponse } from './http_client.js';
 import type { HttpCompressor } from './http_compressors/base.js';
-import { isCompressibleContentType, isNode, MIN_COMPRESS_BYTES } from './utils.js';
+import { runtime } from '#runtime';
+import { isCompressibleContentType, MIN_COMPRESS_BYTES, toBytes } from './utils.js';
 
 /**
  * This error exists for the quite common situation, where only a partial JSON response is received and
@@ -55,6 +56,11 @@ function deleteHeader(config: ApifyRequestConfig, name: string): void {
 }
 
 function serializeRequest(config: ApifyRequestConfig): ApifyRequestConfig {
+    // A string body with an explicit content type is already serialized and goes out as it is. The axios default
+    // transform would otherwise parse a JSON one in full just to check that it is valid, which for a body assembled
+    // from thousands of pre-serialized requests costs about as much as serializing them did.
+    if (typeof config.data === 'string' && getHeader(config, 'content-type')) return config;
+
     const [defaultTransform] = axios.defaults.transformRequest as AxiosRequestTransformer[];
 
     // The function not only serializes data, but it also adds correct headers.
@@ -107,7 +113,8 @@ function stringifyWithFunctions(obj: JsonObject) {
  *
  * Runs after `serializeRequest`, so a JSON body is already a string here. A caller-set `Content-Encoding` is
  * forwarded verbatim, which is how a pre-encoded body is uploaded, and `Content-Encoding: identity` opts a single
- * request out of compression. Browsers have no `node:zlib`, so there the body is always sent as it is.
+ * request out of compression. The built-in compressors need `node:zlib`, so a body sent from a browser or an edge
+ * runtime goes out as it is.
  *
  * Compressing changes the body length, so any `Content-Length` the caller set describes the wrong body and has to
  * go. Axios keeps a caller-set one over the size it computes, which would stall the request until it times out.
@@ -116,17 +123,16 @@ async function maybeCompressRequest(
     config: ApifyRequestConfig,
     compressor: HttpCompressor,
 ): Promise<ApifyRequestConfig> {
-    if (!isNode()) return config;
+    if (!runtime.isNode) return config;
 
-    const { data } = config;
-    if (typeof data !== 'string' && !Buffer.isBuffer(data)) return config;
-    if (Buffer.byteLength(data) < MIN_COMPRESS_BYTES) return config;
+    const bytes = toBytes(config.data);
+    if (!bytes || bytes.byteLength < MIN_COMPRESS_BYTES) return config;
 
     // A caller-supplied encoding means the body is already encoded and the header describes it, so leave both alone.
     if (getHeader(config, 'content-encoding')) return config;
     if (!isCompressibleContentType(getHeader(config, 'content-type'))) return config;
 
-    config.data = await compressor.compress(typeof data === 'string' ? Buffer.from(data) : data);
+    config.data = await compressor.compress(Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength));
     config.headers ??= {};
     config.headers['content-encoding'] = compressor.contentEncoding;
     deleteHeader(config, 'content-length');
@@ -143,8 +149,8 @@ function parseResponseData(response: ApifyResponse): ApifyResponse {
         return response;
     }
 
-    const isBufferEmpty = isNode() ? !response.data.length : !response.data.byteLength;
-    if (isBufferEmpty) {
+    // A `Buffer` from the Node.js adapter and an `ArrayBuffer` from the browser ones both carry `byteLength`.
+    if (!response.data.byteLength) {
         // undefined is better than an empty buffer
         response.data = undefined;
         return response;

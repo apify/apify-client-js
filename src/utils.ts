@@ -25,6 +25,11 @@ import packageJson from '../package.json' with { type: 'json' };
  */
 export const MIN_COMPRESS_BYTES = 1024;
 
+const textEncoder = new TextEncoder();
+
+// Only the version, so a bundler can drop the rest of the manifest.
+export const { version } = packageJson;
+
 /** Media type prefixes whose payloads carry their own compression, so compressing the request body is wasted work. */
 const ALREADY_COMPRESSED_MEDIA_TYPE_PREFIXES = ['audio/', 'image/', 'video/'];
 
@@ -164,13 +169,47 @@ export function catchNotFoundForResourceOrThrow(err: ApifyApiError, resourceId: 
  */
 export function stringifyWebhooksToBase64(webhooks?: readonly WebhookUpdateData[]): string | undefined {
     if (!webhooks) return;
-    const webhooksJson = JSON.stringify(webhooks);
-    if (isNode()) {
-        return Buffer.from(webhooksJson, 'utf8').toString('base64');
+    return bytesToBase64(textEncoder.encode(JSON.stringify(webhooks)));
+}
+
+/**
+ * Encodes bytes as base64. `btoa()` takes a binary string, and the bytes are turned into one in slices,
+ * because spreading them all into a single `String.fromCharCode()` call overflows the argument limit on
+ * inputs of a few tens of kilobytes.
+ */
+export function bytesToBase64(bytes: Uint8Array): string {
+    const SLICE_LENGTH = 0x8000;
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += SLICE_LENGTH) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + SLICE_LENGTH));
     }
-    const encoder = new TextEncoder();
-    const uint8Array = encoder.encode(webhooksJson);
-    return btoa(String.fromCharCode(...uint8Array));
+    return btoa(binary);
+}
+
+/**
+ * Concatenates byte chunks into one array.
+ */
+export function concatBytes(chunks: Uint8Array[]): Uint8Array {
+    const result = new Uint8Array(chunks.reduce((length, chunk) => length + chunk.length, 0));
+    let offset = 0;
+    for (const chunk of chunks) {
+        result.set(chunk, offset);
+        offset += chunk.length;
+    }
+    return result;
+}
+
+/**
+ * Views a request body as bytes: a string is UTF-8 encoded, binary values are viewed in place. Anything else
+ * - a stream, a `Blob`, form data - is `undefined`.
+ * @internal
+ */
+export function toBytes(value: unknown): Uint8Array | undefined {
+    if (typeof value === 'string') return textEncoder.encode(value);
+    if (!isBuffer(value)) return undefined;
+    return ArrayBuffer.isView(value)
+        ? new Uint8Array(value.buffer, value.byteOffset, value.byteLength)
+        : new Uint8Array(value);
 }
 
 /**
@@ -196,35 +235,46 @@ export function isCompressibleContentType(contentType?: string): boolean {
 }
 
 /**
- * Helper function slice the items from array to fit the max byte length.
+ * Reads an environment variable, on runtimes that have them.
  */
-export function sliceArrayByByteLength<T>(array: T[], maxByteLength: number, startIndex: number): T[] {
-    const stringByteLength = (str: string) => (isNode() ? Buffer.byteLength(str) : new Blob([str]).size);
-    const arrayByteLength = stringByteLength(JSON.stringify(array));
-    if (arrayByteLength < maxByteLength) return array;
-
-    const slicedArray: T[] = [];
-    let byteLength = 2; // 2 bytes for the empty array []
-    for (let i = 0; i < array.length; i++) {
-        const item = array[i];
-        const itemByteSize = stringByteLength(JSON.stringify(item));
-        if (itemByteSize > maxByteLength) {
-            throw new Error(
-                `RequestQueueClient.batchAddRequests: The size of the request with index: ${startIndex + i} ` +
-                    `exceeds the maximum allowed size (${maxByteLength} bytes).`,
-            );
-        }
-        if (byteLength + itemByteSize >= maxByteLength) break;
-        byteLength += itemByteSize;
-        slicedArray.push(item);
-    }
-
-    return slicedArray;
+export function getEnv(name: string): string | undefined {
+    return typeof process !== 'undefined' ? process.env?.[name] : undefined;
 }
 
-export function isNode(): boolean {
-    if (typeof BROWSER_BUILD !== 'undefined') return false;
-    return !!(typeof process !== 'undefined' && process.versions && process.versions.node);
+/**
+ * Returns the UTF-8 byte length of a string.
+ */
+export function utf8ByteLength(value: string): number {
+    return textEncoder.encode(value).byteLength;
+}
+
+/**
+ * Splits JSON-serialized items into consecutive batches of at most `maxCount` items, each of which fits into a JSON
+ * array body - the items joined by commas between brackets - of at most `maxByteLength` bytes. The `byteLength` of an
+ * item is the UTF-8 byte length of its serialization. An item too large for a body of its own still gets one, so a
+ * caller that cannot send such an item has to reject it beforehand.
+ */
+export function splitIntoJsonArrayBatches<T extends { byteLength: number }>(
+    items: readonly T[],
+    { maxCount, maxByteLength }: { maxCount: number; maxByteLength: number },
+): T[][] {
+    const batches: T[][] = [];
+    let batch: T[] = [];
+    // One byte for the opening bracket; each item then adds its own bytes plus one for the comma or the closing
+    // bracket that follows it.
+    let byteLength = 1;
+    for (const item of items) {
+        if (batch.length > 0 && (batch.length >= maxCount || byteLength + item.byteLength + 1 > maxByteLength)) {
+            batches.push(batch);
+            batch = [];
+            byteLength = 1;
+        }
+        batch.push(item);
+        byteLength += item.byteLength + 1;
+    }
+    if (batch.length > 0) batches.push(batch);
+
+    return batches;
 }
 
 export function isBuffer(value: unknown): value is Buffer | ArrayBuffer | TypedArray {
@@ -242,14 +292,6 @@ export function isStream(value: unknown): value is Readable {
     if (value === null || typeof value !== 'object') return false;
     const { on, pipe } = value as Partial<Readable>;
     return typeof on === 'function' && typeof pipe === 'function';
-}
-
-export function getVersionData(): { version: string } {
-    if (typeof BROWSER_BUILD !== 'undefined') {
-        return { version: VERSION! };
-    }
-
-    return packageJson;
 }
 
 /**
@@ -293,11 +335,6 @@ export class RequestQueuePaginationIterator {
             nextCursor = page.nextCursor;
         }
     }
-}
-
-declare global {
-    export const BROWSER_BUILD: boolean | undefined;
-    export const VERSION: string | undefined;
 }
 
 /**

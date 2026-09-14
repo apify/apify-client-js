@@ -1,6 +1,5 @@
 import type http from 'node:http';
 import type https from 'node:https';
-import type { Socket } from 'node:net';
 
 import type { RetryFunction } from 'async-retry';
 import retry from 'async-retry';
@@ -9,16 +8,16 @@ import axios, { AxiosHeaders } from 'axios';
 
 import { APIFY_ENV_VARS } from '@apify/consts';
 import type { Log } from '@apify/log';
+import { concatStreamToBuffer } from '@apify/utilities';
 
 import { ApifyApiError } from './apify_api_error.js';
 import type { HttpCompressor } from './http_compressors/base.js';
 import type { RequestInterceptorFunction } from './interceptors.js';
 import { createRequestInterceptors, InvalidResponseBodyError, responseInterceptors } from './interceptors.js';
+import { runtime } from '#runtime';
 import type { Statistics } from './statistics.js';
 import type { Timeout, TimeoutTier } from './timeouts.js';
-import { asArray, cast, getVersionData, isNode, isStream } from './utils.js';
-
-const { version } = getVersionData();
+import { asArray, cast, getEnv, isStream, version } from './utils.js';
 
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 
@@ -53,9 +52,7 @@ export class HttpClient {
 
     workflowKey?: string;
 
-    #nodeInitPromise?: Promise<void>;
-
-    #userAgentSuffix?: string | string[];
+    #httpAgentsPromise?: Promise<void>;
 
     constructor(options: HttpClientOptions) {
         const { token } = options;
@@ -71,8 +68,7 @@ export class HttpClient {
         };
         this.timeoutMaxMillis = options.timeoutMaxSecs * 1000;
         this.logger = options.logger;
-        this.workflowKey = options.workflowKey || process.env[APIFY_ENV_VARS.WORKFLOW_KEY];
-        this.#userAgentSuffix = options.userAgentSuffix;
+        this.workflowKey = options.workflowKey || getEnv(APIFY_ENV_VARS.WORKFLOW_KEY);
 
         this.axios = axios.create({
             // Disable axios's built-in proxy handling since we're using custom agents
@@ -91,9 +87,10 @@ export class HttpClient {
                 return new URLSearchParams(formattedParams).toString();
             },
             validateStatus: null,
-            // Using interceptors for this functionality.
-            transformRequest: undefined,
-            transformResponse: undefined,
+            // Interceptors serialize requests and parse responses instead. Empty arrays rather than `undefined`,
+            // which axios fills in with its default transforms.
+            transformRequest: [],
+            transformResponse: [],
             responseType: 'arraybuffer',
             // Every request sets its own timeout in `createRequestHandler`, so the default only backs a raw
             // `axios.request()` call.
@@ -119,76 +116,41 @@ export class HttpClient {
             this.axios.defaults.headers.Authorization = `Bearer ${token}`;
         }
 
+        // Browsers do not let a page set the header, so it is only sent where the runtime describes its platform.
+        if (runtime.platform) {
+            const isAtHome = !!getEnv(APIFY_ENV_VARS.IS_AT_HOME);
+            let userAgent = `ApifyClient/${version} (${runtime.platform}); isAtHome/${isAtHome}`;
+
+            if (options.userAgentSuffix) {
+                userAgent += `; ${asArray(options.userAgentSuffix).join('; ')}`;
+            }
+
+            this.axios.defaults.headers['User-Agent'] = userAgent;
+        }
+
         createRequestInterceptors(this.httpCompressor).forEach((i) => this.axios.interceptors.request.use(i as any));
         this.userProvidedRequestInterceptors.forEach((i) => this.axios.interceptors.request.use(i as any));
         responseInterceptors.forEach((i) => this.axios.interceptors.response.use(i as any));
     }
 
-    async #ensureNodeInit(): Promise<void> {
-        if (!isNode()) return;
+    async #ensureHttpAgents(): Promise<void> {
+        this.#httpAgentsPromise ??= this.#initHttpAgents();
 
-        this.#nodeInitPromise ??= this.#initNode();
-
-        return this.#nodeInitPromise;
+        return this.#httpAgentsPromise;
     }
 
-    async #initNode(): Promise<void> {
-        if (!isNode()) return;
+    async #initHttpAgents(): Promise<void> {
+        const agents = await runtime.createHttpAgents({ timeoutMillis: this.timeoutMaxMillis });
+        if (!agents) return;
 
-        const [{ ProxyAgent }, os] = await Promise.all([import('proxy-agent'), import('node:os')]);
-
-        // We want to keep sockets alive for better performance.
-        // Enhanced agent configuration based on agentkeepalive best practices:
-        // - Nagle's algorithm disabled for lower latency
-        // - Free socket timeout to prevent socket leaks
-        // - LIFO scheduling to reuse recent sockets
-        // - Socket TTL for connection freshness
-        const agentOptions: http.AgentOptions & { scheduling?: 'lifo' | 'fifo' } = {
-            keepAlive: true,
-            // Timeout for inactive sockets
-            // Prevents socket leaks from idle connections
-            timeout: this.timeoutMaxMillis,
-            // Keep alive timeout for free sockets (15 seconds)
-            // Node.js will close unused sockets after this period
-            keepAliveMsecs: 15_000,
-            // Maximum number of sockets per host
-            maxSockets: 256,
-            maxFreeSockets: 256,
-            // LIFO scheduling - reuse most recently used sockets for better performance
-            scheduling: 'lifo',
-        };
-
-        // Use ProxyAgent which automatically detects proxy from environment variables
-        // and supports CONNECT tunneling
-        const proxyAgent = new ProxyAgent(agentOptions);
-        this.httpAgent = proxyAgent;
-        this.httpsAgent = proxyAgent;
-
-        // Disable Nagle's algorithm for lower latency
-        // This sends data immediately instead of buffering small packets
-        const setNoDelay = (socket: Socket) => {
-            socket.setNoDelay(true);
-        };
-
-        this.httpAgent.on('socket', setNoDelay);
-        this.httpsAgent.on('socket', setNoDelay);
-
+        this.httpAgent = agents.httpAgent;
+        this.httpsAgent = agents.httpsAgent;
         this.axios.defaults.httpAgent = this.httpAgent;
         this.axios.defaults.httpsAgent = this.httpsAgent;
-
-        // Works only in Node. Cannot be set in browser
-        const isAtHome = !!process.env[APIFY_ENV_VARS.IS_AT_HOME];
-        let userAgent = `ApifyClient/${version} (${os.platform()}; Node/${process.version}); isAtHome/${isAtHome}`;
-
-        if (this.#userAgentSuffix) {
-            userAgent += `; ${asArray(this.#userAgentSuffix).join('; ')}`;
-        }
-
-        this.axios.defaults.headers['User-Agent'] = userAgent;
     }
 
     async call<T = any>(config: ApifyRequestConfig): Promise<ApifyResponse<T>> {
-        await this.#ensureNodeInit();
+        await this.#ensureHttpAgents();
         this.stats.calls++;
         const makeRequest = this.#createRequestHandler(config);
 
@@ -234,6 +196,13 @@ export class HttpClient {
                     timeout: this.#computeTimeoutMillis(timeoutSecs, attempt),
                 });
                 if (this.#isStatusOk(response.status)) return response;
+
+                // A failed request with `responseType: 'stream'` carries the API error body in the stream. Read
+                // it so that `ApifyApiError` can parse it like any other error body. A body that cannot be read
+                // leaves the error without a message, which beats losing the status code to a stream error.
+                if (isStream(response.data)) {
+                    response.data = await concatStreamToBuffer(response.data).catch(() => undefined);
+                }
             } catch (err) {
                 return cast(this.#handleRequestError(err as AxiosError, config, stopTrying));
             }

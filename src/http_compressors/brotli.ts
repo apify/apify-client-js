@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { runtime } from '#runtime';
 import { parseArgument } from '../utils.js';
 import { HttpCompressor } from './base.js';
 
@@ -19,7 +20,7 @@ const optionsSchema = z.strictObject({
 /**
  * Compresses request bodies using brotli.
  *
- * Uses the `node:zlib` module, so it works wherever the client runs on Node.js.
+ * Built on the `node:zlib` module, so it works wherever the client runs on Node.js.
  *
  * @example
  * ```javascript
@@ -44,12 +45,7 @@ export class BrotliHttpCompressor extends HttpCompressor {
     }
 
     async compress(data: Buffer): Promise<Buffer> {
-        const { brotliCompress, constants } = await import('node:zlib');
-        const options = { params: { [constants.BROTLI_PARAM_QUALITY]: this.#quality } };
-
-        return new Promise((resolve, reject) => {
-            brotliCompress(data, options, (error, result) => (error ? reject(error) : resolve(result)));
-        });
+        return runtime.compress(data, { algorithm: 'br', quality: this.#quality });
     }
 }
 

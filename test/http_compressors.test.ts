@@ -196,6 +196,20 @@ describe('ApifyClient compression option', () => {
         expect(compress).toHaveBeenCalledOnce();
     });
 
+    test.each([
+        { name: 'a Buffer', value: Buffer.alloc(4096, 'a') },
+        { name: 'a typed array', value: new Uint8Array(4096).fill(0x61) },
+        { name: 'an ArrayBuffer', value: new Uint8Array(4096).fill(0x61).buffer },
+    ])('compresses a large binary body passed as $name', async ({ value }) => {
+        const client = new ApifyClient({ baseUrl, maxRetries: 0 });
+
+        await client
+            .keyValueStore('some-id')
+            .setRecord({ key: 'some-key', value, contentType: 'application/octet-stream' });
+
+        expect(mockServer.getLastRequest()?.headers['content-encoding']).toBe('br');
+    });
+
     test('compresses a body of exactly the threshold size', async () => {
         const compressor = new IdentityCompressor();
         const compress = vi.spyOn(compressor, 'compress');
