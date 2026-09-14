@@ -368,3 +368,36 @@ export HTTPS_PROXY=http://proxy.example.com:3128
 ```
 
 The same `proxy-agent` upgrade removes the `[DEP0169] DeprecationWarning` about `url.parse()` that Node.js 24 and newer printed on the client's first request.
+
+## Non-public members no longer carry an underscore
+
+Members declared `private` or `protected` had a leading underscore on top of the keyword in v2, and the underscore is gone in v3. Code that calls only the public methods of a client is unaffected. A class that extends one of the client classes and calls a protected helper has to switch to the new name. The base classes below are not exported, so you reach these members by extending a concrete client such as `ActorClient`.
+
+| Class | v2 | v3 |
+| --- | --- | --- |
+| `ApiClient` | `_url()` | `buildUrl()` |
+| `ApiClient` | `_publicUrl()` | `buildPublicUrl()` |
+| `ApiClient` | `_params()` | `buildParams()` |
+| `ApiClient` | `_subResourceOptions()` | `subResourceOptions()` |
+| `ApiClient` | `_toSafeId()` | `toSafeId()` |
+| `ApiClient` | `_listPaginatedFromCallback()` | `listPaginatedFromCallback()` |
+| `ResourceClient` | `_get()` | `getResource()` |
+| `ResourceClient` | `_update()` | `updateResource()` |
+| `ResourceClient` | `_delete()` | `deleteResource()` |
+| `ResourceClient` | `_waitForFinish()` | `waitForJobFinish()` |
+| `ResourceCollectionClient` | `_list()` | `listResources()` |
+| `ResourceCollectionClient` | `_listPaginated()` | `listResourcesPaginated()` |
+| `ResourceCollectionClient` | `_create()` | `createResource()` |
+| `ResourceCollectionClient` | `_getOrCreate()` | `getOrCreateResource()` |
+| `RequestQueueClient` | `_batchAddRequests()` | `addRequestBatch()` |
+| `RequestQueueClient` | `_batchAddRequestsWithRetries()` | `addRequestBatchWithRetries()` |
+
+A helper got a suffix wherever the bare name would collide with a public method of the same class, which is why `_get()` is now `getResource()` and not `get()`.
+
+<ApiLink to="class/LoggerActorRedirect">`LoggerActorRedirect`</ApiLink> keeps `_log()`, since it overrides the method of that name on the `Logger` base class in `@apify/log`.
+
+The `clientMethod` field on <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> is parsed from the stack trace, and a public method that delegates to one of these helpers is reported under the helper's name. An error from `client.actor(id).get()` says `ActorClient.getResource`, where v2 said `ActorClient.get`. Adjust anything that matches on these values in your logs.
+
+### Private members are private at runtime
+
+Members that v2 declared `private` are declared with a `#` in v3, so the JavaScript runtime enforces the boundary, where v2 relied on the type checker. Code that reached one of them through a cast, such as `(client.httpClient as any).nodeInitPromise`, throws a `TypeError` in v3. They also don't appear when you spread an instance, iterate `Object.keys()` on it, or pass it to `JSON.stringify()`. The `protected` helpers in the table keep the `protected` keyword, so a subclass can call them.
