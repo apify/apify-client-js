@@ -9,7 +9,8 @@ import type { ApifyRequestConfig, ApifyResponse } from '../http_client.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { optionalTimeoutSchema, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
-import { anyObjectSchema, isNode, parseArgument, parseResponse } from '../utils.js';
+import { runtime } from '#runtime';
+import { anyObjectSchema, parseArgument, parseResponse } from '../utils.js';
 import type { ActorInput, ActorRun } from './actor.js';
 import { DatasetClient } from './dataset.js';
 import { KeyValueStoreClient } from './key_value_store.js';
@@ -489,7 +490,7 @@ export class RunClient extends ResourceClient {
 
         const { fromStart = true, timeoutSecs = 'long' } = options;
         let { toLog } = options;
-        if (toLog === null || !isNode()) {
+        if (toLog === null || !runtime.isNode) {
             // Explicitly no logging or not in Node.js
             return undefined;
         }

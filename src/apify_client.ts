@@ -38,7 +38,7 @@ import {
     DEFAULT_TIMEOUT_MEDIUM_SECS,
     DEFAULT_TIMEOUT_SHORT_SECS,
 } from './timeouts.js';
-import { parseArgument } from './utils.js';
+import { getEnv, parseArgument } from './utils.js';
 
 const clientOptionsSchema = z.strictObject({
     baseUrl: z.string().default('https://api.apify.com'),
@@ -567,7 +567,7 @@ export class ApifyClient {
      * @since Added in 2.7.0
      */
     async setStatusMessage(message: string, options?: SetStatusMessageOptions): Promise<void> {
-        const runId = process.env[ACTOR_ENV_VARS.RUN_ID];
+        const runId = getEnv(ACTOR_ENV_VARS.RUN_ID);
         if (!runId) {
             throw new Error(`Environment variable ${ACTOR_ENV_VARS.RUN_ID} is not set!`);
         }
