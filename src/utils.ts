@@ -200,9 +200,10 @@ export function concatBytes(chunks: Uint8Array[]): Uint8Array {
  */
 function toBytes(value: unknown): Uint8Array | undefined {
     if (typeof value === 'string') return textEncoder.encode(value);
-    if (ArrayBuffer.isView(value)) return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
-    if (value instanceof ArrayBuffer) return new Uint8Array(value);
-    return undefined;
+    if (!isBuffer(value)) return undefined;
+    return ArrayBuffer.isView(value)
+        ? new Uint8Array(value.buffer, value.byteOffset, value.byteLength)
+        : new Uint8Array(value);
 }
 
 /**
