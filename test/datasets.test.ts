@@ -361,6 +361,15 @@ describe('Dataset methods', () => {
             await expect(call).rejects.toThrow('Expected an object at `[1]`');
         });
 
+        test('pushItems() rejects an array of strings', async () => {
+            // The API only accepts an object or an array of objects; a string is only valid as the JSON
+            // serialization of one of those, never as an array element.
+            const call = client.dataset('201').pushItems(['item1', 'item2'] as any);
+
+            await expect(call).rejects.toThrow(ArgumentValidationError);
+            await expect(call).rejects.toThrow('Expected an object at `[0]`');
+        });
+
         test('pushItems() works with string', async () => {
             const datasetId = '201';
             const data = JSON.stringify([{ someData: 'someValue' }, { someData: 'someValue' }]);

@@ -61,7 +61,7 @@ const downloadItemsOptionsSchema = z.strictObject({
     signature: z.string().optional(),
     ...timeoutOptionsShape,
 });
-const pushItemsSchema = z.union([itemSchema, z.string(), z.array(z.union([itemSchema, z.string()]))]);
+const pushItemsSchema = z.union([itemSchema, z.string(), z.array(itemSchema)]);
 // Apart from `timeoutSecs` and `expiresInSecs`, every option becomes a query parameter of the generated URL, so
 // `chunkSize` (client-side only) and `signature` (which this method produces) are left out. The options type
 // omits both to match.
@@ -305,13 +305,14 @@ export class DatasetClient<
     /**
      * Stores one or more items into the dataset.
      *
-     * Items can be objects, strings, or arrays thereof. Each item will be stored as a separate
-     * record in the dataset. Objects are automatically serialized to JSON. If you provide an array,
-     * all items will be stored in order. This method is idempotent - calling it multiple times
-     * with the same data will not create duplicates, but will append items each time.
+     * Each item will be stored as a separate record in the dataset. Objects are automatically
+     * serialized to JSON. If you provide an array, all items will be stored in order. This method
+     * is idempotent - calling it multiple times with the same data will not create duplicates, but
+     * will append items each time.
      *
-     * @param items - A single item (object or string) or an array of items to store.
-     *                Objects are automatically stringified to JSON. Strings are stored as-is.
+     * @param items - A single item, an array of items, or a string that is the JSON serialization of
+     *                either - the API only accepts an object or an array of objects, so a plain string
+     *                is not a valid item on its own.
      * @param options - Request options
      * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
      * @see https://docs.apify.com/api/v2/dataset-items-post
@@ -331,12 +332,9 @@ export class DatasetClient<
      *   { url: 'https://test.com', title: 'Test' },
      *   { url: 'https://demo.com', title: 'Demo' }
      * ]);
-     *
-     * // Store string items
-     * await client.dataset('my-dataset').pushItems(['item1', 'item2', 'item3']);
      * ```
      */
-    async pushItems(items: Data | Data[] | string | string[], options: TimeoutOptions = {}): Promise<void> {
+    async pushItems(items: Data | Data[] | string, options: TimeoutOptions = {}): Promise<void> {
         parseArgument(items, pushItemsSchema);
         const { timeoutSecs = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
