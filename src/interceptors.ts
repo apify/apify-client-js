@@ -43,6 +43,11 @@ function getHeader(config: ApifyRequestConfig, name: string): string | undefined
 }
 
 function serializeRequest(config: ApifyRequestConfig): ApifyRequestConfig {
+    // A string body with an explicit content type is already serialized and goes out as it is. The axios default
+    // transform would otherwise parse a JSON one in full just to check that it is valid, which for a body assembled
+    // from thousands of pre-serialized requests costs about as much as serializing them did.
+    if (typeof config.data === 'string' && getHeader(config, 'content-type')) return config;
+
     const [defaultTransform] = axios.defaults.transformRequest as AxiosRequestTransformer[];
 
     // The function not only serializes data, but it also adds correct headers.

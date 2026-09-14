@@ -15,6 +15,7 @@ import { mockServer } from './mock_server/server.js';
 describe('Request Queue methods', () => {
     let baseUrl: string;
     const browser = new Browser();
+    const jsonHeaders = { 'content-type': 'application/json' };
 
     beforeAll(async () => {
         const server = await mockServer.start();
@@ -432,7 +433,7 @@ describe('Request Queue methods', () => {
                 .map((_, i) => ({ url: `http://example.com/${i}`, uniqueKey: `key-${i}` }));
 
             const res = await client.requestQueue(queueId).batchAddRequests(requests, options);
-            validateRequest({ query: options, params: { queueId }, body: requests });
+            validateRequest({ query: options, params: { queueId }, body: requests, additionalHeaders: jsonHeaders });
 
             const browserRes = await page.evaluate(
                 (id, req, opts) => {
@@ -443,7 +444,58 @@ describe('Request Queue methods', () => {
                 options,
             );
             expect(browserRes).toEqual(asBrowserResult(res));
-            validateRequest({ query: options, params: { queueId }, body: requests });
+            validateRequest({ query: options, params: { queueId }, body: requests, additionalHeaders: jsonHeaders });
+        });
+
+        test('batchAddRequests() serializes each request only once', async () => {
+            const requestsLength = 60;
+            const serializations = new Array(requestsLength).fill(0);
+            const requests = new Array(requestsLength).fill(0).map((_, i) => {
+                const request = { url: `http://example.com/${i}`, uniqueKey: `key-${i}` };
+                // `JSON.stringify` invokes `toJSON` on every object it serializes, alone or as an array item.
+                Object.defineProperty(request, 'toJSON', {
+                    value: () => {
+                        serializations[i]++;
+                        return { ...request };
+                    },
+                });
+                return request;
+            });
+
+            await client.requestQueue('some-id').batchAddRequests(requests);
+
+            expect(serializations).toEqual(new Array(requestsLength).fill(1));
+        });
+
+        test('batchAddRequests() retries only the requests the API left unprocessed', async () => {
+            const requests = new Array(3)
+                .fill(0)
+                .map((_, i) => ({ url: `http://example.com/${i}`, uniqueKey: `key-${i}` }));
+            mockServer.setResponse({
+                body: {
+                    data: {
+                        processedRequests: [
+                            {
+                                requestId: 'request-0',
+                                uniqueKey: 'key-0',
+                                wasAlreadyPresent: false,
+                                wasAlreadyHandled: false,
+                            },
+                        ],
+                        unprocessedRequests: [{ url: requests[1].url, uniqueKey: 'key-1' }],
+                    },
+                },
+            });
+
+            await client.requestQueue('some-id').batchAddRequests(requests, {
+                maxUnprocessedRequestsRetries: 1,
+                minDelayBetweenUnprocessedRequestsRetriesMillis: 0,
+            });
+
+            const uniqueKeys = (req: Request) => req.body.map(({ uniqueKey }: { uniqueKey: string }) => uniqueKey);
+            const [firstAttempt, secondAttempt] = mockServer.getLastRequests(2);
+            expect(uniqueKeys(firstAttempt)).toEqual(['key-0', 'key-1', 'key-2']);
+            expect(uniqueKeys(secondAttempt)).toEqual(['key-1', 'key-2']);
         });
 
         test('batchAddRequests() throws on a response that does not match the API schema', async () => {
@@ -660,9 +712,12 @@ describe('Request Queue methods', () => {
                 uniqueKey: 'key-big',
             };
             const requestsWithBigRequest: typeof requests = [...requests, bigRequest];
+            const firedRequestCount = mockServer.requests.length;
             await expect(client.requestQueue(queueId).batchAddRequests(requestsWithBigRequest)).rejects.toThrow(
                 `RequestQueueClient.batchAddRequests: The size of the request with index: ${requestsWithBigRequest.length - 1}`,
             );
+            // The oversized request is rejected before any of the batches around it goes out.
+            expect(mockServer.requests).toHaveLength(firedRequestCount);
             validateRequest({ query: {}, params: { queueId }, body: false });
         });
     });
