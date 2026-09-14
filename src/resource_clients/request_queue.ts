@@ -33,7 +33,8 @@ import {
     parseArgument,
     parseResponse,
     RequestQueuePaginationIterator,
-    sliceArrayByByteLength,
+    splitIntoJsonArrayBatches,
+    utf8ByteLength,
 } from '../utils.js';
 
 const DEFAULT_PARALLEL_BATCH_ADD_REQUESTS = 5;
@@ -55,7 +56,6 @@ const newRequestSchema = z.custom<RequestQueueClientRequestToAdd>(
     'Expected a request object without an `id`',
 );
 const forefrontOptionsSchema = z.strictObject({ forefront: z.boolean().optional(), ...timeoutOptionsShape });
-const batchAddRequestsSchema = z.array(newRequestSchema).min(1).max(REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION);
 const batchAddRequestsWithRetriesSchema = z.array(newRequestSchema).min(1);
 const optionalBooleanSchema = z.boolean().optional();
 const optionalNumberSchema = z.number().optional();
@@ -91,6 +91,16 @@ const paginateRequestsOptionsSchema = z.strictObject({
     filter: requestFilterSchema.optional(),
     ...timeoutOptionsShape,
 });
+
+/**
+ * A request to add, serialized once up front: `byteLength` decides which batch it goes into, `json` is what the body of
+ * that batch is assembled from, and `request` is what the result bookkeeping needs.
+ */
+interface SerializedRequestToAdd {
+    request: RequestQueueClientRequestToAdd;
+    json: string;
+    byteLength: number;
+}
 
 export type {
     AllowedHttpMethods,
@@ -360,17 +370,19 @@ export class RequestQueueClient extends ResourceClient {
      * @private
      */
     protected async addRequestBatch(
-        requests: RequestQueueClientRequestToAdd[],
+        requests: SerializedRequestToAdd[],
         options: RequestQueueClientAddRequestOptions = {},
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
-        parseArgument(requests, batchAddRequestsSchema);
         const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientAddRequestOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('requests/batch'),
             method: 'POST',
             timeoutSecs: this.#resolveTimeout(parsed.timeoutSecs, 'medium'),
-            data: requests,
+            // The body is assembled from the requests as `batchAddRequests` serialized them; the explicit content type
+            // makes the request interceptor send the string as it is instead of serializing the requests again.
+            headers: { 'content-type': 'application/json' },
+            data: `[${requests.map(({ json }) => json).join(',')}]`,
             params: this.buildParams({
                 forefront: parsed.forefront,
                 clientKey: this.#clientKey,
@@ -381,7 +393,7 @@ export class RequestQueueClient extends ResourceClient {
     }
 
     protected async addRequestBatchWithRetries(
-        requests: RequestQueueClientRequestToAdd[],
+        requests: SerializedRequestToAdd[],
         options: RequestQueueClientBatchAddRequestWithRetriesOptions = {},
     ): Promise<RequestQueueClientBatchRequestsOperationResult> {
         const {
@@ -416,7 +428,7 @@ export class RequestQueueClient extends ResourceClient {
                 const processedRequestsUniqueKeys = processedRequests.map(({ uniqueKey }) => uniqueKey);
                 // Requests remaining to be processed are the all that remain
                 remainingRequests = requests.filter(
-                    ({ uniqueKey }) => !processedRequestsUniqueKeys.includes(uniqueKey),
+                    ({ request }) => !processedRequestsUniqueKeys.includes(request.uniqueKey),
                 );
 
                 // Stop if all requests have been processed
@@ -432,8 +444,8 @@ export class RequestQueueClient extends ResourceClient {
                 // This ensures that this method does not throw and keeps the signature.
                 const processedRequestsUniqueKeys = processedRequests.map(({ uniqueKey }) => uniqueKey);
                 unprocessedRequests = requests
-                    .filter(({ uniqueKey }) => !processedRequestsUniqueKeys.includes(uniqueKey))
-                    .map(({ method, uniqueKey, url }) => ({ method, uniqueKey, url }));
+                    .filter(({ request }) => !processedRequestsUniqueKeys.includes(request.uniqueKey))
+                    .map(({ request: { method, uniqueKey, url } }) => ({ method, uniqueKey, url }));
 
                 break;
             }
@@ -512,12 +524,28 @@ export class RequestQueueClient extends ResourceClient {
         const payloadSizeLimitBytes =
             MAX_PAYLOAD_SIZE_BYTES - Math.ceil(MAX_PAYLOAD_SIZE_BYTES * SAFETY_BUFFER_PERCENT);
 
+        // Serialize every request once: the byte lengths decide the batch boundaries, and the same strings are joined
+        // into the batch bodies, so nothing is stringified a second time when it is sent.
+        const serializedRequests = requests.map((request, index): SerializedRequestToAdd => {
+            const json = JSON.stringify(request);
+            const byteLength = utf8ByteLength(json);
+            // Two more bytes for the brackets, which even a batch of one request carries.
+            if (byteLength + 2 > payloadSizeLimitBytes) {
+                throw new Error(
+                    `RequestQueueClient.batchAddRequests: The size of the request with index: ${index} ` +
+                        `exceeds the maximum allowed size (${payloadSizeLimitBytes} bytes).`,
+                );
+            }
+            return { request, json, byteLength };
+        });
+        const batches = splitIntoJsonArrayBatches(serializedRequests, {
+            maxCount: REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION,
+            maxByteLength: payloadSizeLimitBytes,
+        });
+
         // Keep a pool of up to `maxParallel` requests running at once
-        let i = 0;
-        while (i < requests.length) {
-            const slicedRequests = requests.slice(i, i + REQUEST_QUEUE_MAX_REQUESTS_PER_BATCH_OPERATION);
-            const requestsInBatch = sliceArrayByByteLength(slicedRequests, payloadSizeLimitBytes, i);
-            const requestPromise = this.addRequestBatchWithRetries(requestsInBatch, options);
+        for (const batch of batches) {
+            const requestPromise = this.addRequestBatchWithRetries(batch, options);
             executingRequests.add(requestPromise);
             // A rejection reaches the caller through the awaits below; this bookkeeping chain only has to avoid
             // turning it into an unhandled one of its own.
@@ -531,7 +559,6 @@ export class RequestQueueClient extends ResourceClient {
             if (executingRequests.size >= maxParallel) {
                 await Promise.race(executingRequests);
             }
-            i += requestsInBatch.length;
         }
         // Get results from remaining operations
         await Promise.all(executingRequests);

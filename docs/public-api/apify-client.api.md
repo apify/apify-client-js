@@ -3282,9 +3282,9 @@ export interface RequestQueue extends Omit<Schemas['RequestQueue'], keyof Reques
 export class RequestQueueClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions, userOptions?: RequestQueueUserOptions);
     addRequest(request: RequestQueueClientRequestToAdd, options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientAddRequestResult>;
-    protected addRequestBatch(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
+    protected addRequestBatch(requests: SerializedRequestToAdd[], options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
     // (undocumented)
-    protected addRequestBatchWithRetries(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
+    protected addRequestBatchWithRetries(requests: SerializedRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
     batchAddRequests(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
     batchDeleteRequests(requests: RequestQueueClientRequestToDelete[], options?: TimeoutOptions): Promise<RequestQueueClientBatchDeleteRequestsResult>;
     delete(options?: TimeoutOptions): Promise<void>;
@@ -3737,6 +3737,17 @@ interface ScheduleRePointed {
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 type Schemas = components['schemas'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public
+interface SerializedRequestToAdd {
+    // (undocumented)
+    byteLength: number;
+    // (undocumented)
+    json: string;
+    // (undocumented)
+    request: RequestQueueClientRequestToAdd;
+}
 
 // @public
 export class ServerError extends ApifyApiError {
