@@ -422,18 +422,12 @@ type OverridesRejectingTheirType = {
 }[keyof ResponseSchemas & keyof Schemas];
 
 /**
- * The keys an override may add to a generated object beyond what the specification describes: the ones the
- * published model records as a spec gap for that schema, which `GapsStillMissing` above keeps honest.
- */
-type SpecGapKeys<K> = K extends 'RequestQueue' ? keyof RequestQueueSpecGaps : never;
-
-/**
- * Every other key an override extends a generated object with must still exist in the specification's schema.
+ * Every key an override extends a generated object with must still exist in the specification's schema.
  * `.extend()` with a key the specification has since dropped or renamed would quietly add it back.
  */
 type OverridesWithUnknownKeys = {
     [K in keyof ResponseSchemas & keyof Schemas]: ResponseSchemas[K] extends { shape: infer Shape }
-        ? Exclude<keyof Shape, keyof Schemas[K] | SpecGapKeys<K>> extends never
+        ? Exclude<keyof Shape, keyof Schemas[K]> extends never
             ? never
             : K
         : never;

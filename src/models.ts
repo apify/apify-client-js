@@ -1144,17 +1144,14 @@ export interface RequestQueueStats extends GeneratedRequestQueueStats {}
 /**
  * Fields the API returns on a request queue that the OpenAPI spec does not describe yet.
  *
- * The spec does carry `username` and `expireAt` on `RequestQueueShort`, the listing shape, and simply
- * omits both from the full `RequestQueue` schema. `title` is absent from either.
+ * The spec does carry `username` on `RequestQueueShort`, the listing shape, and simply omits it from the
+ * full `RequestQueue` schema. `title` is absent from either.
  *
  * TODO: Remove once the spec covers them.
  */
 export interface RequestQueueSpecGaps {
     title?: string;
     username?: string;
-    // A `Date`, not the `string` the wire carries: `RequestQueueShort` types it as a date-time, and the
-    // `RequestQueue` override in `schemas.ts` converts it like any other date-time.
-    expireAt?: Date;
 }
 
 export interface RequestQueueRePointed {

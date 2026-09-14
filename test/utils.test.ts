@@ -1,12 +1,6 @@
 import { Readable } from 'node:stream';
 
-import type {
-    PaginatedList,
-    RequestQueue,
-    RequestQueueClientRequestSchema,
-    WebhookDispatch,
-    WebhookUpdateData,
-} from 'apify-client';
+import type { PaginatedList, RequestQueueClientRequestSchema, WebhookDispatch, WebhookUpdateData } from 'apify-client';
 import { ApifyApiError, ResponseValidationError } from 'apify-client';
 import { describe, expect, test } from 'vitest';
 
@@ -74,16 +68,6 @@ describe('utils.parseResponse()', () => {
         );
 
         expect(parsed.handledAt).toEqual(new Date('2019-06-16T10:23:31.607Z'));
-    });
-
-    test('converts a date-time a published model declares where the specification omits it', () => {
-        const expireAt = '2019-06-02T17:15:06.751Z';
-        const parsed = utils.parseResponse<RequestQueue>(
-            response({ ...fixtures.requestQueue, expireAt }),
-            schemas.RequestQueue(),
-        );
-
-        expect(parsed.expireAt).toEqual(new Date(expireAt));
     });
 
     test('rejects a date-time field that does not carry an ISO 8601 date', () => {
