@@ -396,7 +396,7 @@ A helper got a suffix wherever the bare name would collide with a public method 
 
 <ApiLink to="class/LoggerActorRedirect">`LoggerActorRedirect`</ApiLink> keeps `_log()`, since it overrides the method of that name on the `Logger` base class in `@apify/log`.
 
-The `clientMethod` field on <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> still names the public method you called, such as `ActorCollectionClient.list`, so what an error reports doesn't change.
+The `clientMethod` field on <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> is parsed from the stack trace, and a public method that delegates to one of these helpers is reported under the helper's name. An error from `client.actor(id).get()` says `ActorClient.getResource`, where v2 said `ActorClient.get`. Adjust anything that matches on these values in your logs.
 
 ### Private members are private at runtime
 

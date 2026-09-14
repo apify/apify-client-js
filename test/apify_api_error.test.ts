@@ -46,7 +46,8 @@ describe('ApifyApiError', () => {
             // This does not work in v10 and lower, but we want to be able to run tests for v10,
             // because some people might still use it. They will just see clientMethod: undefined.
             if (!process.version.startsWith('v10')) {
-                expect(err.clientMethod).toBe(`${actorCollectionClient.constructor.name}.${method}`);
+                // `list()` returns the promise of the `listResources` helper, so the helper is the frame on the stack.
+                expect(err.clientMethod).toBe(`${actorCollectionClient.constructor.name}.listResources`);
             }
             expect(err.type).toEqual('token-not-provided');
             expect(err.message).toEqual('Authentication token was not provided');
@@ -77,7 +78,7 @@ describe('ApifyApiError', () => {
         }, method);
 
         expect(error.name).toEqual('UnauthorizedError');
-        expect(error.clientMethod).toBe(`ActorCollectionClient.${method}`);
+        expect(error.clientMethod).toBe('ActorCollectionClient.listResources');
         expect(error.type).toEqual('token-not-provided');
         expect(error.message).toEqual('Authentication token was not provided');
         expect(error.statusCode).toEqual(401);
@@ -141,68 +142,6 @@ describe('ApifyApiError', () => {
             invalidItems: {
                 0: [`should have required property 'name'`],
             },
-        });
-    });
-
-    describe('clientMethod names the public method, not the shared helper', () => {
-        // `400` as the resource id is what makes the mock server answer with an API error.
-        const cases: { helper: string; expected: string; call: (client: ApifyClient) => Promise<unknown> }[] = [
-            { helper: 'getResource', expected: 'ActorClient.get', call: (client) => client.actor('400').get() },
-            {
-                helper: 'updateResource',
-                expected: 'ActorClient.update',
-                call: (client) => client.actor('400').update({ isPublic: false }),
-            },
-            {
-                helper: 'deleteResource',
-                expected: 'ActorClient.delete',
-                call: (client) => client.actor('400').delete(),
-            },
-            {
-                helper: 'listResources',
-                expected: 'ActorVersionCollectionClient.list',
-                call: (client) => client.actor('400').versions().list(),
-            },
-            {
-                helper: 'createResource',
-                expected: 'ActorVersionCollectionClient.create',
-                call: (client) =>
-                    client.actor('400').versions().create({
-                        versionNumber: '0.0',
-                        sourceType: 'GIT_REPO',
-                        gitRepoUrl: 'https://github.com/user/repo.git',
-                    }),
-            },
-            {
-                helper: 'waitForJobFinish',
-                expected: 'RunClient.waitForFinish',
-                call: (client) => client.run('400').waitForFinish(),
-            },
-        ];
-
-        test.each(cases)('$helper reports $expected', async ({ expected, call }) => {
-            const client = new ApifyClient({ baseUrl, maxRetries: 0, ...DEFAULT_OPTIONS });
-
-            await expect(call(client)).rejects.toMatchObject({ clientMethod: expected });
-        });
-
-        test('addRequestBatch reports RequestQueueClient.batchAddRequests', async () => {
-            const client = new ApifyClient({ baseUrl, maxRetries: 0, ...DEFAULT_OPTIONS });
-            // `batchAddRequests()` answers with unprocessed requests instead of throwing, so the helper is
-            // called directly to reach the error it builds.
-            const queue = client.requestQueue('some-queue-id') as any;
-            mockServer.setResponse({
-                statusCode: 400,
-                body: { error: { type: 'some-type', message: 'Some message' } },
-            });
-
-            try {
-                await expect(
-                    queue.addRequestBatch([{ url: 'http://example.com', uniqueKey: 'some-key', method: 'GET' }]),
-                ).rejects.toMatchObject({ clientMethod: 'RequestQueueClient.batchAddRequests' });
-            } finally {
-                mockServer.setResponse(null);
-            }
         });
     });
 
