@@ -18,6 +18,12 @@ import { asArray, cast, getVersionData, isNode, isStream } from './utils';
 
 const { version } = getVersionData();
 
+async function readStreamToBuffer(stream: AsyncIterable<Buffer>): Promise<Buffer> {
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream) chunks.push(chunk);
+    return Buffer.concat(chunks);
+}
+
 const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 
 export class HttpClient {
@@ -216,6 +222,13 @@ export class HttpClient {
 
                 response = await this.axios.request(config);
                 if (this._isStatusOk(response.status)) return response;
+
+                // A failed request with `responseType: 'stream'` carries the API error body in the stream. Read
+                // it so that `ApifyApiError` can parse it like any other error body. A body that cannot be read
+                // leaves the error without a message, which beats losing the status code to a stream error.
+                if (isStream(response.data)) {
+                    response.data = await readStreamToBuffer(response.data).catch(() => undefined);
+                }
             } catch (err) {
                 return cast(this._handleRequestError(err as AxiosError, config, stopTrying));
             }

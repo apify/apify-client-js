@@ -32,7 +32,7 @@ const HANDLERS = {
             const context = maybeParseContextFromResourceId(resourceId);
             const delayMillis = context && context.delayMillis;
             setTimeout(() => {
-                res.send(payload);
+                res.status(responseStatusCode).send(payload);
             }, delayMillis || 0);
         };
     },
