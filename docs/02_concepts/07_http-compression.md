@@ -131,6 +131,6 @@ const client = new ApifyClient({ token: 'MY-APIFY-TOKEN', compression: new Ident
 | **CPU cost**                  | Moderate, depends on quality            | Low                                   |
 | **`Content-Encoding` header** | `br`                                    | `gzip`                                |
 | **Quality range**             | `0` to `11`                             | `1` to `9`                            |
-| **Default quality**           | `6`                                     | `9`                                   |
+| **Default quality**           | `6`                                     | `6`                                   |
 | **Enable via config**         | `compression: 'brotli'` (default)       | `compression: 'gzip'`                 |
 | **Best for**                  | Large payloads where bandwidth matters  | Low CPU cost, runtimes without brotli |

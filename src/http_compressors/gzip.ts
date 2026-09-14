@@ -9,8 +9,11 @@ const MIN_QUALITY = 1;
 /** Highest valid gzip quality, the slowest with the best compression. */
 const MAX_QUALITY = 9;
 
+/** zlib's own default. The levels above it roughly double the CPU cost for about a percent fewer bytes. */
+const DEFAULT_QUALITY = 6;
+
 const optionsSchema = z.strictObject({
-    quality: z.int().min(MIN_QUALITY).max(MAX_QUALITY).default(MAX_QUALITY),
+    quality: z.int().min(MIN_QUALITY).max(MAX_QUALITY).default(DEFAULT_QUALITY),
 });
 
 /**
@@ -22,7 +25,7 @@ const optionsSchema = z.strictObject({
  * ```javascript
  * import { ApifyClient, GzipHttpCompressor } from 'apify-client';
  *
- * const client = new ApifyClient({ token: 'my-token', compression: new GzipHttpCompressor({ quality: 6 }) });
+ * const client = new ApifyClient({ token: 'my-token', compression: new GzipHttpCompressor({ quality: 1 }) });
  * ```
  */
 export class GzipHttpCompressor extends HttpCompressor {
@@ -55,7 +58,7 @@ export class GzipHttpCompressor extends HttpCompressor {
 export interface GzipHttpCompressorOptions {
     /**
      * Compression level, from `1` (the fastest) to `9` (the best compression).
-     * @default 9
+     * @default 6
      */
     quality?: number;
 }
