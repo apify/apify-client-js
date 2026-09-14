@@ -1,5 +1,5 @@
 import type { AddressInfo } from 'node:net';
-import { brotliDecompressSync, gunzipSync } from 'node:zlib';
+import { brotliCompressSync, brotliDecompressSync, constants, gunzipSync, gzipSync } from 'node:zlib';
 
 import {
     ApifyClient,
@@ -16,6 +16,9 @@ import { mockServer } from './mock_server/server.js';
 
 const payload = Buffer.from('hello world');
 
+/** Long and repetitive, so the compression quality changes the output bytes. */
+const repetitivePayload = Buffer.from('lorem ipsum dolor sit amet '.repeat(500));
+
 describe('GzipHttpCompressor', () => {
     test('reports gzip as its content encoding', () => {
         expect(new GzipHttpCompressor().contentEncoding).toBe('gzip');
@@ -27,6 +30,19 @@ describe('GzipHttpCompressor', () => {
     ])('round-trips data at $name quality', async ({ quality }) => {
         const compressed = await new GzipHttpCompressor({ quality }).compress(payload);
         expect(gunzipSync(compressed)).toEqual(payload);
+    });
+
+    test('passes the quality through to zlib', async () => {
+        const fastest = await new GzipHttpCompressor({ quality: 1 }).compress(repetitivePayload);
+        const best = await new GzipHttpCompressor({ quality: 9 }).compress(repetitivePayload);
+
+        expect(fastest).toEqual(gzipSync(repetitivePayload, { level: 1 }));
+        expect(best).toEqual(gzipSync(repetitivePayload, { level: 9 }));
+    });
+
+    test('defaults to level 6', async () => {
+        const compressed = await new GzipHttpCompressor().compress(repetitivePayload);
+        expect(compressed).toEqual(gzipSync(repetitivePayload, { level: 6 }));
     });
 
     test.each([
@@ -50,6 +66,21 @@ describe('BrotliHttpCompressor', () => {
     ])('round-trips data at $name quality', async ({ quality }) => {
         const compressed = await new BrotliHttpCompressor({ quality }).compress(payload);
         expect(brotliDecompressSync(compressed)).toEqual(payload);
+    });
+
+    test('passes the quality through to zlib', async () => {
+        const brotli = (quality: number) =>
+            brotliCompressSync(repetitivePayload, { params: { [constants.BROTLI_PARAM_QUALITY]: quality } });
+
+        expect(await new BrotliHttpCompressor({ quality: 0 }).compress(repetitivePayload)).toEqual(brotli(0));
+        expect(await new BrotliHttpCompressor({ quality: 11 }).compress(repetitivePayload)).toEqual(brotli(11));
+    });
+
+    test('defaults to quality 6', async () => {
+        const compressed = await new BrotliHttpCompressor().compress(repetitivePayload);
+        expect(compressed).toEqual(
+            brotliCompressSync(repetitivePayload, { params: { [constants.BROTLI_PARAM_QUALITY]: 6 } }),
+        );
     });
 
     test.each([
@@ -153,6 +184,16 @@ describe('ApifyClient compression option', () => {
         const request = mockServer.getLastRequest();
         expect(request?.headers['content-encoding']).toBe('identity');
         expect(request?.body).toEqual(largeBody);
+    });
+
+    test('fails the request with the error the compressor throws', async () => {
+        const compressor = new IdentityCompressor();
+        const compress = vi.spyOn(compressor, 'compress').mockRejectedValue(new Error('compression failed'));
+        const client = new ApifyClient({ baseUrl, compression: compressor, maxRetries: 2 });
+
+        await expect(client.dataset('some-id').pushItems(largeBody)).rejects.toThrow('compression failed');
+        // Retries are on, so a single call is what proves a compressor error is not retried.
+        expect(compress).toHaveBeenCalledOnce();
     });
 
     test('compresses a body of exactly the threshold size', async () => {
