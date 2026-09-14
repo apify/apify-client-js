@@ -17,6 +17,9 @@ const SCHEMAS: Record<string, SchemaNode> = {
 
 const ref = (name: string): SchemaNode => ({ $ref: `#/components/schemas/${name}` });
 
+/** What `format: date-time` becomes. */
+const DATE_TIME = 'z.iso.datetime({ offset: true }).pipe(z.coerce.date())';
+
 describe('emitSchema', () => {
     describe('objects', () => {
         it('emits a loose object, so fields the specification does not list pass through', () => {
@@ -110,9 +113,9 @@ describe('emitSchema', () => {
             expect(() => emitSchema({ type: 'string', pattern: '(' })).toThrow(/not a valid regular expression/);
         });
 
-        it('emits date-time as z.date(), because the client parses those fields before validating', () => {
-            expect(emitSchema({ type: 'string', format: 'date-time' })).toBe('z.date()');
-            expect(emitSchema({ type: ['string', 'null'], format: 'date-time' })).toBe('z.date().nullable()');
+        it('emits date-time as an ISO datetime coerced into a Date, so the schema does the conversion', () => {
+            expect(emitSchema({ type: 'string', format: 'date-time' })).toBe(DATE_TIME);
+            expect(emitSchema({ type: ['string', 'null'], format: 'date-time' })).toBe(`${DATE_TIME}.nullable()`);
         });
 
         it('emits uri as a normalizing z.url(), so a URL comes back the way the Python client returns it', () => {

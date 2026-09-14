@@ -18,23 +18,6 @@ export type { ApifyApiErrorType } from './models.js';
 const CLIENT_METHOD_REGEX = /at( async)? ([A-Za-z]+(Collection)?Client)\.([A-Za-z]+) \(/;
 
 /**
- * A public method that returns the promise of a shared helper without awaiting it leaves only the helper on
- * the stack, so the helper is reported under the method the caller invoked.
- * @private
- */
-const PUBLIC_METHOD_BY_HELPER: Record<string, string> = {
-    getResource: 'get',
-    updateResource: 'update',
-    deleteResource: 'delete',
-    waitForJobFinish: 'waitForFinish',
-    listResources: 'list',
-    createResource: 'create',
-    getOrCreateResource: 'getOrCreate',
-    addRequestBatch: 'batchAddRequests',
-    addRequestBatchWithRetries: 'batchAddRequests',
-};
-
-/**
  * An `ApifyApiError` is thrown for successful HTTP requests that reach the API,
  * but the API responds with an error response. Typically, those are rate limit
  * errors and internal errors, which are automatically retried, or validation
@@ -52,8 +35,9 @@ export class ApifyApiError extends Error {
     override name: string;
 
     /**
-     * The invoked resource client and the method. Known issue: Sometimes it displays
-     * as `unknown` because it can't be parsed from a stack trace.
+     * The resource client and the method parsed from the stack trace, such as `ActorClient.getResource`. A public
+     * method that delegates to a shared helper of its class is reported under the helper. The value is `unknown`
+     * when the stack trace cannot be parsed.
      */
     clientMethod: string;
 
@@ -130,17 +114,17 @@ export class ApifyApiError extends Error {
         super(message);
 
         this.name = this.constructor.name;
-        this.clientMethod = this._extractClientAndMethodFromStack();
+        this.clientMethod = this.#extractClientAndMethodFromStack();
         this.statusCode = response.status;
         this.type = type;
         this.attempt = attempt;
         this.httpMethod = response.config?.method;
-        this.path = this._safelyParsePathFromResponse(response);
+        this.path = this.#safelyParsePathFromResponse(response);
 
         const stack = this.stack!;
 
         this.originalStack = stack.slice(stack.indexOf('\n'));
-        this.stack = this._createApiStack();
+        this.stack = this.#createApiStack();
 
         this.data = errorData;
     }
@@ -155,7 +139,7 @@ export class ApifyApiError extends Error {
         return new ErrorClass(response, attempt);
     }
 
-    private _safelyParsePathFromResponse(response: AxiosResponse) {
+    #safelyParsePathFromResponse(response: AxiosResponse) {
         const urlString = response.config?.url;
         let url;
         try {
@@ -166,10 +150,10 @@ export class ApifyApiError extends Error {
         return url.pathname + url.search;
     }
 
-    private _extractClientAndMethodFromStack() {
+    #extractClientAndMethodFromStack() {
         const match = this.stack!.match(CLIENT_METHOD_REGEX);
         if (!match) return 'unknown';
-        return `${match[2]}.${PUBLIC_METHOD_BY_HELPER[match[4]] ?? match[4]}`;
+        return `${match[2]}.${match[4]}`;
     }
 
     /**
@@ -186,7 +170,7 @@ export class ApifyApiError extends Error {
      *   httpMethod: post
      *   path: /v2/actor-tasks/user~my-task/runs
      */
-    private _createApiStack() {
+    #createApiStack() {
         const { name, ...props } = this;
 
         const stack = Object.entries(props)
