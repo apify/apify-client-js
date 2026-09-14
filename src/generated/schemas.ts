@@ -25,7 +25,7 @@ export const ActorStats = lazySchema(() => z.looseObject({
     totalUsers30Days: z.int().optional(),
     totalUsers90Days: z.int().optional(),
     totalMetamorphs: z.int().optional(),
-    lastRunStartedAt: z.date().optional(),
+    lastRunStartedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).optional(),
     actorReviewCount: z.int().optional(),
     actorReviewRating: z.number().optional(),
     bookmarkCount: z.int().optional(),
@@ -40,8 +40,8 @@ export const ActorStats = lazySchema(() => z.looseObject({
 
 export const ActorShort = lazySchema(() => z.looseObject({
     id: z.string(),
-    createdAt: z.date(),
-    modifiedAt: z.date(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     name: z.string(),
     username: z.string(),
     title: z.string().optional(),
@@ -155,10 +155,10 @@ export const CreateActorRequest = lazySchema(() => z.looseObject({
 
 export const CommonActorPricingInfo = lazySchema(() => z.looseObject({
     apifyMarginPercentage: z.number(),
-    createdAt: z.date(),
-    startedAt: z.date(),
-    notifiedAboutFutureChangeAt: z.date().nullable().optional(),
-    notifiedAboutChangeAt: z.date().nullable().optional(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    startedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    notifiedAboutFutureChangeAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
+    notifiedAboutChangeAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
     reasonForChange: z.string().nullable().optional(),
     isPriceChangeNotificationSuppressed: z.boolean().optional(),
     forceContainsSignificantPriceChange: z.boolean().optional(),
@@ -231,7 +231,7 @@ export const TaggedBuildInfo = lazySchema(() => z.looseObject({
     buildId: z.string().optional(),
     buildNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])(\.[1-9][0-9]{0,4})$/).nullable().optional(),
     buildNumberInt: z.int().optional(),
-    finishedAt: z.date().nullable().optional(),
+    finishedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
 }));
 
 /** A dictionary mapping build tag names (e.g., "latest", "beta") to their build information. */
@@ -249,8 +249,8 @@ export const Actor = lazySchema(() => z.looseObject({
     restartOnError: z.boolean().optional(),
     isPublic: z.boolean(),
     actorPermissionLevel: ActorPermissionLevel().optional(),
-    createdAt: z.date(),
-    modifiedAt: z.date(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     stats: ActorStats(),
     versions: z.array(Version()),
     pricingInfos: z.array(ActorRunPricingInfo()).optional(),
@@ -357,8 +357,8 @@ export const WebhookDispatchStatus = lazySchema(() => z.enum(["ACTIVE", "SUCCEED
 
 export const ExampleWebhookDispatch = lazySchema(() => z.looseObject({
     status: WebhookDispatchStatus(),
-    finishedAt: z.date().nullable().optional(),
-    removedAt: z.date().nullable().optional(),
+    finishedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
+    removedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
 }));
 
 export const WebhookStats = lazySchema(() => z.looseObject({
@@ -367,8 +367,8 @@ export const WebhookStats = lazySchema(() => z.looseObject({
 
 export const WebhookShort = lazySchema(() => z.looseObject({
     id: z.string(),
-    createdAt: z.date(),
-    modifiedAt: z.date(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     userId: z.string(),
     isAdHoc: z.boolean().nullable().optional(),
     isApifyIntegration: z.boolean().optional(),
@@ -408,8 +408,8 @@ export const BuildShort = lazySchema(() => z.looseObject({
     actId: z.string().optional(),
     userId: z.string().optional(),
     status: ActorJobStatus(),
-    startedAt: z.date(),
-    finishedAt: z.date().nullable().optional(),
+    startedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    finishedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
     usageTotalUsd: z.number(),
     buildNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])(\.[1-9][0-9]{0,4})$/),
     buildNumberInt: z.int().optional(),
@@ -467,8 +467,8 @@ export const Build = lazySchema(() => z.looseObject({
     id: z.string(),
     actId: z.string(),
     userId: z.string(),
-    startedAt: z.date(),
-    finishedAt: z.date().nullable().optional(),
+    startedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    finishedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
     status: ActorJobStatus(),
     meta: BuildsMeta(),
     stats: BuildStats().nullable().optional(),
@@ -499,7 +499,7 @@ export const RunMeta = lazySchema(() => z.looseObject({
     clientIp: z.string().nullable().optional(),
     userAgent: z.string().nullable().optional(),
     scheduleId: z.string().nullable().optional(),
-    scheduledAt: z.date().nullable().optional(),
+    scheduledAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
 }));
 
 export const RunShort = lazySchema(() => z.looseObject({
@@ -508,8 +508,8 @@ export const RunShort = lazySchema(() => z.looseObject({
     userId: z.string().optional(),
     actorTaskId: z.string().nullable().optional(),
     status: ActorJobStatus(),
-    startedAt: z.date(),
-    finishedAt: z.date().nullable().optional(),
+    startedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    finishedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
     buildId: z.string(),
     buildNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])(\.[1-9][0-9]{0,4})$/).optional(),
     buildNumberInt: z.int().optional(),
@@ -609,7 +609,7 @@ export const RunUsageUsd = lazySchema(() => z.looseObject({
 
 /** Information about a metamorph event that occurred during the run. */
 export const Metamorph = lazySchema(() => z.looseObject({
-    createdAt: z.date(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     actorId: z.string(),
     buildId: z.string(),
     inputKey: z.string().nullable().optional(),
@@ -621,8 +621,8 @@ export const Run = lazySchema(() => z.looseObject({
     actId: z.string(),
     userId: z.string(),
     actorTaskId: z.string().nullable().optional(),
-    startedAt: z.date(),
-    finishedAt: z.date().nullable().optional(),
+    startedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    finishedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
     status: ActorJobStatus(),
     statusMessage: z.string().nullable().optional(),
     isStatusMessageTerminal: z.boolean().nullable().optional(),
@@ -674,9 +674,9 @@ export const Dataset = lazySchema(() => z.looseObject({
     id: z.string(),
     name: z.string().nullable().optional(),
     userId: z.string(),
-    createdAt: z.date(),
-    modifiedAt: z.date(),
-    accessedAt: z.date(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    accessedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     itemCount: z.int().min(0),
     cleanItemCount: z.int().min(0),
     actId: z.string().nullable().optional(),
@@ -762,9 +762,9 @@ export const KeyValueStore = lazySchema(() => z.looseObject({
     name: z.string().nullable().optional(),
     userId: z.string().nullable().optional(),
     username: z.string().nullable().optional(),
-    createdAt: z.date(),
-    modifiedAt: z.date(),
-    accessedAt: z.date(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    accessedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     actId: z.string().nullable().optional(),
     actRunId: z.string().nullable().optional(),
     consoleUrl: z.url({ normalize: true }).optional(),
@@ -824,13 +824,13 @@ export const QueueId = lazySchema(() => z.string());
 export const QueueUserId = lazySchema(() => z.string());
 
 /** The timestamp when the request queue was created. */
-export const QueueCreatedAt = lazySchema(() => z.date());
+export const QueueCreatedAt = lazySchema(() => z.iso.datetime({ offset: true }).pipe(z.coerce.date()));
 
 /** The timestamp when the request queue was last modified. Modifications include adding, updating, or removing requests, as well as locking or unlocking requests in the request queue. */
-export const QueueModifiedAt = lazySchema(() => z.date());
+export const QueueModifiedAt = lazySchema(() => z.iso.datetime({ offset: true }).pipe(z.coerce.date()));
 
 /** The timestamp when the request queue was last accessed. */
-export const QueueAccessedAt = lazySchema(() => z.date());
+export const QueueAccessedAt = lazySchema(() => z.iso.datetime({ offset: true }).pipe(z.coerce.date()));
 
 /** The total number of requests in the request queue. */
 export const TotalRequestCount = lazySchema(() => z.int().min(0));
@@ -908,7 +908,7 @@ export const RequestBase = lazySchema(() => z.looseObject({
     userData: RequestUserData().optional(),
     noRetry: z.boolean().nullable().optional(),
     errorMessages: z.array(z.string()).nullable().optional(),
-    handledAt: z.date().nullable().optional(),
+    handledAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
 }));
 
 /** A unique identifier assigned to the request. */
@@ -1043,7 +1043,7 @@ export const UpdateRequestResponse = lazySchema(() => z.looseObject({
 }));
 
 /** The timestamp when the lock on this request expires. */
-export const LockExpiresAt = lazySchema(() => z.date());
+export const LockExpiresAt = lazySchema(() => z.iso.datetime({ offset: true }).pipe(z.coerce.date()));
 
 /** Information about a request lock. */
 export const RequestLockInfo = lazySchema(() => z.looseObject({
@@ -1118,8 +1118,8 @@ export const TaskShort = lazySchema(() => z.looseObject({
     name: z.string(),
     username: z.string().nullable().optional(),
     actUsername: z.string().nullable().optional(),
-    createdAt: z.date(),
-    modifiedAt: z.date(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     stats: TaskStats().nullable().optional(),
 }));
 
@@ -1152,7 +1152,7 @@ export const TaskInput = lazySchema(() => z.record(z.string(), z.unknown()));
  * `publishedAt` is set and unpublished when it is `null`.
  */
 export const TaskPublicConfig = lazySchema(() => z.looseObject({
-    publishedAt: z.date().nullable().optional(),
+    publishedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
     seoTitle: z.string().max(60).nullable().optional(),
     seoDescription: z.string().max(160).nullable().optional(),
     inputSchemaFields: z.array(z.string()).nullable().optional(),
@@ -1176,9 +1176,9 @@ export const Task = lazySchema(() => z.looseObject({
     actId: z.string(),
     name: z.string(),
     username: z.string().nullable().optional(),
-    createdAt: z.date(),
-    modifiedAt: z.date(),
-    removedAt: z.date().nullable().optional(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    removedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
     stats: TaskStats().nullable().optional(),
     options: TaskOptions().nullable().optional(),
     input: z.union([TaskInput(), z.array(TaskInput())]).nullable().optional(),
@@ -1206,8 +1206,8 @@ export const UpdateTaskRequest = lazySchema(() => z.looseObject({
 
 export const Webhook = lazySchema(() => z.looseObject({
     id: z.string(),
-    createdAt: z.date(),
-    modifiedAt: z.date(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     userId: z.string(),
     isAdHoc: z.boolean().nullable().optional(),
     shouldInterpolateStrings: z.boolean().nullable().optional(),
@@ -1250,9 +1250,9 @@ export const DatasetListItem = lazySchema(() => z.looseObject({
     id: z.string(),
     name: z.string(),
     userId: z.string(),
-    createdAt: z.date(),
-    modifiedAt: z.date(),
-    accessedAt: z.date(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    accessedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     itemCount: z.int(),
     cleanItemCount: z.int(),
     actId: z.string().nullable().optional(),
@@ -1281,7 +1281,7 @@ export const RequestQueueShort = lazySchema(() => z.looseObject({
     createdAt: QueueCreatedAt(),
     modifiedAt: QueueModifiedAt(),
     accessedAt: QueueAccessedAt(),
-    expireAt: z.date().optional(),
+    expireAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).optional(),
     totalRequestCount: TotalRequestCount(),
     handledRequestCount: HandledRequestCount(),
     pendingRequestCount: PendingRequestCount(),
@@ -1347,7 +1347,7 @@ export const WebhookDispatch = lazySchema(() => z.looseObject({
     id: z.string(),
     userId: z.string(),
     webhookId: z.string(),
-    createdAt: z.date(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     status: WebhookDispatchStatus(),
     eventType: WebhookEventType(),
     eventData: z.looseObject({
@@ -1358,8 +1358,8 @@ export const WebhookDispatch = lazySchema(() => z.looseObject({
     }).nullable().optional(),
     webhook: WebhookDispatchWebhookSummary().nullable().optional(),
     calls: z.array(z.looseObject({
-        startedAt: z.date().nullable().optional(),
-        finishedAt: z.date().nullable().optional(),
+        startedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
+        finishedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
         errorMessage: z.string().nullable().optional(),
         responseStatus: z.int().nullable().optional(),
         responseBody: z.string().nullable().optional(),
@@ -1390,10 +1390,10 @@ export const ScheduleBase = lazySchema(() => z.looseObject({
     timezone: z.string(),
     isEnabled: z.boolean(),
     isExclusive: z.boolean(),
-    createdAt: z.date(),
-    modifiedAt: z.date(),
-    nextRunAt: z.date().nullable().optional(),
-    lastRunAt: z.date().nullable().optional(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    nextRunAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
+    lastRunAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
 }));
 
 export const ScheduleActionShortRunActor = lazySchema(() => z.looseObject({
@@ -1486,7 +1486,7 @@ export const ScheduleResponse = lazySchema(() => z.looseObject({
 export const ScheduleInvoked = lazySchema(() => z.looseObject({
     message: z.string(),
     level: z.string(),
-    createdAt: z.date(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
 }));
 
 export const ScheduleLogResponse = lazySchema(() => z.looseObject({
@@ -1496,10 +1496,10 @@ export const ScheduleLogResponse = lazySchema(() => z.looseObject({
 export const CurrentPricingInfo = lazySchema(() => z.looseObject({
     pricingModel: z.string(),
     apifyMarginPercentage: z.number().optional(),
-    createdAt: z.date().optional(),
-    startedAt: z.date().optional(),
-    notifiedAboutChangeAt: z.date().nullable().optional(),
-    notifiedAboutFutureChangeAt: z.date().nullable().optional(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).optional(),
+    startedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).optional(),
+    notifiedAboutChangeAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
+    notifiedAboutFutureChangeAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
     isPriceChangeNotificationSuppressed: z.boolean().optional(),
     forceContainsSignificantPriceChange: z.boolean().optional(),
     isPPEPlatformUsagePaidByUser: z.boolean().optional(),
@@ -1610,7 +1610,7 @@ export const EffectivePlatformFeature = lazySchema(() => z.looseObject({
     disabledReason: z.string().nullable(),
     disabledReasonType: z.string().nullable(),
     isTrial: z.boolean(),
-    trialExpirationAt: z.date().nullable(),
+    trialExpirationAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable(),
 }));
 
 export const EffectivePlatformFeatures = lazySchema(() => z.looseObject({
@@ -1634,7 +1634,7 @@ export const UserPrivateInfo = lazySchema(() => z.looseObject({
     proxy: Proxy().optional(),
     plan: Plan().optional(),
     effectivePlatformFeatures: EffectivePlatformFeatures().optional(),
-    createdAt: z.date().optional(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).optional(),
     isPaying: z.boolean().optional(),
 }));
 
@@ -1643,8 +1643,8 @@ export const PrivateUserDataResponse = lazySchema(() => z.looseObject({
 }));
 
 export const UsageCycle = lazySchema(() => z.looseObject({
-    startAt: z.date(),
-    endAt: z.date(),
+    startAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    endAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
 }));
 
 export const PriceTiers = lazySchema(() => z.looseObject({
@@ -1670,7 +1670,7 @@ export const MonthlyServiceUsage = lazySchema(() => z.record(z.string(), UsageIt
 export const ServiceUsage = lazySchema(() => z.record(z.string(), UsageItem()));
 
 export const DailyServiceUsages = lazySchema(() => z.looseObject({
-    date: z.date(),
+    date: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     serviceUsage: ServiceUsage(),
     totalUsageCreditsUsd: z.number(),
 }));

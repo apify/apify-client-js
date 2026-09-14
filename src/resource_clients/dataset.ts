@@ -230,7 +230,7 @@ export class DatasetClient<
                 timeoutSecs,
             });
 
-            return this.createPaginationList(response, datasetListOptions.desc ?? false);
+            return this.#createPaginationList(response, datasetListOptions.desc ?? false);
         };
 
         return this.listPaginatedFromCallback(fetchItems, listOptions);
@@ -435,7 +435,7 @@ export class DatasetClient<
         return createdItemsPublicUrl.toString();
     }
 
-    private createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
+    #createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
         const descHeader = response.headers['x-apify-pagination-desc'];
         const page: PaginatedList<Data> = {
             items: response.data,

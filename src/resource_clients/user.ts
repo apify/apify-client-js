@@ -98,8 +98,7 @@ export class UserClient extends ResourceClient {
             params: this.buildParams(),
             timeoutSecs,
         });
-        // `dailyServiceUsages[].date` does not end in `At`, so it has to be named for `parseDateFields`.
-        return parseResponse(response, schemas.MonthlyUsage(), (key) => key === 'date');
+        return parseResponse(response, schemas.MonthlyUsage());
     }
 
     /**

@@ -45,7 +45,7 @@ export class AxiosHttpClient extends HttpClient {
     /** Keep-alive agent for HTTPS. The same instance as {@link httpAgent}. */
     httpsAgent?: https.Agent;
 
-    private nodeInitPromise?: Promise<void>;
+    #nodeInitPromise?: Promise<void>;
 
     constructor(options: AxiosHttpClientOptions = {}) {
         super(options);
@@ -104,7 +104,7 @@ export class AxiosHttpClient extends HttpClient {
      */
     override async close(): Promise<void> {
         // A failed initialization left nothing to release, and its error belongs to the request that hit it.
-        await this.nodeInitPromise?.catch(() => {});
+        await this.#nodeInitPromise?.catch(() => {});
         this.httpAgent?.destroy();
         this.httpsAgent?.destroy();
     }
@@ -114,7 +114,7 @@ export class AxiosHttpClient extends HttpClient {
      * redirects, since the part of it already sent could not be replayed.
      */
     override async sendRequest(request: HttpRequest): Promise<HttpResponse> {
-        await this.ensureNodeInit();
+        await this.#ensureNodeInit();
 
         const { method, url, headers, body, timeoutMillis, stream } = request;
         const response = await this.axios.request({
@@ -135,15 +135,15 @@ export class AxiosHttpClient extends HttpClient {
         };
     }
 
-    private async ensureNodeInit(): Promise<void> {
+    async #ensureNodeInit(): Promise<void> {
         if (!isNode()) return;
 
-        this.nodeInitPromise ??= this.initNode();
+        this.#nodeInitPromise ??= this.#initNode();
 
-        return this.nodeInitPromise;
+        return this.#nodeInitPromise;
     }
 
-    private async initNode(): Promise<void> {
+    async #initNode(): Promise<void> {
         const { ProxyAgent } = await import('proxy-agent');
 
         // Sockets are pooled and reused, which is what makes a burst of API calls cheap.

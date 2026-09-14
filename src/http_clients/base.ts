@@ -205,7 +205,7 @@ export interface HttpClientOptions {
  *
  * Overriding {@link call} itself is also supported and bypasses the transport hooks entirely. Such a client has
  * to send the default headers from `defaultHeaders` with every request, otherwise the `Authorization` header never
- * reaches the API. The protected helpers `_prepareRequest()`, `_buildUrl()` and `_computeTimeoutMillis()` stay
+ * reaches the API. The protected helpers `prepareRequest()`, `buildUrl()` and `computeTimeoutMillis()` stay
  * available to it.
  *
  * @example
@@ -361,11 +361,11 @@ export abstract class HttpClient {
     async call<T = any>(config: ApifyRequestConfig): Promise<ApifyResponse<T>> {
         this.stats.calls++;
 
-        const { headers, body } = await this._prepareRequest(config);
-        const url = this._buildUrl(config.url, config.params);
+        const { headers, body } = await this.prepareRequest(config);
+        const url = this.buildUrl(config.url, config.params);
 
-        return this._retryWithExpBackoff(async (stopRetrying, attempt) =>
-            this._makeRequest<T>({ config, url, headers, body, attempt, stopRetrying }),
+        return this.#retryWithExpBackoff(async (stopRetrying, attempt) =>
+            this.#makeRequest<T>({ config, url, headers, body, attempt, stopRetrying }),
         );
     }
 
@@ -378,7 +378,7 @@ export abstract class HttpClient {
      * set, the body is too small, or its content type says the payload is already compressed. A caller-supplied
      * `Content-Encoding` is forwarded as it is, which is how a pre-encoded body is uploaded.
      */
-    protected async _prepareRequest(
+    protected async prepareRequest(
         config: ApifyRequestConfig,
     ): Promise<{ headers: Record<string, string>; body: HttpRequestBody | undefined }> {
         let headers = mergeHeaders(this.defaultHeaders, config.headers);
@@ -403,7 +403,7 @@ export abstract class HttpClient {
      * Appends the query parameters to the URL. `undefined` values are dropped, booleans are sent as `1` and `0`,
      * `Date` values as ISO 8601 strings and arrays comma-separated.
      */
-    protected _buildUrl(url: string, params?: Record<string, unknown>): string {
+    protected buildUrl(url: string, params?: Record<string, unknown>): string {
         const pairs: [string, string][] = [];
         for (const [key, value] of Object.entries(params ?? {})) {
             if (value === undefined) continue;
@@ -426,7 +426,7 @@ export abstract class HttpClient {
      * @param timeoutSecs - The request's timeout. Defaults to the `medium` tier.
      * @param attempt - Current attempt number, starting at 1.
      */
-    protected _computeTimeoutMillis(timeoutSecs: Timeout = 'medium', attempt: number): number {
+    protected computeTimeoutMillis(timeoutSecs: Timeout = 'medium', attempt: number): number {
         if (timeoutSecs === 'noTimeout') return 0;
 
         const requestedMillis = typeof timeoutSecs === 'number' ? timeoutSecs * 1000 : this.timeoutMillis[timeoutSecs];
@@ -447,7 +447,7 @@ export abstract class HttpClient {
      * Retries `fn` with randomized exponential backoff until it resolves, `stopRetrying()` was called before it
      * threw, or the retries are exhausted. The last attempt's error propagates as it is.
      */
-    private async _retryWithExpBackoff<T>(fn: (stopRetrying: () => void, attempt: number) => Promise<T>): Promise<T> {
+    async #retryWithExpBackoff<T>(fn: (stopRetrying: () => void, attempt: number) => Promise<T>): Promise<T> {
         let retry = true;
         const stopRetrying = () => {
             retry = false;
@@ -458,7 +458,7 @@ export abstract class HttpClient {
                 return await fn(stopRetrying, attempt);
             } catch (err) {
                 if (!retry) throw err;
-                this._onRequestRetry(err, attempt);
+                this.#onRequestRetry(err, attempt);
             }
 
             // The delay doubles with every attempt and is spread over a random factor between 1 and 2, so that
@@ -477,7 +477,7 @@ export abstract class HttpClient {
      * Throws for anything that is not a success, and flags the failure as final through `stopRetrying()` when a
      * retry could not fix it.
      */
-    private async _makeRequest<T>(options: {
+    async #makeRequest<T>(options: {
         config: ApifyRequestConfig;
         url: string;
         headers: Record<string, string>;
@@ -497,21 +497,21 @@ export abstract class HttpClient {
                 url,
                 headers,
                 body,
-                timeoutMillis: this._computeTimeoutMillis(config.timeoutSecs, attempt),
+                timeoutMillis: this.computeTimeoutMillis(config.timeoutSecs, attempt),
                 stream: config.responseType === 'stream',
             });
         } catch (err) {
-            this._handleRequestError(err, config, stopRetrying);
+            this.#handleRequestError(err, config, stopRetrying);
             throw err;
         }
 
         let data: unknown;
         try {
-            data = this._parseResponseBody(response, config);
+            data = this.#parseResponseBody(response, config);
         } catch (err) {
             // A body that does not parse is usually a connection dropped mid-response, which a retry fixes.
             if (requestIsStream) {
-                this._informAboutStreamNoRetry();
+                this.#informAboutStreamNoRetry();
                 stopRetrying();
             }
             throw err;
@@ -530,10 +530,10 @@ export abstract class HttpClient {
         }
 
         const apiError = ApifyApiError.fromResponse(apifyResponse, attempt);
-        if (!this._isStatusCodeRetryable(response.status)) {
+        if (!this.#isStatusCodeRetryable(response.status)) {
             stopRetrying();
         } else if (requestIsStream) {
-            this._informAboutStreamNoRetry();
+            this.#informAboutStreamNoRetry();
             stopRetrying();
         }
         throw apiError;
@@ -544,7 +544,7 @@ export abstract class HttpClient {
      *
      * @throws {InvalidResponseBodyError} When the body does not parse as its content type claims.
      */
-    private _parseResponseBody(response: HttpResponse, config: ApifyRequestConfig): unknown {
+    #parseResponseBody(response: HttpResponse, config: ApifyRequestConfig): unknown {
         const { body } = response;
         if (config.responseType === 'stream' || config.responseType === 'buffer') return body;
         if (body === undefined || isStream(body)) return body;
@@ -561,7 +561,7 @@ export abstract class HttpClient {
      * Decides whether a transport error ends the call. Timeouts the request opted out of retrying and errors the
      * transport does not classify as retryable are final, and so is any error on a request with a stream body.
      */
-    private _handleRequestError(err: unknown, config: ApifyRequestConfig, stopRetrying: () => void): void {
+    #handleRequestError(err: unknown, config: ApifyRequestConfig, stopRetrying: () => void): void {
         if (config.doNotRetryTimeouts && this.isTimeoutError(err)) {
             stopRetrying();
             return;
@@ -573,7 +573,7 @@ export abstract class HttpClient {
         }
 
         if (isStream(config.data)) {
-            this._informAboutStreamNoRetry();
+            this.#informAboutStreamNoRetry();
             stopRetrying();
         }
     }
@@ -582,11 +582,11 @@ export abstract class HttpClient {
      * Rate limits (429) and server errors (500+) are retried. Anything else in 300-499 is a redirect the client
      * cannot follow or invalid input, which repeating the request cannot fix.
      */
-    private _isStatusCodeRetryable(statusCode: number): boolean {
+    #isStatusCodeRetryable(statusCode: number): boolean {
         return statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE || statusCode >= 500;
     }
 
-    private _informAboutStreamNoRetry(): void {
+    #informAboutStreamNoRetry(): void {
         this.logger.warningOnce(
             'Request body was a stream - retrying will not work, as part of it was already consumed.',
         );
@@ -595,7 +595,7 @@ export abstract class HttpClient {
         );
     }
 
-    private _onRequestRetry(error: unknown, attempt: number): void {
+    #onRequestRetry(error: unknown, attempt: number): void {
         if (attempt === Math.round(this.maxRetries / 2)) {
             this.logger.warning(
                 `API request failed ${attempt} times. Max attempts: ${this.maxRetries + 1}.\nCause:${(error as Error).stack}`,

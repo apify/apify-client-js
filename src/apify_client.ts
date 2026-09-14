@@ -207,7 +207,7 @@ export class ApifyClient {
         this.stats = httpClient.stats;
     }
 
-    private subClientOptions() {
+    #subClientOptions() {
         return {
             baseUrl: this.baseUrl,
             publicBaseUrl: this.publicBaseUrl,
@@ -225,7 +225,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/acts-get
      */
     actors(): ActorCollectionClient {
-        return new ActorCollectionClient(this.subClientOptions());
+        return new ActorCollectionClient(this.#subClientOptions());
     }
 
     /**
@@ -249,7 +249,7 @@ export class ApifyClient {
 
         return new ActorClient({
             id,
-            ...this.subClientOptions(),
+            ...this.#subClientOptions(),
         });
     }
 
@@ -262,7 +262,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/actor-builds-get
      */
     builds(): BuildCollectionClient {
-        return new BuildCollectionClient(this.subClientOptions());
+        return new BuildCollectionClient(this.#subClientOptions());
     }
 
     /**
@@ -279,7 +279,7 @@ export class ApifyClient {
 
         return new BuildClient({
             id,
-            ...this.subClientOptions(),
+            ...this.#subClientOptions(),
         });
     }
 
@@ -292,7 +292,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/datasets-get
      */
     datasets(): DatasetCollectionClient {
-        return new DatasetCollectionClient(this.subClientOptions());
+        return new DatasetCollectionClient(this.#subClientOptions());
     }
 
     /**
@@ -325,7 +325,7 @@ export class ApifyClient {
 
         return new DatasetClient({
             id,
-            ...this.subClientOptions(),
+            ...this.#subClientOptions(),
         });
     }
 
@@ -338,7 +338,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/key-value-stores-get
      */
     keyValueStores(): KeyValueStoreCollectionClient {
-        return new KeyValueStoreCollectionClient(this.subClientOptions());
+        return new KeyValueStoreCollectionClient(this.#subClientOptions());
     }
 
     /**
@@ -365,7 +365,7 @@ export class ApifyClient {
 
         return new KeyValueStoreClient({
             id,
-            ...this.subClientOptions(),
+            ...this.#subClientOptions(),
         });
     }
 
@@ -381,7 +381,7 @@ export class ApifyClient {
 
         return new LogClient({
             id: buildOrRunId,
-            ...this.subClientOptions(),
+            ...this.#subClientOptions(),
         });
     }
 
@@ -394,7 +394,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/request-queues-get
      */
     requestQueues(): RequestQueueCollectionClient {
-        return new RequestQueueCollectionClient(this.subClientOptions());
+        return new RequestQueueCollectionClient(this.#subClientOptions());
     }
 
     /**
@@ -424,7 +424,7 @@ export class ApifyClient {
 
         const apiClientOptions = {
             id,
-            ...this.subClientOptions(),
+            ...this.#subClientOptions(),
         };
         return new RequestQueueClient(apiClientOptions, parsed);
     }
@@ -439,7 +439,7 @@ export class ApifyClient {
      */
     runs(): RunCollectionClient {
         return new RunCollectionClient({
-            ...this.subClientOptions(),
+            ...this.#subClientOptions(),
             resourcePath: 'actor-runs',
         });
     }
@@ -468,7 +468,7 @@ export class ApifyClient {
 
         return new RunClient({
             id,
-            ...this.subClientOptions(),
+            ...this.#subClientOptions(),
         });
     }
 
@@ -481,7 +481,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/actor-tasks-get
      */
     tasks(): TaskCollectionClient {
-        return new TaskCollectionClient(this.subClientOptions());
+        return new TaskCollectionClient(this.#subClientOptions());
     }
 
     /**
@@ -504,7 +504,7 @@ export class ApifyClient {
 
         return new TaskClient({
             id,
-            ...this.subClientOptions(),
+            ...this.#subClientOptions(),
         });
     }
 
@@ -517,7 +517,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/schedules-get
      */
     schedules(): ScheduleCollectionClient {
-        return new ScheduleCollectionClient(this.subClientOptions());
+        return new ScheduleCollectionClient(this.#subClientOptions());
     }
 
     /**
@@ -534,7 +534,7 @@ export class ApifyClient {
 
         return new ScheduleClient({
             id,
-            ...this.subClientOptions(),
+            ...this.#subClientOptions(),
         });
     }
 
@@ -552,7 +552,7 @@ export class ApifyClient {
 
         return new UserClient({
             id,
-            ...this.subClientOptions(),
+            ...this.#subClientOptions(),
         });
     }
 
@@ -565,7 +565,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/webhooks-get
      */
     webhooks(): WebhookCollectionClient {
-        return new WebhookCollectionClient(this.subClientOptions());
+        return new WebhookCollectionClient(this.#subClientOptions());
     }
 
     /**
@@ -582,7 +582,7 @@ export class ApifyClient {
 
         return new WebhookClient({
             id,
-            ...this.subClientOptions(),
+            ...this.#subClientOptions(),
         });
     }
 
@@ -595,7 +595,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/webhook-dispatches-get
      */
     webhookDispatches(): WebhookDispatchCollectionClient {
-        return new WebhookDispatchCollectionClient(this.subClientOptions());
+        return new WebhookDispatchCollectionClient(this.#subClientOptions());
     }
 
     /**
@@ -610,7 +610,7 @@ export class ApifyClient {
 
         return new WebhookDispatchClient({
             id,
-            ...this.subClientOptions(),
+            ...this.#subClientOptions(),
         });
     }
 
@@ -623,7 +623,7 @@ export class ApifyClient {
      * @see https://docs.apify.com/api/v2/store-get
      */
     store(): StoreCollectionClient {
-        return new StoreCollectionClient(this.subClientOptions());
+        return new StoreCollectionClient(this.#subClientOptions());
     }
 
     /**

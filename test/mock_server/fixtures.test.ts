@@ -1,9 +1,7 @@
-import type { JsonValue } from 'type-fest';
 import { describe, expect, it } from 'vitest';
 import type { z } from 'zod';
 
 import * as schemas from '../../src/schemas.js';
-import { parseDateFields } from '../../src/utils.js';
 import * as fixtures from './fixtures.js';
 
 /** Which schema each fixture stands for -- the one the resource client validates that response against. */
@@ -51,10 +49,7 @@ const FIXTURE_SCHEMAS: Record<keyof typeof fixtures, keyof typeof schemas> = {
 
 describe('mock server fixtures', () => {
     it.each(Object.entries(FIXTURE_SCHEMAS))('%s matches the %s schema', (fixture, schema) => {
-        // The clients validate after `parseDateFields`, so the fixture is checked the same way -- including the
-        // `date` field that `UserClient.monthlyUsage()` names for it.
-        const shouldParseField = fixture === 'monthlyUsage' ? (key: string) => key === 'date' : null;
-        const value = parseDateFields((fixtures as unknown as Record<string, JsonValue>)[fixture], shouldParseField);
+        const value = (fixtures as Record<string, unknown>)[fixture];
         const result = (schemas as Record<string, () => z.ZodType>)[schema]().safeParse(value);
 
         expect(result.error?.issues).toBeUndefined();

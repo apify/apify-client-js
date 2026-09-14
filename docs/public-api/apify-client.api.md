@@ -2879,17 +2879,17 @@ export interface GetStreamedLogOptions extends TimeoutOptions {
 // @public
 export abstract class HttpClient {
     constructor(options?: HttpClientOptions);
-    protected _buildUrl(url: string, params?: Record<string, unknown>): string;
+    protected buildUrl(url: string, params?: Record<string, unknown>): string;
     call<T = any>(config: ApifyRequestConfig): Promise<ApifyResponse<T>>;
     close(): Promise<void>;
-    protected _computeTimeoutMillis(timeoutSecs: Timeout | undefined, attempt: number): number;
+    protected computeTimeoutMillis(timeoutSecs: Timeout | undefined, attempt: number): number;
     protected readonly defaultHeaders: Record<string, string>;
     isRetryableTransportError(_error: unknown): boolean;
     isTimeoutError(error: unknown): boolean;
     logger: Log;
     maxRetries: number;
     minDelayBetweenRetriesMillis: number;
-    protected _prepareRequest(config: ApifyRequestConfig): Promise<{
+    protected prepareRequest(config: ApifyRequestConfig): Promise<{
         headers: Record<string, string>;
         body: HttpRequestBody | undefined;
     }>;
@@ -3529,8 +3529,6 @@ export type RequestQueueRequestsAsyncIterable<T> = AsyncIterable<T>;
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
 interface RequestQueueSpecGaps {
-    // (undocumented)
-    expireAt?: Date;
     // (undocumented)
     title?: string;
     // (undocumented)
