@@ -11,8 +11,9 @@ import { APIFY_ENV_VARS } from '@apify/consts';
 import type { Log } from '@apify/log';
 
 import { ApifyApiError } from './apify_api_error.js';
+import type { HttpCompressor } from './http_compressors/base.js';
 import type { RequestInterceptorFunction } from './interceptors.js';
-import { InvalidResponseBodyError, requestInterceptors, responseInterceptors } from './interceptors.js';
+import { createRequestInterceptors, InvalidResponseBodyError, responseInterceptors } from './interceptors.js';
 import type { Statistics } from './statistics.js';
 import type { Timeout, TimeoutTier } from './timeouts.js';
 import { asArray, cast, getVersionData, isNode, isStream } from './utils.js';
@@ -29,6 +30,9 @@ export class HttpClient {
     minDelayBetweenRetriesMillis: number;
 
     userProvidedRequestInterceptors: RequestInterceptorFunction[];
+
+    /** Compressor applied to request bodies that are worth compressing. */
+    httpCompressor: HttpCompressor;
 
     logger: Log;
 
@@ -56,6 +60,7 @@ export class HttpClient {
         this.maxRetries = options.maxRetries;
         this.minDelayBetweenRetriesMillis = options.minDelayBetweenRetriesMillis;
         this.userProvidedRequestInterceptors = options.requestInterceptors;
+        this.httpCompressor = options.httpCompressor;
         this.timeoutMillis = {
             short: options.timeoutShortSecs * 1000,
             medium: options.timeoutMediumSecs * 1000,
@@ -111,7 +116,7 @@ export class HttpClient {
             this.axios.defaults.headers.Authorization = `Bearer ${token}`;
         }
 
-        requestInterceptors.forEach((i) => this.axios.interceptors.request.use(i as any));
+        createRequestInterceptors(this.httpCompressor).forEach((i) => this.axios.interceptors.request.use(i as any));
         this.userProvidedRequestInterceptors.forEach((i) => this.axios.interceptors.request.use(i as any));
         responseInterceptors.forEach((i) => this.axios.interceptors.response.use(i as any));
     }
@@ -377,6 +382,7 @@ export interface HttpClientOptions {
     maxRetries: number;
     minDelayBetweenRetriesMillis: number;
     requestInterceptors: RequestInterceptorFunction[];
+    httpCompressor: HttpCompressor;
     timeoutShortSecs: number;
     timeoutMediumSecs: number;
     timeoutLongSecs: number;

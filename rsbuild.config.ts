@@ -6,7 +6,7 @@ import { version } from './package.json';
 const MAX_BUNDLE_BYTES = 360 * 1024;
 
 const nodeOnlyModules = /^proxy-agent$/;
-const unusedInBrowserBuiltins = ['os', 'zlib', 'util'];
+const unusedInBrowserBuiltins = ['os', 'zlib'];
 const builtinAliases = Object.fromEntries(
     unusedInBrowserBuiltins.flatMap((m) => [
         [m, false],

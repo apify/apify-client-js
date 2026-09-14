@@ -308,6 +308,22 @@ The `timeoutSecs` option of <ApiLink to="class/KeyValueStoreClient#setRecord">`K
 
 `client.httpClient.call()` takes `timeoutSecs` where it read the axios `timeout` in milliseconds. A direct call that passed `timeout: 30000` has to become `timeoutSecs: 30`.
 
+## Request compression is configurable
+
+The <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor takes a `compression` option: `'brotli'`, `'gzip'`, or an instance of <ApiLink to="class/HttpCompressor">`HttpCompressor`</ApiLink> for a custom quality or algorithm. The default stays brotli at quality 6, so a client constructed without the option sends the same requests as in v2. For the rules that decide which bodies get compressed, see [HTTP compression](../02_concepts/07_http-compression.md).
+
+```js
+import { ApifyClient, BrotliHttpCompressor } from 'apify-client';
+
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN', compression: 'gzip' });
+const bestClient = new ApifyClient({
+    token: 'MY-APIFY-TOKEN',
+    compression: new BrotliHttpCompressor({ quality: 11 }),
+});
+```
+
+The silent fallback is gone. In v2, a body was sent gzipped when brotli failed, and uncompressed when gzip failed too, which could happen on a runtime whose `node:zlib` is a polyfill or a Node.js compatibility shim. In v3 the configured compressor is the only one the client runs, and its error fails the request. On such a runtime, pass `compression: 'gzip'` or a custom compressor.
+
 ## `versions().list()` and `envVars().list()` lose their pagination options
 
 <ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> accept only the `timeoutSecs` option. Neither endpoint reads `offset`, `limit` or `desc`, and both return every item in one response, so `chunkSize` had nothing to size either. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those four options, deprecated since v2.21.0, are gone from the package. A call that passed any of them no longer compiles, and throws an `ArgumentValidationError` about an unrecognized key in JavaScript. Drop them and the call returns the same items as before.

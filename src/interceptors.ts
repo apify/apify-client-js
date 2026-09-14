@@ -5,7 +5,8 @@ import type { JsonObject } from 'type-fest';
 
 import { maybeParseBody } from './body_parser.js';
 import type { ApifyRequestConfig, ApifyResponse } from './http_client.js';
-import { isCompressibleContentType, isNode, maybeCompressValue } from './utils.js';
+import type { HttpCompressor } from './http_compressors/base.js';
+import { isCompressibleContentType, isNode, MIN_COMPRESS_BYTES } from './utils.js';
 
 /**
  * This error exists for the quite common situation, where only a partial JSON response is received and
@@ -90,18 +91,32 @@ function stringifyWithFunctions(obj: JsonObject) {
     });
 }
 
-async function maybeCompressRequest(config: ApifyRequestConfig): Promise<ApifyRequestConfig> {
+/**
+ * Compresses the request body with the client's compressor and labels it with the compressor's `Content-Encoding`.
+ *
+ * Runs after `serializeRequest`, so a JSON body is already a string here. The body is sent as it is when it is not
+ * a string or a `Buffer`, when it is smaller than `MIN_COMPRESS_BYTES`, when its content type says the payload is
+ * already compressed, or when the caller set a `Content-Encoding` of their own. That header is forwarded verbatim,
+ * which is how a pre-encoded body is uploaded, and `Content-Encoding: identity` opts a single request out of
+ * compression. Browsers have no `node:zlib`, so there the body is always sent as it is.
+ */
+async function maybeCompressRequest(
+    config: ApifyRequestConfig,
+    compressor: HttpCompressor,
+): Promise<ApifyRequestConfig> {
+    if (!isNode()) return config;
+
+    const { data } = config;
+    if (typeof data !== 'string' && !Buffer.isBuffer(data)) return config;
+    if (Buffer.byteLength(data) < MIN_COMPRESS_BYTES) return config;
+
     // A caller-supplied encoding means the body is already encoded and the header describes it, so leave both alone.
     if (getHeader(config, 'content-encoding')) return config;
-
     if (!isCompressibleContentType(getHeader(config, 'content-type'))) return config;
 
-    const maybeCompressed = await maybeCompressValue(config.data);
-    if (maybeCompressed) {
-        config.headers ??= {};
-        config.headers['content-encoding'] = maybeCompressed.encoding;
-        config.data = maybeCompressed.data;
-    }
+    config.data = await compressor.compress(typeof data === 'string' ? Buffer.from(data) : data);
+    config.headers ??= {};
+    config.headers['content-encoding'] = compressor.contentEncoding;
 
     return config;
 }
@@ -135,9 +150,14 @@ function parseResponseData(response: ApifyResponse): ApifyResponse {
 export type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyRequestConfig>['use']>[0];
 export type ResponseInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyResponse>['use']>[0];
 
-export const requestInterceptors: RequestInterceptorFunction[] = [
-    maybeCompressRequest,
-    serializeRequest,
-    ensureHeadersPrototype,
-];
+/**
+ * The client's own request interceptors, in registration order. Axios runs request interceptors in the reverse
+ * order of registration, so the body is serialized before it is compressed, and interceptors registered later,
+ * such as the user-provided ones, run before both.
+ * @internal
+ */
+export function createRequestInterceptors(compressor: HttpCompressor): RequestInterceptorFunction[] {
+    return [async (config) => maybeCompressRequest(config, compressor), serializeRequest, ensureHeadersPrototype];
+}
+
 export const responseInterceptors: ResponseInterceptorFunction[] = [parseResponseData];
