@@ -462,7 +462,7 @@ Running on Node.js without a bundler is unaffected, and the pre-built browser bu
 In Node.js, v2 decoded response bodies with `Buffer` and v3 decodes them with `TextDecoder`. The two support different charsets, so a `content-type` header carrying one can be handled differently:
 
 - `iso-8859-1` and other charsets only `TextDecoder` knows decode to a string, where v2 handed back raw bytes.
-- `hex` and `base64`, which only `Buffer` knows, come back as raw bytes, where v2 decoded the body as if it were in that encoding.
+- `hex`, `base64`, `binary`, `ucs2` and `utf16le`, which only `Buffer` knows, come back as raw bytes, where v2 decoded the body as if it were in that encoding.
 - `ascii` is read as an alias for `windows-1252`, so a byte above `0x7F` decodes to the character that encoding gives it, where v2 masked the byte down to seven bits.
 
 Code that depended on one of these has to convert the value itself. A body with no charset or with a UTF-8 one is unaffected, and that covers everything the Apify API sends.

@@ -39,10 +39,13 @@ describe('maybeParseBody()', () => {
         expect(maybeParseBody(body, 'text/plain; charset=x-unknown')).toBe(body);
     });
 
-    test.each(['hex', 'base64'])('keeps the body binary for the %s charset, which only Buffer knows', (charset) => {
-        const body = encode('6869');
-        expect(maybeParseBody(body, `text/plain; charset=${charset}`)).toBe(body);
-    });
+    test.each(['hex', 'base64', 'binary', 'ucs2', 'utf16le'])(
+        'keeps the body binary for the %s charset, which only Buffer knows',
+        (charset) => {
+            const body = encode('6869');
+            expect(maybeParseBody(body, `text/plain; charset=${charset}`)).toBe(body);
+        },
+    );
 
     test('keeps a binary content type as it is', () => {
         const body = new Uint8Array([1, 2, 3]);
