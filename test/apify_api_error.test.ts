@@ -47,7 +47,8 @@ describe('ApifyApiError', () => {
             // This does not work in v10 and lower, but we want to be able to run tests for v10,
             // because some people might still use it. They will just see clientMethod: undefined.
             if (!process.version.startsWith('v10')) {
-                expect(err.clientMethod).toBe(`${actorCollectionClient.constructor.name}.${method}`);
+                // `list()` returns the promise of the `listResources` helper, so the helper is the frame on the stack.
+                expect(err.clientMethod).toBe(`${actorCollectionClient.constructor.name}.listResources`);
             }
             expect(err.type).toEqual('token-not-provided');
             expect(err.message).toEqual('Authentication token was not provided');
@@ -78,7 +79,7 @@ describe('ApifyApiError', () => {
         }, method);
 
         expect(error.name).toEqual('UnauthorizedError');
-        expect(error.clientMethod).toBe(`ActorCollectionClient.${method}`);
+        expect(error.clientMethod).toBe('ActorCollectionClient.listResources');
         expect(error.type).toEqual('token-not-provided');
         expect(error.message).toEqual('Authentication token was not provided');
         expect(error.statusCode).toEqual(401);

@@ -154,20 +154,15 @@ A few fields went the other way and became required. `ActorVersion.versionNumber
 A handful of fields and return types also change entirely to match the client's actual behavior:
 
 - `Webhook.lastDispatch` was typed as a `string`, even though the API returns an object. It's now optional and nullable, typed as <ApiLink to="interface/WebhookLastDispatch">`WebhookLastDispatch`</ApiLink>.
-- `Schedule.nextRunAt`, `Schedule.lastRunAt`, `RequestQueue.expireAt` and `RequestQueueClientRequestSchema.handledAt` were typed as `string`, even though `parseDateFields()` has always converted them to `Date`. They're now typed as such. `handledAt` also carries into what <ApiLink to="class/RequestQueueClient#updateRequest">`updateRequest()`</ApiLink> takes, so a call that marked a request handled with an ISO string has to pass a `Date` instead.
+- `Schedule.nextRunAt`, `Schedule.lastRunAt` and `RequestQueueClientRequestSchema.handledAt` were typed as `string`, even though the client has always converted them to `Date`. They're now typed as such. `handledAt` also carries into what <ApiLink to="class/RequestQueueClient#updateRequest">`updateRequest()`</ApiLink> takes, so a call that marked a request handled with an ISO string has to pass a `Date` instead.
 - `Build.status` was typed as the four terminal statuses, even though `waitForFinish()` documents `READY` and `RUNNING`. It's now all eight Actor job statuses, so an exhaustive `switch` over it no longer compiles.
 - `WebhookDispatch.webhook` was `Pick<Webhook, 'requestUrl' | 'isAdHoc'>`. It's now an optional, nullable <ApiLink to="interface/WebhookDispatchWebhookSummary">`WebhookDispatchWebhookSummary`</ApiLink>, which also carries `actionType` and a `condition` typed as the same `WebhookCondition` union `Webhook.condition` carries.
 - `UserPlan.enabledPlatformFeatures` was a `PlatformFeature[]`, even though the platform has features that enum never gained, such as `PROXY_RESIDENTIAL`. It's now a `string[]`. `PlatformFeature` stays published, so an existing comparison against one of its members still works.
+- `RequestQueue.expireAt` is gone. The API does not return it on a request queue, so reading it gave `undefined` on every queue you ever fetched.
 - <ApiLink to="class/RequestQueueClient#getRequest">`getRequest()`</ApiLink> was typed as a queue-head projection, even though the endpoint returns the whole request. It's now the full request schema.
 - <ApiLink to="class/RequestQueueClient#batchDeleteRequests">`batchDeleteRequests()`</ApiLink> was typed with the batch *add* result, whose processed entries carry `requestId`, `wasAlreadyPresent` and `wasAlreadyHandled`. The delete endpoint answers with none of those, so the return type is now <ApiLink to="interface/RequestQueueClientBatchDeleteRequestsResult">`RequestQueueClientBatchDeleteRequestsResult`</ApiLink>, whose processed entries carry `id` and `uniqueKey`. Code that read any of the three old fields was reading `undefined`.
 
 A few changes need more than a null check.
-
-### Date parsing reaches one level deeper
-
-`parseDateFields()`'s recursion depth increased from 3 to 4, so a list response, such as from `webhook.dispatches().list()`, gets the same `Date` conversion as the single resource it wraps.
-
-The extra level applies to every response, so the conversion also reaches one step further into the caller-owned blobs the API stores verbatim. A listed request's `userData.foo.somethingAt` comes back as a `Date` instead of the string it was written as, and so does a `somethingAt` three levels inside a task's `input`.
 
 ### A resource and its list item are no longer interchangeable
 
@@ -227,6 +222,15 @@ Two return types change as a result of describing what the endpoints really retu
 
 - <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink> was typed as a `string`, even though the endpoint returns the log as a list of entries. It's now typed as <ApiLink to="interface/ScheduleInvoked">`ScheduleInvoked[]`</ApiLink>, each entry carrying `message`, `level` and `createdAt`.
 - <ApiLink to="interface/TaskPublicConfig">`TaskPublicConfig`</ApiLink> now follows the specification: `publishedAt` is optional and read-only, and `categorization`, which the specification doesn't describe, is gone from the type.
+
+### Date fields are converted by the schemas
+
+The `Date` conversion moved into the schemas. A field the specification declares as a `date-time` comes back as a `Date`, wherever it sits in the response, and nothing else is touched. v2 walked every response and converted any field whose name ends in `At`, three levels deep, and passed the field on as a string when it didn't parse as a date.
+
+- Date strings inside the bodies the API stores for you stay strings. A `somethingAt` in a request's `userData` or in a task's `input` is returned as written, so parse it yourself where you need a `Date`.
+- A `date-time` field that carries anything other than an ISO 8601 date-time with a `Z` or a time-zone offset throws a `ResponseValidationError`, where v2 handed the string on.
+- The field name no longer matters. `dailyServiceUsages[].date` on <ApiLink to="class/UserClient#monthlyUsage">`UserClient.monthlyUsage()`</ApiLink> is converted because the specification says so.
+- Nothing is skipped for depth. `webhook.dispatches().list()` returns `calls[].startedAt` as a `Date` on every listed dispatch, where v2 left it a string for sitting one level too deep.
 
 ## URL fields are normalized
 
@@ -368,3 +372,36 @@ export HTTPS_PROXY=http://proxy.example.com:3128
 ```
 
 The same `proxy-agent` upgrade removes the `[DEP0169] DeprecationWarning` about `url.parse()` that Node.js 24 and newer printed on the client's first request.
+
+## Non-public members no longer carry an underscore
+
+Members declared `private` or `protected` had a leading underscore on top of the keyword in v2, and the underscore is gone in v3. Code that calls only the public methods of a client is unaffected. A class that extends one of the client classes and calls a protected helper has to switch to the new name. The base classes below are not exported, so you reach these members by extending a concrete client such as `ActorClient`.
+
+| Class | v2 | v3 |
+| --- | --- | --- |
+| `ApiClient` | `_url()` | `buildUrl()` |
+| `ApiClient` | `_publicUrl()` | `buildPublicUrl()` |
+| `ApiClient` | `_params()` | `buildParams()` |
+| `ApiClient` | `_subResourceOptions()` | `subResourceOptions()` |
+| `ApiClient` | `_toSafeId()` | `toSafeId()` |
+| `ApiClient` | `_listPaginatedFromCallback()` | `listPaginatedFromCallback()` |
+| `ResourceClient` | `_get()` | `getResource()` |
+| `ResourceClient` | `_update()` | `updateResource()` |
+| `ResourceClient` | `_delete()` | `deleteResource()` |
+| `ResourceClient` | `_waitForFinish()` | `waitForJobFinish()` |
+| `ResourceCollectionClient` | `_list()` | `listResources()` |
+| `ResourceCollectionClient` | `_listPaginated()` | `listResourcesPaginated()` |
+| `ResourceCollectionClient` | `_create()` | `createResource()` |
+| `ResourceCollectionClient` | `_getOrCreate()` | `getOrCreateResource()` |
+| `RequestQueueClient` | `_batchAddRequests()` | `addRequestBatch()` |
+| `RequestQueueClient` | `_batchAddRequestsWithRetries()` | `addRequestBatchWithRetries()` |
+
+A helper got a suffix wherever the bare name would collide with a public method of the same class, which is why `_get()` is now `getResource()` and not `get()`.
+
+<ApiLink to="class/LoggerActorRedirect">`LoggerActorRedirect`</ApiLink> keeps `_log()`, since it overrides the method of that name on the `Logger` base class in `@apify/log`.
+
+The `clientMethod` field on <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> is parsed from the stack trace, and a public method that delegates to one of these helpers is reported under the helper's name. An error from `client.actor(id).get()` says `ActorClient.getResource`, where v2 said `ActorClient.get`. Adjust anything that matches on these values in your logs.
+
+### Private members are private at runtime
+
+Members that v2 declared `private` are declared with a `#` in v3, so the JavaScript runtime enforces the boundary, where v2 relied on the type checker. Code that reached one of them through a cast, such as `(client.httpClient as any).nodeInitPromise`, throws a `TypeError` in v3. They also don't appear when you spread an instance, iterate `Object.keys()` on it, or pass it to `JSON.stringify()`. The `protected` helpers in the table keep the `protected` keyword, so a subclass can call them.

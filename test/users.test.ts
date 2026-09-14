@@ -87,7 +87,7 @@ describe('User methods', () => {
 
             try {
                 const res = await client.user('some-id').monthlyUsage();
-                // `date` does not end in `At`, so the conversion rests on the matcher the method passes.
+                // `date` is converted because the specification declares it a date-time, whatever its name.
                 // Typed as `Date` rather than inferred, so a regression to the wire `string` fails the
                 // type check as well as the assertion.
                 const date: Date | undefined = res?.dailyServiceUsages[0].date;
