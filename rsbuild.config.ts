@@ -1,18 +1,7 @@
-import { defineConfig, rspack } from '@rsbuild/core';
+import { defineConfig } from '@rsbuild/core';
 import { pluginNodePolyfill } from '@rsbuild/plugin-node-polyfill';
 
-import { version } from './package.json';
-
-const MAX_BUNDLE_BYTES = 360 * 1024;
-
-const nodeOnlyModules = /^proxy-agent$/;
-const unusedInBrowserBuiltins = ['os', 'zlib', 'util'];
-const builtinAliases = Object.fromEntries(
-    unusedInBrowserBuiltins.flatMap((m) => [
-        [m, false],
-        [`node:${m}`, false],
-    ]),
-);
+const MAX_BUNDLE_BYTES = 350 * 1024;
 
 // eslint-disable-next-line import/no-default-export
 export default defineConfig({
@@ -20,10 +9,15 @@ export default defineConfig({
         entry: {
             Apify: './src/index.ts',
         },
-        define: {
-            VERSION: JSON.stringify(version),
-            BROWSER_BUILD: true,
+    },
+    resolve: {
+        alias: {
+            // The `imports` field of `package.json` maps this to `dist`; bundle the source instead.
+            '#runtime': './src/runtime/web.ts',
         },
+        // `tsconfig.json` maps `#runtime` to the Node.js implementation for type-checking, and the default
+        // strategy lets that mapping win over the alias.
+        aliasStrategy: 'prefer-alias',
     },
     output: {
         distPath: { js: '.' },
@@ -61,7 +55,7 @@ export default defineConfig({
                 ...config.optimization,
                 splitChunks: false,
             };
-            // A regression guard, not a target: the bundle sits at ~335 kB, so this only fails the
+            // A regression guard, not a target: the bundle sits at ~325 kB, so this only fails the
             // build on an unnoticed jump. A `zod` minor is the likeliest cause, since it is a runtime
             // dependency on a caret range - bumping this constant is the expected response. The
             // generated response schemas growing with the OpenAPI specification is the other.
@@ -72,18 +66,11 @@ export default defineConfig({
                 // The source map is many times the size of the bundle and ships separately.
                 assetFilter: (filename) => filename === 'bundle.js',
             };
-            config.plugins = [...(config.plugins ?? []), new rspack.IgnorePlugin({ resourceRegExp: nodeOnlyModules })];
-            config.resolve = {
-                ...config.resolve,
-                alias: {
-                    ...config.resolve?.alias,
-                    ...builtinAliases,
-                },
-            };
             config.devtool = 'source-map';
         },
     },
     mode: 'production',
-    // @apify/utilities dynamically imports `crypto` on missing `SubtleCrypto` (but browsers have it).
+    // The client's own code needs no polyfills, so these cover its dependencies. `node:crypto` is excluded,
+    // because the client only calls the helpers built on Web Crypto.
     plugins: [pluginNodePolyfill({ overrides: { crypto: false } })],
 });

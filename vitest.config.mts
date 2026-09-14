@@ -7,6 +7,7 @@ export default defineConfig({
     resolve: {
         alias: {
             'apify-client': resolve(import.meta.dirname, 'src'),
+            '#runtime': resolve(import.meta.dirname, 'src/runtime/node.ts'),
         },
     },
     test: {

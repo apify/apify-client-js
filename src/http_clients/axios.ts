@@ -1,11 +1,11 @@
 import type http from 'node:http';
 import type https from 'node:https';
-import type { Socket } from 'node:net';
 
 import type { AxiosInstance, AxiosInterceptorManager, InternalAxiosRequestConfig } from 'axios';
 import axios, { AxiosError, AxiosHeaders } from 'axios';
 
-import { isNode, isStream } from '../utils.js';
+import { runtime } from '#runtime';
+import { isStream } from '../utils.js';
 import type { HttpClientOptions, HttpRequest, HttpResponse, HttpResponseBody, HttpResponseHeaders } from './base.js';
 import { HttpClient } from './base.js';
 
@@ -45,7 +45,7 @@ export class AxiosHttpClient extends HttpClient {
     /** Keep-alive agent for HTTPS. The same instance as {@link httpAgent}. */
     httpsAgent?: https.Agent;
 
-    #nodeInitPromise?: Promise<void>;
+    #httpAgentsPromise?: Promise<void>;
 
     constructor(options: AxiosHttpClientOptions = {}) {
         super(options);
@@ -104,7 +104,7 @@ export class AxiosHttpClient extends HttpClient {
      */
     override async close(): Promise<void> {
         // A failed initialization left nothing to release, and its error belongs to the request that hit it.
-        await this.#nodeInitPromise?.catch(() => {});
+        await this.#httpAgentsPromise?.catch(() => {});
         this.httpAgent?.destroy();
         this.httpsAgent?.destroy();
     }
@@ -114,7 +114,7 @@ export class AxiosHttpClient extends HttpClient {
      * redirects, since the part of it already sent could not be replayed.
      */
     override async sendRequest(request: HttpRequest): Promise<HttpResponse> {
-        await this.#ensureNodeInit();
+        await this.#ensureHttpAgents();
 
         const { method, url, headers, body, timeoutMillis, stream } = request;
         const response = await this.axios.request({
@@ -135,42 +135,18 @@ export class AxiosHttpClient extends HttpClient {
         };
     }
 
-    async #ensureNodeInit(): Promise<void> {
-        if (!isNode()) return;
+    async #ensureHttpAgents(): Promise<void> {
+        this.#httpAgentsPromise ??= this.#initHttpAgents();
 
-        this.#nodeInitPromise ??= this.#initNode();
-
-        return this.#nodeInitPromise;
+        return this.#httpAgentsPromise;
     }
 
-    async #initNode(): Promise<void> {
-        const { ProxyAgent } = await import('proxy-agent');
+    async #initHttpAgents(): Promise<void> {
+        const agents = await runtime.createHttpAgents({ timeoutMillis: this.timeoutMaxMillis });
+        if (!agents) return;
 
-        // Sockets are pooled and reused, which is what makes a burst of API calls cheap.
-        const agentOptions: http.AgentOptions & { scheduling?: 'lifo' | 'fifo' } = {
-            keepAlive: true,
-            // An idle socket that is never claimed again would leak, so cap how long one may sit unused.
-            timeout: this.timeoutMaxMillis,
-            keepAliveMsecs: 15_000,
-            maxSockets: 256,
-            maxFreeSockets: 256,
-            // Reusing the most recently used socket keeps the rest of the pool free to expire.
-            scheduling: 'lifo',
-        };
-
-        // `ProxyAgent` reads the proxy environment variables itself and tunnels over CONNECT when needed.
-        const proxyAgent = new ProxyAgent(agentOptions);
-        this.httpAgent = proxyAgent;
-        this.httpsAgent = proxyAgent;
-
-        // API calls are small and latency-sensitive, so send each write out instead of waiting for a full packet.
-        const setNoDelay = (socket: Socket) => {
-            socket.setNoDelay(true);
-        };
-
-        this.httpAgent.on('socket', setNoDelay);
-        this.httpsAgent.on('socket', setNoDelay);
-
+        this.httpAgent = agents.httpAgent;
+        this.httpsAgent = agents.httpsAgent;
         this.axios.defaults.httpAgent = this.httpAgent;
         this.axios.defaults.httpsAgent = this.httpsAgent;
     }

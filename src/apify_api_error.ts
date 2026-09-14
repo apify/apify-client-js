@@ -1,6 +1,5 @@
 import type { LiteralUnion } from 'type-fest';
 
-import { isomorphicBufferToString } from './body_parser.js';
 import type { ApifyResponse } from './http_clients/base.js';
 import type { ApifyApiErrorType } from './models.js';
 import { isBuffer } from './utils.js';
@@ -93,13 +92,15 @@ export class ApifyApiError extends Error {
         let responseData = response.data;
         let errorData: Record<string, unknown> | undefined;
 
-        // Some methods (e.g. downloadItems) ask for the raw body with `responseType: 'buffer'`. If such a request
-        // failed, the body buffer needs to be parsed to get the correct error.
+        // A `responseType: 'buffer'` request (e.g. `downloadItems()`) and a failed streaming request, whose body
+        // `HttpClient` has read into a buffer, both arrive unparsed. Parse the body here to get at the error.
         if (isBuffer(responseData)) {
+            const body = new TextDecoder().decode(response.data);
             try {
-                responseData = JSON.parse(isomorphicBufferToString(response.data, 'utf-8'));
+                responseData = JSON.parse(body);
             } catch {
-                // This can happen. The data in the response body are malformed.
+                // A body that is not JSON at all, such as an HTML error page from a proxy, is kept as text.
+                responseData = body;
             }
         }
 

@@ -5,6 +5,7 @@ import type { TypedArray } from 'type-fest';
 import { APIFY_ENV_VARS } from '@apify/consts';
 import type { Log } from '@apify/log';
 import log from '@apify/log';
+import { concatStreamToBuffer } from '@apify/utilities';
 
 import { ApifyApiError } from '../apify_api_error.js';
 import { maybeParseBody } from '../body_parser.js';
@@ -17,17 +18,16 @@ import {
     DEFAULT_TIMEOUT_MEDIUM_SECS,
     DEFAULT_TIMEOUT_SHORT_SECS,
 } from '../timeouts.js';
+import { runtime } from '#runtime';
 import {
     asArray,
-    getVersionData,
+    getEnv,
     isBuffer,
     isCompressibleContentType,
-    isNode,
     isStream,
     maybeCompressValue,
+    version,
 } from '../utils.js';
-
-const { version } = getVersionData();
 
 export const DEFAULT_MAX_RETRIES = 8;
 
@@ -251,9 +251,9 @@ export abstract class HttpClient {
     timeoutMaxMillis: number;
 
     /**
-     * Headers sent with every request: the `Authorization` header built from the token, the `User-Agent` (Node.js
-     * only, browsers refuse a caller-set one), the `X-Apify-Workflow-Key` when a workflow key is configured, and
-     * whatever {@link HttpClientOptions.headers} added.
+     * Headers sent with every request: the `Authorization` header built from the token, the `User-Agent` where the
+     * runtime lets a client set one, the `X-Apify-Workflow-Key` when a workflow key is configured, and whatever
+     * {@link HttpClientOptions.headers} added.
      */
     protected readonly defaultHeaders: Record<string, string>;
 
@@ -275,9 +275,10 @@ export abstract class HttpClient {
         const workflowKey = options.workflowKey || getEnv(APIFY_ENV_VARS.WORKFLOW_KEY);
         if (workflowKey) defaults['X-Apify-Workflow-Key'] = workflowKey;
 
-        if (isNode()) {
+        // Browsers do not let a page set the header, so it only goes out where the runtime describes its platform.
+        if (runtime.platform) {
             const isAtHome = !!getEnv(APIFY_ENV_VARS.IS_AT_HOME);
-            let userAgent = `ApifyClient/${version} (${process.platform}; Node/${process.version}); isAtHome/${isAtHome}`;
+            let userAgent = `ApifyClient/${version} (${runtime.platform}); isAtHome/${isAtHome}`;
             if (options.userAgentSuffix) userAgent += `; ${asArray(options.userAgentSuffix).join('; ')}`;
             defaults['User-Agent'] = userAgent;
         }
@@ -505,6 +506,13 @@ export abstract class HttpClient {
             throw err;
         }
 
+        // A failed streaming request carries the API error body in the stream, so read it and let
+        // `ApifyApiError` parse it like any other error body. A body that cannot be read leaves the error
+        // without a message, which beats losing the status code to a stream error.
+        if (response.status >= 300 && isStream(response.body)) {
+            response.body = await concatStreamToBuffer(response.body).catch(() => undefined);
+        }
+
         let data: unknown;
         try {
             data = this.#parseResponseBody(response, config);
@@ -604,10 +612,6 @@ export abstract class HttpClient {
     }
 }
 
-function getEnv(name: string): string | undefined {
-    return typeof process !== 'undefined' ? process.env?.[name] : undefined;
-}
-
 /**
  * Looks a header up by name, compared case-insensitively.
  */
@@ -657,23 +661,16 @@ function serializeBody(
     if (isStream(data)) return data;
 
     if (isBuffer(data)) {
-        if (!isNode() || Buffer.isBuffer(data)) return data;
+        // The axios Node.js adapter refuses a body that is neither a `Buffer`, an `ArrayBuffer` nor a string.
+        if (!runtime.isNode || Buffer.isBuffer(data)) return data;
         return ArrayBuffer.isView(data)
             ? Buffer.from(data.buffer, data.byteOffset, data.byteLength)
             : Buffer.from(data);
     }
 
-    if (typeof data === 'string') {
-        // With a JSON content type, a string that already is valid JSON goes out as it is and any other string is
-        // JSON-encoded, so `pushItems('text')` and `pushItems('[{...}]')` both reach the API as JSON.
-        if (!isJsonContentType(getHeader(headers, 'content-type'))) return data;
-        try {
-            JSON.parse(data);
-            return data.trim();
-        } catch {
-            return JSON.stringify(data);
-        }
-    }
+    // A string body is already serialized and goes out as it is. Parsing a JSON one to check that it is valid
+    // would cost about as much as serializing it did, for a body assembled from thousands of requests.
+    if (typeof data === 'string') return data;
 
     if (typeof data === 'object') {
         if (data instanceof URLSearchParams) {

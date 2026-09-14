@@ -388,28 +388,15 @@ describe('pluggable HTTP client', () => {
         });
 
         test.each([
-            { name: 'a JSON string as it is', data: ' [{"a":1}] ', expected: '[{"a":1}]' },
-            { name: 'a plain string JSON-encoded', data: 'item1', expected: '"item1"' },
-        ])('sends $name under a JSON content type', async ({ data, expected }) => {
+            { name: 'under a JSON content type', headers: { 'content-type': 'application/json; charset=utf-8' } },
+            { name: 'without a content type', headers: undefined },
+        ])('sends a string body as it is $name', async ({ headers }) => {
             const httpClient = new NodeHttpClient();
+            const data = ' [{"a":1}] ';
 
-            await httpClient.call({
-                url: `${baseUrl}/echo`,
-                method: 'POST',
-                data,
-                headers: { 'content-type': 'application/json; charset=utf-8' },
-            });
+            await httpClient.call({ url: `${baseUrl}/echo`, method: 'POST', data, headers });
 
-            expect(received[0].body).toBe(expected);
-        });
-
-        test('sends a string body as it is without a JSON content type', async () => {
-            const httpClient = new NodeHttpClient();
-
-            await httpClient.call({ url: `${baseUrl}/echo`, method: 'POST', data: 'plain text' });
-
-            expect(received[0].headers['content-type']).toBeUndefined();
-            expect(received[0].body).toBe('plain text');
+            expect(received[0].body).toBe(data);
         });
 
         test('form-encodes an object body under a form content type', async () => {
