@@ -6,7 +6,7 @@
  * documented deviation never sends a resource client reaching into `./generated` directly. An override
  * declared here shadows the generated export of the same name and takes the same form, a `lazySchema()` thunk
  * built on the generated schema it replaces. Every schema that embeds an overridden one has to be rebuilt on
- * top of it, and `spec_guards.ts` checks that each override still accepts what the specification describes,
+ * top of it, and `spec_guards.ts` checks that each override still produces what the specification describes,
  * so one cannot narrow by accident.
  *
  * Spec gaps need no override: the generated objects are loose, so a field the specification omits passes

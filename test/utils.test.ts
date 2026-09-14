@@ -1,10 +1,13 @@
 import { Readable } from 'node:stream';
 
-import type { WebhookUpdateData } from 'apify-client';
-import { ApifyApiError } from 'apify-client';
+import type { PaginatedList, RequestQueueClientRequestSchema, WebhookDispatch, WebhookUpdateData } from 'apify-client';
+import { ApifyApiError, ResponseValidationError } from 'apify-client';
 import { describe, expect, test } from 'vitest';
 
+import type { ApifyResponse } from '../src/http_client.js';
+import * as schemas from '../src/schemas.js';
 import * as utils from '../src/utils.js';
+import * as fixtures from './mock_server/fixtures.js';
 
 describe('utils.pluckData()', () => {
     test('works', () => {
@@ -32,101 +35,66 @@ describe('utils.catchNotFoundOrThrow()', () => {
     });
 });
 
-describe('utils.parseDateFields()', () => {
-    test('works', () => {
-        const date = new Date('2018-01-11T14:44:48.997Z');
-        const original = { fooAt: date, barat: date };
-        const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(original))) as utils.Dictionary<Date | string>;
+describe('utils.parseResponse()', () => {
+    const response = (data: unknown) =>
+        ({ data: { data }, config: { method: 'GET', url: 'https://api.apify.com/v2/x' } }) as unknown as ApifyResponse;
+    const iso = '2019-12-12T07:34:14.202Z';
 
-        expect(parsed.fooAt).toBeInstanceOf(Date);
-        expect(typeof parsed.barat).toBe('string');
-        expect(parsed.fooAt).toEqual(date);
+    test('turns every date-time field the specification declares into a Date, however deep it sits', () => {
+        const parsed = utils.parseResponse<PaginatedList<WebhookDispatch>>(
+            response(fixtures.webhookDispatchList),
+            schemas.ListOfWebhookDispatches(),
+        );
+
+        expect(parsed.items[0].createdAt).toEqual(new Date(iso));
+        expect(parsed.items[0].calls?.[0].startedAt).toEqual(new Date(iso));
     });
 
-    test('works with depth enough', () => {
-        const date = new Date('2018-02-22T14:44:48.997Z');
-        const original = {
-            data: {
-                foo: [
-                    { fooAt: date, barat: date, deep: { fooAt: date, tooDeep: { fooAt: date } } },
-                    { fooAt: date, barat: date, deep: { fooAt: date, tooDeep: { fooAt: date } } },
-                ],
-            },
-        };
+    test('leaves a caller-owned blob alone, whatever its fields are named', () => {
+        const userData = { finishedAt: iso, nested: { createdAt: iso } };
+        const parsed = utils.parseResponse<RequestQueueClientRequestSchema>(
+            response({ ...fixtures.request, userData }),
+            schemas.Request(),
+        );
 
-        const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(original))) as utils.Dictionary<any>;
-
-        for (const item of parsed.data.foo) {
-            expect(item.fooAt).toBeInstanceOf(Date);
-            expect(typeof item.barat).toBe('string');
-            expect(item.fooAt).toEqual(date);
-            expect(item.deep.fooAt).toBeInstanceOf(Date);
-            expect(typeof item.deep.tooDeep.fooAt).toBe('string');
-        }
+        expect(parsed.handledAt).toEqual(new Date(fixtures.request.handledAt));
+        expect(parsed.userData).toEqual(userData);
     });
 
-    test('converts dates nested in an array of a list response item', () => {
-        const date = new Date('2019-12-12T07:34:14.202Z');
-        const listResponse = {
-            total: 1,
-            items: [{ id: 'a', createdAt: date, calls: [{ startedAt: date, finishedAt: date }] }],
-        };
+    test('accepts a date-time that carries a time-zone offset instead of a `Z`', () => {
+        const parsed = utils.parseResponse<RequestQueueClientRequestSchema>(
+            response({ ...fixtures.request, handledAt: '2019-06-16T12:23:31.607+02:00' }),
+            schemas.Request(),
+        );
 
-        const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(listResponse))) as utils.Dictionary<any>;
-
-        expect(parsed.items[0].createdAt).toBeInstanceOf(Date);
-        expect(parsed.items[0].calls[0].startedAt).toBeInstanceOf(Date);
-        expect(parsed.items[0].calls[0].finishedAt).toBeInstanceOf(Date);
-        expect(parsed.items[0].calls[0].startedAt).toEqual(date);
+        expect(parsed.handledAt).toEqual(new Date('2019-06-16T10:23:31.607Z'));
     });
 
-    test('does not parse falsy values', () => {
-        const original = { fooAt: null, barAt: '' };
-        const parsed = utils.parseDateFields(JSON.parse(JSON.stringify(original))) as utils.Dictionary<Date | string>;
+    test('rejects a date-time field that does not carry an ISO 8601 date', () => {
+        const call = () =>
+            utils.parseResponse(response({ ...fixtures.request, handledAt: 'three days ago' }), schemas.Request());
 
-        expect(parsed.fooAt).toEqual(null);
-        expect(parsed.barAt).toEqual('');
+        expect(call).toThrow(ResponseValidationError);
+        expect(call).toThrow('at `handledAt`');
     });
 
-    test('does not mangle non-date strings', () => {
-        const original = { fooAt: 'three days ago', barAt: '30+ days' };
-        const parsed = utils.parseDateFields(original) as utils.Dictionary<Date | string>;
+    test('rejects a date-time that names no time zone, which a bare `new Date()` would read as local time', () => {
+        const call = () =>
+            utils.parseResponse(
+                response({ ...fixtures.request, handledAt: '2019-06-16T10:23:31.607' }),
+                schemas.Request(),
+            );
 
-        expect(parsed.fooAt).toEqual('three days ago');
-        expect(parsed.barAt).toEqual('30+ days');
+        expect(call).toThrow(ResponseValidationError);
+        expect(call).toThrow('at `handledAt`');
     });
 
-    test('ignores perfectly fine RFC 3339 date', () => {
-        const original = { fooAt: 'three days ago', date: '2024-02-18T00:00:00.000Z' };
-        const parsed = utils.parseDateFields(original) as utils.Dictionary<Date | string>;
+    test('rejects a null in a date-time field the specification requires', () => {
+        const call = () =>
+            utils.parseResponse(response({ ...fixtures.requestQueue, createdAt: null }), schemas.RequestQueue());
 
-        expect(parsed.fooAt).toEqual('three days ago');
-        expect(parsed.date).toEqual('2024-02-18T00:00:00.000Z');
-    });
-
-    test('parses custom date field detected by matcher', () => {
-        const original = { fooAt: 'three days ago', date: '2024-02-18T00:00:00.000Z' };
-
-        const parsed = utils.parseDateFields(original, (key) => key === 'date') as { fooAt: string; date: Date };
-
-        expect(parsed.fooAt).toEqual('three days ago');
-        expect(parsed.date).toBeInstanceOf(Date);
-    });
-
-    test('parses custom nested date field detected by matcher', () => {
-        const original = { fooAt: 'three days ago', foo: { date: '2024-02-18T00:00:00.000Z' } };
-
-        const parsed = utils.parseDateFields(original, (key) => key === 'date') as { foo: { date: Date } };
-
-        expect(parsed.foo.date).toBeInstanceOf(Date);
-    });
-
-    test('does not mangle non-date strings even when detected by matcher', () => {
-        const original = { fooAt: 'three days ago', date: '30+ days' };
-        const parsed = utils.parseDateFields(original, (key) => key === 'date') as { fooAt: string; date: Date };
-
-        expect(parsed.fooAt).toEqual('three days ago');
-        expect(parsed.date).toEqual('30+ days');
+        expect(call).toThrow(ResponseValidationError);
+        expect(call).toThrow('at `createdAt`');
     });
 });
 

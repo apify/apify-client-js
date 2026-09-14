@@ -14,8 +14,12 @@
  *     Python client's `extra='allow'`.
  *   - Every string enum accepts any other string too (`z.enum([...]).or(z.string())`), so a value the API adds
  *     does not fail every response that carries it. This is the Python client's `Literal[...] | str`.
- *   - `format: date-time` becomes `z.date()`, because the client converts those fields into `Date` objects
- *     before a response is validated, and the generated types say `Date` for the same reason.
+ *   - `format: date-time` becomes `z.iso.datetime({ offset: true }).pipe(z.coerce.date())`: an ISO 8601 date-time
+ *     with a `Z` or an offset, which is what the format allows, handed back as a `Date`. The ISO check runs ahead
+ *     of the coercion because `new Date(null)` is the epoch, so `z.coerce.date()` on its own would turn a `null`
+ *     the specification does not allow into 1970. Validation is the one pass the client makes over a response, so
+ *     it is also where the strings on the wire become the `Date` the generated types declare. This is the Python
+ *     client's `datetime`.
  *   - `format: uri` becomes `z.url({ normalize: true })`, which parses the value as a WHATWG URL and hands back
  *     its serialization: an empty path gains a `/`, the host is lowercased and punycoded, a default port is dropped
  *     and unsafe characters are percent-encoded. A value that is not a valid absolute URL is rejected. This is the
@@ -271,7 +275,7 @@ class Emitter {
     }
 
     private string(node: SchemaNode, path: string): string {
-        if (node.format === 'date-time') return 'z.date()';
+        if (node.format === 'date-time') return 'z.iso.datetime({ offset: true }).pipe(z.coerce.date())';
 
         let out = node.format === 'uri' ? 'z.url({ normalize: true })' : 'z.string()';
         if (node.minLength !== undefined) out += `.min(${node.minLength})`;

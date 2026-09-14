@@ -388,17 +388,18 @@ export type MapShapeGuards = AssertAll<
 >;
 
 /**
- * The names of every schema whose generated type is not accepted by its generated zod schema.
+ * The names of every schema whose generated type is not produced by its generated zod schema.
  *
  * Both are generated from the same specification, by different generators, so this is where a bug in
  * `scripts/schema_emitter.mts` -- a dropped property, a wrong optionality, a missed `null` -- shows up as
  * a build failure instead of as a response rejected in production. The check is one-directional on
  * purpose: the zod schemas accept unknown fields and unknown enum values that the types do not describe,
- * so their output is deliberately wider than the types.
+ * so their output is deliberately wider than the types. It is the output that is compared, because a
+ * `date-time` field takes the wire's string and hands back the `Date` the type declares.
  */
 type SchemasRejectingTheirType = {
     [K in keyof Schemas]: K extends keyof GeneratedSchemas
-        ? Schemas[K] extends z.input<GeneratedSchemas[K]>
+        ? Schemas[K] extends z.output<GeneratedSchemas[K]>
             ? never
             : K
         : K;
@@ -413,11 +414,11 @@ export type GeneratedSchemaGuards = AssertAll<
 >;
 
 /**
- * Every hand-written override in `./schemas` still accepts what the specification describes: an override
+ * Every hand-written override in `./schemas` still produces what the specification describes: an override
  * may only widen.
  */
 type OverridesRejectingTheirType = {
-    [K in keyof ResponseSchemas & keyof Schemas]: Schemas[K] extends z.input<ResponseSchemas[K]> ? never : K;
+    [K in keyof ResponseSchemas & keyof Schemas]: Schemas[K] extends z.output<ResponseSchemas[K]> ? never : K;
 }[keyof ResponseSchemas & keyof Schemas];
 
 /**
