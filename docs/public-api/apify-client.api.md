@@ -2888,7 +2888,7 @@ class HttpClient {
     call<T = any>(config: ApifyRequestConfig): Promise<ApifyResponse<T>>;
     // (undocumented)
     httpAgent?: http.Agent;
-    httpCompressor: HttpCompressor;
+    readonly httpCompressor: HttpCompressor;
     // (undocumented)
     httpsAgent?: https.Agent;
     // (undocumented)

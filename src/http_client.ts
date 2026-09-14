@@ -31,8 +31,11 @@ export class HttpClient {
 
     userProvidedRequestInterceptors: RequestInterceptorFunction[];
 
-    /** Compressor applied to request bodies that are worth compressing. */
-    httpCompressor: HttpCompressor;
+    /**
+     * Compressor applied to request bodies that are worth compressing. The request interceptor captures it at
+     * construction, so it is fixed for the lifetime of the client.
+     */
+    readonly httpCompressor: HttpCompressor;
 
     logger: Log;
 
