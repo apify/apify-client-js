@@ -15,12 +15,12 @@ import type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore } fr
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
+import { runtime } from '#runtime';
 import {
     anyObjectSchema,
     applyQueryParamsToUrl,
     catchNotFoundOrThrow,
     isBuffer,
-    isNode,
     isStream,
     parseArgument,
     parseResponse,
@@ -406,7 +406,7 @@ export class KeyValueStoreClient extends ResourceClient {
         parseArgument(key, keySchema);
         const parsed = parseArgument(options, getRecordOptionsSchema, 'KeyValueClientGetRecordOptions');
 
-        if (parsed.stream && !isNode()) {
+        if (parsed.stream && !runtime.isNode) {
             throw new Error('The stream option can only be used in Node.js environment.');
         }
 

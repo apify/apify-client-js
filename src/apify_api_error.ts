@@ -1,7 +1,6 @@
 import type { AxiosResponse } from 'axios';
 import type { LiteralUnion } from 'type-fest';
 
-import { isomorphicBufferToString } from './body_parser.js';
 import type { ApifyApiErrorType } from './models.js';
 import { isBuffer } from './utils.js';
 
@@ -91,7 +90,7 @@ export class ApifyApiError extends Error {
         // A `forceBuffer` request (e.g. `downloadItems()`) and a failed streaming request, whose body `HttpClient`
         // has read into a buffer, both arrive unparsed. Parse the body here to get at the error.
         if (isBuffer(responseData)) {
-            const body = isomorphicBufferToString(response.data, 'utf-8');
+            const body = new TextDecoder().decode(response.data);
             try {
                 responseData = JSON.parse(body);
             } catch {

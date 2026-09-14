@@ -10,6 +10,12 @@
     "types": "dist/index.d.ts",
     "browser": "dist/bundle.js",
     "unpkg": "dist/bundle.js",
+    "imports": {
+        "#runtime": {
+            "node": "./dist/runtime/node.js",
+            "default": "./dist/runtime/web.js"
+        }
+    },
     "exports": {
         "./package.json": "./package.json",
         "./browser": "./dist/bundle.js",
