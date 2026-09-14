@@ -46,9 +46,9 @@ export class HttpClient {
 
     workflowKey?: string;
 
-    private nodeInitPromise?: Promise<void>;
+    #nodeInitPromise?: Promise<void>;
 
-    private userAgentSuffix?: string | string[];
+    #userAgentSuffix?: string | string[];
 
     constructor(options: HttpClientOptions) {
         const { token } = options;
@@ -64,8 +64,7 @@ export class HttpClient {
         this.timeoutMaxMillis = options.timeoutMaxSecs * 1000;
         this.logger = options.logger;
         this.workflowKey = options.workflowKey || process.env[APIFY_ENV_VARS.WORKFLOW_KEY];
-        this.userAgentSuffix = options.userAgentSuffix;
-        this.onRequestRetry = this.onRequestRetry.bind(this);
+        this.#userAgentSuffix = options.userAgentSuffix;
 
         this.axios = axios.create({
             // Disable axios's built-in proxy handling since we're using custom agents
@@ -118,15 +117,15 @@ export class HttpClient {
         responseInterceptors.forEach((i) => this.axios.interceptors.response.use(i as any));
     }
 
-    private async ensureNodeInit(): Promise<void> {
+    async #ensureNodeInit(): Promise<void> {
         if (!isNode()) return;
 
-        this.nodeInitPromise ??= this.initNode();
+        this.#nodeInitPromise ??= this.#initNode();
 
-        return this.nodeInitPromise;
+        return this.#nodeInitPromise;
     }
 
-    private async initNode(): Promise<void> {
+    async #initNode(): Promise<void> {
         if (!isNode()) return;
 
         const [{ ProxyAgent }, os] = await Promise.all([import('proxy-agent'), import('node:os')]);
@@ -174,26 +173,26 @@ export class HttpClient {
         const isAtHome = !!process.env[APIFY_ENV_VARS.IS_AT_HOME];
         let userAgent = `ApifyClient/${version} (${os.platform()}; Node/${process.version}); isAtHome/${isAtHome}`;
 
-        if (this.userAgentSuffix) {
-            userAgent += `; ${asArray(this.userAgentSuffix).join('; ')}`;
+        if (this.#userAgentSuffix) {
+            userAgent += `; ${asArray(this.#userAgentSuffix).join('; ')}`;
         }
 
         this.axios.defaults.headers['User-Agent'] = userAgent;
     }
 
     async call<T = any>(config: ApifyRequestConfig): Promise<ApifyResponse<T>> {
-        await this.ensureNodeInit();
+        await this.#ensureNodeInit();
         this.stats.calls++;
-        const makeRequest = this.createRequestHandler(config);
+        const makeRequest = this.#createRequestHandler(config);
 
         return retry(makeRequest, {
             retries: this.maxRetries,
             minTimeout: this.minDelayBetweenRetriesMillis,
-            onRetry: this.onRequestRetry,
+            onRetry: (error, attempt) => this.#onRequestRetry(error, attempt),
         });
     }
 
-    private informAboutStreamNoRetry() {
+    #informAboutStreamNoRetry() {
         this.logger.warningOnce(
             'Request body was a stream - retrying will not work, as part of it was already consumed.',
         );
@@ -207,7 +206,7 @@ export class HttpClient {
      * status codes are retried. See the following functions for the
      * retrying logic.
      */
-    private createRequestHandler(config: ApifyRequestConfig) {
+    #createRequestHandler(config: ApifyRequestConfig) {
         const { timeoutSecs = 'medium', ...axiosConfig } = config;
 
         const makeRequest: RetryFunction<ApifyResponse, Error> = async (stopTrying, attempt) => {
@@ -225,11 +224,11 @@ export class HttpClient {
 
                 response = await this.axios.request({
                     ...axiosConfig,
-                    timeout: this.computeTimeoutMillis(timeoutSecs, attempt),
+                    timeout: this.#computeTimeoutMillis(timeoutSecs, attempt),
                 });
-                if (this.isStatusOk(response.status)) return response;
+                if (this.#isStatusOk(response.status)) return response;
             } catch (err) {
-                return cast(this.handleRequestError(err as AxiosError, config, stopTrying));
+                return cast(this.#handleRequestError(err as AxiosError, config, stopTrying));
             }
 
             if (response.status === RATE_LIMIT_EXCEEDED_STATUS_CODE) {
@@ -237,9 +236,9 @@ export class HttpClient {
             }
 
             const apiError = ApifyApiError.fromResponse(response, attempt);
-            if (this.isStatusCodeRetryable(response.status)) {
+            if (this.#isStatusCodeRetryable(response.status)) {
                 if (requestIsStream) {
-                    this.informAboutStreamNoRetry();
+                    this.#informAboutStreamNoRetry();
                 } else {
                     // allow a retry
                     throw apiError;
@@ -253,7 +252,7 @@ export class HttpClient {
         return makeRequest;
     }
 
-    private isStatusOk(statusCode: number) {
+    #isStatusOk(statusCode: number) {
         return statusCode < 300;
     }
 
@@ -263,7 +262,7 @@ export class HttpClient {
      * as no timeout. The result doubles with each attempt and is capped at `timeoutMaxMillis`. A requested
      * value above the cap is capped too, which warns once, since it does not take effect in full.
      */
-    private computeTimeoutMillis(timeoutSecs: Timeout, attempt: number): number {
+    #computeTimeoutMillis(timeoutSecs: Timeout, attempt: number): number {
         if (timeoutSecs === 'noTimeout') return 0;
 
         const requestedMillis = typeof timeoutSecs === 'number' ? timeoutSecs * 1000 : this.timeoutMillis[timeoutSecs];
@@ -284,14 +283,14 @@ export class HttpClient {
      * Handles all unexpected errors that can happen, but are not
      * Apify API typed errors. E.g. network errors, timeouts and so on.
      */
-    private handleRequestError(err: AxiosError, config: ApifyRequestConfig, stopTrying: (e: Error) => void) {
-        if (this.isTimeoutError(err) && config.doNotRetryTimeouts) {
+    #handleRequestError(err: AxiosError, config: ApifyRequestConfig, stopTrying: (e: Error) => void) {
+        if (this.#isTimeoutError(err) && config.doNotRetryTimeouts) {
             return stopTrying(err);
         }
 
-        if (this.isRetryableError(err)) {
+        if (this.#isRetryableError(err)) {
             if (isStream(config.data)) {
-                this.informAboutStreamNoRetry();
+                this.#informAboutStreamNoRetry();
             } else {
                 throw err;
             }
@@ -303,7 +302,7 @@ export class HttpClient {
      * Axios calls req.abort() on timeouts so timeout errors will
      * have a code ECONNABORTED.
      */
-    private isTimeoutError(err: AxiosError) {
+    #isTimeoutError(err: AxiosError) {
         return err.code === 'ECONNABORTED';
     }
 
@@ -313,8 +312,8 @@ export class HttpClient {
      * @param {Error} err
      * @private
      */
-    private isRetryableError(err: AxiosError) {
-        return this.isNetworkError(err) || this.isResponseBodyInvalid(err);
+    #isRetryableError(err: AxiosError) {
+        return this.#isNetworkError(err) || this.#isResponseBodyInvalid(err);
     }
 
     /**
@@ -322,7 +321,7 @@ export class HttpClient {
      * a response, the request often does not fail, but simply contains
      * an incomplete response. This can often be fixed by retrying.
      */
-    private isResponseBodyInvalid(err: Error): err is InvalidResponseBodyError {
+    #isResponseBodyInvalid(err: Error): err is InvalidResponseBodyError {
         return err instanceof InvalidResponseBodyError;
     }
 
@@ -331,7 +330,7 @@ export class HttpClient {
      * it throws an AxiosError, which will have the request
      * and config (and other) properties.
      */
-    private isNetworkError(err: AxiosError) {
+    #isNetworkError(err: AxiosError) {
         const hasRequest = err.request && typeof err.request === 'object';
         const hasConfig = err.config && typeof err.config === 'object';
         return hasRequest && hasConfig;
@@ -342,13 +341,13 @@ export class HttpClient {
      * For status codes 300-499 (except 429) we do not retry the request,
      * because it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
      */
-    private isStatusCodeRetryable(statusCode: number) {
+    #isStatusCodeRetryable(statusCode: number) {
         const isRateLimitError = statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE;
         const isInternalError = statusCode >= 500;
         return isRateLimitError || isInternalError;
     }
 
-    private onRequestRetry(error: Error, attempt: number) {
+    #onRequestRetry(error: Error, attempt: number) {
         if (attempt === Math.round(this.maxRetries / 2)) {
             this.logger.warning(
                 `API request failed ${attempt} times. Max attempts: ${this.maxRetries + 1}.\nCause:${error.stack}`,

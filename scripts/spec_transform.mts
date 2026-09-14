@@ -10,8 +10,8 @@ import ts from 'typescript';
 const DOCS_BASE_URL = 'https://docs.apify.com';
 
 /**
- * Types `format: date-time` as `Date`, but only for `#/components/schemas` -- the models that flow through
- * `parseDateFields`.
+ * Types `format: date-time` as `Date`, but only for `#/components/schemas` -- the models whose response schemas
+ * hand the field back as a `Date`.
  *
  * Query parameters are deliberately left as `string`. A `Date` there would be serialized into the query
  * string by axios' param serializer, which does not produce ISO 8601. Request bodies are safe because they

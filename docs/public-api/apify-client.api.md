@@ -3492,8 +3492,6 @@ export type RequestQueueRequestsAsyncIterable<T> = AsyncIterable<T>;
 // @public
 interface RequestQueueSpecGaps {
     // (undocumented)
-    expireAt?: Date;
-    // (undocumented)
     title?: string;
     // (undocumented)
     username?: string;
