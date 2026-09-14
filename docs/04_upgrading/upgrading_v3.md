@@ -464,9 +464,8 @@ In Node.js, v2 decoded response bodies with `Buffer` and v3 decodes them with `T
 - `iso-8859-1` and other charsets only `TextDecoder` knows decode to a string, where v2 handed back raw bytes.
 - `hex` and `base64`, which only `Buffer` knows, come back as raw bytes, where v2 decoded the body as if it were in that encoding.
 - `ascii` is read as an alias for `windows-1252`, so a byte above `0x7F` decodes to the character that encoding gives it, where v2 masked the byte down to seven bits.
-- A leading UTF-8 byte order mark is stripped from every decoded body, so a JSON body carrying one parses instead of throwing, and a `text/*` record such as a BOM-prefixed CSV comes back without it.
 
-Code that depended on one of these has to convert the value itself. A body with no charset or with a UTF-8 one is unaffected, apart from the byte order mark, and that covers everything the Apify API sends.
+Code that depended on one of these has to convert the value itself. A body with no charset or with a UTF-8 one is unaffected, and that covers everything the Apify API sends.
 
 ### Request compression covers more body types
 

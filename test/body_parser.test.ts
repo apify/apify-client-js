@@ -24,12 +24,8 @@ describe('maybeParseBody()', () => {
         expect(maybeParseBody(body, 'text/plain; charset=ascii')).toBe('café');
     });
 
-    test('strips a leading byte order mark from a JSON body, which would otherwise fail to parse', () => {
-        expect(maybeParseBody(encode('﻿{"a":1}'), 'application/json')).toEqual({ a: 1 });
-    });
-
-    test('strips a leading byte order mark from a text body', () => {
-        expect(maybeParseBody(encode('﻿a,b\n1,2'), 'text/csv; charset=utf-8')).toBe('a,b\n1,2');
+    test('keeps a leading byte order mark in a text body, so a BOM-prefixed CSV round-trips unchanged', () => {
+        expect(maybeParseBody(encode('\uFEFFa,b\n1,2'), 'text/csv; charset=utf-8')).toBe('\uFEFFa,b\n1,2');
     });
 
     test('accepts an ArrayBuffer, which the browser adapters of axios return', () => {

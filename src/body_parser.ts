@@ -42,8 +42,9 @@ export function maybeParseBody(
 
 function createDecoder(charset?: string): TextDecoder | undefined {
     try {
-        // No charset: hope that it's utf-8.
-        return new TextDecoder(charset || 'utf-8');
+        // No charset defaults to utf-8. A leading BOM is kept, so a BOM-prefixed CSV stored in a key-value store
+        // round-trips through `getRecord()` unchanged.
+        return new TextDecoder(charset, { ignoreBOM: true });
     } catch {
         // `TextDecoder` throws a `RangeError` for a label it does not know.
         return undefined;
