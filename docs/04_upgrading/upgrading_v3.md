@@ -154,20 +154,15 @@ A few fields went the other way and became required. `ActorVersion.versionNumber
 A handful of fields and return types also change entirely to match the client's actual behavior:
 
 - `Webhook.lastDispatch` was typed as a `string`, even though the API returns an object. It's now optional and nullable, typed as <ApiLink to="interface/WebhookLastDispatch">`WebhookLastDispatch`</ApiLink>.
-- `Schedule.nextRunAt`, `Schedule.lastRunAt`, `RequestQueue.expireAt` and `RequestQueueClientRequestSchema.handledAt` were typed as `string`, even though `parseDateFields()` has always converted them to `Date`. They're now typed as such. `handledAt` also carries into what <ApiLink to="class/RequestQueueClient#updateRequest">`updateRequest()`</ApiLink> takes, so a call that marked a request handled with an ISO string has to pass a `Date` instead.
+- `Schedule.nextRunAt`, `Schedule.lastRunAt` and `RequestQueueClientRequestSchema.handledAt` were typed as `string`, even though the client has always converted them to `Date`. They're now typed as such. `handledAt` also carries into what <ApiLink to="class/RequestQueueClient#updateRequest">`updateRequest()`</ApiLink> takes, so a call that marked a request handled with an ISO string has to pass a `Date` instead.
 - `Build.status` was typed as the four terminal statuses, even though `waitForFinish()` documents `READY` and `RUNNING`. It's now all eight Actor job statuses, so an exhaustive `switch` over it no longer compiles.
 - `WebhookDispatch.webhook` was `Pick<Webhook, 'requestUrl' | 'isAdHoc'>`. It's now an optional, nullable <ApiLink to="interface/WebhookDispatchWebhookSummary">`WebhookDispatchWebhookSummary`</ApiLink>, which also carries `actionType` and a `condition` typed as the same `WebhookCondition` union `Webhook.condition` carries.
 - `UserPlan.enabledPlatformFeatures` was a `PlatformFeature[]`, even though the platform has features that enum never gained, such as `PROXY_RESIDENTIAL`. It's now a `string[]`. `PlatformFeature` stays published, so an existing comparison against one of its members still works.
+- `RequestQueue.expireAt` is gone. The API does not return it on a request queue, so reading it gave `undefined` on every queue you ever fetched.
 - <ApiLink to="class/RequestQueueClient#getRequest">`getRequest()`</ApiLink> was typed as a queue-head projection, even though the endpoint returns the whole request. It's now the full request schema.
 - <ApiLink to="class/RequestQueueClient#batchDeleteRequests">`batchDeleteRequests()`</ApiLink> was typed with the batch *add* result, whose processed entries carry `requestId`, `wasAlreadyPresent` and `wasAlreadyHandled`. The delete endpoint answers with none of those, so the return type is now <ApiLink to="interface/RequestQueueClientBatchDeleteRequestsResult">`RequestQueueClientBatchDeleteRequestsResult`</ApiLink>, whose processed entries carry `id` and `uniqueKey`. Code that read any of the three old fields was reading `undefined`.
 
 A few changes need more than a null check.
-
-### Date parsing reaches one level deeper
-
-`parseDateFields()`'s recursion depth increased from 3 to 4, so a list response, such as from `webhook.dispatches().list()`, gets the same `Date` conversion as the single resource it wraps.
-
-The extra level applies to every response, so the conversion also reaches one step further into the caller-owned blobs the API stores verbatim. A listed request's `userData.foo.somethingAt` comes back as a `Date` instead of the string it was written as, and so does a `somethingAt` three levels inside a task's `input`.
 
 ### A resource and its list item are no longer interchangeable
 
@@ -227,6 +222,15 @@ Two return types change as a result of describing what the endpoints really retu
 
 - <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink> was typed as a `string`, even though the endpoint returns the log as a list of entries. It's now typed as <ApiLink to="interface/ScheduleInvoked">`ScheduleInvoked[]`</ApiLink>, each entry carrying `message`, `level` and `createdAt`.
 - <ApiLink to="interface/TaskPublicConfig">`TaskPublicConfig`</ApiLink> now follows the specification: `publishedAt` is optional and read-only, and `categorization`, which the specification doesn't describe, is gone from the type.
+
+### Date fields are converted by the schemas
+
+The `Date` conversion moved into the schemas. A field the specification declares as a `date-time` comes back as a `Date`, wherever it sits in the response, and nothing else is touched. v2 walked every response and converted any field whose name ends in `At`, three levels deep, and passed the field on as a string when it didn't parse as a date.
+
+- Date strings inside the bodies the API stores for you stay strings. A `somethingAt` in a request's `userData` or in a task's `input` is returned as written, so parse it yourself where you need a `Date`.
+- A `date-time` field that carries anything other than an ISO 8601 date-time with a `Z` or a time-zone offset throws a `ResponseValidationError`, where v2 handed the string on.
+- The field name no longer matters. `dailyServiceUsages[].date` on <ApiLink to="class/UserClient#monthlyUsage">`UserClient.monthlyUsage()`</ApiLink> is converted because the specification says so.
+- Nothing is skipped for depth. `webhook.dispatches().list()` returns `calls[].startedAt` as a `Date` on every listed dispatch, where v2 left it a string for sitting one level too deep.
 
 ## URL fields are normalized
 
