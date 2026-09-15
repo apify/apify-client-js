@@ -25,7 +25,7 @@ The bundle is self-contained and needs no polyfill configuration.
 
 ## Bundling the ES module build yourself
 
-The client's own code runs on Web APIs. The parts that need Node.js built-ins, the keep-alive HTTP agents with proxy support and request body compression, live in a single module that the `#runtime` entry of the package's `imports` field selects at bundle time. The `node` condition gets the Node.js implementation, every other target gets the Web API one. A bundler targeting a browser, Cloudflare Workers, or another edge runtime therefore never sees `node:zlib`, `node:os`, `node:util`, or `proxy-agent`.
+The client's own code runs on Web APIs. The parts that need Node.js built-ins, the keep-alive HTTP agents with proxy support and request body compression, live in a single module that the `#runtime` entry of the package's `imports` field selects at bundle time. The `node` condition gets the Node.js implementation, every other target gets the Web API one. A bundler targeting a browser, Cloudflare Workers, or another edge runtime therefore never sees `node:zlib`, `node:os`, or `proxy-agent`.
 
 Reaching the ES module build takes a bundler that doesn't set the `browser` condition, which resolves `apify-client` to the pre-built bundle. esbuild's `neutral` platform sets no conditions, and webpack and Vite let you list them through `resolve.conditionNames` and `resolve.conditions`.
 

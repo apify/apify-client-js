@@ -7,8 +7,6 @@ import type { ApifyApiError } from './apify_api_error.js';
 import { NotFoundError } from './apify_api_error.js';
 import { parseArgument } from '@apify/validations';
 import type { ApifyResponse } from './http_client.js';
-import type { CompressedValue } from './runtime/types.js';
-import { runtime } from '#runtime';
 import { ResponseValidationError } from './response_validation_error.js';
 import type {
     RequestQueueClientListRequestsOptions,
@@ -19,7 +17,14 @@ import type { WebhookUpdateData } from './resource_clients/webhook.js';
 // @ts-ignore if we enable `resolveJsonModule`, we end up with a `src` folder in `dist`
 import packageJson from '../package.json' with { type: 'json' };
 
-const MIN_COMPRESS_BYTES = 1024;
+/**
+ * Smallest request body, in bytes, that is worth compressing. A smaller body already fits in a single network
+ * packet, so compressing it costs CPU time without saving a round trip, and the compression format itself can
+ * make it larger.
+ * @internal
+ */
+export const MIN_COMPRESS_BYTES = 1024;
+
 const textEncoder = new TextEncoder();
 
 // Only the version, so a bundler can drop the rest of the manifest.
@@ -197,8 +202,9 @@ export function concatBytes(chunks: Uint8Array[]): Uint8Array {
 /**
  * Views a request body as bytes: a string is UTF-8 encoded, binary values are viewed in place. Anything else
  * - a stream, a `Blob`, form data - is `undefined`.
+ * @internal
  */
-function toBytes(value: unknown): Uint8Array | undefined {
+export function toBytes(value: unknown): Uint8Array | undefined {
     if (typeof value === 'string') return textEncoder.encode(value);
     if (!isBuffer(value)) return undefined;
     return ArrayBuffer.isView(value)
@@ -226,19 +232,6 @@ export function isCompressibleContentType(contentType?: string): boolean {
 
     if (ALREADY_COMPRESSED_MEDIA_TYPES.has(mediaType)) return false;
     return !ALREADY_COMPRESSED_MEDIA_TYPE_PREFIXES.some((prefix) => mediaType.startsWith(prefix));
-}
-
-/**
- * Compresses the passed value with the runtime's best available algorithm. Returns `undefined` if the data
- * is too small, is not a string or binary value, or if the runtime does not offer compression.
- */
-export async function maybeCompressValue(value: unknown): Promise<CompressedValue | undefined> {
-    // Request compression is not that important so let's
-    // skip it instead of throwing for unsupported types.
-    const bytes = toBytes(value);
-    if (!bytes || bytes.byteLength < MIN_COMPRESS_BYTES) return undefined;
-
-    return runtime.compress(bytes);
 }
 
 /**

@@ -5,7 +5,9 @@ import type { JsonObject } from 'type-fest';
 
 import { maybeParseBody } from './body_parser.js';
 import type { ApifyRequestConfig, ApifyResponse } from './http_client.js';
-import { isCompressibleContentType, maybeCompressValue } from './utils.js';
+import type { HttpCompressor } from './http_compressors/base.js';
+import { runtime } from '#runtime';
+import { isCompressibleContentType, MIN_COMPRESS_BYTES, toBytes } from './utils.js';
 
 /**
  * This error exists for the quite common situation, where only a partial JSON response is received and
@@ -40,6 +42,17 @@ function getHeader(config: ApifyRequestConfig, name: string): string | undefined
     const value = key === undefined ? undefined : config.headers?.[key];
 
     return typeof value === 'string' ? value : undefined;
+}
+
+/** Removes a request header regardless of the casing it was set with. */
+function deleteHeader(config: ApifyRequestConfig, name: string): void {
+    const { headers } = config;
+    if (!headers) return;
+
+    const wanted = name.toLowerCase();
+    for (const key of Object.keys(headers)) {
+        if (key.toLowerCase() === wanted) delete headers[key];
+    }
 }
 
 function serializeRequest(config: ApifyRequestConfig): ApifyRequestConfig {
@@ -95,18 +108,34 @@ function stringifyWithFunctions(obj: JsonObject) {
     });
 }
 
-async function maybeCompressRequest(config: ApifyRequestConfig): Promise<ApifyRequestConfig> {
+/**
+ * Compresses the request body with the client's compressor and labels it with the compressor's `Content-Encoding`.
+ *
+ * Runs after `serializeRequest`, so a JSON body is already a string here. A caller-set `Content-Encoding` is
+ * forwarded verbatim, which is how a pre-encoded body is uploaded, and `Content-Encoding: identity` opts a single
+ * request out of compression. The built-in compressors need `node:zlib`, so a body sent from a browser or an edge
+ * runtime goes out as it is.
+ *
+ * Compressing changes the body length, so any `Content-Length` the caller set describes the wrong body and has to
+ * go. Axios keeps a caller-set one over the size it computes, which would stall the request until it times out.
+ */
+async function maybeCompressRequest(
+    config: ApifyRequestConfig,
+    compressor: HttpCompressor,
+): Promise<ApifyRequestConfig> {
+    if (!runtime.isNode) return config;
+
+    const bytes = toBytes(config.data);
+    if (!bytes || bytes.byteLength < MIN_COMPRESS_BYTES) return config;
+
     // A caller-supplied encoding means the body is already encoded and the header describes it, so leave both alone.
     if (getHeader(config, 'content-encoding')) return config;
-
     if (!isCompressibleContentType(getHeader(config, 'content-type'))) return config;
 
-    const maybeCompressed = await maybeCompressValue(config.data);
-    if (maybeCompressed) {
-        config.headers ??= {};
-        config.headers['content-encoding'] = maybeCompressed.encoding;
-        config.data = maybeCompressed.data;
-    }
+    config.data = await compressor.compress(Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength));
+    config.headers ??= {};
+    config.headers['content-encoding'] = compressor.contentEncoding;
+    deleteHeader(config, 'content-length');
 
     return config;
 }
@@ -140,9 +169,14 @@ function parseResponseData(response: ApifyResponse): ApifyResponse {
 export type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyRequestConfig>['use']>[0];
 export type ResponseInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyResponse>['use']>[0];
 
-export const requestInterceptors: RequestInterceptorFunction[] = [
-    maybeCompressRequest,
-    serializeRequest,
-    ensureHeadersPrototype,
-];
+/**
+ * The client's own request interceptors, in registration order. Axios runs request interceptors in the reverse
+ * order of registration, so the body is serialized before it is compressed, and interceptors registered later,
+ * such as the user-provided ones, run before both.
+ * @internal
+ */
+export function createRequestInterceptors(compressor: HttpCompressor): RequestInterceptorFunction[] {
+    return [async (config) => maybeCompressRequest(config, compressor), serializeRequest, ensureHeadersPrototype];
+}
+
 export const responseInterceptors: ResponseInterceptorFunction[] = [parseResponseData];

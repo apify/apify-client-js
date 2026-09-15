@@ -2,12 +2,14 @@ import type http from 'node:http';
 import type https from 'node:https';
 
 /**
- * A request body compressed for transport, with the `content-encoding` value that declares it.
+ * What to compress a request body with, as the built-in `HttpCompressor` implementations ask for it.
  * @internal
  */
-export interface CompressedValue {
-    data: Uint8Array;
-    encoding: 'br' | 'gzip';
+export interface CompressionOptions {
+    /** Algorithm to compress with, named by the `Content-Encoding` value it produces. */
+    algorithm: 'br' | 'gzip';
+    /** Compression level, in the range the algorithm defines. */
+    quality: number;
 }
 
 /**
@@ -28,9 +30,8 @@ export interface HttpAgents {
 export interface Runtime {
     /**
      * Whether the Node.js implementation was selected, which the `node` condition settles when `#runtime` is
-     * resolved - so a Node.js application bundled for a browser or a neutral target reports `false`. The
-     * features that need a Node.js `Readable` response - log streaming and the `stream` record option - are
-     * gated on it.
+     * resolved - so a Node.js application bundled for a browser or a neutral target reports `false`. Log
+     * streaming, the `stream` record option and request body compression are gated on it.
      */
     isNode: boolean;
     /**
@@ -39,10 +40,11 @@ export interface Runtime {
      */
     platform: string | undefined;
     /**
-     * Compresses a request body, or resolves to `undefined` where compression is not available. Compression
-     * is a best-effort optimization, so it never throws.
+     * Compresses a request body. The built-in compressors go through it, so a bundle for a browser or an edge
+     * runtime carries no `node:zlib`. Throws where the runtime has no compression, which the client never
+     * reaches, since it compresses only where {@link isNode} holds.
      */
-    compress(data: Uint8Array): Promise<CompressedValue | undefined>;
+    compress(data: Uint8Array, options: CompressionOptions): Promise<Buffer>;
     /**
      * Creates the agents axios's Node.js adapter sends requests through, or resolves to `undefined` where
      * axios does not use agents.
