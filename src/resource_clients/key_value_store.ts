@@ -10,7 +10,7 @@ import { createHmacSignatureAsync, createStorageContentSignatureAsync } from '@a
 import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyRequestConfig } from '../http_client.js';
+import type { ApifyRequestConfig } from '../http_clients/index.js';
 import type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
@@ -427,7 +427,7 @@ export class KeyValueStoreClient extends ResourceClient {
             timeoutSecs: parsed.timeoutSecs ?? 'long',
         };
 
-        if (parsed.buffer) requestOpts.forceBuffer = true;
+        if (parsed.buffer) requestOpts.responseType = 'buffer';
         if (parsed.stream) requestOpts.responseType = 'stream';
 
         try {
