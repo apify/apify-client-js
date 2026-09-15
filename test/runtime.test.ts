@@ -3,7 +3,7 @@ import http from 'node:http';
 import os from 'node:os';
 import { resolve } from 'node:path';
 import type * as Zlib from 'node:zlib';
-import { gunzipSync } from 'node:zlib';
+import { brotliDecompressSync, gunzipSync } from 'node:zlib';
 
 import { build } from 'esbuild';
 import { describe, expect, test, vi } from 'vitest';
@@ -19,12 +19,19 @@ describe('Node.js runtime', () => {
 
     test('compresses with brotli', async () => {
         const data = new TextEncoder().encode('x'.repeat(2048));
-        const compressed = await nodeRuntime.compress(data);
-        expect(compressed?.encoding).toBe('br');
-        expect(compressed!.data.byteLength).toBeLessThan(data.byteLength);
+        const compressed = await nodeRuntime.compress(data, { algorithm: 'br', quality: 6 });
+        expect(brotliDecompressSync(compressed)).toEqual(Buffer.from(data));
+        expect(compressed.byteLength).toBeLessThan(data.byteLength);
     });
 
-    test('falls back to gzip where `node:zlib` does not implement brotli', async () => {
+    test('compresses with gzip', async () => {
+        const data = new TextEncoder().encode('x'.repeat(2048));
+        const compressed = await nodeRuntime.compress(data, { algorithm: 'gzip', quality: 6 });
+        expect(gunzipSync(compressed)).toEqual(Buffer.from(data));
+        expect(compressed.byteLength).toBeLessThan(data.byteLength);
+    });
+
+    test('rejects where `node:zlib` does not implement the algorithm', async () => {
         vi.resetModules();
         vi.doMock('node:zlib', async () => {
             const zlib = await vi.importActual<typeof Zlib>('node:zlib');
@@ -34,9 +41,7 @@ describe('Node.js runtime', () => {
         try {
             const { runtime } = await import('../src/runtime/node.js');
             const data = new TextEncoder().encode('x'.repeat(2048));
-            const compressed = await runtime.compress(data);
-            expect(compressed?.encoding).toBe('gzip');
-            expect(gunzipSync(compressed!.data)).toEqual(Buffer.from(data));
+            await expect(runtime.compress(data, { algorithm: 'br', quality: 6 })).rejects.toThrow(TypeError);
         } finally {
             vi.doUnmock('node:zlib');
             vi.resetModules();
@@ -58,7 +63,9 @@ describe('Web API runtime', () => {
     test('offers no platform, compression or agents', async () => {
         expect(webRuntime.isNode).toBe(false);
         expect(webRuntime.platform).toBeUndefined();
-        await expect(webRuntime.compress(new Uint8Array(4096))).resolves.toBeUndefined();
+        await expect(webRuntime.compress(new Uint8Array(4096), { algorithm: 'br', quality: 6 })).rejects.toThrow(
+            'only available in Node.js',
+        );
         await expect(webRuntime.createHttpAgents({ timeoutMillis: 1000 })).resolves.toBeUndefined();
     });
 });
