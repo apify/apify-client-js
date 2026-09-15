@@ -87,7 +87,7 @@ Both algorithms come from `node:zlib`, so neither needs an extra dependency. If 
 
 ## Compression quality and custom compressors
 
-To set the compression quality, pass an <ApiLink to="class/HttpCompressor">`HttpCompressor`</ApiLink> instance instead of a name:
+To set the compression quality, pass an <ApiLink to="interface/HttpCompressor">`HttpCompressor`</ApiLink> instead of a name:
 
 ```js
 import { ApifyClient, BrotliHttpCompressor, GzipHttpCompressor } from 'apify-client';
@@ -105,22 +105,22 @@ const fastClient = new ApifyClient({
 });
 ```
 
-You can also implement a custom compressor by extending <ApiLink to="class/HttpCompressor">`HttpCompressor`</ApiLink>. The client calls it only for bodies that reach the [minimum body size](#minimum-body-size) and aren't [already compressed](#already-compressed-payloads) or [pre-compressed by the caller](#pre-compressed-bodies):
+A custom compressor is any object with a `contentEncoding` string and an async `compress()` method, which is what the <ApiLink to="interface/HttpCompressor">`HttpCompressor`</ApiLink> interface describes. The client calls it only for bodies that reach the [minimum body size](#minimum-body-size) and aren't [already compressed](#already-compressed-payloads) or [pre-compressed by the caller](#pre-compressed-bodies):
 
 ```js
-import { ApifyClient, HttpCompressor } from 'apify-client';
+import { ApifyClient } from 'apify-client';
 
-class IdentityCompressor extends HttpCompressor {
+const identityCompressor = {
     /** Value sent in the `Content-Encoding` header. */
-    contentEncoding = 'identity';
+    contentEncoding: 'identity',
 
     /** Returns the body as it is, so nothing gets compressed. */
     async compress(data) {
         return data;
-    }
-}
+    },
+};
 
-const client = new ApifyClient({ token: 'MY-APIFY-TOKEN', compression: new IdentityCompressor() });
+const client = new ApifyClient({ token: 'MY-APIFY-TOKEN', compression: identityCompressor });
 ```
 
 ## Comparison

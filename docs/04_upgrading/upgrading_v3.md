@@ -341,7 +341,7 @@ The `timeoutSecs` option of <ApiLink to="class/KeyValueStoreClient#setRecord">`K
 
 ## Request compression is configurable
 
-The <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor takes a `compression` option: `'brotli'`, `'gzip'`, or an instance of <ApiLink to="class/HttpCompressor">`HttpCompressor`</ApiLink> for a custom quality or algorithm. The default stays brotli at quality 6, so a client constructed without the option sends the same requests as in v2. For the rules that decide which bodies get compressed, see [HTTP compression](../02_concepts/07_http-compression.md).
+The <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor takes a `compression` option: `'brotli'`, `'gzip'`, or an <ApiLink to="interface/HttpCompressor">`HttpCompressor`</ApiLink> for a custom quality or algorithm. The default stays brotli at quality 6, so a client constructed without the option sends the same requests as in v2. For the rules that decide which bodies get compressed, see [HTTP compression](../02_concepts/07_http-compression.md).
 
 ```js
 import { ApifyClient, BrotliHttpCompressor } from 'apify-client';

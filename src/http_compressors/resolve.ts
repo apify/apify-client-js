@@ -14,7 +14,7 @@ import { GzipHttpCompressor } from './gzip.js';
 export type HttpCompressionAlgorithm = 'brotli' | 'gzip';
 
 /**
- * Schema of the `compression` option: an algorithm name or an {@link HttpCompressor} instance.
+ * Schema of the `compression` option: an algorithm name or an {@link HttpCompressor}.
  * @internal
  */
 export const compressionSchema = z.union([
@@ -24,7 +24,7 @@ export const compressionSchema = z.union([
 
 /**
  * Turns the `compression` option into a ready-to-use {@link HttpCompressor}: a name into the matching built-in
- * compressor with its default quality, an instance into itself.
+ * compressor with its default quality, a compressor into itself.
  * @internal
  */
 export function resolveCompressor(compression: HttpCompressionAlgorithm | HttpCompressor): HttpCompressor {

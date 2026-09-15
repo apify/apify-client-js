@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { runtime } from '#runtime';
 import { parseArgument } from '../utils.js';
-import { HttpCompressor } from './base.js';
+import type { HttpCompressor } from './base.js';
 
 /** Lowest valid brotli quality, the fastest with the least compression. */
 const MIN_QUALITY = 0;
@@ -29,7 +29,7 @@ const optionsSchema = z.strictObject({
  * const client = new ApifyClient({ token: 'my-token', compression: new BrotliHttpCompressor({ quality: 11 }) });
  * ```
  */
-export class BrotliHttpCompressor extends HttpCompressor {
+export class BrotliHttpCompressor implements HttpCompressor {
     readonly contentEncoding = 'br';
 
     readonly #quality: number;
@@ -39,7 +39,6 @@ export class BrotliHttpCompressor extends HttpCompressor {
      * @throws {ArgumentValidationError} If `quality` is out of the valid range.
      */
     constructor(options: BrotliHttpCompressorOptions = {}) {
-        super();
         const { quality } = parseArgument(options, optionsSchema, 'BrotliHttpCompressorOptions');
         this.#quality = quality;
     }

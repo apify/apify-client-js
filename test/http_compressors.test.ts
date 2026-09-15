@@ -1,13 +1,8 @@
 import type { AddressInfo } from 'node:net';
 import { brotliCompressSync, brotliDecompressSync, constants, gunzipSync, gzipSync } from 'node:zlib';
 
-import {
-    ApifyClient,
-    ArgumentValidationError,
-    BrotliHttpCompressor,
-    GzipHttpCompressor,
-    HttpCompressor,
-} from 'apify-client';
+import type { HttpCompressor } from 'apify-client';
+import { ApifyClient, ArgumentValidationError, BrotliHttpCompressor, GzipHttpCompressor } from 'apify-client';
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 
 import { resolveCompressor } from '../src/http_compressors/resolve.js';
@@ -101,7 +96,7 @@ describe('resolveCompressor()', () => {
         expect(resolveCompressor('brotli')).toBeInstanceOf(BrotliHttpCompressor);
     });
 
-    test('passes an HttpCompressor instance through unchanged', () => {
+    test('passes a compressor through unchanged', () => {
         const compressor = new BrotliHttpCompressor({ quality: 11 });
         expect(resolveCompressor(compressor)).toBe(compressor);
     });
@@ -119,7 +114,7 @@ describe('ApifyClient compression option', () => {
         await mockServer.close();
     });
 
-    class IdentityCompressor extends HttpCompressor {
+    class IdentityCompressor implements HttpCompressor {
         readonly contentEncoding = 'identity';
 
         async compress(data: Buffer): Promise<Buffer> {

@@ -591,9 +591,9 @@ export interface ApifyClientOptions {
     /** @default https://api.apify.com */
     baseUrl?: string;
     /**
-     * Compression of request bodies: the name of a built-in algorithm, or an {@link HttpCompressor} instance for
-     * a custom quality or algorithm. Bodies are compressed only in Node.js, and only when they are large enough
-     * to benefit and their content type does not already carry its own compression.
+     * Compression of request bodies: the name of a built-in algorithm, or an {@link HttpCompressor} for a custom
+     * quality or algorithm. Bodies are compressed only in Node.js, and only when they are large enough to benefit
+     * and their content type does not already carry its own compression.
      * @default 'brotli'
      */
     compression?: HttpCompressionAlgorithm | HttpCompressor;

@@ -668,7 +668,7 @@ interface BaseOptions {
 }
 
 // @public
-export class BrotliHttpCompressor extends HttpCompressor {
+export class BrotliHttpCompressor implements HttpCompressor {
     constructor(options?: BrotliHttpCompressorOptions);
     // (undocumented)
     compress(data: Buffer): Promise<Buffer>;
@@ -2865,7 +2865,7 @@ export interface GetStreamedLogOptions extends TimeoutOptions {
 }
 
 // @public
-export class GzipHttpCompressor extends HttpCompressor {
+export class GzipHttpCompressor implements HttpCompressor {
     constructor(options?: GzipHttpCompressorOptions);
     // (undocumented)
     compress(data: Buffer): Promise<Buffer>;
@@ -2940,9 +2940,9 @@ interface HttpClientOptions {
 export type HttpCompressionAlgorithm = 'brotli' | 'gzip';
 
 // @public
-export abstract class HttpCompressor {
-    abstract compress(data: Buffer): Promise<Buffer>;
-    abstract readonly contentEncoding: string;
+export interface HttpCompressor {
+    compress(data: Buffer): Promise<Buffer>;
+    readonly contentEncoding: string;
 }
 
 // @public

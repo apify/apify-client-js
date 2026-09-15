@@ -1,4 +1,4 @@
-export { HttpCompressor } from './base.js';
+export type { HttpCompressor } from './base.js';
 export { BrotliHttpCompressor } from './brotli.js';
 export type { BrotliHttpCompressorOptions } from './brotli.js';
 export { GzipHttpCompressor } from './gzip.js';

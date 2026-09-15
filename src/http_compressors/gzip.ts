@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { runtime } from '#runtime';
 import { parseArgument } from '../utils.js';
-import { HttpCompressor } from './base.js';
+import type { HttpCompressor } from './base.js';
 
 /** Lowest valid gzip quality, the fastest with the least compression. */
 const MIN_QUALITY = 1;
@@ -29,7 +29,7 @@ const optionsSchema = z.strictObject({
  * const client = new ApifyClient({ token: 'my-token', compression: new GzipHttpCompressor({ quality: 1 }) });
  * ```
  */
-export class GzipHttpCompressor extends HttpCompressor {
+export class GzipHttpCompressor implements HttpCompressor {
     readonly contentEncoding = 'gzip';
 
     readonly #quality: number;
@@ -39,7 +39,6 @@ export class GzipHttpCompressor extends HttpCompressor {
      * @throws {ArgumentValidationError} If `quality` is out of the valid range.
      */
     constructor(options: GzipHttpCompressorOptions = {}) {
-        super();
         const { quality } = parseArgument(options, optionsSchema, 'GzipHttpCompressorOptions');
         this.#quality = quality;
     }
