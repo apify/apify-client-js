@@ -7,7 +7,12 @@ import logger from '@apify/log';
 
 import { AxiosHttpClient } from './http_clients/axios.js';
 import type { HttpClientOptions } from './http_clients/base.js';
-import { DEFAULT_MAX_RETRIES, DEFAULT_MIN_DELAY_BETWEEN_RETRIES_MILLIS, HttpClient } from './http_clients/base.js';
+import {
+    DEFAULT_MAX_RETRIES,
+    DEFAULT_MIN_DELAY_BETWEEN_RETRIES_MILLIS,
+    HttpClient,
+    httpClientOptionsShape,
+} from './http_clients/base.js';
 import type { HttpCompressor } from './http_compressors/base.js';
 import type { HttpCompressionAlgorithm } from './http_compressors/resolve.js';
 import { compressionSchema } from './http_compressors/resolve.js';
@@ -51,12 +56,14 @@ const clientOptionsSchema = z.strictObject({
     compression: compressionSchema.default('brotli'),
     headers: z.record(z.string(), z.string()).optional(),
     publicBaseUrl: z.string().default(DEFAULT_API_URL),
-    maxRetries: z.number().int().nonnegative().default(DEFAULT_MAX_RETRIES),
-    minDelayBetweenRetriesMillis: z.number().default(DEFAULT_MIN_DELAY_BETWEEN_RETRIES_MILLIS),
-    timeoutShortSecs: z.number().positive().default(DEFAULT_TIMEOUT_SHORT_SECS),
-    timeoutMediumSecs: z.number().positive().default(DEFAULT_TIMEOUT_MEDIUM_SECS),
-    timeoutLongSecs: z.number().positive().default(DEFAULT_TIMEOUT_LONG_SECS),
-    timeoutMaxSecs: z.number().positive().default(DEFAULT_TIMEOUT_MAX_SECS),
+    maxRetries: httpClientOptionsShape.maxRetries.default(DEFAULT_MAX_RETRIES),
+    minDelayBetweenRetriesMillis: httpClientOptionsShape.minDelayBetweenRetriesMillis.default(
+        DEFAULT_MIN_DELAY_BETWEEN_RETRIES_MILLIS,
+    ),
+    timeoutShortSecs: httpClientOptionsShape.timeoutShortSecs.default(DEFAULT_TIMEOUT_SHORT_SECS),
+    timeoutMediumSecs: httpClientOptionsShape.timeoutMediumSecs.default(DEFAULT_TIMEOUT_MEDIUM_SECS),
+    timeoutLongSecs: httpClientOptionsShape.timeoutLongSecs.default(DEFAULT_TIMEOUT_LONG_SECS),
+    timeoutMaxSecs: httpClientOptionsShape.timeoutMaxSecs.default(DEFAULT_TIMEOUT_MAX_SECS),
     token: z.string().optional(),
     userAgentSuffix: z.union([z.string(), z.array(z.string())]).optional(),
 });

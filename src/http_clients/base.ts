@@ -1,6 +1,7 @@
 import type { Readable } from 'node:stream';
 
 import type { TypedArray } from 'type-fest';
+import { z } from 'zod';
 
 import { APIFY_ENV_VARS } from '@apify/consts';
 import type { Log } from '@apify/log';
@@ -29,6 +30,7 @@ import {
     isCompressibleContentType,
     isStream,
     MIN_COMPRESS_BYTES,
+    parseArgument,
     toBytes,
     version,
 } from '../utils.js';
@@ -42,6 +44,21 @@ const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 const CONTENT_TYPE_JSON = 'application/json';
 
 const CONTENT_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded';
+
+/**
+ * Bounds of the numeric {@link HttpClientOptions}. `ApifyClientOptions` checks the same bounds and adds the defaults.
+ * @internal
+ */
+export const httpClientOptionsShape = {
+    maxRetries: z.number().int().nonnegative(),
+    minDelayBetweenRetriesMillis: z.number().nonnegative(),
+    timeoutShortSecs: z.number().positive(),
+    timeoutMediumSecs: z.number().positive(),
+    timeoutLongSecs: z.number().positive(),
+    timeoutMaxSecs: z.number().positive(),
+};
+
+const httpClientOptionsSchema = z.looseObject(httpClientOptionsShape).partial();
 
 /** Objects whose payload does not live in their own enumerable keys, so JSON serialization loses it. */
 const UNSERIALIZABLE_OBJECT_TAGS = new Set(['Blob', 'File', 'FormData', 'ReadableStream']);
@@ -270,7 +287,14 @@ export abstract class HttpClient {
      */
     protected readonly defaultHeaders: Record<string, string>;
 
+    /**
+     * @param options - Configuration of the pipeline. The retry and timeout options are validated the same way the
+     * `ApifyClient` constructor validates them.
+     * @throws {ArgumentValidationError} When a retry or timeout option is out of bounds.
+     */
     constructor(options: HttpClientOptions = {}) {
+        parseArgument(options, httpClientOptionsSchema, 'HttpClientOptions');
+
         this.stats = options.stats ?? new Statistics();
         this.logger = options.logger ?? log.child({ prefix: 'ApifyClient' });
         this.maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;

@@ -259,6 +259,18 @@ describe('pluggable HTTP client', () => {
         test('AxiosHttpClient is an HttpClient', () => {
             expect(new AxiosHttpClient()).toBeInstanceOf(HttpClient);
         });
+
+        test.each([
+            { name: 'a negative maxRetries', options: { maxRetries: -1 } },
+            { name: 'a fractional maxRetries', options: { maxRetries: 1.5 } },
+            { name: 'a negative minDelayBetweenRetriesMillis', options: { minDelayBetweenRetriesMillis: -1 } },
+            { name: 'a zero timeout tier', options: { timeoutShortSecs: 0 } },
+            { name: 'a negative timeout cap', options: { timeoutMaxSecs: -1 } },
+        ])('rejects $name like the ApifyClient constructor does', ({ options }) => {
+            expect(() => new NodeHttpClient(options)).toThrow(ArgumentValidationError);
+            expect(() => new NodeHttpClient(options)).toThrow('HttpClientOptions');
+            expect(() => new ApifyClient(options)).toThrow(ArgumentValidationError);
+        });
     });
 
     describe('shared pipeline through a hooks-only client', () => {
