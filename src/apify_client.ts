@@ -117,7 +117,13 @@ export class ApifyClient {
     readonly #httpClientOptions: HttpClientOptions;
 
     /**
-     * To use a custom HTTP client, use {@link ApifyClient.withCustomHttpClient} instead.
+     * Creates a client that sends its requests through the built-in {@link AxiosHttpClient}, configured from
+     * `options`: the API token, retries, the timeout tiers, request compression and default headers. The HTTP
+     * client itself is created when {@link httpClient} is first read. To send the requests through a custom HTTP
+     * client, use {@link ApifyClient.withCustomHttpClient} instead.
+     *
+     * @param options - Configuration of the client and of its HTTP client.
+     * @throws {ArgumentValidationError} When an option is unknown or has an invalid value.
      */
     constructor(options: ApifyClientOptions = {}) {
         const parsed = parseArgument(options, clientOptionsSchema, 'ApifyClientOptions');
@@ -203,7 +209,9 @@ export class ApifyClient {
      * constructor options, created on first access. Assigning a client applies {@link token} to it through
      * {@link HttpClient.setDefaultAuthorization} and points {@link stats} at its statistics, so the counters keep
      * tracking the calls the client actually makes. Resource clients hold on to the HTTP client they were created
-     * with, so assign before reaching for them.
+     * with, so assign before reaching for them. Assigning does not close the client it replaces. A default client
+     * that already sent a request keeps its keep-alive agents open until {@link HttpClient.close} is called on it,
+     * so close it yourself, or assign before the first request.
      */
     get httpClient(): HttpClient {
         this.#httpClient ??= new AxiosHttpClient(this.#httpClientOptions);
