@@ -290,11 +290,27 @@ describe('pluggable HTTP client', () => {
         });
 
         test('attributes the error to the resource client, not to the transport', async () => {
-            // The class name ends in `Client` without ending in `HttpClient`, so `ApifyApiError` can only tell
-            // the pipeline frames apart from a resource client's by the method names they carry.
+            // The class name ends in `Client` without ending in `HttpClient`, so only the `#` of the pipeline's
+            // private methods keeps its frames from reading as a resource client's.
             class PipelineClient extends NodeHttpClient {}
 
             const client = ApifyClient.withCustomHttpClient({ baseUrl, httpClient: new PipelineClient() });
+
+            const call = client.keyValueStore('my-store').deleteRecord('missing');
+
+            await expect(call).rejects.toMatchObject({ clientMethod: 'KeyValueStoreClient.deleteRecord' });
+        });
+
+        test('attributes the error past a call() override of a client not named after HttpClient', async () => {
+            class ImpitClient extends NodeHttpClient {
+                override async call<T>(config: ApifyRequestConfig): Promise<ApifyResponse<T>> {
+                    // Awaiting keeps this frame on the async stack trace, right above the resource client's.
+                    const response = await super.call(config);
+                    return response;
+                }
+            }
+
+            const client = ApifyClient.withCustomHttpClient({ baseUrl, httpClient: new ImpitClient() });
 
             const call = client.keyValueStore('my-store').deleteRecord('missing');
 

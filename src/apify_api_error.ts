@@ -14,13 +14,15 @@ export type { ApifyApiErrorType } from './models.js';
  * 3: undefined
  * 4: "listResources"
  *
- * The error is created inside the HTTP client's pipeline, whose frames sit above the resource client's. V8 names
- * them after the transport class, which a custom client can call anything, so the second lookahead skips them by
- * method name as well: no resource client has a method of either name.
+ * The error is created inside the HTTP client's pipeline, whose frames sit above the resource client's. The
+ * pipeline's own methods are private, so V8 prints them with a `#` that no method name can match. A custom client
+ * can be named anything and can override the public `call()`, so its frames are skipped by the `HttpClient` suffix
+ * and by the method name. `ActorClient.call()` and `TaskClient.call()` reach the pipeline through `start()`, whose
+ * frame sits closer to the error and matches first.
  * @private
  */
 const CLIENT_METHOD_REGEX =
-    /at( async)? (?![A-Za-z]*HttpClient\.)([A-Za-z]+(Collection)?Client)\._?(?!makeRequest|retryWithExpBackoff)([A-Za-z]+) \(/;
+    /at( async)? (?![A-Za-z]*HttpClient\.)([A-Za-z]+(Collection)?Client)\.(?!call \()([A-Za-z]+) \(/;
 
 /**
  * An `ApifyApiError` is thrown for successful HTTP requests that reach the API,
