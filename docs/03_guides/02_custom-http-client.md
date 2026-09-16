@@ -9,7 +9,7 @@ import ApiLink from '@theme/ApiLink';
 
 This guide implements a custom <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> over the global `fetch`, which Node.js 22 and browsers provide. It shows the three hooks a transport fills in and how a foreign response API is adapted to the <ApiLink to="interface/HttpResponse">`HttpResponse`</ApiLink> shape the pipeline expects.
 
-For an overview of the architecture and the built-in axios client, see [HTTP clients](../02_concepts/07_http-clients.md).
+For an overview of the architecture and the built-in axios client, see [HTTP clients](../02_concepts/08_http-clients.md).
 
 ## Implementation
 

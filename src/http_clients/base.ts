@@ -9,6 +9,9 @@ import { concatStreamToBuffer } from '@apify/utilities';
 
 import { ApifyApiError } from '../apify_api_error.js';
 import { maybeParseBody } from '../body_parser.js';
+import type { HttpCompressor } from '../http_compressors/base.js';
+import type { HttpCompressionAlgorithm } from '../http_compressors/resolve.js';
+import { resolveCompressor } from '../http_compressors/resolve.js';
 import { InvalidResponseBodyError } from '../invalid_response_body_error.js';
 import { Statistics } from '../statistics.js';
 import type { Timeout, TimeoutTier } from '../timeouts.js';
@@ -25,7 +28,8 @@ import {
     isBuffer,
     isCompressibleContentType,
     isStream,
-    maybeCompressValue,
+    MIN_COMPRESS_BYTES,
+    toBytes,
     version,
 } from '../utils.js';
 
@@ -181,6 +185,12 @@ export interface HttpClientOptions {
     timeoutLongSecs?: number;
     /** Upper bound for the timeout of a single attempt, in seconds. @default 360 */
     timeoutMaxSecs?: number;
+    /**
+     * Compression of request bodies: the name of a built-in algorithm, or an {@link HttpCompressor} for a custom
+     * quality or algorithm.
+     * @default 'brotli'
+     */
+    compression?: HttpCompressionAlgorithm | HttpCompressor;
     /** Additional headers sent with every request. They win over the built-in defaults. */
     headers?: Record<string, string>;
     /** Statistics the client records its calls into. Created when omitted. */
@@ -250,6 +260,9 @@ export abstract class HttpClient {
     /** Upper bound for the timeout of a single attempt, in milliseconds. */
     timeoutMaxMillis: number;
 
+    /** Compressor the request pipeline runs the bodies worth compressing through. */
+    readonly httpCompressor: HttpCompressor;
+
     /**
      * Headers sent with every request: the `Authorization` header built from the token, the `User-Agent` where the
      * runtime lets a client set one, the `X-Apify-Workflow-Key` when a workflow key is configured, and whatever
@@ -269,6 +282,7 @@ export abstract class HttpClient {
             long: (options.timeoutLongSecs ?? DEFAULT_TIMEOUT_LONG_SECS) * 1000,
         };
         this.timeoutMaxMillis = (options.timeoutMaxSecs ?? DEFAULT_TIMEOUT_MAX_SECS) * 1000;
+        this.httpCompressor = resolveCompressor(options.compression ?? 'brotli');
 
         const defaults: Record<string, string> = {};
 
@@ -375,9 +389,10 @@ export abstract class HttpClient {
      *
      * Merges the client's default headers with the per-request ones, header names compared case-insensitively and
      * the per-request values winning. Serializes an object body to JSON, setting `Content-Type: application/json`
-     * unless the caller supplied a content type. Compresses the body unless a `Content-Encoding` header is already
-     * set, the body is too small, or its content type says the payload is already compressed. A caller-supplied
-     * `Content-Encoding` is forwarded as it is, which is how a pre-encoded body is uploaded.
+     * unless the caller supplied a content type. Runs the body through {@link httpCompressor} unless a
+     * `Content-Encoding` header is already set, the body is too small, or its content type says the payload is
+     * already compressed. A caller-supplied `Content-Encoding` is forwarded as it is, which is how a pre-encoded
+     * body is uploaded, and `Content-Encoding: identity` opts a single request out of compression.
      */
     protected async prepareRequest(
         config: ApifyRequestConfig,
@@ -385,16 +400,13 @@ export abstract class HttpClient {
         let headers = mergeHeaders(this.defaultHeaders, config.headers);
         let body = serializeBody(config.data, headers, config.stringifyFunctions);
 
-        if (
-            body !== undefined &&
-            getHeader(headers, 'content-encoding') === undefined &&
-            isCompressibleContentType(getHeader(headers, 'content-type'))
-        ) {
-            const compressed = await maybeCompressValue(body);
-            if (compressed) {
-                body = compressed.data;
-                headers = mergeHeaders(headers, { 'Content-Encoding': compressed.encoding });
-            }
+        const bytes = compressibleBytes(body, headers);
+        if (bytes) {
+            body = await this.httpCompressor.compress(Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength));
+            // Compressing changes the body length, so a `Content-Length` the caller set describes the wrong body
+            // and would leave the server waiting for bytes that never arrive.
+            headers = mergeHeaders(headers, { 'Content-Encoding': this.httpCompressor.contentEncoding });
+            deleteHeader(headers, 'content-length');
         }
 
         return { headers, body };
@@ -634,6 +646,30 @@ function mergeHeaders(base: Record<string, string>, override?: Record<string, st
         merged[key] = value;
     }
     return merged;
+}
+
+/**
+ * Removes a header by name, compared case-insensitively.
+ */
+function deleteHeader(headers: Record<string, string>, name: string): void {
+    const wanted = name.toLowerCase();
+    for (const key of Object.keys(headers)) {
+        if (key.toLowerCase() === wanted) delete headers[key];
+    }
+}
+
+/**
+ * Views a serialized body as the bytes to compress, or `undefined` when compressing it would not pay off: the
+ * caller already labeled the body with a `Content-Encoding`, its content type carries its own compression, it is
+ * a stream or smaller than {@link MIN_COMPRESS_BYTES}, or the runtime has no compression to offer.
+ */
+function compressibleBytes(body: HttpRequestBody | undefined, headers: Record<string, string>): Uint8Array | undefined {
+    if (body === undefined || !runtime.isNode) return undefined;
+    if (getHeader(headers, 'content-encoding') !== undefined) return undefined;
+    if (!isCompressibleContentType(getHeader(headers, 'content-type'))) return undefined;
+
+    const bytes = toBytes(body);
+    return bytes && bytes.byteLength >= MIN_COMPRESS_BYTES ? bytes : undefined;
 }
 
 function headerValue(value: string | string[] | undefined): string | undefined {

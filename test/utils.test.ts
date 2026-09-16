@@ -103,38 +103,6 @@ describe('utils.parseResponse()', () => {
     });
 });
 
-describe('utils.maybeCompressValue()', () => {
-    test('returns undefined for small values', async () => {
-        expect(await utils.maybeCompressValue('small')).toBeUndefined();
-    });
-
-    test('returns undefined for non-string non-binary values', async () => {
-        expect(await utils.maybeCompressValue({ foo: 'bar' })).toBeUndefined();
-        expect(await utils.maybeCompressValue(Readable.from(['x'.repeat(2048)]))).toBeUndefined();
-    });
-
-    test('compresses large string using brotli in Node.js', async () => {
-        const largeValue = 'x'.repeat(2048);
-        const result = await utils.maybeCompressValue(largeValue);
-        expect(result).not.toBeUndefined();
-        expect(result!.encoding).toBe('br');
-        expect(result!.data).toBeInstanceOf(Uint8Array);
-        expect(result!.data.byteLength).toBeLessThan(Buffer.byteLength(largeValue));
-    });
-
-    test.each([
-        { kind: 'Buffer', value: Buffer.alloc(2048, 'a') },
-        { kind: 'Uint8Array', value: new Uint8Array(2048).fill(0x61) },
-        { kind: 'ArrayBuffer', value: new Uint8Array(2048).fill(0x61).buffer },
-    ])('compresses a large $kind using brotli in Node.js', async ({ value }) => {
-        const result = await utils.maybeCompressValue(value);
-        expect(result).not.toBeUndefined();
-        expect(result!.encoding).toBe('br');
-        expect(result!.data).toBeInstanceOf(Uint8Array);
-        expect(result!.data.byteLength).toBeLessThan(2048);
-    });
-});
-
 describe('utils.bytesToBase64()', () => {
     test('matches the Node.js encoding for an input longer than one slice', () => {
         const bytes = new Uint8Array(100_000).map((_, i) => i * 7919);

@@ -616,6 +616,7 @@ export interface ApifyClientCustomHttpClientOptions {
 // @public
 export interface ApifyClientOptions {
     baseUrl?: string;
+    compression?: HttpCompressionAlgorithm | HttpCompressor;
     // (undocumented)
     maxRetries?: number;
     minDelayBetweenRetriesMillis?: number;
@@ -691,6 +692,20 @@ interface BaseOptions {
     params: Record<string, unknown>;
     // (undocumented)
     publicBaseUrl: string;
+}
+
+// @public
+export class BrotliHttpCompressor implements HttpCompressor {
+    constructor(options?: BrotliHttpCompressorOptions);
+    // (undocumented)
+    compress(data: Buffer): Promise<Buffer>;
+    // (undocumented)
+    readonly contentEncoding = "br";
+}
+
+// @public
+export interface BrotliHttpCompressorOptions {
+    quality?: number;
 }
 
 // @public
@@ -2457,7 +2472,7 @@ export class DatasetClient<Data extends Record<string | number, any> = Record<st
     get(options?: TimeoutOptions): Promise<Dataset | undefined>;
     getStatistics(options?: TimeoutOptions): Promise<DatasetStatistics>;
     listItems(options?: DatasetClientListItemOptions): PaginatedIterator<Data>;
-    pushItems(items: Data | Data[] | string | string[], options?: TimeoutOptions): Promise<void>;
+    pushItems(items: Data | Data[] | string, options?: TimeoutOptions): Promise<void>;
     update(newFields: DatasetClientUpdateOptions, options?: TimeoutOptions): Promise<Dataset>;
 }
 
@@ -2877,6 +2892,20 @@ export interface GetStreamedLogOptions extends TimeoutOptions {
 }
 
 // @public
+export class GzipHttpCompressor implements HttpCompressor {
+    constructor(options?: GzipHttpCompressorOptions);
+    // (undocumented)
+    compress(data: Buffer): Promise<Buffer>;
+    // (undocumented)
+    readonly contentEncoding = "gzip";
+}
+
+// @public
+export interface GzipHttpCompressorOptions {
+    quality?: number;
+}
+
+// @public
 export abstract class HttpClient {
     constructor(options?: HttpClientOptions);
     protected buildUrl(url: string, params?: Record<string, unknown>): string;
@@ -2884,6 +2913,7 @@ export abstract class HttpClient {
     close(): Promise<void>;
     protected computeTimeoutMillis(timeoutSecs: Timeout | undefined, attempt: number): number;
     protected readonly defaultHeaders: Record<string, string>;
+    readonly httpCompressor: HttpCompressor;
     isRetryableTransportError(_error: unknown): boolean;
     isTimeoutError(error: unknown): boolean;
     logger: Log;
@@ -2902,6 +2932,7 @@ export abstract class HttpClient {
 
 // @public
 export interface HttpClientOptions {
+    compression?: HttpCompressionAlgorithm | HttpCompressor;
     headers?: Record<string, string>;
     logger?: Log;
     maxRetries?: number;
@@ -2913,6 +2944,15 @@ export interface HttpClientOptions {
     timeoutShortSecs?: number;
     token?: string;
     workflowKey?: string;
+}
+
+// @public
+export type HttpCompressionAlgorithm = 'brotli' | 'gzip';
+
+// @public
+export interface HttpCompressor {
+    compress(data: Buffer): Promise<Buffer>;
+    readonly contentEncoding: string;
 }
 
 // @public

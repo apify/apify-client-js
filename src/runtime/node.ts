@@ -1,7 +1,6 @@
 import type http from 'node:http';
 import type { Socket } from 'node:net';
 import os from 'node:os';
-import { promisify } from 'node:util';
 import { brotliCompress, constants, gzip } from 'node:zlib';
 
 import type { Runtime } from './types.js';
@@ -15,23 +14,15 @@ export const runtime: Runtime = {
 
     platform: `${os.platform()}; Node/${process.version}`,
 
-    async compress(data) {
-        try {
-            // `promisify()` belongs inside the fallback chain: a partial `node:zlib` can export
-            // `brotliCompress` without implementing it, and `promisify(undefined)` throws. At module scope
-            // that would fail the whole import instead of falling through to gzip.
-            const options = { params: { [constants.BROTLI_PARAM_QUALITY]: 6 } };
-            return { data: await promisify(brotliCompress)(data, options), encoding: 'br' };
-        } catch {
-            // Runtimes that only provide a partial `node:zlib` (Node.js compatibility shims) may not implement
-            // brotli, but usually do implement gzip.
-        }
-
-        try {
-            return { data: await promisify(gzip)(data), encoding: 'gzip' };
-        } catch {
-            return undefined;
-        }
+    async compress(data, { algorithm, quality }) {
+        return new Promise((resolve, reject) => {
+            const done = (error: Error | null, result: Buffer) => (error ? reject(error) : resolve(result));
+            if (algorithm === 'br') {
+                brotliCompress(data, { params: { [constants.BROTLI_PARAM_QUALITY]: quality } }, done);
+            } else {
+                gzip(data, { level: quality }, done);
+            }
+        });
     },
 
     async createHttpAgents({ timeoutMillis }) {

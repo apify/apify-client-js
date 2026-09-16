@@ -8,6 +8,9 @@ import logger from '@apify/log';
 import { AxiosHttpClient } from './http_clients/axios.js';
 import type { HttpClientOptions } from './http_clients/base.js';
 import { DEFAULT_MAX_RETRIES, DEFAULT_MIN_DELAY_BETWEEN_RETRIES_MILLIS, HttpClient } from './http_clients/base.js';
+import type { HttpCompressor } from './http_compressors/base.js';
+import type { HttpCompressionAlgorithm } from './http_compressors/resolve.js';
+import { compressionSchema } from './http_compressors/resolve.js';
 import { ActorClient } from './resource_clients/actor.js';
 import { ActorCollectionClient } from './resource_clients/actor_collection.js';
 import { BuildClient } from './resource_clients/build.js';
@@ -45,6 +48,7 @@ const DEFAULT_API_URL = 'https://api.apify.com';
 
 const clientOptionsSchema = z.strictObject({
     baseUrl: z.string().default(DEFAULT_API_URL),
+    compression: compressionSchema.default('brotli'),
     publicBaseUrl: z.string().default(DEFAULT_API_URL),
     maxRetries: z.number().int().nonnegative().default(DEFAULT_MAX_RETRIES),
     minDelayBetweenRetriesMillis: z.number().default(DEFAULT_MIN_DELAY_BETWEEN_RETRIES_MILLIS),
@@ -119,6 +123,7 @@ export class ApifyClient {
 
         const {
             baseUrl,
+            compression,
             publicBaseUrl,
             maxRetries,
             minDelayBetweenRetriesMillis,
@@ -142,6 +147,7 @@ export class ApifyClient {
             stats: this.stats,
             maxRetries,
             minDelayBetweenRetriesMillis,
+            compression,
             timeoutShortSecs,
             timeoutMediumSecs,
             timeoutLongSecs,
@@ -655,6 +661,13 @@ export class ApifyClient {
 export interface ApifyClientOptions {
     /** @default https://api.apify.com */
     baseUrl?: string;
+    /**
+     * Compression of request bodies: the name of a built-in algorithm, or an {@link HttpCompressor} for a custom
+     * quality or algorithm. Bodies are compressed only in Node.js, and only when they are large enough to benefit
+     * and their content type does not already carry its own compression.
+     * @default 'brotli'
+     */
+    compression?: HttpCompressionAlgorithm | HttpCompressor;
     /**
      * @default https://api.apify.com
      * @since Added in 2.17.0

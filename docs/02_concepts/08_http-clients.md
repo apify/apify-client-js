@@ -32,7 +32,7 @@ const client = new ApifyClient({
 });
 ```
 
-Anything beyond those options, such as [axios request interceptors](https://axios-http.com/docs/interceptors), is configured on an <ApiLink to="class/AxiosHttpClient">`AxiosHttpClient`</ApiLink> instance that you plug in yourself. Retries and timeouts then live on the HTTP client too:
+Anything beyond those options, such as [axios request interceptors](https://axios-http.com/docs/interceptors), is configured on an <ApiLink to="class/AxiosHttpClient">`AxiosHttpClient`</ApiLink> instance that you plug in yourself. Retries, timeouts and compression then live on the HTTP client too:
 
 ```js
 import { ApifyClient, AxiosHttpClient } from 'apify-client';

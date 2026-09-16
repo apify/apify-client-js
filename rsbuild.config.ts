@@ -1,7 +1,7 @@
 import { defineConfig } from '@rsbuild/core';
 import { pluginNodePolyfill } from '@rsbuild/plugin-node-polyfill';
 
-const MAX_BUNDLE_BYTES = 350 * 1024;
+const MAX_BUNDLE_BYTES = 360 * 1024;
 
 // eslint-disable-next-line import/no-default-export
 export default defineConfig({
@@ -55,7 +55,7 @@ export default defineConfig({
                 ...config.optimization,
                 splitChunks: false,
             };
-            // A regression guard, not a target: the bundle sits at ~325 kB, so this only fails the
+            // A regression guard, not a target: the bundle sits at ~338 kB, so this only fails the
             // build on an unnoticed jump. A `zod` minor is the likeliest cause, since it is a runtime
             // dependency on a caret range - bumping this constant is the expected response. The
             // generated response schemas growing with the OpenAPI specification is the other.
