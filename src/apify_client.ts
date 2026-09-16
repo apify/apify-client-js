@@ -111,10 +111,10 @@ export class ApifyClient {
 
     logger: Log;
 
-    private _httpClient?: HttpClient;
+    #httpClient?: HttpClient;
 
     /** Configuration of the default HTTP client, applied when no custom one is set. */
-    private readonly _httpClientOptions: HttpClientOptions;
+    readonly #httpClientOptions: HttpClientOptions;
 
     /**
      * To use a custom HTTP client, use {@link ApifyClient.withCustomHttpClient} instead.
@@ -145,7 +145,7 @@ export class ApifyClient {
         this.token = token;
         this.stats = new Statistics();
         this.logger = logger.child({ prefix: 'ApifyClient' });
-        this._httpClientOptions = {
+        this.#httpClientOptions = {
             stats: this.stats,
             maxRetries,
             minDelayBetweenRetriesMillis,
@@ -206,13 +206,13 @@ export class ApifyClient {
      * with, so assign before reaching for them.
      */
     get httpClient(): HttpClient {
-        this._httpClient ??= new AxiosHttpClient(this._httpClientOptions);
-        return this._httpClient;
+        this.#httpClient ??= new AxiosHttpClient(this.#httpClientOptions);
+        return this.#httpClient;
     }
 
     set httpClient(httpClient: HttpClient) {
         if (this.token) httpClient.setDefaultAuthorization(this.token);
-        this._httpClient = httpClient;
+        this.#httpClient = httpClient;
         this.stats = httpClient.stats;
     }
 
