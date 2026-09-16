@@ -163,8 +163,11 @@ export interface HttpRequest {
     headers: Record<string, string>;
     /** Request body, already serialized and compressed, or `undefined` for a request without one. */
     body?: HttpRequestBody;
-    /** Timeout for this attempt in milliseconds. */
-    timeoutMillis: number;
+    /**
+     * Timeout for this attempt in milliseconds, or `undefined` for a request that runs without one, which is what
+     * `timeoutSecs: 'noTimeout'` asks for.
+     */
+    timeoutMillis?: number;
     /** Whether to hand the body back unread as a `Readable`, so the caller can stream it. */
     stream: boolean;
 }
@@ -241,7 +244,8 @@ export interface HttpClientOptions {
  *
  * class FetchHttpClient extends HttpClient {
  *     async sendRequest({ method, url, headers, body, timeoutMillis }) {
- *         const response = await fetch(url, { method, headers, body, signal: AbortSignal.timeout(timeoutMillis) });
+ *         const signal = timeoutMillis === undefined ? undefined : AbortSignal.timeout(timeoutMillis);
+ *         const response = await fetch(url, { method, headers, body, signal });
  *         return {
  *             status: response.status,
  *             headers: Object.fromEntries(response.headers),
@@ -456,15 +460,15 @@ export abstract class HttpClient {
 
     /**
      * Resolves `timeoutSecs` to the number of milliseconds the given attempt gets. A tier name resolves to its
-     * configured duration, a number is taken as seconds, and `'noTimeout'` becomes `0`, which the transports read
-     * as no timeout. The result doubles with each attempt and is capped at `timeoutMaxMillis`. A requested value
-     * above the cap is capped too, which warns once, since it does not take effect in full.
+     * configured duration, a number is taken as seconds, and `'noTimeout'` becomes `undefined`. The result doubles
+     * with each attempt and is capped at `timeoutMaxMillis`. A requested value above the cap is capped too, which
+     * warns once, since it does not take effect in full.
      *
      * @param timeoutSecs - The request's timeout. Defaults to the `medium` tier.
      * @param attempt - Current attempt number, starting at 1.
      */
-    protected computeTimeoutMillis(timeoutSecs: Timeout = 'medium', attempt: number): number {
-        if (timeoutSecs === 'noTimeout') return 0;
+    protected computeTimeoutMillis(timeoutSecs: Timeout = 'medium', attempt: number): number | undefined {
+        if (timeoutSecs === 'noTimeout') return undefined;
 
         const requestedMillis = typeof timeoutSecs === 'number' ? timeoutSecs * 1000 : this.timeoutMillis[timeoutSecs];
 

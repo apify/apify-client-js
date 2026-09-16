@@ -66,7 +66,7 @@ A custom client extends <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> th
 
 The public `call()` method provides the shared request pipeline. A concrete transport implements these hooks:
 
-- `sendRequest(request)` sends one prepared request and returns its response, error statuses included. It receives an <ApiLink to="interface/HttpRequest">`HttpRequest`</ApiLink>: the URL with the query string already encoded into it, the headers with the client's default headers already merged in, the body already serialized and compressed, the timeout for this attempt in milliseconds, and whether the caller wants the response body as a stream. The inherited `call()` needs it, so every transport has to implement it. Let the HTTP library's errors propagate unwrapped, and leave status handling and <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> to `call()`.
+- `sendRequest(request)` sends one prepared request and returns its response, error statuses included. It receives an <ApiLink to="interface/HttpRequest">`HttpRequest`</ApiLink>: the URL with the query string already encoded into it, the headers with the client's default headers already merged in, the body already serialized and compressed, the timeout for this attempt in milliseconds (`undefined` for a request that runs without one), and whether the caller wants the response body as a stream. The inherited `call()` needs it, so every transport has to implement it. Let the HTTP library's errors propagate unwrapped, and leave status handling and <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> to `call()`.
 - `isRetryableTransportError(error)` classifies transport failures for the shared retry loop. The default classifies nothing as retryable, so a transport that does not override it gives up on the first connection failure.
 - `isTimeoutError(error)` identifies the transport's timeout errors. The default recognizes errors named `TimeoutError`, which is what `AbortSignal.timeout()` produces. Timeout classification is independent of retryability, so a timeout the retry loop should retry has to be covered by `isRetryableTransportError()` too.
 - `close()` releases resources owned by the transport, such as a connection pool. The default does nothing.
@@ -83,7 +83,7 @@ Mark your implementations with the `override` keyword, as the built-in axios cli
 | `url: string` | Full URL, query string included |
 | `headers: Record<string, string>` | Final request headers |
 | `body?: string \| Buffer \| ArrayBuffer \| ArrayBufferView \| Readable` | Serialized and compressed body, or `undefined` |
-| `timeoutMillis: number` | Timeout of this attempt |
+| `timeoutMillis?: number` | Timeout of this attempt, or `undefined` for a request that runs without one |
 | `stream: boolean` | Whether to return the body unread, as a `Readable` |
 
 It returns an <ApiLink to="interface/HttpResponse">`HttpResponse`</ApiLink>. It is an interface, not a class, so any object of this shape will do:

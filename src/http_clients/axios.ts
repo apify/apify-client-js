@@ -122,7 +122,8 @@ export class AxiosHttpClient extends HttpClient {
             url,
             headers,
             data: body,
-            timeout: timeoutMillis,
+            // Axios reads 0 as no timeout.
+            timeout: timeoutMillis ?? 0,
             responseType: stream ? 'stream' : 'arraybuffer',
             // See axios/axios#1045 for why axios must not buffer a stream body to follow redirects.
             ...(isStream(body) ? { maxRedirects: 0 } : {}),

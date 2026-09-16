@@ -365,6 +365,15 @@ describe('pluggable HTTP client', () => {
             expect(sendRequest.mock.calls.map(([request]) => request.timeoutMillis)).toEqual([2000, 4000, 5000]);
         });
 
+        test("hands the transport undefined instead of a timeout for 'noTimeout'", async () => {
+            const httpClient = new NodeHttpClient();
+            const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockResolvedValue(okResponse());
+
+            await httpClient.call({ url: `${baseUrl}/echo`, method: 'GET', timeoutSecs: 'noTimeout' });
+
+            expect(sendRequest.mock.calls[0][0]).toHaveProperty('timeoutMillis', undefined);
+        });
+
         test('stops retrying a timeout when the request opts out of it', async () => {
             const timeout = Object.assign(new Error('late'), { name: 'TimeoutError' });
             const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 1, maxRetries: 2 });

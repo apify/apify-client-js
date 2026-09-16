@@ -15,7 +15,7 @@ For an overview of the architecture and the built-in axios client, see [HTTP cli
 
 The client has three parts:
 
-1. `sendRequest()` sends one prepared request and adapts the `Response` that `fetch` resolves to. The pipeline hands it the URL with the query string encoded, the headers merged and the body serialized, so the method only moves bytes. A `Readable` body is streamed, which `fetch` requires to be flagged with `duplex: 'half'`. When the caller asked for a streamed response, the body goes back unread as a `Readable`, otherwise as a `Buffer`.
+1. `sendRequest()` sends one prepared request and adapts the `Response` that `fetch` resolves to. The pipeline hands it the URL with the query string encoded, the headers merged and the body serialized, so the method only moves bytes. The timeout of the attempt becomes an `AbortSignal.timeout()`, unless the request runs without one, which the pipeline signals with an `undefined` `timeoutMillis`. A `Readable` body is streamed, which `fetch` requires to be flagged with `duplex: 'half'`. When the caller asked for a streamed response, the body goes back unread as a `Readable`, otherwise as a `Buffer`.
 2. `isRetryableTransportError()` maps the transport's transient failures for the shared retry loop. `fetch` reports every network failure as a `TypeError` with the underlying error in `cause`, so the classification reads the error code from there. A timeout from `AbortSignal.timeout()` is a `DOMException` named `TimeoutError`, which the inherited `isTimeoutError()` already recognizes, so the override only has to make it retryable.
 3. <ApiLink to="class/ApifyClient#withCustomHttpClient">`ApifyClient.withCustomHttpClient()`</ApiLink> connects the client to the resource clients and applies the API token.
 
@@ -32,7 +32,7 @@ class FetchHttpClient extends HttpClient {
             method,
             headers,
             body,
-            signal: AbortSignal.timeout(timeoutMillis),
+            signal: timeoutMillis === undefined ? undefined : AbortSignal.timeout(timeoutMillis),
             ...(body instanceof Readable ? { duplex: 'half' } : {}),
         });
 
