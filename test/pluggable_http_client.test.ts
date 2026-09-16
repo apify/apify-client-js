@@ -215,6 +215,22 @@ describe('pluggable HTTP client', () => {
 
             expect(received[0].headers.authorization).toBe('Bearer outer_token');
         });
+
+        test('sends the headers option with every request', async () => {
+            const client = new ApifyClient({
+                token: 'test_token',
+                headers: { 'X-Apify-Integration-Platform': 'test' },
+            });
+
+            await client.httpClient.call({ url: `${baseUrl}/echo`, method: 'GET' });
+            await client.httpClient.call({ url: `${baseUrl}/echo`, method: 'GET' });
+
+            expect(received).toHaveLength(2);
+            for (const request of received) {
+                expect(request.headers['x-apify-integration-platform']).toBe('test');
+                expect(request.headers.authorization).toBe('Bearer test_token');
+            }
+        });
     });
 
     describe('HttpClient base', () => {

@@ -617,6 +617,7 @@ export interface ApifyClientCustomHttpClientOptions {
 export interface ApifyClientOptions {
     baseUrl?: string;
     compression?: HttpCompressionAlgorithm | HttpCompressor;
+    headers?: Record<string, string>;
     // (undocumented)
     maxRetries?: number;
     minDelayBetweenRetriesMillis?: number;

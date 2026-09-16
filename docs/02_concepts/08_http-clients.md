@@ -29,10 +29,11 @@ const client = new ApifyClient({
     maxRetries: 4,
     minDelayBetweenRetriesMillis: 500,
     timeoutMediumSecs: 60,
+    headers: { 'x-apify-integration-platform': 'my-platform' },
 });
 ```
 
-Anything beyond those options, such as [axios request interceptors](https://axios-http.com/docs/interceptors), is configured on an <ApiLink to="class/AxiosHttpClient">`AxiosHttpClient`</ApiLink> instance that you plug in yourself. Retries, timeouts and compression then live on the HTTP client too:
+Anything beyond those options, such as [axios request interceptors](https://axios-http.com/docs/interceptors) for a header computed per request, is configured on an <ApiLink to="class/AxiosHttpClient">`AxiosHttpClient`</ApiLink> instance that you plug in yourself. Retries, timeouts and compression then live on the HTTP client too:
 
 ```js
 import { ApifyClient, AxiosHttpClient } from 'apify-client';

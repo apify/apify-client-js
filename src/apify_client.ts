@@ -49,6 +49,7 @@ const DEFAULT_API_URL = 'https://api.apify.com';
 const clientOptionsSchema = z.strictObject({
     baseUrl: z.string().default(DEFAULT_API_URL),
     compression: compressionSchema.default('brotli'),
+    headers: z.record(z.string(), z.string()).optional(),
     publicBaseUrl: z.string().default(DEFAULT_API_URL),
     maxRetries: z.number().int().nonnegative().default(DEFAULT_MAX_RETRIES),
     minDelayBetweenRetriesMillis: z.number().default(DEFAULT_MIN_DELAY_BETWEEN_RETRIES_MILLIS),
@@ -124,6 +125,7 @@ export class ApifyClient {
         const {
             baseUrl,
             compression,
+            headers,
             publicBaseUrl,
             maxRetries,
             minDelayBetweenRetriesMillis,
@@ -148,6 +150,7 @@ export class ApifyClient {
             maxRetries,
             minDelayBetweenRetriesMillis,
             compression,
+            headers,
             timeoutShortSecs,
             timeoutMediumSecs,
             timeoutLongSecs,
@@ -668,6 +671,11 @@ export interface ApifyClientOptions {
      * @default 'brotli'
      */
     compression?: HttpCompressionAlgorithm | HttpCompressor;
+    /**
+     * Additional headers sent with every request, such as an integration platform marker. They win over the
+     * built-in defaults, and a header set on a single call wins over them.
+     */
+    headers?: Record<string, string>;
     /**
      * @default https://api.apify.com
      * @since Added in 2.17.0

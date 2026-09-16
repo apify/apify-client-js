@@ -493,7 +493,22 @@ v2 compressed a request body only when it was a string or a `Buffer`. A `Uint8Ar
 
 ### `requestInterceptors` moved to `AxiosHttpClient`
 
-Axios request interceptors are a feature of the axios transport, so the option left `ApifyClientOptions`. Pass it to an `AxiosHttpClient` instead, and plug that in. The retry and timeout options move along with it:
+Axios request interceptors are a feature of the axios transport, so the option left `ApifyClientOptions`. Most interceptors only added a fixed header to every request, such as `x-apify-integration-platform`. The new `headers` option of `ApifyClientOptions` covers that without touching axios:
+
+```diff
+  const client = new ApifyClient({
+      token: 'MY-APIFY-TOKEN',
+-     requestInterceptors: [
+-         (config) => {
+-             config.headers['x-apify-integration-platform'] = 'my-platform';
+-             return config;
+-         },
+-     ],
++     headers: { 'x-apify-integration-platform': 'my-platform' },
+  });
+```
+
+An interceptor that computes something per request, such as a token read at call time, goes to an `AxiosHttpClient` that you plug in. The retry and timeout options move along with it:
 
 ```diff
 - import { ApifyClient } from 'apify-client';
@@ -510,7 +525,7 @@ Axios request interceptors are a feature of the axios transport, so the option l
 + });
 ```
 
-An interceptor now sees the request as the shared pipeline prepared it: the headers merged, and the body already serialized to a string or `Buffer` and compressed. Under v2 the interceptors ran before serialization and saw the original object.
+An interceptor now sees the request as the shared pipeline prepared it: the headers merged, the query string already encoded into `url` so `params` is empty, and the body already serialized to a string or `Buffer` and compressed. Under v2 the interceptors ran before serialization and saw the original object.
 
 ### `ApifyRequestConfig` and `ApifyResponse` no longer extend the axios types
 
