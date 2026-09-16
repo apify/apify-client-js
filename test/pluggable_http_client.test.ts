@@ -93,6 +93,8 @@ describe('pluggable HTTP client', () => {
                 } else if (path === '/binary') {
                     res.writeHead(200, { 'content-type': 'application/octet-stream' });
                     res.end(Buffer.from([1, 2, 3]));
+                } else if (path === '/stalled') {
+                    // Never answered. The client is expected to abort it.
                 } else {
                     json(200, { data: { method: req.method, url: req.url, headers: req.headers, body } });
                 }
@@ -385,6 +387,60 @@ describe('pluggable HTTP client', () => {
 
             await expect(httpClient.call(request)).rejects.toThrow('late');
             expect(sendRequest).toHaveBeenCalledTimes(1 + 3);
+        });
+
+        test('rejects a call whose signal is already aborted without sending it', async () => {
+            const httpClient = new NodeHttpClient();
+            const sendRequest = vi.spyOn(httpClient, 'sendRequest');
+            const controller = new AbortController();
+            controller.abort(new Error('gone'));
+
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'GET', signal: controller.signal });
+
+            await expect(call).rejects.toThrow('gone');
+            expect(sendRequest).not.toHaveBeenCalled();
+            expect(httpClient.stats.calls).toBe(0);
+        });
+
+        test('hands the signal to the transport and rejects with its reason, not with the transport error', async () => {
+            const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 1 });
+            const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockImplementation(
+                ({ signal }) =>
+                    new Promise((_, reject) => {
+                        signal!.addEventListener('abort', () => reject(new Error('transport canceled')));
+                    }),
+            );
+            const controller = new AbortController();
+            setTimeout(() => controller.abort(), 10);
+
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'GET', signal: controller.signal });
+
+            await expect(call).rejects.toHaveProperty('name', 'AbortError');
+            expect(sendRequest).toHaveBeenCalledTimes(1);
+        });
+
+        test('ends the wait before the next retry once the signal aborts', async () => {
+            const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 60_000 });
+            const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockRejectedValue(new Error('nope'));
+            const controller = new AbortController();
+            setTimeout(() => controller.abort(), 10);
+
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'GET', signal: controller.signal });
+
+            await expect(call).rejects.toHaveProperty('name', 'AbortError');
+            expect(sendRequest).toHaveBeenCalledTimes(1);
+        });
+
+        test('AxiosHttpClient ends the request in flight when the signal aborts', async () => {
+            const httpClient = new AxiosHttpClient();
+            const controller = new AbortController();
+            setTimeout(() => controller.abort(), 20);
+
+            const call = httpClient.call({ url: `${baseUrl}/stalled`, method: 'GET', signal: controller.signal });
+
+            await expect(call).rejects.toHaveProperty('name', 'AbortError');
+            expect(received.map((request) => request.url)).toEqual(['/stalled']);
+            await httpClient.close();
         });
 
         test('retries a response body that does not parse', async () => {

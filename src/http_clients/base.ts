@@ -133,6 +133,11 @@ export interface ApifyRequestConfig {
     stringifyFunctions?: boolean;
     /** Give up on the first transport timeout instead of retrying it. */
     doNotRetryTimeouts?: boolean;
+    /**
+     * Aborts the call. Once the signal aborts, the attempt in flight is ended, no retry follows, and the call
+     * rejects with the signal's `reason`.
+     */
+    signal?: AbortSignal;
 }
 
 /**
@@ -170,6 +175,11 @@ export interface HttpRequest {
     timeoutMillis?: number;
     /** Whether to hand the body back unread as a `Readable`, so the caller can stream it. */
     stream: boolean;
+    /**
+     * The caller's abort signal, to hand to the HTTP library alongside the timeout. The pipeline stops retrying
+     * once it aborts, so the transport only has to end the request in flight.
+     */
+    signal?: AbortSignal;
 }
 
 /**
@@ -243,9 +253,10 @@ export interface HttpClientOptions {
  * import { ApifyClient, HttpClient } from 'apify-client';
  *
  * class FetchHttpClient extends HttpClient {
- *     async sendRequest({ method, url, headers, body, timeoutMillis }) {
- *         const signal = timeoutMillis === undefined ? undefined : AbortSignal.timeout(timeoutMillis);
- *         const response = await fetch(url, { method, headers, body, signal });
+ *     async sendRequest({ method, url, headers, body, timeoutMillis, signal }) {
+ *         const signals = signal ? [signal] : [];
+ *         if (timeoutMillis !== undefined) signals.push(AbortSignal.timeout(timeoutMillis));
+ *         const response = await fetch(url, { method, headers, body, signal: AbortSignal.any(signals) });
  *         return {
  *             status: response.status,
  *             headers: Object.fromEntries(response.headers),
@@ -394,7 +405,8 @@ export abstract class HttpClient {
      * Network errors the transport classifies as retryable, rate limits (HTTP 429) and server errors (HTTP 5xx)
      * are retried up to {@link maxRetries} times. Any other error status is thrown as {@link ApifyApiError} right
      * away. A request whose body is a `Readable` is never retried, since part of the stream has already been
-     * consumed by the time the failure shows.
+     * consumed by the time the failure shows. Aborting `config.signal` ends the attempt in flight, skips the
+     * remaining retries and rejects the call with the signal's `reason`.
      *
      * @template T - Type of the parsed response body.
      * @param config - The request to make.
@@ -402,13 +414,16 @@ export abstract class HttpClient {
      * @throws {ApifyApiError} When the API responds with an error status the retries could not fix.
      */
     async call<T = any>(config: ApifyRequestConfig): Promise<ApifyResponse<T>> {
+        config.signal?.throwIfAborted();
         this.stats.calls++;
 
         const { headers, body } = await this.prepareRequest(config);
         const url = this.buildUrl(config.url, config.params);
 
-        return this.#retryWithExpBackoff(async (stopRetrying, attempt) =>
-            this.#makeRequest<T>({ config, url, headers, body, attempt, stopRetrying }),
+        return this.#retryWithExpBackoff(
+            async (stopRetrying, attempt) =>
+                this.#makeRequest<T>({ config, url, headers, body, attempt, stopRetrying }),
+            config.signal,
         );
     }
 
@@ -486,30 +501,34 @@ export abstract class HttpClient {
 
     /**
      * Retries `fn` with randomized exponential backoff until it resolves, `stopRetrying()` was called before it
-     * threw, or the retries are exhausted. The last attempt's error propagates as it is.
+     * threw, the retries are exhausted, or `signal` aborts. The last attempt's error propagates as it is, and an
+     * abort throws the signal's `reason`, whether it lands during an attempt or during the wait before the next.
      */
-    async #retryWithExpBackoff<T>(fn: (stopRetrying: () => void, attempt: number) => Promise<T>): Promise<T> {
+    async #retryWithExpBackoff<T>(
+        fn: (stopRetrying: () => void, attempt: number) => Promise<T>,
+        signal?: AbortSignal,
+    ): Promise<T> {
         let retry = true;
         const stopRetrying = () => {
             retry = false;
         };
 
         for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+            signal?.throwIfAborted();
             try {
                 return await fn(stopRetrying, attempt);
             } catch (err) {
-                if (!retry) throw err;
+                if (!retry || signal?.aborted) throw err;
                 this.#onRequestRetry(err, attempt);
             }
 
             // The delay doubles with every attempt and is spread over a random factor between 1 and 2, so that
             // callers that failed together do not come back at the API in lockstep on every retry.
             const delayMillis = this.minDelayBetweenRetriesMillis * 2 ** (attempt - 1) * (1 + Math.random());
-            await new Promise((resolve) => {
-                setTimeout(resolve, delayMillis);
-            });
+            await sleep(delayMillis, signal);
         }
 
+        signal?.throwIfAborted();
         return fn(stopRetrying, this.maxRetries + 1);
     }
 
@@ -540,8 +559,11 @@ export abstract class HttpClient {
                 body,
                 timeoutMillis: this.computeTimeoutMillis(config.timeoutSecs, attempt),
                 stream: config.responseType === 'stream',
+                signal: config.signal,
             });
         } catch (err) {
+            // Every HTTP library reports an abort with an error of its own, so the caller gets the reason instead.
+            config.signal?.throwIfAborted();
             this.#handleRequestError(err, config, stopRetrying);
             throw err;
         }
@@ -650,6 +672,27 @@ export abstract class HttpClient {
             );
         }
     }
+}
+
+/**
+ * Resolves after `millis`, or right away once `signal` aborts.
+ */
+async function sleep(millis: number, signal?: AbortSignal): Promise<void> {
+    return new Promise((resolve) => {
+        if (signal?.aborted) {
+            resolve();
+            return;
+        }
+        const onAbort = () => {
+            clearTimeout(timer);
+            resolve();
+        };
+        const timer = setTimeout(() => {
+            signal?.removeEventListener('abort', onAbort);
+            resolve();
+        }, millis);
+        signal?.addEventListener('abort', onAbort, { once: true });
+    });
 }
 
 /**

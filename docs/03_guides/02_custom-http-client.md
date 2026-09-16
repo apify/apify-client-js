@@ -15,7 +15,7 @@ For an overview of the architecture and the built-in axios client, see [HTTP cli
 
 The client has three parts:
 
-1. `sendRequest()` sends one prepared request and adapts the `Response` that `fetch` resolves to. The pipeline hands it the URL with the query string encoded, the headers merged and the body serialized, so the method only moves bytes. The timeout of the attempt becomes an `AbortSignal.timeout()`, unless the request runs without one, which the pipeline signals with an `undefined` `timeoutMillis`. A `Readable` body is streamed, which `fetch` requires to be flagged with `duplex: 'half'`. When the caller asked for a streamed response, the body goes back unread as a `Readable`, otherwise as a `Buffer`.
+1. `sendRequest()` sends one prepared request and adapts the `Response` that `fetch` resolves to. The pipeline hands it the URL with the query string encoded, the headers merged and the body serialized, so the method only moves bytes. The timeout of the attempt becomes an `AbortSignal.timeout()`, unless the request runs without one, which the pipeline signals with an `undefined` `timeoutMillis`. `AbortSignal.any()` joins it with the signal of a caller who wants to abort the call. A `Readable` body is streamed, which `fetch` requires to be flagged with `duplex: 'half'`. When the caller asked for a streamed response, the body goes back unread as a `Readable`, otherwise as a `Buffer`.
 2. `isRetryableTransportError()` maps the transport's transient failures for the shared retry loop. `fetch` reports every network failure as a `TypeError` with the underlying error in `cause`, so the classification reads the error code from there. A timeout from `AbortSignal.timeout()` is a `DOMException` named `TimeoutError`, which the inherited `isTimeoutError()` already recognizes, so the override only has to make it retryable.
 3. <ApiLink to="class/ApifyClient#withCustomHttpClient">`ApifyClient.withCustomHttpClient()`</ApiLink> connects the client to the resource clients and applies the API token.
 
@@ -27,12 +27,15 @@ import { ApifyClient, HttpClient } from 'apify-client';
 const RETRYABLE_CODES = new Set(['ECONNREFUSED', 'ECONNRESET', 'EPIPE', 'ETIMEDOUT', 'EAI_AGAIN', 'UND_ERR_SOCKET']);
 
 class FetchHttpClient extends HttpClient {
-    async sendRequest({ method, url, headers, body, timeoutMillis, stream }) {
+    async sendRequest({ method, url, headers, body, timeoutMillis, stream, signal }) {
+        const signals = signal ? [signal] : [];
+        if (timeoutMillis !== undefined) signals.push(AbortSignal.timeout(timeoutMillis));
+
         const response = await fetch(url, {
             method,
             headers,
             body,
-            signal: timeoutMillis === undefined ? undefined : AbortSignal.timeout(timeoutMillis),
+            signal: AbortSignal.any(signals),
             ...(body instanceof Readable ? { duplex: 'half' } : {}),
         });
 

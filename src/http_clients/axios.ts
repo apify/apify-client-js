@@ -116,7 +116,7 @@ export class AxiosHttpClient extends HttpClient {
     override async sendRequest(request: HttpRequest): Promise<HttpResponse> {
         await this.#ensureHttpAgents();
 
-        const { method, url, headers, body, timeoutMillis, stream } = request;
+        const { method, url, headers, body, timeoutMillis, stream, signal } = request;
         const response = await this.axios.request({
             method,
             url,
@@ -124,6 +124,7 @@ export class AxiosHttpClient extends HttpClient {
             data: body,
             // Axios reads 0 as no timeout.
             timeout: timeoutMillis ?? 0,
+            signal,
             responseType: stream ? 'stream' : 'arraybuffer',
             // See axios/axios#1045 for why axios must not buffer a stream body to follow redirects.
             ...(isStream(body) ? { maxRedirects: 0 } : {}),

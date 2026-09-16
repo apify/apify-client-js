@@ -190,7 +190,7 @@ export class ApifyClient {
      * import { ApifyClient, HttpClient } from 'apify-client';
      *
      * class MyHttpClient extends HttpClient {
-     *     async sendRequest({ method, url, headers, body, timeoutMillis, stream }) {
+     *     async sendRequest({ method, url, headers, body, timeoutMillis, stream, signal }) {
      *         // Send the request with the HTTP library of your choice and return { status, headers, body }.
      *     }
      * }
