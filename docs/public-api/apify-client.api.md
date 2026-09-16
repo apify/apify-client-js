@@ -639,6 +639,7 @@ export interface ApifyRequestConfig {
     method: HttpMethod;
     params?: Record<string, unknown>;
     responseType?: ApifyResponseType;
+    signal?: AbortSignal;
     stringifyFunctions?: boolean;
     timeoutSecs?: Timeout;
     url: string;
@@ -2912,7 +2913,7 @@ export abstract class HttpClient {
     protected buildUrl(url: string, params?: Record<string, unknown>): string;
     call<T = any>(config: ApifyRequestConfig): Promise<ApifyResponse<T>>;
     close(): Promise<void>;
-    protected computeTimeoutMillis(timeoutSecs: Timeout | undefined, attempt: number): number;
+    protected computeTimeoutMillis(timeoutSecs: Timeout | undefined, attempt: number): number | undefined;
     protected readonly defaultHeaders: Record<string, string>;
     readonly httpCompressor: HttpCompressor;
     isRetryableTransportError(_error: unknown): boolean;
@@ -2964,8 +2965,9 @@ export interface HttpRequest {
     body?: HttpRequestBody;
     headers: Record<string, string>;
     method: HttpMethod;
+    signal?: AbortSignal;
     stream: boolean;
-    timeoutMillis: number;
+    timeoutMillis?: number;
     url: string;
 }
 
