@@ -2913,7 +2913,7 @@ export abstract class HttpClient {
     protected buildUrl(url: string, params?: Record<string, unknown>): string;
     call<T = any>(config: ApifyRequestConfig): Promise<ApifyResponse<T>>;
     close(): Promise<void>;
-    protected computeTimeoutMillis(timeoutSecs: Timeout | undefined, attempt: number): number | undefined;
+    protected computeTimeoutMillis(attempt: number, timeoutSecs?: Timeout): number | undefined;
     protected readonly defaultHeaders: Record<string, string>;
     readonly httpCompressor: HttpCompressor;
     isRetryableTransportError(_error: unknown): boolean;

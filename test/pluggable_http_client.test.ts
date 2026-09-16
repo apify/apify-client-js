@@ -69,6 +69,8 @@ describe('pluggable HTTP client', () => {
     let received: { method: string; url: string; headers: http.IncomingHttpHeaders; body: string }[] = [];
     /** How many more requests to `/flaky` and `/broken-json` fail before they succeed. */
     let failuresLeft = 0;
+    /** Called once a request to `/stalled`, which the server never answers, has arrived. */
+    let onStalled: (() => void) | undefined;
 
     beforeAll(async () => {
         server = http.createServer((req, res) => {
@@ -94,7 +96,7 @@ describe('pluggable HTTP client', () => {
                     res.writeHead(200, { 'content-type': 'application/octet-stream' });
                     res.end(Buffer.from([1, 2, 3]));
                 } else if (path === '/stalled') {
-                    // Never answered. The client is expected to abort it.
+                    onStalled?.();
                 } else {
                     json(200, { data: { method: req.method, url: req.url, headers: req.headers, body } });
                 }
@@ -111,6 +113,7 @@ describe('pluggable HTTP client', () => {
     beforeEach(() => {
         received = [];
         failuresLeft = 0;
+        onStalled = undefined;
     });
 
     describe('ApifyClient.withCustomHttpClient()', () => {
@@ -431,10 +434,24 @@ describe('pluggable HTTP client', () => {
             expect(sendRequest).toHaveBeenCalledTimes(1);
         });
 
+        test('rejects with the reason when the transport ignores the signal and answers with an error status', async () => {
+            const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 1 });
+            const controller = new AbortController();
+            const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockImplementation(async () => {
+                controller.abort();
+                return { status: 500, headers: {}, body: Buffer.alloc(0) };
+            });
+
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'GET', signal: controller.signal });
+
+            await expect(call).rejects.toHaveProperty('name', 'AbortError');
+            expect(sendRequest).toHaveBeenCalledTimes(1);
+        });
+
         test('AxiosHttpClient ends the request in flight when the signal aborts', async () => {
             const httpClient = new AxiosHttpClient();
             const controller = new AbortController();
-            setTimeout(() => controller.abort(), 20);
+            onStalled = () => controller.abort();
 
             const call = httpClient.call({ url: `${baseUrl}/stalled`, method: 'GET', signal: controller.signal });
 

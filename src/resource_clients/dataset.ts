@@ -346,7 +346,7 @@ export class DatasetClient<
             },
             data: items,
             params: this.buildParams(),
-            doNotRetryTimeouts: true, // see the timeout handling in HttpClient
+            doNotRetryTimeouts: true,
             timeoutSecs,
         });
     }

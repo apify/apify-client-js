@@ -529,7 +529,7 @@ An interceptor now sees the request as the shared pipeline prepared it: the head
 
 ### `ApifyRequestConfig` and `ApifyResponse` no longer extend the axios types
 
-The request `httpClient.call()` takes and the response it resolves to, which `RunClient.charge()` also returns, are now transport-neutral. `ApifyResponse` carries `status`, `headers`, `data` and `config`, without the `statusText`, `request` and axios-specific `config` fields. `ApifyRequestConfig` accepts `url`, `method`, `params`, `headers`, `data`, `timeoutSecs`, `responseType`, `stringifyFunctions` and `doNotRetryTimeouts`, so an axios-only option such as `maxRedirects` is rejected by the types. The `forceBuffer` flag became `responseType: 'buffer'`, and `responseType` takes `'parsed'`, `'buffer'` or `'stream'` instead of the axios values.
+The request `httpClient.call()` takes and the response it resolves to, which `RunClient.charge()` also returns, are now transport-neutral. `ApifyResponse` carries `status`, `headers`, `data` and `config`, without the `statusText`, `request` and axios-specific `config` fields. `ApifyRequestConfig` accepts `url`, `method`, `params`, `headers`, `data`, `timeoutSecs`, `responseType`, `stringifyFunctions`, `doNotRetryTimeouts` and `signal`, so an axios-only option such as `maxRedirects` is rejected by the types. The `forceBuffer` flag became `responseType: 'buffer'`, and `responseType` takes `'parsed'`, `'buffer'` or `'stream'` instead of the axios values.
 
 ### `InvalidResponseBodyError.response` is the transport's response
 

@@ -479,10 +479,10 @@ export abstract class HttpClient {
      * with each attempt and is capped at `timeoutMaxMillis`. A requested value above the cap is capped too, which
      * warns once, since it does not take effect in full.
      *
-     * @param timeoutSecs - The request's timeout. Defaults to the `medium` tier.
      * @param attempt - Current attempt number, starting at 1.
+     * @param timeoutSecs - The request's timeout. Defaults to the `medium` tier.
      */
-    protected computeTimeoutMillis(timeoutSecs: Timeout = 'medium', attempt: number): number | undefined {
+    protected computeTimeoutMillis(attempt: number, timeoutSecs: Timeout = 'medium'): number | undefined {
         if (timeoutSecs === 'noTimeout') return undefined;
 
         const requestedMillis = typeof timeoutSecs === 'number' ? timeoutSecs * 1000 : this.timeoutMillis[timeoutSecs];
@@ -518,7 +518,10 @@ export abstract class HttpClient {
             try {
                 return await fn(stopRetrying, attempt);
             } catch (err) {
-                if (!retry || signal?.aborted) throw err;
+                // A transport that does not honor the signal may still answer the aborted attempt with an error
+                // status, and the caller expects the reason for that too.
+                signal?.throwIfAborted();
+                if (!retry) throw err;
                 this.#onRequestRetry(err, attempt);
             }
 
@@ -557,7 +560,7 @@ export abstract class HttpClient {
                 url,
                 headers,
                 body,
-                timeoutMillis: this.computeTimeoutMillis(config.timeoutSecs, attempt),
+                timeoutMillis: this.computeTimeoutMillis(attempt, config.timeoutSecs),
                 stream: config.responseType === 'stream',
                 signal: config.signal,
             });
