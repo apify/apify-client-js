@@ -140,4 +140,4 @@ Custom HTTP clients might be useful when the built-in axios client does not cove
 - **Modify requests** - Add custom fields, modify the body, or change headers.
 - **Collect custom metrics** - Measure request latency, track error rates, or count API calls.
 
-For a complete implementation over `fetch`, see [Build a custom HTTP client](../03_guides/02_custom-http-client.md). The <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> API reference documents the full contract.
+For a complete implementation over `fetch`, see [Build a custom HTTP client](../03_guides/02_custom-http-client.md). To send the API traffic through the HTTP client an Actor crawls with, see [Reuse a Crawlee HTTP client](../03_guides/02_custom-http-client.md#reuse-a-crawlee-http-client). The <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> API reference documents the full contract.
