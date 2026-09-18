@@ -15,10 +15,11 @@ export type { ApifyApiErrorType } from './models.js';
  * 4: "listResources"
  *
  * The error is created inside the HTTP client's pipeline, whose frames sit above the resource client's. The
- * pipeline's own methods are private, so V8 prints them with a `#` that no method name can match. A custom client
- * can be named anything and can override the public `call()`, so its frames are skipped by the `HttpClient` suffix
- * and by the method name. `ActorClient.call()` and `TaskClient.call()` reach the pipeline through `start()`, whose
- * frame sits closer to the error and matches first.
+ * pipeline's own methods are private, so V8 prints them with a `#` that no method name can match. Its public
+ * `call()` prints under the name of the transport's class, which can be anything, so the lookaheads skip a class
+ * named after `HttpClient` and the method `call`. A transport named `SomethingClient` whose `call()` override
+ * awaits a helper of its own is reported under that helper. `ActorClient.call()` and `TaskClient.call()` reach the
+ * pipeline through `start()`, whose frame sits closer to the error and matches first.
  * @private
  */
 const CLIENT_METHOD_REGEX =
