@@ -126,6 +126,7 @@ module.exports = {
                     includePages: true,
                     relativePaths: false,
                     excludeRoutes: [
+                        '/api/client/js/',
                         '/api/client/js/reference/2.*/**',
                         '/api/client/js/reference/2.*',
                         '/api/client/js/reference/next/**',
