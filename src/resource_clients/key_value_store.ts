@@ -377,8 +377,14 @@ export class KeyValueStoreClient extends ResourceClient {
     }
 
     /**
+     * By default, the value is parsed by the record's content type: `application/json` is parsed into a value,
+     * `text/*` and `application/*xml` are decoded to a string, and anything else is returned as a Buffer (Node.js)
+     * or ArrayBuffer (browser). A record whose body does not parse as its content type claims, such as a non-JSON
+     * string stored under `application/json`, makes the call throw an {@link InvalidResponseBodyError}, which
+     * carries the raw body in `error.response`.
+     *
      * You can use the `buffer` option to get the value in a Buffer (Node.js)
-     * or ArrayBuffer (browser) format. In Node.js (not in browser) you can also
+     * or ArrayBuffer (browser) format, which skips the parsing. In Node.js (not in browser) you can also
      * use the `stream` option to get a Readable stream.
      *
      * When the record does not exist, the function resolves to `undefined`. It does
@@ -450,6 +456,9 @@ export class KeyValueStoreClient extends ResourceClient {
      * The record value can be any JSON-serializable object, a string, or a Buffer/Stream.
      * The content type is automatically determined based on the value type, but can be
      * overridden using the `contentType` property.
+     *
+     * A string is sent as it is, even under `application/json`, so a string stored under a JSON content type has
+     * to be valid JSON already, or {@link getRecord} fails to parse it back.
      *
      * **Note about streams:** If the value is a stream object (has `.pipe` and `.on` methods),
      * the upload cannot be retried on failure or follow redirects. For reliable uploads,
