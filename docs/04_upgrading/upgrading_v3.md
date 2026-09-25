@@ -493,7 +493,7 @@ v2 compressed a request body only when it was a string or a `Buffer`. A `Uint8Ar
 
 ### `requestInterceptors` moved to `AxiosHttpClient`
 
-Axios request interceptors are a feature of the axios transport, so the option left `ApifyClientOptions`. Most interceptors only added a fixed header to every request, such as `x-apify-integration-platform`. The new `headers` option of `ApifyClientOptions` covers that without touching axios:
+Axios request interceptors are a feature of the axios transport, so the option left `ApifyClientOptions`. An interceptor that only adds a fixed header to every request, such as `x-apify-integration-platform`, can be replaced by the new `headers` option of `ApifyClientOptions`, without touching axios:
 
 ```diff
   const client = new ApifyClient({
