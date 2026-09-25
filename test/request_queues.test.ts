@@ -4,7 +4,7 @@ import type { Dictionary, RequestQueueClientListRequestsOptions } from 'apify-cl
 import { ApifyClient, ArgumentValidationError, ResponseValidationError } from 'apify-client';
 import type { Request } from 'express';
 import type { Page } from 'puppeteer';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, expectTypeOf, test } from 'vitest';
 
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
@@ -216,6 +216,15 @@ describe('Request Queue methods', () => {
             );
             expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { queueId, requestId } });
+        });
+
+        test('getRequest() accepts a pending request with only the required fields and a null handledAt', async () => {
+            const stored = { id: 'sbJ7klsdf7ujN9l', uniqueKey: 'http://example.com', url: 'http://example.com' };
+            mockServer.setResponse({ body: { data: { ...stored, handledAt: null } } });
+
+            const res = await client.requestQueue('some-id').getRequest(stored.id);
+            expect(res).toEqual({ ...stored, handledAt: null });
+            expectTypeOf(res!.handledAt).toEqualTypeOf<Date | null | undefined>();
         });
 
         test('getRequest() respects over-ridden timeout', async () => {
