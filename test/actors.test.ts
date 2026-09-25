@@ -225,6 +225,20 @@ describe('Actor methods', () => {
             });
         });
 
+        test('start() sends a Buffer input as its raw bytes', async () => {
+            const actorId = 'some-id';
+            const contentType = 'application/json';
+            const input = Buffer.from(JSON.stringify({ some: 'body' }));
+
+            const res = await client.actor(actorId).start(input, { contentType });
+            expect(res.id).toEqual('run-actor');
+            validateRequest({
+                params: { actorId },
+                body: { some: 'body' },
+                additionalHeaders: { 'content-type': contentType },
+            });
+        });
+
         test('start() works with functions in input', async () => {
             const actorId = 'some-id';
             const input = {
