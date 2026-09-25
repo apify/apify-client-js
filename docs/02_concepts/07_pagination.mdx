@@ -1,0 +1,50 @@
+---
+id: pagination
+title: Pagination
+sidebar_label: Pagination
+description: 'Paginate through large result sets with single-page calls or async iteration in the Apify API client for JavaScript.'
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import ApiLink from '@theme/ApiLink';
+
+import PaginationExample from '!!raw-loader!./code/07_pagination.ts';
+import IterateCollectionExample from '!!raw-loader!./code/07_iterate_collection.ts';
+import IterateItemsExample from '!!raw-loader!./code/07_iterate_items.ts';
+
+Most methods named `list()` or `listSomething()` in the Apify client resolve to a <ApiLink to="interface/PaginatedList">`PaginatedList`</ApiLink>. All such pages share a consistent interface for working with paginated data and expose the following fields:
+
+- `items` - The main results you're looking for.
+- `total` - The total number of items available.
+- `offset` - The starting point of the current page.
+- `count` - The number of items in the current page.
+- `limit` - The maximum number of items per page.
+- `desc` - Whether the items are sorted in descending order.
+
+Some methods paginate differently. <ApiLink to="class/KeyValueStoreClient#listKeys">`KeyValueStoreClient.listKeys()`</ApiLink> pages by key: to fetch the next page, pass its `nextExclusiveStartKey` value back as the `exclusiveStartKey` option. <ApiLink to="class/RequestQueueClient#listRequests">`RequestQueueClient.listRequests()`</ApiLink> pages by cursor in the same way, and <ApiLink to="class/RequestQueueClient#listHead">`listHead()`</ApiLink> returns only the first requests of the queue. Regardless, the primary results are always stored under the `items` field, and the `limit` option controls the number of results returned.
+
+The following example shows how to fetch one page of dataset items:
+
+<CodeBlock className="language-ts">
+    {PaginationExample}
+</CodeBlock>
+
+A single call returns at most one page, and the API can cap how many items that page holds. To go through a whole collection, iterate it instead.
+
+## Async iteration
+
+The promise that a paginated method returns is also an async iterable. Iterating it with `for await` fetches as many pages as needed to yield every item matching the options, so you don't need to manage offsets, limits, or cursors yourself. The `limit` option caps the total, and `chunkSize` caps the number of items per API call. `listKeys()` and `listRequests()` iterate the same way, and <ApiLink to="class/RequestQueueClient#paginateRequests">`paginateRequests()`</ApiLink> yields whole pages of requests.
+
+The following example iterates over every Actor owned by the current user with a collection client's `list()` method:
+
+<CodeBlock className="language-ts">
+    {IterateCollectionExample}
+</CodeBlock>
+
+The next example iterates dataset items past a given offset:
+
+<CodeBlock className="language-ts">
+    {IterateItemsExample}
+</CodeBlock>
+
+The API applies `offset` and `limit` of `listItems()` to the dataset's rows before `clean`, `skipEmpty`, `skipHidden` and `unwind` reshape them. With any of those options set, a page can hold fewer or more items than the rows it covered, so iteration can yield fewer or more than `limit` items, each of them once.

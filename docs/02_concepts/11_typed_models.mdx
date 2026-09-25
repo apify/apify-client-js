@@ -1,0 +1,107 @@
+---
+id: typed-models
+title: Typed models
+sidebar_label: Typed models
+description: 'Resource client methods of the Apify API client for JavaScript return types generated from the Apify OpenAPI specification, validated at runtime with zod.'
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import ApiLink from '@theme/ApiLink';
+
+import AccessExample from '!!raw-loader!./code/11_typed_models_access.ts';
+import InputExample from '!!raw-loader!./code/11_typed_models_input.ts';
+import DatasetItemsExample from '!!raw-loader!./code/11_typed_dataset_items.ts';
+
+Resource client methods return values typed with TypeScript types generated directly from the [Apify OpenAPI specification](https://docs.apify.com/api/openapi.json). The client also validates each response at runtime against a [zod](https://zod.dev) schema generated from the same specification. You get IDE autocompletion and compile-time checks, and the value you receive at runtime matches its type.
+
+## Accessing response fields
+
+Every method that returns a structured payload resolves to a typed object, such as <ApiLink to="interface/Actor">`Actor`</ApiLink>, <ApiLink to="interface/ActorRun">`ActorRun`</ApiLink> or <ApiLink to="interface/Dataset">`Dataset`</ApiLink>. Field names are the camelCase names the API uses, and the type of each field comes through to your editor.
+
+<CodeBlock className="language-ts">
+    {AccessExample}
+</CodeBlock>
+
+Fields the specification declares as a `date-time` are converted into `Date` objects wherever they sit in the response, and nested objects get their own types, so you can compose field access without manual conversion. Fields the API can omit or return as `null` are typed as optional or nullable, so the compiler points out where a check is needed.
+
+## URL fields
+
+Fields the specification marks as a URL, such as `ActorRun.containerUrl` or `Dataset.consoleUrl`, are parsed with the [WHATWG `URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) parser during validation, and the client returns the parsed URL's serialization. The string you read back can therefore differ from the one the API sent. Both forms denote the same URL under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-6.2), they're just different strings.
+
+```ts
+// An empty path becomes '/'.
+new URL('https://abc123.runs.apify.net').href; // 'https://abc123.runs.apify.net/'
+
+// The host is lowercased.
+new URL('https://EXAMPLE.com/Path').href; // 'https://example.com/Path'
+
+// A default port is dropped.
+new URL('https://example.com:443/path').href; // 'https://example.com/path'
+
+// An internationalized host is punycoded.
+new URL('https://www.žluty.cz').href; // 'https://www.xn--luty-kbb.cz/'
+
+// Unsafe characters are percent-encoded.
+new URL('https://example.com/a b').href; // 'https://example.com/a%20b'
+```
+
+Because of the normalization, compare URLs in their normalized form, not as raw strings:
+
+```ts
+const run = await client.run('my-run-id').get();
+const storedUrl = 'https://abc123.runs.apify.net';
+
+// Wrong, compares a raw string with a normalized one.
+storedUrl === run?.containerUrl; // false
+
+// Right, both sides are normalized before the comparison.
+new URL(storedUrl).href === run?.containerUrl; // true
+```
+
+To build a longer URL out of a URL field, use `new URL(path, base)` only when the field ends with a slash. A relative reference replaces the base's last path segment, so on `consoleUrl` it would drop the resource ID.
+
+```ts
+new URL('status', run?.containerUrl).href; // 'https://abc123.runs.apify.net/status'
+```
+
+For the full list of URL fields, see [URL fields are normalized](../04_upgrading/upgrading_to_v3.mdx#url-fields-are-normalized).
+
+## Response validation
+
+A response that doesn't match the specification throws a <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink>. For how to handle it, see [Invalid responses](./03_error_handling.mdx#invalid-responses).
+
+The check catches the API and its specification disagreeing: a missing required field, a different type, or a value outside the documented range. Such a mismatch would otherwise surface later as an `undefined` where the types promise a value. If you run into one, please [report it](https://github.com/apify/apify-client-js/issues).
+
+## Providing structured input
+
+Every input a method takes has an exported type, such as <ApiLink to="interface/ActorStartOptions">`ActorStartOptions`</ApiLink> or <ApiLink to="interface/RequestQueueClientRequestToAdd">`RequestQueueClientRequestToAdd`</ApiLink>, which lists the fields the API accepts. Annotate an object you build ahead of the call with it, and the compiler checks the object where you build it.
+
+<CodeBlock className="language-ts">
+    {InputExample}
+</CodeBlock>
+
+The client validates the input at runtime too, so plain JavaScript callers get an <ApiLink to="class/ArgumentValidationError">`ArgumentValidationError`</ApiLink> for a value of the wrong shape. The input schemas reject unknown fields, so pass only the fields the input type lists. For details, see [Invalid arguments](./03_error_handling.mdx#invalid-arguments).
+
+## Forward compatibility
+
+The response schemas let fields the specification doesn't describe pass through untouched, and accept enum values it doesn't list. New fields the API starts returning are preserved on the object, they just don't have a declared type yet. Upgrading the client to pick up a newer specification doesn't break code that reads existing fields.
+
+## Browsing all types
+
+The full list of exported types is available in the [API reference](/api/client/js/reference).
+
+## Methods that return plain types
+
+A few endpoints return values the client doesn't validate, because their payloads are user-defined or inherently unstructured:
+
+- <ApiLink to="class/DatasetClient#listItems">`DatasetClient.listItems()`</ApiLink> returns items typed by the `Data` type parameter of <ApiLink to="class/DatasetClient">`DatasetClient`</ApiLink>, which defaults to `Record<string | number, unknown>`. Dataset items follow the [Actor output schema](https://docs.apify.com/platform/actors/development/actor-definition/output-schema), which the client can't know in advance.
+- <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink> returns a <ApiLink to="interface/KeyValueStoreRecord">`KeyValueStoreRecord`</ApiLink> whose `value` is determined by the record's content type and the options you pass.
+- <ApiLink to="class/LogClient#get">`LogClient.get()`</ApiLink> returns the log as a string.
+
+To type the items of a dataset whose shape you know, pass the type to `client.dataset()`:
+
+<CodeBlock className="language-ts">
+    {DatasetItemsExample}
+</CodeBlock>
+
+For background on the move to generated types and response validation, see [Upgrading to v3](../04_upgrading/upgrading_to_v3.mdx#published-types-now-follow-the-openapi-specification).

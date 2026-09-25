@@ -1,0 +1,21 @@
+{
+    // Type-checks the code samples the docs pages load with `raw-loader`, against the client's source.
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "../",
+        "noEmit": true,
+        // A type-check-only project must not write build state into the published `dist` directory.
+        "incremental": false,
+        // Nothing is emitted here, so declaration-emit portability errors are not actionable.
+        "declaration": false,
+        // A sample shows a call and its result, or a hook's signature, and often leaves them unused.
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "paths": {
+            // The entry file, not the `../src` directory: `nodenext` has no directory index lookup.
+            "apify-client": ["../src/index.ts"],
+            "#runtime": ["../src/runtime/node.ts"]
+        }
+    },
+    "include": ["./**/code/**/*", "../src/**/*"]
+}

@@ -10,7 +10,7 @@
         "**/dist",
         "coverage",
         "website",
-        "docs",
+        "docs/**/*.mdx",
         "src/generated"
     ]
 }
