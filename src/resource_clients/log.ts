@@ -14,6 +14,7 @@ import type { ApifyRequestConfig } from '../http_clients/index.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import { timeoutOptionsShape } from '../timeouts.js';
 import { cast, catchNotFoundForResourceOrThrow, concatBytes, parseArgument } from '../utils.js';
+import type { RunClient } from './run.js';
 
 const logOptionsSchema = z.strictObject({ raw: z.boolean().optional(), ...timeoutOptionsShape });
 
@@ -295,4 +296,125 @@ export interface StreamedLogOptions {
     toLog: Log;
     /** Whether to redirect all logs from Actor run start (even logs from the past). */
     fromStart?: boolean;
+}
+
+/**
+ * Helper class for redirecting the status and status message of an Actor run to another log.
+ *
+ * The run is polled at a fixed interval and a line is logged whenever its status or status message changes, so
+ * a status message that is replaced within one polling period is never logged. Polling ends by itself once the run
+ * reports a terminal status message, or when {@link StatusMessageWatcher.stop} is called.
+ *
+ * Obtain an instance via {@link RunClient.getStatusMessageWatcher}.
+ */
+export class StatusMessageWatcher {
+    #destinationLog: Log;
+    #runClient: RunClient;
+    #checkPeriodSecs: number;
+    #lastStatusMessage = '';
+
+    #loggingTask: Promise<void> | null = null;
+    #stopLogging = false;
+    #wakeUp: (() => void) | null = null;
+
+    constructor(options: StatusMessageWatcherOptions) {
+        const { toLog, runClient, checkPeriodSecs = 1 } = options;
+        this.#destinationLog = toLog;
+        this.#runClient = runClient;
+        this.#checkPeriodSecs = checkPeriodSecs;
+    }
+
+    /**
+     * Start status message redirection.
+     */
+    public start(): void {
+        if (this.#loggingTask) {
+            throw new Error('Logging task already active');
+        }
+        this.#stopLogging = false;
+        this.#loggingTask = this.#logChangedStatusMessage();
+    }
+
+    /**
+     * Stop status message redirection.
+     *
+     * @param options.waitSecs - How long to keep polling for a terminal status message before stopping. A run can
+     * set its final status message shortly after it finishes, so waiting a few seconds makes it more likely to be
+     * logged. Default is `0`.
+     */
+    public async stop(options: StatusMessageWatcherStopOptions = {}): Promise<void> {
+        if (!this.#loggingTask) {
+            throw new Error('Logging task is not active');
+        }
+        const { waitSecs = 0 } = options;
+        let graceTimer: ReturnType<typeof setTimeout> | undefined;
+        try {
+            if (waitSecs > 0) {
+                await Promise.race([
+                    this.#loggingTask,
+                    new Promise<void>((resolve) => {
+                        graceTimer = setTimeout(resolve, waitSecs * 1000);
+                    }),
+                ]);
+            }
+            this.#stopLogging = true;
+            this.#wakeUp?.();
+            await this.#loggingTask;
+        } finally {
+            clearTimeout(graceTimer);
+            this.#loggingTask = null;
+        }
+    }
+
+    async #logChangedStatusMessage(): Promise<void> {
+        try {
+            while (!this.#stopLogging) {
+                const run = await this.#runClient.get();
+                if (run) {
+                    const message = `Status: ${run.status}, Message: ${run.statusMessage ?? ''}`;
+                    if (message !== this.#lastStatusMessage) {
+                        this.#lastStatusMessage = message;
+                        this.#destinationLog.info(message);
+                    }
+                    if (run.isStatusMessageTerminal) {
+                        return;
+                    }
+                }
+                await this.#sleep();
+            }
+        } catch (err) {
+            log.warning(`Status message redirection stopped due to error`, err as Error);
+        }
+    }
+
+    /**
+     * Wait one polling period, or less if `stop()` is called meanwhile.
+     */
+    async #sleep(): Promise<void> {
+        if (this.#stopLogging) {
+            return;
+        }
+        await new Promise<void>((resolve) => {
+            const timer = setTimeout(resolve, this.#checkPeriodSecs * 1000);
+            this.#wakeUp = () => {
+                clearTimeout(timer);
+                resolve();
+            };
+        });
+        this.#wakeUp = null;
+    }
+}
+
+export interface StatusMessageWatcherOptions {
+    /** Run client used to poll the Actor run. */
+    runClient: RunClient;
+    /** Log to which the status and status message of the Actor run will be redirected. */
+    toLog: Log;
+    /** How often to poll the Actor run, in seconds. Default is `1`. */
+    checkPeriodSecs?: number;
+}
+
+export interface StatusMessageWatcherStopOptions {
+    /** @default 0 */
+    waitSecs?: number;
 }

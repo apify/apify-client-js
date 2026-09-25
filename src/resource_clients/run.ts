@@ -6,7 +6,7 @@ import { LEVELS, Log } from '@apify/log';
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_clients/index.js';
-import type { TimeoutOptions } from '../timeouts.js';
+import type { Timeout, TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { optionalTimeoutSchema, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { runtime } from '#runtime';
@@ -14,7 +14,7 @@ import { anyObjectSchema, parseArgument, parseResponse } from '../utils.js';
 import type { ActorInput, ActorRun } from './actor.js';
 import { DatasetClient } from './dataset.js';
 import { KeyValueStoreClient } from './key_value_store.js';
-import { LogClient, LoggerActorRedirect, StreamedLog } from './log.js';
+import { LogClient, LoggerActorRedirect, StatusMessageWatcher, StreamedLog } from './log.js';
 import { RequestQueueClient } from './request_queue.js';
 
 const RUN_CHARGE_IDEMPOTENCY_HEADER = 'idempotency-key';
@@ -494,21 +494,60 @@ export class RunClient extends ResourceClient {
             return undefined;
         }
         if (toLog === undefined || toLog === 'default') {
-            // Create default StreamedLog
-            // Get actor name and run id
-            const runData = await this.get({ timeoutSecs });
-            const runId = runData?.id ?? '';
-
-            const actorId = runData?.actId ?? '';
-            // `apifyClient.actor()` rejects an empty ID, which is what a run that could not be read leaves here.
-            const actorData = actorId ? await this.apifyClient.actor(actorId).get({ timeoutSecs }) : undefined;
-            const actorName = actorData?.name ?? '';
-            const name = [actorName, `runId:${runId}`].filter(Boolean).join(' ');
-
-            toLog = new Log({ level: LEVELS.DEBUG, prefix: `${name} -> `, logger: new LoggerActorRedirect() });
+            toLog = await this.#createRedirectLog(timeoutSecs);
         }
 
         return new StreamedLog({ logClient: this.log(), toLog, fromStart });
+    }
+
+    /**
+     * Get StatusMessageWatcher for redirecting the run's status and status message to a log.
+     *
+     * @param options - Watcher options
+     * @param options.toLog - Log instance to redirect the status messages to. Use `'default'` for a preconfigured one, or `null` to disable the redirection.
+     * @param options.checkPeriodSecs - How often to poll the run, in seconds. Default is `1`.
+     * @param options.timeoutSecs - Timeout for the API requests that fetch the run and its Actor. Default is `'long'`.
+     *
+     * @example
+     * ```javascript
+     * const watcher = await client.run('run-id').getStatusMessageWatcher();
+     * watcher?.start();
+     * await client.run('run-id').waitForFinish();
+     * await watcher?.stop({ waitSecs: 6 });
+     * ```
+     */
+    async getStatusMessageWatcher(
+        options: GetStatusMessageWatcherOptions = {},
+    ): Promise<StatusMessageWatcher | undefined> {
+        parseArgument(options.timeoutSecs, optionalTimeoutSchema);
+
+        const { checkPeriodSecs, timeoutSecs = 'long' } = options;
+        let { toLog } = options;
+        if (toLog === null || !runtime.isNode) {
+            // Explicitly no logging or not in Node.js
+            return undefined;
+        }
+        if (toLog === undefined || toLog === 'default') {
+            toLog = await this.#createRedirectLog(timeoutSecs);
+        }
+
+        return new StatusMessageWatcher({ runClient: this, toLog, checkPeriodSecs });
+    }
+
+    /**
+     * Create a log prefixed with the run's Actor name and run ID.
+     */
+    async #createRedirectLog(timeoutSecs: Timeout): Promise<Log> {
+        const runData = await this.get({ timeoutSecs });
+        const runId = runData?.id ?? '';
+
+        const actorId = runData?.actId ?? '';
+        // `apifyClient.actor()` rejects an empty ID, which is what a run that could not be read leaves here.
+        const actorData = actorId ? await this.apifyClient.actor(actorId).get({ timeoutSecs }) : undefined;
+        const actorName = actorData?.name ?? '';
+        const name = [actorName, `runId:${runId}`].filter(Boolean).join(' ');
+
+        return new Log({ level: LEVELS.DEBUG, prefix: `${name} -> `, logger: new LoggerActorRedirect() });
     }
 }
 
@@ -519,6 +558,15 @@ export class RunClient extends ResourceClient {
 export interface GetStreamedLogOptions extends TimeoutOptions {
     toLog?: Log | null | 'default';
     fromStart?: boolean;
+}
+
+/**
+ * Options for getting a status message watcher.
+ */
+export interface GetStatusMessageWatcherOptions extends TimeoutOptions {
+    toLog?: Log | null | 'default';
+    /** @default 1 */
+    checkPeriodSecs?: number;
 }
 
 /**

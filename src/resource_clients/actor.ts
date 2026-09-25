@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ACTOR_JOB_STATUSES, ACTOR_PERMISSION_LEVEL, META_ORIGINS } from '@apify/consts';
+import { ACT_JOB_TERMINAL_STATUSES, ACTOR_JOB_STATUSES, ACTOR_PERMISSION_LEVEL, META_ORIGINS } from '@apify/consts';
 import { Log } from '@apify/log';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
@@ -35,6 +35,10 @@ const startOptionsSchema = z.strictObject({
     forcePermissionLevel: z.enum(ACTOR_PERMISSION_LEVEL).optional(),
     ...timeoutOptionsShape,
 });
+
+// A run can set its final status message shortly after it finishes.
+const FINAL_STATUS_MESSAGE_WAIT_SECS = 6;
+
 const callOptionsSchema = z.strictObject({
     build: z.string().optional(),
     contentType: z.string().optional(),
@@ -263,7 +267,7 @@ export class ActorClient extends ResourceClient {
      * @param input - Input for the Actor, serialized to JSON. Omit it to run the Actor without input.
      * @param options - Run configuration options (extends all options from {@link start})
      * @param options.waitSecs - Maximum time to wait for the run to finish, in seconds. If omitted, waits indefinitely.
-     * @param options.log - Log instance for streaming run logs. Use `'default'` for console output, `null` to disable logging, or provide a custom Log instance.
+     * @param options.log - Log instance for streaming run logs and status messages. Use `'default'` for console output, `null` to disable logging, or provide a custom Log instance.
      * @param options.build - Tag or number of the build to run (e.g., `'beta'` or `'1.2.345'`).
      * @param options.memory - Memory in megabytes allocated for the run.
      * @param options.runTimeoutSecs - Maximum run duration in seconds.
@@ -301,14 +305,23 @@ export class ActorClient extends ResourceClient {
         // setting it up as a nested route under actor API.
         const newRunClient = this.apifyClient.run(id);
 
+        const statusMessageWatcher = await newRunClient.getStatusMessageWatcher({ toLog: log });
         const streamedLog = await newRunClient.getStreamedLog({ toLog: log });
+        statusMessageWatcher?.start();
         streamedLog?.start();
-        return this.apifyClient
-            .run(id)
-            .waitForFinish({ waitSecs, timeoutSecs })
-            .finally(async () => {
-                await streamedLog?.stop();
-            });
+        let finishedRun: ActorRun | undefined;
+        try {
+            finishedRun = await newRunClient.waitForFinish({ waitSecs, timeoutSecs });
+            return finishedRun;
+        } finally {
+            const runFinished =
+                finishedRun &&
+                ACT_JOB_TERMINAL_STATUSES.includes(finishedRun.status as (typeof ACT_JOB_TERMINAL_STATUSES)[number]);
+            await Promise.all([
+                statusMessageWatcher?.stop({ waitSecs: runFinished ? FINAL_STATUS_MESSAGE_WAIT_SECS : 0 }),
+                streamedLog?.stop(),
+            ]);
+        }
     }
 
     /**

@@ -192,6 +192,13 @@ const TIMEOUT_CASES: TimeoutCase[] = [
         // The method reads the run to find its Actor, and that lookup is what the tier times.
         responseData: { ...DEFAULT_RESPONSE_DATA, actId: 'actor-id' },
     },
+    {
+        client: 'RunClient',
+        method: 'getStatusMessageWatcher',
+        tier: 'long',
+        // The method reads the run to find its Actor, and that lookup is what the tier times.
+        responseData: { ...DEFAULT_RESPONSE_DATA, actId: 'actor-id' },
+    },
     { client: 'RunCollectionClient', method: 'list', tier: 'medium' },
     { client: 'ScheduleClient', method: 'get', tier: 'short' },
     { client: 'ScheduleClient', method: 'update', tier: 'short', args: [{ name: 'x' }] },

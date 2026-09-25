@@ -2886,6 +2886,14 @@ type GeneratedWebhookDispatchEventData = NonNullable<Schemas['WebhookDispatch'][
 type GeneratedWebhookStats = Schemas['WebhookStats'];
 
 // @public
+export interface GetStatusMessageWatcherOptions extends TimeoutOptions {
+    // (undocumented)
+    checkPeriodSecs?: number;
+    // (undocumented)
+    toLog?: Log | null | 'default';
+}
+
+// @public
 export interface GetStreamedLogOptions extends TimeoutOptions {
     // (undocumented)
     fromStart?: boolean;
@@ -3656,6 +3664,7 @@ export class RunClient extends ResourceClient {
     dataset(): DatasetClient;
     delete(options?: TimeoutOptions): Promise<void>;
     get(options?: RunGetOptions): Promise<ActorRun | undefined>;
+    getStatusMessageWatcher(options?: GetStatusMessageWatcherOptions): Promise<StatusMessageWatcher | undefined>;
     getStreamedLog(options?: GetStreamedLogOptions): Promise<StreamedLog | undefined>;
     keyValueStore(): KeyValueStoreClient;
     log(): LogClient;
@@ -3848,6 +3857,26 @@ class Statistics {
     calls: number;
     rateLimitErrors: number[];
     requests: number;
+}
+
+// @public
+export class StatusMessageWatcher {
+    constructor(options: StatusMessageWatcherOptions);
+    start(): void;
+    stop(options?: StatusMessageWatcherStopOptions): Promise<void>;
+}
+
+// @public (undocumented)
+export interface StatusMessageWatcherOptions {
+    checkPeriodSecs?: number;
+    runClient: RunClient;
+    toLog: Log;
+}
+
+// @public (undocumented)
+export interface StatusMessageWatcherStopOptions {
+    // (undocumented)
+    waitSecs?: number;
 }
 
 // @public

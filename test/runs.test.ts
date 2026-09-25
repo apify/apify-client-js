@@ -2,14 +2,17 @@ import type { AddressInfo } from 'node:net';
 import { setTimeout as setTimeoutNode } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import { ApifyApiError, ApifyClient, ArgumentValidationError } from 'apify-client';
+import { ApifyApiError, ApifyClient, ArgumentValidationError, LoggerActorRedirect } from 'apify-client';
+import express from 'express';
 import type { Page } from 'puppeteer';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { LEVELS, Log } from '@apify/log';
+
 import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
 import * as fixtures from './mock_server/fixtures.js';
-import { mockServer } from './mock_server/server.js';
-import { MOCKED_ACTOR_LOGS_PROCESSED } from './mock_server/test_utils.js';
+import { createDefaultApp, mockServer } from './mock_server/server.js';
+import { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator } from './mock_server/test_utils.js';
 
 describe('Run methods', () => {
     let baseUrl: string;
@@ -381,6 +384,14 @@ describe('Run methods', () => {
             expect(browserRes).toBeUndefined();
         });
 
+        test('getStatusMessageWatcher() returns undefined outside Node.js', async () => {
+            const browserRes = await page.evaluate(
+                (rId) => client.run(rId).getStatusMessageWatcher(),
+                'redirect-run-id',
+            );
+            expect(browserRes).toBeUndefined();
+        });
+
         test.each(['dataset', 'keyValueStore', 'requestQueue', 'log'] as const)(
             '%s().get() throws on 404 status code',
             async (method) => {
@@ -499,5 +510,91 @@ describe('Redirect run logs', () => {
             ).toBe(true);
             warnSpy.mockRestore();
         });
+    });
+});
+
+describe('Redirect run status messages', () => {
+    let baseUrl: string;
+    let client: ApifyClient;
+    const statusGenerator = new StatusGenerator();
+    const prefix = 'watched -> ';
+    const toLog = new Log({ level: LEVELS.DEBUG, prefix, logger: new LoggerActorRedirect() });
+
+    beforeAll(async () => {
+        const router = express.Router();
+        router.get('/actor-runs/status-run-id', async (_, res) => {
+            const [status, statusMessage, isStatusMessageTerminal] = statusGenerator.next().value;
+            res.json({
+                data: { ...fixtures.run, id: 'status-run-id', status, statusMessage, isStatusMessageTerminal },
+            });
+        });
+        router.get('/actor-runs/failing-run-id', async (_, res) => {
+            res.status(500).json({ error: { type: 'internal-error', message: 'Boom' } });
+        });
+        const server = await mockServer.start(undefined, createDefaultApp(router));
+        baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`;
+    });
+
+    afterAll(async () => {
+        await mockServer.close();
+    });
+
+    beforeEach(() => {
+        client = new ApifyClient({ baseUrl, maxRetries: 0, ...DEFAULT_OPTIONS });
+    });
+
+    afterEach(() => {
+        statusGenerator.reset();
+    });
+
+    test('logs each status change once and stops at the terminal status message', async () => {
+        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+        const watcher = await client.run('status-run-id').getStatusMessageWatcher({ toLog, checkPeriodSecs: 0.01 });
+        watcher?.start();
+        const stopStarted = Date.now();
+        await watcher?.stop({ waitSecs: 10 });
+
+        expect(logSpy.mock.calls).toEqual([
+            [`${c.cyan(prefix)}Status: RUNNING, Message: Actor Started`],
+            [`${c.cyan(prefix)}Status: RUNNING, Message: Doing some stuff`],
+            [`${c.cyan(prefix)}Status: SUCCEEDED, Message: Actor Finished`],
+        ]);
+        // The watcher ends by itself at the terminal status message, well before the grace period runs out.
+        expect(Date.now() - stopStarted).toBeLessThan(5000);
+        logSpy.mockRestore();
+    });
+
+    test('stop() does not wait for the rest of the polling period', async () => {
+        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+        const watcher = await client.run('status-run-id').getStatusMessageWatcher({ toLog, checkPeriodSecs: 60 });
+        watcher?.start();
+        await setTimeoutNode(100);
+        const stopStarted = Date.now();
+        await watcher?.stop();
+
+        expect(Date.now() - stopStarted).toBeLessThan(1000);
+        expect(logSpy.mock.calls).toEqual([[`${c.cyan(prefix)}Status: RUNNING, Message: Actor Started`]]);
+        logSpy.mockRestore();
+    });
+
+    test('logs a warning instead of throwing when polling fails', async () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const watcher = await client.run('failing-run-id').getStatusMessageWatcher({ toLog });
+        watcher?.start();
+        await expect(watcher?.stop({ waitSecs: 5 })).resolves.toBeUndefined();
+
+        expect(
+            warnSpy.mock.calls.some(
+                ([msg]) => typeof msg === 'string' && msg.includes('Status message redirection stopped due to error'),
+            ),
+        ).toBe(true);
+        warnSpy.mockRestore();
+    });
+
+    test('returns undefined when toLog is null', async () => {
+        await expect(client.run('status-run-id').getStatusMessageWatcher({ toLog: null })).resolves.toBeUndefined();
     });
 });

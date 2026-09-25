@@ -23,7 +23,7 @@ import { stringifyWebhooksToBase64 } from '../src/utils.js';
 import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
 import * as fixtures from './mock_server/fixtures.js';
 import { createDefaultApp, mockServer } from './mock_server/server.js';
-import { MOCKED_ACTOR_LOGS_PROCESSED, StatusGenerator } from './mock_server/test_utils.js';
+import { MOCKED_ACTOR_LOGS_PROCESSED, MOCKED_ACTOR_STATUSES, StatusGenerator } from './mock_server/test_utils.js';
 
 describe('Actor methods', () => {
     let baseUrl: string;
@@ -942,9 +942,16 @@ describe('Run actor with redirected logs', () => {
             // Delay the response to give the actor time to run and produce expected logs
             await setTimeout(10);
 
-            const [status, statusMessage] = statusGenerator.next().value;
+            const [status, statusMessage, isStatusMessageTerminal] = statusGenerator.next().value;
             res.json({
-                data: { ...fixtures.run, id: 'redirect-run-id', actId: 'redirect-actor-id', status, statusMessage },
+                data: {
+                    ...fixtures.run,
+                    id: 'redirect-run-id',
+                    actId: 'redirect-actor-id',
+                    status,
+                    statusMessage,
+                    isStatusMessageTerminal,
+                },
             });
         });
         const app = createDefaultApp(router);
@@ -986,8 +993,22 @@ describe('Run actor with redirected logs', () => {
 
             await client.actor('redirect-actor-id').call(undefined, logOptions);
 
-            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [expectedPrefix + item]));
+            const lines = logSpy.mock.calls.map(([line]) => line as string);
             logSpy.mockRestore();
+            const statusPrefix = `${expectedPrefix}Status: `;
+            const statusLines = lines.filter((line) => line.startsWith(statusPrefix));
+
+            expect(lines.filter((line) => !line.startsWith(statusPrefix))).toEqual(
+                MOCKED_ACTOR_LOGS_PROCESSED.map((item) => expectedPrefix + item),
+            );
+            // Which statuses the watcher sees depends on polling timing, but it never repeats one and always
+            // ends with the terminal status message.
+            const possibleStatusLines = MOCKED_ACTOR_STATUSES.map(
+                ([status, statusMessage]) => `${statusPrefix}${status}, Message: ${statusMessage}`,
+            );
+            expect(possibleStatusLines).toEqual(expect.arrayContaining(statusLines));
+            expect(statusLines.every((line, i) => line !== statusLines[i - 1])).toBe(true);
+            expect(statusLines.at(-1)).toBe(`${statusPrefix}SUCCEEDED, Message: Actor Finished`);
         });
 
         test('logOptions:{ "log": null }', async () => {

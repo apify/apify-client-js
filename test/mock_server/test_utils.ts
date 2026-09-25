@@ -33,24 +33,24 @@ export const MOCKED_ACTOR_LOGS_PROCESSED = [
     '2025-05-13T07:28:14.132Z [apify.redirect-logger runId:4U1oAnKau6jpzjUuA] -> 2025-05-13T07:27:14.132Z ACTOR:...',
 ];
 
-export const MOCKED_ACTOR_STATUSES = [
-    ['RUNNING', 'Actor Started'],
-    ['RUNNING', 'Doing some stuff'],
-    ['RUNNING', 'Doing some stuff'],
-    ['RUNNING', 'Doing some stuff'],
-    ['RUNNING', 'Doing some stuff'],
-    ['RUNNING', 'Doing some stuff'],
-    ['RUNNING', 'Doing some stuff'],
-    ['RUNNING', 'Doing some stuff'],
-    ['RUNNING', 'Doing some stuff'],
-    ['SUCCEEDED', 'Actor Finished'],
+export const MOCKED_ACTOR_STATUSES: [status: string, statusMessage: string, isStatusMessageTerminal: boolean][] = [
+    ['RUNNING', 'Actor Started', false],
+    ['RUNNING', 'Doing some stuff', false],
+    ['RUNNING', 'Doing some stuff', false],
+    ['RUNNING', 'Doing some stuff', false],
+    ['RUNNING', 'Doing some stuff', false],
+    ['RUNNING', 'Doing some stuff', false],
+    ['RUNNING', 'Doing some stuff', false],
+    ['RUNNING', 'Doing some stuff', false],
+    ['RUNNING', 'Doing some stuff', false],
+    ['SUCCEEDED', 'Actor Finished', true],
 ];
 
 /**
  * Helper class to allow iterating over defined list of statuses for each test case.
  */
 export class StatusGenerator {
-    private generator: Generator<string[], void, unknown>;
+    private generator: Generator<(typeof MOCKED_ACTOR_STATUSES)[number], void, unknown>;
 
     private *getStatusGenerator() {
         for (const status of MOCKED_ACTOR_STATUSES) {
@@ -70,7 +70,7 @@ export class StatusGenerator {
         this.generator = this.getStatusGenerator();
     }
 
-    next(): IteratorResult<string[]> {
+    next(): IteratorResult<(typeof MOCKED_ACTOR_STATUSES)[number]> {
         return this.generator.next();
     }
 }

@@ -34,6 +34,7 @@ Reaching the ES module build takes a bundler that doesn't set the `browser` cond
 These features rely on Node.js APIs and aren't available in the browser bundle or in the Web API runtime:
 
 - Log streaming with <ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> and <ApiLink to="class/RunClient#getStreamedLog">`RunClient.getStreamedLog()`</ApiLink>, and the `stream` option of <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink>, which all return a Node.js `Readable` stream.
+- Status message redirection with <ApiLink to="class/RunClient#getStatusMessageWatcher">`RunClient.getStatusMessageWatcher()`</ApiLink>. It pairs with `getStreamedLog()` in `ActorClient.call()`, so it returns `undefined` outside Node.js too.
 - Proxy support through the `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` environment variables.
 - Request body compression.
 - The `User-Agent` header, which browsers don't let a page set.
