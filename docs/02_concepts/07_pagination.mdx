@@ -21,7 +21,7 @@ Most methods named `list()` or `listSomething()` in the Apify client resolve to 
 - `limit` - The maximum number of items per page.
 - `desc` - Whether the items are sorted in descending order.
 
-Some methods paginate differently. <ApiLink to="class/KeyValueStoreClient#listKeys">`KeyValueStoreClient.listKeys()`</ApiLink> pages by key: to fetch the next page, pass its `nextExclusiveStartKey` value back as the `exclusiveStartKey` option. <ApiLink to="class/RequestQueueClient#listRequests">`RequestQueueClient.listRequests()`</ApiLink> pages by cursor in the same way, and <ApiLink to="class/RequestQueueClient#listHead">`listHead()`</ApiLink> returns only the first requests of the queue. Regardless, the primary results are always stored under the `items` field, and the `limit` option controls the number of results returned.
+Some methods paginate differently. <ApiLink to="class/KeyValueStoreClient#listKeys">`KeyValueStoreClient.listKeys()`</ApiLink> pages by key: to fetch the next page, pass its `nextExclusiveStartKey` value back as the `exclusiveStartKey` option. <ApiLink to="class/RequestQueueClient#listRequests">`RequestQueueClient.listRequests()`</ApiLink> pages by cursor: pass its `nextCursor` value back as the `cursor` option. <ApiLink to="class/RequestQueueClient#listHead">`listHead()`</ApiLink> returns only the first requests of the queue. Regardless, the primary results are always stored under the `items` field, and the `limit` option controls the number of results returned.
 
 The following example shows how to fetch one page of dataset items:
 
@@ -33,7 +33,7 @@ A single call returns at most one page, and the API can cap how many items that 
 
 ## Async iteration
 
-The promise that a paginated method returns is also an async iterable. Iterating it with `for await` fetches as many pages as needed to yield every item matching the options, so you don't need to manage offsets, limits, or cursors yourself. The `limit` option caps the total, and `chunkSize` caps the number of items per API call. `listKeys()` and `listRequests()` iterate the same way, and <ApiLink to="class/RequestQueueClient#paginateRequests">`paginateRequests()`</ApiLink> yields whole pages of requests.
+The promise that a paginated method returns is also an async iterable. Iterating it with `for await` fetches as many pages as needed to yield every item matching the options, so you don't need to manage offsets, limits, or cursors yourself. The `limit` option caps the total, and `chunkSize` caps the number of items per API call. `listKeys()` and `listRequests()` iterate the same way, except that they don't take `chunkSize`, and <ApiLink to="class/RequestQueueClient#paginateRequests">`paginateRequests()`</ApiLink> yields whole pages of requests.
 
 The following example iterates over every Actor owned by the current user with a collection client's `list()` method:
 

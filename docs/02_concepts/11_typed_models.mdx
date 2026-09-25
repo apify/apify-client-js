@@ -80,7 +80,7 @@ Every input a method takes has an exported type, such as <ApiLink to="interface/
     {InputExample}
 </CodeBlock>
 
-The client validates the input at runtime too, so plain JavaScript callers get an <ApiLink to="class/ArgumentValidationError">`ArgumentValidationError`</ApiLink> for a value of the wrong shape. The input schemas reject unknown fields, so pass only the fields the input type lists. For details, see [Invalid arguments](./03_error_handling.mdx#invalid-arguments).
+The client validates the input at runtime too, so plain JavaScript callers get an <ApiLink to="class/ArgumentValidationError">`ArgumentValidationError`</ApiLink> for a value of the wrong shape. Most input schemas reject unknown fields, so pass only the fields the input type lists. For details, see [Invalid arguments](./03_error_handling.mdx#invalid-arguments).
 
 ## Forward compatibility
 
@@ -96,7 +96,7 @@ A few endpoints return values the client doesn't validate, because their payload
 
 - <ApiLink to="class/DatasetClient#listItems">`DatasetClient.listItems()`</ApiLink> returns items typed by the `Data` type parameter of <ApiLink to="class/DatasetClient">`DatasetClient`</ApiLink>, which defaults to `Record<string | number, unknown>`. Dataset items follow the [Actor output schema](https://docs.apify.com/platform/actors/development/actor-definition/output-schema), which the client can't know in advance.
 - <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink> returns a <ApiLink to="interface/KeyValueStoreRecord">`KeyValueStoreRecord`</ApiLink> whose `value` is determined by the record's content type and the options you pass.
-- <ApiLink to="class/LogClient#get">`LogClient.get()`</ApiLink> returns the log as a string.
+- <ApiLink to="class/LogClient#get">`LogClient.get()`</ApiLink> returns the log as a string, or `undefined` when the log doesn't exist.
 
 To type the items of a dataset whose shape you know, pass the type to `client.dataset()`:
 

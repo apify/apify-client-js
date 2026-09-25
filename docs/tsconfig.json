@@ -17,5 +17,5 @@
             "#runtime": ["../src/runtime/node.ts"]
         }
     },
-    "include": ["./**/code/**/*", "../src/**/*"]
+    "include": ["./**/code/**/*"]
 }

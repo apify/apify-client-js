@@ -15,7 +15,7 @@ Certain resources, such as key-value store records and logs, support streaming d
 
 Supported streaming methods:
 
-- <ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> - Stream a log in real time. Resolves to a Node.js `Readable`, or `undefined` when the log doesn't exist.
+- <ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> - Stream a log in real time. Resolves to a Node.js `Readable`, or `undefined` when the log doesn't exist. A log client chained off a run or build, such as `client.run('run-id').log()`, throws a <ApiLink to="class/NotFoundError">`NotFoundError`</ApiLink> instead, since the run itself may be what is missing.
 - <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink> with the `stream: true` option - Stream a key-value store record as raw data. Resolves to a record whose `value` is a Node.js `Readable`, or `undefined` when the record doesn't exist.
 - <ApiLink to="class/RunClient#getStreamedLog">`RunClient.getStreamedLog()`</ApiLink> - Redirect the log of a run to a logger while the run is in progress. For details, see [Redirecting Actor run logs](./05_logging.mdx#redirecting-actor-run-logs).
 

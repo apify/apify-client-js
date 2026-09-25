@@ -18,11 +18,6 @@ The Apify client provides several convenience methods to handle actions that the
 
 When `waitSecs` runs out before the run finishes, the returned promise resolves to a run object with status `READY` or `RUNNING`, which doesn't contain the Actor run output. Tasks have the same methods on <ApiLink to="class/TaskClient">`TaskClient`</ApiLink>, and builds have <ApiLink to="class/BuildClient#waitForFinish">`BuildClient.waitForFinish()`</ApiLink>.
 
-Additionally, storage-related resources offer flexible options for data retrieval:
-
-- [Key-value store](https://docs.apify.com/platform/storage/key-value-store) records can be retrieved as parsed values, buffers, or streams.
-- [Dataset](https://docs.apify.com/platform/storage/dataset) items can be fetched as individual objects, iterated asynchronously, or downloaded as serialized data in formats such as CSV or XLSX.
-
 <CodeBlock className="language-ts">
     {CallExample}
 </CodeBlock>
@@ -30,3 +25,8 @@ Additionally, storage-related resources offer flexible options for data retrieva
 :::tip
 The `call()` method polls internally and may take a long time for long-running Actors. Use `start()` and `waitForFinish()` separately if you need more control over the waiting behavior.
 :::
+
+Additionally, storage-related resources offer flexible options for data retrieval:
+
+- [Key-value store](https://docs.apify.com/platform/storage/key-value-store) records can be retrieved as parsed values, buffers, or streams.
+- [Dataset](https://docs.apify.com/platform/storage/dataset) items can be fetched as individual objects, iterated asynchronously, or downloaded as serialized data in formats such as CSV or XLSX.
