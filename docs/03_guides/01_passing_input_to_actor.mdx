@@ -1,0 +1,18 @@
+---
+id: passing-input-to-actor
+title: Pass input to an Actor
+sidebar_label: Pass input to an Actor
+description: 'Run an Actor with custom input data and retrieve results with the Apify API client for JavaScript.'
+---
+
+import CodeBlock from '@theme/CodeBlock';
+
+import InputExample from '!!raw-loader!./code/01_input.ts';
+
+You can pass input data directly to the `call()` method to configure and run an Actor in a single step.
+
+The following example shows how to pass input to the `apify/instagram-hashtag-scraper` Actor and wait for it to finish:
+
+<CodeBlock className="language-ts">
+    {InputExample}
+</CodeBlock>

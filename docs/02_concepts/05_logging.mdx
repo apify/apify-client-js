@@ -1,0 +1,64 @@
+---
+id: logging
+title: Logging
+sidebar_label: Logging
+description: 'Configure the logger of the Apify API client for JavaScript and redirect the logs of Actor runs.'
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import ApiLink from '@theme/ApiLink';
+
+import LoggingLevelExample from '!!raw-loader!./code/05_logging_level.ts';
+import LoggingJsonExample from '!!raw-loader!./code/05_logging_json.ts';
+import RedirectRunLogExample from '!!raw-loader!./code/05_redirect_run_log.ts';
+import StreamedLogExample from '!!raw-loader!./code/05_streamed_log.ts';
+
+The client logs through [`@apify/log`](https://www.npmjs.com/package/@apify/log), the logger the Apify SDK and Crawlee use too. Each <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> creates a child of the package's default logger with the `ApifyClient` prefix and exposes it as `client.logger`. The client logs only warnings and errors, for example:
+
+- A request that has failed half of its allowed attempts, with the cause of the last failure.
+- A request timeout above `timeoutMaxSecs`, which the client caps. For details, see [Timeouts](./10_timeouts.mdx).
+- A request with a stream body, which the client can't retry because the failed attempt has already consumed part of the stream.
+
+## Configuring the logger
+
+To configure the logger, install `@apify/log` alongside the client:
+
+```bash
+npm i @apify/log
+```
+
+The `client.logger` is the same logger the built-in HTTP client writes to, so a change to it applies to every request the client sends. To change the log level, call `setLevel()`:
+
+<CodeBlock className="language-ts">
+    {LoggingLevelExample}
+</CodeBlock>
+
+The `APIFY_LOG_LEVEL` environment variable sets the level without any code change, for example `APIFY_LOG_LEVEL=ERROR`. The variable applies when the logger is created, so `setLevel()` overrides it.
+
+By default, the logger prints human-readable lines. To print JSON instead, set the logger implementation to `LoggerJson`:
+
+<CodeBlock className="language-ts">
+    {LoggingJsonExample}
+</CodeBlock>
+
+An HTTP client you plug in with <ApiLink to="class/ApifyClient#withCustomHttpClient">`ApifyClient.withCustomHttpClient()`</ApiLink> logs through the `logger` option of its own constructor. For details, see [HTTP clients](./09_custom_http_clients.mdx).
+
+## Redirecting Actor run logs
+
+In Node.js, <ApiLink to="class/ActorClient#call">`ActorClient.call()`</ApiLink> redirects the log of the run it starts to your process while it waits for the run to finish. The redirected lines carry a prefix with the Actor name and the run ID. The `log` option of `call()` changes where they go:
+
+- A `Log` instance of `@apify/log` receives the redirected lines.
+- `null` turns the redirection off.
+- `'default'` or no value keeps the built-in logger.
+
+<CodeBlock className="language-ts">
+    {RedirectRunLogExample}
+</CodeBlock>
+
+For a run you started with <ApiLink to="class/ActorClient#start">`start()`</ApiLink>, <ApiLink to="class/RunClient#getStreamedLog">`RunClient.getStreamedLog()`</ApiLink> returns a <ApiLink to="class/StreamedLog">`StreamedLog`</ApiLink> that you start and stop yourself. It takes the same choice of logger through its `toLog` option. Log redirection needs Node.js, so outside it `getStreamedLog()` resolves to `undefined` and `call()` doesn't redirect anything.
+
+<CodeBlock className="language-ts">
+    {StreamedLogExample}
+</CodeBlock>
+
+For more on configuring the logger, see the [`@apify/log` README](https://www.npmjs.com/package/@apify/log).

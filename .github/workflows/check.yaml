@@ -136,6 +136,8 @@ jobs:
               run: pnpm tsc-check-tests
             - name: Type-check maintainer scripts
               run: pnpm tsc-check-scripts
+            - name: Type-check docs code samples
+              run: pnpm tsc-check-docs
             - name: Format check
               run: pnpm format:check
 

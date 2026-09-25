@@ -20,7 +20,7 @@ This page summarizes the breaking changes when upgrading from v2 to v3 of `apify
 
 A CommonJS project can keep calling `require('apify-client')`: the client has no top-level `await`, and Node.js 22.12 and newer load an ES module through `require()` directly. On Node.js 22.0 to 22.11, `require()` of an ES module is still behind the `--experimental-require-module` flag, so use `import` there.
 
-The browser bundle at `dist/bundle.js` is now an ES module instead of UMD, so it no longer defines an `Apify` global. Importing it, whether through a bundler or the `apify-client/browser` subpath, is unchanged. A classic `<script>` tag that read `Apify.ApifyClient` off the global has to become a `<script type="module">` that imports it instead. For details, see [Bundled environments](../02_concepts/05_bundled-environments.md).
+The browser bundle at `dist/bundle.js` is now an ES module instead of UMD, so it no longer defines an `Apify` global. Importing it, whether through a bundler or the `apify-client/browser` subpath, is unchanged. A classic `<script>` tag that read `Apify.ApifyClient` off the global has to become a `<script type="module">` that imports it instead. For details, see [Bundled environments](../02_concepts/13_bundled_environments.mdx).
 
 ## Argument validation switched from `ow` to `zod`
 
@@ -46,7 +46,7 @@ try {
     await client.dataset('my-dataset').listItems({ limit: 'ten' });
 } catch (error) {
     if (error instanceof ArgumentValidationError) {
-        console.log(error.message); // Invalid input: expected number, received string at `limit`, got `ten`
+        console.log(error.message); // Invalid input: expected number, received the string `ten` at `limit` in `DatasetClientListItemOptions`
         console.log(error.issues); // [{ code: 'invalid_type', expected: 'number', path: ['limit'], ... }]
     }
 }
@@ -90,7 +90,7 @@ The reverse also happened: `chunkSize` now works on every `list()` method that t
 
 ## API errors are thrown as subclasses of `ApifyApiError`
 
-An error response from the API now throws the <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> subclass matching its HTTP status code: <ApiLink to="class/InvalidRequestError">`InvalidRequestError`</ApiLink> (400), <ApiLink to="class/UnauthorizedError">`UnauthorizedError`</ApiLink> (401), <ApiLink to="class/ForbiddenError">`ForbiddenError`</ApiLink> (403), <ApiLink to="class/NotFoundError">`NotFoundError`</ApiLink> (404), <ApiLink to="class/ConflictError">`ConflictError`</ApiLink> (409), <ApiLink to="class/RateLimitError">`RateLimitError`</ApiLink> (429) or <ApiLink to="class/ServerError">`ServerError`</ApiLink> (5xx). Any other status code still throws a plain `ApifyApiError`. Every subclass extends `ApifyApiError`, so existing `instanceof ApifyApiError` checks keep working. For details, see [Telling API errors apart](../02_concepts/02_error-handling.md#telling-api-errors-apart).
+An error response from the API now throws the <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> subclass matching its HTTP status code: <ApiLink to="class/InvalidRequestError">`InvalidRequestError`</ApiLink> (400), <ApiLink to="class/UnauthorizedError">`UnauthorizedError`</ApiLink> (401), <ApiLink to="class/ForbiddenError">`ForbiddenError`</ApiLink> (403), <ApiLink to="class/NotFoundError">`NotFoundError`</ApiLink> (404), <ApiLink to="class/ConflictError">`ConflictError`</ApiLink> (409), <ApiLink to="class/RateLimitError">`RateLimitError`</ApiLink> (429) or <ApiLink to="class/ServerError">`ServerError`</ApiLink> (5xx). Any other status code still throws a plain `ApifyApiError`. Every subclass extends `ApifyApiError`, so existing `instanceof ApifyApiError` checks keep working. For details, see [Error subclasses](../02_concepts/03_error_handling.mdx#error-subclasses).
 
 Two things change as a result:
 
@@ -318,7 +318,7 @@ The `timeoutSecs` option of the <ApiLink to="class/ApifyClient">`ApifyClient`</A
 + });
 ```
 
-For what each tier covers and which one a method is assigned, see [Timeouts](../02_concepts/06_timeouts.md).
+For what each tier covers and which one a method is assigned, see [Timeouts](../02_concepts/10_timeouts.mdx).
 
 In v2 only the dataset, key-value store and request queue clients picked a timeout per method, and everything else ran with the global 360 seconds. A metadata call such as `actor.get()` now gets the 5 seconds of the `short` tier and a `list()` call the 30 of `medium`, so a call that used to wait out a slow API can fail sooner. <ApiLink to="class/RequestQueueClient#unlockRequests">`RequestQueueClient.unlockRequests()`</ApiLink> moves the other way, from 30 seconds to 360. Where you need a different duration, every method that sends a request takes a `timeoutSecs` option, which replaces the tier of the method for that call:
 
@@ -341,7 +341,7 @@ The `timeoutSecs` option of <ApiLink to="class/KeyValueStoreClient#setRecord">`K
 
 ## Request compression is configurable
 
-The <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor takes a `compression` option: `'brotli'`, `'gzip'`, or an <ApiLink to="interface/HttpCompressor">`HttpCompressor`</ApiLink> for a custom quality or algorithm. The default stays brotli at quality 6, so a client constructed without the option sends the same requests as in v2. For the rules that decide which bodies get compressed, see [HTTP compression](../02_concepts/07_http-compression.md).
+The <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor takes a `compression` option: `'brotli'`, `'gzip'`, or an <ApiLink to="interface/HttpCompressor">`HttpCompressor`</ApiLink> for a custom quality or algorithm. The default stays brotli at quality 6, so a client constructed without the option sends the same requests as in v2. For the rules that decide which bodies get compressed, see [HTTP compression](../02_concepts/12_http_compression.mdx).
 
 ```js
 import { ApifyClient, BrotliHttpCompressor } from 'apify-client';
@@ -471,7 +471,7 @@ export default {
 };
 ```
 
-Running on Node.js without a bundler is unaffected, and the pre-built browser bundle behaves as it did in v2. For what bundling for a non-Node.js target takes, see [Bundled environments](../02_concepts/05_bundled-environments.md).
+Running on Node.js without a bundler is unaffected, and the pre-built browser bundle behaves as it did in v2. For what bundling for a non-Node.js target takes, see [Bundled environments](../02_concepts/13_bundled_environments.mdx).
 
 ### Response bodies are decoded by `TextDecoder`
 
@@ -489,7 +489,7 @@ v2 compressed a request body only when it was a string or a `Buffer`. A `Uint8Ar
 
 ## The HTTP client is pluggable
 
-`ApifyClient` sends its requests through an HTTP client you can replace. <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> is now the abstract base holding the shared request pipeline, and the axios-based client the `ApifyClient` uses by default is <ApiLink to="class/AxiosHttpClient">`AxiosHttpClient`</ApiLink>. A custom client extends `HttpClient`, implements `sendRequest()` and is plugged in with <ApiLink to="class/ApifyClient#withCustomHttpClient">`ApifyClient.withCustomHttpClient()`</ApiLink>. See [HTTP clients](../02_concepts/08_http-clients.md) for the contract. Decoupling the pipeline from axios changes a few details of the public surface.
+`ApifyClient` sends its requests through an HTTP client you can replace. <ApiLink to="class/HttpClient">`HttpClient`</ApiLink> is now the abstract base holding the shared request pipeline, and the axios-based client the `ApifyClient` uses by default is <ApiLink to="class/AxiosHttpClient">`AxiosHttpClient`</ApiLink>. A custom client extends `HttpClient`, implements `sendRequest()` and is plugged in with <ApiLink to="class/ApifyClient#withCustomHttpClient">`ApifyClient.withCustomHttpClient()`</ApiLink>. See [HTTP clients](../02_concepts/09_custom_http_clients.mdx) for the contract. Decoupling the pipeline from axios changes a few details of the public surface.
 
 ### `requestInterceptors` moved to `AxiosHttpClient`
 

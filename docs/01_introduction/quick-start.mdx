@@ -1,0 +1,75 @@
+---
+id: quick-start
+title: Quick start
+sidebar_label: Quick start
+description: 'Get started with the Apify API client for JavaScript by running an Actor and retrieving results from its dataset.'
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import ApiLink from '@theme/ApiLink';
+
+import AuthExample from '!!raw-loader!./code/02_auth.ts';
+import InputExample from '!!raw-loader!./code/03_input.ts';
+import DatasetExample from '!!raw-loader!./code/03_dataset.ts';
+
+Learn how to authenticate, run Actors, and retrieve results using the Apify API client for JavaScript.
+
+---
+
+## Step 1: Authenticate the client
+
+To use the client, you need an [API token](https://docs.apify.com/platform/integrations/api#api-token). You can find your token under the [Integrations](https://console.apify.com/account/integrations) tab in Apify Console. Copy the token and initialize the client by providing it (`MY-APIFY-TOKEN`) as a parameter to the `ApifyClient` constructor.
+
+<CodeBlock className="language-ts">
+    {AuthExample}
+</CodeBlock>
+
+:::warning Secure access
+
+The API token is used to authorize your requests to the Apify API. You can be charged for the usage of the underlying services, so don't share your API token with untrusted parties or expose it on the client side of your applications.
+
+:::
+
+## Step 2: Run an Actor
+
+To start an Actor, call the <ApiLink to="class/ApifyClient#actor">`client.actor()`</ApiLink> method with the Actor's ID (e.g. `john-doe/my-cool-actor`). The Actor's ID is a combination of the Actor owner's username and the Actor name. You can run both your own Actors and Actors from [Apify Store](https://apify.com/store).
+
+To define the Actor's input, pass an object to the <ApiLink to="class/ActorClient#call">`call()`</ApiLink> method that matches the Actor's [input schema](https://docs.apify.com/platform/actors/development/actor-definition/input-schema). The input can include URLs to scrape, search terms, or other configuration data.
+
+<CodeBlock className="language-ts">
+    {InputExample}
+</CodeBlock>
+
+## Step 3: Get results from the dataset
+
+To get the results from the dataset, call the <ApiLink to="class/ApifyClient#dataset">`client.dataset()`</ApiLink> method with the dataset ID, then call <ApiLink to="class/DatasetClient#listItems">`listItems()`</ApiLink> to retrieve the data. You can get the dataset ID from the `defaultDatasetId` field of the <ApiLink to="interface/ActorRun">`ActorRun`</ApiLink> object returned by `call()`.
+
+<CodeBlock className="language-ts">
+    {DatasetExample}
+</CodeBlock>
+
+:::note Dataset access
+
+Running an Actor might take time, depending on the Actor's complexity and the amount of data it processes. If you want only to get data and have an immediate response, you should access the existing dataset of the finished [Actor run](https://docs.apify.com/platform/actors/running/runs-and-builds#runs).
+
+:::
+
+## Next steps
+
+### Concepts
+
+To learn more about how the client works, check out the Concepts section in the sidebar:
+
+- [Single and collection clients](../02_concepts/01_single_collection_clients.mdx) - resource clients and collection clients
+- [Error handling](../02_concepts/03_error_handling.mdx) - API errors and how to tell them apart
+- [Retries](../02_concepts/04_retries.mdx) - automatic retries with exponential backoff
+- [Pagination](../02_concepts/07_pagination.mdx) - iterating through large result sets
+- [Typed models](../02_concepts/11_typed_models.mdx) - response types and validation
+
+### Guides
+
+For practical examples of common tasks, see the Guides section:
+
+- [Pass input to an Actor](../03_guides/01_passing_input_to_actor.mdx)
+- [Retrieve Actor data](../03_guides/03_retrieve_actor_data.mdx)
+- [Handle webhooks](../03_guides/04_handle_webhooks.mdx)

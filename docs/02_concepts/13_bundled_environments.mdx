@@ -17,7 +17,7 @@ This page applies only to non-Node.js environments (browsers, Cloudflare Workers
 
 The package ships a pre-built browser bundle at `dist/bundle.js`. A bundler that targets the browser picks it up through the `browser` condition of the package's `exports` field. If yours doesn't, import it directly:
 
-```js
+```ts
 import { ApifyClient } from 'apify-client/browser';
 ```
 

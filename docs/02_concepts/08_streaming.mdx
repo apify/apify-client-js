@@ -1,0 +1,36 @@
+---
+id: streaming-resources
+title: Streaming resources
+sidebar_label: Streaming resources
+description: 'Stream key-value store records and Actor run logs with the Apify API client for JavaScript, without loading them into memory.'
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import ApiLink from '@theme/ApiLink';
+
+import StreamLogExample from '!!raw-loader!./code/08_stream_log.ts';
+import StreamRecordExample from '!!raw-loader!./code/08_stream_record.ts';
+
+Certain resources, such as key-value store records and logs, support streaming directly from the Apify API. You can then process large resources incrementally without downloading them entirely into memory, which suits large or continuously updated data.
+
+Supported streaming methods:
+
+- <ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> - Stream a log in real time. Resolves to a Node.js `Readable`, or `undefined` when the log doesn't exist. A log client chained off a run or build, such as `client.run('run-id').log()`, throws a <ApiLink to="class/NotFoundError">`NotFoundError`</ApiLink> instead, since the run itself may be what is missing.
+- <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink> with the `stream: true` option - Stream a key-value store record as raw data. Resolves to a record whose `value` is a Node.js `Readable`, or `undefined` when the record doesn't exist.
+- <ApiLink to="class/RunClient#getStreamedLog">`RunClient.getStreamedLog()`</ApiLink> - Redirect the log of a run to a logger while the run is in progress. For details, see [Redirecting Actor run logs](./05_logging.mdx#redirecting-actor-run-logs).
+
+A stream holds its connection open until you consume it to the end or destroy it. Iterating it with `for await` or passing it to `pipeline()` from `node:stream/promises` does either one for you, including when the processing throws.
+
+The following example shows how to stream the log of an Actor run incrementally:
+
+<CodeBlock className="language-ts">
+    {StreamLogExample}
+</CodeBlock>
+
+The next example streams a key-value store record straight to a file:
+
+<CodeBlock className="language-ts">
+    {StreamRecordExample}
+</CodeBlock>
+
+Streaming needs Node.js, so these methods aren't available in the browser bundle or in other non-Node.js runtimes. For details, see [Bundled environments](./13_bundled_environments.mdx).

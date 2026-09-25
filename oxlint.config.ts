@@ -30,6 +30,14 @@ export default defineConfig({
             },
         },
         {
+            // Docs code samples print what they fetch, and often leave a result unused to show the call alone.
+            files: ['docs/**/code/**'],
+            rules: {
+                'no-console': 'off',
+                'typescript/no-unused-vars': 'off',
+            },
+        },
+        {
             files: ['test/**'],
             rules: {
                 'no-console': 'off',
