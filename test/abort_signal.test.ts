@@ -104,6 +104,30 @@ describe('AbortSignal in resource-client methods', () => {
         expect(received).toEqual([startPath, 'GET /v2/actor-runs/job-id', 'GET /v2/actor-runs/job-id']);
     });
 
+    test('call() of ActorClient rejects with the reason while the redirected run log is still streaming', async () => {
+        const controller = new AbortController();
+        let polls = 0;
+        handler = (req, res) => {
+            const path = new URL(req.url!, 'http://x').pathname;
+            if (path.endsWith('/log')) {
+                // The log of a run that is still going stays open.
+                res.setHeader('content-type', 'text/plain');
+                res.write('2024-01-01T00:00:00.000Z started\n');
+                return;
+            }
+            if (path === '/v2/actor-runs/job-id' && ++polls === 3) {
+                controller.abort(new Error('shutting down'));
+                return;
+            }
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify({ data: { id: 'job-id', actId: 'actor-id', name: 'actor', status: 'RUNNING' } }));
+        };
+
+        await expect(client.actor('actor-id').call(undefined, { signal: controller.signal })).rejects.toThrow(
+            'shutting down',
+        );
+    });
+
     test('a signal that already aborted sends nothing', async () => {
         const controller = new AbortController();
         controller.abort(new Error('shutting down'));
@@ -122,5 +146,41 @@ describe('AbortSignal in resource-client methods', () => {
 
         await expect(call).rejects.toThrow('shutting down');
         expect(received).toEqual(['POST /v2/request-queues/queue-id/requests/batch']);
+    });
+
+    test('batchAddRequests() rejects with the reason when the signal aborts during the wait before a retry', async () => {
+        const controller = new AbortController();
+        const request = { url: 'http://example.com', uniqueKey: 'x' };
+        handler = (_req, res) => {
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify({ data: { processedRequests: [], unprocessedRequests: [request] } }));
+            setTimeout(() => controller.abort(new Error('shutting down')), 50);
+        };
+
+        const startedAt = Date.now();
+        const call = client.requestQueue('queue-id').batchAddRequests([request], {
+            signal: controller.signal,
+            maxUnprocessedRequestsRetries: 1,
+            minDelayBetweenUnprocessedRequestsRetriesMillis: 60_000,
+        });
+
+        await expect(call).rejects.toThrow('shutting down');
+        expect(Date.now() - startedAt).toBeLessThan(5_000);
+        expect(received).toEqual(['POST /v2/request-queues/queue-id/requests/batch']);
+    });
+
+    test('waitForFinish() rejects with the reason when the signal aborts during the wait after a 404', async () => {
+        const controller = new AbortController();
+        handler = (_req, res) => {
+            res.statusCode = 404;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify({ error: { type: 'record-not-found', message: 'not found' } }));
+            setTimeout(() => controller.abort(new Error('shutting down')), 50);
+        };
+
+        await expect(client.run('job-id').waitForFinish({ signal: controller.signal })).rejects.toThrow(
+            'shutting down',
+        );
+        expect(received).toEqual(['GET /v2/actor-runs/job-id']);
     });
 });

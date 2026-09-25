@@ -5,7 +5,7 @@ import type { z } from 'zod';
 import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApifyRequestConfig } from '../http_clients/index.js';
 import type { Timeout, TimeoutOptions, TimeoutTier } from '../timeouts.js';
-import { catchNotFoundForResourceOrThrow, catchNotFoundOrThrow, parseResponse } from '../utils.js';
+import { catchNotFoundForResourceOrThrow, catchNotFoundOrThrow, parseResponse, sleep } from '../utils.js';
 import { ApiClient } from './api_client.js';
 
 /**
@@ -148,10 +148,10 @@ export class ResourceClient extends ApiClient {
 
             // It might take some time for database replicas to get up-to-date,
             // so getRun() might return null. Wait a little bit and try it again.
-            if (!job)
-                await new Promise((resolve) => {
-                    setTimeout(resolve, 250);
-                });
+            if (!job) {
+                await sleep(250, signal);
+                signal?.throwIfAborted();
+            }
         } while (shouldRepeat());
 
         if (!job) {

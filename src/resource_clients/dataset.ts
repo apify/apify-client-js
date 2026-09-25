@@ -62,8 +62,8 @@ const downloadItemsOptionsSchema = z.strictObject({
     ...timeoutOptionsShape,
 });
 const pushItemsSchema = z.union([itemSchema, z.string(), z.array(itemSchema)]);
-// Apart from `timeoutSecs`, `signal` and `expiresInSecs`, every option becomes a query parameter of the generated URL, so
-// `chunkSize` (client-side only) and `signature` (which this method produces) are left out. The options type
+// Apart from `timeoutSecs`, `signal` and `expiresInSecs`, every option becomes a query parameter of the generated
+// URL, so `chunkSize` (client-side only) and `signature` (which this method produces) are left out. The options type
 // omits both to match.
 const createItemsPublicUrlOptionsSchema = z.strictObject({
     clean: z.boolean().optional(),

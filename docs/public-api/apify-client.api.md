@@ -3882,6 +3882,7 @@ export class StreamedLog {
 export interface StreamedLogOptions {
     fromStart?: boolean;
     logClient: LogClient;
+    signal?: AbortSignal;
     toLog: Log;
 }
 

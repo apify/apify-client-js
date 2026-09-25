@@ -33,6 +33,7 @@ import {
     parseArgument,
     parseResponse,
     RequestQueuePaginationIterator,
+    sleep,
     splitIntoJsonArrayBatches,
     utf8ByteLength,
 } from '../utils.js';
@@ -467,9 +468,8 @@ export class RequestQueueClient extends ResourceClient {
             const delayMillis = Math.floor(
                 (1 + Math.random()) * 2 ** i * minDelayBetweenUnprocessedRequestsRetriesMillis,
             );
-            await new Promise((resolve) => {
-                setTimeout(resolve, delayMillis);
-            });
+            await sleep(delayMillis, signal);
+            signal?.throwIfAborted();
         }
 
         return { processedRequests, unprocessedRequests };
