@@ -61,6 +61,23 @@ A number above `timeoutMaxSecs` is capped at it, and the client logs a warning. 
 
 Methods that start an Actor run keep the API's run timeout apart from the request timeout. The `runTimeoutSecs` option of `start()`, `call()` and `resurrect()` bounds how long the run may execute on the platform, while `timeoutSecs` bounds the request that starts it.
 
+## Aborting a call
+
+Every method that accepts `timeoutSecs` also accepts a `signal` option that takes an `AbortSignal`. Once the signal aborts, the client ends the request in flight and skips any remaining retries. It sends no further poll, and the method rejects with the signal's `reason`. Use it to stop a call from a shutdown handler, or to give a polling method such as `call()` an overall deadline:
+
+```js
+const controller = new AbortController();
+process.once('SIGTERM', () => controller.abort());
+
+// Stops waiting for the run once the process receives SIGTERM. The run itself keeps going on the platform.
+const run = await client.actor('my-actor').call(input, { signal: controller.signal });
+
+// Gives up on the whole wait after 10 minutes, however many polls it takes.
+const finishedRun = await client.run('my-run-id').waitForFinish({ signal: AbortSignal.timeout(600_000) });
+```
+
+Aborting the signal only stops the client. To stop an Actor run on the platform, call <ApiLink to="class/RunClient#abort">`RunClient.abort()`</ApiLink>.
+
 ## Interaction with retries
 
 Timeouts work together with [retries](./02_error-handling.md#retries-with-exponential-backoff). A request that times out counts as a failed attempt and is retried, up to `maxRetries` times. The timeout applies to each attempt on its own, and doubles with every retry up to `timeoutMaxSecs`, so a request that timed out at 5 seconds gets 10 seconds on the second attempt and 20 on the third.

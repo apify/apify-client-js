@@ -25,7 +25,7 @@ import type {
 } from '../models.js';
 import type { Timeout, TimeoutOptions, TimeoutTier } from '../timeouts.js';
 import * as schemas from '../schemas.js';
-import { optionalTimeoutSchema, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
+import { optionalSignalSchema, optionalTimeoutSchema, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import {
     anyObjectSchema,
     catchNotFoundOrThrow,
@@ -33,6 +33,7 @@ import {
     parseArgument,
     parseResponse,
     RequestQueuePaginationIterator,
+    sleep,
     splitIntoJsonArrayBatches,
     utf8ByteLength,
 } from '../utils.js';
@@ -189,9 +190,9 @@ export class RequestQueueClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/request-queue-get
      */
     async get(options: TimeoutOptions = {}): Promise<RequestQueue | undefined> {
-        const { timeoutSecs } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs, signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.RequestQueue(), {}, this.#resolveTimeout(timeoutSecs, 'short'));
+        return this.getResource(schemas.RequestQueue(), {}, this.#resolveTimeout(timeoutSecs, 'short'), signal);
     }
 
     /**
@@ -205,9 +206,14 @@ export class RequestQueueClient extends ResourceClient {
      */
     async update(newFields: RequestQueueClientUpdateOptions, options: TimeoutOptions = {}): Promise<RequestQueue> {
         parseArgument(newFields, anyObjectSchema);
-        const { timeoutSecs } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs, signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.RequestQueue(), newFields, this.#resolveTimeout(timeoutSecs, 'short'));
+        return this.updateResource(
+            schemas.RequestQueue(),
+            newFields,
+            this.#resolveTimeout(timeoutSecs, 'short'),
+            signal,
+        );
     }
 
     /**
@@ -218,9 +224,9 @@ export class RequestQueueClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/request-queue-delete
      */
     async delete(options: TimeoutOptions = {}): Promise<void> {
-        const { timeoutSecs } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs, signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(this.#resolveTimeout(timeoutSecs, 'short'));
+        return this.deleteResource(this.#resolveTimeout(timeoutSecs, 'short'), signal);
     }
 
     /**
@@ -242,6 +248,7 @@ export class RequestQueueClient extends ResourceClient {
             url: this.buildUrl('head'),
             method: 'GET',
             timeoutSecs: this.#resolveTimeout(parsed.timeoutSecs, 'short'),
+            signal: parsed.signal,
             params: this.buildParams({
                 limit: parsed.limit,
                 clientKey: this.#clientKey,
@@ -294,6 +301,7 @@ export class RequestQueueClient extends ResourceClient {
             url: this.buildUrl('head/lock'),
             method: 'POST',
             timeoutSecs: this.#resolveTimeout(parsed.timeoutSecs, 'medium'),
+            signal: parsed.signal,
             params: this.buildParams({
                 limit: parsed.limit,
                 lockSecs: parsed.lockSecs,
@@ -354,6 +362,7 @@ export class RequestQueueClient extends ResourceClient {
             url: this.buildUrl('requests'),
             method: 'POST',
             timeoutSecs: this.#resolveTimeout(parsed.timeoutSecs, 'short'),
+            signal: parsed.signal,
             data: request,
             params: this.buildParams({
                 forefront: parsed.forefront,
@@ -379,6 +388,7 @@ export class RequestQueueClient extends ResourceClient {
             url: this.buildUrl('requests/batch'),
             method: 'POST',
             timeoutSecs: this.#resolveTimeout(parsed.timeoutSecs, 'medium'),
+            signal: parsed.signal,
             // The body is assembled from the requests as `batchAddRequests` serialized them; the explicit content type
             // makes the request interceptor send the string as it is instead of serializing the requests again.
             headers: { 'content-type': 'application/json' },
@@ -399,6 +409,7 @@ export class RequestQueueClient extends ResourceClient {
         const {
             forefront,
             timeoutSecs,
+            signal,
             maxUnprocessedRequestsRetries = DEFAULT_UNPROCESSED_RETRIES_BATCH_ADD_REQUESTS,
             minDelayBetweenUnprocessedRequestsRetriesMillis = DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS,
         } = options;
@@ -414,6 +425,7 @@ export class RequestQueueClient extends ResourceClient {
                 const response = await this.addRequestBatch(remainingRequests, {
                     forefront,
                     timeoutSecs,
+                    signal,
                 });
                 processedRequests.push(...response.processedRequests);
                 unprocessedRequests = response.unprocessedRequests;
@@ -436,6 +448,8 @@ export class RequestQueueClient extends ResourceClient {
                     break;
                 }
             } catch (err) {
+                // An abort rejects the whole call, since the caller asked to stop and not for a partial result.
+                signal?.throwIfAborted();
                 // A response the specification does not describe is reported, as everywhere else: the server may well
                 // have added the batch, so calling it unprocessed would hide the mismatch behind a wrong answer.
                 if (err instanceof ResponseValidationError) throw err;
@@ -454,9 +468,8 @@ export class RequestQueueClient extends ResourceClient {
             const delayMillis = Math.floor(
                 (1 + Math.random()) * 2 ** i * minDelayBetweenUnprocessedRequestsRetriesMillis,
             );
-            await new Promise((resolve) => {
-                setTimeout(resolve, delayMillis);
-            });
+            await sleep(delayMillis, signal);
+            signal?.throwIfAborted();
         }
 
         return { processedRequests, unprocessedRequests };
@@ -508,6 +521,7 @@ export class RequestQueueClient extends ResourceClient {
         const {
             forefront,
             timeoutSecs,
+            signal,
             maxUnprocessedRequestsRetries = DEFAULT_UNPROCESSED_RETRIES_BATCH_ADD_REQUESTS,
             maxParallel = DEFAULT_PARALLEL_BATCH_ADD_REQUESTS,
             minDelayBetweenUnprocessedRequestsRetriesMillis = DEFAULT_MIN_DELAY_BETWEEN_UNPROCESSED_REQUESTS_RETRIES_MILLIS,
@@ -515,6 +529,7 @@ export class RequestQueueClient extends ResourceClient {
         parseArgument(requests, batchAddRequestsWithRetriesSchema);
         parseArgument(forefront, optionalBooleanSchema);
         parseArgument(timeoutSecs, optionalTimeoutSchema);
+        parseArgument(signal, optionalSignalSchema);
         parseArgument(maxUnprocessedRequestsRetries, optionalNumberSchema);
         parseArgument(maxParallel, optionalNumberSchema);
         parseArgument(minDelayBetweenUnprocessedRequestsRetriesMillis, optionalNumberSchema);
@@ -592,12 +607,13 @@ export class RequestQueueClient extends ResourceClient {
         options: TimeoutOptions = {},
     ): Promise<RequestQueueClientBatchDeleteRequestsResult> {
         parseArgument(requests, batchDeleteRequestsSchema);
-        const { timeoutSecs } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs, signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('requests/batch'),
             method: 'DELETE',
             timeoutSecs: this.#resolveTimeout(timeoutSecs, 'short'),
+            signal,
             data: requests,
             params: this.buildParams({
                 clientKey: this.#clientKey,
@@ -621,12 +637,13 @@ export class RequestQueueClient extends ResourceClient {
         options: TimeoutOptions = {},
     ): Promise<RequestQueueClientGetRequestResult | undefined> {
         parseArgument(id, requestIdSchema);
-        const { timeoutSecs } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs, signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const requestOpts: ApifyRequestConfig = {
             url: this.buildUrl(['requests', id]),
             method: 'GET',
             timeoutSecs: this.#resolveTimeout(timeoutSecs, 'short'),
+            signal,
             params: this.buildParams(),
         };
         try {
@@ -660,6 +677,7 @@ export class RequestQueueClient extends ResourceClient {
             url: this.buildUrl(['requests', request.id]),
             method: 'PUT',
             timeoutSecs: this.#resolveTimeout(parsed.timeoutSecs, 'medium'),
+            signal: parsed.signal,
             data: request,
             params: this.buildParams({
                 forefront: parsed.forefront,
@@ -679,12 +697,13 @@ export class RequestQueueClient extends ResourceClient {
      */
     async deleteRequest(id: string, options: TimeoutOptions = {}): Promise<void> {
         parseArgument(id, requestIdSchema);
-        const { timeoutSecs } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs, signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         await this.httpClient.call({
             url: this.buildUrl(['requests', id]),
             method: 'DELETE',
             timeoutSecs: this.#resolveTimeout(timeoutSecs, 'short'),
+            signal,
             params: this.buildParams({
                 clientKey: this.#clientKey,
             }),
@@ -732,6 +751,7 @@ export class RequestQueueClient extends ResourceClient {
             url: this.buildUrl(['requests', id, 'lock']),
             method: 'PUT',
             timeoutSecs: this.#resolveTimeout(parsed.timeoutSecs, 'medium'),
+            signal: parsed.signal,
             params: this.buildParams({
                 forefront: parsed.forefront,
                 lockSecs: parsed.lockSecs,
@@ -763,6 +783,7 @@ export class RequestQueueClient extends ResourceClient {
             url: this.buildUrl(['requests', id, 'lock']),
             method: 'DELETE',
             timeoutSecs: this.#resolveTimeout(parsed.timeoutSecs, 'short'),
+            signal: parsed.signal,
             params: this.buildParams({
                 forefront: parsed.forefront,
                 clientKey: this.#clientKey,
@@ -785,8 +806,9 @@ export class RequestQueueClient extends ResourceClient {
     listRequests(
         options: RequestQueueClientListRequestsOptions = {},
     ): Promise<RequestQueueClientListRequestsResult> & AsyncIterable<RequestQueueClientRequestSchema> {
-        // `timeoutSecs` times every page request; it is not an API parameter, so it must not reach the query string.
-        const { timeoutSecs, ...parsed } = parseArgument(
+        // `timeoutSecs` and `signal` apply to every page request; they are not API parameters, so they must not reach
+        // the query string.
+        const { timeoutSecs, signal, ...parsed } = parseArgument(
             options,
             listRequestsOptionsSchema,
             'RequestQueueClientListRequestsOptions',
@@ -800,6 +822,7 @@ export class RequestQueueClient extends ResourceClient {
                 url: this.buildUrl('requests'),
                 method: 'GET',
                 timeoutSecs: pageTimeout,
+                signal,
                 params: this.buildParams({
                     ...rqListOptions,
                     filter: rqListOptions.filter ? rqListOptions.filter.join(',') : undefined,
@@ -855,12 +878,13 @@ export class RequestQueueClient extends ResourceClient {
      * @since Added in 2.12.5
      */
     async unlockRequests(options: TimeoutOptions = {}): Promise<RequestQueueClientUnlockRequestsResult> {
-        const { timeoutSecs } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs, signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('requests/unlock'),
             method: 'POST',
             timeoutSecs: this.#resolveTimeout(timeoutSecs, 'long'),
+            signal,
             params: this.buildParams({
                 clientKey: this.#clientKey,
             }),
@@ -891,13 +915,13 @@ export class RequestQueueClient extends ResourceClient {
     paginateRequests(
         options: RequestQueueClientPaginateRequestsOptions = {},
     ): RequestQueueRequestsAsyncIterable<RequestQueueClientListRequestsResult> {
-        const { limit, cursor, filter, maxPageLimit, timeoutSecs } = parseArgument(
+        const { limit, cursor, filter, maxPageLimit, timeoutSecs, signal } = parseArgument(
             options,
             paginateRequestsOptionsSchema,
             'RequestQueueClientPaginateRequestsOptions',
         );
         return new RequestQueuePaginationIterator({
-            getPage: async (pageOptions) => this.listRequests({ ...pageOptions, filter, timeoutSecs }),
+            getPage: async (pageOptions) => this.listRequests({ ...pageOptions, filter, timeoutSecs, signal }),
             limit,
             cursor,
             maxPageLimit,

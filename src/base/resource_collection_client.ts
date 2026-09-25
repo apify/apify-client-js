@@ -13,41 +13,55 @@ export class ResourceCollectionClient extends ApiClient {
     /**
      * @private
      */
-    protected async listResources<T, R>(schema: z.ZodType, options: T | undefined, timeoutSecs: Timeout): Promise<R> {
+    protected async listResources<T, R>(
+        schema: z.ZodType,
+        options: T | undefined,
+        timeoutSecs: Timeout,
+        signal?: AbortSignal,
+    ): Promise<R> {
         const response = await this.httpClient.call({
             url: this.buildUrl(),
             method: 'GET',
             params: this.buildParams(options),
             timeoutSecs,
+            signal,
         });
         return parseResponse<R>(response, schema);
     }
 
     /**
      * Returns async iterator to iterate through all items and Promise that can be awaited to get first page of results.
-     * `defaultTimeoutSecs` applies to every page request unless `options.timeoutSecs` overrides it.
+     * `defaultTimeoutSecs` applies to every page request unless `options.timeoutSecs` overrides it, and
+     * `options.signal` goes to every page request.
      */
     protected listResourcesPaginated<
         T extends PaginationOptions & TimeoutOptions,
         Data,
         R extends PaginatedResponse<Data>,
     >(schema: z.ZodType, options: T, defaultTimeoutSecs: Timeout): AsyncIterable<Data> & Promise<R> {
-        // `timeoutSecs` only times the page requests; it is not an API parameter, so it must not reach the query string.
-        const { timeoutSecs = defaultTimeoutSecs, ...listOptions } = options;
+        // `timeoutSecs` and `signal` only apply to the page requests; they are not API parameters, so they must not
+        // reach the query string.
+        const { timeoutSecs = defaultTimeoutSecs, signal, ...listOptions } = options;
 
         return this.listPaginatedFromCallback(
-            async (pageOptions?: T) => this.listResources<T, R>(schema, pageOptions, timeoutSecs),
+            async (pageOptions?: T) => this.listResources<T, R>(schema, pageOptions, timeoutSecs, signal),
             listOptions as T,
         );
     }
 
-    protected async createResource<D, R>(schema: z.ZodType, resource: D, timeoutSecs: Timeout): Promise<R> {
+    protected async createResource<D, R>(
+        schema: z.ZodType,
+        resource: D,
+        timeoutSecs: Timeout,
+        signal?: AbortSignal,
+    ): Promise<R> {
         const response = await this.httpClient.call({
             url: this.buildUrl(),
             method: 'POST',
             params: this.buildParams(),
             data: resource,
             timeoutSecs,
+            signal,
         });
         return parseResponse<R>(response, schema);
     }
@@ -57,6 +71,7 @@ export class ResourceCollectionClient extends ApiClient {
         name: string | undefined,
         resource: D | undefined,
         timeoutSecs: Timeout,
+        signal?: AbortSignal,
     ): Promise<R> {
         const response = await this.httpClient.call({
             url: this.buildUrl(),
@@ -64,6 +79,7 @@ export class ResourceCollectionClient extends ApiClient {
             params: this.buildParams({ name }),
             data: resource,
             timeoutSecs,
+            signal,
         });
         return parseResponse<R>(response, schema);
     }

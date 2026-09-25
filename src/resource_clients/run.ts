@@ -8,7 +8,7 @@ import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig, ApifyResponse } from '../http_clients/index.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
-import { optionalTimeoutSchema, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
+import { optionalSignalSchema, optionalTimeoutSchema, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { runtime } from '#runtime';
 import { anyObjectSchema, parseArgument, parseResponse } from '../utils.js';
 import type { ActorInput, ActorRun } from './actor.js';
@@ -99,12 +99,13 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
-        const { timeoutSecs, ...params } = parseArgument(options, getOptionsSchema, 'RunGetOptions');
+        const { timeoutSecs, signal, ...params } = parseArgument(options, getOptionsSchema, 'RunGetOptions');
 
         return this.getResource(
             schemas.Run(),
             params,
             this.timeoutForWaitForFinish(timeoutSecs, 'short', params.waitForFinish),
+            signal,
         );
     }
 
@@ -127,13 +128,18 @@ export class RunClient extends ResourceClient {
      * ```
      */
     async abort(options: RunAbortOptions = {}): Promise<ActorRun> {
-        const { timeoutSecs = 'medium', ...params } = parseArgument(options, abortOptionsSchema, 'RunAbortOptions');
+        const {
+            timeoutSecs = 'medium',
+            signal,
+            ...params
+        } = parseArgument(options, abortOptionsSchema, 'RunAbortOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('abort'),
             method: 'POST',
             params: this.buildParams(params),
             timeoutSecs,
+            signal,
         });
 
         return parseResponse(response, schemas.Run());
@@ -148,9 +154,9 @@ export class RunClient extends ResourceClient {
      * @since Added in 2.8.1
      */
     async delete(options: TimeoutOptions = {}): Promise<void> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(timeoutSecs);
+        return this.deleteResource(timeoutSecs, signal);
     }
 
     /**
@@ -197,6 +203,7 @@ export class RunClient extends ResourceClient {
             // Actor input may carry page functions, which plain JSON serialization would drop.
             stringifyFunctions: true,
             timeoutSecs: parsed.timeoutSecs ?? 'medium',
+            signal: parsed.signal,
         };
 
         if (parsed.contentType) {
@@ -228,12 +235,13 @@ export class RunClient extends ResourceClient {
      * @since Added in 2.8.0
      */
     async reboot(options: TimeoutOptions = {}): Promise<ActorRun> {
-        const { timeoutSecs = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'medium', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const request: ApifyRequestConfig = {
             url: this.buildUrl('reboot'),
             method: 'POST',
             timeoutSecs,
+            signal,
         };
 
         const response = await this.httpClient.call(request);
@@ -262,9 +270,9 @@ export class RunClient extends ResourceClient {
      */
     async update(newFields: RunUpdateOptions, options: TimeoutOptions = {}): Promise<ActorRun> {
         parseArgument(newFields, anyObjectSchema);
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Run(), newFields, timeoutSecs);
+        return this.updateResource(schemas.Run(), newFields, timeoutSecs, signal);
     }
 
     /**
@@ -294,6 +302,7 @@ export class RunClient extends ResourceClient {
     async resurrect(options: RunResurrectOptions = {}): Promise<ActorRun> {
         const {
             timeoutSecs = 'medium',
+            signal,
             runTimeoutSecs,
             ...params
         } = parseArgument(options, resurrectOptionsSchema, 'RunResurrectOptions');
@@ -304,6 +313,7 @@ export class RunClient extends ResourceClient {
             // The API's `timeout` parameter bounds the run, not the request.
             params: this.buildParams({ ...params, timeout: runTimeoutSecs }),
             timeoutSecs,
+            signal,
         });
 
         return parseResponse(response, schemas.Run());
@@ -327,6 +337,7 @@ export class RunClient extends ResourceClient {
             count,
             idempotencyKey: providedIdempotencyKey,
             timeoutSecs = 'short',
+            signal,
         } = parseArgument(options, chargeOptionsSchema, 'RunChargeOptions');
 
         /** To avoid duplicates during the same milisecond, doesn't need to by crypto-secure. */
@@ -344,6 +355,7 @@ export class RunClient extends ResourceClient {
                 [RUN_CHARGE_IDEMPOTENCY_HEADER]: idempotencyKey,
             },
             timeoutSecs,
+            signal,
         };
         const response = await this.httpClient.call(request);
         return response;
@@ -486,8 +498,9 @@ export class RunClient extends ResourceClient {
      */
     async getStreamedLog(options: GetStreamedLogOptions = {}): Promise<StreamedLog | undefined> {
         parseArgument(options.timeoutSecs, optionalTimeoutSchema);
+        parseArgument(options.signal, optionalSignalSchema);
 
-        const { fromStart = true, timeoutSecs = 'long' } = options;
+        const { fromStart = true, timeoutSecs = 'long', signal } = options;
         let { toLog } = options;
         if (toLog === null || !runtime.isNode) {
             // Explicitly no logging or not in Node.js
@@ -496,19 +509,19 @@ export class RunClient extends ResourceClient {
         if (toLog === undefined || toLog === 'default') {
             // Create default StreamedLog
             // Get actor name and run id
-            const runData = await this.get({ timeoutSecs });
+            const runData = await this.get({ timeoutSecs, signal });
             const runId = runData?.id ?? '';
 
             const actorId = runData?.actId ?? '';
             // `apifyClient.actor()` rejects an empty ID, which is what a run that could not be read leaves here.
-            const actorData = actorId ? await this.apifyClient.actor(actorId).get({ timeoutSecs }) : undefined;
+            const actorData = actorId ? await this.apifyClient.actor(actorId).get({ timeoutSecs, signal }) : undefined;
             const actorName = actorData?.name ?? '';
             const name = [actorName, `runId:${runId}`].filter(Boolean).join(' ');
 
             toLog = new Log({ level: LEVELS.DEBUG, prefix: `${name} -> `, logger: new LoggerActorRedirect() });
         }
 
-        return new StreamedLog({ logClient: this.log(), toLog, fromStart });
+        return new StreamedLog({ logClient: this.log(), toLog, fromStart, signal });
     }
 }
 

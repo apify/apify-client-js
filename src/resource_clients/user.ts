@@ -75,9 +75,9 @@ export class UserClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/user-get
      */
     async get(options: TimeoutOptions = {}): Promise<User | undefined> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.UserPrivateInfo(), {}, timeoutSecs);
+        return this.getResource(schemas.UserPrivateInfo(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -90,13 +90,14 @@ export class UserClient extends ResourceClient {
      * @since Added in 2.9.2
      */
     async monthlyUsage(options: TimeoutOptions = {}): Promise<MonthlyUsage> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('usage/monthly'),
             method: 'GET',
             params: this.buildParams(),
             timeoutSecs,
+            signal,
         });
         return parseResponse(response, schemas.MonthlyUsage());
     }
@@ -111,13 +112,14 @@ export class UserClient extends ResourceClient {
      * @since Added in 2.9.2
      */
     async limits(options: TimeoutOptions = {}): Promise<AccountAndUsageLimits> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('limits'),
             method: 'GET',
             params: this.buildParams(),
             timeoutSecs,
+            signal,
         });
         return parseResponse(response, schemas.AccountLimits());
     }
@@ -132,7 +134,7 @@ export class UserClient extends ResourceClient {
      * @since Added in 2.10.0
      */
     async updateLimits(newLimits: LimitsUpdateOptions, options: TimeoutOptions = {}): Promise<void> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const requestOpts: ApifyRequestConfig = {
             url: this.buildUrl('limits'),
@@ -140,6 +142,7 @@ export class UserClient extends ResourceClient {
             params: this.buildParams(),
             data: newLimits,
             timeoutSecs,
+            signal,
         };
         await this.httpClient.call(requestOpts);
     }

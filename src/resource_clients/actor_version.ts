@@ -68,9 +68,9 @@ export class ActorVersionClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-version-get
      */
     async get(options: TimeoutOptions = {}): Promise<FinalActorVersion | undefined> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Version(), {}, timeoutSecs);
+        return this.getResource(schemas.Version(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -84,9 +84,9 @@ export class ActorVersionClient extends ResourceClient {
      */
     async update(newFields: ActorVersionUpdateData, options: TimeoutOptions = {}): Promise<FinalActorVersion> {
         parseArgument(newFields, anyObjectSchema);
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Version(), newFields, timeoutSecs);
+        return this.updateResource(schemas.Version(), newFields, timeoutSecs, signal);
     }
 
     /**
@@ -97,9 +97,9 @@ export class ActorVersionClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-version-delete
      */
     async delete(options: TimeoutOptions = {}): Promise<void> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(timeoutSecs);
+        return this.deleteResource(timeoutSecs, signal);
     }
 
     /**

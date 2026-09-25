@@ -65,9 +65,9 @@ export class ScheduleClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/schedule-get
      */
     async get(options: TimeoutOptions = {}): Promise<Schedule | undefined> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Schedule(), {}, timeoutSecs);
+        return this.getResource(schemas.Schedule(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -81,9 +81,9 @@ export class ScheduleClient extends ResourceClient {
      */
     async update(newFields: ScheduleCreateOrUpdateData, options: TimeoutOptions = {}): Promise<Schedule> {
         parseArgument(newFields, anyObjectSchema);
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Schedule(), newFields, timeoutSecs);
+        return this.updateResource(schemas.Schedule(), newFields, timeoutSecs, signal);
     }
 
     /**
@@ -94,9 +94,9 @@ export class ScheduleClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/schedule-delete
      */
     async delete(options: TimeoutOptions = {}): Promise<void> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(timeoutSecs);
+        return this.deleteResource(timeoutSecs, signal);
     }
 
     /**
@@ -108,13 +108,14 @@ export class ScheduleClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/schedule-log-get
      */
     async getLog(options: TimeoutOptions = {}): Promise<ScheduleInvoked[]> {
-        const { timeoutSecs = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'medium', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('log'),
             method: 'GET',
             params: this.buildParams(),
             timeoutSecs,
+            signal,
         });
         return parseResponse(response, scheduleLogSchema);
     }

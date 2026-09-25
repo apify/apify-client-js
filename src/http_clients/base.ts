@@ -31,6 +31,7 @@ import {
     isStream,
     MIN_COMPRESS_BYTES,
     parseArgument,
+    sleep,
     toBytes,
     version,
 } from '../utils.js';
@@ -675,27 +676,6 @@ export abstract class HttpClient {
             );
         }
     }
-}
-
-/**
- * Resolves after `millis`, or right away once `signal` aborts.
- */
-async function sleep(millis: number, signal?: AbortSignal): Promise<void> {
-    return new Promise((resolve) => {
-        if (signal?.aborted) {
-            resolve();
-            return;
-        }
-        const onAbort = () => {
-            clearTimeout(timer);
-            resolve();
-        };
-        const timer = setTimeout(() => {
-            signal?.removeEventListener('abort', onAbort);
-            resolve();
-        }, millis);
-        signal?.addEventListener('abort', onAbort, { once: true });
-    });
 }
 
 /**

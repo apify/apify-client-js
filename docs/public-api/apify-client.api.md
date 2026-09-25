@@ -3599,11 +3599,11 @@ export interface RequestQueueUserOptions {
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
 class ResourceClient extends ApiClient {
-    protected deleteResource(timeoutSecs: Timeout): Promise<void>;
-    protected getResource<T, R>(schema: z.ZodType, options: T, timeoutSecs: Timeout): Promise<R | undefined>;
+    protected deleteResource(timeoutSecs: Timeout, signal?: AbortSignal): Promise<void>;
+    protected getResource<T, R>(schema: z.ZodType, options: T, timeoutSecs: Timeout, signal?: AbortSignal): Promise<R | undefined>;
     protected timeoutForWaitForFinish(timeoutSecs: Timeout | undefined, tier: TimeoutTier, waitForFinishSecs: number | undefined): Timeout;
     // (undocumented)
-    protected updateResource<T, R>(schema: z.ZodType, newFields: T, timeoutSecs: Timeout): Promise<R>;
+    protected updateResource<T, R>(schema: z.ZodType, newFields: T, timeoutSecs: Timeout, signal?: AbortSignal): Promise<R>;
     protected waitForJobFinish<R extends {
         status: (typeof ACT_JOB_STATUSES)[keyof typeof ACT_JOB_STATUSES];
     }>(schema: z.ZodType, options?: WaitForFinishOptions): Promise<R>;
@@ -3613,11 +3613,11 @@ class ResourceClient extends ApiClient {
 // @public
 class ResourceCollectionClient extends ApiClient {
     // (undocumented)
-    protected createResource<D, R>(schema: z.ZodType, resource: D, timeoutSecs: Timeout): Promise<R>;
+    protected createResource<D, R>(schema: z.ZodType, resource: D, timeoutSecs: Timeout, signal?: AbortSignal): Promise<R>;
     // (undocumented)
-    protected getOrCreateResource<D, R>(schema: z.ZodType, name: string | undefined, resource: D | undefined, timeoutSecs: Timeout): Promise<R>;
+    protected getOrCreateResource<D, R>(schema: z.ZodType, name: string | undefined, resource: D | undefined, timeoutSecs: Timeout, signal?: AbortSignal): Promise<R>;
     // (undocumented)
-    protected listResources<T, R>(schema: z.ZodType, options: T | undefined, timeoutSecs: Timeout): Promise<R>;
+    protected listResources<T, R>(schema: z.ZodType, options: T | undefined, timeoutSecs: Timeout, signal?: AbortSignal): Promise<R>;
     protected listResourcesPaginated<T extends PaginationOptions & TimeoutOptions, Data, R extends PaginatedResponse<Data>>(schema: z.ZodType, options: T, defaultTimeoutSecs: Timeout): AsyncIterable<Data> & Promise<R>;
 }
 
@@ -3882,6 +3882,7 @@ export class StreamedLog {
 export interface StreamedLogOptions {
     fromStart?: boolean;
     logClient: LogClient;
+    signal?: AbortSignal;
     toLog: Log;
 }
 
@@ -4020,6 +4021,7 @@ export type Timeout = TimeoutTier | 'noTimeout' | number;
 
 // @public
 export interface TimeoutOptions {
+    signal?: AbortSignal;
     timeoutSecs?: Timeout;
 }
 

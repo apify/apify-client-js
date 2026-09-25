@@ -67,9 +67,9 @@ export class WebhookClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/webhook-get
      */
     async get(options: TimeoutOptions = {}): Promise<Webhook | undefined> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Webhook(), {}, timeoutSecs);
+        return this.getResource(schemas.Webhook(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -83,9 +83,9 @@ export class WebhookClient extends ResourceClient {
      */
     async update(newFields: WebhookUpdateData, options: TimeoutOptions = {}): Promise<Webhook> {
         parseArgument(newFields, anyObjectSchema);
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Webhook(), newFields, timeoutSecs);
+        return this.updateResource(schemas.Webhook(), newFields, timeoutSecs, signal);
     }
 
     /**
@@ -96,9 +96,9 @@ export class WebhookClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/webhook-delete
      */
     async delete(options: TimeoutOptions = {}): Promise<void> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(timeoutSecs);
+        return this.deleteResource(timeoutSecs, signal);
     }
 
     /**
@@ -110,13 +110,14 @@ export class WebhookClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/webhook-test-post
      */
     async test(options: TimeoutOptions = {}): Promise<WebhookDispatch> {
-        const { timeoutSecs = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'medium', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('test'),
             method: 'POST',
             params: this.buildParams(),
             timeoutSecs,
+            signal,
         });
         return parseResponse(response, schemas.WebhookDispatch());
     }
