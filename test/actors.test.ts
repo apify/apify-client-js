@@ -1011,6 +1011,18 @@ describe('Run actor with redirected logs', () => {
             expect(statusLines.at(-1)).toBe(`${statusPrefix}SUCCEEDED, Message: Actor Finished`);
         });
 
+        test('call() skips the final status message wait when the run has not finished', async () => {
+            const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+            const callStarted = Date.now();
+            const run = await client.actor('redirect-actor-id').call(undefined, { waitSecs: 0 });
+            const callDuration = Date.now() - callStarted;
+            logSpy.mockRestore();
+
+            expect(run.status).toBe('RUNNING');
+            expect(callDuration).toBeLessThan(3000);
+        });
+
         test('logOptions:{ "log": null }', async () => {
             const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 

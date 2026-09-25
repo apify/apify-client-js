@@ -305,8 +305,10 @@ export class ActorClient extends ResourceClient {
         // setting it up as a nested route under actor API.
         const newRunClient = this.apifyClient.run(id);
 
-        const statusMessageWatcher = await newRunClient.getStatusMessageWatcher({ toLog: log });
-        const streamedLog = await newRunClient.getStreamedLog({ toLog: log });
+        const [statusMessageWatcher, streamedLog] = await Promise.all([
+            newRunClient.getStatusMessageWatcher({ toLog: log }),
+            newRunClient.getStreamedLog({ toLog: log }),
+        ]);
         statusMessageWatcher?.start();
         streamedLog?.start();
         let finishedRun: ActorRun | undefined;

@@ -520,6 +520,7 @@ export class RunClient extends ResourceClient {
         options: GetStatusMessageWatcherOptions = {},
     ): Promise<StatusMessageWatcher | undefined> {
         parseArgument(options.timeoutSecs, optionalTimeoutSchema);
+        parseArgument(options.checkPeriodSecs, z.number().positive().optional());
 
         const { checkPeriodSecs, timeoutSecs = 'long' } = options;
         let { toLog } = options;
@@ -564,8 +565,9 @@ export interface GetStreamedLogOptions extends TimeoutOptions {
  * Options for getting a status message watcher.
  */
 export interface GetStatusMessageWatcherOptions extends TimeoutOptions {
+    /** Log to redirect the status messages to. Use `'default'` for a preconfigured one, or `null` to disable the redirection. */
     toLog?: Log | null | 'default';
-    /** @default 1 */
+    /** How often to poll the run, in seconds. Default is `1`. */
     checkPeriodSecs?: number;
 }
 

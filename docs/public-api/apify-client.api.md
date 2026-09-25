@@ -2887,9 +2887,7 @@ type GeneratedWebhookStats = Schemas['WebhookStats'];
 
 // @public
 export interface GetStatusMessageWatcherOptions extends TimeoutOptions {
-    // (undocumented)
     checkPeriodSecs?: number;
-    // (undocumented)
     toLog?: Log | null | 'default';
 }
 
@@ -3866,16 +3864,15 @@ export class StatusMessageWatcher {
     stop(options?: StatusMessageWatcherStopOptions): Promise<void>;
 }
 
-// @public (undocumented)
+// @public
 export interface StatusMessageWatcherOptions {
     checkPeriodSecs?: number;
     runClient: RunClient;
     toLog: Log;
 }
 
-// @public (undocumented)
+// @public
 export interface StatusMessageWatcherStopOptions {
-    // (undocumented)
     waitSecs?: number;
 }
 

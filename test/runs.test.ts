@@ -594,6 +594,12 @@ describe('Redirect run status messages', () => {
         warnSpy.mockRestore();
     });
 
+    test('rejects a non-positive checkPeriodSecs', async () => {
+        await expect(
+            client.run('status-run-id').getStatusMessageWatcher({ toLog, checkPeriodSecs: 0 }),
+        ).rejects.toThrow(ArgumentValidationError);
+    });
+
     test('returns undefined when toLog is null', async () => {
         await expect(client.run('status-run-id').getStatusMessageWatcher({ toLog: null })).resolves.toBeUndefined();
     });

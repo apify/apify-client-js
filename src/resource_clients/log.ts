@@ -405,6 +405,9 @@ export class StatusMessageWatcher {
     }
 }
 
+/**
+ * Options for creating a {@link StatusMessageWatcher}.
+ */
 export interface StatusMessageWatcherOptions {
     /** Run client used to poll the Actor run. */
     runClient: RunClient;
@@ -414,7 +417,10 @@ export interface StatusMessageWatcherOptions {
     checkPeriodSecs?: number;
 }
 
+/**
+ * Options for {@link StatusMessageWatcher.stop}.
+ */
 export interface StatusMessageWatcherStopOptions {
-    /** @default 0 */
+    /** How long to keep polling for a terminal status message before stopping, in seconds. Default is `0`. */
     waitSecs?: number;
 }
