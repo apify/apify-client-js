@@ -59,6 +59,12 @@ By default, it will retry up to 8 times. First retry will be attempted after ~50
 and so on. You can configure those parameters using the `maxRetries` and `minDelayBetweenRetriesMillis`
 options of the `ApifyClient` constructor.
 
+### Pluggable HTTP client
+
+The client ships with an axios-based HTTP client and accepts a custom one. Extend `HttpClient`, implement
+`sendRequest()` over the HTTP library of your choice and plug it in with `ApifyClient.withCustomHttpClient()`. The
+custom client inherits the retries, timeouts, compression and error handling of the built-in one.
+
 ### Convenience functions and options
 
 Some actions can't be performed by the API itself, such as indefinite waiting for an actor run to finish

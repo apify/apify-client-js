@@ -54,7 +54,7 @@ describe('ApifyApiError', () => {
             expect(err.message).toEqual('Authentication token was not provided');
             expect(err.statusCode).toEqual(401);
             expect(err.path).toMatch(`/v2/${actorCollectionClient.resourcePath}`);
-            expect(err.httpMethod).toEqual('get');
+            expect(err.httpMethod).toEqual('GET');
             expect(err.attempt).toEqual(1);
         }
     });
@@ -84,7 +84,7 @@ describe('ApifyApiError', () => {
         expect(error.message).toEqual('Authentication token was not provided');
         expect(error.statusCode).toEqual(401);
         expect(error.path).toMatch(`/v2/${error.resourcePath}`);
-        expect(error.httpMethod).toEqual('get');
+        expect(error.httpMethod).toEqual('GET');
         expect(error.attempt).toEqual(1);
     });
 
@@ -100,7 +100,7 @@ describe('ApifyApiError', () => {
             statusCode: 404,
             type: 'record-not-found',
             message: 'Record with this name was not found',
-            httpMethod: 'get',
+            httpMethod: 'GET',
             path: '/v2/actor-runs/404/log',
         });
     });

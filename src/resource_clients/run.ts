@@ -5,7 +5,7 @@ import { LEVELS, Log } from '@apify/log';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyRequestConfig, ApifyResponse } from '../http_client.js';
+import type { ApifyRequestConfig, ApifyResponse } from '../http_clients/index.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { optionalTimeoutSchema, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
@@ -194,8 +194,7 @@ export class RunClient extends ResourceClient {
             method: 'POST',
             data: input,
             params: this.buildParams(params),
-            // Apify internal property. Tells the request serialization interceptor
-            // to stringify functions to JSON, instead of omitting them.
+            // Actor input may carry page functions, which plain JSON serialization would drop.
             stringifyFunctions: true,
             timeoutSecs: parsed.timeoutSecs ?? 'medium',
         };

@@ -4,14 +4,15 @@ import type { AddressInfo } from 'node:net';
 import os from 'node:os';
 import { gzipSync } from 'node:zlib';
 
-import { ApifyClient } from 'apify-client';
+import { ApifyClient, AxiosHttpClient } from 'apify-client';
 import type { InternalAxiosRequestConfig } from 'axios';
+import { AxiosError } from 'axios';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { Browser } from './_helper.js';
 import { mockServer } from './mock_server/server.js';
 
-describe('HttpClient', () => {
+describe('AxiosHttpClient', () => {
     let baseUrl: string;
     const browser = new Browser();
 
@@ -196,8 +197,62 @@ describe('HttpClient', () => {
         expect(request?.headers['content-length']).toBe(String(payload.length));
     });
 
+    test('runs the request interceptors passed to the client', async () => {
+        const httpClient = new AxiosHttpClient({
+            requestInterceptors: [
+                (config) => {
+                    config.headers.set('X-Intercepted', 'yes');
+                    return config;
+                },
+            ],
+        });
+        const custom = ApifyClient.withCustomHttpClient({ baseUrl, token: 'test_token', httpClient });
+
+        const user = await custom.user('me').get();
+
+        expect(user?.id).toBe('get-user');
+        const request = mockServer.getLastRequest();
+        expect(request?.headers['x-intercepted']).toBe('yes');
+        expect(request?.headers.authorization).toBe('Bearer test_token');
+    });
+
+    test('close() destroys the keep-alive agent', async () => {
+        const httpClient = client.httpClient as AxiosHttpClient;
+        await client.user('me').get();
+        const destroy = vi.spyOn(httpClient.httpAgent!, 'destroy');
+
+        await httpClient.close();
+
+        expect(destroy).toHaveBeenCalled();
+    });
+
+    test('close() before any request has nothing to destroy', async () => {
+        await expect(new AxiosHttpClient().close()).resolves.toBeUndefined();
+    });
+
+    test.each([
+        { name: 'an aborted request', error: new AxiosError('timeout', AxiosError.ECONNABORTED), expected: true },
+        { name: 'a clarified timeout', error: new AxiosError('timeout', AxiosError.ETIMEDOUT), expected: true },
+        { name: 'a TimeoutError', error: Object.assign(new Error('late'), { name: 'TimeoutError' }), expected: true },
+        { name: 'a network error', error: new AxiosError('reset', AxiosError.ERR_NETWORK), expected: false },
+        { name: 'a plain error', error: new Error('boom'), expected: false },
+    ])('isTimeoutError() classifies $name', ({ error, expected }) => {
+        expect(new AxiosHttpClient().isTimeoutError(error)).toBe(expected);
+    });
+
+    test('isRetryableTransportError() retries axios errors raised while a request was in flight', () => {
+        const httpClient = new AxiosHttpClient();
+        const config = { headers: {} } as any;
+        const inFlight = new AxiosError('reset', AxiosError.ERR_NETWORK, config, {});
+        const beforeRequest = new AxiosError('bad url', AxiosError.ERR_BAD_OPTION, config);
+
+        expect(httpClient.isRetryableTransportError(inFlight)).toBe(true);
+        expect(httpClient.isRetryableTransportError(beforeRequest)).toBe(false);
+        expect(httpClient.isRetryableTransportError(new Error('boom'))).toBe(false);
+    });
+
     test('sends a string body with an explicit content type as it is', async () => {
-        // The axios default transform would re-parse the body to validate it and trim this whitespace away.
+        // Validating the body would trim this whitespace away.
         const body = ' [{"uniqueKey": "key-1", "url": "http://example.com/1"}] ';
 
         const response = await client.httpClient.call({
@@ -218,7 +273,8 @@ describe('HttpClient', () => {
          */
         const recordAttemptTimeouts = (retryingClient: ApifyClient, failures: number) => {
             const timeouts: number[] = [];
-            retryingClient.httpClient.axios.defaults.adapter = async (config: InternalAxiosRequestConfig) => {
+            const { axios } = retryingClient.httpClient as AxiosHttpClient;
+            axios.defaults.adapter = async (config: InternalAxiosRequestConfig) => {
                 timeouts.push(config.timeout!);
                 const failed = timeouts.length <= failures;
                 const body = failed

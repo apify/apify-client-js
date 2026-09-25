@@ -5,7 +5,7 @@ import { createStorageContentSignatureAsync } from '@apify/utilities';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyResponse } from '../http_client.js';
+import type { ApifyResponse } from '../http_clients/index.js';
 import type { Dataset, DatasetStatistics } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
@@ -295,7 +295,7 @@ export class DatasetClient<
                 format,
                 ...query,
             }),
-            forceBuffer: true,
+            responseType: 'buffer',
             timeoutSecs,
         });
 
@@ -346,7 +346,7 @@ export class DatasetClient<
             },
             data: items,
             params: this.buildParams(),
-            doNotRetryTimeouts: true, // see timeoutSecs handling in http-client
+            doNotRetryTimeouts: true,
             timeoutSecs,
         });
     }
@@ -434,6 +434,7 @@ export class DatasetClient<
     }
 
     #createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
+        const descHeader = response.headers['x-apify-pagination-desc'];
         const page: PaginatedList<Data> = {
             items: response.data,
             total: Number(response.headers['x-apify-pagination-total']),
@@ -443,7 +444,7 @@ export class DatasetClient<
             count: response.data.length,
             limit: Number(response.headers['x-apify-pagination-limit']), // API returns 999999999999 when no limit is used
             // TODO: Replace this once https://github.com/apify/apify-core/issues/3503 is solved
-            desc: JSON.parse(response.headers['x-apify-pagination-desc'] ?? userProvidedDesc),
+            desc: typeof descHeader === 'string' ? JSON.parse(descHeader) : userProvidedDesc,
         };
 
         // The offset iterator paginates by the scanned number, so it travels with the page outside its public shape.

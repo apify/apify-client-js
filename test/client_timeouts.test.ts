@@ -2,7 +2,7 @@ import type { Timeout, TimeoutTier } from 'apify-client';
 import { ApifyClient, ArgumentValidationError } from 'apify-client';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { ApifyRequestConfig, HttpClient } from '../src/http_client.js';
+import type { ApifyRequestConfig, HttpClient } from 'apify-client';
 
 import type * as utils from '../src/utils.js';
 
