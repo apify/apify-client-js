@@ -61,13 +61,14 @@ export class LogClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/log-get
      */
     async get(options: LogOptions = {}): Promise<string | undefined> {
-        const { timeoutSecs = 'long', ...params } = parseArgument(options, logOptionsSchema, 'LogOptions');
+        const { timeoutSecs = 'long', signal, ...params } = parseArgument(options, logOptionsSchema, 'LogOptions');
 
         const requestOpts: ApifyRequestConfig = {
             url: this.buildUrl(),
             method: 'GET',
             params: this.buildParams(params),
             timeoutSecs,
+            signal,
         };
 
         try {
@@ -91,7 +92,7 @@ export class LogClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/log-get
      */
     async stream(options: LogOptions = {}): Promise<Readable | undefined> {
-        const { timeoutSecs = 'long', raw } = parseArgument(options, logOptionsSchema, 'LogOptions');
+        const { timeoutSecs = 'long', signal, raw } = parseArgument(options, logOptionsSchema, 'LogOptions');
 
         const params = {
             stream: true,
@@ -104,6 +105,7 @@ export class LogClient extends ResourceClient {
             params: this.buildParams(params),
             responseType: 'stream',
             timeoutSecs,
+            signal,
         };
 
         try {

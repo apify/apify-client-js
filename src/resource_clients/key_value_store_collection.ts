@@ -7,7 +7,7 @@ import { ResourceCollectionClient } from '../base/resource_collection_client.js'
 import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
-import { optionalTimeoutSchema, timeoutOptionsShape } from '../timeouts.js';
+import { optionalSignalSchema, optionalTimeoutSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
 import type { KeyValueStore } from './key_value_store.js';
 
@@ -98,13 +98,20 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
         parseArgument(name, nameSchema);
         parseArgument(options?.schema, schemaSchema); // TODO: Add schema validation
         parseArgument(options?.timeoutSecs, optionalTimeoutSchema);
+        parseArgument(options?.signal, optionalSignalSchema);
 
-        // `timeoutSecs` is not part of the resource, so the body carries only the rest, and stays absent when
-        // there is nothing else to send.
-        const { timeoutSecs = 'short', ...resource } = options ?? {};
+        // `timeoutSecs` and `signal` are not part of the resource, so the body carries only the rest, and stays
+        // absent when there is nothing else to send.
+        const { timeoutSecs = 'short', signal, ...resource } = options ?? {};
         const hasResource = Object.keys(resource).length > 0;
 
-        return this.getOrCreateResource(schemas.KeyValueStore(), name, hasResource ? resource : undefined, timeoutSecs);
+        return this.getOrCreateResource(
+            schemas.KeyValueStore(),
+            name,
+            hasResource ? resource : undefined,
+            timeoutSecs,
+            signal,
+        );
     }
 }
 

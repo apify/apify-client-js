@@ -62,7 +62,7 @@ const downloadItemsOptionsSchema = z.strictObject({
     ...timeoutOptionsShape,
 });
 const pushItemsSchema = z.union([itemSchema, z.string(), z.array(itemSchema)]);
-// Apart from `timeoutSecs` and `expiresInSecs`, every option becomes a query parameter of the generated URL, so
+// Apart from `timeoutSecs`, `signal` and `expiresInSecs`, every option becomes a query parameter of the generated URL, so
 // `chunkSize` (client-side only) and `signature` (which this method produces) are left out. The options type
 // omits both to match.
 const createItemsPublicUrlOptionsSchema = z.strictObject({
@@ -134,9 +134,9 @@ export class DatasetClient<
      * @see https://docs.apify.com/api/v2/dataset-get
      */
     async get(options: TimeoutOptions = {}): Promise<Dataset | undefined> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Dataset(), {}, timeoutSecs);
+        return this.getResource(schemas.Dataset(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -150,9 +150,9 @@ export class DatasetClient<
      */
     async update(newFields: DatasetClientUpdateOptions, options: TimeoutOptions = {}): Promise<Dataset> {
         parseArgument(newFields, anyObjectSchema);
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Dataset(), newFields, timeoutSecs);
+        return this.updateResource(schemas.Dataset(), newFields, timeoutSecs, signal);
     }
 
     /**
@@ -163,9 +163,9 @@ export class DatasetClient<
      * @see https://docs.apify.com/api/v2/dataset-delete
      */
     async delete(options: TimeoutOptions = {}): Promise<void> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(timeoutSecs);
+        return this.deleteResource(timeoutSecs, signal);
     }
 
     /**
@@ -214,11 +214,11 @@ export class DatasetClient<
      * ```
      */
     listItems(options: DatasetClientListItemOptions = {}): PaginatedIterator<Data> {
-        const { timeoutSecs = 'long', ...listOptions } = parseArgument(
-            options,
-            listItemsOptionsSchema,
-            'DatasetClientListItemOptions',
-        );
+        const {
+            timeoutSecs = 'long',
+            signal,
+            ...listOptions
+        } = parseArgument(options, listItemsOptionsSchema, 'DatasetClientListItemOptions');
 
         const fetchItems = async (
             datasetListOptions: DatasetClientListItemOptions = {},
@@ -228,6 +228,7 @@ export class DatasetClient<
                 method: 'GET',
                 params: this.buildParams(datasetListOptions),
                 timeoutSecs,
+                signal,
             });
 
             return this.#createPaginationList(response, datasetListOptions.desc ?? false);
@@ -282,11 +283,11 @@ export class DatasetClient<
         options: DatasetClientDownloadItemsOptions = {},
     ): Promise<Buffer> {
         parseArgument(format, itemFormatSchema);
-        const { timeoutSecs = 'long', ...query } = parseArgument(
-            options,
-            downloadItemsOptionsSchema,
-            'DatasetClientDownloadItemsOptions',
-        );
+        const {
+            timeoutSecs = 'long',
+            signal,
+            ...query
+        } = parseArgument(options, downloadItemsOptionsSchema, 'DatasetClientDownloadItemsOptions');
 
         const { data } = await this.httpClient.call({
             url: this.buildUrl('items'),
@@ -297,6 +298,7 @@ export class DatasetClient<
             }),
             responseType: 'buffer',
             timeoutSecs,
+            signal,
         });
 
         return cast(data);
@@ -336,7 +338,7 @@ export class DatasetClient<
      */
     async pushItems(items: Data | Data[] | string, options: TimeoutOptions = {}): Promise<void> {
         parseArgument(items, pushItemsSchema);
-        const { timeoutSecs = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'medium', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         await this.httpClient.call({
             url: this.buildUrl('items'),
@@ -348,6 +350,7 @@ export class DatasetClient<
             params: this.buildParams(),
             doNotRetryTimeouts: true,
             timeoutSecs,
+            signal,
         });
     }
 
@@ -364,13 +367,14 @@ export class DatasetClient<
      * @since Added in 2.11.2
      */
     async getStatistics(options: TimeoutOptions = {}): Promise<DatasetStatistics> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('statistics'),
             method: 'GET',
             params: this.buildParams(),
             timeoutSecs,
+            signal,
         });
         return parseResponse(response, schemas.DatasetStatistics());
     }
@@ -411,11 +415,12 @@ export class DatasetClient<
     async createItemsPublicUrl(options: DatasetClientCreateItemsUrlOptions = {}): Promise<string> {
         const {
             timeoutSecs = 'long',
+            signal,
             expiresInSecs,
             ...queryOptions
         } = parseArgument(options, createItemsPublicUrlOptionsSchema, 'DatasetClientCreateItemsUrlOptions');
 
-        const dataset = await this.get({ timeoutSecs });
+        const dataset = await this.get({ timeoutSecs, signal });
 
         let createdItemsPublicUrl = new URL(this.buildPublicUrl('items'));
 
