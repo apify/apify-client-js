@@ -10,8 +10,6 @@ import { ACTOR_PERMISSION_LEVEL } from '@apify/consts';
 import { ArgumentValidationError } from '@apify/validations';
 import type { AxiosInstance } from 'axios';
 import type { AxiosInterceptorManager } from 'axios';
-import type { AxiosRequestConfig } from 'axios';
-import type { AxiosResponse } from 'axios';
 import type http from 'node:http';
 import type https from 'node:https';
 import type { InternalAxiosRequestConfig } from 'axios';
@@ -550,11 +548,11 @@ type ApiClientSubResourceOptions = Omit<ApiClientOptions, 'resourcePath'>;
 
 // @public
 export class ApifyApiError extends Error {
-    constructor(response: AxiosResponse, attempt: number);
+    constructor(response: ApifyResponse, attempt: number);
     attempt: number;
     clientMethod: string;
     data?: Record<string, unknown>;
-    static fromResponse(response: AxiosResponse, attempt: number): ApifyApiError;
+    static fromResponse(response: ApifyResponse, attempt: number): ApifyApiError;
     httpMethod?: string;
     // (undocumented)
     name: string;
@@ -578,8 +576,8 @@ export class ApifyClient {
     builds(): BuildCollectionClient;
     dataset<Data extends Record<string | number, any> = Record<string | number, unknown>>(id: string): DatasetClient<Data>;
     datasets(): DatasetCollectionClient;
-    // (undocumented)
-    httpClient: HttpClient;
+    get httpClient(): HttpClient;
+    set httpClient(httpClient: HttpClient);
     keyValueStore(id: string): KeyValueStoreClient;
     keyValueStores(): KeyValueStoreCollectionClient;
     log(buildOrRunId: string): LogClient;
@@ -593,7 +591,6 @@ export class ApifyClient {
     schedule(id: string): ScheduleClient;
     schedules(): ScheduleCollectionClient;
     setStatusMessage(message: string, options?: SetStatusMessageOptions): Promise<void>;
-    // (undocumented)
     stats: Statistics;
     store(): StoreCollectionClient;
     task(id: string): TaskClient;
@@ -605,17 +602,26 @@ export class ApifyClient {
     webhookDispatch(id: string): WebhookDispatchClient;
     webhookDispatches(): WebhookDispatchCollectionClient;
     webhooks(): WebhookCollectionClient;
+    static withCustomHttpClient(options: ApifyClientCustomHttpClientOptions): ApifyClient;
+}
+
+// @public
+export interface ApifyClientCustomHttpClientOptions {
+    baseUrl?: string;
+    httpClient: HttpClient;
+    publicBaseUrl?: string;
+    token?: string;
 }
 
 // @public
 export interface ApifyClientOptions {
     baseUrl?: string;
     compression?: HttpCompressionAlgorithm | HttpCompressor;
+    headers?: Record<string, string>;
     // (undocumented)
     maxRetries?: number;
     minDelayBetweenRetriesMillis?: number;
     publicBaseUrl?: string;
-    requestInterceptors?: RequestInterceptorFunction[];
     timeoutLongSecs?: number;
     timeoutMaxSecs?: number;
     timeoutMediumSecs?: number;
@@ -625,26 +631,49 @@ export interface ApifyClientOptions {
     userAgentSuffix?: string | string[];
 }
 
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface ApifyRequestConfig extends Omit<AxiosRequestConfig, 'timeout'> {
-    // (undocumented)
+// @public
+export interface ApifyRequestConfig {
+    data?: unknown;
     doNotRetryTimeouts?: boolean;
-    // (undocumented)
-    forceBuffer?: boolean;
-    // (undocumented)
+    headers?: Record<string, string>;
+    method: HttpMethod;
+    params?: Record<string, unknown>;
+    responseType?: ApifyResponseType;
+    signal?: AbortSignal;
     stringifyFunctions?: boolean;
     timeoutSecs?: Timeout;
+    url: string;
 }
 
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface ApifyResponse<T = any> extends AxiosResponse<T> {
-    // (undocumented)
-    config: ApifyRequestConfig & InternalAxiosRequestConfig;
+// @public
+export interface ApifyResponse<T = any> {
+    config: ApifyRequestConfig;
+    data: T;
+    headers: HttpResponseHeaders;
+    status: number;
 }
+
+// @public
+export type ApifyResponseType = 'parsed' | 'buffer' | 'stream';
 
 export { ArgumentValidationError }
+
+// @public
+export class AxiosHttpClient extends HttpClient {
+    constructor(options?: AxiosHttpClientOptions);
+    axios: AxiosInstance;
+    close(): Promise<void>;
+    httpAgent?: http.Agent;
+    httpsAgent?: https.Agent;
+    isRetryableTransportError(error: unknown): boolean;
+    isTimeoutError(error: unknown): boolean;
+    sendRequest(request: HttpRequest): Promise<HttpResponse>;
+}
+
+// @public
+export interface AxiosHttpClientOptions extends HttpClientOptions {
+    requestInterceptors?: RequestInterceptorFunction[];
+}
 
 // @public
 export interface BaseActorVersion<SourceType extends `${ActorSourceType}`> extends Omit<GeneratedVersion, keyof ActorVersionClientNarrowings | keyof ActorVersionRePointed | ActorVersionSourceLocation>, ActorVersionRePointed {
@@ -2878,61 +2907,44 @@ export interface GzipHttpCompressorOptions {
     quality?: number;
 }
 
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-class HttpClient {
-    constructor(options: HttpClientOptions);
-    // (undocumented)
-    axios: AxiosInstance;
-    // (undocumented)
+// @public
+export abstract class HttpClient {
+    constructor(options?: HttpClientOptions);
+    protected buildUrl(url: string, params?: Record<string, unknown>): string;
     call<T = any>(config: ApifyRequestConfig): Promise<ApifyResponse<T>>;
-    // (undocumented)
-    httpAgent?: http.Agent;
+    close(): Promise<void>;
+    protected computeTimeoutMillis(attempt: number, timeoutSecs?: Timeout): number | undefined;
+    protected readonly defaultHeaders: Record<string, string>;
     readonly httpCompressor: HttpCompressor;
-    // (undocumented)
-    httpsAgent?: https.Agent;
-    // (undocumented)
+    isRetryableTransportError(_error: unknown): boolean;
+    isTimeoutError(error: unknown): boolean;
     logger: Log;
-    // (undocumented)
     maxRetries: number;
-    // (undocumented)
     minDelayBetweenRetriesMillis: number;
-    // (undocumented)
+    protected prepareRequest(config: ApifyRequestConfig): Promise<{
+        headers: Record<string, string>;
+        body: HttpRequestBody | undefined;
+    }>;
+    sendRequest(request: HttpRequest): Promise<HttpResponse>;
+    setDefaultAuthorization(token: string): void;
     stats: Statistics;
     timeoutMaxMillis: number;
     timeoutMillis: Record<TimeoutTier, number>;
-    // (undocumented)
-    userProvidedRequestInterceptors: RequestInterceptorFunction[];
-    // (undocumented)
-    workflowKey?: string;
 }
 
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface HttpClientOptions {
-    // (undocumented)
-    apifyClientStats: Statistics;
-    // (undocumented)
-    httpCompressor: HttpCompressor;
-    // (undocumented)
-    logger: Log;
-    // (undocumented)
-    maxRetries: number;
-    // (undocumented)
-    minDelayBetweenRetriesMillis: number;
-    // (undocumented)
-    requestInterceptors: RequestInterceptorFunction[];
-    // (undocumented)
-    timeoutLongSecs: number;
-    // (undocumented)
-    timeoutMaxSecs: number;
-    // (undocumented)
-    timeoutMediumSecs: number;
-    // (undocumented)
-    timeoutShortSecs: number;
-    // (undocumented)
+// @public
+export interface HttpClientOptions {
+    compression?: HttpCompressionAlgorithm | HttpCompressor;
+    headers?: Record<string, string>;
+    logger?: Log;
+    maxRetries?: number;
+    minDelayBetweenRetriesMillis?: number;
+    stats?: Statistics;
+    timeoutLongSecs?: number;
+    timeoutMaxSecs?: number;
+    timeoutMediumSecs?: number;
+    timeoutShortSecs?: number;
     token?: string;
-    // (undocumented)
     workflowKey?: string;
 }
 
@@ -2946,18 +2958,47 @@ export interface HttpCompressor {
 }
 
 // @public
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS';
+
+// @public
+export interface HttpRequest {
+    body?: HttpRequestBody;
+    headers: Record<string, string>;
+    method: HttpMethod;
+    signal?: AbortSignal;
+    stream: boolean;
+    timeoutMillis?: number;
+    url: string;
+}
+
+// @public
+export type HttpRequestBody = string | Buffer | ArrayBuffer | ArrayBufferView | Readable;
+
+// @public
+export interface HttpResponse {
+    body: HttpResponseBody;
+    headers: HttpResponseHeaders;
+    status: number;
+}
+
+// @public
+export type HttpResponseBody = Buffer | ArrayBuffer | Readable | undefined;
+
+// @public
+export type HttpResponseHeaders = Record<string, string | string[] | undefined>;
+
+// @public
 export class InvalidRequestError extends ApifyApiError {
 }
 
 // @public
 export class InvalidResponseBodyError extends Error {
-    constructor(response: AxiosResponse, cause: Error);
+    constructor(response: HttpResponse, cause: Error);
     // (undocumented)
     cause: Error;
     // (undocumented)
     code: string;
-    // (undocumented)
-    response: AxiosResponse;
+    response: HttpResponse;
 }
 
 // @public
@@ -3311,9 +3352,8 @@ export interface ProxyGroup extends GeneratedProxyGroup {
 export class RateLimitError extends ApifyApiError {
 }
 
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<ApifyRequestConfig>['use']>[0];
+// @public
+export type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<InternalAxiosRequestConfig>['use']>[0];
 
 // @public
 export interface RequestQueue extends Omit<Schemas['RequestQueue'], keyof RequestQueueRePointed | keyof RequestQueueSpecNarrowings>, RequestQueueRePointed, RequestQueueSpecNarrowings, RequestQueueSpecGaps {

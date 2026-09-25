@@ -85,6 +85,8 @@ const gzipClient = new ApifyClient({ token: 'MY-APIFY-TOKEN', compression: 'gzip
 
 Both algorithms come from `node:zlib`, so neither needs an extra dependency. If the runtime's `node:zlib` doesn't implement brotli, which can happen with a Node.js compatibility shim or a bundler polyfill, the request fails with the error from the runtime. The client doesn't fall back to gzip on its own, so pass `compression: 'gzip'` on such a runtime.
 
+An HTTP client you plug in with <ApiLink to="class/ApifyClient#withCustomHttpClient">`ApifyClient.withCustomHttpClient()`</ApiLink> owns its configuration, so pass `compression` to its constructor. The compressor runs in the shared request pipeline, so a custom transport compresses the same bodies the built-in one does. See [HTTP clients](./08_http-clients.md).
+
 ## Compression quality and custom compressors
 
 To set the compression quality, pass an <ApiLink to="interface/HttpCompressor">`HttpCompressor`</ApiLink> instead of a name:

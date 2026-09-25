@@ -7,7 +7,7 @@ import log from '@apify/log';
 import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyRequestConfig } from '../http_client.js';
+import type { ApifyRequestConfig } from '../http_clients/index.js';
 import { ResponseValidationError } from '../response_validation_error.js';
 import type {
     RequestQueue,

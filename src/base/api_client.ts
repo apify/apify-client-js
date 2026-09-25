@@ -1,5 +1,5 @@
 import type { ApifyClient } from '../apify_client.js';
-import type { HttpClient } from '../http_client.js';
+import type { HttpClient } from '../http_clients/index.js';
 import type { PaginatedResponse, PaginationOptions } from '../utils.js';
 import { SCANNED_COUNT, toPath, toPathSegment } from '../utils.js';
 

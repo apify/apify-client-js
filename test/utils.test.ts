@@ -1,10 +1,15 @@
 import { Readable } from 'node:stream';
 
-import type { PaginatedList, RequestQueueClientRequestSchema, WebhookDispatch, WebhookUpdateData } from 'apify-client';
+import type {
+    ApifyResponse,
+    PaginatedList,
+    RequestQueueClientRequestSchema,
+    WebhookDispatch,
+    WebhookUpdateData,
+} from 'apify-client';
 import { ApifyApiError, ResponseValidationError } from 'apify-client';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
-import type { ApifyResponse } from '../src/http_client.js';
 import * as schemas from '../src/schemas.js';
 import * as utils from '../src/utils.js';
 import * as fixtures from './mock_server/fixtures.js';

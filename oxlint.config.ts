@@ -8,6 +8,11 @@ export default defineConfig({
         'no-use-before-define': 'off',
         'no-param-reassign': 'off',
         'no-void': 'off',
+        // Private state lives in native `#` fields. The allow list covers the `@apify/log` hooks `LogClient` overrides.
+        'no-underscore-dangle': [
+            'error',
+            { enforceInClassFields: true, enforceInMethodNames: true, allow: ['_log', '_outputWithConsole'] },
+        ],
     },
     overrides: [
         {
