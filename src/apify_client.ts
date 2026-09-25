@@ -50,6 +50,13 @@ import {
 import { getEnv, parseArgument } from './utils.js';
 
 const DEFAULT_API_URL = 'https://api.apify.com';
+const API_VERSION_PATH = '/v2';
+
+/** Strips trailing slashes from an API URL and appends {@link API_VERSION_PATH}, unless the URL already ends with it. */
+function toApiBaseUrl(url: string): string {
+    const trimmed = url.replace(/\/+$/, '');
+    return /[^/]\/v2$/.test(trimmed) ? trimmed : `${trimmed}${API_VERSION_PATH}`;
+}
 
 const clientOptionsSchema = z.strictObject({
     baseUrl: z.string().default(DEFAULT_API_URL),
@@ -149,12 +156,8 @@ export class ApifyClient {
             token,
         } = parsed;
 
-        const tempBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, baseUrl.length - 1) : baseUrl;
-        this.baseUrl = `${tempBaseUrl}/v2`;
-        const tempPublicBaseUrl = publicBaseUrl.endsWith('/')
-            ? publicBaseUrl.slice(0, publicBaseUrl.length - 1)
-            : publicBaseUrl;
-        this.publicBaseUrl = `${tempPublicBaseUrl}/v2`;
+        this.baseUrl = toApiBaseUrl(baseUrl);
+        this.publicBaseUrl = toApiBaseUrl(publicBaseUrl);
         this.token = token;
         this.stats = new Statistics();
         this.logger = logger.child({ prefix: 'ApifyClient' });
@@ -677,7 +680,10 @@ export class ApifyClient {
  * Configuration options for ApifyClient.
  */
 export interface ApifyClientOptions {
-    /** @default https://api.apify.com */
+    /**
+     * URL of the Apify API, with or without the `/v2` version path, which is appended when missing.
+     * @default https://api.apify.com
+     */
     baseUrl?: string;
     /**
      * Compression of request bodies: the name of a built-in algorithm, or an {@link HttpCompressor} for a custom
@@ -692,6 +698,8 @@ export interface ApifyClientOptions {
      */
     headers?: Record<string, string>;
     /**
+     * Publicly accessible URL of the Apify API, used in the URLs the client generates. Like `baseUrl`, with or
+     * without the `/v2` version path.
      * @default https://api.apify.com
      * @since Added in 2.17.0
      */
@@ -733,9 +741,16 @@ export interface ApifyClientOptions {
  * on the HTTP client itself.
  */
 export interface ApifyClientCustomHttpClientOptions {
-    /** @default https://api.apify.com */
+    /**
+     * URL of the Apify API, with or without the `/v2` version path, which is appended when missing.
+     * @default https://api.apify.com
+     */
     baseUrl?: string;
-    /** @default https://api.apify.com */
+    /**
+     * Publicly accessible URL of the Apify API, used in the URLs the client generates. Like `baseUrl`, with or
+     * without the `/v2` version path.
+     * @default https://api.apify.com
+     */
     publicBaseUrl?: string;
     /** Set as the HTTP client's `Authorization` header, unless it already has one. */
     token?: string;
