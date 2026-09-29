@@ -1,0 +1,10 @@
+{
+    "name": "apify-client-scripts",
+    "private": true,
+    "description": "Maintainer scripts. A separate workspace package so openapi-typescript resolves its typescript peer to TS 6: it builds its output with the TS JS API, which TS 7 at the root no longer has.",
+    "type": "module",
+    "devDependencies": {
+        "openapi-typescript": "7.13.0",
+        "typescript": "^6.0.3"
+    }
+}

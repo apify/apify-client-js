@@ -1,4 +1,4 @@
-import ts from 'typescript';
+import ts from 'typescript-v6';
 import { describe, expect, it } from 'vitest';
 
 import { absolutizeDocLinks, hoistAllOfRequired, transformDateTime } from '../scripts/spec_transform.mts';

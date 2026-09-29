@@ -1,5 +1,6 @@
 packages:
   - website
+  - scripts
 
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
