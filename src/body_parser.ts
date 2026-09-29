@@ -1,4 +1,4 @@
-import contentTypeParser from 'content-type';
+import { parse as parseContentType } from 'content-type';
 import type { JsonArray, JsonObject } from 'type-fest';
 
 const CONTENT_TYPE_JSON = 'application/json';
@@ -21,7 +21,7 @@ export function maybeParseBody(
     let contentType: string;
     let charset: string | undefined;
     try {
-        const result = contentTypeParser.parse(contentTypeHeader);
+        const result = parseContentType(contentTypeHeader);
         contentType = result.type;
         charset = result.parameters.charset;
     } catch {
