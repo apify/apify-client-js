@@ -76,7 +76,7 @@ const run = await client.actor('my-actor').call(input, { signal: controller.sign
 const finishedRun = await client.run('my-run-id').waitForFinish({ signal: AbortSignal.timeout(600_000) });
 ```
 
-Aborting the signal only stops the client. To stop an Actor run on the platform, call <ApiLink to="class/RunClient#abort">`RunClient.abort()`</ApiLink>.
+Aborting the signal only stops the current API call. To stop an Actor run on the platform, call <ApiLink to="class/RunClient#abort">`RunClient.abort()`</ApiLink>.
 
 ## Interaction with retries
 
