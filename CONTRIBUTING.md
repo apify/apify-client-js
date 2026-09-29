@@ -17,7 +17,7 @@ Thank you for your interest in contributing to the official JavaScript/TypeScrip
 ### Prerequisites
 
 - Node.js 22+ (LTS recommended)
-- pnpm 11+ (needs Node.js 22.13 or newer)
+- pnpm 12+
 
 ### Installation
 
