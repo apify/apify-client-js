@@ -3657,6 +3657,7 @@ export class RunClient extends ResourceClient {
     delete(options?: TimeoutOptions): Promise<void>;
     get(options?: RunGetOptions): Promise<ActorRun | undefined>;
     getStreamedLog(options?: GetStreamedLogOptions): Promise<StreamedLog | undefined>;
+    iterateDatasetItems<Data extends Record<string | number, any> = Record<string | number, unknown>>(options?: RunIterateDatasetItemsOptions): AsyncGenerator<Data, void, undefined>;
     keyValueStore(): KeyValueStoreClient;
     log(): LogClient;
     metamorph(targetActorId: string, input?: ActorInput, options?: RunMetamorphOptions): Promise<ActorRun>;
@@ -3687,6 +3688,17 @@ export interface RunCollectionListOptions extends PaginationOptions, TimeoutOpti
 export interface RunGetOptions extends TimeoutOptions {
     // (undocumented)
     waitForFinish?: number;
+}
+
+// @public
+export interface RunIterateDatasetItemsOptions extends PaginationOptions, TimeoutOptions {
+    clean?: boolean;
+    fields?: string[];
+    omit?: string[];
+    pollIntervalSecs?: number;
+    skipEmpty?: boolean;
+    skipHidden?: boolean;
+    unwind?: string[];
 }
 
 // @public
