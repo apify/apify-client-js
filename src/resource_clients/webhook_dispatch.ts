@@ -52,8 +52,8 @@ export class WebhookDispatchClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/webhook-dispatch-get
      */
     async get(options: TimeoutOptions = {}): Promise<WebhookDispatch | undefined> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.WebhookDispatch(), {}, timeoutSecs);
+        return this.getResource(schemas.WebhookDispatch(), {}, timeoutSecs, signal);
     }
 }

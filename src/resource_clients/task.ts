@@ -86,9 +86,9 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-get
      */
     async get(options: TimeoutOptions = {}): Promise<Task | undefined> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Task(), {}, timeoutSecs);
+        return this.getResource(schemas.Task(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -102,9 +102,9 @@ export class TaskClient extends ResourceClient {
      */
     async update(newFields: TaskUpdateData, options: TimeoutOptions = {}): Promise<Task> {
         parseArgument(newFields, anyObjectSchema);
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Task(), newFields, timeoutSecs);
+        return this.updateResource(schemas.Task(), newFields, timeoutSecs, signal);
     }
 
     /**
@@ -151,9 +151,9 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-delete
      */
     async delete(options: TimeoutOptions = {}): Promise<void> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(timeoutSecs);
+        return this.deleteResource(timeoutSecs, signal);
     }
 
     /**
@@ -187,6 +187,7 @@ export class TaskClient extends ResourceClient {
             maxTotalChargeUsd,
             restartOnError,
             timeoutSecs,
+            signal,
         } = parsed;
 
         // The API's `timeout` parameter bounds the run, not the request.
@@ -212,6 +213,7 @@ export class TaskClient extends ResourceClient {
                 'Content-Type': 'application/json',
             },
             timeoutSecs: this.timeoutForWaitForFinish(timeoutSecs, 'medium', waitForFinish),
+            signal,
         };
 
         const response = await this.httpClient.call(request);
@@ -240,14 +242,14 @@ export class TaskClient extends ResourceClient {
         parseArgument(input, inputSchema);
         const parsed = parseArgument(options, callOptionsSchema, 'TaskCallOptions');
 
-        const { waitSecs, timeoutSecs = 'noTimeout', ...startOptions } = parsed;
+        const { waitSecs, timeoutSecs = 'noTimeout', signal, ...startOptions } = parsed;
 
-        const { id } = await this.start(input, { ...startOptions, timeoutSecs });
+        const { id } = await this.start(input, { ...startOptions, timeoutSecs, signal });
 
         // Calling root client because we need access to top level API.
         // Creating a new instance of RunClient here would only allow
         // setting it up as a nested route under task API.
-        return this.apifyClient.run(id).waitForFinish({ waitSecs, timeoutSecs });
+        return this.apifyClient.run(id).waitForFinish({ waitSecs, timeoutSecs, signal });
     }
 
     /**
@@ -259,13 +261,14 @@ export class TaskClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/actor-task-input-get
      */
     async getInput(options: TimeoutOptions = {}): Promise<Dictionary | Dictionary[]> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('input'),
             method: 'GET',
             params: this.buildParams(),
             timeoutSecs,
+            signal,
         });
         return cast(response.data);
     }
@@ -283,7 +286,7 @@ export class TaskClient extends ResourceClient {
         newFields: Dictionary | Dictionary[],
         options: TimeoutOptions = {},
     ): Promise<Dictionary | Dictionary[]> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('input'),
@@ -291,6 +294,7 @@ export class TaskClient extends ResourceClient {
             params: this.buildParams(),
             data: newFields,
             timeoutSecs,
+            signal,
         });
 
         return cast(response.data);

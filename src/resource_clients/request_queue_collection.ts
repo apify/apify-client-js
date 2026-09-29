@@ -91,9 +91,9 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
      */
     async getOrCreate(name?: string, options: TimeoutOptions = {}): Promise<RequestQueue> {
         parseArgument(name, nameSchema);
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getOrCreateResource(schemas.RequestQueue(), name, undefined, timeoutSecs);
+        return this.getOrCreateResource(schemas.RequestQueue(), name, undefined, timeoutSecs, signal);
     }
 }
 
