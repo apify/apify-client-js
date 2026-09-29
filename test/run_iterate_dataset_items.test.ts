@@ -26,17 +26,18 @@ interface Step {
 
 interface Shaping {
     clean?: boolean;
+    skipEmpty?: boolean;
     unwind?: boolean;
 }
 
 const range = (start: number, end: number) => Array.from({ length: Math.max(end - start, 0) }, (_, i) => start + i);
 
 /**
- * Turns dataset rows into items: `clean` drops every odd row, `unwind` splits a row into `UNWIND_PARTS` items and
- * drops every third row, whose unwound field is an empty array.
+ * Turns dataset rows into items: `clean` and `skipEmpty` drop every odd row, `unwind` splits a row into `UNWIND_PARTS`
+ * items and drops every third row, whose unwound field is an empty array.
  */
-const shapeItems = (rows: number[], { clean = false, unwind = false }: Shaping = {}) => {
-    const keptRows = rows.filter((row) => !(clean && row % 2) && !(unwind && row % 3 === 2));
+const shapeItems = (rows: number[], { clean = false, skipEmpty = false, unwind = false }: Shaping = {}) => {
+    const keptRows = rows.filter((row) => !((clean || skipEmpty) && row % 2) && !(unwind && row % 3 === 2));
     if (unwind) return keptRows.flatMap((row) => range(0, UNWIND_PARTS).map((part) => ({ row, part })));
     return keptRows.map((row) => ({ row }));
 };
@@ -63,7 +64,11 @@ const mockRunApi = (client: ApifyClient, steps: Step[]) => {
             const limit: number = request.params.limit || 999_999_999_999;
             const rows = range(offset, Math.min(offset + limit, step().pushedRows));
             return {
-                data: shapeItems(rows, { clean: request.params.clean, unwind: Boolean(request.params.unwind) }),
+                data: shapeItems(rows, {
+                    clean: request.params.clean,
+                    skipEmpty: request.params.skipEmpty,
+                    unwind: Boolean(request.params.unwind),
+                }),
                 headers: {
                     'x-apify-pagination-total': String(step().itemCount),
                     'x-apify-pagination-offset': String(offset),
@@ -110,6 +115,7 @@ describe('RunClient.iterateDatasetItems', () => {
     test.each([
         { name: 'clean drops items, partly filtered pages', shaping: { clean: true }, chunkSize: 10 },
         { name: 'clean drops items, fully filtered pages', shaping: { clean: true }, chunkSize: 1 },
+        { name: 'skipEmpty drops items, fully filtered pages', shaping: { skipEmpty: true }, chunkSize: 1 },
         { name: 'unwind multiplies or drops items, partly filtered pages', shaping: { unwind: true }, chunkSize: 10 },
         { name: 'unwind multiplies or drops items, fully filtered pages', shaping: { unwind: true }, chunkSize: 1 },
     ])('filters and unwind neither duplicate nor skip rows ($name)', async ({ shaping, chunkSize }) => {
@@ -119,6 +125,7 @@ describe('RunClient.iterateDatasetItems', () => {
         const items = await collect(
             client.run(RUN_ID).iterateDatasetItems({
                 clean: shaping.clean,
+                skipEmpty: shaping.skipEmpty,
                 unwind: shaping.unwind ? ['parts'] : undefined,
                 chunkSize,
                 pollIntervalSecs: 0,
@@ -164,6 +171,19 @@ describe('RunClient.iterateDatasetItems', () => {
         );
 
         expect(items).toEqual(shapeItems(range(0, 60)));
+    });
+
+    test('forwards item options to every page and ends on an empty page without a plain read', async () => {
+        const client = new ApifyClient();
+        const { spy } = mockRunApi(client, [{ pushedRows: 5, itemCount: 3, status: 'SUCCEEDED' }]);
+
+        const items = await collect(
+            client.run(RUN_ID).iterateDatasetItems({ fields: ['row'], chunkSize: 10, pollIntervalSecs: 0 }),
+        );
+
+        expect(items).toEqual(shapeItems(range(0, 5)));
+        const itemRequests = spy.mock.calls.map(([request]) => request).filter(({ url }) => url.endsWith('/items'));
+        expect(itemRequests.map(({ params }) => params?.fields)).toEqual([['row'], ['row'], ['row']]);
     });
 
     test('waits pollIntervalSecs after each poll of an unfinished run and not after the final one', async () => {
