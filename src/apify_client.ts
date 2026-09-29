@@ -53,10 +53,10 @@ const DEFAULT_API_URL = 'https://api.apify.com';
 const API_VERSION_PATH = '/v2';
 
 function toApiBaseUrl(url: string): string {
-    const trimmed = url.replace(/\/+$/, '');
-    // `https://v2` ends with the version path too, but there `v2` is the host.
-    const hasVersion = trimmed.endsWith(API_VERSION_PATH) && !trimmed.endsWith(`/${API_VERSION_PATH}`);
-    return hasVersion ? trimmed : `${trimmed}${API_VERSION_PATH}`;
+    const parsed = new URL(url);
+    const path = parsed.pathname.replace(/\/+$/, '');
+    parsed.pathname = path.endsWith(API_VERSION_PATH) ? path : `${path}${API_VERSION_PATH}`;
+    return parsed.href;
 }
 
 const clientOptionsSchema = z.strictObject({
