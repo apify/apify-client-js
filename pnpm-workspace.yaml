@@ -15,11 +15,13 @@ minimumReleaseAgeExclude:
   # Renovate security update: axios@1.18.0
   - axios@1.18.0
 
-onlyBuiltDependencies:
-  - "@playwright/browser-chromium"
-  - "@swc/core"
-  - esbuild
-  - puppeteer
+allowBuilds:
+  "@apify/ui-icons": false
+  "@playwright/browser-chromium": true
+  "@swc/core": true
+  core-js: false
+  esbuild: true
+  puppeteer: true
 
 overrides:
   js-yaml@4: ^5.0.0
@@ -35,7 +37,6 @@ overrides:
 nodeLinker: hoisted
 linkWorkspacePackages: true
 preferWorkspacePackages: true
-legacyPeerDeps: true
 publicHoistPattern:
   - "*"
 
