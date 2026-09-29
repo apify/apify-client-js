@@ -67,9 +67,9 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/act-versions-get
      */
     list(options: TimeoutOptions = {}): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.listResourcesPaginated(schemas.ListOfVersions(), {}, timeoutSecs);
+        return this.listResourcesPaginated(schemas.ListOfVersions(), { signal }, timeoutSecs);
     }
 
     /**
@@ -83,9 +83,9 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      */
     async create(actorVersion: ActorVersion, options: TimeoutOptions = {}): Promise<FinalActorVersion> {
         parseArgument(actorVersion, actorVersionSchema);
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.createResource(schemas.Version(), actorVersion, timeoutSecs);
+        return this.createResource(schemas.Version(), actorVersion, timeoutSecs, signal);
     }
 }
 

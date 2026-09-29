@@ -49,9 +49,9 @@ export class ActorEnvVarClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-version-env-var-get
      */
     async get(options: TimeoutOptions = {}): Promise<ActorEnvironmentVariable | undefined> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.EnvVar(), {}, timeoutSecs);
+        return this.getResource(schemas.EnvVar(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -68,9 +68,9 @@ export class ActorEnvVarClient extends ResourceClient {
         options: TimeoutOptions = {},
     ): Promise<ActorEnvironmentVariable> {
         parseArgument(actorEnvVar, anyObjectSchema);
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.EnvVar(), actorEnvVar, timeoutSecs);
+        return this.updateResource(schemas.EnvVar(), actorEnvVar, timeoutSecs, signal);
     }
 
     /**
@@ -81,8 +81,8 @@ export class ActorEnvVarClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-version-env-var-delete
      */
     async delete(options: TimeoutOptions = {}): Promise<void> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(timeoutSecs);
+        return this.deleteResource(timeoutSecs, signal);
     }
 }

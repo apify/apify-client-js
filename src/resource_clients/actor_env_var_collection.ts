@@ -68,9 +68,9 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      * @see https://docs.apify.com/api/v2/act-version-env-vars-get
      */
     list(options: TimeoutOptions = {}): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.listResourcesPaginated(schemas.ListOfEnvVars(), {}, timeoutSecs);
+        return this.listResourcesPaginated(schemas.ListOfEnvVars(), { signal }, timeoutSecs);
     }
 
     /**
@@ -87,9 +87,9 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
         options: TimeoutOptions = {},
     ): Promise<ActorEnvironmentVariable> {
         parseArgument(actorEnvVar, actorEnvVarSchema);
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.createResource(schemas.EnvVar(), actorEnvVar, timeoutSecs);
+        return this.createResource(schemas.EnvVar(), actorEnvVar, timeoutSecs, signal);
     }
 }
 

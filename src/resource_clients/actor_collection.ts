@@ -89,9 +89,9 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      */
     async create(actor: ActorCollectionCreateOptions, options: TimeoutOptions = {}): Promise<Actor> {
         parseArgument(actor, actorCreateSchema);
-        const { timeoutSecs = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'medium', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.createResource(schemas.Actor(), actor, timeoutSecs);
+        return this.createResource(schemas.Actor(), actor, timeoutSecs, signal);
     }
 }
 

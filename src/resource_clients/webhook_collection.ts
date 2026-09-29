@@ -91,9 +91,9 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
      */
     async create(webhook?: WebhookUpdateData, options: TimeoutOptions = {}): Promise<Webhook> {
         parseArgument(webhook, webhookCreateSchema);
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.createResource(schemas.Webhook(), webhook, timeoutSecs);
+        return this.createResource(schemas.Webhook(), webhook, timeoutSecs, signal);
     }
 }
 

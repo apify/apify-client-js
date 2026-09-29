@@ -89,9 +89,9 @@ export class ScheduleCollectionClient extends ResourceCollectionClient {
      */
     async create(schedule?: ScheduleCreateOrUpdateData, options: TimeoutOptions = {}): Promise<Schedule> {
         parseArgument(schedule, scheduleCreateSchema);
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.createResource(schemas.Schedule(), schedule, timeoutSecs);
+        return this.createResource(schemas.Schedule(), schedule, timeoutSecs, signal);
     }
 }
 

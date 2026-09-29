@@ -41,6 +41,12 @@ export interface TimeoutOptions {
      * `'noTimeout'`. Defaults to the tier the method is assigned, which its documentation names.
      */
     timeoutSecs?: Timeout;
+
+    /**
+     * Aborts the method. Once the signal aborts, the request in flight is ended, no retry or further poll
+     * follows, and the method rejects with the signal's `reason`.
+     */
+    signal?: AbortSignal;
 }
 
 /**
@@ -55,12 +61,19 @@ const timeoutSchema = z.union([z.enum(['short', 'medium', 'long', 'noTimeout']),
 export const optionalTimeoutSchema = timeoutSchema.optional();
 
 /**
+ * Schema of {@link TimeoutOptions.signal}, for the methods that validate `signal` on its own.
+ * @internal
+ */
+export const optionalSignalSchema = z.instanceof(AbortSignal).optional();
+
+/**
  * Schema shape of {@link TimeoutOptions}, to spread into the option schema of every method that sends a
  * request. One copy stops it drifting from the interface.
  * @internal
  */
 export const timeoutOptionsShape = {
     timeoutSecs: optionalTimeoutSchema,
+    signal: optionalSignalSchema,
 };
 
 /**

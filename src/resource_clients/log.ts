@@ -61,13 +61,14 @@ export class LogClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/log-get
      */
     async get(options: LogOptions = {}): Promise<string | undefined> {
-        const { timeoutSecs = 'long', ...params } = parseArgument(options, logOptionsSchema, 'LogOptions');
+        const { timeoutSecs = 'long', signal, ...params } = parseArgument(options, logOptionsSchema, 'LogOptions');
 
         const requestOpts: ApifyRequestConfig = {
             url: this.buildUrl(),
             method: 'GET',
             params: this.buildParams(params),
             timeoutSecs,
+            signal,
         };
 
         try {
@@ -91,7 +92,7 @@ export class LogClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/log-get
      */
     async stream(options: LogOptions = {}): Promise<Readable | undefined> {
-        const { timeoutSecs = 'long', raw } = parseArgument(options, logOptionsSchema, 'LogOptions');
+        const { timeoutSecs = 'long', signal, raw } = parseArgument(options, logOptionsSchema, 'LogOptions');
 
         const params = {
             stream: true,
@@ -104,6 +105,7 @@ export class LogClient extends ResourceClient {
             params: this.buildParams(params),
             responseType: 'stream',
             timeoutSecs,
+            signal,
         };
 
         try {
@@ -170,13 +172,15 @@ export class StreamedLog {
     #relevancyTimeLimit: Date | null;
 
     #logClient: LogClient;
+    #signal: AbortSignal | undefined;
     #streamingTask: Promise<void> | null = null;
     #stopLogging = false;
 
     constructor(options: StreamedLogOptions) {
-        const { toLog, logClient, fromStart = true } = options;
+        const { toLog, logClient, fromStart = true, signal } = options;
         this.#destinationLog = toLog;
         this.#logClient = logClient;
+        this.#signal = signal;
         this.#relevancyTimeLimit = fromStart ? null : new Date();
     }
 
@@ -215,7 +219,7 @@ export class StreamedLog {
      */
     async #streamLog(): Promise<void> {
         try {
-            const logStream = await this.#logClient.stream({ raw: true });
+            const logStream = await this.#logClient.stream({ raw: true, signal: this.#signal });
             if (!logStream) {
                 return;
             }
@@ -226,6 +230,7 @@ export class StreamedLog {
                 this.#destinationLog.info(lastMessage);
             }
         } catch (err) {
+            if (this.#signal?.aborted) return;
             log.warning(`Log redirection stopped due to error`, err as Error);
         }
     }
@@ -295,4 +300,6 @@ export interface StreamedLogOptions {
     toLog: Log;
     /** Whether to redirect all logs from Actor run start (even logs from the past). */
     fromStart?: boolean;
+    /** Ends the log stream once it aborts. */
+    signal?: AbortSignal;
 }

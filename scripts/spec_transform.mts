@@ -4,7 +4,8 @@
  */
 
 import type { SchemaObject, TransformNodeOptions } from 'openapi-typescript';
-import ts from 'typescript';
+// The factory API is gone from the native TS 7 compiler, and these nodes are fed to openapi-typescript, which runs on TS 6.
+import ts from 'typescript-v6';
 
 /** Base that the spec's root-relative Markdown links are resolved against. */
 const DOCS_BASE_URL = 'https://docs.apify.com';

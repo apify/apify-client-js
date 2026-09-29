@@ -498,3 +498,25 @@ export function toPathSegment(value: string): string {
 export function toPath(path: string | string[]): string {
     return Array.isArray(path) ? path.map(toPathSegment).join('/') : path;
 }
+
+/**
+ * Resolves after `millis`, or right away once `signal` aborts.
+ * @internal
+ */
+export async function sleep(millis: number, signal?: AbortSignal): Promise<void> {
+    return new Promise((resolve) => {
+        if (signal?.aborted) {
+            resolve();
+            return;
+        }
+        const onAbort = () => {
+            clearTimeout(timer);
+            resolve();
+        };
+        const timer = setTimeout(() => {
+            signal?.removeEventListener('abort', onAbort);
+            resolve();
+        }, millis);
+        signal?.addEventListener('abort', onAbort, { once: true });
+    });
+}
