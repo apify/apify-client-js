@@ -113,7 +113,6 @@
         "compression": "^1.8.1",
         "esbuild": "0.28.2",
         "express": "^5.2.1",
-        "openapi-typescript": "7.13.0",
         "oxfmt": "0.66.0",
         "oxlint": "1.81.0",
         "oxlint-tsgolint": "7.0.2001",
