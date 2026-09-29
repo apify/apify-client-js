@@ -69,12 +69,13 @@ export class BuildClient extends ResourceClient {
      * ```
      */
     async get(options: BuildClientGetOptions = {}): Promise<Build | undefined> {
-        const { timeoutSecs, ...params } = parseArgument(options, getOptionsSchema, 'BuildClientGetOptions');
+        const { timeoutSecs, signal, ...params } = parseArgument(options, getOptionsSchema, 'BuildClientGetOptions');
 
         return this.getResource(
             schemas.Build(),
             params,
             this.timeoutForWaitForFinish(timeoutSecs, 'short', params.waitForFinish),
+            signal,
         );
     }
 
@@ -94,13 +95,14 @@ export class BuildClient extends ResourceClient {
      * ```
      */
     async abort(options: TimeoutOptions = {}): Promise<Build> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('abort'),
             method: 'POST',
             params: this.buildParams(),
             timeoutSecs,
+            signal,
         });
 
         return parseResponse(response, schemas.Build());
@@ -115,9 +117,9 @@ export class BuildClient extends ResourceClient {
      * @since Added in 2.8.1
      */
     async delete(options: TimeoutOptions = {}): Promise<void> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(timeoutSecs);
+        return this.deleteResource(timeoutSecs, signal);
     }
 
     /**
@@ -130,13 +132,14 @@ export class BuildClient extends ResourceClient {
      * @since Added in 2.11.2
      */
     async getOpenApiDefinition(options: TimeoutOptions = {}): Promise<OpenApiDefinition> {
-        const { timeoutSecs = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'medium', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('openapi.json'),
             method: 'GET',
             params: this.buildParams(),
             timeoutSecs,
+            signal,
         });
 
         return response.data;

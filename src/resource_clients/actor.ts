@@ -138,9 +138,9 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-get
      */
     async get(options: TimeoutOptions = {}): Promise<Actor | undefined> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Actor(), {}, timeoutSecs);
+        return this.getResource(schemas.Actor(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -154,9 +154,9 @@ export class ActorClient extends ResourceClient {
      */
     async update(newFields: ActorUpdateOptions, options: TimeoutOptions = {}): Promise<Actor> {
         parseArgument(newFields, anyObjectSchema);
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Actor(), newFields, timeoutSecs);
+        return this.updateResource(schemas.Actor(), newFields, timeoutSecs, signal);
     }
 
     /**
@@ -167,9 +167,9 @@ export class ActorClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/act-delete
      */
     async delete(options: TimeoutOptions = {}): Promise<void> {
-        const { timeoutSecs = 'short' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.deleteResource(timeoutSecs);
+        return this.deleteResource(timeoutSecs, signal);
     }
 
     /**
@@ -219,6 +219,7 @@ export class ActorClient extends ResourceClient {
             restartOnError,
             forcePermissionLevel,
             timeoutSecs,
+            signal,
         } = parsed;
 
         // The API's `timeout` parameter bounds the run, not the request.
@@ -242,6 +243,7 @@ export class ActorClient extends ResourceClient {
             // Actor input may carry page functions, which plain JSON serialization would drop.
             stringifyFunctions: true,
             timeoutSecs: this.timeoutForWaitForFinish(timeoutSecs, 'medium', waitForFinish),
+            signal,
         };
         if (parsed.contentType) {
             request.headers = {
@@ -293,19 +295,19 @@ export class ActorClient extends ResourceClient {
     async call(input?: ActorInput, options: ActorCallOptions = {}): Promise<ActorRun> {
         const parsed = parseArgument(options, callOptionsSchema, 'ActorCallOptions');
 
-        const { waitSecs, log, timeoutSecs = 'noTimeout', ...startOptions } = parsed;
-        const { id } = await this.start(input, { ...startOptions, timeoutSecs });
+        const { waitSecs, log, timeoutSecs = 'noTimeout', signal, ...startOptions } = parsed;
+        const { id } = await this.start(input, { ...startOptions, timeoutSecs, signal });
 
         // Calling root client because we need access to top level API.
         // Creating a new instance of RunClient here would only allow
         // setting it up as a nested route under actor API.
         const newRunClient = this.apifyClient.run(id);
 
-        const streamedLog = await newRunClient.getStreamedLog({ toLog: log });
+        const streamedLog = await newRunClient.getStreamedLog({ toLog: log, signal });
         streamedLog?.start();
         return this.apifyClient
             .run(id)
-            .waitForFinish({ waitSecs, timeoutSecs })
+            .waitForFinish({ waitSecs, timeoutSecs, signal })
             .finally(async () => {
                 await streamedLog?.stop();
             });
@@ -351,6 +353,7 @@ export class ActorClient extends ResourceClient {
             // Actor input may carry page functions, which plain JSON serialization would drop.
             stringifyFunctions: true,
             timeoutSecs: parsed.timeoutSecs ?? 'short',
+            signal: parsed.signal,
         };
         if (parsed.contentType) {
             request.headers = {
@@ -395,7 +398,7 @@ export class ActorClient extends ResourceClient {
      */
     async build(versionNumber: string, options: ActorBuildOptions = {}): Promise<Build> {
         parseArgument(versionNumber, versionNumberSchema);
-        const { timeoutSecs, ...params } = parseArgument(options, buildOptionsSchema, 'ActorBuildOptions');
+        const { timeoutSecs, signal, ...params } = parseArgument(options, buildOptionsSchema, 'ActorBuildOptions');
 
         const response = await this.httpClient.call({
             url: this.buildUrl('builds'),
@@ -405,6 +408,7 @@ export class ActorClient extends ResourceClient {
                 ...params,
             }),
             timeoutSecs: this.timeoutForWaitForFinish(timeoutSecs, 'medium', params.waitForFinish),
+            signal,
         });
 
         return parseResponse(response, schemas.Build());
@@ -438,13 +442,18 @@ export class ActorClient extends ResourceClient {
      * @since Added in 2.12.2
      */
     async defaultBuild(options: BuildClientGetOptions = {}): Promise<BuildClient> {
-        const { timeoutSecs, ...params } = parseArgument(options, defaultBuildOptionsSchema, 'BuildClientGetOptions');
+        const { timeoutSecs, signal, ...params } = parseArgument(
+            options,
+            defaultBuildOptionsSchema,
+            'BuildClientGetOptions',
+        );
 
         const response = await this.httpClient.call({
             url: this.buildUrl('builds/default'),
             method: 'GET',
             params: this.buildParams(params),
             timeoutSecs: this.timeoutForWaitForFinish(timeoutSecs, 'short', params.waitForFinish),
+            signal,
         });
 
         const { id } = parseResponse<Build>(response, schemas.Build());

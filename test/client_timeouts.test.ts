@@ -260,8 +260,35 @@ describe('Client timeouts', () => {
 
                 expect(mockHttpClient.lastCall.timeoutSecs).toBe(42);
             });
+
+            test('forwards the signal to every request it sends, and to neither the query string nor the body', async () => {
+                const { signal } = new AbortController();
+                await resourceClient(clientName)[method](...args, { ...options, signal });
+
+                expect(mockHttpClient.callHistory.length).toBeGreaterThan(0);
+                for (const config of mockHttpClient.callHistory) {
+                    expect(config.signal).toBe(signal);
+                    expect(Object.values(config.params ?? {})).not.toContain(signal);
+                    if (typeof config.data === 'object' && config.data !== null) {
+                        expect(Object.values(config.data)).not.toContain(signal);
+                    }
+                }
+            });
         },
     );
+
+    test.each([
+        { signal: {}, reason: 'a plain object' },
+        { signal: null, reason: 'null' },
+    ])('rejects $reason as a signal', async ({ signal }) => {
+        await expect(resourceClient('DatasetClient').get({ signal })).rejects.toThrow(ArgumentValidationError);
+        await expect(resourceClient('DatasetCollectionClient').getOrCreate('name', { signal })).rejects.toThrow(
+            ArgumentValidationError,
+        );
+        await expect(
+            resourceClient('RequestQueueClient').batchAddRequests([{ url: 'http://x', uniqueKey: 'x' }], { signal }),
+        ).rejects.toThrow(ArgumentValidationError);
+    });
 
     test('the timeout never reaches the query string', async () => {
         await resourceClient('DatasetClient').listItems({ limit: 5, timeoutSecs: 'short' });

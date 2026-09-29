@@ -91,9 +91,9 @@ export class TaskCollectionClient extends ResourceCollectionClient {
      */
     async create(task: TaskCreateData, options: TimeoutOptions = {}): Promise<Task> {
         parseArgument(task, anyObjectSchema);
-        const { timeoutSecs = 'medium' } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
+        const { timeoutSecs = 'medium', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.createResource(schemas.Task(), task, timeoutSecs);
+        return this.createResource(schemas.Task(), task, timeoutSecs, signal);
     }
 }
 
