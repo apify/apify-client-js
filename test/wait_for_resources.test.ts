@@ -3,14 +3,16 @@ import type { AddressInfo } from 'node:net';
 import { Readable } from 'node:stream';
 
 import { ApifyClient } from 'apify-client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, onTestFinished, test, vi } from 'vitest';
+
+import log from '@apify/log';
 
 import type * as utils from '../src/utils.js';
 
 const { sleeps } = vi.hoisted(() => ({ sleeps: [] as number[] }));
 
-// The cooldown sleeps resolve at once and move the clock forward instead, and the server answers with bodies shaped
-// for the retry mechanics, not for the API's schemas.
+// The cooldown sleeps resolve at once and move the fake clock forward by their length. The server answers with bodies
+// shaped for the retry mechanics, so `parseResponse` skips the API's schemas.
 vi.mock('../src/utils', async (importOriginal) => {
     const actual = await importOriginal<typeof utils>();
     return {
@@ -143,6 +145,8 @@ describe('waitForResources option', () => {
 
     test('a number of seconds bounds the retrying and throws the last rejection', async () => {
         rejections = Array(10).fill('actor-memory-limit-exceeded');
+        const info = vi.spyOn(log, 'info').mockImplementation(() => {});
+        onTestFinished(() => info.mockRestore());
 
         await expect(client.actor('actor-id').start(undefined, { waitForResources: 25 })).rejects.toMatchObject({
             type: 'actor-memory-limit-exceeded',
@@ -150,6 +154,11 @@ describe('waitForResources option', () => {
         // Attempts at 0, 10, 20 and 25 seconds, the last cooldown cut short by the bound.
         expect(starts).toHaveLength(4);
         expect(sleeps).toEqual([10_000, 10_000, 5_000]);
+        expect(info.mock.calls.map(([message]) => message)).toEqual([
+            'Not enough resources to start the run (actor-memory-limit-exceeded), retrying in 10s.',
+            'Not enough resources to start the run (actor-memory-limit-exceeded), retrying in 10s.',
+            'Not enough resources to start the run (actor-memory-limit-exceeded), retrying in 5s.',
+        ]);
     });
 
     test('zero seconds makes a single attempt', async () => {
@@ -186,7 +195,9 @@ describe('waitForResources option', () => {
     });
 
     test('rejects a negative number of seconds', async () => {
-        await expect(client.actor('actor-id').start(undefined, { waitForResources: -1 })).rejects.toThrow();
+        await expect(client.actor('actor-id').start(undefined, { waitForResources: -1 })).rejects.toThrow(
+            /waitForResources/,
+        );
         expect(starts).toEqual([]);
     });
 });
