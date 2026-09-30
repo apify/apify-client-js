@@ -14,7 +14,7 @@ on:
                 default: latest
                 options:
                     - latest
-                    - beta
+                    - next
                     - next-v3
                     - rc
 

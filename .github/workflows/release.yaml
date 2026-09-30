@@ -139,12 +139,12 @@ jobs:
                   cd website
                   VERSION=$(jq -r '.version' ../package.json)
                   export MAJOR=$(echo $VERSION | cut -d. -f1)
-                  # We only ever keep a single "stable" snapshot (the latest release)
-                  for v in $(jq -r '.[]' versions.json); do
-                      rm -rf "versioned_docs/version-$v"
-                      rm -f "versioned_sidebars/version-$v-sidebars.json"
-                  done
-                  echo '[]' > versions.json
+                  # Refresh the current major's snapshot in place; snapshots of older majors are kept
+                  if jq -e --arg v "$MAJOR" 'index($v)' versions.json > /dev/null; then
+                      rm -rf "versioned_docs/version-$MAJOR"
+                      rm -f "versioned_sidebars/version-$MAJOR-sidebars.json"
+                      jq -c --arg v "$MAJOR" 'map(select(. != $v))' versions.json > versions.json.tmp && mv versions.json.tmp versions.json
+                  fi
                   pnpm exec docusaurus docs:version $MAJOR
                   pnpm exec docusaurus api:version $MAJOR
                   cd ..
