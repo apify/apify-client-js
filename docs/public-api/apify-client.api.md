@@ -363,6 +363,7 @@ export interface ActorStartOptions extends TimeoutOptions {
     restartOnError?: boolean;
     runTimeoutSecs?: number;
     waitForFinish?: number;
+    waitForResources?: boolean | number;
     webhooks?: readonly WebhookUpdateData[];
 }
 
