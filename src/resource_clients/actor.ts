@@ -10,7 +10,7 @@ import type { Actor, ActorRun } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
-import { anyObjectSchema, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
+import { anyObjectSchema, isStream, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
 import { startWaitingForResources } from '../wait_for_resources.js';
 import { ActorVersionClient } from './actor_version.js';
 import { ActorVersionCollectionClient } from './actor_version_collection.js';
@@ -257,9 +257,10 @@ export class ActorClient extends ResourceClient {
             };
         }
 
+        // A `Readable` input is consumed by the first attempt, so a retry would start the run with an empty input.
         const response = await startWaitingForResources(
             async () => this.httpClient.call(request),
-            waitForResources,
+            isStream(input) ? false : waitForResources,
             signal,
         );
         return parseResponse(response, schemas.Run());
@@ -689,6 +690,8 @@ export interface ActorStartOptions extends TimeoutOptions {
      *
      * `true` retries until the run starts. A number stops retrying after that many seconds and throws the last
      * error. Omitted or `false`, the first rejection is thrown.
+     *
+     * A `Readable` input can't be sent twice, so its start is never retried and the first rejection is thrown.
      */
     waitForResources?: boolean | number;
 }

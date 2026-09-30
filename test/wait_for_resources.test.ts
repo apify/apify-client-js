@@ -1,5 +1,6 @@
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
+import { Readable } from 'node:stream';
 
 import { ApifyClient } from 'apify-client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
@@ -169,6 +170,19 @@ describe('waitForResources option', () => {
             client.actor('actor-id').start(undefined, { waitForResources: true, signal: controller.signal }),
         ).rejects.toThrow('shutting down');
         expect(starts).toHaveLength(1);
+    });
+
+    test('never retries the start of a Readable input', async () => {
+        rejections = ['actor-memory-limit-exceeded'];
+
+        await expect(
+            client.actor('actor-id').start(Readable.from(['{"foo":"bar"}']), {
+                contentType: 'application/json',
+                waitForResources: true,
+            }),
+        ).rejects.toMatchObject({ type: 'actor-memory-limit-exceeded' });
+        expect(starts).toHaveLength(1);
+        expect(sleeps).toEqual([]);
     });
 
     test('rejects a negative number of seconds', async () => {
