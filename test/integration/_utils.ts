@@ -100,14 +100,15 @@ export async function pollUntilCondition<T>(
     return result;
 }
 
-const COLLECT_MAX_ATTEMPTS = 5;
-const COLLECT_INTERVAL_SECS = 1;
+const COLLECT_MAX_ATTEMPTS = 30;
+const COLLECT_INTERVAL_SECS = 3;
 
 /**
  * Drain an async-iterable listing until every expected ID is present.
  *
- * Handles eventual consistency on listing endpoints: under parallel load a freshly created resource
- * may be missing from the listing for a short window. Each attempt builds a fresh iterable via
+ * Handles eventual consistency on listing endpoints: they read from Mongo secondaries with up to 90 s
+ * of staleness, so under load a freshly created resource may be missing from the listing for a while.
+ * The attempts and interval cover that whole window. Each attempt builds a fresh iterable via
  * `iterableFactory` and drains it, stopping early once all `expectedIds` are found. The most recent
  * collection is returned regardless, so the caller can assert with a helpful message.
  *
