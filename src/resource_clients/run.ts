@@ -542,9 +542,10 @@ export class RunClient extends ResourceClient {
     /**
      * Iterates over the items of the run's default dataset while the run is still producing them.
      *
-     * While the run has not finished, the dataset is polled every `pollIntervalSecs` and the rows below its
-     * `itemCount` are yielded. Each page is requested with a `limit` that ends at `itemCount`, so it covers exactly
-     * the rows it asks for, whatever the filters or `unwind` do to the items. `itemCount` lags a few seconds behind
+     * While the run has not finished, each poll yields the rows below the dataset's `itemCount` and then waits up to
+     * `pollIntervalSecs` for the run to finish, so the last rows are read as soon as it does. Each page is requested
+     * with a `limit` that ends at `itemCount`, so it covers exactly the rows it asks for, whatever the filters or
+     * `unwind` do to the items. `itemCount` lags a few seconds behind
      * the pushed items, so once the run reaches a terminal status, the rows past it are read a page at a time until
      * none are left, and the iterator returns.
      *
@@ -559,8 +560,7 @@ export class RunClient extends ResourceClient {
      * @param options.skipEmpty - If `true`, skips empty items. Default is `false`.
      * @param options.skipHidden - If `true`, skips hidden fields (fields starting with `#`). Default is `false`.
      * @param options.chunkSize - Maximum number of dataset rows requested per API call. Default is 1000.
-     * @param options.pollIntervalSecs - How long to wait between polls while the run has not finished, in seconds.
-     * Default is 5.
+     * @param options.pollIntervalSecs - How long to wait for the run to finish between polls, in seconds. Default is 5.
      * @param options.timeoutSecs - Timeout for each API request. Default is `'long'`.
      * @returns An async iterable of the dataset items
      * @see https://docs.apify.com/api/v2/dataset-items-get
@@ -581,6 +581,7 @@ export class RunClient extends ResourceClient {
             chunkSize,
             pollIntervalSecs = 5,
             timeoutSecs = 'long',
+            signal,
             ...itemOptions
         } = parseArgument(options, iterateDatasetItemsOptionsSchema, 'RunIterateDatasetItemsOptions');
         const datasetClient = this.dataset() as DatasetClient<Data>;
@@ -589,13 +590,13 @@ export class RunClient extends ResourceClient {
         const end = limit ? position + limit : undefined;
 
         const listPage = async (pageOffset: number, pageLimit: number): Promise<PaginatedList<Data>> =>
-            datasetClient.listItems({ ...itemOptions, offset: pageOffset, limit: pageLimit, timeoutSecs });
+            datasetClient.listItems({ ...itemOptions, offset: pageOffset, limit: pageLimit, timeoutSecs, signal });
 
+        let run = await this.get({ timeoutSecs, signal });
         while (true) {
-            const run = await this.get({ timeoutSecs });
             const isFinished =
                 !run || ACT_JOB_TERMINAL_STATUSES.includes(run.status as (typeof ACT_JOB_TERMINAL_STATUSES)[number]);
-            const dataset = await datasetClient.get({ timeoutSecs });
+            const dataset = await datasetClient.get({ timeoutSecs, signal });
             let itemCount = dataset?.itemCount ?? 0;
             if (end !== undefined) itemCount = Math.min(itemCount, end);
 
@@ -608,9 +609,7 @@ export class RunClient extends ResourceClient {
 
             if (end !== undefined && position >= end) return;
             if (isFinished) break;
-            await new Promise((resolve) => {
-                setTimeout(resolve, pollIntervalSecs * 1000);
-            });
+            run = await this.waitForFinish({ waitSecs: pollIntervalSecs, timeoutSecs, signal });
         }
 
         const { clean, skipEmpty, unwind } = itemOptions;
@@ -624,7 +623,8 @@ export class RunClient extends ResourceClient {
             if (
                 isEmpty &&
                 (!(clean || skipEmpty || unwind?.length) ||
-                    (await datasetClient.listItems({ offset: position, limit: 1, timeoutSecs })).items.length === 0)
+                    (await datasetClient.listItems({ offset: position, limit: 1, timeoutSecs, signal })).items
+                        .length === 0)
             ) {
                 return;
             }
@@ -749,6 +749,6 @@ export interface RunIterateDatasetItemsOptions extends PaginationOptions, Timeou
     skipHidden?: boolean;
     /** Field names to unwind. Each array value creates a separate item. */
     unwind?: string[];
-    /** How long to wait between polls while the run has not finished, in seconds. Default is 5. */
+    /** How long to wait for the run to finish between polls, in seconds. Default is 5. */
     pollIntervalSecs?: number;
 }

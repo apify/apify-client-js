@@ -115,6 +115,7 @@ describe('RunClient.iterateDatasetItems', () => {
     test.each([
         { name: 'clean drops items, partly filtered pages', shaping: { clean: true }, chunkSize: 10 },
         { name: 'clean drops items, fully filtered pages', shaping: { clean: true }, chunkSize: 1 },
+        { name: 'skipEmpty drops items, partly filtered pages', shaping: { skipEmpty: true }, chunkSize: 10 },
         { name: 'skipEmpty drops items, fully filtered pages', shaping: { skipEmpty: true }, chunkSize: 1 },
         { name: 'unwind multiplies or drops items, partly filtered pages', shaping: { unwind: true }, chunkSize: 10 },
         { name: 'unwind multiplies or drops items, fully filtered pages', shaping: { unwind: true }, chunkSize: 1 },
@@ -186,17 +187,34 @@ describe('RunClient.iterateDatasetItems', () => {
         expect(itemRequests.map(({ params }) => params?.fields)).toEqual([['row'], ['row'], ['row']]);
     });
 
-    test('waits pollIntervalSecs after each poll of an unfinished run and not after the final one', async () => {
+    test('waits up to pollIntervalSecs for the run to finish after each poll of an unfinished run', async () => {
         const client = new ApifyClient();
-        mockRunApi(client, LAGGING_RUN_STEPS);
-        const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout').mockImplementation(((callback: () => void) => {
-            callback();
-            return 0;
-        }) as any);
+        const { spy } = mockRunApi(client, LAGGING_RUN_STEPS);
+        const runClient = client.run(RUN_ID);
+        const waitWithHolding = runClient.waitForFinish.bind(runClient);
+        // The fake API answers at once, so a real wait would re-read the run until the deadline and skip steps.
+        const waitForFinish = vi
+            .spyOn(runClient, 'waitForFinish')
+            .mockImplementation(async (options) => waitWithHolding({ ...options, waitSecs: 0 }));
 
-        await collect(client.run(RUN_ID).iterateDatasetItems({ pollIntervalSecs: 2 }));
+        const items = await collect(runClient.iterateDatasetItems({ pollIntervalSecs: 2 }));
 
-        expect(setTimeoutSpy.mock.calls.map(([, delay]) => delay)).toEqual([2000, 2000, 2000]);
+        expect(items).toEqual(shapeItems(range(0, 75)));
+        expect(waitForFinish.mock.calls.map(([options]) => options?.waitSecs)).toEqual([2, 2, 2]);
+        const runRequests = spy.mock.calls.map(([request]) => request).filter(({ url }) => url.endsWith(RUN_ID));
+        expect(runRequests.map(({ params }) => params?.waitForFinish)).toEqual([undefined, 0, 0, 0]);
+    });
+
+    test('forwards the signal to every request', async () => {
+        const client = new ApifyClient();
+        const { spy } = mockRunApi(client, LAGGING_RUN_STEPS);
+        const { signal } = new AbortController();
+
+        await collect(
+            client.run(RUN_ID).iterateDatasetItems({ clean: true, chunkSize: 10, pollIntervalSecs: 0, signal }),
+        );
+
+        expect(spy.mock.calls.every(([request]) => request.signal === signal)).toBe(true);
     });
 
     test('rejects unknown options', async () => {
