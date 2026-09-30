@@ -1,4 +1,3 @@
-import type { SetStatusMessageOptions } from '@crawlee/types';
 import { z } from 'zod';
 
 import { ACTOR_ENV_VARS, ME_USER_NAME_PLACEHOLDER } from '@apify/consts';
@@ -680,6 +679,19 @@ export class ApifyClient {
 /**
  * Configuration options for ApifyClient.
  */
+/**
+ * Options for {@apilink ApifyClient.setStatusMessage}. Structurally identical to crawlee's
+ * `SetStatusMessageOptions`, so the client stays a drop-in `StorageClient` implementation
+ * without a dependency on the crawlee packages.
+ */
+export interface SetStatusMessageOptions {
+    /** If true, the status message is marked as the final one for the run. */
+    isStatusMessageTerminal?: boolean;
+
+    /** The log level for the status message. */
+    level?: 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR';
+}
+
 export interface ApifyClientOptions {
     /**
      * URL of the Apify API, with or without the `/v2` version path, which is appended when missing.

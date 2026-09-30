@@ -21,7 +21,6 @@ import { LogLevel } from '@apify/log';
 import { META_ORIGINS } from '@apify/consts';
 import type { Readable } from 'node:stream';
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
-import type { SetStatusMessageOptions } from '@crawlee/types';
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 import type { TypedArray } from 'type-fest';
@@ -613,7 +612,7 @@ export interface ApifyClientCustomHttpClientOptions {
     token?: string;
 }
 
-// @public
+// @public (undocumented)
 export interface ApifyClientOptions {
     baseUrl?: string;
     compression?: HttpCompressionAlgorithm | HttpCompressor;
@@ -3838,6 +3837,12 @@ export class ServerError extends ApifyApiError {
 export interface ServiceUsage {
     // (undocumented)
     [service: string]: UsageItem;
+}
+
+// @public
+export interface SetStatusMessageOptions {
+    isStatusMessageTerminal?: boolean;
+    level?: 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR';
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
