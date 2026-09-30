@@ -1,0 +1,76 @@
+---
+id: error-handling
+title: Error handling
+sidebar_label: Error handling
+description: 'Handle API errors with ApifyApiError and its subclasses, and the argument and response validation errors of the Apify API client for JavaScript.'
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import ApiLink from '@theme/ApiLink';
+
+import ErrorExample from '!!raw-loader!./code/03_error.ts';
+import ErrorSubclassesExample from '!!raw-loader!./code/03_error_subclasses.ts';
+import ErrorTypeExample from '!!raw-loader!./code/03_error_type.ts';
+import MissingResourcesExample from '!!raw-loader!./code/03_missing_resources.ts';
+import InvalidArgumentsExample from '!!raw-loader!./code/03_invalid_arguments.ts';
+import InvalidResponsesExample from '!!raw-loader!./code/03_invalid_responses.ts';
+
+Based on the endpoint, the client automatically extracts the relevant data and returns it in the expected format. Date strings, for instance, are converted to `Date` objects. For details, see [Typed models](./11_typed_models.mdx). If an error occurs, the client throws an <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink>, which wraps the plain JSON errors returned by the API and enriches them with other context for easier debugging.
+
+<CodeBlock className="language-ts">
+    {ErrorExample}
+</CodeBlock>
+
+## Error subclasses
+
+The client throws the <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> subclass that matches the HTTP status code of the response, so a `catch` block can branch on `instanceof` instead of comparing status codes:
+
+| Status | Subclass |
+| --- | --- |
+| 400 | <ApiLink to="class/InvalidRequestError">`InvalidRequestError`</ApiLink> |
+| 401 | <ApiLink to="class/UnauthorizedError">`UnauthorizedError`</ApiLink> |
+| 403 | <ApiLink to="class/ForbiddenError">`ForbiddenError`</ApiLink> |
+| 404 | <ApiLink to="class/NotFoundError">`NotFoundError`</ApiLink> |
+| 409 | <ApiLink to="class/ConflictError">`ConflictError`</ApiLink> |
+| 429 | <ApiLink to="class/RateLimitError">`RateLimitError`</ApiLink> |
+| 5xx | <ApiLink to="class/ServerError">`ServerError`</ApiLink> |
+
+Any other status code throws a plain `ApifyApiError`. Every subclass extends `ApifyApiError`, so `instanceof ApifyApiError` still matches all of them. Check for a specific subclass when you want to react differently to, for example, a missing resource or a rate limit:
+
+<CodeBlock className="language-ts">
+    {ErrorSubclassesExample}
+</CodeBlock>
+
+Errors with the same status code differ in `type`, the machine-readable identifier the API returns. The field is typed with the known values, so your editor autocompletes them:
+
+<CodeBlock className="language-ts">
+    {ErrorTypeExample}
+</CodeBlock>
+
+## Missing resources
+
+When you address a resource by ID, `get()` resolves to `undefined` on a 404 instead of throwing, and `delete()` resolves without error. <ApiLink to="class/KeyValueStoreClient#getRecord">`getRecord()`</ApiLink> and <ApiLink to="class/RequestQueueClient#getRequest">`getRequest()`</ApiLink> do the same for a missing record or request, <ApiLink to="class/KeyValueStoreClient#recordExists">`recordExists()`</ApiLink> answers `false`, and `lastRun().get()` resolves to `undefined` for an Actor or task with no matching run.
+
+Everywhere else a 404 throws a <ApiLink to="class/NotFoundError">`NotFoundError`</ApiLink>. That covers clients chained off a run or build without an ID, such as `client.run('run-id').dataset()` or `client.build('build-id').log()`, where the missing resource may be the parent rather than the sub-resource. It also covers fixed sub-paths such as `getStatistics()`, `monthlyUsage()`, `limits()`, `getLog()`, `getInput()` and `test()`, where a 404 means the parent is gone.
+
+<CodeBlock className="language-ts">
+    {MissingResourcesExample}
+</CodeBlock>
+
+## Invalid arguments
+
+Before sending a request, the client validates the arguments you passed. When a value doesn't match the expected shape, the client throws an <ApiLink to="class/ArgumentValidationError">`ArgumentValidationError`</ApiLink> without reaching the API. Its `message` names the offending field and the value it received. For programmatic inspection, `issues` carries the structured [zod](https://zod.dev) issues and `cause` carries the original `ZodError`.
+
+<CodeBlock className="language-ts">
+    {InvalidArgumentsExample}
+</CodeBlock>
+
+## Invalid responses
+
+The client validates every response it turns into a typed value against the Apify OpenAPI specification. A response that doesn't match throws a <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink>. Its `message` names the request and every offending field, and `issues` and `cause` carry the structured detail, the same way `ArgumentValidationError` does. For what the validation checks and what it lets through, see [Response validation](./11_typed_models.mdx#response-validation).
+
+<CodeBlock className="language-ts">
+    {InvalidResponsesExample}
+</CodeBlock>
+
+For the full list of error classes, see the <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> reference.

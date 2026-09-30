@@ -1,0 +1,39 @@
+---
+id: retries
+title: Retries
+sidebar_label: Retries
+description: 'Configure automatic retries with exponential backoff for failed requests in the Apify API client for JavaScript.'
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import ApiLink from '@theme/ApiLink';
+
+import RetriesExample from '!!raw-loader!./code/04_retries.ts';
+
+The Apify client automatically retries requests that fail due to:
+
+- Network errors
+- Internal errors in the Apify API (HTTP status codes 500 and above)
+- Rate limit errors (HTTP status code 429)
+
+By default, the client retries a failed request up to 8 times. The retry intervals use an exponential backoff strategy:
+
+- The first retry occurs after 500 to 1,000 milliseconds.
+- The second retry occurs after 1,000 to 2,000 milliseconds, and so on.
+
+The delay is spread over a random factor between one and two, so clients that failed together don't come back at the API in lockstep.
+
+You can customize this behavior using the following options in the <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor:
+
+- `maxRetries`: Defines the maximum number of retry attempts.
+- `minDelayBetweenRetriesMillis`: Sets the minimum delay between retries in milliseconds.
+
+Retries with exponential backoff help reduce the load on the server and increase the chances of a successful request.
+
+<CodeBlock className="language-ts">
+    {RetriesExample}
+</CodeBlock>
+
+When the retries are exhausted, the client throws the error of the final attempt. Which transport errors count as retryable is decided by the HTTP client the requests go through. The built-in axios client retries every network failure, timeouts included. A custom client classifies its own errors. For details, see [HTTP clients](./09_custom_http_clients.mdx).
+
+A request that times out is retried the same way, with a longer timeout on each attempt. For how the timeouts are set, see [Timeouts](./10_timeouts.mdx).

@@ -1,0 +1,32 @@
+---
+id: convenience-methods
+title: Convenience methods
+sidebar_label: Convenience methods
+description: 'Use call(), waitForFinish(), and other high-level methods of the Apify API client for JavaScript for running Actors and accessing data.'
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import ApiLink from '@theme/ApiLink';
+
+import CallExample from '!!raw-loader!./code/06_call.ts';
+
+The Apify client provides several convenience methods to handle actions that the API alone can't perform efficiently, such as waiting for an Actor run to finish without running into network timeouts:
+
+- <ApiLink to="class/ActorClient#call">`ActorClient.call()`</ApiLink> - Starts an Actor and waits for it to finish, handling network timeouts internally. Waits indefinitely by default, or up to the specified `waitSecs`.
+- <ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink> - Starts an Actor and immediately returns the run object. Its `waitForFinish` option asks the API to hold the response for up to 60 seconds.
+- <ApiLink to="class/RunClient#waitForFinish">`RunClient.waitForFinish()`</ApiLink> - Waits for an already started run to reach a terminal status.
+
+When `waitSecs` runs out before the run finishes, the returned promise resolves to a run object with status `READY` or `RUNNING`, which doesn't contain the Actor run output. Tasks have the same methods on <ApiLink to="class/TaskClient">`TaskClient`</ApiLink>, and builds have <ApiLink to="class/BuildClient#waitForFinish">`BuildClient.waitForFinish()`</ApiLink>.
+
+<CodeBlock className="language-ts">
+    {CallExample}
+</CodeBlock>
+
+:::tip
+The `call()` method polls internally and may take a long time for long-running Actors. Use `start()` and `waitForFinish()` separately if you need more control over the waiting behavior.
+:::
+
+Additionally, storage-related resources offer flexible options for data retrieval:
+
+- [Key-value store](https://docs.apify.com/platform/storage/key-value-store) records can be retrieved as parsed values, buffers, or streams.
+- [Dataset](https://docs.apify.com/platform/storage/dataset) items can be fetched as individual objects, iterated asynchronously, or downloaded as serialized data in formats such as CSV or XLSX.

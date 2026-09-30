@@ -1,0 +1,29 @@
+---
+id: single-and-collection-clients
+title: Single and collection clients
+sidebar_label: Single and collection clients
+description: 'Understand the two types of resource clients in the Apify API client for JavaScript, single-resource and collection clients.'
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import ApiLink from '@theme/ApiLink';
+
+import CollectionExample from '!!raw-loader!./code/01_collection.ts';
+import SingleExample from '!!raw-loader!./code/01_single.ts';
+
+The Apify client provides two types of resource clients: single-resource clients for managing an individual resource, and collection clients for listing or creating resources.
+
+- <ApiLink to="class/ActorClient">`ActorClient`</ApiLink> - Manages a single resource.
+- <ApiLink to="class/ActorCollectionClient">`ActorCollectionClient`</ApiLink> - Manages a collection of resources.
+
+<CodeBlock className="language-ts">
+    {CollectionExample}
+</CodeBlock>
+
+The resource ID can be the resource's `id` or a combination of `username/resource-name`.
+
+<CodeBlock className="language-ts">
+    {SingleExample}
+</CodeBlock>
+
+Every API resource follows the same pattern: `client.datasets()` returns a collection client, and `client.dataset(id)` a client for one dataset.

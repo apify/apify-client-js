@@ -1,0 +1,36 @@
+---
+id: handle-webhooks
+title: Handle webhooks
+sidebar_label: Handle webhooks
+description: 'Create a webhook for Actor runs and process its notifications with the Apify API client for JavaScript.'
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import ApiLink from '@theme/ApiLink';
+
+import CreateWebhookExample from '!!raw-loader!./code/04_create_webhook.ts';
+import WebhookServerExample from '!!raw-loader!./code/04_webhook_server.ts';
+
+[Webhooks](https://docs.apify.com/platform/integrations/webhooks) notify your server about events on the Apify platform, such as an Actor run that finished successfully. The notification carries the run object, including the ID of its default dataset, so your server can process the results as soon as they're ready.
+
+## Create a webhook
+
+To create a webhook, call <ApiLink to="class/WebhookCollectionClient#create">`create()`</ApiLink> on the webhook collection client. The `condition` selects the Actor whose runs trigger the webhook, and `eventTypes` the events it reacts to:
+
+<CodeBlock className="language-ts">
+    {CreateWebhookExample}
+</CodeBlock>
+
+## Receive the notifications
+
+The server that receives the notifications can be any HTTP server. This example uses [Express](https://expressjs.com/), so install it alongside the client:
+
+```bash
+npm i apify-client express
+```
+
+The server reads the dataset ID from the payload and saves the run's items to a local file:
+
+<CodeBlock className="language-ts">
+    {WebhookServerExample}
+</CodeBlock>

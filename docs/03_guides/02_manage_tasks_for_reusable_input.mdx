@@ -1,0 +1,18 @@
+---
+id: manage-tasks-for-reusable-input
+title: Manage tasks for reusable input
+sidebar_label: Manage tasks for reusable input
+description: 'Create and run tasks with reusable input configurations with the Apify API client for JavaScript.'
+---
+
+import CodeBlock from '@theme/CodeBlock';
+
+import TasksExample from '!!raw-loader!./code/02_tasks.ts';
+
+When you need to run multiple inputs with the same Actor, the most convenient approach is to create multiple [tasks](https://docs.apify.com/platform/actors/running/tasks), each with a different input configuration. Task inputs are stored on the Apify platform when the task is created, so you can reuse them easily.
+
+The following example shows how to create tasks for the `apify/instagram-hashtag-scraper` Actor with different inputs and run them in parallel:
+
+<CodeBlock className="language-ts">
+    {TasksExample}
+</CodeBlock>

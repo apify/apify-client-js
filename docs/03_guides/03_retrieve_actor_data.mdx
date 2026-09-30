@@ -1,0 +1,18 @@
+---
+id: retrieve-actor-data
+title: Retrieve Actor data
+sidebar_label: Retrieve Actor data
+description: 'Fetch, paginate, and merge datasets from Actor runs with the Apify API client for JavaScript.'
+---
+
+import CodeBlock from '@theme/CodeBlock';
+
+import RetrieveExample from '!!raw-loader!./code/03_retrieve.ts';
+
+Actor output data is stored in [datasets](https://docs.apify.com/platform/storage/dataset), which can be retrieved from individual Actor runs. Dataset items support [pagination](../02_concepts/07_pagination.mdx) for efficient retrieval, and multiple datasets can be merged into a single dataset for further analysis. You can then export the merged dataset into formats such as CSV, JSON, XLSX, or XML. [Integrations](https://docs.apify.com/platform/integrations) can automate such data workflows as well.
+
+The following example shows how to fetch the datasets of an Actor's runs, read their items, and merge them into a single dataset:
+
+<CodeBlock className="language-ts">
+    {RetrieveExample}
+</CodeBlock>

@@ -14,8 +14,8 @@
         "docusaurus": "docusaurus",
         "lint": "pnpm lint:md",
         "lint:fix": "pnpm lint:md:fix",
-        "lint:md": "cd .. && markdownlint 'website/**/*.md' 'docs/**/*.md' && cd website",
-        "lint:md:fix": "cd .. && markdownlint 'website/**/*.md' 'docs/**/*.md' --fix && cd website"
+        "lint:md": "cd .. && markdownlint 'website/**/*.md' 'docs/**/*.md' 'docs/**/*.mdx' && cd website",
+        "lint:md:fix": "cd .. && markdownlint 'website/**/*.md' 'docs/**/*.md' 'docs/**/*.mdx' --fix && cd website"
     },
     "devDependencies": {
         "@apify/tsconfig": "^0.2.0",
@@ -36,6 +36,7 @@
         "clsx": "^2.1.1",
         "docusaurus-gtm-plugin": "^0.0.2",
         "prop-types": "^15.8.1",
+        "raw-loader": "^4.0.2",
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
         "unist-util-visit": "^5.1.0"
