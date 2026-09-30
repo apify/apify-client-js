@@ -5,7 +5,7 @@ import { sleep } from './utils.js';
 
 /**
  * Error types the API rejects a run start with while the account has no free memory or concurrent-run slot for it.
- * Both clear once other runs of the account finish.
+ * Both clear as other runs or builds finish.
  */
 export const RESOURCE_LIMIT_ERROR_TYPES: ReadonlySet<string> = new Set([
     'actor-memory-limit-exceeded',

@@ -684,12 +684,14 @@ export interface ActorStartOptions extends TimeoutOptions {
 
     /**
      * Retry the start while the account lacks the resources for the run, that is while the API rejects it with an
-     * `ApifyApiError` of type `actor-memory-limit-exceeded` or `concurrent-runs-limit-exceeded`. Both clear once
-     * other runs of the account finish. The start is retried every 10 seconds, and any other error is thrown right
-     * away.
+     * `ApifyApiError` of type `actor-memory-limit-exceeded` or `concurrent-runs-limit-exceeded`. Both clear as
+     * other runs or builds finish. The start is retried every 10 seconds, and any other error is thrown right away.
      *
      * `true` retries until the run starts. A number stops retrying after that many seconds and throws the last
      * error. Omitted or `false`, the first rejection is thrown.
+     *
+     * A run that requests more memory than the whole memory limit of the account is rejected with
+     * `actor-memory-limit-exceeded` as well and never starts, so `true` retries it forever.
      *
      * A `Readable` input can't be sent twice, so its start is never retried and the first rejection is thrown.
      */
