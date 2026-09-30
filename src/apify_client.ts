@@ -677,9 +677,6 @@ export class ApifyClient {
 }
 
 /**
- * Configuration options for ApifyClient.
- */
-/**
  * Options for {@apilink ApifyClient.setStatusMessage}. Structurally identical to crawlee's
  * `SetStatusMessageOptions`, so the client stays a drop-in `StorageClient` implementation
  * without a dependency on the crawlee packages.
@@ -692,6 +689,9 @@ export interface SetStatusMessageOptions {
     level?: 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR';
 }
 
+/**
+ * Configuration options for ApifyClient.
+ */
 export interface ApifyClientOptions {
     /**
      * URL of the Apify API, with or without the `/v2` version path, which is appended when missing.

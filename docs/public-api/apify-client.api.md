@@ -612,7 +612,7 @@ export interface ApifyClientCustomHttpClientOptions {
     token?: string;
 }
 
-// @public (undocumented)
+// @public
 export interface ApifyClientOptions {
     baseUrl?: string;
     compression?: HttpCompressionAlgorithm | HttpCompressor;
