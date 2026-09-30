@@ -14,7 +14,7 @@ on:
                 default: latest
                 options:
                     - latest
-                    - beta
+                    - next-v2
 
 permissions:
     id-token: write # Required for OIDC
@@ -35,8 +35,8 @@ jobs:
                   registry-url: 'https://registry.npmjs.org'
             - name: Install pnpm and dependencies
               uses: apify/actions/pnpm-install@v1.6.1
-            - name: Check version consistency and bump pre-release version (beta only)
-              if: ${{ inputs.tag == 'beta' }}
+            - name: Check version consistency and bump pre-release version (pre-release tags only)
+              if: ${{ inputs.tag != 'latest' }}
               run: node ./.github/scripts/before-beta-release.js
             - name: Build module
               run: pnpm build

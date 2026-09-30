@@ -1,10 +1,10 @@
 name: Create a pre-release
 
 on:
-    # Push to master will deploy a beta version
+    # Push to 2.x will deploy a 2.x maintenance pre-release under the next-v2 dist-tag
     push:
         branches:
-            - master
+            - 2.x
         tags-ignore:
             - '**' # Ignore all tags to prevent duplicate builds when tags are pushed.
 
@@ -87,4 +87,4 @@ jobs:
               uses: apify/actions/execute-workflow@v1.6.1
               with:
                   workflow: publish_to_npm.yaml
-                  inputs: '{ "ref": "${{ needs.update_changelog.outputs.changelog_commitish }}", "tag": "beta" }'
+                  inputs: '{ "ref": "${{ needs.update_changelog.outputs.changelog_commitish }}", "tag": "next-v2" }'

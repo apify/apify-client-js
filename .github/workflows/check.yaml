@@ -5,10 +5,10 @@ name: Check
 on:
     pull_request:
 
-    # Push to master will trigger code checks
+    # Push to 2.x will trigger code checks
     push:
         branches:
-            - master
+            - 2.x
         tags-ignore:
             - '**' # Ignore all tags to prevent duplicate builds when tags are pushed.
 
