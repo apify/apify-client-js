@@ -594,8 +594,8 @@ export type ActorUpdateOptions = Partial<
  *
  * A plain object or an array of plain objects, serialized into the request body, or raw bytes
  * (a `Uint8Array` such as a `Buffer`, or an `ArrayBuffer`) sent as they are, typically with a
- * `contentType`. An input typed as an `interface` needs a `type` alias or a spread (`{ ...input }`)
- * to compile.
+ * `contentType`. An input typed as an `interface` or a class needs a spread (`{ ...input }`), or for
+ * an interface a `type` alias, to compile.
  */
 export type ActorInput = Dictionary | readonly Dictionary[] | Uint8Array | ArrayBuffer;
 

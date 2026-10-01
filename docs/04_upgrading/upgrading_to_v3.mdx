@@ -398,7 +398,7 @@ The input is now typed `ActorInput`, which accepts a plain object, an array of p
 + await client.actor('my-actor').call(undefined, { memory: 1024 }); // v3
 ```
 
-An input declared as an `interface` stops compiling as well, since `ActorInput` needs an index signature and interfaces don't get one implicitly. Declare the input type as a `type` alias, or spread the value into a new object:
+An input declared as an `interface` or a class stops compiling as well, since `ActorInput` needs an index signature and neither gets one implicitly. Declare the input type as a `type` alias, or spread the value into a new object:
 
 ```diff
 - interface MyInput { url: string } // v2
