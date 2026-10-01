@@ -22,6 +22,19 @@ import {
     SCANNED_COUNT,
 } from '../utils.js';
 
+/**
+ * Supported formats for downloading dataset items.
+ */
+export enum DownloadItemsFormat {
+    JSON = 'json',
+    JSONL = 'jsonl',
+    XML = 'xml',
+    HTML = 'html',
+    CSV = 'csv',
+    XLSX = 'xlsx',
+    RSS = 'rss',
+}
+
 // A predicate, not a `z.object()` arm, which would walk and copy every key of every pushed item.
 const itemSchema = z.custom<object>(isNonArrayObject, 'Expected an object');
 const listItemsOptionsSchema = z.strictObject({
@@ -70,6 +83,7 @@ const createItemsPublicUrlOptionsSchema = z.strictObject({
     desc: z.boolean().optional(),
     flatten: z.array(z.string()).optional(),
     fields: z.array(z.string()).optional(),
+    format: z.enum(DownloadItemsFormat).optional(),
     omit: z.array(z.string()).optional(),
     limit: z.number().min(0).optional(),
     offset: z.number().min(0).optional(),
@@ -513,20 +527,8 @@ export interface DatasetClientCreateItemsUrlOptions extends Omit<
     DatasetClientListItemOptions,
     'chunkSize' | 'signature'
 > {
+    format?: DownloadItemsFormat;
     expiresInSecs?: number;
-}
-
-/**
- * Supported formats for downloading dataset items.
- */
-export enum DownloadItemsFormat {
-    JSON = 'json',
-    JSONL = 'jsonl',
-    XML = 'xml',
-    HTML = 'html',
-    CSV = 'csv',
-    XLSX = 'xlsx',
-    RSS = 'rss',
 }
 
 const validItemFormats = [...new Set(Object.values(DownloadItemsFormat).map((item) => item.toLowerCase()))];

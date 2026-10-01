@@ -472,12 +472,15 @@ describe('Dataset methods', () => {
 
             it('includes provided options (e.g., limit and prefix) as query parameters', async () => {
                 const datasetId = 'id-with-secret-key';
-                const res = await client.dataset(datasetId).createItemsPublicUrl({ desc: true, limit: 10, offset: 5 });
+                const res = await client
+                    .dataset(datasetId)
+                    .createItemsPublicUrl({ desc: true, limit: 10, offset: 5, format: DownloadItemsFormat.CSV });
                 const itemsPublicUrl = new URL(res);
 
                 expect(itemsPublicUrl.searchParams.get('desc')).toBe('true');
                 expect(itemsPublicUrl.searchParams.get('limit')).toBe('10');
                 expect(itemsPublicUrl.searchParams.get('offset')).toBe('5');
+                expect(itemsPublicUrl.searchParams.get('format')).toBe('csv');
                 expect(itemsPublicUrl.searchParams.get('signature')).toBeDefined();
                 expect(itemsPublicUrl.pathname).toBe(`/v2/datasets/${datasetId}/items`);
             });
