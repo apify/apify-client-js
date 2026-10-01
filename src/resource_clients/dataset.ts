@@ -333,6 +333,7 @@ export class DatasetClient<
      * @param options - URL generation options (extends all options from {@link listItems})
      * @param options.expiresInSecs - Number of seconds until the signed URL expires. If omitted, the URL never expires.
      * @param options.fields - Array of field names to include in the response.
+     * @param options.format - Format of the items served by the URL. Defaults to `json`.
      * @param options.limit - Maximum number of items to return.
      * @param options.offset - Number of items to skip.
      * @returns A public URL string for accessing the dataset items
@@ -363,6 +364,7 @@ export class DatasetClient<
                 desc: ow.optional.boolean,
                 flatten: ow.optional.array.ofType(ow.string),
                 fields: ow.optional.array.ofType(ow.string),
+                format: ow.optional.string.oneOf(validItemFormats),
                 omit: ow.optional.array.ofType(ow.string),
                 limit: ow.optional.number.not.negative,
                 offset: ow.optional.number.not.negative,
@@ -504,10 +506,15 @@ export interface DatasetClientListItemOptions extends PaginationOptions {
 /**
  * Options for creating a public URL to access dataset items.
  *
- * Extends {@link DatasetClientListItemOptions} with URL expiration control.
+ * Extends {@link DatasetClientListItemOptions} with output format and URL expiration control.
  * @since Added in 2.16.0
  */
 export interface DatasetClientCreateItemsUrlOptions extends DatasetClientListItemOptions {
+    /**
+     * Format of the items served by the URL. Defaults to `json`.
+     * @since Added in 2.26.0
+     */
+    format?: `${DownloadItemsFormat}`;
     expiresInSecs?: number;
 }
 
