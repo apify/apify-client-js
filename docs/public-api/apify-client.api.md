@@ -201,7 +201,7 @@ export interface ActorExampleRunInput extends GeneratedExampleRunInput {
 }
 
 // @public
-export type ActorInput = Dictionary | Dictionary[] | Uint8Array;
+export type ActorInput = Dictionary | readonly Dictionary[] | Uint8Array | ArrayBuffer;
 
 // @public
 export interface ActorLastRunOptions {

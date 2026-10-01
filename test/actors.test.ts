@@ -248,8 +248,10 @@ describe('Actor methods', () => {
             expectTypeOf<{ url: string }>().toExtend<ActorInput>();
             expectTypeOf<AliasInput>().toExtend<ActorInput>();
             expectTypeOf<AliasInput[]>().toExtend<ActorInput>();
+            expectTypeOf<readonly AliasInput[]>().toExtend<ActorInput>();
             expectTypeOf<Buffer>().toExtend<ActorInput>();
             expectTypeOf<Uint8Array>().toExtend<ActorInput>();
+            expectTypeOf<ArrayBuffer>().toExtend<ActorInput>();
 
             expectTypeOf<InterfaceInput>().not.toExtend<ActorInput>();
             expectTypeOf<Date>().not.toExtend<ActorInput>();
@@ -257,6 +259,7 @@ describe('Actor methods', () => {
             expectTypeOf<Set<unknown>>().not.toExtend<ActorInput>();
             expectTypeOf<() => void>().not.toExtend<ActorInput>();
             expectTypeOf<string>().not.toExtend<ActorInput>();
+            expectTypeOf<string[]>().not.toExtend<ActorInput>();
         });
 
         test('start() works with functions in input', async () => {

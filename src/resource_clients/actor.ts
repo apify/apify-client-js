@@ -589,11 +589,12 @@ export type ActorUpdateOptions = Partial<
  * Input for an Actor run, as taken by {@link ActorClient.start}, {@link ActorClient.call},
  * {@link ActorClient.validateInput} and {@link RunClient.metamorph}.
  *
- * A plain object or an array of plain objects, serialized into the request body, or raw bytes sent
- * as they are, typically with a `contentType`. An input typed as an `interface` needs a `type` alias
- * or a spread (`{ ...input }`) to compile.
+ * A plain object or an array of plain objects, serialized into the request body, or raw bytes
+ * (a `Uint8Array` such as a `Buffer`, or an `ArrayBuffer`) sent as they are, typically with a
+ * `contentType`. An input typed as an `interface` needs a `type` alias or a spread (`{ ...input }`)
+ * to compile.
  */
-export type ActorInput = Dictionary | Dictionary[] | Uint8Array;
+export type ActorInput = Dictionary | readonly Dictionary[] | Uint8Array | ArrayBuffer;
 
 export interface ActorStartOptions extends TimeoutOptions {
     /**
