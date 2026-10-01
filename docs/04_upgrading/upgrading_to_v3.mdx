@@ -9,6 +9,22 @@ import ApiLink from '@theme/ApiLink';
 
 This page summarizes the breaking changes when upgrading from v2 to v3 of `apify-client`.
 
+Most projects only need to check these:
+
+- The client needs [Node.js 22](#nodejs-22-or-newer-is-required) and [TypeScript 5.9](#typescript-59-or-newer-is-required), and it ships as [pure ESM](#the-package-is-now-pure-esm).
+- Calls to an ID that doesn't exist resolve to `undefined` as before, but some [404s now throw](#a-404-throws-where-it-used-to-resolve-to-undefined).
+- The client-wide `timeoutSecs` is replaced by [timeout tiers](#timeouts-are-configured-per-tier), and the run timeout of `start()` and `call()` is renamed to `runTimeoutSecs`.
+- The [published types](#published-types-now-follow-the-openapi-specification) follow the OpenAPI specification, so expect new null checks.
+- Responses are [validated](#responses-are-validated-against-the-openapi-specification), and a response that doesn't match the specification throws.
+
+## Node.js 22 or newer is required
+
+The client supports Node.js 22 and newer. Node.js 18 and 20 are no longer supported, and `package.json` declares `"engines": { "node": ">=22.0.0" }`.
+
+## TypeScript 5.9 or newer is required
+
+The published types build on `type-fest` 5, which supports TypeScript 5.9 and newer. v2 used `type-fest` 4, which worked with TypeScript 5.1. Plain JavaScript projects are unaffected.
+
 ## The package is now pure ESM
 
 `apify-client` ships as an ES module. The CommonJS build is gone, along with the `dist/index.mjs` wrapper and the `require` condition in `exports`, so `import` is the supported way to load the client.
@@ -20,11 +36,20 @@ This page summarizes the breaking changes when upgrading from v2 to v3 of `apify
 
 A CommonJS project can keep calling `require('apify-client')`: the client has no top-level `await`, and Node.js 22.12 and newer load an ES module through `require()` directly. On Node.js 22.0 to 22.11, `require()` of an ES module is still behind the `--experimental-require-module` flag, so use `import` there.
 
-The browser bundle at `dist/bundle.js` is now an ES module instead of UMD, so it no longer defines an `Apify` global. Importing it, whether through a bundler or the `apify-client/browser` subpath, is unchanged. A classic `<script>` tag that read `Apify.ApifyClient` off the global has to become a `<script type="module">` that imports it instead. For details, see [Bundled environments](../02_concepts/13_bundled_environments.mdx).
+A TypeScript project that compiles to CommonJS needs `module` set to `nodenext` or `node20` to import the client. Under `node16`, the import fails with TS1479.
 
-## TypeScript 5.9 or newer is required
+The browser bundle at `dist/bundle.js` is now an ES module instead of UMD, so it no longer defines an `Apify` global. Importing it, whether through a bundler or the `apify-client/browser` subpath, is unchanged. A classic `<script>` tag that read `Apify.ApifyClient` off the global has to become a module script that imports it:
 
-The published types build on `type-fest` 5, which needs TypeScript 5.9 or newer. v2 used `type-fest` 4, which worked with TypeScript 5.1. Plain JavaScript projects are unaffected.
+```diff
+- <script src="apify-client/dist/bundle.js"></script>
+- <script>const client = new Apify.ApifyClient();</script>
++ <script type="module">
++     import { ApifyClient } from './apify-client/dist/bundle.js';
++     const client = new ApifyClient();
++ </script>
+```
+
+For bundler setups, see [Browser bundle](../02_concepts/13_bundled_environments.mdx#browser-bundle).
 
 ## Argument validation switched from `ow` to `zod`
 
@@ -32,11 +57,11 @@ The client now validates the arguments you pass with [zod](https://zod.dev) inst
 
 ### A new error type
 
-Invalid arguments now throw an <ApiLink to="class/ArgumentValidationError">`ArgumentValidationError`</ApiLink> (exported from `apify-client`), not `ow`'s `ArgumentError`. Its message is a plain, human-readable sentence naming the offending field and the value it received, rather than `ow`'s JSON dump:
+Invalid arguments now throw an <ApiLink to="class/ArgumentValidationError">`ArgumentValidationError`</ApiLink> (exported from `apify-client`), not `ow`'s `ArgumentError`. The message is worded differently, and names the options type the field belongs to:
 
 ```diff
-- Expected property string `countryCode` to match `/^[A-Z]{2}$/`, got `CZE` in object   // v2 (ow)
-+ Invalid string: must match pattern /^[A-Z]{2}$/ at `countryCode`, got `CZE`            // v3 (zod)
+- Expected property `limit` to be of type `number` but received type `string` in object `options`        // v2 (ow)
++ Invalid input: expected number, received the string `ten` at `limit` in `DatasetClientListItemOptions`  // v3 (zod)
 ```
 
 The structured zod issues are available on `issues`, and the original `ZodError` on `cause`:
@@ -63,28 +88,32 @@ If you were matching on `ow`'s `ArgumentError`, switch to `ArgumentValidationErr
 `ow`'s object check let arrays and functions through wherever a plain object was expected. Zod's does not, so passing one now throws instead of reaching the API with a nonsensical body. This affects `update()` / `create()` fields, `TaskClient.start()` / `call()` input, the storage `schema` option, `DatasetClient.pushItems()` items, and `RequestQueueClient.addRequest()` / `batchAddRequests()` requests.
 
 ```js
-// Now throws: Invalid input: expected object, received array
+// Now throws: Invalid input: expected an object, received array
 await client.actor('my-actor').update([{ name: 'my-actor' }]);
 ```
 
 `Date`, `Map`, `Set` and other class instances still pass as objects, same as under `ow`.
+
+### `pushItems()` no longer takes an array of strings
+
+<ApiLink to="class/DatasetClient#pushItems">`DatasetClient.pushItems()`</ApiLink> takes an object, an array of objects, or a string holding either one as JSON. v2 also typed and accepted an array of strings, which the API always rejected, so passing one now fails at compile time and throws an `ArgumentValidationError` before any request is sent. Parse the strings into objects first.
 
 ### `Infinity` and invalid `Date`s are now rejected
 
 `ow` only checked the type, so `Infinity` passed as a number and an invalid `Date` passed as a date. Zod additionally requires a *finite* number and a *valid* date, so both now throw:
 
 ```js
-// Now throws: Invalid input: expected a finite number at `runTimeoutSecs`, got `Infinity`
+// Now throws: Invalid input: expected a finite number at `runTimeoutSecs`, got `Infinity` in `ActorCallOptions`
 await client.actor('my-actor').call(undefined, { runTimeoutSecs: Infinity });
 
-// Now throws: Invalid input: expected a valid date at `startedBefore`
-//             Invalid input: expected string, received Date at `startedBefore`
+// Now throws: Invalid input: expected a valid date at `startedBefore` in `RunCollectionListOptions`
+//             Invalid input: expected string, received Date at `startedBefore` in `RunCollectionListOptions`
 await client.actor('my-actor').runs().list({ startedBefore: new Date('nonsense') });
 ```
 
 The second example reports a line per arm, because `startedBefore` accepts either a `Date` or a string.
 
-This affects numeric options such as `waitSecs`, `runTimeoutSecs` and `memory`, and date options such as `startedBefore` / `startedAfter`. `KeyValueStoreClient.setRecord()` rejects `NaN` and `Infinity` as a record value too, since `JSON.stringify()` turns both into `null`.
+This affects numeric options such as `waitSecs`, `runTimeoutSecs` and `memory`, and date options such as `startedBefore` / `startedAfter`. `KeyValueStoreClient.setRecord()` now rejects `Infinity` as a record value too, since `JSON.stringify()` turns it into `null`. `NaN` was already rejected in v2.
 
 ### A few always-rejected options are gone from the types
 
@@ -96,14 +125,13 @@ The reverse also happened: `chunkSize` now works on every `list()` method that t
 
 An error response from the API now throws the <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> subclass matching its HTTP status code: <ApiLink to="class/InvalidRequestError">`InvalidRequestError`</ApiLink> (400), <ApiLink to="class/UnauthorizedError">`UnauthorizedError`</ApiLink> (401), <ApiLink to="class/ForbiddenError">`ForbiddenError`</ApiLink> (403), <ApiLink to="class/NotFoundError">`NotFoundError`</ApiLink> (404), <ApiLink to="class/ConflictError">`ConflictError`</ApiLink> (409), <ApiLink to="class/RateLimitError">`RateLimitError`</ApiLink> (429) or <ApiLink to="class/ServerError">`ServerError`</ApiLink> (5xx). Any other status code still throws a plain `ApifyApiError`. Every subclass extends `ApifyApiError`, so existing `instanceof ApifyApiError` checks keep working. For details, see [Error subclasses](../02_concepts/03_error_handling.mdx#error-subclasses).
 
-Two things change as a result:
-
-- `error.name`, and with it the first line of the printed stack, now carries the subclass name, such as `NotFoundError: Actor task was not found` instead of `ApifyApiError: Actor task was not found`. Log tooling that matches on the `ApifyApiError` name has to match the subclass names as well.
-- Methods that swallow a 404 response, such as `get()` returning `undefined` or `delete()` succeeding silently, now swallow every 404, whatever its `type`. In v2 they swallowed only the `record-not-found` and `record-or-token-not-found` types and threw for any other 404. The same helper backs <ApiLink to="class/RunClient#waitForFinish">`waitForFinish()`</ApiLink> and <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, which read a swallowed 404 as "the run is not visible yet", so a 404 that used to throw now keeps them polling until `waitSecs` runs out.
+As a result, `error.name`, and with it the first line of the printed stack, now carries the subclass name, such as `NotFoundError: Actor task was not found` instead of `ApifyApiError: Actor task was not found`. Log tooling that matches on the `ApifyApiError` name has to match the subclass names as well.
 
 ## A 404 throws where it used to resolve to `undefined`
 
-Fetching a resource by ID still resolves to `undefined` when the API answers 404, and `delete()` on such a client still resolves without error. The change affects endpoints where a 404 can't be pinned to one resource: the missing thing may be the parent or the sub-resource, and the response doesn't say which. Those now throw an <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> with `statusCode` 404 instead of hiding the cause behind `undefined`.
+Fetching a resource by ID still resolves to `undefined` when the API answers 404, and `delete()` on such a client still resolves without error. These methods now swallow every 404, whatever its `type`. In v2 they swallowed only the `record-not-found` and `record-or-token-not-found` types, and any 404 to a `HEAD` request, and threw for any other 404. The same helper backs <ApiLink to="class/RunClient#waitForFinish">`waitForFinish()`</ApiLink> and <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, which read a swallowed 404 as "the run is not visible yet", so a 404 that used to throw now keeps them polling until `waitSecs` runs out.
+
+The other change affects endpoints where a 404 can't be pinned to one resource: the missing thing may be the parent or the sub-resource, and the response doesn't say which. Those now throw an <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> with `statusCode` 404 instead of hiding the cause behind `undefined`.
 
 ```js
 import { ApifyApiError, ApifyClient } from 'apify-client';
@@ -124,7 +152,7 @@ Affected calls:
 - Clients chained off a run or build without an ID: `run.dataset()`, `run.keyValueStore()`, `run.requestQueue()`, `run.log()` and `build.log()`. Their `get()` and `delete()` throw on a 404, and so does `log().get()`. `client.log(id).get()` keeps resolving to `undefined`.
 - Singleton endpoints at a fixed path under a resource: <ApiLink to="class/DatasetClient#getStatistics">`DatasetClient.getStatistics()`</ApiLink>, <ApiLink to="class/UserClient#monthlyUsage">`UserClient.monthlyUsage()`</ApiLink>, <ApiLink to="class/UserClient#limits">`UserClient.limits()`</ApiLink>, <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink>, <ApiLink to="class/TaskClient#getInput">`TaskClient.getInput()`</ApiLink> and <ApiLink to="class/WebhookClient#test">`WebhookClient.test()`</ApiLink>. A 404 there means the parent resource is gone, so these throw as well, and their return types drop `| undefined`.
 
-Lookups by key keep the old behavior, because there the 404 is about the record itself: <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink> and <ApiLink to="class/RequestQueueClient#getRequest">`RequestQueueClient.getRequest()`</ApiLink> still resolve to `undefined`, and <ApiLink to="class/KeyValueStoreClient#recordExists">`KeyValueStoreClient.recordExists()`</ApiLink> still answers `false`. <ApiLink to="class/ActorClient#lastRun">`ActorClient.lastRun()`</ApiLink> and <ApiLink to="class/TaskClient#lastRun">`TaskClient.lastRun()`</ApiLink> also keep resolving to `undefined`, where having no run yet is an ordinary outcome.
+Lookups by key keep the old behavior, because there the 404 is about the record itself: <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink> and <ApiLink to="class/RequestQueueClient#getRequest">`RequestQueueClient.getRequest()`</ApiLink> still resolve to `undefined`, and <ApiLink to="class/KeyValueStoreClient#recordExists">`KeyValueStoreClient.recordExists()`</ApiLink> still answers `false`. `get()` on <ApiLink to="class/ActorClient#lastRun">`ActorClient.lastRun()`</ApiLink> and <ApiLink to="class/TaskClient#lastRun">`TaskClient.lastRun()`</ApiLink> also keeps resolving to `undefined`, where having no run yet is an ordinary outcome.
 
 <ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> follows the same rule as `get()`: `client.log(id).stream()` resolves to `undefined` on a 404, `run.log().stream()` throws.
 
@@ -145,7 +173,11 @@ A <ApiLink to="class/StreamedLog">`StreamedLog`</ApiLink> whose run no longer ex
 
 <ApiLink to="class/ActorClient#version">`ActorClient.version()`</ApiLink>, <ApiLink to="class/ActorClient#build">`ActorClient.build()`</ApiLink> and <ApiLink to="class/ActorVersionClient#envVar">`ActorVersionClient.envVar()`</ApiLink> now throw an <ApiLink to="class/ArgumentValidationError">`ArgumentValidationError`</ApiLink> for an empty string, which is what every other resource identifier has always done.
 
-An empty identifier used to build the URL of the whole collection instead of one member, so `actor.version('')` read every version of the Actor and a 404 no longer meant a missing version. Rejecting it up front keeps the 404 rules above unambiguous.
+An empty identifier used to build the URL of the whole collection instead of one member, so `actor.version('')` read every version of the Actor and a 404 no longer meant a missing version. `actor.build('')` sent an empty version number to the API. Rejecting it up front keeps the 404 rules above unambiguous.
+
+## Identifiers are encoded into the URL path
+
+Resource IDs, record keys and request IDs are percent-encoded before they go into the URL, so a value can no longer point a request at a different endpoint. `.` and `..` can't be made safe that way, so they throw an <ApiLink to="class/ArgumentValidationError">`ArgumentValidationError`</ApiLink>. Every `/` in a resource ID now becomes `~`, where v2 replaced only the first one.
 
 ## Published types now follow the OpenAPI specification
 
@@ -158,10 +190,10 @@ A few fields went the other way and became required. `ActorVersion.versionNumber
 A handful of fields and return types also change entirely to match the client's actual behavior:
 
 - `Webhook.lastDispatch` was typed as a `string`, even though the API returns an object. It's now optional and nullable, typed as <ApiLink to="interface/WebhookLastDispatch">`WebhookLastDispatch`</ApiLink>.
-- `Schedule.nextRunAt`, `Schedule.lastRunAt` and `RequestQueueClientRequestSchema.handledAt` were typed as `string`, even though the client has always converted them to `Date`. They're now typed as such. `handledAt` also carries into what <ApiLink to="class/RequestQueueClient#updateRequest">`updateRequest()`</ApiLink> takes, so a call that marked a request handled with an ISO string has to pass a `Date` instead.
+- `Schedule.nextRunAt`, `Schedule.lastRunAt` and `RequestQueueClientRequestSchema.handledAt` were typed as `string`, even though the client has always converted them to `Date`. They're now typed as `Date`, optional and nullable where the API can leave them out. `handledAt` also carries into what <ApiLink to="class/RequestQueueClient#addRequest">`addRequest()`</ApiLink>, <ApiLink to="class/RequestQueueClient#batchAddRequests">`batchAddRequests()`</ApiLink> and <ApiLink to="class/RequestQueueClient#updateRequest">`updateRequest()`</ApiLink> take, so a call that marked a request handled with an ISO string has to pass a `Date` instead.
 - `Build.status` was typed as the four terminal statuses, even though `waitForFinish()` documents `READY` and `RUNNING`. It's now all eight Actor job statuses, so an exhaustive `switch` over it no longer compiles.
 - `WebhookDispatch.webhook` was `Pick<Webhook, 'requestUrl' | 'isAdHoc'>`. It's now an optional, nullable <ApiLink to="interface/WebhookDispatchWebhookSummary">`WebhookDispatchWebhookSummary`</ApiLink>, which also carries `actionType` and a `condition` typed as the same `WebhookCondition` union `Webhook.condition` carries.
-- `UserPlan.enabledPlatformFeatures` was a `PlatformFeature[]`, even though the platform has features that enum never gained, such as `PROXY_RESIDENTIAL`. It's now a `string[]`. `PlatformFeature` stays published, so an existing comparison against one of its members still works.
+- `UserPlan.enabledPlatformFeatures` was a `PlatformFeature[]`, even though the platform has features that enum never gained, such as `PROXY_RESIDENTIAL`. It's now an optional `string[]`. `PlatformFeature` stays published, so an existing comparison against one of its members still works.
 - `RequestQueue.expireAt` is gone. The API does not return it on a request queue, so reading it gave `undefined` on every queue you ever fetched.
 - <ApiLink to="class/RequestQueueClient#getRequest">`getRequest()`</ApiLink> was typed as a queue-head projection, even though the endpoint returns the whole request. It's now the full request schema.
 - <ApiLink to="class/RequestQueueClient#batchDeleteRequests">`batchDeleteRequests()`</ApiLink> was typed with the batch *add* result, whose processed entries carry `requestId`, `wasAlreadyPresent` and `wasAlreadyHandled`. The delete endpoint answers with none of those, so the return type is now <ApiLink to="interface/RequestQueueClientBatchDeleteRequestsResult">`RequestQueueClientBatchDeleteRequestsResult`</ApiLink>, whose processed entries carry `id` and `uniqueKey`. Code that read any of the three old fields was reading `undefined`.
@@ -182,19 +214,19 @@ An Actor version's `sourceFiles` is a flat list that mixes files and folders, so
 
 What breaks is reading the value back into a variable or parameter annotated with the enum. `const type: ActorSourceType = version.sourceType` no longer compiles. Annotate it as `ActorVersion['sourceType']` instead, or leave it to inference.
 
+The `sortBy` option of `client.actors().list()` and the format argument of <ApiLink to="class/DatasetClient#downloadItems">`downloadItems()`</ApiLink> change the same way: they take the values of `ActorListSortBy` and `DownloadItemsFormat` as string literals, and the enums stay published.
+
 ### The request-queue head splits into two item types
 
 <ApiLink to="interface/RequestQueueClientRequestSchema">`RequestQueueClientRequestSchema`</ApiLink> is now derived from the specification's stored-request schema. Its `id`, `url` and `uniqueKey` stay required, as the specification states them, and the rest of the fields follow the specification's optionality.
 
 The queue head splits into two item types. <ApiLink to="class/RequestQueueClient#listHead">`listHead()`</ApiLink> still yields <ApiLink to="interface/RequestQueueClientListItem">`RequestQueueClientListItem`</ApiLink>, which drops `lockExpiresAt`, while <ApiLink to="class/RequestQueueClient#listAndLockHead">`listAndLockHead()`</ApiLink> now yields the new <ApiLink to="interface/RequestQueueClientLockedListItem">`RequestQueueClientLockedListItem`</ApiLink>, where the field is required.
 
-Submitting a request is unchanged: <ApiLink to="class/RequestQueueClient#addRequest">`addRequest()`</ApiLink> and <ApiLink to="class/RequestQueueClient#batchAddRequests">`batchAddRequests()`</ApiLink> take <ApiLink to="interface/RequestQueueClientRequestToAdd">`RequestQueueClientRequestToAdd`</ApiLink>, which is the stored request without the `id` the API assigns.
+<ApiLink to="class/RequestQueueClient#addRequest">`addRequest()`</ApiLink> and <ApiLink to="class/RequestQueueClient#batchAddRequests">`batchAddRequests()`</ApiLink> take <ApiLink to="interface/RequestQueueClientRequestToAdd">`RequestQueueClientRequestToAdd`</ApiLink>, which is the stored request without the `id` the API assigns, so it follows the same optionality, and its `handledAt` is a `Date`.
 
 ### A scheduled Actor-task action takes its input as an object
 
-`ScheduleActionRunActorTask.input` was typed as a `string`, and is now the object the specification describes. The same type backs <ApiLink to="class/ScheduleClient#update">`update()`</ApiLink>, so an action that passed its input as a JSON string has to pass the parsed object instead.
-
-For the full per-resource breakdown of what became optional, nullable, newly exposed, or dropped, see the `BREAKING CHANGE` commit footer of [#985](https://github.com/apify/apify-client-js/pull/985).
+`ScheduleActionRunActorTask.input` was typed as a `string`, and is now the object the specification describes. The same type backs <ApiLink to="class/ScheduleCollectionClient#create">`create()`</ApiLink> and <ApiLink to="class/ScheduleClient#update">`update()`</ApiLink>, so an action that passed its input as a JSON string has to pass the parsed object instead.
 
 ## Responses are validated against the OpenAPI specification
 
@@ -212,7 +244,7 @@ try {
 } catch (error) {
     if (error instanceof ResponseValidationError) {
         console.log(error.message);
-        // Response from GET https://api.apify.com/v2/acts/my-actor does not match the API schema:
+        // Response from GET https://api.apify.com/v2/actors/my-actor does not match the API schema:
         // Invalid input: expected string, received null at `name`
         // The API returned something its OpenAPI specification does not describe. Please report this at https://github.com/apify/apify-client-js/issues.
         console.log(error.issues); // [{ code: 'invalid_type', expected: 'string', path: ['name'], ... }]
@@ -224,7 +256,7 @@ Bodies the specification leaves to you aren't validated: dataset items, key-valu
 
 Two return types change as a result of describing what the endpoints really return:
 
-- <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink> was typed as a `string`, even though the endpoint returns the log as a list of entries. It's now typed as <ApiLink to="interface/ScheduleInvoked">`ScheduleInvoked[]`</ApiLink>, each entry carrying `message`, `level` and `createdAt`.
+- <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink> was typed as `string | undefined`, even though the endpoint returns the log as a list of entries. It's now typed as <ApiLink to="interface/ScheduleInvoked">`ScheduleInvoked[]`</ApiLink>, each entry carrying `message`, `level` and `createdAt`.
 - <ApiLink to="interface/TaskPublicConfig">`TaskPublicConfig`</ApiLink> now follows the specification: `publishedAt` is optional and read-only, and `categorization`, which the specification doesn't describe, is gone from the type.
 
 ### Date fields are converted by the schemas
@@ -233,7 +265,7 @@ The `Date` conversion moved into the schemas. A field the specification declares
 
 - Date strings inside the bodies the API stores for you stay strings. A `somethingAt` in a request's `userData` or in a task's `input` is returned as written, so parse it yourself where you need a `Date`.
 - A `date-time` field that carries anything other than an ISO 8601 date-time with a `Z` or a time-zone offset throws a `ResponseValidationError`, where v2 handed the string on.
-- The field name no longer matters. `dailyServiceUsages[].date` on <ApiLink to="class/UserClient#monthlyUsage">`UserClient.monthlyUsage()`</ApiLink> is converted because the specification says so.
+- The field name no longer matters. A `date-time` field is converted whatever it's called.
 - Nothing is skipped for depth. `webhook.dispatches().list()` returns `calls[].startedAt` as a `Date` on every listed dispatch, where v2 left it a string for sitting one level too deep.
 
 ## URL fields are normalized
@@ -305,7 +337,7 @@ await client.keyValueStore('my-store').setRecord({
 
 Give a record a content type matching what it holds, such as `text/plain`, or pass the value as an object and let the client serialize it.
 
-The same applies to a string input passed together with a `contentType` to <ApiLink to="class/ActorClient#start">`start()`</ApiLink>, <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, or <ApiLink to="class/RunClient#metamorph">`metamorph()`</ApiLink>. v2 handed the API the string wrapped in quotes, v3 hands it over as it is.
+The same applies to a string input passed with a JSON `contentType` to <ApiLink to="class/ActorClient#start">`start()`</ApiLink>, <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, or <ApiLink to="class/RunClient#metamorph">`metamorph()`</ApiLink>. When the string wasn't valid JSON, v2 handed the API the string wrapped in quotes. v3 hands it over as it is.
 
 ## Timeouts are configured per tier
 
@@ -324,7 +356,7 @@ The `timeoutSecs` option of the <ApiLink to="class/ApifyClient">`ApifyClient`</A
 
 For what each tier covers and which one a method is assigned, see [Timeouts](../02_concepts/10_timeouts.mdx).
 
-In v2 only the dataset, key-value store and request queue clients picked a timeout per method, and everything else ran with the global 360 seconds. A metadata call such as `actor.get()` now gets the 5 seconds of the `short` tier and a `list()` call the 30 of `medium`, so a call that used to wait out a slow API can fail sooner. <ApiLink to="class/RequestQueueClient#unlockRequests">`RequestQueueClient.unlockRequests()`</ApiLink> moves the other way, from 30 seconds to 360. Where you need a different duration, every method that sends a request takes a `timeoutSecs` option, which replaces the tier of the method for that call:
+In v2 only the dataset, key-value store and request queue clients picked a timeout per method, and everything else ran with the global 360 seconds. A metadata call such as `actor.get()` now gets the 5 seconds of the `short` tier and most `list()` calls the 30 of `medium`, so a call that used to wait out a slow API can fail sooner. A few methods move the other way, to the 360 seconds of `long`: <ApiLink to="class/RequestQueueClient#unlockRequests">`RequestQueueClient.unlockRequests()`</ApiLink> from 30 seconds, and <ApiLink to="class/DatasetClient#createItemsPublicUrl">`DatasetClient.createItemsPublicUrl()`</ApiLink>, <ApiLink to="class/KeyValueStoreClient#getRecordPublicUrl">`KeyValueStoreClient.getRecordPublicUrl()`</ApiLink> and <ApiLink to="class/KeyValueStoreClient#createKeysPublicUrl">`KeyValueStoreClient.createKeysPublicUrl()`</ApiLink> from 5. Where you need a different duration, pass the `timeoutSecs` option, which replaces the tier of the method for that call:
 
 ```js
 await client.actor('my-actor').get({ timeoutSecs: 'long' });
@@ -339,13 +371,15 @@ await client.actor('my-actor').get({ timeoutSecs: 'long' });
 
 TypeScript reports a leftover `timeout` at compile time, and in JavaScript the option schemas reject it as an unrecognized key, so the call throws an `ArgumentValidationError` instead of silently dropping the run limit. `{ timeout: 0 }`, which asked for an unlimited run in v2, becomes `{ runTimeoutSecs: 0 }`.
 
-The `timeoutSecs` option of <ApiLink to="class/KeyValueStoreClient#setRecord">`KeyValueStoreClient.setRecord()`</ApiLink> keeps its name and its meaning for a number of seconds, and now takes a tier name or `'noTimeout'` as well. The same goes for `client.requestQueue(id, { timeoutSecs })`, which caps the tier of every request that queue client sends rather than timing each one at the given value.
+The `timeoutSecs` option of <ApiLink to="class/KeyValueStoreClient#setRecord">`KeyValueStoreClient.setRecord()`</ApiLink> keeps its name and its meaning for a number of seconds, and now takes a tier name or `'noTimeout'` as well. `client.requestQueue(id, { timeoutSecs })` still takes a number of seconds that caps the tier of every request the queue client sends.
 
-`client.httpClient.call()` takes `timeoutSecs` where it read the axios `timeout` in milliseconds. A direct call that passed `timeout: 30000` has to become `timeoutSecs: 30`.
+Neither accepts `0` any more. In v2, `setRecord(record, { timeoutSecs: 0 })` meant no timeout and `client.requestQueue(id, { timeoutSecs: 0 })` meant no cap. v3 rejects both with an `ArgumentValidationError`, so pass `'noTimeout'` to `setRecord()` and leave the option out of `requestQueue()`.
+
+`client.httpClient.call()` takes `timeoutSecs` where it read the axios `timeout` in milliseconds. A direct call that passed `timeout: 30000` has to become `timeoutSecs: 30`. In JavaScript, a leftover `timeout` is ignored rather than rejected. A direct call without `timeoutSecs` gets the 30 seconds of `medium`, where v2 used the global 360.
 
 ## Request compression is configurable
 
-The <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor takes a `compression` option: `'brotli'`, `'gzip'`, or an <ApiLink to="interface/HttpCompressor">`HttpCompressor`</ApiLink> for a custom quality or algorithm. The default stays brotli at quality 6, so a client constructed without the option sends the same requests as in v2. For the rules that decide which bodies get compressed, see [HTTP compression](../02_concepts/12_http_compression.mdx).
+The <ApiLink to="class/ApifyClient">`ApifyClient`</ApiLink> constructor takes a `compression` option: `'brotli'`, `'gzip'`, or an <ApiLink to="interface/HttpCompressor">`HttpCompressor`</ApiLink> for a custom quality or algorithm. The default stays brotli at quality 6. For the rules that decide which bodies get compressed, see [HTTP compression](../02_concepts/12_http_compression.mdx).
 
 ```js
 import { ApifyClient, BrotliHttpCompressor } from 'apify-client';
@@ -359,9 +393,16 @@ const bestClient = new ApifyClient({
 
 The silent fallback is gone. In v2, a body was sent gzipped when brotli failed, and uncompressed when gzip failed too, which could happen on a runtime whose `node:zlib` is a polyfill or a Node.js compatibility shim. In v3 the configured compressor is the only one the client runs, and its error fails the request. On such a runtime, pass `compression: 'gzip'` or a custom compressor.
 
+Which bodies get compressed changed as well:
+
+- A body whose `Content-Type` is already compressed, such as an image, audio, video or an archive, is sent as it is. v2 compressed any string or `Buffer` of 1 kB or more. See [Already-compressed payloads](../02_concepts/12_http_compression.mdx#already-compressed-payloads).
+- A `Uint8Array`, another typed array, or an `ArrayBuffer` is compressed once it reaches the same 1 kB threshold, where v2 compressed only strings and `Buffer`s, so a request carrying one gains a `content-encoding` header.
+
+The API accepts both encodings the client sends, `br` and `gzip`, so neither change needs anything on your side.
+
 ## `versions().list()` and `envVars().list()` lose their pagination options
 
-<ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> accept only the `timeoutSecs` option. Neither endpoint reads `offset`, `limit` or `desc`, and both return every item in one response, so `chunkSize` had nothing to size either. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those four options, deprecated since v2.21.0, are gone from the package. A call that passed any of them no longer compiles, and throws an `ArgumentValidationError` about an unrecognized key in JavaScript. Drop them and the call returns the same items as before.
+<ApiLink to="class/ActorVersionCollectionClient#list">`ActorVersionCollectionClient.list()`</ApiLink> and <ApiLink to="class/ActorEnvVarCollectionClient#list">`ActorEnvVarCollectionClient.list()`</ApiLink> accept only the `timeoutSecs` and `signal` options. Neither endpoint reads `offset`, `limit` or `desc`, and both return every item in one response, so `chunkSize` had nothing to size either. The `ActorVersionCollectionListOptions` and `ActorEnvVarCollectionListOptions` types that declared those four options, deprecated since v2.21.0, are gone from the package. A call that passed any of them no longer compiles, and throws an `ArgumentValidationError` about an unrecognized key in JavaScript. Drop them and the call returns the same items as before.
 
 ## `limit` counts scanned rows when iterating `listItems()`
 
@@ -381,11 +422,11 @@ for await (const item of client.dataset('dataset-id').listItems({ clean: true, c
 
 ## The last deprecated options are gone
 
-Two options that carried a `@deprecated` marker throughout v2 have been removed.
+Two options deprecated during v2 have been removed.
 
-`restartOnError` is gone from <ApiLink to="interface/ActorCollectionCreateOptions">`ActorCollectionCreateOptions`</ApiLink>, so <ApiLink to="class/ActorCollectionClient#create">`ActorCollectionClient.create()`</ApiLink> no longer accepts it at the top level. Pass it inside `defaultRunOptions` instead, as the deprecation notice advised.
+`restartOnError`, deprecated since v2.19.0, is gone from <ApiLink to="interface/ActorCollectionCreateOptions">`ActorCollectionCreateOptions`</ApiLink>, so <ApiLink to="class/ActorCollectionClient#create">`ActorCollectionClient.create()`</ApiLink> no longer accepts it at the top level. Pass it inside `defaultRunOptions` instead, as the deprecation notice advised. Only the type changed: the client doesn't validate the fields `create()` sends, so in JavaScript a top-level `restartOnError` still reaches the API.
 
-`exclusiveStartId` is gone from <ApiLink to="class/RequestQueueClient#listRequests">`listRequests()`</ApiLink> and <ApiLink to="class/RequestQueueClient#paginateRequests">`paginateRequests()`</ApiLink>. Both paginate by `cursor` alone now, and passing `exclusiveStartId` throws an `ArgumentValidationError` about an unrecognized key. In v2 the two were mutually exclusive, so the error about combining them is gone as well. Responses are unaffected, since the API still echoes `exclusiveStartId` back in the request listing.
+`exclusiveStartId`, deprecated since v2.23.2, is gone from <ApiLink to="class/RequestQueueClient#listRequests">`listRequests()`</ApiLink> and <ApiLink to="class/RequestQueueClient#paginateRequests">`paginateRequests()`</ApiLink>. Both paginate by `cursor` alone now, and passing `exclusiveStartId` throws an `ArgumentValidationError` about an unrecognized key. In v2 the two were mutually exclusive, so the error about combining them is gone as well. Responses are unaffected, since the API still echoes `exclusiveStartId` back in the request listing.
 
 ## Actor run input is no longer `unknown`
 
@@ -422,11 +463,11 @@ export HTTP_PROXY=http://proxy.example.com:3128
 export HTTPS_PROXY=http://proxy.example.com:3128
 ```
 
-The same `proxy-agent` upgrade removes the `[DEP0169] DeprecationWarning` about `url.parse()` that Node.js 24 and newer printed on the client's first request.
+The same `proxy-agent` upgrade removes the `[DEP0169] DeprecationWarning` about `url.parse()` that Node.js 24 and newer printed on the client's first request when the client was bundled into the application.
 
 ## Non-public members no longer carry an underscore
 
-Members declared `private` or `protected` had a leading underscore on top of the keyword in v2, and the underscore is gone in v3. Code that calls only the public methods of a client is unaffected. A class that extends one of the client classes and calls a protected helper has to switch to the new name. The base classes below are not exported, so you reach these members by extending a concrete client such as `ActorClient`.
+Members declared `private` or `protected` had a leading underscore on top of the keyword in v2, and the underscore is gone in v3. Code that calls only the public methods of a client is unaffected. A class that extends one of the client classes and calls a protected helper has to switch to the new name. `ApiClient`, `ResourceClient` and `ResourceCollectionClient` are not exported, so you reach their members by extending a concrete client such as `ActorClient`.
 
 | Class | v2 | v3 |
 | --- | --- | --- |
@@ -449,47 +490,49 @@ Members declared `private` or `protected` had a leading underscore on top of the
 
 A helper got a suffix wherever the bare name would collide with a public method of the same class, which is why `_get()` is now `getResource()` and not `get()`.
 
+The signatures changed along with the names:
+
+- `getResource()`, `updateResource()`, `listResources()`, `listResourcesPaginated()`, `createResource()`, `getOrCreateResource()` and `waitForJobFinish()` take the zod schema that validates the response as their first argument.
+- The timeout is a required number of seconds or a tier name, where v2 took an optional number of milliseconds. `_delete(5000)` renamed to `deleteResource(5000)` waits 5000 seconds.
+- `addRequestBatch()` and `addRequestBatchWithRetries()` take requests already serialized to JSON, where v2 took request objects.
+
 <ApiLink to="class/LoggerActorRedirect">`LoggerActorRedirect`</ApiLink> keeps `_log()`, since it overrides the method of that name on the `Logger` base class in `@apify/log`.
 
 The `clientMethod` field on <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> is parsed from the stack trace, and a public method that delegates to one of these helpers is reported under the helper's name. An error from `client.actor(id).get()` says `ActorClient.getResource`, where v2 said `ActorClient.get`. Adjust anything that matches on these values in your logs.
 
 ### Private members are private at runtime
 
-Members that v2 declared `private` are declared with a `#` in v3, so the JavaScript runtime enforces the boundary, where v2 relied on the type checker. Code that reached one of them through a cast, such as `(client.httpClient as any).httpAgentsPromise`, throws a `TypeError` in v3. They also don't appear when you spread an instance, iterate `Object.keys()` on it, or pass it to `JSON.stringify()`. The `protected` helpers in the table keep the `protected` keyword, so a subclass can call them.
+Members that v2 declared `private` are declared with a `#` in v3, so the JavaScript runtime enforces the boundary, where v2 relied on the type checker. Code that reached one of them through a cast, such as `(client.httpClient as any)._isRetryableError(error)`, finds nothing under the old name: reading it gives `undefined`, and calling it throws a `TypeError`. They also don't appear when you spread an instance, iterate `Object.keys()` on it, or pass it to `JSON.stringify()`. The `protected` helpers in the table keep the `protected` keyword, so a subclass can call them.
 
 ## Node.js-only features follow the bundler's target
 
-Four features need Node.js APIs: log streaming with <ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> and <ApiLink to="class/RunClient#getStreamedLog">`RunClient.getStreamedLog()`</ApiLink>, the `stream` option of <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink>, proxy support, and request body compression.
+Some features need Node.js APIs: log redirection with <ApiLink to="class/RunClient#getStreamedLog">`RunClient.getStreamedLog()`</ApiLink>, the `stream` option of <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink>, proxy support, request body compression, and the `User-Agent` header.
 
-In v2 the client detected the runtime when one of them was used, so a Node.js application bundled for a browser or a neutral target kept them all. In v3 the implementation is picked when the import is resolved, so the bundler's conditions decide. Without the `node` condition, `getRecord({ stream: true })` throws, `getStreamedLog()` returns `undefined`, and requests go out unproxied, uncompressed, and without the client's `User-Agent` header.
+In v2 the client detected the runtime when one of them was used, so a Node.js application bundled for a browser or a neutral target kept them all. In v3 the implementation is picked when the import is resolved, so the bundler's conditions decide. Without the `node` condition, `getRecord({ stream: true })` throws, `getStreamedLog()` returns `undefined`, and requests go out unproxied, uncompressed, and without the client's `User-Agent` header. A typed array other than a `Buffer`, such as a `Uint8Array` record value passed to `setRecord()`, fails too, because axios's Node.js adapter rejects it.
 
-Enable the `node` condition when you bundle for Node.js. esbuild sets it through `platform: 'node'`, webpack through `resolve.conditionNames`, and Vite through `resolve.conditions`.
+Enable the `node` condition when you bundle for Node.js. esbuild sets it through `platform: 'node'`, webpack through `resolve.conditionNames`, and Vite through `resolve.conditions` for a client build. A Vite SSR build includes `node` already.
 
 A test runner that resolves the `browser` condition decides the same way. Jest's `jsdom` environment resolves it, so a Node.js test suite running under it loses them unless you list the `node` condition:
 
 ```js
-// jest.config.js
+// jest.config.mjs
 export default {
     testEnvironment: 'jsdom',
     testEnvironmentOptions: { customExportConditions: ['node'] },
 };
 ```
 
-Running on Node.js without a bundler is unaffected, and the pre-built browser bundle behaves as it did in v2. For what bundling for a non-Node.js target takes, see [Bundled environments](../02_concepts/13_bundled_environments.mdx).
+Running on Node.js without a bundler is unaffected, and the pre-built browser bundle leaves these features out, as in v2. For what bundling for a non-Node.js target takes, see [Bundled environments](../02_concepts/13_bundled_environments.mdx).
 
 ### Response bodies are decoded by `TextDecoder`
 
-In Node.js, v2 decoded response bodies with `Buffer` and v3 decodes them with `TextDecoder`. The two support different charsets, so a `content-type` header carrying one can be handled differently:
+v2 decoded response bodies with `Buffer` in Node.js, and decoded only UTF-8 ones in browsers. v3 decodes them with `TextDecoder` everywhere. The two support different charsets, so a `content-type` header carrying one can be handled differently:
 
 - `iso-8859-1` and other charsets only `TextDecoder` knows decode to a string, where v2 handed back raw bytes.
-- `hex`, `base64`, `binary`, `ucs2` and `utf16le`, which only `Buffer` knows, come back as raw bytes, where v2 decoded the body as if it were in that encoding.
-- `ascii` is read as an alias for `windows-1252`, so a byte above `0x7F` decodes to the character that encoding gives it, where v2 masked the byte down to seven bits.
+- `hex`, `base64`, `base64url`, `binary`, `ucs2` and `utf16le`, which only `Buffer` knows, come back as raw bytes. v2 passed them to `buffer.toString()`, which decoded `binary`, `ucs2` and `utf16le` bodies, and turned the bytes into hex or base64 text for the others.
+- `ascii` and `latin1` are read as aliases for `windows-1252`. A byte above `0x7F` in an `ascii` body decodes to the character that encoding gives it, where v2 masked the byte down to seven bits. A byte between `0x80` and `0x9F` in a `latin1` body decodes to a printable character such as `€`, where v2 gave a control character.
 
 Code that depended on one of these has to convert the value itself. A body with no charset or with a UTF-8 one is unaffected, and that covers everything the Apify API sends.
-
-### Request compression covers more body types
-
-v2 compressed a request body only when it was a string or a `Buffer`. A `Uint8Array`, another typed array, or an `ArrayBuffer` is compressed as well once it reaches the same 1 kB threshold, so a request carrying one gains a `content-encoding` header. The API accepts both encodings the client sends, `br` and `gzip`, so nothing needs to change on your side.
 
 ## The HTTP client is pluggable
 
@@ -529,11 +572,11 @@ An interceptor that computes something per request, such as a token read at call
 + });
 ```
 
-An interceptor now sees the request as the shared pipeline prepared it: the headers merged, the query string already encoded into `url` so `params` is empty, and the body already serialized to a string or `Buffer` and compressed. Under v2 the interceptors ran before serialization and saw the original object.
+An interceptor now sees the request as the shared pipeline prepared it: the headers merged, the query string already encoded into `url` so `params` is not set, and the body already serialized to a string or `Buffer` and compressed. Under v2 the interceptors ran before serialization and saw the original object.
 
 ### `ApifyRequestConfig` and `ApifyResponse` no longer extend the axios types
 
-The request `httpClient.call()` takes and the response it resolves to, which `RunClient.charge()` also returns, are now transport-neutral. `ApifyResponse` carries `status`, `headers`, `data` and `config`, without the `statusText`, `request` and axios-specific `config` fields. `ApifyRequestConfig` accepts `url`, `method`, `params`, `headers`, `data`, `timeoutSecs`, `responseType`, `stringifyFunctions`, `doNotRetryTimeouts` and `signal`, so an axios-only option such as `maxRedirects` is rejected by the types. The `forceBuffer` flag became `responseType: 'buffer'`, and `responseType` takes `'parsed'`, `'buffer'` or `'stream'` instead of the axios values.
+The request `httpClient.call()` takes and the response it resolves to, which `RunClient.charge()` also returns, are now transport-neutral. `ApifyResponse` carries `status`, `headers`, `data` and `config`, without the `statusText`, `request` and axios-specific `config` fields. `ApifyRequestConfig` accepts `url`, `method`, `params`, `headers`, `data`, `timeoutSecs`, `responseType`, `stringifyFunctions`, `doNotRetryTimeouts` and `signal`, so an axios-only option such as `maxRedirects` is rejected by the types. The `forceBuffer` flag became `responseType: 'buffer'`, and `responseType` takes `'parsed'`, `'buffer'` or `'stream'` instead of the axios values. `url` and `method` are required, and `method` takes uppercase names only, so `method: 'get'` no longer compiles. `ApifyResponse.headers` is a plain object, without the `get()` and the other helpers of `AxiosHeaders`.
 
 ### `InvalidResponseBodyError.response` is the transport's response
 
@@ -541,7 +584,7 @@ The `response` property carries the <ApiLink to="interface/HttpResponse">`HttpRe
 
 ### `ApifyApiError.httpMethod` is uppercase
 
-The method is reported as the client sent it, so `POST` where v2 reported axios's lowercased `post`. <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink> takes its method from the same place, so its message is uppercase too.
+The method is reported as the client sent it, so `POST` where v2 reported axios's lowercased `post`.
 
 ### A `Blob`, `File` or `FormData` body is no longer sent
 
@@ -549,11 +592,19 @@ Under v2 axios recognized these types and streamed them, taking the `Content-Typ
 
 ### A form-encoded object body is encoded by the client
 
-Pairing an object with `Content-Type: application/x-www-form-urlencoded`, which the `contentType` option of `ActorClient.start()`, `TaskClient.start()` and `RunClient.metamorph()` sets, no longer goes through axios. Binary values are base64-encoded wherever they sit in the object, so an `ArrayBuffer` or a typed-array field arrives intact instead of coerced to UTF-8, and a binary field nested under another key keeps its full path instead of losing it. Arrays nested below the top level are sent as `key[]` rather than `key[0]`, which decodes to the same structure.
+Pairing an object with `Content-Type: application/x-www-form-urlencoded`, which the `contentType` option of `ActorClient.start()`, `call()` and `validateInput()` and of `RunClient.metamorph()` sets, no longer goes through axios. Binary values are base64-encoded wherever they sit in the object, so an `ArrayBuffer` or a typed-array field arrives intact instead of coerced to UTF-8, and a binary field nested under another key keeps its full path instead of losing it. Arrays nested below the top level are sent as `key[]` rather than `key[0]`, which decodes to the same structure.
+
+### `HttpClient` no longer exposes the axios instance
+
+The `axios`, `httpAgent` and `httpsAgent` properties, the `userProvidedRequestInterceptors` array and the `workflowKey` moved to `AxiosHttpClient` or became internal. Reach them through `client.httpClient` after narrowing it with `instanceof AxiosHttpClient`. `HttpClient.timeoutMillis` holds the duration of each tier instead of one number, and the cap is in `timeoutMaxMillis`.
+
+The instance itself is bare: the pipeline merges the default headers and serializes the bodies per request, so `AxiosHttpClient.axios` no longer carries the `Authorization`, `X-Apify-Workflow-Key` and `User-Agent` defaults nor the interceptors and the params serializer that serialized requests and parsed responses. A request sent through it directly reaches the API unauthenticated. Go through <ApiLink to="class/HttpClient#call">`httpClient.call()`</ApiLink> for an ad-hoc API request.
+
+## Retries
 
 ### The error thrown after the retries are exhausted is the last one
 
-`ApifyClient` reports the failure of the final attempt. In v2 `async-retry` reported the error whose message occurred most often across the attempts, so a call that hit five HTTP 500s and then four connection resets threw the `ServerError` rather than the reset. Code that branches on `instanceof ApifyApiError` for a call that fails in more than one way may see a different error type than it did before.
+`ApifyClient` reports the failure of the final attempt. In v2 `async-retry` reported the error whose message occurred most often across the attempts, so a call that hit five HTTP 500s and then four connection resets threw an `ApifyApiError` for the 500s rather than the reset. Code that branches on `instanceof ApifyApiError` for a call that fails in more than one way may see a different error type than it did before.
 
 ### The per-attempt timeout grows on a fixed schedule
 
@@ -562,9 +613,3 @@ Each attempt gets the request's timeout doubled once per retry, capped at `timeo
 ### Retry delays are randomized
 
 The wait before a retry is `minDelayBetweenRetriesMillis` doubled once per attempt and then spread over a random factor between one and two, so clients that failed together don't come back at the API in lockstep. The option is a lower bound now rather than the delay itself. At the defaults, a call that burns through all eight retries sleeps 128 to 255 seconds in total, where v2 always slept 128.
-
-### `HttpClient` no longer exposes the axios instance
-
-The `axios`, `httpAgent` and `httpsAgent` properties, the `userProvidedRequestInterceptors` array and the `workflowKey` moved to `AxiosHttpClient` or became internal. Reach them through `client.httpClient` after narrowing it with `instanceof AxiosHttpClient`.
-
-The instance itself is bare: the pipeline merges the default headers and serializes the bodies per request, so `AxiosHttpClient.axios` no longer carries the `Authorization`, `X-Apify-Workflow-Key` and `User-Agent` defaults nor the serialization interceptors. A request sent through it directly reaches the API unauthenticated. Go through <ApiLink to="class/HttpClient#call">`httpClient.call()`</ApiLink> for an ad-hoc API request.
