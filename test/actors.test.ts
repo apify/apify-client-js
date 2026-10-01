@@ -3,7 +3,7 @@ import type { AddressInfo } from 'node:net';
 import { setTimeout } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import type { ActorCollectionCreateOptions, ActorCollectionListOptions, ActorVersion } from 'apify-client';
+import type { ActorCollectionCreateOptions, ActorCollectionListOptions, ActorInput, ActorVersion } from 'apify-client';
 import {
     ActorListSortBy,
     ActorSourceType,
@@ -14,7 +14,7 @@ import {
 } from 'apify-client';
 import express from 'express';
 import type { Page } from 'puppeteer';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
 
 import { META_ORIGINS, WEBHOOK_EVENT_TYPES } from '@apify/consts';
 import { LEVELS, Log } from '@apify/log';
@@ -237,6 +237,26 @@ describe('Actor methods', () => {
                 body: { some: 'body' },
                 additionalHeaders: { 'content-type': contentType },
             });
+        });
+
+        test('ActorInput accepts plain objects, arrays of them and raw bytes, but no other objects', () => {
+            interface InterfaceInput {
+                url: string;
+            }
+            type AliasInput = { url: string };
+
+            expectTypeOf<{ url: string }>().toExtend<ActorInput>();
+            expectTypeOf<AliasInput>().toExtend<ActorInput>();
+            expectTypeOf<AliasInput[]>().toExtend<ActorInput>();
+            expectTypeOf<Buffer>().toExtend<ActorInput>();
+            expectTypeOf<Uint8Array>().toExtend<ActorInput>();
+
+            expectTypeOf<InterfaceInput>().not.toExtend<ActorInput>();
+            expectTypeOf<Date>().not.toExtend<ActorInput>();
+            expectTypeOf<Map<string, unknown>>().not.toExtend<ActorInput>();
+            expectTypeOf<Set<unknown>>().not.toExtend<ActorInput>();
+            expectTypeOf<() => void>().not.toExtend<ActorInput>();
+            expectTypeOf<string>().not.toExtend<ActorInput>();
         });
 
         test('start() works with functions in input', async () => {

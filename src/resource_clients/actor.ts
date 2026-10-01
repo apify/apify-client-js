@@ -8,6 +8,7 @@ import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_clients/index.js';
 import type { Actor, ActorRun } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
+import type { Dictionary } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
@@ -588,10 +589,11 @@ export type ActorUpdateOptions = Partial<
  * Input for an Actor run, as taken by {@link ActorClient.start}, {@link ActorClient.call},
  * {@link ActorClient.validateInput} and {@link RunClient.metamorph}.
  *
- * An object or an array. Declared as `object` rather than an index-signature type such as
- * `Dictionary`, which would reject a caller's own `interface`.
+ * A plain object or an array of plain objects, serialized into the request body, or raw bytes sent
+ * as they are, typically with a `contentType`. An input typed as an `interface` needs a `type` alias
+ * or a spread (`{ ...input }`) to compile.
  */
-export type ActorInput = object;
+export type ActorInput = Dictionary | Dictionary[] | Uint8Array;
 
 export interface ActorStartOptions extends TimeoutOptions {
     /**
