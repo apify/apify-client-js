@@ -24,6 +24,11 @@
         {
             "matchPackageNames": ["@apify/*", "@crawlee/*", "apify-client", "apify", "crawlee", "got-scraping"],
             "minimumReleaseAge": "0 days"
+        },
+        {
+            "description": "Keep redocly on js-yaml 4, v5 breaks it at import time (see the override comment in pnpm-workspace.yaml)",
+            "matchDepNames": ["@redocly/openapi-core>js-yaml"],
+            "allowedVersions": "<5"
         }
     ],
     "schedule": ["every weekday"],

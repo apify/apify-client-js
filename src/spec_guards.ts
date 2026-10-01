@@ -74,7 +74,6 @@ import type {
     TaskListRePointed,
     TaskListSpecGaps,
     TaskRePointed,
-    TaskSpecGaps,
     UsageItemRePointed,
     UserPlanRePointed,
     UserProxyRePointed,
@@ -277,7 +276,6 @@ export type AdapterKeyGuards = AssertAll<
         GapsStillMissing<ActorSpecGaps, Schemas['Actor']>,
         GapsStillMissing<ActorDefinitionSpecGaps, Schemas['ActorDefinition']>,
         GapsStillMissing<ActorRunOptionsSpecGaps, Schemas['RunOptions']>,
-        GapsStillMissing<TaskSpecGaps, Schemas['Task']>,
         // `TaskList` has a gap of its own, because the spec describes a listed task in a separate schema
         // that omits `title` as well.
         GapsStillMissing<TaskListSpecGaps, Schemas['TaskShort']>,

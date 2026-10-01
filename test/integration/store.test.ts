@@ -33,11 +33,11 @@ test('store().list() moves the window with offset', async () => {
 });
 
 // `expectItems` marks the models the public store actually carries Actors for. No public Actor is
-// priced per dataset item, so that filter matching nothing is the correct answer, not a failure -
-// there the assertion is only that the client serializes the filter into a request the API accepts.
+// priced per dataset item or rented monthly any more, so those filters matching nothing is the correct answer,
+// not a failure - there the assertion is only that the client serializes the filter into a request the API accepts.
 test.for([
     { pricingModel: 'FREE', expectItems: true },
-    { pricingModel: 'FLAT_PRICE_PER_MONTH', expectItems: true },
+    { pricingModel: 'FLAT_PRICE_PER_MONTH', expectItems: false },
     { pricingModel: 'PRICE_PER_DATASET_ITEM', expectItems: false },
     { pricingModel: 'PAY_PER_EVENT', expectItems: true },
 ])('store().list() filters by the $pricingModel pricing model', async ({ pricingModel, expectItems }) => {
