@@ -14,6 +14,7 @@ vi.mock('../src/utils', async (importOriginal) => {
 });
 
 const RUN_ID = 'test-run-id';
+const ACTOR_ID = 'test-actor-id';
 const UNWIND_PARTS = 3;
 
 interface Step {
@@ -52,7 +53,7 @@ const mockRunApi = (client: ApifyClient, steps: Step[]) => {
 
     const spy = vi.spyOn(client.httpClient, 'call').mockImplementation((async (request: any) => {
         const url: string = request.url;
-        if (url.endsWith(`/actor-runs/${RUN_ID}`)) {
+        if (url.endsWith(`/actor-runs/${RUN_ID}`) || url.endsWith(`/actors/${ACTOR_ID}/runs/last`)) {
             stepIndex = Math.min(stepIndex + 1, steps.length - 1);
             return { data: { data: { id: RUN_ID, status: step().status } } };
         }
@@ -215,6 +216,19 @@ describe('RunClient.iterateDatasetItems', () => {
         );
 
         expect(spy.mock.calls.every(([request]) => request.signal === signal)).toBe(true);
+    });
+
+    test("resolves lastRun() once and reads that run's dataset to the end", async () => {
+        const client = new ApifyClient();
+        const { spy } = mockRunApi(client, LAGGING_RUN_STEPS);
+
+        const items = await collect(
+            client.actor(ACTOR_ID).lastRun().iterateDatasetItems({ chunkSize: 10, pollIntervalSecs: 0 }),
+        );
+
+        expect(items).toEqual(shapeItems(range(0, 75)));
+        const lastRunRequests = spy.mock.calls.filter(([request]) => request.url.includes('/runs/last'));
+        expect(lastRunRequests).toHaveLength(1);
     });
 
     test('rejects unknown options', async () => {

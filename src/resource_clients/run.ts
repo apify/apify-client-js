@@ -547,7 +547,8 @@ export class RunClient extends ResourceClient {
      * with a `limit` that ends at `itemCount`, so it covers exactly the rows it asks for, whatever the filters or
      * `unwind` do to the items. `itemCount` lags a few seconds behind
      * the pushed items, so once the run reaches a terminal status, the rows past it are read a page at a time until
-     * none are left, and the iterator returns.
+     * none are left, and the iterator returns. On a `lastRun()` client, the iterator sticks to the run that its first
+     * request resolves to.
      *
      * @param options - Iteration options
      * @param options.offset - Number of rows to skip from the beginning. Default is 0.
@@ -584,15 +585,17 @@ export class RunClient extends ResourceClient {
             signal,
             ...itemOptions
         } = parseArgument(options, iterateDatasetItemsOptionsSchema, 'RunIterateDatasetItemsOptions');
-        const datasetClient = this.dataset() as DatasetClient<Data>;
         const pageSize = chunkSize || DEFAULT_ITERATE_CHUNK_SIZE;
         let position = offset ?? 0;
         const end = limit ? position + limit : undefined;
 
+        let run = await this.get({ timeoutSecs, signal });
+        // A `lastRun()` client resolves `runs/last` on each request, so a newer run would swap the dataset mid-iteration.
+        const runClient = run && run.id !== this.id ? this.apifyClient.run(run.id) : this;
+        const datasetClient = runClient.dataset() as DatasetClient<Data>;
         const listPage = async (pageOffset: number, pageLimit: number): Promise<PaginatedList<Data>> =>
             datasetClient.listItems({ ...itemOptions, offset: pageOffset, limit: pageLimit, timeoutSecs, signal });
 
-        let run = await this.get({ timeoutSecs, signal });
         while (true) {
             const isFinished =
                 !run || ACT_JOB_TERMINAL_STATUSES.includes(run.status as (typeof ACT_JOB_TERMINAL_STATUSES)[number]);
@@ -609,7 +612,7 @@ export class RunClient extends ResourceClient {
 
             if (end !== undefined && position >= end) return;
             if (isFinished) break;
-            run = await this.waitForFinish({ waitSecs: pollIntervalSecs, timeoutSecs, signal });
+            run = await runClient.waitForFinish({ waitSecs: pollIntervalSecs, timeoutSecs, signal });
         }
 
         const { clean, skipEmpty, unwind } = itemOptions;
