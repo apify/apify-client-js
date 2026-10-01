@@ -1,3 +1,4 @@
+import openapiTS, { astToString } from 'openapi-typescript';
 import ts from 'typescript-v6';
 import { describe, expect, it } from 'vitest';
 
@@ -151,5 +152,30 @@ describe('hoistAllOfRequired', () => {
         const document = { components: { schemas: { Base: { type: 'object', required: ['id'] } } } };
 
         expect(hoistAllOfRequired(document)).toEqual(document);
+    });
+});
+
+// PR CI never runs `pnpm generate:models`, so this runs the real generator to catch a dependency update that breaks it.
+describe('openapi-typescript', () => {
+    it('generates types from a minimal specification', async () => {
+        const ast = await openapiTS(
+            {
+                openapi: '3.1.0',
+                info: { title: 'Test', version: '1.0.0' },
+                paths: {},
+                components: {
+                    schemas: {
+                        Run: {
+                            type: 'object',
+                            required: ['startedAt'],
+                            properties: { startedAt: { type: 'string', format: 'date-time' } },
+                        },
+                    },
+                },
+            },
+            { transform: transformDateTime, silent: true },
+        );
+
+        expect(astToString(ast)).toContain('startedAt: Date;');
     });
 });

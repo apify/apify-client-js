@@ -1515,10 +1515,11 @@ export interface paths {
          *     landing page, and `isPublic` publishes or unpublishes the task itself. Both require
          *     write permission to the task's Actor.
          *
-         *     To publish a task, its Actor must be public, `publicConfig.inputSchemaFields` and
-         *     `publicConfig.datasetView` must be set, and the Actor must have fewer than 50 published
-         *     tasks. If the task isn't ready to be published, the whole update fails and none of it
-         *     is applied.
+         *     To publish a task, its Actor must be public and both `publicConfig.inputSchemaFields` and
+         *     `publicConfig.datasetView` must be set. Note that an Actor can have up to 10 published tasks
+         *     and your account up to 100.
+         *     If the task doesn't meet all these conditions, the request fails and no fields are updated,
+         *     including those unrelated to publishing.
          *
          *     Publishing lists the task among the Actor's examples and makes its input public, so anyone
          *     can view and copy it. The landing page itself is shown only while `publicConfig` still
@@ -6788,6 +6789,8 @@ export interface components {
          * @enum {string}
          */
         HttpMethod: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH";
+        /** @description The HTTP method of the request. */
+        RequestMethod: components["schemas"]["HttpMethod"];
         /**
          * @description The number of times this request has been retried.
          * @example 0
@@ -6808,7 +6811,7 @@ export interface components {
         RequestBase: {
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
-            method?: components["schemas"]["HttpMethod"];
+            method?: components["schemas"]["RequestMethod"];
             retryCount?: components["schemas"]["RetryCount"];
             /**
              * @description The final URL that was loaded, after redirects (if any).
@@ -6982,7 +6985,7 @@ export interface components {
             id?: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
-            method?: components["schemas"]["HttpMethod"];
+            method?: components["schemas"]["RequestMethod"];
         };
         /**
          * BatchAddResult
@@ -7144,7 +7147,7 @@ export interface components {
             id: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
-            method?: components["schemas"]["HttpMethod"];
+            method?: components["schemas"]["RequestMethod"];
             retryCount?: components["schemas"]["RetryCount"];
         };
         /**
@@ -7203,7 +7206,7 @@ export interface components {
             id: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
-            method?: components["schemas"]["HttpMethod"];
+            method?: components["schemas"]["RequestMethod"];
             retryCount?: components["schemas"]["RetryCount"];
             lockExpiresAt: components["schemas"]["LockExpiresAt"];
         };
@@ -7395,6 +7398,7 @@ export interface components {
             options?: components["schemas"]["TaskOptions"] | null;
             input?: components["schemas"]["TaskInput"] | components["schemas"]["TaskInput"][] | null;
             title?: string | null;
+            description?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             /**
              * @description Configuration that controls how the published task appears on its public landing page.
@@ -7430,6 +7434,7 @@ export interface components {
             options?: components["schemas"]["TaskOptions"] | null;
             input?: components["schemas"]["TaskInput"] | components["schemas"]["TaskInput"][] | null;
             title?: string | null;
+            description?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             /** Format: uri */
             standbyUrl?: string | null;
@@ -7477,6 +7482,7 @@ export interface components {
             options?: components["schemas"]["TaskOptions"] | null;
             input?: components["schemas"]["TaskInput"] | components["schemas"]["TaskInput"][] | null;
             title?: string | null;
+            description?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             /**
              * @description Configuration that controls how the published task appears on its public landing page.
@@ -8890,7 +8896,7 @@ export interface components {
          */
         clean: boolean;
         /** @description Maximum number of items to return. By default there is no limit. */
-        datasetParameters_limit: number;
+        "limit-2": number;
         /**
          * @description A comma-separated list of fields which should be picked from the items, only these fields will remain in the resulting record objects.
          *     Note that the fields in the outputted items are sorted the same way as they are specified in the `fields` query parameter.
@@ -9015,7 +9021,7 @@ export interface components {
          */
         restartOnErrorResurrect: boolean;
         /** @description Filter for the run status. */
-        lastRunParameters_status: string;
+        "status-2": string;
         /** @description Filter for the run origin, i.e. the means by which the run was started. */
         origin: components["schemas"]["RunOrigin"];
         /** @description Signature used for the access. */
@@ -9025,7 +9031,7 @@ export interface components {
         /** @description All keys up to this one (including) are skipped from the result. */
         exclusiveStartKey: string;
         /** @description Number of keys to be returned. */
-        keyValueStoreParameters_limit: number;
+        "limit-3": number;
         /** @description Limit the results to keys that belong to a specific collection from the key-value store schema. The key-value store need to have a schema defined for this parameter to work. */
         collectionKeys: string;
         /** @description Limit the results to keys that start with a specific prefix. */
@@ -9040,7 +9046,7 @@ export interface components {
          * @description If `true` or `1`, the response will be served with `Content-Disposition: attachment` header,
          *     causing web browsers to offer downloading HTML records instead of displaying them.
          */
-        keyValueStoreParameters_attachment: boolean;
+        "attachment-2": boolean;
         /**
          * @description A unique identifier of the client accessing the request queue. It must
          *     be a string between 1 and 32 characters long. This identifier is used to
@@ -9157,6 +9163,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -10151,6 +10182,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -10189,6 +10245,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -10472,6 +10553,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -10802,7 +10908,7 @@ export interface operations {
                 /** @description Number of items that should be skipped at the start. The default value is `0`. */
                 offset?: components["parameters"]["offset"];
                 /** @description Maximum number of items to return. By default there is no limit. */
-                limit?: components["parameters"]["datasetParameters_limit"];
+                limit?: components["parameters"]["limit-2"];
                 /**
                  * @description A comma-separated list of fields which should be picked from the items, only these fields will remain in the resulting record objects.
                  *     Note that the fields in the outputted items are sorted the same way as they are specified in the `fields` query parameter.
@@ -10927,9 +11033,14 @@ export interface operations {
                         /** @example 100 */
                         "text/plain": string;
                     };
-                    /** @description The total number of items in the dataset. */
+                    /** @description The total number of items available. */
                     "X-Apify-Pagination-Total"?: {
                         /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
                         "text/plain": string;
                     };
                     [name: string]: unknown;
@@ -11007,7 +11118,7 @@ export interface operations {
                 /** @description Number of items that should be skipped at the start. The default value is `0`. */
                 offset?: components["parameters"]["offset"];
                 /** @description Maximum number of items to return. By default there is no limit. */
-                limit?: components["parameters"]["datasetParameters_limit"];
+                limit?: components["parameters"]["limit-2"];
                 /**
                  * @description A comma-separated list of fields which should be picked from the items, only these fields will remain in the resulting record objects.
                  *     Note that the fields in the outputted items are sorted the same way as they are specified in the `fields` query parameter.
@@ -11142,9 +11253,14 @@ export interface operations {
                         /** @example 100 */
                         "text/plain": string;
                     };
-                    /** @description The total number of items in the dataset. */
+                    /** @description The total number of items available. */
                     "X-Apify-Pagination-Total"?: {
                         /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
                         "text/plain": string;
                     };
                     [name: string]: unknown;
@@ -11282,7 +11398,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -11322,7 +11438,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -11356,7 +11472,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -11395,7 +11511,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -11421,7 +11537,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description Format of the results, possible values are: `json`, `jsonl`, `csv`, `html`, `xlsx`, `xml` and `rss`. The default value is `json`. */
@@ -11435,7 +11551,7 @@ export interface operations {
                 /** @description Number of items that should be skipped at the start. The default value is `0`. */
                 offset?: components["parameters"]["offset"];
                 /** @description Maximum number of items to return. By default there is no limit. */
-                limit?: components["parameters"]["datasetParameters_limit"];
+                limit?: components["parameters"]["limit-2"];
                 /**
                  * @description A comma-separated list of fields which should be picked from the items, only these fields will remain in the resulting record objects.
                  *     Note that the fields in the outputted items are sorted the same way as they are specified in the `fields` query parameter.
@@ -11562,9 +11678,14 @@ export interface operations {
                         /** @example 100 */
                         "text/plain": string;
                     };
-                    /** @description The total number of items in the dataset. */
+                    /** @description The total number of items available. */
                     "X-Apify-Pagination-Total"?: {
                         /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
                         "text/plain": string;
                     };
                     [name: string]: unknown;
@@ -11597,7 +11718,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -11650,7 +11771,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -11684,7 +11805,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -11718,7 +11839,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -11762,7 +11883,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -11788,13 +11909,13 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description All keys up to this one (including) are skipped from the result. */
                 exclusiveStartKey?: components["parameters"]["exclusiveStartKey"];
                 /** @description Number of keys to be returned. */
-                limit?: components["parameters"]["keyValueStoreParameters_limit"];
+                limit?: components["parameters"]["limit-3"];
                 /** @description Limit the results to keys that belong to a specific collection from the key-value store schema. The key-value store need to have a schema defined for this parameter to work. */
                 collection?: components["parameters"]["collectionKeys"];
                 /** @description Limit the results to keys that start with a specific prefix. */
@@ -11832,7 +11953,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description If specified, only records belonging to a specific collection from the key-value store schema. The key-value store need to have a schema defined for this parameter to work. */
@@ -11872,7 +11993,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description Signature used for the access. */
@@ -11881,7 +12002,7 @@ export interface operations {
                  * @description If `true` or `1`, the response will be served with `Content-Disposition: attachment` header,
                  *     causing web browsers to offer downloading HTML records instead of displaying them.
                  */
-                attachment?: components["parameters"]["keyValueStoreParameters_attachment"];
+                attachment?: components["parameters"]["attachment-2"];
             };
             header?: never;
             path: {
@@ -11926,7 +12047,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -11976,7 +12097,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -12026,7 +12147,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -12054,7 +12175,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -12088,7 +12209,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -12132,7 +12253,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -12158,7 +12279,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -12213,7 +12334,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -12267,7 +12388,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -12321,7 +12442,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -12372,7 +12493,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -12416,7 +12537,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -12452,7 +12573,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -12508,7 +12629,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -12546,7 +12667,7 @@ export interface operations {
         parameters: {
             query: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description How long the requests will be locked for (in seconds). */
@@ -12598,7 +12719,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -12641,7 +12762,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description How many items from queue should be returned. */
@@ -12687,7 +12808,7 @@ export interface operations {
         parameters: {
             query: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description How long the requests will be locked for (in seconds). */
@@ -12734,7 +12855,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description If `true` or `1` then the logs will be streamed as long as the run or build is running. */
@@ -12776,7 +12897,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -12907,7 +13028,7 @@ export interface operations {
         parameters: {
             query: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description ID of a target Actor that the run should be transformed into. */
@@ -12950,7 +13071,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -13208,6 +13329,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -13523,6 +13669,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -13641,6 +13812,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -13967,7 +14163,7 @@ export interface operations {
                 /** @description Number of items that should be skipped at the start. The default value is `0`. */
                 offset?: components["parameters"]["offset"];
                 /** @description Maximum number of items to return. By default there is no limit. */
-                limit?: components["parameters"]["datasetParameters_limit"];
+                limit?: components["parameters"]["limit-2"];
                 /**
                  * @description A comma-separated list of fields which should be picked from the items, only these fields will remain in the resulting record objects.
                  *     Note that the fields in the outputted items are sorted the same way as they are specified in the `fields` query parameter.
@@ -14092,9 +14288,14 @@ export interface operations {
                         /** @example 100 */
                         "text/plain": string;
                     };
-                    /** @description The total number of items in the dataset. */
+                    /** @description The total number of items available. */
                     "X-Apify-Pagination-Total"?: {
                         /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
                         "text/plain": string;
                     };
                     [name: string]: unknown;
@@ -14164,7 +14365,7 @@ export interface operations {
                 /** @description Number of items that should be skipped at the start. The default value is `0`. */
                 offset?: components["parameters"]["offset"];
                 /** @description Maximum number of items to return. By default there is no limit. */
-                limit?: components["parameters"]["datasetParameters_limit"];
+                limit?: components["parameters"]["limit-2"];
                 /**
                  * @description A comma-separated list of fields which should be picked from the items, only these fields will remain in the resulting record objects.
                  *     Note that the fields in the outputted items are sorted the same way as they are specified in the `fields` query parameter.
@@ -14299,9 +14500,14 @@ export interface operations {
                         /** @example 100 */
                         "text/plain": string;
                     };
-                    /** @description The total number of items in the dataset. */
+                    /** @description The total number of items available. */
                     "X-Apify-Pagination-Total"?: {
                         /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
                         "text/plain": string;
                     };
                     [name: string]: unknown;
@@ -14326,7 +14532,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -14368,7 +14574,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description If `true` or `1` then the logs will be streamed as long as the run or build is running. */
@@ -14410,7 +14616,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -14541,7 +14747,7 @@ export interface operations {
         parameters: {
             query: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description ID of a target Actor that the run should be transformed into. */
@@ -14584,7 +14790,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -14617,7 +14823,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -14651,7 +14857,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -14690,7 +14896,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -14716,7 +14922,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description Format of the results, possible values are: `json`, `jsonl`, `csv`, `html`, `xlsx`, `xml` and `rss`. The default value is `json`. */
@@ -14730,7 +14936,7 @@ export interface operations {
                 /** @description Number of items that should be skipped at the start. The default value is `0`. */
                 offset?: components["parameters"]["offset"];
                 /** @description Maximum number of items to return. By default there is no limit. */
-                limit?: components["parameters"]["datasetParameters_limit"];
+                limit?: components["parameters"]["limit-2"];
                 /**
                  * @description A comma-separated list of fields which should be picked from the items, only these fields will remain in the resulting record objects.
                  *     Note that the fields in the outputted items are sorted the same way as they are specified in the `fields` query parameter.
@@ -14857,9 +15063,14 @@ export interface operations {
                         /** @example 100 */
                         "text/plain": string;
                     };
-                    /** @description The total number of items in the dataset. */
+                    /** @description The total number of items available. */
                     "X-Apify-Pagination-Total"?: {
                         /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
                         "text/plain": string;
                     };
                     [name: string]: unknown;
@@ -14892,7 +15103,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -14945,7 +15156,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -14979,7 +15190,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -15013,7 +15224,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -15057,7 +15268,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -15083,13 +15294,13 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description All keys up to this one (including) are skipped from the result. */
                 exclusiveStartKey?: components["parameters"]["exclusiveStartKey"];
                 /** @description Number of keys to be returned. */
-                limit?: components["parameters"]["keyValueStoreParameters_limit"];
+                limit?: components["parameters"]["limit-3"];
                 /** @description Limit the results to keys that belong to a specific collection from the key-value store schema. The key-value store need to have a schema defined for this parameter to work. */
                 collection?: components["parameters"]["collectionKeys"];
                 /** @description Limit the results to keys that start with a specific prefix. */
@@ -15127,7 +15338,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description If specified, only records belonging to a specific collection from the key-value store schema. The key-value store need to have a schema defined for this parameter to work. */
@@ -15167,7 +15378,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description Signature used for the access. */
@@ -15176,7 +15387,7 @@ export interface operations {
                  * @description If `true` or `1`, the response will be served with `Content-Disposition: attachment` header,
                  *     causing web browsers to offer downloading HTML records instead of displaying them.
                  */
-                attachment?: components["parameters"]["keyValueStoreParameters_attachment"];
+                attachment?: components["parameters"]["attachment-2"];
             };
             header?: never;
             path: {
@@ -15221,7 +15432,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -15271,7 +15482,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -15321,7 +15532,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -15349,7 +15560,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -15383,7 +15594,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -15427,7 +15638,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -15453,7 +15664,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description How many items from queue should be returned. */
@@ -15499,7 +15710,7 @@ export interface operations {
         parameters: {
             query: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description How long the requests will be locked for (in seconds). */
@@ -15546,7 +15757,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -15601,7 +15812,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -15655,7 +15866,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -15709,7 +15920,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -15760,7 +15971,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -15804,7 +16015,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
             };
@@ -15840,7 +16051,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -15896,7 +16107,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -15934,7 +16145,7 @@ export interface operations {
         parameters: {
             query: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /** @description How long the requests will be locked for (in seconds). */
@@ -15986,7 +16197,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Filter for the run status. */
-                status?: components["parameters"]["lastRunParameters_status"];
+                status?: components["parameters"]["status-2"];
                 /** @description Filter for the run origin, i.e. the means by which the run was started. */
                 origin?: components["parameters"]["origin"];
                 /**
@@ -16061,6 +16272,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -16439,12 +16675,12 @@ export interface operations {
     PostChargeRun: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
                 /**
-                 * @description Always pass a unique idempotency key (any unique string) for each charge to avoid double charging in case of retries or network errors.
+                 * @description Always pass a unique idempotency key (any unique string) for each charge to avoid double charging in case of retries or network errors. The key expires 3 minutes after the charge, so a later request with the same key creates a new charge.
                  * @example 2024-12-09T01:23:45.000Z-random-uuid
                  */
-                "idempotency-key"?: string;
+                "idempotency-key": string;
             };
             path: {
                 /** @description Actor run ID. */
@@ -16582,7 +16818,7 @@ export interface operations {
                 /** @description Number of items that should be skipped at the start. The default value is `0`. */
                 offset?: components["parameters"]["offset"];
                 /** @description Maximum number of items to return. By default there is no limit. */
-                limit?: components["parameters"]["datasetParameters_limit"];
+                limit?: components["parameters"]["limit-2"];
                 /**
                  * @description A comma-separated list of fields which should be picked from the items, only these fields will remain in the resulting record objects.
                  *     Note that the fields in the outputted items are sorted the same way as they are specified in the `fields` query parameter.
@@ -16709,9 +16945,14 @@ export interface operations {
                         /** @example 100 */
                         "text/plain": string;
                     };
-                    /** @description The total number of items in the dataset. */
+                    /** @description The total number of items available. */
                     "X-Apify-Pagination-Total"?: {
                         /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
                         "text/plain": string;
                     };
                     [name: string]: unknown;
@@ -16912,7 +17153,7 @@ export interface operations {
                 /** @description All keys up to this one (including) are skipped from the result. */
                 exclusiveStartKey?: components["parameters"]["exclusiveStartKey"];
                 /** @description Number of keys to be returned. */
-                limit?: components["parameters"]["keyValueStoreParameters_limit"];
+                limit?: components["parameters"]["limit-3"];
                 /** @description Limit the results to keys that belong to a specific collection from the key-value store schema. The key-value store need to have a schema defined for this parameter to work. */
                 collection?: components["parameters"]["collectionKeys"];
                 /** @description Limit the results to keys that start with a specific prefix. */
@@ -16991,7 +17232,7 @@ export interface operations {
                  * @description If `true` or `1`, the response will be served with `Content-Disposition: attachment` header,
                  *     causing web browsers to offer downloading HTML records instead of displaying them.
                  */
-                attachment?: components["parameters"]["keyValueStoreParameters_attachment"];
+                attachment?: components["parameters"]["attachment-2"];
             };
             header?: never;
             path: {
@@ -17820,6 +18061,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -18015,6 +18281,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -18163,7 +18454,7 @@ export interface operations {
                 /** @description All keys up to this one (including) are skipped from the result. */
                 exclusiveStartKey?: components["parameters"]["exclusiveStartKey"];
                 /** @description Number of keys to be returned. */
-                limit?: components["parameters"]["keyValueStoreParameters_limit"];
+                limit?: components["parameters"]["limit-3"];
                 /** @description Limit the results to keys that belong to a specific collection from the key-value store schema. The key-value store need to have a schema defined for this parameter to work. */
                 collection?: components["parameters"]["collectionKeys"];
                 /** @description Limit the results to keys that start with a specific prefix. */
@@ -18240,7 +18531,7 @@ export interface operations {
                  * @description If `true` or `1`, the response will be served with `Content-Disposition: attachment` header,
                  *     causing web browsers to offer downloading HTML records instead of displaying them.
                  */
-                attachment?: components["parameters"]["keyValueStoreParameters_attachment"];
+                attachment?: components["parameters"]["attachment-2"];
                 /** @description Signature used for the access. */
                 signature?: components["parameters"]["signature"];
             };
@@ -18458,6 +18749,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -18609,7 +18925,7 @@ export interface operations {
                 /** @description Number of items that should be skipped at the start. The default value is `0`. */
                 offset?: components["parameters"]["offset"];
                 /** @description Maximum number of items to return. By default there is no limit. */
-                limit?: components["parameters"]["datasetParameters_limit"];
+                limit?: components["parameters"]["limit-2"];
                 /**
                  * @description A comma-separated list of fields which should be picked from the items, only these fields will remain in the resulting record objects.
                  *     Note that the fields in the outputted items are sorted the same way as they are specified in the `fields` query parameter.
@@ -18736,9 +19052,14 @@ export interface operations {
                         /** @example 100 */
                         "text/plain": string;
                     };
-                    /** @description The total number of items in the dataset. */
+                    /** @description The total number of items available. */
                     "X-Apify-Pagination-Total"?: {
                         /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
                         "text/plain": string;
                     };
                     [name: string]: unknown;
@@ -18829,7 +19150,7 @@ export interface operations {
                 /** @description Number of items that should be skipped at the start. The default value is `0`. */
                 offset?: components["parameters"]["offset"];
                 /** @description Maximum number of items to return. By default there is no limit. */
-                limit?: components["parameters"]["datasetParameters_limit"];
+                limit?: components["parameters"]["limit-2"];
                 /**
                  * @description A comma-separated list of fields which should be picked from the items, only these fields will remain in the resulting record objects.
                  *     Note that the fields in the outputted items are sorted the same way as they are specified in the `fields` query parameter.
@@ -18956,9 +19277,14 @@ export interface operations {
                         /** @example 100 */
                         "text/plain": string;
                     };
-                    /** @description The total number of items in the dataset. */
+                    /** @description The total number of items available. */
                     "X-Apify-Pagination-Total"?: {
                         /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
                         "text/plain": string;
                     };
                     [name: string]: unknown;
@@ -19035,6 +19361,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -19725,6 +20076,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -19894,7 +20270,17 @@ export interface operations {
     };
     webhook_webhookDispatches_get: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Number of items that should be skipped at the start. The default value is `0`. */
+                offset?: components["parameters"]["offset"];
+                /** @description Maximum number of items to return. The default value as well as the maximum is `1000`. */
+                limit?: components["parameters"]["limit"];
+                /**
+                 * @description If `true` or `1` then the objects are sorted by the `createdAt` field in
+                 *     descending order. By default, they are sorted in ascending order.
+                 */
+                desc?: components["parameters"]["descCreatedAt"];
+            };
             header?: never;
             path: {
                 /** @description Webhook ID. */
@@ -19906,6 +20292,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -19941,6 +20352,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -20003,6 +20439,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
@@ -20240,6 +20701,31 @@ export interface operations {
         responses: {
             200: {
                 headers: {
+                    /** @description The offset of the first item in the current page. */
+                    "X-Apify-Pagination-Offset"?: {
+                        /** @example 0 */
+                        "text/plain": string;
+                    };
+                    /** @description The maximum number of items returned per page. */
+                    "X-Apify-Pagination-Limit"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The number of items returned in the current page. */
+                    "X-Apify-Pagination-Count"?: {
+                        /** @example 100 */
+                        "text/plain": string;
+                    };
+                    /** @description The total number of items available. */
+                    "X-Apify-Pagination-Total"?: {
+                        /** @example 10204 */
+                        "text/plain": string;
+                    };
+                    /** @description Whether the items are sorted in descending order. */
+                    "X-Apify-Pagination-Desc"?: {
+                        /** @example false */
+                        "text/plain": string;
+                    };
                     [name: string]: unknown;
                 };
                 content: {
