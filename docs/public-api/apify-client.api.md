@@ -2485,6 +2485,7 @@ export class DatasetClient<Data extends Record<string | number, any> = Record<st
 export interface DatasetClientCreateItemsUrlOptions extends Omit<DatasetClientListItemOptions, 'chunkSize' | 'signature'> {
     // (undocumented)
     expiresInSecs?: number;
+    format?: `${DownloadItemsFormat}`;
 }
 
 // @public
