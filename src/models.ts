@@ -732,15 +732,6 @@ export interface TaskOptions extends GeneratedTaskOptions {}
  */
 export interface TaskPublicConfig extends GeneratedTaskPublicConfig {}
 
-/**
- * Fields the API returns on a task that the OpenAPI spec does not describe yet.
- *
- * TODO: Remove once the spec covers it.
- */
-export interface TaskSpecGaps {
-    description?: string;
-}
-
 export interface TaskRePointed {
     stats?: TaskStats | null;
     options?: TaskOptions | null;
@@ -758,7 +749,7 @@ export interface TaskRePointed {
  * Tasks are saved Actor configurations with input and settings that can be executed
  * repeatedly without having to specify the full input each time.
  */
-export interface Task extends Omit<Schemas['Task'], keyof TaskRePointed>, TaskRePointed, TaskSpecGaps {}
+export interface Task extends Omit<Schemas['Task'], keyof TaskRePointed>, TaskRePointed {}
 
 export interface TaskListRePointed {
     stats?: TaskStats | null;
@@ -767,7 +758,7 @@ export interface TaskListRePointed {
 /**
  * Fields the API returns on a listed task that the OpenAPI spec does not describe yet.
  *
- * `description` is deliberately not here, although `TaskSpecGaps` claims it on the full resource: the
+ * `description` is deliberately not here, although the spec has it on the full `Task` resource: the
  * list endpoint publishes a smaller set of fields, and that is one of the fields it leaves out.
  *
  * TODO: Remove once the spec covers it.
