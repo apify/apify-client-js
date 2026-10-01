@@ -474,7 +474,7 @@ describe('Dataset methods', () => {
                 const datasetId = 'id-with-secret-key';
                 const res = await client
                     .dataset(datasetId)
-                    .createItemsPublicUrl({ desc: true, limit: 10, offset: 5, format: DownloadItemsFormat.CSV });
+                    .createItemsPublicUrl({ desc: true, limit: 10, offset: 5, format: 'csv' });
                 const itemsPublicUrl = new URL(res);
 
                 expect(itemsPublicUrl.searchParams.get('desc')).toBe('true');

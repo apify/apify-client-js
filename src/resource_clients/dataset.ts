@@ -35,6 +35,8 @@ export enum DownloadItemsFormat {
     RSS = 'rss',
 }
 
+const itemFormatSchema = z.enum(DownloadItemsFormat);
+
 // A predicate, not a `z.object()` arm, which would walk and copy every key of every pushed item.
 const itemSchema = z.custom<object>(isNonArrayObject, 'Expected an object');
 const listItemsOptionsSchema = z.strictObject({
@@ -83,7 +85,7 @@ const createItemsPublicUrlOptionsSchema = z.strictObject({
     desc: z.boolean().optional(),
     flatten: z.array(z.string()).optional(),
     fields: z.array(z.string()).optional(),
-    format: z.enum(DownloadItemsFormat).optional(),
+    format: itemFormatSchema.optional(),
     omit: z.array(z.string()).optional(),
     limit: z.number().min(0).optional(),
     offset: z.number().min(0).optional(),
@@ -403,6 +405,7 @@ export class DatasetClient<
      * @param options - URL generation options (extends all options from {@link listItems})
      * @param options.expiresInSecs - Number of seconds until the signed URL expires. If omitted, the URL never expires.
      * @param options.fields - Array of field names to include in the response.
+     * @param options.format - Format of the items served by the URL. Defaults to `json`.
      * @param options.limit - Maximum number of items to return.
      * @param options.offset - Number of items to skip.
      * @param options.timeoutSecs - Timeout for the API request that fetches the dataset. Default is `'long'`.
@@ -519,7 +522,7 @@ export interface DatasetClientListItemOptions extends PaginationOptions, Timeout
 /**
  * Options for creating a public URL to access dataset items.
  *
- * Extends {@link DatasetClientListItemOptions} with URL expiration control, minus `chunkSize` (it only
+ * Extends {@link DatasetClientListItemOptions} with output format and URL expiration control, minus `chunkSize` (it only
  * sizes a client-side iteration) and `signature` (this method produces one).
  * @since Added in 2.16.0
  */
@@ -527,14 +530,13 @@ export interface DatasetClientCreateItemsUrlOptions extends Omit<
     DatasetClientListItemOptions,
     'chunkSize' | 'signature'
 > {
-    format?: DownloadItemsFormat;
+    /**
+     * Format of the items served by the URL. Defaults to `json`.
+     * @since Added in 2.26.0
+     */
+    format?: `${DownloadItemsFormat}`;
     expiresInSecs?: number;
 }
-
-const validItemFormats = [...new Set(Object.values(DownloadItemsFormat).map((item) => item.toLowerCase()))];
-
-// Declared below `validItemFormats` because it references it at module load time.
-const itemFormatSchema = z.enum(validItemFormats);
 
 /**
  * Options for downloading dataset items in a specific format.
