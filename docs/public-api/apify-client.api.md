@@ -835,7 +835,7 @@ interface components {
         outputRecordKey: string;
         format: string;
         clean: boolean;
-        datasetParameters_limit: number;
+        "limit-2": number;
         fields: string;
         outputFields: string;
         omit: string;
@@ -860,18 +860,18 @@ interface components {
         timeoutResurrect: number;
         memoryResurrect: number;
         restartOnErrorResurrect: boolean;
-        lastRunParameters_status: string;
+        "status-2": string;
         origin: components["schemas"]["RunOrigin"];
         signature: string;
         "Content-Encoding": "br" | "gzip" | "deflate" | "identity";
         exclusiveStartKey: string;
-        keyValueStoreParameters_limit: number;
+        "limit-3": number;
         collectionKeys: string;
         prefixKeys: string;
         collectionRecords: string;
         prefixRecords: string;
         recordKey: string;
-        keyValueStoreParameters_attachment: boolean;
+        "attachment-2": boolean;
         clientKey: string;
         exclusiveStartId: string;
         listLimit: number;
@@ -1733,6 +1733,7 @@ interface components {
         UniqueKey: string;
         RequestUrl: string;
         HttpMethod: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH";
+        RequestMethod: components["schemas"]["HttpMethod"];
         RetryCount: number;
         RequestUserData: {
             [key: string]: unknown;
@@ -1740,7 +1741,7 @@ interface components {
         RequestBase: {
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
-            method?: components["schemas"]["HttpMethod"];
+            method?: components["schemas"]["RequestMethod"];
             retryCount?: components["schemas"]["RetryCount"];
             loadedUrl?: string | null;
             payload?: string | Record<string, unknown> | null;
@@ -1785,7 +1786,7 @@ interface components {
             id?: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
-            method?: components["schemas"]["HttpMethod"];
+            method?: components["schemas"]["RequestMethod"];
         };
         BatchAddResult: {
             processedRequests: components["schemas"]["AddedRequest"][];
@@ -1843,7 +1844,7 @@ interface components {
             id: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
-            method?: components["schemas"]["HttpMethod"];
+            method?: components["schemas"]["RequestMethod"];
             retryCount?: components["schemas"]["RetryCount"];
         };
         RequestQueueHead: {
@@ -1859,7 +1860,7 @@ interface components {
             id: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
-            method?: components["schemas"]["HttpMethod"];
+            method?: components["schemas"]["RequestMethod"];
             retryCount?: components["schemas"]["RetryCount"];
             lockExpiresAt: components["schemas"]["LockExpiresAt"];
         };
@@ -1921,6 +1922,7 @@ interface components {
             options?: components["schemas"]["TaskOptions"] | null;
             input?: components["schemas"]["TaskInput"] | components["schemas"]["TaskInput"][] | null;
             title?: string | null;
+            description?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             publicConfig?: components["schemas"]["TaskPublicConfig"];
         };
@@ -1937,6 +1939,7 @@ interface components {
             options?: components["schemas"]["TaskOptions"] | null;
             input?: components["schemas"]["TaskInput"] | components["schemas"]["TaskInput"][] | null;
             title?: string | null;
+            description?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             standbyUrl?: string | null;
             isPublic?: boolean;
@@ -1950,6 +1953,7 @@ interface components {
             options?: components["schemas"]["TaskOptions"] | null;
             input?: components["schemas"]["TaskInput"] | components["schemas"]["TaskInput"][] | null;
             title?: string | null;
+            description?: string | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             publicConfig?: components["schemas"]["TaskPublicConfig"];
             isPublic?: boolean;
@@ -3892,7 +3896,7 @@ export interface StreamedLogOptions {
 }
 
 // @public
-export interface Task extends Omit<Schemas['Task'], keyof TaskRePointed>, TaskRePointed, TaskSpecGaps {
+export interface Task extends Omit<Schemas['Task'], keyof TaskRePointed>, TaskRePointed {
 }
 
 // @public
@@ -3980,13 +3984,6 @@ interface TaskRePointed {
     publicConfig?: TaskPublicConfig | null;
     // (undocumented)
     stats?: TaskStats | null;
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface TaskSpecGaps {
-    // (undocumented)
-    description?: string;
 }
 
 // @public

@@ -891,6 +891,9 @@ export const RequestUrl = lazySchema(() => z.string());
 
 export const HttpMethod = lazySchema(() => z.enum(["GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH"]).or(z.string()));
 
+/** The HTTP method of the request. */
+export const RequestMethod = lazySchema(() => HttpMethod());
+
 /** The number of times this request has been retried. */
 export const RetryCount = lazySchema(() => z.int());
 
@@ -900,7 +903,7 @@ export const RequestUserData = lazySchema(() => z.record(z.string(), z.unknown()
 export const RequestBase = lazySchema(() => z.looseObject({
     uniqueKey: UniqueKey(),
     url: RequestUrl(),
-    method: HttpMethod().optional(),
+    method: RequestMethod().optional(),
     retryCount: RetryCount().optional(),
     loadedUrl: z.string().nullable().optional(),
     payload: z.union([z.string(), z.record(z.string(), z.unknown())]).nullable().optional(),
@@ -967,7 +970,7 @@ export const RequestDraft = lazySchema(() => z.looseObject({
     id: RequestId().optional(),
     uniqueKey: UniqueKey(),
     url: RequestUrl(),
-    method: HttpMethod().optional(),
+    method: RequestMethod().optional(),
 }));
 
 /** Result of a batch add operation containing successfully processed and failed requests. */
@@ -1063,7 +1066,7 @@ export const HeadRequest = lazySchema(() => z.looseObject({
     id: RequestId(),
     uniqueKey: UniqueKey(),
     url: RequestUrl(),
-    method: HttpMethod().optional(),
+    method: RequestMethod().optional(),
     retryCount: RetryCount().optional(),
 }));
 
@@ -1085,7 +1088,7 @@ export const LockedHeadRequest = lazySchema(() => z.looseObject({
     id: RequestId(),
     uniqueKey: UniqueKey(),
     url: RequestUrl(),
-    method: HttpMethod().optional(),
+    method: RequestMethod().optional(),
     retryCount: RetryCount().optional(),
     lockExpiresAt: LockExpiresAt(),
 }));
@@ -1166,6 +1169,7 @@ export const CreateTaskRequest = lazySchema(() => z.looseObject({
     options: TaskOptions().nullable().optional(),
     input: z.union([TaskInput(), z.array(TaskInput())]).nullable().optional(),
     title: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
     actorStandby: ActorStandby().nullable().optional(),
     publicConfig: TaskPublicConfig().optional(),
 }));
@@ -1183,6 +1187,7 @@ export const Task = lazySchema(() => z.looseObject({
     options: TaskOptions().nullable().optional(),
     input: z.union([TaskInput(), z.array(TaskInput())]).nullable().optional(),
     title: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
     actorStandby: ActorStandby().nullable().optional(),
     standbyUrl: z.url({ normalize: true }).nullable().optional(),
     isPublic: z.boolean().optional(),
@@ -1199,6 +1204,7 @@ export const UpdateTaskRequest = lazySchema(() => z.looseObject({
     options: TaskOptions().nullable().optional(),
     input: z.union([TaskInput(), z.array(TaskInput())]).nullable().optional(),
     title: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
     actorStandby: ActorStandby().nullable().optional(),
     publicConfig: TaskPublicConfig().optional(),
     isPublic: z.boolean().optional(),
