@@ -238,6 +238,11 @@ export class StreamedLog {
                 if (!logStream) {
                     return;
                 }
+                // A stream opened during stop() would be cut after its first chunk, so read the log in one request.
+                if (this.#stopLogging) {
+                    logStream.destroy();
+                    continue;
+                }
                 lastChunkRemainder = await this.#logStreamChunks(logStream);
                 if (!lastChunkRemainder) {
                     const wakeSignals = [this.#stopController.signal, ...(this.#signal ? [this.#signal] : [])];
