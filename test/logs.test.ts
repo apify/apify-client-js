@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net';
 import { Readable } from 'node:stream';
 
-import { Log } from '@apify/log';
+import log, { Log } from '@apify/log';
 
 import { ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
@@ -129,4 +129,23 @@ test('StreamedLog neither reopens nor reads a log that does not exist', async ()
 
     expect(stream).toHaveBeenCalledTimes(1);
     expect(get).not.toHaveBeenCalled();
+});
+
+test('StreamedLog reports a failing one-shot log read and still stops', async () => {
+    const stream = vi.fn().mockImplementation(async () => Readable.from([]));
+    const get = vi.fn().mockRejectedValue(new Error('Simulated log read failure'));
+    const logClient = { stream, get } as unknown as LogClient;
+    const warning = vi.spyOn(log, 'warning').mockImplementation(() => {});
+
+    try {
+        const streamedLog = new StreamedLog({ toLog: new Log(), logClient });
+        streamedLog.start();
+        await vi.waitFor(() => expect(stream).toHaveBeenCalled());
+        await streamedLog.stop();
+
+        expect(get).toHaveBeenCalledTimes(1);
+        expect(warning).toHaveBeenCalledWith('Log redirection stopped due to error', expect.any(Error));
+    } finally {
+        warning.mockRestore();
+    }
 });
