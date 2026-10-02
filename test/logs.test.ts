@@ -117,3 +117,16 @@ test('StreamedLog redirects the whole log when stop() lands while an empty log s
 
     expect(info.mock.calls).toEqual(lines.map((line) => [line.trim()]));
 });
+
+test('StreamedLog neither reopens nor reads a log that does not exist', async () => {
+    const stream = vi.fn().mockResolvedValue(undefined);
+    const get = vi.fn();
+    const logClient = { stream, get } as unknown as LogClient;
+
+    const streamedLog = new StreamedLog({ toLog: new Log(), logClient });
+    streamedLog.start();
+    await streamedLog.stop();
+
+    expect(stream).toHaveBeenCalledTimes(1);
+    expect(get).not.toHaveBeenCalled();
+});
