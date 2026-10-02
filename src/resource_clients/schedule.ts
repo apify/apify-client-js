@@ -14,8 +14,8 @@ export type {
     ScheduleAction,
     ScheduleActionRunActor,
     ScheduleActionRunActorTask,
-    ScheduledActorRunInput,
-    ScheduledActorRunOptions,
+    ScheduleActionRunInput,
+    TaskOptions,
     ScheduleInvoked,
 } from '../models.js';
 export { ScheduleActions } from '../models.js';

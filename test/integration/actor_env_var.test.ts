@@ -1,6 +1,6 @@
 import { beforeAll, expect, test } from 'vitest';
 
-import type { Actor, ActorEnvironmentVariable, ActorVersion, ApifyClient } from 'apify-client';
+import type { Actor, EnvVar, Version, ApifyClient } from 'apify-client';
 import { ActorSourceType } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
@@ -12,7 +12,7 @@ beforeAll(() => {
     client = makeClient();
 });
 
-function sourceFilesVersion(versionNumber: string, envVars?: ActorEnvironmentVariable[]): ActorVersion {
+function sourceFilesVersion(versionNumber: string, envVars?: EnvVar[]): Version {
     return {
         versionNumber,
         sourceType: ActorSourceType.SourceFiles,
@@ -23,7 +23,7 @@ function sourceFilesVersion(versionNumber: string, envVars?: ActorEnvironmentVar
 }
 
 /** Create a throwaway Actor with a single unbuilt version, so this costs no compute. */
-async function createActor(version: ActorVersion): Promise<Actor> {
+async function createActor(version: Version): Promise<Actor> {
     return client.actors().create({ name: getRandomResourceName('actor'), versions: [version] });
 }
 
@@ -108,7 +108,7 @@ test('envVars().list() is async-iterable and yields every environment variable',
     const actorClient = client.actor(actor.id);
 
     try {
-        const collected: ActorEnvironmentVariable[] = [];
+        const collected: EnvVar[] = [];
         for await (const envVar of actorClient.version('0.0').envVars().list()) {
             collected.push(envVar);
         }

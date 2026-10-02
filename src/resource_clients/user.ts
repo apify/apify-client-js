@@ -1,30 +1,29 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_clients/index.js';
-import type { AccountAndUsageLimits, MonthlyUsage, User } from '../models.js';
+import type { AccountLimits, MonthlyUsage, UserPrivateInfo } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema } from '../timeouts.js';
 import { parseArgument, parseResponse } from '../utils.js';
 
 export type {
-    AccountAndUsageLimits,
+    AccountLimits,
     Current,
-    DailyServiceUsage,
+    DailyServiceUsages,
     EffectivePlatformFeature,
     EffectivePlatformFeatures,
     Limits,
     MonthlyUsage,
-    MonthlyUsageCycle,
-    PriceTier,
+    PriceTiers,
     ProxyGroup,
     ServiceUsage,
     UsageCycle,
     UsageItem,
-    User,
-    UserPlan,
-    UserProfile,
-    UserProxy,
+    UserPrivateInfo,
+    Plan,
+    Profile,
+    Proxy,
 } from '../models.js';
 export { PlatformFeature } from '../models.js';
 
@@ -74,7 +73,7 @@ export class UserClient extends ResourceClient {
      * @returns The user object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/user-get
      */
-    async get(options: TimeoutOptions = {}): Promise<User | undefined> {
+    async get(options: TimeoutOptions = {}): Promise<UserPrivateInfo | undefined> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         return this.getResource(schemas.UserPrivateInfo(), {}, timeoutSecs, signal);
@@ -111,7 +110,7 @@ export class UserClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/users-me-limits-get
      * @since Added in 2.9.2
      */
-    async limits(options: TimeoutOptions = {}): Promise<AccountAndUsageLimits> {
+    async limits(options: TimeoutOptions = {}): Promise<AccountLimits> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({

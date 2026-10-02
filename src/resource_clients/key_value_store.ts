@@ -11,7 +11,7 @@ import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_clients/index.js';
-import type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore } from '../models.js';
+import type { ListOfKeys, KeyValueStoreKey, KeyValueStore } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
@@ -74,7 +74,7 @@ const recordOptionsSchema = z.strictObject({
     doNotRetryTimeouts: z.boolean().optional(),
 });
 
-export type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore, KeyValueStoreStats } from '../models.js';
+export type { ListOfKeys, KeyValueStoreKey, KeyValueStore, KeyValueStoreStats } from '../models.js';
 
 /**
  * Client for managing a specific key-value store.
@@ -197,18 +197,14 @@ export class KeyValueStoreClient extends ResourceClient {
      * } while (result.isTruncated);
      * ```
      */
-    listKeys(
-        options: KeyValueClientListKeysOptions = {},
-    ): Promise<KeyValueClientListKeysResult> & AsyncIterable<KeyValueListItem> {
+    listKeys(options: KeyValueClientListKeysOptions = {}): Promise<ListOfKeys> & AsyncIterable<KeyValueStoreKey> {
         const {
             timeoutSecs = 'medium',
             signal,
             ...parsed
         } = parseArgument(options, listKeysOptionsSchema, 'KeyValueClientListKeysOptions');
 
-        const getPaginatedList = async (
-            kvsListOptions: KeyValueClientListKeysOptions = {},
-        ): Promise<KeyValueClientListKeysResult> => {
+        const getPaginatedList = async (kvsListOptions: KeyValueClientListKeysOptions = {}): Promise<ListOfKeys> => {
             const response = await this.httpClient.call({
                 url: this.buildUrl('keys'),
                 method: 'GET',
@@ -249,7 +245,7 @@ export class KeyValueStoreClient extends ResourceClient {
 
         return Object.defineProperty(paginatedListPromise, Symbol.asyncIterator, {
             value: asyncGenerator,
-        }) as unknown as AsyncIterable<KeyValueListItem> & Promise<KeyValueClientListKeysResult>;
+        }) as unknown as AsyncIterable<KeyValueStoreKey> & Promise<ListOfKeys>;
     }
 
     /**

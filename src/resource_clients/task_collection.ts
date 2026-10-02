@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
-import type { TaskList } from '../models.js';
+import type { TaskShort } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
@@ -16,7 +16,7 @@ const listOptionsSchema = z.strictObject({
     ...timeoutOptionsShape,
 });
 
-export type { TaskList } from '../models.js';
+export type { TaskShort } from '../models.js';
 
 /**
  * Client for managing the collection of Actor tasks in your account.
@@ -74,7 +74,7 @@ export class TaskCollectionClient extends ResourceCollectionClient {
      * @returns A paginated iterator of tasks.
      * @see https://docs.apify.com/api/v2/actor-tasks-get
      */
-    list(options: TaskCollectionListOptions = {}): PaginatedIterator<TaskList> {
+    list(options: TaskCollectionListOptions = {}): PaginatedIterator<TaskShort> {
         const parsed = parseArgument(options, listOptionsSchema, 'TaskCollectionListOptions');
 
         return this.listResourcesPaginated(schemas.ListOfTasks(), parsed, 'medium');

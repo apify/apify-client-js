@@ -15,7 +15,7 @@ export type {
     WebhookCertainRunCondition,
     WebhookCondition,
     WebhookEventType,
-    WebhookLastDispatch,
+    ExampleWebhookDispatch,
     WebhookStats,
 } from '../models.js';
 

@@ -11,17 +11,17 @@ import type { ApifyRequestConfig } from '../http_clients/index.js';
 import { ResponseValidationError } from '../response_validation_error.js';
 import type {
     RequestQueue,
-    RequestQueueClientAddRequestResult,
-    RequestQueueClientBatchDeleteRequestsResult,
-    RequestQueueClientBatchRequestsOperationResult,
-    RequestQueueClientListAndLockHeadResult,
-    RequestQueueClientListHeadResult,
-    RequestQueueClientListRequestsResult,
-    RequestQueueClientProlongRequestLockResult,
-    RequestQueueClientRequestSchema,
+    RequestRegistration,
+    BatchDeleteResult,
+    BatchAddResult,
+    LockedRequestQueueHead,
+    RequestQueueHead,
+    ListOfRequests,
+    RequestLockInfo,
+    Request,
     RequestQueueClientRequestToAdd,
     RequestQueueClientRequestToUpdate,
-    RequestQueueClientUnlockRequestsResult,
+    UnlockRequestsResult,
 } from '../models.js';
 import type { Timeout, TimeoutOptions, TimeoutTier } from '../timeouts.js';
 import * as schemas from '../schemas.js';
@@ -106,19 +106,19 @@ interface SerializedRequestToAdd {
 export type {
     AllowedHttpMethods,
     RequestQueue,
-    RequestQueueClientAddRequestResult,
-    RequestQueueClientBatchDeleteRequestsResult,
-    RequestQueueClientBatchRequestsOperationResult,
-    RequestQueueClientListAndLockHeadResult,
-    RequestQueueClientListHeadResult,
-    RequestQueueClientListItem,
-    RequestQueueClientListRequestsResult,
-    RequestQueueClientLockedListItem,
-    RequestQueueClientProlongRequestLockResult,
-    RequestQueueClientRequestSchema,
+    RequestRegistration,
+    BatchDeleteResult,
+    BatchAddResult,
+    LockedRequestQueueHead,
+    RequestQueueHead,
+    HeadRequest,
+    ListOfRequests,
+    LockedHeadRequest,
+    RequestLockInfo,
+    Request,
     RequestQueueClientRequestToAdd,
     RequestQueueClientRequestToUpdate,
-    RequestQueueClientUnlockRequestsResult,
+    UnlockRequestsResult,
     RequestQueueStats,
 } from '../models.js';
 
@@ -241,7 +241,7 @@ export class RequestQueueClient extends ResourceClient {
      * @returns List of requests from the queue head
      * @see https://docs.apify.com/api/v2/request-queue-head-get
      */
-    async listHead(options: RequestQueueClientListHeadOptions = {}): Promise<RequestQueueClientListHeadResult> {
+    async listHead(options: RequestQueueClientListHeadOptions = {}): Promise<RequestQueueHead> {
         const parsed = parseArgument(options, listHeadOptionsSchema, 'RequestQueueClientListHeadOptions');
 
         const response = await this.httpClient.call({
@@ -292,9 +292,7 @@ export class RequestQueueClient extends ResourceClient {
      * ```
      * @since Added in 2.4.1
      */
-    async listAndLockHead(
-        options: RequestQueueClientListAndLockHeadOptions,
-    ): Promise<RequestQueueClientListAndLockHeadResult> {
+    async listAndLockHead(options: RequestQueueClientListAndLockHeadOptions): Promise<LockedRequestQueueHead> {
         const parsed = parseArgument(options, listAndLockHeadOptionsSchema, 'RequestQueueClientListAndLockHeadOptions');
 
         const response = await this.httpClient.call({
@@ -354,7 +352,7 @@ export class RequestQueueClient extends ResourceClient {
     async addRequest(
         request: RequestQueueClientRequestToAdd,
         options: RequestQueueClientAddRequestOptions = {},
-    ): Promise<RequestQueueClientAddRequestResult> {
+    ): Promise<RequestRegistration> {
         parseArgument(request, newRequestSchema);
         const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientAddRequestOptions');
 
@@ -381,7 +379,7 @@ export class RequestQueueClient extends ResourceClient {
     protected async addRequestBatch(
         requests: SerializedRequestToAdd[],
         options: RequestQueueClientAddRequestOptions = {},
-    ): Promise<RequestQueueClientBatchRequestsOperationResult> {
+    ): Promise<BatchAddResult> {
         const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientAddRequestOptions');
 
         const response = await this.httpClient.call({
@@ -405,7 +403,7 @@ export class RequestQueueClient extends ResourceClient {
     protected async addRequestBatchWithRetries(
         requests: SerializedRequestToAdd[],
         options: RequestQueueClientBatchAddRequestWithRetriesOptions = {},
-    ): Promise<RequestQueueClientBatchRequestsOperationResult> {
+    ): Promise<BatchAddResult> {
         const {
             forefront,
             timeoutSecs,
@@ -416,10 +414,10 @@ export class RequestQueueClient extends ResourceClient {
         // Keep track of the requests that remain to be processed (in parameter format)
         let remainingRequests = requests;
         // Keep track of the requests that have been processed (in api format)
-        const processedRequests: RequestQueueClientBatchRequestsOperationResult['processedRequests'] = [];
+        const processedRequests: BatchAddResult['processedRequests'] = [];
         // The requests we have not been able to process in the last call
         // ie. those we have not been able to process at all
-        let unprocessedRequests: RequestQueueClientBatchRequestsOperationResult['unprocessedRequests'] = [];
+        let unprocessedRequests: BatchAddResult['unprocessedRequests'] = [];
         for (let i = 0; i < 1 + maxUnprocessedRequestsRetries; i++) {
             try {
                 const response = await this.addRequestBatch(remainingRequests, {
@@ -517,7 +515,7 @@ export class RequestQueueClient extends ResourceClient {
     async batchAddRequests(
         requests: RequestQueueClientRequestToAdd[],
         options: RequestQueueClientBatchAddRequestWithRetriesOptions = {},
-    ): Promise<RequestQueueClientBatchRequestsOperationResult> {
+    ): Promise<BatchAddResult> {
         const {
             forefront,
             timeoutSecs,
@@ -535,7 +533,7 @@ export class RequestQueueClient extends ResourceClient {
         parseArgument(minDelayBetweenUnprocessedRequestsRetriesMillis, optionalNumberSchema);
 
         const executingRequests = new Set();
-        const individualResults: RequestQueueClientBatchRequestsOperationResult[] = [];
+        const individualResults: BatchAddResult[] = [];
         const payloadSizeLimitBytes =
             MAX_PAYLOAD_SIZE_BYTES - Math.ceil(MAX_PAYLOAD_SIZE_BYTES * SAFETY_BUFFER_PERCENT);
 
@@ -579,7 +577,7 @@ export class RequestQueueClient extends ResourceClient {
         await Promise.all(executingRequests);
 
         // Combine individual results together
-        const result: RequestQueueClientBatchRequestsOperationResult = {
+        const result: BatchAddResult = {
             processedRequests: [],
             unprocessedRequests: [],
         };
@@ -605,7 +603,7 @@ export class RequestQueueClient extends ResourceClient {
     async batchDeleteRequests(
         requests: RequestQueueClientRequestToDelete[],
         options: TimeoutOptions = {},
-    ): Promise<RequestQueueClientBatchDeleteRequestsResult> {
+    ): Promise<BatchDeleteResult> {
         parseArgument(requests, batchDeleteRequestsSchema);
         const { timeoutSecs, signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
@@ -669,7 +667,7 @@ export class RequestQueueClient extends ResourceClient {
     async updateRequest(
         request: RequestQueueClientRequestToUpdate,
         options: RequestQueueClientAddRequestOptions = {},
-    ): Promise<RequestQueueClientAddRequestResult> {
+    ): Promise<RequestRegistration> {
         parseArgument(request, existingRequestSchema);
         const parsed = parseArgument(options, forefrontOptionsSchema, 'RequestQueueClientAddRequestOptions');
 
@@ -739,7 +737,7 @@ export class RequestQueueClient extends ResourceClient {
     async prolongRequestLock(
         id: string,
         options: RequestQueueClientProlongRequestLockOptions,
-    ): Promise<RequestQueueClientProlongRequestLockResult> {
+    ): Promise<RequestLockInfo> {
         parseArgument(id, requestIdSchema);
         const parsed = parseArgument(
             options,
@@ -805,7 +803,7 @@ export class RequestQueueClient extends ResourceClient {
      */
     listRequests(
         options: RequestQueueClientListRequestsOptions = {},
-    ): Promise<RequestQueueClientListRequestsResult> & AsyncIterable<RequestQueueClientRequestSchema> {
+    ): Promise<ListOfRequests> & AsyncIterable<Request> {
         // `timeoutSecs` and `signal` apply to every page request; they are not API parameters, so they must not reach
         // the query string.
         const { timeoutSecs, signal, ...parsed } = parseArgument(
@@ -817,7 +815,7 @@ export class RequestQueueClient extends ResourceClient {
 
         const getPaginatedList = async (
             rqListOptions: RequestQueueClientListRequestsOptions = {},
-        ): Promise<RequestQueueClientListRequestsResult> => {
+        ): Promise<ListOfRequests> => {
             const response = await this.httpClient.call({
                 url: this.buildUrl('requests'),
                 method: 'GET',
@@ -862,7 +860,7 @@ export class RequestQueueClient extends ResourceClient {
 
         return Object.defineProperty(paginatedListPromise, Symbol.asyncIterator, {
             value: asyncGenerator,
-        }) as unknown as Promise<RequestQueueClientListRequestsResult> & AsyncIterable<RequestQueueClientRequestSchema>;
+        }) as unknown as Promise<ListOfRequests> & AsyncIterable<Request>;
     }
 
     /**
@@ -877,7 +875,7 @@ export class RequestQueueClient extends ResourceClient {
      * @see https://docs.apify.com/api/v2/request-queue-requests-unlock-post
      * @since Added in 2.12.5
      */
-    async unlockRequests(options: TimeoutOptions = {}): Promise<RequestQueueClientUnlockRequestsResult> {
+    async unlockRequests(options: TimeoutOptions = {}): Promise<UnlockRequestsResult> {
         const { timeoutSecs, signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({
@@ -914,7 +912,7 @@ export class RequestQueueClient extends ResourceClient {
      */
     paginateRequests(
         options: RequestQueueClientPaginateRequestsOptions = {},
-    ): RequestQueueRequestsAsyncIterable<RequestQueueClientListRequestsResult> {
+    ): RequestQueueRequestsAsyncIterable<ListOfRequests> {
         const { limit, cursor, filter, maxPageLimit, timeoutSecs, signal } = parseArgument(
             options,
             paginateRequestsOptionsSchema,
@@ -1049,7 +1047,7 @@ export interface RequestQueueClientBatchAddRequestWithRetriesOptions extends Tim
 export type RequestQueueClientRequestToDelete =
     // A union rather than one object with both keys optional: a deletion has to be addressed by one id
     // or the other, and the flat shape would let `{}` through.
-    Pick<RequestQueueClientRequestSchema, 'id'> | Pick<RequestQueueClientRequestSchema, 'uniqueKey'>;
+    Pick<Request, 'id'> | Pick<Request, 'uniqueKey'>;
 
 /**
  * Result of getting a single request from the queue.
@@ -1057,7 +1055,7 @@ export type RequestQueueClientRequestToDelete =
  * `GET /v2/request-queues/{queueId}/requests/{requestId}` answers with the whole request rather than
  * a queue-head projection.
  */
-export type RequestQueueClientGetRequestResult = RequestQueueClientRequestSchema;
+export type RequestQueueClientGetRequestResult = Request;
 
 /**
  * @since Added in 2.5.1

@@ -2,14 +2,14 @@ import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
-import type { ActorStoreList } from '../models.js';
+import type { StoreListActor } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsShape } from '../timeouts.js';
 import { paginationOptionsShape, parseArgument } from '../utils.js';
 
-export type { ActorStoreList, PricingInfo } from '../models.js';
+export type { StoreListActor, CurrentPricingInfo } from '../models.js';
 
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
@@ -75,7 +75,7 @@ export class StoreCollectionClient extends ResourceCollectionClient {
      * @returns A paginated iterator of store Actors.
      * @see https://docs.apify.com/api/v2/store-get
      */
-    list(options: StoreCollectionListOptions = {}): PaginatedIterator<ActorStoreList> {
+    list(options: StoreCollectionListOptions = {}): PaginatedIterator<StoreListActor> {
         const parsed = parseArgument(options, listOptionsSchema, 'StoreCollectionListOptions');
 
         return this.listResourcesPaginated(schemas.ListOfStoreActors(), parsed, 'medium');

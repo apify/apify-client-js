@@ -3,7 +3,7 @@ import type { AddressInfo } from 'node:net';
 import { setTimeout } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import type { ActorCollectionCreateOptions, ActorCollectionListOptions, ActorVersion } from 'apify-client';
+import type { ActorCollectionCreateOptions, ActorCollectionListOptions, Version } from 'apify-client';
 import {
     ActorListSortBy,
     ActorSourceType,
@@ -630,7 +630,7 @@ describe('Actor methods', () => {
                 } as const;
                 // Both spellings compile, and the enum member holds the same value, so one round-trip
                 // covers them both.
-                const withEnumMember: ActorVersion = { ...actorVersion, sourceType: ActorSourceType.GitRepo };
+                const withEnumMember: Version = { ...actorVersion, sourceType: ActorSourceType.GitRepo };
                 expect(withEnumMember).toEqual(actorVersion);
 
                 const res = await client.actor(actorId).versions().create(actorVersion);

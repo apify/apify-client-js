@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ActorVersion, FinalActorVersion } from '../models.js';
+import type { Version, FinalVersion } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema } from '../timeouts.js';
@@ -13,17 +13,17 @@ import { ActorEnvVarCollectionClient } from './actor_env_var_collection.js';
 const envVarNameSchema = z.string().min(1);
 
 export type {
-    ActorEnvironmentVariable,
-    ActorVersion,
-    ActorVersionGitHubGist,
-    ActorVersionGitRepo,
-    ActorVersionSourceCode,
-    ActorVersionSourceFile,
-    ActorVersionSourceFiles,
-    ActorVersionSourceFolder,
-    ActorVersionTarball,
-    BaseActorVersion,
-    FinalActorVersion,
+    EnvVar,
+    Version,
+    VersionGitHubGist,
+    VersionGitRepo,
+    VersionSourceCode,
+    SourceCodeFile,
+    VersionSourceFiles,
+    SourceCodeFolder,
+    VersionTarball,
+    BaseVersion,
+    FinalVersion,
 } from '../models.js';
 export { ActorSourceType } from '../models.js';
 
@@ -67,7 +67,7 @@ export class ActorVersionClient extends ResourceClient {
      * @returns The Actor version object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/act-version-get
      */
-    async get(options: TimeoutOptions = {}): Promise<FinalActorVersion | undefined> {
+    async get(options: TimeoutOptions = {}): Promise<FinalVersion | undefined> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         return this.getResource(schemas.Version(), {}, timeoutSecs, signal);
@@ -82,7 +82,7 @@ export class ActorVersionClient extends ResourceClient {
      * @returns The updated Actor version object.
      * @see https://docs.apify.com/api/v2/act-version-put
      */
-    async update(newFields: ActorVersionUpdateData, options: TimeoutOptions = {}): Promise<FinalActorVersion> {
+    async update(newFields: ActorVersionUpdateData, options: TimeoutOptions = {}): Promise<FinalVersion> {
         parseArgument(newFields, anyObjectSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
@@ -138,4 +138,4 @@ export class ActorVersionClient extends ResourceClient {
  * mention. The version union enforces the pairing: a `sourceType` can only be sent next to the
  * source location it implies, never next to one of the other three.
  */
-export type ActorVersionUpdateData = Partial<ActorVersion>;
+export type ActorVersionUpdateData = Partial<Version>;
