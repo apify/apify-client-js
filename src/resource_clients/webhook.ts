@@ -9,13 +9,13 @@ import type { WebhookDispatch } from './webhook_dispatch.js';
 import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection.js';
 
 export type {
+    ExampleWebhookDispatch,
     Webhook,
     WebhookAnyRunOfActorCondition,
     WebhookAnyRunOfActorTaskCondition,
     WebhookCertainRunCondition,
     WebhookCondition,
     WebhookEventType,
-    ExampleWebhookDispatch,
     WebhookStats,
 } from '../models.js';
 

@@ -1,6 +1,6 @@
 import { beforeAll, expect, test } from 'vitest';
 
-import type { StoreListActor, ApifyClient } from 'apify-client';
+import type { ApifyClient, StoreListActor } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
 

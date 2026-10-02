@@ -5,7 +5,7 @@ import type { PaginatedList } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema } from '../timeouts.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
-import type { Version, FinalVersion } from './actor_version.js';
+import type { FinalVersion, Version } from './actor_version.js';
 
 const actorVersionSchema = anyObjectSchema.optional();
 

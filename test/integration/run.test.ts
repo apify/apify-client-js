@@ -2,7 +2,7 @@ import { beforeAll, expect, test } from 'vitest';
 
 import { Log, LogLevel } from '@apify/log';
 
-import type { Run, RunShort, ApifyClient, RunClient } from 'apify-client';
+import type { ApifyClient, Run, RunClient, RunShort } from 'apify-client';
 import { ApifyApiError } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';

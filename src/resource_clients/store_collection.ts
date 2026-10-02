@@ -9,7 +9,7 @@ import * as schemas from '../schemas.js';
 import { timeoutOptionsShape } from '../timeouts.js';
 import { paginationOptionsShape, parseArgument } from '../utils.js';
 
-export type { StoreListActor, CurrentPricingInfo } from '../models.js';
+export type { CurrentPricingInfo, StoreListActor } from '../models.js';
 
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,

@@ -11,7 +11,7 @@ import type { Dictionary } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, cast, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
-import type { ActorLastRunOptions, Run, ActorStartOptions } from './actor.js';
+import type { ActorLastRunOptions, ActorStartOptions, Run } from './actor.js';
 import { RunClient } from './run.js';
 import { RunCollectionClient } from './run_collection.js';
 import { WebhookCollectionClient } from './webhook_collection.js';

@@ -1,6 +1,6 @@
 import { beforeAll, expect, test } from 'vitest';
 
-import type { Actor, Version, ApifyClient, FinalVersion } from 'apify-client';
+import type { Actor, ApifyClient, FinalVersion, Version } from 'apify-client';
 import { ActorSourceType } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';

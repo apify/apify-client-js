@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { Version, FinalVersion } from '../models.js';
+import type { FinalVersion, Version } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema } from '../timeouts.js';
@@ -13,17 +13,17 @@ import { ActorEnvVarCollectionClient } from './actor_env_var_collection.js';
 const envVarNameSchema = z.string().min(1);
 
 export type {
+    BaseVersion,
     EnvVar,
+    FinalVersion,
+    SourceCodeFile,
+    SourceCodeFolder,
     Version,
     VersionGitHubGist,
     VersionGitRepo,
     VersionSourceCode,
-    SourceCodeFile,
     VersionSourceFiles,
-    SourceCodeFolder,
     VersionTarball,
-    BaseVersion,
-    FinalVersion,
 } from '../models.js';
 export { ActorSourceType } from '../models.js';
 

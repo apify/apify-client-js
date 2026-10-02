@@ -97,7 +97,7 @@ const createItemsPublicUrlOptionsSchema = z.strictObject({
     ...timeoutOptionsShape,
 });
 
-export type { Dataset, DatasetStatistics, DatasetStats, DatasetFieldStatistics } from '../models.js';
+export type { Dataset, DatasetFieldStatistics, DatasetStatistics, DatasetStats } from '../models.js';
 
 /**
  * Client for managing a specific Dataset.

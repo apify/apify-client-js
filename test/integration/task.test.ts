@@ -1,6 +1,6 @@
 import { beforeAll, expect, test } from 'vitest';
 
-import type { RunShort, ApifyClient, Task } from 'apify-client';
+import type { ApifyClient, RunShort, Task } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
 import { collectUntilPresent, getRandomResourceName } from './_utils.js';

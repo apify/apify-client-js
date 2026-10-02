@@ -8,7 +8,7 @@ import { NotFoundError } from './apify_api_error.js';
 import { parseArgument } from '@apify/validations';
 import type { ApifyResponse } from './http_clients/index.js';
 import { ResponseValidationError } from './response_validation_error.js';
-import type { RequestQueueClientListRequestsOptions, ListOfRequests } from './resource_clients/request_queue.js';
+import type { ListOfRequests, RequestQueueClientListRequestsOptions } from './resource_clients/request_queue.js';
 import type { WebhookUpdateData } from './resource_clients/webhook.js';
 
 // @ts-ignore if we enable `resolveJsonModule`, we end up with a `src` folder in `dist`

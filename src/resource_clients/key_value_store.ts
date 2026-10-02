@@ -11,7 +11,7 @@ import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_clients/index.js';
-import type { ListOfKeys, KeyValueStoreKey, KeyValueStore } from '../models.js';
+import type { KeyValueStore, KeyValueStoreKey, ListOfKeys } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
@@ -74,7 +74,7 @@ const recordOptionsSchema = z.strictObject({
     doNotRetryTimeouts: z.boolean().optional(),
 });
 
-export type { ListOfKeys, KeyValueStoreKey, KeyValueStore, KeyValueStoreStats } from '../models.js';
+export type { KeyValueStore, KeyValueStoreKey, KeyValueStoreStats, ListOfKeys } from '../models.js';
 
 /**
  * Client for managing a specific key-value store.

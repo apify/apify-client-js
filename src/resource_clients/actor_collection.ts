@@ -10,7 +10,7 @@ import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../uti
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
-import type { Actor, DefaultRunOptions, ExampleRunInput, ActorStandby } from './actor.js';
+import type { Actor, ActorStandby, DefaultRunOptions, ExampleRunInput } from './actor.js';
 import type { Version } from './actor_version.js';
 
 const actorCreateSchema = anyObjectSchema.optional();
