@@ -13,7 +13,10 @@ import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_clients/index.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import { timeoutOptionsShape } from '../timeouts.js';
-import { cast, catchNotFoundForResourceOrThrow, concatBytes, parseArgument } from '../utils.js';
+import { cast, catchNotFoundForResourceOrThrow, concatBytes, parseArgument, sleep } from '../utils.js';
+
+/** Pause before reopening a log stream that ended before the run logged anything. */
+const EMPTY_LOG_STREAM_RETRY_MILLIS = 500;
 
 const logOptionsSchema = z.strictObject({ raw: z.boolean().optional(), ...timeoutOptionsShape });
 
@@ -175,6 +178,7 @@ export class StreamedLog {
     #signal: AbortSignal | undefined;
     #streamingTask: Promise<void> | null = null;
     #stopLogging = false;
+    #stopController = new AbortController();
 
     constructor(options: StreamedLogOptions) {
         const { toLog, logClient, fromStart = true, signal } = options;
@@ -192,6 +196,7 @@ export class StreamedLog {
             throw new Error('Streaming task already active');
         }
         this.#stopLogging = false;
+        this.#stopController = new AbortController();
         this.#streamingTask = this.#streamLog();
     }
 
@@ -203,6 +208,7 @@ export class StreamedLog {
             throw new Error('Streaming task is not active');
         }
         this.#stopLogging = true;
+        this.#stopController.abort();
         try {
             await this.#streamingTask;
         } catch (err) {
@@ -219,11 +225,30 @@ export class StreamedLog {
      */
     async #streamLog(): Promise<void> {
         try {
-            const logStream = await this.#logClient.stream({ raw: true, signal: this.#signal });
-            if (!logStream) {
-                return;
+            let lastChunkRemainder: Uint8Array | undefined;
+            // The API serves the log of a run that has not logged anything yet as an empty stream that ends at once,
+            // so reopen it until the first bytes arrive. Once stopped, read whatever the log holds in one request.
+            while (!lastChunkRemainder) {
+                if (this.#stopLogging) {
+                    const logContent = await this.#logClient.get({ raw: true, signal: this.#signal });
+                    lastChunkRemainder = await this.#logStreamChunks([new TextEncoder().encode(logContent ?? '')]);
+                    break;
+                }
+                const logStream = await this.#logClient.stream({ raw: true, signal: this.#signal });
+                if (!logStream) {
+                    return;
+                }
+                // A stream opened during stop() would be cut after its first chunk, so read the log in one request.
+                if (this.#stopLogging) {
+                    logStream.destroy();
+                    continue;
+                }
+                lastChunkRemainder = await this.#logStreamChunks(logStream);
+                if (!lastChunkRemainder) {
+                    const wakeSignals = [this.#stopController.signal, ...(this.#signal ? [this.#signal] : [])];
+                    await sleep(EMPTY_LOG_STREAM_RETRY_MILLIS, AbortSignal.any(wakeSignals));
+                }
             }
-            const lastChunkRemainder = await this.#logStreamChunks(logStream);
             // Process whatever is left when exiting. Maybe it is incomplete, maybe it is last log without EOL.
             const lastMessage = this.#decoder.decode(lastChunkRemainder).trim();
             if (lastMessage.length) {
@@ -235,13 +260,20 @@ export class StreamedLog {
         }
     }
 
-    async #logStreamChunks(logStream: Readable): Promise<Uint8Array> {
+    /**
+     * Redirect every complete message in the chunks and return the incomplete rest, or `undefined` when there were no
+     * chunks at all.
+     */
+    async #logStreamChunks(
+        logStream: AsyncIterable<Uint8Array> | Iterable<Uint8Array>,
+    ): Promise<Uint8Array | undefined> {
         // Chunk may be incomplete. Keep remainder for next chunk.
-        let previousChunkRemainder: Uint8Array = new Uint8Array();
+        let previousChunkRemainder: Uint8Array | undefined;
 
         for await (const chunk of logStream) {
             // Handle possible leftover incomplete line from previous chunk.
             // Everything before last end of line is complete.
+            previousChunkRemainder ??= new Uint8Array();
             const chunkWithPreviousRemainder = new Uint8Array(previousChunkRemainder.length + chunk.length);
             chunkWithPreviousRemainder.set(previousChunkRemainder, 0);
             chunkWithPreviousRemainder.set(chunk, previousChunkRemainder.length);

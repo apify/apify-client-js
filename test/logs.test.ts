@@ -1,8 +1,14 @@
 import type { AddressInfo } from 'node:net';
+import { Readable } from 'node:stream';
+
+import log, { Log } from '@apify/log';
 
 import { ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+
+import type { LogClient } from '../src/resource_clients/log.js';
+import { StreamedLog } from '../src/resource_clients/log.js';
 
 import { DEFAULT_OPTIONS, asBrowserResult, Browser, validateRequest } from './_helper.js';
 import { mockServer } from './mock_server/server.js';
@@ -86,4 +92,60 @@ describe('Log methods', () => {
             validateRequest({ query: { stream: true }, params: { logId } });
         });
     });
+});
+
+test('StreamedLog redirects the whole log when stop() lands while an empty log stream is being reopened', async () => {
+    const lines = [0, 1, 2].map((i) => `2025-01-01T00:00:0${i}.000Z line ${i}\n`);
+    const { promise: reopenedStreamGate, resolve: openReopenedStream } = Promise.withResolvers<void>();
+    const stream = vi
+        .fn()
+        .mockResolvedValueOnce(Readable.from([]))
+        .mockImplementationOnce(async () => {
+            await reopenedStreamGate;
+            return Readable.from(lines.map((line) => Buffer.from(line)));
+        });
+    const logClient = { stream, get: vi.fn().mockResolvedValue(lines.join('')) } as unknown as LogClient;
+    const toLog = new Log();
+    const info = vi.spyOn(toLog, 'info').mockImplementation(() => {});
+
+    const streamedLog = new StreamedLog({ toLog, logClient });
+    streamedLog.start();
+    await vi.waitFor(() => expect(stream).toHaveBeenCalledTimes(2), { timeout: 5_000 });
+    const stopping = streamedLog.stop();
+    openReopenedStream();
+    await stopping;
+
+    expect(info.mock.calls).toEqual(lines.map((line) => [line.trim()]));
+});
+
+test('StreamedLog neither reopens nor reads a log that does not exist', async () => {
+    const stream = vi.fn().mockResolvedValue(undefined);
+    const get = vi.fn();
+    const logClient = { stream, get } as unknown as LogClient;
+
+    const streamedLog = new StreamedLog({ toLog: new Log(), logClient });
+    streamedLog.start();
+    await streamedLog.stop();
+
+    expect(stream).toHaveBeenCalledTimes(1);
+    expect(get).not.toHaveBeenCalled();
+});
+
+test('StreamedLog reports a failing one-shot log read and still stops', async () => {
+    const stream = vi.fn().mockImplementation(async () => Readable.from([]));
+    const get = vi.fn().mockRejectedValue(new Error('Simulated log read failure'));
+    const logClient = { stream, get } as unknown as LogClient;
+    const warning = vi.spyOn(log, 'warning').mockImplementation(() => {});
+
+    try {
+        const streamedLog = new StreamedLog({ toLog: new Log(), logClient });
+        streamedLog.start();
+        await vi.waitFor(() => expect(stream).toHaveBeenCalled());
+        await streamedLog.stop();
+
+        expect(get).toHaveBeenCalledTimes(1);
+        expect(warning).toHaveBeenCalledWith('Log redirection stopped due to error', expect.any(Error));
+    } finally {
+        warning.mockRestore();
+    }
 });
