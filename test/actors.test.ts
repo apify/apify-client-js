@@ -947,10 +947,20 @@ describe('Run actor with redirected logs', () => {
     let baseUrl: string;
     let client: ApifyClient;
     const statusGenerator = new StatusGenerator();
+    // Streamed log requests left to answer with an empty body, the way the API answers before a run has logged anything.
+    let emptyLogStreams = 0;
 
     beforeAll(async () => {
         // Use custom router for the tests
         const router = express.Router();
+        router.get('/actor-runs/redirect-run-id/log', (req, res, next) => {
+            if (req.query.stream && emptyLogStreams > 0) {
+                emptyLogStreams -= 1;
+                res.end();
+                return;
+            }
+            next();
+        });
         // Set up a status generator to simulate run status changes. It will be reset for each test.
         router.get('/actor-runs/redirect-run-id', async (_, res) => {
             // Delay the response to give the actor time to run and produce expected logs
@@ -980,6 +990,7 @@ describe('Run actor with redirected logs', () => {
     afterEach(async () => {
         // Reset the generator to so that the next test starts fresh
         statusGenerator.reset();
+        emptyLogStreams = 0;
         client = null as unknown as ApifyClient;
     });
 
@@ -1010,6 +1021,36 @@ describe('Run actor with redirected logs', () => {
             await client.actor('redirect-actor-id').call(undefined, { log: null });
 
             expect(logSpy.mock.calls).toEqual([]);
+            logSpy.mockRestore();
+        });
+
+        test('redirects the whole log when every log stream is empty until the run finishes', async () => {
+            const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+            emptyLogStreams = Infinity;
+
+            await client.actor('redirect-actor-id').call(undefined, { log: 'default' });
+
+            const prefix = c.cyan('redirect-actor-name runId:redirect-run-id -> ');
+            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [prefix + item]));
+            logSpy.mockRestore();
+        });
+    });
+
+    describe('run.getStreamedLog - empty log stream', () => {
+        test('reopens the log stream when the first one is empty', async () => {
+            const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+            emptyLogStreams = 1;
+
+            const streamedLog = await client.run('redirect-run-id').getStreamedLog();
+            streamedLog?.start();
+            // Only the reopened stream can deliver the log before stop() reads the rest with a plain request.
+            await vi.waitFor(() => expect(logSpy).toHaveBeenCalledTimes(MOCKED_ACTOR_LOGS_PROCESSED.length), {
+                timeout: 10_000,
+            });
+            await streamedLog?.stop();
+
+            const prefix = c.cyan('redirect-actor-name runId:redirect-run-id -> ');
+            expect(logSpy.mock.calls).toEqual(MOCKED_ACTOR_LOGS_PROCESSED.map((item) => [prefix + item]));
             logSpy.mockRestore();
         });
     });
