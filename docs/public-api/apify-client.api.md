@@ -799,6 +799,7 @@ export interface Build {
     finishedAt?: Date;
     // (undocumented)
     id: string;
+    imageDigest?: string | null;
     // @deprecated (undocumented)
     inputSchema?: string;
     // (undocumented)

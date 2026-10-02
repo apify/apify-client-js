@@ -254,6 +254,12 @@ export interface Build {
      * @since Added in 2.11.0
      */
     actorDefinition?: ActorDefinition;
+    /**
+     * Digest of the built Docker image manifest, without the `sha256:` prefix. Compare digests of two builds
+     * to find out whether their image contents differ. `null` if the digest is not available.
+     * @since Added in 2.26.0
+     */
+    imageDigest?: string | null;
 }
 
 /**
