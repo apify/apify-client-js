@@ -6,7 +6,7 @@ import { Log } from '@apify/log';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_clients/index.js';
-import type { Actor, ActorRun } from '../models.js';
+import type { Actor, Run } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
@@ -72,26 +72,26 @@ export type {
     Actor,
     ActorChargeEvent,
     ActorChargeEvents,
-    ActorDefaultRunOptions,
     ActorDefinition,
-    ActorExampleRunInput,
-    ActorRun,
-    ActorRunListItem,
-    ActorRunMeta,
-    ActorRunMetamorph,
-    ActorRunOptions,
     ActorRunPricingInfo,
-    ActorRunStats,
     ActorRunStorageIds,
-    ActorRunUsage,
     ActorStandby,
     ActorStats,
-    ActorTaggedBuild,
     ActorTaggedBuilds,
+    DefaultRunOptions,
+    ExampleRunInput,
     FlatPricePerMonthActorPricingInfo,
     FreeActorPricingInfo,
+    Metamorph,
+    PayPerEventActorPricingInfo,
     PricePerDatasetItemActorPricingInfo,
-    PricePerEventActorPricingInfo,
+    Run,
+    RunMeta,
+    RunOptions,
+    RunShort,
+    RunStats,
+    RunUsage,
+    TaggedBuildInfo,
     TieredPricingPerDatasetItem,
     TieredPricingPerDatasetItemEntry,
     TieredPricingPerEvent,
@@ -206,7 +206,7 @@ export class ActorClient extends ResourceClient {
      * );
      * ```
      */
-    async start(input?: ActorInput, options: ActorStartOptions = {}): Promise<ActorRun> {
+    async start(input?: ActorInput, options: ActorStartOptions = {}): Promise<Run> {
         const parsed = parseArgument(options, startOptionsSchema, 'ActorStartOptions');
 
         const {
@@ -292,7 +292,7 @@ export class ActorClient extends ResourceClient {
      * const run = await client.actor('my-actor').call({ url: 'https://example.com' }, { log });
      * ```
      */
-    async call(input?: ActorInput, options: ActorCallOptions = {}): Promise<ActorRun> {
+    async call(input?: ActorInput, options: ActorCallOptions = {}): Promise<Run> {
         const parsed = parseArgument(options, callOptionsSchema, 'ActorCallOptions');
 
         const { waitSecs, log, timeoutSecs = 'noTimeout', signal, ...startOptions } = parsed;

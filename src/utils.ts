@@ -8,10 +8,7 @@ import { NotFoundError } from './apify_api_error.js';
 import { parseArgument } from '@apify/validations';
 import type { ApifyResponse } from './http_clients/index.js';
 import { ResponseValidationError } from './response_validation_error.js';
-import type {
-    RequestQueueClientListRequestsOptions,
-    RequestQueueClientListRequestsResult,
-} from './resource_clients/request_queue.js';
+import type { ListOfRequests, RequestQueueClientListRequestsOptions } from './resource_clients/request_queue.js';
 import type { WebhookUpdateData } from './resource_clients/webhook.js';
 
 // @ts-ignore if we enable `resolveJsonModule`, we end up with a `src` folder in `dist`
@@ -300,7 +297,7 @@ export function isStream(value: unknown): value is Readable {
 export class RequestQueuePaginationIterator {
     readonly #maxPageLimit: number;
 
-    readonly #getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<RequestQueueClientListRequestsResult>;
+    readonly #getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<ListOfRequests>;
 
     readonly #limit?: number;
 
@@ -313,7 +310,7 @@ export class RequestQueuePaginationIterator {
         this.#getPage = options.getPage;
     }
 
-    async *[Symbol.asyncIterator](): AsyncIterator<RequestQueueClientListRequestsResult> {
+    async *[Symbol.asyncIterator](): AsyncIterator<ListOfRequests> {
         let nextCursor = this.#cursor;
         let iterateItemCount = 0;
         while (true) {
@@ -321,7 +318,7 @@ export class RequestQueuePaginationIterator {
                 ? Math.min(this.#maxPageLimit, this.#limit - iterateItemCount)
                 : this.#maxPageLimit;
 
-            const page: RequestQueueClientListRequestsResult = await this.#getPage({
+            const page: ListOfRequests = await this.#getPage({
                 limit: pageLimit,
                 cursor: nextCursor,
             });
@@ -342,7 +339,7 @@ export class RequestQueuePaginationIterator {
  */
 export interface RequestQueuePaginationIteratorOptions {
     maxPageLimit: number;
-    getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<RequestQueueClientListRequestsResult>;
+    getPage: (opts: RequestQueueClientListRequestsOptions) => Promise<ListOfRequests>;
     limit?: number;
     cursor?: string;
 }

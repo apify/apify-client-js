@@ -4,18 +4,18 @@ import type { ACTOR_PERMISSION_LEVEL } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
-import type { ActorCollectionListItem } from '../models.js';
+import type { ActorShort } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
-import type { Actor, ActorDefaultRunOptions, ActorExampleRunInput, ActorStandby } from './actor.js';
-import type { ActorVersion } from './actor_version.js';
+import type { Actor, ActorStandby, DefaultRunOptions, ExampleRunInput } from './actor.js';
+import type { Version } from './actor_version.js';
 
 const actorCreateSchema = anyObjectSchema.optional();
 
-export type { ActorCollectionListItem } from '../models.js';
+export type { ActorShort } from '../models.js';
 
 /**
  * Client for managing the collection of Actors in your account.
@@ -72,7 +72,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * @returns A paginated iterator of Actors.
      * @see https://docs.apify.com/api/v2/acts-get
      */
-    list(options: ActorCollectionListOptions = {}): PaginatedIterator<ActorCollectionListItem> {
+    list(options: ActorCollectionListOptions = {}): PaginatedIterator<ActorShort> {
         const parsed = parseArgument(options, listOptionsSchema, 'ActorCollectionListOptions');
 
         return this.listResourcesPaginated(schemas.ListOfActors(), parsed, 'medium');
@@ -123,7 +123,7 @@ export interface ActorCollectionListOptions extends PaginationOptions, TimeoutOp
     sortBy?: `${ActorListSortBy}`;
 }
 
-export type ActorCollectionListResult = PaginatedList<ActorCollectionListItem>;
+export type ActorCollectionListResult = PaginatedList<ActorShort>;
 
 export interface ActorCollectionCreateOptions {
     /**
@@ -133,12 +133,12 @@ export interface ActorCollectionCreateOptions {
     /**
      * @since Added in 2.8.6
      */
-    defaultRunOptions?: ActorDefaultRunOptions;
+    defaultRunOptions?: DefaultRunOptions;
     description?: string;
     /**
      * @since Added in 2.8.6
      */
-    exampleRunInput?: ActorExampleRunInput;
+    exampleRunInput?: ExampleRunInput;
     /**
      * @since Added in 2.8.6
      */
@@ -154,7 +154,7 @@ export interface ActorCollectionCreateOptions {
      */
     seoDescription?: string;
     title?: string;
-    versions?: ActorVersion[];
+    versions?: Version[];
     /**
      * @since Added in 2.9.5
      */

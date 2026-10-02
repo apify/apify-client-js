@@ -1,12 +1,6 @@
 import { Readable } from 'node:stream';
 
-import type {
-    ApifyResponse,
-    PaginatedList,
-    RequestQueueClientRequestSchema,
-    WebhookDispatch,
-    WebhookUpdateData,
-} from 'apify-client';
+import type { ApifyResponse, PaginatedList, Request, WebhookDispatch, WebhookUpdateData } from 'apify-client';
 import { ApifyApiError, ResponseValidationError } from 'apify-client';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
@@ -57,17 +51,14 @@ describe('utils.parseResponse()', () => {
 
     test('leaves a caller-owned blob alone, whatever its fields are named', () => {
         const userData = { finishedAt: iso, nested: { createdAt: iso } };
-        const parsed = utils.parseResponse<RequestQueueClientRequestSchema>(
-            response({ ...fixtures.request, userData }),
-            schemas.Request(),
-        );
+        const parsed = utils.parseResponse<Request>(response({ ...fixtures.request, userData }), schemas.Request());
 
         expect(parsed.handledAt).toEqual(new Date(fixtures.request.handledAt));
         expect(parsed.userData).toEqual(userData);
     });
 
     test('accepts a date-time that carries a time-zone offset instead of a `Z`', () => {
-        const parsed = utils.parseResponse<RequestQueueClientRequestSchema>(
+        const parsed = utils.parseResponse<Request>(
             response({ ...fixtures.request, handledAt: '2019-06-16T12:23:31.607+02:00' }),
             schemas.Request(),
         );

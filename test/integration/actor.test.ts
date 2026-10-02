@@ -1,6 +1,6 @@
 import { afterEach, beforeAll, expect, test, vi } from 'vitest';
 
-import type { Actor, ActorCollectionListItem, ApifyClient } from 'apify-client';
+import type { Actor, ActorShort, ApifyClient } from 'apify-client';
 import { ActorListSortBy, ActorSourceType } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
@@ -41,7 +41,7 @@ async function createActor(options: { title?: string } = {}): Promise<Actor> {
  * is not part of the client's contract. Compare only the timestamps that are present, the same way the
  * run feed assertions do.
  */
-function lastRunSortKeys(items: ActorCollectionListItem[]): number[] {
+function lastRunSortKeys(items: ActorShort[]): number[] {
     return items
         .map((item) => item.stats?.lastRunStartedAt?.getTime())
         .filter((value): value is number => value !== undefined);
@@ -103,7 +103,7 @@ test('actors().list() sorted by last run, ascending, comes back in that order', 
 });
 
 test('actors().list() is async-iterable and yields the user Actors', async () => {
-    const collected: ActorCollectionListItem[] = [];
+    const collected: ActorShort[] = [];
     for await (const actor of client.actors().list({ my: true, limit: 10 })) {
         collected.push(actor);
     }

@@ -12,7 +12,7 @@ import { LogClient } from './log.js';
 const getOptionsSchema = z.strictObject({ waitForFinish: z.number().optional(), ...timeoutOptionsShape });
 const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional(), ...timeoutOptionsShape });
 
-export type { Build, BuildMeta, BuildOptions, BuildStats, BuildUsage } from '../models.js';
+export type { Build, BuildOptions, BuildStats, BuildUsage, BuildsMeta } from '../models.js';
 
 /**
  * Client for managing a specific Actor build.

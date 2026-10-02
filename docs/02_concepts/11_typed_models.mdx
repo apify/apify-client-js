@@ -16,7 +16,7 @@ Resource client methods return values typed with TypeScript types generated dire
 
 ## Accessing response fields
 
-Every method that returns a structured payload resolves to a typed object, such as <ApiLink to="interface/Actor">`Actor`</ApiLink>, <ApiLink to="interface/ActorRun">`ActorRun`</ApiLink> or <ApiLink to="interface/Dataset">`Dataset`</ApiLink>. Field names are the camelCase names the API uses, and the type of each field comes through to your editor.
+Every method that returns a structured payload resolves to a typed object, such as <ApiLink to="interface/Actor">`Actor`</ApiLink>, <ApiLink to="interface/Run">`Run`</ApiLink> or <ApiLink to="interface/Dataset">`Dataset`</ApiLink>. Field names are the camelCase names the API uses, and the type of each field comes through to your editor.
 
 <CodeBlock className="language-ts">
     {AccessExample}
@@ -26,7 +26,7 @@ Fields the specification declares as a `date-time` are converted into `Date` obj
 
 ## URL fields
 
-Fields the specification marks as a URL, such as `ActorRun.containerUrl` or `Dataset.consoleUrl`, are parsed with the [WHATWG `URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) parser during validation, and the client returns the parsed URL's serialization. The string you read back can therefore differ from the one the API sent. Both forms denote the same URL under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-6.2), they're just different strings.
+Fields the specification marks as a URL, such as `Run.containerUrl` or `Dataset.consoleUrl`, are parsed with the [WHATWG `URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) parser during validation, and the client returns the parsed URL's serialization. The string you read back can therefore differ from the one the API sent. Both forms denote the same URL under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-6.2), they're just different strings.
 
 ```ts
 // An empty path becomes '/'.

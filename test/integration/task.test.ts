@@ -1,6 +1,6 @@
 import { beforeAll, expect, test } from 'vitest';
 
-import type { ActorRunListItem, ApifyClient, Task } from 'apify-client';
+import type { ApifyClient, RunShort, Task } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
 import { collectUntilPresent, getRandomResourceName } from './_utils.js';
@@ -212,7 +212,7 @@ test('runs().list() is async-iterable and yields the run that was just made', as
     try {
         const run = await taskClient.call();
 
-        const collected: ActorRunListItem[] = [];
+        const collected: RunShort[] = [];
         for await (const taskRun of taskClient.runs().list({ limit: 5 })) {
             collected.push(taskRun);
         }
