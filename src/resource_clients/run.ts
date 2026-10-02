@@ -167,7 +167,8 @@ export class RunClient extends ResourceClient {
      * This is useful for chaining Actor executions or implementing complex workflows.
      *
      * @param targetActorId - ID or username/name of the target Actor
-     * @param input - Input for the target Actor, serialized to JSON. Omit it to metamorph without input.
+     * @param input - Input for the target Actor: an object or array serialized to JSON, or raw bytes sent as they
+     *                are. Omit it to metamorph without input.
      * @param options - Metamorph options
      * @param options.build - Tag or number of the target Actor's build to run. Default is the target Actor's default build.
      * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
