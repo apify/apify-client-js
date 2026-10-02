@@ -233,7 +233,7 @@ The queue head splits into two item types. <ApiLink to="class/RequestQueueClient
 
 Each model type now has the name of the [OpenAPI specification](https://docs.apify.com/api/v2) schema it's built on. The API reference, the [Python client](https://docs.apify.com/api/client/python) and this client use the same name for the same object. For example, the result of `client.run(id).get()` is a <ApiLink to="interface/Run">`Run`</ApiLink>, not an `ActorRun`.
 
-The renames change only the names, not the shapes. The helper interfaces that carry a model's prefix, such as `ActorRunRePointed`, follow their model, so `ActorRunRePointed` is now `RunRePointed`. Two of the types below merge into a type that already existed: `ScheduledActorRunOptions` into <ApiLink to="interface/TaskOptions">`TaskOptions`</ApiLink> and `MonthlyUsageCycle` into <ApiLink to="interface/UsageCycle">`UsageCycle`</ApiLink>, because each pair was built on the same schema.
+The renames change only the names, not the shapes. Two of the types below merge into a type that already existed: `ScheduledActorRunOptions` into <ApiLink to="interface/TaskOptions">`TaskOptions`</ApiLink> and `MonthlyUsageCycle` into <ApiLink to="interface/UsageCycle">`UsageCycle`</ApiLink>, because each pair was built on the same schema.
 
 The specification describes an Actor version as one `Version` schema, while the client splits it by source type. The union is now `Version`, and its base type and variants drop the `Actor` prefix to match.
 
@@ -260,7 +260,6 @@ The specification describes an Actor version as one `Version` schema, while the 
 | `ActorVersionSourceFile` | `SourceCodeFile` |
 | `ActorVersionSourceFiles` | `VersionSourceFiles` |
 | `ActorVersionSourceFolder` | `SourceCodeFolder` |
-| `ActorVersionSourceLocation` | `VersionSourceLocation` |
 | `ActorVersionTarball` | `VersionTarball` |
 | `BaseActorVersion` | `BaseVersion` |
 | `BuildCollectionClientListItem` | `BuildShort` |
