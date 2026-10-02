@@ -1397,6 +1397,7 @@ interface components {
             inputSchema?: string | null;
             readme?: string | null;
             buildNumber: string;
+            imageDigest?: string | null;
             actVersion?: {
                 sourceType?: components["schemas"]["VersionSourceType"];
                 buildTag?: string;
