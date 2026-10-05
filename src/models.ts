@@ -597,8 +597,8 @@ type GeneratedRunStorageIds = NonNullable<Schemas['Run']['storageIds']>;
  * Resource usage metrics for an Actor run.
  *
  * All values represent the total consumption during the run's lifetime. The same shape doubles as the
- * cost breakdown on `Run.usageUsd`, where the spec names it `RunUsageUsd`; the two are
- * structurally identical, so the published type stays single.
+ * cost breakdown on `Run.usageUsd`, where the spec names it `RunUsageUsd`; the two are structurally
+ * identical, so the published type stays single.
  * @since Added in 2.7.0
  */
 export interface RunUsage extends GeneratedRunUsage {}
@@ -753,8 +753,8 @@ export interface StoreListActorRePointed {
 /**
  * Pricing information as Apify Store reports it.
  *
- * It is a flat summary rather than one of the `ActorRunPricingInfo` variants, so `pricingModel` is a
- * plain string and every price field is optional.
+ * It is a flat summary rather than one of the `ActorRunPricingInfo` variants, so `pricingModel` is a plain
+ * string and every price field is optional.
  * @since Added in 2.7.2
  */
 export interface CurrentPricingInfo extends GeneratedCurrentPricingInfo {}
@@ -924,10 +924,10 @@ type GeneratedCurrent = Schemas['Current'];
 /**
  * Platform features a plan can enable.
  *
- * This enum is not the element type of `Plan.enabledPlatformFeatures`, which the spec types
- * as a plain `string[]`: the platform has features this list never gained -- `PROXY_RESIDENTIAL`,
- * `ACTORS_PUBLIC_ALL` and `ACTORS_PUBLIC_DEVELOPER` all appear as keys of `EffectivePlatformFeatures`
- * -- so using it there promised a completeness that was not real. It stays published for comparisons.
+ * This enum is not the element type of `Plan.enabledPlatformFeatures`, which the spec types as a plain
+ * `string[]`: the platform has features this list never gained -- `PROXY_RESIDENTIAL`, `ACTORS_PUBLIC_ALL`
+ * and `ACTORS_PUBLIC_DEVELOPER` all appear as keys of `EffectivePlatformFeatures` -- so using it there
+ * promised a completeness that was not real. It stays published for comparisons.
  *
  * Declared here rather than in `./resource_clients/user` so the user types can live alongside it. It is
  * re-exported from there, so the public name and import path are unchanged.
@@ -1150,9 +1150,8 @@ export interface LockedRequestQueueHeadRePointed {
 /**
  * Result of listing and locking requests from the queue head.
  *
- * The spec describes this and {@link RequestQueueHead} as separate schemas that
- * disagree about which fields are required, and the locked variant carries a different element type,
- * so both are derived independently.
+ * The spec describes this and {@link RequestQueueHead} as separate schemas that disagree about which fields
+ * are required, and the locked variant carries a different element type, so both are derived independently.
  * @since Added in 2.4.1
  */
 export interface LockedRequestQueueHead
