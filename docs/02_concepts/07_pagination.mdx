@@ -48,3 +48,5 @@ The next example iterates dataset items past a given offset:
 </CodeBlock>
 
 The API applies `offset` and `limit` of `listItems()` to the dataset's rows before `clean`, `skipEmpty`, `skipHidden` and `unwind` reshape them. With any of those options set, a page can hold fewer or more items than the rows it covered, so iteration can yield fewer or more than `limit` items, each of them once.
+
+To read the items of a run that's still going, use <ApiLink to="class/RunClient#iterateDatasetItems">`RunClient.iterateDatasetItems()`</ApiLink>. Its `offset` and `limit` also count dataset rows. For details, see [Retrieve Actor data](../03_guides/03_retrieve_actor_data.mdx#read-items-while-the-run-is-going).

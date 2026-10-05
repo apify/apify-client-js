@@ -469,10 +469,11 @@ export class DatasetClient<
             desc: typeof descHeader === 'string' ? JSON.parse(descHeader) : userProvidedDesc,
         };
 
+        const scannedCount = response.headers['x-apify-pagination-count'];
+        if (scannedCount === undefined) return page;
+
         // The offset iterator paginates by the scanned number, so it travels with the page outside its public shape.
-        return Object.defineProperty(page, SCANNED_COUNT, {
-            value: Number(response.headers['x-apify-pagination-count']) || 0,
-        });
+        return Object.defineProperty(page, SCANNED_COUNT, { value: Number(scannedCount) });
     }
 }
 

@@ -63,7 +63,7 @@ jobs:
                   node-version: ${{ env.NODE_VERSION }}
 
             - name: Install pnpm and dependencies
-              uses: apify/actions/pnpm-install@v1.4.1
+              uses: apify/actions/pnpm-install@v1.6.2
 
             # Read before regeneration overwrites it, so the pull request can say whether the specification moved.
             - name: Read the recorded specification version
@@ -162,7 +162,7 @@ jobs:
             - name: Commit the regenerated models
               id: commit
               if: steps.changes.outputs.has-changes == 'true' && steps.review.outputs.is-new == 'true'
-              uses: apify/actions/signed-commit@v1.4.1
+              uses: apify/actions/signed-commit@v1.6.2
               with:
                   message: ${{ env.PR_TITLE }}
                   add: >-

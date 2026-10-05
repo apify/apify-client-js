@@ -3,12 +3,36 @@ import { beforeAll, expect, test } from 'vitest';
 import { Log, LogLevel } from '@apify/log';
 
 import type { ActorRun, ActorRunListItem, ApifyClient, RunClient } from 'apify-client';
-import { ApifyApiError } from 'apify-client';
+import { ActorSourceType, ApifyApiError } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
-import { NO_LOG_REDIRECT, pollUntilCondition } from './_utils.js';
+import { getRandomResourceName, NO_LOG_REDIRECT, pollUntilCondition } from './_utils.js';
 
 const HELLO_WORLD_ACTOR = 'apify/hello-world';
+
+const LIVE_ITEM_COUNT = 10;
+
+/** Source of an Actor that pushes `LIVE_ITEM_COUNT` items tagged with its run ID to its dataset, one per second. */
+const LIVE_ITEMS_SOURCE_FILES = [
+    { name: 'Dockerfile', format: 'TEXT', content: 'FROM apify/actor-node:22\nCOPY . ./\nCMD ["node", "main.mjs"]\n' },
+    {
+        name: 'main.mjs',
+        format: 'TEXT',
+        content: `
+const apiUrl = (process.env.APIFY_API_BASE_URL || 'https://api.apify.com').replace(/\\/$/, '');
+const itemsUrl = \`\${apiUrl}/v2/datasets/\${process.env.ACTOR_DEFAULT_DATASET_ID}/items\`;
+for (let index = 0; index < ${LIVE_ITEM_COUNT}; index++) {
+    const response = await fetch(itemsUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: \`Bearer \${process.env.APIFY_TOKEN}\` },
+        body: JSON.stringify({ runId: process.env.ACTOR_RUN_ID, index }),
+    });
+    if (!response.ok) throw new Error(\`Pushing item \${index} failed with \${response.status}\`);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+}
+`,
+    },
+] as const;
 
 let client: ApifyClient;
 
@@ -327,5 +351,45 @@ test('actor.runs().list() is async-iterable and yields only that Actor runs', as
         expect(collected.every((item) => item.actId === run.actId)).toBe(true);
     } finally {
         await client.run(run.id).delete();
+    }
+});
+
+test('iterateDatasetItems() on lastRun() reads the run it resolved to, even after a newer run starts', async () => {
+    const actor = await client.actors().create({
+        name: getRandomResourceName('actor'),
+        versions: [
+            {
+                versionNumber: '0.0',
+                sourceType: ActorSourceType.SourceFiles,
+                buildTag: 'latest',
+                sourceFiles: [...LIVE_ITEMS_SOURCE_FILES],
+            },
+        ],
+    });
+    const actorClient = client.actor(actor.id);
+    const runIds: string[] = [];
+
+    try {
+        const build = await client.build((await actorClient.build('0.0')).id).waitForFinish();
+        expect(build.status).toBe('SUCCEEDED');
+
+        const runOptions = { memory: 256, runTimeoutSecs: 120 };
+        const firstRun = await actorClient.start(undefined, runOptions);
+        runIds.push(firstRun.id);
+
+        const items: Record<string, unknown>[] = [];
+        // A page of one row makes every further read a fresh request, which could land on the newer run.
+        for await (const item of actorClient.lastRun().iterateDatasetItems({ chunkSize: 1, pollIntervalSecs: 1 })) {
+            items.push(item);
+            if (runIds.length === 1) runIds.push((await actorClient.start(undefined, runOptions)).id);
+        }
+
+        expect(items).toEqual(Array.from({ length: LIVE_ITEM_COUNT }, (_, index) => ({ runId: firstRun.id, index })));
+    } finally {
+        for (const runId of runIds) {
+            await client.run(runId).waitForFinish();
+            await client.run(runId).delete();
+        }
+        await actorClient.delete();
     }
 });
