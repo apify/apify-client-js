@@ -3,7 +3,7 @@
     "version": "2.25.1",
     "description": "Apify API client for JavaScript",
     "engines": {
-        "node": ">=22.0.0"
+        "node": ">=22.13.0"
     },
     "type": "module",
     "main": "dist/index.js",
