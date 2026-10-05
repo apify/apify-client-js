@@ -225,6 +225,7 @@ export class TaskClient extends ResourceClient {
         const response = await startWaitingForResources(
             async () => this.httpClient.call(request),
             waitForResources,
+            this.httpClient.logger,
             signal,
         );
         return parseResponse(response, schemas.Run());

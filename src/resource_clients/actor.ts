@@ -263,6 +263,7 @@ export class ActorClient extends ResourceClient {
         const response = await startWaitingForResources(
             async () => this.httpClient.call(request),
             isStream(input) ? false : waitForResources,
+            this.httpClient.logger,
             signal,
         );
         return parseResponse(response, schemas.Run());

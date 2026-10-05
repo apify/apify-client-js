@@ -1,4 +1,4 @@
-import log from '@apify/log';
+import type { Log } from '@apify/log';
 
 import type { ApifyApiErrorType } from './apify_api_error.js';
 import { ApifyApiError } from './apify_api_error.js';
@@ -25,6 +25,7 @@ const WAIT_FOR_RESOURCES_COOLDOWN_MILLIS = 10_000;
 export async function startWaitingForResources<T>(
     start: () => Promise<T>,
     waitForResources: boolean | number | undefined,
+    logger: Log,
     signal?: AbortSignal,
 ): Promise<T> {
     if (!waitForResources) return start();
@@ -39,7 +40,7 @@ export async function startWaitingForResources<T>(
             if (remainingMillis <= 0) throw err;
 
             const delayMillis = Math.min(WAIT_FOR_RESOURCES_COOLDOWN_MILLIS, remainingMillis);
-            log.info(
+            logger.info(
                 `Not enough resources to start the run (${err.type}), retrying in ${Number((delayMillis / 1000).toPrecision(3))}s.`,
             );
             await sleep(delayMillis, signal);

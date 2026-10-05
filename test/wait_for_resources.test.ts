@@ -6,8 +6,6 @@ import type { ActorInput } from 'apify-client';
 import { ApifyClient } from 'apify-client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, onTestFinished, test, vi } from 'vitest';
 
-import log from '@apify/log';
-
 import type * as utils from '../src/utils.js';
 
 const { sleeps } = vi.hoisted(() => ({ sleeps: [] as number[] }));
@@ -146,7 +144,7 @@ describe('waitForResources option', () => {
 
     test('a number of seconds bounds the retrying and throws the last rejection', async () => {
         rejections = Array(10).fill('actor-memory-limit-exceeded');
-        const info = vi.spyOn(log, 'info').mockImplementation(() => {});
+        const info = vi.spyOn(client.httpClient.logger, 'info').mockImplementation(() => {});
         onTestFinished(() => info.mockRestore());
 
         await expect(client.actor('actor-id').start(undefined, { waitForResources: 25 })).rejects.toMatchObject({
