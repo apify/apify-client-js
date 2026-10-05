@@ -479,6 +479,7 @@ export const Build = lazySchema(() => z.looseObject({
     inputSchema: z.string().nullable().optional(),
     readme: z.string().nullable().optional(),
     buildNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])(\.[1-9][0-9]{0,4})$/),
+    imageDigest: z.string().nullable().optional(),
     actVersion: z.looseObject({
         sourceType: VersionSourceType().optional(),
         buildTag: z.string().optional(),

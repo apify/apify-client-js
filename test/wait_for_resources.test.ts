@@ -2,6 +2,7 @@ import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { Readable } from 'node:stream';
 
+import type { ActorInput } from 'apify-client';
 import { ApifyClient } from 'apify-client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, onTestFinished, test, vi } from 'vitest';
 
@@ -185,7 +186,7 @@ describe('waitForResources option', () => {
         rejections = ['actor-memory-limit-exceeded'];
 
         await expect(
-            client.actor('actor-id').start(Readable.from(['{"foo":"bar"}']), {
+            client.actor('actor-id').start(Readable.from(['{"foo":"bar"}']) as unknown as ActorInput, {
                 contentType: 'application/json',
                 waitForResources: true,
             }),

@@ -5711,6 +5711,7 @@ export interface components {
          *       "inputSchema": "{\\n  \"title\": \"Schema for ...\"}",
          *       "readme": "# Magic Actor\\nThis Actor is magic.",
          *       "buildNumber": "0.1.1",
+         *       "imageDigest": "1b2f1e8c0d5a4c7f9e3b6a2d8c4e0f7a5b9d3c1e6f8a2b4d0c7e9f1a3b5d7c9e",
          *       "actorDefinition": {
          *         "actorSpecification": 1,
          *         "name": "example-actor",
@@ -5802,6 +5803,11 @@ export interface components {
             readme?: string | null;
             /** @example 0.1.1 */
             buildNumber: string;
+            /**
+             * @description Digest of the built Docker image manifest, without the `sha256:` prefix. Compare digests of two builds to find out whether their image contents differ. `null` if the digest is not available.
+             * @example 1b2f1e8c0d5a4c7f9e3b6a2d8c4e0f7a5b9d3c1e6f8a2b4d0c7e9f1a3b5d7c9e
+             */
+            imageDigest?: string | null;
             /**
              * BuildActVersion
              * @description Snapshot of the Actor version that this build was created from.

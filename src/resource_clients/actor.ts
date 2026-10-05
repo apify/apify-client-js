@@ -8,6 +8,7 @@ import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_clients/index.js';
 import type { Actor, ActorRun } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
+import type { Dictionary } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, isStream, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
@@ -182,7 +183,8 @@ export class ActorClient extends ResourceClient {
      * asynchronously and this method returns immediately without waiting for completion.
      * Use the {@link call} method if you want to wait for the Actor to finish.
      *
-     * @param input - Input for the Actor, serialized to JSON. Omit it to run the Actor without input.
+     * @param input - Input for the Actor: an object or array serialized to JSON, or raw bytes sent as they are.
+     *                Omit it to run the Actor without input.
      * @param options - Run configuration options
      * @param options.build - Tag or number of the build to run (e.g., `'beta'` or `'1.2.345'`). If not provided, uses the default build.
      * @param options.memory - Memory in megabytes allocated for the run. If not provided, uses the Actor's default memory setting.
@@ -273,7 +275,8 @@ export class ActorClient extends ResourceClient {
      * by polling the run status. It optionally streams logs to the console or a custom Log instance.
      * By default, it waits indefinitely unless the `waitSecs` option is provided.
      *
-     * @param input - Input for the Actor, serialized to JSON. Omit it to run the Actor without input.
+     * @param input - Input for the Actor: an object or array serialized to JSON, or raw bytes sent as they are.
+     *                Omit it to run the Actor without input.
      * @param options - Run configuration options (extends all options from {@link start})
      * @param options.waitSecs - Maximum time to wait for the run to finish, in seconds. If omitted, waits indefinitely.
      * @param options.log - Log instance for streaming run logs. Use `'default'` for console output, `null` to disable logging, or provide a custom Log instance.
@@ -335,7 +338,8 @@ export class ActorClient extends ResourceClient {
      * invalid, the API responds with an error that is thrown as an `ApifyApiError` describing the
      * validation problem.
      *
-     * @param input - Input to validate against the Actor's input schema, serialized to JSON.
+     * @param input - Input to validate against the Actor's input schema: an object or array serialized to JSON, or
+     *                raw bytes sent as they are.
      * @param options - Validation options
      * @param options.build - Tag or number of the build whose input schema the input is validated against
      *                         (e.g., `'latest'` or `'1.2.345'`). If not provided, uses the default build.
@@ -602,10 +606,12 @@ export type ActorUpdateOptions = Partial<
  * Input for an Actor run, as taken by {@link ActorClient.start}, {@link ActorClient.call},
  * {@link ActorClient.validateInput} and {@link RunClient.metamorph}.
  *
- * An object or an array. Declared as `object` rather than an index-signature type such as
- * `Dictionary`, which would reject a caller's own `interface`.
+ * A plain object or an array of plain objects, serialized into the request body, or raw bytes
+ * (a `Uint8Array` such as a `Buffer`, or an `ArrayBuffer`) sent as they are, typically with a
+ * `contentType`. An input typed as an `interface` or a class needs a spread (`{ ...input }`), or for
+ * an interface a `type` alias, to compile.
  */
-export type ActorInput = object;
+export type ActorInput = Dictionary | readonly Dictionary[] | Uint8Array | ArrayBuffer;
 
 export interface ActorStartOptions extends TimeoutOptions {
     /**
