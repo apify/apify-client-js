@@ -372,7 +372,7 @@ export interface ExampleRunInput extends GeneratedExampleRunInput {}
 export interface TaggedBuildInfo extends GeneratedTaggedBuildInfo {}
 
 /** Mapping of build tags (e.g. 'latest', 'beta') to their corresponding build information. */
-export type ActorTaggedBuilds = Record<string, TaggedBuildInfo | null>;
+export type TaggedBuilds = Record<string, TaggedBuildInfo | null>;
 
 export interface DefaultRunOptionsRePointed {
     forcePermissionLevel?: ACTOR_PERMISSION_LEVEL | null;
@@ -515,7 +515,7 @@ export interface ActorRePointed {
     pricingInfos?: ActorRunPricingInfo[];
     defaultRunOptions: DefaultRunOptions;
     exampleRunInput?: ExampleRunInput | null;
-    taggedBuilds?: ActorTaggedBuilds | null;
+    taggedBuilds?: TaggedBuilds | null;
     actorStandby?: ActorStandby | null;
     actorPermissionLevel?: ACTOR_PERMISSION_LEVEL;
 }

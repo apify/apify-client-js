@@ -204,7 +204,7 @@ interface ActorRePointed {
     // (undocumented)
     stats: ActorStats;
     // (undocumented)
-    taggedBuilds?: ActorTaggedBuilds | null;
+    taggedBuilds?: TaggedBuilds | null;
     // (undocumented)
     versions: Version[];
 }
@@ -268,9 +268,6 @@ export interface ActorStartOptions extends TimeoutOptions {
 // @public
 export interface ActorStats extends GeneratedActorStats {
 }
-
-// @public
-export type ActorTaggedBuilds = Record<string, TaggedBuildInfo | null>;
 
 // @public
 export type ActorUpdateOptions = Partial<Pick<Actor, 'name' | 'description' | 'isPublic' | 'isDeprecated' | 'seoTitle' | 'seoDescription' | 'title' | 'restartOnError' | 'versions' | 'categories' | 'defaultRunOptions' | 'actorStandby' | 'actorPermissionLevel' | 'taggedBuilds'>>;
@@ -3886,6 +3883,9 @@ export interface StreamedLogOptions {
 // @public
 export interface TaggedBuildInfo extends GeneratedTaggedBuildInfo {
 }
+
+// @public
+export type TaggedBuilds = Record<string, TaggedBuildInfo | null>;
 
 // @public
 export interface Task extends Omit<Schemas['Task'], keyof TaskRePointed>, TaskRePointed {
