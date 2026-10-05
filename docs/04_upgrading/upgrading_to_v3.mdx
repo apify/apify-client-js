@@ -497,11 +497,21 @@ Two options deprecated during v2 have been removed.
 
 <ApiLink to="class/ActorClient#start">`ActorClient.start()`</ApiLink>, <ApiLink to="class/ActorClient#call">`call()`</ApiLink>, <ApiLink to="class/ActorClient#validateInput">`validateInput()`</ApiLink> and <ApiLink to="class/RunClient#metamorph">`RunClient.metamorph()`</ApiLink> took their `input` as `unknown`, so any value compiled, including ones the client cannot send.
 
-The input is now typed `ActorInput`, an alias for `object`, so it's an object or an array that the client serializes into the request body. Any other value stops compiling, including a value typed `unknown`, which has to be narrowed or cast first. To run an Actor without input, omit the argument or pass `undefined`.
+The input is now typed `ActorInput`, which accepts a plain object, an array of plain objects, or raw bytes as a `Uint8Array` (such as a `Buffer`) or an `ArrayBuffer`. The client serializes objects and arrays into the request body and sends bytes as they are. Any other value stops compiling, including a `Date`, `Map`, `Set` or function, and a value typed `unknown`, which has to be narrowed or cast first. To run an Actor without input, omit the argument or pass `undefined`.
 
 ```diff
 - await client.actor('my-actor').call(null, { memory: 1024 }); // v2
 + await client.actor('my-actor').call(undefined, { memory: 1024 }); // v3
+```
+
+An input declared as an `interface` or a class stops compiling as well, since `ActorInput` needs an index signature and neither gets one implicitly. Declare the input type as a `type` alias, or spread the value into a new object:
+
+```diff
+- interface MyInput { url: string } // v2
++ type MyInput = { url: string }; // v3
+
+- await client.actor('my-actor').call(input); // v2, with an interface-typed `input`
++ await client.actor('my-actor').call({ ...input }); // v3
 ```
 
 A raw `string` body stops compiling too, with or without a `contentType`. Pass the input as an object and let the client serialize it:

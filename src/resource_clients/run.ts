@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { RUN_GENERAL_ACCESS } from '@apify/consts';
+import { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 import { LEVELS, Log } from '@apify/log';
 
 import type { ApiClientOptionsWithOptionalResourcePath } from '../base/api_client.js';
@@ -10,7 +11,8 @@ import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { optionalSignalSchema, optionalTimeoutSchema, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { runtime } from '#runtime';
-import { anyObjectSchema, parseArgument, parseResponse } from '../utils.js';
+import type { PaginatedList, PaginationOptions } from '../utils.js';
+import { anyObjectSchema, paginationOptionsShape, parseArgument, parseResponse, SCANNED_COUNT } from '../utils.js';
 import type { ActorInput, Run } from './actor.js';
 import { DatasetClient } from './dataset.js';
 import { KeyValueStoreClient } from './key_value_store.js';
@@ -43,6 +45,19 @@ const chargeOptionsSchema = z.strictObject({
     ...timeoutOptionsShape,
 });
 const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional(), ...timeoutOptionsShape });
+const iterateDatasetItemsOptionsSchema = z.strictObject({
+    clean: z.boolean().optional(),
+    fields: z.array(z.string()).optional(),
+    omit: z.array(z.string()).optional(),
+    ...paginationOptionsShape,
+    skipEmpty: z.boolean().optional(),
+    skipHidden: z.boolean().optional(),
+    unwind: z.array(z.string()).optional(),
+    pollIntervalSecs: z.number().min(0).optional(),
+    ...timeoutOptionsShape,
+});
+
+const DEFAULT_ITERATE_CHUNK_SIZE = 1000;
 
 /**
  * Client for managing a specific Actor run.
@@ -167,7 +182,8 @@ export class RunClient extends ResourceClient {
      * This is useful for chaining Actor executions or implementing complex workflows.
      *
      * @param targetActorId - ID or username/name of the target Actor
-     * @param input - Input for the target Actor, serialized to JSON. Omit it to metamorph without input.
+     * @param input - Input for the target Actor: an object or array serialized to JSON, or raw bytes sent as they
+     *                are. Omit it to metamorph without input.
      * @param options - Metamorph options
      * @param options.build - Tag or number of the target Actor's build to run. Default is the target Actor's default build.
      * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
@@ -523,6 +539,103 @@ export class RunClient extends ResourceClient {
 
         return new StreamedLog({ logClient: this.log(), toLog, fromStart, signal });
     }
+
+    /**
+     * Iterates over the items of the run's default dataset while the run is still producing them.
+     *
+     * While the run has not finished, each poll yields the rows below the dataset's `itemCount` and then waits up to
+     * `pollIntervalSecs` for the run to finish, so the last rows are read as soon as it does. Each page is requested
+     * with a `limit` that ends at `itemCount`, so it covers exactly the rows it asks for, whatever the filters or
+     * `unwind` do to the items. `itemCount` lags a few seconds behind
+     * the pushed items, so once the run reaches a terminal status, the rows past it are read a page at a time until
+     * none are left, and the iterator returns. On a `lastRun()` client, the iterator sticks to the run that its first
+     * request resolves to.
+     *
+     * @param options - Iteration options
+     * @param options.offset - Number of rows to skip from the beginning. Default is 0.
+     * @param options.limit - Maximum number of dataset rows to scan. Fewer items are yielded when filters drop some,
+     * more when `unwind` splits a row into several. Default is no limit.
+     * @param options.clean - If `true`, returns only non-empty items and skips hidden fields. Default is `false`.
+     * @param options.fields - Array of field names to include in the results. Omits all other fields.
+     * @param options.omit - Array of field names to exclude from the results.
+     * @param options.unwind - Array of field names to unwind. Each array value creates a separate item.
+     * @param options.skipEmpty - If `true`, skips empty items. Default is `false`.
+     * @param options.skipHidden - If `true`, skips hidden fields (fields starting with `#`). Default is `false`.
+     * @param options.chunkSize - Maximum number of dataset rows requested per API call. Default is 1000.
+     * @param options.pollIntervalSecs - How long to wait for the run to finish between polls, in seconds. Default is 5.
+     * @param options.timeoutSecs - Timeout for each API request. Default is `'long'`.
+     * @returns An async iterable of the dataset items
+     * @see https://docs.apify.com/api/v2/dataset-items-get
+     *
+     * @example
+     * ```javascript
+     * for await (const item of client.run('run-id').iterateDatasetItems()) {
+     *     console.log(item);
+     * }
+     * ```
+     */
+    async *iterateDatasetItems<Data extends Record<string | number, any> = Record<string | number, unknown>>(
+        options: RunIterateDatasetItemsOptions = {},
+    ): AsyncGenerator<Data, void, undefined> {
+        const {
+            offset,
+            limit,
+            chunkSize,
+            pollIntervalSecs = 5,
+            timeoutSecs = 'long',
+            signal,
+            ...itemOptions
+        } = parseArgument(options, iterateDatasetItemsOptionsSchema, 'RunIterateDatasetItemsOptions');
+        const pageSize = chunkSize || DEFAULT_ITERATE_CHUNK_SIZE;
+        let position = offset ?? 0;
+        const end = limit ? position + limit : undefined;
+
+        let run = await this.get({ timeoutSecs, signal });
+        // A `lastRun()` client resolves `runs/last` on each request, so a newer run would swap the dataset mid-iteration.
+        const runClient = run && run.id !== this.id ? this.apifyClient.run(run.id) : this;
+        const datasetClient = runClient.dataset() as DatasetClient<Data>;
+        const listPage = async (pageOffset: number, pageLimit: number): Promise<PaginatedList<Data>> =>
+            datasetClient.listItems({ ...itemOptions, offset: pageOffset, limit: pageLimit, timeoutSecs, signal });
+
+        while (true) {
+            const isFinished =
+                !run || ACT_JOB_TERMINAL_STATUSES.includes(run.status as (typeof ACT_JOB_TERMINAL_STATUSES)[number]);
+            const dataset = await datasetClient.get({ timeoutSecs, signal });
+            let itemCount = dataset?.itemCount ?? 0;
+            if (end !== undefined) itemCount = Math.min(itemCount, end);
+
+            while (position < itemCount) {
+                const pageLimit = Math.min(pageSize, itemCount - position);
+                const page = await listPage(position, pageLimit);
+                yield* page.items;
+                position += pageLimit;
+            }
+
+            if (end !== undefined && position >= end) return;
+            if (isFinished) break;
+            run = await runClient.waitForFinish({ waitSecs: pollIntervalSecs, timeoutSecs, signal });
+        }
+
+        const { clean, skipEmpty, unwind } = itemOptions;
+        while (true) {
+            const pageLimit = end !== undefined ? Math.min(pageSize, end - position) : pageSize;
+            const page = await listPage(position, pageLimit);
+            yield* page.items;
+            // Only an empty page marks the end, as filters can shorten a full one. A page that `clean`, `skipEmpty` or
+            // `unwind` emptied past a lagging `itemCount` reports no scanned rows either, so a plain read checks.
+            const isEmpty = page.items.length === 0 && !(page as { [SCANNED_COUNT]?: number })[SCANNED_COUNT];
+            if (
+                isEmpty &&
+                (!(clean || skipEmpty || unwind?.length) ||
+                    (await datasetClient.listItems({ offset: position, limit: 1, timeoutSecs, signal })).items
+                        .length === 0)
+            ) {
+                return;
+            }
+            position += pageLimit;
+            if (end !== undefined && position >= end) return;
+        }
+    }
 }
 
 /**
@@ -622,4 +735,24 @@ export interface RunWaitForFinishOptions extends TimeoutOptions {
      * status `READY` or `RUNNING`. If `waitSecs` omitted, the function waits indefinitely.
      */
     waitSecs?: number;
+}
+
+/**
+ * Options for iterating over the items of a run's default dataset while the run is still producing them.
+ */
+export interface RunIterateDatasetItemsOptions extends PaginationOptions, TimeoutOptions {
+    /** If `true`, returns only non-empty items and skips hidden fields. */
+    clean?: boolean;
+    /** Field names to include in the items. Omits all other fields. */
+    fields?: string[];
+    /** Field names to exclude from the items. */
+    omit?: string[];
+    /** If `true`, skips empty items. */
+    skipEmpty?: boolean;
+    /** If `true`, skips hidden fields (fields starting with `#`). */
+    skipHidden?: boolean;
+    /** Field names to unwind. Each array value creates a separate item. */
+    unwind?: string[];
+    /** How long to wait for the run to finish between polls, in seconds. Default is 5. */
+    pollIntervalSecs?: number;
 }

@@ -374,6 +374,27 @@ describe('DatasetClient.listItems as async iterable', () => {
             mockedClient.mockRestore();
         }
     });
+
+    test('advances by the items returned when the response has no x-apify-pagination-count header', async () => {
+        // A proxy or a mock can strip the header; the iterator must not read its absence as an empty page.
+        const mockedClient = vi.spyOn(client.httpClient, 'call').mockImplementation((async (request: any) => {
+            const offset = request.params.offset ?? 0;
+            return {
+                data: range(offset, Math.min(offset + request.params.limit, 4)),
+                headers: { 'x-apify-pagination-total': '4' },
+            };
+        }) as any);
+
+        try {
+            const items = [];
+            for await (const item of client.dataset('some-id').listItems({ chunkSize: 2 })) {
+                items.push(item);
+            }
+            expect(items).toEqual(range(0, 4));
+        } finally {
+            mockedClient.mockRestore();
+        }
+    });
 });
 
 describe('KeyValueStoreClient.listKeys as async iterable', () => {
