@@ -11,15 +11,15 @@ This page summarizes the breaking changes when upgrading from v2 to v3 of `apify
 
 Most projects only need to check these:
 
-- The client needs [Node.js 22](#nodejs-22-or-newer-is-required) and [TypeScript 5.9](#typescript-59-or-newer-is-required), and it ships as [pure ESM](#the-package-is-now-pure-esm).
+- The client needs [Node.js 22.13](#nodejs-2213-or-newer-is-required) and [TypeScript 5.9](#typescript-59-or-newer-is-required), and it ships as [pure ESM](#the-package-is-now-pure-esm).
 - Calls to an ID that doesn't exist resolve to `undefined` as before, but some [404s now throw](#a-404-throws-where-it-used-to-resolve-to-undefined).
 - The client-wide `timeoutSecs` is replaced by [timeout tiers](#timeouts-are-configured-per-tier), and the run timeout of `start()` and `call()` is renamed to `runTimeoutSecs`.
 - The [published types](#published-types-now-follow-the-openapi-specification) follow the OpenAPI specification, so expect new null checks.
 - Responses are [validated](#responses-are-validated-against-the-openapi-specification), and a response that doesn't match the specification throws.
 
-## Node.js 22 or newer is required
+## Node.js 22.13 or newer is required
 
-The client supports Node.js 22 and newer. Node.js 18 and 20 are no longer supported, and `package.json` declares `"engines": { "node": ">=22.0.0" }`.
+The client supports Node.js 22.13 and newer. Node.js 18 and 20 are no longer supported, and `package.json` declares `"engines": { "node": ">=22.13.0" }`.
 
 ## TypeScript 5.9 or newer is required
 
@@ -34,7 +34,7 @@ The published types build on `type-fest` 5, which supports TypeScript 5.9 and ne
 + import { ApifyClient } from 'apify-client';      // v3
 ```
 
-A CommonJS project can keep calling `require('apify-client')`: the client has no top-level `await`, and Node.js 22.12 and newer load an ES module through `require()` directly. On Node.js 22.0 to 22.11, `require()` of an ES module is still behind the `--experimental-require-module` flag, so use `import` there.
+A CommonJS project can keep calling `require('apify-client')`: the client has no top-level `await`, and every supported Node.js version loads an ES module through `require()` directly.
 
 A TypeScript project that compiles to CommonJS needs `module` set to `nodenext` or `node20` to import the client. Under `node16`, the import fails with TS1479.
 
