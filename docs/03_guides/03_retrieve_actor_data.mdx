@@ -6,7 +6,9 @@ description: 'Fetch, paginate, and merge datasets from Actor runs with the Apify
 ---
 
 import CodeBlock from '@theme/CodeBlock';
+import ApiLink from '@theme/ApiLink';
 
+import LiveItemsExample from '!!raw-loader!./code/03_live_items.ts';
 import RetrieveExample from '!!raw-loader!./code/03_retrieve.ts';
 
 Actor output data is stored in [datasets](https://docs.apify.com/platform/storage/dataset), which can be retrieved from individual Actor runs. Dataset items support [pagination](../02_concepts/07_pagination.mdx) for efficient retrieval, and multiple datasets can be merged into a single dataset for further analysis. You can then export the merged dataset into formats such as CSV, JSON, XLSX, or XML. [Integrations](https://docs.apify.com/platform/integrations) can automate such data workflows as well.
@@ -15,4 +17,21 @@ The following example shows how to fetch the datasets of an Actor's runs, read t
 
 <CodeBlock className="language-ts">
     {RetrieveExample}
+</CodeBlock>
+
+## Read items while the run is going
+
+To process a run's output before the run finishes, use <ApiLink to="class/RunClient#iterateDatasetItems">`RunClient.iterateDatasetItems()`</ApiLink>. It yields the items of the run's default dataset shortly after the run pushes them, and it returns once the run has finished and every item is read.
+
+Note that:
+
+- Between polls, the iterator waits up to `pollIntervalSecs` (5 by default) for the run to finish. Once it finishes, the iterator reads the remaining items right away. An explicit `timeoutSecs` has to leave room for that wait.
+- The item options are the same as in <ApiLink to="class/DatasetClient#listItems">`DatasetClient.listItems()`</ApiLink>, except for `desc`, `signature`, `flatten` and `view`.
+- `offset` and `limit` count dataset rows, not the items you get back. With `clean`, `skipEmpty` or `unwind`, the iterator can yield fewer or more items than `limit`.
+- A run that's `ABORTING` or `TIMING-OUT` can still push items, so the iterator keeps polling until the run reaches a terminal status.
+
+The following example starts an Actor and prints its items as the run produces them:
+
+<CodeBlock className="language-ts">
+    {LiveItemsExample}
 </CodeBlock>
