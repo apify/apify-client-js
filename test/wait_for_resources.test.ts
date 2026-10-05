@@ -2,7 +2,7 @@ import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { Readable } from 'node:stream';
 
-import type { ActorInput } from 'apify-client';
+import type { ActorInput, Dictionary } from 'apify-client';
 import { ApifyClient } from 'apify-client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, onTestFinished, test, vi } from 'vitest';
 
@@ -180,12 +180,24 @@ describe('waitForResources option', () => {
         expect(starts).toHaveLength(1);
     });
 
-    test('never retries the start of a Readable input', async () => {
+    test('never retries the start of a Readable Actor input', async () => {
         rejections = ['actor-memory-limit-exceeded'];
 
         await expect(
             client.actor('actor-id').start(Readable.from(['{"foo":"bar"}']) as unknown as ActorInput, {
                 contentType: 'application/json',
+                waitForResources: true,
+            }),
+        ).rejects.toMatchObject({ type: 'actor-memory-limit-exceeded' });
+        expect(starts).toHaveLength(1);
+        expect(sleeps).toEqual([]);
+    });
+
+    test('never retries the start of a Readable task input', async () => {
+        rejections = ['actor-memory-limit-exceeded'];
+
+        await expect(
+            client.task('task-id').start(Readable.from(['{"foo":"bar"}']) as unknown as Dictionary, {
                 waitForResources: true,
             }),
         ).rejects.toMatchObject({ type: 'actor-memory-limit-exceeded' });
