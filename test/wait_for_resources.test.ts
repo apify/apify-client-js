@@ -25,6 +25,15 @@ vi.mock('../src/utils', async (importOriginal) => {
     };
 });
 
+/** Error messages the API rejects a run start with, by error type. */
+const ERROR_MESSAGES: Record<string, string> = {
+    'actor-memory-limit-exceeded':
+        'By launching this job you will exceed the memory limit of 8192MB for all your Actor runs and builds (currently used: 4096MB, requested: 8192MB). Please consider upgrading or purchasing extra memory as an add-on at https://console.apify.com/billing/subscription to increase your Actor memory limit.',
+    'concurrent-runs-limit-exceeded':
+        'By launching this job you will exceed your limit of 25 concurrent Actor runs. Please consider upgrading or purchasing an increase to concurrent Actor runs as an add-on at https://console.apify.com/billing/subscription to increase your limit.',
+    'invalid-input': 'Input is not valid.',
+};
+
 type Starter = (client: ApifyClient, options: Record<string, unknown>) => Promise<unknown>;
 
 const STARTERS: { name: string; start: Starter; startPath: string }[] = [
@@ -69,7 +78,7 @@ describe('waitForResources option', () => {
                     const type = rejections.shift();
                     if (type) {
                         res.statusCode = type === 'invalid-input' ? 400 : 402;
-                        res.end(JSON.stringify({ error: { type, message: `Rejected: ${type}` } }));
+                        res.end(JSON.stringify({ error: { type, message: ERROR_MESSAGES[type] } }));
                         return;
                     }
                     res.statusCode = 201;
@@ -154,9 +163,9 @@ describe('waitForResources option', () => {
         expect(starts).toHaveLength(4);
         expect(sleeps).toEqual([10_000, 10_000, 5_000]);
         expect(info.mock.calls.map(([message]) => message)).toEqual([
-            'Not enough resources to start the run, retrying in 10s: Rejected: actor-memory-limit-exceeded',
-            'Not enough resources to start the run, retrying in 10s: Rejected: actor-memory-limit-exceeded',
-            'Not enough resources to start the run, retrying in 5s: Rejected: actor-memory-limit-exceeded',
+            `Not enough resources to start the run, retrying in 10s: ${ERROR_MESSAGES['actor-memory-limit-exceeded']}`,
+            `Not enough resources to start the run, retrying in 10s: ${ERROR_MESSAGES['actor-memory-limit-exceeded']}`,
+            `Not enough resources to start the run, retrying in 5s: ${ERROR_MESSAGES['actor-memory-limit-exceeded']}`,
         ]);
     });
 
