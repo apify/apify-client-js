@@ -11,8 +11,8 @@ import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { optionalSignalSchema, optionalTimeoutSchema, timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { runtime } from '#runtime';
-import type { PaginatedList, PaginationOptions } from '../utils.js';
-import { anyObjectSchema, paginationOptionsShape, parseArgument, parseResponse, SCANNED_COUNT } from '../utils.js';
+import type { PaginationOptions } from '../utils.js';
+import { anyObjectSchema, paginationOptionsShape, parseArgument, parseResponse } from '../utils.js';
 import type { ActorInput, ActorRun } from './actor.js';
 import { DatasetClient } from './dataset.js';
 import { KeyValueStoreClient } from './key_value_store.js';
@@ -56,8 +56,6 @@ const iterateDatasetItemsOptionsSchema = z.strictObject({
     pollIntervalSecs: z.number().min(0).optional(),
     ...timeoutOptionsShape,
 });
-
-const DEFAULT_ITERATE_CHUNK_SIZE = 1000;
 
 /**
  * Client for managing a specific Actor run.
@@ -543,13 +541,10 @@ export class RunClient extends ResourceClient {
     /**
      * Iterates over the items of the run's default dataset while the run is still producing them.
      *
-     * While the run has not finished, each poll yields the rows below the dataset's `itemCount` and then waits up to
-     * `pollIntervalSecs` for the run to finish, so the last rows are read as soon as it does. Each page is requested
-     * with a `limit` that ends at `itemCount`, so it covers exactly the rows it asks for, whatever the filters or
-     * `unwind` do to the items. `itemCount` lags a few seconds behind
-     * the pushed items, so once the run reaches a terminal status, the rows past it are read a page at a time until
-     * none are left, and the iterator returns. On a `lastRun()` client, the iterator sticks to the run that its first
-     * request resolves to.
+     * A thin wrapper over {@link DatasetClient.iterateItems} with a `stopCondition`: between polls of the dataset, it
+     * waits up to `pollIntervalSecs` for the run to finish, so the last rows are read as soon as it does. Once the run
+     * reaches a terminal status, the iterator reads the remaining rows and returns. On a `lastRun()` client, the
+     * iterator sticks to the run that its first request resolves to.
      *
      * @param options - Iteration options
      * @param options.offset - Number of rows to skip from the beginning. Default is 0.
@@ -586,55 +581,28 @@ export class RunClient extends ResourceClient {
             signal,
             ...itemOptions
         } = parseArgument(options, iterateDatasetItemsOptionsSchema, 'RunIterateDatasetItemsOptions');
-        const pageSize = chunkSize || DEFAULT_ITERATE_CHUNK_SIZE;
-        let position = offset ?? 0;
-        const end = limit ? position + limit : undefined;
-
         let run = await this.get({ timeoutSecs, signal });
         // A `lastRun()` client resolves `runs/last` on each request, so a newer run would swap the dataset mid-iteration.
         const runClient = run && run.id !== this.id ? this.apifyClient.run(run.id) : this;
         const datasetClient = runClient.dataset() as DatasetClient<Data>;
-        const listPage = async (pageOffset: number, pageLimit: number): Promise<PaginatedList<Data>> =>
-            datasetClient.listItems({ ...itemOptions, offset: pageOffset, limit: pageLimit, timeoutSecs, signal });
+        let isFirstPoll = true;
 
-        while (true) {
-            const isFinished =
-                !run || ACT_JOB_TERMINAL_STATUSES.includes(run.status as (typeof ACT_JOB_TERMINAL_STATUSES)[number]);
-            const dataset = await datasetClient.get({ timeoutSecs, signal });
-            let itemCount = dataset?.itemCount ?? 0;
-            if (end !== undefined) itemCount = Math.min(itemCount, end);
+        const isRunFinished = async (): Promise<boolean> => {
+            // The first poll reuses the run read above, every later one waits for the run to finish first.
+            if (!isFirstPoll) run = await runClient.waitForFinish({ waitSecs: pollIntervalSecs, timeoutSecs, signal });
+            isFirstPoll = false;
+            return !run || ACT_JOB_TERMINAL_STATUSES.includes(run.status as (typeof ACT_JOB_TERMINAL_STATUSES)[number]);
+        };
 
-            while (position < itemCount) {
-                const pageLimit = Math.min(pageSize, itemCount - position);
-                const page = await listPage(position, pageLimit);
-                yield* page.items;
-                position += pageLimit;
-            }
-
-            if (end !== undefined && position >= end) return;
-            if (isFinished) break;
-            run = await runClient.waitForFinish({ waitSecs: pollIntervalSecs, timeoutSecs, signal });
-        }
-
-        const { clean, skipEmpty, unwind } = itemOptions;
-        while (true) {
-            const pageLimit = end !== undefined ? Math.min(pageSize, end - position) : pageSize;
-            const page = await listPage(position, pageLimit);
-            yield* page.items;
-            // Only an empty page marks the end, as filters can shorten a full one. A page that `clean`, `skipEmpty` or
-            // `unwind` emptied past a lagging `itemCount` reports no scanned rows either, so a plain read checks.
-            const isEmpty = page.items.length === 0 && !(page as { [SCANNED_COUNT]?: number })[SCANNED_COUNT];
-            if (
-                isEmpty &&
-                (!(clean || skipEmpty || unwind?.length) ||
-                    (await datasetClient.listItems({ offset: position, limit: 1, timeoutSecs, signal })).items
-                        .length === 0)
-            ) {
-                return;
-            }
-            position += pageLimit;
-            if (end !== undefined && position >= end) return;
-        }
+        yield* datasetClient.iterateItems({
+            ...itemOptions,
+            offset,
+            limit,
+            chunkSize,
+            timeoutSecs,
+            signal,
+            stopCondition: isRunFinished,
+        });
     }
 }
 

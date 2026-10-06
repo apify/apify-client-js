@@ -2478,6 +2478,7 @@ export class DatasetClient<Data extends Record<string | number, any> = Record<st
     downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Buffer>;
     get(options?: TimeoutOptions): Promise<Dataset | undefined>;
     getStatistics(options?: TimeoutOptions): Promise<DatasetStatistics>;
+    iterateItems(options?: DatasetClientIterateItemsOptions): AsyncGenerator<Data, void, undefined>;
     listItems(options?: DatasetClientListItemOptions): PaginatedIterator<Data>;
     pushItems(items: Data | Data[] | string, options?: TimeoutOptions): Promise<void>;
     update(newFields: DatasetClientUpdateOptions, options?: TimeoutOptions): Promise<Dataset>;
@@ -2504,6 +2505,11 @@ export interface DatasetClientDownloadItemsOptions extends Omit<DatasetClientLis
     xmlRoot?: string;
     // (undocumented)
     xmlRow?: string;
+}
+
+// @public
+export interface DatasetClientIterateItemsOptions extends DatasetClientListItemOptions {
+    stopCondition?: () => boolean | Promise<boolean>;
 }
 
 // @public

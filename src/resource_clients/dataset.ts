@@ -76,6 +76,11 @@ const downloadItemsOptionsSchema = z.strictObject({
     signature: z.string().optional(),
     ...timeoutOptionsShape,
 });
+const iterateItemsOptionsSchema = listItemsOptionsSchema.extend({
+    stopCondition: z
+        .custom<() => boolean | Promise<boolean>>((value) => typeof value === 'function', 'Expected a function')
+        .optional(),
+});
 const pushItemsSchema = z.union([itemSchema, z.string(), z.array(itemSchema)]);
 // Apart from `timeoutSecs`, `signal` and `expiresInSecs`, every option becomes a query parameter of the generated
 // URL, so `chunkSize` (client-side only) and `signature` (which this method produces) are left out. The options type
@@ -96,6 +101,8 @@ const createItemsPublicUrlOptionsSchema = z.strictObject({
     expiresInSecs: z.number().optional(),
     ...timeoutOptionsShape,
 });
+
+const DEFAULT_ITERATE_CHUNK_SIZE = 1000;
 
 export type { Dataset, DatasetStatistics, DatasetStats, FieldStatistics } from '../models.js';
 
@@ -251,6 +258,90 @@ export class DatasetClient<
         };
 
         return this.listPaginatedFromCallback(fetchItems, listOptions);
+    }
+
+    /**
+     * Iterates over the items in the dataset.
+     *
+     * Without `stopCondition`, it iterates like {@link listItems}. With it, the iterator follows a dataset that is
+     * still being written to. `stopCondition` is called before each poll of the dataset, resolves to whether the
+     * writer has finished, and paces the polls, so it should wait until new items may have arrived. Each poll reads
+     * the rows below the dataset's `itemCount`, with every page requested with a `limit` that ends at `itemCount`, so
+     * it covers exactly the rows it asks for, whatever the filters or `unwind` do to the items. Once `stopCondition`
+     * resolves to `true`, the rows past the lagging `itemCount` are read a page at a time until none are left.
+     *
+     * @param options - All options of {@link listItems}, plus `stopCondition`
+     * @param options.stopCondition - Makes the iterator follow a growing dataset, see above. Cannot be combined with
+     * `desc`.
+     * @returns An async iterable of the dataset items
+     * @see https://docs.apify.com/api/v2/dataset-items-get
+     *
+     * @example
+     * ```javascript
+     * const runClient = client.run('run-id');
+     * const stopCondition = async () => {
+     *     const run = await runClient.waitForFinish({ waitSecs: 5 });
+     *     return !run || ['SUCCEEDED', 'FAILED', 'ABORTED', 'TIMED-OUT'].includes(run.status);
+     * };
+     * for await (const item of client.dataset('my-dataset').iterateItems({ stopCondition })) {
+     *     console.log(item);
+     * }
+     * ```
+     */
+    async *iterateItems(options: DatasetClientIterateItemsOptions = {}): AsyncGenerator<Data, void, undefined> {
+        const { stopCondition, ...listOptions } = parseArgument(
+            options,
+            iterateItemsOptionsSchema,
+            'DatasetClientIterateItemsOptions',
+        );
+        if (!stopCondition) {
+            yield* this.listItems(listOptions);
+            return;
+        }
+        if (listOptions.desc) throw new Error('stopCondition cannot be combined with desc');
+
+        const { offset, limit, chunkSize, timeoutSecs = 'long', signal, ...itemOptions } = listOptions;
+        const pageSize = chunkSize || DEFAULT_ITERATE_CHUNK_SIZE;
+        let position = offset ?? 0;
+        const end = limit ? position + limit : undefined;
+        const listPage = async (pageOffset: number, pageLimit: number): Promise<PaginatedList<Data>> =>
+            this.listItems({ ...itemOptions, offset: pageOffset, limit: pageLimit, timeoutSecs, signal });
+
+        while (true) {
+            const isFinished = await stopCondition();
+            const dataset = await this.get({ timeoutSecs, signal });
+            let itemCount = dataset?.itemCount ?? 0;
+            if (end !== undefined) itemCount = Math.min(itemCount, end);
+
+            while (position < itemCount) {
+                const pageLimit = Math.min(pageSize, itemCount - position);
+                const page = await listPage(position, pageLimit);
+                yield* page.items;
+                position += pageLimit;
+            }
+
+            if (end !== undefined && position >= end) return;
+            if (isFinished) break;
+        }
+
+        const { clean, skipEmpty, unwind } = itemOptions;
+        while (true) {
+            const pageLimit = end !== undefined ? Math.min(pageSize, end - position) : pageSize;
+            const page = await listPage(position, pageLimit);
+            yield* page.items;
+            // Only an empty page marks the end, as filters can shorten a full one. A page that `clean`, `skipEmpty` or
+            // `unwind` emptied past a lagging `itemCount` reports no scanned rows either, so a plain read checks.
+            const isEmpty = page.items.length === 0 && !(page as { [SCANNED_COUNT]?: number })[SCANNED_COUNT];
+            if (
+                isEmpty &&
+                (!(clean || skipEmpty || unwind?.length) ||
+                    (await this.listItems({ offset: position, limit: 1, timeoutSecs, signal })).items.length === 0)
+            ) {
+                return;
+            }
+            position += pageLimit;
+            if (end !== undefined && position >= end) return;
+        }
     }
 
     /**
@@ -537,6 +628,17 @@ export interface DatasetClientCreateItemsUrlOptions extends Omit<
      */
     format?: `${DownloadItemsFormat}`;
     expiresInSecs?: number;
+}
+
+/**
+ * Options for iterating over items of a dataset.
+ */
+export interface DatasetClientIterateItemsOptions extends DatasetClientListItemOptions {
+    /**
+     * Makes the iterator follow a dataset that is still being written to. Called before each poll of the dataset, it
+     * resolves to whether the writer has finished and paces the polls. Cannot be combined with `desc`.
+     */
+    stopCondition?: () => boolean | Promise<boolean>;
 }
 
 /**

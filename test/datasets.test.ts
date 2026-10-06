@@ -370,6 +370,12 @@ describe('Dataset methods', () => {
             await expect(call).rejects.toThrow('Expected an object at `[0]`');
         });
 
+        test('iterateItems() rejects stopCondition combined with desc', async () => {
+            const iterator = client.dataset('201').iterateItems({ desc: true, stopCondition: () => true });
+
+            await expect(iterator.next()).rejects.toThrow('stopCondition cannot be combined with desc');
+        });
+
         test('pushItems() works with string', async () => {
             const datasetId = '201';
             const data = JSON.stringify([{ someData: 'someValue' }, { someData: 'someValue' }]);
