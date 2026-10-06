@@ -10,11 +10,11 @@
 #   2. The auto-update branch is rebuilt from master instead of appended to, so the diff is always "current
 #      specification vs current master" and cannot resurrect a stale generated file.
 #
-# Deliberately not automerged, and no build step here: the pull request is opened with a token that triggers
-# `check.yaml`, so whether the adapter in `src/models.ts` still compiles against the new types is answered by that
-# run. A red check is the signal `src/spec_guards.ts` exists for -- a field an override replaces was dropped or
-# renamed, a documented spec gap was filled, or a shared `@apify/consts` enum diverged -- and each of those needs a
-# human to decide.
+# Deliberately not automerged, and the only build is the one behind the public API report, which never fails the job:
+# the pull request is opened with a token that triggers `check.yaml`, so whether the adapter in `src/models.ts` still
+# compiles against the new types is answered by that run. A red check is the signal `src/spec_guards.ts` exists for
+# -- a field an override replaces was dropped or renamed, a documented spec gap was filled, or a shared `@apify/consts`
+# enum diverged -- and each of those needs a human to decide.
 
 name: Regenerate models
 
@@ -157,6 +157,14 @@ jobs:
                       echo "Deleted leftover branch $BRANCH_NAME (no open pull request)."
                   fi
 
+            # The generated types are part of the public API, so a model change usually changes the report that
+            # `check.yaml` verifies. A build failure here leaves the report as it is and surfaces as a red check on the
+            # pull request instead.
+            - name: Update the public API report
+              if: steps.changes.outputs.has-changes == 'true' && steps.review.outputs.is-new == 'true'
+              continue-on-error: true
+              run: pnpm api:extract
+
             # Creates the branch at the current master commit and lands the regenerated files as one signed
             # ("Verified") commit, via GitHub's createCommitOnBranch mutation.
             - name: Commit the regenerated models
@@ -167,6 +175,7 @@ jobs:
                   message: ${{ env.PR_TITLE }}
                   add: >-
                       package.json
+                      docs/public-api/apify-client.api.md
                       ${{ env.GENERATED_FILES }}
                   github-token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
                   branch: ${{ env.BRANCH_NAME }}
