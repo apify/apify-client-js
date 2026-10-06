@@ -2441,6 +2441,7 @@ export interface User {
         githubUsername?: string;
         websiteUrl?: string;
         twitterUsername?: string;
+        readme?: string | null;
     };
     // (undocumented)
     proxy?: UserProxy;

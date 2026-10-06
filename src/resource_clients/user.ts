@@ -137,6 +137,11 @@ export interface User {
         githubUsername?: string;
         websiteUrl?: string;
         twitterUsername?: string;
+        /**
+         * Markdown README shown on the user's public profile page.
+         * @since Added in 2.26.0
+         */
+        readme?: string | null;
     };
     // Private properties
     id?: string;
