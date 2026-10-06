@@ -8205,6 +8205,12 @@ export interface components {
         Profile: {
             /** @example I started web scraping in 1985 using Altair BASIC. */
             bio?: string | null;
+            /**
+             * @description Markdown README shown on the user's public profile page.
+             * @example ### Hello world 👋🏻
+             *     I build web scrapers.
+             */
+            readme?: string | null;
             /** @example Jane Doe */
             name?: string;
             /**
