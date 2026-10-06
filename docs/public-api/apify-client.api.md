@@ -2251,6 +2251,7 @@ interface components {
         };
         Profile: {
             bio?: string | null;
+            readme?: string | null;
             name?: string;
             pictureUrl?: string | null;
             githubUsername?: string | null;
