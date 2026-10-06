@@ -154,9 +154,9 @@ describe('waitForResources option', () => {
         expect(starts).toHaveLength(4);
         expect(sleeps).toEqual([10_000, 10_000, 5_000]);
         expect(info.mock.calls.map(([message]) => message)).toEqual([
-            'Not enough resources to start the run (actor-memory-limit-exceeded), retrying in 10s.',
-            'Not enough resources to start the run (actor-memory-limit-exceeded), retrying in 10s.',
-            'Not enough resources to start the run (actor-memory-limit-exceeded), retrying in 5s.',
+            'Not enough resources to start the run, retrying in 10s: Rejected: actor-memory-limit-exceeded',
+            'Not enough resources to start the run, retrying in 10s: Rejected: actor-memory-limit-exceeded',
+            'Not enough resources to start the run, retrying in 5s: Rejected: actor-memory-limit-exceeded',
         ]);
     });
 

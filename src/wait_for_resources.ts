@@ -41,7 +41,7 @@ export async function startWaitingForResources<T>(
 
             const delayMillis = Math.min(WAIT_FOR_RESOURCES_COOLDOWN_MILLIS, remainingMillis);
             logger.info(
-                `Not enough resources to start the run (${err.type}), retrying in ${Number((delayMillis / 1000).toPrecision(3))}s.`,
+                `Not enough resources to start the run, retrying in ${Number((delayMillis / 1000).toPrecision(3))}s: ${err.message}`,
             );
             await sleep(delayMillis, signal);
             signal?.throwIfAborted();
