@@ -1550,6 +1550,7 @@ export const ListOfActorsInStoreResponse = lazySchema(() => z.looseObject({
 
 export const Profile = lazySchema(() => z.looseObject({
     bio: z.string().nullable().optional(),
+    readme: z.string().nullable().optional(),
     name: z.string().optional(),
     pictureUrl: z.url({ normalize: true }).nullable().optional(),
     githubUsername: z.string().nullable().optional(),
