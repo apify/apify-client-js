@@ -265,6 +265,13 @@ describe('Dataset methods', () => {
             validateRequest({ query: qs, params: { datasetId } });
         });
 
+        test('listItems() rejects a string unwind', () => {
+            const call = () => client.dataset('some-id').listItems({ unwind: 'parts' } as any);
+
+            expect(call).toThrow(ArgumentValidationError);
+            expect(call).toThrow('expected array, received the string `parts` at `unwind`');
+        });
+
         test("downloadItems() doesn't parse application/json", async () => {
             const datasetId = 'some-id';
             const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });

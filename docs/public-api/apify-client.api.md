@@ -2524,7 +2524,7 @@ export interface DatasetClientListItemOptions extends PaginationOptions, Timeout
     // (undocumented)
     skipHidden?: boolean;
     // (undocumented)
-    unwind?: string | string[];
+    unwind?: string[];
     view?: string;
 }
 

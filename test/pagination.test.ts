@@ -365,7 +365,7 @@ describe('DatasetClient.listItems as async iterable', () => {
 
         try {
             const items = [];
-            for await (const item of client.dataset('some-id').listItems({ unwind: 'parts', chunkSize: 2 })) {
+            for await (const item of client.dataset('some-id').listItems({ unwind: ['parts'], chunkSize: 2 })) {
                 items.push(item);
             }
             expect(items).toEqual(unwind(range(0, 4)));
