@@ -2,7 +2,7 @@ import { afterAll, beforeAll, expect, test } from 'vitest';
 
 import { WEBHOOK_EVENT_TYPES } from '@apify/consts';
 
-import type { ApifyClient, Webhook, WebhookDispatch } from 'apify-client';
+import type { ApifyClient, Webhook } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
 import { collectUntilPresent, NO_LOG_REDIRECT, pollUntilCondition } from './_utils.js';
@@ -121,19 +121,14 @@ test('dispatches().list() is async-iterable', async () => {
     const webhookClient = client.webhook(createdWebhook.id);
 
     try {
-        await webhookClient.test();
+        const testDispatch = await webhookClient.test();
 
-        await pollUntilCondition(
+        const collected = await collectUntilPresent(
             () => webhookClient.dispatches().list({ limit: 10 }),
-            (page) => page.items.length > 0,
+            [testDispatch.id],
         );
 
-        const collected: WebhookDispatch[] = [];
-        for await (const dispatch of webhookClient.dispatches().list({ limit: 10 })) {
-            collected.push(dispatch);
-        }
-
-        expect(collected.length).toBeGreaterThanOrEqual(1);
+        expect(collected.map((dispatch) => dispatch.id)).toContain(testDispatch.id);
         for (const dispatch of collected) {
             expect(dispatch.id).toBeTruthy();
         }
