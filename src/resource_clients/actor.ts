@@ -11,7 +11,8 @@ import type { TimeoutOptions } from '../timeouts.js';
 import type { Dictionary } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
-import { anyObjectSchema, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
+import { anyObjectSchema, isStream, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
+import { startWaitingForResources } from '../wait_for_resources.js';
 import { ActorVersionClient } from './actor_version.js';
 import { ActorVersionCollectionClient } from './actor_version_collection.js';
 import type { Build, BuildClientGetOptions } from './build.js';
@@ -34,6 +35,7 @@ const startOptionsSchema = z.strictObject({
     maxTotalChargeUsd: z.number().min(0).optional(),
     restartOnError: z.boolean().optional(),
     forcePermissionLevel: z.enum(ACTOR_PERMISSION_LEVEL).optional(),
+    waitForResources: z.union([z.boolean(), z.number().min(0)]).optional(),
     ...timeoutOptionsShape,
 });
 const callOptionsSchema = z.strictObject({
@@ -48,6 +50,7 @@ const callOptionsSchema = z.strictObject({
     log: z.union([z.null(), z.instanceof(Log), z.literal('default')]).optional(),
     restartOnError: z.boolean().optional(),
     forcePermissionLevel: z.enum(ACTOR_PERMISSION_LEVEL).optional(),
+    waitForResources: z.union([z.boolean(), z.number().min(0)]).optional(),
     ...timeoutOptionsShape,
 });
 const validateInputOptionsSchema = z.strictObject({
@@ -190,6 +193,8 @@ export class ActorClient extends ResourceClient {
      * @param options.webhooks - Webhooks to trigger when the Actor run reaches a specific state (e.g., `SUCCEEDED`, `FAILED`).
      * @param options.maxItems - Maximum number of dataset items that will be charged (only for pay-per-result Actors).
      * @param options.maxTotalChargeUsd - Maximum cost in USD (only for pay-per-event Actors).
+     * @param options.waitForResources - Retry the start while the account lacks the memory or a concurrent-run slot for
+     * the run. `true` retries until the run starts, a number stops retrying after that many seconds.
      * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`, extended to cover `waitForFinish`
      * when the API is asked to hold the response.
      * @returns The Actor run object with status, usage, and storage IDs
@@ -220,6 +225,7 @@ export class ActorClient extends ResourceClient {
             maxTotalChargeUsd,
             restartOnError,
             forcePermissionLevel,
+            waitForResources,
             timeoutSecs,
             signal,
         } = parsed;
@@ -253,7 +259,13 @@ export class ActorClient extends ResourceClient {
             };
         }
 
-        const response = await this.httpClient.call(request);
+        // A `Readable` input is consumed by the first attempt, so a retry would start the run with an empty input.
+        const response = await startWaitingForResources(
+            async () => this.httpClient.call(request),
+            isStream(input) ? false : waitForResources,
+            this.httpClient.logger,
+            signal,
+        );
         return parseResponse(response, schemas.Run());
     }
 
@@ -272,6 +284,9 @@ export class ActorClient extends ResourceClient {
      * @param options.build - Tag or number of the build to run (e.g., `'beta'` or `'1.2.345'`).
      * @param options.memory - Memory in megabytes allocated for the run.
      * @param options.runTimeoutSecs - Maximum run duration in seconds.
+     * @param options.waitForResources - Retry the start while the account lacks the memory or a concurrent-run slot for
+     * the run. `true` retries until the run starts, a number stops retrying after that many seconds. The time spent
+     * retrying doesn't count toward `waitSecs`.
      * @param options.timeoutSecs - Timeout for each API request, the start and every poll alike. Default is `'noTimeout'`.
      * @returns The finished Actor run object with final status (`SUCCEEDED`, `FAILED`, `ABORTED`, or `TIMED-OUT`)
      * @see https://docs.apify.com/api/v2/act-runs-post
@@ -673,6 +688,21 @@ export interface ActorStartOptions extends TimeoutOptions {
      * @since Added in 2.17.0
      */
     forcePermissionLevel?: ACTOR_PERMISSION_LEVEL;
+
+    /**
+     * Retry the start while the account lacks the resources for the run, that is while the API rejects it with an
+     * `ApifyApiError` of type `actor-memory-limit-exceeded` or `concurrent-runs-limit-exceeded`. Both clear as
+     * other runs or builds finish. The start is retried every 10 seconds, and any other error is thrown right away.
+     *
+     * `true` retries until the run starts. A number stops retrying after that many seconds and throws the last
+     * error. Omitted or `false`, the first rejection is thrown.
+     *
+     * A run that requests more memory than the whole memory limit of the account is rejected with
+     * `actor-memory-limit-exceeded` as well and never starts, so `true` retries it forever.
+     *
+     * A `Readable` input can't be sent twice, so its start is never retried and the first rejection is thrown.
+     */
+    waitForResources?: boolean | number;
 }
 
 /**

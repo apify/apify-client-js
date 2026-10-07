@@ -10,7 +10,8 @@ import type { TimeoutOptions } from '../timeouts.js';
 import type { Dictionary } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
-import { anyObjectSchema, cast, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
+import { anyObjectSchema, cast, isStream, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
+import { startWaitingForResources } from '../wait_for_resources.js';
 import type { ActorLastRunOptions, ActorRun, ActorStartOptions } from './actor.js';
 import { RunClient } from './run.js';
 import { RunCollectionClient } from './run_collection.js';
@@ -26,6 +27,7 @@ const startOptionsSchema = z.strictObject({
     maxItems: z.number().min(0).optional(),
     maxTotalChargeUsd: z.number().min(0).optional(),
     restartOnError: z.boolean().optional(),
+    waitForResources: z.union([z.boolean(), z.number().min(0)]).optional(),
     ...timeoutOptionsShape,
 });
 const callOptionsSchema = z.strictObject({
@@ -37,6 +39,7 @@ const callOptionsSchema = z.strictObject({
     maxItems: z.number().min(0).optional(),
     maxTotalChargeUsd: z.number().min(0).optional(),
     restartOnError: z.boolean().optional(),
+    waitForResources: z.union([z.boolean(), z.number().min(0)]).optional(),
     ...timeoutOptionsShape,
 });
 const lastRunOptionsSchema = z.strictObject({
@@ -169,6 +172,8 @@ export class TaskClient extends ResourceClient {
      * @param options.maxItems - Maximum number of dataset items (for pay-per-result Actors).
      * @param options.maxTotalChargeUsd - Maximum cost in USD (for pay-per-event Actors).
      * @param options.restartOnError - Whether to restart the run on error.
+     * @param options.waitForResources - Retry the start while the account lacks the memory or a concurrent-run slot for
+     * the run. `true` retries until the run starts, a number stops retrying after that many seconds.
      * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`, extended to cover `waitForFinish`
      * when the API is asked to hold the response.
      * @returns The Actor Run object.
@@ -186,6 +191,7 @@ export class TaskClient extends ResourceClient {
             maxItems,
             maxTotalChargeUsd,
             restartOnError,
+            waitForResources,
             timeoutSecs,
             signal,
         } = parsed;
@@ -216,7 +222,13 @@ export class TaskClient extends ResourceClient {
             signal,
         };
 
-        const response = await this.httpClient.call(request);
+        // A `Readable` input is consumed by the first attempt, so a retry would start the run with an empty input.
+        const response = await startWaitingForResources(
+            async () => this.httpClient.call(request),
+            isStream(input) ? false : waitForResources,
+            this.httpClient.logger,
+            signal,
+        );
         return parseResponse(response, schemas.Run());
     }
 
@@ -234,6 +246,9 @@ export class TaskClient extends ResourceClient {
      * @param options.maxItems - Maximum number of dataset items (for pay-per-result Actors).
      * @param options.maxTotalChargeUsd - Maximum cost in USD (for pay-per-event Actors).
      * @param options.restartOnError - Whether to restart the run on error.
+     * @param options.waitForResources - Retry the start while the account lacks the memory or a concurrent-run slot for
+     * the run. `true` retries until the run starts, a number stops retrying after that many seconds. The time spent
+     * retrying doesn't count toward `waitSecs`.
      * @param options.timeoutSecs - Timeout for each API request, the start and every poll alike. Default is `'noTimeout'`.
      * @returns The Actor run object.
      * @see https://docs.apify.com/api/v2/actor-task-runs-post
