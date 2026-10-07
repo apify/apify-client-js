@@ -15,7 +15,6 @@ import type { HttpCompressionAlgorithm } from '../http_compressors/resolve.js';
 import { resolveCompressor } from '../http_compressors/resolve.js';
 import { InvalidResponseBodyError } from '../invalid_response_body_error.js';
 import type { HttpMethod } from '../models.js';
-export type { HttpMethod } from '../models.js';
 import { Statistics } from '../statistics.js';
 import type { Timeout, TimeoutTier } from '../timeouts.js';
 import {
@@ -37,6 +36,8 @@ import {
     toBytes,
     version,
 } from '../utils.js';
+
+export type { HttpMethod } from '../models.js';
 
 export const DEFAULT_MAX_RETRIES = 8;
 

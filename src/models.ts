@@ -1092,7 +1092,7 @@ type GeneratedBatchAddResult = Schemas['BatchAddResult'];
 type GeneratedBatchDeleteResult = Schemas['BatchDeleteResult'];
 type GeneratedRequestResource = Schemas['RequestResource'];
 
-/** HTTP methods supported by Request Queue requests. */
+/** HTTP methods the API specification lists: a request queue request's `method`, and what the HTTP client sends. */
 export type HttpMethod = Schemas['HttpMethod'];
 
 /** Statistics about Request Queue usage and storage. */

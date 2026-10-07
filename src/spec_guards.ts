@@ -30,13 +30,13 @@ import type {
     AccountLimitsRePointed,
     ActorChargeEventRePointed,
     ActorDefinitionSpecGaps,
-    ActorResourceRePointed,
     ActorListItemRePointed,
-    ActorSourceType,
+    ActorResourceRePointed,
     ActorResourceSpecGaps,
-    BuildRePointed,
+    ActorSourceType,
     BuildListItemRePointed,
     BuildMetaRePointed,
+    BuildRePointed,
     DailyServiceUsageRePointed,
     DatasetResourceRePointed,
     DatasetResourceSpecGaps,
@@ -45,7 +45,6 @@ import type {
     DatasetStatsSpecGaps,
     DefaultRunOptionsRePointed,
     EffectivePlatformFeaturesRePointed,
-    WebhookLastDispatchRePointed,
     KeyValueStoreResourceRePointed,
     KeyValueStoreResourceSpecGaps,
     ListOfKeysRePointed,
@@ -53,7 +52,6 @@ import type {
     LockedRequestQueueHeadRePointed,
     MonthlyUsageRePointed,
     PayPerEventActorPricingInfoRePointed,
-    UserPlanRePointed,
     PricePerDatasetItemActorPricingInfoRePointed,
     ProxyResourceRePointed,
     RequestQueueHeadRePointed,
@@ -61,31 +59,33 @@ import type {
     RequestQueueResourceSpecGaps,
     RequestQueueResourceSpecNarrowings,
     RunClientNarrowings,
+    RunListItemRePointed,
     RunMetaRePointed,
     RunOptionsSpecGaps,
     RunRePointed,
-    RunListItemRePointed,
     ScheduleActionRunActorRePointed,
     ScheduleActionRunActorTaskRePointed,
     ScheduleActions,
     ScheduleClientNarrowings,
     ScheduleRePointed,
     StoreActorRePointed,
-    TaskRePointed,
     TaskListItemRePointed,
     TaskListItemSpecGaps,
+    TaskRePointed,
     UsageItemRePointed,
+    UserPlanRePointed,
     UserPrivateInfoRePointed,
     VersionClientNarrowings,
     VersionRePointed,
     VersionSourceLocation,
-    WebhookResource,
     WebhookConditionKey,
     WebhookDispatchRePointed,
     WebhookDispatchStatus,
     WebhookDispatchWebhookSummary,
     WebhookDispatchWebhookSummaryRePointed,
     WebhookEventType,
+    WebhookLastDispatchRePointed,
+    WebhookResource,
     WebhookResourceRePointed,
     WebhookResourceSpecGaps,
 } from './models.js';
@@ -171,16 +171,14 @@ export type EnumGuards = AssertAll<
 >;
 
 /**
- * `WebhookDispatch.webhook` is a summary of the webhook that triggered it, and the two schemas have to
- * keep agreeing about the fields they share. It is declared from the spec's summary rather than as
- * `Pick<Webhook, ...>`, because the summary also carries `actionType` and `condition`, so the overlap
- * is asserted here instead.
+ * `WebhookDispatch.webhook` is a summary of the webhook that triggered it, and the two schemas have to keep agreeing
+ * about the fields they share. It is declared from the spec's summary rather than as `Pick<WebhookResource, ...>`,
+ * because the summary also carries `actionType` and `condition`, so the overlap is asserted here instead.
  *
- * Only `requestUrl` is asserted. It is nullable on both sides, because a hook action other than a
- * plain HTTP request -- Slack, email -- has no URL to report. `isAdHoc` is left out: the spec types it
- * as nullable on the full `WebhookResource` and non-nullable on the summary, and there is no reason to think
- * the API really answers differently for the two, so pinning them to each other would only encode the
- * inconsistency.
+ * Only `requestUrl` is asserted. It is nullable on both sides, because a hook action other than a plain HTTP request
+ * -- Slack, email -- has no URL to report. `isAdHoc` is left out: the spec types it as nullable on the full
+ * `WebhookResource` and non-nullable on the summary, and there is no reason to think the API really answers
+ * differently for the two, so pinning them to each other would only encode the inconsistency.
  */
 export type WebhookDispatchGuards = AssertAll<
     [Equals<Pick<WebhookDispatchWebhookSummary, 'requestUrl'>, Pick<WebhookResource, 'requestUrl'>>]

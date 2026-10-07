@@ -26,7 +26,7 @@ Fields the specification declares as a `date-time` are converted into `Date` obj
 
 ## URL fields
 
-Fields the specification marks as a URL, such as `Run.containerUrl` or `Dataset.consoleUrl`, are parsed with the [WHATWG `URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) parser during validation, and the client returns the parsed URL's serialization. The string you read back can therefore differ from the one the API sent. Both forms denote the same URL under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-6.2), they're just different strings.
+Fields the specification marks as a URL, such as `Run.containerUrl` or `DatasetResource.consoleUrl`, are parsed with the [WHATWG `URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) parser during validation, and the client returns the parsed URL's serialization. The string you read back can therefore differ from the one the API sent. Both forms denote the same URL under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-6.2), they're just different strings.
 
 ```ts
 // An empty path becomes '/'.
