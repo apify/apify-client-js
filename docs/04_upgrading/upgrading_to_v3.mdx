@@ -98,6 +98,10 @@ await client.actor('my-actor').update([{ name: 'my-actor' }]);
 
 <ApiLink to="class/DatasetClient#pushItems">`DatasetClient.pushItems()`</ApiLink> takes an object, an array of objects, or a string holding either one as JSON. v2 also typed and accepted an array of strings, which the API always rejected, so passing one now fails at compile time and throws an `ArgumentValidationError` before any request is sent. Parse the strings into objects first.
 
+### `unwind` takes an array only
+
+The `unwind` option of <ApiLink to="class/DatasetClient#listItems">`listItems()`</ApiLink>, <ApiLink to="class/DatasetClient#downloadItems">`downloadItems()`</ApiLink> and <ApiLink to="class/DatasetClient#createItemsPublicUrl">`createItemsPublicUrl()`</ApiLink> no longer accepts a single string. Passing one fails at compile time and throws an `ArgumentValidationError`. Wrap the field name in an array: `unwind: ['field']`.
+
 ### `Infinity` and invalid `Date`s are now rejected
 
 `ow` only checked the type, so `Infinity` passed as a number and an invalid `Date` passed as a date. Zod additionally requires a *finite* number and a *valid* date, so both now throw:
