@@ -593,7 +593,6 @@ export type ActorUpdateOptions = Partial<
         | 'seoTitle'
         | 'seoDescription'
         | 'title'
-        | 'restartOnError'
         | 'versions'
         | 'categories'
         | 'defaultRunOptions'
