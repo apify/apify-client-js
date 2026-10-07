@@ -126,7 +126,7 @@ export class KeyValueStoreClient extends ResourceClient {
     async get(options: TimeoutOptions = {}): Promise<KeyValueStore | undefined> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.KeyValueStore(), {}, timeoutSecs, signal);
+        return this.getResource(schemas.KeyValueStoreResource(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -145,7 +145,7 @@ export class KeyValueStoreClient extends ResourceClient {
         parseArgument(newFields, anyObjectSchema);
         const { timeoutSecs = 'long', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.KeyValueStore(), newFields, timeoutSecs, signal);
+        return this.updateResource(schemas.KeyValueStoreResource(), newFields, timeoutSecs, signal);
     }
 
     /**

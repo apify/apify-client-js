@@ -103,7 +103,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
         const hasResource = Object.keys(resource).length > 0;
 
         return this.getOrCreateResource(
-            schemas.Dataset(),
+            schemas.DatasetResource(),
             name,
             hasResource ? resource : undefined,
             timeoutSecs,

@@ -69,7 +69,7 @@ export class WebhookClient extends ResourceClient {
     async get(options: TimeoutOptions = {}): Promise<Webhook | undefined> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Webhook(), {}, timeoutSecs, signal);
+        return this.getResource(schemas.WebhookResource(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -85,7 +85,7 @@ export class WebhookClient extends ResourceClient {
         parseArgument(newFields, anyObjectSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Webhook(), newFields, timeoutSecs, signal);
+        return this.updateResource(schemas.WebhookResource(), newFields, timeoutSecs, signal);
     }
 
     /**

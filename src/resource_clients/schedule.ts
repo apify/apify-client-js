@@ -20,7 +20,7 @@ export type {
 } from '../models.js';
 export { ScheduleActions } from '../models.js';
 
-const scheduleLogSchema = z.array(schemas.ScheduleInvoked());
+const scheduleLogSchema = z.array(schemas.ScheduleLogEntry());
 
 /**
  * Client for managing a specific Schedule.

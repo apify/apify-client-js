@@ -106,7 +106,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
         const hasResource = Object.keys(resource).length > 0;
 
         return this.getOrCreateResource(
-            schemas.KeyValueStore(),
+            schemas.KeyValueStoreResource(),
             name,
             hasResource ? resource : undefined,
             timeoutSecs,

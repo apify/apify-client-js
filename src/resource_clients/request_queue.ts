@@ -192,7 +192,7 @@ export class RequestQueueClient extends ResourceClient {
     async get(options: TimeoutOptions = {}): Promise<RequestQueue | undefined> {
         const { timeoutSecs, signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.RequestQueue(), {}, this.#resolveTimeout(timeoutSecs, 'short'), signal);
+        return this.getResource(schemas.RequestQueueResource(), {}, this.#resolveTimeout(timeoutSecs, 'short'), signal);
     }
 
     /**
@@ -209,7 +209,7 @@ export class RequestQueueClient extends ResourceClient {
         const { timeoutSecs, signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         return this.updateResource(
-            schemas.RequestQueue(),
+            schemas.RequestQueueResource(),
             newFields,
             this.#resolveTimeout(timeoutSecs, 'short'),
             signal,
@@ -646,7 +646,7 @@ export class RequestQueueClient extends ResourceClient {
         };
         try {
             const response = await this.httpClient.call(requestOpts);
-            return parseResponse(response, schemas.Request());
+            return parseResponse(response, schemas.RequestResource());
         } catch (err) {
             catchNotFoundOrThrow(err as ApifyApiError);
         }

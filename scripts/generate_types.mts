@@ -47,7 +47,7 @@ const spec = hoistAllOfRequired(JSON.parse(await readFile(specPath, 'utf8')) as 
 // appends `& { [key: string]: unknown }` to every object and so relaxes *static* typing. This client never
 // validates responses at runtime (`cast()` is `input as T`), so unknown server fields already pass through
 // untouched -- the flag would add no forward compatibility and would silently make every property typo
-// type-check. `rootTypes` would emit `export type Dataset = components['schemas']['Dataset']` aliases that
+// type-check. `rootTypes` would emit `export type Build = components['schemas']['Build']` aliases that
 // collide by name with the published models, and since both consumers of this file go through `components`, they
 // would be 300-odd exported lines nothing imports.
 const ast = await openapiTS(spec, {
