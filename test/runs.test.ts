@@ -1,3 +1,4 @@
+import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { setTimeout as setTimeoutNode } from 'node:timers/promises';
 
@@ -461,5 +462,75 @@ describe('Redirect run logs', () => {
             ).toBe(true);
             warnSpy.mockRestore();
         });
+    });
+});
+
+describe('waitForFinish() on a job that returns 404', () => {
+    let server: http.Server;
+    let client: ApifyClient;
+    let received: number;
+    /** Answers for the upcoming lookups, oldest first. The last one repeats once the rest are used up. */
+    let answers: (404 | 'RUNNING' | 'SUCCEEDED')[];
+    /** How far the frozen `Date.now()` has moved. Only a 404 moves it, by a second, so lookup counts are exact. */
+    let clockOffsetMillis: number;
+
+    beforeAll(async () => {
+        server = http.createServer((req, res) => {
+            const answer = answers.length > 1 ? answers.shift()! : answers[0];
+            received += 1;
+            req.resume();
+            req.on('end', () => {
+                res.setHeader('content-type', 'application/json');
+                if (answer === 404) {
+                    clockOffsetMillis += 1000;
+                    res.statusCode = 404;
+                    res.end(JSON.stringify({ error: { type: 'record-not-found', message: 'not found' } }));
+                } else {
+                    res.end(JSON.stringify({ data: { id: 'job-id', status: answer } }));
+                }
+            });
+        });
+        await new Promise<void>((resolve) => {
+            server.listen(0, resolve);
+        });
+    });
+
+    afterAll(async () => {
+        server.closeAllConnections();
+        await new Promise((resolve) => {
+            server.close(resolve);
+        });
+    });
+
+    beforeEach(() => {
+        received = 0;
+        clockOffsetMillis = 0;
+        const startMillis = Date.now();
+        vi.spyOn(Date, 'now').mockImplementation(() => startMillis + clockOffsetMillis);
+        client = new ApifyClient({
+            baseUrl: `http://localhost:${(server.address() as AddressInfo).port}`,
+            maxRetries: 0,
+        });
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    test.each([
+        { name: 'run', waitForFinish: (c: ApifyClient) => c.run('job-id').waitForFinish() },
+        { name: 'build', waitForFinish: (c: ApifyClient) => c.build('job-id').waitForFinish() },
+    ])('of a $name throws once the grace window for a missing job passes', async ({ name, waitForFinish }) => {
+        answers = [404];
+
+        await expect(waitForFinish(client)).rejects.toThrow(`Waiting for ${name} to finish failed`);
+        expect(received).toBe(4);
+    });
+
+    test('a successful lookup resets the grace window for a missing job', async () => {
+        answers = [404, 404, 404, 'RUNNING', 404, 404, 404, 'SUCCEEDED'];
+
+        await expect(client.run('job-id').waitForFinish()).resolves.toMatchObject({ status: 'SUCCEEDED' });
+        expect(received).toBe(8);
     });
 });
