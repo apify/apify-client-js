@@ -38,7 +38,7 @@ export const ActorStats = lazySchema(() => z.looseObject({
     }).optional(),
 }));
 
-export const ActorShort = lazySchema(() => z.looseObject({
+export const ActorListItem = lazySchema(() => z.looseObject({
     id: z.string(),
     createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
@@ -49,7 +49,7 @@ export const ActorShort = lazySchema(() => z.looseObject({
 }));
 
 export const ListOfActors = lazySchema(() => PaginationResponse().extend({
-    items: z.array(ActorShort()),
+    items: z.array(ActorListItem()),
 }));
 
 export const ListOfActorsResponse = lazySchema(() => z.looseObject({
@@ -240,7 +240,7 @@ export const TaggedBuilds = lazySchema(() => z.record(z.string(), TaggedBuildInf
 /** A warning displayed on the Actor's page in Apify Store and Console. Can be set by the Actor's developer or automatically by Apify's quality checks. */
 export const ActorNotice = lazySchema(() => z.enum(["NONE", "RESIDENTIAL_PROXY_REQUIRED", "UNDER_MAINTENANCE"]).or(z.string()).nullable());
 
-export const Actor = lazySchema(() => z.looseObject({
+export const ActorResource = lazySchema(() => z.looseObject({
     id: z.string(),
     userId: z.string(),
     name: z.string(),
@@ -276,7 +276,7 @@ export const Actor = lazySchema(() => z.looseObject({
 
 /** Response containing Actor data. */
 export const ActorResponse = lazySchema(() => z.looseObject({
-    data: Actor(),
+    data: ActorResource(),
 }));
 
 export const CreateOrUpdateVersionRequest = lazySchema(() => z.looseObject({
@@ -292,7 +292,7 @@ export const CreateOrUpdateVersionRequest = lazySchema(() => z.looseObject({
 }));
 
 /** The name of the build tag. */
-export const BuildTag = lazySchema(() => z.looseObject({
+export const UpdatedBuildProperty = lazySchema(() => z.looseObject({
     buildId: z.string(),
 }).nullable());
 
@@ -309,7 +309,7 @@ export const UpdateActorRequest = lazySchema(() => z.looseObject({
     pricingInfos: z.array(ActorRunPricingInfo()).optional(),
     categories: z.array(z.string()).nullable().optional(),
     defaultRunOptions: DefaultRunOptions().nullable().optional(),
-    taggedBuilds: z.record(z.string(), BuildTag()).nullable().optional(),
+    taggedBuilds: z.record(z.string(), UpdatedBuildProperty()).nullable().optional(),
     actorStandby: ActorStandby().nullable().optional(),
     exampleRunInput: ExampleRunInput().nullable().optional(),
     isDeprecated: z.boolean().nullable().optional(),
@@ -355,7 +355,7 @@ export const WebhookCondition = lazySchema(() => z.looseObject({
 /** Status of the webhook dispatch indicating whether the HTTP request was successful. */
 export const WebhookDispatchStatus = lazySchema(() => z.enum(["ACTIVE", "SUCCEEDED", "FAILED"]).or(z.string()));
 
-export const ExampleWebhookDispatch = lazySchema(() => z.looseObject({
+export const WebhookLastDispatch = lazySchema(() => z.looseObject({
     status: WebhookDispatchStatus(),
     finishedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
     removedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
@@ -365,7 +365,7 @@ export const WebhookStats = lazySchema(() => z.looseObject({
     totalDispatches: z.int().optional(),
 }));
 
-export const WebhookShort = lazySchema(() => z.looseObject({
+export const WebhookListItem = lazySchema(() => z.looseObject({
     id: z.string(),
     createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
@@ -380,12 +380,12 @@ export const WebhookShort = lazySchema(() => z.looseObject({
     ignoreSslErrors: z.boolean(),
     doNotRetry: z.boolean(),
     requestUrl: z.url({ normalize: true }),
-    lastDispatch: ExampleWebhookDispatch().nullable().optional(),
+    lastDispatch: WebhookLastDispatch().nullable().optional(),
     stats: WebhookStats().nullable().optional(),
 }));
 
 export const ListOfWebhooks = lazySchema(() => PaginationResponse().extend({
-    items: z.array(WebhookShort()),
+    items: z.array(WebhookListItem()),
 }));
 
 export const ListOfWebhooksResponse = lazySchema(() => z.looseObject({
@@ -397,13 +397,13 @@ export const ActorJobStatus = lazySchema(() => z.enum(["READY", "RUNNING", "SUCC
 
 export const RunOrigin = lazySchema(() => z.enum(["DEVELOPMENT", "WEB", "API", "SCHEDULER", "TEST", "WEBHOOK", "ACTOR", "CLI", "CI", "STANDBY", "MCP"]).or(z.string()));
 
-export const BuildsMeta = lazySchema(() => z.looseObject({
+export const BuildMeta = lazySchema(() => z.looseObject({
     origin: RunOrigin(),
     clientIp: z.string().optional(),
     userAgent: z.string().optional(),
 }));
 
-export const BuildShort = lazySchema(() => z.looseObject({
+export const BuildListItem = lazySchema(() => z.looseObject({
     id: z.string(),
     actId: z.string().optional(),
     userId: z.string().optional(),
@@ -413,11 +413,11 @@ export const BuildShort = lazySchema(() => z.looseObject({
     usageTotalUsd: z.number(),
     buildNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])(\.[1-9][0-9]{0,4})$/),
     buildNumberInt: z.int().optional(),
-    meta: BuildsMeta().optional(),
+    meta: BuildMeta().optional(),
 }));
 
 export const ListOfBuilds = lazySchema(() => PaginationResponse().extend({
-    items: z.array(BuildShort()),
+    items: z.array(BuildListItem()),
 }));
 
 export const ListOfBuildsResponse = lazySchema(() => z.looseObject({
@@ -470,7 +470,7 @@ export const Build = lazySchema(() => z.looseObject({
     startedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     finishedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
     status: ActorJobStatus(),
-    meta: BuildsMeta(),
+    meta: BuildMeta(),
     stats: BuildStats().nullable().optional(),
     options: BuildOptions().nullable().optional(),
     usage: BuildUsage().nullable().optional(),
@@ -503,7 +503,7 @@ export const RunMeta = lazySchema(() => z.looseObject({
     scheduledAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
 }));
 
-export const RunShort = lazySchema(() => z.looseObject({
+export const RunListItem = lazySchema(() => z.looseObject({
     id: z.string(),
     actId: z.string(),
     userId: z.string().optional(),
@@ -522,7 +522,7 @@ export const RunShort = lazySchema(() => z.looseObject({
 }));
 
 export const ListOfRuns = lazySchema(() => PaginationResponse().extend({
-    items: z.array(RunShort()),
+    items: z.array(RunListItem()),
 }));
 
 export const ListOfRunsResponse = lazySchema(() => z.looseObject({
@@ -609,7 +609,7 @@ export const RunUsageUsd = lazySchema(() => z.looseObject({
 }));
 
 /** Information about a metamorph event that occurred during the run. */
-export const Metamorph = lazySchema(() => z.looseObject({
+export const RunMetamorphEvent = lazySchema(() => z.looseObject({
     createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     actorId: z.string(),
     buildId: z.string(),
@@ -656,7 +656,7 @@ export const Run = lazySchema(() => z.looseObject({
     usage: RunUsage().nullable().optional(),
     usageTotalUsd: z.number().nullable().optional(),
     usageUsd: RunUsageUsd().nullable().optional(),
-    metamorphs: z.array(Metamorph()).nullable().optional(),
+    metamorphs: z.array(RunMetamorphEvent()).nullable().optional(),
     platformUsageBillingModel: z.string().optional(),
 }));
 
@@ -671,7 +671,7 @@ export const DatasetStats = lazySchema(() => z.looseObject({
     inflatedBytes: z.int().optional(),
 }));
 
-export const Dataset = lazySchema(() => z.looseObject({
+export const DatasetResource = lazySchema(() => z.looseObject({
     id: z.string(),
     name: z.string().nullable().optional(),
     userId: z.string(),
@@ -693,7 +693,7 @@ export const Dataset = lazySchema(() => z.looseObject({
 
 /** Response containing dataset metadata. */
 export const DatasetResponse = lazySchema(() => z.looseObject({
-    data: Dataset(),
+    data: DatasetResource(),
 }));
 
 export const UpdateDatasetRequest = lazySchema(() => z.looseObject({
@@ -707,7 +707,7 @@ export const UpdateDatasetRequest = lazySchema(() => z.looseObject({
  */
 export const PutItemsRequest = lazySchema(() => z.record(z.string(), z.unknown()));
 
-export const ValidationError = lazySchema(() => z.looseObject({
+export const DatasetItemValidationError = lazySchema(() => z.looseObject({
     instancePath: z.string().optional(),
     schemaPath: z.string().optional(),
     keyword: z.string().optional(),
@@ -715,22 +715,22 @@ export const ValidationError = lazySchema(() => z.looseObject({
     params: z.record(z.string(), z.unknown()).optional(),
 }));
 
-export const InvalidItem = lazySchema(() => z.looseObject({
+export const InvalidDatasetItem = lazySchema(() => z.looseObject({
     itemPosition: z.int().optional(),
-    validationErrors: z.array(ValidationError()).optional(),
+    validationErrors: z.array(DatasetItemValidationError()).optional(),
 }));
 
-export const SchemaValidationErrorData = lazySchema(() => z.looseObject({
-    invalidItems: z.array(InvalidItem()),
+export const DatasetSchemaValidationErrorData = lazySchema(() => z.looseObject({
+    invalidItems: z.array(InvalidDatasetItem()),
 }));
 
 export const DatasetSchemaValidationError = lazySchema(() => z.looseObject({
     type: z.string().optional(),
     message: z.string().optional(),
-    data: SchemaValidationErrorData().optional(),
+    data: DatasetSchemaValidationErrorData().optional(),
 }));
 
-export const PutItemResponseError = lazySchema(() => z.looseObject({
+export const PutItemsErrorResponse = lazySchema(() => z.looseObject({
     error: DatasetSchemaValidationError(),
 }));
 
@@ -758,7 +758,7 @@ export const KeyValueStoreStats = lazySchema(() => z.looseObject({
     storageBytes: z.int().optional(),
 }));
 
-export const KeyValueStore = lazySchema(() => z.looseObject({
+export const KeyValueStoreResource = lazySchema(() => z.looseObject({
     id: z.string(),
     name: z.string().nullable().optional(),
     userId: z.string().nullable().optional(),
@@ -779,10 +779,10 @@ export const KeyValueStore = lazySchema(() => z.looseObject({
 
 /** Response containing key-value store data. */
 export const KeyValueStoreResponse = lazySchema(() => z.looseObject({
-    data: KeyValueStore(),
+    data: KeyValueStoreResource(),
 }));
 
-export const UpdateStoreRequest = lazySchema(() => z.looseObject({
+export const UpdateKeyValueStoreRequest = lazySchema(() => z.looseObject({
     name: z.string().nullable().optional(),
     generalAccess: GeneralAccess().optional(),
 }));
@@ -855,7 +855,7 @@ export const RequestQueueStats = lazySchema(() => z.looseObject({
 }));
 
 /** A request queue object containing metadata and statistics. */
-export const RequestQueue = lazySchema(() => z.looseObject({
+export const RequestQueueResource = lazySchema(() => z.looseObject({
     id: QueueId(),
     name: z.string().nullable().optional(),
     userId: QueueUserId(),
@@ -875,7 +875,7 @@ export const RequestQueue = lazySchema(() => z.looseObject({
 
 /** Response containing request queue data. */
 export const RequestQueueResponse = lazySchema(() => z.looseObject({
-    data: RequestQueue(),
+    data: RequestQueueResource(),
 }));
 
 /** Request object for updating a request queue. */
@@ -919,13 +919,13 @@ export const RequestBase = lazySchema(() => z.looseObject({
 export const RequestId = lazySchema(() => z.string());
 
 /** A request stored in the request queue, including its metadata and processing state. */
-export const Request = lazySchema(() => RequestBase().extend({
+export const RequestResource = lazySchema(() => RequestBase().extend({
     id: RequestId().optional(),
 }).required({ id: true }));
 
 /** A paginated list of requests from the request queue. */
 export const ListOfRequests = lazySchema(() => z.looseObject({
-    items: z.array(Request()),
+    items: z.array(RequestResource()),
     limit: z.int(),
     exclusiveStartId: z.string().optional(),
     cursor: z.string().optional(),
@@ -967,7 +967,7 @@ export const AddedRequest = lazySchema(() => z.looseObject({
 }));
 
 /** A request that failed to be processed during a request queue operation and can be retried. */
-export const RequestDraft = lazySchema(() => z.looseObject({
+export const UnprocessedRequest = lazySchema(() => z.looseObject({
     id: RequestId().optional(),
     uniqueKey: UniqueKey(),
     url: RequestUrl(),
@@ -977,7 +977,7 @@ export const RequestDraft = lazySchema(() => z.looseObject({
 /** Result of a batch add operation containing successfully processed and failed requests. */
 export const BatchAddResult = lazySchema(() => z.looseObject({
     processedRequests: z.array(AddedRequest()),
-    unprocessedRequests: z.array(RequestDraft()),
+    unprocessedRequests: z.array(UnprocessedRequest()),
 }));
 
 /** Response containing the result of a batch add operation. */
@@ -986,19 +986,19 @@ export const BatchAddResponse = lazySchema(() => z.looseObject({
 }));
 
 /** A request that should be deleted, identified by its ID. */
-export const RequestDraftDeleteById = lazySchema(() => z.looseObject({
+export const RequestToDeleteById = lazySchema(() => z.looseObject({
     id: RequestId(),
     uniqueKey: UniqueKey().optional(),
 }));
 
 /** A request that should be deleted, identified by its unique key. */
-export const RequestDraftDeleteByUniqueKey = lazySchema(() => z.looseObject({
+export const RequestToDeleteByUniqueKey = lazySchema(() => z.looseObject({
     id: RequestId().optional(),
     uniqueKey: UniqueKey(),
 }));
 
 /** A request that should be deleted. */
-export const RequestDraftDelete = lazySchema(() => z.union([RequestDraftDeleteById(), RequestDraftDeleteByUniqueKey()]));
+export const RequestToDelete = lazySchema(() => z.union([RequestToDeleteById(), RequestToDeleteByUniqueKey()]));
 
 /** Confirmation of a request that was successfully deleted, identified by its ID. */
 export const DeletedRequestById = lazySchema(() => z.looseObject({
@@ -1018,7 +1018,7 @@ export const DeletedRequest = lazySchema(() => z.union([DeletedRequestById(), De
 /** Result of a batch delete operation containing successfully deleted and failed requests. */
 export const BatchDeleteResult = lazySchema(() => z.looseObject({
     processedRequests: z.array(DeletedRequest()),
-    unprocessedRequests: z.array(RequestDraft()),
+    unprocessedRequests: z.array(UnprocessedRequest()),
 }));
 
 /** Response containing the result of a batch delete operation. */
@@ -1038,7 +1038,7 @@ export const UnlockRequestsResponse = lazySchema(() => z.looseObject({
 
 /** Response containing a single request from the request queue. */
 export const RequestResponse = lazySchema(() => z.looseObject({
-    data: Request(),
+    data: RequestResource(),
 }));
 
 /** Response containing the result of updating a request in the request queue. */
@@ -1063,7 +1063,7 @@ export const ProlongRequestLockResponse = lazySchema(() => z.looseObject({
 export const HeadLimit = lazySchema(() => z.int());
 
 /** A request from the request queue head without lock information. */
-export const HeadRequest = lazySchema(() => z.looseObject({
+export const RequestQueueHeadItem = lazySchema(() => z.looseObject({
     id: RequestId(),
     uniqueKey: UniqueKey(),
     url: RequestUrl(),
@@ -1076,16 +1076,16 @@ export const RequestQueueHead = lazySchema(() => z.looseObject({
     limit: HeadLimit(),
     queueModifiedAt: QueueModifiedAt(),
     hadMultipleClients: HadMultipleClients(),
-    items: z.array(HeadRequest()),
+    items: z.array(RequestQueueHeadItem()),
 }));
 
 /** Response containing requests from the request queue head without locking. */
-export const HeadResponse = lazySchema(() => z.looseObject({
+export const RequestQueueHeadResponse = lazySchema(() => z.looseObject({
     data: RequestQueueHead(),
 }));
 
 /** A request from the request queue head that has been locked for processing. */
-export const LockedHeadRequest = lazySchema(() => z.looseObject({
+export const LockedRequestQueueHeadItem = lazySchema(() => z.looseObject({
     id: RequestId(),
     uniqueKey: UniqueKey(),
     url: RequestUrl(),
@@ -1102,11 +1102,11 @@ export const LockedRequestQueueHead = lazySchema(() => z.looseObject({
     clientKey: z.string().optional(),
     hadMultipleClients: HadMultipleClients(),
     lockSecs: z.int(),
-    items: z.array(LockedHeadRequest()),
+    items: z.array(LockedRequestQueueHeadItem()),
 }));
 
 /** Response containing locked requests from the request queue head. */
-export const HeadAndLockResponse = lazySchema(() => z.looseObject({
+export const LockedRequestQueueHeadResponse = lazySchema(() => z.looseObject({
     data: LockedRequestQueueHead(),
 }));
 
@@ -1114,7 +1114,7 @@ export const TaskStats = lazySchema(() => z.looseObject({
     totalRuns: z.int().optional(),
 }));
 
-export const TaskShort = lazySchema(() => z.looseObject({
+export const TaskListItem = lazySchema(() => z.looseObject({
     id: z.string(),
     userId: z.string(),
     actId: z.string(),
@@ -1128,7 +1128,7 @@ export const TaskShort = lazySchema(() => z.looseObject({
 }));
 
 export const ListOfTasks = lazySchema(() => PaginationResponse().extend({
-    items: z.array(TaskShort()),
+    items: z.array(TaskListItem()),
 }));
 
 export const ListOfTasksResponse = lazySchema(() => z.looseObject({
@@ -1211,7 +1211,7 @@ export const UpdateTaskRequest = lazySchema(() => z.looseObject({
     isPublic: z.boolean().optional(),
 }));
 
-export const Webhook = lazySchema(() => z.looseObject({
+export const WebhookResource = lazySchema(() => z.looseObject({
     id: z.string(),
     createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
@@ -1226,7 +1226,7 @@ export const Webhook = lazySchema(() => z.looseObject({
     payloadTemplate: z.string().nullable().optional(),
     headersTemplate: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
-    lastDispatch: ExampleWebhookDispatch().nullable().optional(),
+    lastDispatch: WebhookLastDispatch().nullable().optional(),
     stats: WebhookStats().nullable().optional(),
 }));
 
@@ -1246,7 +1246,7 @@ export const StorageOwnership = lazySchema(() => z.enum(["ownedByMe", "sharedWit
 
 export const ListOfKeyValueStores = lazySchema(() => PaginationResponse().extend({
     unnamed: z.boolean().optional(),
-    items: z.array(KeyValueStore()),
+    items: z.array(KeyValueStoreResource()),
 }));
 
 export const ListOfKeyValueStoresResponse = lazySchema(() => z.looseObject({
@@ -1280,7 +1280,7 @@ export const ListOfDatasetsResponse = lazySchema(() => z.looseObject({
 }));
 
 /** A shortened request queue object for list responses. */
-export const RequestQueueShort = lazySchema(() => z.looseObject({
+export const RequestQueueListItem = lazySchema(() => z.looseObject({
     id: QueueId(),
     name: z.string(),
     userId: QueueUserId(),
@@ -1302,7 +1302,7 @@ export const RequestQueueShort = lazySchema(() => z.looseObject({
 /** A paginated list of request queues. */
 export const ListOfRequestQueues = lazySchema(() => PaginationResponse().extend({
     unnamed: z.boolean().optional(),
-    items: z.array(RequestQueueShort()),
+    items: z.array(RequestQueueListItem()),
 }));
 
 /** Response containing a list of request queues. */
@@ -1310,7 +1310,7 @@ export const ListOfRequestQueuesResponse = lazySchema(() => z.looseObject({
     data: ListOfRequestQueues(),
 }));
 
-export const WebhookCreate = lazySchema(() => z.looseObject({
+export const CreateWebhookRequest = lazySchema(() => z.looseObject({
     isAdHoc: z.boolean().nullable().optional(),
     eventTypes: z.array(WebhookEventType()),
     condition: WebhookCondition(),
@@ -1326,10 +1326,10 @@ export const WebhookCreate = lazySchema(() => z.looseObject({
 
 /** Response containing webhook data. */
 export const WebhookResponse = lazySchema(() => z.looseObject({
-    data: Webhook(),
+    data: WebhookResource(),
 }));
 
-export const WebhookUpdate = lazySchema(() => z.looseObject({
+export const UpdateWebhookRequest = lazySchema(() => z.looseObject({
     isAdHoc: z.boolean().nullable().optional(),
     eventTypes: z.array(WebhookEventType()).nullable().optional(),
     condition: WebhookCondition().nullable().optional(),
@@ -1373,7 +1373,7 @@ export const WebhookDispatch = lazySchema(() => z.looseObject({
     })).optional(),
 }));
 
-export const TestWebhookResponse = lazySchema(() => z.looseObject({
+export const WebhookDispatchResponse = lazySchema(() => z.looseObject({
     data: WebhookDispatch(),
 }));
 
@@ -1383,10 +1383,6 @@ export const ListOfWebhookDispatches = lazySchema(() => PaginationResponse().ext
 
 export const ListOfWebhookDispatchesResponse = lazySchema(() => z.looseObject({
     data: ListOfWebhookDispatches(),
-}));
-
-export const WebhookDispatchResponse = lazySchema(() => z.looseObject({
-    data: WebhookDispatch(),
 }));
 
 export const ScheduleBase = lazySchema(() => z.looseObject({
@@ -1403,26 +1399,26 @@ export const ScheduleBase = lazySchema(() => z.looseObject({
     lastRunAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
 }));
 
-export const ScheduleActionShortRunActor = lazySchema(() => z.looseObject({
+export const ScheduleListItemActionRunActor = lazySchema(() => z.looseObject({
     id: z.string(),
     type: z.literal("RUN_ACTOR"),
     actorId: z.string(),
 }));
 
-export const ScheduleActionShortRunActorTask = lazySchema(() => z.looseObject({
+export const ScheduleListItemActionRunActorTask = lazySchema(() => z.looseObject({
     id: z.string(),
     type: z.literal("RUN_ACTOR_TASK"),
     actorTaskId: z.string(),
 }));
 
-export const ScheduleActionShort = lazySchema(() => z.discriminatedUnion("type", [ScheduleActionShortRunActor(), ScheduleActionShortRunActorTask()]));
+export const ScheduleListItemAction = lazySchema(() => z.discriminatedUnion("type", [ScheduleListItemActionRunActor(), ScheduleListItemActionRunActorTask()]));
 
-export const ScheduleShort = lazySchema(() => ScheduleBase().extend({
-    actions: z.array(ScheduleActionShort()),
+export const ScheduleListItem = lazySchema(() => ScheduleBase().extend({
+    actions: z.array(ScheduleListItemAction()),
 }));
 
 export const ListOfSchedules = lazySchema(() => PaginationResponse().extend({
-    items: z.array(ScheduleShort()),
+    items: z.array(ScheduleListItem()),
 }));
 
 export const ListOfSchedulesResponse = lazySchema(() => z.looseObject({
@@ -1449,7 +1445,7 @@ export const ScheduleCreateActionRunActorTask = lazySchema(() => z.looseObject({
 
 export const ScheduleCreateAction = lazySchema(() => z.discriminatedUnion("type", [ScheduleCreateActionRunActor(), ScheduleCreateActionRunActorTask()]));
 
-export const ScheduleCreate = lazySchema(() => z.looseObject({
+export const CreateOrUpdateScheduleRequest = lazySchema(() => z.looseObject({
     name: z.string().nullable().optional(),
     isEnabled: z.boolean().nullable().optional(),
     isExclusive: z.boolean().nullable().optional(),
@@ -1490,14 +1486,14 @@ export const ScheduleResponse = lazySchema(() => z.looseObject({
     data: Schedule(),
 }));
 
-export const ScheduleInvoked = lazySchema(() => z.looseObject({
+export const ScheduleLogEntry = lazySchema(() => z.looseObject({
     message: z.string(),
     level: z.string(),
     createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
 }));
 
 export const ScheduleLogResponse = lazySchema(() => z.looseObject({
-    data: z.array(ScheduleInvoked()),
+    data: z.array(ScheduleLogEntry()),
 }));
 
 export const CurrentPricingInfo = lazySchema(() => z.looseObject({
@@ -1518,7 +1514,7 @@ export const CurrentPricingInfo = lazySchema(() => z.looseObject({
     pricingPerEvent: z.record(z.string(), z.unknown()).nullable().optional(),
 }));
 
-export const StoreListActor = lazySchema(() => z.looseObject({
+export const StoreActor = lazySchema(() => z.looseObject({
     id: z.string(),
     title: z.string(),
     name: z.string(),
@@ -1541,14 +1537,14 @@ export const StoreListActor = lazySchema(() => z.looseObject({
 }));
 
 export const ListOfStoreActors = lazySchema(() => PaginationResponse().extend({
-    items: z.array(StoreListActor()),
+    items: z.array(StoreActor()),
 }));
 
-export const ListOfActorsInStoreResponse = lazySchema(() => z.looseObject({
+export const ListOfStoreActorsResponse = lazySchema(() => z.looseObject({
     data: ListOfStoreActors(),
 }));
 
-export const Profile = lazySchema(() => z.looseObject({
+export const UserProfile = lazySchema(() => z.looseObject({
     bio: z.string().nullable().optional(),
     readme: z.string().nullable().optional(),
     name: z.string().optional(),
@@ -1560,10 +1556,10 @@ export const Profile = lazySchema(() => z.looseObject({
 
 export const UserPublicInfo = lazySchema(() => z.looseObject({
     username: z.string(),
-    profile: Profile().optional(),
+    profile: UserProfile().optional(),
 }));
 
-export const PublicUserDataResponse = lazySchema(() => z.looseObject({
+export const UserPublicInfoResponse = lazySchema(() => z.looseObject({
     data: UserPublicInfo(),
 }));
 
@@ -1573,7 +1569,7 @@ export const ProxyGroup = lazySchema(() => z.looseObject({
     availableCount: z.int(),
 }));
 
-export const Proxy = lazySchema(() => z.looseObject({
+export const ProxyResource = lazySchema(() => z.looseObject({
     password: z.string(),
     groups: z.array(ProxyGroup()),
 }));
@@ -1585,7 +1581,7 @@ export const Proxy = lazySchema(() => z.looseObject({
  */
 export const AvailableProxyGroups = lazySchema(() => z.record(z.string(), z.int()));
 
-export const Plan = lazySchema(() => z.looseObject({
+export const UserPlan = lazySchema(() => z.looseObject({
     id: z.string().optional(),
     description: z.string().optional(),
     isEnabled: z.boolean().optional(),
@@ -1637,16 +1633,16 @@ export const EffectivePlatformFeatures = lazySchema(() => z.looseObject({
 export const UserPrivateInfo = lazySchema(() => z.looseObject({
     id: z.string().optional(),
     username: z.string(),
-    profile: Profile().optional(),
+    profile: UserProfile().optional(),
     email: z.string().optional(),
-    proxy: Proxy().optional(),
-    plan: Plan().optional(),
+    proxy: ProxyResource().optional(),
+    plan: UserPlan().optional(),
     effectivePlatformFeatures: EffectivePlatformFeatures().optional(),
     createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).optional(),
     isPaying: z.boolean().optional(),
 }));
 
-export const PrivateUserDataResponse = lazySchema(() => z.looseObject({
+export const UserPrivateInfoResponse = lazySchema(() => z.looseObject({
     data: UserPrivateInfo(),
 }));
 
@@ -1655,7 +1651,7 @@ export const UsageCycle = lazySchema(() => z.looseObject({
     endAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
 }));
 
-export const PriceTiers = lazySchema(() => z.looseObject({
+export const PriceTier = lazySchema(() => z.looseObject({
     quantityAbove: z.number(),
     discountPercent: z.number(),
     tierQuantity: z.number(),
@@ -1668,7 +1664,7 @@ export const UsageItem = lazySchema(() => z.looseObject({
     baseAmountUsd: z.number(),
     baseUnitPriceUsd: z.number().optional(),
     amountAfterVolumeDiscountUsd: z.number().optional(),
-    priceTiers: z.array(PriceTiers()).optional(),
+    priceTiers: z.array(PriceTier()).optional(),
 }));
 
 /** A map of usage item names (e.g., ACTOR_COMPUTE_UNITS) to their usage details. */
@@ -1677,7 +1673,7 @@ export const MonthlyServiceUsage = lazySchema(() => z.record(z.string(), UsageIt
 /** A map of service usage item names to their usage details. */
 export const ServiceUsage = lazySchema(() => z.record(z.string(), UsageItem()));
 
-export const DailyServiceUsages = lazySchema(() => z.looseObject({
+export const DailyServiceUsage = lazySchema(() => z.looseObject({
     date: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     serviceUsage: ServiceUsage(),
     totalUsageCreditsUsd: z.number(),
@@ -1686,7 +1682,7 @@ export const DailyServiceUsages = lazySchema(() => z.looseObject({
 export const MonthlyUsage = lazySchema(() => z.looseObject({
     usageCycle: UsageCycle(),
     monthlyServiceUsage: MonthlyServiceUsage(),
-    dailyServiceUsages: z.array(DailyServiceUsages()),
+    dailyServiceUsages: z.array(DailyServiceUsage()),
     totalUsageCreditsUsdBeforeVolumeDiscount: z.number(),
     totalUsageCreditsUsdAfterVolumeDiscount: z.number(),
 }));
@@ -1710,7 +1706,7 @@ export const Limits = lazySchema(() => z.looseObject({
     maxScheduleCount: z.int().optional(),
 }));
 
-export const Current = lazySchema(() => z.looseObject({
+export const CurrentUsage = lazySchema(() => z.looseObject({
     monthlyUsageUsd: z.number(),
     monthlyActorComputeUnits: z.number(),
     monthlyExternalDataTransferGbytes: z.number(),
@@ -1727,10 +1723,10 @@ export const Current = lazySchema(() => z.looseObject({
 export const AccountLimits = lazySchema(() => z.looseObject({
     monthlyUsageCycle: UsageCycle(),
     limits: Limits(),
-    current: Current(),
+    current: CurrentUsage(),
 }));
 
-export const LimitsResponse = lazySchema(() => z.looseObject({
+export const AccountLimitsResponse = lazySchema(() => z.looseObject({
     data: AccountLimits(),
 }));
 
@@ -1748,24 +1744,24 @@ export const BrowserInfoResponse = lazySchema(() => z.looseObject({
     rawHeaders: z.array(z.string()).optional(),
 }));
 
-export const EncodeAndSignData = lazySchema(() => z.looseObject({
+export const EncodeAndSignResult = lazySchema(() => z.looseObject({
     encoded: z.string(),
 }));
 
 export const EncodeAndSignResponse = lazySchema(() => z.looseObject({
-    data: EncodeAndSignData(),
+    data: EncodeAndSignResult(),
 }));
 
 export const DecodeAndVerifyRequest = lazySchema(() => z.looseObject({
     encoded: z.string(),
 }));
 
-export const DecodeAndVerifyData = lazySchema(() => z.looseObject({
+export const DecodeAndVerifyResult = lazySchema(() => z.looseObject({
     decoded: z.unknown(),
     encodedByUserId: z.string().nullable(),
     isVerifiedUser: z.boolean(),
 }));
 
 export const DecodeAndVerifyResponse = lazySchema(() => z.looseObject({
-    data: DecodeAndVerifyData(),
+    data: DecodeAndVerifyResult(),
 }));
