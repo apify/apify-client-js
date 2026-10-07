@@ -1,7 +1,7 @@
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 
-import { ApifyClient } from 'apify-client';
+import { ApifyClient, NotFoundError } from 'apify-client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type * as utils from '../src/utils.js';
@@ -70,10 +70,10 @@ describe('waitForFinish() on a job that returns 404', () => {
     test.each([
         { name: 'run', waitForFinish: (c: ApifyClient) => c.run('job-id').waitForFinish() },
         { name: 'build', waitForFinish: (c: ApifyClient) => c.build('job-id').waitForFinish() },
-    ])('of a $name throws once the grace window for a missing job passes', async ({ name, waitForFinish }) => {
+    ])('of a $name throws once the grace window for a missing job passes', async ({ waitForFinish }) => {
         answers = [404];
 
-        await expect(waitForFinish(client)).rejects.toThrow(`Waiting for ${name} to finish failed`);
+        await expect(waitForFinish(client)).rejects.toThrow(NotFoundError);
         expect(received).toBe(4);
     });
 

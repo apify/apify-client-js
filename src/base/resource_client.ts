@@ -2,7 +2,7 @@ import type { ACT_JOB_STATUSES } from '@apify/consts';
 import { ACT_JOB_TERMINAL_STATUSES } from '@apify/consts';
 import type { z } from 'zod';
 
-import type { ApifyApiError } from '../apify_api_error.js';
+import type { ApifyApiError, NotFoundError } from '../apify_api_error.js';
 import type { ApifyRequestConfig } from '../http_clients/index.js';
 import type { Timeout, TimeoutOptions, TimeoutTier } from '../timeouts.js';
 import { catchNotFoundForResourceOrThrow, catchNotFoundOrThrow, parseResponse, sleep } from '../utils.js';
@@ -120,6 +120,7 @@ export class ResourceClient extends ApiClient {
         const waitMillis = waitSecs * 1000;
         let job: R | undefined;
         let notFoundSince: number | undefined;
+        let notFoundError: NotFoundError | undefined;
 
         const startedAt = Date.now();
         const shouldRepeat = () => {
@@ -151,6 +152,7 @@ export class ResourceClient extends ApiClient {
                 catchNotFoundOrThrow(err as ApifyApiError);
                 job = undefined;
                 notFoundSince ??= Date.now();
+                notFoundError = err as NotFoundError;
             }
 
             // It might take some time for database replicas to get up-to-date,
@@ -161,13 +163,7 @@ export class ResourceClient extends ApiClient {
             }
         } while (shouldRepeat());
 
-        if (!job) {
-            const constructorName = this.constructor.name;
-            const jobName = constructorName.match(/(\w+)Client/)![1].toLowerCase();
-            throw new Error(
-                `Waiting for ${jobName} to finish failed. Cannot fetch actor ${jobName} details from the server.`,
-            );
-        }
+        if (!job) throw notFoundError;
 
         return job;
     }
