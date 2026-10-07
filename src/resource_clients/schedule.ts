@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { Schedule, ScheduleAction, ScheduleInvoked } from '../models.js';
+import type { Schedule, ScheduleAction, ScheduleLogEntry } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import type { DistributiveOptional } from '../utils.js';
 import * as schemas from '../schemas.js';
@@ -15,7 +15,7 @@ export type {
     ScheduleActionRunActor,
     ScheduleActionRunActorTask,
     ScheduleActionRunInput,
-    ScheduleInvoked,
+    ScheduleLogEntry,
     TaskOptions,
 } from '../models.js';
 export { ScheduleActions } from '../models.js';
@@ -107,7 +107,7 @@ export class ScheduleClient extends ResourceClient {
      * @returns The schedule log, one entry per invocation.
      * @see https://docs.apify.com/api/v2/schedule-log-get
      */
-    async getLog(options: TimeoutOptions = {}): Promise<ScheduleInvoked[]> {
+    async getLog(options: TimeoutOptions = {}): Promise<ScheduleLogEntry[]> {
         const { timeoutSecs = 'medium', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const response = await this.httpClient.call({

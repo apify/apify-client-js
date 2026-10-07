@@ -1,10 +1,10 @@
 import type { LiteralUnion } from 'type-fest';
 
 import type { ApifyResponse } from './http_clients/base.js';
-import type { ApifyApiErrorType } from './models.js';
+import type { ErrorType } from './models.js';
 import { isBuffer } from './utils.js';
 
-export type { ApifyApiErrorType } from './models.js';
+export type { ErrorType } from './models.js';
 
 /**
  * Examples of capturing groups for "...at ActorCollectionClient.listResources (/Users/..."
@@ -55,10 +55,10 @@ export class ApifyApiError extends Error {
     statusCode: number;
 
     /**
-     * The type of the error, as returned by the API. Typed as the known {@link ApifyApiErrorType}
+     * The type of the error, as returned by the API. Typed as the known {@link ErrorType}
      * values for autocompletion, while still accepting any string the API may return.
      */
-    type?: LiteralUnion<ApifyApiErrorType, string>;
+    type?: LiteralUnion<ErrorType, string>;
 
     /**
      * Number of the API call attempt.

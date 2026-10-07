@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, test } from 'vitest';
 
-import type { ApifyClient, Dataset } from 'apify-client';
+import type { ApifyClient, DatasetResource } from 'apify-client';
 import { DownloadItemsFormat } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
@@ -12,7 +12,7 @@ beforeAll(() => {
     client = makeClient();
 });
 
-async function createDataset(label = 'dataset'): Promise<Dataset> {
+async function createDataset(label = 'dataset'): Promise<DatasetResource> {
     return client.datasets().getOrCreate(getRandomResourceName(label));
 }
 

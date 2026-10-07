@@ -1,6 +1,6 @@
 import { beforeAll, expect, test } from 'vitest';
 
-import type { ApifyClient, StoreListActor } from 'apify-client';
+import type { ApifyClient, StoreActor } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
 
@@ -88,7 +88,7 @@ test('store().list() parses every item on a full first page', async () => {
 });
 
 test('store().list() is async-iterable and yields distinct Actors', async () => {
-    const collected: StoreListActor[] = [];
+    const collected: StoreActor[] = [];
     for await (const actor of client.store().list({ limit: 20 })) {
         collected.push(actor);
     }
@@ -105,7 +105,7 @@ test('store().list() is async-iterable and yields distinct Actors', async () => 
 });
 
 test('store().list() iteration keeps the username filter across pages', async () => {
-    const collected: StoreListActor[] = [];
+    const collected: StoreActor[] = [];
     for await (const actor of client.store().list({ limit: 15, username: 'apify' })) {
         collected.push(actor);
     }

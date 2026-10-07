@@ -2,7 +2,7 @@ import { afterAll, beforeAll, expect, test } from 'vitest';
 
 import { WEBHOOK_EVENT_TYPES } from '@apify/consts';
 
-import type { ApifyClient, Webhook } from 'apify-client';
+import type { ApifyClient, WebhookResource } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
 import { collectUntilPresent, NO_LOG_REDIRECT, pollUntilCondition } from './_utils.js';
@@ -31,7 +31,7 @@ afterAll(async () => {
     if (finishedRunId) await client.run(finishedRunId).delete();
 });
 
-async function createWebhook(runId: string, requestUrl = 'https://example.com/webhook'): Promise<Webhook> {
+async function createWebhook(runId: string, requestUrl = 'https://example.com/webhook'): Promise<WebhookResource> {
     return client.webhooks().create({
         eventTypes: [WEBHOOK_EVENT_TYPES.ACTOR_RUN_SUCCEEDED],
         requestUrl,

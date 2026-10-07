@@ -9,7 +9,7 @@ import type { PaginatedIterator, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsShape } from '../timeouts.js';
 import { paginationOptionsShape, parseArgument } from '../utils.js';
-import type { RunShort } from './actor.js';
+import type { RunListItem } from './actor.js';
 
 const jobStatusSchema = z.enum(ACTOR_JOB_STATUSES);
 const listOptionsSchema = z.strictObject({
@@ -74,7 +74,7 @@ export class RunCollectionClient extends ResourceCollectionClient {
      * @returns A paginated iterator of Actor runs.
      * @see https://docs.apify.com/api/v2/actor-runs-get
      */
-    list(options: RunCollectionListOptions = {}): PaginatedIterator<RunShort> {
+    list(options: RunCollectionListOptions = {}): PaginatedIterator<RunListItem> {
         const parsed = parseArgument(options, listOptionsSchema, 'RunCollectionListOptions');
 
         return this.listResourcesPaginated(schemas.ListOfRuns(), parsed, 'medium');

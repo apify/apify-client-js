@@ -186,7 +186,7 @@ Resource IDs, record keys and request IDs are percent-encoded before they go int
 
 ## Published types now follow the OpenAPI specification
 
-Every output type the client publishes, such as <ApiLink to="interface/Dataset">`Dataset`</ApiLink>, <ApiLink to="interface/KeyValueStore">`KeyValueStore`</ApiLink>, <ApiLink to="interface/Build">`Build`</ApiLink>, <ApiLink to="interface/Run">`Run`</ApiLink>, <ApiLink to="interface/Webhook">`Webhook`</ApiLink>, <ApiLink to="interface/Schedule">`Schedule`</ApiLink>, <ApiLink to="interface/Task">`Task`</ApiLink>, <ApiLink to="interface/RequestQueue">`RequestQueue`</ApiLink>, and <ApiLink to="interface/UserPrivateInfo">`UserPrivateInfo`</ApiLink>, is now declared on top of a type generated from the published [OpenAPI specification](https://docs.apify.com/api/v2) instead of being hand-written. Several of the previous hand-written types were wrong, and some even contradicted the client's own runtime behavior. For example, `nextExclusiveStartKey` was typed as a required `string`, but `listKeys()` has always compared it to `null`.
+Every output type the client publishes, such as <ApiLink to="interface/DatasetResource">`DatasetResource`</ApiLink>, <ApiLink to="interface/KeyValueStoreResource">`KeyValueStoreResource`</ApiLink>, <ApiLink to="interface/Build">`Build`</ApiLink>, <ApiLink to="interface/Run">`Run`</ApiLink>, <ApiLink to="interface/WebhookResource">`WebhookResource`</ApiLink>, <ApiLink to="interface/Schedule">`Schedule`</ApiLink>, <ApiLink to="interface/Task">`Task`</ApiLink>, <ApiLink to="interface/RequestQueueResource">`RequestQueueResource`</ApiLink>, and <ApiLink to="interface/UserPrivateInfo">`UserPrivateInfo`</ApiLink>, is now declared on top of a type generated from the published [OpenAPI specification](https://docs.apify.com/api/v2) instead of being hand-written. Several of the previous hand-written types were wrong, and some even contradicted the client's own runtime behavior. For example, `nextExclusiveStartKey` was typed as a required `string`, but `listKeys()` has always compared it to `null`.
 
 For most consumers, the change only surfaces as new compiler errors. Many fields that were typed as required are now optional (`field?: T`) or nullable (`field: T | null`) to match what the API can actually return. Recompile your project and add the null and undefined checks the compiler points out. These type corrections don't change what the client returns at runtime, only what TypeScript claimed about it before.
 
@@ -194,7 +194,7 @@ A few fields went the other way and became required. `Version.versionNumber` is 
 
 A handful of fields and return types also change entirely to match the client's actual behavior:
 
-- `Webhook.lastDispatch` was typed as a `string`, even though the API returns an object. It's now optional and nullable, typed as <ApiLink to="interface/ExampleWebhookDispatch">`ExampleWebhookDispatch`</ApiLink>.
+- `WebhookResource.lastDispatch` was typed as a `string`, even though the API returns an object. It's now optional and nullable, typed as <ApiLink to="interface/WebhookLastDispatch">`WebhookLastDispatch`</ApiLink>.
 - `Schedule.nextRunAt`, `Schedule.lastRunAt` and `Request.handledAt` were typed as `string`, even though the client has always converted them to `Date`. They're now typed as `Date`, optional and nullable where the API can leave them out. `handledAt` also carries into what <ApiLink to="class/RequestQueueClient#addRequest">`addRequest()`</ApiLink>, <ApiLink to="class/RequestQueueClient#batchAddRequests">`batchAddRequests()`</ApiLink> and <ApiLink to="class/RequestQueueClient#updateRequest">`updateRequest()`</ApiLink> take, so a call that marked a request handled with an ISO string has to pass a `Date` instead.
 - `Build.status` was typed as the four terminal statuses, even though `waitForFinish()` documents `READY` and `RUNNING`. It's now all eight Actor job statuses, so an exhaustive `switch` over it no longer compiles.
 - `WebhookDispatch.webhook` was `Pick<Webhook, 'requestUrl' | 'isAdHoc'>`. It's now an optional, nullable <ApiLink to="interface/WebhookDispatchWebhookSummary">`WebhookDispatchWebhookSummary`</ApiLink>, which also carries `actionType` and a `condition` typed as the same `WebhookCondition` union `Webhook.condition` carries.
@@ -207,7 +207,7 @@ A few changes need more than a null check.
 
 ### A resource and its list item are no longer interchangeable
 
-The specification describes a full resource and its list item as two different shapes, so <ApiLink to="interface/Run">`Run`</ApiLink> no longer extends <ApiLink to="interface/RunShort">`RunShort`</ApiLink>, and a <ApiLink to="interface/Build">`Build`</ApiLink> still isn't assignable to <ApiLink to="interface/BuildShort">`BuildShort`</ApiLink>, which requires the `usageTotalUsd` that only the list endpoint always returns. Code that passes a full resource where a list item is expected needs to change.
+The specification describes a full resource and its list item as two different shapes, so <ApiLink to="interface/Run">`Run`</ApiLink> no longer extends <ApiLink to="interface/RunListItem">`RunListItem`</ApiLink>, and a <ApiLink to="interface/Build">`Build`</ApiLink> still isn't assignable to <ApiLink to="interface/BuildListItem">`BuildListItem`</ApiLink>, which requires the `usageTotalUsd` that only the list endpoint always returns. Code that passes a full resource where a list item is expected needs to change.
 
 ### An Actor version's source files can be folders
 
@@ -223,9 +223,9 @@ The `sortBy` option of `client.actors().list()` and the format argument of <ApiL
 
 ### The request-queue head splits into two item types
 
-<ApiLink to="interface/Request">`Request`</ApiLink> is now derived from the specification's stored-request schema. Its `id`, `url` and `uniqueKey` stay required, as the specification states them, and the rest of the fields follow the specification's optionality.
+<ApiLink to="interface/RequestResource">`RequestResource`</ApiLink> is now derived from the specification's stored-request schema. Its `id`, `url` and `uniqueKey` stay required, as the specification states them, and the rest of the fields follow the specification's optionality.
 
-The queue head splits into two item types. <ApiLink to="class/RequestQueueClient#listHead">`listHead()`</ApiLink> still yields <ApiLink to="interface/HeadRequest">`HeadRequest`</ApiLink>, which drops `lockExpiresAt`, while <ApiLink to="class/RequestQueueClient#listAndLockHead">`listAndLockHead()`</ApiLink> now yields the new <ApiLink to="interface/LockedHeadRequest">`LockedHeadRequest`</ApiLink>, where the field is required.
+The queue head splits into two item types. <ApiLink to="class/RequestQueueClient#listHead">`listHead()`</ApiLink> still yields <ApiLink to="interface/RequestQueueHeadItem">`RequestQueueHeadItem`</ApiLink>, which drops `lockExpiresAt`, while <ApiLink to="class/RequestQueueClient#listAndLockHead">`listAndLockHead()`</ApiLink> now yields the new <ApiLink to="interface/LockedRequestQueueHeadItem">`LockedRequestQueueHeadItem`</ApiLink>, where the field is required.
 
 <ApiLink to="class/RequestQueueClient#addRequest">`addRequest()`</ApiLink> and <ApiLink to="class/RequestQueueClient#batchAddRequests">`batchAddRequests()`</ApiLink> take <ApiLink to="interface/RequestQueueClientRequestToAdd">`RequestQueueClientRequestToAdd`</ApiLink>, which is the stored request without the `id` the API assigns, so it follows the same optionality, and its `handledAt` is a `Date`.
 
@@ -239,22 +239,25 @@ Each model type now has the name of the [OpenAPI specification](https://docs.api
 
 The renames change only the names, not the shapes. Two of the types below merge into a type that already existed: `ScheduledActorRunOptions` into <ApiLink to="interface/TaskOptions">`TaskOptions`</ApiLink> and `MonthlyUsageCycle` into <ApiLink to="interface/UsageCycle">`UsageCycle`</ApiLink>, because each pair was built on the same schema.
 
+Where a schema name would clash with a JavaScript global or a class in the Apify SDK or Crawlee, the specification adds a `Resource` suffix, so a dataset is a <ApiLink to="interface/DatasetResource">`DatasetResource`</ApiLink> and a stored request is a <ApiLink to="interface/RequestResource">`RequestResource`</ApiLink>.
+
 The specification describes an Actor version as one `Version` schema, while the client splits it by source type. The union is now `Version`, and its base type and variants drop the `Actor` prefix to match.
 
 | v2 | v3 |
 | --- | --- |
 | `AccountAndUsageLimits` | `AccountLimits` |
-| `ActorCollectionListItem` | `ActorShort` |
+| `Actor` | `ActorResource` |
+| `ActorCollectionListItem` | `ActorListItem` |
 | `ActorDefaultRunOptions` | `DefaultRunOptions` |
 | `ActorEnvironmentVariable` | `EnvVar` |
 | `ActorExampleRunInput` | `ExampleRunInput` |
 | `ActorRun` | `Run` |
-| `ActorRunListItem` | `RunShort` |
+| `ActorRunListItem` | `RunListItem` |
 | `ActorRunMeta` | `RunMeta` |
 | `ActorRunOptions` | `RunOptions` |
 | `ActorRunStats` | `RunStats` |
 | `ActorRunUsage` | `RunUsage` |
-| `ActorStoreList` | `StoreListActor` |
+| `ActorStoreList` | `StoreActor` |
 | `ActorTaggedBuild` | `TaggedBuildInfo` |
 | `ActorTaggedBuilds` | `TaggedBuilds` |
 | `ActorVersion` | `Version` |
@@ -263,31 +266,35 @@ The specification describes an Actor version as one `Version` schema, while the 
 | `ActorVersionSourceFile` | `SourceCodeFile` |
 | `ActorVersionSourceFiles` | `VersionSourceFiles` |
 | `ActorVersionTarball` | `VersionTarball` |
+| `AllowedHttpMethods` | `HttpMethod` |
 | `BaseActorVersion` | `BaseVersion` |
-| `BuildCollectionClientListItem` | `BuildShort` |
-| `BuildMeta` | `BuildsMeta` |
+| `BuildCollectionClientListItem` | `BuildListItem` |
+| `Current` | `CurrentUsage` |
+| `Dataset` | `DatasetResource` |
 | `FieldStatistics` | `DatasetFieldStatistics` |
 | `FinalActorVersion` | `FinalVersion` |
 | `KeyValueClientListKeysResult` | `ListOfKeys` |
 | `KeyValueListItem` | `KeyValueStoreKey` |
+| `KeyValueStore` | `KeyValueStoreResource` |
 | `MonthlyUsageCycle` | `UsageCycle` |
 | `PricePerEventActorPricingInfo` | `PayPerEventActorPricingInfo` |
 | `PricingInfo` | `CurrentPricingInfo` |
+| `RequestQueue` | `RequestQueueResource` |
 | `RequestQueueClientAddRequestResult` | `RequestRegistration` |
 | `RequestQueueClientBatchRequestsOperationResult` | `BatchAddResult` |
 | `RequestQueueClientListAndLockHeadResult` | `LockedRequestQueueHead` |
 | `RequestQueueClientListHeadResult` | `RequestQueueHead` |
-| `RequestQueueClientListItem` | `HeadRequest` |
+| `RequestQueueClientListItem` | `RequestQueueHeadItem` |
 | `RequestQueueClientListRequestsResult` | `ListOfRequests` |
 | `RequestQueueClientProlongRequestLockResult` | `RequestLockInfo` |
-| `RequestQueueClientRequestSchema` | `Request` |
+| `RequestQueueClientRequestSchema` | `RequestResource` |
 | `RequestQueueClientUnlockRequestsResult` | `UnlockRequestsResult` |
 | `ScheduledActorRunInput` | `ScheduleActionRunInput` |
 | `ScheduledActorRunOptions` | `TaskOptions` |
-| `TaskList` | `TaskShort` |
+| `TaskList` | `TaskListItem` |
 | `User` | `UserPrivateInfo` |
-| `UserPlan` | `Plan` |
-| `UserProxy` | `Proxy` |
+| `UserProxy` | `ProxyResource` |
+| `Webhook` | `WebhookResource` |
 
 ## Responses are validated against the OpenAPI specification
 
@@ -317,7 +324,7 @@ Bodies the specification leaves to you aren't validated: dataset items, key-valu
 
 Two return types change as a result of describing what the endpoints really return:
 
-- <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink> was typed as `string | undefined`, even though the endpoint returns the log as a list of entries. It's now typed as <ApiLink to="interface/ScheduleInvoked">`ScheduleInvoked[]`</ApiLink>, each entry carrying `message`, `level` and `createdAt`.
+- <ApiLink to="class/ScheduleClient#getLog">`ScheduleClient.getLog()`</ApiLink> was typed as `string | undefined`, even though the endpoint returns the log as a list of entries. It's now typed as <ApiLink to="interface/ScheduleLogEntry">`ScheduleLogEntry[]`</ApiLink>, each entry carrying `message`, `level` and `createdAt`.
 - <ApiLink to="interface/TaskPublicConfig">`TaskPublicConfig`</ApiLink> now follows the specification: `publishedAt` is optional and read-only, and `categorization`, which the specification doesn't describe, is gone from the type.
 
 ### Date fields are converted by the schemas
@@ -331,7 +338,7 @@ The `Date` conversion moved into the schemas. A field the specification declares
 
 ## URL fields are normalized
 
-Fields the specification marks as a URL, such as <ApiLink to="interface/Run">`Run.containerUrl`</ApiLink> or <ApiLink to="interface/Dataset">`Dataset.consoleUrl`</ApiLink>, are parsed with the [WHATWG `URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) parser as part of response validation, and the client hands back the parsed URL's serialization. In v2 you got the raw string from the API. In v3 the string can differ, most visibly by an added trailing slash. Normalization also lowercases the host, drops a default port, punycodes an internationalized host, and percent-encodes unsafe characters. Both forms denote the same URL under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-6.2). They're just different strings.
+Fields the specification marks as a URL, such as <ApiLink to="interface/Run">`Run.containerUrl`</ApiLink> or <ApiLink to="interface/DatasetResource">`DatasetResource.consoleUrl`</ApiLink>, are parsed with the [WHATWG `URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL) parser as part of response validation, and the client hands back the parsed URL's serialization. In v2 you got the raw string from the API. In v3 the string can differ, most visibly by an added trailing slash. Normalization also lowercases the host, drops a default port, punycodes an internationalized host, and percent-encodes unsafe characters. Both forms denote the same URL under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-6.2). They're just different strings.
 
 ```js
 // An empty path becomes '/'.

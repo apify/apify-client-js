@@ -4,18 +4,18 @@ import type { ACTOR_PERMISSION_LEVEL } from '@apify/consts';
 
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceCollectionClient } from '../base/resource_collection_client.js';
-import type { ActorShort } from '../models.js';
+import type { ActorListItem } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
-import type { Actor, ActorStandby, DefaultRunOptions, ExampleRunInput } from './actor.js';
+import type { ActorResource, ActorStandby, DefaultRunOptions, ExampleRunInput } from './actor.js';
 import type { Version } from './actor_version.js';
 
 const actorCreateSchema = anyObjectSchema.optional();
 
-export type { ActorShort } from '../models.js';
+export type { ActorListItem } from '../models.js';
 
 /**
  * Client for managing the collection of Actors in your account.
@@ -72,7 +72,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * @returns A paginated iterator of Actors.
      * @see https://docs.apify.com/api/v2/acts-get
      */
-    list(options: ActorCollectionListOptions = {}): PaginatedIterator<ActorShort> {
+    list(options: ActorCollectionListOptions = {}): PaginatedIterator<ActorListItem> {
         const parsed = parseArgument(options, listOptionsSchema, 'ActorCollectionListOptions');
 
         return this.listResourcesPaginated(schemas.ListOfActors(), parsed, 'medium');
@@ -87,7 +87,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
      * @returns The created Actor object.
      * @see https://docs.apify.com/api/v2/acts-post
      */
-    async create(actor: ActorCollectionCreateOptions, options: TimeoutOptions = {}): Promise<Actor> {
+    async create(actor: ActorCollectionCreateOptions, options: TimeoutOptions = {}): Promise<ActorResource> {
         parseArgument(actor, actorCreateSchema);
         const { timeoutSecs = 'medium', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
@@ -123,7 +123,7 @@ export interface ActorCollectionListOptions extends PaginationOptions, TimeoutOp
     sortBy?: `${ActorListSortBy}`;
 }
 
-export type ActorCollectionListResult = PaginatedList<ActorShort>;
+export type ActorCollectionListResult = PaginatedList<ActorListItem>;
 
 export interface ActorCollectionCreateOptions {
     /**

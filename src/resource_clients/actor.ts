@@ -6,7 +6,7 @@ import { Log } from '@apify/log';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_clients/index.js';
-import type { Actor, Run } from '../models.js';
+import type { ActorResource, Run } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import type { Dictionary } from '../utils.js';
 import * as schemas from '../schemas.js';
@@ -73,7 +73,7 @@ const lastRunOptionsSchema = z.strictObject({
 });
 
 export type {
-    Actor,
+    ActorResource,
     ActorChargeEvent,
     ActorChargeEvents,
     ActorDefinition,
@@ -85,13 +85,13 @@ export type {
     ExampleRunInput,
     FlatPricePerMonthActorPricingInfo,
     FreeActorPricingInfo,
-    Metamorph,
+    RunMetamorphEvent,
     PayPerEventActorPricingInfo,
     PricePerDatasetItemActorPricingInfo,
     Run,
     RunMeta,
     RunOptions,
-    RunShort,
+    RunListItem,
     RunStats,
     RunUsage,
     TaggedBuildInfo,
@@ -141,7 +141,7 @@ export class ActorClient extends ResourceClient {
      * @returns The Actor object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/act-get
      */
-    async get(options: TimeoutOptions = {}): Promise<Actor | undefined> {
+    async get(options: TimeoutOptions = {}): Promise<ActorResource | undefined> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         return this.getResource(schemas.ActorResource(), {}, timeoutSecs, signal);
@@ -156,7 +156,7 @@ export class ActorClient extends ResourceClient {
      * @returns The updated Actor object
      * @see https://docs.apify.com/api/v2/act-put
      */
-    async update(newFields: ActorUpdateOptions, options: TimeoutOptions = {}): Promise<Actor> {
+    async update(newFields: ActorUpdateOptions, options: TimeoutOptions = {}): Promise<ActorResource> {
         parseArgument(newFields, anyObjectSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
@@ -585,7 +585,7 @@ export class ActorClient extends ResourceClient {
  */
 export type ActorUpdateOptions = Partial<
     Pick<
-        Actor,
+        ActorResource,
         | 'name'
         | 'description'
         | 'isPublic'

@@ -2,7 +2,7 @@ import { beforeAll, expect, test } from 'vitest';
 
 import { Log, LogLevel } from '@apify/log';
 
-import type { ApifyClient, Run, RunClient, RunShort } from 'apify-client';
+import type { ApifyClient, Run, RunClient, RunListItem } from 'apify-client';
 import { ActorSourceType, ApifyApiError } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
@@ -326,7 +326,7 @@ test('runs().list({ desc: true }) returns the run feed newest first', async () =
 });
 
 test('runs().list() is async-iterable and yields the user runs', async () => {
-    const collected: RunShort[] = [];
+    const collected: RunListItem[] = [];
     for await (const run of client.runs().list({ limit: 5 })) {
         collected.push(run);
     }
@@ -342,7 +342,7 @@ test('actor.runs().list() is async-iterable and yields only that Actor runs', as
     const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
 
     try {
-        const collected: RunShort[] = [];
+        const collected: RunListItem[] = [];
         for await (const actorRun of client.actor(HELLO_WORLD_ACTOR).runs().list({ limit: 3, desc: true })) {
             collected.push(actorRun);
         }

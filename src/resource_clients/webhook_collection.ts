@@ -7,7 +7,7 @@ import type { PaginatedIterator, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
-import type { Webhook, WebhookUpdateData } from './webhook.js';
+import type { WebhookResource, WebhookUpdateData } from './webhook.js';
 
 const listOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
@@ -74,7 +74,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
 
     list(
         options: WebhookCollectionListOptions = {},
-    ): PaginatedIterator<Omit<Webhook, 'payloadTemplate' | 'headersTemplate'>> {
+    ): PaginatedIterator<Omit<WebhookResource, 'payloadTemplate' | 'headersTemplate'>> {
         const parsed = parseArgument(options, listOptionsSchema, 'WebhookCollectionListOptions');
 
         return this.listResourcesPaginated(schemas.ListOfWebhooks(), parsed, 'medium');
@@ -89,7 +89,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
      * @returns The created webhook object.
      * @see https://docs.apify.com/api/v2/webhooks-post
      */
-    async create(webhook?: WebhookUpdateData, options: TimeoutOptions = {}): Promise<Webhook> {
+    async create(webhook?: WebhookUpdateData, options: TimeoutOptions = {}): Promise<WebhookResource> {
         parseArgument(webhook, webhookCreateSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 

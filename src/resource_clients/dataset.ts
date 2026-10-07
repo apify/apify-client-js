@@ -6,7 +6,7 @@ import { createStorageContentSignatureAsync } from '@apify/utilities';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyResponse } from '../http_clients/index.js';
-import type { Dataset, DatasetStatistics } from '../models.js';
+import type { DatasetResource, DatasetStatistics } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
@@ -97,7 +97,7 @@ const createItemsPublicUrlOptionsSchema = z.strictObject({
     ...timeoutOptionsShape,
 });
 
-export type { Dataset, DatasetFieldStatistics, DatasetStatistics, DatasetStats } from '../models.js';
+export type { DatasetResource, DatasetFieldStatistics, DatasetStatistics, DatasetStats } from '../models.js';
 
 /**
  * Client for managing a specific Dataset.
@@ -149,7 +149,7 @@ export class DatasetClient<
      * @returns The Dataset object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/dataset-get
      */
-    async get(options: TimeoutOptions = {}): Promise<Dataset | undefined> {
+    async get(options: TimeoutOptions = {}): Promise<DatasetResource | undefined> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         return this.getResource(schemas.DatasetResource(), {}, timeoutSecs, signal);
@@ -164,7 +164,7 @@ export class DatasetClient<
      * @returns The updated Dataset object
      * @see https://docs.apify.com/api/v2/dataset-put
      */
-    async update(newFields: DatasetClientUpdateOptions, options: TimeoutOptions = {}): Promise<Dataset> {
+    async update(newFields: DatasetClientUpdateOptions, options: TimeoutOptions = {}): Promise<DatasetResource> {
         parseArgument(newFields, anyObjectSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 

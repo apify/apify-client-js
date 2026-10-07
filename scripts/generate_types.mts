@@ -58,7 +58,7 @@ const ast = await openapiTS(spec, {
     // On by default, which makes a property carrying a schema `default` non-optional. A default says what
     // the server fills in when a request omits the field, and is no promise that a response carries it:
     // what a response is guaranteed to carry is its `required` list and nothing else. So a defaulted field
-    // the schema does not require stays optional here. `Actor.isSourceCodeHidden` is the one today.
+    // the schema does not require stays optional here. `ActorResource.isSourceCodeHidden` is the one today.
     defaultNonNullable: false,
     silent: true,
 });

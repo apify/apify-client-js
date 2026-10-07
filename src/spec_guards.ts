@@ -30,64 +30,64 @@ import type {
     AccountLimitsRePointed,
     ActorChargeEventRePointed,
     ActorDefinitionSpecGaps,
-    ActorRePointed,
-    ActorShortRePointed,
+    ActorResourceRePointed,
+    ActorListItemRePointed,
     ActorSourceType,
-    ActorSpecGaps,
+    ActorResourceSpecGaps,
     BuildRePointed,
-    BuildShortRePointed,
-    BuildsMetaRePointed,
-    DailyServiceUsagesRePointed,
-    DatasetRePointed,
-    DatasetSpecGaps,
-    DatasetSpecNarrowings,
+    BuildListItemRePointed,
+    BuildMetaRePointed,
+    DailyServiceUsageRePointed,
+    DatasetResourceRePointed,
+    DatasetResourceSpecGaps,
+    DatasetResourceSpecNarrowings,
     DatasetStatisticsRePointed,
     DatasetStatsSpecGaps,
     DefaultRunOptionsRePointed,
     EffectivePlatformFeaturesRePointed,
-    ExampleWebhookDispatchRePointed,
-    KeyValueStoreRePointed,
-    KeyValueStoreSpecGaps,
+    WebhookLastDispatchRePointed,
+    KeyValueStoreResourceRePointed,
+    KeyValueStoreResourceSpecGaps,
     ListOfKeysRePointed,
     ListOfRequestsRePointed,
     LockedRequestQueueHeadRePointed,
     MonthlyUsageRePointed,
     PayPerEventActorPricingInfoRePointed,
-    PlanRePointed,
+    UserPlanRePointed,
     PricePerDatasetItemActorPricingInfoRePointed,
-    ProxyRePointed,
+    ProxyResourceRePointed,
     RequestQueueHeadRePointed,
-    RequestQueueRePointed,
-    RequestQueueSpecGaps,
-    RequestQueueSpecNarrowings,
+    RequestQueueResourceRePointed,
+    RequestQueueResourceSpecGaps,
+    RequestQueueResourceSpecNarrowings,
     RunClientNarrowings,
     RunMetaRePointed,
     RunOptionsSpecGaps,
     RunRePointed,
-    RunShortRePointed,
+    RunListItemRePointed,
     ScheduleActionRunActorRePointed,
     ScheduleActionRunActorTaskRePointed,
     ScheduleActions,
     ScheduleClientNarrowings,
     ScheduleRePointed,
-    StoreListActorRePointed,
+    StoreActorRePointed,
     TaskRePointed,
-    TaskShortRePointed,
-    TaskShortSpecGaps,
+    TaskListItemRePointed,
+    TaskListItemSpecGaps,
     UsageItemRePointed,
     UserPrivateInfoRePointed,
     VersionClientNarrowings,
     VersionRePointed,
     VersionSourceLocation,
-    Webhook,
+    WebhookResource,
     WebhookConditionKey,
     WebhookDispatchRePointed,
     WebhookDispatchStatus,
     WebhookDispatchWebhookSummary,
     WebhookDispatchWebhookSummaryRePointed,
     WebhookEventType,
-    WebhookRePointed,
-    WebhookSpecGaps,
+    WebhookResourceRePointed,
+    WebhookResourceSpecGaps,
 } from './models.js';
 import type * as responseSchemas from './schemas.js';
 
@@ -178,12 +178,12 @@ export type EnumGuards = AssertAll<
  *
  * Only `requestUrl` is asserted. It is nullable on both sides, because a hook action other than a
  * plain HTTP request -- Slack, email -- has no URL to report. `isAdHoc` is left out: the spec types it
- * as nullable on the full `Webhook` and non-nullable on the summary, and there is no reason to think
+ * as nullable on the full `WebhookResource` and non-nullable on the summary, and there is no reason to think
  * the API really answers differently for the two, so pinning them to each other would only encode the
  * inconsistency.
  */
 export type WebhookDispatchGuards = AssertAll<
-    [Equals<Pick<WebhookDispatchWebhookSummary, 'requestUrl'>, Pick<Webhook, 'requestUrl'>>]
+    [Equals<Pick<WebhookDispatchWebhookSummary, 'requestUrl'>, Pick<WebhookResource, 'requestUrl'>>]
 >;
 
 /**
@@ -193,12 +193,12 @@ export type WebhookDispatchGuards = AssertAll<
  */
 export type AdapterKeyGuards = AssertAll<
     [
-        OverridesStillExist<DatasetRePointed, Schemas['DatasetResource']>,
-        OverridesStillExist<DatasetSpecNarrowings, Schemas['DatasetResource']>,
+        OverridesStillExist<DatasetResourceRePointed, Schemas['DatasetResource']>,
+        OverridesStillExist<DatasetResourceSpecNarrowings, Schemas['DatasetResource']>,
         OverridesStillExist<DatasetStatisticsRePointed, Schemas['DatasetStatistics']>,
         OverridesStillExist<WebhookDispatchRePointed, Schemas['WebhookDispatch']>,
         OverridesStillExist<WebhookDispatchWebhookSummaryRePointed, Schemas['WebhookDispatchWebhookSummary']>,
-        OverridesStillExist<KeyValueStoreRePointed, Schemas['KeyValueStoreResource']>,
+        OverridesStillExist<KeyValueStoreResourceRePointed, Schemas['KeyValueStoreResource']>,
         OverridesStillExist<ListOfKeysRePointed, Schemas['ListOfKeys']>,
         OverridesStillExist<VersionRePointed, Schemas['Version']>,
         OverridesStillExist<VersionClientNarrowings, Schemas['Version']>,
@@ -212,8 +212,8 @@ export type AdapterKeyGuards = AssertAll<
             NonNullable<Schemas['Version']['sourceFiles']>[number],
             Schemas['SourceCodeFile'] | Schemas['SourceCodeFolder']
         >,
-        OverridesStillExist<ActorRePointed, Schemas['ActorResource']>,
-        OverridesStillExist<ActorShortRePointed, Schemas['ActorListItem']>,
+        OverridesStillExist<ActorResourceRePointed, Schemas['ActorResource']>,
+        OverridesStillExist<ActorListItemRePointed, Schemas['ActorListItem']>,
         OverridesStillExist<DefaultRunOptionsRePointed, Schemas['DefaultRunOptions']>,
         OverridesStillExist<ActorChargeEventRePointed, Schemas['ActorChargeEvent']>,
         OverridesStillExist<
@@ -228,35 +228,35 @@ export type AdapterKeyGuards = AssertAll<
             keyof PayPerEventActorPricingInfoRePointed['pricingPerEvent']
         >,
         OverridesStillExist<BuildRePointed, Schemas['Build']>,
-        OverridesStillExist<BuildsMetaRePointed, Schemas['BuildMeta']>,
-        OverridesStillExist<BuildShortRePointed, Schemas['BuildListItem']>,
+        OverridesStillExist<BuildMetaRePointed, Schemas['BuildMeta']>,
+        OverridesStillExist<BuildListItemRePointed, Schemas['BuildListItem']>,
         OverridesStillExist<RunRePointed, Schemas['Run']>,
         OverridesStillExist<RunClientNarrowings, Schemas['Run']>,
-        OverridesStillExist<RunShortRePointed, Schemas['RunListItem']>,
+        OverridesStillExist<RunListItemRePointed, Schemas['RunListItem']>,
         OverridesStillExist<RunMetaRePointed, Schemas['RunMeta']>,
         OverridesStillExist<TaskRePointed, Schemas['Task']>,
-        OverridesStillExist<TaskShortRePointed, Schemas['TaskListItem']>,
-        OverridesStillExist<StoreListActorRePointed, Schemas['StoreActor']>,
-        OverridesStillExist<WebhookRePointed, Schemas['WebhookResource']>,
-        OverridesStillExist<ExampleWebhookDispatchRePointed, Schemas['WebhookLastDispatch']>,
+        OverridesStillExist<TaskListItemRePointed, Schemas['TaskListItem']>,
+        OverridesStillExist<StoreActorRePointed, Schemas['StoreActor']>,
+        OverridesStillExist<WebhookResourceRePointed, Schemas['WebhookResource']>,
+        OverridesStillExist<WebhookLastDispatchRePointed, Schemas['WebhookLastDispatch']>,
         OverridesStillExist<ScheduleRePointed, Schemas['Schedule']>,
         OverridesStillExist<ScheduleClientNarrowings, Schemas['Schedule']>,
         OverridesStillExist<ScheduleActionRunActorRePointed, Schemas['ScheduleActionRunActor']>,
         OverridesStillExist<ScheduleActionRunActorTaskRePointed, Schemas['ScheduleActionRunActorTask']>,
         OverridesStillExist<UserPrivateInfoRePointed, Schemas['UserPrivateInfo']>,
-        OverridesStillExist<ProxyRePointed, Schemas['ProxyResource']>,
+        OverridesStillExist<ProxyResourceRePointed, Schemas['ProxyResource']>,
         OverridesStillExist<EffectivePlatformFeaturesRePointed, Schemas['EffectivePlatformFeatures']>,
         // `EffectivePlatformFeaturesRePointed` re-points every key of the schema, so equality rather
         // than containment: a feature gained upstream would otherwise survive the `Omit` and be typed
         // from the generated schema instead of the published `EffectivePlatformFeature`.
         Equals<keyof Schemas['EffectivePlatformFeatures'], keyof EffectivePlatformFeaturesRePointed>,
-        OverridesStillExist<PlanRePointed, Schemas['UserPlan']>,
+        OverridesStillExist<UserPlanRePointed, Schemas['UserPlan']>,
         OverridesStillExist<MonthlyUsageRePointed, Schemas['MonthlyUsage']>,
         OverridesStillExist<UsageItemRePointed, Schemas['UsageItem']>,
-        OverridesStillExist<DailyServiceUsagesRePointed, Schemas['DailyServiceUsage']>,
+        OverridesStillExist<DailyServiceUsageRePointed, Schemas['DailyServiceUsage']>,
         OverridesStillExist<AccountLimitsRePointed, Schemas['AccountLimits']>,
-        OverridesStillExist<RequestQueueRePointed, Schemas['RequestQueueResource']>,
-        OverridesStillExist<RequestQueueSpecNarrowings, Schemas['RequestQueueResource']>,
+        OverridesStillExist<RequestQueueResourceRePointed, Schemas['RequestQueueResource']>,
+        OverridesStillExist<RequestQueueResourceSpecNarrowings, Schemas['RequestQueueResource']>,
         OverridesStillExist<RequestQueueHeadRePointed, Schemas['RequestQueueHead']>,
         OverridesStillExist<LockedRequestQueueHeadRePointed, Schemas['LockedRequestQueueHead']>,
         OverridesStillExist<ListOfRequestsRePointed, Schemas['ListOfRequests']>,
@@ -270,17 +270,17 @@ export type AdapterKeyGuards = AssertAll<
         // The published `WebhookCondition` union reinstates each of these as the required key of its own
         // variant, so losing one upstream must not pass unnoticed.
         Equals<WebhookConditionKey & keyof Schemas['WebhookCondition'], WebhookConditionKey>,
-        GapsStillMissing<DatasetSpecGaps, Schemas['DatasetResource']>,
+        GapsStillMissing<DatasetResourceSpecGaps, Schemas['DatasetResource']>,
         GapsStillMissing<DatasetStatsSpecGaps, Schemas['DatasetStats']>,
-        GapsStillMissing<KeyValueStoreSpecGaps, Schemas['KeyValueStoreResource']>,
-        GapsStillMissing<ActorSpecGaps, Schemas['ActorResource']>,
+        GapsStillMissing<KeyValueStoreResourceSpecGaps, Schemas['KeyValueStoreResource']>,
+        GapsStillMissing<ActorResourceSpecGaps, Schemas['ActorResource']>,
         GapsStillMissing<ActorDefinitionSpecGaps, Schemas['ActorDefinition']>,
         GapsStillMissing<RunOptionsSpecGaps, Schemas['RunOptions']>,
-        // `TaskShort` has a gap of its own, because the spec describes a listed task in a separate schema
+        // `TaskListItem` has a gap of its own, because the spec describes a listed task in a separate schema
         // that omits `title` as well.
-        GapsStillMissing<TaskShortSpecGaps, Schemas['TaskListItem']>,
-        GapsStillMissing<WebhookSpecGaps, Schemas['WebhookResource']>,
-        GapsStillMissing<RequestQueueSpecGaps, Schemas['RequestQueueResource']>,
+        GapsStillMissing<TaskListItemSpecGaps, Schemas['TaskListItem']>,
+        GapsStillMissing<WebhookResourceSpecGaps, Schemas['WebhookResource']>,
+        GapsStillMissing<RequestQueueResourceSpecGaps, Schemas['RequestQueueResource']>,
     ]
 >;
 
@@ -289,7 +289,7 @@ export type AdapterKeyGuards = AssertAll<
  * failure says which of the two rules broke.
  *
  * Every exclusion is noted next to the entry it relates to. One is here rather than inline, because width
- * is not the right question for it: `WebhookDispatch.status` and `ExampleWebhookDispatch.status` publish this
+ * is not the right question for it: `WebhookDispatch.status` and `WebhookLastDispatch.status` publish this
  * package's runtime enum, and a string-literal union is never assignable to a string enum even when the
  * members are identical. Their members are pinned by `EnumGuards` instead, against both `@apify/consts`
  * and the spec. The four `status` overrides typed from `ACTOR_JOB_STATUSES` are plain unions, so they are
@@ -297,15 +297,15 @@ export type AdapterKeyGuards = AssertAll<
  */
 export type AdapterWidthGuards = AssertAll<
     [
-        OverridesStayWider<DatasetRePointed, Schemas['DatasetResource']>,
-        OverridesStayWider<DatasetSpecNarrowings, Schemas['DatasetResource']>,
+        OverridesStayWider<DatasetResourceRePointed, Schemas['DatasetResource']>,
+        OverridesStayWider<DatasetResourceSpecNarrowings, Schemas['DatasetResource']>,
         OverridesStayWider<DatasetStatisticsRePointed, Schemas['DatasetStatistics']>,
         // `webhook` is excluded alongside `status`: the summary it re-points at narrows `condition` to
         // the published union, so the generated dispatch is no longer assignable to it.
         OverridesStayWider<Omit<WebhookDispatchRePointed, 'status' | 'webhook'>, Schemas['WebhookDispatch']>,
         // `WebhookDispatchWebhookSummaryRePointed` is excluded outright: its only key is the same
         // `condition` narrowing the webhook itself carries, argued at the declaration of the union.
-        OverridesStayWider<KeyValueStoreRePointed, Schemas['KeyValueStoreResource']>,
+        OverridesStayWider<KeyValueStoreResourceRePointed, Schemas['KeyValueStoreResource']>,
         OverridesStayWider<ListOfKeysRePointed, Schemas['ListOfKeys']>,
         // `VersionClientNarrowings` has no entry here on purpose: dropping the spec's
         // `sourceType: null` is the one narrowing the version union rests on, and it is argued for at
@@ -313,8 +313,8 @@ export type AdapterWidthGuards = AssertAll<
         OverridesStayWider<VersionRePointed, Schemas['Version']>,
         // `versions` is excluded: it re-points at the discriminated `Version` union, which is
         // narrower than the spec's flat `Version` by design.
-        OverridesStayWider<Omit<ActorRePointed, 'versions'>, Schemas['ActorResource']>,
-        OverridesStayWider<ActorShortRePointed, Schemas['ActorListItem']>,
+        OverridesStayWider<Omit<ActorResourceRePointed, 'versions'>, Schemas['ActorResource']>,
+        OverridesStayWider<ActorListItemRePointed, Schemas['ActorListItem']>,
         OverridesStayWider<DefaultRunOptionsRePointed, Schemas['DefaultRunOptions']>,
         OverridesStayWider<ActorChargeEventRePointed, Schemas['ActorChargeEvent']>,
         OverridesStayWider<
@@ -323,37 +323,37 @@ export type AdapterWidthGuards = AssertAll<
         >,
         OverridesStayWider<PayPerEventActorPricingInfoRePointed, Schemas['PayPerEventActorPricingInfo']>,
         OverridesStayWider<BuildRePointed, Schemas['Build']>,
-        OverridesStayWider<BuildsMetaRePointed, Schemas['BuildMeta']>,
-        OverridesStayWider<BuildShortRePointed, Schemas['BuildListItem']>,
+        OverridesStayWider<BuildMetaRePointed, Schemas['BuildMeta']>,
+        OverridesStayWider<BuildListItemRePointed, Schemas['BuildListItem']>,
         // `RunClientNarrowings` has no entry here: narrowing the spec's storage-wide `GeneralAccess`
         // to the three-member run-specific union is the point of that block, and it is argued for at the
         // declaration. `EnumGuards` checks instead that the three are still a subset of the spec's four.
         OverridesStayWider<RunRePointed, Schemas['Run']>,
-        OverridesStayWider<RunShortRePointed, Schemas['RunListItem']>,
+        OverridesStayWider<RunListItemRePointed, Schemas['RunListItem']>,
         OverridesStayWider<RunMetaRePointed, Schemas['RunMeta']>,
         OverridesStayWider<TaskRePointed, Schemas['Task']>,
-        OverridesStayWider<TaskShortRePointed, Schemas['TaskListItem']>,
-        OverridesStayWider<StoreListActorRePointed, Schemas['StoreActor']>,
+        OverridesStayWider<TaskListItemRePointed, Schemas['TaskListItem']>,
+        OverridesStayWider<StoreActorRePointed, Schemas['StoreActor']>,
         // Two exclusions. `condition` keeps the union of single-id variants, which is narrower than the
         // spec's flat schema by design and argued for at the declaration. `lastDispatch` re-points at a
         // type whose `status` is the published runtime enum, and a string-literal union is never
         // assignable to a string enum even when the members match -- `EnumGuards` pins those instead.
-        OverridesStayWider<Omit<WebhookRePointed, 'condition' | 'lastDispatch'>, Schemas['WebhookResource']>,
+        OverridesStayWider<Omit<WebhookResourceRePointed, 'condition' | 'lastDispatch'>, Schemas['WebhookResource']>,
         OverridesStayWider<ScheduleRePointed, Schemas['Schedule']>,
         OverridesStayWider<ScheduleActionRunActorRePointed, Schemas['ScheduleActionRunActor']>,
         OverridesStayWider<ScheduleActionRunActorTaskRePointed, Schemas['ScheduleActionRunActorTask']>,
         // `timezone` is excluded: it narrows the spec's bare `string` to the curated IANA union on
         // purpose, argued for at the declaration.
         OverridesStayWider<UserPrivateInfoRePointed, Schemas['UserPrivateInfo']>,
-        OverridesStayWider<ProxyRePointed, Schemas['ProxyResource']>,
+        OverridesStayWider<ProxyResourceRePointed, Schemas['ProxyResource']>,
         OverridesStayWider<EffectivePlatformFeaturesRePointed, Schemas['EffectivePlatformFeatures']>,
-        OverridesStayWider<PlanRePointed, Schemas['UserPlan']>,
+        OverridesStayWider<UserPlanRePointed, Schemas['UserPlan']>,
         OverridesStayWider<MonthlyUsageRePointed, Schemas['MonthlyUsage']>,
         OverridesStayWider<UsageItemRePointed, Schemas['UsageItem']>,
-        OverridesStayWider<DailyServiceUsagesRePointed, Schemas['DailyServiceUsage']>,
+        OverridesStayWider<DailyServiceUsageRePointed, Schemas['DailyServiceUsage']>,
         OverridesStayWider<AccountLimitsRePointed, Schemas['AccountLimits']>,
-        OverridesStayWider<RequestQueueRePointed, Schemas['RequestQueueResource']>,
-        OverridesStayWider<RequestQueueSpecNarrowings, Schemas['RequestQueueResource']>,
+        OverridesStayWider<RequestQueueResourceRePointed, Schemas['RequestQueueResource']>,
+        OverridesStayWider<RequestQueueResourceSpecNarrowings, Schemas['RequestQueueResource']>,
         OverridesStayWider<RequestQueueHeadRePointed, Schemas['RequestQueueHead']>,
         OverridesStayWider<LockedRequestQueueHeadRePointed, Schemas['LockedRequestQueueHead']>,
         OverridesStayWider<ListOfRequestsRePointed, Schemas['ListOfRequests']>,

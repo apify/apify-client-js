@@ -1,6 +1,6 @@
 import { beforeAll, expect, test } from 'vitest';
 
-import type { Actor, ApifyClient, FinalVersion, Version } from 'apify-client';
+import type { ActorResource, ApifyClient, FinalVersion, Version } from 'apify-client';
 import { ActorSourceType } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
@@ -22,7 +22,7 @@ function sourceFilesVersion(versionNumber: string, buildTag: string, content = '
 }
 
 /** Create a throwaway Actor. The versions are never built, so this costs no compute. */
-async function createActor(versions?: Version[]): Promise<Actor> {
+async function createActor(versions?: Version[]): Promise<ActorResource> {
     return client.actors().create({
         name: getRandomResourceName('actor'),
         ...(versions ? { versions } : {}),

@@ -9,7 +9,7 @@ import type { PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { optionalSignalSchema, optionalTimeoutSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
-import type { Dataset } from './dataset.js';
+import type { DatasetResource } from './dataset.js';
 
 const listOptionsSchema = z.strictObject({
     unnamed: z.boolean().optional(),
@@ -75,7 +75,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
      */
     list(
         options: DatasetCollectionClientListOptions = {},
-    ): Promise<DatasetCollectionClientListResult> & AsyncIterable<Dataset> {
+    ): Promise<DatasetCollectionClientListResult> & AsyncIterable<DatasetResource> {
         const parsed = parseArgument(options, listOptionsSchema, 'DatasetCollectionClientListOptions');
 
         return this.listResourcesPaginated(schemas.ListOfDatasets(), parsed, 'medium');
@@ -91,7 +91,7 @@ export class DatasetCollectionClient extends ResourceCollectionClient {
      * @returns The dataset object.
      * @see https://docs.apify.com/api/v2/datasets-post
      */
-    async getOrCreate(name?: string, options?: DatasetCollectionClientGetOrCreateOptions): Promise<Dataset> {
+    async getOrCreate(name?: string, options?: DatasetCollectionClientGetOrCreateOptions): Promise<DatasetResource> {
         parseArgument(name, nameSchema);
         parseArgument(options?.schema, schemaSchema); // TODO: Add schema validation
         parseArgument(options?.timeoutSecs, optionalTimeoutSchema);
@@ -129,4 +129,4 @@ export interface DatasetCollectionClientGetOrCreateOptions extends TimeoutOption
     schema?: Record<string, unknown>;
 }
 
-export type DatasetCollectionClientListResult = PaginatedList<Dataset> & { unnamed: boolean };
+export type DatasetCollectionClientListResult = PaginatedList<DatasetResource> & { unnamed: boolean };

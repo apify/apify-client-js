@@ -9,7 +9,7 @@ import type { PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { paginationOptionsShape, parseArgument } from '../utils.js';
-import type { RequestQueue } from './request_queue.js';
+import type { RequestQueueResource } from './request_queue.js';
 
 const listOptionsSchema = z.strictObject({
     unnamed: z.boolean().optional(),
@@ -74,7 +74,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
      */
     list(
         options: RequestQueueCollectionListOptions = {},
-    ): Promise<RequestQueueCollectionListResult> & AsyncIterable<RequestQueue> {
+    ): Promise<RequestQueueCollectionListResult> & AsyncIterable<RequestQueueResource> {
         const parsed = parseArgument(options, listOptionsSchema, 'RequestQueueCollectionListOptions');
 
         return this.listResourcesPaginated(schemas.ListOfRequestQueues(), parsed, 'medium');
@@ -89,7 +89,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
      * @returns The Request queue object.
      * @see https://docs.apify.com/api/v2/request-queues-post
      */
-    async getOrCreate(name?: string, options: TimeoutOptions = {}): Promise<RequestQueue> {
+    async getOrCreate(name?: string, options: TimeoutOptions = {}): Promise<RequestQueueResource> {
         parseArgument(name, nameSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
@@ -107,4 +107,4 @@ export interface RequestQueueCollectionListOptions extends PaginationOptions, Ti
     ownership?: STORAGE_OWNERSHIP_FILTER;
 }
 
-export type RequestQueueCollectionListResult = PaginatedList<RequestQueue> & { unnamed: boolean };
+export type RequestQueueCollectionListResult = PaginatedList<RequestQueueResource> & { unnamed: boolean };

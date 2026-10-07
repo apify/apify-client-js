@@ -14,9 +14,9 @@ import type {
     BatchDeleteResult,
     ListOfRequests,
     LockedRequestQueueHead,
-    Request,
+    RequestResource,
     RequestLockInfo,
-    RequestQueue,
+    RequestQueueResource,
     RequestQueueClientRequestToAdd,
     RequestQueueClientRequestToUpdate,
     RequestQueueHead,
@@ -104,16 +104,16 @@ interface SerializedRequestToAdd {
 }
 
 export type {
-    AllowedHttpMethods,
+    HttpMethod,
     BatchAddResult,
     BatchDeleteResult,
-    HeadRequest,
+    RequestQueueHeadItem,
     ListOfRequests,
-    LockedHeadRequest,
+    LockedRequestQueueHeadItem,
     LockedRequestQueueHead,
-    Request,
+    RequestResource,
     RequestLockInfo,
-    RequestQueue,
+    RequestQueueResource,
     RequestQueueClientRequestToAdd,
     RequestQueueClientRequestToUpdate,
     RequestQueueHead,
@@ -189,7 +189,7 @@ export class RequestQueueClient extends ResourceClient {
      * @returns The RequestQueue object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/request-queue-get
      */
-    async get(options: TimeoutOptions = {}): Promise<RequestQueue | undefined> {
+    async get(options: TimeoutOptions = {}): Promise<RequestQueueResource | undefined> {
         const { timeoutSecs, signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         return this.getResource(schemas.RequestQueueResource(), {}, this.#resolveTimeout(timeoutSecs, 'short'), signal);
@@ -204,7 +204,10 @@ export class RequestQueueClient extends ResourceClient {
      * @returns The updated RequestQueue object
      * @see https://docs.apify.com/api/v2/request-queue-put
      */
-    async update(newFields: RequestQueueClientUpdateOptions, options: TimeoutOptions = {}): Promise<RequestQueue> {
+    async update(
+        newFields: RequestQueueClientUpdateOptions,
+        options: TimeoutOptions = {},
+    ): Promise<RequestQueueResource> {
         parseArgument(newFields, anyObjectSchema);
         const { timeoutSecs, signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
@@ -803,7 +806,7 @@ export class RequestQueueClient extends ResourceClient {
      */
     listRequests(
         options: RequestQueueClientListRequestsOptions = {},
-    ): Promise<ListOfRequests> & AsyncIterable<Request> {
+    ): Promise<ListOfRequests> & AsyncIterable<RequestResource> {
         // `timeoutSecs` and `signal` apply to every page request; they are not API parameters, so they must not reach
         // the query string.
         const { timeoutSecs, signal, ...parsed } = parseArgument(
@@ -860,7 +863,7 @@ export class RequestQueueClient extends ResourceClient {
 
         return Object.defineProperty(paginatedListPromise, Symbol.asyncIterator, {
             value: asyncGenerator,
-        }) as unknown as Promise<ListOfRequests> & AsyncIterable<Request>;
+        }) as unknown as Promise<ListOfRequests> & AsyncIterable<RequestResource>;
     }
 
     /**
@@ -1047,7 +1050,7 @@ export interface RequestQueueClientBatchAddRequestWithRetriesOptions extends Tim
 export type RequestQueueClientRequestToDelete =
     // A union rather than one object with both keys optional: a deletion has to be addressed by one id
     // or the other, and the flat shape would let `{}` through.
-    Pick<Request, 'id'> | Pick<Request, 'uniqueKey'>;
+    Pick<RequestResource, 'id'> | Pick<RequestResource, 'uniqueKey'>;
 
 /**
  * Result of getting a single request from the queue.
@@ -1055,7 +1058,7 @@ export type RequestQueueClientRequestToDelete =
  * `GET /v2/request-queues/{queueId}/requests/{requestId}` answers with the whole request rather than
  * a queue-head projection.
  */
-export type RequestQueueClientGetRequestResult = Request;
+export type RequestQueueClientGetRequestResult = RequestResource;
 
 /**
  * @since Added in 2.5.1
