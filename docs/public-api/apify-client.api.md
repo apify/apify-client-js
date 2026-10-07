@@ -262,6 +262,7 @@ export interface ActorStartOptions extends TimeoutOptions {
     restartOnError?: boolean;
     runTimeoutSecs?: number;
     waitForFinish?: number;
+    waitForResources?: boolean | number;
     webhooks?: readonly WebhookUpdateData[];
 }
 
@@ -270,7 +271,7 @@ export interface ActorStats extends GeneratedActorStats {
 }
 
 // @public
-export type ActorUpdateOptions = Partial<Pick<Actor, 'name' | 'description' | 'isPublic' | 'isDeprecated' | 'seoTitle' | 'seoDescription' | 'title' | 'restartOnError' | 'versions' | 'categories' | 'defaultRunOptions' | 'actorStandby' | 'actorPermissionLevel' | 'taggedBuilds'>>;
+export type ActorUpdateOptions = Partial<Pick<Actor, 'name' | 'description' | 'isPublic' | 'isDeprecated' | 'seoTitle' | 'seoDescription' | 'title' | 'versions' | 'categories' | 'defaultRunOptions' | 'actorStandby' | 'actorPermissionLevel' | 'taggedBuilds'>>;
 
 // @public
 export interface ActorValidateInputOptions extends TimeoutOptions {
@@ -2082,6 +2083,7 @@ interface components {
         };
         Profile: {
             bio?: string | null;
+            readme?: string | null;
             name?: string;
             pictureUrl?: string | null;
             githubUsername?: string | null;
@@ -2357,7 +2359,7 @@ export interface DatasetClientListItemOptions extends PaginationOptions, Timeout
     // (undocumented)
     skipHidden?: boolean;
     // (undocumented)
-    unwind?: string | string[];
+    unwind?: string[];
     view?: string;
 }
 
@@ -3501,6 +3503,7 @@ class ResourceCollectionClient extends ApiClient {
     // (undocumented)
     protected listResources<T, R>(schema: z.ZodType, options: T | undefined, timeoutSecs: Timeout, signal?: AbortSignal): Promise<R>;
     protected listResourcesPaginated<T extends PaginationOptions & TimeoutOptions, Data, R extends PaginatedResponse<Data>>(schema: z.ZodType, options: T, defaultTimeoutSecs: Timeout): AsyncIterable<Data> & Promise<R>;
+    protected listUnpaginatedResources<Data, R extends PaginatedResponse<Data>>(schema: z.ZodType, timeoutSecs: Timeout, signal?: AbortSignal): AsyncIterable<Data> & Promise<R>;
 }
 
 // @public

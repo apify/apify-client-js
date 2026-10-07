@@ -48,7 +48,7 @@ const listItemsOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
     skipEmpty: z.boolean().optional(),
     skipHidden: z.boolean().optional(),
-    unwind: z.union([z.string(), z.array(z.string())]).optional(),
+    unwind: z.array(z.string()).optional(),
     view: z.string().optional(),
     signature: z.string().optional(),
     ...timeoutOptionsShape,
@@ -69,7 +69,7 @@ const downloadItemsOptionsSchema = z.strictObject({
     skipEmpty: z.boolean().optional(),
     skipHeaderRow: z.boolean().optional(),
     skipHidden: z.boolean().optional(),
-    unwind: z.union([z.string(), z.array(z.string())]).optional(),
+    unwind: z.array(z.string()).optional(),
     view: z.string().optional(),
     xmlRoot: z.string().optional(),
     xmlRow: z.string().optional(),
@@ -91,7 +91,7 @@ const createItemsPublicUrlOptionsSchema = z.strictObject({
     offset: z.number().min(0).optional(),
     skipEmpty: z.boolean().optional(),
     skipHidden: z.boolean().optional(),
-    unwind: z.union([z.string(), z.array(z.string())]).optional(),
+    unwind: z.array(z.string()).optional(),
     view: z.string().optional(),
     expiresInSecs: z.number().optional(),
     ...timeoutOptionsShape,
@@ -202,7 +202,7 @@ export class DatasetClient<
      * @param options.skipEmpty - If `true`, skips empty items. Default is `false`.
      * @param options.skipHidden - If `true`, skips hidden fields (fields starting with `#`). Default is `false`.
      * @param options.flatten - Array of field names to flatten. Nested objects are converted to dot notation (e.g., `obj.field`).
-     * @param options.unwind - Field name or array of field names to unwind. Each array value creates a separate item.
+     * @param options.unwind - Array of field names to unwind. Each array value creates a separate item.
      * @param options.view - Name of a predefined view to use for field selection.
      * @param options.timeoutSecs - Timeout for each API request. Default is `'long'`.
      * @returns A paginated list with `items`, `total` count, `offset`, `count`, and `limit`
@@ -509,7 +509,7 @@ export interface DatasetClientListItemOptions extends PaginationOptions, Timeout
     omit?: string[];
     skipEmpty?: boolean;
     skipHidden?: boolean;
-    unwind?: string | string[]; // TODO: when doing a breaking change release, change to string[] only
+    unwind?: string[];
     /**
      * @since Added in 2.2.0
      */

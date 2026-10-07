@@ -108,42 +108,43 @@ export abstract class ApiClient {
         // before calling this, since they also apply to every page request.
         const { chunkSize, ...listOptions } = options;
 
-        const paginatedListPromise = getPaginatedList({
-            ...listOptions,
-            limit: minForLimitParam(options.limit, chunkSize),
-        } as T);
+        const firstPageLimit = minForLimitParam(options.limit, chunkSize);
+        const paginatedListPromise = getPaginatedList({ ...listOptions, limit: firstPageLimit } as T);
 
         // A page can return more or fewer items than the rows it scanned (see `SCANNED_COUNT`). The next offset and
-        // the stop condition follow the scanned number alone: advancing by `items.length` would re-scan rows after a
-        // filter dropped some and skip rows after `unwind` multiplied them, and stopping at an empty page would end
-        // the iteration in front of rows a filter hid.
-        const scannedRows = (page: R): number =>
-            (page as { [SCANNED_COUNT]?: number })[SCANNED_COUNT] ?? page.items.length;
+        // the stop condition follow the scanned rows: advancing by `items.length` would re-scan rows after a filter
+        // dropped some and skip rows after `unwind` multiplied them, and stopping at an empty page would end the
+        // iteration in front of rows a filter hid. The scanned number is derived from a dataset's item count, which
+        // lags a fresh push, so the larger of it and `items.length` is taken, capped at the rows the request asked for
+        // so that an unwound page does not advance past rows the next request would then never read.
+        const scannedRows = (page: R, requestedLimit: number | undefined): number => {
+            const scanned = Math.max((page as { [SCANNED_COUNT]?: number })[SCANNED_COUNT] ?? 0, page.items.length);
+            return requestedLimit ? Math.min(scanned, requestedLimit) : scanned;
+        };
 
+        // `total` is not consulted, as it changes when the listed resource grows during the iteration.
         async function* asyncGenerator() {
             let currentPage = await paginatedListPromise;
             yield* currentPage.items;
-            const offset = options.offset ?? 0;
-            const limit = Math.min(options.limit || currentPage.total, currentPage.total);
-
-            let pageScanned = scannedRows(currentPage);
-            let currentOffset = offset + pageScanned;
-            let remainingItems = Math.min(currentPage.total - offset, limit) - pageScanned;
+            let pageScanned = scannedRows(currentPage, firstPageLimit);
+            let currentOffset = (options.offset ?? 0) + pageScanned;
+            let remainingItems = options.limit ? options.limit - pageScanned : undefined;
 
             while (
                 pageScanned > 0 && // Continue only if the last page scanned some rows.
-                remainingItems > 0
+                (remainingItems === undefined || remainingItems > 0)
             ) {
+                const requestedLimit = minForLimitParam(remainingItems, chunkSize);
                 const newOptions = {
                     ...listOptions,
-                    limit: minForLimitParam(remainingItems, chunkSize),
+                    limit: requestedLimit,
                     offset: currentOffset,
                 } as T;
                 currentPage = await getPaginatedList(newOptions);
                 yield* currentPage.items;
-                pageScanned = scannedRows(currentPage);
+                pageScanned = scannedRows(currentPage, requestedLimit);
                 currentOffset += pageScanned;
-                remainingItems -= pageScanned;
+                if (remainingItems !== undefined) remainingItems -= pageScanned;
             }
         }
 

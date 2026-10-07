@@ -32,6 +32,11 @@ const range = (start: number, end: number, step = 1) => {
 const expectedRequestCount = (itemCount: number, chunkSize: number | undefined, maxItemsPerPage: number) =>
     Math.max(Math.ceil(itemCount / Math.min(chunkSize || Infinity, maxItemsPerPage)), 1);
 
+// An offset-paginated listing ends on a page that scans no rows, unless the caller's `limit` is reached first.
+const expectedOffsetRequestCount = (itemCount: number, options: ListOptions, maxItemsPerPage: number) =>
+    Math.ceil(itemCount / Math.min(options.chunkSize || Infinity, maxItemsPerPage)) +
+    (itemCount === options.limit ? 0 : 1);
+
 const noOptions = [
     {
         testName: 'No options',
@@ -117,8 +122,6 @@ describe('Collection clients list method as async iterable', () => {
     const maxItemsPerPage = 1000;
 
     const allCollectionClients = [
-        client.actor('some-id').version('some-version').envVars(), // Does not support options
-        client.actor('some-id').versions(), // Does not support options
         client.store(), // Does not support desc
         client.actor('some-id').builds(),
         client.actor('some-id').runs(),
@@ -152,16 +155,17 @@ describe('Collection clients list method as async iterable', () => {
     // Create valid tests cases for each client based on the pagination options it is supporting.
     const noOptionsTestCases = generateTestCases(allCollectionClients, noOptions);
 
-    const commonTestCases = generateTestCases(
-        allCollectionClients.slice(2), // without envVars and versions
-        [...limitPaginationOptions, ...offsetPaginationOptions, ...chunkSizePaginationOptions],
-    );
+    const commonTestCases = generateTestCases(allCollectionClients, [
+        ...limitPaginationOptions,
+        ...offsetPaginationOptions,
+        ...chunkSizePaginationOptions,
+    ]);
     const unnamedTestCases = generateTestCases(
         [client.datasets(), client.keyValueStores(), client.requestQueues()],
         unnamedPaginationOptions,
     );
     const descTestCases = generateTestCases(
-        allCollectionClients.slice(3), // without envVars, versions and store
+        allCollectionClients.slice(1), // without store
         descPaginationOptions,
     );
 
@@ -219,13 +223,37 @@ describe('Collection clients list method as async iterable', () => {
                 }
                 expect(items).toEqual(expectedItems);
                 expect(mockedClient).toHaveBeenCalledTimes(
-                    expectedRequestCount(expectedItems.length, userDefinedOptions.chunkSize, maxItemsPerPage),
+                    expectedOffsetRequestCount(expectedItems.length, userDefinedOptions, maxItemsPerPage),
                 );
             } finally {
                 mockedClient.mockRestore();
             }
         } as any,
     );
+});
+
+test.each([
+    { name: 'envVars', resourceClient: new ApifyClient().actor('some-id').version('some-version').envVars() },
+    { name: 'versions', resourceClient: new ApifyClient().actor('some-id').versions() },
+])('$name().list() iterates the single response of an endpoint without pagination', async ({ resourceClient }) => {
+    // The endpoint ignores `offset` and `limit` and returns every item on each call. The mock refuses a second
+    // request, so a regression fails fast instead of looping forever.
+    const mockedClient = vi.spyOn((resourceClient as any).httpClient, 'call').mockImplementation((async () => {
+        if (mockedClient.mock.calls.length > 1) throw new Error('list() asked for a page it should not need');
+
+        return { data: { data: { total: 3, count: 3, offset: 0, limit: 3, desc: false, items: range(0, 3) } } };
+    }) as any);
+
+    try {
+        const items = [];
+        for await (const item of resourceClient.list()) {
+            items.push(item);
+        }
+        expect(items).toEqual(range(0, 3));
+        expect(mockedClient).toHaveBeenCalledTimes(1);
+    } finally {
+        mockedClient.mockRestore();
+    }
 });
 
 describe('DatasetClient.listItems as async iterable', () => {
@@ -296,7 +324,7 @@ describe('DatasetClient.listItems as async iterable', () => {
             }
             expect(items).toEqual(expectedItems);
             expect(mockedClient).toHaveBeenCalledTimes(
-                expectedRequestCount(expectedItems.length, userDefinedOptions.chunkSize, maxItemsPerPage),
+                expectedOffsetRequestCount(expectedItems.length, userDefinedOptions, maxItemsPerPage),
             );
         } finally {
             mockedClient.mockRestore();
@@ -333,7 +361,11 @@ describe('DatasetClient.listItems as async iterable', () => {
                 items.push(item);
             }
             expect(items).toEqual(range(1000, 2000));
-            expect(mockedClient.mock.calls.map(([request]: any) => request.params.offset)).toEqual([undefined, 1000]);
+            expect(mockedClient.mock.calls.map(([request]: any) => request.params.offset)).toEqual([
+                undefined,
+                1000,
+                2000,
+            ]);
         } finally {
             mockedClient.mockRestore();
         }
@@ -350,7 +382,7 @@ describe('DatasetClient.listItems as async iterable', () => {
                 items.push(item);
             }
             expect(items).toEqual([...range(0, 1), ...range(2, 3)]);
-            expect(mockedClient.mock.calls.map(([request]: any) => request.params.offset)).toEqual([undefined, 2]);
+            expect(mockedClient.mock.calls.map(([request]: any) => request.params.offset)).toEqual([undefined, 2, 4]);
         } finally {
             mockedClient.mockRestore();
         }
@@ -365,11 +397,61 @@ describe('DatasetClient.listItems as async iterable', () => {
 
         try {
             const items = [];
-            for await (const item of client.dataset('some-id').listItems({ unwind: 'parts', chunkSize: 2 })) {
+            for await (const item of client.dataset('some-id').listItems({ unwind: ['parts'], chunkSize: 2 })) {
                 items.push(item);
             }
             expect(items).toEqual(unwind(range(0, 4)));
-            expect(mockedClient.mock.calls.map(([request]: any) => request.params.offset)).toEqual([undefined, 2]);
+            expect(mockedClient.mock.calls.map(([request]: any) => request.params.offset)).toEqual([undefined, 2, 4]);
+        } finally {
+            mockedClient.mockRestore();
+        }
+    });
+
+    test('keeps paging past the first page total when the dataset grows during iteration', async () => {
+        // The dataset holds 2 rows when the first page is read and 4 from then on.
+        const mockedClient = vi.spyOn(client.httpClient, 'call').mockImplementation((async (request: any) => {
+            const totalRows = mockedClient.mock.calls.length > 1 ? 4 : 2;
+            const offset = request.params.offset ?? 0;
+            const rows = range(offset, Math.min(offset + request.params.limit, totalRows));
+            return {
+                data: rows,
+                headers: {
+                    'x-apify-pagination-total': String(totalRows),
+                    'x-apify-pagination-count': String(rows.length),
+                },
+            };
+        }) as any);
+
+        try {
+            const items = [];
+            for await (const item of client.dataset('some-id').listItems({ chunkSize: 2 })) {
+                items.push(item);
+            }
+            expect(items).toEqual(range(0, 4));
+            expect(mockedClient.mock.calls.map(([request]: any) => request.params.offset)).toEqual([undefined, 2, 4]);
+        } finally {
+            mockedClient.mockRestore();
+        }
+    });
+
+    test('advances by the items returned when x-apify-pagination-count lags behind them', async () => {
+        // Right after a push the header can count fewer rows than the page returns, down to none.
+        const mockedClient = vi.spyOn(client.httpClient, 'call').mockImplementation((async (request: any) => {
+            const offset = request.params.offset ?? 0;
+            const rows = range(offset, Math.min(offset + request.params.limit, 4));
+            return {
+                data: rows,
+                headers: { 'x-apify-pagination-total': '4', 'x-apify-pagination-count': '0' },
+            };
+        }) as any);
+
+        try {
+            const items = [];
+            for await (const item of client.dataset('some-id').listItems({ chunkSize: 2 })) {
+                items.push(item);
+            }
+            expect(items).toEqual(range(0, 4));
+            expect(mockedClient.mock.calls.map(([request]: any) => request.params.offset)).toEqual([undefined, 2, 4]);
         } finally {
             mockedClient.mockRestore();
         }
@@ -596,8 +678,8 @@ test('chunkSize sizes each request without being sent as a query parameter', asy
         }
 
         expect(items).toEqual(range(0, totalItems));
-        // Three requests, asking for 100, 100 and the remaining 50 items - so `chunkSize` did size them.
-        expect(seenParams.map((params) => params.limit)).toEqual([100, 100, 50]);
+        // Every request asks for 100 items, the last one finding none left - so `chunkSize` did size them.
+        expect(seenParams.map((params) => params.limit)).toEqual([100, 100, 100, 100]);
         // It drives client-side iteration only, though, so the API must never see it.
         for (const params of seenParams) {
             expect(params).not.toHaveProperty('chunkSize');

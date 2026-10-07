@@ -69,7 +69,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
     list(options: TimeoutOptions = {}): Promise<ActorVersionListResult> & AsyncIterable<FinalVersion> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.listResourcesPaginated(schemas.ListOfVersions(), { signal }, timeoutSecs);
+        return this.listUnpaginatedResources(schemas.ListOfVersions(), timeoutSecs, signal);
     }
 
     /**

@@ -30,6 +30,24 @@ export class ResourceCollectionClient extends ApiClient {
     }
 
     /**
+     * Lists an endpoint that returns every item in one response and ignores `offset` and `limit`. The result can be
+     * awaited as that response or iterated over its items, with a single request either way.
+     */
+    protected listUnpaginatedResources<Data, R extends PaginatedResponse<Data>>(
+        schema: z.ZodType,
+        timeoutSecs: Timeout,
+        signal?: AbortSignal,
+    ): AsyncIterable<Data> & Promise<R> {
+        const listPromise = this.listResources<undefined, R>(schema, undefined, timeoutSecs, signal);
+
+        return Object.defineProperty(listPromise, Symbol.asyncIterator, {
+            async *value() {
+                yield* (await listPromise).items;
+            },
+        }) as unknown as AsyncIterable<Data> & Promise<R>;
+    }
+
+    /**
      * Returns async iterator to iterate through all items and Promise that can be awaited to get first page of results.
      * `defaultTimeoutSecs` applies to every page request unless `options.timeoutSecs` overrides it, and
      * `options.signal` goes to every page request.
