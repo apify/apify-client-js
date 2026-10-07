@@ -485,6 +485,20 @@ describe('Redirect run logs', () => {
         });
     });
 
+    describe('run.getStreamedLog quiet run', () => {
+        test('stop() returns while the log stream stays open without new lines', async () => {
+            const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+            const streamedLog = await client.run('quiet-run-id').getStreamedLog({ fromStart: true });
+            streamedLog!.start();
+            await vi.waitFor(() => expect(logSpy).toHaveBeenCalled());
+
+            const stopped = streamedLog!.stop().then(() => 'stopped');
+            const timedOut = setTimeoutNode(5000, 'timed out');
+            await expect(Promise.race([stopped, timedOut])).resolves.toBe('stopped');
+            logSpy.mockRestore();
+        });
+    });
+
     describe('run.getStreamedLog ECONNRESET', () => {
         test('logs warning instead of throwing on error', async () => {
             const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});

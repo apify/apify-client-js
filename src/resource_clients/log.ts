@@ -17,6 +17,9 @@ import { cast, catchNotFoundForResourceOrThrow, concatBytes, parseArgument } fro
 
 const logOptionsSchema = z.strictObject({ raw: z.boolean().optional(), ...timeoutOptionsShape });
 
+/** How long `StreamedLog.stop()` waits for lines already in flight before aborting the log stream request. */
+const STOP_GRACE_MS = 1000;
+
 /**
  * Client for accessing Actor run or build logs.
  *
@@ -175,6 +178,7 @@ export class StreamedLog {
     #signal: AbortSignal | undefined;
     #streamingTask: Promise<void> | null = null;
     #stopLogging = false;
+    #stopController = new AbortController();
 
     constructor(options: StreamedLogOptions) {
         const { toLog, logClient, fromStart = true, signal } = options;
@@ -192,17 +196,20 @@ export class StreamedLog {
             throw new Error('Streaming task already active');
         }
         this.#stopLogging = false;
+        this.#stopController = new AbortController();
         this.#streamingTask = this.#streamLog();
     }
 
     /**
-     * Stop log redirection.
+     * Stop log redirection. Waits up to one second for lines already in flight, then aborts the log stream request.
      */
     public async stop(): Promise<void> {
         if (!this.#streamingTask) {
             throw new Error('Streaming task is not active');
         }
         this.#stopLogging = true;
+        const stopController = this.#stopController;
+        const abortTimeout = setTimeout(() => stopController.abort(), STOP_GRACE_MS);
         try {
             await this.#streamingTask;
         } catch (err) {
@@ -210,6 +217,7 @@ export class StreamedLog {
                 throw err;
             }
         } finally {
+            clearTimeout(abortTimeout);
             this.#streamingTask = null;
         }
     }
@@ -218,8 +226,11 @@ export class StreamedLog {
      * Get log stream from response and redirect it to another log.
      */
     async #streamLog(): Promise<void> {
+        const signal = this.#signal
+            ? AbortSignal.any([this.#signal, this.#stopController.signal])
+            : this.#stopController.signal;
         try {
-            const logStream = await this.#logClient.stream({ raw: true, signal: this.#signal });
+            const logStream = await this.#logClient.stream({ raw: true, signal });
             if (!logStream) {
                 return;
             }
@@ -230,7 +241,7 @@ export class StreamedLog {
                 this.#destinationLog.info(lastMessage);
             }
         } catch (err) {
-            if (this.#signal?.aborted) return;
+            if (signal.aborted) return;
             log.warning(`Log redirection stopped due to error`, err as Error);
         }
     }
