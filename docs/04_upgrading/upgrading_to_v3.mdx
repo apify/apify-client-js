@@ -420,6 +420,10 @@ for await (const item of client.dataset('dataset-id').listItems({ clean: true, c
 
 `PaginatedList.count` keeps reporting the items returned on the page. The cursor-based iterators, `listKeys()`, `listRequests()` and `paginateRequests()`, are unchanged.
 
+## Offset iterators page until they find no rows
+
+Iterating a `list()` method or `listItems()` with `for await` no longer stops at the `total` reported by the first page. v2 never requested rows past it, so a dataset that a running Actor kept pushing to was cut off at the size it had when the loop started. v3 keeps requesting pages until one scans no rows, or until your `limit` is reached. The loop yields the rows added while it runs, and it sends one more request at the end to find the empty page.
+
 ## The last deprecated options are gone
 
 Two options deprecated during v2 have been removed.
