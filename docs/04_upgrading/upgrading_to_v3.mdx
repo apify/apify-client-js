@@ -100,7 +100,7 @@ await client.actor('my-actor').update([{ name: 'my-actor' }]);
 
 ### `unwind` takes an array only
 
-The `unwind` option of <ApiLink to="class/DatasetClient#listItems">`listItems()`</ApiLink>, <ApiLink to="class/DatasetClient#downloadItems">`downloadItems()`</ApiLink> and <ApiLink to="class/DatasetClient#createItemsPublicUrl">`createItemsPublicUrl()`</ApiLink> no longer accepts a single string. Wrap the field name in an array: `unwind: ['field']`.
+The `unwind` option of <ApiLink to="class/DatasetClient#listItems">`listItems()`</ApiLink>, <ApiLink to="class/DatasetClient#downloadItems">`downloadItems()`</ApiLink> and <ApiLink to="class/DatasetClient#createItemsPublicUrl">`createItemsPublicUrl()`</ApiLink> no longer accepts a single string. Passing one fails at compile time and throws an `ArgumentValidationError`. Wrap the field name in an array: `unwind: ['field']`.
 
 ### `Infinity` and invalid `Date`s are now rejected
 
