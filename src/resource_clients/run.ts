@@ -387,6 +387,7 @@ export class RunClient extends ResourceClient {
      * Unlike the `waitForFinish` parameter in {@link get}, this method can wait indefinitely
      * by polling the run status. It uses the `waitForFinish` parameter internally (max 60s per call)
      * and continuously polls until the run finishes or the timeout is reached.
+     * Rejects if the run keeps returning 404 for 3 seconds.
      *
      * @param options - Wait options
      * @param options.waitSecs - Maximum time to wait for the run to finish, in seconds. If the limit is reached, the returned promise resolves to a run object that will have status `READY` or `RUNNING`. If omitted, waits indefinitely.

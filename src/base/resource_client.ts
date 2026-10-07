@@ -18,6 +18,9 @@ const MAX_WAIT_FOR_FINISH = 999999;
 /** The API holds a `waitForFinish` response for at most a minute, however long the parameter asks for. */
 const MAX_WAIT_FOR_FINISH_HOLD_SECS = 60;
 
+/** How long `waitForFinish()` keeps polling a job that returns 404, to ride out replica lag, before it gives up. */
+const MAX_WAIT_WHEN_JOB_NOT_EXIST_MILLIS = 3000;
+
 /**
  * Resource client.
  * @private
@@ -116,11 +119,13 @@ export class ResourceClient extends ApiClient {
         const { waitSecs = MAX_WAIT_FOR_FINISH, timeoutSecs = 'noTimeout', signal } = options;
         const waitMillis = waitSecs * 1000;
         let job: R | undefined;
+        let notFoundSince: number | undefined;
 
         const startedAt = Date.now();
         const shouldRepeat = () => {
-            const millisSinceStart = Date.now() - startedAt;
-            if (millisSinceStart >= waitMillis) return false;
+            const now = Date.now();
+            if (now - startedAt >= waitMillis) return false;
+            if (notFoundSince !== undefined && now - notFoundSince >= MAX_WAIT_WHEN_JOB_NOT_EXIST_MILLIS) return false;
             const hasJobEnded =
                 job && ACT_JOB_TERMINAL_STATUSES.includes(job.status as (typeof ACT_JOB_TERMINAL_STATUSES)[number]);
             return !hasJobEnded;
@@ -141,9 +146,11 @@ export class ResourceClient extends ApiClient {
             try {
                 const response = await this.httpClient.call(requestOpts);
                 job = parseResponse<R>(response, schema);
+                notFoundSince = undefined;
             } catch (err) {
                 catchNotFoundOrThrow(err as ApifyApiError);
                 job = undefined;
+                notFoundSince ??= Date.now();
             }
 
             // It might take some time for database replicas to get up-to-date,
