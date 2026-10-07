@@ -13,7 +13,7 @@ import { optionalSignalSchema, optionalTimeoutSchema, timeoutOptionsSchema, time
 import { runtime } from '#runtime';
 import type { PaginatedList, PaginationOptions } from '../utils.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument, parseResponse, SCANNED_COUNT } from '../utils.js';
-import type { ActorInput, ActorRun } from './actor.js';
+import type { ActorInput, Run } from './actor.js';
 import { DatasetClient } from './dataset.js';
 import { KeyValueStoreClient } from './key_value_store.js';
 import { LogClient, LoggerActorRedirect, StreamedLog } from './log.js';
@@ -100,7 +100,7 @@ export class RunClient extends ResourceClient {
      * @param options.waitForFinish - Maximum time to wait (in seconds, max 60s) for the run to finish on the API side before returning. Default is 0 (returns immediately).
      * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`, extended to cover `waitForFinish`
      * when the API is asked to hold the response.
-     * @returns The ActorRun object, or `undefined` if it does not exist
+     * @returns The Run object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/actor-run-get
      *
      * @example
@@ -113,7 +113,7 @@ export class RunClient extends ResourceClient {
      * const run = await client.run('run-id').get({ waitForFinish: 60 });
      * ```
      */
-    async get(options: RunGetOptions = {}): Promise<ActorRun | undefined> {
+    async get(options: RunGetOptions = {}): Promise<Run | undefined> {
         const { timeoutSecs, signal, ...params } = parseArgument(options, getOptionsSchema, 'RunGetOptions');
 
         return this.getResource(
@@ -130,7 +130,7 @@ export class RunClient extends ResourceClient {
      * @param options - Abort options
      * @param options.gracefully - If `true`, the Actor run will abort gracefully - it can send status messages and perform cleanup. Default is `false` (immediate abort).
      * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
-     * @returns The updated ActorRun object with `ABORTING` or `ABORTED` status
+     * @returns The updated Run object with `ABORTING` or `ABORTED` status
      * @see https://docs.apify.com/api/v2/actor-run-abort-post
      *
      * @example
@@ -142,7 +142,7 @@ export class RunClient extends ResourceClient {
      * await client.run('run-id').abort({ gracefully: true });
      * ```
      */
-    async abort(options: RunAbortOptions = {}): Promise<ActorRun> {
+    async abort(options: RunAbortOptions = {}): Promise<Run> {
         const {
             timeoutSecs = 'medium',
             signal,
@@ -187,7 +187,7 @@ export class RunClient extends ResourceClient {
      * @param options - Metamorph options
      * @param options.build - Tag or number of the target Actor's build to run. Default is the target Actor's default build.
      * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
-     * @returns The metamorphed ActorRun object (same ID, but now running the target Actor)
+     * @returns The metamorphed Run object (same ID, but now running the target Actor)
      * @see https://docs.apify.com/api/v2/actor-run-metamorph-post
      *
      * @example
@@ -200,7 +200,7 @@ export class RunClient extends ResourceClient {
      * console.log(`Run ${metamorphedRun.id} is now running ${metamorphedRun.actId}`);
      * ```
      */
-    async metamorph(targetActorId: string, input?: ActorInput, options: RunMetamorphOptions = {}): Promise<ActorRun> {
+    async metamorph(targetActorId: string, input?: ActorInput, options: RunMetamorphOptions = {}): Promise<Run> {
         parseArgument(targetActorId, targetActorIdSchema);
         const parsed = parseArgument(options, metamorphOptionsSchema, 'RunMetamorphOptions');
 
@@ -241,7 +241,7 @@ export class RunClient extends ResourceClient {
      *
      * @param options - Request options
      * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
-     * @returns The updated ActorRun object
+     * @returns The updated Run object
      * @see https://docs.apify.com/api/v2/actor-run-reboot-post
      *
      * @example
@@ -250,7 +250,7 @@ export class RunClient extends ResourceClient {
      * ```
      * @since Added in 2.8.0
      */
-    async reboot(options: TimeoutOptions = {}): Promise<ActorRun> {
+    async reboot(options: TimeoutOptions = {}): Promise<Run> {
         const { timeoutSecs = 'medium', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const request: ApifyRequestConfig = {
@@ -273,7 +273,7 @@ export class RunClient extends ResourceClient {
      * @param newFields.generalAccess - General resource access level ('FOLLOW_USER_SETTING', 'ANYONE_WITH_ID_CAN_READ' or 'RESTRICTED')
      * @param options - Request options
      * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
-     * @returns The updated ActorRun object
+     * @returns The updated Run object
      *
      * @example
      * ```javascript
@@ -284,7 +284,7 @@ export class RunClient extends ResourceClient {
      * ```
      * @since Added in 2.6.0
      */
-    async update(newFields: RunUpdateOptions, options: TimeoutOptions = {}): Promise<ActorRun> {
+    async update(newFields: RunUpdateOptions, options: TimeoutOptions = {}): Promise<Run> {
         parseArgument(newFields, anyObjectSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
@@ -305,7 +305,7 @@ export class RunClient extends ResourceClient {
      * @param options.maxTotalChargeUsd - Maximum cost in USD (pay-per-event Actors).
      * @param options.restartOnError - Whether to restart on error.
      * @param options.timeoutSecs - Timeout for the API request. Default is `'medium'`.
-     * @returns The new (resurrected) ActorRun object
+     * @returns The new (resurrected) Run object
      * @see https://docs.apify.com/api/v2/post-resurrect-run
      *
      * @example
@@ -315,7 +315,7 @@ export class RunClient extends ResourceClient {
      * console.log(`New run started: ${newRun.id}`);
      * ```
      */
-    async resurrect(options: RunResurrectOptions = {}): Promise<ActorRun> {
+    async resurrect(options: RunResurrectOptions = {}): Promise<Run> {
         const {
             timeoutSecs = 'medium',
             signal,
@@ -392,7 +392,7 @@ export class RunClient extends ResourceClient {
      * @param options - Wait options
      * @param options.waitSecs - Maximum time to wait for the run to finish, in seconds. If the limit is reached, the returned promise resolves to a run object that will have status `READY` or `RUNNING`. If omitted, waits indefinitely.
      * @param options.timeoutSecs - Timeout for each polling API request. Default is `'noTimeout'`.
-     * @returns The ActorRun object (finished or still running if the timeout was reached)
+     * @returns The Run object (finished or still running if the timeout was reached)
      *
      * @example
      * ```javascript
@@ -407,7 +407,7 @@ export class RunClient extends ResourceClient {
      * }
      * ```
      */
-    async waitForFinish(options: RunWaitForFinishOptions = {}): Promise<ActorRun> {
+    async waitForFinish(options: RunWaitForFinishOptions = {}): Promise<Run> {
         const parsed = parseArgument(options, waitForFinishOptionsSchema, 'RunWaitForFinishOptions');
 
         return this.waitForJobFinish(schemas.Run(), parsed);

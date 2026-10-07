@@ -1,6 +1,6 @@
 import { beforeAll, expect, test } from 'vitest';
 
-import type { ApifyClient, RequestQueue, RequestQueueClient } from 'apify-client';
+import type { ApifyClient, RequestQueueResource, RequestQueueClient } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
 import { collectUntilPresent, getRandomResourceName, pollUntilCondition, randomId } from './_utils.js';
@@ -11,7 +11,7 @@ beforeAll(() => {
     client = makeClient();
 });
 
-async function createQueue(label = 'queue'): Promise<RequestQueue> {
+async function createQueue(label = 'queue'): Promise<RequestQueueResource> {
     return client.requestQueues().getOrCreate(getRandomResourceName(label));
 }
 

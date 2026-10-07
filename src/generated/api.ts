@@ -4728,8 +4728,8 @@ export interface components {
                 TOTAL?: number;
             };
         };
-        /** ActorShort */
-        ActorShort: {
+        /** ActorListItem */
+        ActorListItem: {
             /** @example br9CKmk457 */
             id: string;
             /**
@@ -4752,7 +4752,7 @@ export interface components {
         };
         /** ListOfActors */
         ListOfActors: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["ActorShort"][];
+            items: components["schemas"]["ActorListItem"][];
         };
         /** ListOfActorsResponse */
         ListOfActorsResponse: {
@@ -5182,8 +5182,8 @@ export interface components {
          * @enum {string|null}
          */
         ActorNotice: "NONE" | "RESIDENTIAL_PROXY_REQUIRED" | "UNDER_MAINTENANCE" | null;
-        /** Actor */
-        Actor: {
+        /** ActorResource */
+        ActorResource: {
             /**
              * @description The ID of the Actor.
              * @example zdc3Pyhyz3m8vjDeM
@@ -5314,7 +5314,7 @@ export interface components {
          * @description Response containing Actor data.
          */
         ActorResponse: {
-            data: components["schemas"]["Actor"];
+            data: components["schemas"]["ActorResource"];
         };
         /** CreateOrUpdateVersionRequest */
         CreateOrUpdateVersionRequest: {
@@ -5347,10 +5347,10 @@ export interface components {
             gitHubGistUrl?: string | null;
         };
         /**
-         * BuildTag
+         * UpdatedBuildProperty
          * @description The name of the build tag.
          */
-        BuildTag: {
+        UpdatedBuildProperty: {
             /** @description The ID of the build to assign to the tag. */
             buildId: string;
         } | null;
@@ -5414,7 +5414,7 @@ export interface components {
              *     }
              */
             taggedBuilds?: {
-                [key: string]: components["schemas"]["BuildTag"];
+                [key: string]: components["schemas"]["UpdatedBuildProperty"];
             } | null;
             /** @description The configuration of the Actor's standby mode. For details, see [Standby mode](https://docs.apify.com/platform/actors/development/programming-interface/standby). */
             actorStandby?: components["schemas"]["ActorStandby"] | null;
@@ -5474,8 +5474,8 @@ export interface components {
          * @enum {string}
          */
         WebhookDispatchStatus: "ACTIVE" | "SUCCEEDED" | "FAILED";
-        /** ExampleWebhookDispatch */
-        ExampleWebhookDispatch: {
+        /** WebhookLastDispatch */
+        WebhookLastDispatch: {
             status: components["schemas"]["WebhookDispatchStatus"];
             /**
              * Format: date-time
@@ -5493,8 +5493,8 @@ export interface components {
             /** @example 1 */
             totalDispatches?: number;
         };
-        /** WebhookShort */
-        WebhookShort: {
+        /** WebhookListItem */
+        WebhookListItem: {
             /** @example YiKoxjkaS9gjGTqhF */
             id: string;
             /**
@@ -5535,12 +5535,12 @@ export interface components {
              * @example http://example.com/
              */
             requestUrl: string;
-            lastDispatch?: components["schemas"]["ExampleWebhookDispatch"] | null;
+            lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
             stats?: components["schemas"]["WebhookStats"] | null;
         };
         /** ListOfWebhooks */
         ListOfWebhooks: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["WebhookShort"][];
+            items: components["schemas"]["WebhookListItem"][];
         };
         /** ListOfWebhooksResponse */
         ListOfWebhooksResponse: {
@@ -5557,8 +5557,8 @@ export interface components {
          * @enum {string}
          */
         RunOrigin: "DEVELOPMENT" | "WEB" | "API" | "SCHEDULER" | "TEST" | "WEBHOOK" | "ACTOR" | "CLI" | "CI" | "STANDBY" | "MCP";
-        /** BuildsMeta */
-        BuildsMeta: {
+        /** BuildMeta */
+        BuildMeta: {
             origin: components["schemas"]["RunOrigin"];
             /**
              * @description IP address of the client that started the build.
@@ -5571,8 +5571,8 @@ export interface components {
              */
             userAgent?: string;
         };
-        /** BuildShort */
-        BuildShort: {
+        /** BuildListItem */
+        BuildListItem: {
             /** @example HG7ML7M8z78YcAPEB */
             id: string;
             /** @example janedoe~my-actor */
@@ -5596,11 +5596,11 @@ export interface components {
             buildNumber: string;
             /** @example 10000 */
             buildNumberInt?: number;
-            meta?: components["schemas"]["BuildsMeta"];
+            meta?: components["schemas"]["BuildMeta"];
         };
         /** ListOfBuilds */
         ListOfBuilds: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["BuildShort"][];
+            items: components["schemas"]["BuildListItem"][];
         };
         /** ListOfBuildsResponse */
         ListOfBuildsResponse: {
@@ -5780,7 +5780,7 @@ export interface components {
              */
             finishedAt?: Date | null;
             status: components["schemas"]["ActorJobStatus"];
-            meta: components["schemas"]["BuildsMeta"];
+            meta: components["schemas"]["BuildMeta"];
             stats?: components["schemas"]["BuildStats"] | null;
             options?: components["schemas"]["BuildOptions"] | null;
             usage?: components["schemas"]["BuildUsage"] | null;
@@ -5850,8 +5850,8 @@ export interface components {
              */
             scheduledAt?: Date | null;
         };
-        /** RunShort */
-        RunShort: {
+        /** RunListItem */
+        RunListItem: {
             /** @example HG7ML7M8z78YcAPEB */
             id: string;
             /** @example HDSasDasz78YcAPEB */
@@ -5889,7 +5889,7 @@ export interface components {
         };
         /** ListOfRuns */
         ListOfRuns: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["RunShort"][];
+            items: components["schemas"]["RunListItem"][];
         };
         /** ListOfRunsResponse */
         ListOfRunsResponse: {
@@ -6061,10 +6061,10 @@ export interface components {
             PROXY_SERPS?: number | null;
         };
         /**
-         * Metamorph
+         * RunMetamorphEvent
          * @description Information about a metamorph event that occurred during the run.
          */
-        Metamorph: {
+        RunMetamorphEvent: {
             /**
              * Format: date-time
              * @description Time when the metamorph occurred.
@@ -6246,7 +6246,7 @@ export interface components {
             /** @description Platform usage costs breakdown in USD. Only present if you own the run AND are paying for platform usage (Pay-Per-Usage, Rental, or Pay-Per-Event with usage costs like standby Actors). Not available for standard Pay-Per-Event Actors. Requires authentication token to access. */
             usageUsd?: components["schemas"]["RunUsageUsd"] | null;
             /** @description List of metamorph events that occurred during the run. */
-            metamorphs?: components["schemas"]["Metamorph"][] | null;
+            metamorphs?: components["schemas"]["RunMetamorphEvent"][] | null;
             /**
              * @description Indicates which party covers platform usage costs for this run.
              * @example USER
@@ -6274,8 +6274,8 @@ export interface components {
              */
             inflatedBytes?: number;
         };
-        /** Dataset */
-        Dataset: {
+        /** DatasetResource */
+        DatasetResource: {
             /** @example WkzbQMuFYuamGv3YF */
             id: string;
             /** @example d7b9MDYsbtX5L7XAj */
@@ -6352,7 +6352,7 @@ export interface components {
          * @description Response containing dataset metadata.
          */
         DatasetResponse: {
-            data: components["schemas"]["Dataset"];
+            data: components["schemas"]["DatasetResource"];
         };
         /**
          * UpdateDatasetRequest
@@ -6378,8 +6378,8 @@ export interface components {
         PutItemsRequest: {
             [key: string]: unknown;
         };
-        /** ValidationError */
-        ValidationError: {
+        /** DatasetItemValidationError */
+        DatasetItemValidationError: {
             /** @description The path to the instance being validated. */
             instancePath?: string;
             /** @description The path to the schema that failed the validation. */
@@ -6391,20 +6391,20 @@ export interface components {
             /** @description Additional parameters specific to the validation error. */
             params?: Record<string, unknown>;
         };
-        /** InvalidItem */
-        InvalidItem: {
+        /** InvalidDatasetItem */
+        InvalidDatasetItem: {
             /**
              * @description The position of the invalid item in the array.
              * @example 2
              */
             itemPosition?: number;
             /** @description A complete list of AJV validation error objects for the invalid item. */
-            validationErrors?: components["schemas"]["ValidationError"][];
+            validationErrors?: components["schemas"]["DatasetItemValidationError"][];
         };
-        /** SchemaValidationErrorData */
-        SchemaValidationErrorData: {
+        /** DatasetSchemaValidationErrorData */
+        DatasetSchemaValidationErrorData: {
             /** @description A list of invalid items in the received array of items. */
-            invalidItems: components["schemas"]["InvalidItem"][];
+            invalidItems: components["schemas"]["InvalidDatasetItem"][];
         };
         /** DatasetSchemaValidationError */
         DatasetSchemaValidationError: {
@@ -6418,10 +6418,10 @@ export interface components {
              * @example Schema validation failed
              */
             message?: string;
-            data?: components["schemas"]["SchemaValidationErrorData"];
+            data?: components["schemas"]["DatasetSchemaValidationErrorData"];
         };
         /**
-         * PutItemResponseError
+         * PutItemsErrorResponse
          * @example {
          *       "error": {
          *         "type": "schema-validation-error",
@@ -6447,7 +6447,7 @@ export interface components {
          *       }
          *     }
          */
-        PutItemResponseError: {
+        PutItemsErrorResponse: {
             error: components["schemas"]["DatasetSchemaValidationError"];
         };
         /** DatasetFieldStatistics */
@@ -6500,8 +6500,8 @@ export interface components {
             /** @example 457225 */
             storageBytes?: number;
         };
-        /** KeyValueStore */
-        KeyValueStore: {
+        /** KeyValueStoreResource */
+        KeyValueStoreResource: {
             /** @example WkzbQMuFYuamGv3YF */
             id: string;
             /** @example d7b9MDYsbtX5L7XAj */
@@ -6558,16 +6558,16 @@ export interface components {
          * @description Response containing key-value store data.
          */
         KeyValueStoreResponse: {
-            data: components["schemas"]["KeyValueStore"];
+            data: components["schemas"]["KeyValueStoreResource"];
         };
         /**
-         * UpdateStoreRequest
+         * UpdateKeyValueStoreRequest
          * @example {
          *       "name": "new-store-name",
          *       "generalAccess": "RESTRICTED"
          *     }
          */
-        UpdateStoreRequest: {
+        UpdateKeyValueStoreRequest: {
             name?: string | null;
             generalAccess?: components["schemas"]["GeneralAccess"];
         };
@@ -6729,10 +6729,10 @@ export interface components {
             writeCount?: number;
         };
         /**
-         * RequestQueue
+         * RequestQueueResource
          * @description A request queue object containing metadata and statistics.
          */
-        RequestQueue: {
+        RequestQueueResource: {
             id: components["schemas"]["QueueId"];
             /**
              * @description The name of the request queue.
@@ -6765,7 +6765,7 @@ export interface components {
          * @description Response containing request queue data.
          */
         RequestQueueResponse: {
-            data: components["schemas"]["RequestQueue"];
+            data: components["schemas"]["RequestQueueResource"];
         };
         /**
          * UpdateRequestQueueRequest
@@ -6858,10 +6858,10 @@ export interface components {
          */
         RequestId: string;
         /**
-         * Request
+         * RequestResource
          * @description A request stored in the request queue, including its metadata and processing state.
          */
-        Request: components["schemas"]["RequestBase"] & {
+        RequestResource: components["schemas"]["RequestBase"] & {
             id: components["schemas"]["RequestId"];
         };
         /**
@@ -6870,7 +6870,7 @@ export interface components {
          */
         ListOfRequests: {
             /** @description The array of requests. */
-            items: components["schemas"]["Request"][];
+            items: components["schemas"]["RequestResource"][];
             /**
              * @description The maximum number of requests returned in this response.
              * @example 2
@@ -6984,10 +6984,10 @@ export interface components {
             wasAlreadyHandled: components["schemas"]["WasAlreadyHandled"];
         };
         /**
-         * RequestDraft
+         * UnprocessedRequest
          * @description A request that failed to be processed during a request queue operation and can be retried.
          */
-        RequestDraft: {
+        UnprocessedRequest: {
             id?: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
@@ -7001,7 +7001,7 @@ export interface components {
             /** @description Requests that were successfully added to the request queue. */
             processedRequests: components["schemas"]["AddedRequest"][];
             /** @description Requests that failed to be added and can be retried. */
-            unprocessedRequests: components["schemas"]["RequestDraft"][];
+            unprocessedRequests: components["schemas"]["UnprocessedRequest"][];
         };
         /**
          * BatchAddResponse
@@ -7030,26 +7030,26 @@ export interface components {
             data: components["schemas"]["BatchAddResult"];
         };
         /**
-         * RequestDraftDeleteById
+         * RequestToDeleteById
          * @description A request that should be deleted, identified by its ID.
          */
-        RequestDraftDeleteById: {
+        RequestToDeleteById: {
             id: components["schemas"]["RequestId"];
             uniqueKey?: components["schemas"]["UniqueKey"];
         };
         /**
-         * RequestDraftDeleteByUniqueKey
+         * RequestToDeleteByUniqueKey
          * @description A request that should be deleted, identified by its unique key.
          */
-        RequestDraftDeleteByUniqueKey: {
+        RequestToDeleteByUniqueKey: {
             id?: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
         };
         /**
-         * RequestDraftDelete
+         * RequestToDelete
          * @description A request that should be deleted.
          */
-        RequestDraftDelete: components["schemas"]["RequestDraftDeleteById"] | components["schemas"]["RequestDraftDeleteByUniqueKey"];
+        RequestToDelete: components["schemas"]["RequestToDeleteById"] | components["schemas"]["RequestToDeleteByUniqueKey"];
         /**
          * DeletedRequestById
          * @description Confirmation of a request that was successfully deleted, identified by its ID.
@@ -7079,7 +7079,7 @@ export interface components {
             /** @description Requests that were successfully deleted from the request queue. */
             processedRequests: components["schemas"]["DeletedRequest"][];
             /** @description Requests that failed to be deleted and can be retried. */
-            unprocessedRequests: components["schemas"]["RequestDraft"][];
+            unprocessedRequests: components["schemas"]["UnprocessedRequest"][];
         };
         /**
          * BatchDeleteResponse
@@ -7111,7 +7111,7 @@ export interface components {
          * @description Response containing a single request from the request queue.
          */
         RequestResponse: {
-            data: components["schemas"]["Request"];
+            data: components["schemas"]["RequestResource"];
         };
         /**
          * UpdateRequestResponse
@@ -7146,10 +7146,10 @@ export interface components {
          */
         HeadLimit: number;
         /**
-         * HeadRequest
+         * RequestQueueHeadItem
          * @description A request from the request queue head without lock information.
          */
-        HeadRequest: {
+        RequestQueueHeadItem: {
             id: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
@@ -7165,10 +7165,10 @@ export interface components {
             queueModifiedAt: components["schemas"]["QueueModifiedAt"];
             hadMultipleClients: components["schemas"]["HadMultipleClients"];
             /** @description The array of requests from the request queue head. */
-            items: components["schemas"]["HeadRequest"][];
+            items: components["schemas"]["RequestQueueHeadItem"][];
         };
         /**
-         * HeadResponse
+         * RequestQueueHeadResponse
          * @description Response containing requests from the request queue head without locking.
          * @example {
          *       "data": {
@@ -7201,14 +7201,14 @@ export interface components {
          *       }
          *     }
          */
-        HeadResponse: {
+        RequestQueueHeadResponse: {
             data: components["schemas"]["RequestQueueHead"];
         };
         /**
-         * LockedHeadRequest
+         * LockedRequestQueueHeadItem
          * @description A request from the request queue head that has been locked for processing.
          */
-        LockedHeadRequest: {
+        LockedRequestQueueHeadItem: {
             id: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
@@ -7240,10 +7240,10 @@ export interface components {
              */
             lockSecs: number;
             /** @description The array of locked requests from the request queue head. */
-            items: components["schemas"]["LockedHeadRequest"][];
+            items: components["schemas"]["LockedRequestQueueHeadItem"][];
         };
         /**
-         * HeadAndLockResponse
+         * LockedRequestQueueHeadResponse
          * @description Response containing locked requests from the request queue head.
          * @example {
          *       "data": {
@@ -7280,7 +7280,7 @@ export interface components {
          *       }
          *     }
          */
-        HeadAndLockResponse: {
+        LockedRequestQueueHeadResponse: {
             data: components["schemas"]["LockedRequestQueueHead"];
         };
         /** TaskStats */
@@ -7288,8 +7288,8 @@ export interface components {
             /** @example 15 */
             totalRuns?: number;
         };
-        /** TaskShort */
-        TaskShort: {
+        /** TaskListItem */
+        TaskListItem: {
             /** @example zdc3Pyhyz3m8vjDeM */
             id: string;
             /** @example wRsJZtadYvn4mBZmm */
@@ -7318,7 +7318,7 @@ export interface components {
         };
         /** ListOfTasks */
         ListOfTasks: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["TaskShort"][];
+            items: components["schemas"]["TaskListItem"][];
         };
         /** ListOfTasksResponse */
         ListOfTasksResponse: {
@@ -7506,8 +7506,8 @@ export interface components {
              */
             isPublic?: boolean;
         };
-        /** Webhook */
-        Webhook: {
+        /** WebhookResource */
+        WebhookResource: {
             /** @example YiKoxjkaS9gjGTqhF */
             id: string;
             /**
@@ -7549,7 +7549,7 @@ export interface components {
             headersTemplate?: string | null;
             /** @example this is webhook description */
             description?: string | null;
-            lastDispatch?: components["schemas"]["ExampleWebhookDispatch"] | null;
+            lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
             stats?: components["schemas"]["WebhookStats"] | null;
         };
         /** UpdateRunRequest */
@@ -7581,7 +7581,7 @@ export interface components {
              * @example false
              */
             unnamed?: boolean;
-            items: components["schemas"]["KeyValueStore"][];
+            items: components["schemas"]["KeyValueStoreResource"][];
         };
         /** ListOfKeyValueStoresResponse */
         ListOfKeyValueStoresResponse: {
@@ -7639,10 +7639,10 @@ export interface components {
             data: components["schemas"]["ListOfDatasets"];
         };
         /**
-         * RequestQueueShort
+         * RequestQueueListItem
          * @description A shortened request queue object for list responses.
          */
-        RequestQueueShort: {
+        RequestQueueListItem: {
             id: components["schemas"]["QueueId"];
             /**
              * @description The name of the request queue.
@@ -7686,7 +7686,7 @@ export interface components {
              */
             unnamed?: boolean;
             /** @description The array of request queues. */
-            items: components["schemas"]["RequestQueueShort"][];
+            items: components["schemas"]["RequestQueueListItem"][];
         };
         /**
          * ListOfRequestQueuesResponse
@@ -7695,8 +7695,8 @@ export interface components {
         ListOfRequestQueuesResponse: {
             data: components["schemas"]["ListOfRequestQueues"];
         };
-        /** WebhookCreate */
-        WebhookCreate: {
+        /** CreateWebhookRequest */
+        CreateWebhookRequest: {
             /** @example false */
             isAdHoc?: boolean | null;
             /**
@@ -7728,10 +7728,10 @@ export interface components {
          * @description Response containing webhook data.
          */
         WebhookResponse: {
-            data: components["schemas"]["Webhook"];
+            data: components["schemas"]["WebhookResource"];
         };
-        /** WebhookUpdate */
-        WebhookUpdate: {
+        /** UpdateWebhookRequest */
+        UpdateWebhookRequest: {
             /** @example false */
             isAdHoc?: boolean | null;
             /**
@@ -7823,8 +7823,8 @@ export interface components {
                 responseBody?: string | null;
             }[];
         };
-        /** TestWebhookResponse */
-        TestWebhookResponse: {
+        /** WebhookDispatchResponse */
+        WebhookDispatchResponse: {
             data: components["schemas"]["WebhookDispatch"];
         };
         /** ListOfWebhookDispatches */
@@ -7834,10 +7834,6 @@ export interface components {
         /** ListOfWebhookDispatchesResponse */
         ListOfWebhookDispatchesResponse: {
             data: components["schemas"]["ListOfWebhookDispatches"];
-        };
-        /** WebhookDispatchResponse */
-        WebhookDispatchResponse: {
-            data: components["schemas"]["WebhookDispatch"];
         };
         /** ScheduleBase */
         ScheduleBase: {
@@ -7876,8 +7872,8 @@ export interface components {
              */
             lastRunAt?: Date | null;
         };
-        /** ScheduleActionShortRunActor */
-        ScheduleActionShortRunActor: {
+        /** ScheduleListItemActionRunActor */
+        ScheduleListItemActionRunActor: {
             /** @example ZReCs7hkdieq8ZUki */
             id: string;
             /**
@@ -7888,8 +7884,8 @@ export interface components {
             /** @example HKhKmiCMrDgu9eXeE */
             actorId: string;
         };
-        /** ScheduleActionShortRunActorTask */
-        ScheduleActionShortRunActorTask: {
+        /** ScheduleListItemActionRunActorTask */
+        ScheduleListItemActionRunActorTask: {
             /** @example ZReCs7hkdieq8ZUki */
             id: string;
             /**
@@ -7900,15 +7896,15 @@ export interface components {
             /** @example HKhKmiCMrDgu9eXeE */
             actorTaskId: string;
         };
-        /** ScheduleActionShort */
-        ScheduleActionShort: components["schemas"]["ScheduleActionShortRunActor"] | components["schemas"]["ScheduleActionShortRunActorTask"];
-        /** ScheduleShort */
-        ScheduleShort: components["schemas"]["ScheduleBase"] & {
-            actions: components["schemas"]["ScheduleActionShort"][];
+        /** ScheduleListItemAction */
+        ScheduleListItemAction: components["schemas"]["ScheduleListItemActionRunActor"] | components["schemas"]["ScheduleListItemActionRunActorTask"];
+        /** ScheduleListItem */
+        ScheduleListItem: components["schemas"]["ScheduleBase"] & {
+            actions: components["schemas"]["ScheduleListItemAction"][];
         };
         /** ListOfSchedules */
         ListOfSchedules: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["ScheduleShort"][];
+            items: components["schemas"]["ScheduleListItem"][];
         };
         /** ListOfSchedulesResponse */
         ListOfSchedulesResponse: {
@@ -7946,8 +7942,8 @@ export interface components {
         };
         /** ScheduleCreateAction */
         ScheduleCreateAction: components["schemas"]["ScheduleCreateActionRunActor"] | components["schemas"]["ScheduleCreateActionRunActorTask"];
-        /** ScheduleCreate */
-        ScheduleCreate: {
+        /** CreateOrUpdateScheduleRequest */
+        CreateOrUpdateScheduleRequest: {
             /** @example my-schedule */
             name?: string | null;
             /** @example true */
@@ -8011,8 +8007,8 @@ export interface components {
         ScheduleResponse: {
             data: components["schemas"]["Schedule"];
         };
-        /** ScheduleInvoked */
-        ScheduleInvoked: {
+        /** ScheduleLogEntry */
+        ScheduleLogEntry: {
             /** @example Schedule invoked */
             message: string;
             /** @example INFO */
@@ -8025,7 +8021,7 @@ export interface components {
         };
         /** ScheduleLogResponse */
         ScheduleLogResponse: {
-            data: components["schemas"]["ScheduleInvoked"][];
+            data: components["schemas"]["ScheduleLogEntry"][];
         };
         /** CurrentPricingInfo */
         CurrentPricingInfo: {
@@ -8077,8 +8073,8 @@ export interface components {
                 [key: string]: unknown;
             } | null;
         };
-        /** StoreListActor */
-        StoreListActor: {
+        /** StoreActor */
+        StoreActor: {
             /** @example zdc3Pyhyz3m8vjDeM */
             id: string;
             /** @example My Public Actor */
@@ -8128,10 +8124,10 @@ export interface components {
         };
         /** ListOfStoreActors */
         ListOfStoreActors: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["StoreListActor"][];
+            items: components["schemas"]["StoreActor"][];
         };
         /**
-         * ListOfActorsInStoreResponse
+         * ListOfStoreActorsResponse
          * @example {
          *       "data": {
          *         "total": 100,
@@ -8198,11 +8194,11 @@ export interface components {
          *       }
          *     }
          */
-        ListOfActorsInStoreResponse: {
+        ListOfStoreActorsResponse: {
             data: components["schemas"]["ListOfStoreActors"];
         };
-        /** Profile */
-        Profile: {
+        /** UserProfile */
+        UserProfile: {
             /** @example I started web scraping in 1985 using Altair BASIC. */
             bio?: string | null;
             /**
@@ -8232,10 +8228,10 @@ export interface components {
         UserPublicInfo: {
             /** @example d7b9MDYsbtX5L7XAj */
             username: string;
-            profile?: components["schemas"]["Profile"];
+            profile?: components["schemas"]["UserProfile"];
         };
-        /** PublicUserDataResponse */
-        PublicUserDataResponse: {
+        /** UserPublicInfoResponse */
+        UserPublicInfoResponse: {
             data: components["schemas"]["UserPublicInfo"];
         };
         /** ProxyGroup */
@@ -8247,8 +8243,8 @@ export interface components {
             /** @example 10 */
             availableCount: number;
         };
-        /** Proxy */
-        Proxy: {
+        /** ProxyResource */
+        ProxyResource: {
             /** @example ad78knd9Jkjd86 */
             password: string;
             groups: components["schemas"]["ProxyGroup"][];
@@ -8267,8 +8263,8 @@ export interface components {
         AvailableProxyGroups: {
             [key: string]: number;
         };
-        /** Plan */
-        Plan: {
+        /** UserPlan */
+        UserPlan: {
             /** @example Personal */
             id?: string;
             /** @example Cost-effective plan for freelancers, developers and students. */
@@ -8364,14 +8360,14 @@ export interface components {
             id?: string;
             /** @example myusername */
             username: string;
-            profile?: components["schemas"]["Profile"];
+            profile?: components["schemas"]["UserProfile"];
             /**
              * Format: email
              * @example bob@example.com
              */
             email?: string;
-            proxy?: components["schemas"]["Proxy"];
-            plan?: components["schemas"]["Plan"];
+            proxy?: components["schemas"]["ProxyResource"];
+            plan?: components["schemas"]["UserPlan"];
             effectivePlatformFeatures?: components["schemas"]["EffectivePlatformFeatures"];
             /**
              * Format: date-time
@@ -8381,8 +8377,8 @@ export interface components {
             /** @example true */
             isPaying?: boolean;
         };
-        /** PrivateUserDataResponse */
-        PrivateUserDataResponse: {
+        /** UserPrivateInfoResponse */
+        UserPrivateInfoResponse: {
             data: components["schemas"]["UserPrivateInfo"];
         };
         /** UsageCycle */
@@ -8398,8 +8394,8 @@ export interface components {
              */
             endAt: Date;
         };
-        /** PriceTiers */
-        PriceTiers: {
+        /** PriceTier */
+        PriceTier: {
             /** @example 0 */
             quantityAbove: number;
             /** @example 100 */
@@ -8421,7 +8417,7 @@ export interface components {
             baseUnitPriceUsd?: number;
             /** @example 0.69611875 */
             amountAfterVolumeDiscountUsd?: number;
-            priceTiers?: components["schemas"]["PriceTiers"][];
+            priceTiers?: components["schemas"]["PriceTier"][];
         };
         /**
          * MonthlyServiceUsage
@@ -8446,8 +8442,8 @@ export interface components {
         ServiceUsage: {
             [key: string]: components["schemas"]["UsageItem"];
         };
-        /** DailyServiceUsages */
-        DailyServiceUsages: {
+        /** DailyServiceUsage */
+        DailyServiceUsage: {
             /**
              * Format: date-time
              * @example 2022-10-02T00:00:00.000Z
@@ -8461,7 +8457,7 @@ export interface components {
         MonthlyUsage: {
             usageCycle: components["schemas"]["UsageCycle"];
             monthlyServiceUsage: components["schemas"]["MonthlyServiceUsage"];
-            dailyServiceUsages: components["schemas"]["DailyServiceUsages"][];
+            dailyServiceUsages: components["schemas"]["DailyServiceUsage"][];
             /** @example 0.786143673840067 */
             totalUsageCreditsUsdBeforeVolumeDiscount: number;
             /** @example 0.786143673840067 */
@@ -8498,8 +8494,8 @@ export interface components {
             /** @example 100 */
             maxScheduleCount?: number;
         };
-        /** Current */
-        Current: {
+        /** CurrentUsage */
+        CurrentUsage: {
             /** @example 43 */
             monthlyUsageUsd: number;
             /** @example 500.784475 */
@@ -8527,10 +8523,10 @@ export interface components {
         AccountLimits: {
             monthlyUsageCycle: components["schemas"]["UsageCycle"];
             limits: components["schemas"]["Limits"];
-            current: components["schemas"]["Current"];
+            current: components["schemas"]["CurrentUsage"];
         };
-        /** LimitsResponse */
-        LimitsResponse: {
+        /** AccountLimitsResponse */
+        AccountLimitsResponse: {
             data: components["schemas"]["AccountLimits"];
         };
         /** UpdateLimitsRequest */
@@ -8577,22 +8573,22 @@ export interface components {
              */
             rawHeaders?: string[];
         };
-        /** EncodeAndSignData */
-        EncodeAndSignData: {
+        /** EncodeAndSignResult */
+        EncodeAndSignResult: {
             /** @example eyJwYXlsb2FkIjoiLi4uIiwic2lnbmF0dXJlIjoiLi4uIn0= */
             encoded: string;
         };
         /** EncodeAndSignResponse */
         EncodeAndSignResponse: {
-            data: components["schemas"]["EncodeAndSignData"];
+            data: components["schemas"]["EncodeAndSignResult"];
         };
         /** DecodeAndVerifyRequest */
         DecodeAndVerifyRequest: {
             /** @example eyJwYXlsb2FkIjoiLi4uIiwic2lnbmF0dXJlIjoiLi4uIn0= */
             encoded: string;
         };
-        /** DecodeAndVerifyData */
-        DecodeAndVerifyData: {
+        /** DecodeAndVerifyResult */
+        DecodeAndVerifyResult: {
             /** @description The original object that was encoded. */
             decoded: unknown;
             /** @example wRwJZtadYvn4mBZmm */
@@ -8602,7 +8598,7 @@ export interface components {
         };
         /** DecodeAndVerifyResponse */
         DecodeAndVerifyResponse: {
-            data: components["schemas"]["DecodeAndVerifyData"];
+            data: components["schemas"]["DecodeAndVerifyResult"];
         };
     };
     responses: {
@@ -11767,7 +11763,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PutItemResponseError"] | components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["PutItemsErrorResponse"] | components["schemas"]["ErrorResponse"];
                 };
             };
             401: components["responses"]["Unauthorized"];
@@ -11869,7 +11865,7 @@ export interface operations {
                  *       "name": "new-store-name"
                  *     }
                  */
-                "application/json": components["schemas"]["UpdateStoreRequest"];
+                "application/json": components["schemas"]["UpdateKeyValueStoreRequest"];
             };
         };
         responses: {
@@ -12479,7 +12475,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestDraftDelete"][];
+                "application/json": components["schemas"]["RequestToDelete"][];
             };
         };
         responses: {
@@ -12804,7 +12800,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HeadResponse"];
+                    "application/json": components["schemas"]["RequestQueueHeadResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -12852,7 +12848,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HeadAndLockResponse"];
+                    "application/json": components["schemas"]["LockedRequestQueueHeadResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -13782,7 +13778,7 @@ export interface operations {
                      */
                     "application/json": {
                         data: components["schemas"]["PaginationResponse"] & {
-                            items: components["schemas"]["Webhook"][];
+                            items: components["schemas"]["WebhookResource"][];
                         };
                     };
                 };
@@ -13854,7 +13850,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["PaginationResponse"] & {
-                            items: components["schemas"]["RunShort"][];
+                            items: components["schemas"]["RunListItem"][];
                         };
                     };
                 };
@@ -15152,7 +15148,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PutItemResponseError"] | components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["PutItemsErrorResponse"] | components["schemas"]["ErrorResponse"];
                 };
             };
             401: components["responses"]["Unauthorized"];
@@ -15254,7 +15250,7 @@ export interface operations {
                  *       "name": "new-store-name"
                  *     }
                  */
-                "application/json": components["schemas"]["UpdateStoreRequest"];
+                "application/json": components["schemas"]["UpdateKeyValueStoreRequest"];
             };
         };
         responses: {
@@ -15706,7 +15702,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HeadResponse"];
+                    "application/json": components["schemas"]["RequestQueueHeadResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -15754,7 +15750,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HeadAndLockResponse"];
+                    "application/json": components["schemas"]["LockedRequestQueueHeadResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -15957,7 +15953,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestDraftDelete"][];
+                "application/json": components["schemas"]["RequestToDelete"][];
             };
         };
         responses: {
@@ -17029,7 +17025,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PutItemResponseError"] | components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["PutItemsErrorResponse"] | components["schemas"]["ErrorResponse"];
                 };
             };
             401: components["responses"]["Unauthorized"];
@@ -17116,7 +17112,7 @@ export interface operations {
                  *       "name": "new-store-name"
                  *     }
                  */
-                "application/json": components["schemas"]["UpdateStoreRequest"];
+                "application/json": components["schemas"]["UpdateKeyValueStoreRequest"];
             };
         };
         responses: {
@@ -17663,7 +17659,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestDraftDelete"][];
+                "application/json": components["schemas"]["RequestToDelete"][];
             };
         };
         responses: {
@@ -17959,7 +17955,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HeadResponse"];
+                    "application/json": components["schemas"]["RequestQueueHeadResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -18003,7 +17999,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HeadAndLockResponse"];
+                    "application/json": components["schemas"]["LockedRequestQueueHeadResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -18417,7 +18413,7 @@ export interface operations {
                  *       "name": "new-store-name"
                  *     }
                  */
-                "application/json": components["schemas"]["UpdateStoreRequest"];
+                "application/json": components["schemas"]["UpdateKeyValueStoreRequest"];
             };
         };
         responses: {
@@ -19136,7 +19132,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PutItemResponseError"] | components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["PutItemsErrorResponse"] | components["schemas"]["ErrorResponse"];
                 };
             };
             401: components["responses"]["Unauthorized"];
@@ -19615,7 +19611,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestDraftDelete"][];
+                "application/json": components["schemas"]["RequestToDelete"][];
             };
         };
         responses: {
@@ -19925,7 +19921,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HeadResponse"];
+                    "application/json": components["schemas"]["RequestQueueHeadResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -19969,7 +19965,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HeadAndLockResponse"];
+                    "application/json": components["schemas"]["LockedRequestQueueHeadResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -20135,7 +20131,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["WebhookCreate"];
+                "application/json": components["schemas"]["CreateWebhookRequest"];
             };
         };
         responses: {
@@ -20201,7 +20197,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["WebhookUpdate"];
+                "application/json": components["schemas"]["UpdateWebhookRequest"];
             };
         };
         responses: {
@@ -20269,7 +20265,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TestWebhookResponse"];
+                    "application/json": components["schemas"]["WebhookDispatchResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -20498,7 +20494,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ScheduleCreate"];
+                "application/json": components["schemas"]["CreateOrUpdateScheduleRequest"];
             };
         };
         responses: {
@@ -20565,7 +20561,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ScheduleCreate"];
+                "application/json": components["schemas"]["CreateOrUpdateScheduleRequest"];
             };
         };
         responses: {
@@ -20741,7 +20737,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ListOfActorsInStoreResponse"];
+                    "application/json": components["schemas"]["ListOfStoreActorsResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -20805,7 +20801,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PublicUserDataResponse"];
+                    "application/json": components["schemas"]["UserPublicInfoResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -20829,7 +20825,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PrivateUserDataResponse"];
+                    "application/json": components["schemas"]["UserPrivateInfoResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -20880,7 +20876,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LimitsResponse"];
+                    "application/json": components["schemas"]["AccountLimitsResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];

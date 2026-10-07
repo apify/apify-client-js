@@ -1,6 +1,6 @@
 import { beforeAll, expect, test } from 'vitest';
 
-import type { Actor, ApifyClient, BuildCollectionClientListItem } from 'apify-client';
+import type { ActorResource, ApifyClient, BuildListItem } from 'apify-client';
 import { ActorSourceType } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
@@ -33,7 +33,7 @@ beforeAll(() => {
  *
  * Reading the first entry instead would depend on whichever tag the API happens to serialize first.
  */
-function pickBuildId(actor: Actor): string {
+function pickBuildId(actor: ActorResource): string {
     const taggedBuilds = actor.taggedBuilds ?? {};
     const buildId =
         taggedBuilds.latest?.buildId ?? Object.values(taggedBuilds).find((build) => build?.buildId)?.buildId;
@@ -42,7 +42,7 @@ function pickBuildId(actor: Actor): string {
     return buildId!;
 }
 
-async function firstHelloWorldBuild(limit = 1): Promise<BuildCollectionClientListItem[]> {
+async function firstHelloWorldBuild(limit = 1): Promise<BuildListItem[]> {
     const buildsPage = await client.actor(HELLO_WORLD_ACTOR).builds().list({ limit });
     expect(buildsPage.items.length, `${HELLO_WORLD_ACTOR} should have at least one build`).toBeGreaterThan(0);
     return buildsPage.items;
@@ -99,7 +99,7 @@ test('getOpenApiDefinition() returns the OpenAPI document of a build', async () 
 });
 
 test('builds().list() is async-iterable and yields the builds of an Actor', async () => {
-    const collected: BuildCollectionClientListItem[] = [];
+    const collected: BuildListItem[] = [];
     for await (const build of client.actor(HELLO_WORLD_ACTOR).builds().list({ limit: 5 })) {
         collected.push(build);
     }
@@ -112,7 +112,7 @@ test('builds().list() is async-iterable and yields the builds of an Actor', asyn
 });
 
 test('builds().list() at the user level is async-iterable', async () => {
-    const collected: BuildCollectionClientListItem[] = [];
+    const collected: BuildListItem[] = [];
     for await (const build of client.builds().list({ limit: 5 })) {
         collected.push(build);
     }

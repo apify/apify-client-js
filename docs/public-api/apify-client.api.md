@@ -30,22 +30,18 @@ import type { WEBHOOK_EVENT_TYPES } from '@apify/consts';
 import type { z } from 'zod';
 
 // @public
-export interface AccountAndUsageLimits extends Omit<Schemas['AccountLimits'], keyof AccountAndUsageLimitsRePointed>, AccountAndUsageLimitsRePointed {
+export interface AccountLimits extends Omit<Schemas['AccountLimits'], keyof AccountLimitsRePointed>, AccountLimitsRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-interface AccountAndUsageLimitsRePointed {
+interface AccountLimitsRePointed {
     // (undocumented)
-    current: Current;
+    current: CurrentUsage;
     // (undocumented)
     limits: Limits;
     // (undocumented)
-    monthlyUsageCycle: MonthlyUsageCycle;
-}
-
-// @public
-export interface Actor extends Omit<Schemas['Actor'], keyof ActorRePointed>, ActorRePointed, ActorSpecGaps {
+    monthlyUsageCycle: UsageCycle;
 }
 
 // @public
@@ -85,14 +81,14 @@ export class ActorClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     build(versionNumber: string, options?: ActorBuildOptions): Promise<Build>;
     builds(): BuildCollectionClient;
-    call(input?: ActorInput, options?: ActorCallOptions): Promise<ActorRun>;
+    call(input?: ActorInput, options?: ActorCallOptions): Promise<Run>;
     defaultBuild(options?: BuildClientGetOptions): Promise<BuildClient>;
     delete(options?: TimeoutOptions): Promise<void>;
-    get(options?: TimeoutOptions): Promise<Actor | undefined>;
+    get(options?: TimeoutOptions): Promise<ActorResource | undefined>;
     lastRun(options?: ActorLastRunOptions): RunClient;
     runs(): RunCollectionClient;
-    start(input?: ActorInput, options?: ActorStartOptions): Promise<ActorRun>;
-    update(newFields: ActorUpdateOptions, options?: TimeoutOptions): Promise<Actor>;
+    start(input?: ActorInput, options?: ActorStartOptions): Promise<Run>;
+    update(newFields: ActorUpdateOptions, options?: TimeoutOptions): Promise<ActorResource>;
     validateInput(input?: ActorInput, options?: ActorValidateInputOptions): Promise<boolean>;
     version(versionNumber: string): ActorVersionClient;
     versions(): ActorVersionCollectionClient;
@@ -102,8 +98,8 @@ export class ActorClient extends ResourceClient {
 // @public
 export class ActorCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
-    create(actor: ActorCollectionCreateOptions, options?: TimeoutOptions): Promise<Actor>;
-    list(options?: ActorCollectionListOptions): PaginatedIterator<ActorCollectionListItem>;
+    create(actor: ActorCollectionCreateOptions, options?: TimeoutOptions): Promise<ActorResource>;
+    list(options?: ActorCollectionListOptions): PaginatedIterator<ActorListItem>;
 }
 
 // @public (undocumented)
@@ -113,10 +109,10 @@ export interface ActorCollectionCreateOptions {
         isEnabled: boolean;
     };
     categories?: string[];
-    defaultRunOptions?: ActorDefaultRunOptions;
+    defaultRunOptions?: DefaultRunOptions;
     // (undocumented)
     description?: string;
-    exampleRunInput?: ActorExampleRunInput;
+    exampleRunInput?: ExampleRunInput;
     isDeprecated?: boolean;
     // (undocumented)
     isPublic?: boolean;
@@ -127,18 +123,7 @@ export interface ActorCollectionCreateOptions {
     // (undocumented)
     title?: string;
     // (undocumented)
-    versions?: ActorVersion[];
-}
-
-// @public
-export interface ActorCollectionListItem extends Omit<Schemas['ActorShort'], keyof ActorCollectionListItemRePointed>, ActorCollectionListItemRePointed {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface ActorCollectionListItemRePointed {
-    // (undocumented)
-    stats?: ActorStats | null;
+    versions?: Version[];
 }
 
 // @public (undocumented)
@@ -151,18 +136,7 @@ export interface ActorCollectionListOptions extends PaginationOptions, TimeoutOp
 }
 
 // @public (undocumented)
-export type ActorCollectionListResult = PaginatedList<ActorCollectionListItem>;
-
-// @public
-export interface ActorDefaultRunOptions extends Omit<Schemas['DefaultRunOptions'], keyof ActorDefaultRunOptionsRePointed>, ActorDefaultRunOptionsRePointed {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface ActorDefaultRunOptionsRePointed {
-    // (undocumented)
-    forcePermissionLevel?: ACTOR_PERMISSION_LEVEL | null;
-}
+export type ActorCollectionListResult = PaginatedList<ActorListItem>;
 
 // @public
 export interface ActorDefinition extends GeneratedActorDefinition, ActorDefinitionSpecGaps {
@@ -175,30 +149,22 @@ interface ActorDefinitionSpecGaps {
 }
 
 // @public
-export interface ActorEnvironmentVariable extends GeneratedEnvVar {
-}
-
-// @public
 export class ActorEnvVarClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     delete(options?: TimeoutOptions): Promise<void>;
-    get(options?: TimeoutOptions): Promise<ActorEnvironmentVariable | undefined>;
-    update(actorEnvVar: ActorEnvironmentVariable, options?: TimeoutOptions): Promise<ActorEnvironmentVariable>;
+    get(options?: TimeoutOptions): Promise<EnvVar | undefined>;
+    update(actorEnvVar: EnvVar, options?: TimeoutOptions): Promise<EnvVar>;
 }
 
 // @public
 export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
-    create(actorEnvVar: ActorEnvironmentVariable, options?: TimeoutOptions): Promise<ActorEnvironmentVariable>;
-    list(options?: TimeoutOptions): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable>;
+    create(actorEnvVar: EnvVar, options?: TimeoutOptions): Promise<EnvVar>;
+    list(options?: TimeoutOptions): Promise<ActorEnvVarListResult> & AsyncIterable<EnvVar>;
 }
 
 // @public
-export type ActorEnvVarListResult = Pick<PaginatedList<ActorEnvironmentVariable>, 'total' | 'items'>;
-
-// @public
-export interface ActorExampleRunInput extends GeneratedExampleRunInput {
-}
+export type ActorEnvVarListResult = Pick<PaginatedList<EnvVar>, 'total' | 'items'>;
 
 // @public
 export type ActorInput = Dictionary | readonly Dictionary[] | Uint8Array | ArrayBuffer;
@@ -211,6 +177,17 @@ export interface ActorLastRunOptions {
 }
 
 // @public
+export interface ActorListItem extends Omit<Schemas['ActorListItem'], keyof ActorListItemRePointed>, ActorListItemRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ActorListItemRePointed {
+    // (undocumented)
+    stats?: ActorStats | null;
+}
+
+// @public
 export enum ActorListSortBy {
     // (undocumented)
     CREATED_AT = "createdAt",
@@ -218,113 +195,42 @@ export enum ActorListSortBy {
     LAST_RUN_STARTED_AT = "stats.lastRunStartedAt"
 }
 
+// @public
+export interface ActorResource extends Omit<Schemas['ActorResource'], keyof ActorResourceRePointed>, ActorResourceRePointed, ActorResourceSpecGaps {
+}
+
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-interface ActorRePointed {
+interface ActorResourceRePointed {
     // (undocumented)
     actorPermissionLevel?: ACTOR_PERMISSION_LEVEL;
     // (undocumented)
     actorStandby?: ActorStandby | null;
     // (undocumented)
-    defaultRunOptions: ActorDefaultRunOptions;
+    defaultRunOptions: DefaultRunOptions;
     // (undocumented)
-    exampleRunInput?: ActorExampleRunInput | null;
+    exampleRunInput?: ExampleRunInput | null;
     // (undocumented)
     pricingInfos?: ActorRunPricingInfo[];
     // (undocumented)
     stats: ActorStats;
     // (undocumented)
-    taggedBuilds?: ActorTaggedBuilds | null;
+    taggedBuilds?: TaggedBuilds | null;
     // (undocumented)
-    versions: ActorVersion[];
-}
-
-// @public
-export interface ActorRun extends Omit<Schemas['Run'], keyof ActorRunRePointed | keyof ActorRunClientNarrowings>, ActorRunRePointed, ActorRunClientNarrowings {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface ActorRunClientNarrowings {
-    // (undocumented)
-    generalAccess?: RUN_GENERAL_ACCESS | null;
-}
-
-// @public
-export interface ActorRunListItem extends Omit<Schemas['RunShort'], keyof ActorRunListItemRePointed>, ActorRunListItemRePointed {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface ActorRunListItemRePointed {
-    // (undocumented)
-    meta: ActorRunMeta;
-    // (undocumented)
-    status: ValueOf<typeof ACTOR_JOB_STATUSES>;
-}
-
-// @public
-export interface ActorRunMeta extends Omit<Schemas['RunMeta'], keyof ActorRunMetaRePointed>, ActorRunMetaRePointed {
-}
-
-// @public
-export interface ActorRunMetamorph extends GeneratedMetamorph {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface ActorRunMetaRePointed {
-    // (undocumented)
-    origin: ValueOf<typeof META_ORIGINS>;
-}
-
-// @public
-export interface ActorRunOptions extends GeneratedRunOptions, ActorRunOptionsSpecGaps {
+    versions: Version[];
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
-interface ActorRunOptionsSpecGaps {
-    // (undocumented)
-    restartOnError?: boolean;
+interface ActorResourceSpecGaps {
+    isAnonymouslyRunnable?: boolean;
 }
 
 // @public
-export type ActorRunPricingInfo = PricePerEventActorPricingInfo | PricePerDatasetItemActorPricingInfo | FlatPricePerMonthActorPricingInfo | FreeActorPricingInfo;
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface ActorRunRePointed {
-    // (undocumented)
-    meta: ActorRunMeta;
-    // (undocumented)
-    metamorphs?: ActorRunMetamorph[] | null;
-    // (undocumented)
-    options: ActorRunOptions;
-    // (undocumented)
-    pricingInfo?: ActorRunPricingInfo;
-    // (undocumented)
-    stats: ActorRunStats;
-    // (undocumented)
-    status: ValueOf<typeof ACTOR_JOB_STATUSES>;
-    // (undocumented)
-    storageIds?: ActorRunStorageIds;
-    // (undocumented)
-    usage?: ActorRunUsage | null;
-    // (undocumented)
-    usageUsd?: ActorRunUsage | null;
-}
-
-// @public
-export interface ActorRunStats extends GeneratedRunStats {
-}
+export type ActorRunPricingInfo = PayPerEventActorPricingInfo | PricePerDatasetItemActorPricingInfo | FlatPricePerMonthActorPricingInfo | FreeActorPricingInfo;
 
 // @public
 export interface ActorRunStorageIds extends GeneratedRunStorageIds {
-}
-
-// @public
-export interface ActorRunUsage extends GeneratedRunUsage {
 }
 
 // @public
@@ -339,12 +245,6 @@ export enum ActorSourceType {
     SourceFiles = "SOURCE_FILES",
     // (undocumented)
     Tarball = "TARBALL"
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface ActorSpecGaps {
-    isAnonymouslyRunnable?: boolean;
 }
 
 // @public
@@ -371,27 +271,7 @@ export interface ActorStats extends GeneratedActorStats {
 }
 
 // @public
-export interface ActorStoreList extends Omit<Schemas['StoreListActor'], keyof ActorStoreListRePointed>, ActorStoreListRePointed {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface ActorStoreListRePointed {
-    // (undocumented)
-    currentPricingInfo?: PricingInfo;
-    // (undocumented)
-    stats: ActorStats;
-}
-
-// @public
-export interface ActorTaggedBuild extends GeneratedTaggedBuildInfo {
-}
-
-// @public
-export type ActorTaggedBuilds = Record<string, ActorTaggedBuild | null>;
-
-// @public
-export type ActorUpdateOptions = Partial<Pick<Actor, 'name' | 'description' | 'isPublic' | 'isDeprecated' | 'seoTitle' | 'seoDescription' | 'title' | 'versions' | 'categories' | 'defaultRunOptions' | 'actorStandby' | 'actorPermissionLevel' | 'taggedBuilds'>>;
+export type ActorUpdateOptions = Partial<Pick<ActorResource, 'name' | 'description' | 'isPublic' | 'isDeprecated' | 'seoTitle' | 'seoDescription' | 'title' | 'versions' | 'categories' | 'defaultRunOptions' | 'actorStandby' | 'actorPermissionLevel' | 'taggedBuilds'>>;
 
 // @public
 export interface ActorValidateInputOptions extends TimeoutOptions {
@@ -400,87 +280,27 @@ export interface ActorValidateInputOptions extends TimeoutOptions {
 }
 
 // @public
-export type ActorVersion = ActorVersionSourceFiles | ActorVersionGitRepo | ActorVersionTarball | ActorVersionGitHubGist | ActorVersionSourceCode;
-
-// @public
 export class ActorVersionClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     delete(options?: TimeoutOptions): Promise<void>;
     envVar(envVarName: string): ActorEnvVarClient;
     envVars(): ActorEnvVarCollectionClient;
-    get(options?: TimeoutOptions): Promise<FinalActorVersion | undefined>;
-    update(newFields: ActorVersionUpdateData, options?: TimeoutOptions): Promise<FinalActorVersion>;
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface ActorVersionClientNarrowings {
-    // (undocumented)
-    sourceType: `${ActorSourceType}`;
+    get(options?: TimeoutOptions): Promise<FinalVersion | undefined>;
+    update(newFields: ActorVersionUpdateData, options?: TimeoutOptions): Promise<FinalVersion>;
 }
 
 // @public
 export class ActorVersionCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
-    create(actorVersion: ActorVersion, options?: TimeoutOptions): Promise<FinalActorVersion>;
-    list(options?: TimeoutOptions): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion>;
-}
-
-// @public
-export interface ActorVersionGitHubGist extends BaseActorVersion<`${ActorSourceType.GitHubGist}`> {
-    // (undocumented)
-    gitHubGistUrl: NonNullable<GeneratedVersion['gitHubGistUrl']>;
-}
-
-// @public
-export interface ActorVersionGitRepo extends BaseActorVersion<`${ActorSourceType.GitRepo}`> {
-    // (undocumented)
-    gitRepoUrl: NonNullable<GeneratedVersion['gitRepoUrl']>;
+    create(actorVersion: Version, options?: TimeoutOptions): Promise<FinalVersion>;
+    list(options?: TimeoutOptions): Promise<ActorVersionListResult> & AsyncIterable<FinalVersion>;
 }
 
 // @public (undocumented)
-export type ActorVersionListResult = Pick<PaginatedList<FinalActorVersion>, 'total' | 'items'>;
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface ActorVersionRePointed {
-    // (undocumented)
-    envVars?: ActorEnvironmentVariable[] | null;
-}
+export type ActorVersionListResult = Pick<PaginatedList<FinalVersion>, 'total' | 'items'>;
 
 // @public
-export interface ActorVersionSourceCode extends BaseActorVersion<`${ActorSourceType.SourceCode}`> {
-}
-
-// @public
-export interface ActorVersionSourceFile extends GeneratedSourceCodeFile {
-}
-
-// @public
-export interface ActorVersionSourceFiles extends BaseActorVersion<`${ActorSourceType.SourceFiles}`> {
-    // (undocumented)
-    sourceFiles: (ActorVersionSourceFile | ActorVersionSourceFolder)[];
-}
-
-// @public
-export interface ActorVersionSourceFolder extends GeneratedSourceCodeFolder {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-type ActorVersionSourceLocation = 'sourceFiles' | 'gitRepoUrl' | 'tarballUrl' | 'gitHubGistUrl';
-
-// @public
-export interface ActorVersionTarball extends BaseActorVersion<`${ActorSourceType.Tarball}`> {
-    // (undocumented)
-    tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
-}
-
-// @public
-export type ActorVersionUpdateData = Partial<ActorVersion>;
-
-// @public
-export type AllowedHttpMethods = Schemas['HttpMethod'];
+export type ActorVersionUpdateData = Partial<Version>;
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -559,11 +379,8 @@ export class ApifyApiError extends Error {
     originalStack: string;
     path?: string;
     statusCode: number;
-    type?: LiteralUnion<ApifyApiErrorType, string>;
+    type?: LiteralUnion<ErrorType, string>;
 }
-
-// @public
-export type ApifyApiErrorType = Schemas['ErrorType'];
 
 // @public
 export class ApifyClient {
@@ -675,12 +492,6 @@ export interface AxiosHttpClientOptions extends HttpClientOptions {
     requestInterceptors?: RequestInterceptorFunction[];
 }
 
-// @public
-export interface BaseActorVersion<SourceType extends `${ActorSourceType}`> extends Omit<GeneratedVersion, keyof ActorVersionClientNarrowings | keyof ActorVersionRePointed | ActorVersionSourceLocation>, ActorVersionRePointed {
-    // (undocumented)
-    sourceType: SourceType;
-}
-
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 interface BaseOptions {
@@ -694,6 +505,20 @@ interface BaseOptions {
     params: Record<string, unknown>;
     // (undocumented)
     publicBaseUrl: string;
+}
+
+// @public
+export interface BaseVersion<SourceType extends `${ActorSourceType}`> extends Omit<GeneratedVersion, keyof VersionClientNarrowings | keyof VersionRePointed | VersionSourceLocation>, VersionRePointed {
+    // (undocumented)
+    sourceType: SourceType;
+}
+
+// @public
+export interface BatchAddResult extends GeneratedBatchAddResult {
+}
+
+// @public
+export interface BatchDeleteResult extends GeneratedBatchDeleteResult {
 }
 
 // @public
@@ -739,20 +564,7 @@ export interface BuildClientWaitForFinishOptions extends TimeoutOptions {
 // @public
 export class BuildCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientOptionsWithOptionalResourcePath);
-    list(options?: BuildCollectionClientListOptions): PaginatedIterator<BuildCollectionClientListItem>;
-}
-
-// @public
-export interface BuildCollectionClientListItem extends Omit<Schemas['BuildShort'], keyof BuildCollectionClientListItemRePointed>, BuildCollectionClientListItemRePointed {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface BuildCollectionClientListItemRePointed {
-    // (undocumented)
-    meta?: BuildMeta;
-    // (undocumented)
-    status: ValueOf<typeof ACTOR_JOB_STATUSES>;
+    list(options?: BuildCollectionClientListOptions): PaginatedIterator<BuildListItem>;
 }
 
 // @public (undocumented)
@@ -762,10 +574,23 @@ export interface BuildCollectionClientListOptions extends PaginationOptions, Tim
 }
 
 // @public (undocumented)
-export type BuildCollectionClientListResult = PaginatedList<BuildCollectionClientListItem>;
+export type BuildCollectionClientListResult = PaginatedList<BuildListItem>;
 
 // @public
-export interface BuildMeta extends Omit<Schemas['BuildsMeta'], keyof BuildMetaRePointed>, BuildMetaRePointed {
+export interface BuildListItem extends Omit<Schemas['BuildListItem'], keyof BuildListItemRePointed>, BuildListItemRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface BuildListItemRePointed {
+    // (undocumented)
+    meta?: BuildMeta;
+    // (undocumented)
+    status: ValueOf<typeof ACTOR_JOB_STATUSES>;
+}
+
+// @public
+export interface BuildMeta extends Omit<Schemas['BuildMeta'], keyof BuildMetaRePointed>, BuildMetaRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -1030,7 +855,7 @@ interface components {
                 TOTAL?: number;
             };
         };
-        ActorShort: {
+        ActorListItem: {
             id: string;
             createdAt: Date;
             modifiedAt: Date;
@@ -1040,7 +865,7 @@ interface components {
             stats?: components["schemas"]["ActorStats"] | null;
         };
         ListOfActors: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["ActorShort"][];
+            items: components["schemas"]["ActorListItem"][];
         };
         ListOfActorsResponse: {
             data: components["schemas"]["ListOfActors"];
@@ -1191,7 +1016,7 @@ interface components {
             [key: string]: components["schemas"]["TaggedBuildInfo"] | null;
         };
         ActorNotice: "NONE" | "RESIDENTIAL_PROXY_REQUIRED" | "UNDER_MAINTENANCE" | null;
-        Actor: {
+        ActorResource: {
             id: string;
             userId: string;
             name: string;
@@ -1225,7 +1050,7 @@ interface components {
             hasNoDataset?: boolean;
         };
         ActorResponse: {
-            data: components["schemas"]["Actor"];
+            data: components["schemas"]["ActorResource"];
         };
         CreateOrUpdateVersionRequest: {
             versionNumber?: string | null;
@@ -1238,7 +1063,7 @@ interface components {
             tarballUrl?: string | null;
             gitHubGistUrl?: string | null;
         };
-        BuildTag: {
+        UpdatedBuildProperty: {
             buildId: string;
         } | null;
         UpdateActorRequest: {
@@ -1255,7 +1080,7 @@ interface components {
             categories?: string[] | null;
             defaultRunOptions?: components["schemas"]["DefaultRunOptions"] | null;
             taggedBuilds?: {
-                [key: string]: components["schemas"]["BuildTag"];
+                [key: string]: components["schemas"]["UpdatedBuildProperty"];
             } | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             exampleRunInput?: components["schemas"]["ExampleRunInput"] | null;
@@ -1289,7 +1114,7 @@ interface components {
             actorRunId?: string | null;
         };
         WebhookDispatchStatus: "ACTIVE" | "SUCCEEDED" | "FAILED";
-        ExampleWebhookDispatch: {
+        WebhookLastDispatch: {
             status: components["schemas"]["WebhookDispatchStatus"];
             finishedAt?: Date | null;
             removedAt?: Date | null;
@@ -1297,7 +1122,7 @@ interface components {
         WebhookStats: {
             totalDispatches?: number;
         };
-        WebhookShort: {
+        WebhookListItem: {
             id: string;
             createdAt: Date;
             modifiedAt: Date;
@@ -1312,23 +1137,23 @@ interface components {
             ignoreSslErrors: boolean;
             doNotRetry: boolean;
             requestUrl: string;
-            lastDispatch?: components["schemas"]["ExampleWebhookDispatch"] | null;
+            lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
             stats?: components["schemas"]["WebhookStats"] | null;
         };
         ListOfWebhooks: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["WebhookShort"][];
+            items: components["schemas"]["WebhookListItem"][];
         };
         ListOfWebhooksResponse: {
             data: components["schemas"]["ListOfWebhooks"];
         };
         ActorJobStatus: "READY" | "RUNNING" | "SUCCEEDED" | "FAILED" | "TIMING-OUT" | "TIMED-OUT" | "ABORTING" | "ABORTED";
         RunOrigin: "DEVELOPMENT" | "WEB" | "API" | "SCHEDULER" | "TEST" | "WEBHOOK" | "ACTOR" | "CLI" | "CI" | "STANDBY" | "MCP";
-        BuildsMeta: {
+        BuildMeta: {
             origin: components["schemas"]["RunOrigin"];
             clientIp?: string;
             userAgent?: string;
         };
-        BuildShort: {
+        BuildListItem: {
             id: string;
             actId?: string;
             userId?: string;
@@ -1338,10 +1163,10 @@ interface components {
             usageTotalUsd: number;
             buildNumber: string;
             buildNumberInt?: number;
-            meta?: components["schemas"]["BuildsMeta"];
+            meta?: components["schemas"]["BuildMeta"];
         };
         ListOfBuilds: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["BuildShort"][];
+            items: components["schemas"]["BuildListItem"][];
         };
         ListOfBuildsResponse: {
             data: components["schemas"]["ListOfBuilds"];
@@ -1389,7 +1214,7 @@ interface components {
             startedAt: Date;
             finishedAt?: Date | null;
             status: components["schemas"]["ActorJobStatus"];
-            meta: components["schemas"]["BuildsMeta"];
+            meta: components["schemas"]["BuildMeta"];
             stats?: components["schemas"]["BuildStats"] | null;
             options?: components["schemas"]["BuildOptions"] | null;
             usage?: components["schemas"]["BuildUsage"] | null;
@@ -1418,7 +1243,7 @@ interface components {
             scheduleId?: string | null;
             scheduledAt?: Date | null;
         };
-        RunShort: {
+        RunListItem: {
             id: string;
             actId: string;
             userId?: string;
@@ -1436,7 +1261,7 @@ interface components {
             defaultRequestQueueId: string;
         };
         ListOfRuns: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["RunShort"][];
+            items: components["schemas"]["RunListItem"][];
         };
         ListOfRunsResponse: {
             data: components["schemas"]["ListOfRuns"];
@@ -1507,7 +1332,7 @@ interface components {
             PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number | null;
             PROXY_SERPS?: number | null;
         };
-        Metamorph: {
+        RunMetamorphEvent: {
             createdAt: Date;
             actorId: string;
             buildId: string;
@@ -1560,7 +1385,7 @@ interface components {
             usage?: components["schemas"]["RunUsage"] | null;
             usageTotalUsd?: number | null;
             usageUsd?: components["schemas"]["RunUsageUsd"] | null;
-            metamorphs?: components["schemas"]["Metamorph"][] | null;
+            metamorphs?: components["schemas"]["RunMetamorphEvent"][] | null;
             platformUsageBillingModel?: string;
         };
         RunResponse: {
@@ -1572,7 +1397,7 @@ interface components {
             storageBytes?: number;
             inflatedBytes?: number;
         };
-        Dataset: {
+        DatasetResource: {
             id: string;
             name?: string | null;
             userId: string;
@@ -1592,7 +1417,7 @@ interface components {
             stats?: components["schemas"]["DatasetStats"];
         };
         DatasetResponse: {
-            data: components["schemas"]["Dataset"];
+            data: components["schemas"]["DatasetResource"];
         };
         UpdateDatasetRequest: {
             name?: string | null;
@@ -1601,26 +1426,26 @@ interface components {
         PutItemsRequest: {
             [key: string]: unknown;
         };
-        ValidationError: {
+        DatasetItemValidationError: {
             instancePath?: string;
             schemaPath?: string;
             keyword?: string;
             message?: string;
             params?: Record<string, unknown>;
         };
-        InvalidItem: {
+        InvalidDatasetItem: {
             itemPosition?: number;
-            validationErrors?: components["schemas"]["ValidationError"][];
+            validationErrors?: components["schemas"]["DatasetItemValidationError"][];
         };
-        SchemaValidationErrorData: {
-            invalidItems: components["schemas"]["InvalidItem"][];
+        DatasetSchemaValidationErrorData: {
+            invalidItems: components["schemas"]["InvalidDatasetItem"][];
         };
         DatasetSchemaValidationError: {
             type?: string;
             message?: string;
-            data?: components["schemas"]["SchemaValidationErrorData"];
+            data?: components["schemas"]["DatasetSchemaValidationErrorData"];
         };
-        PutItemResponseError: {
+        PutItemsErrorResponse: {
             error: components["schemas"]["DatasetSchemaValidationError"];
         };
         DatasetFieldStatistics: {
@@ -1645,7 +1470,7 @@ interface components {
             s3StorageBytes?: number;
             storageBytes?: number;
         };
-        KeyValueStore: {
+        KeyValueStoreResource: {
             id: string;
             name?: string | null;
             userId?: string | null;
@@ -1664,9 +1489,9 @@ interface components {
             stats?: components["schemas"]["KeyValueStoreStats"];
         };
         KeyValueStoreResponse: {
-            data: components["schemas"]["KeyValueStore"];
+            data: components["schemas"]["KeyValueStoreResource"];
         };
-        UpdateStoreRequest: {
+        UpdateKeyValueStoreRequest: {
             name?: string | null;
             generalAccess?: components["schemas"]["GeneralAccess"];
         };
@@ -1708,7 +1533,7 @@ interface components {
             storageBytes?: number;
             writeCount?: number;
         };
-        RequestQueue: {
+        RequestQueueResource: {
             id: components["schemas"]["QueueId"];
             name?: string | null;
             userId: components["schemas"]["QueueUserId"];
@@ -1726,7 +1551,7 @@ interface components {
             generalAccess?: components["schemas"]["GeneralAccess"] | null;
         };
         RequestQueueResponse: {
-            data: components["schemas"]["RequestQueue"];
+            data: components["schemas"]["RequestQueueResource"];
         };
         UpdateRequestQueueRequest: {
             name?: string | null;
@@ -1754,11 +1579,11 @@ interface components {
             handledAt?: Date | null;
         };
         RequestId: string;
-        Request: components["schemas"]["RequestBase"] & {
+        RequestResource: components["schemas"]["RequestBase"] & {
             id: components["schemas"]["RequestId"];
         };
         ListOfRequests: {
-            items: components["schemas"]["Request"][];
+            items: components["schemas"]["RequestResource"][];
             limit: number;
             exclusiveStartId?: string;
             cursor?: string;
@@ -1784,7 +1609,7 @@ interface components {
             wasAlreadyPresent: components["schemas"]["WasAlreadyPresent"];
             wasAlreadyHandled: components["schemas"]["WasAlreadyHandled"];
         };
-        RequestDraft: {
+        UnprocessedRequest: {
             id?: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
@@ -1792,20 +1617,20 @@ interface components {
         };
         BatchAddResult: {
             processedRequests: components["schemas"]["AddedRequest"][];
-            unprocessedRequests: components["schemas"]["RequestDraft"][];
+            unprocessedRequests: components["schemas"]["UnprocessedRequest"][];
         };
         BatchAddResponse: {
             data: components["schemas"]["BatchAddResult"];
         };
-        RequestDraftDeleteById: {
+        RequestToDeleteById: {
             id: components["schemas"]["RequestId"];
             uniqueKey?: components["schemas"]["UniqueKey"];
         };
-        RequestDraftDeleteByUniqueKey: {
+        RequestToDeleteByUniqueKey: {
             id?: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
         };
-        RequestDraftDelete: components["schemas"]["RequestDraftDeleteById"] | components["schemas"]["RequestDraftDeleteByUniqueKey"];
+        RequestToDelete: components["schemas"]["RequestToDeleteById"] | components["schemas"]["RequestToDeleteByUniqueKey"];
         DeletedRequestById: {
             uniqueKey?: components["schemas"]["UniqueKey"];
             id: components["schemas"]["RequestId"];
@@ -1817,7 +1642,7 @@ interface components {
         DeletedRequest: components["schemas"]["DeletedRequestById"] | components["schemas"]["DeletedRequestByUniqueKey"];
         BatchDeleteResult: {
             processedRequests: components["schemas"]["DeletedRequest"][];
-            unprocessedRequests: components["schemas"]["RequestDraft"][];
+            unprocessedRequests: components["schemas"]["UnprocessedRequest"][];
         };
         BatchDeleteResponse: {
             data: components["schemas"]["BatchDeleteResult"];
@@ -1829,7 +1654,7 @@ interface components {
             data: components["schemas"]["UnlockRequestsResult"];
         };
         RequestResponse: {
-            data: components["schemas"]["Request"];
+            data: components["schemas"]["RequestResource"];
         };
         UpdateRequestResponse: {
             data: components["schemas"]["RequestRegistration"];
@@ -1842,7 +1667,7 @@ interface components {
             data: components["schemas"]["RequestLockInfo"];
         };
         HeadLimit: number;
-        HeadRequest: {
+        RequestQueueHeadItem: {
             id: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
@@ -1853,12 +1678,12 @@ interface components {
             limit: components["schemas"]["HeadLimit"];
             queueModifiedAt: components["schemas"]["QueueModifiedAt"];
             hadMultipleClients: components["schemas"]["HadMultipleClients"];
-            items: components["schemas"]["HeadRequest"][];
+            items: components["schemas"]["RequestQueueHeadItem"][];
         };
-        HeadResponse: {
+        RequestQueueHeadResponse: {
             data: components["schemas"]["RequestQueueHead"];
         };
-        LockedHeadRequest: {
+        LockedRequestQueueHeadItem: {
             id: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
@@ -1873,15 +1698,15 @@ interface components {
             clientKey?: string;
             hadMultipleClients: components["schemas"]["HadMultipleClients"];
             lockSecs: number;
-            items: components["schemas"]["LockedHeadRequest"][];
+            items: components["schemas"]["LockedRequestQueueHeadItem"][];
         };
-        HeadAndLockResponse: {
+        LockedRequestQueueHeadResponse: {
             data: components["schemas"]["LockedRequestQueueHead"];
         };
         TaskStats: {
             totalRuns?: number;
         };
-        TaskShort: {
+        TaskListItem: {
             id: string;
             userId: string;
             actId: string;
@@ -1894,7 +1719,7 @@ interface components {
             stats?: components["schemas"]["TaskStats"] | null;
         };
         ListOfTasks: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["TaskShort"][];
+            items: components["schemas"]["TaskListItem"][];
         };
         ListOfTasksResponse: {
             data: components["schemas"]["ListOfTasks"];
@@ -1960,7 +1785,7 @@ interface components {
             publicConfig?: components["schemas"]["TaskPublicConfig"];
             isPublic?: boolean;
         };
-        Webhook: {
+        WebhookResource: {
             id: string;
             createdAt: Date;
             modifiedAt: Date;
@@ -1975,7 +1800,7 @@ interface components {
             payloadTemplate?: string | null;
             headersTemplate?: string | null;
             description?: string | null;
-            lastDispatch?: components["schemas"]["ExampleWebhookDispatch"] | null;
+            lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
             stats?: components["schemas"]["WebhookStats"] | null;
         };
         UpdateRunRequest: {
@@ -1991,7 +1816,7 @@ interface components {
         StorageOwnership: "ownedByMe" | "sharedWithMe";
         ListOfKeyValueStores: components["schemas"]["PaginationResponse"] & {
             unnamed?: boolean;
-            items: components["schemas"]["KeyValueStore"][];
+            items: components["schemas"]["KeyValueStoreResource"][];
         };
         ListOfKeyValueStoresResponse: {
             data: components["schemas"]["ListOfKeyValueStores"];
@@ -2019,7 +1844,7 @@ interface components {
         ListOfDatasetsResponse: {
             data: components["schemas"]["ListOfDatasets"];
         };
-        RequestQueueShort: {
+        RequestQueueListItem: {
             id: components["schemas"]["QueueId"];
             name: string;
             userId: components["schemas"]["QueueUserId"];
@@ -2039,12 +1864,12 @@ interface components {
         };
         ListOfRequestQueues: components["schemas"]["PaginationResponse"] & {
             unnamed?: boolean;
-            items: components["schemas"]["RequestQueueShort"][];
+            items: components["schemas"]["RequestQueueListItem"][];
         };
         ListOfRequestQueuesResponse: {
             data: components["schemas"]["ListOfRequestQueues"];
         };
-        WebhookCreate: {
+        CreateWebhookRequest: {
             isAdHoc?: boolean | null;
             eventTypes: components["schemas"]["WebhookEventType"][];
             condition: components["schemas"]["WebhookCondition"];
@@ -2058,9 +1883,9 @@ interface components {
             shouldInterpolateStrings?: boolean | null;
         };
         WebhookResponse: {
-            data: components["schemas"]["Webhook"];
+            data: components["schemas"]["WebhookResource"];
         };
-        WebhookUpdate: {
+        UpdateWebhookRequest: {
             isAdHoc?: boolean | null;
             eventTypes?: components["schemas"]["WebhookEventType"][] | null;
             condition?: components["schemas"]["WebhookCondition"] | null;
@@ -2100,7 +1925,7 @@ interface components {
                 responseBody?: string | null;
             }[];
         };
-        TestWebhookResponse: {
+        WebhookDispatchResponse: {
             data: components["schemas"]["WebhookDispatch"];
         };
         ListOfWebhookDispatches: components["schemas"]["PaginationResponse"] & {
@@ -2108,9 +1933,6 @@ interface components {
         };
         ListOfWebhookDispatchesResponse: {
             data: components["schemas"]["ListOfWebhookDispatches"];
-        };
-        WebhookDispatchResponse: {
-            data: components["schemas"]["WebhookDispatch"];
         };
         ScheduleBase: {
             id: string;
@@ -2125,22 +1947,22 @@ interface components {
             nextRunAt?: Date | null;
             lastRunAt?: Date | null;
         };
-        ScheduleActionShortRunActor: {
+        ScheduleListItemActionRunActor: {
             id: string;
             type: "RUN_ACTOR";
             actorId: string;
         };
-        ScheduleActionShortRunActorTask: {
+        ScheduleListItemActionRunActorTask: {
             id: string;
             type: "RUN_ACTOR_TASK";
             actorTaskId: string;
         };
-        ScheduleActionShort: components["schemas"]["ScheduleActionShortRunActor"] | components["schemas"]["ScheduleActionShortRunActorTask"];
-        ScheduleShort: components["schemas"]["ScheduleBase"] & {
-            actions: components["schemas"]["ScheduleActionShort"][];
+        ScheduleListItemAction: components["schemas"]["ScheduleListItemActionRunActor"] | components["schemas"]["ScheduleListItemActionRunActorTask"];
+        ScheduleListItem: components["schemas"]["ScheduleBase"] & {
+            actions: components["schemas"]["ScheduleListItemAction"][];
         };
         ListOfSchedules: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["ScheduleShort"][];
+            items: components["schemas"]["ScheduleListItem"][];
         };
         ListOfSchedulesResponse: {
             data: components["schemas"]["ListOfSchedules"];
@@ -2161,7 +1983,7 @@ interface components {
             input?: Record<string, unknown> | null;
         };
         ScheduleCreateAction: components["schemas"]["ScheduleCreateActionRunActor"] | components["schemas"]["ScheduleCreateActionRunActorTask"];
-        ScheduleCreate: {
+        CreateOrUpdateScheduleRequest: {
             name?: string | null;
             isEnabled?: boolean | null;
             isExclusive?: boolean | null;
@@ -2196,13 +2018,13 @@ interface components {
         ScheduleResponse: {
             data: components["schemas"]["Schedule"];
         };
-        ScheduleInvoked: {
+        ScheduleLogEntry: {
             message: string;
             level: string;
             createdAt: Date;
         };
         ScheduleLogResponse: {
-            data: components["schemas"]["ScheduleInvoked"][];
+            data: components["schemas"]["ScheduleLogEntry"][];
         };
         CurrentPricingInfo: {
             pricingModel: string;
@@ -2223,7 +2045,7 @@ interface components {
                 [key: string]: unknown;
             } | null;
         };
-        StoreListActor: {
+        StoreActor: {
             id: string;
             title: string;
             name: string;
@@ -2245,12 +2067,12 @@ interface components {
             readmeSummary?: string;
         };
         ListOfStoreActors: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["StoreListActor"][];
+            items: components["schemas"]["StoreActor"][];
         };
-        ListOfActorsInStoreResponse: {
+        ListOfStoreActorsResponse: {
             data: components["schemas"]["ListOfStoreActors"];
         };
-        Profile: {
+        UserProfile: {
             bio?: string | null;
             readme?: string | null;
             name?: string;
@@ -2261,9 +2083,9 @@ interface components {
         };
         UserPublicInfo: {
             username: string;
-            profile?: components["schemas"]["Profile"];
+            profile?: components["schemas"]["UserProfile"];
         };
-        PublicUserDataResponse: {
+        UserPublicInfoResponse: {
             data: components["schemas"]["UserPublicInfo"];
         };
         ProxyGroup: {
@@ -2271,14 +2093,14 @@ interface components {
             description: string | null;
             availableCount: number;
         };
-        Proxy: {
+        ProxyResource: {
             password: string;
             groups: components["schemas"]["ProxyGroup"][];
         };
         AvailableProxyGroups: {
             [key: string]: number;
         };
-        Plan: {
+        UserPlan: {
             id?: string;
             description?: string;
             isEnabled?: boolean;
@@ -2329,22 +2151,22 @@ interface components {
         UserPrivateInfo: {
             id?: string;
             username: string;
-            profile?: components["schemas"]["Profile"];
+            profile?: components["schemas"]["UserProfile"];
             email?: string;
-            proxy?: components["schemas"]["Proxy"];
-            plan?: components["schemas"]["Plan"];
+            proxy?: components["schemas"]["ProxyResource"];
+            plan?: components["schemas"]["UserPlan"];
             effectivePlatformFeatures?: components["schemas"]["EffectivePlatformFeatures"];
             createdAt?: Date;
             isPaying?: boolean;
         };
-        PrivateUserDataResponse: {
+        UserPrivateInfoResponse: {
             data: components["schemas"]["UserPrivateInfo"];
         };
         UsageCycle: {
             startAt: Date;
             endAt: Date;
         };
-        PriceTiers: {
+        PriceTier: {
             quantityAbove: number;
             discountPercent: number;
             tierQuantity: number;
@@ -2356,7 +2178,7 @@ interface components {
             baseAmountUsd: number;
             baseUnitPriceUsd?: number;
             amountAfterVolumeDiscountUsd?: number;
-            priceTiers?: components["schemas"]["PriceTiers"][];
+            priceTiers?: components["schemas"]["PriceTier"][];
         };
         MonthlyServiceUsage: {
             [key: string]: components["schemas"]["UsageItem"];
@@ -2364,7 +2186,7 @@ interface components {
         ServiceUsage: {
             [key: string]: components["schemas"]["UsageItem"];
         };
-        DailyServiceUsages: {
+        DailyServiceUsage: {
             date: Date;
             serviceUsage: components["schemas"]["ServiceUsage"];
             totalUsageCreditsUsd: number;
@@ -2372,7 +2194,7 @@ interface components {
         MonthlyUsage: {
             usageCycle: components["schemas"]["UsageCycle"];
             monthlyServiceUsage: components["schemas"]["MonthlyServiceUsage"];
-            dailyServiceUsages: components["schemas"]["DailyServiceUsages"][];
+            dailyServiceUsages: components["schemas"]["DailyServiceUsage"][];
             totalUsageCreditsUsdBeforeVolumeDiscount: number;
             totalUsageCreditsUsdAfterVolumeDiscount: number;
         };
@@ -2393,7 +2215,7 @@ interface components {
             dataRetentionDays: number;
             maxScheduleCount?: number;
         };
-        Current: {
+        CurrentUsage: {
             monthlyUsageUsd: number;
             monthlyActorComputeUnits: number;
             monthlyExternalDataTransferGbytes: number;
@@ -2409,9 +2231,9 @@ interface components {
         AccountLimits: {
             monthlyUsageCycle: components["schemas"]["UsageCycle"];
             limits: components["schemas"]["Limits"];
-            current: components["schemas"]["Current"];
+            current: components["schemas"]["CurrentUsage"];
         };
-        LimitsResponse: {
+        AccountLimitsResponse: {
             data: components["schemas"]["AccountLimits"];
         };
         UpdateLimitsRequest: {
@@ -2428,22 +2250,22 @@ interface components {
             };
             rawHeaders?: string[];
         };
-        EncodeAndSignData: {
+        EncodeAndSignResult: {
             encoded: string;
         };
         EncodeAndSignResponse: {
-            data: components["schemas"]["EncodeAndSignData"];
+            data: components["schemas"]["EncodeAndSignResult"];
         };
         DecodeAndVerifyRequest: {
             encoded: string;
         };
-        DecodeAndVerifyData: {
+        DecodeAndVerifyResult: {
             decoded: unknown;
             encodedByUserId: string | null;
             isVerifiedUser: boolean;
         };
         DecodeAndVerifyResponse: {
-            data: components["schemas"]["DecodeAndVerifyData"];
+            data: components["schemas"]["DecodeAndVerifyResult"];
         };
     };
 }
@@ -2453,11 +2275,15 @@ export class ConflictError extends ApifyApiError {
 }
 
 // @public
-export interface Current extends GeneratedCurrent {
+export interface CurrentPricingInfo extends GeneratedCurrentPricingInfo {
 }
 
 // @public
-export interface DailyServiceUsage extends Omit<Schemas['DailyServiceUsages'], keyof DailyServiceUsageRePointed>, DailyServiceUsageRePointed {
+export interface CurrentUsage extends GeneratedCurrentUsage {
+}
+
+// @public
+export interface DailyServiceUsage extends Omit<Schemas['DailyServiceUsage'], keyof DailyServiceUsageRePointed>, DailyServiceUsageRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -2468,20 +2294,16 @@ interface DailyServiceUsageRePointed {
 }
 
 // @public
-export interface Dataset extends Omit<Schemas['Dataset'], keyof DatasetRePointed | keyof DatasetSpecNarrowings>, DatasetRePointed, DatasetSpecNarrowings, DatasetSpecGaps {
-}
-
-// @public
 export class DatasetClient<Data extends Record<string | number, any> = Record<string | number, unknown>> extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     createItemsPublicUrl(options?: DatasetClientCreateItemsUrlOptions): Promise<string>;
     delete(options?: TimeoutOptions): Promise<void>;
     downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Buffer>;
-    get(options?: TimeoutOptions): Promise<Dataset | undefined>;
+    get(options?: TimeoutOptions): Promise<DatasetResource | undefined>;
     getStatistics(options?: TimeoutOptions): Promise<DatasetStatistics>;
     listItems(options?: DatasetClientListItemOptions): PaginatedIterator<Data>;
     pushItems(items: Data | Data[] | string, options?: TimeoutOptions): Promise<void>;
-    update(newFields: DatasetClientUpdateOptions, options?: TimeoutOptions): Promise<Dataset>;
+    update(newFields: DatasetClientUpdateOptions, options?: TimeoutOptions): Promise<DatasetResource>;
 }
 
 // @public
@@ -2539,8 +2361,8 @@ export interface DatasetClientUpdateOptions {
 // @public
 export class DatasetCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
-    getOrCreate(name?: string, options?: DatasetCollectionClientGetOrCreateOptions): Promise<Dataset>;
-    list(options?: DatasetCollectionClientListOptions): Promise<DatasetCollectionClientListResult> & AsyncIterable<Dataset>;
+    getOrCreate(name?: string, options?: DatasetCollectionClientGetOrCreateOptions): Promise<DatasetResource>;
+    list(options?: DatasetCollectionClientListOptions): Promise<DatasetCollectionClientListResult> & AsyncIterable<DatasetResource>;
 }
 
 // @public
@@ -2559,13 +2381,21 @@ export interface DatasetCollectionClientListOptions extends PaginationOptions, T
 }
 
 // @public (undocumented)
-export type DatasetCollectionClientListResult = PaginatedList<Dataset> & {
+export type DatasetCollectionClientListResult = PaginatedList<DatasetResource> & {
     unnamed: boolean;
 };
 
+// @public
+export interface DatasetFieldStatistics extends GeneratedDatasetFieldStatistics {
+}
+
+// @public
+export interface DatasetResource extends Omit<Schemas['DatasetResource'], keyof DatasetResourceRePointed | keyof DatasetResourceSpecNarrowings>, DatasetResourceRePointed, DatasetResourceSpecNarrowings, DatasetResourceSpecGaps {
+}
+
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-interface DatasetRePointed {
+interface DatasetResourceRePointed {
     // (undocumented)
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
     // (undocumented)
@@ -2574,7 +2404,7 @@ interface DatasetRePointed {
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
-interface DatasetSpecGaps {
+interface DatasetResourceSpecGaps {
     // (undocumented)
     title?: string;
     // (undocumented)
@@ -2583,7 +2413,7 @@ interface DatasetSpecGaps {
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-interface DatasetSpecNarrowings {
+interface DatasetResourceSpecNarrowings {
     // (undocumented)
     consoleUrl?: string;
 }
@@ -2595,7 +2425,7 @@ export interface DatasetStatistics extends Omit<Schemas['DatasetStatistics'], ke
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 interface DatasetStatisticsRePointed {
-    fieldStatistics?: Record<string, FieldStatistics> | null;
+    fieldStatistics?: Record<string, DatasetFieldStatistics> | null;
 }
 
 // @public
@@ -2607,6 +2437,17 @@ export interface DatasetStats extends GeneratedDatasetStats, DatasetStatsSpecGap
 interface DatasetStatsSpecGaps {
     // (undocumented)
     deleteCount?: number;
+}
+
+// @public
+export interface DefaultRunOptions extends Omit<Schemas['DefaultRunOptions'], keyof DefaultRunOptionsRePointed>, DefaultRunOptionsRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface DefaultRunOptionsRePointed {
+    // (undocumented)
+    forcePermissionLevel?: ACTOR_PERMISSION_LEVEL | null;
 }
 
 // @public
@@ -2668,12 +2509,19 @@ interface EffectivePlatformFeaturesRePointed {
 }
 
 // @public
-export interface FieldStatistics extends GeneratedDatasetFieldStatistics {
+export interface EnvVar extends GeneratedEnvVar {
 }
 
 // @public
-export type FinalActorVersion = ActorVersion & {
-    buildTag: NonNullable<ActorVersion['buildTag']>;
+export type ErrorType = Schemas['ErrorType'];
+
+// @public
+export interface ExampleRunInput extends GeneratedExampleRunInput {
+}
+
+// @public
+export type FinalVersion = Version & {
+    buildTag: NonNullable<Version['buildTag']>;
 };
 
 // @public
@@ -2722,11 +2570,11 @@ type GeneratedBuildUsage = Schemas['BuildUsage'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedCurrent = Schemas['Current'];
+type GeneratedCurrentPricingInfo = Schemas['CurrentPricingInfo'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedCurrentPricingInfo = Schemas['CurrentPricingInfo'];
+type GeneratedCurrentUsage = Schemas['CurrentUsage'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -2758,10 +2606,6 @@ type GeneratedFreeActorPricingInfo = Schemas['FreeActorPricingInfo'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedHeadRequest = Schemas['HeadRequest'];
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
 type GeneratedKeyValueStoreKey = Schemas['KeyValueStoreKey'];
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -2774,19 +2618,11 @@ type GeneratedLimits = Schemas['Limits'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedLockedHeadRequest = Schemas['LockedHeadRequest'];
+type GeneratedLockedRequestQueueHeadItem = Schemas['LockedRequestQueueHeadItem'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedMetamorph = Schemas['Metamorph'];
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-type GeneratedPriceTiers = Schemas['PriceTiers'];
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-type GeneratedProfile = Schemas['Profile'];
+type GeneratedPriceTier = Schemas['PriceTier'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -2794,11 +2630,11 @@ type GeneratedProxyGroup = Schemas['ProxyGroup'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedRequest = Schemas['Request'];
+type GeneratedRequestLockInfo = Schemas['RequestLockInfo'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedRequestLockInfo = Schemas['RequestLockInfo'];
+type GeneratedRequestQueueHeadItem = Schemas['RequestQueueHeadItem'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -2807,6 +2643,14 @@ type GeneratedRequestQueueStats = Schemas['RequestQueueStats'];
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 type GeneratedRequestRegistration = Schemas['RequestRegistration'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedRequestResource = Schemas['RequestResource'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedRunMetamorphEvent = Schemas['RunMetamorphEvent'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -2830,7 +2674,7 @@ type GeneratedScheduleActionRunInput = Schemas['ScheduleActionRunInput'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedScheduleInvoked = Schemas['ScheduleInvoked'];
+type GeneratedScheduleLogEntry = Schemas['ScheduleLogEntry'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -2871,6 +2715,10 @@ type GeneratedUnlockRequestsResult = Schemas['UnlockRequestsResult'];
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 type GeneratedUsageCycle = Schemas['UsageCycle'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedUserProfile = Schemas['UserProfile'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -2965,7 +2813,7 @@ export interface HttpCompressor {
 }
 
 // @public
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS';
+export type HttpMethod = Schemas['HttpMethod'];
 
 // @public
 export interface HttpRequest {
@@ -3036,17 +2884,6 @@ export interface KeyValueClientListKeysOptions extends TimeoutOptions {
 }
 
 // @public
-export interface KeyValueClientListKeysResult extends Omit<Schemas['ListOfKeys'], keyof KeyValueClientListKeysResultRePointed>, KeyValueClientListKeysResultRePointed {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface KeyValueClientListKeysResultRePointed {
-    // (undocumented)
-    items: KeyValueListItem[];
-}
-
-// @public
 export interface KeyValueClientUpdateOptions {
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
     // (undocumented)
@@ -3055,35 +2892,27 @@ export interface KeyValueClientUpdateOptions {
 }
 
 // @public
-export interface KeyValueListItem extends GeneratedKeyValueStoreKey {
-}
-
-// @public
-export interface KeyValueStore extends Omit<Schemas['KeyValueStore'], keyof KeyValueStoreRePointed>, KeyValueStoreRePointed, KeyValueStoreSpecGaps {
-}
-
-// @public
 export class KeyValueStoreClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     createKeysPublicUrl(options?: KeyValueClientCreateKeysUrlOptions): Promise<string>;
     delete(options?: TimeoutOptions): Promise<void>;
     deleteRecord(key: string, options?: TimeoutOptions): Promise<void>;
-    get(options?: TimeoutOptions): Promise<KeyValueStore | undefined>;
+    get(options?: TimeoutOptions): Promise<KeyValueStoreResource | undefined>;
     getRecord(key: string): Promise<KeyValueStoreRecord<JsonValue> | undefined>;
     // (undocumented)
     getRecord<Options extends KeyValueClientGetRecordOptions = KeyValueClientGetRecordOptions>(key: string, options: Options): Promise<KeyValueStoreRecord<ReturnTypeFromOptions<Options>> | undefined>;
     getRecordPublicUrl(key: string, options?: TimeoutOptions): Promise<string>;
-    listKeys(options?: KeyValueClientListKeysOptions): Promise<KeyValueClientListKeysResult> & AsyncIterable<KeyValueListItem>;
+    listKeys(options?: KeyValueClientListKeysOptions): Promise<ListOfKeys> & AsyncIterable<KeyValueStoreKey>;
     recordExists(key: string, options?: TimeoutOptions): Promise<boolean>;
     setRecord(record: KeyValueStoreRecord<KeyValueStoreRecordValue>, options?: KeyValueStoreRecordOptions): Promise<void>;
-    update(newFields: KeyValueClientUpdateOptions, options?: TimeoutOptions): Promise<KeyValueStore>;
+    update(newFields: KeyValueClientUpdateOptions, options?: TimeoutOptions): Promise<KeyValueStoreResource>;
 }
 
 // @public
 export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
-    getOrCreate(name?: string, options?: KeyValueStoreCollectionClientGetOrCreateOptions): Promise<KeyValueStore>;
-    list(options?: KeyValueStoreCollectionClientListOptions): Promise<KeyValueStoreCollectionListResult> & AsyncIterable<KeyValueStore>;
+    getOrCreate(name?: string, options?: KeyValueStoreCollectionClientGetOrCreateOptions): Promise<KeyValueStoreResource>;
+    list(options?: KeyValueStoreCollectionClientListOptions): Promise<KeyValueStoreCollectionListResult> & AsyncIterable<KeyValueStoreResource>;
 }
 
 // @public
@@ -3102,9 +2931,13 @@ export interface KeyValueStoreCollectionClientListOptions extends PaginationOpti
 }
 
 // @public (undocumented)
-export type KeyValueStoreCollectionListResult = PaginatedList<KeyValueStore> & {
+export type KeyValueStoreCollectionListResult = PaginatedList<KeyValueStoreResource> & {
     unnamed: boolean;
 };
+
+// @public
+export interface KeyValueStoreKey extends GeneratedKeyValueStoreKey {
+}
 
 // @public
 export interface KeyValueStoreRecord<T> {
@@ -3125,9 +2958,13 @@ export interface KeyValueStoreRecordOptions extends TimeoutOptions {
 // @public
 export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Readable;
 
+// @public
+export interface KeyValueStoreResource extends Omit<Schemas['KeyValueStoreResource'], keyof KeyValueStoreResourceRePointed>, KeyValueStoreResourceRePointed, KeyValueStoreResourceSpecGaps {
+}
+
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-interface KeyValueStoreRePointed {
+interface KeyValueStoreResourceRePointed {
     // (undocumented)
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
     // (undocumented)
@@ -3136,7 +2973,7 @@ interface KeyValueStoreRePointed {
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
-interface KeyValueStoreSpecGaps {
+interface KeyValueStoreResourceSpecGaps {
     // (undocumented)
     title?: string;
 }
@@ -3155,6 +2992,43 @@ export type LimitsUpdateOptions = {
 } | {
     dataRetentionDays: number;
 };
+
+// @public
+export interface ListOfKeys extends Omit<Schemas['ListOfKeys'], keyof ListOfKeysRePointed>, ListOfKeysRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ListOfKeysRePointed {
+    // (undocumented)
+    items: KeyValueStoreKey[];
+}
+
+// @public
+export interface ListOfRequests extends Omit<Schemas['ListOfRequests'], keyof ListOfRequestsRePointed>, ListOfRequestsRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ListOfRequestsRePointed {
+    // (undocumented)
+    items: RequestResource[];
+}
+
+// @public
+export interface LockedRequestQueueHead extends Omit<Schemas['LockedRequestQueueHead'], keyof LockedRequestQueueHeadRePointed>, LockedRequestQueueHeadRePointed {
+}
+
+// @public
+export interface LockedRequestQueueHeadItem extends GeneratedLockedRequestQueueHeadItem {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface LockedRequestQueueHeadRePointed {
+    // (undocumented)
+    items: LockedRequestQueueHeadItem[];
+}
 
 // @public
 export class LogClient extends ResourceClient {
@@ -3177,10 +3051,6 @@ export interface LogOptions extends TimeoutOptions {
 
 // @public
 export interface MonthlyUsage extends Omit<Schemas['MonthlyUsage'], keyof MonthlyUsageRePointed>, MonthlyUsageRePointed {
-}
-
-// @public
-export interface MonthlyUsageCycle extends GeneratedUsageCycle {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3302,6 +3172,19 @@ interface PaginationOptions {
 }
 
 // @public
+export interface PayPerEventActorPricingInfo extends Omit<Schemas['PayPerEventActorPricingInfo'], keyof PayPerEventActorPricingInfoRePointed>, PayPerEventActorPricingInfoRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface PayPerEventActorPricingInfoRePointed {
+    // (undocumented)
+    pricingPerEvent: {
+        actorChargeEvents?: ActorChargeEvents;
+    };
+}
+
+// @public
 export enum PlatformFeature {
     // (undocumented)
     Actors = "ACTORS",
@@ -3331,28 +3214,22 @@ interface PricePerDatasetItemActorPricingInfoRePointed {
 }
 
 // @public
-export interface PricePerEventActorPricingInfo extends Omit<Schemas['PayPerEventActorPricingInfo'], keyof PricePerEventActorPricingInfoRePointed>, PricePerEventActorPricingInfoRePointed {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface PricePerEventActorPricingInfoRePointed {
-    // (undocumented)
-    pricingPerEvent: {
-        actorChargeEvents?: ActorChargeEvents;
-    };
-}
-
-// @public
-export interface PriceTier extends GeneratedPriceTiers {
-}
-
-// @public
-export interface PricingInfo extends GeneratedCurrentPricingInfo {
+export interface PriceTier extends GeneratedPriceTier {
 }
 
 // @public
 export interface ProxyGroup extends GeneratedProxyGroup {
+}
+
+// @public
+export interface ProxyResource extends Omit<Schemas['ProxyResource'], keyof ProxyResourceRePointed>, ProxyResourceRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ProxyResourceRePointed {
+    // (undocumented)
+    groups: ProxyGroup[];
 }
 
 // @public
@@ -3363,41 +3240,37 @@ export class RateLimitError extends ApifyApiError {
 export type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<InternalAxiosRequestConfig>['use']>[0];
 
 // @public
-export interface RequestQueue extends Omit<Schemas['RequestQueue'], keyof RequestQueueRePointed | keyof RequestQueueSpecNarrowings>, RequestQueueRePointed, RequestQueueSpecNarrowings, RequestQueueSpecGaps {
+export interface RequestLockInfo extends GeneratedRequestLockInfo {
 }
 
 // @public
 export class RequestQueueClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions, userOptions?: RequestQueueUserOptions);
-    addRequest(request: RequestQueueClientRequestToAdd, options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientAddRequestResult>;
-    protected addRequestBatch(requests: SerializedRequestToAdd[], options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
+    addRequest(request: RequestQueueClientRequestToAdd, options?: RequestQueueClientAddRequestOptions): Promise<RequestRegistration>;
+    protected addRequestBatch(requests: SerializedRequestToAdd[], options?: RequestQueueClientAddRequestOptions): Promise<BatchAddResult>;
     // (undocumented)
-    protected addRequestBatchWithRetries(requests: SerializedRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
-    batchAddRequests(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<RequestQueueClientBatchRequestsOperationResult>;
-    batchDeleteRequests(requests: RequestQueueClientRequestToDelete[], options?: TimeoutOptions): Promise<RequestQueueClientBatchDeleteRequestsResult>;
+    protected addRequestBatchWithRetries(requests: SerializedRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<BatchAddResult>;
+    batchAddRequests(requests: RequestQueueClientRequestToAdd[], options?: RequestQueueClientBatchAddRequestWithRetriesOptions): Promise<BatchAddResult>;
+    batchDeleteRequests(requests: RequestQueueClientRequestToDelete[], options?: TimeoutOptions): Promise<BatchDeleteResult>;
     delete(options?: TimeoutOptions): Promise<void>;
     deleteRequest(id: string, options?: TimeoutOptions): Promise<void>;
     deleteRequestLock(id: string, options?: RequestQueueClientDeleteRequestLockOptions): Promise<void>;
-    get(options?: TimeoutOptions): Promise<RequestQueue | undefined>;
+    get(options?: TimeoutOptions): Promise<RequestQueueResource | undefined>;
     getRequest(id: string, options?: TimeoutOptions): Promise<RequestQueueClientGetRequestResult | undefined>;
-    listAndLockHead(options: RequestQueueClientListAndLockHeadOptions): Promise<RequestQueueClientListAndLockHeadResult>;
-    listHead(options?: RequestQueueClientListHeadOptions): Promise<RequestQueueClientListHeadResult>;
-    listRequests(options?: RequestQueueClientListRequestsOptions): Promise<RequestQueueClientListRequestsResult> & AsyncIterable<RequestQueueClientRequestSchema>;
-    paginateRequests(options?: RequestQueueClientPaginateRequestsOptions): RequestQueueRequestsAsyncIterable<RequestQueueClientListRequestsResult>;
-    prolongRequestLock(id: string, options: RequestQueueClientProlongRequestLockOptions): Promise<RequestQueueClientProlongRequestLockResult>;
-    unlockRequests(options?: TimeoutOptions): Promise<RequestQueueClientUnlockRequestsResult>;
-    update(newFields: RequestQueueClientUpdateOptions, options?: TimeoutOptions): Promise<RequestQueue>;
-    updateRequest(request: RequestQueueClientRequestToUpdate, options?: RequestQueueClientAddRequestOptions): Promise<RequestQueueClientAddRequestResult>;
+    listAndLockHead(options: RequestQueueClientListAndLockHeadOptions): Promise<LockedRequestQueueHead>;
+    listHead(options?: RequestQueueClientListHeadOptions): Promise<RequestQueueHead>;
+    listRequests(options?: RequestQueueClientListRequestsOptions): Promise<ListOfRequests> & AsyncIterable<RequestResource>;
+    paginateRequests(options?: RequestQueueClientPaginateRequestsOptions): RequestQueueRequestsAsyncIterable<ListOfRequests>;
+    prolongRequestLock(id: string, options: RequestQueueClientProlongRequestLockOptions): Promise<RequestLockInfo>;
+    unlockRequests(options?: TimeoutOptions): Promise<UnlockRequestsResult>;
+    update(newFields: RequestQueueClientUpdateOptions, options?: TimeoutOptions): Promise<RequestQueueResource>;
+    updateRequest(request: RequestQueueClientRequestToUpdate, options?: RequestQueueClientAddRequestOptions): Promise<RequestRegistration>;
 }
 
 // @public (undocumented)
 export interface RequestQueueClientAddRequestOptions extends TimeoutOptions {
     // (undocumented)
     forefront?: boolean;
-}
-
-// @public
-export interface RequestQueueClientAddRequestResult extends GeneratedRequestRegistration {
 }
 
 // @public
@@ -3412,21 +3285,13 @@ export interface RequestQueueClientBatchAddRequestWithRetriesOptions extends Tim
 }
 
 // @public
-export interface RequestQueueClientBatchDeleteRequestsResult extends GeneratedBatchDeleteResult {
-}
-
-// @public
-export interface RequestQueueClientBatchRequestsOperationResult extends GeneratedBatchAddResult {
-}
-
-// @public
 export interface RequestQueueClientDeleteRequestLockOptions extends TimeoutOptions {
     // (undocumented)
     forefront?: boolean;
 }
 
 // @public
-export type RequestQueueClientGetRequestResult = RequestQueueClientRequestSchema;
+export type RequestQueueClientGetRequestResult = RequestResource;
 
 // @public
 export interface RequestQueueClientListAndLockHeadOptions extends TimeoutOptions {
@@ -3437,35 +3302,9 @@ export interface RequestQueueClientListAndLockHeadOptions extends TimeoutOptions
 }
 
 // @public
-export interface RequestQueueClientListAndLockHeadResult extends Omit<Schemas['LockedRequestQueueHead'], keyof RequestQueueClientListAndLockHeadResultRePointed>, RequestQueueClientListAndLockHeadResultRePointed {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface RequestQueueClientListAndLockHeadResultRePointed {
-    // (undocumented)
-    items: RequestQueueClientLockedListItem[];
-}
-
-// @public
 export interface RequestQueueClientListHeadOptions extends TimeoutOptions {
     // (undocumented)
     limit?: number;
-}
-
-// @public
-export interface RequestQueueClientListHeadResult extends Omit<Schemas['RequestQueueHead'], keyof RequestQueueClientListHeadResultRePointed>, RequestQueueClientListHeadResultRePointed {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface RequestQueueClientListHeadResultRePointed {
-    // (undocumented)
-    items: RequestQueueClientListItem[];
-}
-
-// @public
-export interface RequestQueueClientListItem extends GeneratedHeadRequest {
 }
 
 // @public
@@ -3474,21 +3313,6 @@ export interface RequestQueueClientListRequestsOptions extends TimeoutOptions {
     filter?: readonly RequestQueueListRequestsFilter[];
     // (undocumented)
     limit?: number;
-}
-
-// @public
-export interface RequestQueueClientListRequestsResult extends Omit<Schemas['ListOfRequests'], keyof RequestQueueClientListRequestsResultRePointed>, RequestQueueClientListRequestsResultRePointed {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface RequestQueueClientListRequestsResultRePointed {
-    // (undocumented)
-    items: RequestQueueClientRequestSchema[];
-}
-
-// @public
-export interface RequestQueueClientLockedListItem extends GeneratedLockedHeadRequest {
 }
 
 // @public
@@ -3510,26 +3334,14 @@ export interface RequestQueueClientProlongRequestLockOptions extends TimeoutOpti
 }
 
 // @public
-export interface RequestQueueClientProlongRequestLockResult extends GeneratedRequestLockInfo {
+export interface RequestQueueClientRequestToAdd extends Omit<RequestResource, 'id'> {
 }
 
 // @public
-export interface RequestQueueClientRequestSchema extends GeneratedRequest {
-}
+export type RequestQueueClientRequestToDelete = Pick<RequestResource, 'id'> | Pick<RequestResource, 'uniqueKey'>;
 
 // @public
-export interface RequestQueueClientRequestToAdd extends Omit<RequestQueueClientRequestSchema, 'id'> {
-}
-
-// @public
-export type RequestQueueClientRequestToDelete = Pick<RequestQueueClientRequestSchema, 'id'> | Pick<RequestQueueClientRequestSchema, 'uniqueKey'>;
-
-// @public
-export interface RequestQueueClientRequestToUpdate extends RequestQueueClientRequestSchema {
-}
-
-// @public
-export interface RequestQueueClientUnlockRequestsResult extends GeneratedUnlockRequestsResult {
+export interface RequestQueueClientRequestToUpdate extends RequestResource {
 }
 
 // @public
@@ -3543,8 +3355,8 @@ export interface RequestQueueClientUpdateOptions {
 // @public
 export class RequestQueueCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
-    getOrCreate(name?: string, options?: TimeoutOptions): Promise<RequestQueue>;
-    list(options?: RequestQueueCollectionListOptions): Promise<RequestQueueCollectionListResult> & AsyncIterable<RequestQueue>;
+    getOrCreate(name?: string, options?: TimeoutOptions): Promise<RequestQueueResource>;
+    list(options?: RequestQueueCollectionListOptions): Promise<RequestQueueCollectionListResult> & AsyncIterable<RequestQueueResource>;
 }
 
 // @public (undocumented)
@@ -3557,28 +3369,47 @@ export interface RequestQueueCollectionListOptions extends PaginationOptions, Ti
 }
 
 // @public (undocumented)
-export type RequestQueueCollectionListResult = PaginatedList<RequestQueue> & {
+export type RequestQueueCollectionListResult = PaginatedList<RequestQueueResource> & {
     unnamed: boolean;
 };
 
 // @public
-export type RequestQueueListRequestsFilter = 'locked' | 'pending';
+export interface RequestQueueHead extends Omit<Schemas['RequestQueueHead'], keyof RequestQueueHeadRePointed>, RequestQueueHeadRePointed {
+}
+
+// @public
+export interface RequestQueueHeadItem extends GeneratedRequestQueueHeadItem {
+}
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-interface RequestQueueRePointed {
+interface RequestQueueHeadRePointed {
+    // (undocumented)
+    items: RequestQueueHeadItem[];
+}
+
+// @public
+export type RequestQueueListRequestsFilter = 'locked' | 'pending';
+
+// @public
+export type RequestQueueRequestsAsyncIterable<T> = AsyncIterable<T>;
+
+// @public
+export interface RequestQueueResource extends Omit<Schemas['RequestQueueResource'], keyof RequestQueueResourceRePointed | keyof RequestQueueResourceSpecNarrowings>, RequestQueueResourceRePointed, RequestQueueResourceSpecNarrowings, RequestQueueResourceSpecGaps {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface RequestQueueResourceRePointed {
     // (undocumented)
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
     // (undocumented)
     stats?: RequestQueueStats;
 }
 
-// @public
-export type RequestQueueRequestsAsyncIterable<T> = AsyncIterable<T>;
-
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
-interface RequestQueueSpecGaps {
+interface RequestQueueResourceSpecGaps {
     // (undocumented)
     title?: string;
     // (undocumented)
@@ -3587,7 +3418,7 @@ interface RequestQueueSpecGaps {
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-interface RequestQueueSpecNarrowings {
+interface RequestQueueResourceSpecNarrowings {
     // (undocumented)
     consoleUrl?: string;
 }
@@ -3601,6 +3432,14 @@ export interface RequestQueueUserOptions {
     // (undocumented)
     clientKey?: string;
     timeoutSecs?: number;
+}
+
+// @public
+export interface RequestRegistration extends GeneratedRequestRegistration {
+}
+
+// @public
+export interface RequestResource extends GeneratedRequestResource {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3644,6 +3483,10 @@ export class ResponseValidationError extends Error {
 export type ReturnTypeFromOptions<Options extends KeyValueClientGetRecordOptions> = Options['stream'] extends true ? Readable : Options['buffer'] extends true ? Buffer : JsonValue;
 
 // @public
+export interface Run extends Omit<Schemas['Run'], keyof RunRePointed | keyof RunClientNarrowings>, RunRePointed, RunClientNarrowings {
+}
+
+// @public
 export interface RunAbortOptions extends TimeoutOptions {
     // (undocumented)
     gracefully?: boolean;
@@ -3659,27 +3502,34 @@ export interface RunChargeOptions extends TimeoutOptions {
 // @public
 export class RunClient extends ResourceClient {
     constructor(options: ApiClientOptionsWithOptionalResourcePath);
-    abort(options?: RunAbortOptions): Promise<ActorRun>;
+    abort(options?: RunAbortOptions): Promise<Run>;
     charge(options: RunChargeOptions): Promise<ApifyResponse<Record<string, never>>>;
     dataset(): DatasetClient;
     delete(options?: TimeoutOptions): Promise<void>;
-    get(options?: RunGetOptions): Promise<ActorRun | undefined>;
+    get(options?: RunGetOptions): Promise<Run | undefined>;
     getStreamedLog(options?: GetStreamedLogOptions): Promise<StreamedLog | undefined>;
     iterateDatasetItems<Data extends Record<string | number, any> = Record<string | number, unknown>>(options?: RunIterateDatasetItemsOptions): AsyncGenerator<Data, void, undefined>;
     keyValueStore(): KeyValueStoreClient;
     log(): LogClient;
-    metamorph(targetActorId: string, input?: ActorInput, options?: RunMetamorphOptions): Promise<ActorRun>;
-    reboot(options?: TimeoutOptions): Promise<ActorRun>;
+    metamorph(targetActorId: string, input?: ActorInput, options?: RunMetamorphOptions): Promise<Run>;
+    reboot(options?: TimeoutOptions): Promise<Run>;
     requestQueue(): RequestQueueClient;
-    resurrect(options?: RunResurrectOptions): Promise<ActorRun>;
-    update(newFields: RunUpdateOptions, options?: TimeoutOptions): Promise<ActorRun>;
-    waitForFinish(options?: RunWaitForFinishOptions): Promise<ActorRun>;
+    resurrect(options?: RunResurrectOptions): Promise<Run>;
+    update(newFields: RunUpdateOptions, options?: TimeoutOptions): Promise<Run>;
+    waitForFinish(options?: RunWaitForFinishOptions): Promise<Run>;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface RunClientNarrowings {
+    // (undocumented)
+    generalAccess?: RUN_GENERAL_ACCESS | null;
 }
 
 // @public
 export class RunCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientOptionsWithOptionalResourcePath);
-    list(options?: RunCollectionListOptions): PaginatedIterator<ActorRunListItem>;
+    list(options?: RunCollectionListOptions): PaginatedIterator<RunListItem>;
 }
 
 // @public (undocumented)
@@ -3710,10 +3560,72 @@ export interface RunIterateDatasetItemsOptions extends PaginationOptions, Timeou
 }
 
 // @public
+export interface RunListItem extends Omit<Schemas['RunListItem'], keyof RunListItemRePointed>, RunListItemRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface RunListItemRePointed {
+    // (undocumented)
+    meta: RunMeta;
+    // (undocumented)
+    status: ValueOf<typeof ACTOR_JOB_STATUSES>;
+}
+
+// @public
+export interface RunMeta extends Omit<Schemas['RunMeta'], keyof RunMetaRePointed>, RunMetaRePointed {
+}
+
+// @public
+export interface RunMetamorphEvent extends GeneratedRunMetamorphEvent {
+}
+
+// @public
 export interface RunMetamorphOptions extends TimeoutOptions {
     // (undocumented)
     build?: string;
     contentType?: string;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface RunMetaRePointed {
+    // (undocumented)
+    origin: ValueOf<typeof META_ORIGINS>;
+}
+
+// @public
+export interface RunOptions extends GeneratedRunOptions, RunOptionsSpecGaps {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public
+interface RunOptionsSpecGaps {
+    // (undocumented)
+    restartOnError?: boolean;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface RunRePointed {
+    // (undocumented)
+    meta: RunMeta;
+    // (undocumented)
+    metamorphs?: RunMetamorphEvent[] | null;
+    // (undocumented)
+    options: RunOptions;
+    // (undocumented)
+    pricingInfo?: ActorRunPricingInfo;
+    // (undocumented)
+    stats: RunStats;
+    // (undocumented)
+    status: ValueOf<typeof ACTOR_JOB_STATUSES>;
+    // (undocumented)
+    storageIds?: ActorRunStorageIds;
+    // (undocumented)
+    usage?: RunUsage | null;
+    // (undocumented)
+    usageUsd?: RunUsage | null;
 }
 
 // @public
@@ -3729,11 +3641,19 @@ export interface RunResurrectOptions extends TimeoutOptions {
 }
 
 // @public
+export interface RunStats extends GeneratedRunStats {
+}
+
+// @public
 export interface RunUpdateOptions {
     generalAccess?: RUN_GENERAL_ACCESS | null;
     isStatusMessageTerminal?: boolean;
     // (undocumented)
     statusMessage?: string;
+}
+
+// @public
+export interface RunUsage extends GeneratedRunUsage {
 }
 
 // @public
@@ -3756,9 +3676,9 @@ export interface ScheduleActionRunActor extends Omit<Schemas['ScheduleActionRunA
 // @public (undocumented)
 interface ScheduleActionRunActorRePointed {
     // (undocumented)
-    runInput?: ScheduledActorRunInput | null;
+    runInput?: ScheduleActionRunInput | null;
     // (undocumented)
-    runOptions?: ScheduledActorRunOptions | null;
+    runOptions?: TaskOptions | null;
     // (undocumented)
     type: `${ScheduleActions.RunActor}`;
 }
@@ -3775,6 +3695,10 @@ interface ScheduleActionRunActorTaskRePointed {
 }
 
 // @public
+export interface ScheduleActionRunInput extends GeneratedScheduleActionRunInput {
+}
+
+// @public
 export enum ScheduleActions {
     // (undocumented)
     RunActor = "RUN_ACTOR",
@@ -3787,7 +3711,7 @@ export class ScheduleClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     delete(options?: TimeoutOptions): Promise<void>;
     get(options?: TimeoutOptions): Promise<Schedule | undefined>;
-    getLog(options?: TimeoutOptions): Promise<ScheduleInvoked[]>;
+    getLog(options?: TimeoutOptions): Promise<ScheduleLogEntry[]>;
     update(newFields: ScheduleCreateOrUpdateData, options?: TimeoutOptions): Promise<Schedule>;
 }
 
@@ -3817,15 +3741,7 @@ export type ScheduleCreateOrUpdateData = Partial<Pick<Schedule, 'name' | 'title'
 }>;
 
 // @public
-export interface ScheduledActorRunInput extends GeneratedScheduleActionRunInput {
-}
-
-// @public
-export interface ScheduledActorRunOptions extends GeneratedTaskOptions {
-}
-
-// @public
-export interface ScheduleInvoked extends GeneratedScheduleInvoked {
+export interface ScheduleLogEntry extends GeneratedScheduleLogEntry {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3866,6 +3782,14 @@ export interface SetStatusMessageOptions {
     level?: 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR';
 }
 
+// @public
+export interface SourceCodeFile extends GeneratedSourceCodeFile {
+}
+
+// @public
+export interface SourceCodeFolder extends GeneratedSourceCodeFolder {
+}
+
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 class Statistics {
@@ -3877,9 +3801,22 @@ class Statistics {
 }
 
 // @public
+export interface StoreActor extends Omit<Schemas['StoreActor'], keyof StoreActorRePointed>, StoreActorRePointed {
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface StoreActorRePointed {
+    // (undocumented)
+    currentPricingInfo?: CurrentPricingInfo;
+    // (undocumented)
+    stats: ActorStats;
+}
+
+// @public
 export class StoreCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
-    list(options?: StoreCollectionListOptions): PaginatedIterator<ActorStoreList>;
+    list(options?: StoreCollectionListOptions): PaginatedIterator<StoreActor>;
 }
 
 // @public
@@ -3913,6 +3850,13 @@ export interface StreamedLogOptions {
 }
 
 // @public
+export interface TaggedBuildInfo extends GeneratedTaggedBuildInfo {
+}
+
+// @public
+export type TaggedBuilds = Record<string, TaggedBuildInfo | null>;
+
+// @public
 export interface Task extends Omit<Schemas['Task'], keyof TaskRePointed>, TaskRePointed {
 }
 
@@ -3925,14 +3869,14 @@ export interface TaskCallOptions extends Omit<TaskStartOptions, 'waitForFinish'>
 // @public
 export class TaskClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
-    call(input?: Dictionary, options?: TaskCallOptions): Promise<ActorRun>;
+    call(input?: Dictionary, options?: TaskCallOptions): Promise<Run>;
     delete(options?: TimeoutOptions): Promise<void>;
     get(options?: TimeoutOptions): Promise<Task | undefined>;
     getInput(options?: TimeoutOptions): Promise<Dictionary | Dictionary[]>;
     lastRun(options?: TaskLastRunOptions): RunClient;
     publish(options?: TimeoutOptions): Promise<Task>;
     runs(): RunCollectionClient;
-    start(input?: Dictionary, options?: TaskStartOptions): Promise<ActorRun>;
+    start(input?: Dictionary, options?: TaskStartOptions): Promise<Run>;
     unpublish(options?: TimeoutOptions): Promise<Task>;
     update(newFields: TaskUpdateData, options?: TimeoutOptions): Promise<Task>;
     updateInput(newFields: Dictionary | Dictionary[], options?: TimeoutOptions): Promise<Dictionary | Dictionary[]>;
@@ -3943,7 +3887,7 @@ export class TaskClient extends ResourceClient {
 export class TaskCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
     create(task: TaskCreateData, options?: TimeoutOptions): Promise<Task>;
-    list(options?: TaskCollectionListOptions): PaginatedIterator<TaskList>;
+    list(options?: TaskCollectionListOptions): PaginatedIterator<TaskListItem>;
 }
 
 // @public (undocumented)
@@ -3963,19 +3907,19 @@ export interface TaskLastRunOptions extends ActorLastRunOptions {
 }
 
 // @public
-export interface TaskList extends Omit<Schemas['TaskShort'], keyof TaskListRePointed>, TaskListRePointed, TaskListSpecGaps {
+export interface TaskListItem extends Omit<Schemas['TaskListItem'], keyof TaskListItemRePointed>, TaskListItemRePointed, TaskListItemSpecGaps {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-interface TaskListRePointed {
+interface TaskListItemRePointed {
     // (undocumented)
     stats?: TaskStats | null;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
-interface TaskListSpecGaps {
+interface TaskListItemSpecGaps {
     // (undocumented)
     title?: string | null;
 }
@@ -4060,6 +4004,10 @@ export class UnauthorizedError extends ApifyApiError {
 }
 
 // @public
+export interface UnlockRequestsResult extends GeneratedUnlockRequestsResult {
+}
+
+// @public
 export interface UsageCycle extends GeneratedUsageCycle {
 }
 
@@ -4075,20 +4023,16 @@ interface UsageItemRePointed {
 }
 
 // @public
-export interface User extends Omit<Schemas['UserPrivateInfo'], keyof UserRePointed>, UserRePointed {
-}
-
-// @public
 export class UserClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
-    get(options?: TimeoutOptions): Promise<User | undefined>;
-    limits(options?: TimeoutOptions): Promise<AccountAndUsageLimits>;
+    get(options?: TimeoutOptions): Promise<UserPrivateInfo | undefined>;
+    limits(options?: TimeoutOptions): Promise<AccountLimits>;
     monthlyUsage(options?: TimeoutOptions): Promise<MonthlyUsage>;
     updateLimits(newLimits: LimitsUpdateOptions, options?: TimeoutOptions): Promise<void>;
 }
 
 // @public
-export interface UserPlan extends Omit<Schemas['Plan'], keyof UserPlanRePointed>, UserPlanRePointed {
+export interface UserPlan extends Omit<Schemas['UserPlan'], keyof UserPlanRePointed>, UserPlanRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -4099,23 +4043,12 @@ interface UserPlanRePointed {
 }
 
 // @public
-export interface UserProfile extends GeneratedProfile {
-}
-
-// @public
-export interface UserProxy extends Omit<Schemas['Proxy'], keyof UserProxyRePointed>, UserProxyRePointed {
+export interface UserPrivateInfo extends Omit<Schemas['UserPrivateInfo'], keyof UserPrivateInfoRePointed>, UserPrivateInfoRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-interface UserProxyRePointed {
-    // (undocumented)
-    groups: ProxyGroup[];
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-interface UserRePointed {
+interface UserPrivateInfoRePointed {
     // (undocumented)
     effectivePlatformFeatures?: EffectivePlatformFeatures;
     // (undocumented)
@@ -4123,7 +4056,60 @@ interface UserRePointed {
     // (undocumented)
     profile?: UserProfile;
     // (undocumented)
-    proxy?: UserProxy;
+    proxy?: ProxyResource;
+}
+
+// @public
+export interface UserProfile extends GeneratedUserProfile {
+}
+
+// @public
+export type Version = VersionSourceFiles | VersionGitRepo | VersionTarball | VersionGitHubGist | VersionSourceCode;
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface VersionClientNarrowings {
+    // (undocumented)
+    sourceType: `${ActorSourceType}`;
+}
+
+// @public
+export interface VersionGitHubGist extends BaseVersion<`${ActorSourceType.GitHubGist}`> {
+    // (undocumented)
+    gitHubGistUrl: NonNullable<GeneratedVersion['gitHubGistUrl']>;
+}
+
+// @public
+export interface VersionGitRepo extends BaseVersion<`${ActorSourceType.GitRepo}`> {
+    // (undocumented)
+    gitRepoUrl: NonNullable<GeneratedVersion['gitRepoUrl']>;
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface VersionRePointed {
+    // (undocumented)
+    envVars?: EnvVar[] | null;
+}
+
+// @public
+export interface VersionSourceCode extends BaseVersion<`${ActorSourceType.SourceCode}`> {
+}
+
+// @public
+export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.SourceFiles}`> {
+    // (undocumented)
+    sourceFiles: (SourceCodeFile | SourceCodeFolder)[];
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public
+type VersionSourceLocation = 'sourceFiles' | 'gitRepoUrl' | 'tarballUrl' | 'gitHubGistUrl';
+
+// @public
+export interface VersionTarball extends BaseVersion<`${ActorSourceType.Tarball}`> {
+    // (undocumented)
+    tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -4131,10 +4117,6 @@ interface UserRePointed {
 interface WaitForFinishOptions extends TimeoutOptions {
     // (undocumented)
     waitSecs?: number;
-}
-
-// @public
-export interface Webhook extends Omit<Schemas['Webhook'], keyof WebhookRePointed>, WebhookRePointed, WebhookSpecGaps {
 }
 
 // @public
@@ -4160,16 +4142,16 @@ export class WebhookClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     delete(options?: TimeoutOptions): Promise<void>;
     dispatches(): WebhookDispatchCollectionClient;
-    get(options?: TimeoutOptions): Promise<Webhook | undefined>;
+    get(options?: TimeoutOptions): Promise<WebhookResource | undefined>;
     test(options?: TimeoutOptions): Promise<WebhookDispatch>;
-    update(newFields: WebhookUpdateData, options?: TimeoutOptions): Promise<Webhook>;
+    update(newFields: WebhookUpdateData, options?: TimeoutOptions): Promise<WebhookResource>;
 }
 
 // @public
 export class WebhookCollectionClient extends ResourceCollectionClient {
     constructor(options: ApiClientSubResourceOptions);
-    create(webhook?: WebhookUpdateData, options?: TimeoutOptions): Promise<Webhook>;
-    list(options?: WebhookCollectionListOptions): PaginatedIterator<Omit<Webhook, 'payloadTemplate' | 'headersTemplate'>>;
+    create(webhook?: WebhookUpdateData, options?: TimeoutOptions): Promise<WebhookResource>;
+    list(options?: WebhookCollectionListOptions): PaginatedIterator<Omit<WebhookResource, 'payloadTemplate' | 'headersTemplate'>>;
 }
 
 // @public (undocumented)
@@ -4257,7 +4239,7 @@ export interface WebhookIdempotencyKey {
 }
 
 // @public
-export interface WebhookLastDispatch extends Omit<Schemas['ExampleWebhookDispatch'], keyof WebhookLastDispatchRePointed>, WebhookLastDispatchRePointed {
+export interface WebhookLastDispatch extends Omit<Schemas['WebhookLastDispatch'], keyof WebhookLastDispatchRePointed>, WebhookLastDispatchRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -4267,9 +4249,13 @@ interface WebhookLastDispatchRePointed {
     status: WebhookDispatchStatus;
 }
 
+// @public
+export interface WebhookResource extends Omit<Schemas['WebhookResource'], keyof WebhookResourceRePointed>, WebhookResourceRePointed, WebhookResourceSpecGaps {
+}
+
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-interface WebhookRePointed {
+interface WebhookResourceRePointed {
     // (undocumented)
     condition: WebhookCondition;
     // (undocumented)
@@ -4282,7 +4268,7 @@ interface WebhookRePointed {
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
-interface WebhookSpecGaps {
+interface WebhookResourceSpecGaps {
     // (undocumented)
     isApifyIntegration?: boolean;
 }
@@ -4292,7 +4278,7 @@ export interface WebhookStats extends GeneratedWebhookStats {
 }
 
 // @public
-export type WebhookUpdateData = Partial<Pick<Webhook, 'isAdHoc' | 'condition' | 'ignoreSslErrors' | 'doNotRetry' | 'requestUrl' | 'payloadTemplate' | 'shouldInterpolateStrings' | 'isApifyIntegration' | 'headersTemplate' | 'description'> & {
+export type WebhookUpdateData = Partial<Pick<WebhookResource, 'isAdHoc' | 'condition' | 'ignoreSslErrors' | 'doNotRetry' | 'requestUrl' | 'payloadTemplate' | 'shouldInterpolateStrings' | 'isApifyIntegration' | 'headersTemplate' | 'description'> & {
     eventTypes: readonly WebhookEventType[];
 }> & WebhookIdempotencyKey;
 

@@ -1,6 +1,6 @@
 import type { Log } from '@apify/log';
 
-import type { ApifyApiErrorType } from './apify_api_error.js';
+import type { ErrorType } from './apify_api_error.js';
 import { ApifyApiError } from './apify_api_error.js';
 import { sleep } from './utils.js';
 
@@ -11,7 +11,7 @@ import { sleep } from './utils.js';
 const RESOURCE_LIMIT_ERROR_TYPES: ReadonlySet<string> = new Set([
     'actor-memory-limit-exceeded',
     'concurrent-runs-limit-exceeded',
-] satisfies ApifyApiErrorType[]);
+] satisfies ErrorType[]);
 
 /** Cooldown between two attempts to start a run that was rejected for lack of resources. */
 const WAIT_FOR_RESOURCES_COOLDOWN_MILLIS = 10_000;

@@ -4,7 +4,7 @@ import { beforeAll, expect, test } from 'vitest';
 
 import type { JsonValue } from 'type-fest';
 
-import type { ApifyClient, KeyValueStore } from 'apify-client';
+import type { ApifyClient, KeyValueStoreResource } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
 import { collectUntilPresent, getRandomResourceName, pollUntilCondition } from './_utils.js';
@@ -15,7 +15,7 @@ beforeAll(() => {
     client = makeClient();
 });
 
-async function createStore(label = 'kvs'): Promise<KeyValueStore> {
+async function createStore(label = 'kvs'): Promise<KeyValueStoreResource> {
     return client.keyValueStores().getOrCreate(getRandomResourceName(label));
 }
 

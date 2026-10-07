@@ -2,7 +2,7 @@ import { ApifyClient } from 'apify-client';
 
 const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 
-// `get()` resolves to an `Actor`, or to `undefined` when the Actor doesn't exist.
+// `get()` resolves to an `ActorResource`, or to `undefined` when the Actor doesn't exist.
 const actor = await client.actor('apify/hello-world').get();
 
 if (actor) {

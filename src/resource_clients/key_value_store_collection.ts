@@ -9,7 +9,7 @@ import type { PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { optionalSignalSchema, optionalTimeoutSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, paginationOptionsShape, parseArgument } from '../utils.js';
-import type { KeyValueStore } from './key_value_store.js';
+import type { KeyValueStoreResource } from './key_value_store.js';
 
 const listOptionsSchema = z.strictObject({
     unnamed: z.boolean().optional(),
@@ -75,7 +75,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
      */
     list(
         options: KeyValueStoreCollectionClientListOptions = {},
-    ): Promise<KeyValueStoreCollectionListResult> & AsyncIterable<KeyValueStore> {
+    ): Promise<KeyValueStoreCollectionListResult> & AsyncIterable<KeyValueStoreResource> {
         const parsed = parseArgument(options, listOptionsSchema, 'KeyValueStoreCollectionClientListOptions');
 
         return this.listResourcesPaginated(schemas.ListOfKeyValueStores(), parsed, 'medium');
@@ -94,7 +94,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
     async getOrCreate(
         name?: string,
         options?: KeyValueStoreCollectionClientGetOrCreateOptions,
-    ): Promise<KeyValueStore> {
+    ): Promise<KeyValueStoreResource> {
         parseArgument(name, nameSchema);
         parseArgument(options?.schema, schemaSchema); // TODO: Add schema validation
         parseArgument(options?.timeoutSecs, optionalTimeoutSchema);
@@ -106,7 +106,7 @@ export class KeyValueStoreCollectionClient extends ResourceCollectionClient {
         const hasResource = Object.keys(resource).length > 0;
 
         return this.getOrCreateResource(
-            schemas.KeyValueStore(),
+            schemas.KeyValueStoreResource(),
             name,
             hasResource ? resource : undefined,
             timeoutSecs,
@@ -132,4 +132,4 @@ export interface KeyValueStoreCollectionClientGetOrCreateOptions extends Timeout
     schema?: Record<string, unknown>;
 }
 
-export type KeyValueStoreCollectionListResult = PaginatedList<KeyValueStore> & { unnamed: boolean };
+export type KeyValueStoreCollectionListResult = PaginatedList<KeyValueStoreResource> & { unnamed: boolean };

@@ -47,7 +47,7 @@ const spec = hoistAllOfRequired(JSON.parse(await readFile(specPath, 'utf8')) as 
 // appends `& { [key: string]: unknown }` to every object and so relaxes *static* typing. This client never
 // validates responses at runtime (`cast()` is `input as T`), so unknown server fields already pass through
 // untouched -- the flag would add no forward compatibility and would silently make every property typo
-// type-check. `rootTypes` would emit `export type Dataset = components['schemas']['Dataset']` aliases that
+// type-check. `rootTypes` would emit `export type Build = components['schemas']['Build']` aliases that
 // collide by name with the published models, and since both consumers of this file go through `components`, they
 // would be 300-odd exported lines nothing imports.
 const ast = await openapiTS(spec, {
@@ -58,7 +58,7 @@ const ast = await openapiTS(spec, {
     // On by default, which makes a property carrying a schema `default` non-optional. A default says what
     // the server fills in when a request omits the field, and is no promise that a response carries it:
     // what a response is guaranteed to carry is its `required` list and nothing else. So a defaulted field
-    // the schema does not require stays optional here. `Actor.isSourceCodeHidden` is the one today.
+    // the schema does not require stays optional here. `ActorResource.isSourceCodeHidden` is the one today.
     defaultNonNullable: false,
     silent: true,
 });

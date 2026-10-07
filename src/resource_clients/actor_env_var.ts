@@ -4,7 +4,7 @@ import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema } from '../timeouts.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
-import type { ActorEnvironmentVariable } from './actor_version.js';
+import type { EnvVar } from './actor_version.js';
 
 /**
  * Client for managing a specific Actor environment variable.
@@ -48,7 +48,7 @@ export class ActorEnvVarClient extends ResourceClient {
      * @returns The environment variable object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/act-version-env-var-get
      */
-    async get(options: TimeoutOptions = {}): Promise<ActorEnvironmentVariable | undefined> {
+    async get(options: TimeoutOptions = {}): Promise<EnvVar | undefined> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         return this.getResource(schemas.EnvVar(), {}, timeoutSecs, signal);
@@ -63,10 +63,7 @@ export class ActorEnvVarClient extends ResourceClient {
      * @returns The updated environment variable object.
      * @see https://docs.apify.com/api/v2/act-version-env-var-put
      */
-    async update(
-        actorEnvVar: ActorEnvironmentVariable,
-        options: TimeoutOptions = {},
-    ): Promise<ActorEnvironmentVariable> {
+    async update(actorEnvVar: EnvVar, options: TimeoutOptions = {}): Promise<EnvVar> {
         parseArgument(actorEnvVar, anyObjectSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 

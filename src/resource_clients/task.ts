@@ -12,7 +12,7 @@ import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
 import { anyObjectSchema, cast, isStream, parseArgument, parseResponse, stringifyWebhooksToBase64 } from '../utils.js';
 import { startWaitingForResources } from '../wait_for_resources.js';
-import type { ActorLastRunOptions, ActorRun, ActorStartOptions } from './actor.js';
+import type { ActorLastRunOptions, ActorStartOptions, Run } from './actor.js';
 import { RunClient } from './run.js';
 import { RunCollectionClient } from './run_collection.js';
 import { WebhookCollectionClient } from './webhook_collection.js';
@@ -179,7 +179,7 @@ export class TaskClient extends ResourceClient {
      * @returns The Actor Run object.
      * @see https://docs.apify.com/api/v2/actor-task-runs-post
      */
-    async start(input?: Dictionary, options: TaskStartOptions = {}): Promise<ActorRun> {
+    async start(input?: Dictionary, options: TaskStartOptions = {}): Promise<Run> {
         parseArgument(input, inputSchema);
         const parsed = parseArgument(options, startOptionsSchema, 'TaskStartOptions');
 
@@ -253,7 +253,7 @@ export class TaskClient extends ResourceClient {
      * @returns The Actor run object.
      * @see https://docs.apify.com/api/v2/actor-task-runs-post
      */
-    async call(input?: Dictionary, options: TaskCallOptions = {}): Promise<ActorRun> {
+    async call(input?: Dictionary, options: TaskCallOptions = {}): Promise<Run> {
         parseArgument(input, inputSchema);
         const parsed = parseArgument(options, callOptionsSchema, 'TaskCallOptions');
 

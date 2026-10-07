@@ -6,7 +6,7 @@ import { Log } from '@apify/log';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_clients/index.js';
-import type { Actor, ActorRun } from '../models.js';
+import type { ActorResource, Run } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import type { Dictionary } from '../utils.js';
 import * as schemas from '../schemas.js';
@@ -73,29 +73,29 @@ const lastRunOptionsSchema = z.strictObject({
 });
 
 export type {
-    Actor,
+    ActorResource,
     ActorChargeEvent,
     ActorChargeEvents,
-    ActorDefaultRunOptions,
     ActorDefinition,
-    ActorExampleRunInput,
-    ActorRun,
-    ActorRunListItem,
-    ActorRunMeta,
-    ActorRunMetamorph,
-    ActorRunOptions,
     ActorRunPricingInfo,
-    ActorRunStats,
     ActorRunStorageIds,
-    ActorRunUsage,
     ActorStandby,
     ActorStats,
-    ActorTaggedBuild,
-    ActorTaggedBuilds,
+    DefaultRunOptions,
+    ExampleRunInput,
     FlatPricePerMonthActorPricingInfo,
     FreeActorPricingInfo,
+    RunMetamorphEvent,
+    PayPerEventActorPricingInfo,
     PricePerDatasetItemActorPricingInfo,
-    PricePerEventActorPricingInfo,
+    Run,
+    RunMeta,
+    RunOptions,
+    RunListItem,
+    RunStats,
+    RunUsage,
+    TaggedBuildInfo,
+    TaggedBuilds,
     TieredPricingPerDatasetItem,
     TieredPricingPerDatasetItemEntry,
     TieredPricingPerEvent,
@@ -141,10 +141,10 @@ export class ActorClient extends ResourceClient {
      * @returns The Actor object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/act-get
      */
-    async get(options: TimeoutOptions = {}): Promise<Actor | undefined> {
+    async get(options: TimeoutOptions = {}): Promise<ActorResource | undefined> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Actor(), {}, timeoutSecs, signal);
+        return this.getResource(schemas.ActorResource(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -156,11 +156,11 @@ export class ActorClient extends ResourceClient {
      * @returns The updated Actor object
      * @see https://docs.apify.com/api/v2/act-put
      */
-    async update(newFields: ActorUpdateOptions, options: TimeoutOptions = {}): Promise<Actor> {
+    async update(newFields: ActorUpdateOptions, options: TimeoutOptions = {}): Promise<ActorResource> {
         parseArgument(newFields, anyObjectSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Actor(), newFields, timeoutSecs, signal);
+        return this.updateResource(schemas.ActorResource(), newFields, timeoutSecs, signal);
     }
 
     /**
@@ -213,7 +213,7 @@ export class ActorClient extends ResourceClient {
      * );
      * ```
      */
-    async start(input?: ActorInput, options: ActorStartOptions = {}): Promise<ActorRun> {
+    async start(input?: ActorInput, options: ActorStartOptions = {}): Promise<Run> {
         const parsed = parseArgument(options, startOptionsSchema, 'ActorStartOptions');
 
         const {
@@ -310,7 +310,7 @@ export class ActorClient extends ResourceClient {
      * const run = await client.actor('my-actor').call({ url: 'https://example.com' }, { log });
      * ```
      */
-    async call(input?: ActorInput, options: ActorCallOptions = {}): Promise<ActorRun> {
+    async call(input?: ActorInput, options: ActorCallOptions = {}): Promise<Run> {
         const parsed = parseArgument(options, callOptionsSchema, 'ActorCallOptions');
 
         const { waitSecs, log, timeoutSecs = 'noTimeout', signal, ...startOptions } = parsed;
@@ -585,7 +585,7 @@ export class ActorClient extends ResourceClient {
  */
 export type ActorUpdateOptions = Partial<
     Pick<
-        Actor,
+        ActorResource,
         | 'name'
         | 'description'
         | 'isPublic'

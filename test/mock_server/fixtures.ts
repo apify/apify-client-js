@@ -6,7 +6,7 @@
  * still passes the schema it stands for, so a regeneration that tightens a schema shows up there.
  */
 
-/** `Actor` */
+/** `ActorResource` */
 export const actor = {
     id: 'zdc3Pyhyz3m8vjDeM',
     userId: 'wRsJZtadYvn4mBZmm',
@@ -339,7 +339,7 @@ export const runList = {
     ],
 };
 
-/** `Dataset` */
+/** `DatasetResource` */
 export const dataset = {
     id: 'WkzbQMuFYuamGv3YF',
     name: 'd7b9MDYsbtX5L7XAj',
@@ -409,7 +409,7 @@ export const datasetStatistics = {
     },
 };
 
-/** `KeyValueStore` */
+/** `KeyValueStoreResource` */
 export const keyValueStore = {
     id: 'WkzbQMuFYuamGv3YF',
     name: 'd7b9MDYsbtX5L7XAj',
@@ -488,7 +488,7 @@ export const keyList = {
     nextExclusiveStartKey: 'third-key',
 };
 
-/** `RequestQueue` */
+/** `RequestQueueResource` */
 export const requestQueue = {
     id: 'WkzbQMuFYuamGv3YF',
     name: 'some-name',
@@ -549,7 +549,7 @@ export const requestQueueList = {
     ],
 };
 
-/** `Request` */
+/** `RequestResource` */
 export const request = {
     uniqueKey: 'GET|60d83e70|e3b0c442|https://apify.com',
     url: 'https://apify.com',
@@ -832,7 +832,7 @@ export const envVarList = {
     ],
 };
 
-/** `Webhook` */
+/** `WebhookResource` */
 export const webhook = {
     id: 'YiKoxjkaS9gjGTqhF',
     createdAt: '2019-12-12T07:34:14.202Z',
@@ -1120,7 +1120,7 @@ export const scheduleList = {
     ],
 };
 
-/** `ScheduleInvoked` */
+/** `ScheduleLogEntry` */
 export const scheduleInvoked = {
     message: 'Schedule invoked',
     level: 'INFO',

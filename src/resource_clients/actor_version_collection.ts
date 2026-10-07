@@ -5,7 +5,7 @@ import type { PaginatedList } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema } from '../timeouts.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
-import type { ActorVersion, FinalActorVersion } from './actor_version.js';
+import type { FinalVersion, Version } from './actor_version.js';
 
 const actorVersionSchema = anyObjectSchema.optional();
 
@@ -66,7 +66,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      * @returns The Actor versions, awaitable as a whole list or iterable one by one.
      * @see https://docs.apify.com/api/v2/act-versions-get
      */
-    list(options: TimeoutOptions = {}): Promise<ActorVersionListResult> & AsyncIterable<FinalActorVersion> {
+    list(options: TimeoutOptions = {}): Promise<ActorVersionListResult> & AsyncIterable<FinalVersion> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         return this.listUnpaginatedResources(schemas.ListOfVersions(), timeoutSecs, signal);
@@ -81,7 +81,7 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
      * @returns The created Actor version object.
      * @see https://docs.apify.com/api/v2/act-versions-post
      */
-    async create(actorVersion: ActorVersion, options: TimeoutOptions = {}): Promise<FinalActorVersion> {
+    async create(actorVersion: Version, options: TimeoutOptions = {}): Promise<FinalVersion> {
         parseArgument(actorVersion, actorVersionSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
@@ -89,4 +89,4 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
     }
 }
 
-export type ActorVersionListResult = Pick<PaginatedList<FinalActorVersion>, 'total' | 'items'>;
+export type ActorVersionListResult = Pick<PaginatedList<FinalVersion>, 'total' | 'items'>;
