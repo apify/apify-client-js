@@ -391,7 +391,7 @@ export interface ActorTaggedBuild extends GeneratedTaggedBuildInfo {
 export type ActorTaggedBuilds = Record<string, ActorTaggedBuild | null>;
 
 // @public
-export type ActorUpdateOptions = Partial<Pick<Actor, 'name' | 'description' | 'isPublic' | 'isDeprecated' | 'seoTitle' | 'seoDescription' | 'title' | 'restartOnError' | 'versions' | 'categories' | 'defaultRunOptions' | 'actorStandby' | 'actorPermissionLevel' | 'taggedBuilds'>>;
+export type ActorUpdateOptions = Partial<Pick<Actor, 'name' | 'description' | 'isPublic' | 'isDeprecated' | 'seoTitle' | 'seoDescription' | 'title' | 'versions' | 'categories' | 'defaultRunOptions' | 'actorStandby' | 'actorPermissionLevel' | 'taggedBuilds'>>;
 
 // @public
 export interface ActorValidateInputOptions extends TimeoutOptions {
