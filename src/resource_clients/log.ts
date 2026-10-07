@@ -234,7 +234,7 @@ export class StreamedLog {
             if (!logStream) {
                 return;
             }
-            const lastChunkRemainder = await this.#logStreamChunks(logStream);
+            const lastChunkRemainder = await this.#logStreamChunks(logStream, signal);
             // Process whatever is left when exiting. Maybe it is incomplete, maybe it is last log without EOL.
             const lastMessage = this.#decoder.decode(lastChunkRemainder).trim();
             if (lastMessage.length) {
@@ -246,28 +246,33 @@ export class StreamedLog {
         }
     }
 
-    async #logStreamChunks(logStream: Readable): Promise<Uint8Array> {
+    async #logStreamChunks(logStream: Readable, signal: AbortSignal): Promise<Uint8Array> {
         // Chunk may be incomplete. Keep remainder for next chunk.
         let previousChunkRemainder: Uint8Array = new Uint8Array();
 
-        for await (const chunk of logStream) {
-            // Handle possible leftover incomplete line from previous chunk.
-            // Everything before last end of line is complete.
-            const chunkWithPreviousRemainder = new Uint8Array(previousChunkRemainder.length + chunk.length);
-            chunkWithPreviousRemainder.set(previousChunkRemainder, 0);
-            chunkWithPreviousRemainder.set(chunk, previousChunkRemainder.length);
+        try {
+            for await (const chunk of logStream) {
+                // Handle possible leftover incomplete line from previous chunk.
+                // Everything before last end of line is complete.
+                const chunkWithPreviousRemainder = new Uint8Array(previousChunkRemainder.length + chunk.length);
+                chunkWithPreviousRemainder.set(previousChunkRemainder, 0);
+                chunkWithPreviousRemainder.set(chunk, previousChunkRemainder.length);
 
-            const lastCompleteMessageIndex = chunkWithPreviousRemainder.lastIndexOf(0x0a);
-            previousChunkRemainder = chunkWithPreviousRemainder.slice(lastCompleteMessageIndex);
+                const lastCompleteMessageIndex = chunkWithPreviousRemainder.lastIndexOf(0x0a);
+                previousChunkRemainder = chunkWithPreviousRemainder.slice(lastCompleteMessageIndex);
 
-            // Push complete part of the chunk to the buffer
-            this.#streamBuffer.push(chunkWithPreviousRemainder.slice(0, lastCompleteMessageIndex));
-            this.#logBufferContent();
+                // Push complete part of the chunk to the buffer
+                this.#streamBuffer.push(chunkWithPreviousRemainder.slice(0, lastCompleteMessageIndex));
+                this.#logBufferContent();
 
-            // Keep processing the new data until stopped
-            if (this.#stopLogging) {
-                break;
+                // Keep processing the new data until stopped
+                if (this.#stopLogging) {
+                    break;
+                }
             }
+        } catch (err) {
+            // An aborted stream still hands back its unterminated last line, so the caller can flush it.
+            if (!signal.aborted) throw err;
         }
         return previousChunkRemainder;
     }

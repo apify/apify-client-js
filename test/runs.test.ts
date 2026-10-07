@@ -495,6 +495,7 @@ describe('Redirect run logs', () => {
             const stopped = streamedLog!.stop().then(() => 'stopped');
             const timedOut = setTimeoutNode(5000, 'timed out');
             await expect(Promise.race([stopped, timedOut])).resolves.toBe('stopped');
+            expect(logSpy.mock.calls.at(-1)?.[0]).toContain('2025-05-13T07:24:13.000Z ACTOR: Unterminated last line.');
             logSpy.mockRestore();
         });
     });
