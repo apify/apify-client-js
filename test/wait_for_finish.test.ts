@@ -24,7 +24,7 @@ describe('waitForFinish() on a job that returns 404', () => {
     let received: number;
     /** Answers for the upcoming lookups, oldest first. The last one repeats once the rest are used up. */
     let answers: Answer[];
-    /** Milliseconds added to `Date.now()`. Every 404 advances it by a second, so the grace window passes quickly. */
+    /** How far the frozen `Date.now()` has moved. Only a 404 moves it, by a second, so lookup counts are exact. */
     let clockOffsetMillis: number;
 
     beforeAll(async () => {
@@ -58,8 +58,8 @@ describe('waitForFinish() on a job that returns 404', () => {
     beforeEach(() => {
         received = 0;
         clockOffsetMillis = 0;
-        const realNow = Date.now.bind(Date);
-        vi.spyOn(Date, 'now').mockImplementation(() => realNow() + clockOffsetMillis);
+        const startMillis = Date.now();
+        vi.spyOn(Date, 'now').mockImplementation(() => startMillis + clockOffsetMillis);
         client = new ApifyClient({ baseUrl: `http://localhost:${(server.address() as AddressInfo).port}` });
     });
 
@@ -74,7 +74,7 @@ describe('waitForFinish() on a job that returns 404', () => {
         answers = [404];
 
         await expect(waitForFinish(client)).rejects.toThrow(`Waiting for ${name} to finish failed`);
-        expect(received).toBeLessThanOrEqual(5);
+        expect(received).toBe(4);
     });
 
     test('a successful lookup resets the grace window for a missing job', async () => {
