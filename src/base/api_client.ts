@@ -108,10 +108,8 @@ export abstract class ApiClient {
         // before calling this, since they also apply to every page request.
         const { chunkSize, ...listOptions } = options;
 
-        const paginatedListPromise = getPaginatedList({
-            ...listOptions,
-            limit: minForLimitParam(options.limit, chunkSize),
-        } as T);
+        const firstPageLimit = minForLimitParam(options.limit, chunkSize);
+        const paginatedListPromise = getPaginatedList({ ...listOptions, limit: firstPageLimit } as T);
 
         // A page can return more or fewer items than the rows it scanned (see `SCANNED_COUNT`). The next offset and
         // the stop condition follow the scanned rows: advancing by `items.length` would re-scan rows after a filter
@@ -128,9 +126,7 @@ export abstract class ApiClient {
         async function* asyncGenerator() {
             let currentPage = await paginatedListPromise;
             yield* currentPage.items;
-            let requestedLimit = minForLimitParam(options.limit, chunkSize);
-
-            let pageScanned = scannedRows(currentPage, requestedLimit);
+            let pageScanned = scannedRows(currentPage, firstPageLimit);
             let currentOffset = (options.offset ?? 0) + pageScanned;
             let remainingItems = options.limit ? options.limit - pageScanned : undefined;
 
@@ -138,7 +134,7 @@ export abstract class ApiClient {
                 pageScanned > 0 && // Continue only if the last page scanned some rows.
                 (remainingItems === undefined || remainingItems > 0)
             ) {
-                requestedLimit = minForLimitParam(remainingItems, chunkSize);
+                const requestedLimit = minForLimitParam(remainingItems, chunkSize);
                 const newOptions = {
                     ...listOptions,
                     limit: requestedLimit,
