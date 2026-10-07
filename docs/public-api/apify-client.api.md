@@ -3626,6 +3626,7 @@ class ResourceCollectionClient extends ApiClient {
     // (undocumented)
     protected listResources<T, R>(schema: z.ZodType, options: T | undefined, timeoutSecs: Timeout, signal?: AbortSignal): Promise<R>;
     protected listResourcesPaginated<T extends PaginationOptions & TimeoutOptions, Data, R extends PaginatedResponse<Data>>(schema: z.ZodType, options: T, defaultTimeoutSecs: Timeout): AsyncIterable<Data> & Promise<R>;
+    protected listUnpaginatedResources<Data, R extends PaginatedResponse<Data>>(schema: z.ZodType, timeoutSecs: Timeout, signal?: AbortSignal): AsyncIterable<Data> & Promise<R>;
 }
 
 // @public

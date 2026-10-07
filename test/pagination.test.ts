@@ -122,8 +122,6 @@ describe('Collection clients list method as async iterable', () => {
     const maxItemsPerPage = 1000;
 
     const allCollectionClients = [
-        client.actor('some-id').version('some-version').envVars(), // Does not support options
-        client.actor('some-id').versions(), // Does not support options
         client.store(), // Does not support desc
         client.actor('some-id').builds(),
         client.actor('some-id').runs(),
@@ -157,16 +155,17 @@ describe('Collection clients list method as async iterable', () => {
     // Create valid tests cases for each client based on the pagination options it is supporting.
     const noOptionsTestCases = generateTestCases(allCollectionClients, noOptions);
 
-    const commonTestCases = generateTestCases(
-        allCollectionClients.slice(2), // without envVars and versions
-        [...limitPaginationOptions, ...offsetPaginationOptions, ...chunkSizePaginationOptions],
-    );
+    const commonTestCases = generateTestCases(allCollectionClients, [
+        ...limitPaginationOptions,
+        ...offsetPaginationOptions,
+        ...chunkSizePaginationOptions,
+    ]);
     const unnamedTestCases = generateTestCases(
         [client.datasets(), client.keyValueStores(), client.requestQueues()],
         unnamedPaginationOptions,
     );
     const descTestCases = generateTestCases(
-        allCollectionClients.slice(3), // without envVars, versions and store
+        allCollectionClients.slice(1), // without store
         descPaginationOptions,
     );
 
@@ -231,6 +230,30 @@ describe('Collection clients list method as async iterable', () => {
             }
         } as any,
     );
+});
+
+test.each([
+    { name: 'envVars', resourceClient: new ApifyClient().actor('some-id').version('some-version').envVars() },
+    { name: 'versions', resourceClient: new ApifyClient().actor('some-id').versions() },
+])('$name().list() iterates the single response of an endpoint without pagination', async ({ resourceClient }) => {
+    // The endpoint ignores `offset` and `limit` and returns every item on each call. The mock refuses a second
+    // request, so a regression fails fast instead of looping forever.
+    const mockedClient = vi.spyOn((resourceClient as any).httpClient, 'call').mockImplementation((async () => {
+        if (mockedClient.mock.calls.length > 1) throw new Error('list() asked for a page it should not need');
+
+        return { data: { data: { total: 3, count: 3, offset: 0, limit: 3, desc: false, items: range(0, 3) } } };
+    }) as any);
+
+    try {
+        const items = [];
+        for await (const item of resourceClient.list()) {
+            items.push(item);
+        }
+        expect(items).toEqual(range(0, 3));
+        expect(mockedClient).toHaveBeenCalledTimes(1);
+    } finally {
+        mockedClient.mockRestore();
+    }
 });
 
 describe('DatasetClient.listItems as async iterable', () => {
