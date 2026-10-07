@@ -18,7 +18,7 @@ import { cast, catchNotFoundForResourceOrThrow, concatBytes, parseArgument } fro
 const logOptionsSchema = z.strictObject({ raw: z.boolean().optional(), ...timeoutOptionsShape });
 
 /** How long `StreamedLog.stop()` waits for lines already in flight before aborting the log stream request. */
-const STOP_GRACE_MS = 1000;
+const STOP_GRACE_MILLIS = 1000;
 
 /**
  * Client for accessing Actor run or build logs.
@@ -209,7 +209,7 @@ export class StreamedLog {
         }
         this.#stopLogging = true;
         const stopController = this.#stopController;
-        const abortTimeout = setTimeout(() => stopController.abort(), STOP_GRACE_MS);
+        const abortTimeout = setTimeout(() => stopController.abort(), STOP_GRACE_MILLIS);
         try {
             await this.#streamingTask;
         } catch (err) {
