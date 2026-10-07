@@ -59,7 +59,7 @@ describe('utils.parseResponse()', () => {
         const userData = { finishedAt: iso, nested: { createdAt: iso } };
         const parsed = utils.parseResponse<RequestQueueClientRequestSchema>(
             response({ ...fixtures.request, userData }),
-            schemas.Request(),
+            schemas.RequestResource(),
         );
 
         expect(parsed.handledAt).toEqual(new Date(fixtures.request.handledAt));
@@ -69,7 +69,7 @@ describe('utils.parseResponse()', () => {
     test('accepts a date-time that carries a time-zone offset instead of a `Z`', () => {
         const parsed = utils.parseResponse<RequestQueueClientRequestSchema>(
             response({ ...fixtures.request, handledAt: '2019-06-16T12:23:31.607+02:00' }),
-            schemas.Request(),
+            schemas.RequestResource(),
         );
 
         expect(parsed.handledAt).toEqual(new Date('2019-06-16T10:23:31.607Z'));
@@ -77,7 +77,10 @@ describe('utils.parseResponse()', () => {
 
     test('rejects a date-time field that does not carry an ISO 8601 date', () => {
         const call = () =>
-            utils.parseResponse(response({ ...fixtures.request, handledAt: 'three days ago' }), schemas.Request());
+            utils.parseResponse(
+                response({ ...fixtures.request, handledAt: 'three days ago' }),
+                schemas.RequestResource(),
+            );
 
         expect(call).toThrow(ResponseValidationError);
         expect(call).toThrow('at `handledAt`');
@@ -87,7 +90,7 @@ describe('utils.parseResponse()', () => {
         const call = () =>
             utils.parseResponse(
                 response({ ...fixtures.request, handledAt: '2019-06-16T10:23:31.607' }),
-                schemas.Request(),
+                schemas.RequestResource(),
             );
 
         expect(call).toThrow(ResponseValidationError);
@@ -96,7 +99,10 @@ describe('utils.parseResponse()', () => {
 
     test('rejects a null in a date-time field the specification requires', () => {
         const call = () =>
-            utils.parseResponse(response({ ...fixtures.requestQueue, createdAt: null }), schemas.RequestQueue());
+            utils.parseResponse(
+                response({ ...fixtures.requestQueue, createdAt: null }),
+                schemas.RequestQueueResource(),
+            );
 
         expect(call).toThrow(ResponseValidationError);
         expect(call).toThrow('at `createdAt`');

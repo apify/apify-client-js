@@ -93,7 +93,7 @@ export class WebhookCollectionClient extends ResourceCollectionClient {
         parseArgument(webhook, webhookCreateSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.createResource(schemas.Webhook(), webhook, timeoutSecs, signal);
+        return this.createResource(schemas.WebhookResource(), webhook, timeoutSecs, signal);
     }
 }
 

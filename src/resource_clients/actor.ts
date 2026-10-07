@@ -144,7 +144,7 @@ export class ActorClient extends ResourceClient {
     async get(options: TimeoutOptions = {}): Promise<Actor | undefined> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Actor(), {}, timeoutSecs, signal);
+        return this.getResource(schemas.ActorResource(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -160,7 +160,7 @@ export class ActorClient extends ResourceClient {
         parseArgument(newFields, anyObjectSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Actor(), newFields, timeoutSecs, signal);
+        return this.updateResource(schemas.ActorResource(), newFields, timeoutSecs, signal);
     }
 
     /**

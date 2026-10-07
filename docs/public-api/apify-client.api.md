@@ -45,7 +45,7 @@ interface AccountAndUsageLimitsRePointed {
 }
 
 // @public
-export interface Actor extends Omit<Schemas['Actor'], keyof ActorRePointed>, ActorRePointed, ActorSpecGaps {
+export interface Actor extends Omit<Schemas['ActorResource'], keyof ActorRePointed>, ActorRePointed, ActorSpecGaps {
 }
 
 // @public
@@ -131,7 +131,7 @@ export interface ActorCollectionCreateOptions {
 }
 
 // @public
-export interface ActorCollectionListItem extends Omit<Schemas['ActorShort'], keyof ActorCollectionListItemRePointed>, ActorCollectionListItemRePointed {
+export interface ActorCollectionListItem extends Omit<Schemas['ActorListItem'], keyof ActorCollectionListItemRePointed>, ActorCollectionListItemRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -251,7 +251,7 @@ interface ActorRunClientNarrowings {
 }
 
 // @public
-export interface ActorRunListItem extends Omit<Schemas['RunShort'], keyof ActorRunListItemRePointed>, ActorRunListItemRePointed {
+export interface ActorRunListItem extends Omit<Schemas['RunListItem'], keyof ActorRunListItemRePointed>, ActorRunListItemRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -371,7 +371,7 @@ export interface ActorStats extends GeneratedActorStats {
 }
 
 // @public
-export interface ActorStoreList extends Omit<Schemas['StoreListActor'], keyof ActorStoreListRePointed>, ActorStoreListRePointed {
+export interface ActorStoreList extends Omit<Schemas['StoreActor'], keyof ActorStoreListRePointed>, ActorStoreListRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -743,7 +743,7 @@ export class BuildCollectionClient extends ResourceCollectionClient {
 }
 
 // @public
-export interface BuildCollectionClientListItem extends Omit<Schemas['BuildShort'], keyof BuildCollectionClientListItemRePointed>, BuildCollectionClientListItemRePointed {
+export interface BuildCollectionClientListItem extends Omit<Schemas['BuildListItem'], keyof BuildCollectionClientListItemRePointed>, BuildCollectionClientListItemRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -765,7 +765,7 @@ export interface BuildCollectionClientListOptions extends PaginationOptions, Tim
 export type BuildCollectionClientListResult = PaginatedList<BuildCollectionClientListItem>;
 
 // @public
-export interface BuildMeta extends Omit<Schemas['BuildsMeta'], keyof BuildMetaRePointed>, BuildMetaRePointed {
+export interface BuildMeta extends Omit<Schemas['BuildMeta'], keyof BuildMetaRePointed>, BuildMetaRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -1030,7 +1030,7 @@ interface components {
                 TOTAL?: number;
             };
         };
-        ActorShort: {
+        ActorListItem: {
             id: string;
             createdAt: Date;
             modifiedAt: Date;
@@ -1040,7 +1040,7 @@ interface components {
             stats?: components["schemas"]["ActorStats"] | null;
         };
         ListOfActors: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["ActorShort"][];
+            items: components["schemas"]["ActorListItem"][];
         };
         ListOfActorsResponse: {
             data: components["schemas"]["ListOfActors"];
@@ -1191,7 +1191,7 @@ interface components {
             [key: string]: components["schemas"]["TaggedBuildInfo"] | null;
         };
         ActorNotice: "NONE" | "RESIDENTIAL_PROXY_REQUIRED" | "UNDER_MAINTENANCE" | null;
-        Actor: {
+        ActorResource: {
             id: string;
             userId: string;
             name: string;
@@ -1225,7 +1225,7 @@ interface components {
             hasNoDataset?: boolean;
         };
         ActorResponse: {
-            data: components["schemas"]["Actor"];
+            data: components["schemas"]["ActorResource"];
         };
         CreateOrUpdateVersionRequest: {
             versionNumber?: string | null;
@@ -1238,7 +1238,7 @@ interface components {
             tarballUrl?: string | null;
             gitHubGistUrl?: string | null;
         };
-        BuildTag: {
+        UpdatedBuildProperty: {
             buildId: string;
         } | null;
         UpdateActorRequest: {
@@ -1255,7 +1255,7 @@ interface components {
             categories?: string[] | null;
             defaultRunOptions?: components["schemas"]["DefaultRunOptions"] | null;
             taggedBuilds?: {
-                [key: string]: components["schemas"]["BuildTag"];
+                [key: string]: components["schemas"]["UpdatedBuildProperty"];
             } | null;
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             exampleRunInput?: components["schemas"]["ExampleRunInput"] | null;
@@ -1289,7 +1289,7 @@ interface components {
             actorRunId?: string | null;
         };
         WebhookDispatchStatus: "ACTIVE" | "SUCCEEDED" | "FAILED";
-        ExampleWebhookDispatch: {
+        WebhookLastDispatch: {
             status: components["schemas"]["WebhookDispatchStatus"];
             finishedAt?: Date | null;
             removedAt?: Date | null;
@@ -1297,7 +1297,7 @@ interface components {
         WebhookStats: {
             totalDispatches?: number;
         };
-        WebhookShort: {
+        WebhookListItem: {
             id: string;
             createdAt: Date;
             modifiedAt: Date;
@@ -1312,23 +1312,23 @@ interface components {
             ignoreSslErrors: boolean;
             doNotRetry: boolean;
             requestUrl: string;
-            lastDispatch?: components["schemas"]["ExampleWebhookDispatch"] | null;
+            lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
             stats?: components["schemas"]["WebhookStats"] | null;
         };
         ListOfWebhooks: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["WebhookShort"][];
+            items: components["schemas"]["WebhookListItem"][];
         };
         ListOfWebhooksResponse: {
             data: components["schemas"]["ListOfWebhooks"];
         };
         ActorJobStatus: "READY" | "RUNNING" | "SUCCEEDED" | "FAILED" | "TIMING-OUT" | "TIMED-OUT" | "ABORTING" | "ABORTED";
         RunOrigin: "DEVELOPMENT" | "WEB" | "API" | "SCHEDULER" | "TEST" | "WEBHOOK" | "ACTOR" | "CLI" | "CI" | "STANDBY" | "MCP";
-        BuildsMeta: {
+        BuildMeta: {
             origin: components["schemas"]["RunOrigin"];
             clientIp?: string;
             userAgent?: string;
         };
-        BuildShort: {
+        BuildListItem: {
             id: string;
             actId?: string;
             userId?: string;
@@ -1338,10 +1338,10 @@ interface components {
             usageTotalUsd: number;
             buildNumber: string;
             buildNumberInt?: number;
-            meta?: components["schemas"]["BuildsMeta"];
+            meta?: components["schemas"]["BuildMeta"];
         };
         ListOfBuilds: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["BuildShort"][];
+            items: components["schemas"]["BuildListItem"][];
         };
         ListOfBuildsResponse: {
             data: components["schemas"]["ListOfBuilds"];
@@ -1389,7 +1389,7 @@ interface components {
             startedAt: Date;
             finishedAt?: Date | null;
             status: components["schemas"]["ActorJobStatus"];
-            meta: components["schemas"]["BuildsMeta"];
+            meta: components["schemas"]["BuildMeta"];
             stats?: components["schemas"]["BuildStats"] | null;
             options?: components["schemas"]["BuildOptions"] | null;
             usage?: components["schemas"]["BuildUsage"] | null;
@@ -1418,7 +1418,7 @@ interface components {
             scheduleId?: string | null;
             scheduledAt?: Date | null;
         };
-        RunShort: {
+        RunListItem: {
             id: string;
             actId: string;
             userId?: string;
@@ -1436,7 +1436,7 @@ interface components {
             defaultRequestQueueId: string;
         };
         ListOfRuns: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["RunShort"][];
+            items: components["schemas"]["RunListItem"][];
         };
         ListOfRunsResponse: {
             data: components["schemas"]["ListOfRuns"];
@@ -1507,7 +1507,7 @@ interface components {
             PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number | null;
             PROXY_SERPS?: number | null;
         };
-        Metamorph: {
+        RunMetamorphEvent: {
             createdAt: Date;
             actorId: string;
             buildId: string;
@@ -1560,7 +1560,7 @@ interface components {
             usage?: components["schemas"]["RunUsage"] | null;
             usageTotalUsd?: number | null;
             usageUsd?: components["schemas"]["RunUsageUsd"] | null;
-            metamorphs?: components["schemas"]["Metamorph"][] | null;
+            metamorphs?: components["schemas"]["RunMetamorphEvent"][] | null;
             platformUsageBillingModel?: string;
         };
         RunResponse: {
@@ -1572,7 +1572,7 @@ interface components {
             storageBytes?: number;
             inflatedBytes?: number;
         };
-        Dataset: {
+        DatasetResource: {
             id: string;
             name?: string | null;
             userId: string;
@@ -1592,7 +1592,7 @@ interface components {
             stats?: components["schemas"]["DatasetStats"];
         };
         DatasetResponse: {
-            data: components["schemas"]["Dataset"];
+            data: components["schemas"]["DatasetResource"];
         };
         UpdateDatasetRequest: {
             name?: string | null;
@@ -1601,26 +1601,26 @@ interface components {
         PutItemsRequest: {
             [key: string]: unknown;
         };
-        ValidationError: {
+        DatasetItemValidationError: {
             instancePath?: string;
             schemaPath?: string;
             keyword?: string;
             message?: string;
             params?: Record<string, unknown>;
         };
-        InvalidItem: {
+        InvalidDatasetItem: {
             itemPosition?: number;
-            validationErrors?: components["schemas"]["ValidationError"][];
+            validationErrors?: components["schemas"]["DatasetItemValidationError"][];
         };
-        SchemaValidationErrorData: {
-            invalidItems: components["schemas"]["InvalidItem"][];
+        DatasetSchemaValidationErrorData: {
+            invalidItems: components["schemas"]["InvalidDatasetItem"][];
         };
         DatasetSchemaValidationError: {
             type?: string;
             message?: string;
-            data?: components["schemas"]["SchemaValidationErrorData"];
+            data?: components["schemas"]["DatasetSchemaValidationErrorData"];
         };
-        PutItemResponseError: {
+        PutItemsErrorResponse: {
             error: components["schemas"]["DatasetSchemaValidationError"];
         };
         DatasetFieldStatistics: {
@@ -1645,7 +1645,7 @@ interface components {
             s3StorageBytes?: number;
             storageBytes?: number;
         };
-        KeyValueStore: {
+        KeyValueStoreResource: {
             id: string;
             name?: string | null;
             userId?: string | null;
@@ -1664,9 +1664,9 @@ interface components {
             stats?: components["schemas"]["KeyValueStoreStats"];
         };
         KeyValueStoreResponse: {
-            data: components["schemas"]["KeyValueStore"];
+            data: components["schemas"]["KeyValueStoreResource"];
         };
-        UpdateStoreRequest: {
+        UpdateKeyValueStoreRequest: {
             name?: string | null;
             generalAccess?: components["schemas"]["GeneralAccess"];
         };
@@ -1708,7 +1708,7 @@ interface components {
             storageBytes?: number;
             writeCount?: number;
         };
-        RequestQueue: {
+        RequestQueueResource: {
             id: components["schemas"]["QueueId"];
             name?: string | null;
             userId: components["schemas"]["QueueUserId"];
@@ -1726,7 +1726,7 @@ interface components {
             generalAccess?: components["schemas"]["GeneralAccess"] | null;
         };
         RequestQueueResponse: {
-            data: components["schemas"]["RequestQueue"];
+            data: components["schemas"]["RequestQueueResource"];
         };
         UpdateRequestQueueRequest: {
             name?: string | null;
@@ -1754,11 +1754,11 @@ interface components {
             handledAt?: Date | null;
         };
         RequestId: string;
-        Request: components["schemas"]["RequestBase"] & {
+        RequestResource: components["schemas"]["RequestBase"] & {
             id: components["schemas"]["RequestId"];
         };
         ListOfRequests: {
-            items: components["schemas"]["Request"][];
+            items: components["schemas"]["RequestResource"][];
             limit: number;
             exclusiveStartId?: string;
             cursor?: string;
@@ -1784,7 +1784,7 @@ interface components {
             wasAlreadyPresent: components["schemas"]["WasAlreadyPresent"];
             wasAlreadyHandled: components["schemas"]["WasAlreadyHandled"];
         };
-        RequestDraft: {
+        UnprocessedRequest: {
             id?: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
@@ -1792,20 +1792,20 @@ interface components {
         };
         BatchAddResult: {
             processedRequests: components["schemas"]["AddedRequest"][];
-            unprocessedRequests: components["schemas"]["RequestDraft"][];
+            unprocessedRequests: components["schemas"]["UnprocessedRequest"][];
         };
         BatchAddResponse: {
             data: components["schemas"]["BatchAddResult"];
         };
-        RequestDraftDeleteById: {
+        RequestToDeleteById: {
             id: components["schemas"]["RequestId"];
             uniqueKey?: components["schemas"]["UniqueKey"];
         };
-        RequestDraftDeleteByUniqueKey: {
+        RequestToDeleteByUniqueKey: {
             id?: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
         };
-        RequestDraftDelete: components["schemas"]["RequestDraftDeleteById"] | components["schemas"]["RequestDraftDeleteByUniqueKey"];
+        RequestToDelete: components["schemas"]["RequestToDeleteById"] | components["schemas"]["RequestToDeleteByUniqueKey"];
         DeletedRequestById: {
             uniqueKey?: components["schemas"]["UniqueKey"];
             id: components["schemas"]["RequestId"];
@@ -1817,7 +1817,7 @@ interface components {
         DeletedRequest: components["schemas"]["DeletedRequestById"] | components["schemas"]["DeletedRequestByUniqueKey"];
         BatchDeleteResult: {
             processedRequests: components["schemas"]["DeletedRequest"][];
-            unprocessedRequests: components["schemas"]["RequestDraft"][];
+            unprocessedRequests: components["schemas"]["UnprocessedRequest"][];
         };
         BatchDeleteResponse: {
             data: components["schemas"]["BatchDeleteResult"];
@@ -1829,7 +1829,7 @@ interface components {
             data: components["schemas"]["UnlockRequestsResult"];
         };
         RequestResponse: {
-            data: components["schemas"]["Request"];
+            data: components["schemas"]["RequestResource"];
         };
         UpdateRequestResponse: {
             data: components["schemas"]["RequestRegistration"];
@@ -1842,7 +1842,7 @@ interface components {
             data: components["schemas"]["RequestLockInfo"];
         };
         HeadLimit: number;
-        HeadRequest: {
+        RequestQueueHeadItem: {
             id: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
@@ -1853,12 +1853,12 @@ interface components {
             limit: components["schemas"]["HeadLimit"];
             queueModifiedAt: components["schemas"]["QueueModifiedAt"];
             hadMultipleClients: components["schemas"]["HadMultipleClients"];
-            items: components["schemas"]["HeadRequest"][];
+            items: components["schemas"]["RequestQueueHeadItem"][];
         };
-        HeadResponse: {
+        RequestQueueHeadResponse: {
             data: components["schemas"]["RequestQueueHead"];
         };
-        LockedHeadRequest: {
+        LockedRequestQueueHeadItem: {
             id: components["schemas"]["RequestId"];
             uniqueKey: components["schemas"]["UniqueKey"];
             url: components["schemas"]["RequestUrl"];
@@ -1873,15 +1873,15 @@ interface components {
             clientKey?: string;
             hadMultipleClients: components["schemas"]["HadMultipleClients"];
             lockSecs: number;
-            items: components["schemas"]["LockedHeadRequest"][];
+            items: components["schemas"]["LockedRequestQueueHeadItem"][];
         };
-        HeadAndLockResponse: {
+        LockedRequestQueueHeadResponse: {
             data: components["schemas"]["LockedRequestQueueHead"];
         };
         TaskStats: {
             totalRuns?: number;
         };
-        TaskShort: {
+        TaskListItem: {
             id: string;
             userId: string;
             actId: string;
@@ -1894,7 +1894,7 @@ interface components {
             stats?: components["schemas"]["TaskStats"] | null;
         };
         ListOfTasks: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["TaskShort"][];
+            items: components["schemas"]["TaskListItem"][];
         };
         ListOfTasksResponse: {
             data: components["schemas"]["ListOfTasks"];
@@ -1960,7 +1960,7 @@ interface components {
             publicConfig?: components["schemas"]["TaskPublicConfig"];
             isPublic?: boolean;
         };
-        Webhook: {
+        WebhookResource: {
             id: string;
             createdAt: Date;
             modifiedAt: Date;
@@ -1975,7 +1975,7 @@ interface components {
             payloadTemplate?: string | null;
             headersTemplate?: string | null;
             description?: string | null;
-            lastDispatch?: components["schemas"]["ExampleWebhookDispatch"] | null;
+            lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
             stats?: components["schemas"]["WebhookStats"] | null;
         };
         UpdateRunRequest: {
@@ -1991,7 +1991,7 @@ interface components {
         StorageOwnership: "ownedByMe" | "sharedWithMe";
         ListOfKeyValueStores: components["schemas"]["PaginationResponse"] & {
             unnamed?: boolean;
-            items: components["schemas"]["KeyValueStore"][];
+            items: components["schemas"]["KeyValueStoreResource"][];
         };
         ListOfKeyValueStoresResponse: {
             data: components["schemas"]["ListOfKeyValueStores"];
@@ -2019,7 +2019,7 @@ interface components {
         ListOfDatasetsResponse: {
             data: components["schemas"]["ListOfDatasets"];
         };
-        RequestQueueShort: {
+        RequestQueueListItem: {
             id: components["schemas"]["QueueId"];
             name: string;
             userId: components["schemas"]["QueueUserId"];
@@ -2039,12 +2039,12 @@ interface components {
         };
         ListOfRequestQueues: components["schemas"]["PaginationResponse"] & {
             unnamed?: boolean;
-            items: components["schemas"]["RequestQueueShort"][];
+            items: components["schemas"]["RequestQueueListItem"][];
         };
         ListOfRequestQueuesResponse: {
             data: components["schemas"]["ListOfRequestQueues"];
         };
-        WebhookCreate: {
+        CreateWebhookRequest: {
             isAdHoc?: boolean | null;
             eventTypes: components["schemas"]["WebhookEventType"][];
             condition: components["schemas"]["WebhookCondition"];
@@ -2058,9 +2058,9 @@ interface components {
             shouldInterpolateStrings?: boolean | null;
         };
         WebhookResponse: {
-            data: components["schemas"]["Webhook"];
+            data: components["schemas"]["WebhookResource"];
         };
-        WebhookUpdate: {
+        UpdateWebhookRequest: {
             isAdHoc?: boolean | null;
             eventTypes?: components["schemas"]["WebhookEventType"][] | null;
             condition?: components["schemas"]["WebhookCondition"] | null;
@@ -2100,7 +2100,7 @@ interface components {
                 responseBody?: string | null;
             }[];
         };
-        TestWebhookResponse: {
+        WebhookDispatchResponse: {
             data: components["schemas"]["WebhookDispatch"];
         };
         ListOfWebhookDispatches: components["schemas"]["PaginationResponse"] & {
@@ -2108,9 +2108,6 @@ interface components {
         };
         ListOfWebhookDispatchesResponse: {
             data: components["schemas"]["ListOfWebhookDispatches"];
-        };
-        WebhookDispatchResponse: {
-            data: components["schemas"]["WebhookDispatch"];
         };
         ScheduleBase: {
             id: string;
@@ -2125,22 +2122,22 @@ interface components {
             nextRunAt?: Date | null;
             lastRunAt?: Date | null;
         };
-        ScheduleActionShortRunActor: {
+        ScheduleListItemActionRunActor: {
             id: string;
             type: "RUN_ACTOR";
             actorId: string;
         };
-        ScheduleActionShortRunActorTask: {
+        ScheduleListItemActionRunActorTask: {
             id: string;
             type: "RUN_ACTOR_TASK";
             actorTaskId: string;
         };
-        ScheduleActionShort: components["schemas"]["ScheduleActionShortRunActor"] | components["schemas"]["ScheduleActionShortRunActorTask"];
-        ScheduleShort: components["schemas"]["ScheduleBase"] & {
-            actions: components["schemas"]["ScheduleActionShort"][];
+        ScheduleListItemAction: components["schemas"]["ScheduleListItemActionRunActor"] | components["schemas"]["ScheduleListItemActionRunActorTask"];
+        ScheduleListItem: components["schemas"]["ScheduleBase"] & {
+            actions: components["schemas"]["ScheduleListItemAction"][];
         };
         ListOfSchedules: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["ScheduleShort"][];
+            items: components["schemas"]["ScheduleListItem"][];
         };
         ListOfSchedulesResponse: {
             data: components["schemas"]["ListOfSchedules"];
@@ -2161,7 +2158,7 @@ interface components {
             input?: Record<string, unknown> | null;
         };
         ScheduleCreateAction: components["schemas"]["ScheduleCreateActionRunActor"] | components["schemas"]["ScheduleCreateActionRunActorTask"];
-        ScheduleCreate: {
+        CreateOrUpdateScheduleRequest: {
             name?: string | null;
             isEnabled?: boolean | null;
             isExclusive?: boolean | null;
@@ -2196,13 +2193,13 @@ interface components {
         ScheduleResponse: {
             data: components["schemas"]["Schedule"];
         };
-        ScheduleInvoked: {
+        ScheduleLogEntry: {
             message: string;
             level: string;
             createdAt: Date;
         };
         ScheduleLogResponse: {
-            data: components["schemas"]["ScheduleInvoked"][];
+            data: components["schemas"]["ScheduleLogEntry"][];
         };
         CurrentPricingInfo: {
             pricingModel: string;
@@ -2223,7 +2220,7 @@ interface components {
                 [key: string]: unknown;
             } | null;
         };
-        StoreListActor: {
+        StoreActor: {
             id: string;
             title: string;
             name: string;
@@ -2245,12 +2242,12 @@ interface components {
             readmeSummary?: string;
         };
         ListOfStoreActors: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["StoreListActor"][];
+            items: components["schemas"]["StoreActor"][];
         };
-        ListOfActorsInStoreResponse: {
+        ListOfStoreActorsResponse: {
             data: components["schemas"]["ListOfStoreActors"];
         };
-        Profile: {
+        UserProfile: {
             bio?: string | null;
             readme?: string | null;
             name?: string;
@@ -2261,9 +2258,9 @@ interface components {
         };
         UserPublicInfo: {
             username: string;
-            profile?: components["schemas"]["Profile"];
+            profile?: components["schemas"]["UserProfile"];
         };
-        PublicUserDataResponse: {
+        UserPublicInfoResponse: {
             data: components["schemas"]["UserPublicInfo"];
         };
         ProxyGroup: {
@@ -2271,14 +2268,14 @@ interface components {
             description: string | null;
             availableCount: number;
         };
-        Proxy: {
+        ProxyResource: {
             password: string;
             groups: components["schemas"]["ProxyGroup"][];
         };
         AvailableProxyGroups: {
             [key: string]: number;
         };
-        Plan: {
+        UserPlan: {
             id?: string;
             description?: string;
             isEnabled?: boolean;
@@ -2329,22 +2326,22 @@ interface components {
         UserPrivateInfo: {
             id?: string;
             username: string;
-            profile?: components["schemas"]["Profile"];
+            profile?: components["schemas"]["UserProfile"];
             email?: string;
-            proxy?: components["schemas"]["Proxy"];
-            plan?: components["schemas"]["Plan"];
+            proxy?: components["schemas"]["ProxyResource"];
+            plan?: components["schemas"]["UserPlan"];
             effectivePlatformFeatures?: components["schemas"]["EffectivePlatformFeatures"];
             createdAt?: Date;
             isPaying?: boolean;
         };
-        PrivateUserDataResponse: {
+        UserPrivateInfoResponse: {
             data: components["schemas"]["UserPrivateInfo"];
         };
         UsageCycle: {
             startAt: Date;
             endAt: Date;
         };
-        PriceTiers: {
+        PriceTier: {
             quantityAbove: number;
             discountPercent: number;
             tierQuantity: number;
@@ -2356,7 +2353,7 @@ interface components {
             baseAmountUsd: number;
             baseUnitPriceUsd?: number;
             amountAfterVolumeDiscountUsd?: number;
-            priceTiers?: components["schemas"]["PriceTiers"][];
+            priceTiers?: components["schemas"]["PriceTier"][];
         };
         MonthlyServiceUsage: {
             [key: string]: components["schemas"]["UsageItem"];
@@ -2364,7 +2361,7 @@ interface components {
         ServiceUsage: {
             [key: string]: components["schemas"]["UsageItem"];
         };
-        DailyServiceUsages: {
+        DailyServiceUsage: {
             date: Date;
             serviceUsage: components["schemas"]["ServiceUsage"];
             totalUsageCreditsUsd: number;
@@ -2372,7 +2369,7 @@ interface components {
         MonthlyUsage: {
             usageCycle: components["schemas"]["UsageCycle"];
             monthlyServiceUsage: components["schemas"]["MonthlyServiceUsage"];
-            dailyServiceUsages: components["schemas"]["DailyServiceUsages"][];
+            dailyServiceUsages: components["schemas"]["DailyServiceUsage"][];
             totalUsageCreditsUsdBeforeVolumeDiscount: number;
             totalUsageCreditsUsdAfterVolumeDiscount: number;
         };
@@ -2393,7 +2390,7 @@ interface components {
             dataRetentionDays: number;
             maxScheduleCount?: number;
         };
-        Current: {
+        CurrentUsage: {
             monthlyUsageUsd: number;
             monthlyActorComputeUnits: number;
             monthlyExternalDataTransferGbytes: number;
@@ -2409,9 +2406,9 @@ interface components {
         AccountLimits: {
             monthlyUsageCycle: components["schemas"]["UsageCycle"];
             limits: components["schemas"]["Limits"];
-            current: components["schemas"]["Current"];
+            current: components["schemas"]["CurrentUsage"];
         };
-        LimitsResponse: {
+        AccountLimitsResponse: {
             data: components["schemas"]["AccountLimits"];
         };
         UpdateLimitsRequest: {
@@ -2428,22 +2425,22 @@ interface components {
             };
             rawHeaders?: string[];
         };
-        EncodeAndSignData: {
+        EncodeAndSignResult: {
             encoded: string;
         };
         EncodeAndSignResponse: {
-            data: components["schemas"]["EncodeAndSignData"];
+            data: components["schemas"]["EncodeAndSignResult"];
         };
         DecodeAndVerifyRequest: {
             encoded: string;
         };
-        DecodeAndVerifyData: {
+        DecodeAndVerifyResult: {
             decoded: unknown;
             encodedByUserId: string | null;
             isVerifiedUser: boolean;
         };
         DecodeAndVerifyResponse: {
-            data: components["schemas"]["DecodeAndVerifyData"];
+            data: components["schemas"]["DecodeAndVerifyResult"];
         };
     };
 }
@@ -2453,11 +2450,11 @@ export class ConflictError extends ApifyApiError {
 }
 
 // @public
-export interface Current extends GeneratedCurrent {
+export interface Current extends GeneratedCurrentUsage {
 }
 
 // @public
-export interface DailyServiceUsage extends Omit<Schemas['DailyServiceUsages'], keyof DailyServiceUsageRePointed>, DailyServiceUsageRePointed {
+export interface DailyServiceUsage extends Omit<Schemas['DailyServiceUsage'], keyof DailyServiceUsageRePointed>, DailyServiceUsageRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -2468,7 +2465,7 @@ interface DailyServiceUsageRePointed {
 }
 
 // @public
-export interface Dataset extends Omit<Schemas['Dataset'], keyof DatasetRePointed | keyof DatasetSpecNarrowings>, DatasetRePointed, DatasetSpecNarrowings, DatasetSpecGaps {
+export interface Dataset extends Omit<Schemas['DatasetResource'], keyof DatasetRePointed | keyof DatasetSpecNarrowings>, DatasetRePointed, DatasetSpecNarrowings, DatasetSpecGaps {
 }
 
 // @public
@@ -2722,11 +2719,11 @@ type GeneratedBuildUsage = Schemas['BuildUsage'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedCurrent = Schemas['Current'];
+type GeneratedCurrentPricingInfo = Schemas['CurrentPricingInfo'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedCurrentPricingInfo = Schemas['CurrentPricingInfo'];
+type GeneratedCurrentUsage = Schemas['CurrentUsage'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -2758,7 +2755,7 @@ type GeneratedFreeActorPricingInfo = Schemas['FreeActorPricingInfo'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedHeadRequest = Schemas['HeadRequest'];
+type GeneratedHeadRequest = Schemas['RequestQueueHeadItem'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -2774,19 +2771,15 @@ type GeneratedLimits = Schemas['Limits'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedLockedHeadRequest = Schemas['LockedHeadRequest'];
+type GeneratedLockedHeadRequest = Schemas['LockedRequestQueueHeadItem'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedMetamorph = Schemas['Metamorph'];
+type GeneratedMetamorph = Schemas['RunMetamorphEvent'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedPriceTiers = Schemas['PriceTiers'];
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-type GeneratedProfile = Schemas['Profile'];
+type GeneratedPriceTier = Schemas['PriceTier'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -2794,7 +2787,7 @@ type GeneratedProxyGroup = Schemas['ProxyGroup'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedRequest = Schemas['Request'];
+type GeneratedRequest = Schemas['RequestResource'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -2830,7 +2823,7 @@ type GeneratedScheduleActionRunInput = Schemas['ScheduleActionRunInput'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
-type GeneratedScheduleInvoked = Schemas['ScheduleInvoked'];
+type GeneratedScheduleInvoked = Schemas['ScheduleLogEntry'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -2871,6 +2864,10 @@ type GeneratedUnlockRequestsResult = Schemas['UnlockRequestsResult'];
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 type GeneratedUsageCycle = Schemas['UsageCycle'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedUserProfile = Schemas['UserProfile'];
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -3059,7 +3056,7 @@ export interface KeyValueListItem extends GeneratedKeyValueStoreKey {
 }
 
 // @public
-export interface KeyValueStore extends Omit<Schemas['KeyValueStore'], keyof KeyValueStoreRePointed>, KeyValueStoreRePointed, KeyValueStoreSpecGaps {
+export interface KeyValueStore extends Omit<Schemas['KeyValueStoreResource'], keyof KeyValueStoreRePointed>, KeyValueStoreRePointed, KeyValueStoreSpecGaps {
 }
 
 // @public
@@ -3344,7 +3341,7 @@ interface PricePerEventActorPricingInfoRePointed {
 }
 
 // @public
-export interface PriceTier extends GeneratedPriceTiers {
+export interface PriceTier extends GeneratedPriceTier {
 }
 
 // @public
@@ -3363,7 +3360,7 @@ export class RateLimitError extends ApifyApiError {
 export type RequestInterceptorFunction = Parameters<AxiosInterceptorManager<InternalAxiosRequestConfig>['use']>[0];
 
 // @public
-export interface RequestQueue extends Omit<Schemas['RequestQueue'], keyof RequestQueueRePointed | keyof RequestQueueSpecNarrowings>, RequestQueueRePointed, RequestQueueSpecNarrowings, RequestQueueSpecGaps {
+export interface RequestQueue extends Omit<Schemas['RequestQueueResource'], keyof RequestQueueRePointed | keyof RequestQueueSpecNarrowings>, RequestQueueRePointed, RequestQueueSpecNarrowings, RequestQueueSpecGaps {
 }
 
 // @public
@@ -3963,7 +3960,7 @@ export interface TaskLastRunOptions extends ActorLastRunOptions {
 }
 
 // @public
-export interface TaskList extends Omit<Schemas['TaskShort'], keyof TaskListRePointed>, TaskListRePointed, TaskListSpecGaps {
+export interface TaskList extends Omit<Schemas['TaskListItem'], keyof TaskListRePointed>, TaskListRePointed, TaskListSpecGaps {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -4088,7 +4085,7 @@ export class UserClient extends ResourceClient {
 }
 
 // @public
-export interface UserPlan extends Omit<Schemas['Plan'], keyof UserPlanRePointed>, UserPlanRePointed {
+export interface UserPlan extends Omit<Schemas['UserPlan'], keyof UserPlanRePointed>, UserPlanRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -4099,11 +4096,11 @@ interface UserPlanRePointed {
 }
 
 // @public
-export interface UserProfile extends GeneratedProfile {
+export interface UserProfile extends GeneratedUserProfile {
 }
 
 // @public
-export interface UserProxy extends Omit<Schemas['Proxy'], keyof UserProxyRePointed>, UserProxyRePointed {
+export interface UserProxy extends Omit<Schemas['ProxyResource'], keyof UserProxyRePointed>, UserProxyRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -4134,7 +4131,7 @@ interface WaitForFinishOptions extends TimeoutOptions {
 }
 
 // @public
-export interface Webhook extends Omit<Schemas['Webhook'], keyof WebhookRePointed>, WebhookRePointed, WebhookSpecGaps {
+export interface Webhook extends Omit<Schemas['WebhookResource'], keyof WebhookRePointed>, WebhookRePointed, WebhookSpecGaps {
 }
 
 // @public
@@ -4257,7 +4254,7 @@ export interface WebhookIdempotencyKey {
 }
 
 // @public
-export interface WebhookLastDispatch extends Omit<Schemas['ExampleWebhookDispatch'], keyof WebhookLastDispatchRePointed>, WebhookLastDispatchRePointed {
+export interface WebhookLastDispatch extends Omit<Schemas['WebhookLastDispatch'], keyof WebhookLastDispatchRePointed>, WebhookLastDispatchRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.

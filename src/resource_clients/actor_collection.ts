@@ -91,7 +91,7 @@ export class ActorCollectionClient extends ResourceCollectionClient {
         parseArgument(actor, actorCreateSchema);
         const { timeoutSecs = 'medium', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.createResource(schemas.Actor(), actor, timeoutSecs, signal);
+        return this.createResource(schemas.ActorResource(), actor, timeoutSecs, signal);
     }
 }
 

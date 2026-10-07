@@ -93,7 +93,7 @@ export class RequestQueueCollectionClient extends ResourceCollectionClient {
         parseArgument(name, nameSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getOrCreateResource(schemas.RequestQueue(), name, undefined, timeoutSecs, signal);
+        return this.getOrCreateResource(schemas.RequestQueueResource(), name, undefined, timeoutSecs, signal);
     }
 }
 

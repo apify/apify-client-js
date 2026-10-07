@@ -152,7 +152,7 @@ export class DatasetClient<
     async get(options: TimeoutOptions = {}): Promise<Dataset | undefined> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Dataset(), {}, timeoutSecs, signal);
+        return this.getResource(schemas.DatasetResource(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -168,7 +168,7 @@ export class DatasetClient<
         parseArgument(newFields, anyObjectSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Dataset(), newFields, timeoutSecs, signal);
+        return this.updateResource(schemas.DatasetResource(), newFields, timeoutSecs, signal);
     }
 
     /**
