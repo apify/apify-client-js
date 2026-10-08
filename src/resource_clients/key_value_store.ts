@@ -11,7 +11,7 @@ import type { ApifyApiError } from '../apify_api_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_clients/index.js';
-import type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore } from '../models.js';
+import type { KeyValueStoreResource, KeyValueStoreKey, ListOfKeys } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
@@ -74,7 +74,7 @@ const recordOptionsSchema = z.strictObject({
     doNotRetryTimeouts: z.boolean().optional(),
 });
 
-export type { KeyValueClientListKeysResult, KeyValueListItem, KeyValueStore, KeyValueStoreStats } from '../models.js';
+export type { KeyValueStoreResource, KeyValueStoreKey, KeyValueStoreStats, ListOfKeys } from '../models.js';
 
 /**
  * Client for managing a specific key-value store.
@@ -123,10 +123,10 @@ export class KeyValueStoreClient extends ResourceClient {
      * @returns The KeyValueStore object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/key-value-store-get
      */
-    async get(options: TimeoutOptions = {}): Promise<KeyValueStore | undefined> {
+    async get(options: TimeoutOptions = {}): Promise<KeyValueStoreResource | undefined> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.KeyValueStore(), {}, timeoutSecs, signal);
+        return this.getResource(schemas.KeyValueStoreResource(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -141,11 +141,11 @@ export class KeyValueStoreClient extends ResourceClient {
      * @returns The updated KeyValueStore object
      * @see https://docs.apify.com/api/v2/key-value-store-put
      */
-    async update(newFields: KeyValueClientUpdateOptions, options: TimeoutOptions = {}): Promise<KeyValueStore> {
+    async update(newFields: KeyValueClientUpdateOptions, options: TimeoutOptions = {}): Promise<KeyValueStoreResource> {
         parseArgument(newFields, anyObjectSchema);
         const { timeoutSecs = 'long', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.KeyValueStore(), newFields, timeoutSecs, signal);
+        return this.updateResource(schemas.KeyValueStoreResource(), newFields, timeoutSecs, signal);
     }
 
     /**
@@ -197,18 +197,14 @@ export class KeyValueStoreClient extends ResourceClient {
      * } while (result.isTruncated);
      * ```
      */
-    listKeys(
-        options: KeyValueClientListKeysOptions = {},
-    ): Promise<KeyValueClientListKeysResult> & AsyncIterable<KeyValueListItem> {
+    listKeys(options: KeyValueClientListKeysOptions = {}): Promise<ListOfKeys> & AsyncIterable<KeyValueStoreKey> {
         const {
             timeoutSecs = 'medium',
             signal,
             ...parsed
         } = parseArgument(options, listKeysOptionsSchema, 'KeyValueClientListKeysOptions');
 
-        const getPaginatedList = async (
-            kvsListOptions: KeyValueClientListKeysOptions = {},
-        ): Promise<KeyValueClientListKeysResult> => {
+        const getPaginatedList = async (kvsListOptions: KeyValueClientListKeysOptions = {}): Promise<ListOfKeys> => {
             const response = await this.httpClient.call({
                 url: this.buildUrl('keys'),
                 method: 'GET',
@@ -249,7 +245,7 @@ export class KeyValueStoreClient extends ResourceClient {
 
         return Object.defineProperty(paginatedListPromise, Symbol.asyncIterator, {
             value: asyncGenerator,
-        }) as unknown as AsyncIterable<KeyValueListItem> & Promise<KeyValueClientListKeysResult>;
+        }) as unknown as AsyncIterable<KeyValueStoreKey> & Promise<ListOfKeys>;
     }
 
     /**
@@ -391,7 +387,7 @@ export class KeyValueStoreClient extends ResourceClient {
      * use the `stream` option to get a Readable stream.
      *
      * When the record does not exist, the function resolves to `undefined`. It does
-     * NOT resolve to a `KeyValueStore` record with an `undefined` value.
+     * NOT resolve to a `KeyValueStoreRecord` with an `undefined` value.
      *
      * @param key - The record key
      * @param options - Retrieval options

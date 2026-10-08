@@ -265,6 +265,24 @@ describe('Dataset methods', () => {
             validateRequest({ query: qs, params: { datasetId } });
         });
 
+        test('listItems() rejects a string unwind', () => {
+            const call = () => client.dataset('some-id').listItems({ unwind: 'parts' } as any);
+
+            expect(call).toThrow(ArgumentValidationError);
+            expect(call).toThrow('expected array, received the string `parts` at `unwind`');
+        });
+
+        test('downloadItems() and createItemsPublicUrl() reject a string unwind', async () => {
+            const dataset = client.dataset('some-id');
+            const download = dataset.downloadItems(DownloadItemsFormat.JSON, { unwind: 'parts' } as any);
+            const publicUrl = dataset.createItemsPublicUrl({ unwind: 'parts' } as any);
+
+            await expect(download).rejects.toThrow(ArgumentValidationError);
+            await expect(download).rejects.toThrow('expected array, received the string `parts` at `unwind`');
+            await expect(publicUrl).rejects.toThrow(ArgumentValidationError);
+            await expect(publicUrl).rejects.toThrow('expected array, received the string `parts` at `unwind`');
+        });
+
         test("downloadItems() doesn't parse application/json", async () => {
             const datasetId = 'some-id';
             const body = JSON.stringify({ a: 'foo', b: ['bar1', 'bar2'] });

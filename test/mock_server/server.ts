@@ -111,6 +111,14 @@ export function createDefaultApp(v2Router = express.Router()) {
         res.json({ data: { ...fixtures.run, id: 'redirect-run-id', actId: 'redirect-actor-id', status: 'SUCCEEDED' } });
     });
 
+    v2Router.use('/actor-runs/quiet-run-id/log', async (_: express.Request, res: express.Response) => {
+        res.write(`${MOCKED_ACTOR_LOGS[0]}2025-05-13T07:24:13.000Z ACTOR: Unterminated last line.`);
+        (res as any).flush();
+    });
+    v2Router.use('/actor-runs/quiet-run-id', async (_, res) => {
+        res.json({ data: { ...fixtures.run, id: 'quiet-run-id', actId: 'redirect-actor-id', status: 'RUNNING' } });
+    });
+
     v2Router.use('/actor-runs/econnreset-run-id/log', async (req: express.Request, res: express.Response) => {
         res.write(MOCKED_ACTOR_LOGS[0]);
         (res as any).flush();

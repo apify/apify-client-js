@@ -40,7 +40,7 @@ export function transformDateTime(
  * Moves a `required` that an `allOf` branch cannot carry on its own up to the branch's parent.
  *
  * Two shapes qualify. A `required` next to a `$ref`: OpenAPI 3.1 lets a `$ref` carry siblings, and the
- * specification uses that to say which of `RequestBase`'s fields a stored `Request` always carries, but
+ * specification uses that to say which of `RequestBase`'s fields a stored `RequestResource` always carries, but
  * `openapi-typescript` drops a `required` in that position, so all three arrive optional. And a branch that
  * is nothing but a `required`, which the specification uses to make an inherited field mandatory
  * (`EnvVarRequest`), and which `openapi-typescript` types as `unknown`. Every branch of an `allOf`

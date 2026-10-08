@@ -2,7 +2,7 @@ import { beforeAll, expect, test } from 'vitest';
 
 import { Log, LogLevel } from '@apify/log';
 
-import type { ActorRun, ActorRunListItem, ApifyClient, RunClient } from 'apify-client';
+import type { ApifyClient, Run, RunClient, RunListItem } from 'apify-client';
 import { ActorSourceType, ApifyApiError } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
@@ -46,7 +46,7 @@ beforeAll(() => {
  * Startup time varies by orders of magnitude - a second when the platform is warm, close to a minute
  * when it is not - so this backs off instead of polling at a fixed rate.
  */
-async function waitUntilStarted(runClient: RunClient): Promise<ActorRun | undefined> {
+async function waitUntilStarted(runClient: RunClient): Promise<Run | undefined> {
     return pollUntilCondition(
         async () => runClient.get(),
         (run) => run !== undefined && run.status !== 'READY',
@@ -326,7 +326,7 @@ test('runs().list({ desc: true }) returns the run feed newest first', async () =
 });
 
 test('runs().list() is async-iterable and yields the user runs', async () => {
-    const collected: ActorRunListItem[] = [];
+    const collected: RunListItem[] = [];
     for await (const run of client.runs().list({ limit: 5 })) {
         collected.push(run);
     }
@@ -342,7 +342,7 @@ test('actor.runs().list() is async-iterable and yields only that Actor runs', as
     const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
 
     try {
-        const collected: ActorRunListItem[] = [];
+        const collected: RunListItem[] = [];
         for await (const actorRun of client.actor(HELLO_WORLD_ACTOR).runs().list({ limit: 3, desc: true })) {
             collected.push(actorRun);
         }

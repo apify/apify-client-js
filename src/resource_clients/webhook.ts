@@ -1,6 +1,6 @@
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { Webhook, WebhookEventType } from '../models.js';
+import type { WebhookResource, WebhookEventType } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema } from '../timeouts.js';
@@ -9,13 +9,13 @@ import type { WebhookDispatch } from './webhook_dispatch.js';
 import { WebhookDispatchCollectionClient } from './webhook_dispatch_collection.js';
 
 export type {
-    Webhook,
+    WebhookLastDispatch,
+    WebhookResource,
     WebhookAnyRunOfActorCondition,
     WebhookAnyRunOfActorTaskCondition,
     WebhookCertainRunCondition,
     WebhookCondition,
     WebhookEventType,
-    WebhookLastDispatch,
     WebhookStats,
 } from '../models.js';
 
@@ -66,10 +66,10 @@ export class WebhookClient extends ResourceClient {
      * @returns The webhook object, or `undefined` if it does not exist.
      * @see https://docs.apify.com/api/v2/webhook-get
      */
-    async get(options: TimeoutOptions = {}): Promise<Webhook | undefined> {
+    async get(options: TimeoutOptions = {}): Promise<WebhookResource | undefined> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Webhook(), {}, timeoutSecs, signal);
+        return this.getResource(schemas.WebhookResource(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -81,11 +81,11 @@ export class WebhookClient extends ResourceClient {
      * @returns The updated webhook object.
      * @see https://docs.apify.com/api/v2/webhook-put
      */
-    async update(newFields: WebhookUpdateData, options: TimeoutOptions = {}): Promise<Webhook> {
+    async update(newFields: WebhookUpdateData, options: TimeoutOptions = {}): Promise<WebhookResource> {
         parseArgument(newFields, anyObjectSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Webhook(), newFields, timeoutSecs, signal);
+        return this.updateResource(schemas.WebhookResource(), newFields, timeoutSecs, signal);
     }
 
     /**
@@ -146,7 +146,7 @@ export interface WebhookIdempotencyKey {
  */
 export type WebhookUpdateData = Partial<
     Pick<
-        Webhook,
+        WebhookResource,
         | 'isAdHoc'
         | 'condition'
         | 'ignoreSslErrors'
@@ -159,7 +159,7 @@ export type WebhookUpdateData = Partial<
         | 'description'
     > & {
         // Input only: the client doesn't mutate the array, so accept a `readonly`
-        // one too (the `Webhook` response keeps `eventTypes` mutable).
+        // one too (the `WebhookResource` response keeps `eventTypes` mutable).
         eventTypes: readonly WebhookEventType[];
     }
 > &

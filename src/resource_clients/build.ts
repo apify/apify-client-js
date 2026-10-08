@@ -12,7 +12,7 @@ import { LogClient } from './log.js';
 const getOptionsSchema = z.strictObject({ waitForFinish: z.number().optional(), ...timeoutOptionsShape });
 const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional(), ...timeoutOptionsShape });
 
-export type { Build, BuildMeta, BuildOptions, BuildStats, BuildUsage } from '../models.js';
+export type { Build, BuildOptions, BuildStats, BuildUsage, BuildMeta } from '../models.js';
 
 /**
  * Client for managing a specific Actor build.
@@ -155,6 +155,7 @@ export class BuildClient extends ResourceClient {
      * Unlike the `waitForFinish` parameter in {@link get}, this method can wait indefinitely
      * by polling the build status. It uses the `waitForFinish` parameter internally (max 60s per call)
      * and continuously polls until the build finishes or the timeout is reached.
+     * Rejects with a {@link NotFoundError} if the build keeps returning 404 for 3 seconds.
      *
      * This is useful when you need to immediately start a run after a build finishes.
      *

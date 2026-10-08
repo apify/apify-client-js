@@ -143,6 +143,26 @@ test('StreamedLog doubles the pause between empty log streams up to its cap', as
     }
 });
 
+test('StreamedLog reads the whole log when the stop grace period ends while a log stream is connecting', async () => {
+    const lines = [0, 1, 2].map((i) => `2025-01-01T00:00:0${i}.000Z line ${i}\n`);
+    const stream = vi.fn().mockImplementation(
+        async ({ signal }: { signal: AbortSignal }) =>
+            new Promise((_, reject) => {
+                signal.addEventListener('abort', () => reject(signal.reason), { once: true });
+            }),
+    );
+    const logClient = { stream, get: vi.fn().mockResolvedValue(lines.join('')) } as unknown as LogClient;
+    const toLog = new Log();
+    const info = vi.spyOn(toLog, 'info').mockImplementation(() => {});
+
+    const streamedLog = new StreamedLog({ toLog, logClient });
+    streamedLog.start();
+    await vi.waitFor(() => expect(stream).toHaveBeenCalled());
+    await streamedLog.stop();
+
+    expect(info.mock.calls).toEqual(lines.map((line) => [line.trim()]));
+});
+
 test('StreamedLog neither reopens nor reads a log that does not exist', async () => {
     const stream = vi.fn().mockResolvedValue(undefined);
     const get = vi.fn();

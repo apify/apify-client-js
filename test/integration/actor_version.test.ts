@@ -1,6 +1,6 @@
 import { beforeAll, expect, test } from 'vitest';
 
-import type { Actor, ActorVersion, ApifyClient, FinalActorVersion } from 'apify-client';
+import type { ActorResource, ApifyClient, FinalVersion, Version } from 'apify-client';
 import { ActorSourceType } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
@@ -12,7 +12,7 @@ beforeAll(() => {
     client = makeClient();
 });
 
-function sourceFilesVersion(versionNumber: string, buildTag: string, content = 'console.log("Hello")'): ActorVersion {
+function sourceFilesVersion(versionNumber: string, buildTag: string, content = 'console.log("Hello")'): Version {
     return {
         versionNumber,
         sourceType: ActorSourceType.SourceFiles,
@@ -22,7 +22,7 @@ function sourceFilesVersion(versionNumber: string, buildTag: string, content = '
 }
 
 /** Create a throwaway Actor. The versions are never built, so this costs no compute. */
-async function createActor(versions?: ActorVersion[]): Promise<Actor> {
+async function createActor(versions?: Version[]): Promise<ActorResource> {
     return client.actors().create({
         name: getRandomResourceName('actor'),
         ...(versions ? { versions } : {}),
@@ -111,7 +111,7 @@ test('versions().list() is async-iterable and yields every version', async () =>
     const actorClient = client.actor(actor.id);
 
     try {
-        const collected: FinalActorVersion[] = [];
+        const collected: FinalVersion[] = [];
         for await (const version of actorClient.versions().list()) {
             collected.push(version);
         }

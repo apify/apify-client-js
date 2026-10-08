@@ -5,7 +5,7 @@ import type { PaginatedList } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema } from '../timeouts.js';
 import { anyObjectSchema, parseArgument } from '../utils.js';
-import type { ActorEnvironmentVariable } from './actor_version.js';
+import type { EnvVar } from './actor_version.js';
 
 const actorEnvVarSchema = anyObjectSchema.optional();
 
@@ -67,10 +67,10 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      * @returns The environment variables, awaitable as a whole list or iterable one by one.
      * @see https://docs.apify.com/api/v2/act-version-env-vars-get
      */
-    list(options: TimeoutOptions = {}): Promise<ActorEnvVarListResult> & AsyncIterable<ActorEnvironmentVariable> {
+    list(options: TimeoutOptions = {}): Promise<ActorEnvVarListResult> & AsyncIterable<EnvVar> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.listResourcesPaginated(schemas.ListOfEnvVars(), { signal }, timeoutSecs);
+        return this.listUnpaginatedResources(schemas.ListOfEnvVars(), timeoutSecs, signal);
     }
 
     /**
@@ -82,10 +82,7 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
      * @returns The created environment variable object.
      * @see https://docs.apify.com/api/v2/act-version-env-vars-post
      */
-    async create(
-        actorEnvVar: ActorEnvironmentVariable,
-        options: TimeoutOptions = {},
-    ): Promise<ActorEnvironmentVariable> {
+    async create(actorEnvVar: EnvVar, options: TimeoutOptions = {}): Promise<EnvVar> {
         parseArgument(actorEnvVar, actorEnvVarSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
@@ -96,4 +93,4 @@ export class ActorEnvVarCollectionClient extends ResourceCollectionClient {
 /**
  * @since Added in 2.1.0
  */
-export type ActorEnvVarListResult = Pick<PaginatedList<ActorEnvironmentVariable>, 'total' | 'items'>;
+export type ActorEnvVarListResult = Pick<PaginatedList<EnvVar>, 'total' | 'items'>;

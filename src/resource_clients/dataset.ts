@@ -6,7 +6,7 @@ import { createStorageContentSignatureAsync } from '@apify/utilities';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyResponse } from '../http_clients/index.js';
-import type { Dataset, DatasetStatistics } from '../models.js';
+import type { DatasetResource, DatasetStatistics } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
@@ -48,7 +48,7 @@ const listItemsOptionsSchema = z.strictObject({
     ...paginationOptionsShape,
     skipEmpty: z.boolean().optional(),
     skipHidden: z.boolean().optional(),
-    unwind: z.union([z.string(), z.array(z.string())]).optional(),
+    unwind: z.array(z.string()).optional(),
     view: z.string().optional(),
     signature: z.string().optional(),
     ...timeoutOptionsShape,
@@ -69,7 +69,7 @@ const downloadItemsOptionsSchema = z.strictObject({
     skipEmpty: z.boolean().optional(),
     skipHeaderRow: z.boolean().optional(),
     skipHidden: z.boolean().optional(),
-    unwind: z.union([z.string(), z.array(z.string())]).optional(),
+    unwind: z.array(z.string()).optional(),
     view: z.string().optional(),
     xmlRoot: z.string().optional(),
     xmlRow: z.string().optional(),
@@ -91,13 +91,13 @@ const createItemsPublicUrlOptionsSchema = z.strictObject({
     offset: z.number().min(0).optional(),
     skipEmpty: z.boolean().optional(),
     skipHidden: z.boolean().optional(),
-    unwind: z.union([z.string(), z.array(z.string())]).optional(),
+    unwind: z.array(z.string()).optional(),
     view: z.string().optional(),
     expiresInSecs: z.number().optional(),
     ...timeoutOptionsShape,
 });
 
-export type { Dataset, DatasetStatistics, DatasetStats, FieldStatistics } from '../models.js';
+export type { DatasetResource, DatasetFieldStatistics, DatasetStatistics, DatasetStats } from '../models.js';
 
 /**
  * Client for managing a specific Dataset.
@@ -149,10 +149,10 @@ export class DatasetClient<
      * @returns The Dataset object, or `undefined` if it does not exist
      * @see https://docs.apify.com/api/v2/dataset-get
      */
-    async get(options: TimeoutOptions = {}): Promise<Dataset | undefined> {
+    async get(options: TimeoutOptions = {}): Promise<DatasetResource | undefined> {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.getResource(schemas.Dataset(), {}, timeoutSecs, signal);
+        return this.getResource(schemas.DatasetResource(), {}, timeoutSecs, signal);
     }
 
     /**
@@ -164,11 +164,11 @@ export class DatasetClient<
      * @returns The updated Dataset object
      * @see https://docs.apify.com/api/v2/dataset-put
      */
-    async update(newFields: DatasetClientUpdateOptions, options: TimeoutOptions = {}): Promise<Dataset> {
+    async update(newFields: DatasetClientUpdateOptions, options: TimeoutOptions = {}): Promise<DatasetResource> {
         parseArgument(newFields, anyObjectSchema);
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
-        return this.updateResource(schemas.Dataset(), newFields, timeoutSecs, signal);
+        return this.updateResource(schemas.DatasetResource(), newFields, timeoutSecs, signal);
     }
 
     /**
@@ -202,7 +202,7 @@ export class DatasetClient<
      * @param options.skipEmpty - If `true`, skips empty items. Default is `false`.
      * @param options.skipHidden - If `true`, skips hidden fields (fields starting with `#`). Default is `false`.
      * @param options.flatten - Array of field names to flatten. Nested objects are converted to dot notation (e.g., `obj.field`).
-     * @param options.unwind - Field name or array of field names to unwind. Each array value creates a separate item.
+     * @param options.unwind - Array of field names to unwind. Each array value creates a separate item.
      * @param options.view - Name of a predefined view to use for field selection.
      * @param options.timeoutSecs - Timeout for each API request. Default is `'long'`.
      * @returns A paginated list with `items`, `total` count, `offset`, `count`, and `limit`
@@ -509,7 +509,7 @@ export interface DatasetClientListItemOptions extends PaginationOptions, Timeout
     omit?: string[];
     skipEmpty?: boolean;
     skipHidden?: boolean;
-    unwind?: string | string[]; // TODO: when doing a breaking change release, change to string[] only
+    unwind?: string[];
     /**
      * @since Added in 2.2.0
      */

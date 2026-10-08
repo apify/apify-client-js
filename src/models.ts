@@ -1,6 +1,8 @@
 /**
  * Public models adapted from the generated OpenAPI types in `./generated/api`.
  *
+ * Each model takes the name of the spec schema it is declared on, as the Python client does.
+ *
  * The generated file is never re-exported directly. Every type here is declared on top of a generated
  * schema so the compiler reports drift, and the spec is adopted as-is wherever it is trustworthy. What
  * remains is deliberately small, and each deviation falls into exactly one of five kinds, one block per
@@ -48,7 +50,7 @@ type Schemas = components['schemas'];
 /**
  * Event types that can trigger webhooks.
  *
- * Declared here rather than in `./resource_clients/webhook` so that both `Webhook` and
+ * Declared here rather than in `./resource_clients/webhook` so that both `WebhookResource` and
  * `WebhookDispatch` can reference it without closing an import cycle. It is re-exported from there, so
  * the public name and import path are unchanged.
  */
@@ -72,25 +74,25 @@ export enum WebhookDispatchStatus {
  *
  * Declared here, next to the other spec-derived types, and re-exported from `./apify_api_error`.
  */
-export type ApifyApiErrorType = Schemas['ErrorType'];
+export type ErrorType = Schemas['ErrorType'];
 
 /**
  * Fields the API returns on a dataset that the OpenAPI spec does not describe yet.
  *
  * TODO: Remove once the spec covers them.
  */
-export interface DatasetSpecGaps {
+export interface DatasetResourceSpecGaps {
     title?: string;
     username?: string;
 }
 
-export interface DatasetRePointed {
+export interface DatasetResourceRePointed {
     stats?: DatasetStats;
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
-export interface DatasetSpecNarrowings {
-    // Spec lists `consoleUrl` as required, but the same `Dataset` schema backs both `GET /v2/datasets` and
+export interface DatasetResourceSpecNarrowings {
+    // Spec lists `consoleUrl` as required, but the same `DatasetResource` schema backs both `GET /v2/datasets` and
     // `GET /v2/datasets/{datasetId}`, and its `required` array describes only the single-resource response.
     // The spec documents that split in prose rather than in the schema -- `DatasetStats.storageBytes` says
     // "Only returned by the single-dataset endpoint" and `inflatedBytes` "Only returned by the dataset list
@@ -105,12 +107,12 @@ export interface DatasetSpecNarrowings {
  * Datasets store structured data as a sequence of items (records). Each item is a JSON object.
  * Datasets are useful for storing results from web scraping, crawling, or data processing tasks.
  */
-export interface Dataset
+export interface DatasetResource
     extends
-        Omit<Schemas['Dataset'], keyof DatasetRePointed | keyof DatasetSpecNarrowings>,
-        DatasetRePointed,
-        DatasetSpecNarrowings,
-        DatasetSpecGaps {}
+        Omit<Schemas['DatasetResource'], keyof DatasetResourceRePointed | keyof DatasetResourceSpecNarrowings>,
+        DatasetResourceRePointed,
+        DatasetResourceSpecNarrowings,
+        DatasetResourceSpecGaps {}
 
 /**
  * Fields the API returns in dataset stats that the OpenAPI spec does not describe yet.
@@ -133,12 +135,11 @@ type GeneratedWebhookDispatchEventData = NonNullable<Schemas['WebhookDispatch'][
 export interface DatasetStats extends GeneratedDatasetStats, DatasetStatsSpecGaps {}
 
 export interface DatasetStatisticsRePointed {
-    // The published name stays `FieldStatistics` rather than the spec's `DatasetFieldStatistics`.
     /**
      * Statistics such as `min`, `max`, `nullCount` and `emptyCount` for each field of the dataset's
      * [fields schema](https://docs.apify.com/platform/actors/development/actor-definition/dataset-schema/validation).
      */
-    fieldStatistics?: Record<string, FieldStatistics> | null;
+    fieldStatistics?: Record<string, DatasetFieldStatistics> | null;
 }
 
 /**
@@ -154,10 +155,10 @@ export interface DatasetStatistics
  * Statistics for a single field in a dataset.
  * @since Added in 2.11.2
  */
-export interface FieldStatistics extends GeneratedDatasetFieldStatistics {}
+export interface DatasetFieldStatistics extends GeneratedDatasetFieldStatistics {}
 
 export interface WebhookDispatchWebhookSummaryRePointed {
-    // The published union of single-id variants, the same type `Webhook.condition` carries. Left alone,
+    // The published union of single-id variants, the same type `WebhookResource.condition` carries. Left alone,
     // one concept would have two published shapes and this one would render as an indexed access into
     // the generated file.
     condition?: WebhookCondition;
@@ -197,11 +198,11 @@ type GeneratedKeyValueStoreKey = Schemas['KeyValueStoreKey'];
  *
  * TODO: Remove once the spec covers them.
  */
-export interface KeyValueStoreSpecGaps {
+export interface KeyValueStoreResourceSpecGaps {
     title?: string;
 }
 
-export interface KeyValueStoreRePointed {
+export interface KeyValueStoreResourceRePointed {
     stats?: KeyValueStoreStats;
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
@@ -212,21 +213,20 @@ export interface KeyValueStoreRePointed {
  * Key-value stores are used to store arbitrary data records or files. Each record is identified
  * by a unique key and can contain any data - JSON objects, strings, binary files, etc.
  */
-export interface KeyValueStore
+export interface KeyValueStoreResource
     extends
-        Omit<Schemas['KeyValueStore'], keyof KeyValueStoreRePointed>,
-        KeyValueStoreRePointed,
-        KeyValueStoreSpecGaps {}
+        Omit<Schemas['KeyValueStoreResource'], keyof KeyValueStoreResourceRePointed>,
+        KeyValueStoreResourceRePointed,
+        KeyValueStoreResourceSpecGaps {}
 
 /** Statistics about Key-Value Store usage and storage. */
 export interface KeyValueStoreStats extends GeneratedKeyValueStoreStats {}
 
 /** Metadata about a single key in a Key-Value Store. */
-export interface KeyValueListItem extends GeneratedKeyValueStoreKey {}
+export interface KeyValueStoreKey extends GeneratedKeyValueStoreKey {}
 
-export interface KeyValueClientListKeysResultRePointed {
-    // `KeyValueListItem` is the name this client has always used for the spec's `KeyValueStoreKey`.
-    items: KeyValueListItem[];
+export interface ListOfKeysRePointed {
+    items: KeyValueStoreKey[];
 }
 
 /**
@@ -234,10 +234,7 @@ export interface KeyValueClientListKeysResultRePointed {
  *
  * Contains paginated list of keys with metadata and pagination information.
  */
-export interface KeyValueClientListKeysResult
-    extends
-        Omit<Schemas['ListOfKeys'], keyof KeyValueClientListKeysResultRePointed>,
-        KeyValueClientListKeysResultRePointed {}
+export interface ListOfKeys extends Omit<Schemas['ListOfKeys'], keyof ListOfKeysRePointed>, ListOfKeysRePointed {}
 
 type GeneratedVersion = Schemas['Version'];
 type GeneratedSourceCodeFile = Schemas['SourceCodeFile'];
@@ -260,10 +257,10 @@ export enum ActorSourceType {
 }
 
 /** An environment variable of an Actor version. */
-export interface ActorEnvironmentVariable extends GeneratedEnvVar {}
+export interface EnvVar extends GeneratedEnvVar {}
 
 /** A single file of an Actor version's source code. */
-export interface ActorVersionSourceFile extends GeneratedSourceCodeFile {}
+export interface SourceCodeFile extends GeneratedSourceCodeFile {}
 
 /**
  * A folder in an Actor version's source code tree.
@@ -271,20 +268,20 @@ export interface ActorVersionSourceFile extends GeneratedSourceCodeFile {}
  * `sourceFiles` is a flat list that mixes files and folders, told apart by this shape's `folder` flag
  * rather than by nesting.
  */
-export interface ActorVersionSourceFolder extends GeneratedSourceCodeFolder {}
+export interface SourceCodeFolder extends GeneratedSourceCodeFolder {}
 
 /**
  * The four fields that hold a version's source location, exactly one of which applies per source
  * type. The spec marks all of them optional on a single flat schema; each union variant below
  * reinstates the one that its `sourceType` implies, as required.
  */
-export type ActorVersionSourceLocation = 'sourceFiles' | 'gitRepoUrl' | 'tarballUrl' | 'gitHubGistUrl';
+export type VersionSourceLocation = 'sourceFiles' | 'gitRepoUrl' | 'tarballUrl' | 'gitHubGistUrl';
 
-export interface ActorVersionRePointed {
-    envVars?: ActorEnvironmentVariable[] | null;
+export interface VersionRePointed {
+    envVars?: EnvVar[] | null;
 }
 
-export interface ActorVersionClientNarrowings {
+export interface VersionClientNarrowings {
     // The spec permits `sourceType: null`. It is deliberately not adopted: the published type is a
     // union discriminated on exactly this field, and a version with no source type carries no usable
     // source location either, so accepting the `null` would only make every variant unreachable.
@@ -298,13 +295,10 @@ export interface ActorVersionClientNarrowings {
  * keeps a union discriminated on `sourceType` instead, because that narrows the source location down
  * to the single field which applies -- so the four are dropped here and reinstated per variant.
  */
-export interface BaseActorVersion<SourceType extends `${ActorSourceType}`>
+export interface BaseVersion<SourceType extends `${ActorSourceType}`>
     extends
-        Omit<
-            GeneratedVersion,
-            keyof ActorVersionClientNarrowings | keyof ActorVersionRePointed | ActorVersionSourceLocation
-        >,
-        ActorVersionRePointed {
+        Omit<GeneratedVersion, keyof VersionClientNarrowings | keyof VersionRePointed | VersionSourceLocation>,
+        VersionRePointed {
     sourceType: SourceType;
 }
 
@@ -312,40 +306,35 @@ export interface BaseActorVersion<SourceType extends `${ActorSourceType}`>
  * An Actor version whose source code is stored on the Apify platform.
  * @since Added in 2.6.1
  */
-export interface ActorVersionSourceFiles extends BaseActorVersion<`${ActorSourceType.SourceFiles}`> {
-    sourceFiles: (ActorVersionSourceFile | ActorVersionSourceFolder)[];
+export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.SourceFiles}`> {
+    sourceFiles: (SourceCodeFile | SourceCodeFolder)[];
 }
 
 /** An Actor version built from a Git repository. */
-export interface ActorVersionGitRepo extends BaseActorVersion<`${ActorSourceType.GitRepo}`> {
+export interface VersionGitRepo extends BaseVersion<`${ActorSourceType.GitRepo}`> {
     gitRepoUrl: NonNullable<GeneratedVersion['gitRepoUrl']>;
 }
 
 /** An Actor version built from a downloadable tarball or ZIP archive. */
-export interface ActorVersionTarball extends BaseActorVersion<`${ActorSourceType.Tarball}`> {
+export interface VersionTarball extends BaseVersion<`${ActorSourceType.Tarball}`> {
     tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
 }
 
 /** An Actor version built from a GitHub Gist. */
-export interface ActorVersionGitHubGist extends BaseActorVersion<`${ActorSourceType.GitHubGist}`> {
+export interface VersionGitHubGist extends BaseVersion<`${ActorSourceType.GitHubGist}`> {
     gitHubGistUrl: NonNullable<GeneratedVersion['gitHubGistUrl']>;
 }
 
 /**
  * An Actor version whose source is a single inline script.
  *
- * It carries no source location of its own, so it adds nothing to `BaseActorVersion`; the variant
+ * It carries no source location of its own, so it adds nothing to `BaseVersion`; the variant
  * exists so that `SOURCE_CODE`, which both the spec and `@apify/consts` list, is representable.
  */
-export interface ActorVersionSourceCode extends BaseActorVersion<`${ActorSourceType.SourceCode}`> {}
+export interface VersionSourceCode extends BaseVersion<`${ActorSourceType.SourceCode}`> {}
 
 /** A version of an Actor, discriminated on where its source code comes from. */
-export type ActorVersion =
-    | ActorVersionSourceFiles
-    | ActorVersionGitRepo
-    | ActorVersionTarball
-    | ActorVersionGitHubGist
-    | ActorVersionSourceCode;
+export type Version = VersionSourceFiles | VersionGitRepo | VersionTarball | VersionGitHubGist | VersionSourceCode;
 
 /**
  * An Actor version as the API returns it, where the build tag is always set.
@@ -354,8 +343,8 @@ export type ActorVersion =
  * `buildTag`, so a caller would still have to null-check a field this type promises is set. It is
  * unwrapped with `NonNullable` instead.
  */
-export type FinalActorVersion = ActorVersion & {
-    buildTag: NonNullable<ActorVersion['buildTag']>;
+export type FinalVersion = Version & {
+    buildTag: NonNullable<Version['buildTag']>;
 };
 
 type GeneratedActorStats = Schemas['ActorStats'];
@@ -377,23 +366,21 @@ export interface ActorStats extends GeneratedActorStats {}
 export interface ActorStandby extends GeneratedActorStandby {}
 
 /** Example input data to demonstrate Actor usage. */
-export interface ActorExampleRunInput extends GeneratedExampleRunInput {}
+export interface ExampleRunInput extends GeneratedExampleRunInput {}
 
 /** Information about a specific tagged build. */
-export interface ActorTaggedBuild extends GeneratedTaggedBuildInfo {}
+export interface TaggedBuildInfo extends GeneratedTaggedBuildInfo {}
 
 /** Mapping of build tags (e.g. 'latest', 'beta') to their corresponding build information. */
-export type ActorTaggedBuilds = Record<string, ActorTaggedBuild | null>;
+export type TaggedBuilds = Record<string, TaggedBuildInfo | null>;
 
-export interface ActorDefaultRunOptionsRePointed {
+export interface DefaultRunOptionsRePointed {
     forcePermissionLevel?: ACTOR_PERMISSION_LEVEL | null;
 }
 
 /** Default configuration options for Actor runs. */
-export interface ActorDefaultRunOptions
-    extends
-        Omit<Schemas['DefaultRunOptions'], keyof ActorDefaultRunOptionsRePointed>,
-        ActorDefaultRunOptionsRePointed {}
+export interface DefaultRunOptions
+    extends Omit<Schemas['DefaultRunOptions'], keyof DefaultRunOptionsRePointed>, DefaultRunOptionsRePointed {}
 
 /**
  * Fields of an Actor definition that the OpenAPI spec does not describe yet.
@@ -464,7 +451,7 @@ export interface PricePerDatasetItemActorPricingInfo
         Omit<Schemas['PricePerDatasetItemActorPricingInfo'], keyof PricePerDatasetItemActorPricingInfoRePointed>,
         PricePerDatasetItemActorPricingInfoRePointed {}
 
-export interface PricePerEventActorPricingInfoRePointed {
+export interface PayPerEventActorPricingInfoRePointed {
     pricingPerEvent: {
         actorChargeEvents?: ActorChargeEvents;
     };
@@ -473,21 +460,20 @@ export interface PricePerEventActorPricingInfoRePointed {
 /**
  * Pricing information for pay-per-event Actors.
  *
- * These Actors charge based on specific events (e.g., emails sent, API calls made). The spec names
- * this schema `PayPerEventActorPricingInfo`; the published name is kept as it is.
+ * These Actors charge based on specific events (e.g., emails sent, API calls made).
  * @since Added in 2.11.1
  */
-export interface PricePerEventActorPricingInfo
+export interface PayPerEventActorPricingInfo
     extends
-        Omit<Schemas['PayPerEventActorPricingInfo'], keyof PricePerEventActorPricingInfoRePointed>,
-        PricePerEventActorPricingInfoRePointed {}
+        Omit<Schemas['PayPerEventActorPricingInfo'], keyof PayPerEventActorPricingInfoRePointed>,
+        PayPerEventActorPricingInfoRePointed {}
 
 /**
  * Union type representing all possible Actor pricing models.
  * @since Added in 2.11.1
  */
 export type ActorRunPricingInfo =
-    | PricePerEventActorPricingInfo
+    | PayPerEventActorPricingInfo
     | PricePerDatasetItemActorPricingInfo
     | FlatPricePerMonthActorPricingInfo
     | FreeActorPricingInfo;
@@ -518,18 +504,18 @@ export interface TieredPricingPerEvent {
  *
  * TODO: Remove once the spec covers them.
  */
-export interface ActorSpecGaps {
+export interface ActorResourceSpecGaps {
     /** Whether the Actor can be run by anonymous users without authentication */
     isAnonymouslyRunnable?: boolean;
 }
 
-export interface ActorRePointed {
+export interface ActorResourceRePointed {
     stats: ActorStats;
-    versions: ActorVersion[];
+    versions: Version[];
     pricingInfos?: ActorRunPricingInfo[];
-    defaultRunOptions: ActorDefaultRunOptions;
-    exampleRunInput?: ActorExampleRunInput | null;
-    taggedBuilds?: ActorTaggedBuilds | null;
+    defaultRunOptions: DefaultRunOptions;
+    exampleRunInput?: ExampleRunInput | null;
+    taggedBuilds?: TaggedBuilds | null;
     actorStandby?: ActorStandby | null;
     actorPermissionLevel?: ACTOR_PERMISSION_LEVEL;
 }
@@ -541,15 +527,19 @@ export interface ActorRePointed {
  * data processing, automation, and more. Each Actor has versions, builds, and can be executed
  * with different configurations.
  */
-export interface Actor extends Omit<Schemas['Actor'], keyof ActorRePointed>, ActorRePointed, ActorSpecGaps {}
+export interface ActorResource
+    extends
+        Omit<Schemas['ActorResource'], keyof ActorResourceRePointed>,
+        ActorResourceRePointed,
+        ActorResourceSpecGaps {}
 
-export interface ActorCollectionListItemRePointed {
+export interface ActorListItemRePointed {
     stats?: ActorStats | null;
 }
 
 /** An Actor as it appears in a listing, which carries fewer fields than the full resource. */
-export interface ActorCollectionListItem
-    extends Omit<Schemas['ActorShort'], keyof ActorCollectionListItemRePointed>, ActorCollectionListItemRePointed {}
+export interface ActorListItem
+    extends Omit<Schemas['ActorListItem'], keyof ActorListItemRePointed>, ActorListItemRePointed {}
 
 type GeneratedBuildUsage = Schemas['BuildUsage'];
 type GeneratedBuildStats = Schemas['BuildStats'];
@@ -571,12 +561,8 @@ export interface BuildMetaRePointed {
     origin: ValueOf<typeof META_ORIGINS>;
 }
 
-/**
- * Metadata about how a Build was initiated.
- *
- * The spec names this schema `BuildsMeta`; the published name is kept as it is.
- */
-export interface BuildMeta extends Omit<Schemas['BuildsMeta'], keyof BuildMetaRePointed>, BuildMetaRePointed {}
+/** Metadata about how a Build was initiated. */
+export interface BuildMeta extends Omit<Schemas['BuildMeta'], keyof BuildMetaRePointed>, BuildMetaRePointed {}
 
 export interface BuildRePointed {
     meta: BuildMeta;
@@ -596,21 +582,19 @@ export interface BuildRePointed {
  */
 export interface Build extends Omit<Schemas['Build'], keyof BuildRePointed>, BuildRePointed {}
 
-export interface BuildCollectionClientListItemRePointed {
+export interface BuildListItemRePointed {
     meta?: BuildMeta;
     status: ValueOf<typeof ACTOR_JOB_STATUSES>;
 }
 
 /** A build as it appears in a listing, which carries fewer fields than the full resource. */
-export interface BuildCollectionClientListItem
-    extends
-        Omit<Schemas['BuildShort'], keyof BuildCollectionClientListItemRePointed>,
-        BuildCollectionClientListItemRePointed {}
+export interface BuildListItem
+    extends Omit<Schemas['BuildListItem'], keyof BuildListItemRePointed>, BuildListItemRePointed {}
 
 type GeneratedRunUsage = Schemas['RunUsage'];
 type GeneratedRunStats = Schemas['RunStats'];
 type GeneratedRunOptions = Schemas['RunOptions'];
-type GeneratedMetamorph = Schemas['Metamorph'];
+type GeneratedRunMetamorphEvent = Schemas['RunMetamorphEvent'];
 
 // The spec inlines the storage-id map into `Run` rather than naming it.
 type GeneratedRunStorageIds = NonNullable<Schemas['Run']['storageIds']>;
@@ -619,21 +603,21 @@ type GeneratedRunStorageIds = NonNullable<Schemas['Run']['storageIds']>;
  * Resource usage metrics for an Actor run.
  *
  * All values represent the total consumption during the run's lifetime. The same shape doubles as the
- * cost breakdown on `ActorRun.usageUsd`, where the spec names it `RunUsageUsd`; the two are
- * structurally identical, so the published type stays single.
+ * cost breakdown on `Run.usageUsd`, where the spec names it `RunUsageUsd`; the two are structurally
+ * identical, so the published type stays single.
  * @since Added in 2.7.0
  */
-export interface ActorRunUsage extends GeneratedRunUsage {}
+export interface RunUsage extends GeneratedRunUsage {}
 
 /**
  * Runtime statistics for an Actor run.
  *
  * Provides detailed metrics about resource consumption and performance during the run.
  */
-export interface ActorRunStats extends GeneratedRunStats {}
+export interface RunStats extends GeneratedRunStats {}
 
 /** A metamorph event that occurred during an Actor run. */
-export interface ActorRunMetamorph extends GeneratedMetamorph {}
+export interface RunMetamorphEvent extends GeneratedRunMetamorphEvent {}
 
 /**
  * Aliased storage IDs associated with an Actor run, grouped by storage type.
@@ -644,19 +628,19 @@ export interface ActorRunMetamorph extends GeneratedMetamorph {}
  */
 export interface ActorRunStorageIds extends GeneratedRunStorageIds {}
 
-export interface ActorRunMetaRePointed {
+export interface RunMetaRePointed {
     origin: ValueOf<typeof META_ORIGINS>;
 }
 
 /** Metadata about how an Actor run was initiated. */
-export interface ActorRunMeta extends Omit<Schemas['RunMeta'], keyof ActorRunMetaRePointed>, ActorRunMetaRePointed {}
+export interface RunMeta extends Omit<Schemas['RunMeta'], keyof RunMetaRePointed>, RunMetaRePointed {}
 
 /**
  * Fields the API returns in an Actor run's options that the OpenAPI spec does not describe yet.
  *
  * TODO: Remove once the spec covers it.
  */
-export interface ActorRunOptionsSpecGaps {
+export interface RunOptionsSpecGaps {
     restartOnError?: boolean;
 }
 
@@ -665,10 +649,10 @@ export interface ActorRunOptionsSpecGaps {
  *
  * These are the actual options that were applied to the run (may differ from requested options).
  */
-export interface ActorRunOptions extends GeneratedRunOptions, ActorRunOptionsSpecGaps {}
+export interface RunOptions extends GeneratedRunOptions, RunOptionsSpecGaps {}
 
-export interface ActorRunListItemRePointed {
-    meta: ActorRunMeta;
+export interface RunListItemRePointed {
+    meta: RunMeta;
     status: ValueOf<typeof ACTOR_JOB_STATUSES>;
 }
 
@@ -676,22 +660,21 @@ export interface ActorRunListItemRePointed {
  * An Actor run as it appears in a listing, which carries fewer fields than the full resource.
  * @since Added in 2.7.0
  */
-export interface ActorRunListItem
-    extends Omit<Schemas['RunShort'], keyof ActorRunListItemRePointed>, ActorRunListItemRePointed {}
+export interface RunListItem extends Omit<Schemas['RunListItem'], keyof RunListItemRePointed>, RunListItemRePointed {}
 
-export interface ActorRunRePointed {
-    meta: ActorRunMeta;
-    stats: ActorRunStats;
-    options: ActorRunOptions;
-    usage?: ActorRunUsage | null;
-    usageUsd?: ActorRunUsage | null;
+export interface RunRePointed {
+    meta: RunMeta;
+    stats: RunStats;
+    options: RunOptions;
+    usage?: RunUsage | null;
+    usageUsd?: RunUsage | null;
     storageIds?: ActorRunStorageIds;
-    metamorphs?: ActorRunMetamorph[] | null;
+    metamorphs?: RunMetamorphEvent[] | null;
     pricingInfo?: ActorRunPricingInfo;
     status: ValueOf<typeof ACTOR_JOB_STATUSES>;
 }
 
-export interface ActorRunClientNarrowings {
+export interface RunClientNarrowings {
     // The spec reuses the storage-wide `GeneralAccess` schema here, which also lists
     // `ANYONE_WITH_NAME_CAN_READ`. A run has no name to be addressed by, which is exactly why
     // `@apify/consts` declares a separate three-member `RUN_GENERAL_ACCESS`, and that stays the
@@ -705,11 +688,8 @@ export interface ActorRunClientNarrowings {
  * Represents a single execution of an Actor with all its configuration, status,
  * and resource usage information.
  */
-export interface ActorRun
-    extends
-        Omit<Schemas['Run'], keyof ActorRunRePointed | keyof ActorRunClientNarrowings>,
-        ActorRunRePointed,
-        ActorRunClientNarrowings {}
+export interface Run
+    extends Omit<Schemas['Run'], keyof RunRePointed | keyof RunClientNarrowings>, RunRePointed, RunClientNarrowings {}
 
 type GeneratedTaskStats = Schemas['TaskStats'];
 type GeneratedTaskOptions = Schemas['TaskOptions'];
@@ -751,7 +731,7 @@ export interface TaskRePointed {
  */
 export interface Task extends Omit<Schemas['Task'], keyof TaskRePointed>, TaskRePointed {}
 
-export interface TaskListRePointed {
+export interface TaskListItemRePointed {
     stats?: TaskStats | null;
 }
 
@@ -763,35 +743,33 @@ export interface TaskListRePointed {
  *
  * TODO: Remove once the spec covers it.
  */
-export interface TaskListSpecGaps {
+export interface TaskListItemSpecGaps {
     title?: string | null;
 }
 
 /** A task as it appears in a listing, which carries fewer fields than the full resource. */
-export interface TaskList
-    extends Omit<Schemas['TaskShort'], keyof TaskListRePointed>, TaskListRePointed, TaskListSpecGaps {}
+export interface TaskListItem
+    extends Omit<Schemas['TaskListItem'], keyof TaskListItemRePointed>, TaskListItemRePointed, TaskListItemSpecGaps {}
 
-export interface ActorStoreListRePointed {
+export interface StoreActorRePointed {
     stats: ActorStats;
-    currentPricingInfo?: PricingInfo;
+    currentPricingInfo?: CurrentPricingInfo;
 }
 
 /**
  * Pricing information as Apify Store reports it.
  *
- * The spec names this schema `CurrentPricingInfo`; the published name is kept as it is. It is a flat
- * summary rather than one of the `ActorRunPricingInfo` variants, so `pricingModel` is a plain string
- * and every price field is optional.
+ * It is a flat summary rather than one of the `ActorRunPricingInfo` variants, so `pricingModel` is a plain
+ * string and every price field is optional.
  * @since Added in 2.7.2
  */
-export interface PricingInfo extends GeneratedCurrentPricingInfo {}
+export interface CurrentPricingInfo extends GeneratedCurrentPricingInfo {}
 
 /**
  * An Actor as it appears in Apify Store.
  * @since Added in 2.7.2
  */
-export interface ActorStoreList
-    extends Omit<Schemas['StoreListActor'], keyof ActorStoreListRePointed>, ActorStoreListRePointed {}
+export interface StoreActor extends Omit<Schemas['StoreActor'], keyof StoreActorRePointed>, StoreActorRePointed {}
 
 type GeneratedWebhookStats = Schemas['WebhookStats'];
 type GeneratedWebhookCondition = Schemas['WebhookCondition'];
@@ -838,27 +816,23 @@ export interface WebhookLastDispatchRePointed {
     status: WebhookDispatchStatus;
 }
 
-/**
- * The summary of a webhook's most recent dispatch that the webhook resource carries.
- *
- * The spec names this schema `ExampleWebhookDispatch`.
- */
+/** The summary of a webhook's most recent dispatch that the webhook resource carries. */
 export interface WebhookLastDispatch
-    extends Omit<Schemas['ExampleWebhookDispatch'], keyof WebhookLastDispatchRePointed>, WebhookLastDispatchRePointed {}
+    extends Omit<Schemas['WebhookLastDispatch'], keyof WebhookLastDispatchRePointed>, WebhookLastDispatchRePointed {}
 
 /**
  * Fields the API returns on a webhook that the OpenAPI spec does not describe yet.
  *
- * The spec does carry `isApifyIntegration` on `WebhookShort`, the listing shape, and simply omits it
- * from the full `Webhook` schema.
+ * The spec does carry `isApifyIntegration` on `WebhookListItem`, the listing shape, and simply omits it
+ * from the full `WebhookResource` schema.
  *
  * TODO: Remove once the spec covers it.
  */
-export interface WebhookSpecGaps {
+export interface WebhookResourceSpecGaps {
     isApifyIntegration?: boolean;
 }
 
-export interface WebhookRePointed {
+export interface WebhookResourceRePointed {
     condition: WebhookCondition;
     stats?: WebhookStats | null;
     lastDispatch?: WebhookLastDispatch | null;
@@ -871,7 +845,11 @@ export interface WebhookRePointed {
  * Webhooks send HTTP POST requests to specified URLs when certain events occur
  * (e.g., Actor run succeeds, fails, or times out).
  */
-export interface Webhook extends Omit<Schemas['Webhook'], keyof WebhookRePointed>, WebhookRePointed, WebhookSpecGaps {}
+export interface WebhookResource
+    extends
+        Omit<Schemas['WebhookResource'], keyof WebhookResourceRePointed>,
+        WebhookResourceRePointed,
+        WebhookResourceSpecGaps {}
 
 type GeneratedScheduleActionRunInput = Schemas['ScheduleActionRunInput'];
 
@@ -888,19 +866,12 @@ export enum ScheduleActions {
 }
 
 /** Input configuration for a scheduled Actor run. */
-export interface ScheduledActorRunInput extends GeneratedScheduleActionRunInput {}
-
-/**
- * Run options for a scheduled Actor run.
- *
- * The spec reuses its `TaskOptions` schema here; the published name is kept as it is.
- */
-export interface ScheduledActorRunOptions extends GeneratedTaskOptions {}
+export interface ScheduleActionRunInput extends GeneratedScheduleActionRunInput {}
 
 export interface ScheduleActionRunActorRePointed {
     type: `${ScheduleActions.RunActor}`;
-    runInput?: ScheduledActorRunInput | null;
-    runOptions?: ScheduledActorRunOptions | null;
+    runInput?: ScheduleActionRunInput | null;
+    runOptions?: TaskOptions | null;
 }
 
 /** Scheduled action to run an Actor. */
@@ -922,10 +893,10 @@ export interface ScheduleActionRunActorTask
 /** Union type representing all possible scheduled actions. */
 export type ScheduleAction = ScheduleActionRunActor | ScheduleActionRunActorTask;
 
-type GeneratedScheduleInvoked = Schemas['ScheduleInvoked'];
+type GeneratedScheduleLogEntry = Schemas['ScheduleLogEntry'];
 
 /** One entry of a schedule's log: an invocation of the schedule and how it went. */
-export interface ScheduleInvoked extends GeneratedScheduleInvoked {}
+export interface ScheduleLogEntry extends GeneratedScheduleLogEntry {}
 
 export interface ScheduleRePointed {
     actions: ScheduleAction[];
@@ -949,21 +920,21 @@ export interface Schedule
         ScheduleRePointed,
         ScheduleClientNarrowings {}
 
-type GeneratedProfile = Schemas['Profile'];
+type GeneratedUserProfile = Schemas['UserProfile'];
 type GeneratedProxyGroup = Schemas['ProxyGroup'];
 type GeneratedEffectivePlatformFeature = Schemas['EffectivePlatformFeature'];
 type GeneratedUsageCycle = Schemas['UsageCycle'];
-type GeneratedPriceTiers = Schemas['PriceTiers'];
+type GeneratedPriceTier = Schemas['PriceTier'];
 type GeneratedLimits = Schemas['Limits'];
-type GeneratedCurrent = Schemas['Current'];
+type GeneratedCurrentUsage = Schemas['CurrentUsage'];
 
 /**
  * Platform features a plan can enable.
  *
- * This enum is not the element type of `UserPlan.enabledPlatformFeatures`, which the spec types
- * as a plain `string[]`: the platform has features this list never gained -- `PROXY_RESIDENTIAL`,
- * `ACTORS_PUBLIC_ALL` and `ACTORS_PUBLIC_DEVELOPER` all appear as keys of `EffectivePlatformFeatures`
- * -- so using it there promised a completeness that was not real. It stays published for comparisons.
+ * This enum is not the element type of `UserPlan.enabledPlatformFeatures`, which the spec types as a plain
+ * `string[]`: the platform has features this list never gained -- `PROXY_RESIDENTIAL`, `ACTORS_PUBLIC_ALL`
+ * and `ACTORS_PUBLIC_DEVELOPER` all appear as keys of `EffectivePlatformFeatures` -- so using it there
+ * promised a completeness that was not real. It stays published for comparisons.
  *
  * Declared here rather than in `./resource_clients/user` so the user types can live alongside it. It is
  * re-exported from there, so the public name and import path are unchanged.
@@ -979,14 +950,15 @@ export enum PlatformFeature {
 }
 
 /** The public part of a user's profile. */
-export interface UserProfile extends GeneratedProfile {}
+export interface UserProfile extends GeneratedUserProfile {}
 
-export interface UserProxyRePointed {
+export interface ProxyResourceRePointed {
     groups: ProxyGroup[];
 }
 
 /** A user's proxy credentials and the groups they may use. */
-export interface UserProxy extends Omit<Schemas['Proxy'], keyof UserProxyRePointed>, UserProxyRePointed {}
+export interface ProxyResource
+    extends Omit<Schemas['ProxyResource'], keyof ProxyResourceRePointed>, ProxyResourceRePointed {}
 
 /** One proxy group available to a user. */
 export interface ProxyGroup extends GeneratedProxyGroup {}
@@ -1020,11 +992,11 @@ export interface UserPlanRePointed {
 }
 
 /** The subscription plan a user is on, with the quotas it grants. */
-export interface UserPlan extends Omit<Schemas['Plan'], keyof UserPlanRePointed>, UserPlanRePointed {}
+export interface UserPlan extends Omit<Schemas['UserPlan'], keyof UserPlanRePointed>, UserPlanRePointed {}
 
-export interface UserRePointed {
+export interface UserPrivateInfoRePointed {
     profile?: UserProfile;
-    proxy?: UserProxy;
+    proxy?: ProxyResource;
     plan?: UserPlan;
     effectivePlatformFeatures?: EffectivePlatformFeatures;
 }
@@ -1035,7 +1007,8 @@ export interface UserRePointed {
  * The private fields are only populated for `GET /v2/users/me`, which needs a token; the public
  * endpoint returns the username and profile alone.
  */
-export interface User extends Omit<Schemas['UserPrivateInfo'], keyof UserRePointed>, UserRePointed {}
+export interface UserPrivateInfo
+    extends Omit<Schemas['UserPrivateInfo'], keyof UserPrivateInfoRePointed>, UserPrivateInfoRePointed {}
 
 /**
  * The start and end of a billing cycle.
@@ -1043,14 +1016,8 @@ export interface User extends Omit<Schemas['UserPrivateInfo'], keyof UserRePoint
  */
 export interface UsageCycle extends GeneratedUsageCycle {}
 
-/**
- * The start and end of a monthly billing cycle. The spec reuses its `UsageCycle` schema here.
- * @since Added in 2.9.2
- */
-export interface MonthlyUsageCycle extends GeneratedUsageCycle {}
-
-/** One tier of a volume-discounted price. The spec names this schema `PriceTiers`. */
-export interface PriceTier extends GeneratedPriceTiers {}
+/** One tier of a volume-discounted price. */
+export interface PriceTier extends GeneratedPriceTier {}
 
 export interface UsageItemRePointed {
     priceTiers?: PriceTier[];
@@ -1073,9 +1040,9 @@ export interface DailyServiceUsageRePointed {
     serviceUsage: ServiceUsage;
 }
 
-/** A single day's usage within a monthly cycle. The spec names this schema `DailyServiceUsages`. */
+/** A single day's usage within a monthly cycle. */
 export interface DailyServiceUsage
-    extends Omit<Schemas['DailyServiceUsages'], keyof DailyServiceUsageRePointed>, DailyServiceUsageRePointed {}
+    extends Omit<Schemas['DailyServiceUsage'], keyof DailyServiceUsageRePointed>, DailyServiceUsageRePointed {}
 
 export interface MonthlyUsageRePointed {
     usageCycle: UsageCycle;
@@ -1100,34 +1067,33 @@ export interface Limits extends GeneratedLimits {}
  * How much of each quota a user has consumed in the current cycle.
  * @since Added in 2.9.2
  */
-export interface Current extends GeneratedCurrent {}
+export interface CurrentUsage extends GeneratedCurrentUsage {}
 
-export interface AccountAndUsageLimitsRePointed {
-    // The spec types this with its `UsageCycle` schema; the published `MonthlyUsageCycle` name is kept.
-    monthlyUsageCycle: MonthlyUsageCycle;
+export interface AccountLimitsRePointed {
+    monthlyUsageCycle: UsageCycle;
     limits: Limits;
-    current: Current;
+    current: CurrentUsage;
 }
 
 /**
  * A user's quotas together with their current consumption.
  * @since Added in 2.9.2
  */
-export interface AccountAndUsageLimits
-    extends Omit<Schemas['AccountLimits'], keyof AccountAndUsageLimitsRePointed>, AccountAndUsageLimitsRePointed {}
+export interface AccountLimits
+    extends Omit<Schemas['AccountLimits'], keyof AccountLimitsRePointed>, AccountLimitsRePointed {}
 
 type GeneratedRequestQueueStats = Schemas['RequestQueueStats'];
-type GeneratedHeadRequest = Schemas['HeadRequest'];
-type GeneratedLockedHeadRequest = Schemas['LockedHeadRequest'];
+type GeneratedRequestQueueHeadItem = Schemas['RequestQueueHeadItem'];
+type GeneratedLockedRequestQueueHeadItem = Schemas['LockedRequestQueueHeadItem'];
 type GeneratedRequestRegistration = Schemas['RequestRegistration'];
 type GeneratedRequestLockInfo = Schemas['RequestLockInfo'];
 type GeneratedUnlockRequestsResult = Schemas['UnlockRequestsResult'];
 type GeneratedBatchAddResult = Schemas['BatchAddResult'];
 type GeneratedBatchDeleteResult = Schemas['BatchDeleteResult'];
-type GeneratedRequest = Schemas['Request'];
+type GeneratedRequestResource = Schemas['RequestResource'];
 
-/** HTTP methods supported by Request Queue requests. */
-export type AllowedHttpMethods = Schemas['HttpMethod'];
+/** HTTP methods the API specification lists: a request queue request's `method`, and what the HTTP client sends. */
+export type HttpMethod = Schemas['HttpMethod'];
 
 /** Statistics about Request Queue usage and storage. */
 export interface RequestQueueStats extends GeneratedRequestQueueStats {}
@@ -1135,24 +1101,24 @@ export interface RequestQueueStats extends GeneratedRequestQueueStats {}
 /**
  * Fields the API returns on a request queue that the OpenAPI spec does not describe yet.
  *
- * The spec does carry `username` on `RequestQueueShort`, the listing shape, and simply omits it from the
- * full `RequestQueue` schema. `title` is absent from either.
+ * The spec does carry `username` on `RequestQueueListItem`, the listing shape, and simply omits it from the
+ * full `RequestQueueResource` schema. `title` is absent from either.
  *
  * TODO: Remove once the spec covers them.
  */
-export interface RequestQueueSpecGaps {
+export interface RequestQueueResourceSpecGaps {
     title?: string;
     username?: string;
 }
 
-export interface RequestQueueRePointed {
+export interface RequestQueueResourceRePointed {
     stats?: RequestQueueStats;
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
 }
 
-export interface RequestQueueSpecNarrowings {
+export interface RequestQueueResourceSpecNarrowings {
     // Spec lists `consoleUrl` as required on the full resource, and the client types the items of
-    // `requestQueues().list()` as this same model. The listing is described by `RequestQueueShort`, which
+    // `requestQueues().list()` as this same model. The listing is described by `RequestQueueListItem`, which
     // has no `consoleUrl` at all, so a required one would type-check and then be `undefined` per item.
     consoleUrl?: string;
 }
@@ -1163,98 +1129,95 @@ export interface RequestQueueSpecNarrowings {
  * Request queues store URLs (requests) to be processed by web crawlers. They provide
  * automatic deduplication, request locking for parallel processing, and persistence.
  */
-export interface RequestQueue
+export interface RequestQueueResource
     extends
-        Omit<Schemas['RequestQueue'], keyof RequestQueueRePointed | keyof RequestQueueSpecNarrowings>,
-        RequestQueueRePointed,
-        RequestQueueSpecNarrowings,
-        RequestQueueSpecGaps {}
+        Omit<
+            Schemas['RequestQueueResource'],
+            keyof RequestQueueResourceRePointed | keyof RequestQueueResourceSpecNarrowings
+        >,
+        RequestQueueResourceRePointed,
+        RequestQueueResourceSpecNarrowings,
+        RequestQueueResourceSpecGaps {}
 
 /** Simplified request information used in queue-head results. */
-export interface RequestQueueClientListItem extends GeneratedHeadRequest {}
+export interface RequestQueueHeadItem extends GeneratedRequestQueueHeadItem {}
 
 /** A queue-head request that has been locked for processing, so it also reports its lock expiry. */
-export interface RequestQueueClientLockedListItem extends GeneratedLockedHeadRequest {}
+export interface LockedRequestQueueHeadItem extends GeneratedLockedRequestQueueHeadItem {}
 
-export interface RequestQueueClientListHeadResultRePointed {
-    items: RequestQueueClientListItem[];
+export interface RequestQueueHeadRePointed {
+    items: RequestQueueHeadItem[];
 }
 
 /** Result of listing requests from the queue head. */
-export interface RequestQueueClientListHeadResult
-    extends
-        Omit<Schemas['RequestQueueHead'], keyof RequestQueueClientListHeadResultRePointed>,
-        RequestQueueClientListHeadResultRePointed {}
+export interface RequestQueueHead
+    extends Omit<Schemas['RequestQueueHead'], keyof RequestQueueHeadRePointed>, RequestQueueHeadRePointed {}
 
-export interface RequestQueueClientListAndLockHeadResultRePointed {
+export interface LockedRequestQueueHeadRePointed {
     // The locked element type, which the plain head result does not use.
-    items: RequestQueueClientLockedListItem[];
+    items: LockedRequestQueueHeadItem[];
 }
 
 /**
  * Result of listing and locking requests from the queue head.
  *
- * The spec describes this and {@link RequestQueueClientListHeadResult} as separate schemas that
- * disagree about which fields are required, and the locked variant carries a different element type,
- * so both are derived independently.
+ * The spec describes this and {@link RequestQueueHead} as separate schemas that disagree about which fields
+ * are required, and the locked variant carries a different element type, so both are derived independently.
  * @since Added in 2.4.1
  */
-export interface RequestQueueClientListAndLockHeadResult
+export interface LockedRequestQueueHead
     extends
-        Omit<Schemas['LockedRequestQueueHead'], keyof RequestQueueClientListAndLockHeadResultRePointed>,
-        RequestQueueClientListAndLockHeadResultRePointed {}
+        Omit<Schemas['LockedRequestQueueHead'], keyof LockedRequestQueueHeadRePointed>,
+        LockedRequestQueueHeadRePointed {}
 
 /**
  * Complete schema for a request in the queue.
  *
  * Represents a URL to be crawled along with its metadata, retry information, and custom data.
  */
-export interface RequestQueueClientRequestSchema extends GeneratedRequest {}
+export interface RequestResource extends GeneratedRequestResource {}
 
 /**
  * A request as the caller submits it to the queue.
  *
  * The API assigns the id, so it is dropped. The unique key and the URL the caller has to supply come
- * required from {@link RequestQueueClientRequestSchema}.
+ * required from {@link RequestResource}.
  */
-export interface RequestQueueClientRequestToAdd extends Omit<RequestQueueClientRequestSchema, 'id'> {}
+export interface RequestQueueClientRequestToAdd extends Omit<RequestResource, 'id'> {}
 
 /**
  * A request as the caller submits it to an update of a stored one.
  *
  * The update addresses that request by its id, which a stored request always carries, so the shape is
- * {@link RequestQueueClientRequestSchema} unchanged. The name stays published as the argument type of
- * `updateRequest()`.
+ * {@link RequestResource} unchanged. The name stays published as the argument type of `updateRequest()`.
  */
-export interface RequestQueueClientRequestToUpdate extends RequestQueueClientRequestSchema {}
+export interface RequestQueueClientRequestToUpdate extends RequestResource {}
 
-export interface RequestQueueClientListRequestsResultRePointed {
-    items: RequestQueueClientRequestSchema[];
+export interface ListOfRequestsRePointed {
+    items: RequestResource[];
 }
 
 /**
  * Result of listing all requests in the queue.
  * @since Added in 2.5.1
  */
-export interface RequestQueueClientListRequestsResult
-    extends
-        Omit<Schemas['ListOfRequests'], keyof RequestQueueClientListRequestsResultRePointed>,
-        RequestQueueClientListRequestsResultRePointed {}
+export interface ListOfRequests
+    extends Omit<Schemas['ListOfRequests'], keyof ListOfRequestsRePointed>, ListOfRequestsRePointed {}
 
 /** Result of adding a request to the queue. */
-export interface RequestQueueClientAddRequestResult extends GeneratedRequestRegistration {}
+export interface RequestRegistration extends GeneratedRequestRegistration {}
 
 /**
  * Result of prolonging a request lock.
  * @since Added in 2.4.1
  */
-export interface RequestQueueClientProlongRequestLockResult extends GeneratedRequestLockInfo {}
+export interface RequestLockInfo extends GeneratedRequestLockInfo {}
 
 /**
  * Result of unlocking requests in the queue.
  * @since Added in 2.12.5
  */
-export interface RequestQueueClientUnlockRequestsResult extends GeneratedUnlockRequestsResult {}
+export interface UnlockRequestsResult extends GeneratedUnlockRequestsResult {}
 
 /**
  * Result of a batch add operation on requests.
@@ -1262,7 +1225,7 @@ export interface RequestQueueClientUnlockRequestsResult extends GeneratedUnlockR
  * Contains lists of successfully processed and unprocessed requests.
  * @since Added in 2.3.0
  */
-export interface RequestQueueClientBatchRequestsOperationResult extends GeneratedBatchAddResult {}
+export interface BatchAddResult extends GeneratedBatchAddResult {}
 
 /**
  * Result of a batch delete operation on requests.
@@ -1271,4 +1234,4 @@ export interface RequestQueueClientBatchRequestsOperationResult extends Generate
  * and `uniqueKey` rather than the `requestId`, `wasAlreadyPresent` and `wasAlreadyHandled` that a batch
  * add reports.
  */
-export interface RequestQueueClientBatchDeleteRequestsResult extends GeneratedBatchDeleteResult {}
+export interface BatchDeleteResult extends GeneratedBatchDeleteResult {}

@@ -14,6 +14,7 @@ import type { HttpCompressor } from '../http_compressors/base.js';
 import type { HttpCompressionAlgorithm } from '../http_compressors/resolve.js';
 import { resolveCompressor } from '../http_compressors/resolve.js';
 import { InvalidResponseBodyError } from '../invalid_response_body_error.js';
+import type { HttpMethod } from '../models.js';
 import { Statistics } from '../statistics.js';
 import type { Timeout, TimeoutTier } from '../timeouts.js';
 import {
@@ -35,6 +36,8 @@ import {
     toBytes,
     version,
 } from '../utils.js';
+
+export type { HttpMethod } from '../models.js';
 
 export const DEFAULT_MAX_RETRIES = 8;
 
@@ -63,11 +66,6 @@ const httpClientOptionsSchema = z.looseObject(httpClientOptionsShape).partial();
 
 /** Objects whose payload does not live in their own enumerable keys, so JSON serialization loses it. */
 const UNSERIALIZABLE_OBJECT_TAGS = new Set(['Blob', 'File', 'FormData', 'ReadableStream']);
-
-/**
- * HTTP methods the Apify API accepts.
- */
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS';
 
 /**
  * Response headers keyed by lowercase header name. A header the server sent more than once may arrive as an array.
