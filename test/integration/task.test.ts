@@ -233,7 +233,11 @@ test('lastRun() resolves to the most recent run of a task', async () => {
     try {
         const run = await taskClient.call();
 
-        const lastRun = await taskClient.lastRun().get();
+        const lastRun = await pollUntilCondition(
+            () => taskClient.lastRun().get(),
+            (value) => value?.id === run.id,
+            { timeoutSecs: 90, pollIntervalSecs: 3 },
+        );
         expect(lastRun?.id).toBe(run.id);
 
         await client.run(run.id).delete();
