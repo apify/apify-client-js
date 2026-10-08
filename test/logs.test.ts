@@ -118,6 +118,31 @@ test('StreamedLog redirects the whole log when stop() lands while an empty log s
     expect(info.mock.calls).toEqual(lines.map((line) => [line.trim()]));
 });
 
+test('StreamedLog doubles the pause between empty log streams up to its cap', async () => {
+    vi.useFakeTimers();
+    try {
+        const streamTimes: number[] = [];
+        const stream = vi.fn().mockImplementation(async () => {
+            streamTimes.push(Date.now());
+            const chunks = streamTimes.length <= 6 ? [] : [Buffer.from('2025-01-01T00:00:00.000Z line\n')];
+            return Readable.from(chunks);
+        });
+        const logClient = { stream, get: vi.fn() } as unknown as LogClient;
+        const toLog = new Log();
+        vi.spyOn(toLog, 'info').mockImplementation(() => {});
+
+        const streamedLog = new StreamedLog({ toLog, logClient });
+        streamedLog.start();
+        await vi.advanceTimersByTimeAsync(17_500);
+        await streamedLog.stop();
+
+        const pauses = streamTimes.slice(1).map((time, i) => time - streamTimes[i]);
+        expect(pauses).toEqual([500, 1_000, 2_000, 4_000, 5_000, 5_000]);
+    } finally {
+        vi.useRealTimers();
+    }
+});
+
 test('StreamedLog neither reopens nor reads a log that does not exist', async () => {
     const stream = vi.fn().mockResolvedValue(undefined);
     const get = vi.fn();

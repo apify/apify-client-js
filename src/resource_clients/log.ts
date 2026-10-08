@@ -15,8 +15,15 @@ import type { TimeoutOptions } from '../timeouts.js';
 import { timeoutOptionsShape } from '../timeouts.js';
 import { cast, catchNotFoundForResourceOrThrow, concatBytes, parseArgument, sleep } from '../utils.js';
 
-/** Pause before reopening a log stream that ended before the run logged anything. */
+/**
+ * Pause before the first reopen of a log stream that ended before the run logged anything. Each further reopen doubles
+ * the pause up to `EMPTY_LOG_STREAM_MAX_RETRY_MILLIS`, which bounds the request rate while a run waits long to start,
+ * for example for free memory.
+ */
 const EMPTY_LOG_STREAM_RETRY_MILLIS = 500;
+
+/** Upper bound on the pause between reopens of an empty log stream. */
+const EMPTY_LOG_STREAM_MAX_RETRY_MILLIS = 5_000;
 
 const logOptionsSchema = z.strictObject({ raw: z.boolean().optional(), ...timeoutOptionsShape });
 
@@ -226,6 +233,7 @@ export class StreamedLog {
     async #streamLog(): Promise<void> {
         try {
             let lastChunkRemainder: Uint8Array | undefined;
+            let retryMillis = EMPTY_LOG_STREAM_RETRY_MILLIS;
             // The API serves the log of a run that has not logged anything yet as an empty stream that ends at once,
             // so reopen it until the first bytes arrive. Once stopped, read whatever the log holds in one request.
             while (!lastChunkRemainder) {
@@ -246,7 +254,8 @@ export class StreamedLog {
                 lastChunkRemainder = await this.#logStreamChunks(logStream);
                 if (!lastChunkRemainder) {
                     const wakeSignals = [this.#stopController.signal, ...(this.#signal ? [this.#signal] : [])];
-                    await sleep(EMPTY_LOG_STREAM_RETRY_MILLIS, AbortSignal.any(wakeSignals));
+                    await sleep(retryMillis, AbortSignal.any(wakeSignals));
+                    retryMillis = Math.min(retryMillis * 2, EMPTY_LOG_STREAM_MAX_RETRY_MILLIS);
                 }
             }
             // Process whatever is left when exiting. Maybe it is incomplete, maybe it is last log without EOL.
