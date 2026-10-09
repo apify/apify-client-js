@@ -367,7 +367,7 @@ interface ApiClientOptionsWithOptionalResourcePath extends Omit<ApiClientOptions
 type ApiClientSubResourceOptions = Omit<ApiClientOptions, 'resourcePath'>;
 
 // @public
-export class ApifyApiError extends Error {
+export class ApifyApiError extends ApifyClientError {
     constructor(response: ApifyResponse, attempt: number);
     attempt: number;
     clientMethod: string;
@@ -428,6 +428,10 @@ export interface ApifyClientCustomHttpClientOptions {
     httpClient: HttpClient;
     publicBaseUrl?: string;
     token?: string;
+}
+
+// @public
+export class ApifyClientError extends Error {
 }
 
 // @public
@@ -2847,7 +2851,7 @@ export class InvalidRequestError extends ApifyApiError {
 }
 
 // @public
-export class InvalidResponseBodyError extends Error {
+export class InvalidResponseBodyError extends ApifyClientError {
     constructor(response: HttpResponse, cause: Error);
     // (undocumented)
     cause: Error;
@@ -3469,7 +3473,7 @@ class ResourceCollectionClient extends ApiClient {
 }
 
 // @public
-export class ResponseValidationError extends Error {
+export class ResponseValidationError extends ApifyClientError {
     constructor(error: z.ZodError, value: unknown, request: {
         method: string;
         url: string;
