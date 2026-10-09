@@ -200,7 +200,7 @@ test('lastRun() resolves to a readable run', async () => {
         // Other test files start and delete hello-world runs concurrently, so the unfiltered "last" run can vanish.
         const lastRun = await pollUntilCondition(
             () => actorClient.lastRun({ status: 'SUCCEEDED' }).get(),
-            undefined,
+            (value) => value !== undefined,
             LISTING_POLL_OPTIONS,
         );
 
