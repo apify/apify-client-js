@@ -2904,7 +2904,7 @@ export class KeyValueStoreClient extends ResourceClient {
     getRecordPublicUrl(key: string, options?: TimeoutOptions): Promise<string>;
     listKeys(options?: KeyValueClientListKeysOptions): Promise<ListOfKeys> & AsyncIterable<KeyValueStoreKey>;
     recordExists(key: string, options?: TimeoutOptions): Promise<boolean>;
-    setRecord(record: KeyValueStoreRecord<KeyValueStoreRecordValue>, options?: KeyValueStoreRecordOptions): Promise<void>;
+    setRecord(record: KeyValueStoreRecordInput, options?: KeyValueStoreRecordOptions): Promise<void>;
     update(newFields: KeyValueClientUpdateOptions, options?: TimeoutOptions): Promise<KeyValueStoreResource>;
 }
 
@@ -2947,6 +2947,11 @@ export interface KeyValueStoreRecord<T> {
     key: string;
     // (undocumented)
     value: T;
+}
+
+// @public
+export interface KeyValueStoreRecordInput extends KeyValueStoreRecord<KeyValueStoreRecordValue> {
+    contentEncoding?: string;
 }
 
 // @public

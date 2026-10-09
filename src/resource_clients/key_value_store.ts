@@ -68,6 +68,7 @@ const recordSchema = z.strictObject({
         'Expected a JSON-serializable value, binary data, or a stream',
     ),
     contentType: z.string().min(1).optional(),
+    contentEncoding: z.string().trim().min(1).optional(),
 });
 const recordOptionsSchema = z.strictObject({
     ...timeoutOptionsShape,
@@ -476,6 +477,14 @@ export class KeyValueStoreClient extends ResourceClient {
      *                             whose content type already carries its own compression. The
      *                             `'application/octet-stream'` fallback is treated as compressible, because
      *                             it could hold any binary data.
+     * @param record.contentEncoding - Optional encoding already applied to `value`, sent as the `Content-Encoding`
+     *                                 header. Set it to upload a pre-compressed value: the client then sends the
+     *                                 bytes as they are and does not compress them again. The API accepts `gzip`,
+     *                                 `br`, `deflate`, and `identity`, and stores the record exactly as uploaded, so
+     *                                 this is also the encoding the record is served with. Only binary values and
+     *                                 streams can carry a compression, so any encoding other than `identity` on a
+     *                                 string or a JSON value throws a `TypeError`. Node.js only, since browsers
+     *                                 cannot send the header to the API.
      * @param options - Storage options
      * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @param options.doNotRetryTimeouts - If `true`, don't retry on timeout errors. Default is `false`.
@@ -503,20 +512,43 @@ export class KeyValueStoreClient extends ResourceClient {
      *   value: imageBuffer,
      *   contentType: 'image/png'
      * });
+     *
+     * // Store a gzipped file without compressing it again
+     * const gzippedReport = await readFile('report.json.gz');
+     * await client.keyValueStore('my-store').setRecord({
+     *   key: 'report.json',
+     *   value: gzippedReport,
+     *   contentType: 'application/json',
+     *   contentEncoding: 'gzip'
+     * });
      * ```
      */
-    async setRecord(
-        record: KeyValueStoreRecord<KeyValueStoreRecordValue>,
-        options: KeyValueStoreRecordOptions = {},
-    ): Promise<void> {
+    async setRecord(record: KeyValueStoreRecordInput, options: KeyValueStoreRecordOptions = {}): Promise<void> {
         parseArgument(record, recordSchema);
         const parsed = parseArgument(options, recordOptionsSchema, 'KeyValueStoreRecordOptions');
 
-        const { key } = record;
+        const { key, contentEncoding } = record;
         let { value, contentType } = record;
         const { timeoutSecs = 'long', signal, doNotRetryTimeouts } = parsed;
 
+        if (contentEncoding !== undefined && !runtime.isNode) {
+            throw new Error('The contentEncoding option can only be used in Node.js environment.');
+        }
+
         const isValueStreamOrBuffer = isStream(value) || isBuffer(value);
+
+        // The client forwards the header without inspecting the body, so a string or a JSON value, which cannot hold
+        // compressed bytes, would be stored under an encoding that misdescribes it.
+        const declaresCompression =
+            contentEncoding !== undefined && contentEncoding.trim().toLowerCase() !== 'identity';
+        if (declaresCompression && !isValueStreamOrBuffer) {
+            throw new TypeError(
+                `Cannot upload a value of type ${typeof value} with Content-Encoding: ${contentEncoding}. ` +
+                    'An encoding other than identity declares the value is already compressed, so pass the ' +
+                    'compressed bytes as a Buffer, an ArrayBuffer, a typed array, or a readable stream.',
+            );
+        }
+
         // To allow saving Objects to JSON without providing content type
         if (!contentType) {
             if (isValueStreamOrBuffer) contentType = 'application/octet-stream';
@@ -539,7 +571,10 @@ export class KeyValueStoreClient extends ResourceClient {
             method: 'PUT',
             params: this.buildParams(),
             data: value,
-            headers: contentType ? { 'content-type': contentType } : undefined,
+            headers: {
+                'content-type': contentType,
+                ...(contentEncoding !== undefined && { 'content-encoding': contentEncoding }),
+            },
             doNotRetryTimeouts,
             timeoutSecs,
             signal,
@@ -648,6 +683,17 @@ export interface KeyValueStoreRecord<T> {
     key: string;
     value: T;
     contentType?: string;
+}
+
+/**
+ * A record to store with {@link KeyValueStoreClient.setRecord}.
+ */
+export interface KeyValueStoreRecordInput extends KeyValueStoreRecord<KeyValueStoreRecordValue> {
+    /**
+     * Encoding already applied to `value`, sent as the `Content-Encoding` header. See
+     * {@link KeyValueStoreClient.setRecord}.
+     */
+    contentEncoding?: string;
 }
 
 /**
