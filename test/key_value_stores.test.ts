@@ -739,6 +739,15 @@ describe('Key-Value Store methods', () => {
             expect(request?.headers['content-length']).toBe(String(value.length));
         });
 
+        test('setRecord() matches identity contentEncoding case-insensitively', async () => {
+            const res = await client
+                .keyValueStore('some-id')
+                .setRecord({ key: 'some-key', value: 'plain text', contentEncoding: 'IDENTITY' });
+            expect(res).toBeUndefined();
+
+            expect(mockServer.getLastRequest()?.headers['content-encoding']).toBe('IDENTITY');
+        });
+
         test.each([
             { name: 'a string', value: 'plain text' },
             { name: 'an object', value: { foo: 'bar' } },
