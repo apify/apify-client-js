@@ -2857,7 +2857,7 @@ export class InvalidResponseBodyError extends Error {
 }
 
 // @public
-export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientListKeysOptions, 'signature'> {
+export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientListKeysOptions, 'chunkSize' | 'signature'> {
     // (undocumented)
     expiresInSecs?: number;
 }
@@ -2873,6 +2873,7 @@ export interface KeyValueClientGetRecordOptions extends TimeoutOptions {
 
 // @public
 export interface KeyValueClientListKeysOptions extends TimeoutOptions {
+    chunkSize?: number;
     // (undocumented)
     collection?: string;
     // (undocumented)
@@ -3309,6 +3310,7 @@ export interface RequestQueueClientListHeadOptions extends TimeoutOptions {
 
 // @public
 export interface RequestQueueClientListRequestsOptions extends TimeoutOptions {
+    chunkSize?: number;
     cursor?: string;
     filter?: readonly RequestQueueListRequestsFilter[];
     // (undocumented)

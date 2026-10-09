@@ -363,6 +363,19 @@ export interface PaginationOptions {
 }
 
 /**
+ * The smaller of two page limits, for the `limit` query parameter. The API treats a `limit` of 0 as unset, so 0 here
+ * means no limit and loses to any other value.
+ * @internal
+ */
+export function minForLimitParam(a: number | undefined, b: number | undefined): number | undefined {
+    if (a === 0) a = undefined;
+    if (b === 0) b = undefined;
+    if (a === undefined) return b;
+    if (b === undefined) return a;
+    return Math.min(a, b);
+}
+
+/**
  * Schema shape of {@link PaginationOptions}, to spread into every paginating client's list schema. One
  * copy stops it drifting from the interface.
  * @internal

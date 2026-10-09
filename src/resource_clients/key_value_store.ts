@@ -22,12 +22,14 @@ import {
     catchNotFoundOrThrow,
     isBuffer,
     isStream,
+    minForLimitParam,
     parseArgument,
     parseResponse,
 } from '../utils.js';
 
 const listKeysOptionsSchema = z.strictObject({
     limit: z.number().min(0).optional(),
+    chunkSize: z.number().positive().optional(),
     exclusiveStartKey: z.string().optional(),
     collection: z.string().optional(),
     prefix: z.string().optional(),
@@ -35,7 +37,8 @@ const listKeysOptionsSchema = z.strictObject({
     ...timeoutOptionsShape,
 });
 const nonEmptyKeySchema = z.string().min(1);
-// `signature` is left out - this method produces one. The options type omits it to match.
+// `chunkSize` (client-side only) and `signature` (which this method produces) are left out. The options type omits
+// both to match.
 const createKeysPublicUrlOptionsSchema = z.strictObject({
     limit: z.number().min(0).optional(),
     exclusiveStartKey: z.string().optional(),
@@ -169,6 +172,8 @@ export class KeyValueStoreClient extends ResourceClient {
      *
      * @param options - Listing options
      * @param options.limit - Maximum number of keys to return. Default is 1000.
+     * @param options.chunkSize - Maximum number of keys requested per API call when iterating across pages. `limit`
+     *   then caps the total across all pages.
      * @param options.exclusiveStartKey - Key to start listing from (for pagination). The listing starts with the next key after this one.
      * @param options.collection - Filter keys by collection name.
      * @param options.prefix - Filter keys that start with this prefix.
@@ -198,7 +203,9 @@ export class KeyValueStoreClient extends ResourceClient {
      * ```
      */
     listKeys(options: KeyValueClientListKeysOptions = {}): Promise<ListOfKeys> & AsyncIterable<KeyValueStoreKey> {
+        // `chunkSize` only sizes the page requests; it is not an API parameter, so it must not reach the query string.
         const {
+            chunkSize,
             timeoutSecs = 'medium',
             signal,
             ...parsed
@@ -216,7 +223,7 @@ export class KeyValueStoreClient extends ResourceClient {
             return parseResponse(response, schemas.ListOfKeys());
         };
 
-        const paginatedListPromise = getPaginatedList(parsed);
+        const paginatedListPromise = getPaginatedList({ ...parsed, limit: minForLimitParam(parsed.limit, chunkSize) });
         async function* asyncGenerator() {
             let currentPage = await paginatedListPromise;
             yield* currentPage.items;
@@ -232,7 +239,7 @@ export class KeyValueStoreClient extends ResourceClient {
             ) {
                 const newOptions = {
                     ...parsed,
-                    limit: remainingItems,
+                    limit: minForLimitParam(remainingItems, chunkSize),
                     exclusiveStartKey: currentPage.nextExclusiveStartKey,
                 };
                 currentPage = await getPaginatedList(newOptions);
@@ -595,6 +602,12 @@ export interface KeyValueClientUpdateOptions {
  */
 export interface KeyValueClientListKeysOptions extends TimeoutOptions {
     limit?: number;
+    /**
+     * Maximum number of keys returned in one API response. Relevant in the context of asyncIterator, the iterator
+     * fetches keys in chunks of this size and yields them one by one, until `limit` is reached or the store has no
+     * more keys. Awaiting the call returns only the first chunk.
+     */
+    chunkSize?: number;
     exclusiveStartKey?: string;
     collection?: string;
     /**
@@ -610,11 +623,14 @@ export interface KeyValueClientListKeysOptions extends TimeoutOptions {
 /**
  * Options for creating a public URL to list keys in a Key-Value Store.
  *
- * Extends {@link KeyValueClientListKeysOptions} with URL expiration control, minus `signature` (this
- * method produces one).
+ * Extends {@link KeyValueClientListKeysOptions} with URL expiration control, minus `chunkSize` (it only sizes a
+ * client-side iteration) and `signature` (this method produces one).
  * @since Added in 2.16.0
  */
-export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientListKeysOptions, 'signature'> {
+export interface KeyValueClientCreateKeysUrlOptions extends Omit<
+    KeyValueClientListKeysOptions,
+    'chunkSize' | 'signature'
+> {
     expiresInSecs?: number;
 }
 

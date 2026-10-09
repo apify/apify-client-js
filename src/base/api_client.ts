@@ -1,7 +1,7 @@
 import type { ApifyClient } from '../apify_client.js';
 import type { HttpClient } from '../http_clients/index.js';
 import type { PaginatedResponse, PaginationOptions } from '../utils.js';
-import { SCANNED_COUNT, toPath, toPathSegment } from '../utils.js';
+import { minForLimitParam, SCANNED_COUNT, toPath, toPathSegment } from '../utils.js';
 
 /** @private */
 export interface ApiClientOptions {
@@ -94,15 +94,6 @@ export abstract class ApiClient {
         getPaginatedList: (options?: T) => Promise<R>,
         options: T = {} as T,
     ): AsyncIterable<Data> & Promise<R> {
-        const minForLimitParam = (a: number | undefined, b: number | undefined): number | undefined => {
-            // API treats 0 as undefined for limit parameter
-            if (a === 0) a = undefined;
-            if (b === 0) b = undefined;
-            if (a === undefined) return b;
-            if (b === undefined) return a;
-            return Math.min(a, b);
-        };
-
         // `chunkSize` only sizes this loop's requests; it is not an API parameter, so it must not reach
         // `buildParams()` and the query string. The same goes for `timeoutSecs` and `signal`, which callers take out
         // before calling this, since they also apply to every page request.
