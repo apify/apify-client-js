@@ -6,7 +6,7 @@ try {
     await client.actor('my-actor').call({ url: 'https://example.com' });
 } catch (error) {
     if (error instanceof ApifyClientError) {
-        // An ApifyApiError subclass, an InvalidResponseBodyError or a ResponseValidationError.
+        // An ApifyApiError, an InvalidResponseBodyError or a ResponseValidationError.
         console.log(`${error.name}: ${error.message}`);
     } else {
         throw error;
