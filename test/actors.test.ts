@@ -3,7 +3,13 @@ import type { AddressInfo } from 'node:net';
 import { setTimeout } from 'node:timers/promises';
 
 import c from 'ansi-colors';
-import type { ActorCollectionCreateOptions, ActorCollectionListOptions, ActorInput, Version } from 'apify-client';
+import type {
+    ActorCollectionCreateOptions,
+    ActorCollectionListOptions,
+    ActorInput,
+    ActorUpdateOptions,
+    Version,
+} from 'apify-client';
 import {
     ActorListSortBy,
     ActorSourceType,
@@ -102,6 +108,41 @@ describe('Actor methods', () => {
             const browserRes = await page.evaluate((id, opts) => client.actor(id).update(opts), actorId, newFields);
             expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query: {}, params: { actorId: 'some-user~some-id' }, body: newFields });
+        });
+
+        test('update() sends pricingInfos and exampleRunInput', async () => {
+            const actorId = 'some-id';
+            const startedAt = new Date('2026-01-01T00:00:00.000Z');
+            const newFields: ActorUpdateOptions = {
+                pricingInfos: [
+                    {
+                        pricingModel: 'PRICE_PER_DATASET_ITEM',
+                        unitName: 'result',
+                        pricePerUnitUsd: 0.001,
+                        apifyMarginPercentage: 0.2,
+                        createdAt: startedAt,
+                        startedAt,
+                    },
+                ],
+                exampleRunInput: { body: '{"url":"https://example.com"}', contentType: 'application/json' },
+            };
+            const expectedBody = {
+                ...newFields,
+                pricingInfos: [
+                    {
+                        ...newFields.pricingInfos![0],
+                        createdAt: startedAt.toISOString(),
+                        startedAt: startedAt.toISOString(),
+                    },
+                ],
+            };
+
+            const res = await client.actor(actorId).update(newFields);
+            validateRequest({ query: {}, params: { actorId }, body: expectedBody, endpointId: 'update-actor' });
+
+            const browserRes = await page.evaluate((id, opts) => client.actor(id).update(opts), actorId, newFields);
+            expect(browserRes).toEqual(asBrowserResult(res));
+            validateRequest({ query: {}, params: { actorId }, body: expectedBody, endpointId: 'update-actor' });
         });
 
         test('get() works', async () => {
