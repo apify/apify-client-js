@@ -14,6 +14,7 @@ import ErrorTypeExample from '!!raw-loader!./code/03_error_type.ts';
 import MissingResourcesExample from '!!raw-loader!./code/03_missing_resources.ts';
 import InvalidArgumentsExample from '!!raw-loader!./code/03_invalid_arguments.ts';
 import InvalidResponsesExample from '!!raw-loader!./code/03_invalid_responses.ts';
+import ClientErrorExample from '!!raw-loader!./code/03_client_error.ts';
 
 Based on the endpoint, the client automatically extracts the relevant data and returns it in the expected format. Date strings, for instance, are converted to `Date` objects. For details, see [Typed models](./11_typed_models.mdx). If an error occurs, the client throws an <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink>, which wraps the plain JSON errors returned by the API and enriches them with other context for easier debugging.
 
@@ -73,4 +74,14 @@ The client validates every response it turns into a typed value against the Apif
     {InvalidResponsesExample}
 </CodeBlock>
 
-For the full list of error classes, see the <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> reference.
+## Catching all client errors
+
+Every error the client throws for a failed API call extends <ApiLink to="class/ApifyClientError">`ApifyClientError`</ApiLink>: <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> and its subclasses, <ApiLink to="class/ResponseValidationError">`ResponseValidationError`</ApiLink>, and <ApiLink to="class/InvalidResponseBodyError">`InvalidResponseBodyError`</ApiLink>, which the client throws when a response body doesn't parse as its content type claims. A single `instanceof ApifyClientError` check catches all of them:
+
+<CodeBlock className="language-ts">
+    {ClientErrorExample}
+</CodeBlock>
+
+`ArgumentValidationError` doesn't extend `ApifyClientError`, and neither do network errors, timeouts and aborts, which surface as the errors the HTTP client raised.
+
+For the full list of error classes, see the <ApiLink to="class/ApifyClientError">`ApifyClientError`</ApiLink> reference.
