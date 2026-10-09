@@ -537,8 +537,8 @@ export class KeyValueStoreClient extends ResourceClient {
 
         const isValueStreamOrBuffer = isStream(value) || isBuffer(value);
 
-        // The client forwards the header without inspecting the body, so a value that cannot be compressed bytes
-        // would be stored under an encoding that misdescribes it.
+        // The client forwards the header without inspecting the body, so a string or a JSON value, which cannot hold
+        // compressed bytes, would be stored under an encoding that misdescribes it.
         const declaresCompression =
             contentEncoding !== undefined && contentEncoding.trim().toLowerCase() !== 'identity';
         if (declaresCompression && !isValueStreamOrBuffer) {

@@ -50,7 +50,7 @@ A payload can reach the client already encoded, for example a gzipped file read 
 
 The header is forwarded verbatim, so it also covers encodings the client ships no compressor for, such as `deflate`. It's forwarded for a stream too, so a readable stream of a gzipped file can be passed in place of its bytes. The API accepts `gzip`, `br`, `deflate`, and `identity`. Passing `identity` turns compression off for a single request without changing how the client is configured. For other requests, set the header in `headers` when calling `client.httpClient.call()`.
 
-A value that can't be compressed at all, a string or a value serialized to JSON, is rejected with a `TypeError` when `contentEncoding` names a compression. Browsers can't send the header to the API, so `contentEncoding` works in Node.js only. Beyond that, the client can't verify that the bytes match the header, so set `Content-Encoding` only when the payload really is encoded that way. Key-value store records are stored exactly as you upload them, which makes the header part of the stored record rather than a transport detail.
+A string or a value serialized to JSON can't hold compressed bytes, so it's rejected with a `TypeError` when `contentEncoding` names a compression. Browsers can't send the header to the API, so `contentEncoding` works in Node.js only. Beyond that, the client can't verify that the bytes match the header, so set `Content-Encoding` only when the payload really is encoded that way. Key-value store records are stored exactly as you upload them, which makes the header part of the stored record rather than a transport detail.
 
 ## Configuration
 
