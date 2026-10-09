@@ -603,7 +603,7 @@ export interface KeyValueClientUpdateOptions {
 export interface KeyValueClientListKeysOptions extends TimeoutOptions {
     limit?: number;
     /**
-     * Maximum number of keys returned in one API response. Relevant in the context of asyncIterator, the iterator
+     * Maximum number of keys returned in one API response. When the call is iterated with `for await`, the iterator
      * fetches keys in chunks of this size and yields them one by one, until `limit` is reached or the store has no
      * more keys. Awaiting the call returns only the first chunk.
      */

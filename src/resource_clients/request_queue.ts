@@ -801,7 +801,7 @@ export class RequestQueueClient extends ResourceClient {
      * queue contents.
      *
      * @param options - Pagination options
-     * @param options.chunkSize - Maximum number of requests requested per API call when iterating across pages. `limit`
+     * @param options.chunkSize - Maximum number of requests fetched per API call when iterating across pages. `limit`
      *   then caps the total across all pages.
      * @param options.timeoutSecs - Timeout for each API request. Default is `'medium'`.
      * @returns List of requests with pagination information
@@ -981,7 +981,7 @@ export type RequestQueueListRequestsFilter = 'locked' | 'pending';
 export interface RequestQueueClientListRequestsOptions extends TimeoutOptions {
     limit?: number;
     /**
-     * Maximum number of requests returned in one API response. Relevant in the context of asyncIterator, the iterator
+     * Maximum number of requests returned in one API response. When the call is iterated with `for await`, the iterator
      * fetches requests in chunks of this size and yields them one by one, until `limit` is reached or the RQ is
      * exhausted. Awaiting the call returns only the first chunk.
      */
