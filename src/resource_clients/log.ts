@@ -13,7 +13,17 @@ import { ResourceClient } from '../base/resource_client.js';
 import type { ApifyRequestConfig } from '../http_clients/index.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import { timeoutOptionsShape } from '../timeouts.js';
-import { cast, catchNotFoundForResourceOrThrow, concatBytes, parseArgument } from '../utils.js';
+import { cast, catchNotFoundForResourceOrThrow, concatBytes, parseArgument, sleep } from '../utils.js';
+
+/**
+ * Pause before the first reopen of a log stream that ended before the run logged anything. Each further reopen doubles
+ * the pause up to `EMPTY_LOG_STREAM_MAX_RETRY_MILLIS`, which bounds the request rate while a run waits long to start,
+ * for example for free memory.
+ */
+const EMPTY_LOG_STREAM_RETRY_MILLIS = 500;
+
+/** Upper bound on the pause between reopens of an empty log stream. */
+const EMPTY_LOG_STREAM_MAX_RETRY_MILLIS = 5_000;
 
 const logOptionsSchema = z.strictObject({ raw: z.boolean().optional(), ...timeoutOptionsShape });
 
@@ -179,6 +189,7 @@ export class StreamedLog {
     #streamingTask: Promise<void> | null = null;
     #stopLogging = false;
     #stopController = new AbortController();
+    #wakeController = new AbortController();
 
     constructor(options: StreamedLogOptions) {
         const { toLog, logClient, fromStart = true, signal } = options;
@@ -197,17 +208,20 @@ export class StreamedLog {
         }
         this.#stopLogging = false;
         this.#stopController = new AbortController();
+        this.#wakeController = new AbortController();
         this.#streamingTask = this.#streamLog();
     }
 
     /**
-     * Stop log redirection. Waits up to one second for lines already in flight, then aborts the log stream request.
+     * Stop log redirection. Waits up to one second for lines already in flight, then aborts the log stream request. If
+     * no stream has delivered anything yet, reads the whole log in one request instead.
      */
     public async stop(): Promise<void> {
         if (!this.#streamingTask) {
             throw new Error('Streaming task is not active');
         }
         this.#stopLogging = true;
+        this.#wakeController.abort();
         const stopController = this.#stopController;
         const abortTimeout = setTimeout(() => stopController.abort(), STOP_GRACE_MILLIS);
         try {
@@ -230,11 +244,42 @@ export class StreamedLog {
             ? AbortSignal.any([this.#signal, this.#stopController.signal])
             : this.#stopController.signal;
         try {
-            const logStream = await this.#logClient.stream({ raw: true, signal });
-            if (!logStream) {
-                return;
+            let lastChunkRemainder: Uint8Array | undefined;
+            let retryMillis = EMPTY_LOG_STREAM_RETRY_MILLIS;
+            // The API serves the log of a run that has not logged anything yet as an empty stream that ends at once,
+            // so reopen it until the first bytes arrive. If stopped before any bytes arrive, fetch it in one request.
+            while (!lastChunkRemainder) {
+                if (this.#stopLogging) {
+                    // `signal` is aborted once the stop grace period ends, which would cut this read short.
+                    const logContent = await this.#logClient.get({ raw: true, signal: this.#signal });
+                    lastChunkRemainder = await this.#logStreamChunks(
+                        [new TextEncoder().encode(logContent ?? '')],
+                        signal,
+                    );
+                    break;
+                }
+                let logStream: Readable | undefined;
+                try {
+                    logStream = await this.#logClient.stream({ raw: true, signal });
+                } catch (err) {
+                    // The stop grace period ended while the stream was connecting, so read the log in one request.
+                    if (this.#stopLogging && !this.#signal?.aborted) continue;
+                    throw err;
+                }
+                if (!logStream) {
+                    return;
+                }
+                // A stream opened during stop() would be cut after its first chunk, so read the log in one request.
+                if (this.#stopLogging) {
+                    logStream.destroy();
+                    continue;
+                }
+                lastChunkRemainder = await this.#logStreamChunks(logStream, signal);
+                if (!lastChunkRemainder) {
+                    await sleep(retryMillis, AbortSignal.any([signal, this.#wakeController.signal]));
+                    retryMillis = Math.min(retryMillis * 2, EMPTY_LOG_STREAM_MAX_RETRY_MILLIS);
+                }
             }
-            const lastChunkRemainder = await this.#logStreamChunks(logStream, signal);
             // Process whatever is left when exiting. Maybe it is incomplete, maybe it is last log without EOL.
             const lastMessage = this.#decoder.decode(lastChunkRemainder).trim();
             if (lastMessage.length) {
@@ -246,14 +291,22 @@ export class StreamedLog {
         }
     }
 
-    async #logStreamChunks(logStream: Readable, signal: AbortSignal): Promise<Uint8Array> {
+    /**
+     * Redirect every complete message in the chunks and return the incomplete rest, or `undefined` when there were no
+     * chunks at all.
+     */
+    async #logStreamChunks(
+        logStream: AsyncIterable<Uint8Array> | Iterable<Uint8Array>,
+        signal: AbortSignal,
+    ): Promise<Uint8Array | undefined> {
         // Chunk may be incomplete. Keep remainder for next chunk.
-        let previousChunkRemainder: Uint8Array = new Uint8Array();
+        let previousChunkRemainder: Uint8Array | undefined;
 
         try {
             for await (const chunk of logStream) {
                 // Handle possible leftover incomplete line from previous chunk.
                 // Everything before last end of line is complete.
+                previousChunkRemainder ??= new Uint8Array();
                 const chunkWithPreviousRemainder = new Uint8Array(previousChunkRemainder.length + chunk.length);
                 chunkWithPreviousRemainder.set(previousChunkRemainder, 0);
                 chunkWithPreviousRemainder.set(chunk, previousChunkRemainder.length);
