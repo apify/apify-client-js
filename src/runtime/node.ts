@@ -1,6 +1,7 @@
 import type http from 'node:http';
 import type { Socket } from 'node:net';
 import os from 'node:os';
+import { Readable } from 'node:stream';
 import { brotliCompress, constants, gzip } from 'node:zlib';
 
 import type { Runtime } from './types.js';
@@ -57,4 +58,32 @@ export const runtime: Runtime = {
 
         return { httpAgent: agent, httpsAgent: agent };
     },
+
+    openBlobBody(blob, onSourceError) {
+        return Readable.from(readBlob(blob, onSourceError), { objectMode: false });
+    },
 };
+
+/**
+ * Yields the bytes of a blob. Ending the iteration early, which destroying the `Readable` around it does, cancels
+ * the read and releases a file the blob reads from. Only a failing read is reported: an error the `Readable` is
+ * destroyed with is thrown in at the `yield` and belongs to the transport.
+ */
+async function* readBlob(blob: Blob, onSourceError: (error: unknown) => void): AsyncGenerator<Uint8Array> {
+    const chunks = blob.stream()[Symbol.asyncIterator]();
+    try {
+        while (true) {
+            let chunk: IteratorResult<Uint8Array>;
+            try {
+                chunk = await chunks.next();
+            } catch (error) {
+                onSourceError(error);
+                throw error;
+            }
+            if (chunk.done) return;
+            yield chunk.value;
+        }
+    } finally {
+        await chunks.return?.();
+    }
+}

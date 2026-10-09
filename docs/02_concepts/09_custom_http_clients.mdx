@@ -74,7 +74,7 @@ Mark your implementations with the `override` keyword, as the built-in axios cli
 | `method: HttpMethod` | HTTP method, for example `GET` or `POST` |
 | `url: string` | Full URL, query string included |
 | `headers: Record<string, string>` | Final request headers |
-| `body?: string \| Buffer \| ArrayBuffer \| ArrayBufferView \| Readable` | Serialized and compressed body, or `undefined` |
+| `body?: string \| Buffer \| ArrayBuffer \| ArrayBufferView \| Readable \| Blob` | Serialized and compressed body, or `undefined`. A `Blob` body arrives in Node.js as a new `Readable` for every attempt |
 | `timeoutMillis?: number` | Timeout of this attempt, or `undefined` for a request that runs without one |
 | `stream: boolean` | Whether to return the body unread, as a `Readable` |
 | `signal?: AbortSignal` | The caller's abort signal, to end the request in flight with. The pipeline stops retrying once it aborts |

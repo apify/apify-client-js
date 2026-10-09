@@ -281,6 +281,14 @@ export function isBuffer(value: unknown): value is Buffer | ArrayBuffer | TypedA
     return isTagged(value, 'ArrayBuffer');
 }
 
+/**
+ * Whether a value is a `Blob`, a `File` included. Unlike a stream, a blob can be read again for every attempt of a
+ * request, so a request with a blob body can be retried.
+ */
+export function isBlob(value: unknown): value is Blob {
+    return isTagged(value, 'Blob') || isTagged(value, 'File');
+}
+
 function isTagged(value: unknown, tag: string): boolean {
     return Object.prototype.toString.call(value) === `[object ${tag}]`;
 }

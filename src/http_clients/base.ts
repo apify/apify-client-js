@@ -27,6 +27,7 @@ import { runtime } from '#runtime';
 import {
     asArray,
     getEnv,
+    isBlob,
     isBuffer,
     isCompressibleContentType,
     isStream,
@@ -65,7 +66,7 @@ export const httpClientOptionsShape = {
 const httpClientOptionsSchema = z.looseObject(httpClientOptionsShape).partial();
 
 /** Objects whose payload does not live in their own enumerable keys, so JSON serialization loses it. */
-const UNSERIALIZABLE_OBJECT_TAGS = new Set(['Blob', 'File', 'FormData', 'ReadableStream']);
+const UNSERIALIZABLE_OBJECT_TAGS = new Set(['FormData', 'ReadableStream']);
 
 /**
  * Response headers keyed by lowercase header name. A header the server sent more than once may arrive as an array.
@@ -74,9 +75,10 @@ export type HttpResponseHeaders = Record<string, string | string[] | undefined>;
 
 /**
  * A request body as the transport receives it: already serialized, and compressed when that paid off. A `Readable`
- * is passed through untouched and is only available in Node.js.
+ * is passed through untouched and is only available in Node.js. A `Blob` body reaches a Node.js transport as a
+ * fresh `Readable` over its bytes for every attempt, and a transport in any other runtime as the `Blob` itself.
  */
-export type HttpRequestBody = string | Buffer | ArrayBuffer | ArrayBufferView | Readable;
+export type HttpRequestBody = string | Buffer | ArrayBuffer | ArrayBufferView | Readable | Blob;
 
 /**
  * A response body as the transport hands it back: the raw bytes, a `Readable` when the request asked for a streamed
@@ -113,8 +115,9 @@ export interface ApifyRequestConfig {
      * Request body. A plain object or array is serialized to JSON and sent as `application/json`, or form-encoded
      * when a `Content-Type: application/x-www-form-urlencoded` header asks for it. A string, binary value
      * (`Buffer`, `ArrayBuffer`, typed array) or `Readable` is sent as it is, and `URLSearchParams` is sent
-     * form-encoded. A `Blob`, `File`, `FormData` or web `ReadableStream` is rejected with a `TypeError`, since
-     * serializing one would send an empty body.
+     * form-encoded. A `Blob` or `File`, such as one from `fs.openAsBlob()`, is streamed without being held in
+     * memory, under its own `type` when no `Content-Type` header is set. A `FormData` or web `ReadableStream` is
+     * rejected with a `TypeError`, since serializing one would send an empty body.
      */
     data?: unknown;
     /**
@@ -404,8 +407,10 @@ export abstract class HttpClient {
      * Network errors the transport classifies as retryable, rate limits (HTTP 429) and server errors (HTTP 5xx)
      * are retried up to {@link maxRetries} times. Any other error status is thrown as {@link ApifyApiError} right
      * away. A request whose body is a `Readable` is never retried, since part of the stream has already been
-     * consumed by the time the failure shows. Aborting `config.signal` ends the attempt in flight, skips the
-     * remaining retries and rejects the call with the signal's `reason`.
+     * consumed by the time the failure shows. A `Blob` body is read again for every attempt, so it is retried like
+     * any other, unless reading the blob itself fails: that error is thrown right away, with the transport error
+     * as its `cause` when that error does not already wrap it. Aborting `config.signal` ends the attempt in flight,
+     * skips the remaining retries and rejects the call with the signal's `reason`.
      *
      * @template T - Type of the parsed response body.
      * @param config - The request to make.
@@ -449,6 +454,12 @@ export abstract class HttpClient {
             // and would leave the server waiting for bytes that never arrive.
             headers = mergeHeaders(headers, { 'Content-Encoding': this.httpCompressor.contentEncoding });
             deleteHeader(headers, 'content-length');
+        }
+
+        // A blob reaches a Node.js transport as a stream, which would go out chunked without a known length.
+        // Browsers set the header themselves and refuse to let a page set it.
+        if (isBlob(body) && runtime.isNode) {
+            headers = mergeHeaders(headers, { 'Content-Length': String(body.size) });
         }
 
         return { headers, body };
@@ -552,13 +563,21 @@ export abstract class HttpClient {
 
         const requestIsStream = isStream(config.data);
 
+        // The transport reports a failure of the blob as an error of its own, which may pass as transient.
+        let sourceFailure: { error: unknown } | undefined;
+        const attemptBody = isBlob(body)
+            ? runtime.openBlobBody(body, (error) => {
+                  sourceFailure = { error };
+              })
+            : body;
+
         let response: HttpResponse;
         try {
             response = await this.sendRequest({
                 method: config.method,
                 url,
                 headers,
-                body,
+                body: attemptBody,
                 timeoutMillis: this.computeTimeoutMillis(attempt, config.timeoutSecs),
                 stream: config.responseType === 'stream',
                 signal: config.signal,
@@ -566,8 +585,17 @@ export abstract class HttpClient {
         } catch (err) {
             // Every HTTP library reports an abort with an error of its own, so the caller gets the reason instead.
             config.signal?.throwIfAborted();
+            if (sourceFailure) {
+                // Sending the body again cannot fix its source.
+                stopRetrying();
+                throw withCause(sourceFailure.error, err);
+            }
             this.#handleRequestError(err, config, stopRetrying);
             throw err;
+        } finally {
+            // A transport may stop reading the body early, for example on an error response sent before the whole
+            // body arrived, which would leave the blob's file open.
+            if (attemptBody !== body && isStream(attemptBody)) attemptBody.destroy();
         }
 
         // A failed streaming request carries the API error body in the stream, so read it and let
@@ -713,7 +741,7 @@ function deleteHeader(headers: Record<string, string>, name: string): void {
 /**
  * Views a serialized body as the bytes to compress, or `undefined` when compressing it would not pay off: the
  * caller already labeled the body with a `Content-Encoding`, its content type carries its own compression, it is
- * a stream or smaller than {@link MIN_COMPRESS_BYTES}, or the runtime has no compression to offer.
+ * a stream or a blob, it is smaller than {@link MIN_COMPRESS_BYTES}, or the runtime has no compression to offer.
  */
 function compressibleBytes(body: HttpRequestBody | undefined, headers: Record<string, string>): Uint8Array | undefined {
     if (body === undefined || !runtime.isNode) return undefined;
@@ -722,6 +750,21 @@ function compressibleBytes(body: HttpRequestBody | undefined, headers: Record<st
 
     const bytes = toBytes(body);
     return bytes && bytes.byteLength >= MIN_COMPRESS_BYTES ? bytes : undefined;
+}
+
+/**
+ * Sets `cause` on an error that has none, and returns the error. A `cause` that already wraps the error, as an axios
+ * error wraps the error of its request body, is left out, since linking it would make the chain circular.
+ */
+function withCause(error: unknown, cause: unknown): unknown {
+    if (!(error instanceof Error) || error.cause !== undefined) return error;
+    const seen = new Set<unknown>();
+    for (let link = cause; link instanceof Error && !seen.has(link); link = link.cause) {
+        if (link === error) return error;
+        seen.add(link);
+    }
+    error.cause = cause;
+    return error;
 }
 
 function headerValue(value: string | string[] | undefined): string | undefined {
@@ -747,6 +790,11 @@ function serializeBody(
 ): HttpRequestBody | undefined {
     if (data === undefined || data === null) return undefined;
     if (isStream(data)) return data;
+
+    if (isBlob(data)) {
+        if (getHeader(headers, 'content-type') === undefined && data.type) headers['Content-Type'] = data.type;
+        return data;
+    }
 
     if (isBuffer(data)) {
         // The axios Node.js adapter refuses a body that is neither a `Buffer`, an `ArrayBuffer` nor a string.

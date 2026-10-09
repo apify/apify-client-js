@@ -20,4 +20,8 @@ export const runtime: Runtime = {
     async createHttpAgents() {
         return undefined;
     },
+
+    openBlobBody(blob) {
+        return blob;
+    },
 };
