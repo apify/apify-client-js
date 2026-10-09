@@ -4,7 +4,7 @@ import type { ActorResource, ActorListItem, ApifyClient } from 'apify-client';
 import { ActorListSortBy, ActorSourceType } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
-import { ANY_RUN_STATUS, getRandomResourceName, NO_LOG_REDIRECT } from './_utils.js';
+import { ANY_RUN_STATUS, getRandomResourceName, NO_LOG_REDIRECT, pollUntilCondition } from './_utils.js';
 
 const HELLO_WORLD_ACTOR = 'apify/hello-world';
 const WEB_SCRAPER_ACTOR = 'apify/web-scraper';
@@ -192,7 +192,10 @@ test('lastRun() resolves to a readable run', async () => {
 
     try {
         // Other test files start and delete hello-world runs concurrently, so the unfiltered "last" run can vanish.
-        const lastRun = await actorClient.lastRun({ status: 'SUCCEEDED' }).get();
+        const lastRun = await pollUntilCondition(() => actorClient.lastRun({ status: 'SUCCEEDED' }).get(), undefined, {
+            timeoutSecs: 90,
+            pollIntervalSecs: 3,
+        });
 
         expect(lastRun?.id).toBeTruthy();
     } finally {

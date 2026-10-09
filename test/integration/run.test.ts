@@ -342,10 +342,17 @@ test('actor.runs().list() is async-iterable and yields only that Actor runs', as
     const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
 
     try {
-        const collected: RunListItem[] = [];
-        for await (const actorRun of client.actor(HELLO_WORLD_ACTOR).runs().list({ limit: 3, desc: true })) {
-            collected.push(actorRun);
-        }
+        const collected = await pollUntilCondition(
+            async () => {
+                const items: RunListItem[] = [];
+                for await (const actorRun of client.actor(HELLO_WORLD_ACTOR).runs().list({ limit: 3, desc: true })) {
+                    items.push(actorRun);
+                }
+                return items;
+            },
+            (items) => items.length >= 1,
+            { timeoutSecs: 90, pollIntervalSecs: 3 },
+        );
 
         expect(collected.length).toBeGreaterThanOrEqual(1);
         expect(collected.every((item) => item.actId === run.actId)).toBe(true);
