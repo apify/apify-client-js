@@ -688,6 +688,12 @@ The instance itself is bare: the pipeline merges the default headers and seriali
 
 `ApifyClient` reports the failure of the final attempt. In v2 `async-retry` reported the error whose message occurred most often across the attempts, so a call that hit five HTTP 500s and then four connection resets threw an `ApifyApiError` for the 500s rather than the reset. Code that branches on `instanceof ApifyApiError` for a call that fails in more than one way may see a different error type than it did before.
 
+### A response body that doesn't parse is no longer retried
+
+A successful response whose body doesn't parse as its content type claims throws <ApiLink to="class/InvalidResponseBodyError">`InvalidResponseBodyError`</ApiLink> on the first attempt. Under v2 the client retried it, so a key-value store record holding non-JSON text under `application/json` cost every retry before `getRecord()` threw. A connection that drops mid-body still fails as a network error, which is retried.
+
+An error status whose body doesn't parse, such as an HTML page from a proxy with a `502`, throws the <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> subclass for its status code, with the raw body in `message`, and is retried by that status code. Under v2 it threw `InvalidResponseBodyError`.
+
 ### The per-attempt timeout grows on a fixed schedule
 
 Each attempt gets the request's timeout doubled once per retry, capped at `timeoutMaxSecs`. In v2 the doubling compounded, because every attempt overwrote the request's timeout with the value it had just computed. A request starting at 5 seconds got 5, 10, 40 and 320 seconds; it now gets 5, 10, 20 and 40. Requests whose timeout is already `timeoutMaxSecs` are unaffected.

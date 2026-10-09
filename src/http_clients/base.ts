@@ -387,7 +387,8 @@ export abstract class HttpClient {
      * The inherited {@link call} needs it, so every transport has to implement it. Let the library's errors
      * propagate unwrapped: {@link call} classifies them through {@link isRetryableTransportError} and
      * {@link isTimeoutError}. Return error responses as they are too, the pipeline turns them into
-     * {@link ApifyApiError} and decides whether to retry.
+     * {@link ApifyApiError} and decides whether to retry. Reject when the connection drops before the body is
+     * complete: the pipeline takes a returned body as whole and does not retry one that fails to parse.
      *
      * @param request - The request to send, with the headers merged, the body serialized and the query encoded.
      * @returns The response, with the body unread when `request.stream` is set and as raw bytes otherwise.
@@ -581,12 +582,14 @@ export abstract class HttpClient {
         try {
             data = this.#parseResponseBody(response, config);
         } catch (err) {
-            // A body that does not parse is usually a connection dropped mid-response, which a retry fixes.
-            if (requestIsStream) {
-                this.#informAboutStreamNoRetry();
+            // The body of a success arrived in full, since a transfer cut short fails in `sendRequest()`, so a
+            // retry would get the same body back.
+            if (response.status < 300) {
                 stopRetrying();
+                throw err;
             }
-            throw err;
+            // An error status is reported by its code, and `ApifyApiError` makes what it can of the raw body.
+            data = response.body;
         }
 
         const apifyResponse: ApifyResponse<T> = {
