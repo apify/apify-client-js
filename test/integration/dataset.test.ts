@@ -419,6 +419,31 @@ describe('downloadItems()', () => {
     });
 });
 
+test('streamItems() yields the serialized items as a readable stream', async () => {
+    const createdDataset = await createDataset();
+    const datasetClient = client.dataset(createdDataset.id);
+
+    try {
+        const items = [
+            { id: 1, name: 'first' },
+            { id: 2, name: 'second' },
+        ];
+        await datasetClient.pushItems(items);
+        await waitForItemCount(createdDataset.id, 2);
+
+        const stream = await datasetClient.streamItems(DownloadItemsFormat.JSONL);
+        const chunks: Buffer[] = [];
+        for await (const chunk of stream) {
+            chunks.push(chunk);
+        }
+
+        const lines = Buffer.concat(chunks).toString('utf8').trim().split('\n');
+        expect(lines.map((line) => JSON.parse(line))).toEqual(items);
+    } finally {
+        await datasetClient.delete();
+    }
+});
+
 test('createItemsPublicUrl() returns a signed, never-expiring URL that serves the items', async () => {
     const createdDataset = await createDataset();
     const datasetClient = client.dataset(createdDataset.id);
