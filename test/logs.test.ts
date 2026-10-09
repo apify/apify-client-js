@@ -66,6 +66,40 @@ describe('Log methods', () => {
             expect(browserRes).toBeUndefined();
         });
 
+        test('getAsBuffer() returns the log as raw bytes', async () => {
+            const logId = 'some-id';
+
+            const res = await client.log(logId).getAsBuffer();
+            expect(res).toBeInstanceOf(Buffer);
+            expect(res!.toString()).toBe('get-log');
+            validateRequest({ query: {}, params: { logId } });
+
+            const browserRes = await page.evaluate(async (id) => {
+                const buffer = await client.log(id).getAsBuffer();
+                return { isArrayBuffer: buffer instanceof ArrayBuffer, text: new TextDecoder().decode(buffer) };
+            }, logId);
+            expect(browserRes).toEqual({ isArrayBuffer: true, text: 'get-log' });
+            validateRequest({ query: {}, params: { logId } });
+        });
+
+        test('getAsBuffer() passes the raw option to the API', async () => {
+            const logId = 'some-id';
+
+            await client.log(logId).getAsBuffer({ raw: true });
+            validateRequest({ query: { raw: true }, params: { logId } });
+        });
+
+        test('getAsBuffer() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
+            const logId = '404';
+
+            const res = await client.log(logId).getAsBuffer();
+            expect(res).toBeUndefined();
+            validateRequest({ query: {}, params: { logId } });
+
+            const browserRes = await page.evaluate((id) => client.log(id).getAsBuffer(), logId);
+            expect(browserRes).toBeUndefined();
+        });
+
         test('stream() works', async () => {
             const logId = 'some-id';
 

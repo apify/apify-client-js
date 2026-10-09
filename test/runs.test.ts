@@ -394,6 +394,14 @@ describe('Run methods', () => {
             },
         );
 
+        test('log().getAsBuffer() throws on 404 status code', async () => {
+            const runId = '404';
+
+            const call = client.run(runId).log().getAsBuffer();
+            await expect(call).rejects.toThrow(ApifyApiError);
+            await expect(call).rejects.toMatchObject({ statusCode: 404 });
+        });
+
         test('dataset().delete() throws on 404 status code', async () => {
             const runId = '404';
 

@@ -41,6 +41,20 @@ test('get({ raw: true }) returns the log without the client-side processing', as
     }
 });
 
+test('getAsBuffer() returns the log of an Actor run as raw bytes', async () => {
+    const run = await client.actor(HELLO_WORLD_ACTOR).call(undefined, NO_LOG_REDIRECT);
+    const runClient = client.run(run.id);
+
+    try {
+        const logBuffer = await runClient.log().getAsBuffer();
+
+        expect(logBuffer).toBeInstanceOf(Buffer);
+        expect(logBuffer!.length).toBeGreaterThan(0);
+    } finally {
+        await runClient.delete();
+    }
+});
+
 test('get() returns the log of a build', async () => {
     const buildsPage = await client.actor(HELLO_WORLD_ACTOR).builds().list({ limit: 1 });
     expect(buildsPage.items.length, `${HELLO_WORLD_ACTOR} should have at least one build`).toBeGreaterThan(0);
