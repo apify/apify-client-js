@@ -6,7 +6,7 @@ import type { ApifyClient, Run, RunClient, RunListItem } from 'apify-client';
 import { ActorSourceType, ApifyApiError } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
-import { getRandomResourceName, NO_LOG_REDIRECT, pollUntilCondition } from './_utils.js';
+import { getRandomResourceName, LISTING_POLL_OPTIONS, NO_LOG_REDIRECT, pollUntilCondition } from './_utils.js';
 
 const HELLO_WORLD_ACTOR = 'apify/hello-world';
 
@@ -351,7 +351,7 @@ test('actor.runs().list() is async-iterable and yields only that Actor runs', as
                 return items;
             },
             (items) => items.length >= 1,
-            { timeoutSecs: 90, pollIntervalSecs: 3 },
+            LISTING_POLL_OPTIONS,
         );
 
         expect(collected.length).toBeGreaterThanOrEqual(1);

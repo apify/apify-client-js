@@ -3,7 +3,7 @@ import { beforeAll, expect, test } from 'vitest';
 import type { ApifyClient, Task } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
-import { collectUntilPresent, getRandomResourceName, pollUntilCondition } from './_utils.js';
+import { collectUntilPresent, getRandomResourceName, LISTING_POLL_OPTIONS, pollUntilCondition } from './_utils.js';
 
 const HELLO_WORLD_ACTOR = 'apify/hello-world';
 
@@ -199,7 +199,7 @@ test('runs().list() returns the runs of a task', async () => {
         const runsPage = await pollUntilCondition(
             () => taskClient.runs().list({ limit: 10 }),
             (page) => page.items.some((item) => item.id === run.id),
-            { timeoutSecs: 90, pollIntervalSecs: 3 },
+            LISTING_POLL_OPTIONS,
         );
         expect(runsPage.items.map((item) => item.id)).toContain(run.id);
 
@@ -236,7 +236,7 @@ test('lastRun() resolves to the most recent run of a task', async () => {
         const lastRun = await pollUntilCondition(
             () => taskClient.lastRun().get(),
             (value) => value?.id === run.id,
-            { timeoutSecs: 90, pollIntervalSecs: 3 },
+            LISTING_POLL_OPTIONS,
         );
         expect(lastRun?.id).toBe(run.id);
 
