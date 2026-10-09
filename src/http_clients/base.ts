@@ -409,8 +409,8 @@ export abstract class HttpClient {
      * away. A request whose body is a `Readable` is never retried, since part of the stream has already been
      * consumed by the time the failure shows. A `Blob` body is read again for every attempt, so it is retried like
      * any other, unless reading the blob itself fails: that error is thrown right away, with the transport error
-     * as its `cause`. Aborting `config.signal` ends the attempt in flight, skips the remaining retries and rejects
-     * the call with the signal's `reason`.
+     * as its `cause` when that error does not already wrap it. Aborting `config.signal` ends the attempt in flight,
+     * skips the remaining retries and rejects the call with the signal's `reason`.
      *
      * @template T - Type of the parsed response body.
      * @param config - The request to make.
@@ -753,10 +753,17 @@ function compressibleBytes(body: HttpRequestBody | undefined, headers: Record<st
 }
 
 /**
- * Sets `cause` on an error that has none, and returns the error.
+ * Sets `cause` on an error that has none, and returns the error. A `cause` that already wraps the error, as an axios
+ * error wraps the error of its request body, is left out, since linking it would make the chain circular.
  */
 function withCause(error: unknown, cause: unknown): unknown {
-    if (error instanceof Error && error !== cause && error.cause === undefined) error.cause = cause;
+    if (!(error instanceof Error) || error.cause !== undefined) return error;
+    const seen = new Set<unknown>();
+    for (let link = cause; link instanceof Error && !seen.has(link); link = link.cause) {
+        if (link === error) return error;
+        seen.add(link);
+    }
+    error.cause = cause;
     return error;
 }
 

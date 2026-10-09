@@ -41,7 +41,7 @@ A request that times out is retried the same way, with a longer timeout on each 
 
 ## Retry a request body read from a file
 
-A request whose body is a Node.js `Readable` gets a single attempt, since the failed attempt has already consumed part of the stream. To upload a file with retries, pass it as a `Blob`, for example one from `fs.openAsBlob()`. The client reads the blob again for every attempt and doesn't hold it in memory. If reading the blob itself fails, for example because the file was deleted, the client throws that error right away, with the transport error as its `cause`.
+A request whose body is a Node.js `Readable` gets a single attempt, since the failed attempt has already consumed part of the stream. To upload a file with retries, pass it as a `Blob`, for example one from `fs.openAsBlob()`. The client reads the blob again for every attempt and doesn't hold it in memory. If reading the blob itself fails, for example because the file was deleted, the client throws that error right away. Its `cause` is the transport error, unless the transport error already wraps it.
 
 ## Wait for resources to start a run
 

@@ -62,6 +62,14 @@ const okResponse = (body: unknown = { data: { id: 'abc' } }) => ({
     body: Buffer.from(JSON.stringify(body)),
 });
 
+/** A blob whose read fails with `error`, as a file blob does when the file changes on disk. */
+const failingBlob = (error: Error) =>
+    new (class extends Blob {
+        override stream() {
+            return new ReadableStream<Uint8Array<ArrayBuffer>>({ pull: (controller) => controller.error(error) });
+        }
+    })(['x']);
+
 describe('pluggable HTTP client', () => {
     let baseUrl: string;
     let server: http.Server;
@@ -651,13 +659,6 @@ describe('pluggable HTTP client', () => {
 
         test('throws the error of a Blob that fails to read, with the transport error as its cause', async () => {
             const sourceError = new Error('file changed on disk');
-            class FailingBlob extends Blob {
-                override stream() {
-                    return new ReadableStream<Uint8Array<ArrayBuffer>>({
-                        pull: (controller) => controller.error(sourceError),
-                    });
-                }
-            }
             const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 1 });
             const transportError = new Error('socket hang up');
             const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockImplementation(async ({ body }) => {
@@ -665,11 +666,22 @@ describe('pluggable HTTP client', () => {
                 throw transportError;
             });
 
-            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'PUT', data: new FailingBlob(['x']) });
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'PUT', data: failingBlob(sourceError) });
 
             await expect(call).rejects.toBe(sourceError);
             expect(sourceError.cause).toBe(transportError);
             expect(sendRequest).toHaveBeenCalledTimes(1);
+        });
+
+        test('AxiosHttpClient throws the error of a failing Blob without a circular cause chain', async () => {
+            const sourceError = new Error('file changed on disk');
+            const httpClient = new AxiosHttpClient({ minDelayBetweenRetriesMillis: 1 });
+
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'PUT', data: failingBlob(sourceError) });
+
+            await expect(call).rejects.toBe(sourceError);
+            expect(sourceError.cause).toBeUndefined();
+            await httpClient.close();
         });
 
         test('closes the stream over a Blob body that the transport left unread', async () => {
