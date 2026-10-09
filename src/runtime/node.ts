@@ -66,13 +66,24 @@ export const runtime: Runtime = {
 
 /**
  * Yields the bytes of a blob. Ending the iteration early, which destroying the `Readable` around it does, cancels
- * the read and releases a file the blob reads from.
+ * the read and releases a file the blob reads from. Only a failing read is reported: an error the `Readable` is
+ * destroyed with is thrown in at the `yield` and belongs to the transport.
  */
 async function* readBlob(blob: Blob, onSourceError: (error: unknown) => void): AsyncGenerator<Uint8Array> {
+    const chunks = blob.stream()[Symbol.asyncIterator]();
     try {
-        yield* blob.stream();
-    } catch (error) {
-        onSourceError(error);
-        throw error;
+        while (true) {
+            let chunk: IteratorResult<Uint8Array>;
+            try {
+                chunk = await chunks.next();
+            } catch (error) {
+                onSourceError(error);
+                throw error;
+            }
+            if (chunk.done) return;
+            yield chunk.value;
+        }
+    } finally {
+        await chunks.return?.();
     }
 }

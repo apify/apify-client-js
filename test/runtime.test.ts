@@ -89,6 +89,22 @@ describe('Node.js runtime', () => {
         await expect(body.toArray()).rejects.toBe(sourceError);
         expect(onSourceError).toHaveBeenCalledExactlyOnceWith(sourceError);
     });
+
+    test('does not report the error a transport destroys the Blob body with', async () => {
+        const onSourceError = vi.fn();
+        const body = nodeRuntime.openBlobBody(new Blob(['x'.repeat(1_000_000)]), onSourceError) as Readable;
+        body.on('error', () => {});
+
+        await new Promise<void>((resolve) => {
+            body.once('data', () => {
+                body.pause();
+                body.destroy(new Error('socket hang up'));
+                body.once('close', resolve);
+            });
+        });
+
+        expect(onSourceError).not.toHaveBeenCalled();
+    });
 });
 
 describe('Web API runtime', () => {
