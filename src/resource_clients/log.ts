@@ -247,7 +247,7 @@ export class StreamedLog {
             let lastChunkRemainder: Uint8Array | undefined;
             let retryMillis = EMPTY_LOG_STREAM_RETRY_MILLIS;
             // The API serves the log of a run that has not logged anything yet as an empty stream that ends at once,
-            // so reopen it until the first bytes arrive. Once stopped, read whatever the log holds in one request.
+            // so reopen it until the first bytes arrive. If stopped before any bytes arrive, fetch it in one request.
             while (!lastChunkRemainder) {
                 if (this.#stopLogging) {
                     // `signal` is aborted once the stop grace period ends, which would cut this read short.
