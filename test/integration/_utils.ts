@@ -100,16 +100,19 @@ export async function pollUntilCondition<T>(
     return result;
 }
 
+const COLLECT_MAX_ATTEMPTS = 30;
+const COLLECT_INTERVAL_SECS = 3;
+
 /**
  * Poll options for reads from listing endpoints, such as `runs().list()` or `lastRun()`.
  *
  * Those endpoints read from Mongo secondaries with up to 90 s of staleness, the same window `collectUntilPresent`
  * covers.
  */
-export const LISTING_POLL_OPTIONS: PollOptions = { timeoutSecs: 90, pollIntervalSecs: 3 };
-
-const COLLECT_MAX_ATTEMPTS = 30;
-const COLLECT_INTERVAL_SECS = 3;
+export const LISTING_POLL_OPTIONS: PollOptions = {
+    timeoutSecs: COLLECT_MAX_ATTEMPTS * COLLECT_INTERVAL_SECS,
+    pollIntervalSecs: COLLECT_INTERVAL_SECS,
+};
 
 /**
  * Drain an async-iterable listing until every expected ID is present.
