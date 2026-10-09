@@ -7,6 +7,7 @@ import type {
     ActorCollectionCreateOptions,
     ActorCollectionListOptions,
     ActorInput,
+    ActorRunPricingInfo,
     ActorUpdateOptions,
     Version,
 } from 'apify-client';
@@ -113,27 +114,22 @@ describe('Actor methods', () => {
         test('update() sends pricingInfos and exampleRunInput', async () => {
             const actorId = 'some-id';
             const startedAt = new Date('2026-01-01T00:00:00.000Z');
+            const pricingInfo = {
+                pricingModel: 'PRICE_PER_DATASET_ITEM',
+                unitName: 'result',
+                pricePerUnitUsd: 0.001,
+                apifyMarginPercentage: 0.2,
+                createdAt: startedAt,
+                startedAt,
+            } satisfies ActorRunPricingInfo;
             const newFields: ActorUpdateOptions = {
-                pricingInfos: [
-                    {
-                        pricingModel: 'PRICE_PER_DATASET_ITEM',
-                        unitName: 'result',
-                        pricePerUnitUsd: 0.001,
-                        apifyMarginPercentage: 0.2,
-                        createdAt: startedAt,
-                        startedAt,
-                    },
-                ],
+                pricingInfos: [pricingInfo],
                 exampleRunInput: { body: '{"url":"https://example.com"}', contentType: 'application/json' },
             };
             const expectedBody = {
                 ...newFields,
                 pricingInfos: [
-                    {
-                        ...newFields.pricingInfos![0],
-                        createdAt: startedAt.toISOString(),
-                        startedAt: startedAt.toISOString(),
-                    },
+                    { ...pricingInfo, createdAt: startedAt.toISOString(), startedAt: startedAt.toISOString() },
                 ],
             };
 
