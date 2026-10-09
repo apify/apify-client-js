@@ -520,17 +520,17 @@ export class KeyValueStoreClient extends ResourceClient {
         let { value, contentType } = record;
         const { timeoutSecs = 'long', signal, doNotRetryTimeouts } = parsed;
 
-        const isValueStreamOrBuffer = isStream(value) || isBuffer(value) || isBlob(value);
+        const isBinaryValue = isStream(value) || isBuffer(value) || isBlob(value);
         // To allow saving Objects to JSON without providing content type
         if (!contentType) {
             if (isBlob(value)) contentType = value.type || 'application/octet-stream';
-            else if (isValueStreamOrBuffer) contentType = 'application/octet-stream';
+            else if (isBinaryValue) contentType = 'application/octet-stream';
             else if (typeof value === 'string') contentType = 'text/plain; charset=utf-8';
             else contentType = 'application/json; charset=utf-8';
         }
 
         const isContentTypeJson = contentType.startsWith('application/json');
-        if (isContentTypeJson && !isValueStreamOrBuffer && typeof value !== 'string') {
+        if (isContentTypeJson && !isBinaryValue && typeof value !== 'string') {
             try {
                 value = JSON.stringify(value, null, 2);
             } catch (err) {

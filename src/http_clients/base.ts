@@ -76,7 +76,7 @@ export type HttpResponseHeaders = Record<string, string | string[] | undefined>;
 /**
  * A request body as the transport receives it: already serialized, and compressed when that paid off. A `Readable`
  * is passed through untouched and is only available in Node.js. A `Blob` body reaches a Node.js transport as a
- * fresh `Readable` over its bytes for every attempt, and any other transport as the `Blob` itself.
+ * fresh `Readable` over its bytes for every attempt, and a transport in any other runtime as the `Blob` itself.
  */
 export type HttpRequestBody = string | Buffer | ArrayBuffer | ArrayBufferView | Readable | Blob;
 
