@@ -42,15 +42,15 @@ Without an explicit content type, a `Buffer` is sent as `application/octet-strea
 
 ## Pre-compressed bodies
 
-A payload can reach the client already encoded, for example a gzipped file read from disk. Set the `Content-Encoding` header to name the encoding the payload carries. The client then sends the body as it is and forwards the header, so nothing gets compressed twice. The resource clients don't expose the header, so send such a request through `client.httpClient.call()`:
+A payload can reach the client already encoded, for example a gzipped file read from disk. Set the `Content-Encoding` header to name the encoding the payload carries. The client then sends the body as it is and forwards the header, so nothing gets compressed twice. `setRecord()` exposes the header as the `contentEncoding` property of the record:
 
 <CodeBlock className="language-ts">
     {PrecompressedExample}
 </CodeBlock>
 
-The header is forwarded verbatim, so it also covers encodings the client ships no compressor for, such as `deflate`. The API accepts `gzip`, `br`, `deflate`, and `identity`. Passing `identity` turns compression off for a single request without changing how the client is configured.
+The header is forwarded verbatim, so it also covers encodings the client ships no compressor for, such as `deflate`. It's forwarded for a stream too, so a readable stream of a gzipped file can be passed in place of its bytes. The API accepts `gzip`, `br`, `deflate`, and `identity`. Passing `identity` turns compression off for a single request without changing how the client is configured. For other requests, set the header in `headers` when calling `client.httpClient.call()`.
 
-The client can't verify that the bytes match the header, so set `Content-Encoding` only when the payload really is encoded that way. Key-value store records are stored exactly as you upload them, which makes the header part of the stored record rather than a transport detail.
+A value that can't be compressed at all, a string or a value serialized to JSON, is rejected with a `TypeError` when `contentEncoding` names a compression. Browsers can't send the header to the API, so `contentEncoding` works in Node.js only. Beyond that, the client can't verify that the bytes match the header, so set `Content-Encoding` only when the payload really is encoded that way. Key-value store records are stored exactly as you upload them, which makes the header part of the stored record rather than a transport detail.
 
 ## Configuration
 

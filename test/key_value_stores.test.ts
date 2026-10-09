@@ -1,5 +1,6 @@
 import type { AddressInfo } from 'node:net';
 import { Readable } from 'node:stream';
+import { gzipSync } from 'node:zlib';
 
 import { ApifyClient, ArgumentValidationError } from 'apify-client';
 import type { Page } from 'puppeteer';
@@ -683,6 +684,85 @@ describe('Key-Value Store methods', () => {
             const request = mockServer.getLastRequest();
             expect(request?.headers['content-type']).toBe(contentType);
             expect(request?.headers['content-encoding']).toBe('br');
+        });
+
+        test('setRecord() forwards contentEncoding and sends a pre-compressed buffer as it is', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            // Large enough that the gzipped bytes stay above the 1 KiB compression threshold.
+            const value = { foo: 'bar', items: Array.from({ length: 5000 }, (_, i) => `item-${i}`) };
+            const compressed = gzipSync(JSON.stringify(value));
+
+            const res = await client.keyValueStore(storeId).setRecord({
+                key,
+                value: compressed,
+                contentType: 'application/json',
+                contentEncoding: 'gzip',
+            });
+            expect(res).toBeUndefined();
+
+            // The mock server inflates the body, so it reads back as the original value only if the client did
+            // not compress the gzipped bytes a second time.
+            validateRequest({
+                params: { storeId, key },
+                body: value,
+                additionalHeaders: { 'content-type': 'application/json', 'content-encoding': 'gzip' },
+            });
+        });
+
+        test('setRecord() forwards contentEncoding with a readable stream', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const data = 'special chars \u{1F916}\u2705';
+            const value = Readable.from([gzipSync(data)]);
+
+            const res = await client.keyValueStore(storeId).setRecord({ key, value, contentEncoding: 'gzip' });
+            expect(res).toBeUndefined();
+            validateRequest({
+                params: { storeId, key },
+                body: Buffer.from(data),
+                additionalHeaders: { 'content-type': 'application/octet-stream', 'content-encoding': 'gzip' },
+            });
+        });
+
+        test('setRecord() sends a string uncompressed with identity contentEncoding', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            // Well above the 1 KiB compression threshold and trivially compressible.
+            const value = 'a'.repeat(4096);
+
+            const res = await client.keyValueStore(storeId).setRecord({ key, value, contentEncoding: 'identity' });
+            expect(res).toBeUndefined();
+
+            const request = mockServer.getLastRequest();
+            expect(request?.headers['content-encoding']).toBe('identity');
+            expect(request?.headers['content-length']).toBe(String(value.length));
+        });
+
+        test.each([
+            { name: 'a string', value: 'plain text' },
+            { name: 'an object', value: { foo: 'bar' } },
+            { name: 'a number', value: 42 },
+        ])('setRecord() rejects $name with a compressing contentEncoding', async ({ value }) => {
+            const call = client.keyValueStore('some-id').setRecord({ key: 'some-key', value, contentEncoding: 'gzip' });
+
+            await expect(call).rejects.toThrow(TypeError);
+            await expect(call).rejects.toThrow('Content-Encoding: gzip');
+        });
+
+        test('setRecord() rejects contentEncoding in a browser', async () => {
+            const call = page.evaluate(
+                (id, k) =>
+                    client.keyValueStore(id).setRecord({
+                        key: k,
+                        value: new TextEncoder().encode('data'),
+                        contentEncoding: 'identity',
+                    }),
+                'some-id',
+                'some-key',
+            );
+
+            await expect(call).rejects.toThrow('The contentEncoding option can only be used in Node.js environment.');
         });
 
         test('deleteRecord() works', async () => {
