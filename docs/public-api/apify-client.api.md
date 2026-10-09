@@ -3034,6 +3034,7 @@ interface LockedRequestQueueHeadRePointed {
 export class LogClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     get(options?: LogOptions): Promise<string | undefined>;
+    getAsBuffer(options?: LogOptions): Promise<Buffer | undefined>;
     stream(options?: LogOptions): Promise<Readable | undefined>;
 }
 

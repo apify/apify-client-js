@@ -45,6 +45,9 @@ const STOP_GRACE_MILLIS = 1000;
  * const log = await runClient.log().get();
  * console.log(log);
  *
+ * // Get the log content as raw bytes
+ * const logBuffer = await runClient.log().getAsBuffer();
+ *
  * // Stream the log in real-time
  * const stream = await runClient.log().stream();
  * stream.on('line', (line) => console.log(line));
@@ -80,6 +83,39 @@ export class LogClient extends ResourceClient {
             url: this.buildUrl(),
             method: 'GET',
             params: this.buildParams(params),
+            timeoutSecs,
+            signal,
+        };
+
+        try {
+            const response = await this.httpClient.call(requestOpts);
+            return cast(response.data);
+        } catch (err) {
+            catchNotFoundForResourceOrThrow(err as ApifyApiError, this.id);
+        }
+
+        return undefined;
+    }
+
+    /**
+     * Retrieves the log as raw bytes, without decoding it to a string.
+     *
+     * @param options - Log retrieval options.
+     * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
+     * @returns The log content as a Buffer (Node.js) or ArrayBuffer (browser), or `undefined` if it does not exist.
+     * A chained client such as `run.log()` throws an `ApifyApiError` on a 404, since the run itself may be what is
+     * missing.
+     * @see https://docs.apify.com/api/v2/log-get
+     */
+    async getAsBuffer(options: LogOptions = {}): Promise<Buffer | undefined> {
+        const { timeoutSecs = 'long', signal, ...params } = parseArgument(options, logOptionsSchema, 'LogOptions');
+
+        const requestOpts: ApifyRequestConfig = {
+            url: this.buildUrl(),
+            method: 'GET',
+            params: this.buildParams(params),
+            responseType: 'buffer',
             timeoutSecs,
             signal,
         };
