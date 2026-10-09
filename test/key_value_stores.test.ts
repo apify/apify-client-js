@@ -588,6 +588,44 @@ describe('Key-Value Store methods', () => {
             validateRequest({ params: { storeId, key }, body: Buffer.from(data), additionalHeaders: expectedHeaders });
         });
 
+        test('setRecord() sends a Blob under its own type', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const data = 'special chars \u{1F916}\u2705';
+            const expectedHeaders = {
+                'content-type': 'text/plain',
+            };
+
+            const res = await client
+                .keyValueStore(storeId)
+                .setRecord({ key, value: new Blob([data], { type: 'text/plain' }) });
+            expect(res).toBeUndefined();
+            validateRequest({ params: { storeId, key }, body: data, additionalHeaders: expectedHeaders });
+
+            const browserRes = await page.evaluate(
+                async (id, k, d) =>
+                    client.keyValueStore(id).setRecord({ key: k, value: new Blob([d], { type: 'text/plain' }) }),
+                storeId,
+                key,
+                data,
+            );
+            expect(browserRes).toBeUndefined();
+            validateRequest({ params: { storeId, key }, body: data, additionalHeaders: expectedHeaders });
+        });
+
+        test('setRecord() sends a Blob without a type as binary data', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const value = new Blob([Buffer.from([1, 2, 3])]);
+
+            await client.keyValueStore(storeId).setRecord({ key, value });
+            validateRequest({
+                params: { storeId, key },
+                body: Buffer.from([1, 2, 3]),
+                additionalHeaders: { 'content-type': 'application/octet-stream' },
+            });
+        });
+
         test('setRecord() works with pre-stringified JSON', async () => {
             const key = 'some-key';
             const storeId = 'some-id';

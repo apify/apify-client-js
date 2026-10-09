@@ -1,5 +1,6 @@
 import type http from 'node:http';
 import type https from 'node:https';
+import type { Readable } from 'node:stream';
 
 /**
  * What to compress a request body with, as the built-in `HttpCompressor` implementations ask for it.
@@ -50,4 +51,11 @@ export interface Runtime {
      * axios does not use agents.
      */
     createHttpAgents(options: { timeoutMillis: number }): Promise<HttpAgents | undefined>;
+    /**
+     * Opens a `Blob` request body for one attempt. The Node.js implementation reads the blob into a `Readable` and
+     * reports an error the blob raises while it is read to `onSourceError` before the stream fails with it, so the
+     * pipeline can tell a failing source apart from a failing connection. The Web API one returns the blob itself,
+     * which `fetch` and `XMLHttpRequest` read on their own, and never calls `onSourceError`.
+     */
+    openBlobBody(blob: Blob, onSourceError: (error: unknown) => void): Readable | Blob;
 }

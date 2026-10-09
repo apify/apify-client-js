@@ -20,6 +20,7 @@ import {
     anyObjectSchema,
     applyQueryParamsToUrl,
     catchNotFoundOrThrow,
+    isBlob,
     isBuffer,
     isStream,
     parseArgument,
@@ -461,15 +462,18 @@ export class KeyValueStoreClient extends ResourceClient {
      * to be valid JSON already, or {@link getRecord} fails to parse it back.
      *
      * **Note about streams:** If the value is a stream object (has `.pipe` and `.on` methods),
-     * the upload cannot be retried on failure or follow redirects. For reliable uploads,
-     * buffer the entire stream into memory first.
+     * the upload cannot be retried on failure or follow redirects. For reliable uploads of a file,
+     * pass a `Blob` from `fs.openAsBlob()` instead: it is read again for every attempt and never held
+     * in memory whole.
      *
      * @param record - The record to store
      * @param record.key - Record key (unique identifier)
-     * @param record.value - Record value (a JSON-serializable value, Buffer, ArrayBuffer, typed array, or Readable)
+     * @param record.value - Record value (a JSON-serializable value, Buffer, ArrayBuffer, typed array, Blob, or
+     *                       Readable)
      * @param record.contentType - Optional MIME type. Auto-detected if not provided:
      *                             - Objects: `'application/json; charset=utf-8'`
      *                             - Strings: `'text/plain; charset=utf-8'`
+     *                             - Blobs: their `type`, or `'application/octet-stream'` when it is empty
      *                             - Binary values and streams: `'application/octet-stream'`
      *
      *                             Worth setting for media and archives: the client skips compressing a body
@@ -516,10 +520,11 @@ export class KeyValueStoreClient extends ResourceClient {
         let { value, contentType } = record;
         const { timeoutSecs = 'long', signal, doNotRetryTimeouts } = parsed;
 
-        const isValueStreamOrBuffer = isStream(value) || isBuffer(value);
+        const isValueStreamOrBuffer = isStream(value) || isBuffer(value) || isBlob(value);
         // To allow saving Objects to JSON without providing content type
         if (!contentType) {
-            if (isValueStreamOrBuffer) contentType = 'application/octet-stream';
+            if (isBlob(value)) contentType = value.type || 'application/octet-stream';
+            else if (isValueStreamOrBuffer) contentType = 'application/octet-stream';
             else if (typeof value === 'string') contentType = 'text/plain; charset=utf-8';
             else contentType = 'application/json; charset=utf-8';
         }
@@ -634,10 +639,10 @@ export interface KeyValueClientGetRecordOptions extends TimeoutOptions {
  * A value that `setRecord` accepts.
  *
  * Anything JSON-serializable, or binary content the client uploads as bytes instead of JSON-encoding
- * it: a `Buffer`, an `ArrayBuffer`, a typed array, or a readable stream. `Buffer` is a `Uint8Array`, so
- * `TypedArray` covers it.
+ * it: a `Buffer`, an `ArrayBuffer`, a typed array, a `Blob`, or a readable stream. `Buffer` is a
+ * `Uint8Array`, so `TypedArray` covers it.
  */
-export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Readable;
+export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Blob | Readable;
 
 /**
  * Represents a record (key-value pair) in a Key-Value Store.

@@ -185,6 +185,20 @@ describe('utils.isBuffer()', () => {
     });
 });
 
+describe('utils.isBlob()', () => {
+    test('accepts blobs and files', () => {
+        expect(utils.isBlob(new Blob(['abc']))).toBe(true);
+        expect(utils.isBlob(new File(['abc'], 'abc.txt'))).toBe(true);
+    });
+
+    test('rejects streams, buffers and plain objects', () => {
+        expect(utils.isBlob(new ReadableStream())).toBe(false);
+        expect(utils.isBlob(Buffer.from('abc'))).toBe(false);
+        expect(utils.isBlob({ size: 3, type: '', stream: () => {} })).toBe(false);
+        expect(utils.isBlob(null)).toBe(false);
+    });
+});
+
 describe('utils.isStream()', () => {
     test('accepts readable streams and stream-like objects', () => {
         expect(utils.isStream(Readable.from(['abc']))).toBe(true);

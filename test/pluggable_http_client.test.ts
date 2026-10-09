@@ -565,7 +565,6 @@ describe('pluggable HTTP client', () => {
         });
 
         test.each([
-            { name: 'a Blob', data: new Blob([Buffer.from([1, 2, 3])]) },
             { name: 'a FormData', data: new FormData() },
             { name: 'a ReadableStream', data: new ReadableStream() },
         ])('throws instead of sending $name as an empty JSON body', async ({ data }) => {
@@ -609,6 +608,97 @@ describe('pluggable HTTP client', () => {
             await expect(call).rejects.toThrow('socket hang up');
             expect(sendRequest).toHaveBeenCalledTimes(1);
             expect(warningOnce).toHaveBeenCalled();
+        });
+
+        test('retries a request whose body is a Blob, reading the whole blob again for every attempt', async () => {
+            const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 1 });
+            const bodies: string[] = [];
+            const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockImplementation(async ({ body }) => {
+                bodies.push(Buffer.concat(await (body as Readable).toArray()).toString('utf8'));
+                if (bodies.length < 3) throw new Error('socket hang up');
+                return okResponse();
+            });
+            const warningOnce = vi.spyOn(httpClient.logger, 'warningOnce');
+
+            const response = await httpClient.call({
+                url: `${baseUrl}/echo`,
+                method: 'PUT',
+                data: new Blob(['blob body'], { type: 'text/plain' }),
+            });
+
+            expect(response.data).toEqual({ data: { id: 'abc' } });
+            expect(bodies).toEqual(Array(3).fill('blob body'));
+            expect(sendRequest.mock.calls[0][0].headers).toMatchObject({
+                'Content-Type': 'text/plain',
+                'Content-Length': '9',
+            });
+            expect(warningOnce).not.toHaveBeenCalled();
+        });
+
+        test("keeps a caller's content type for a Blob body", async () => {
+            const httpClient = new NodeHttpClient();
+            const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockResolvedValue(okResponse());
+
+            await httpClient.call({
+                url: `${baseUrl}/echo`,
+                method: 'PUT',
+                data: new Blob(['{}'], { type: 'text/plain' }),
+                headers: { 'content-type': 'application/json' },
+            });
+
+            expect(sendRequest.mock.calls[0][0].headers['content-type']).toBe('application/json');
+        });
+
+        test('throws the error of a Blob that fails to read, with the transport error as its cause', async () => {
+            const sourceError = new Error('file changed on disk');
+            class FailingBlob extends Blob {
+                override stream() {
+                    return new ReadableStream<Uint8Array<ArrayBuffer>>({
+                        pull: (controller) => controller.error(sourceError),
+                    });
+                }
+            }
+            const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 1 });
+            const transportError = new Error('socket hang up');
+            const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockImplementation(async ({ body }) => {
+                await (body as Readable).toArray().catch(() => {});
+                throw transportError;
+            });
+
+            const call = httpClient.call({ url: `${baseUrl}/echo`, method: 'PUT', data: new FailingBlob(['x']) });
+
+            await expect(call).rejects.toBe(sourceError);
+            expect(sourceError.cause).toBe(transportError);
+            expect(sendRequest).toHaveBeenCalledTimes(1);
+        });
+
+        test('closes the stream over a Blob body that the transport left unread', async () => {
+            const httpClient = new NodeHttpClient();
+            const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockResolvedValue(okResponse());
+
+            await httpClient.call({ url: `${baseUrl}/echo`, method: 'PUT', data: new Blob(['unread']) });
+
+            expect((sendRequest.mock.calls[0][0].body as Readable).destroyed).toBe(true);
+        });
+
+        test('AxiosHttpClient sends a Blob body again after a server error', async () => {
+            failuresLeft = 2;
+            const httpClient = new AxiosHttpClient({ minDelayBetweenRetriesMillis: 1 });
+
+            const response = await httpClient.call({
+                url: `${baseUrl}/flaky`,
+                method: 'PUT',
+                data: new Blob(['x'.repeat(4096)], { type: 'application/octet-stream' }),
+            });
+
+            expect(response.status).toBe(200);
+            expect(received.map((request) => request.body)).toEqual(Array(3).fill('x'.repeat(4096)));
+            expect(received[2].headers).toMatchObject({
+                'content-type': 'application/octet-stream',
+                'content-length': '4096',
+            });
+            expect(received[2].headers['content-encoding']).toBeUndefined();
+            await httpClient.close();
         });
 
         test('hands back the body unread for responseType stream', async () => {

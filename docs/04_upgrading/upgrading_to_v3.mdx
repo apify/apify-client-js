@@ -668,9 +668,9 @@ The `response` property carries the <ApiLink to="interface/HttpResponse">`HttpRe
 
 The method is reported as the client sent it, so `POST` where v2 reported axios's lowercased `post`.
 
-### A `Blob`, `File` or `FormData` body is no longer sent
+### A `FormData` body is no longer sent
 
-Under v2 axios recognized these types and streamed them, taking the `Content-Type` and `Content-Length`, or the multipart boundary, from the value itself. The pipeline serializes bodies on its own now and doesn't handle them, so passing one throws a `TypeError` naming the type. Read a `Blob` or a `File` into a `Buffer` or an `ArrayBuffer` first. A `FormData` body has to be encoded to a `Buffer` or a string with a matching `Content-Type` header. A web `ReadableStream` is refused the same way, where a `Readable` and a `URLSearchParams` both still go through.
+Under v2 axios recognized a `FormData` body and sent it as multipart, taking the boundary from the value itself. The pipeline serializes bodies on its own now and doesn't handle it, so passing one throws a `TypeError` naming the type. Encode it to a `Buffer` or a string with a matching `Content-Type` header. A web `ReadableStream` is refused the same way. A `Readable`, a `URLSearchParams`, a `Blob` and a `File` all still go through. A request with a `Blob` or `File` body is now retried, since the client reads the blob again for every attempt.
 
 ### A form-encoded object body is encoded by the client
 

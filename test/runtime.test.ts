@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import http from 'node:http';
 import os from 'node:os';
 import { resolve } from 'node:path';
+import { Readable } from 'node:stream';
 import type * as Zlib from 'node:zlib';
 import { brotliDecompressSync, gunzipSync } from 'node:zlib';
 
@@ -57,6 +58,37 @@ describe('Node.js runtime', () => {
         expect(agent.options).toMatchObject({ keepAlive: true, timeout: 1000 });
         agent.destroy();
     });
+
+    test('opens a Blob body as a fresh Readable over its bytes every time', async () => {
+        const blob = new Blob(['blob bytes']);
+        const onSourceError = vi.fn();
+
+        const first = nodeRuntime.openBlobBody(blob, onSourceError) as Readable;
+        const second = nodeRuntime.openBlobBody(blob, onSourceError) as Readable;
+
+        expect(first).toBeInstanceOf(Readable);
+        expect(second).not.toBe(first);
+        expect(Buffer.concat(await first.toArray()).toString()).toBe('blob bytes');
+        expect(Buffer.concat(await second.toArray()).toString()).toBe('blob bytes');
+        expect(onSourceError).not.toHaveBeenCalled();
+    });
+
+    test('reports an error the Blob raises while it is read', async () => {
+        const sourceError = new Error('file changed on disk');
+        class FailingBlob extends Blob {
+            override stream() {
+                return new ReadableStream<Uint8Array<ArrayBuffer>>({
+                    pull: (controller) => controller.error(sourceError),
+                });
+            }
+        }
+        const onSourceError = vi.fn();
+
+        const body = nodeRuntime.openBlobBody(new FailingBlob(['x']), onSourceError) as Readable;
+
+        await expect(body.toArray()).rejects.toBe(sourceError);
+        expect(onSourceError).toHaveBeenCalledExactlyOnceWith(sourceError);
+    });
 });
 
 describe('Web API runtime', () => {
@@ -67,6 +99,11 @@ describe('Web API runtime', () => {
             'only available in Node.js',
         );
         await expect(webRuntime.createHttpAgents({ timeoutMillis: 1000 })).resolves.toBeUndefined();
+    });
+
+    test('hands a Blob body over as it is', () => {
+        const blob = new Blob(['blob bytes']);
+        expect(webRuntime.openBlobBody(blob, vi.fn())).toBe(blob);
     });
 });
 
