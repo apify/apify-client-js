@@ -1,3 +1,5 @@
+import type { Readable } from 'node:stream';
+
 import { z } from 'zod';
 
 import type { STORAGE_GENERAL_ACCESS } from '@apify/consts';
@@ -11,6 +13,7 @@ import type { TimeoutOptions } from '../timeouts.js';
 import type { PaginatedIterator, PaginatedList, PaginationOptions } from '../utils.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
+import { runtime } from '#runtime';
 import {
     anyObjectSchema,
     applyQueryParamsToUrl,
@@ -313,6 +316,61 @@ export class DatasetClient<
                 ...query,
             }),
             responseType: 'buffer',
+            timeoutSecs,
+            signal,
+        });
+
+        return cast(data);
+    }
+
+    /**
+     * Downloads dataset items in a specific format as a Readable stream. Only works in Node.js.
+     *
+     * Takes the same arguments as {@link downloadItems}, but resolves to the response body as a stream, so a large
+     * export is processed in chunks without holding all of it in memory.
+     *
+     * The stream holds its connection open until you consume it to the end or destroy it. Iterating it with
+     * `for await` or passing it to `pipeline()` from `node:stream/promises` does either one for you.
+     *
+     * @param format - Output format: `'json'`, `'jsonl'`, `'csv'`, `'xlsx'`, `'xml'`, `'rss'`, or `'html'`
+     * @param options - Download and formatting options, the same as for {@link downloadItems}
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
+     * @returns Readable stream of the items serialized to the specified format
+     * @see https://docs.apify.com/api/v2/dataset-items-get
+     *
+     * @example
+     * ```javascript
+     * const { createWriteStream } = require('node:fs');
+     * const { pipeline } = require('node:stream/promises');
+     *
+     * // Write a CSV export straight to a file
+     * const stream = await client.dataset('my-dataset').streamItems('csv', { bom: true });
+     * await pipeline(stream, createWriteStream('output.csv'));
+     * ```
+     */
+    async streamItems(
+        format: `${DownloadItemsFormat}`,
+        options: DatasetClientDownloadItemsOptions = {},
+    ): Promise<Readable> {
+        parseArgument(format, itemFormatSchema);
+        const {
+            timeoutSecs = 'long',
+            signal,
+            ...query
+        } = parseArgument(options, downloadItemsOptionsSchema, 'DatasetClientDownloadItemsOptions');
+
+        if (!runtime.isNode) {
+            throw new Error('The streamItems() method can only be used in Node.js environment.');
+        }
+
+        const { data } = await this.httpClient.call({
+            url: this.buildUrl('items'),
+            method: 'GET',
+            params: this.buildParams({
+                format,
+                ...query,
+            }),
+            responseType: 'stream',
             timeoutSecs,
             signal,
         });

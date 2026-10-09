@@ -2303,6 +2303,7 @@ export class DatasetClient<Data extends Record<string | number, any> = Record<st
     getStatistics(options?: TimeoutOptions): Promise<DatasetStatistics>;
     listItems(options?: DatasetClientListItemOptions): PaginatedIterator<Data>;
     pushItems(items: Data | Data[] | string, options?: TimeoutOptions): Promise<void>;
+    streamItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Readable>;
     update(newFields: DatasetClientUpdateOptions, options?: TimeoutOptions): Promise<DatasetResource>;
 }
 
