@@ -670,7 +670,7 @@ The method is reported as the client sent it, so `POST` where v2 reported axios'
 
 ### A `FormData` body is no longer sent
 
-Under v2 axios recognized a `FormData` body and sent it as multipart, taking the boundary from the value itself. The pipeline serializes bodies on its own now and doesn't handle it, so passing one throws a `TypeError` naming the type. Encode it to a `Buffer` or a string with a matching `Content-Type` header. A web `ReadableStream` is refused the same way. A `Readable`, a `URLSearchParams`, a `Blob` and a `File` all still go through. A request with a `Blob` or `File` body is now retried, since the client reads the blob again for every attempt.
+Under v2 axios recognized a `FormData` body and sent it as multipart, taking the boundary from the value itself. The pipeline serializes bodies on its own now and doesn't handle it, so passing one throws a `TypeError` naming the type. Encode it to a `Buffer` or a string with a matching `Content-Type` header. A web `ReadableStream` is refused the same way. A `Readable`, a `URLSearchParams`, a `Blob` and a `File` all still go through.
 
 ### A form-encoded object body is encoded by the client
 
