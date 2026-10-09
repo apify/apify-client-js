@@ -68,7 +68,7 @@ const recordSchema = z.strictObject({
         'Expected a JSON-serializable value, binary data, or a stream',
     ),
     contentType: z.string().min(1).optional(),
-    contentEncoding: z.string().min(1).optional(),
+    contentEncoding: z.string().trim().min(1).optional(),
 });
 const recordOptionsSchema = z.strictObject({
     ...timeoutOptionsShape,

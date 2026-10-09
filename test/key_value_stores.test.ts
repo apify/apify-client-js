@@ -750,6 +750,14 @@ describe('Key-Value Store methods', () => {
             await expect(call).rejects.toThrow('Content-Encoding: gzip');
         });
 
+        test('setRecord() rejects a blank contentEncoding', async () => {
+            const call = client
+                .keyValueStore('some-id')
+                .setRecord({ key: 'some-key', value: Buffer.from('data'), contentEncoding: '  ' });
+
+            await expect(call).rejects.toThrow(ArgumentValidationError);
+        });
+
         test('setRecord() rejects contentEncoding in a browser', async () => {
             const call = page.evaluate(
                 (id, k) =>
