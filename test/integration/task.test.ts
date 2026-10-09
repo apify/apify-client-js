@@ -1,9 +1,9 @@
 import { beforeAll, expect, test } from 'vitest';
 
-import type { ApifyClient, RunListItem, Task } from 'apify-client';
+import type { ApifyClient, Task } from 'apify-client';
 
 import { makeClient } from './_fixtures.js';
-import { collectUntilPresent, getRandomResourceName } from './_utils.js';
+import { collectUntilPresent, getRandomResourceName, LISTING_POLL_OPTIONS, pollUntilCondition } from './_utils.js';
 
 const HELLO_WORLD_ACTOR = 'apify/hello-world';
 
@@ -196,8 +196,12 @@ test('runs().list() returns the runs of a task', async () => {
     try {
         const run = await taskClient.call();
 
-        const runsPage = await taskClient.runs().list({ limit: 10 });
-        expect(runsPage.items.length).toBeGreaterThanOrEqual(1);
+        const runsPage = await pollUntilCondition(
+            () => taskClient.runs().list({ limit: 10 }),
+            (page) => page.items.some((item) => item.id === run.id),
+            LISTING_POLL_OPTIONS,
+        );
+        expect(runsPage.items.map((item) => item.id)).toContain(run.id);
 
         await client.run(run.id).delete();
     } finally {
@@ -212,10 +216,7 @@ test('runs().list() is async-iterable and yields the run that was just made', as
     try {
         const run = await taskClient.call();
 
-        const collected: RunListItem[] = [];
-        for await (const taskRun of taskClient.runs().list({ limit: 5 })) {
-            collected.push(taskRun);
-        }
+        const collected = await collectUntilPresent(() => taskClient.runs().list({ limit: 5 }), [run.id]);
 
         expect(collected.map((item) => item.id)).toContain(run.id);
 
@@ -232,7 +233,11 @@ test('lastRun() resolves to the most recent run of a task', async () => {
     try {
         const run = await taskClient.call();
 
-        const lastRun = await taskClient.lastRun().get();
+        const lastRun = await pollUntilCondition(
+            () => taskClient.lastRun().get(),
+            (value) => value?.id === run.id,
+            LISTING_POLL_OPTIONS,
+        );
         expect(lastRun?.id).toBe(run.id);
 
         await client.run(run.id).delete();
