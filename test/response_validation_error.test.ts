@@ -81,6 +81,18 @@ describe('response validation in the client', () => {
         await expect(call).rejects.toThrow('at `stats`');
     });
 
+    test.each([
+        { body: { foo: 'bar' }, issue: 'expected nonoptional, received undefined at `data`', id: 'no data key' },
+        { body: [1, 2], issue: 'expected object, received array', id: 'not an object' },
+    ])('a response body without the data envelope throws ResponseValidationError ($id)', async ({ body, issue }) => {
+        mockServer.setResponse({ body });
+
+        const call = client.run('some-run-id').get();
+
+        await expect(call).rejects.toBeInstanceOf(ResponseValidationError);
+        await expect(call).rejects.toThrow(issue);
+    });
+
     test('fields the specification does not describe pass through', async () => {
         mockServer.setResponse({ body: { data: { ...fixtures.run, brandNewField: { nested: true } } } });
 
