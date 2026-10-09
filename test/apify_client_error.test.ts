@@ -48,7 +48,7 @@ describe('ApifyClientError', () => {
 
     test('InvalidResponseBodyError is an ApifyClientError', () => {
         const cause = new SyntaxError('Unexpected end of JSON input');
-        const error = new InvalidResponseBodyError({ status: 200, headers: {}, body: new Uint8Array() }, cause);
+        const error = new InvalidResponseBodyError({ status: 200, headers: {}, body: Buffer.alloc(0) }, cause);
 
         expect(error).toBeInstanceOf(ApifyClientError);
         expect(error).toBeInstanceOf(Error);
