@@ -10299,7 +10299,8 @@ export interface operations {
                 version: string;
                 /**
                  * @description If `true` or `1`, the system will use a cache to speed up the build
-                 *     process. By default, cache is not used.
+                 *     process. Pass `false` or `0` to build without the cache. By default,
+                 *     cache is used.
                  */
                 useCache?: boolean;
                 /**
