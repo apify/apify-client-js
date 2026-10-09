@@ -1,9 +1,9 @@
 import type { HttpResponse } from './http_clients/base.js';
 
 /**
- * Thrown when a response body does not parse as its content type claims, typically a JSON document cut short by a
- * connection dropped mid-response. The client retries such requests, so the error surfaces once the retries are
- * exhausted.
+ * Thrown when the body of a successful response does not parse as its content type claims, for example a non-JSON
+ * value stored under `application/json`. The response arrived in full, so the request is not retried. An error
+ * status with an unparsable body throws {@link ApifyApiError} for its status code.
  */
 export class InvalidResponseBodyError extends Error {
     code: string;

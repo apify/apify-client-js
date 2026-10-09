@@ -10,6 +10,7 @@ import {
     HttpClient,
     InvalidResponseBodyError,
     NotFoundError,
+    ServerError,
 } from 'apify-client';
 import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
@@ -67,7 +68,7 @@ describe('pluggable HTTP client', () => {
     let server: http.Server;
     /** Requests the test server received, oldest first. */
     let received: { method: string; url: string; headers: http.IncomingHttpHeaders; body: string }[] = [];
-    /** How many more requests to `/flaky` and `/broken-json` fail before they succeed. */
+    /** How many more requests to `/flaky`, `/broken-json` and `/broken-error` fail before they succeed. */
     let failuresLeft = 0;
     /** Called once a request to `/stalled`, which the server never answers, has arrived. */
     let onStalled: (() => void) | undefined;
@@ -90,6 +91,9 @@ describe('pluggable HTTP client', () => {
                 } else if (path === '/broken-json' && failuresLeft-- > 0) {
                     res.writeHead(200, { 'content-type': 'application/json' });
                     res.end('{"data": ');
+                } else if (path === '/broken-error' && failuresLeft-- > 0) {
+                    res.writeHead(502, { 'content-type': 'application/json' });
+                    res.end('<html>Bad Gateway</html>');
                 } else if (path === '/missing' || path.endsWith('/records/missing')) {
                     json(404, { error: { type: 'record-not-found', message: 'Not there.' } });
                 } else if (path === '/binary') {
@@ -460,25 +464,29 @@ describe('pluggable HTTP client', () => {
             await httpClient.close();
         });
 
-        test('retries a response body that does not parse', async () => {
+        test('throws InvalidResponseBodyError without retrying a success whose body does not parse', async () => {
             failuresLeft = 1;
             const httpClient = new NodeHttpClient({ minDelayBetweenRetriesMillis: 1 });
-
-            const response = await httpClient.call({ url: `${baseUrl}/broken-json`, method: 'GET' });
-
-            expect(response.data).toMatchObject({ data: { method: 'GET' } });
-            expect(received).toHaveLength(2);
-        });
-
-        test('throws InvalidResponseBodyError once the retries are exhausted', async () => {
-            failuresLeft = 10;
-            const httpClient = new NodeHttpClient({ maxRetries: 0 });
 
             const call = httpClient.call({ url: `${baseUrl}/broken-json`, method: 'GET' });
 
             await expect(call).rejects.toThrow(InvalidResponseBodyError);
             await expect(call).rejects.toMatchObject({ response: { status: 200, body: Buffer.from('{"data": ') } });
             expect(received).toHaveLength(1);
+        });
+
+        test('retries an error status whose body does not parse and throws its ApifyApiError', async () => {
+            failuresLeft = 10;
+            const httpClient = new NodeHttpClient({ maxRetries: 1, minDelayBetweenRetriesMillis: 1 });
+
+            const call = httpClient.call({ url: `${baseUrl}/broken-error`, method: 'GET' });
+
+            await expect(call).rejects.toThrow(ServerError);
+            await expect(call).rejects.toMatchObject({
+                statusCode: 502,
+                message: 'Unexpected error: "<html>Bad Gateway</html>"',
+            });
+            expect(received).toHaveLength(2);
         });
 
         test('encodes the query parameters', async () => {
