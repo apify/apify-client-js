@@ -525,7 +525,7 @@ export interface ActorTaggedBuild {
 export type ActorTaggedBuilds = Record<string, ActorTaggedBuild>;
 
 // @public
-export type ActorUpdateOptions = Partial<Pick<Actor, 'name' | 'description' | 'isPublic' | 'isDeprecated' | 'seoTitle' | 'seoDescription' | 'title' | 'restartOnError' | 'versions' | 'categories' | 'defaultRunOptions' | 'actorStandby' | 'actorPermissionLevel' | 'taggedBuilds'>>;
+export type ActorUpdateOptions = Partial<Pick<Actor, 'name' | 'description' | 'isPublic' | 'isDeprecated' | 'seoTitle' | 'seoDescription' | 'title' | 'restartOnError' | 'versions' | 'categories' | 'defaultRunOptions' | 'actorStandby' | 'actorPermissionLevel' | 'taggedBuilds' | 'pricingInfos' | 'exampleRunInput'>>;
 
 // @public
 export interface ActorValidateInputOptions {
