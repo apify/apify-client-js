@@ -271,7 +271,7 @@ export interface ActorStats extends GeneratedActorStats {
 }
 
 // @public
-export type ActorUpdateOptions = Partial<Pick<ActorResource, 'name' | 'description' | 'isPublic' | 'isDeprecated' | 'seoTitle' | 'seoDescription' | 'title' | 'versions' | 'categories' | 'defaultRunOptions' | 'actorStandby' | 'actorPermissionLevel' | 'taggedBuilds'>>;
+export type ActorUpdateOptions = Partial<Pick<ActorResource, 'name' | 'description' | 'isPublic' | 'isDeprecated' | 'seoTitle' | 'seoDescription' | 'title' | 'versions' | 'categories' | 'defaultRunOptions' | 'actorStandby' | 'actorPermissionLevel' | 'taggedBuilds' | 'pricingInfos' | 'exampleRunInput'>>;
 
 // @public
 export interface ActorValidateInputOptions extends TimeoutOptions {
