@@ -189,6 +189,7 @@ jobs:
                       --max-retries 6
                       --exclude="github.com"
                       --exclude="npmjs.com"
+                      --exclude="^https://x\.com/"
                       --exclude="docs\.apify\.com/api/client/js/assets/"
                       --no-progress
                       --timeout '60'
