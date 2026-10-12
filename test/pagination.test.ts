@@ -58,6 +58,24 @@ const limitPaginationOptions = [
     },
 ];
 
+const limitChunkSizePaginationOptions = [
+    {
+        testName: 'User chunkSize',
+        userDefinedOptions: { chunkSize: 100 },
+        expectedItems: range(0, 2500),
+    },
+    {
+        testName: 'User limit, user chunkSize',
+        userDefinedOptions: { limit: 1100, chunkSize: 100 },
+        expectedItems: range(0, 1100),
+    },
+    {
+        testName: 'User limit, chunkSize larger than limit',
+        userDefinedOptions: { limit: 50, chunkSize: 100 },
+        expectedItems: range(0, 50),
+    },
+];
+
 const offsetPaginationOptions = [
     {
         testName: 'User offset',
@@ -493,7 +511,7 @@ describe('KeyValueStoreClient.listKeys as async iterable', () => {
 
     const testCases = generateTestCases(
         [client.keyValueStore('some-id')],
-        [...limitPaginationOptions, ...exclusiveStartKeyPaginationOptions],
+        [...limitPaginationOptions, ...limitChunkSizePaginationOptions, ...exclusiveStartKeyPaginationOptions],
     );
     test.each(testCases as any)('$testName', async function handler({
         resourceClient,
@@ -587,7 +605,7 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
 
     const testCases = generateTestCases(
         [client.requestQueue('some-id')],
-        [...limitPaginationOptions, ...cursorPaginationOptions],
+        [...limitPaginationOptions, ...limitChunkSizePaginationOptions, ...cursorPaginationOptions],
     );
     test.each(testCases as any)('$testName', async function handler({
         resourceClient,
@@ -622,7 +640,7 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
                         count: items.length,
                         limit: limit || maxItemsPerPage,
                         cursor: request.params.cursor,
-                        nextCursor: items.length < maxItemsPerPage ? undefined : `cursor:${upperIndex}`,
+                        nextCursor: upperIndex < totalItems ? `cursor:${upperIndex}` : undefined,
                     },
                 },
             };
@@ -636,10 +654,10 @@ describe('RequestQueueClient.listKeys as async iterable', () => {
                 items.push(page);
             }
 
-            const expectedAPIcalls = Math.max(Math.ceil(expectedItems.length / maxItemsPerPage), 1);
-
             expect(items).toEqual(expectedItems);
-            expect(mockedClient).toHaveBeenCalledTimes(expectedAPIcalls);
+            expect(mockedClient).toHaveBeenCalledTimes(
+                expectedRequestCount(expectedItems.length, userDefinedOptions.chunkSize, maxItemsPerPage),
+            );
         } finally {
             mockedClient.mockRestore();
         }
@@ -688,3 +706,71 @@ test('chunkSize sizes each request without being sent as a query parameter', asy
         mockedClient.mockRestore();
     }
 });
+
+test.each([
+    {
+        name: 'listKeys',
+        list: (client: ApifyClient, options: { limit?: number; chunkSize: number }) =>
+            client.keyValueStore('some-id').listKeys(options),
+        page: (items: ReturnType<typeof range>, upperIndex: number, totalItems: number) => ({
+            items,
+            count: items.length,
+            isTruncated: upperIndex < totalItems,
+            nextExclusiveStartKey: upperIndex < totalItems ? String(upperIndex - 1) : null,
+        }),
+        startIndex: (params: Record<string, any>) =>
+            params.exclusiveStartKey === undefined ? 0 : Number(params.exclusiveStartKey) + 1,
+    },
+    {
+        name: 'listRequests',
+        list: (client: ApifyClient, options: { limit?: number; chunkSize: number }) =>
+            client.requestQueue('some-id').listRequests(options),
+        // The RQ API returns a cursor whenever the page is full, even when no requests follow it.
+        page: (items: ReturnType<typeof range>, upperIndex: number, _totalItems: number, limit: number) => ({
+            items,
+            count: items.length,
+            nextCursor: items.length === limit ? `cursor:${upperIndex}` : undefined,
+        }),
+        startIndex: (params: Record<string, any>) =>
+            params.cursor === undefined ? 0 : Number(params.cursor.split(':')[1]),
+    },
+])(
+    '$name() chunkSize sizes each request without being sent as a query parameter',
+    async ({ list, page, startIndex }) => {
+        const client = new ApifyClient();
+        const totalItems = 250;
+        const seenParams: Record<string, any>[] = [];
+
+        const mockedClient = vi.spyOn(client.httpClient, 'call').mockImplementation((async (request: any) => {
+            seenParams.push(request.params);
+
+            const lowerIndex = Math.min(startIndex(request.params), totalItems);
+            const upperIndex = Math.min(lowerIndex + (request.params.limit || totalItems), totalItems);
+
+            return {
+                data: { data: page(range(lowerIndex, upperIndex), upperIndex, totalItems, request.params.limit) },
+            };
+        }) as any);
+
+        try {
+            const items = [];
+            for await (const item of list(client, { chunkSize: 100 })) {
+                items.push(item);
+            }
+            expect(items).toEqual(range(0, totalItems));
+            expect(seenParams.map((params) => params.limit)).toEqual([100, 100, 100]);
+
+            const limitedItems = [];
+            for await (const item of list(client, { limit: 230, chunkSize: 100 })) {
+                limitedItems.push(item);
+            }
+            expect(limitedItems).toEqual(range(0, 230));
+            // The last request asks only for what is left of `limit`.
+            expect(seenParams.slice(3).map((params) => params.limit)).toEqual([100, 100, 30]);
+
+            expect(seenParams.some((params) => 'chunkSize' in params)).toBe(false);
+        } finally {
+            mockedClient.mockRestore();
+        }
+    },
+);
