@@ -482,9 +482,10 @@ export class KeyValueStoreClient extends ResourceClient {
      *                                 bytes as they are and does not compress them again. The API accepts `gzip`,
      *                                 `br`, `deflate`, and `identity`, and stores the record exactly as uploaded, so
      *                                 this is also the encoding the record is served with. Only binary values and
-     *                                 streams can carry a compression, so any encoding other than `identity` on a
-     *                                 string or a JSON value throws a `TypeError`. Node.js only, since browsers
-     *                                 cannot send the header to the API.
+     *                                 streams can carry a compression, so any encoding other than `identity` throws
+     *                                 a `TypeError` when `value` is a string, or a plain object, array, or other
+     *                                 value that the client serializes to JSON. Node.js only, since browsers cannot
+     *                                 send the header to the API.
      * @param options - Storage options
      * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @param options.doNotRetryTimeouts - If `true`, don't retry on timeout errors. Default is `false`.
@@ -537,8 +538,8 @@ export class KeyValueStoreClient extends ResourceClient {
 
         const isValueStreamOrBuffer = isStream(value) || isBuffer(value);
 
-        // The client forwards the header without inspecting the body, so a string or a JSON value, which cannot hold
-        // compressed bytes, would be stored under an encoding that misdescribes it.
+        // The client forwards the header without inspecting the body, so a string or a value serialized to JSON, which
+        // cannot hold compressed bytes, would be stored under an encoding that misdescribes it.
         const declaresCompression =
             contentEncoding !== undefined && contentEncoding.trim().toLowerCase() !== 'identity';
         if (declaresCompression && !isValueStreamOrBuffer) {
