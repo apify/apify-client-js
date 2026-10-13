@@ -334,7 +334,9 @@ export class DatasetClient<
      *
      * @param format - Output format: `'json'`, `'jsonl'`, `'csv'`, `'xlsx'`, `'xml'`, `'rss'`, or `'html'`
      * @param options - Download and formatting options, the same as for {@link downloadItems}
-     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
+     * @param options.timeoutSecs - Timeout for the API to start responding. Default is `'long'`. Once the stream is
+     * returned, it only limits inactivity: the stream errors if no data arrives for that long. To stop the download
+     * early or cap its total duration, destroy the stream or abort `signal`.
      * @returns Readable stream of the items serialized to the specified format
      * @see https://docs.apify.com/api/v2/dataset-items-get
      *
