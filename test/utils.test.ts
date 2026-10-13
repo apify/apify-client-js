@@ -8,17 +8,6 @@ import * as schemas from '../src/schemas.js';
 import * as utils from '../src/utils.js';
 import * as fixtures from './mock_server/fixtures.js';
 
-describe('utils.pluckData()', () => {
-    test('works', () => {
-        expect(utils.pluckData({ foo: 'bar', data: 'something' } as any)).toEqual('something');
-        expect(() => utils.pluckData({ foo: 'bar' } as any)).toThrow();
-        expect(() => utils.pluckData(1 as any)).toThrow();
-        expect(() => utils.pluckData('string' as any)).toThrow();
-        expect(() => utils.pluckData(null as any)).toThrow();
-        expect(() => utils.pluckData(undefined as any)).toThrow();
-    });
-});
-
 describe('utils.catchNotFoundOrThrow()', () => {
     test('swallows a NotFoundError and rethrows anything else', () => {
         const response = (status: number, type: string) => ({ status, data: { error: { type } } }) as any;

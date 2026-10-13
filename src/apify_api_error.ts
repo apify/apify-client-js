@@ -1,5 +1,6 @@
 import type { LiteralUnion } from 'type-fest';
 
+import { ApifyClientError } from './apify_client_error.js';
 import type { ApifyResponse } from './http_clients/base.js';
 import type { ErrorType } from './models.js';
 import { isBuffer } from './utils.js';
@@ -39,7 +40,7 @@ const CLIENT_METHOD_REGEX =
  * subclass extends `ApifyApiError`, so `instanceof ApifyApiError` matches all of them. Errors that
  * share a status code are told apart by their `type`.
  */
-export class ApifyApiError extends Error {
+export class ApifyApiError extends ApifyClientError {
     override name: string;
 
     /**
