@@ -1,4 +1,5 @@
 import type { AddressInfo } from 'node:net';
+import { Readable } from 'node:stream';
 
 import { ApifyApiError, ApifyClient, ArgumentValidationError, DownloadItemsFormat } from 'apify-client';
 import type { Page } from 'puppeteer';
@@ -344,6 +345,47 @@ describe('Dataset methods', () => {
                 options,
             );
             validateRequest({ query: { format, ...options }, params: { datasetId } });
+        });
+
+        test('streamItems() resolves to a readable stream of the export', async () => {
+            const datasetId = 'some-id';
+            const body = 'a;b\n1;2\n';
+            const headers = {
+                'content-type': 'text/csv; charset=utf-8',
+            };
+            mockServer.setResponse({ body, headers });
+            const format = DownloadItemsFormat.CSV;
+            const options = {
+                bom: false,
+                delimiter: ';',
+                fields: ['a', 'b'],
+            };
+
+            const res = await client.dataset(datasetId).streamItems(format, options);
+            expect(res).toBeInstanceOf(Readable);
+            const chunks: Buffer[] = [];
+            for await (const chunk of res) {
+                chunks.push(chunk);
+            }
+            expect(Buffer.concat(chunks).toString()).toBe(body);
+            validateRequest({ query: { format, bom: 0, delimiter: ';', fields: 'a,b' }, params: { datasetId } });
+
+            await expect(
+                page.evaluate(
+                    async (id, f, opts) => client.dataset(id).streamItems(f, opts),
+                    datasetId,
+                    format,
+                    options,
+                ),
+            ).rejects.toThrow('The streamItems() method can only be used in Node.js environment.');
+        });
+
+        test('streamItems() throws an ApifyApiError with the parsed error body', async () => {
+            mockServer.setResponse(null);
+            const call = client.dataset('404').streamItems(DownloadItemsFormat.JSON);
+
+            await expect(call).rejects.toThrow(ApifyApiError);
+            await expect(call).rejects.toMatchObject({ statusCode: 404, type: 'record-not-found' });
         });
 
         test('pushItems() works with object', async () => {
