@@ -1,3 +1,4 @@
+import { ApifyClientError } from './apify_client_error.js';
 import type { HttpResponse } from './http_clients/base.js';
 
 /**
@@ -5,7 +6,7 @@ import type { HttpResponse } from './http_clients/base.js';
  * connection dropped mid-response. The client retries such requests, so the error surfaces once the retries are
  * exhausted.
  */
-export class InvalidResponseBodyError extends Error {
+export class InvalidResponseBodyError extends ApifyClientError {
     code: string;
 
     /** The response whose body did not parse, with the body as the transport returned it. */

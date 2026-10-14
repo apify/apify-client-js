@@ -271,7 +271,7 @@ export interface ActorStats extends GeneratedActorStats {
 }
 
 // @public
-export type ActorUpdateOptions = Partial<Pick<ActorResource, 'name' | 'description' | 'isPublic' | 'isDeprecated' | 'seoTitle' | 'seoDescription' | 'title' | 'versions' | 'categories' | 'defaultRunOptions' | 'actorStandby' | 'actorPermissionLevel' | 'taggedBuilds'>>;
+export type ActorUpdateOptions = Partial<Pick<ActorResource, 'name' | 'description' | 'isPublic' | 'isDeprecated' | 'seoTitle' | 'seoDescription' | 'title' | 'versions' | 'categories' | 'defaultRunOptions' | 'actorStandby' | 'actorPermissionLevel' | 'taggedBuilds' | 'pricingInfos' | 'exampleRunInput'>>;
 
 // @public
 export interface ActorValidateInputOptions extends TimeoutOptions {
@@ -367,7 +367,7 @@ interface ApiClientOptionsWithOptionalResourcePath extends Omit<ApiClientOptions
 type ApiClientSubResourceOptions = Omit<ApiClientOptions, 'resourcePath'>;
 
 // @public
-export class ApifyApiError extends Error {
+export class ApifyApiError extends ApifyClientError {
     constructor(response: ApifyResponse, attempt: number);
     attempt: number;
     clientMethod: string;
@@ -428,6 +428,10 @@ export interface ApifyClientCustomHttpClientOptions {
     httpClient: HttpClient;
     publicBaseUrl?: string;
     token?: string;
+}
+
+// @public
+export class ApifyClientError extends Error {
 }
 
 // @public
@@ -2303,6 +2307,7 @@ export class DatasetClient<Data extends Record<string | number, any> = Record<st
     getStatistics(options?: TimeoutOptions): Promise<DatasetStatistics>;
     listItems(options?: DatasetClientListItemOptions): PaginatedIterator<Data>;
     pushItems(items: Data | Data[] | string, options?: TimeoutOptions): Promise<void>;
+    streamItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Readable>;
     update(newFields: DatasetClientUpdateOptions, options?: TimeoutOptions): Promise<DatasetResource>;
 }
 
@@ -2847,7 +2852,7 @@ export class InvalidRequestError extends ApifyApiError {
 }
 
 // @public
-export class InvalidResponseBodyError extends Error {
+export class InvalidResponseBodyError extends ApifyClientError {
     constructor(response: HttpResponse, cause: Error);
     // (undocumented)
     cause: Error;
@@ -2857,7 +2862,7 @@ export class InvalidResponseBodyError extends Error {
 }
 
 // @public
-export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientListKeysOptions, 'signature'> {
+export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientListKeysOptions, 'chunkSize' | 'signature'> {
     // (undocumented)
     expiresInSecs?: number;
 }
@@ -2873,6 +2878,7 @@ export interface KeyValueClientGetRecordOptions extends TimeoutOptions {
 
 // @public
 export interface KeyValueClientListKeysOptions extends TimeoutOptions {
+    chunkSize?: number;
     // (undocumented)
     collection?: string;
     // (undocumented)
@@ -2904,7 +2910,7 @@ export class KeyValueStoreClient extends ResourceClient {
     getRecordPublicUrl(key: string, options?: TimeoutOptions): Promise<string>;
     listKeys(options?: KeyValueClientListKeysOptions): Promise<ListOfKeys> & AsyncIterable<KeyValueStoreKey>;
     recordExists(key: string, options?: TimeoutOptions): Promise<boolean>;
-    setRecord(record: KeyValueStoreRecord<KeyValueStoreRecordValue>, options?: KeyValueStoreRecordOptions): Promise<void>;
+    setRecord(record: KeyValueStoreRecordInput, options?: KeyValueStoreRecordOptions): Promise<void>;
     update(newFields: KeyValueClientUpdateOptions, options?: TimeoutOptions): Promise<KeyValueStoreResource>;
 }
 
@@ -2947,6 +2953,11 @@ export interface KeyValueStoreRecord<T> {
     key: string;
     // (undocumented)
     value: T;
+}
+
+// @public
+export interface KeyValueStoreRecordInput extends KeyValueStoreRecord<KeyValueStoreRecordValue> {
+    contentEncoding?: string;
 }
 
 // @public
@@ -3033,7 +3044,15 @@ interface LockedRequestQueueHeadRePointed {
 // @public
 export class LogClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
-    get(options?: LogOptions): Promise<string | undefined>;
+    get(options?: LogGetOptions & {
+        buffer?: false;
+    }): Promise<string | undefined>;
+    // (undocumented)
+    get(options: LogGetOptions & {
+        buffer: true;
+    }): Promise<Buffer | undefined>;
+    // (undocumented)
+    get(options?: LogGetOptions): Promise<string | Buffer | undefined>;
     stream(options?: LogOptions): Promise<Readable | undefined>;
 }
 
@@ -3042,6 +3061,11 @@ export class LoggerActorRedirect extends Logger {
     constructor(options?: {});
     // (undocumented)
     _log(level: LogLevel, message: string, data?: any, exception?: unknown, opts?: Record<string, any>): string | undefined;
+}
+
+// @public
+export interface LogGetOptions extends LogOptions {
+    buffer?: boolean;
 }
 
 // @public
@@ -3309,6 +3333,7 @@ export interface RequestQueueClientListHeadOptions extends TimeoutOptions {
 
 // @public
 export interface RequestQueueClientListRequestsOptions extends TimeoutOptions {
+    chunkSize?: number;
     cursor?: string;
     filter?: readonly RequestQueueListRequestsFilter[];
     // (undocumented)
@@ -3469,7 +3494,7 @@ class ResourceCollectionClient extends ApiClient {
 }
 
 // @public
-export class ResponseValidationError extends Error {
+export class ResponseValidationError extends ApifyClientError {
     constructor(error: z.ZodError, value: unknown, request: {
         method: string;
         url: string;

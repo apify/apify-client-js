@@ -23,12 +23,14 @@ import {
     isBlob,
     isBuffer,
     isStream,
+    minForLimitParam,
     parseArgument,
     parseResponse,
 } from '../utils.js';
 
 const listKeysOptionsSchema = z.strictObject({
     limit: z.number().min(0).optional(),
+    chunkSize: z.number().positive().optional(),
     exclusiveStartKey: z.string().optional(),
     collection: z.string().optional(),
     prefix: z.string().optional(),
@@ -36,7 +38,8 @@ const listKeysOptionsSchema = z.strictObject({
     ...timeoutOptionsShape,
 });
 const nonEmptyKeySchema = z.string().min(1);
-// `signature` is left out - this method produces one. The options type omits it to match.
+// `chunkSize` (client-side only) and `signature` (which this method produces) are left out. The options type omits
+// both to match.
 const createKeysPublicUrlOptionsSchema = z.strictObject({
     limit: z.number().min(0).optional(),
     exclusiveStartKey: z.string().optional(),
@@ -69,6 +72,7 @@ const recordSchema = z.strictObject({
         'Expected a JSON-serializable value, binary data, or a stream',
     ),
     contentType: z.string().min(1).optional(),
+    contentEncoding: z.string().trim().min(1).optional(),
 });
 const recordOptionsSchema = z.strictObject({
     ...timeoutOptionsShape,
@@ -170,6 +174,8 @@ export class KeyValueStoreClient extends ResourceClient {
      *
      * @param options - Listing options
      * @param options.limit - Maximum number of keys to return. Default is 1000.
+     * @param options.chunkSize - Maximum number of keys requested per API call when iterating across pages. `limit`
+     *   then caps the total across all pages.
      * @param options.exclusiveStartKey - Key to start listing from (for pagination). The listing starts with the next key after this one.
      * @param options.collection - Filter keys by collection name.
      * @param options.prefix - Filter keys that start with this prefix.
@@ -199,7 +205,9 @@ export class KeyValueStoreClient extends ResourceClient {
      * ```
      */
     listKeys(options: KeyValueClientListKeysOptions = {}): Promise<ListOfKeys> & AsyncIterable<KeyValueStoreKey> {
+        // `chunkSize` only sizes the page requests; it is not an API parameter, so it must not reach the query string.
         const {
+            chunkSize,
             timeoutSecs = 'medium',
             signal,
             ...parsed
@@ -217,7 +225,7 @@ export class KeyValueStoreClient extends ResourceClient {
             return parseResponse(response, schemas.ListOfKeys());
         };
 
-        const paginatedListPromise = getPaginatedList(parsed);
+        const paginatedListPromise = getPaginatedList({ ...parsed, limit: minForLimitParam(parsed.limit, chunkSize) });
         async function* asyncGenerator() {
             let currentPage = await paginatedListPromise;
             yield* currentPage.items;
@@ -233,7 +241,7 @@ export class KeyValueStoreClient extends ResourceClient {
             ) {
                 const newOptions = {
                     ...parsed,
-                    limit: remainingItems,
+                    limit: minForLimitParam(remainingItems, chunkSize),
                     exclusiveStartKey: currentPage.nextExclusiveStartKey,
                 };
                 currentPage = await getPaginatedList(newOptions);
@@ -480,6 +488,15 @@ export class KeyValueStoreClient extends ResourceClient {
      *                             whose content type already carries its own compression. The
      *                             `'application/octet-stream'` fallback is treated as compressible, because
      *                             it could hold any binary data.
+     * @param record.contentEncoding - Optional encoding already applied to `value`, sent as the `Content-Encoding`
+     *                                 header. Set it to upload a pre-compressed value: the client then sends the
+     *                                 bytes as they are and does not compress them again. The API accepts `gzip`,
+     *                                 `br`, `deflate`, and `identity`, and stores the record exactly as uploaded, so
+     *                                 this is also the encoding the record is served with. Only binary values and
+     *                                 streams can carry a compression, so any encoding other than `identity` throws
+     *                                 a `TypeError` when `value` is a string, or a plain object, array, or other
+     *                                 value that the client serializes to JSON. Node.js only, since browsers cannot
+     *                                 send the header to the API.
      * @param options - Storage options
      * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
      * @param options.doNotRetryTimeouts - If `true`, don't retry on timeout errors. Default is `false`.
@@ -507,20 +524,43 @@ export class KeyValueStoreClient extends ResourceClient {
      *   value: imageBuffer,
      *   contentType: 'image/png'
      * });
+     *
+     * // Store a gzipped file without compressing it again
+     * const gzippedReport = await readFile('report.json.gz');
+     * await client.keyValueStore('my-store').setRecord({
+     *   key: 'report.json',
+     *   value: gzippedReport,
+     *   contentType: 'application/json',
+     *   contentEncoding: 'gzip'
+     * });
      * ```
      */
-    async setRecord(
-        record: KeyValueStoreRecord<KeyValueStoreRecordValue>,
-        options: KeyValueStoreRecordOptions = {},
-    ): Promise<void> {
+    async setRecord(record: KeyValueStoreRecordInput, options: KeyValueStoreRecordOptions = {}): Promise<void> {
         parseArgument(record, recordSchema);
         const parsed = parseArgument(options, recordOptionsSchema, 'KeyValueStoreRecordOptions');
 
-        const { key } = record;
+        const { key, contentEncoding } = record;
         let { value, contentType } = record;
         const { timeoutSecs = 'long', signal, doNotRetryTimeouts } = parsed;
 
+        if (contentEncoding !== undefined && !runtime.isNode) {
+            throw new Error('The contentEncoding option can only be used in Node.js environment.');
+        }
+
         const isBinaryValue = isStream(value) || isBuffer(value) || isBlob(value);
+
+        // The client forwards the header without inspecting the body, so a string or a value serialized to JSON, which
+        // cannot hold compressed bytes, would be stored under an encoding that misdescribes it.
+        const declaresCompression =
+            contentEncoding !== undefined && contentEncoding.trim().toLowerCase() !== 'identity';
+        if (declaresCompression && !isBinaryValue) {
+            throw new TypeError(
+                `Cannot upload a value of type ${typeof value} with Content-Encoding: ${contentEncoding}. ` +
+                    'An encoding other than identity declares the value is already compressed, so pass the ' +
+                    'compressed bytes as a Buffer, an ArrayBuffer, a typed array, a Blob, or a readable stream.',
+            );
+        }
+
         // To allow saving Objects to JSON without providing content type
         if (!contentType) {
             if (isBlob(value)) contentType = value.type || 'application/octet-stream';
@@ -544,7 +584,10 @@ export class KeyValueStoreClient extends ResourceClient {
             method: 'PUT',
             params: this.buildParams(),
             data: value,
-            headers: contentType ? { 'content-type': contentType } : undefined,
+            headers: {
+                'content-type': contentType,
+                ...(contentEncoding !== undefined && { 'content-encoding': contentEncoding }),
+            },
             doNotRetryTimeouts,
             timeoutSecs,
             signal,
@@ -600,6 +643,12 @@ export interface KeyValueClientUpdateOptions {
  */
 export interface KeyValueClientListKeysOptions extends TimeoutOptions {
     limit?: number;
+    /**
+     * Maximum number of keys returned in one API response. When the call is iterated with `for await`, the iterator
+     * fetches keys in chunks of this size and yields them one by one, until `limit` is reached or the store has no
+     * more keys. Awaiting the call returns only the first chunk.
+     */
+    chunkSize?: number;
     exclusiveStartKey?: string;
     collection?: string;
     /**
@@ -615,11 +664,14 @@ export interface KeyValueClientListKeysOptions extends TimeoutOptions {
 /**
  * Options for creating a public URL to list keys in a Key-Value Store.
  *
- * Extends {@link KeyValueClientListKeysOptions} with URL expiration control, minus `signature` (this
- * method produces one).
+ * Extends {@link KeyValueClientListKeysOptions} with URL expiration control, minus `chunkSize` (it only sizes a
+ * client-side iteration) and `signature` (this method produces one).
  * @since Added in 2.16.0
  */
-export interface KeyValueClientCreateKeysUrlOptions extends Omit<KeyValueClientListKeysOptions, 'signature'> {
+export interface KeyValueClientCreateKeysUrlOptions extends Omit<
+    KeyValueClientListKeysOptions,
+    'chunkSize' | 'signature'
+> {
     expiresInSecs?: number;
 }
 
@@ -653,6 +705,17 @@ export interface KeyValueStoreRecord<T> {
     key: string;
     value: T;
     contentType?: string;
+}
+
+/**
+ * A record to store with {@link KeyValueStoreClient.setRecord}.
+ */
+export interface KeyValueStoreRecordInput extends KeyValueStoreRecord<KeyValueStoreRecordValue> {
+    /**
+     * Encoding already applied to `value`, sent as the `Content-Encoding` header. See
+     * {@link KeyValueStoreClient.setRecord}.
+     */
+    contentEncoding?: string;
 }
 
 /**
