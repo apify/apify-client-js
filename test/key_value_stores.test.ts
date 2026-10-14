@@ -763,6 +763,21 @@ describe('Key-Value Store methods', () => {
             });
         });
 
+        test('setRecord() forwards contentEncoding with a Blob', async () => {
+            const key = 'some-key';
+            const storeId = 'some-id';
+            const data = 'special chars \u{1F916}✅';
+            const value = new Blob([gzipSync(data)], { type: 'text/plain' });
+
+            const res = await client.keyValueStore(storeId).setRecord({ key, value, contentEncoding: 'gzip' });
+            expect(res).toBeUndefined();
+            validateRequest({
+                params: { storeId, key },
+                body: data,
+                additionalHeaders: { 'content-type': 'text/plain', 'content-encoding': 'gzip' },
+            });
+        });
+
         test('setRecord() sends a string uncompressed with identity contentEncoding', async () => {
             const key = 'some-key';
             const storeId = 'some-id';
