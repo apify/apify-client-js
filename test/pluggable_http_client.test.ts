@@ -92,6 +92,7 @@ describe('pluggable HTTP client', () => {
                     res.writeHead(200, { 'content-type': 'application/json' });
                     res.end('{"data": ');
                 } else if (path === '/broken-error' && failuresLeft-- > 0) {
+                    // A gateway's HTML page mislabelled as JSON, so parsing the body fails.
                     res.writeHead(502, { 'content-type': 'application/json' });
                     res.end('<html>Bad Gateway</html>');
                 } else if (path === '/missing' || path.endsWith('/records/missing')) {
