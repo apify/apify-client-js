@@ -5,7 +5,7 @@ import log, { Log } from '@apify/log';
 
 import { ApifyClient } from 'apify-client';
 import type { Page } from 'puppeteer';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
 
 import type { LogClient } from '../src/resource_clients/log.js';
 import { StreamedLog } from '../src/resource_clients/log.js';
@@ -66,37 +66,39 @@ describe('Log methods', () => {
             expect(browserRes).toBeUndefined();
         });
 
-        test('getAsBuffer() returns the log as raw bytes', async () => {
+        test('get({ buffer: true }) returns the log as raw bytes', async () => {
             const logId = 'some-id';
 
-            const res = await client.log(logId).getAsBuffer();
+            const res = await client.log(logId).get({ buffer: true });
+            expectTypeOf(res).toEqualTypeOf<Buffer | undefined>();
+            expectTypeOf(() => client.log(logId).get()).returns.resolves.toEqualTypeOf<string | undefined>();
             expect(res).toBeInstanceOf(Buffer);
             expect(res!.toString()).toBe('get-log');
             validateRequest({ query: {}, params: { logId } });
 
             const browserRes = await page.evaluate(async (id) => {
-                const buffer = await client.log(id).getAsBuffer();
+                const buffer = await client.log(id).get({ buffer: true });
                 return { isArrayBuffer: buffer instanceof ArrayBuffer, text: new TextDecoder().decode(buffer) };
             }, logId);
             expect(browserRes).toEqual({ isArrayBuffer: true, text: 'get-log' });
             validateRequest({ query: {}, params: { logId } });
         });
 
-        test('getAsBuffer() passes the raw option to the API', async () => {
+        test('get({ buffer: true }) passes the raw option to the API', async () => {
             const logId = 'some-id';
 
-            await client.log(logId).getAsBuffer({ raw: true });
+            await client.log(logId).get({ buffer: true, raw: true });
             validateRequest({ query: { raw: true }, params: { logId } });
         });
 
-        test('getAsBuffer() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
+        test('get({ buffer: true }) returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
             const logId = '404';
 
-            const res = await client.log(logId).getAsBuffer();
+            const res = await client.log(logId).get({ buffer: true });
             expect(res).toBeUndefined();
             validateRequest({ query: {}, params: { logId } });
 
-            const browserRes = await page.evaluate((id) => client.log(id).getAsBuffer(), logId);
+            const browserRes = await page.evaluate((id) => client.log(id).get({ buffer: true }), logId);
             expect(browserRes).toBeUndefined();
         });
 

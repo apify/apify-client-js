@@ -2302,12 +2302,19 @@ export class DatasetClient<Data extends Record<string | number, any> = Record<st
     constructor(options: ApiClientSubResourceOptions);
     createItemsPublicUrl(options?: DatasetClientCreateItemsUrlOptions): Promise<string>;
     delete(options?: TimeoutOptions): Promise<void>;
-    downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Buffer>;
+    downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions & {
+        stream?: false;
+    }): Promise<Buffer>;
+    // (undocumented)
+    downloadItems(format: `${DownloadItemsFormat}`, options: DatasetClientDownloadItemsOptions & {
+        stream: true;
+    }): Promise<Readable>;
+    // (undocumented)
+    downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Buffer | Readable>;
     get(options?: TimeoutOptions): Promise<DatasetResource | undefined>;
     getStatistics(options?: TimeoutOptions): Promise<DatasetStatistics>;
     listItems(options?: DatasetClientListItemOptions): PaginatedIterator<Data>;
     pushItems(items: Data | Data[] | string, options?: TimeoutOptions): Promise<void>;
-    streamItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Readable>;
     update(newFields: DatasetClientUpdateOptions, options?: TimeoutOptions): Promise<DatasetResource>;
 }
 
@@ -2328,6 +2335,7 @@ export interface DatasetClientDownloadItemsOptions extends Omit<DatasetClientLis
     delimiter?: string;
     // (undocumented)
     skipHeaderRow?: boolean;
+    stream?: boolean;
     // (undocumented)
     xmlRoot?: string;
     // (undocumented)
@@ -3044,8 +3052,15 @@ interface LockedRequestQueueHeadRePointed {
 // @public
 export class LogClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
-    get(options?: LogOptions): Promise<string | undefined>;
-    getAsBuffer(options?: LogOptions): Promise<Buffer | undefined>;
+    get(options?: LogGetOptions & {
+        buffer?: false;
+    }): Promise<string | undefined>;
+    // (undocumented)
+    get(options: LogGetOptions & {
+        buffer: true;
+    }): Promise<Buffer | undefined>;
+    // (undocumented)
+    get(options?: LogGetOptions): Promise<string | Buffer | undefined>;
     stream(options?: LogOptions): Promise<Readable | undefined>;
 }
 
@@ -3054,6 +3069,11 @@ export class LoggerActorRedirect extends Logger {
     constructor(options?: {});
     // (undocumented)
     _log(level: LogLevel, message: string, data?: any, exception?: unknown, opts?: Record<string, any>): string | undefined;
+}
+
+// @public
+export interface LogGetOptions extends LogOptions {
+    buffer?: boolean;
 }
 
 // @public

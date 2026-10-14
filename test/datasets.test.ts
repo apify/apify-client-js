@@ -3,7 +3,7 @@ import { Readable } from 'node:stream';
 
 import { ApifyApiError, ApifyClient, ArgumentValidationError, DownloadItemsFormat } from 'apify-client';
 import type { Page } from 'puppeteer';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, expectTypeOf, it, test } from 'vitest';
 
 import { STORAGE_OWNERSHIP_FILTER } from '@apify/consts';
 
@@ -347,7 +347,7 @@ describe('Dataset methods', () => {
             validateRequest({ query: { format, ...options }, params: { datasetId } });
         });
 
-        test('streamItems() resolves to a readable stream of the export', async () => {
+        test('downloadItems() with stream resolves to a readable stream of the export', async () => {
             const datasetId = 'some-id';
             const body = 'a;b\n1;2\n';
             const headers = {
@@ -361,7 +361,11 @@ describe('Dataset methods', () => {
                 fields: ['a', 'b'],
             };
 
-            const res = await client.dataset(datasetId).streamItems(format, options);
+            const res = await client.dataset(datasetId).downloadItems(format, { ...options, stream: true });
+            expectTypeOf(res).toEqualTypeOf<Readable>();
+            expectTypeOf(() =>
+                client.dataset(datasetId).downloadItems(format),
+            ).returns.resolves.toEqualTypeOf<Buffer>();
             expect(res).toBeInstanceOf(Readable);
             const chunks: Buffer[] = [];
             for await (const chunk of res) {
@@ -372,17 +376,17 @@ describe('Dataset methods', () => {
 
             await expect(
                 page.evaluate(
-                    async (id, f, opts) => client.dataset(id).streamItems(f, opts),
+                    async (id, f, opts) => client.dataset(id).downloadItems(f, { ...opts, stream: true }),
                     datasetId,
                     format,
                     options,
                 ),
-            ).rejects.toThrow('The streamItems() method can only be used in Node.js environment.');
+            ).rejects.toThrow('The stream option can only be used in Node.js environment.');
         });
 
-        test('streamItems() throws an ApifyApiError with the parsed error body', async () => {
+        test('downloadItems() with stream throws an ApifyApiError with the parsed error body', async () => {
             mockServer.setResponse(null);
-            const call = client.dataset('404').streamItems(DownloadItemsFormat.JSON);
+            const call = client.dataset('404').downloadItems(DownloadItemsFormat.JSON, { stream: true });
 
             await expect(call).rejects.toThrow(ApifyApiError);
             await expect(call).rejects.toMatchObject({ statusCode: 404, type: 'record-not-found' });

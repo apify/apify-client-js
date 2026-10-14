@@ -77,6 +77,7 @@ const downloadItemsOptionsSchema = z.strictObject({
     xmlRoot: z.string().optional(),
     xmlRow: z.string().optional(),
     signature: z.string().optional(),
+    stream: z.boolean().optional(),
     ...timeoutOptionsShape,
 });
 const pushItemsSchema = z.union([itemSchema, z.string(), z.array(itemSchema)]);
@@ -263,6 +264,11 @@ export class DatasetClient<
      * dataset items, this method returns the items serialized to the provided format
      * (JSON, CSV, Excel, etc.) as a Buffer. Useful for exporting data for further processing.
      *
+     * In Node.js you can use the `stream` option to get a Readable stream, so a large export is processed in chunks
+     * without holding all of it in memory. The stream holds its connection open until you consume it to the end or
+     * destroy it. Iterating it with `for await` or passing it to `pipeline()` from `node:stream/promises` does either
+     * one for you.
+     *
      * @param format - Output format: `'json'`, `'jsonl'`, `'csv'`, `'xlsx'`, `'xml'`, `'rss'`, or `'html'`
      * @param options - Download and formatting options (extends all options from {@link listItems})
      * @param options.attachment - If `true`, the response will have `Content-Disposition: attachment` header.
@@ -273,8 +279,12 @@ export class DatasetClient<
      * @param options.xmlRow - Name of the XML element for each item. Default is `'item'`.
      * @param options.fields - Array of field names to include in the export.
      * @param options.omit - Array of field names to exclude from the export.
-     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
-     * @returns Buffer containing the serialized data in the specified format
+     * @param options.stream - If `true`, the items are returned as a Readable stream. Node.js only.
+     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`. With `stream`, it bounds the
+     * wait for the API to start responding; once the stream is returned, it only limits inactivity: the stream errors
+     * if no data arrives for that long. To stop the download early or cap its total duration, destroy the stream or
+     * abort `signal`.
+     * @returns Buffer containing the serialized data in the specified format, or a Readable stream of it with `stream`
      * @see https://docs.apify.com/api/v2/dataset-items-get
      *
      * @example
@@ -295,74 +305,43 @@ export class DatasetClient<
      *   xmlRoot: 'products',
      *   xmlRow: 'product'
      * });
+     *
+     * // Stream a CSV export straight to a file
+     * const { createWriteStream } = require('node:fs');
+     * const { pipeline } = require('node:stream/promises');
+     * const stream = await client.dataset('my-dataset').downloadItems('csv', { stream: true });
+     * await pipeline(stream, createWriteStream('output.csv'));
      * ```
      */
     async downloadItems(
         format: `${DownloadItemsFormat}`,
-        options: DatasetClientDownloadItemsOptions = {},
-    ): Promise<Buffer> {
-        parseArgument(format, itemFormatSchema);
-        const {
-            timeoutSecs = 'long',
-            signal,
-            ...query
-        } = parseArgument(options, downloadItemsOptionsSchema, 'DatasetClientDownloadItemsOptions');
+        options?: DatasetClientDownloadItemsOptions & { stream?: false },
+    ): Promise<Buffer>;
 
-        const { data } = await this.httpClient.call({
-            url: this.buildUrl('items'),
-            method: 'GET',
-            params: this.buildParams({
-                format,
-                ...query,
-            }),
-            responseType: 'buffer',
-            timeoutSecs,
-            signal,
-        });
+    async downloadItems(
+        format: `${DownloadItemsFormat}`,
+        options: DatasetClientDownloadItemsOptions & { stream: true },
+    ): Promise<Readable>;
 
-        return cast(data);
-    }
+    async downloadItems(
+        format: `${DownloadItemsFormat}`,
+        options?: DatasetClientDownloadItemsOptions,
+    ): Promise<Buffer | Readable>;
 
-    /**
-     * Downloads dataset items in a specific format as a Readable stream. Only works in Node.js.
-     *
-     * Takes the same arguments as {@link downloadItems}, but resolves to the response body as a stream, so a large
-     * export is processed in chunks without holding all of it in memory.
-     *
-     * The stream holds its connection open until you consume it to the end or destroy it. Iterating it with
-     * `for await` or passing it to `pipeline()` from `node:stream/promises` does either one for you.
-     *
-     * @param format - Output format: `'json'`, `'jsonl'`, `'csv'`, `'xlsx'`, `'xml'`, `'rss'`, or `'html'`
-     * @param options - Download and formatting options, the same as for {@link downloadItems}
-     * @param options.timeoutSecs - Timeout for the API to start responding. Default is `'long'`. Once the stream is
-     * returned, it only limits inactivity: the stream errors if no data arrives for that long. To stop the download
-     * early or cap its total duration, destroy the stream or abort `signal`.
-     * @returns Readable stream of the items serialized to the specified format
-     * @see https://docs.apify.com/api/v2/dataset-items-get
-     *
-     * @example
-     * ```javascript
-     * const { createWriteStream } = require('node:fs');
-     * const { pipeline } = require('node:stream/promises');
-     *
-     * // Write a CSV export straight to a file
-     * const stream = await client.dataset('my-dataset').streamItems('csv', { bom: true });
-     * await pipeline(stream, createWriteStream('output.csv'));
-     * ```
-     */
-    async streamItems(
+    async downloadItems(
         format: `${DownloadItemsFormat}`,
         options: DatasetClientDownloadItemsOptions = {},
-    ): Promise<Readable> {
+    ): Promise<Buffer | Readable> {
         parseArgument(format, itemFormatSchema);
         const {
             timeoutSecs = 'long',
             signal,
+            stream,
             ...query
         } = parseArgument(options, downloadItemsOptionsSchema, 'DatasetClientDownloadItemsOptions');
 
-        if (!runtime.isNode) {
-            throw new Error('The streamItems() method can only be used in Node.js environment.');
+        if (stream && !runtime.isNode) {
+            throw new Error('The stream option can only be used in Node.js environment.');
         }
 
         const { data } = await this.httpClient.call({
@@ -372,7 +351,7 @@ export class DatasetClient<
                 format,
                 ...query,
             }),
-            responseType: 'stream',
+            responseType: stream ? 'stream' : 'buffer',
             timeoutSecs,
             signal,
         });
@@ -612,4 +591,9 @@ export interface DatasetClientDownloadItemsOptions extends Omit<DatasetClientLis
     skipHeaderRow?: boolean;
     xmlRoot?: string;
     xmlRow?: string;
+    /**
+     * If `true`, the items are returned as a Readable stream. Node.js only.
+     * @default false
+     */
+    stream?: boolean;
 }

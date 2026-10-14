@@ -26,6 +26,7 @@ const EMPTY_LOG_STREAM_RETRY_MILLIS = 500;
 const EMPTY_LOG_STREAM_MAX_RETRY_MILLIS = 5_000;
 
 const logOptionsSchema = z.strictObject({ raw: z.boolean().optional(), ...timeoutOptionsShape });
+const logGetOptionsSchema = logOptionsSchema.extend({ buffer: z.boolean().optional() });
 
 /** How long `StreamedLog.stop()` waits for lines already in flight before aborting the log stream request. */
 const STOP_GRACE_MILLIS = 1000;
@@ -46,7 +47,7 @@ const STOP_GRACE_MILLIS = 1000;
  * console.log(log);
  *
  * // Get the log content as raw bytes
- * const logBuffer = await runClient.log().getAsBuffer();
+ * const logBuffer = await runClient.log().get({ buffer: true });
  *
  * // Stream the log in real-time
  * const stream = await runClient.log().stream();
@@ -69,56 +70,40 @@ export class LogClient extends ResourceClient {
     /**
      * Retrieves the log as a string.
      *
-     * @param options - Log retrieval options.
-     * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
-     * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
-     * @returns The log content as a string, or `undefined` if it does not exist. A chained client such as
-     * `run.log()` throws an `ApifyApiError` on a 404, since the run itself may be what is missing.
-     * @see https://docs.apify.com/api/v2/log-get
-     */
-    async get(options: LogOptions = {}): Promise<string | undefined> {
-        const { timeoutSecs = 'long', signal, ...params } = parseArgument(options, logOptionsSchema, 'LogOptions');
-
-        const requestOpts: ApifyRequestConfig = {
-            url: this.buildUrl(),
-            method: 'GET',
-            params: this.buildParams(params),
-            timeoutSecs,
-            signal,
-        };
-
-        try {
-            const response = await this.httpClient.call(requestOpts);
-            return cast(response.data);
-        } catch (err) {
-            catchNotFoundForResourceOrThrow(err as ApifyApiError, this.id);
-        }
-
-        return undefined;
-    }
-
-    /**
-     * Retrieves the log as raw bytes, without decoding it to a string.
+     * Use the `buffer` option to get the raw bytes as a Buffer (Node.js) or ArrayBuffer (browser) instead, without
+     * decoding them to a string.
      *
      * @param options - Log retrieval options.
      * @param options.raw - If `true`, returns raw log content without any processing. Default is `false`.
+     * @param options.buffer - If `true`, the log is returned as a Buffer (Node.js) or ArrayBuffer (browser).
      * @param options.timeoutSecs - Timeout for the API request. Default is `'long'`.
-     * @returns The log content as a Buffer (Node.js) or ArrayBuffer (browser), or `undefined` if it does not exist.
-     * A chained client such as `run.log()` throws an `ApifyApiError` on a 404, since the run itself may be what is
-     * missing.
+     * @returns The log content, or `undefined` if it does not exist. A chained client such as `run.log()` throws an
+     * `ApifyApiError` on a 404, since the run itself may be what is missing.
      * @see https://docs.apify.com/api/v2/log-get
      */
-    async getAsBuffer(options: LogOptions = {}): Promise<Buffer | undefined> {
-        const { timeoutSecs = 'long', signal, ...params } = parseArgument(options, logOptionsSchema, 'LogOptions');
+    async get(options?: LogGetOptions & { buffer?: false }): Promise<string | undefined>;
+
+    async get(options: LogGetOptions & { buffer: true }): Promise<Buffer | undefined>;
+
+    async get(options?: LogGetOptions): Promise<string | Buffer | undefined>;
+
+    async get(options: LogGetOptions = {}): Promise<string | Buffer | undefined> {
+        const {
+            timeoutSecs = 'long',
+            signal,
+            buffer,
+            ...params
+        } = parseArgument(options, logGetOptionsSchema, 'LogGetOptions');
 
         const requestOpts: ApifyRequestConfig = {
             url: this.buildUrl(),
             method: 'GET',
             params: this.buildParams(params),
-            responseType: 'buffer',
             timeoutSecs,
             signal,
         };
+
+        if (buffer) requestOpts.responseType = 'buffer';
 
         try {
             const response = await this.httpClient.call(requestOpts);
@@ -174,6 +159,17 @@ export class LogClient extends ResourceClient {
 export interface LogOptions extends TimeoutOptions {
     /** @default false */
     raw?: boolean;
+}
+
+/**
+ * Options for {@link LogClient.get}.
+ */
+export interface LogGetOptions extends LogOptions {
+    /**
+     * If `true`, the log is returned as a Buffer (Node.js) or ArrayBuffer (browser) instead of a string.
+     * @default false
+     */
+    buffer?: boolean;
 }
 
 /**
