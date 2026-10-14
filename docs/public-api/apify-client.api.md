@@ -2302,19 +2302,12 @@ export class DatasetClient<Data extends Record<string | number, any> = Record<st
     constructor(options: ApiClientSubResourceOptions);
     createItemsPublicUrl(options?: DatasetClientCreateItemsUrlOptions): Promise<string>;
     delete(options?: TimeoutOptions): Promise<void>;
-    downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions & {
-        stream?: false;
-    }): Promise<Buffer>;
-    // (undocumented)
-    downloadItems(format: `${DownloadItemsFormat}`, options: DatasetClientDownloadItemsOptions & {
-        stream: true;
-    }): Promise<Readable>;
-    // (undocumented)
-    downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Buffer | Readable>;
+    downloadItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Buffer>;
     get(options?: TimeoutOptions): Promise<DatasetResource | undefined>;
     getStatistics(options?: TimeoutOptions): Promise<DatasetStatistics>;
     listItems(options?: DatasetClientListItemOptions): PaginatedIterator<Data>;
     pushItems(items: Data | Data[] | string, options?: TimeoutOptions): Promise<void>;
+    streamItems(format: `${DownloadItemsFormat}`, options?: DatasetClientDownloadItemsOptions): Promise<Readable>;
     update(newFields: DatasetClientUpdateOptions, options?: TimeoutOptions): Promise<DatasetResource>;
 }
 
@@ -2335,7 +2328,6 @@ export interface DatasetClientDownloadItemsOptions extends Omit<DatasetClientLis
     delimiter?: string;
     // (undocumented)
     skipHeaderRow?: boolean;
-    stream?: boolean;
     // (undocumented)
     xmlRoot?: string;
     // (undocumented)

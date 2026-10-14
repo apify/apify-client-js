@@ -419,7 +419,7 @@ describe('downloadItems()', () => {
     });
 });
 
-test('downloadItems() with stream yields the serialized items as a readable stream', async () => {
+test('streamItems() yields the serialized items as a readable stream', async () => {
     const createdDataset = await createDataset();
     const datasetClient = client.dataset(createdDataset.id);
 
@@ -431,7 +431,7 @@ test('downloadItems() with stream yields the serialized items as a readable stre
         await datasetClient.pushItems(items);
         await waitForItemCount(createdDataset.id, 2);
 
-        const stream = await datasetClient.downloadItems(DownloadItemsFormat.JSONL, { stream: true });
+        const stream = await datasetClient.streamItems(DownloadItemsFormat.JSONL);
         const chunks: Buffer[] = [];
         for await (const chunk of stream) {
             chunks.push(chunk);
