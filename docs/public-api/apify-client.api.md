@@ -3044,7 +3044,15 @@ interface LockedRequestQueueHeadRePointed {
 // @public
 export class LogClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
-    get(options?: LogOptions): Promise<string | undefined>;
+    get(options?: LogGetOptions & {
+        buffer?: false;
+    }): Promise<string | undefined>;
+    // (undocumented)
+    get(options: LogGetOptions & {
+        buffer: true;
+    }): Promise<Buffer | undefined>;
+    // (undocumented)
+    get(options?: LogGetOptions): Promise<string | Buffer | undefined>;
     stream(options?: LogOptions): Promise<Readable | undefined>;
 }
 
@@ -3053,6 +3061,11 @@ export class LoggerActorRedirect extends Logger {
     constructor(options?: {});
     // (undocumented)
     _log(level: LogLevel, message: string, data?: any, exception?: unknown, opts?: Record<string, any>): string | undefined;
+}
+
+// @public
+export interface LogGetOptions extends LogOptions {
+    buffer?: boolean;
 }
 
 // @public
