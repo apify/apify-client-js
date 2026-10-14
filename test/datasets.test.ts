@@ -298,6 +298,7 @@ describe('Dataset methods', () => {
             mockServer.setResponse({ body, headers });
 
             const res = await client.dataset(datasetId).downloadItems(format, options);
+            expectTypeOf(res).toEqualTypeOf<Buffer>();
             expect(res).toBeInstanceOf(Buffer);
             const resString = res.toString('utf-8');
             expect(resString).toBe(body);
@@ -363,9 +364,6 @@ describe('Dataset methods', () => {
 
             const res = await client.dataset(datasetId).downloadItems(format, { ...options, stream: true });
             expectTypeOf(res).toEqualTypeOf<Readable>();
-            expectTypeOf(() =>
-                client.dataset(datasetId).downloadItems(format),
-            ).returns.resolves.toEqualTypeOf<Buffer>();
             expect(res).toBeInstanceOf(Readable);
             const chunks: Buffer[] = [];
             for await (const chunk of res) {
