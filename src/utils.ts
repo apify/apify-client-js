@@ -96,19 +96,12 @@ export const anyObjectSchema = z.custom<Record<string, unknown>>(isNonArrayObjec
     error: 'Invalid input: expected an object',
 });
 
-/**
- * Generic interface for objects that may contain a data property.
- *
- * @template R - The type of the data property
- */
-export interface MaybeData<R> {
-    data?: R;
-}
-
 // Zod installs its English locale as a module-level side effect but ships `"sideEffects": false`, so
 // any tree-shaking bundler drops it and every message degrades to a bare "Invalid input". Passing it
 // in per parse keeps them intact without reaching into the zod config the whole process shares.
 const { localeError } = z.locales.en();
+
+const RESPONSE_ENVELOPE_SCHEMA = z.object({ data: z.unknown() });
 
 /**
  * Turns a JSON API response into the value a resource method returns: unwraps the `data` envelope and validates the
@@ -121,25 +114,17 @@ const { localeError } = z.locales.en();
  * @internal
  */
 export function parseResponse<R>(response: ApifyResponse, schema: z.ZodType): R {
-    const data = pluckData(response.data);
+    const { method = 'GET', url = '' } = response.config;
+    const envelope = RESPONSE_ENVELOPE_SCHEMA.safeParse(response.data, { error: localeError });
+    if (!envelope.success) {
+        throw new ResponseValidationError(envelope.error, response.data, { method, url });
+    }
+    const { data } = envelope.data;
     const result = schema.safeParse(data, { error: localeError });
     if (!result.success) {
-        const { method = 'GET', url = '' } = response.config;
         throw new ResponseValidationError(result.error, data, { method, url });
     }
     return result.data as R;
-}
-
-/**
- * Returns object's 'data' property or throws if parameter is not an object,
- * or an object without a 'data' property.
- */
-export function pluckData<R>(obj: MaybeData<R>): R {
-    if (typeof obj === 'object' && obj) {
-        if (typeof obj.data !== 'undefined') return obj.data;
-    }
-
-    throw new Error(`Expected response object with a "data" property, but received: ${obj}`);
 }
 
 /**
@@ -360,6 +345,19 @@ export interface PaginationOptions {
      * @since Added in 2.21.0
      * */
     chunkSize?: number;
+}
+
+/**
+ * The smaller of two page limits, for the `limit` query parameter. The API treats a `limit` of 0 as unset, so 0 here
+ * means no limit and loses to any other value.
+ * @internal
+ */
+export function minForLimitParam(a: number | undefined, b: number | undefined): number | undefined {
+    if (a === 0) a = undefined;
+    if (b === 0) b = undefined;
+    if (a === undefined) return b;
+    if (b === undefined) return a;
+    return Math.min(a, b);
 }
 
 /**

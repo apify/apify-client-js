@@ -8,10 +8,9 @@ const client = new ApifyClient({ token: 'MY-APIFY-TOKEN' });
 const report = await readFile('report.json.gz');
 
 // The explicit content encoding stops the client from compressing the bytes again.
-await client.httpClient.call({
-    url: `${client.baseUrl}/key-value-stores/MY-KVS-ID/records/report.json`,
-    method: 'PUT',
-    data: report,
-    headers: { 'content-type': 'application/json', 'content-encoding': 'gzip' },
-    timeoutSecs: 'long',
+await client.keyValueStore('MY-KVS-ID').setRecord({
+    key: 'report.json',
+    value: report,
+    contentType: 'application/json',
+    contentEncoding: 'gzip',
 });

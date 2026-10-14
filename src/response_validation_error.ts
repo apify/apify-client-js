@@ -1,6 +1,8 @@
 import { ArgumentValidationError } from '@apify/validations';
 import type { z } from 'zod';
 
+import { ApifyClientError } from './apify_client_error.js';
+
 const REPORT_HINT =
     'The API returned something its OpenAPI specification does not describe. ' +
     'Please report this at https://github.com/apify/apify-client-js/issues.';
@@ -18,7 +20,7 @@ const REPORT_HINT =
  * {@link https://zod.dev | zod} issues are available on `issues`, and the original `ZodError` on `cause`,
  * for programmatic inspection.
  */
-export class ResponseValidationError extends Error {
+export class ResponseValidationError extends ApifyClientError {
     /** Structured issues from the underlying schema check. */
     readonly issues: z.ZodError['issues'];
 

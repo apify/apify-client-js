@@ -1,3 +1,4 @@
+import { ApifyClientError } from './apify_client_error.js';
 import type { HttpResponse } from './http_clients/base.js';
 
 /**
@@ -5,7 +6,7 @@ import type { HttpResponse } from './http_clients/base.js';
  * value stored under `application/json`. The response arrived in full, so the request is not retried. An error
  * status with an unparsable body throws {@link ApifyApiError} for its status code.
  */
-export class InvalidResponseBodyError extends Error {
+export class InvalidResponseBodyError extends ApifyClientError {
     code: string;
 
     /** The response whose body did not parse, with the body as the transport returned it. */

@@ -30,6 +30,7 @@ import {
     anyObjectSchema,
     catchNotFoundOrThrow,
     isNonArrayObject,
+    minForLimitParam,
     parseArgument,
     parseResponse,
     RequestQueuePaginationIterator,
@@ -81,6 +82,7 @@ const prolongRequestLockOptionsSchema = z.strictObject({
 const requestFilterSchema = z.array(z.enum(['locked', 'pending'])).min(1);
 const listRequestsOptionsSchema = z.strictObject({
     limit: z.number().min(0).optional(),
+    chunkSize: z.number().positive().optional(),
     cursor: z.string().optional(),
     filter: requestFilterSchema.optional(),
     ...timeoutOptionsShape,
@@ -799,6 +801,8 @@ export class RequestQueueClient extends ResourceClient {
      * queue contents.
      *
      * @param options - Pagination options
+     * @param options.chunkSize - Maximum number of requests fetched per API call when iterating across pages. `limit`
+     *   then caps the total across all pages.
      * @param options.timeoutSecs - Timeout for each API request. Default is `'medium'`.
      * @returns List of requests with pagination information
      * @see https://docs.apify.com/api/v2/request-queue-requests-get
@@ -807,9 +811,9 @@ export class RequestQueueClient extends ResourceClient {
     listRequests(
         options: RequestQueueClientListRequestsOptions = {},
     ): Promise<ListOfRequests> & AsyncIterable<RequestResource> {
-        // `timeoutSecs` and `signal` apply to every page request; they are not API parameters, so they must not reach
-        // the query string.
-        const { timeoutSecs, signal, ...parsed } = parseArgument(
+        // `chunkSize` only sizes the page requests, and `timeoutSecs` and `signal` apply to every one of them; none of
+        // them is an API parameter, so they must not reach the query string.
+        const { chunkSize, timeoutSecs, signal, ...parsed } = parseArgument(
             options,
             listRequestsOptionsSchema,
             'RequestQueueClientListRequestsOptions',
@@ -834,7 +838,7 @@ export class RequestQueueClient extends ResourceClient {
             return parseResponse(response, schemas.ListOfRequests());
         };
 
-        const paginatedListPromise = getPaginatedList(parsed);
+        const paginatedListPromise = getPaginatedList({ ...parsed, limit: minForLimitParam(parsed.limit, chunkSize) });
         async function* asyncGenerator() {
             let currentPage = await paginatedListPromise;
             yield* currentPage.items;
@@ -850,7 +854,7 @@ export class RequestQueueClient extends ResourceClient {
             ) {
                 const newOptions = {
                     ...parsed,
-                    limit: remainingItems,
+                    limit: minForLimitParam(remainingItems, chunkSize),
                     cursor: currentPage.nextCursor,
                 };
                 currentPage = await getPaginatedList(newOptions);
@@ -976,6 +980,12 @@ export type RequestQueueListRequestsFilter = 'locked' | 'pending';
  */
 export interface RequestQueueClientListRequestsOptions extends TimeoutOptions {
     limit?: number;
+    /**
+     * Maximum number of requests returned in one API response. When the call is iterated with `for await`, the iterator
+     * fetches requests in chunks of this size and yields them one by one, until `limit` is reached or the RQ is
+     * exhausted. Awaiting the call returns only the first chunk.
+     */
+    chunkSize?: number;
     /**
      * @since Added in 2.23.2
      */
