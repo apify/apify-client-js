@@ -17,7 +17,7 @@ Certain resources, such as dataset items, key-value store records and logs, supp
 Supported streaming methods:
 
 - <ApiLink to="class/LogClient#stream">`LogClient.stream()`</ApiLink> - Stream a log in real time. Resolves to a Node.js `Readable`, or `undefined` when the log doesn't exist. A log client chained off a run or build, such as `client.run('run-id').log()`, throws a <ApiLink to="class/NotFoundError">`NotFoundError`</ApiLink> instead, since the run itself may be what is missing.
-- <ApiLink to="class/DatasetClient#streamItems">`DatasetClient.streamItems()`</ApiLink> - Stream dataset items serialized to a format such as CSV or XLSX. Takes the same options as <ApiLink to="class/DatasetClient#downloadItems">`downloadItems()`</ApiLink> and resolves to a Node.js `Readable`.
+- <ApiLink to="class/DatasetClient#downloadItems">`DatasetClient.downloadItems()`</ApiLink> with the `stream: true` option - Stream dataset items serialized to a format such as CSV or XLSX. Resolves to a Node.js `Readable`.
 - <ApiLink to="class/KeyValueStoreClient#getRecord">`KeyValueStoreClient.getRecord()`</ApiLink> with the `stream: true` option - Stream a key-value store record as raw data. Resolves to a record whose `value` is a Node.js `Readable`, or `undefined` when the record doesn't exist.
 - <ApiLink to="class/RunClient#getStreamedLog">`RunClient.getStreamedLog()`</ApiLink> - Redirect the log of a run to a logger while the run is in progress. For details, see [Redirecting Actor run logs](./05_logging.mdx#redirecting-actor-run-logs).
 
