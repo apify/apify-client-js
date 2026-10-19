@@ -42,6 +42,7 @@ const chargeOptionsSchema = z.strictObject({
     eventName: z.string(),
     count: z.number().default(1),
     idempotencyKey: z.string().optional(),
+    apifyRequestId: z.string().optional(),
     ...timeoutOptionsShape,
 });
 const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional(), ...timeoutOptionsShape });
@@ -353,6 +354,7 @@ export class RunClient extends ResourceClient {
             count,
             idempotencyKey: providedIdempotencyKey,
             timeoutSecs = 'short',
+            apifyRequestId: requestId,
             signal,
         } = parseArgument(options, chargeOptionsSchema, 'RunChargeOptions');
 
@@ -366,6 +368,7 @@ export class RunClient extends ResourceClient {
             data: {
                 eventName,
                 count,
+                requestId,
             },
             headers: {
                 [RUN_CHARGE_IDEMPOTENCY_HEADER]: idempotencyKey,
@@ -724,6 +727,11 @@ export interface RunChargeOptions extends TimeoutOptions {
     count?: number;
     /** Defaults to runId-eventName-timestamp */
     idempotencyKey?: string;
+    /**
+     * ID of the request being served by a multi-tenant Standby run, taken from the `X-Apify-Request-ID` header of the incoming request.
+     * Maps the charge to the account of the caller who made that request instead of the account that started the run.
+     */
+    apifyRequestId?: string;
 }
 
 /**
