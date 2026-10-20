@@ -613,6 +613,9 @@ export interface BuildOptions extends GeneratedBuildOptions {
 interface BuildRePointed {
     // (undocumented)
     actorDefinition?: ActorDefinition | null;
+    actVersion?: Omit<GeneratedBuildActVersion, 'buildTag'> & {
+        buildTag?: string | null;
+    };
     // (undocumented)
     meta: BuildMeta;
     // (undocumented)
@@ -2587,6 +2590,10 @@ type GeneratedBatchAddResult = Schemas['BatchAddResult'];
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 type GeneratedBatchDeleteResult = Schemas['BatchDeleteResult'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedBuildActVersion = NonNullable<Schemas['Build']['actVersion']>;
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)

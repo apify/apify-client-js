@@ -544,6 +544,7 @@ export interface ActorListItem
 type GeneratedBuildUsage = Schemas['BuildUsage'];
 type GeneratedBuildStats = Schemas['BuildStats'];
 type GeneratedBuildOptions = Schemas['BuildOptions'];
+type GeneratedBuildActVersion = NonNullable<Schemas['Build']['actVersion']>;
 
 /**
  * Resource usage for an Actor build.
@@ -572,6 +573,8 @@ export interface BuildRePointed {
     usageUsd?: BuildUsage | null;
     actorDefinition?: ActorDefinition | null;
     status: ValueOf<typeof ACTOR_JOB_STATUSES>;
+    /** The API returns `buildTag` as `null` for some builds, which the specification types as a string. */
+    actVersion?: Omit<GeneratedBuildActVersion, 'buildTag'> & { buildTag?: string | null };
 }
 
 /**
