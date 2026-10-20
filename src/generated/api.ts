@@ -4775,22 +4775,29 @@ export interface components {
             error: components["schemas"]["ErrorDetail"];
         };
         /**
-         * VersionSourceType
+         * @description Determines the permission level that the Actor requires to run. For details, see [Actor permissions](https://docs.apify.com/platform/actors/development/permissions).
+         * @example LIMITED_PERMISSIONS
          * @enum {string}
          */
-        VersionSourceType: "SOURCE_FILES" | "GIT_REPO" | "TARBALL" | "GITHUB_GIST" | "SOURCE_CODE";
-        /** EnvVar */
-        EnvVar: {
+        ActorPermissionLevel: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
+        /**
+         * WritableVersionSourceType
+         * @description The version source types accepted in request bodies. Same as `VersionSourceType`, without `SOURCE_CODE`.
+         * @enum {string}
+         */
+        WritableVersionSourceType: "SOURCE_FILES" | "GIT_REPO" | "TARBALL" | "GITHUB_GIST";
+        /** EnvVarRequest */
+        EnvVarRequest: {
             /**
-             * @description The name of the environment variable.
+             * @description The name of the environment variable. Can't contain `=`.
              * @example MY_ENV_VAR
              */
             name: string;
             /**
-             * @description The value of the environment variable. If `isSecret` is `true`, this value isn't returned by the API.
+             * @description The value of the environment variable.
              * @example my-value
              */
-            value?: string;
+            value: string;
             /**
              * @description Whether the environment variable is encrypted. Secret values aren't returned by the API.
              * @example false
@@ -4839,17 +4846,17 @@ export interface components {
         };
         /** VersionSourceFiles */
         VersionSourceFiles: (components["schemas"]["SourceCodeFile"] | components["schemas"]["SourceCodeFolder"])[];
-        /** Version */
-        Version: {
+        /** CreateVersionRequest */
+        CreateVersionRequest: {
             /**
              * @description The version number of the Actor. Two numbers separated by a dot, that represent the `MAJOR.MINOR` part of the semantic versioning.
-             * @example 0.0
+             * @example 1.6
              */
             versionNumber: string;
             /** @description Where the source code of the version lives. */
-            sourceType: components["schemas"]["VersionSourceType"] | null;
+            sourceType: components["schemas"]["WritableVersionSourceType"];
             /** @description Environment variables for the version. */
-            envVars?: components["schemas"]["EnvVar"][] | null;
+            envVars?: components["schemas"]["EnvVarRequest"][];
             /**
              * @description Whether to inject the environment variables at build time.
              * @example false
@@ -4863,18 +4870,12 @@ export interface components {
             /** @description Applies when the `sourceType` is `SOURCE_FILES`. Represents the Actor's file structure as an array of files and folders. */
             sourceFiles?: components["schemas"]["VersionSourceFiles"];
             /** @description URL of the Git repository to clone the source code from. Applies when the `sourceType` is `GIT_REPO`. */
-            gitRepoUrl?: string | null;
-            /** @description URL to download the source code from as a tarball or ZIP file. Applies when the `sourceType` is `TARBALL`. */
-            tarballUrl?: string | null;
+            gitRepoUrl?: string;
+            /** @description URL of the tarball to download the source code from. Applies when the `sourceType` is `TARBALL`. */
+            tarballUrl?: string;
             /** @description URL of the GitHub Gist to clone the source code from. Applies when the `sourceType` is `GITHUB_GIST`. */
-            gitHubGistUrl?: string | null;
+            gitHubGistUrl?: string;
         };
-        /**
-         * @description Determines the permission level that the Actor requires to run. For details, see [Actor permissions](https://docs.apify.com/platform/actors/development/permissions).
-         * @example LIMITED_PERMISSIONS
-         * @enum {string}
-         */
-        ActorPermissionLevel: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
         /**
          * DefaultRunOptions
          * @description The default settings applied to an Actor run. Can be overridden elsewhere.
@@ -4954,10 +4955,11 @@ export interface components {
              */
             title?: string | null;
             /**
-             * @description Whether the Actor is available to users in Apify Store. If `false`, the Actor is private and only visible to you.
+             * @description Whether the Actor is available to users in Apify Store. A new Actor is always private. To publish it, build it first, then update it with `isPublic` set to `true`.
              * @example false
              */
-            isPublic?: boolean | null;
+            isPublic?: boolean;
+            actorPermissionLevel?: components["schemas"]["ActorPermissionLevel"];
             /**
              * @description Name of the Actor to display by search engines such as Google. Can be different from the Actor's name displayed in Apify Store and Console. Recommended length is 40-50 characters.
              * @example Free Instagram scraper
@@ -4974,7 +4976,7 @@ export interface components {
              */
             restartOnError?: boolean;
             /** @description An array of `Version` objects. Each object represents a specific version of the Actor's source code: its location, builds, and environment configuration. */
-            versions?: components["schemas"]["Version"][] | null;
+            versions?: components["schemas"]["CreateVersionRequest"][];
             /**
              * @description A list of categories that best define the Actor. Reflected in Apify Store's search and filtering options.
              * @example [
@@ -4989,6 +4991,59 @@ export interface components {
             exampleRunInput?: components["schemas"]["ExampleRunInput"] | null;
             /** @description Whether the Actor is deprecated. */
             isDeprecated?: boolean | null;
+        };
+        /**
+         * VersionSourceType
+         * @enum {string}
+         */
+        VersionSourceType: "SOURCE_FILES" | "GIT_REPO" | "TARBALL" | "GITHUB_GIST" | "SOURCE_CODE";
+        /** EnvVar */
+        EnvVar: {
+            /**
+             * @description The name of the environment variable.
+             * @example MY_ENV_VAR
+             */
+            name: string;
+            /**
+             * @description The value of the environment variable. If `isSecret` is `true`, this value isn't returned by the API.
+             * @example my-value
+             */
+            value?: string;
+            /**
+             * @description Whether the environment variable is encrypted. Secret values aren't returned by the API.
+             * @example false
+             */
+            isSecret?: boolean | null;
+        };
+        /** Version */
+        Version: {
+            /**
+             * @description The version number of the Actor. Two numbers separated by a dot, that represent the `MAJOR.MINOR` part of the semantic versioning.
+             * @example 0.0
+             */
+            versionNumber: string;
+            /** @description Where the source code of the version lives. */
+            sourceType: components["schemas"]["VersionSourceType"] | null;
+            /** @description Environment variables for the version. */
+            envVars?: components["schemas"]["EnvVar"][] | null;
+            /**
+             * @description Whether to inject the environment variables at build time.
+             * @example false
+             */
+            applyEnvVarsToBuild?: boolean | null;
+            /**
+             * @description The tag name to apply to a successful build of this version. Can be `null` when the version has no build tag.
+             * @example latest
+             */
+            buildTag?: string | null;
+            /** @description Applies when the `sourceType` is `SOURCE_FILES`. Represents the Actor's file structure as an array of files and folders. */
+            sourceFiles?: components["schemas"]["VersionSourceFiles"];
+            /** @description URL of the Git repository to clone the source code from. Applies when the `sourceType` is `GIT_REPO`. */
+            gitRepoUrl?: string | null;
+            /** @description URL to download the source code from as a tarball or ZIP file. Applies when the `sourceType` is `TARBALL`. */
+            tarballUrl?: string | null;
+            /** @description URL of the GitHub Gist to clone the source code from. Applies when the `sourceType` is `GITHUB_GIST`. */
+            gitHubGistUrl?: string | null;
         };
         /** CommonActorPricingInfo */
         CommonActorPricingInfo: {
@@ -5316,36 +5371,6 @@ export interface components {
         ActorResponse: {
             data: components["schemas"]["ActorResource"];
         };
-        /** CreateOrUpdateVersionRequest */
-        CreateOrUpdateVersionRequest: {
-            /**
-             * @description The version number of the Actor. Two numbers separated by a dot, that represent the `MAJOR.MINOR` part of the semantic versioning.
-             * @example 1.6
-             */
-            versionNumber?: string | null;
-            /** @description Where the source code of the version lives. */
-            sourceType?: components["schemas"]["VersionSourceType"] | null;
-            /** @description Environment variables for the version. */
-            envVars?: components["schemas"]["EnvVar"][] | null;
-            /**
-             * @description Whether to inject the environment variables at build time.
-             * @example false
-             */
-            applyEnvVarsToBuild?: boolean | null;
-            /**
-             * @description The tag name to apply to a successful build of this version. Can be `null` when the version has no build tag.
-             * @example latest
-             */
-            buildTag?: string | null;
-            /** @description Applies when the `sourceType` is `SOURCE_FILES`. Represents the Actor's file structure as an array of files and folders. */
-            sourceFiles?: components["schemas"]["VersionSourceFiles"];
-            /** @description URL of the Git repository to clone the source code from. Applies when the `sourceType` is `GIT_REPO`. */
-            gitRepoUrl?: string | null;
-            /** @description URL of the tarball to download the source code from. Applies when the `sourceType` is `TARBALL`. */
-            tarballUrl?: string | null;
-            /** @description URL of the GitHub Gist to clone the source code from. Applies when the `sourceType` is `GITHUB_GIST`. */
-            gitHubGistUrl?: string | null;
-        };
         /**
          * UpdatedBuildProperty
          * @description The name of the build tag.
@@ -5371,7 +5396,7 @@ export interface components {
              * @example false
              */
             isPublic?: boolean;
-            actorPermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
+            actorPermissionLevel?: components["schemas"]["ActorPermissionLevel"];
             /**
              * @description Name of the Actor to display by search engines such as Google. Can be different from the Actor's name displayed in Apify Store and Console. Recommended length is 40-50 characters.
              * @example Free Instagram scraper
@@ -5393,7 +5418,7 @@ export interface components {
              */
             restartOnError?: boolean;
             /** @description An array of `Version` objects. Each object represents a specific version of the Actor's source code: its location, builds, and environment configuration. */
-            versions?: components["schemas"]["CreateOrUpdateVersionRequest"][];
+            versions?: components["schemas"]["CreateVersionRequest"][];
             pricingInfos?: components["schemas"]["ActorRunPricingInfo"][];
             /**
              * @description A list of categories that best define the Actor. Reflected in Apify Store's search and filtering options.
@@ -5437,6 +5462,36 @@ export interface components {
         VersionResponse: {
             data: components["schemas"]["Version"];
         };
+        /** UpdateVersionRequest */
+        UpdateVersionRequest: {
+            /**
+             * @description The version number of the Actor. Two numbers separated by a dot, that represent the `MAJOR.MINOR` part of the semantic versioning.
+             * @example 1.6
+             */
+            versionNumber?: string;
+            /** @description Where the source code of the version lives. */
+            sourceType?: components["schemas"]["WritableVersionSourceType"];
+            /** @description Environment variables for the version. */
+            envVars?: components["schemas"]["EnvVarRequest"][];
+            /**
+             * @description Whether to inject the environment variables at build time.
+             * @example false
+             */
+            applyEnvVarsToBuild?: boolean | null;
+            /**
+             * @description The tag name to apply to a successful build of this version. Can be `null` when the version has no build tag.
+             * @example latest
+             */
+            buildTag?: string | null;
+            /** @description Applies when the `sourceType` is `SOURCE_FILES`. Represents the Actor's file structure as an array of files and folders. */
+            sourceFiles?: components["schemas"]["VersionSourceFiles"];
+            /** @description URL of the Git repository to clone the source code from. Applies when the `sourceType` is `GIT_REPO`. */
+            gitRepoUrl?: string;
+            /** @description URL of the tarball to download the source code from. Applies when the `sourceType` is `TARBALL`. */
+            tarballUrl?: string;
+            /** @description URL of the GitHub Gist to clone the source code from. Applies when the `sourceType` is `GITHUB_GIST`. */
+            gitHubGistUrl?: string;
+        };
         /** ListOfEnvVars */
         ListOfEnvVars: {
             /** @example 5 */
@@ -5447,8 +5502,6 @@ export interface components {
         ListOfEnvVarsResponse: {
             data: components["schemas"]["ListOfEnvVars"];
         };
-        /** EnvVarRequest */
-        EnvVarRequest: WithRequired<components["schemas"]["EnvVar"], "value">;
         /** EnvVarResponse */
         EnvVarResponse: {
             data: components["schemas"]["EnvVar"];
@@ -7910,6 +7963,14 @@ export interface components {
         ListOfSchedulesResponse: {
             data: components["schemas"]["ListOfSchedules"];
         };
+        /**
+         * ScheduleNotifications
+         * @description Notification settings for this schedule.
+         */
+        ScheduleNotifications: {
+            /** @example true */
+            email?: boolean;
+        };
         /** ScheduleActionRunInput */
         ScheduleActionRunInput: {
             /** @example {\n   "foo": "actor"\n} */
@@ -7957,6 +8018,7 @@ export interface components {
             /** @example Schedule of actor ... */
             description?: string | null;
             title?: string | null;
+            notifications?: components["schemas"]["ScheduleNotifications"];
             actions?: components["schemas"]["ScheduleCreateAction"][] | null;
         };
         /** ScheduleActionRunActor */
@@ -7993,14 +8055,7 @@ export interface components {
             /** @example Schedule of actor ... */
             description?: string | null;
             title?: string | null;
-            /**
-             * ScheduleNotifications
-             * @description Notification settings for this schedule.
-             */
-            notifications?: {
-                /** @example true */
-                email?: boolean;
-            };
+            notifications?: components["schemas"]["ScheduleNotifications"];
             actions: components["schemas"]["ScheduleAction"][];
         };
         /** ScheduleResponse */
@@ -9698,7 +9753,7 @@ export interface operations {
                  *       "gitRepoUrl": "https://github.com/my-github-account/actor-repo"
                  *     }
                  */
-                "application/json": components["schemas"]["CreateOrUpdateVersionRequest"];
+                "application/json": components["schemas"]["CreateVersionRequest"];
             };
         };
         responses: {
@@ -9789,7 +9844,7 @@ export interface operations {
                  *       "sourceFiles": []
                  *     }
                  */
-                "application/json": components["schemas"]["CreateOrUpdateVersionRequest"];
+                "application/json": components["schemas"]["UpdateVersionRequest"];
             };
         };
         responses: {
@@ -9846,7 +9901,7 @@ export interface operations {
                  *       "sourceFiles": []
                  *     }
                  */
-                "application/json": components["schemas"]["CreateOrUpdateVersionRequest"];
+                "application/json": components["schemas"]["UpdateVersionRequest"];
             };
         };
         responses: {
@@ -21085,6 +21140,3 @@ export interface operations {
         };
     };
 }
-type WithRequired<T, K extends keyof T> = T & {
-    [P in K]-?: T[P];
-};

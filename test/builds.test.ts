@@ -68,6 +68,18 @@ describe('Build methods', () => {
             validateRequest({ query: {}, params: { buildId } });
         });
 
+        test('get() accepts a build whose actVersion.buildTag is null', async () => {
+            const data = { ...fixtures.build, actVersion: { ...fixtures.build.actVersion, buildTag: null } };
+            mockServer.setResponse({ body: { data } });
+
+            try {
+                const res = await client.build('some-build-id').get();
+                expect(res?.actVersion?.buildTag).toBeNull();
+            } finally {
+                mockServer.setResponse(null);
+            }
+        });
+
         test('get() returns undefined on 404 status code (RECORD_NOT_FOUND)', async () => {
             const buildId = '404';
 

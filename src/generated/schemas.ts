@@ -68,11 +68,15 @@ export const ErrorResponse = lazySchema(() => z.looseObject({
     error: ErrorDetail(),
 }));
 
-export const VersionSourceType = lazySchema(() => z.enum(["SOURCE_FILES", "GIT_REPO", "TARBALL", "GITHUB_GIST", "SOURCE_CODE"]).or(z.string()));
+/** Determines the permission level that the Actor requires to run. For details, see [Actor permissions](https://docs.apify.com/platform/actors/development/permissions). */
+export const ActorPermissionLevel = lazySchema(() => z.enum(["LIMITED_PERMISSIONS", "FULL_PERMISSIONS"]).or(z.string()));
 
-export const EnvVar = lazySchema(() => z.looseObject({
+/** The version source types accepted in request bodies. Same as `VersionSourceType`, without `SOURCE_CODE`. */
+export const WritableVersionSourceType = lazySchema(() => z.enum(["SOURCE_FILES", "GIT_REPO", "TARBALL", "GITHUB_GIST"]).or(z.string()));
+
+export const EnvVarRequest = lazySchema(() => z.looseObject({
     name: z.string(),
-    value: z.string().optional(),
+    value: z.string(),
     isSecret: z.boolean().nullable().optional(),
 }));
 
@@ -96,20 +100,17 @@ export const SourceCodeFolder = lazySchema(() => z.looseObject({
 
 export const VersionSourceFiles = lazySchema(() => z.array(z.union([SourceCodeFile(), SourceCodeFolder()])));
 
-export const Version = lazySchema(() => z.looseObject({
+export const CreateVersionRequest = lazySchema(() => z.looseObject({
     versionNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])$/),
-    sourceType: VersionSourceType().nullable(),
-    envVars: z.array(EnvVar()).nullable().optional(),
+    sourceType: WritableVersionSourceType(),
+    envVars: z.array(EnvVarRequest()).optional(),
     applyEnvVarsToBuild: z.boolean().nullable().optional(),
     buildTag: z.string().nullable().optional(),
     sourceFiles: VersionSourceFiles().optional(),
-    gitRepoUrl: z.string().nullable().optional(),
-    tarballUrl: z.string().nullable().optional(),
-    gitHubGistUrl: z.string().nullable().optional(),
+    gitRepoUrl: z.string().optional(),
+    tarballUrl: z.string().optional(),
+    gitHubGistUrl: z.string().optional(),
 }));
-
-/** Determines the permission level that the Actor requires to run. For details, see [Actor permissions](https://docs.apify.com/platform/actors/development/permissions). */
-export const ActorPermissionLevel = lazySchema(() => z.enum(["LIMITED_PERMISSIONS", "FULL_PERMISSIONS"]).or(z.string()));
 
 /** The default settings applied to an Actor run. Can be overridden elsewhere. */
 export const DefaultRunOptions = lazySchema(() => z.looseObject({
@@ -141,16 +142,37 @@ export const CreateActorRequest = lazySchema(() => z.looseObject({
     name: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
     title: z.string().nullable().optional(),
-    isPublic: z.boolean().nullable().optional(),
+    isPublic: z.boolean().optional(),
+    actorPermissionLevel: ActorPermissionLevel().optional(),
     seoTitle: z.string().nullable().optional(),
     seoDescription: z.string().nullable().optional(),
     restartOnError: z.boolean().optional(),
-    versions: z.array(Version()).nullable().optional(),
+    versions: z.array(CreateVersionRequest()).min(1).optional(),
     categories: z.array(z.string()).nullable().optional(),
     defaultRunOptions: DefaultRunOptions().optional(),
     actorStandby: ActorStandby().nullable().optional(),
     exampleRunInput: ExampleRunInput().nullable().optional(),
     isDeprecated: z.boolean().nullable().optional(),
+}));
+
+export const VersionSourceType = lazySchema(() => z.enum(["SOURCE_FILES", "GIT_REPO", "TARBALL", "GITHUB_GIST", "SOURCE_CODE"]).or(z.string()));
+
+export const EnvVar = lazySchema(() => z.looseObject({
+    name: z.string(),
+    value: z.string().optional(),
+    isSecret: z.boolean().nullable().optional(),
+}));
+
+export const Version = lazySchema(() => z.looseObject({
+    versionNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])$/),
+    sourceType: VersionSourceType().nullable(),
+    envVars: z.array(EnvVar()).nullable().optional(),
+    applyEnvVarsToBuild: z.boolean().nullable().optional(),
+    buildTag: z.string().nullable().optional(),
+    sourceFiles: VersionSourceFiles().optional(),
+    gitRepoUrl: z.string().nullable().optional(),
+    tarballUrl: z.string().nullable().optional(),
+    gitHubGistUrl: z.string().nullable().optional(),
 }));
 
 export const CommonActorPricingInfo = lazySchema(() => z.looseObject({
@@ -279,18 +301,6 @@ export const ActorResponse = lazySchema(() => z.looseObject({
     data: ActorResource(),
 }));
 
-export const CreateOrUpdateVersionRequest = lazySchema(() => z.looseObject({
-    versionNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])$/).nullable().optional(),
-    sourceType: VersionSourceType().nullable().optional(),
-    envVars: z.array(EnvVar()).nullable().optional(),
-    applyEnvVarsToBuild: z.boolean().nullable().optional(),
-    buildTag: z.string().nullable().optional(),
-    sourceFiles: VersionSourceFiles().optional(),
-    gitRepoUrl: z.string().nullable().optional(),
-    tarballUrl: z.string().nullable().optional(),
-    gitHubGistUrl: z.string().nullable().optional(),
-}));
-
 /** The name of the build tag. */
 export const UpdatedBuildProperty = lazySchema(() => z.looseObject({
     buildId: z.string(),
@@ -300,12 +310,12 @@ export const UpdateActorRequest = lazySchema(() => z.looseObject({
     name: z.string().optional(),
     description: z.string().nullable().optional(),
     isPublic: z.boolean().optional(),
-    actorPermissionLevel: ActorPermissionLevel().nullable().optional(),
+    actorPermissionLevel: ActorPermissionLevel().optional(),
     seoTitle: z.string().nullable().optional(),
     seoDescription: z.string().nullable().optional(),
     title: z.string().nullable().optional(),
     restartOnError: z.boolean().optional(),
-    versions: z.array(CreateOrUpdateVersionRequest()).optional(),
+    versions: z.array(CreateVersionRequest()).min(1).optional(),
     pricingInfos: z.array(ActorRunPricingInfo()).optional(),
     categories: z.array(z.string()).nullable().optional(),
     defaultRunOptions: DefaultRunOptions().nullable().optional(),
@@ -328,6 +338,18 @@ export const VersionResponse = lazySchema(() => z.looseObject({
     data: Version(),
 }));
 
+export const UpdateVersionRequest = lazySchema(() => z.looseObject({
+    versionNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])$/).optional(),
+    sourceType: WritableVersionSourceType().optional(),
+    envVars: z.array(EnvVarRequest()).optional(),
+    applyEnvVarsToBuild: z.boolean().nullable().optional(),
+    buildTag: z.string().nullable().optional(),
+    sourceFiles: VersionSourceFiles().optional(),
+    gitRepoUrl: z.string().optional(),
+    tarballUrl: z.string().optional(),
+    gitHubGistUrl: z.string().optional(),
+}));
+
 export const ListOfEnvVars = lazySchema(() => z.looseObject({
     total: z.int(),
     items: z.array(EnvVar()),
@@ -336,8 +358,6 @@ export const ListOfEnvVars = lazySchema(() => z.looseObject({
 export const ListOfEnvVarsResponse = lazySchema(() => z.looseObject({
     data: ListOfEnvVars(),
 }));
-
-export const EnvVarRequest = lazySchema(() => EnvVar().required({ value: true }));
 
 export const EnvVarResponse = lazySchema(() => z.looseObject({
     data: EnvVar(),
@@ -1425,6 +1445,11 @@ export const ListOfSchedulesResponse = lazySchema(() => z.looseObject({
     data: ListOfSchedules(),
 }));
 
+/** Notification settings for this schedule. */
+export const ScheduleNotifications = lazySchema(() => z.looseObject({
+    email: z.boolean().optional(),
+}));
+
 export const ScheduleActionRunInput = lazySchema(() => z.looseObject({
     body: z.string().nullable().optional(),
     contentType: z.string().nullable().optional(),
@@ -1453,6 +1478,7 @@ export const CreateOrUpdateScheduleRequest = lazySchema(() => z.looseObject({
     timezone: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
     title: z.string().nullable().optional(),
+    notifications: ScheduleNotifications().optional(),
     actions: z.array(ScheduleCreateAction()).nullable().optional(),
 }));
 
@@ -1476,9 +1502,7 @@ export const ScheduleAction = lazySchema(() => z.discriminatedUnion("type", [Sch
 export const Schedule = lazySchema(() => ScheduleBase().extend({
     description: z.string().nullable().optional(),
     title: z.string().nullable().optional(),
-    notifications: z.looseObject({
-        email: z.boolean().optional(),
-    }).optional(),
+    notifications: ScheduleNotifications().optional(),
     actions: z.array(ScheduleAction()),
 }));
 
