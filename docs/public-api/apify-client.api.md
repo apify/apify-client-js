@@ -882,10 +882,11 @@ interface components {
         ErrorResponse: {
             error: components["schemas"]["ErrorDetail"];
         };
-        VersionSourceType: "SOURCE_FILES" | "GIT_REPO" | "TARBALL" | "GITHUB_GIST" | "SOURCE_CODE";
-        EnvVar: {
+        ActorPermissionLevel: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
+        WritableVersionSourceType: "SOURCE_FILES" | "GIT_REPO" | "TARBALL" | "GITHUB_GIST";
+        EnvVarRequest: {
             name: string;
-            value?: string;
+            value: string;
             isSecret?: boolean | null;
         };
         SourceCodeFileFormat: "BASE64" | "TEXT";
@@ -899,18 +900,17 @@ interface components {
             folder: boolean;
         };
         VersionSourceFiles: (components["schemas"]["SourceCodeFile"] | components["schemas"]["SourceCodeFolder"])[];
-        Version: {
+        CreateVersionRequest: {
             versionNumber: string;
-            sourceType: components["schemas"]["VersionSourceType"] | null;
-            envVars?: components["schemas"]["EnvVar"][] | null;
+            sourceType: components["schemas"]["WritableVersionSourceType"];
+            envVars?: components["schemas"]["EnvVarRequest"][];
             applyEnvVarsToBuild?: boolean | null;
             buildTag?: string | null;
             sourceFiles?: components["schemas"]["VersionSourceFiles"];
-            gitRepoUrl?: string | null;
-            tarballUrl?: string | null;
-            gitHubGistUrl?: string | null;
+            gitRepoUrl?: string;
+            tarballUrl?: string;
+            gitHubGistUrl?: string;
         };
-        ActorPermissionLevel: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
         DefaultRunOptions: {
             build?: string;
             timeoutSecs?: number;
@@ -937,16 +937,34 @@ interface components {
             name?: string | null;
             description?: string | null;
             title?: string | null;
-            isPublic?: boolean | null;
+            isPublic?: boolean;
+            actorPermissionLevel?: components["schemas"]["ActorPermissionLevel"];
             seoTitle?: string | null;
             seoDescription?: string | null;
             restartOnError?: boolean;
-            versions?: components["schemas"]["Version"][] | null;
+            versions?: components["schemas"]["CreateVersionRequest"][];
             categories?: string[] | null;
             defaultRunOptions?: components["schemas"]["DefaultRunOptions"];
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             exampleRunInput?: components["schemas"]["ExampleRunInput"] | null;
             isDeprecated?: boolean | null;
+        };
+        VersionSourceType: "SOURCE_FILES" | "GIT_REPO" | "TARBALL" | "GITHUB_GIST" | "SOURCE_CODE";
+        EnvVar: {
+            name: string;
+            value?: string;
+            isSecret?: boolean | null;
+        };
+        Version: {
+            versionNumber: string;
+            sourceType: components["schemas"]["VersionSourceType"] | null;
+            envVars?: components["schemas"]["EnvVar"][] | null;
+            applyEnvVarsToBuild?: boolean | null;
+            buildTag?: string | null;
+            sourceFiles?: components["schemas"]["VersionSourceFiles"];
+            gitRepoUrl?: string | null;
+            tarballUrl?: string | null;
+            gitHubGistUrl?: string | null;
         };
         CommonActorPricingInfo: {
             apifyMarginPercentage: number;
@@ -1056,17 +1074,6 @@ interface components {
         ActorResponse: {
             data: components["schemas"]["ActorResource"];
         };
-        CreateOrUpdateVersionRequest: {
-            versionNumber?: string | null;
-            sourceType?: components["schemas"]["VersionSourceType"] | null;
-            envVars?: components["schemas"]["EnvVar"][] | null;
-            applyEnvVarsToBuild?: boolean | null;
-            buildTag?: string | null;
-            sourceFiles?: components["schemas"]["VersionSourceFiles"];
-            gitRepoUrl?: string | null;
-            tarballUrl?: string | null;
-            gitHubGistUrl?: string | null;
-        };
         UpdatedBuildProperty: {
             buildId: string;
         } | null;
@@ -1074,12 +1081,12 @@ interface components {
             name?: string;
             description?: string | null;
             isPublic?: boolean;
-            actorPermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
+            actorPermissionLevel?: components["schemas"]["ActorPermissionLevel"];
             seoTitle?: string | null;
             seoDescription?: string | null;
             title?: string | null;
             restartOnError?: boolean;
-            versions?: components["schemas"]["CreateOrUpdateVersionRequest"][];
+            versions?: components["schemas"]["CreateVersionRequest"][];
             pricingInfos?: components["schemas"]["ActorRunPricingInfo"][];
             categories?: string[] | null;
             defaultRunOptions?: components["schemas"]["DefaultRunOptions"] | null;
@@ -1100,6 +1107,17 @@ interface components {
         VersionResponse: {
             data: components["schemas"]["Version"];
         };
+        UpdateVersionRequest: {
+            versionNumber?: string;
+            sourceType?: components["schemas"]["WritableVersionSourceType"];
+            envVars?: components["schemas"]["EnvVarRequest"][];
+            applyEnvVarsToBuild?: boolean | null;
+            buildTag?: string | null;
+            sourceFiles?: components["schemas"]["VersionSourceFiles"];
+            gitRepoUrl?: string;
+            tarballUrl?: string;
+            gitHubGistUrl?: string;
+        };
         ListOfEnvVars: {
             total: number;
             items: components["schemas"]["EnvVar"][];
@@ -1107,7 +1125,6 @@ interface components {
         ListOfEnvVarsResponse: {
             data: components["schemas"]["ListOfEnvVars"];
         };
-        EnvVarRequest: WithRequired<components["schemas"]["EnvVar"], "value">;
         EnvVarResponse: {
             data: components["schemas"]["EnvVar"];
         };
@@ -1971,6 +1988,9 @@ interface components {
         ListOfSchedulesResponse: {
             data: components["schemas"]["ListOfSchedules"];
         };
+        ScheduleNotifications: {
+            email?: boolean;
+        };
         ScheduleActionRunInput: {
             body?: string | null;
             contentType?: string | null;
@@ -1995,6 +2015,7 @@ interface components {
             timezone?: string | null;
             description?: string | null;
             title?: string | null;
+            notifications?: components["schemas"]["ScheduleNotifications"];
             actions?: components["schemas"]["ScheduleCreateAction"][] | null;
         };
         ScheduleActionRunActor: {
@@ -2014,9 +2035,7 @@ interface components {
         Schedule: components["schemas"]["ScheduleBase"] & {
             description?: string | null;
             title?: string | null;
-            notifications?: {
-                email?: boolean;
-            };
+            notifications?: components["schemas"]["ScheduleNotifications"];
             actions: components["schemas"]["ScheduleAction"][];
         };
         ScheduleResponse: {
@@ -4314,12 +4333,6 @@ export interface WebhookStats extends GeneratedWebhookStats {
 export type WebhookUpdateData = Partial<Pick<WebhookResource, 'isAdHoc' | 'condition' | 'ignoreSslErrors' | 'doNotRetry' | 'requestUrl' | 'payloadTemplate' | 'shouldInterpolateStrings' | 'isApifyIntegration' | 'headersTemplate' | 'description'> & {
     eventTypes: readonly WebhookEventType[];
 }> & WebhookIdempotencyKey;
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-type WithRequired<T, K extends keyof T> = T & {
-    [P in K]-?: T[P];
-};
 
 // (No @packageDocumentation comment for this package)
 
