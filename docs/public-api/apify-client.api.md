@@ -2866,7 +2866,7 @@ export interface HttpRequest {
 }
 
 // @public
-export type HttpRequestBody = string | Buffer | ArrayBuffer | ArrayBufferView | Readable;
+export type HttpRequestBody = string | Buffer | ArrayBuffer | ArrayBufferView | Readable | Blob;
 
 // @public
 export interface HttpResponse {
@@ -3001,7 +3001,7 @@ export interface KeyValueStoreRecordOptions extends TimeoutOptions {
 }
 
 // @public
-export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Readable;
+export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Blob | Readable;
 
 // @public
 export interface KeyValueStoreResource extends Omit<Schemas['KeyValueStoreResource'], keyof KeyValueStoreResourceRePointed>, KeyValueStoreResourceRePointed, KeyValueStoreResourceSpecGaps {
