@@ -2,7 +2,7 @@ packages:
   - website
   - scripts
 
-minimumReleaseAge: 1440
+minimumReleaseAge: 10080
 minimumReleaseAgeExclude:
   - "@apify/*"
   - "@crawlee/*"
