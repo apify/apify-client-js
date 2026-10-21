@@ -149,7 +149,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get list of versions
+         * Get list of Actor versions
          * @description Gets the list of versions of a specific Actor. The response is a JSON object
          *     with the list of [Version objects](#/reference/actors/version-object), where each
          *     contains basic information about a single version.
@@ -157,7 +157,7 @@ export interface paths {
         get: operations["actor_versions_get"];
         put?: never;
         /**
-         * Create version
+         * Create Actor version
          * @description Creates a version of an Actor using values specified in a [Version
          *     object](#/reference/actors/version-object) passed as JSON in the POST
          *     payload.
@@ -203,12 +203,12 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get version
+         * Get Actor version
          * @description Gets a [Version object](#/reference/actors/version-object) that contains all the details about a specific version of an Actor.
          */
         get: operations["actor_version_get"];
         /**
-         * Update version
+         * Update Actor version
          * @description Updates Actor version using values specified by a [Version object](#/reference/actors/version-object) passed as JSON in the POST payload.
          *
          *     If the object does not define a specific property, its value will not be
@@ -226,13 +226,13 @@ export interface paths {
          */
         put: operations["actor_version_put"];
         /**
-         * Update version (POST)
+         * Update Actor version (POST)
          * @description Updates Actor version using values specified by a [Version object](#/reference/actors/version-object) passed as JSON in the POST payload.
          *     This endpoint is an alias for the [`PUT` update version](#tag/ActorsVersion-object/operation/act_version_put) method and behaves identically.
          */
         post: operations["actor_version_post"];
         /**
-         * Delete version
+         * Delete Actor version
          * @description Deletes a specific version of Actor's source code.
          */
         delete: operations["actor_version_delete"];
@@ -249,14 +249,14 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get list of environment variables
+         * Get list of environment variables of Actor version
          * @description Gets the list of environment variables for a specific version of an Actor.
          *     The response is a JSON object with the list of [EnvVar objects](#/reference/actors/environment-variable-object), where each contains basic information about a single environment variable.
          */
         get: operations["actor_version_envVars_get"];
         put?: never;
         /**
-         * Create environment variable
+         * Create environment variable in Actor version
          * @description Creates an environment variable of an Actor using values specified in a
          *     [EnvVar object](#/reference/actors/environment-variable-object) passed as
          *     JSON in the POST payload.
@@ -291,7 +291,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get environment variable
+         * Get environment variable of Actor version
          * @description Gets a [EnvVar object](#/reference/actors/environment-variable-object) that
          *     contains all the details about a specific environment variable of an Actor.
          *
@@ -299,7 +299,7 @@ export interface paths {
          */
         get: operations["actor_version_envVar_get"];
         /**
-         * Update environment variable
+         * Update environment variable in Actor version
          * @description Updates Actor environment variable using values specified by a [EnvVar
          *     object](#/reference/actors/environment-variable-object)
          *     passed as JSON in the POST payload.
@@ -319,7 +319,7 @@ export interface paths {
          */
         put: operations["actor_version_envVar_put"];
         /**
-         * Update environment variable (POST)
+         * Update environment variable in Actor version (POST)
          * @description Updates Actor environment variable using values specified by a [EnvVar
          *     object](#/reference/actors/environment-variable-object)
          *     passed as JSON in the POST payload.
@@ -327,7 +327,7 @@ export interface paths {
          */
         post: operations["actor_version_envVar_post"];
         /**
-         * Delete environment variable
+         * Delete environment variable from Actor version
          * @description Deletes a specific environment variable.
          */
         delete: operations["actor_version_envVar_delete"];
@@ -344,7 +344,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get list of webhooks
+         * Get list of Actor's webhooks
          * @description Gets the list of webhooks of a specific Actor. The response is a JSON with
          *     the list of objects, where each object contains basic information about a single webhook.
          *
@@ -371,7 +371,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get list of builds
+         * Get list of Actor's builds
          * @description Gets the list of builds of a specific Actor. The response is a JSON with the
          *     list of objects, where each object contains basic information about a single build.
          *
@@ -406,7 +406,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get default build
+         * Get default Actor build
          * @description Get the default build for an Actor.
          *
          *     Use the optional `waitForFinish` parameter to synchronously wait for the build to finish.
@@ -432,7 +432,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get OpenAPI definition
+         * Get OpenAPI definition of Actor build
          * @description Get the OpenAPI definition for Actor builds. Two similar endpoints are available:
          *
          *     - [First endpoint](https://docs.apify.com/api/v2/actor-openapi-json-get): Requires both `actorId` and `buildId`. Use `default` as the `buildId` to get the OpenAPI schema for the default Actor build.
@@ -467,7 +467,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get build
+         * Get Actor build
          * @deprecated
          * @description By passing the optional `waitForFinish` parameter the API endpoint will
          *     synchronously wait for the build to finish.
@@ -496,7 +496,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Abort build
+         * Abort Actor build
          * @deprecated
          * @description **[DEPRECATED]** API endpoints related to build of the Actor were moved
          *     under new namespace [`actor-builds`](#/reference/actor-builds). Aborts an
@@ -521,7 +521,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get list of runs
+         * Get list of Actor's runs
          * @description Gets the list of runs of a specific Actor. The response is a list of
          *     objects, where each object contains basic information about a single Actor run.
          *
@@ -575,7 +575,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Run Actor synchronously without input
+         * Run Actor synchronously and get key-value store record (GET)
          * @description Runs a specific Actor and returns a key-value store record. The response contains the
          *     record stored under the `OUTPUT` key in the run's default key-value store.
          *     This is a legacy approach that has been replaced by the Actor
@@ -599,7 +599,7 @@ export interface paths {
         get: operations["actor_runSync_get"];
         put?: never;
         /**
-         * Run Actor synchronously and return key-value store record
+         * Run Actor synchronously and get key-value store record
          * @description Runs a specific Actor and returns a key-value store record.
          *
          *     The POST payload including its `Content-Type` header is passed as `INPUT` to
@@ -641,7 +641,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Run Actor synchronously without input and get dataset items
+         * Run Actor synchronously and get dataset items (GET)
          * @description Runs a specific Actor and returns its dataset items.
          *     The run must finish in 300<!-- MAX_ACTOR_JOB_SYNC_WAIT_SECS --> seconds
          *     otherwise the API endpoint returns a timeout error.
@@ -730,7 +730,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Resurrect run
+         * Resurrect Actor run
          * @description **[DEPRECATED]** API endpoints related to run of the Actor were moved under
          *     new namespace [`actor-runs`](#/reference/actor-runs).Resurrects a finished
          *     Actor run and returns an object that contains all the details about the
@@ -760,7 +760,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last run
+         * Get Actor's last run
          * @description This is not a single endpoint, but an entire group of endpoints that lets you to
          *     retrieve and manage the last run of given Actor or any of its default storages.
          *     All the endpoints require an authentication token.
@@ -801,7 +801,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last run's default dataset
+         * Get the default dataset of an Actor's last run
          * @description Returns the default dataset associated with the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultDatasetId` and then using the
@@ -809,7 +809,7 @@ export interface paths {
          */
         get: operations["actor_runs_last_dataset_get"];
         /**
-         * Update last run's default dataset
+         * Update the default dataset of an Actor's last run
          * @description Updates the default dataset associated with the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultDatasetId` and then using the
@@ -818,7 +818,7 @@ export interface paths {
         put: operations["actor_runs_last_dataset_put"];
         post?: never;
         /**
-         * Delete last run's default dataset
+         * Delete the default dataset of an Actor's last run
          * @description Deletes the default dataset associated with the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultDatasetId` and then using the
@@ -838,7 +838,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last run's dataset items
+         * Get the default dataset items from an Actor's last run
          * @description Returns data stored in the default dataset of the last Actor run in the desired format.
          *
          *     This endpoint is a shortcut that resolves the last run's `defaultDatasetId` and proxies to the
@@ -847,11 +847,11 @@ export interface paths {
         get: operations["actor_runs_last_dataset_items_get"];
         put?: never;
         /**
-         * Store items in last run's dataset
+         * Store items in the default dataset of an Actor's last run
          * @description Appends an item or an array of items to the end of the last Actor run's default dataset.
          *
          *     This endpoint is a shortcut that resolves the last run's `defaultDatasetId` and proxies to the
-         *     [Store items](https://docs.apify.com/api/v2/dataset-items-post) endpoint.
+         *     [Store items in dataset](https://docs.apify.com/api/v2/dataset-items-post) endpoint.
          *
          *     To save bandwidth and speed up your upload, you can send the request payload compressed and set the `Content-Encoding` header accordingly.
          *
@@ -876,7 +876,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last run's dataset statistics
+         * Get the default dataset statistics for an Actor's last run
          * @description Returns statistics for the last Actor run's default dataset.
          *
          *     This endpoint is a shortcut that resolves the last run's `defaultDatasetId` and proxies to the
@@ -899,29 +899,29 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last run's default store
+         * Get the default key-value store of an Actor's last run
          * @description Gets an object that contains all the details about the default key-value store associated with the last Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultKeyValueStoreId` and then using the
-         *     [Get store](https://docs.apify.com/api/v2/key-value-store-get) endpoint.
+         *     [Get key-value store](https://docs.apify.com/api/v2/key-value-store-get) endpoint.
          */
         get: operations["actor_runs_last_keyValueStore_get"];
         /**
-         * Update last run's default store
+         * Update the default key-value store of an Actor's last run
          * @description Updates the last Actor run key-value store's name and general resource access level using a value specified by a JSON object
          *     passed in the PUT payload.
          *
          *     This endpoint is a shortcut for getting the run's `defaultKeyValueStoreId` and then using the
-         *     [Update store](https://docs.apify.com/api/v2/key-value-store-put) endpoint.
+         *     [Update key-value store](https://docs.apify.com/api/v2/key-value-store-put) endpoint.
          */
         put: operations["actor_runs_last_keyValueStore_put"];
         post?: never;
         /**
-         * Delete last run's default store
+         * Delete the default key-value store of an Actor's last run
          * @description Deletes the last Actor run key-value store.
          *
          *     This endpoint is a shortcut for getting the run's `defaultKeyValueStoreId` and then using the
-         *     [Delete store](https://docs.apify.com/api/v2/key-value-store-delete) endpoint.
+         *     [Delete key-value store](https://docs.apify.com/api/v2/key-value-store-delete) endpoint.
          */
         delete: operations["actor_runs_last_keyValueStore_delete"];
         options?: never;
@@ -937,11 +937,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last run's default store's list of keys
+         * Get list of keys in the default key-value store of an Actor's last run
          * @description Returns a list of keys for the default key-value store of the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultKeyValueStoreId` and then using the
-         *     [Get list of keys](https://docs.apify.com/api/v2/key-value-store-keys-get) endpoint.
+         *     [Get list of key-value store keys](https://docs.apify.com/api/v2/key-value-store-keys-get) endpoint.
          */
         get: operations["actor_runs_last_keyValueStore_keys_get"];
         put?: never;
@@ -960,11 +960,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Download last run's default store's records
+         * Download records from the default key-value store of an Actor's last run
          * @description Downloads all records from the default key-value store of the last Actor run as a ZIP archive.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultKeyValueStoreId` and then using the
-         *     [Download records](https://docs.apify.com/api/v2/key-value-store-records-get) endpoint.
+         *     [Download key-value store records](https://docs.apify.com/api/v2/key-value-store-records-get) endpoint.
          */
         get: operations["actor_runs_last_keyValueStore_records_get"];
         put?: never;
@@ -983,35 +983,35 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last run's default store's record
+         * Get record from the default key-value store of an Actor's last run
          * @description Gets a value stored under a specific key in the default key-value store of the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultKeyValueStoreId` and then using the
-         *     [Get record](https://docs.apify.com/api/v2/key-value-store-record-get) endpoint.
+         *     [Get key-value store record](https://docs.apify.com/api/v2/key-value-store-record-get) endpoint.
          */
         get: operations["actor_runs_last_keyValueStore_record_get"];
         /**
-         * Store record in last run's default store
+         * Set record in the default key-value store of an Actor's last run
          * @description Stores a value under a specific key in the default key-value store of the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultKeyValueStoreId` and then using the
-         *     [Store record](https://docs.apify.com/api/v2/key-value-store-record-put) endpoint.
+         *     [Set key-value store record](https://docs.apify.com/api/v2/key-value-store-record-put) endpoint.
          */
         put: operations["actor_runs_last_keyValueStore_record_put"];
         /**
-         * Store record in last run's default store (POST)
+         * Set record in the default key-value store of an Actor's last run (POST)
          * @description Stores a value under a specific key in the default key-value store of the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultKeyValueStoreId` and then using the
-         *     [Store record](https://docs.apify.com/api/v2/key-value-store-record-post) endpoint.
+         *     [Set key-value store record (POST)](https://docs.apify.com/api/v2/key-value-store-record-post) endpoint.
          */
         post: operations["actor_runs_last_keyValueStore_record_post"];
         /**
-         * Delete last run's default store's record
+         * Delete record from the default key-value store of an Actor's last run
          * @description Removes a record specified by a key from the default key-value store of the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultKeyValueStoreId` and then using the
-         *     [Delete record](https://docs.apify.com/api/v2/key-value-store-record-delete) endpoint.
+         *     [Delete key-value store record](https://docs.apify.com/api/v2/key-value-store-record-delete) endpoint.
          */
         delete: operations["actor_runs_last_keyValueStore_record_delete"];
         options?: never;
@@ -1027,7 +1027,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last run's default request queue
+         * Get the default request queue of an Actor's last run
          * @description Returns the default request queue associated with the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultRequestQueueId` and then using the
@@ -1035,7 +1035,7 @@ export interface paths {
          */
         get: operations["actor_runs_last_requestQueue_get"];
         /**
-         * Update last run's default request queue
+         * Update the default request queue of an Actor's last run
          * @description Updates the default request queue associated with the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultRequestQueueId` and then using the
@@ -1044,7 +1044,7 @@ export interface paths {
         put: operations["actor_runs_last_requestQueue_put"];
         post?: never;
         /**
-         * Delete last run's default request queue
+         * Delete the default request queue of an Actor's last run
          * @description Deletes the default request queue associated with the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultRequestQueueId` and then using the
@@ -1064,20 +1064,20 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List last run's default request queue's requests
+         * List requests in the default request queue of an Actor's last run
          * @description Returns a list of requests from the default request queue of the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultRequestQueueId` and then using the
-         *     [List requests](https://docs.apify.com/api/v2/request-queue-requests-get) endpoint.
+         *     [List requests in request queue](https://docs.apify.com/api/v2/request-queue-requests-get) endpoint.
          */
         get: operations["actor_runs_last_requestQueue_requests_get"];
         put?: never;
         /**
-         * Add request to last run's default request queue
+         * Add request to the default request queue of an Actor's last run
          * @description Adds a request to the default request queue of the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultRequestQueueId` and then using the
-         *     [Add request](https://docs.apify.com/api/v2/request-queue-requests-post) endpoint.
+         *     [Add request to request queue](https://docs.apify.com/api/v2/request-queue-requests-post) endpoint.
          */
         post: operations["actor_runs_last_requestQueue_requests_post"];
         delete?: never;
@@ -1096,19 +1096,19 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Batch add requests to last run's default request queue
+         * Batch add requests to the default request queue of an Actor's last run
          * @description Adds requests to the default request queue of the last Actor run in batch.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultRequestQueueId` and then using the
-         *     [Add requests](https://docs.apify.com/api/v2/request-queue-requests-batch-post) endpoint.
+         *     [Batch add requests to request queue](https://docs.apify.com/api/v2/request-queue-requests-batch-post) endpoint.
          */
         post: operations["actor_runs_last_requestQueue_requests_batch_post"];
         /**
-         * Batch delete requests from last run's default request queue
+         * Batch delete requests from the default request queue of an Actor's last run
          * @description Batch-deletes requests from the default request queue of the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultRequestQueueId` and then using the
-         *     [Delete requests](https://docs.apify.com/api/v2/request-queue-requests-batch-delete) endpoint.
+         *     [Batch delete requests from request queue](https://docs.apify.com/api/v2/request-queue-requests-batch-delete) endpoint.
          */
         delete: operations["actor_runs_last_requestQueue_requests_batch_delete"];
         options?: never;
@@ -1126,11 +1126,11 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Unlock requests in last run's default request queue
+         * Unlock requests in the default request queue of an Actor's last run
          * @description Unlocks requests in the default request queue of the last Actor run that are currently locked by the client.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultRequestQueueId` and then using the
-         *     [Unlock requests](https://docs.apify.com/api/v2/request-queue-requests-unlock-post) endpoint.
+         *     [Unlock requests in request queue](https://docs.apify.com/api/v2/request-queue-requests-unlock-post) endpoint.
          */
         post: operations["actor_runs_last_requestQueue_requests_unlock_post"];
         delete?: never;
@@ -1147,28 +1147,28 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get request from last run's default request queue
+         * Get request from the default request queue of an Actor's last run
          * @description Returns a request from the default request queue of the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultRequestQueueId` and then using the
-         *     [Get request](https://docs.apify.com/api/v2/request-queue-request-get) endpoint.
+         *     [Get request from request queue](https://docs.apify.com/api/v2/request-queue-request-get) endpoint.
          */
         get: operations["actor_runs_last_requestQueue_request_get"];
         /**
-         * Update request in last run's default request queue
+         * Update request in the default request queue of an Actor's last run
          * @description Updates a request in the default request queue of the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultRequestQueueId` and then using the
-         *     [Update request](https://docs.apify.com/api/v2/request-queue-request-put) endpoint.
+         *     [Update request in request queue](https://docs.apify.com/api/v2/request-queue-request-put) endpoint.
          */
         put: operations["actor_runs_last_requestQueue_request_put"];
         post?: never;
         /**
-         * Delete request from last run's default request queue
+         * Delete request from the default request queue of an Actor's last run
          * @description Deletes a request from the default request queue of the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultRequestQueueId` and then using the
-         *     [Delete request](https://docs.apify.com/api/v2/request-queue-request-delete) endpoint.
+         *     [Delete request from request queue](https://docs.apify.com/api/v2/request-queue-request-delete) endpoint.
          */
         delete: operations["actor_runs_last_requestQueue_request_delete"];
         options?: never;
@@ -1185,20 +1185,20 @@ export interface paths {
         };
         get?: never;
         /**
-         * Prolong lock on request in last run's default request queue
+         * Prolong lock on request in the default request queue of an Actor's last run
          * @description Prolongs a request lock in the default request queue of the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultRequestQueueId` and then using the
-         *     [Prolong request lock](https://docs.apify.com/api/v2/request-queue-request-lock-put) endpoint.
+         *     [Prolong lock on request in request queue](https://docs.apify.com/api/v2/request-queue-request-lock-put) endpoint.
          */
         put: operations["actor_runs_last_requestQueue_request_lock_put"];
         post?: never;
         /**
-         * Delete lock on request in last run's default request queue
+         * Delete lock on request in the default request queue of an Actor's last run
          * @description Deletes a request lock in the default request queue of the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultRequestQueueId` and then using the
-         *     [Delete request lock](https://docs.apify.com/api/v2/request-queue-request-lock-delete) endpoint.
+         *     [Delete lock on request in request queue](https://docs.apify.com/api/v2/request-queue-request-lock-delete) endpoint.
          */
         delete: operations["actor_runs_last_requestQueue_request_lock_delete"];
         options?: never;
@@ -1214,11 +1214,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last run's default request queue head
+         * Get the default request queue head for an Actor's last run
          * @description Returns the given number of first requests from the default request queue of the last Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultRequestQueueId` and then using the
-         *     [Get head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
+         *     [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
          */
         get: operations["actor_runs_last_requestQueue_head_get"];
         put?: never;
@@ -1239,12 +1239,12 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Get and lock last run's default request queue head
+         * Get and lock the default request queue head for an Actor's last run
          * @description Returns the given number of first requests from the default request queue of the last Actor run
          *     and locks them for the given time.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultRequestQueueId` and then using the
-         *     [Get head and lock](https://docs.apify.com/api/v2/request-queue-head-lock-post) endpoint.
+         *     [Get and lock request queue head](https://docs.apify.com/api/v2/request-queue-head-lock-post) endpoint.
          */
         post: operations["actor_runs_last_requestQueue_head_lock_post"];
         delete?: never;
@@ -1261,10 +1261,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last Actor run's log
+         * Get log of an Actor's last run
          * @description Retrieves last Actor run's logs.
          *
-         *     This endpoint is a shortcut for getting last Actor run's log. Same as [Get log](https://docs.apify.com/api/v2/log-get) endpoint.
+         *     This endpoint is a shortcut for getting last Actor run's log. Same as [Get Actor build or run log](https://docs.apify.com/api/v2/log-get) endpoint.
          */
         get: operations["actor_runs_last_log_get"];
         put?: never;
@@ -1359,7 +1359,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get run
+         * Get Actor run
          * @deprecated
          * @description **[DEPRECATED]** API endpoints related to run of the Actor were moved under
          *     new namespace [`actor-runs`](#/reference/actor-runs).
@@ -1393,7 +1393,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Abort run
+         * Abort Actor run
          * @deprecated
          * @description **[DEPRECATED]** API endpoints related to run of the Actor were moved under
          *     new namespace [`actor-runs`](#/reference/actor-runs). Aborts an Actor run and
@@ -1419,7 +1419,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Metamorph run
+         * Metamorph Actor run
          * @deprecated
          * @description **[DEPRECATED]** API endpoints related to run of the Actor were moved under
          *     new namespace [`actor-runs`](#/reference/actor-runs). Transforms an Actor run
@@ -1456,7 +1456,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get list of tasks
+         * Get list of Actor tasks
          * @description Gets the complete list of tasks that a user has created or used.
          *
          *     The response is a list of objects in which each object contains essential
@@ -1473,12 +1473,12 @@ export interface paths {
         get: operations["actorTasks_get"];
         put?: never;
         /**
-         * Create task
+         * Create Actor task
          * @description Create a new task with settings specified by the object passed as JSON in
          *     the POST payload.
          *
          *     The response is the full task object as returned by the
-         *     [Get task](https://docs.apify.com/api/v2/actor-task-get) endpoint.
+         *     [Get Actor task](https://docs.apify.com/api/v2/actor-task-get) endpoint.
          *
          *     The request needs to specify the `Content-Type: application/json` HTTP header!
          *
@@ -1500,12 +1500,12 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get task
+         * Get Actor task
          * @description Get an object that contains all the details about a task.
          */
         get: operations["actorTask_get"];
         /**
-         * Update task
+         * Update Actor task
          * @description Update settings of a task using values specified by an object passed as JSON
          *     in the POST payload.
          *
@@ -1527,7 +1527,7 @@ export interface paths {
          *     offered while the task stays published and copyable.
          *
          *     The response is the full task object as returned by the
-         *     [Get task](https://docs.apify.com/api/v2/actor-task-get) endpoint.
+         *     [Get Actor task](https://docs.apify.com/api/v2/actor-task-get) endpoint.
          *
          *     The request needs to specify the `Content-Type: application/json` HTTP
          *     header!
@@ -1538,7 +1538,7 @@ export interface paths {
         put: operations["actorTask_put"];
         post?: never;
         /**
-         * Delete task
+         * Delete Actor task
          * @description Delete the task specified through the `actorTaskId` parameter.
          */
         delete: operations["actorTask_delete"];
@@ -1555,12 +1555,12 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get task input
+         * Get Actor task input
          * @description Returns the input of a given task.
          */
         get: operations["actorTask_input_get"];
         /**
-         * Update task input
+         * Update Actor task input
          * @description Updates the input of a task using values specified by an object passed as
          *     JSON in the PUT payload.
          *
@@ -1592,7 +1592,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get list of webhooks
+         * Get list of Actor task's webhooks
          * @description Gets the list of webhooks of a specific Actor task. The response is a JSON
          *     with the list of objects, where each object contains basic information about a single webhook.
          *
@@ -1619,7 +1619,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get list of task runs
+         * Get list of Actor task's runs
          * @description Get a list of runs of a specific task. The response is a list of objects,
          *     where each object contains essential information about a single task run.
          *
@@ -1635,7 +1635,7 @@ export interface paths {
         get: operations["actorTask_runs_get"];
         put?: never;
         /**
-         * Run task
+         * Run Actor task
          * @description Runs an Actor task and immediately returns without waiting for the run to
          *     finish.
          *
@@ -1674,7 +1674,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Run task synchronously
+         * Run Actor task synchronously and get key-value store record (GET)
          * @description Runs an Actor task and synchronously returns a key-value store record.
          *
          *     The response contains the record stored under the `OUTPUT` key in the run's
@@ -1702,7 +1702,7 @@ export interface paths {
         get: operations["actorTask_runSync_get"];
         put?: never;
         /**
-         * Run task synchronously
+         * Run Actor task synchronously and get key-value store record
          * @description Runs an Actor task and synchronously returns a key-value store record.
          *
          *     The response contains the record stored under the `OUTPUT` key in the run's
@@ -1754,7 +1754,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Run task synchronously and get dataset items
+         * Run Actor task synchronously and get dataset items (GET)
          * @description Run a specific task and return its dataset items.
          *
          *     The run must finish in 300<!-- MAX_ACTOR_JOB_SYNC_WAIT_SECS --> seconds
@@ -1778,7 +1778,7 @@ export interface paths {
         get: operations["actorTask_runSyncGetDatasetItems_get"];
         put?: never;
         /**
-         * Run task synchronously and get dataset items
+         * Run Actor task synchronously and get dataset items
          * @description Runs an Actor task and synchronously returns its dataset items.
          *
          *     The run must finish in 300<!-- MAX_ACTOR_JOB_SYNC_WAIT_SECS --> seconds
@@ -1826,7 +1826,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last run
+         * Get last run of an Actor task
          * @description This is not a single endpoint, but an entire group of endpoints that lets you to
          *     retrieve and manage the last run of given actor task or any of its default storages.
          *     All the endpoints require an authentication token.
@@ -1867,10 +1867,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last Actor task run's log
+         * Get log of an Actor task's last run
          * @description Retrieves last Actor task run's logs.
          *
-         *     This endpoint is a shortcut for getting last Actor task run's log. Same as [Get log](https://docs.apify.com/api/v2/log-get) endpoint.
+         *     This endpoint is a shortcut for getting last Actor task run's log. Same as [Get Actor build or run log](https://docs.apify.com/api/v2/log-get) endpoint.
          */
         get: operations["actorTask_last_log_get"];
         put?: never;
@@ -1891,7 +1891,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Abort Actor task's last run
+         * Abort last run of an Actor task
          * @description Aborts the last run of the specified Actor task and returns an object that
          *     contains all the details about the run.
          *
@@ -1917,7 +1917,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Metamorph Actor task's last run
+         * Metamorph last run of an Actor task
          * @description Transforms the last run of the specified Actor task into a run of another Actor with
          *     a new input.
          *
@@ -1941,7 +1941,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Reboot Actor task's last run
+         * Reboot last run of an Actor task
          * @description Reboots the last run of the specified Actor task and returns an object that
          *     contains all the details about the rebooted run.
          *
@@ -1965,7 +1965,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last task run's default dataset
+         * Get the default dataset of an Actor task's last run
          * @description Returns the default dataset associated with the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultDatasetId` and then using the
@@ -1973,7 +1973,7 @@ export interface paths {
          */
         get: operations["actorTask_runs_last_dataset_get"];
         /**
-         * Update last task run's default dataset
+         * Update the default dataset of an Actor task's last run
          * @description Updates the default dataset associated with the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultDatasetId` and then using the
@@ -1982,7 +1982,7 @@ export interface paths {
         put: operations["actorTask_runs_last_dataset_put"];
         post?: never;
         /**
-         * Delete last task run's default dataset
+         * Delete the default dataset of an Actor task's last run
          * @description Deletes the default dataset associated with the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultDatasetId` and then using the
@@ -2002,7 +2002,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last task run's dataset items
+         * Get the default dataset items from an Actor task's last run
          * @description Returns data stored in the default dataset of the last Actor task run in the desired format.
          *
          *     This endpoint is a shortcut that resolves the last task run's `defaultDatasetId` and proxies to the
@@ -2011,11 +2011,11 @@ export interface paths {
         get: operations["actorTask_runs_last_dataset_items_get"];
         put?: never;
         /**
-         * Store items in last task run's dataset
+         * Store items in the default dataset of an Actor task's last run
          * @description Appends an item or an array of items to the end of the last Actor task run's default dataset.
          *
          *     This endpoint is a shortcut that resolves the last task run's `defaultDatasetId` and proxies to the
-         *     [Store items](https://docs.apify.com/api/v2/dataset-items-post) endpoint.
+         *     [Store items in dataset](https://docs.apify.com/api/v2/dataset-items-post) endpoint.
          *
          *     To save bandwidth and speed up your upload, you can send the request payload compressed and set the `Content-Encoding` header accordingly.
          *
@@ -2040,7 +2040,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last task run's dataset statistics
+         * Get the default dataset statistics for an Actor task's last run
          * @description Returns statistics for the last Actor task run's default dataset.
          *
          *     This endpoint is a shortcut that resolves the last task run's `defaultDatasetId` and proxies to the
@@ -2063,28 +2063,28 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last task run's default store
+         * Get the default key-value store of an Actor task's last run
          * @description Gets an object that contains all the details about the default key-value store of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultKeyValueStoreId` and then using the
-         *     [Get store](https://docs.apify.com/api/v2/key-value-store-get) endpoint.
+         *     [Get key-value store](https://docs.apify.com/api/v2/key-value-store-get) endpoint.
          */
         get: operations["actorTask_runs_last_keyValueStore_get"];
         /**
-         * Update last task run's default store
+         * Update the default key-value store of an Actor task's last run
          * @description Updates the default key-value store associated with the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultKeyValueStoreId` and then using the
-         *     [Update store](https://docs.apify.com/api/v2/key-value-store-put) endpoint.
+         *     [Update key-value store](https://docs.apify.com/api/v2/key-value-store-put) endpoint.
          */
         put: operations["actorTask_runs_last_keyValueStore_put"];
         post?: never;
         /**
-         * Delete last task run's default store
+         * Delete the default key-value store of an Actor task's last run
          * @description Deletes the default key-value store of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultKeyValueStoreId` and then using the
-         *     [Delete store](https://docs.apify.com/api/v2/key-value-store-delete) endpoint.
+         *     [Delete key-value store](https://docs.apify.com/api/v2/key-value-store-delete) endpoint.
          */
         delete: operations["actorTask_runs_last_keyValueStore_delete"];
         options?: never;
@@ -2100,11 +2100,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last task run's default store's list of keys
+         * Get list of keys in the default key-value store of an Actor task's last run
          * @description Returns a list of keys for the default key-value store of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultKeyValueStoreId` and then using the
-         *     [Get list of keys](https://docs.apify.com/api/v2/key-value-store-keys-get) endpoint.
+         *     [Get list of key-value store keys](https://docs.apify.com/api/v2/key-value-store-keys-get) endpoint.
          */
         get: operations["actorTask_runs_last_keyValueStore_keys_get"];
         put?: never;
@@ -2123,11 +2123,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Download last task run's default store's records
+         * Download records from the default key-value store of an Actor task's last run
          * @description Downloads all records from the default key-value store of the last Actor task run as a ZIP archive.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultKeyValueStoreId` and then using the
-         *     [Download records](https://docs.apify.com/api/v2/key-value-store-records-get) endpoint.
+         *     [Download key-value store records](https://docs.apify.com/api/v2/key-value-store-records-get) endpoint.
          */
         get: operations["actorTask_runs_last_keyValueStore_records_get"];
         put?: never;
@@ -2146,35 +2146,35 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last task run's default store's record
+         * Get record from the default key-value store of an Actor task's last run
          * @description Gets a value stored under a specific key in the default key-value store of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultKeyValueStoreId` and then using the
-         *     [Get record](https://docs.apify.com/api/v2/key-value-store-record-get) endpoint.
+         *     [Get key-value store record](https://docs.apify.com/api/v2/key-value-store-record-get) endpoint.
          */
         get: operations["actorTask_runs_last_keyValueStore_record_get"];
         /**
-         * Store record in last task run's default store
+         * Set record in the default key-value store of an Actor task's last run
          * @description Stores a value under a specific key in the default key-value store of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultKeyValueStoreId` and then using the
-         *     [Store record](https://docs.apify.com/api/v2/key-value-store-record-put) endpoint.
+         *     [Set key-value store record](https://docs.apify.com/api/v2/key-value-store-record-put) endpoint.
          */
         put: operations["actorTask_runs_last_keyValueStore_record_put"];
         /**
-         * Store record in last task run's default store (POST)
+         * Set record in the default key-value store of an Actor task's last run (POST)
          * @description Stores a value under a specific key in the default key-value store of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultKeyValueStoreId` and then using the
-         *     [Store record](https://docs.apify.com/api/v2/key-value-store-record-post) endpoint.
+         *     [Set key-value store record (POST)](https://docs.apify.com/api/v2/key-value-store-record-post) endpoint.
          */
         post: operations["actorTask_runs_last_keyValueStore_record_post"];
         /**
-         * Delete last task run's default store's record
+         * Delete record from the default key-value store of an Actor task's last run
          * @description Removes a record specified by a key from the default key-value store of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultKeyValueStoreId` and then using the
-         *     [Delete record](https://docs.apify.com/api/v2/key-value-store-record-delete) endpoint.
+         *     [Delete key-value store record](https://docs.apify.com/api/v2/key-value-store-record-delete) endpoint.
          */
         delete: operations["actorTask_runs_last_keyValueStore_record_delete"];
         options?: never;
@@ -2190,7 +2190,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last task run's default request queue
+         * Get the default request queue of an Actor task's last run
          * @description Returns the default request queue associated with the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultRequestQueueId` and then using the
@@ -2198,7 +2198,7 @@ export interface paths {
          */
         get: operations["actorTask_runs_last_requestQueue_get"];
         /**
-         * Update last task run's default request queue
+         * Update the default request queue of an Actor task's last run
          * @description Updates the default request queue associated with the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultRequestQueueId` and then using the
@@ -2207,7 +2207,7 @@ export interface paths {
         put: operations["actorTask_runs_last_requestQueue_put"];
         post?: never;
         /**
-         * Delete last task run's default request queue
+         * Delete the default request queue of an Actor task's last run
          * @description Deletes the default request queue associated with the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultRequestQueueId` and then using the
@@ -2227,11 +2227,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get last task run's default request queue head
+         * Get the default request queue head for an Actor task's last run
          * @description Returns the given number of first requests from the default request queue of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultRequestQueueId` and then using the
-         *     [Get head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
+         *     [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
          */
         get: operations["actorTask_runs_last_requestQueue_head_get"];
         put?: never;
@@ -2252,12 +2252,12 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Get and lock last task run's default request queue head
+         * Get and lock the default request queue head for an Actor task's last run
          * @description Returns the given number of first requests from the default request queue of the last Actor task run
          *     and locks them for the given time.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultRequestQueueId` and then using the
-         *     [Get head and lock](https://docs.apify.com/api/v2/request-queue-head-lock-post) endpoint.
+         *     [Get and lock request queue head](https://docs.apify.com/api/v2/request-queue-head-lock-post) endpoint.
          */
         post: operations["actorTask_runs_last_requestQueue_head_lock_post"];
         delete?: never;
@@ -2274,20 +2274,20 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List last task run's default request queue's requests
+         * List requests in the default request queue of an Actor task's last run
          * @description Returns a list of requests from the default request queue of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultRequestQueueId` and then using the
-         *     [List requests](https://docs.apify.com/api/v2/request-queue-requests-get) endpoint.
+         *     [List requests in request queue](https://docs.apify.com/api/v2/request-queue-requests-get) endpoint.
          */
         get: operations["actorTask_runs_last_requestQueue_requests_get"];
         put?: never;
         /**
-         * Add request to last task run's default request queue
+         * Add request to the default request queue of an Actor task's last run
          * @description Adds a request to the default request queue of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultRequestQueueId` and then using the
-         *     [Add request](https://docs.apify.com/api/v2/request-queue-requests-post) endpoint.
+         *     [Add request to request queue](https://docs.apify.com/api/v2/request-queue-requests-post) endpoint.
          */
         post: operations["actorTask_runs_last_requestQueue_requests_post"];
         delete?: never;
@@ -2306,19 +2306,19 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Batch add requests to last task run's default request queue
+         * Batch add requests to the default request queue of an Actor task's last run
          * @description Adds requests to the default request queue of the last Actor task run in batch.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultRequestQueueId` and then using the
-         *     [Add requests](https://docs.apify.com/api/v2/request-queue-requests-batch-post) endpoint.
+         *     [Batch add requests to request queue](https://docs.apify.com/api/v2/request-queue-requests-batch-post) endpoint.
          */
         post: operations["actorTask_runs_last_requestQueue_requests_batch_post"];
         /**
-         * Batch delete requests from last task run's default request queue
+         * Batch delete requests from the default request queue of an Actor task's last run
          * @description Batch-deletes requests from the default request queue of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultRequestQueueId` and then using the
-         *     [Delete requests](https://docs.apify.com/api/v2/request-queue-requests-batch-delete) endpoint.
+         *     [Batch delete requests from request queue](https://docs.apify.com/api/v2/request-queue-requests-batch-delete) endpoint.
          */
         delete: operations["actorTask_runs_last_requestQueue_requests_batch_delete"];
         options?: never;
@@ -2336,11 +2336,11 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Unlock requests in last task run's default request queue
+         * Unlock requests in the default request queue of an Actor task's last run
          * @description Unlocks requests in the default request queue of the last Actor task run that are currently locked by the client.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultRequestQueueId` and then using the
-         *     [Unlock requests](https://docs.apify.com/api/v2/request-queue-requests-unlock-post) endpoint.
+         *     [Unlock requests in request queue](https://docs.apify.com/api/v2/request-queue-requests-unlock-post) endpoint.
          */
         post: operations["actorTask_runs_last_requestQueue_requests_unlock_post"];
         delete?: never;
@@ -2357,28 +2357,28 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get request from last task run's default request queue
+         * Get request from the default request queue of an Actor task's last run
          * @description Returns a request from the default request queue of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultRequestQueueId` and then using the
-         *     [Get request](https://docs.apify.com/api/v2/request-queue-request-get) endpoint.
+         *     [Get request from request queue](https://docs.apify.com/api/v2/request-queue-request-get) endpoint.
          */
         get: operations["actorTask_runs_last_requestQueue_request_get"];
         /**
-         * Update request in last task run's default request queue
+         * Update request in the default request queue of an Actor task's last run
          * @description Updates a request in the default request queue of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultRequestQueueId` and then using the
-         *     [Update request](https://docs.apify.com/api/v2/request-queue-request-put) endpoint.
+         *     [Update request in request queue](https://docs.apify.com/api/v2/request-queue-request-put) endpoint.
          */
         put: operations["actorTask_runs_last_requestQueue_request_put"];
         post?: never;
         /**
-         * Delete request from last task run's default request queue
+         * Delete request from the default request queue of an Actor task's last run
          * @description Deletes a request from the default request queue of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultRequestQueueId` and then using the
-         *     [Delete request](https://docs.apify.com/api/v2/request-queue-request-delete) endpoint.
+         *     [Delete request from request queue](https://docs.apify.com/api/v2/request-queue-request-delete) endpoint.
          */
         delete: operations["actorTask_runs_last_requestQueue_request_delete"];
         options?: never;
@@ -2395,20 +2395,20 @@ export interface paths {
         };
         get?: never;
         /**
-         * Prolong lock on request in last task run's default request queue
+         * Prolong lock on request in the default request queue of an Actor task's last run
          * @description Prolongs a request lock in the default request queue of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultRequestQueueId` and then using the
-         *     [Prolong request lock](https://docs.apify.com/api/v2/request-queue-request-lock-put) endpoint.
+         *     [Prolong lock on request in request queue](https://docs.apify.com/api/v2/request-queue-request-lock-put) endpoint.
          */
         put: operations["actorTask_runs_last_requestQueue_request_lock_put"];
         post?: never;
         /**
-         * Delete lock on request in last task run's default request queue
+         * Delete lock on request in the default request queue of an Actor task's last run
          * @description Deletes a request lock in the default request queue of the last Actor task run.
          *
          *     This endpoint is a shortcut for getting the last task run's `defaultRequestQueueId` and then using the
-         *     [Delete request lock](https://docs.apify.com/api/v2/request-queue-request-lock-delete) endpoint.
+         *     [Delete lock on request in request queue](https://docs.apify.com/api/v2/request-queue-request-lock-delete) endpoint.
          */
         delete: operations["actorTask_runs_last_requestQueue_request_lock_delete"];
         options?: never;
@@ -2424,7 +2424,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get user runs list
+         * Get list of user's Actor runs
          * @description Gets a list of all runs for a user. The response is a list of objects, where
          *     each object contains basic information about a single Actor run.
          *
@@ -2454,7 +2454,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get run
+         * Get Actor run
          * @description This is not a single endpoint, but an entire group of endpoints that lets
          *     you retrieve the run or any of its default storages.
          *
@@ -2479,7 +2479,7 @@ export interface paths {
          */
         get: operations["actorRun_get"];
         /**
-         * Update run
+         * Update Actor run
          * @description This endpoint can be used to update both the run's status message and to configure its general resource access level.
          *
          *     **Status message:**
@@ -2508,7 +2508,7 @@ export interface paths {
         put: operations["actorRun_put"];
         post?: never;
         /**
-         * Delete run
+         * Delete Actor run
          * @description Delete the run. Only finished runs can be deleted. Only the person or
          *     organization that initiated the run can delete it.
          */
@@ -2528,7 +2528,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Abort run
+         * Abort Actor run
          * @description Aborts an Actor run and returns an object that contains all the details
          *     about the run.
          *
@@ -2552,7 +2552,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Metamorph run
+         * Metamorph Actor run
          * @description Transforms an Actor run into a run of another Actor with a new input.
          *
          *     This is useful if you want to use another Actor to finish the work
@@ -2587,7 +2587,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Reboot run
+         * Reboot Actor run
          * @description Reboots an Actor run and returns an object that contains all the details
          *     about the rebooted run.
          *
@@ -2613,7 +2613,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Resurrect run
+         * Resurrect Actor run
          * @description Resurrects a finished Actor run and returns an object that contains all the details about the resurrected run.
          *     Only finished runs, i.e. runs with status `FINISHED`, `FAILED`, `ABORTED` and `TIMED-OUT` can be resurrected.
          *     Run status will be updated to RUNNING and its container will be restarted with the same storages
@@ -2638,7 +2638,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Charge events in run
+         * Charge events in Actor run
          * @description Charge for events in the run of your [pay per event Actor](https://docs.apify.com/platform/actors/running/actors-in-store#pay-per-event).
          *     The event you are charging for must be one of the configured events in your Actor. If the Actor is not set up as pay per event, or if the event is not configured,
          *     the endpoint will return an error. The endpoint must be called from the Actor run itself, with the same API token that the run was started with.
@@ -2664,7 +2664,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get default dataset
+         * Get the default dataset of an Actor run
          * @description Returns the default dataset associated with an Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultDatasetId` and then using the
@@ -2672,7 +2672,7 @@ export interface paths {
          */
         get: operations["actorRun_dataset_get"];
         /**
-         * Update default dataset
+         * Update the default dataset of an Actor run
          * @description Updates the default dataset associated with an Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultDatasetId` and then using the
@@ -2681,7 +2681,7 @@ export interface paths {
         put: operations["actorRun_dataset_put"];
         post?: never;
         /**
-         * Delete default dataset
+         * Delete the default dataset of an Actor run
          * @description Deletes default dataset associated with an Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultDatasetId` and then using the
@@ -2701,7 +2701,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get default dataset items
+         * Get the default dataset items from an Actor run
          * @description Returns data stored in the default dataset of the Actor run in the desired format.
          *
          *     This endpoint is a shortcut that resolves the run's `defaultDatasetId` and proxies to the
@@ -2710,11 +2710,11 @@ export interface paths {
         get: operations["actorRun_dataset_items_get"];
         put?: never;
         /**
-         * Store items
+         * Store items in the default dataset of an Actor run
          * @description Appends an item or an array of items to the end of the Actor run's default dataset.
          *
          *     This endpoint is a shortcut that resolves the run's `defaultDatasetId` and proxies to the
-         *     [Store items](https://docs.apify.com/api/v2/dataset-items-post) endpoint.
+         *     [Store items in dataset](https://docs.apify.com/api/v2/dataset-items-post) endpoint.
          *
          *     To save bandwidth and speed up your upload, you can send the request payload compressed and set the `Content-Encoding` header accordingly.
          *
@@ -2739,7 +2739,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get default dataset statistics
+         * Get the default dataset statistics for an Actor run
          * @description Returns statistics for the Actor run's default dataset.
          *
          *     This endpoint is a shortcut that resolves the run's `defaultDatasetId` and proxies to the
@@ -2762,30 +2762,30 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get default store
+         * Get the default key-value store of an Actor run
          * @description Gets an object that contains all the details about the default key-value
          *     store.
          *
          *     This endpoint is a shortcut for getting the run's `defaultKeyValueStoreId` and then using the
-         *     [Get store](https://docs.apify.com/api/v2/key-value-store-get) endpoint.
+         *     [Get key-value store](https://docs.apify.com/api/v2/key-value-store-get) endpoint.
          */
         get: operations["actorRun_keyValueStore_get"];
         /**
-         * Update default store
+         * Update the default key-value store of an Actor run
          * @description Updates the default key-value store's name and general resource access level using a value specified by a JSON object
          *     passed in the PUT payload.
          *
          *     This endpoint is a shortcut for getting the run's `defaultKeyValueStoreId` and then using the
-         *     [Update store](https://docs.apify.com/api/v2/key-value-store-put) endpoint.
+         *     [Update key-value store](https://docs.apify.com/api/v2/key-value-store-put) endpoint.
          */
         put: operations["actorRun_keyValueStore_put"];
         post?: never;
         /**
-         * Delete default store
+         * Delete the default key-value store of an Actor run
          * @description Delete the default key-value store.
          *
          *     This endpoint is a shortcut for getting the run's `defaultKeyValueStoreId` and then using the
-         *     [Delete store](https://docs.apify.com/api/v2/key-value-store-delete) endpoint.
+         *     [Delete key-value store](https://docs.apify.com/api/v2/key-value-store-delete) endpoint.
          */
         delete: operations["actorRun_keyValueStore_delete"];
         options?: never;
@@ -2801,11 +2801,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get default store's list of keys
+         * Get list of keys in the default key-value store of an Actor run
          * @description Returns a list of keys for the default key-value store of the Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultKeyValueStoreId` and then using the
-         *     [Get list of keys](https://docs.apify.com/api/v2/key-value-store-keys-get) endpoint.
+         *     [Get list of key-value store keys](https://docs.apify.com/api/v2/key-value-store-keys-get) endpoint.
          */
         get: operations["actorRun_keyValueStore_keys_get"];
         put?: never;
@@ -2824,11 +2824,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Download default store's records
+         * Download records from the default key-value store of an Actor run
          * @description Downloads all records from the default key-value store of the Actor run as a ZIP archive.
          *
          *     This endpoint is a shortcut for getting the run's `defaultKeyValueStoreId` and then using the
-         *     [Download records](https://docs.apify.com/api/v2/key-value-store-records-get) endpoint.
+         *     [Download key-value store records](https://docs.apify.com/api/v2/key-value-store-records-get) endpoint.
          */
         get: operations["actorRun_keyValueStore_records_get"];
         put?: never;
@@ -2847,35 +2847,35 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get default store's record
+         * Get record from the default key-value store of an Actor run
          * @description Gets a value stored under a specific key in the default key-value store of the Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultKeyValueStoreId` and then using the
-         *     [Get record](https://docs.apify.com/api/v2/key-value-store-record-get) endpoint.
+         *     [Get key-value store record](https://docs.apify.com/api/v2/key-value-store-record-get) endpoint.
          */
         get: operations["actorRun_keyValueStore_record_get"];
         /**
-         * Store record in default store
+         * Set record in the default key-value store of an Actor run
          * @description Stores a value under a specific key in the default key-value store of the Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultKeyValueStoreId` and then using the
-         *     [Store record](https://docs.apify.com/api/v2/key-value-store-record-put) endpoint.
+         *     [Set key-value store record](https://docs.apify.com/api/v2/key-value-store-record-put) endpoint.
          */
         put: operations["actorRun_keyValueStore_record_put"];
         /**
-         * Store record in default store (POST)
+         * Set record in the default key-value store of an Actor run (POST)
          * @description Stores a value under a specific key in the default key-value store of the Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultKeyValueStoreId` and then using the
-         *     [Store record](https://docs.apify.com/api/v2/key-value-store-record-post) endpoint.
+         *     [Set key-value store record (POST)](https://docs.apify.com/api/v2/key-value-store-record-post) endpoint.
          */
         post: operations["actorRun_keyValueStore_record_post"];
         /**
-         * Delete default store's record
+         * Delete record from the default key-value store of an Actor run
          * @description Removes a record specified by a key from the default key-value store of the Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultKeyValueStoreId` and then using the
-         *     [Delete record](https://docs.apify.com/api/v2/key-value-store-record-delete) endpoint.
+         *     [Delete key-value store record](https://docs.apify.com/api/v2/key-value-store-record-delete) endpoint.
          */
         delete: operations["actorRun_keyValueStore_record_delete"];
         options?: never;
@@ -2891,7 +2891,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get default request queue
+         * Get the default request queue of an Actor run
          * @description Returns the default request queue associated with an Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultRequestQueueId` and then using the
@@ -2899,7 +2899,7 @@ export interface paths {
          */
         get: operations["actorRun_requestQueue_get"];
         /**
-         * Update default request queue
+         * Update the default request queue of an Actor run
          * @description Updates the default request queue associated with an Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultRequestQueueId` and then using the
@@ -2908,7 +2908,7 @@ export interface paths {
         put: operations["actorRun_requestQueue_put"];
         post?: never;
         /**
-         * Delete default request queue
+         * Delete the default request queue of an Actor run
          * @description Deletes the default request queue associated with an Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultRequestQueueId` and then using the
@@ -2928,20 +2928,20 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List default request queue's requests
+         * List requests in the default request queue of an Actor run
          * @description Returns a list of requests from the default request queue of the Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultRequestQueueId` and then using the
-         *     [List requests](https://docs.apify.com/api/v2/request-queue-requests-get) endpoint.
+         *     [List requests in request queue](https://docs.apify.com/api/v2/request-queue-requests-get) endpoint.
          */
         get: operations["actorRun_requestQueue_requests_get"];
         put?: never;
         /**
-         * Add request to default request queue
+         * Add request to the default request queue of an Actor run
          * @description Adds a request to the default request queue of the Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultRequestQueueId` and then using the
-         *     [Add request](https://docs.apify.com/api/v2/request-queue-requests-post) endpoint.
+         *     [Add request to request queue](https://docs.apify.com/api/v2/request-queue-requests-post) endpoint.
          */
         post: operations["actorRun_requestQueue_requests_post"];
         delete?: never;
@@ -2960,19 +2960,19 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Batch add requests to default request queue
+         * Batch add requests to the default request queue of an Actor run
          * @description Adds requests to the default request queue of the Actor run in batch.
          *
          *     This endpoint is a shortcut for getting the run's `defaultRequestQueueId` and then using the
-         *     [Add requests](https://docs.apify.com/api/v2/request-queue-requests-batch-post) endpoint.
+         *     [Batch add requests to request queue](https://docs.apify.com/api/v2/request-queue-requests-batch-post) endpoint.
          */
         post: operations["actorRun_requestQueue_requests_batch_post"];
         /**
-         * Batch delete requests from default request queue
+         * Batch delete requests from the default request queue of an Actor run
          * @description Batch-deletes requests from the default request queue of the Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultRequestQueueId` and then using the
-         *     [Delete requests](https://docs.apify.com/api/v2/request-queue-requests-batch-delete) endpoint.
+         *     [Batch delete requests from request queue](https://docs.apify.com/api/v2/request-queue-requests-batch-delete) endpoint.
          */
         delete: operations["actorRun_requestQueue_requests_batch_delete"];
         options?: never;
@@ -2990,11 +2990,11 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Unlock requests in default request queue
+         * Unlock requests in the default request queue of an Actor run
          * @description Unlocks requests in the default request queue of the Actor run that are currently locked by the client.
          *
          *     This endpoint is a shortcut for getting the run's `defaultRequestQueueId` and then using the
-         *     [Unlock requests](https://docs.apify.com/api/v2/request-queue-requests-unlock-post) endpoint.
+         *     [Unlock requests in request queue](https://docs.apify.com/api/v2/request-queue-requests-unlock-post) endpoint.
          */
         post: operations["actorRun_requestQueue_requests_unlock_post"];
         delete?: never;
@@ -3011,28 +3011,28 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get request from default request queue
+         * Get request from the default request queue of an Actor run
          * @description Returns a request from the default request queue of the Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultRequestQueueId` and then using the
-         *     [Get request](https://docs.apify.com/api/v2/request-queue-request-get) endpoint.
+         *     [Get request from request queue](https://docs.apify.com/api/v2/request-queue-request-get) endpoint.
          */
         get: operations["actorRun_requestQueue_request_get"];
         /**
-         * Update request in default request queue
+         * Update request in the default request queue of an Actor run
          * @description Updates a request in the default request queue of the Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultRequestQueueId` and then using the
-         *     [Update request](https://docs.apify.com/api/v2/request-queue-request-put) endpoint.
+         *     [Update request in request queue](https://docs.apify.com/api/v2/request-queue-request-put) endpoint.
          */
         put: operations["actorRun_requestQueue_request_put"];
         post?: never;
         /**
-         * Delete request from default request queue
+         * Delete request from the default request queue of an Actor run
          * @description Deletes a request from the default request queue of the Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultRequestQueueId` and then using the
-         *     [Delete request](https://docs.apify.com/api/v2/request-queue-request-delete) endpoint.
+         *     [Delete request from request queue](https://docs.apify.com/api/v2/request-queue-request-delete) endpoint.
          */
         delete: operations["actorRun_requestQueue_request_delete"];
         options?: never;
@@ -3049,20 +3049,20 @@ export interface paths {
         };
         get?: never;
         /**
-         * Prolong lock on request in default request queue
+         * Prolong lock on request in the default request queue of an Actor run
          * @description Prolongs a request lock in the default request queue of the Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultRequestQueueId` and then using the
-         *     [Prolong request lock](https://docs.apify.com/api/v2/request-queue-request-lock-put) endpoint.
+         *     [Prolong lock on request in request queue](https://docs.apify.com/api/v2/request-queue-request-lock-put) endpoint.
          */
         put: operations["actorRun_requestQueue_request_lock_put"];
         post?: never;
         /**
-         * Delete lock on request in default request queue
+         * Delete lock on request in the default request queue of an Actor run
          * @description Deletes a request lock in the default request queue of the Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultRequestQueueId` and then using the
-         *     [Delete request lock](https://docs.apify.com/api/v2/request-queue-request-lock-delete) endpoint.
+         *     [Delete lock on request in request queue](https://docs.apify.com/api/v2/request-queue-request-lock-delete) endpoint.
          */
         delete: operations["actorRun_requestQueue_request_lock_delete"];
         options?: never;
@@ -3078,11 +3078,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get default request queue head
+         * Get the default request queue head for an Actor run
          * @description Returns the given number of first requests from the default request queue of the Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultRequestQueueId` and then using the
-         *     [Get head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
+         *     [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
          */
         get: operations["actorRun_requestQueue_head_get"];
         put?: never;
@@ -3103,12 +3103,12 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Get and lock default request queue head
+         * Get and lock the default request queue head for an Actor run
          * @description Returns the given number of first requests from the default request queue of the Actor run
          *     and locks them for the given time.
          *
          *     This endpoint is a shortcut for getting the run's `defaultRequestQueueId` and then using the
-         *     [Get head and lock](https://docs.apify.com/api/v2/request-queue-head-lock-post) endpoint.
+         *     [Get and lock request queue head](https://docs.apify.com/api/v2/request-queue-head-lock-post) endpoint.
          */
         post: operations["actorRun_requestQueue_head_lock_post"];
         delete?: never;
@@ -3125,10 +3125,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get run's log
+         * Get log of an Actor run
          * @description Retrieves Actor run's logs.
          *
-         *     This endpoint is a shortcut for getting the run's log. Same as [Get log](https://docs.apify.com/api/v2/log-get) endpoint.
+         *     This endpoint is a shortcut for getting the run's log. Same as [Get Actor build or run log](https://docs.apify.com/api/v2/log-get) endpoint.
          */
         get: operations["actorRun_log_get"];
         put?: never;
@@ -3147,7 +3147,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get user builds list
+         * Get list of user's Actor builds
          * @description Gets a list of all builds for a user. The response is a JSON array of
          *     objects, where each object contains basic information about a single build.
          *
@@ -3176,7 +3176,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get build
+         * Get Actor build
          * @description Gets an object that contains all the details about a specific build of an
          *     Actor.
          *
@@ -3191,7 +3191,7 @@ export interface paths {
         put?: never;
         post?: never;
         /**
-         * Delete build
+         * Delete Actor build
          * @description Delete the build. The build that is the current default build for the Actor
          *     cannot be deleted.
          *
@@ -3213,7 +3213,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Abort build
+         * Abort Actor build
          * @description Aborts an Actor build and returns an object that contains all the details
          *     about the build.
          *
@@ -3235,10 +3235,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get build's Log
+         * Get Actor build's log
          * @description Retrieves Actor build's logs.
          *
-         *     This endpoint is a shortcut for getting the build's log. Same as [Get log](https://docs.apify.com/api/v2/log-get) endpoint.
+         *     This endpoint is a shortcut for getting the build's log. Same as [Get Actor build or run log](https://docs.apify.com/api/v2/log-get) endpoint.
          */
         get: operations["actorBuild_log_get"];
         put?: never;
@@ -3257,7 +3257,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get OpenAPI definition
+         * Get OpenAPI definition of Actor build
          * @description Get the OpenAPI definition for Actor builds. Two similar endpoints are available:
          *
          *     - [First endpoint](https://docs.apify.com/api/v2/actor-openapi-json-get): Requires both `actorId` and `buildId`. Use `default` as the `buildId` to get the OpenAPI schema for the default Actor build.
@@ -3308,7 +3308,7 @@ export interface paths {
         /**
          * Create key-value store
          * @description Creates a key-value store and returns its object. The response is the same
-         *     object as returned by the [Get store](#/reference/key-value-stores/store-object/get-store)
+         *     object as returned by the [Get key-value store](https://docs.apify.com/api/v2/key-value-store-get)
          *     endpoint.
          *
          *     Keep in mind that data stored under unnamed store follows [data retention
@@ -3333,13 +3333,13 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get store
+         * Get key-value store
          * @description Gets an object that contains all the details about a specific key-value
          *     store.
          */
         get: operations["keyValueStore_get"];
         /**
-         * Update store
+         * Update key-value store
          * @description Updates a key-value store's name and general resource access level using a value specified by a JSON object
          *     passed in the PUT payload.
          *
@@ -3349,7 +3349,7 @@ export interface paths {
         put: operations["keyValueStore_put"];
         post?: never;
         /**
-         * Delete store
+         * Delete key-value store
          * @description Deletes a key-value store.
          */
         delete: operations["keyValueStore_delete"];
@@ -3366,7 +3366,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get list of keys
+         * Get list of key-value store keys
          * @description Returns a list of objects describing keys of a given key-value store, as
          *     well as some information about the values (e.g. size).
          *
@@ -3390,7 +3390,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Download records
+         * Download key-value store records
          * @description Downloads all records from the key-value store as a ZIP archive.
          *     Each record is stored as a separate file in the archive, with the filename equal to the record key.
          *
@@ -3413,7 +3413,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get record
+         * Get key-value store record
          * @description Gets a value stored in the key-value store under a specific key.
          *
          *     The response body has the same `Content-Encoding` header as it was set in
@@ -3432,7 +3432,7 @@ export interface paths {
          */
         get: operations["keyValueStore_record_get"];
         /**
-         * Store record
+         * Set key-value store record
          * @description Stores a value under a specific key to the key-value store.
          *
          *     The value is passed as the PUT payload and it is stored with a MIME content
@@ -3452,20 +3452,20 @@ export interface paths {
          */
         put: operations["keyValueStore_record_put"];
         /**
-         * Store record (POST)
+         * Set key-value store record (POST)
          * @description Stores a value under a specific key to the key-value store.
          *
          *     This endpoint is an alias for the [`PUT` record](#tag/Key-value-storesRecord/operation/keyValueStore_record_put) method and behaves identically.
          */
         post: operations["keyValueStore_record_post"];
         /**
-         * Delete record
+         * Delete key-value store record
          * @description Removes a record specified by a key from the key-value store.
          */
         delete: operations["keyValueStore_record_delete"];
         options?: never;
         /**
-         * Check if a record exists
+         * Check if key-value store record exists
          * @description Check if a value is stored in the key-value store under a specific key.
          */
         head: operations["keyValueStore_record_head"];
@@ -3710,7 +3710,7 @@ export interface paths {
         get: operations["dataset_items_get"];
         put?: never;
         /**
-         * Store items
+         * Store items in dataset
          * @description Appends an item or an array of items to the end of the dataset.
          *     The POST payload is a JSON object or a JSON array of objects to save into the dataset.
          *
@@ -3842,7 +3842,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Add requests
+         * Batch add requests to request queue
          * @description Adds requests to the queue in batch. The maximum requests in batch is limited
          *     to 25. The response contains an array of unprocessed and processed requests.
          *     If any add operation fails because the request queue rate limit is exceeded
@@ -3856,7 +3856,7 @@ export interface paths {
          */
         post: operations["requestQueue_requests_batch_post"];
         /**
-         * Delete requests
+         * Batch delete requests from request queue
          * @description Batch-deletes given requests from the queue. The number of requests in a
          *     batch is limited to 25. The response contains an array of unprocessed and
          *     processed requests.
@@ -3885,7 +3885,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Unlock requests
+         * Unlock requests in request queue
          * @description Unlocks requests in the queue that are currently locked by the client.
          *
          *     * If the client is within an Actor run, it unlocks all requests locked by that specific run plus all requests locked by the same clientKey.
@@ -3906,14 +3906,14 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List requests
+         * List requests in request queue
          * @description Returns a list of requests. This endpoint is paginated using
          *     cursor (pagination by `exclusiveStartId` is deprecated) and limit parameters.
          */
         get: operations["requestQueue_requests_get"];
         put?: never;
         /**
-         * Add request
+         * Add request to request queue
          * @description Adds request to the queue. Response contains ID of the request and info if
          *     request was already present in the queue or handled.
          *
@@ -3935,12 +3935,12 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get request
+         * Get request from request queue
          * @description Returns request from queue.
          */
         get: operations["requestQueue_request_get"];
         /**
-         * Update request
+         * Update request in request queue
          * @description Updates a request in a queue. Mark request as handled by setting
          *     `request.handledAt = new Date()`.
          *     If `handledAt` is set, the request will be removed from head of the queue (and unlocked, if applicable).
@@ -3948,7 +3948,7 @@ export interface paths {
         put: operations["requestQueue_request_put"];
         post?: never;
         /**
-         * Delete request
+         * Delete request from request queue
          * @description Deletes given request from queue.
          */
         delete: operations["requestQueue_request_delete"];
@@ -3965,7 +3965,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get head
+         * Get request queue head
          * @description Returns given number of first requests from the queue.
          *
          *     The response contains the `hadMultipleClients` boolean field which indicates
@@ -3994,7 +3994,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Get head and lock
+         * Get and lock request queue head
          * @description Returns the given number of first requests from the queue and locks them for
          *     the given time.
          *
@@ -4021,7 +4021,7 @@ export interface paths {
         };
         get?: never;
         /**
-         * Prolong request lock
+         * Prolong lock on request in request queue
          * @description Prolongs request lock. The request lock can be prolonged only by the client
          *     that has locked it using [Get and lock head
          *     operation](#/request-queue-head-lock-post).
@@ -4032,7 +4032,7 @@ export interface paths {
         put: operations["requestQueue_request_lock_put"];
         post?: never;
         /**
-         * Delete request lock
+         * Delete lock on request in request queue
          * @description Deletes a request lock. The request lock can be deleted only by the client
          *     that has locked it using [Get and lock head
          *     operation](#/request-queue-head-lock-post).
@@ -4194,7 +4194,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get collection
+         * Get list of webhook's dispatches
          * @description Gets a given webhook's list of dispatches.
          */
         get: operations["webhook_webhookDispatches_get"];
@@ -4385,7 +4385,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get log
+         * Get Actor build or run log
          * @description Retrieves logs for a specific Actor build or run.
          */
         get: operations["log_get"];
@@ -4453,7 +4453,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get monthly usage
+         * Get user's monthly usage
          * @description Returns a complete summary of your usage for the current monthly usage cycle,
          *     an overall sum, as well as a daily breakdown of usage. It is the same
          *     information you will see on your account's [Billing > Historical usage page](https://console.apify.com/billing/historical-usage). The information
@@ -4479,14 +4479,14 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get limits
+         * Get user's limits
          * @description Returns a complete summary of your account's limits. It is the same
          *     information you will see on your account's [Limits page](https://console.apify.com/billing#/limits). The returned data
          *     includes the current usage cycle, a summary of your limits, and your current usage.
          */
         get: operations["users_me_limits_get"];
         /**
-         * Update limits
+         * Update user's limits
          * @description Updates the account's limits manageable on your account's [Limits page](https://console.apify.com/billing#/limits).
          *     Specifically the: `maxMonthlyUsageUsd` and `dataRetentionDays` limits (see request body schema for more details).
          */
@@ -4516,7 +4516,7 @@ export interface paths {
          */
         get: operations["tools_browser_info_get"];
         /**
-         * Get browser info
+         * Get browser info (PUT)
          * @description Returns information about the HTTP request, including the client IP address,
          *     country code, request headers, and body length.
          *
@@ -4526,7 +4526,7 @@ export interface paths {
          */
         put: operations["tools_browser_info_put"];
         /**
-         * Get browser info
+         * Get browser info (POST)
          * @description Returns information about the HTTP request, including the client IP address,
          *     country code, request headers, and body length.
          *
@@ -4536,7 +4536,7 @@ export interface paths {
          */
         post: operations["tools_browser_info_post"];
         /**
-         * Get browser info
+         * Get browser info (DELETE)
          * @description Returns information about the HTTP request, including the client IP address,
          *     country code, request headers, and body length.
          *
@@ -4763,7 +4763,7 @@ export interface components {
          * @description Machine-processable error type identifier.
          * @enum {string}
          */
-        ErrorType: "3d-secure-auth-failed" | "access-right-already-exists" | "action-not-found" | "actor-already-rented" | "actor-can-not-be-rented" | "actor-disabled" | "actor-is-not-rented" | "actor-memory-limit-exceeded" | "actor-name-exists-new-owner" | "actor-name-not-unique" | "actor-not-found" | "actor-not-github-actor" | "actor-not-public" | "actor-permission-level-not-supported-for-agentic-payments" | "actor-review-already-exists" | "actor-run-failed" | "actor-standby-not-supported-for-agentic-payments" | "actor-task-name-not-unique" | "agentic-payment-info-retrieval-error" | "agentic-payment-information-missing" | "agentic-payment-insufficient-amount" | "agentic-payment-provider-internal-error" | "agentic-payment-provider-unauthorized" | "airtable-webhook-deprecated" | "already-subscribed-to-paid-actor" | "apify-plan-required-to-use-paid-actor" | "apify-signup-not-allowed" | "auth-method-not-supported" | "authorization-server-not-found" | "auto-issue-date-invalid" | "background-check-required" | "billing-system-error" | "black-friday-plan-expired" | "braintree-error" | "braintree-not-linked" | "braintree-operation-timed-out" | "braintree-unsupported-currency" | "build-not-found" | "build-outdated" | "cannot-add-apify-events-to-ppe-actor" | "cannot-add-multiple-pricing-infos" | "cannot-add-pricing-info-that-alters-past" | "cannot-add-second-future-pricing-info" | "cannot-build-actor-from-webhook" | "cannot-change-billing-interval" | "cannot-change-owner" | "cannot-charge-apify-event" | "cannot-charge-non-pay-per-event-actor" | "cannot-comment-as-other-user" | "cannot-copy-actor-task" | "cannot-create-payout" | "cannot-create-public-actor" | "cannot-create-tax-transaction" | "cannot-delete-critical-actor" | "cannot-delete-invoice" | "cannot-delete-paid-actor" | "cannot-disable-one-time-event-for-apify-start-event" | "cannot-disable-organization-with-enabled-members" | "cannot-disable-user-with-subscription" | "cannot-link-oauth-to-unverified-email" | "cannot-metamorph-to-pay-per-result-actor" | "cannot-modify-actor-pricing-too-frequently" | "cannot-modify-actor-pricing-with-immediate-effect" | "cannot-monetize-without-payout-billing-info" | "cannot-override-paid-actor-trial" | "cannot-permanently-delete-subscription" | "cannot-publish-actor" | "cannot-publish-actor-task" | "cannot-reduce-last-full-token" | "cannot-reimburse-more-than-original-charge" | "cannot-reimburse-non-rental-charge" | "cannot-remove-own-actor-from-recently-used" | "cannot-remove-payment-method" | "cannot-remove-pricing-info" | "cannot-remove-running-run" | "cannot-remove-user-with-public-actors" | "cannot-remove-user-with-subscription" | "cannot-remove-user-with-unpaid-invoice" | "cannot-rename-env-var" | "cannot-rent-paid-actor" | "cannot-review-own-actor" | "cannot-set-access-rights-for-owner" | "cannot-set-is-status-message-terminal" | "cannot-unpublish-critical-actor" | "cannot-unpublish-paid-actor" | "cannot-unpublish-profile" | "cannot-update-invoice-field" | "concurrent-runs-limit-exceeded" | "concurrent-update-detected" | "conference-token-not-found" | "content-encoding-forbidden-for-html" | "coupon-already-redeemed" | "coupon-expired" | "coupon-for-new-customers" | "coupon-for-subscribed-users" | "coupon-limits-are-in-conflict-with-current-limits" | "coupon-max-number-of-redemptions-reached" | "coupon-not-found" | "coupon-not-unique" | "coupons-disabled" | "create-github-issue-not-allowed" | "creator-plan-not-available" | "cron-expression-invalid" | "daily-ai-token-limit-exceeded" | "daily-publication-limit-exceeded" | "dataset-does-not-have-fields-schema" | "dataset-does-not-have-schema" | "dataset-locked" | "dataset-schema-invalid" | "dcr-not-supported" | "default-dataset-not-found" | "deleting-default-build" | "deleting-unfinished-build" | "email-already-taken" | "email-already-taken-removed-user" | "email-domain-not-allowed-for-coupon" | "email-invalid" | "email-not-allowed" | "email-not-valid" | "email-update-too-soon" | "elevated-permissions-needed" | "env-var-already-exists" | "exchange-rate-fetch-failed" | "expired-conference-token" | "failed-to-charge-user" | "final-invoice-negative" | "full-permission-actor-blocked-for-admin" | "full-permission-actor-not-approved" | "github-branch-empty" | "github-issue-already-exists" | "github-public-key-not-found" | "github-repository-not-found" | "github-signature-does-not-match-payload" | "github-user-not-authorized-for-issues" | "gmail-not-allowed" | "id-does-not-match" | "incompatible-billing-interval" | "incomplete-payout-billing-info" | "inconsistent-currencies" | "incorrect-pricing-modifier-prefix" | "input-json-invalid-characters" | "input-json-not-object" | "input-json-too-long" | "input-update-collision" | "insufficient-permissions" | "insufficient-permissions-to-change-field" | "insufficient-security-measures" | "insufficient-tax-country-evidence" | "integration-auth-error" | "internal-server-error" | "invalid-billing-info" | "invalid-billing-period-for-payout" | "invalid-build" | "invalid-client-key" | "invalid-collection" | "invalid-conference-login-password" | "invalid-content-type-header" | "invalid-credentials" | "invalid-git-auth-token" | "invalid-github-issue-url" | "invalid-header" | "invalid-id" | "invalid-idempotency-key" | "invalid-input" | "invalid-input-schema" | "invalid-invoice" | "invalid-invoice-type" | "invalid-issue-date" | "invalid-label-params" | "invalid-main-account-user-id" | "invalid-oauth-app" | "invalid-oauth-scope" | "invalid-one-time-invoice" | "invalid-parameter" | "invalid-payout-status" | "invalid-picture-url" | "invalid-record-key" | "invalid-request" | "invalid-resource-type" | "invalid-signature" | "invalid-subscription-plan" | "invalid-tax-number" | "invalid-tax-number-format" | "invalid-token" | "invalid-token-type" | "invalid-two-factor-code" | "invalid-two-factor-code-or-recovery-code" | "invalid-two-factor-recovery-code" | "invalid-username" | "invalid-value" | "invitation-invalid-resource-type" | "invitation-no-longer-valid" | "invoice-canceled" | "invoice-cannot-be-refunded-due-to-too-high-amount" | "invoice-incomplete" | "invoice-is-draft" | "invoice-locked" | "invoice-must-be-buffer" | "invoice-not-canceled" | "invoice-not-draft" | "invoice-not-found" | "invoice-outdated" | "invoice-paid-already" | "issue-already-connected-to-github" | "issue-not-found" | "issues-bad-request" | "issuer-not-registered" | "job-finished" | "label-already-linked" | "last-api-token" | "limit-reached" | "max-items-must-be-greater-than-zero" | "max-metamorphs-exceeded" | "max-total-charge-usd-below-minimum" | "max-total-charge-usd-must-be-greater-than-zero" | "method-not-allowed" | "migration-disabled" | "missing-actor-rights" | "missing-api-token" | "missing-billing-info" | "missing-line-items" | "missing-payment-date" | "missing-payout-billing-info" | "missing-proxy-password" | "missing-reporting-fields" | "missing-resource-name" | "missing-settings" | "missing-username" | "monthly-usage-limit-too-low" | "more-than-one-update-not-allowed" | "multiple-records-found" | "must-be-admin" | "name-not-unique" | "next-runtime-computation-failed" | "no-columns-in-exported-dataset" | "no-payment-attempt-for-refund-found" | "no-payment-method-available" | "no-team-account-seats-available" | "non-temporary-email" | "not-enough-usage-to-run-paid-actor" | "not-implemented" | "not-supported-currencies" | "o-auth-service-already-connected" | "o-auth-service-not-connected" | "oauth-resource-access-failed" | "one-time-invoice-already-marked-paid" | "only-drafts-can-be-deleted" | "operation-canceled" | "operation-not-allowed" | "operation-timed-out" | "organization-cannot-own-itself" | "organization-role-not-found" | "overlapping-payout-billing-periods" | "own-token-required" | "page-not-found" | "param-not-one-of" | "parameter-required" | "parameters-mismatched" | "password-reset-email-already-sent" | "password-reset-token-expired" | "pay-as-you-go-without-monthly-interval" | "payment-attempt-status-message-required" | "payout-already-paid" | "payout-canceled" | "payout-invalid-state" | "payout-must-be-approved-to-be-marked-paid" | "payout-not-found" | "payout-number-already-exists" | "phone-number-invalid" | "phone-number-landline" | "phone-number-opted-out" | "phone-verification-disabled" | "platform-feature-disabled" | "price-overrides-validation-failed" | "pricing-model-not-supported" | "promotional-plan-not-available" | "proxy-auth-ip-not-unique" | "public-actor-disabled" | "query-timeout" | "quoted-price-outdated" | "rate-limit-exceeded" | "recaptcha-invalid" | "recaptcha-required" | "record-not-found" | "record-not-public" | "record-or-token-not-found" | "record-too-large" | "redirect-uri-mismatch" | "reduced-plan-not-available" | "rental-charge-already-reimbursed" | "rental-not-allowed" | "request-aborted-prematurely" | "request-handled-or-locked" | "request-id-invalid" | "request-queue-duplicate-requests" | "request-too-large" | "requested-dataset-view-does-not-exist" | "resume-token-expired" | "run-failed" | "run-input-body-not-valid-json" | "run-timeout-exceeded" | "russia-is-evil" | "same-user" | "schedule-actor-not-found" | "schedule-actor-task-not-found" | "schedule-name-not-unique" | "schema-validation" | "schema-validation-error" | "schema-validation-failed" | "service-worker-registration-not-allowed" | "sign-up-method-not-allowed" | "slack-integration-not-custom" | "socket-closed" | "socket-destroyed" | "store-schema-invalid" | "store-terms-not-accepted" | "stripe-enabled" | "stripe-generic-decline" | "stripe-not-enabled" | "stripe-not-enabled-for-user" | "tagged-build-required" | "tax-country-invalid" | "tax-number-invalid" | "tax-number-validation-failed" | "taxamo-call-failed" | "taxamo-request-failed" | "testing-error" | "token-not-provided" | "too-few-versions" | "too-many-actor-tasks" | "too-many-actors" | "too-many-labels-on-resource" | "too-many-mcp-connectors" | "too-many-o-auth-apps" | "too-many-organizations" | "too-many-requests" | "too-many-schedules" | "too-many-ui-access-keys" | "too-many-user-labels" | "too-many-values" | "too-many-versions" | "too-many-webhooks" | "unexpected-route" | "unknown-build-tag" | "unknown-payment-provider" | "unsubscribe-token-invalid" | "unsupported-actor-pricing-model-for-agentic-payments" | "unsupported-content-encoding" | "unsupported-file-type-for-issue" | "unsupported-file-type-image-expected" | "unsupported-file-type-text-or-json-expected" | "unsupported-permission" | "upcoming-subscription-bill-not-up-to-date" | "user-already-exists" | "user-already-verified" | "user-creates-organizations-too-fast" | "user-disabled" | "user-email-is-disposable" | "user-email-not-set" | "user-email-not-verified" | "user-has-no-subscription" | "user-integration-not-found" | "user-is-already-invited" | "user-is-already-organization-member" | "user-is-not-member-of-organization" | "user-is-not-organization" | "user-is-organization" | "user-is-organization-owner" | "user-is-removed" | "user-not-found" | "user-not-logged-in" | "user-not-verified" | "user-or-token-not-found" | "user-plan-not-allowed-for-coupon" | "user-problem-with-card" | "user-record-not-found" | "username-already-taken" | "username-missing" | "username-not-allowed" | "username-removal-forbidden" | "username-required" | "verification-email-already-sent" | "verification-token-expired" | "version-already-exists" | "versions-size-exceeded" | "weak-password" | "x402-agentic-payment-already-finalized" | "x402-agentic-payment-insufficient-amount" | "x402-agentic-payment-malformed-token" | "x402-agentic-payment-settlement-failed" | "x402-agentic-payment-settlement-in-progress" | "x402-agentic-payment-settlement-stuck" | "x402-agentic-payment-unauthorized" | "x402-payment-required" | "zero-invoice";
+        ErrorType: "3d-secure-auth-failed" | "access-right-already-exists" | "action-not-found" | "actor-already-rented" | "actor-can-not-be-rented" | "actor-disabled" | "actor-is-not-rented" | "actor-memory-limit-exceeded" | "actor-name-exists-new-owner" | "actor-name-not-unique" | "actor-not-found" | "actor-not-github-actor" | "actor-not-public" | "actor-permission-level-not-supported-for-agentic-payments" | "actor-review-already-exists" | "actor-run-failed" | "actor-standby-not-supported-for-agentic-payments" | "actor-task-name-not-unique" | "agentic-payment-info-retrieval-error" | "agentic-payment-information-missing" | "agentic-payment-insufficient-amount" | "agentic-payment-provider-internal-error" | "agentic-payment-provider-unauthorized" | "airtable-webhook-deprecated" | "already-subscribed-to-paid-actor" | "apify-plan-required-to-use-paid-actor" | "apify-signup-not-allowed" | "auth-method-not-supported" | "authorization-server-not-found" | "auto-issue-date-invalid" | "background-check-required" | "billing-system-error" | "black-friday-plan-expired" | "braintree-error" | "braintree-not-linked" | "braintree-operation-timed-out" | "braintree-unsupported-currency" | "build-not-found" | "build-outdated" | "cannot-add-apify-events-to-ppe-actor" | "cannot-add-multiple-pricing-infos" | "cannot-add-pricing-info-that-alters-past" | "cannot-add-second-future-pricing-info" | "cannot-build-actor-from-webhook" | "cannot-change-billing-interval" | "cannot-change-owner" | "cannot-charge-apify-event" | "cannot-charge-non-pay-per-event-actor" | "cannot-comment-as-other-user" | "cannot-copy-actor-task" | "cannot-create-payout" | "cannot-create-public-actor" | "cannot-create-tax-transaction" | "cannot-delete-critical-actor" | "cannot-delete-invoice" | "cannot-delete-paid-actor" | "cannot-disable-one-time-event-for-apify-start-event" | "cannot-disable-organization-with-enabled-members" | "cannot-disable-user-with-subscription" | "cannot-link-oauth-to-unverified-email" | "cannot-metamorph-to-pay-per-result-actor" | "cannot-modify-actor-pricing-too-frequently" | "cannot-modify-actor-pricing-with-immediate-effect" | "cannot-monetize-without-payout-billing-info" | "cannot-override-paid-actor-trial" | "cannot-permanently-delete-subscription" | "cannot-publish-actor" | "cannot-publish-actor-task" | "cannot-reduce-last-full-token" | "cannot-reimburse-more-than-original-charge" | "cannot-reimburse-non-rental-charge" | "cannot-remove-own-actor-from-recently-used" | "cannot-remove-payment-method" | "cannot-remove-pricing-info" | "cannot-remove-running-run" | "cannot-remove-user-with-public-actors" | "cannot-remove-user-with-subscription" | "cannot-remove-user-with-unpaid-invoice" | "cannot-rename-env-var" | "cannot-rent-paid-actor" | "cannot-review-own-actor" | "cannot-set-access-rights-for-owner" | "cannot-set-is-status-message-terminal" | "cannot-unpublish-critical-actor" | "cannot-unpublish-paid-actor" | "cannot-unpublish-profile" | "cannot-update-invoice-field" | "concurrent-runs-limit-exceeded" | "concurrent-update-detected" | "conference-token-not-found" | "content-encoding-forbidden-for-html" | "coupon-already-redeemed" | "coupon-expired" | "coupon-for-new-customers" | "coupon-for-subscribed-users" | "coupon-limits-are-in-conflict-with-current-limits" | "coupon-max-number-of-redemptions-reached" | "coupon-not-found" | "coupon-not-unique" | "coupons-disabled" | "create-github-issue-not-allowed" | "creator-plan-not-available" | "cron-expression-invalid" | "daily-ai-token-limit-exceeded" | "daily-publication-limit-exceeded" | "dataset-does-not-have-fields-schema" | "dataset-does-not-have-schema" | "dataset-locked" | "dataset-schema-invalid" | "dcr-not-supported" | "default-dataset-not-found" | "deleting-default-build" | "deleting-unfinished-build" | "email-already-taken" | "email-already-taken-removed-user" | "email-domain-not-allowed-for-coupon" | "email-invalid" | "email-not-allowed" | "email-not-valid" | "email-update-too-soon" | "elevated-permissions-needed" | "env-var-already-exists" | "exchange-rate-fetch-failed" | "expired-conference-token" | "failed-to-charge-user" | "final-invoice-negative" | "full-permission-actor-blocked-for-admin" | "full-permission-actor-not-approved" | "full-permissions-require-verified-owner" | "github-branch-empty" | "github-issue-already-exists" | "github-public-key-not-found" | "github-repository-not-found" | "github-signature-does-not-match-payload" | "github-user-not-authorized-for-issues" | "gmail-not-allowed" | "id-does-not-match" | "incompatible-billing-interval" | "incomplete-payout-billing-info" | "inconsistent-currencies" | "incorrect-pricing-modifier-prefix" | "input-json-invalid-characters" | "input-json-not-object" | "input-json-too-long" | "input-update-collision" | "input-validation-timed-out" | "insufficient-permissions" | "insufficient-permissions-to-change-field" | "insufficient-security-measures" | "insufficient-tax-country-evidence" | "integration-auth-error" | "internal-server-error" | "invalid-billing-info" | "invalid-billing-period-for-payout" | "invalid-build" | "invalid-client-key" | "invalid-collection" | "invalid-conference-login-password" | "invalid-content-type-header" | "invalid-credentials" | "invalid-git-auth-token" | "invalid-github-issue-url" | "invalid-header" | "invalid-id" | "invalid-idempotency-key" | "invalid-input" | "invalid-input-schema" | "invalid-invoice" | "invalid-invoice-type" | "invalid-issue-date" | "invalid-label-params" | "invalid-main-account-user-id" | "invalid-oauth-app" | "invalid-oauth-scope" | "invalid-one-time-invoice" | "invalid-parameter" | "invalid-payout-status" | "invalid-picture-url" | "invalid-record-key" | "invalid-request" | "invalid-resource-type" | "invalid-signature" | "invalid-subscription-plan" | "invalid-tax-number" | "invalid-tax-number-format" | "invalid-token" | "invalid-token-type" | "invalid-two-factor-code" | "invalid-two-factor-code-or-recovery-code" | "invalid-two-factor-recovery-code" | "invalid-username" | "invalid-value" | "invitation-invalid-resource-type" | "invitation-no-longer-valid" | "invoice-canceled" | "invoice-cannot-be-refunded-due-to-too-high-amount" | "invoice-incomplete" | "invoice-is-draft" | "invoice-locked" | "invoice-must-be-buffer" | "invoice-not-canceled" | "invoice-not-draft" | "invoice-not-found" | "invoice-outdated" | "invoice-paid-already" | "issue-already-connected-to-github" | "issue-not-found" | "issues-bad-request" | "issuer-not-registered" | "job-finished" | "label-already-linked" | "last-api-token" | "limit-reached" | "max-items-must-be-greater-than-zero" | "max-metamorphs-exceeded" | "max-total-charge-usd-below-minimum" | "max-total-charge-usd-must-be-greater-than-zero" | "mcp-connector-actor-not-allowed" | "method-not-allowed" | "migration-disabled" | "missing-actor-rights" | "missing-api-token" | "missing-billing-info" | "missing-line-items" | "missing-payment-date" | "missing-payout-billing-info" | "missing-proxy-password" | "missing-reporting-fields" | "missing-resource-name" | "missing-settings" | "missing-username" | "monthly-usage-limit-too-low" | "more-public-actors-require-verified-owner" | "more-than-one-update-not-allowed" | "multiple-records-found" | "must-be-admin" | "name-not-unique" | "next-runtime-computation-failed" | "no-columns-in-exported-dataset" | "no-payment-attempt-for-refund-found" | "no-payment-method-available" | "no-team-account-seats-available" | "non-temporary-email" | "not-enough-usage-to-run-paid-actor" | "not-implemented" | "not-supported-currencies" | "o-auth-service-already-connected" | "o-auth-service-not-connected" | "oauth-resource-access-failed" | "one-time-invoice-already-marked-paid" | "only-drafts-can-be-deleted" | "operation-canceled" | "operation-not-allowed" | "operation-timed-out" | "organization-cannot-own-itself" | "organization-role-not-found" | "overlapping-payout-billing-periods" | "own-token-required" | "page-not-found" | "param-not-one-of" | "parameter-required" | "parameters-mismatched" | "password-reset-email-already-sent" | "password-reset-token-expired" | "pay-as-you-go-without-monthly-interval" | "payment-attempt-status-message-required" | "payout-already-paid" | "payout-canceled" | "payout-invalid-state" | "payout-must-be-approved-to-be-marked-paid" | "payout-not-found" | "payout-number-already-exists" | "phone-number-invalid" | "phone-number-landline" | "phone-number-opted-out" | "phone-verification-disabled" | "platform-feature-disabled" | "price-overrides-validation-failed" | "pricing-model-not-supported" | "promotional-plan-not-available" | "proxy-auth-ip-not-unique" | "public-actor-disabled" | "query-timeout" | "quoted-price-outdated" | "rate-limit-exceeded" | "readme-required" | "recaptcha-invalid" | "recaptcha-required" | "record-not-found" | "record-not-public" | "record-or-token-not-found" | "record-too-large" | "redirect-uri-mismatch" | "reduced-plan-not-available" | "rental-charge-already-reimbursed" | "rental-not-allowed" | "request-aborted-prematurely" | "request-handled-or-locked" | "request-id-invalid" | "request-queue-duplicate-requests" | "request-too-large" | "requested-dataset-view-does-not-exist" | "resume-token-expired" | "run-failed" | "run-input-body-not-valid-json" | "run-timeout-exceeded" | "russia-is-evil" | "same-user" | "schedule-actor-not-found" | "schedule-actor-task-not-found" | "schedule-name-not-unique" | "schema-validation" | "schema-validation-error" | "schema-validation-failed" | "schemas-required" | "service-worker-registration-not-allowed" | "sign-up-method-not-allowed" | "slack-integration-not-custom" | "socket-closed" | "socket-destroyed" | "standby-deployment-invalid" | "store-schema-invalid" | "store-terms-not-accepted" | "stripe-enabled" | "stripe-generic-decline" | "stripe-not-enabled" | "stripe-not-enabled-for-user" | "tagged-build-required" | "tax-country-invalid" | "tax-number-invalid" | "tax-number-validation-failed" | "taxamo-call-failed" | "taxamo-request-failed" | "testing-error" | "token-not-provided" | "too-few-versions" | "too-many-actor-tasks" | "too-many-actors" | "too-many-labels-on-resource" | "too-many-mcp-connectors" | "too-many-o-auth-apps" | "too-many-organizations" | "too-many-public-actor-tasks-per-account" | "too-many-public-actor-tasks-per-actor" | "too-many-requests" | "too-many-schedules" | "too-many-ui-access-keys" | "too-many-user-labels" | "too-many-values" | "too-many-versions" | "too-many-webhooks" | "unexpected-route" | "unknown-build-tag" | "unknown-payment-provider" | "unsubscribe-token-invalid" | "unsupported-actor-pricing-model-for-agentic-payments" | "unsupported-content-encoding" | "unsupported-file-type-for-issue" | "unsupported-file-type-image-expected" | "unsupported-file-type-text-or-json-expected" | "unsupported-permission" | "upcoming-subscription-bill-not-up-to-date" | "user-already-exists" | "user-already-verified" | "user-creates-organizations-too-fast" | "user-disabled" | "user-email-is-disposable" | "user-email-not-set" | "user-email-not-verified" | "user-has-no-subscription" | "user-integration-not-found" | "user-is-already-invited" | "user-is-already-organization-member" | "user-is-not-member-of-organization" | "user-is-not-organization" | "user-is-organization" | "user-is-organization-owner" | "user-is-removed" | "user-not-found" | "user-not-logged-in" | "user-not-verified" | "user-or-token-not-found" | "user-plan-not-allowed-for-coupon" | "user-problem-with-card" | "user-record-not-found" | "username-already-taken" | "username-missing" | "username-not-allowed" | "username-removal-forbidden" | "username-required" | "verification-email-already-sent" | "verification-token-expired" | "version-already-exists" | "versions-size-exceeded" | "weak-password" | "x402-agentic-payment-already-finalized" | "x402-agentic-payment-insufficient-amount" | "x402-agentic-payment-malformed-token" | "x402-agentic-payment-settlement-failed" | "x402-agentic-payment-settlement-in-progress" | "x402-agentic-payment-settlement-stuck" | "x402-agentic-payment-unauthorized" | "x402-payment-required" | "zero-invoice";
         /** ErrorDetail */
         ErrorDetail: {
             type?: components["schemas"]["ErrorType"];
@@ -4900,7 +4900,7 @@ export interface components {
              * @description Whether to automatically restart the run if it fails.
              * @example false
              */
-            restartOnError?: boolean;
+            restartOnError?: boolean | null;
             /** @description Maximum number of items the run might produce. */
             maxItems?: number | null;
             forcePermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
@@ -5102,7 +5102,7 @@ export interface components {
             /** @description Whether this event is the Actor's primary chargeable event. */
             isPrimaryEvent?: boolean;
             /** @description Whether this event can only be charged once per Actor run. */
-            isOneTimeEvent?: boolean;
+            isOneTimeEvent?: boolean | null;
         };
         /** PayPerEventActorPricingInfo */
         PayPerEventActorPricingInfo: components["schemas"]["CommonActorPricingInfo"] & {
@@ -5156,13 +5156,17 @@ export interface components {
              */
             pricingModel: "PRICE_PER_DATASET_ITEM";
         };
-        /** FlatPricePerMonthActorPricingInfo */
+        /**
+         * FlatPricePerMonthActorPricingInfo
+         * @deprecated
+         * @description Rental pricing model, which is no longer supported.
+         */
         FlatPricePerMonthActorPricingInfo: components["schemas"]["CommonActorPricingInfo"] & {
             /** @constant */
             pricingModel: "FLAT_PRICE_PER_MONTH";
-            /** @description For how long this Actor can be used for free in trial period */
+            /** @description Number of minutes a user could run the Actor for free before having to rent it. Apify no longer offers rental pricing, so you can see this field only in pricing history and in runs started before rented Actors moved to other pricing models. */
             trialMinutes: number;
-            /** @description Monthly flat price in USD */
+            /** @description Monthly flat price in USD. Apify no longer offers rental pricing, so you can see this field only in pricing history and in runs started before rented Actors moved to other pricing models. */
             pricePerUnitUsd: number;
         } & {
             /**
@@ -5268,7 +5272,7 @@ export interface components {
              * @deprecated
              * @example false
              */
-            restartOnError?: boolean;
+            restartOnError?: boolean | null;
             /**
              * @description Whether the Actor is available to users in Apify Store.
              * @example false
@@ -5290,6 +5294,7 @@ export interface components {
             stats: components["schemas"]["ActorStats"];
             /** @description An array of `Version` objects. Each object represents a specific version of the Actor's source code: its location, builds, and environment configuration. */
             versions: components["schemas"]["Version"][];
+            /** @description The Actor's pricing records, including past ones. */
             pricingInfos?: components["schemas"]["ActorRunPricingInfo"][];
             defaultRunOptions: components["schemas"]["DefaultRunOptions"];
             exampleRunInput?: components["schemas"]["ExampleRunInput"] | null;
@@ -5419,6 +5424,7 @@ export interface components {
             restartOnError?: boolean;
             /** @description An array of `Version` objects. Each object represents a specific version of the Actor's source code: its location, builds, and environment configuration. */
             versions?: components["schemas"]["CreateVersionRequest"][];
+            /** @description The Actor's pricing records. You can't add the `FLAT_PRICE_PER_MONTH` or `PRICE_PER_DATASET_ITEM` records, because these pricing models are no longer supported. */
             pricingInfos?: components["schemas"]["ActorRunPricingInfo"][];
             /**
              * @description A list of categories that best define the Actor. Reflected in Apify Store's search and filtering options.
@@ -5867,8 +5873,11 @@ export interface components {
              */
             actVersion?: {
                 sourceType?: components["schemas"]["VersionSourceType"];
-                /** @example experimental */
-                buildTag?: string;
+                /**
+                 * @description The build tag of the Actor version this build was created from. Can be `null` when the version has no build tag, in which case the build is tagged on success only if the `tag` parameter was passed when starting it.
+                 * @example experimental
+                 */
+                buildTag?: string | null;
                 /** @example 0.0 */
                 versionNumber?: string;
                 /**
@@ -6292,11 +6301,11 @@ export interface components {
             /** @description Resource usage statistics for the run. */
             usage?: components["schemas"]["RunUsage"] | null;
             /**
-             * @description Total cost in USD for this run. Represents what you actually pay. For run owners: includes platform usage (compute units) and/or event costs depending on the Actor's pricing model. For run non-owners: only available for Pay-Per-Event Actors (event costs only). Requires authentication token to access.
+             * @description Total cost in USD for this run. Represents what you actually pay. For run owners: includes platform usage (compute units) and/or event costs depending on the Actor's pricing model. For run non-owners: only available for pay-per-event Actors (event costs only). Requires authentication token to access.
              * @example 0.2654
              */
             usageTotalUsd?: number | null;
-            /** @description Platform usage costs breakdown in USD. Only present if you own the run AND are paying for platform usage (Pay-Per-Usage, Rental, or Pay-Per-Event with usage costs like standby Actors). Not available for standard Pay-Per-Event Actors. Requires authentication token to access. */
+            /** @description Platform usage costs breakdown in USD. Only present if you own the run and are paying for platform usage (pay-per-usage or pay-per-event with usage costs like Standby Actors). Not available for standard pay-per-event Actors. Requires authentication token to access. */
             usageUsd?: components["schemas"]["RunUsageUsd"] | null;
             /** @description List of metamorph events that occurred during the run. */
             metamorphs?: components["schemas"]["RunMetamorphEvent"][] | null;
@@ -7419,7 +7428,7 @@ export interface components {
              * Format: date-time
              * @description Time when the task was published, or `null` if the task isn't published.
              *     This field is server-controlled. To publish or unpublish a task, use the
-             *     [Update task](https://docs.apify.com/api/v2/actor-task-put) endpoint and set `isPublic`.
+             *     [Update Actor task](https://docs.apify.com/api/v2/actor-task-put) endpoint and set `isPublic`.
              * @example 2025-06-16T09:20:45.777Z
              */
             readonly publishedAt?: Date | null;
@@ -8115,12 +8124,6 @@ export interface components {
             isPPEPlatformUsagePaidByUser?: boolean;
             /** @example null */
             reasonForChange?: string | null;
-            /** @example null */
-            trialMinutes?: number | null;
-            /** @example null */
-            unitName?: string | null;
-            /** @example null */
-            pricePerUnitUsd?: number | null;
             /** @example 0.5 */
             minimalMaxTotalChargeUsd?: number | null;
             /** @description Per-event pricing configuration for pay-per-event Actors. */
@@ -10471,6 +10474,7 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             405: components["responses"]["MethodNotAllowed"];
@@ -20735,7 +20739,7 @@ export interface operations {
                 /** @description Filters the results by the specified username. */
                 username?: string;
                 /** @description Only return Actors with the specified pricing model. */
-                pricingModel?: "FREE" | "FLAT_PRICE_PER_MONTH" | "PRICE_PER_DATASET_ITEM" | "PAY_PER_EVENT";
+                pricingModel?: "FREE" | "PRICE_PER_DATASET_ITEM" | "PAY_PER_EVENT";
                 /**
                  * @description If true, only return Actors that allow agentic users. If false, only
                  *     return Actors that do not allow agentic users.
