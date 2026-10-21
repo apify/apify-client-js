@@ -3527,10 +3527,10 @@ export interface RunAbortOptions extends TimeoutOptions {
 
 // @public
 export interface RunChargeOptions extends TimeoutOptions {
-    apifyRequestId?: string;
     count?: number;
     eventName: string;
     idempotencyKey?: string;
+    requestId?: string;
 }
 
 // @public

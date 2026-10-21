@@ -42,7 +42,7 @@ const chargeOptionsSchema = z.strictObject({
     eventName: z.string(),
     count: z.number().default(1),
     idempotencyKey: z.string().optional(),
-    apifyRequestId: z.string().optional(),
+    requestId: z.string().optional(),
     ...timeoutOptionsShape,
 });
 const waitForFinishOptionsSchema = z.strictObject({ waitSecs: z.number().optional(), ...timeoutOptionsShape });
@@ -343,6 +343,7 @@ export class RunClient extends ResourceClient {
      * @param options.eventName - **Required.** Name of the event to charge for.
      * @param options.count - Number of times to charge the event. Default is 1.
      * @param options.idempotencyKey - Optional key to ensure the charge is not duplicated. If not provided, one is auto-generated.
+     * @param options.requestId - ID of the Server Actor request being charged, from the `X-Actor-Request-ID` header of the incoming request. Required for multi-tenant Server Actor runs.
      * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
      * @returns Empty response object.
      * @see https://docs.apify.com/api/v2/post-charge-run
@@ -354,7 +355,7 @@ export class RunClient extends ResourceClient {
             count,
             idempotencyKey: providedIdempotencyKey,
             timeoutSecs = 'short',
-            apifyRequestId: requestId,
+            requestId,
             signal,
         } = parseArgument(options, chargeOptionsSchema, 'RunChargeOptions');
 
@@ -728,10 +729,11 @@ export interface RunChargeOptions extends TimeoutOptions {
     /** Defaults to runId-eventName-timestamp */
     idempotencyKey?: string;
     /**
-     * ID of the request being served by a multi-tenant Standby run, taken from the `X-Apify-Request-ID` header of the incoming request.
-     * Maps the charge to the account of the caller who made that request instead of the account that started the run.
+     * ID of the Server Actor request being charged, taken from the `X-Actor-Request-ID` header of the incoming request.
+     * Required for multi-tenant Server Actor runs, where it maps the charge to the caller's account instead of the account that started the run.
+     * Ignored elsewhere.
      */
-    apifyRequestId?: string;
+    requestId?: string;
 }
 
 /**
