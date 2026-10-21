@@ -290,6 +290,7 @@ export class RunClient extends ResourceClient {
      * @param options.eventName - **Required.** Name of the event to charge for.
      * @param options.count - Number of times to charge the event. Default is 1.
      * @param options.idempotencyKey - Optional key to ensure the charge is not duplicated. If not provided, one is auto-generated.
+     * @param options.requestId - ID of the Server Actor request being charged, from the `X-Actor-Request-ID` header of the incoming request. Required for multi-tenant Server Actor runs.
      * @returns Empty response object.
      * @see https://docs.apify.com/api/v2/post-charge-run
      * @since Added in 2.11.0
@@ -301,6 +302,7 @@ export class RunClient extends ResourceClient {
                 eventName: ow.string,
                 count: ow.optional.number,
                 idempotencyKey: ow.optional.string,
+                requestId: ow.optional.string,
             }),
         );
 
@@ -316,6 +318,7 @@ export class RunClient extends ResourceClient {
             data: {
                 eventName: options.eventName,
                 count,
+                requestId: options.requestId,
             },
             headers: {
                 [RUN_CHARGE_IDEMPOTENCY_HEADER]: idempotencyKey,
@@ -554,6 +557,12 @@ export interface RunChargeOptions {
     count?: number;
     /** Defaults to runId-eventName-timestamp */
     idempotencyKey?: string;
+    /**
+     * ID of the Server Actor request being charged, taken from the `X-Actor-Request-ID` header of the incoming request.
+     * Required for multi-tenant Server Actor runs, where it maps the charge to the caller's account instead of the account that started the run.
+     * Ignored elsewhere.
+     */
+    requestId?: string;
 }
 
 /**

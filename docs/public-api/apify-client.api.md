@@ -2032,6 +2032,7 @@ export interface RunChargeOptions {
     count?: number;
     eventName: string;
     idempotencyKey?: string;
+    requestId?: string;
 }
 
 // @public

@@ -386,8 +386,9 @@ describe('Run methods', () => {
         test('charge() works', async () => {
             const runId = 'some-run-id';
 
-            const res = await client.run(runId).charge({ eventName: 'some-event' });
+            const res = await client.run(runId).charge({ eventName: 'some-event', requestId: 'some-request-id' });
             expect(res.status).toEqual(200);
+            validateRequest({ body: { eventName: 'some-event', count: 1, requestId: 'some-request-id' } });
 
             await expect(client.run(runId).charge(undefined as any)).rejects.toThrow(
                 'Expected argument to be of type `object` but received type `undefined`\n' +
