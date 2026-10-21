@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 <!-- git-cliff-unreleased-start -->
 ## 2.25.1 - **not yet released**
 
+### 🚀 Features
+
+- Allow passing X-Actor-Request-ID via charge() method (backport of #1162) ([9e497bb](https://github.com/apify/apify-client-js/commit/9e497bbc37f427d10c3dc987517382c8ab1df1cf))
+
 
 <!-- git-cliff-unreleased-end -->
 ## [2.25.0](https://github.com/apify/apify-client-js/releases/tag/v2.25.0) (2026-08-11)
