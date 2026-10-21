@@ -3553,6 +3553,7 @@ export interface RunChargeOptions extends TimeoutOptions {
     count?: number;
     eventName: string;
     idempotencyKey?: string;
+    requestId?: string;
 }
 
 // @public

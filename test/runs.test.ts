@@ -413,8 +413,9 @@ describe('Run methods', () => {
         test('charge() works', async () => {
             const runId = 'some-run-id';
 
-            const res = await client.run(runId).charge({ eventName: 'some-event' });
+            const res = await client.run(runId).charge({ eventName: 'some-event', requestId: 'some-request-id' });
             expect(res.status).toEqual(200);
+            validateRequest({ body: { eventName: 'some-event', count: 1, requestId: 'some-request-id' } });
 
             // Assert on the error type and the structured issue, since zod owns the wording.
             const error = await client
