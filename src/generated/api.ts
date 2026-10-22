@@ -7630,6 +7630,11 @@ export interface components {
             eventName: string;
             /** @example 1 */
             count: number;
+            /**
+             * @description ID of the Server Actor request being charged, from the `X-Actor-Request-ID` header of the incoming request. Required for multi-tenant Server Actor runs, where it identifies the request the charge belongs to.
+             * @example 7Hs2kQw9LxP4mN1vB
+             */
+            requestId?: string;
         };
         /**
          * @example ownedByMe
