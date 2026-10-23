@@ -736,14 +736,14 @@ export interface paths {
          *     Actor run and returns an object that contains all the details about the
          *     resurrected run.
          *
-         *     Only finished runs, i.e. runs with status `FINISHED`, `FAILED`, `ABORTED`
+         *     Only finished runs, i.e. runs with status `SUCCEEDED`, `FAILED`, `ABORTED`
          *     and `TIMED-OUT` can be resurrected.
          *     Run status will be updated to RUNNING and its container will be restarted
          *     with the same storages
          *     (the same behaviour as when the run gets migrated to the new server).
          *
          *     For more information, see the [Actor
-         *     docs](https://docs.apify.com/platform/actors/running/runs-and-builds#resurrection-of-finished-run).
+         *     docs](https://docs.apify.com/platform/actors/running/runs-and-builds#resurrect-a-finished-run).
          */
         post: operations["actor_run_resurrect_post"];
         delete?: never;
@@ -2615,11 +2615,11 @@ export interface paths {
         /**
          * Resurrect Actor run
          * @description Resurrects a finished Actor run and returns an object that contains all the details about the resurrected run.
-         *     Only finished runs, i.e. runs with status `FINISHED`, `FAILED`, `ABORTED` and `TIMED-OUT` can be resurrected.
+         *     Only finished runs, that is, runs with status `SUCCEEDED`, `FAILED`, `ABORTED` and `TIMED-OUT` can be resurrected.
          *     Run status will be updated to RUNNING and its container will be restarted with the same storages
          *     (the same behaviour as when the run gets migrated to the new server).
          *
-         *     For more information, see the [Actor docs](https://docs.apify.com/platform/actors/running/runs-and-builds#resurrection-of-finished-run).
+         *     For more information, see the [Actor docs](https://docs.apify.com/platform/actors/running/runs-and-builds#resurrect-a-finished-run).
          */
         post: operations["PostResurrectRun"];
         delete?: never;
@@ -2639,15 +2639,9 @@ export interface paths {
         put?: never;
         /**
          * Charge events in Actor run
-         * @description Charge for events in the run of your [pay per event Actor](https://docs.apify.com/platform/actors/running/actors-in-store#pay-per-event).
+         * @description Charge for events in the run of your [pay-per-event Actor](https://docs.apify.com/actors/monetize/pay-per-event).
          *     The event you are charging for must be one of the configured events in your Actor. If the Actor is not set up as pay per event, or if the event is not configured,
          *     the endpoint will return an error. The endpoint must be called from the Actor run itself, with the same API token that the run was started with.
-         *
-         *     :::info Learn more about pay-per-event pricing
-         *
-         *     For more details about pay-per-event (PPE) pricing, refer to our [PPE documentation](https://docs.apify.com/actors/publishing/monetize/pay-per-event).
-         *
-         *     :::
          */
         post: operations["PostChargeRun"];
         delete?: never;
@@ -7630,6 +7624,11 @@ export interface components {
             eventName: string;
             /** @example 1 */
             count: number;
+            /**
+             * @description ID of the Server Actor request being charged, from the `X-Actor-Request-ID` header of the incoming request. Required for multi-tenant Server Actor runs, where it identifies the request the charge belongs to.
+             * @example 7Hs2kQw9LxP4mN1vB
+             */
+            requestId?: string;
         };
         /**
          * @example ownedByMe
