@@ -4155,7 +4155,7 @@ export interface VersionSourceCode extends BaseVersion<`${ActorSourceType.Source
 }
 
 // @public
-export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.SourceFiles}`> {
+export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.SourceFiles}`>, VersionSpecGaps {
     // (undocumented)
     sourceFiles: (SourceCodeFile | SourceCodeFolder)[];
 }
@@ -4164,8 +4164,14 @@ export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.Sourc
 // @public
 type VersionSourceLocation = 'sourceFiles' | 'gitRepoUrl' | 'tarballUrl' | 'gitHubGistUrl';
 
+// Not exported by the entry point; reachable only as a referenced type.
 // @public
-export interface VersionTarball extends BaseVersion<`${ActorSourceType.Tarball}`> {
+interface VersionSpecGaps {
+    actorPath?: string;
+}
+
+// @public
+export interface VersionTarball extends BaseVersion<`${ActorSourceType.Tarball}`>, VersionSpecGaps {
     // (undocumented)
     tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
 }
