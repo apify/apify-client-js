@@ -81,7 +81,7 @@
     },
     "apify": {
         "openapiSpec": {
-            "version": "v2-2026-10-20T095308Z"
+            "version": "v2-2026-10-22T124802Z"
         }
     },
     "dependencies": {

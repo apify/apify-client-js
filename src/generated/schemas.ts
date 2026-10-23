@@ -1261,6 +1261,7 @@ export const UpdateRunRequest = lazySchema(() => z.looseObject({
 export const ChargeRunRequest = lazySchema(() => z.looseObject({
     eventName: z.string(),
     count: z.int(),
+    requestId: z.string().optional(),
 }));
 
 export const StorageOwnership = lazySchema(() => z.enum(["ownedByMe", "sharedWithMe"]).or(z.string()));
