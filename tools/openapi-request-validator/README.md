@@ -2,7 +2,12 @@
 
 Checks the requests the client sends against the Apify API OpenAPI specification and reports every mismatch.
 Only requests are validated; responses are passed through untouched. Nothing is ever blocked, the result is a
-report, so it works as a warning in CI while the specification and the client catch up with each other.
+report, so it works as a warning while the specification and the client catch up with each other.
+
+Validation is opt-in. The regular `Check` workflow and a plain `pnpm test` or `pnpm test:integration` never run it.
+The manual `Run tests` workflow (Actions, `Run workflow`) runs the whole suite with the
+`Check every request against the OpenAPI specification` option on by default and prints the findings as warning
+annotations.
 
 - `validator.mts` is an Express middleware. The unit-test mock server mounts it when `OPENAPI_SPEC_PATH` is set
   and appends findings to `OPENAPI_REPORT_FILE`.

@@ -48,19 +48,8 @@ jobs:
             - name: Install Chrome for puppeteer
               run: pnpm exec puppeteer browsers install chrome
 
-            - name: Fetch the OpenAPI specification
-              run: pnpm spec:fetch
-
-            # The mock server also checks every request against the specification, see `tools/openapi-request-validator`.
             - name: Run Tests
               run: pnpm test
-              env:
-                  OPENAPI_SPEC_PATH: tmp/openapi.json
-                  OPENAPI_REPORT_FILE: openapi-findings.jsonl
-
-            - name: Report requests that do not match the OpenAPI specification
-              if: always()
-              run: pnpm openapi:report openapi-findings.jsonl
 
     integration_tests:
         name: Integration tests (Node ${{ matrix.node-version }})
@@ -103,28 +92,9 @@ jobs:
             # A workflow that calls this one as a reusable workflow - the release flow does - gets no
             # secrets unless it opts in with `secrets: inherit`, so the token can legitimately be empty.
             # Skip rather than fail there, otherwise a missing token blocks the release.
-            - name: Fetch the OpenAPI specification
-              if: ${{ env.APIFY_TEST_USER_API_TOKEN != '' }}
-              run: pnpm spec:fetch
-
-            # The tests talk to the live API through a proxy that checks every request against the
-            # specification, see `tools/openapi-request-validator`. The proxy keeps running into the next steps.
-            - name: Start the OpenAPI validating proxy
-              if: ${{ env.APIFY_TEST_USER_API_TOKEN != '' }}
-              run: |
-                  pnpm openapi:proxy --spec tmp/openapi.json --port 3999 --report openapi-findings.jsonl > openapi-proxy.log 2>&1 &
-                  for _ in $(seq 1 30); do grep -q listening openapi-proxy.log && break; sleep 1; done
-                  cat openapi-proxy.log
-
             - name: Run integration tests
               if: ${{ env.APIFY_TEST_USER_API_TOKEN != '' }}
               run: pnpm test:integration
-              env:
-                  APIFY_INTEGRATION_TESTS_API_URL: http://127.0.0.1:3999
-
-            - name: Report requests that do not match the OpenAPI specification
-              if: ${{ always() && env.APIFY_TEST_USER_API_TOKEN != '' }}
-              run: pnpm openapi:report openapi-findings.jsonl
 
             - name: Report the skipped integration tests
               if: ${{ env.APIFY_TEST_USER_API_TOKEN == '' }}
