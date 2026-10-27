@@ -1,6 +1,6 @@
-# Runs the whole test suite (unit and integration) on demand. Unlike the `Check` workflow, every request the tests
-# send can be checked against the published OpenAPI specification; mismatches are reported as warnings and never
-# fail the run. See `tools/openapi-request-validator`.
+# Runs the whole test suite (unit and integration) with every request the tests send checked against the published
+# OpenAPI specification. Mismatches are reported as warnings and never fail the run, see
+# `tools/openapi-request-validator`. Runs on every pull request update, and on demand with the validation optional.
 
 name: Run tests
 
@@ -11,9 +11,11 @@ on:
                 description: Check every request against the OpenAPI specification and report mismatches as warnings
                 type: boolean
                 default: true
-    # TEMPORARY, remove before merging: a workflow can only be started by hand once it exists on the default
-    # branch, so until then the pull request runs it with validation on.
     pull_request:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 permissions:
     contents: read
@@ -22,7 +24,7 @@ env:
     NODE_VERSION: 24
     # Where the unit-test mock server and the integration-test proxy append their findings.
     OPENAPI_FINDINGS_FILE: openapi-findings.jsonl
-    # Decided once here: ticked when started by hand, always on for the temporary pull request trigger.
+    # Decided once here: always on for a pull request, as ticked when started by hand.
     VALIDATE_OPENAPI: ${{ github.event_name == 'pull_request' || inputs.validate_openapi }}
 
 jobs:
