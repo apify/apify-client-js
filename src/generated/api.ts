@@ -151,15 +151,15 @@ export interface paths {
         /**
          * Get list of Actor versions
          * @description Gets the list of versions of a specific Actor. The response is a JSON object
-         *     with the list of [Version objects](#/reference/actors/version-object), where each
+         *     with the list of `Version` objects, where each
          *     contains basic information about a single version.
          */
         get: operations["actor_versions_get"];
         put?: never;
         /**
          * Create Actor version
-         * @description Creates a version of an Actor using values specified in a [Version
-         *     object](#/reference/actors/version-object) passed as JSON in the POST
+         * @description Creates a version of an Actor using values specified in a `Version`
+         *     object passed as JSON in the POST
          *     payload.
          *
          *     The request must specify `versionNumber` and `sourceType` parameters (as
@@ -167,8 +167,8 @@ export interface paths {
          *     header.
          *
          *     Each `sourceType` requires its own additional properties to be passed to the
-         *     JSON payload object. These are outlined in the [Version
-         *     object](#/reference/actors/version-object) table below and in more detail in
+         *     JSON payload object. These are outlined in the `Version`
+         *     object table below and in more detail in
          *     the [Apify
          *     documentation](https://docs.apify.com/platform/actors/development/deployment/source-types).
          *
@@ -185,8 +185,8 @@ export interface paths {
          *     }
          *     ```
          *
-         *     The response is the [Version object](#/reference/actors/version-object) as
-         *     returned by the [Get version](#/reference/actors/version-object/get-version) endpoint.
+         *     The response is the `Version` object as
+         *     returned by the [Get Actor version](https://docs.apify.com/api/v2/actor-version-get) endpoint.
          */
         post: operations["actor_versions_post"];
         delete?: never;
@@ -204,12 +204,12 @@ export interface paths {
         };
         /**
          * Get Actor version
-         * @description Gets a [Version object](#/reference/actors/version-object) that contains all the details about a specific version of an Actor.
+         * @description Gets a `Version` object that contains all the details about a specific version of an Actor.
          */
         get: operations["actor_version_get"];
         /**
          * Update Actor version
-         * @description Updates Actor version using values specified by a [Version object](#/reference/actors/version-object) passed as JSON in the POST payload.
+         * @description Updates Actor version using values specified by a `Version` object passed as JSON in the POST payload.
          *
          *     If the object does not define a specific property, its value will not be
          *     updated.
@@ -218,17 +218,17 @@ export interface paths {
          *     header!
          *
          *     When providing your API authentication token, we recommend using the
-         *     request's `Authorization` header, rather than the URL. ([More
-         *     info](#/introduction/authentication)).
+         *     request's `Authorization` header, rather than the URL.
+         *     For details, see [Authentication](https://docs.apify.com/api/v2/getting-started#authentication).
          *
-         *     The response is the [Version object](#/reference/actors/version-object) as
-         *     returned by the [Get version](#/reference/actors/version-object/get-version) endpoint.
+         *     The response is the `Version` object as
+         *     returned by the [Get Actor version](https://docs.apify.com/api/v2/actor-version-get) endpoint.
          */
         put: operations["actor_version_put"];
         /**
          * Update Actor version (POST)
-         * @description Updates Actor version using values specified by a [Version object](#/reference/actors/version-object) passed as JSON in the POST payload.
-         *     This endpoint is an alias for the [`PUT` update version](#tag/ActorsVersion-object/operation/act_version_put) method and behaves identically.
+         * @description Updates Actor version using values specified by a `Version` object passed as JSON in the POST payload.
+         *     This endpoint is an alias for the [Update Actor version](https://docs.apify.com/api/v2/actor-version-put) endpoint and behaves identically.
          */
         post: operations["actor_version_post"];
         /**
@@ -251,14 +251,14 @@ export interface paths {
         /**
          * Get list of environment variables of Actor version
          * @description Gets the list of environment variables for a specific version of an Actor.
-         *     The response is a JSON object with the list of [EnvVar objects](#/reference/actors/environment-variable-object), where each contains basic information about a single environment variable.
+         *     The response is a JSON object with the list of `EnvVar` objects, where each contains basic information about a single environment variable.
          */
         get: operations["actor_version_envVars_get"];
         put?: never;
         /**
          * Create environment variable in Actor version
-         * @description Creates an environment variable of an Actor using values specified in a
-         *     [EnvVar object](#/reference/actors/environment-variable-object) passed as
+         * @description Creates an environment variable of an Actor using values specified in an
+         *     `EnvVar` object passed as
          *     JSON in the POST payload.
          *
          *     The request must specify `name` and `value` parameters (as strings) in the
@@ -271,9 +271,8 @@ export interface paths {
          *     }
          *     ```
          *
-         *     The response is the [EnvVar
-         *     object](#/reference/actors/environment-variable-object) as returned by the [Get environment
-         *     variable](#/reference/actors/environment-variable-object/get-environment-variable)
+         *     The response is the `EnvVar`
+         *     object as returned by the [Get environment variable of Actor version](https://docs.apify.com/api/v2/actor-version-env-var-get)
          *     endpoint.
          */
         post: operations["actor_version_envVars_post"];
@@ -292,7 +291,7 @@ export interface paths {
         };
         /**
          * Get environment variable of Actor version
-         * @description Gets a [EnvVar object](#/reference/actors/environment-variable-object) that
+         * @description Gets an `EnvVar` object that
          *     contains all the details about a specific environment variable of an Actor.
          *
          *     If `isSecret` is set to `true`, then `value` will never be returned.
@@ -300,8 +299,8 @@ export interface paths {
         get: operations["actor_version_envVar_get"];
         /**
          * Update environment variable in Actor version
-         * @description Updates Actor environment variable using values specified by a [EnvVar
-         *     object](#/reference/actors/environment-variable-object)
+         * @description Updates Actor environment variable using values specified by an `EnvVar`
+         *     object
          *     passed as JSON in the POST payload.
          *     If the object does not define a specific property, its value will not be
          *     updated.
@@ -310,20 +309,20 @@ export interface paths {
          *     header!
          *
          *     When providing your API authentication token, we recommend using the
-         *     request's `Authorization` header, rather than the URL. ([More
-         *     info](#/introduction/authentication)).
+         *     request's `Authorization` header, rather than the URL.
+         *     For details, see [Authentication](https://docs.apify.com/api/v2/getting-started#authentication).
          *
-         *     The response is the [EnvVar object](#/reference/actors/environment-variable-object) as returned by the
-         *     [Get environment variable](#/reference/actors/environment-variable-object/get-environment-variable)
+         *     The response is the `EnvVar` object as returned by the
+         *     [Get environment variable of Actor version](https://docs.apify.com/api/v2/actor-version-env-var-get)
          *     endpoint.
          */
         put: operations["actor_version_envVar_put"];
         /**
          * Update environment variable in Actor version (POST)
-         * @description Updates Actor environment variable using values specified by a [EnvVar
-         *     object](#/reference/actors/environment-variable-object)
+         * @description Updates Actor environment variable using values specified by an `EnvVar`
+         *     object
          *     passed as JSON in the POST payload.
-         *     This endpoint is an alias for the [`PUT` update environment variable](#tag/ActorsEnvironment-variable-object/operation/act_version_envVar_put) method and behaves identically.
+         *     This endpoint is an alias for the [Update environment variable in Actor version](https://docs.apify.com/api/v2/actor-version-env-var-put) endpoint and behaves identically.
          */
         post: operations["actor_version_envVar_post"];
         /**
@@ -389,7 +388,7 @@ export interface paths {
          * Build Actor
          * @description Builds an Actor.
          *     The response is the build object as returned by the
-         *     [Get build](#/reference/actors/build-object/get-build) endpoint.
+         *     [Get Actor build](https://docs.apify.com/api/v2/actor-build-get) endpoint.
          */
         post: operations["actors_builds_post"];
         delete?: never;
@@ -435,9 +434,9 @@ export interface paths {
          * Get OpenAPI definition of Actor build
          * @description Get the OpenAPI definition for Actor builds. Two similar endpoints are available:
          *
-         *     - [First endpoint](https://docs.apify.com/api/v2/actor-openapi-json-get): Requires both `actorId` and `buildId`. Use `default` as the `buildId` to get the OpenAPI schema for the default Actor build.
+         *     - [Get OpenAPI definition of Actor build](https://docs.apify.com/api/v2/actor-openapi-json-get) (`/v2/actors/{actorId}/builds/{buildId}/openapi.json`): Requires both `actorId` and `buildId`. Use `default` as the `buildId` to get the OpenAPI schema for the default Actor build.
          *
-         *     - [Second endpoint](https://docs.apify.com/api/v2/actor-build-openapi-json-get): Requires only `buildId`.
+         *     - [Get OpenAPI definition of Actor build](https://docs.apify.com/api/v2/actor-build-openapi-json-get) (`/v2/actor-builds/{buildId}/openapi.json`): Requires only `buildId`.
          *
          *     Get the OpenAPI definition for a specific Actor build.
          *
@@ -446,7 +445,7 @@ export interface paths {
          *
          *     :::note
          *
-         *     You can also use the [`/api/v2/actor-build-openapi-json-get`](https://docs.apify.com/api/v2/actor-build-openapi-json-get) endpoint to get the OpenAPI definition for a build.
+         *     You can also use the [Get OpenAPI definition of Actor build](https://docs.apify.com/api/v2/actor-build-openapi-json-get) endpoint (`/v2/actor-builds/{buildId}/openapi.json`) to get the OpenAPI definition for a build.
          *
          *     :::
          */
@@ -499,7 +498,7 @@ export interface paths {
          * Abort Actor build
          * @deprecated
          * @description **[DEPRECATED]** API endpoints related to build of the Actor were moved
-         *     under new namespace [`actor-builds`](#/reference/actor-builds). Aborts an
+         *     under new namespace `actor-builds` ([Manage Actor builds](https://docs.apify.com/api/v2/actor-builds)). Aborts an
          *     Actor build and returns an object that contains all the details about the
          *     build.
          *
@@ -546,18 +545,17 @@ export interface paths {
          *     The Actor is started with the default options; you can override them using
          *     various URL query parameters.
          *
-         *     The response is the Run object as returned by the [Get
-         *     run](#/reference/actor-runs/run-object-and-its-storages/get-run) API
+         *     The response is the Run object as returned by the [Get Actor run](https://docs.apify.com/api/v2/actor-run-get) API
          *     endpoint.
          *
          *     If you want to wait for the run to finish and receive the actual output of
-         *     the Actor as the response, please use one of the [Run Actor
-         *     synchronously](#/reference/actors/run-actor-synchronously) API endpoints
-         *     instead.
+         *     the Actor as the response, please use the [Run Actor synchronously and get key-value store record](https://docs.apify.com/api/v2/actor-run-sync-post)
+         *     or [Run Actor synchronously and get dataset items](https://docs.apify.com/api/v2/actor-run-sync-get-dataset-items-post)
+         *     endpoint instead.
          *
          *     To fetch the Actor run results that are typically stored in the default
          *     dataset, you'll need to pass the ID received in the `defaultDatasetId` field
-         *     received in the response JSON to the [Get dataset items](#/reference/datasets/item-collection/get-items)
+         *     received in the response JSON to the [Get dataset items](https://docs.apify.com/api/v2/dataset-items-get)
          *     API endpoint.
          */
         post: operations["actors_runs_post"];
@@ -593,8 +591,7 @@ export interface paths {
          *     If the connection breaks, you will not receive any information about the run
          *     and its status.
          *
-         *     To run the Actor asynchronously, use the [Run
-         *     Actor](#/reference/actors/run-collection/run-actor) API endpoint instead.
+         *     To run the Actor asynchronously, use the [Run Actor](https://docs.apify.com/api/v2/actors-runs-post) API endpoint instead.
          */
         get: operations["actor_runSync_get"];
         put?: never;
@@ -623,8 +620,7 @@ export interface paths {
          *     If the connection breaks, you will not receive any information about the run
          *     and its status.
          *
-         *     To run the Actor asynchronously, use the [Run
-         *     Actor](#/reference/actors/run-collection/run-actor) API endpoint instead.
+         *     To run the Actor asynchronously, use the [Run Actor](https://docs.apify.com/api/v2/actors-runs-post) API endpoint instead.
          */
         post: operations["actor_runSync_post"];
         delete?: never;
@@ -647,8 +643,7 @@ export interface paths {
          *     otherwise the API endpoint returns a timeout error.
          *     The Actor is not passed any input.
          *
-         *     It allows to send all possible options in parameters from [Get Dataset
-         *     Items](#/reference/datasets/item-collection/get-items) API endpoint.
+         *     It allows to send all possible options in parameters from [Get dataset items](https://docs.apify.com/api/v2/dataset-items-get) API endpoint.
          *
          *     Beware that it might be impossible to maintain an idle HTTP connection for a
          *     long period of time,
@@ -657,8 +652,7 @@ export interface paths {
          *     If the connection breaks, you will not receive any information about the run
          *     and its status.
          *
-         *     To run the Actor asynchronously, use the [Run
-         *     Actor](#/reference/actors/run-collection/run-actor) API endpoint instead.
+         *     To run the Actor asynchronously, use the [Run Actor](https://docs.apify.com/api/v2/actors-runs-post) API endpoint instead.
          */
         get: operations["actor_runSyncGetDatasetItems_get"];
         put?: never;
@@ -671,8 +665,7 @@ export interface paths {
          *     The HTTP response contains the Actors dataset items, while the format of
          *     items depends on specifying dataset items' `format` parameter.
          *
-         *     You can send all the same options in parameters as the [Get Dataset
-         *     Items](#/reference/datasets/item-collection/get-items) API endpoint.
+         *     You can send all the same options in parameters as the [Get dataset items](https://docs.apify.com/api/v2/dataset-items-get) API endpoint.
          *
          *     The Actor is started with the default options; you can override them using
          *     URL query parameters.
@@ -686,8 +679,7 @@ export interface paths {
          *     If the connection breaks, you will not receive any information about the run
          *     and its status.
          *
-         *     To run the Actor asynchronously, use the [Run
-         *     Actor](#/reference/actors/run-collection/run-actor) API endpoint instead.
+         *     To run the Actor asynchronously, use the [Run Actor](https://docs.apify.com/api/v2/actors-runs-post) API endpoint instead.
          */
         post: operations["actor_runSyncGetDatasetItems_post"];
         delete?: never;
@@ -732,7 +724,8 @@ export interface paths {
         /**
          * Resurrect Actor run
          * @description **[DEPRECATED]** API endpoints related to run of the Actor were moved under
-         *     new namespace [`actor-runs`](#/reference/actor-runs).Resurrects a finished
+         *     new namespace `actor-runs`
+         *     ([Manage Actor runs](https://docs.apify.com/api/v2/actor-runs)). Resurrects a finished
          *     Actor run and returns an object that contains all the details about the
          *     resurrected run.
          *
@@ -772,17 +765,17 @@ export interface paths {
          *     Using the `status` query parameter you can ensure to only get a run with a certain status
          *     (e.g. `status=SUCCEEDED`). Similarly, the `origin` query parameter filters runs by the means
          *     by which they were started (e.g. `origin=API`). The output of this endpoint and other query
-         *     parameters are the same as in the [Run object](#/reference/actors/run-object) endpoint.
+         *     parameters are the same as in the [Get Actor run](https://docs.apify.com/api/v2/actor-run-get) endpoint.
          *
          *     ##### Convenience endpoints for last Actor run
          *
-         *     * [Dataset](https://docs.apify.com/api/v2/last-actor-runs-default-dataset)
+         *     * [Last Actor run's default dataset](https://docs.apify.com/api/v2/last-actor-runs-default-dataset)
          *
-         *     * [Key-value store](https://docs.apify.com/api/v2/last-actor-runs-default-key-value-store)
+         *     * [Last Actor run's default key-value store](https://docs.apify.com/api/v2/last-actor-runs-default-key-value-store)
          *
-         *     * [Request queue](https://docs.apify.com/api/v2/last-actor-runs-default-request-queue)
+         *     * [Last Actor run's default request queue](https://docs.apify.com/api/v2/last-actor-runs-default-request-queue)
          *
-         *     * [Log](https://docs.apify.com/api/v2/last-actor-runs-log)
+         *     * [Last Actor run's log](https://docs.apify.com/api/v2/last-actor-runs-log)
          */
         get: operations["actor_runs_last_get"];
         put?: never;
@@ -1289,7 +1282,7 @@ export interface paths {
          * @description Aborts the last run of the specified Actor and returns an object that
          *     contains all the details about the run.
          *
-         *     This endpoint is a shortcut for [Abort run](#/reference/actor-runs/abort-run/abort-run)
+         *     This endpoint is a shortcut for [Abort Actor run](https://docs.apify.com/api/v2/actor-run-abort-post)
          *     on the Actor's last run. Only runs that are starting or running are aborted.
          *     For runs with status `FINISHED`, `FAILED`, `ABORTING` and `TIMED-OUT` this call
          *     does nothing.
@@ -1315,7 +1308,7 @@ export interface paths {
          * @description Transforms the last run of the specified Actor into a run of another Actor with
          *     a new input.
          *
-         *     This endpoint is a shortcut for [Metamorph run](#/reference/actor-runs/metamorph-run/metamorph-run)
+         *     This endpoint is a shortcut for [Metamorph Actor run](https://docs.apify.com/api/v2/actor-run-metamorph-post)
          *     on the Actor's last run.
          */
         post: operations["actor_runs_last_metamorph_post"];
@@ -1339,7 +1332,7 @@ export interface paths {
          * @description Reboots the last run of the specified Actor and returns an object that
          *     contains all the details about the rebooted run.
          *
-         *     This endpoint is a shortcut for [Reboot run](#/reference/actor-runs/reboot-run/reboot-run)
+         *     This endpoint is a shortcut for [Reboot Actor run](https://docs.apify.com/api/v2/actor-run-reboot-post)
          *     on the Actor's last run. Only runs with status `RUNNING` can be rebooted. The run's
          *     container will be restarted, so any data not persisted in the key-value store, dataset,
          *     or request queue will be lost.
@@ -1362,7 +1355,8 @@ export interface paths {
          * Get Actor run
          * @deprecated
          * @description **[DEPRECATED]** API endpoints related to run of the Actor were moved under
-         *     new namespace [`actor-runs`](#/reference/actor-runs).
+         *     new namespace `actor-runs`
+         *     ([Manage Actor runs](https://docs.apify.com/api/v2/actor-runs)).
          *
          *     Gets an object that contains all the details about a specific run of an Actor.
          *
@@ -1396,7 +1390,8 @@ export interface paths {
          * Abort Actor run
          * @deprecated
          * @description **[DEPRECATED]** API endpoints related to run of the Actor were moved under
-         *     new namespace [`actor-runs`](#/reference/actor-runs). Aborts an Actor run and
+         *     new namespace `actor-runs`
+         *     ([Manage Actor runs](https://docs.apify.com/api/v2/actor-runs)). Aborts an Actor run and
          *     returns an object that contains all the details about the run.
          *
          *     Only runs that are starting or running are aborted. For runs with status
@@ -1422,7 +1417,8 @@ export interface paths {
          * Metamorph Actor run
          * @deprecated
          * @description **[DEPRECATED]** API endpoints related to run of the Actor were moved under
-         *     new namespace [`actor-runs`](#/reference/actor-runs). Transforms an Actor run
+         *     new namespace `actor-runs`
+         *     ([Manage Actor runs](https://docs.apify.com/api/v2/actor-runs)). Transforms an Actor run
          *     into a run of another Actor with a new input.
          *
          *     This is useful if you want to use another Actor to finish the work
@@ -1567,14 +1563,14 @@ export interface paths {
          *     If the object does not define a specific property, its value is not updated.
          *
          *     The response is the full task input as returned by the
-         *     [Get task input](#/reference/tasks/task-input-object/get-task-input) endpoint.
+         *     [Get Actor task input](https://docs.apify.com/api/v2/actor-task-input-get) endpoint.
          *
          *     The request needs to specify the `Content-Type: application/json` HTTP
          *     header!
          *
          *     When providing your API authentication token, we recommend using the
-         *     request's `Authorization` header, rather than the URL. ([More
-         *     info](#/introduction/authentication)).
+         *     request's `Authorization` header, rather than the URL.
+         *     For details, see [Authentication](https://docs.apify.com/api/v2/getting-started#authentication).
          */
         put: operations["actorTask_input_put"];
         post?: never;
@@ -1646,18 +1642,17 @@ export interface paths {
          *     input property, the Actor run uses the default value defined by the task (or Actor's input
          *     schema if not defined by the task).
          *
-         *     The response is the Actor Run object as returned by the [Get
-         *     run](#/reference/actor-runs/run-object-and-its-storages/get-run) endpoint.
+         *     The response is the Actor Run object as returned by the [Get Actor run](https://docs.apify.com/api/v2/actor-run-get) endpoint.
          *
          *     If you want to wait for the run to finish and receive the actual output of
-         *     the Actor run as the response, use one of the [Run task
-         *     synchronously](#/reference/actor-tasks/run-task-synchronously) API endpoints
-         *     instead.
+         *     the Actor run as the response, use the [Run Actor task synchronously and get key-value store record](https://docs.apify.com/api/v2/actor-task-run-sync-post)
+         *     or [Run Actor task synchronously and get dataset items](https://docs.apify.com/api/v2/actor-task-run-sync-get-dataset-items-post)
+         *     endpoint instead.
          *
          *     To fetch the Actor run results that are typically stored in the default
          *     dataset, you'll need to pass the ID received in the `defaultDatasetId` field
          *     received in the response JSON to the
-         *     [Get dataset items](#/reference/datasets/item-collection/get-items) API endpoint.
+         *     [Get dataset items](https://docs.apify.com/api/v2/dataset-items-get) API endpoint.
          */
         post: operations["actorTask_runs_post"];
         delete?: never;
@@ -1696,7 +1691,7 @@ export interface paths {
          *     and its status.
          *
          *     To run the Task asynchronously, use the
-         *     [Run task asynchronously](#/reference/actor-tasks/run-collection/run-task)
+         *     [Run Actor task](https://docs.apify.com/api/v2/actor-task-runs-post)
          *     endpoint instead.
          */
         get: operations["actorTask_runSync_get"];
@@ -1736,8 +1731,7 @@ export interface paths {
          *     Just make sure to specify `Content-Type` header to be `application/json` and
          *     input to be an object.
          *
-         *     To run the task asynchronously, use the [Run
-         *     task](#/reference/actor-tasks/run-collection/run-task) API endpoint instead.
+         *     To run the task asynchronously, use the [Run Actor task](https://docs.apify.com/api/v2/actor-task-runs-post) API endpoint instead.
          */
         post: operations["actorTask_runSync_post"];
         delete?: never;
@@ -1761,8 +1755,7 @@ export interface paths {
          *     otherwise the HTTP request fails with a timeout error (this won't abort
          *     the run itself).
          *
-         *     You can send all the same options in parameters as the [Get Dataset
-         *     Items](#/reference/datasets/item-collection/get-items) API endpoint.
+         *     You can send all the same options in parameters as the [Get dataset items](https://docs.apify.com/api/v2/dataset-items-get) API endpoint.
          *
          *     Beware that it might be impossible to maintain an idle HTTP connection for
          *     an extended period, due to client timeout or network conditions. Make sure your HTTP client is
@@ -1771,8 +1764,7 @@ export interface paths {
          *     If the connection breaks, you will not receive any information about the run
          *     and its status.
          *
-         *     To run the Task asynchronously, use the [Run task
-         *     asynchronously](#/reference/actor-tasks/run-collection/run-task) endpoint
+         *     To run the Task asynchronously, use the [Run Actor task](https://docs.apify.com/api/v2/actor-task-runs-post) endpoint
          *     instead.
          */
         get: operations["actorTask_runSyncGetDatasetItems_get"];
@@ -1792,8 +1784,7 @@ export interface paths {
          *     input property, the Actor run uses the default value defined by the task (or the Actor's
          *     input schema if not defined by the task).
          *
-         *     You can send all the same options in parameters as the [Get Dataset
-         *     Items](#/reference/datasets/item-collection/get-items) API endpoint.
+         *     You can send all the same options in parameters as the [Get dataset items](https://docs.apify.com/api/v2/dataset-items-get) API endpoint.
          *
          *     Beware that it might be impossible to maintain an idle HTTP connection for
          *     an extended period, due to client timeout or network conditions. Make sure your HTTP client is
@@ -1808,8 +1799,7 @@ export interface paths {
          *     Just make sure to specify the `Content-Type` header as `application/json`
          *     and that the input is an object.
          *
-         *     To run the task asynchronously, use the [Run
-         *     task](#/reference/actor-tasks/run-collection/run-task) API endpoint instead.
+         *     To run the task asynchronously, use the [Run Actor task](https://docs.apify.com/api/v2/actor-task-runs-post) API endpoint instead.
          */
         post: operations["actorTask_runSyncGetDatasetItems_post"];
         delete?: never;
@@ -1838,17 +1828,17 @@ export interface paths {
          *     Using the `status` query parameter you can ensure to only get a run with a certain status
          *     (e.g. `status=SUCCEEDED`). Similarly, the `origin` query parameter filters runs by the means
          *     by which they were started (e.g. `origin=API`). The output of this endpoint and other query
-         *     parameters are the same as in the [Run object](https://docs.apify.com/api/v2/actor-run-get) endpoint.
+         *     parameters are the same as in the [Get Actor run](https://docs.apify.com/api/v2/actor-run-get) endpoint.
          *
          *     ##### Convenience endpoints for last Actor task run
          *
-         *     * [Dataset](https://docs.apify.com/api/v2/last-actor-task-runs-default-dataset)
+         *     * [Last Actor task run's default dataset](https://docs.apify.com/api/v2/last-actor-task-runs-default-dataset)
          *
-         *     * [Key-value store](https://docs.apify.com/api/v2/last-actor-task-runs-default-key-value-store)
+         *     * [Last Actor task run's default key-value store](https://docs.apify.com/api/v2/last-actor-task-runs-default-key-value-store)
          *
-         *     * [Request queue](https://docs.apify.com/api/v2/last-actor-task-runs-default-request-queue)
+         *     * [Last Actor task run's default request queue](https://docs.apify.com/api/v2/last-actor-task-runs-default-request-queue)
          *
-         *     * [Log](https://docs.apify.com/api/v2/last-actor-task-runs-log)
+         *     * [Last Actor task run's log](https://docs.apify.com/api/v2/last-actor-task-runs-log)
          */
         get: operations["actorTask_runs_last_get"];
         put?: never;
@@ -1895,7 +1885,7 @@ export interface paths {
          * @description Aborts the last run of the specified Actor task and returns an object that
          *     contains all the details about the run.
          *
-         *     This endpoint is a shortcut for [Abort run](#/reference/actor-runs/abort-run/abort-run)
+         *     This endpoint is a shortcut for [Abort Actor run](https://docs.apify.com/api/v2/actor-run-abort-post)
          *     on the Actor task's last run. Only runs that are starting or running are aborted.
          *     For runs with status `FINISHED`, `FAILED`, `ABORTING` and `TIMED-OUT` this call
          *     does nothing.
@@ -1921,7 +1911,7 @@ export interface paths {
          * @description Transforms the last run of the specified Actor task into a run of another Actor with
          *     a new input.
          *
-         *     This endpoint is a shortcut for [Metamorph run](#/reference/actor-runs/metamorph-run/metamorph-run)
+         *     This endpoint is a shortcut for [Metamorph Actor run](https://docs.apify.com/api/v2/actor-run-metamorph-post)
          *     on the Actor task's last run.
          */
         post: operations["actorTask_runs_last_metamorph_post"];
@@ -1945,7 +1935,7 @@ export interface paths {
          * @description Reboots the last run of the specified Actor task and returns an object that
          *     contains all the details about the rebooted run.
          *
-         *     This endpoint is a shortcut for [Reboot run](#/reference/actor-runs/reboot-run/reboot-run)
+         *     This endpoint is a shortcut for [Reboot Actor run](https://docs.apify.com/api/v2/actor-run-reboot-post)
          *     on the Actor task's last run. Only runs with status `RUNNING` can be rebooted. The run's
          *     container will be restarted, so any data not persisted in the key-value store, dataset,
          *     or request queue will be lost.
@@ -2460,11 +2450,11 @@ export interface paths {
          *
          *     ##### Convenience endpoints for Actor run default storages
          *
-         *     * [Dataset](https://docs.apify.com/api/v2/default-dataset)
+         *     * [Default dataset](https://docs.apify.com/api/v2/default-dataset)
          *
-         *     * [Key-value store](https://docs.apify.com/api/v2/default-key-value-store)
+         *     * [Default key-value store](https://docs.apify.com/api/v2/default-key-value-store)
          *
-         *     * [Request queue](https://docs.apify.com/api/v2/default-request-queue)
+         *     * [Default request queue](https://docs.apify.com/api/v2/default-request-queue)
          *
          *     Gets an object that contains all the details about a
          *     specific run of an Actor.
@@ -2670,7 +2660,7 @@ export interface paths {
          * @description Updates the default dataset associated with an Actor run.
          *
          *     This endpoint is a shortcut for getting the run's `defaultDatasetId` and then using the
-         *     [Put dataset](https://docs.apify.com/api/v2/dataset-put) endpoint.
+         *     [Update dataset](https://docs.apify.com/api/v2/dataset-put) endpoint.
          */
         put: operations["actorRun_dataset_put"];
         post?: never;
@@ -2679,7 +2669,7 @@ export interface paths {
          * @description Deletes default dataset associated with an Actor run.
          *
          *     This endpoint is a shortcut for getting the last run's `defaultDatasetId` and then using the
-         *     [ Delete dataset ](https://docs.apify.com/api/v2/dataset-delete) endpoint.
+         *     [Delete dataset](https://docs.apify.com/api/v2/dataset-delete) endpoint.
          */
         delete: operations["actorRun_dataset_delete"];
         options?: never;
@@ -3254,15 +3244,15 @@ export interface paths {
          * Get OpenAPI definition of Actor build
          * @description Get the OpenAPI definition for Actor builds. Two similar endpoints are available:
          *
-         *     - [First endpoint](https://docs.apify.com/api/v2/actor-openapi-json-get): Requires both `actorId` and `buildId`. Use `default` as the `buildId` to get the OpenAPI schema for the default Actor build.
-         *     - [Second endpoint](https://docs.apify.com/api/v2/actor-build-openapi-json-get): Requires only `buildId`.
+         *     - [Get OpenAPI definition of Actor build](https://docs.apify.com/api/v2/actor-openapi-json-get) (`/v2/actors/{actorId}/builds/{buildId}/openapi.json`): Requires both `actorId` and `buildId`. Use `default` as the `buildId` to get the OpenAPI schema for the default Actor build.
+         *     - [Get OpenAPI definition of Actor build](https://docs.apify.com/api/v2/actor-build-openapi-json-get) (`/v2/actor-builds/{buildId}/openapi.json`): Requires only `buildId`.
          *
          *     Get the OpenAPI definition for a specific Actor build.
          *     Authentication is based on the build's unique ID. No authentication token is required.
          *
          *     :::note
          *
-         *     You can also use the [`/api/v2/actor-openapi-json-get`](https://docs.apify.com/api/v2/actor-openapi-json-get) endpoint to get the OpenAPI definition for a build.
+         *     You can also use the [Get OpenAPI definition of Actor build](https://docs.apify.com/api/v2/actor-openapi-json-get) endpoint (`/v2/actors/{actorId}/builds/{buildId}/openapi.json`) to get the OpenAPI definition for a build.
          *
          *     :::
          */
@@ -3337,8 +3327,7 @@ export interface paths {
          * @description Updates a key-value store's name and general resource access level using a value specified by a JSON object
          *     passed in the PUT payload.
          *
-         *     The response is the updated key-value store object, as returned by the [Get
-         *     store](#/reference/key-value-stores/store-object/get-store) API endpoint.
+         *     The response is the updated key-value store object, as returned by the [Get key-value store](https://docs.apify.com/api/v2/key-value-store-get) API endpoint.
          */
         put: operations["keyValueStore_put"];
         post?: never;
@@ -3411,7 +3400,7 @@ export interface paths {
          * @description Gets a value stored in the key-value store under a specific key.
          *
          *     The response body has the same `Content-Encoding` header as it was set in
-         *     [Put record](#tag/Key-value-storesRecord/operation/keyValueStore_record_put).
+         *     [Set key-value store record](https://docs.apify.com/api/v2/key-value-store-record-put).
          *
          *     If the request does not define the `Accept-Encoding` HTTP header with the
          *     right encoding, the record will be decompressed.
@@ -3449,7 +3438,7 @@ export interface paths {
          * Set key-value store record (POST)
          * @description Stores a value under a specific key to the key-value store.
          *
-         *     This endpoint is an alias for the [`PUT` record](#tag/Key-value-storesRecord/operation/keyValueStore_record_put) method and behaves identically.
+         *     This endpoint is an alias for the [Set key-value store record](https://docs.apify.com/api/v2/key-value-store-record-put) endpoint and behaves identically.
          */
         post: operations["keyValueStore_record_post"];
         /**
@@ -3514,7 +3503,7 @@ export interface paths {
          * @description Returns dataset object for given dataset ID.
          *
          *     This does not return dataset items, only information about the storage itself.
-         *     To retrieve dataset items, use the [List dataset items](https://docs.apify.com/api/v2/dataset-items-get) endpoint.
+         *     To retrieve dataset items, use the [Get dataset items](https://docs.apify.com/api/v2/dataset-items-get) endpoint.
          *
          *     :::note
          *
@@ -3812,7 +3801,7 @@ export interface paths {
          *     passed in the PUT payload.
          *
          *     The response is the updated request queue object, as returned by the
-         *     [Get request queue](#/reference/request-queues/queue-collection/get-request-queue) API endpoint.
+         *     [Get request queue](https://docs.apify.com/api/v2/request-queue-get) API endpoint.
          */
         put: operations["requestQueue_put"];
         post?: never;
@@ -4139,14 +4128,14 @@ export interface paths {
          *     updated.
          *
          *     The response is the full webhook object as returned by the
-         *     [Get webhook](#/reference/webhooks/webhook-object/get-webhook) endpoint.
+         *     [Get webhook](https://docs.apify.com/api/v2/webhook-get) endpoint.
          *
          *     The request needs to specify the `Content-Type: application/json` HTTP
          *     header!
          *
          *     When providing your API authentication token, we recommend using the
-         *     request's `Authorization` header, rather than the URL. ([More
-         *     info](#/introduction/authentication)).
+         *     request's `Authorization` header, rather than the URL.
+         *     For details, see [Authentication](https://docs.apify.com/api/v2/getting-started#authentication).
          */
         put: operations["webhook_put"];
         post?: never;
@@ -4273,8 +4262,8 @@ export interface paths {
          *     The request needs to specify the `Content-Type: application/json` HTTP header!
          *
          *     When providing your API authentication token, we recommend using the
-         *     request's `Authorization` header, rather than the URL. ([More
-         *     info](#/introduction/authentication)).
+         *     request's `Authorization` header, rather than the URL.
+         *     For details, see [Authentication](https://docs.apify.com/api/v2/getting-started#authentication).
          */
         post: operations["schedules_post"];
         delete?: never;
@@ -4302,14 +4291,14 @@ export interface paths {
          *     its value will not be updated.
          *
          *     The response is the full schedule object as returned by the
-         *     [Get schedule](#/reference/schedules/schedule-object/get-schedule) endpoint.
+         *     [Get schedule](https://docs.apify.com/api/v2/schedule-get) endpoint.
          *
          *     **The request needs to specify the `Content-Type: application/json` HTTP
          *     header!**
          *
          *     When providing your API authentication token, we recommend using the
-         *     request's `Authorization` header, rather than the URL. ([More
-         *     info](#/introduction/authentication)).
+         *     request's `Authorization` header, rather than the URL.
+         *     For details, see [Authentication](https://docs.apify.com/api/v2/getting-started#authentication).
          */
         put: operations["schedule_put"];
         post?: never;
@@ -4356,8 +4345,7 @@ export interface paths {
          * @description Gets the list of public Actors in Apify Store. You can use `search`
          *     parameter to search Actors by string in title, name, description, username
          *     and readme.
-         *     If you need detailed info about a specific Actor, use the [Get
-         *     Actor](#/reference/actors/actor-object/get-actor) endpoint.
+         *     If you need detailed info about a specific Actor, use the [Get Actor](https://docs.apify.com/api/v2/actor-get) endpoint.
          *
          *     The endpoint supports pagination using the `limit` and `offset` parameters.
          *     It will not return more than 1,000 records.
@@ -5687,6 +5675,16 @@ export interface components {
             ACTOR_COMPUTE_UNITS?: number | null;
         };
         /**
+         * ActorDefinitionMeta
+         * @description Additional information about the Actor.
+         */
+        ActorDefinitionMeta: {
+            /** @description The ID of the template from which the Actor was created. */
+            templateId?: string;
+            /** @description The tool or model that generated the Actor. */
+            generatedBy?: string;
+        };
+        /**
          * ActorDefinition
          * @description The definition of the Actor, the full specification of this field can be found in [Apify docs](https://docs.apify.com/platform/actors/development/actor-definition/actor-json)
          */
@@ -5698,10 +5696,15 @@ export interface components {
             actorSpecification?: 1;
             /** @description The name of the Actor. */
             name?: string;
+            /** @description The human-readable display title of the Actor, shown in Apify Console and Apify Store. */
+            title?: string;
+            /** @description The description of the Actor. */
+            description?: string;
             /** @description The version of the Actor, typically a dot-separated sequence of numbers (e.g., `0.1`, `1.0`, or `0.0.1`). */
             version?: string;
             /** @description The tag name to be applied to a successful build of the Actor. Defaults to 'latest' if not specified. */
             buildTag?: string;
+            meta?: components["schemas"]["ActorDefinitionMeta"];
             /** @description A map of environment variables to be used during local development and deployment. */
             environmentVariables?: {
                 [key: string]: string;
@@ -5714,11 +5717,19 @@ export interface components {
             readme?: string | null;
             /** @description The input schema object, the full specification can be found in [Apify docs](https://docs.apify.com/platform/actors/development/actor-definition/input-schema) */
             input?: Record<string, unknown> | null;
+            /** @description The output schema object, the full specification can be found in [Apify docs](https://docs.apify.com/platform/actors/development/actor-definition/output-schema) */
+            output?: Record<string, unknown> | null;
             /** @description The path to the CHANGELOG file displayed in the Actor's information tab. */
             changelog?: string | null;
             storages?: {
                 /** @description Defines the schema of items in your dataset, the full specification can be found in [Apify docs](https://docs.apify.com/platform/actors/development/actor-definition/dataset-schema) */
                 dataset?: Record<string, unknown>;
+                /** @description Maps dataset aliases to the schemas of the Actor's datasets, the full specification can be found in [Apify docs](https://docs.apify.com/platform/storage/dataset-schema/multiple-datasets) */
+                datasets?: {
+                    [key: string]: Record<string, unknown>;
+                };
+                /** @description Defines the schema of the Actor's default key-value store, the full specification can be found in [Apify docs](https://docs.apify.com/platform/storage/key-value-store-schema) */
+                keyValueStore?: Record<string, unknown>;
             };
             /** @description Specifies the default amount of memory in megabytes to be used when the Actor is started. Can be an integer or a [dynamic memory expression](https://docs.apify.com/actors/development/actor-definition/dynamic-actor-memory). */
             defaultMemoryMbytes?: string | number;
@@ -5728,6 +5739,10 @@ export interface components {
             maxMemoryMbytes?: number;
             /** @description Specifies whether Standby mode is enabled for the Actor. */
             usesStandbyMode?: boolean;
+            /** @description The OpenAPI v3 specification of the web server running in the Actor, the full specification can be found in [Apify docs](https://docs.apify.com/platform/actors/development/actor-definition/web-server-schema) */
+            webServerSchema?: Record<string, unknown>;
+            /** @description The HTTP path where the Actor's web server exposes its MCP (Model Context Protocol) server, for example `/mcp`. */
+            webServerMcpPath?: string;
         };
         /**
          * Build
@@ -9118,8 +9133,7 @@ export interface components {
          *     determine whether the queue was accessed by multiple clients. If
          *     `clientKey` is not provided,
          *     the system considers this API call to come from a new client. For
-         *     details, see the `hadMultipleClients` field returned by the [Get
-         *     head](#/reference/request-queues/queue-head) operation.
+         *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
          */
         clientKey: string;
         /**
@@ -12355,8 +12369,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -12410,8 +12423,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -12464,8 +12476,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -12518,8 +12529,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -12569,8 +12579,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -12654,8 +12663,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -12705,8 +12713,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -12745,8 +12752,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -12795,8 +12801,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -12840,8 +12845,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -12888,8 +12892,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -15742,8 +15745,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -15790,8 +15792,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -15833,8 +15834,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -15888,8 +15888,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -15942,8 +15941,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -15996,8 +15994,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -16047,8 +16044,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -16132,8 +16128,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -16183,8 +16178,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -16223,8 +16217,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -16273,8 +16266,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -17551,8 +17543,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -17602,8 +17593,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -17652,8 +17642,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -17702,8 +17691,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -17749,8 +17737,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -17825,8 +17812,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -17872,8 +17858,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -17908,8 +17893,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -17954,8 +17938,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -17995,8 +17978,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -18039,8 +18021,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -19604,8 +19585,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -19654,8 +19634,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -19701,8 +19680,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -19741,8 +19719,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -19792,8 +19769,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -19878,8 +19854,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -19925,8 +19900,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -19961,8 +19935,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -20005,8 +19978,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
             };
@@ -20046,8 +20018,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**
@@ -20092,8 +20063,7 @@ export interface operations {
                  *     determine whether the queue was accessed by multiple clients. If
                  *     `clientKey` is not provided,
                  *     the system considers this API call to come from a new client. For
-                 *     details, see the `hadMultipleClients` field returned by the [Get
-                 *     head](#/reference/request-queues/queue-head) operation.
+                 *     details, see the `hadMultipleClients` field returned by the [Get request queue head](https://docs.apify.com/api/v2/request-queue-head-get) endpoint.
                  */
                 clientKey?: components["parameters"]["clientKey"];
                 /**

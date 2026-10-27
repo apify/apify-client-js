@@ -463,25 +463,39 @@ export const BuildUsage = lazySchema(() => z.looseObject({
     ACTOR_COMPUTE_UNITS: z.number().nullable().optional(),
 }));
 
+/** Additional information about the Actor. */
+export const ActorDefinitionMeta = lazySchema(() => z.looseObject({
+    templateId: z.string().optional(),
+    generatedBy: z.string().optional(),
+}));
+
 /** The definition of the Actor, the full specification of this field can be found in [Apify docs](https://docs.apify.com/platform/actors/development/actor-definition/actor-json) */
 export const ActorDefinition = lazySchema(() => z.looseObject({
     actorSpecification: z.literal(1).optional(),
     name: z.string().optional(),
+    title: z.string().optional(),
+    description: z.string().optional(),
     version: z.string().regex(/^[0-9]+(\.[0-9]+)+$/).optional(),
     buildTag: z.string().optional(),
+    meta: ActorDefinitionMeta().optional(),
     environmentVariables: z.record(z.string(), z.string()).optional(),
     dockerfile: z.string().optional(),
     dockerContextDir: z.string().optional(),
     readme: z.string().nullable().optional(),
     input: z.record(z.string(), z.unknown()).nullable().optional(),
+    output: z.record(z.string(), z.unknown()).nullable().optional(),
     changelog: z.string().nullable().optional(),
     storages: z.looseObject({
         dataset: z.record(z.string(), z.unknown()).optional(),
+        datasets: z.record(z.string(), z.record(z.string(), z.unknown())).optional(),
+        keyValueStore: z.record(z.string(), z.unknown()).optional(),
     }).optional(),
     defaultMemoryMbytes: z.union([z.string(), z.int()]).optional(),
     minMemoryMbytes: z.int().min(128).optional(),
     maxMemoryMbytes: z.int().min(128).optional(),
     usesStandbyMode: z.boolean().optional(),
+    webServerSchema: z.record(z.string(), z.unknown()).optional(),
+    webServerMcpPath: z.string().optional(),
 }));
 
 export const Build = lazySchema(() => z.looseObject({

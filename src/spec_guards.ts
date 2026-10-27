@@ -29,7 +29,6 @@ import type * as generatedSchemas from './generated/schemas.js';
 import type {
     AccountLimitsRePointed,
     ActorChargeEventRePointed,
-    ActorDefinitionSpecGaps,
     ActorListItemRePointed,
     ActorResourceRePointed,
     ActorResourceSpecGaps,
@@ -272,7 +271,6 @@ export type AdapterKeyGuards = AssertAll<
         GapsStillMissing<DatasetStatsSpecGaps, Schemas['DatasetStats']>,
         GapsStillMissing<KeyValueStoreResourceSpecGaps, Schemas['KeyValueStoreResource']>,
         GapsStillMissing<ActorResourceSpecGaps, Schemas['ActorResource']>,
-        GapsStillMissing<ActorDefinitionSpecGaps, Schemas['ActorDefinition']>,
         GapsStillMissing<RunOptionsSpecGaps, Schemas['RunOptions']>,
         // `TaskListItem` has a gap of its own, because the spec describes a listed task in a separate schema
         // that omits `title` as well.
