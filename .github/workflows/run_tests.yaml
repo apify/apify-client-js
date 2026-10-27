@@ -11,6 +11,9 @@ on:
                 description: Check every request against the OpenAPI specification and report mismatches as warnings
                 type: boolean
                 default: true
+    # TEMPORARY, remove before merging: a workflow can only be started by hand once it exists on the default
+    # branch, so until then the pull request runs it with validation on.
+    pull_request:
 
 permissions:
     contents: read
@@ -19,6 +22,8 @@ env:
     NODE_VERSION: 24
     # Where the unit-test mock server and the integration-test proxy append their findings.
     OPENAPI_FINDINGS_FILE: openapi-findings.jsonl
+    # Decided once here: ticked when started by hand, always on for the temporary pull request trigger.
+    VALIDATE_OPENAPI: ${{ github.event_name == 'pull_request' || inputs.validate_openapi }}
 
 jobs:
     unit_tests:
@@ -41,18 +46,18 @@ jobs:
               run: pnpm exec puppeteer browsers install chrome
 
             - name: Fetch the OpenAPI specification
-              if: ${{ inputs.validate_openapi }}
+              if: ${{ env.VALIDATE_OPENAPI == 'true' }}
               run: pnpm spec:fetch
 
             # With validation off both variables are empty, and the mock server runs as it does everywhere else.
             - name: Run unit tests
               run: pnpm test
               env:
-                  OPENAPI_SPEC_PATH: ${{ inputs.validate_openapi && 'tmp/openapi.json' || '' }}
-                  OPENAPI_REPORT_FILE: ${{ inputs.validate_openapi && env.OPENAPI_FINDINGS_FILE || '' }}
+                  OPENAPI_SPEC_PATH: ${{ env.VALIDATE_OPENAPI == 'true' && 'tmp/openapi.json' || '' }}
+                  OPENAPI_REPORT_FILE: ${{ env.VALIDATE_OPENAPI == 'true' && env.OPENAPI_FINDINGS_FILE || '' }}
 
             - name: Report requests that do not match the OpenAPI specification
-              if: ${{ always() && inputs.validate_openapi }}
+              if: ${{ always() && env.VALIDATE_OPENAPI == 'true' }}
               run: pnpm openapi:report ${{ env.OPENAPI_FINDINGS_FILE }}
 
     integration_tests:
@@ -76,13 +81,13 @@ jobs:
               uses: apify/actions/pnpm-install@v1.6.2
 
             - name: Fetch the OpenAPI specification
-              if: ${{ inputs.validate_openapi }}
+              if: ${{ env.VALIDATE_OPENAPI == 'true' }}
               run: pnpm spec:fetch
 
             # The proxy forwards every request to the live API and records the ones that do not match the
             # specification. It keeps running in the background through the following steps.
             - name: Start the OpenAPI validating proxy
-              if: ${{ inputs.validate_openapi }}
+              if: ${{ env.VALIDATE_OPENAPI == 'true' }}
               run: |
                   pnpm openapi:proxy --spec tmp/openapi.json --port "$OPENAPI_PROXY_PORT" --report "$OPENAPI_FINDINGS_FILE" > openapi-proxy.log 2>&1 &
                   for _ in $(seq 1 30); do grep -q listening openapi-proxy.log && break; sleep 1; done
@@ -93,12 +98,12 @@ jobs:
               if: ${{ env.APIFY_TEST_USER_API_TOKEN != '' }}
               run: pnpm test:integration
               env:
-                  APIFY_INTEGRATION_TESTS_API_URL: ${{ inputs.validate_openapi && format('http://127.0.0.1:{0}', env.OPENAPI_PROXY_PORT) || '' }}
+                  APIFY_INTEGRATION_TESTS_API_URL: ${{ env.VALIDATE_OPENAPI == 'true' && format('http://127.0.0.1:{0}', env.OPENAPI_PROXY_PORT) || '' }}
 
             - name: Report the skipped integration tests
               if: ${{ env.APIFY_TEST_USER_API_TOKEN == '' }}
               run: echo "::warning::APIFY_TEST_USER_API_TOKEN is empty, the integration tests did not run."
 
             - name: Report requests that do not match the OpenAPI specification
-              if: ${{ always() && inputs.validate_openapi }}
+              if: ${{ always() && env.VALIDATE_OPENAPI == 'true' }}
               run: pnpm openapi:report "$OPENAPI_FINDINGS_FILE"
