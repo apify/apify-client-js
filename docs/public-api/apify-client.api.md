@@ -139,13 +139,7 @@ export interface ActorCollectionListOptions extends PaginationOptions, TimeoutOp
 export type ActorCollectionListResult = PaginatedList<ActorListItem>;
 
 // @public
-export interface ActorDefinition extends GeneratedActorDefinition, ActorDefinitionSpecGaps {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface ActorDefinitionSpecGaps {
-    output?: object | null;
+export interface ActorDefinition extends GeneratedActorDefinition {
 }
 
 // @public
@@ -1210,11 +1204,18 @@ interface components {
         BuildUsage: {
             ACTOR_COMPUTE_UNITS?: number | null;
         };
+        ActorDefinitionMeta: {
+            templateId?: string;
+            generatedBy?: string;
+        };
         ActorDefinition: {
             actorSpecification?: 1;
             name?: string;
+            title?: string;
+            description?: string;
             version?: string;
             buildTag?: string;
+            meta?: components["schemas"]["ActorDefinitionMeta"];
             environmentVariables?: {
                 [key: string]: string;
             };
@@ -1222,14 +1223,21 @@ interface components {
             dockerContextDir?: string;
             readme?: string | null;
             input?: Record<string, unknown> | null;
+            output?: Record<string, unknown> | null;
             changelog?: string | null;
             storages?: {
                 dataset?: Record<string, unknown>;
+                datasets?: {
+                    [key: string]: Record<string, unknown>;
+                };
+                keyValueStore?: Record<string, unknown>;
             };
             defaultMemoryMbytes?: string | number;
             minMemoryMbytes?: number;
             maxMemoryMbytes?: number;
             usesStandbyMode?: boolean;
+            webServerSchema?: Record<string, unknown>;
+            webServerMcpPath?: string;
         };
         Build: {
             id: string;

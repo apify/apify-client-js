@@ -382,20 +382,6 @@ export interface DefaultRunOptionsRePointed {
 export interface DefaultRunOptions
     extends Omit<Schemas['DefaultRunOptions'], keyof DefaultRunOptionsRePointed>, DefaultRunOptionsRePointed {}
 
-/**
- * Fields of an Actor definition that the OpenAPI spec does not describe yet.
- *
- * TODO: Remove once the spec covers them.
- */
-export interface ActorDefinitionSpecGaps {
-    /**
-     * Output schema for the Actor.
-     *
-     * @see https://docs.apify.com/platform/actors/development/actor-definition/output-schema
-     */
-    output?: object | null;
-}
-
 type GeneratedActorDefinition = Schemas['ActorDefinition'];
 
 /**
@@ -405,7 +391,7 @@ type GeneratedActorDefinition = Schemas['ActorDefinition'];
  * @see https://docs.apify.com/platform/actors/development/actor-definition/actor-json
  * @since Added in 2.11.0
  */
-export interface ActorDefinition extends GeneratedActorDefinition, ActorDefinitionSpecGaps {}
+export interface ActorDefinition extends GeneratedActorDefinition {}
 
 export interface ActorChargeEventRePointed {
     eventTieredPricingUsd?: TieredPricingPerEvent;
