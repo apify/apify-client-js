@@ -5921,6 +5921,20 @@ export interface components {
              */
             scheduledAt?: Date | null;
         };
+        /**
+         * RunStandby
+         * @description Standby configuration of the run. Present only on Actor Standby runs.
+         */
+        RunStandby: {
+            /**
+             * @description Which pool the Server Actor run serves. `SINGLE_TENANT` is a private instance in the caller's account.
+             *     The `MULTI_TENANT_*` pools run in the Actor owner's account and serve many callers;
+             *     charges in them require a `requestId` (see the charge endpoint).
+             * @example MULTI_TENANT_PAYING_USERS
+             * @enum {string}
+             */
+            deployment: "SINGLE_TENANT" | "MULTI_TENANT_OWNER_PAID" | "MULTI_TENANT_FREE_USERS" | "MULTI_TENANT_PAYING_USERS";
+        };
         /** RunListItem */
         RunListItem: {
             /** @example HG7ML7M8z78YcAPEB */
@@ -6323,6 +6337,8 @@ export interface components {
              * @example USER
              */
             platformUsageBillingModel?: string;
+            /** @description Server Actor deployment of this run, `null` for runs not started by a Server Actor request. */
+            standby?: components["schemas"]["RunStandby"] | null;
         };
         /** RunResponse */
         RunResponse: {

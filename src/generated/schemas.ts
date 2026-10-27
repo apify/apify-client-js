@@ -538,6 +538,11 @@ export const RunMeta = lazySchema(() => z.looseObject({
     scheduledAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
 }));
 
+/** Standby configuration of the run. Present only on Actor Standby runs. */
+export const RunStandby = lazySchema(() => z.looseObject({
+    deployment: z.enum(["SINGLE_TENANT", "MULTI_TENANT_OWNER_PAID", "MULTI_TENANT_FREE_USERS", "MULTI_TENANT_PAYING_USERS"]).or(z.string()),
+}));
+
 export const RunListItem = lazySchema(() => z.looseObject({
     id: z.string(),
     actId: z.string(),
@@ -693,6 +698,7 @@ export const Run = lazySchema(() => z.looseObject({
     usageUsd: RunUsageUsd().nullable().optional(),
     metamorphs: z.array(RunMetamorphEvent()).nullable().optional(),
     platformUsageBillingModel: z.string().optional(),
+    standby: RunStandby().nullable().optional(),
 }));
 
 export const RunResponse = lazySchema(() => z.looseObject({
