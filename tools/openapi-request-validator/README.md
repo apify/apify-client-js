@@ -8,8 +8,8 @@ report, so it works as a warning in CI while the specification and the client ca
   and appends findings to `OPENAPI_REPORT_FILE`.
 - `proxy.mts` is a validating reverse proxy for the integration tests. It forwards every request to the live API
   and records the findings on the way. `GET /__openapi-report` returns them as JSON.
-- `report.mts` aggregates a findings file by operation and error, prints it, and emits GitHub Actions warning
-  annotations in CI. `--fail` makes it exit non-zero when there is any finding.
+- `report.mts` aggregates a findings file by operation and error and prints one warning line per group, as
+  GitHub Actions warning annotations in CI. `--fail` makes it exit non-zero when there is any finding.
 
 ```sh
 pnpm spec:fetch

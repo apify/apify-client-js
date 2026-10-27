@@ -2,8 +2,8 @@
  * Aggregate and print request validation findings.
  *
  * Findings are stored as JSON lines so that several processes (vitest workers, the proxy) can append to the same
- * file. `node report.mts <file>` prints a summary grouped by operation and error, and emits GitHub Actions
- * `::warning::` annotations when running in CI. Pass `--fail` to exit non-zero when there is any finding.
+ * file. `node report.mts <file>` prints one warning line per operation and error, as GitHub Actions `::warning::`
+ * annotations when running in CI. Pass `--fail` to exit non-zero when there is any finding.
  */
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 
@@ -69,27 +69,15 @@ const KIND_LABELS: Record<Finding['kind'], string> = {
     'validator-failure': 'Validator failed',
 };
 
-export const formatReport = (groups: FindingGroup[], totalRequests?: number): string => {
-    const lines: string[] = [];
-    const total = groups.reduce((sum, group) => sum + group.count, 0);
-    const scope = totalRequests === undefined ? '' : ` out of ${totalRequests} validated requests`;
-    lines.push(`OpenAPI request validation: ${total} finding(s) in ${groups.length} group(s)${scope}`);
-    let currentOperation = '';
-    for (const group of groups) {
-        if (group.operation !== currentOperation) {
-            currentOperation = group.operation;
-            lines.push('', currentOperation);
-        }
-        lines.push(`  [${group.kind}] ${group.message} (${group.count}x)`);
-        for (const url of group.exampleUrls) lines.push(`      e.g. ${url}`);
-    }
-    return lines.join('\n');
-};
+const describeGroup = (group: FindingGroup): string =>
+    `${group.operation}: ${KIND_LABELS[group.kind]}: ${group.message} (${group.count}x, e.g. ${group.exampleUrls[0]})`;
 
-export const formatAnnotations = (groups: FindingGroup[]): string[] =>
-    groups.map(
-        (group) =>
-            `::warning title=OpenAPI request validation::${group.operation}: ${KIND_LABELS[group.kind]}: ${group.message} (${group.count}x, e.g. ${group.exampleUrls[0]})`,
+/** One warning line per group; GitHub Actions renders the annotated form in the job summary and on the PR. */
+export const formatWarnings = (groups: FindingGroup[], { annotations = false } = {}): string[] =>
+    groups.map((group) =>
+        annotations
+            ? `::warning title=OpenAPI request validation::${describeGroup(group)}`
+            : `Warning: ${describeGroup(group)}`,
     );
 
 const main = (): void => {
@@ -101,11 +89,12 @@ const main = (): void => {
         process.exit(2);
     }
     const groups = aggregate(loadFindings(file));
-    console.log(formatReport(groups));
-    if (process.env.GITHUB_ACTIONS) {
-        for (const line of formatAnnotations(groups)) console.log(line);
+    if (groups.length === 0) {
+        console.log('OpenAPI request validation: every request matched the specification.');
+        return;
     }
-    if (fail && groups.length > 0) process.exit(1);
+    for (const line of formatWarnings(groups, { annotations: Boolean(process.env.GITHUB_ACTIONS) })) console.log(line);
+    if (fail) process.exit(1);
 };
 
 if (process.argv[1] && import.meta.url === new URL(process.argv[1], 'file://').href) main();
