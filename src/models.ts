@@ -851,6 +851,12 @@ export interface ScheduleClientNarrowings {
     timezone: Timezone;
 }
 
+export interface ScheduleSpecNarrowings {
+    // Spec types `uiState` as a non-nullable object, but the API returns `null` once an API update has
+    // changed `cronExpression` or `timezone` and the Console editor state was dropped.
+    uiState?: NonNullable<Schemas['Schedule']['uiState']> | null;
+}
+
 /**
  * Represents a schedule for automated Actor or Task runs.
  *
@@ -858,9 +864,13 @@ export interface ScheduleClientNarrowings {
  */
 export interface Schedule
     extends
-        Omit<Schemas['Schedule'], keyof ScheduleRePointed | keyof ScheduleClientNarrowings>,
+        Omit<
+            Schemas['Schedule'],
+            keyof ScheduleRePointed | keyof ScheduleClientNarrowings | keyof ScheduleSpecNarrowings
+        >,
         ScheduleRePointed,
-        ScheduleClientNarrowings {}
+        ScheduleClientNarrowings,
+        ScheduleSpecNarrowings {}
 
 type GeneratedUserProfile = Schemas['UserProfile'];
 type GeneratedProxyGroup = Schemas['ProxyGroup'];

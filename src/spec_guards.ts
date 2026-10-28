@@ -65,6 +65,7 @@ import type {
     ScheduleActions,
     ScheduleClientNarrowings,
     ScheduleRePointed,
+    ScheduleSpecNarrowings,
     StoreActorRePointed,
     TaskListItemRePointed,
     TaskRePointed,
@@ -234,6 +235,7 @@ export type AdapterKeyGuards = AssertAll<
         OverridesStillExist<WebhookLastDispatchRePointed, Schemas['WebhookLastDispatch']>,
         OverridesStillExist<ScheduleRePointed, Schemas['Schedule']>,
         OverridesStillExist<ScheduleClientNarrowings, Schemas['Schedule']>,
+        OverridesStillExist<ScheduleSpecNarrowings, Schemas['Schedule']>,
         OverridesStillExist<ScheduleActionRunActorRePointed, Schemas['ScheduleActionRunActor']>,
         OverridesStillExist<ScheduleActionRunActorTaskRePointed, Schemas['ScheduleActionRunActorTask']>,
         OverridesStillExist<UserPrivateInfoRePointed, Schemas['UserPrivateInfo']>,
@@ -326,6 +328,7 @@ export type AdapterWidthGuards = AssertAll<
         // assignable to a string enum even when the members match -- `EnumGuards` pins those instead.
         OverridesStayWider<Omit<WebhookResourceRePointed, 'condition' | 'lastDispatch'>, Schemas['WebhookResource']>,
         OverridesStayWider<ScheduleRePointed, Schemas['Schedule']>,
+        OverridesStayWider<ScheduleSpecNarrowings, Schemas['Schedule']>,
         OverridesStayWider<ScheduleActionRunActorRePointed, Schemas['ScheduleActionRunActor']>,
         OverridesStayWider<ScheduleActionRunActorTaskRePointed, Schemas['ScheduleActionRunActorTask']>,
         // `timezone` is excluded: it narrows the spec's bare `string` to the curated IANA union on

@@ -4014,7 +4014,7 @@ export interface RunWaitForFinishOptions extends TimeoutOptions {
 }
 
 // @public
-export interface Schedule extends Omit<Schemas['Schedule'], keyof ScheduleRePointed | keyof ScheduleClientNarrowings>, ScheduleRePointed, ScheduleClientNarrowings {
+export interface Schedule extends Omit<Schemas['Schedule'], keyof ScheduleRePointed | keyof ScheduleClientNarrowings | keyof ScheduleSpecNarrowings>, ScheduleRePointed, ScheduleClientNarrowings, ScheduleSpecNarrowings {
 }
 
 // @public
@@ -4101,6 +4101,13 @@ export interface ScheduleLogEntry extends GeneratedScheduleLogEntry {
 interface ScheduleRePointed {
     // (undocumented)
     actions: ScheduleAction[];
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ScheduleSpecNarrowings {
+    // (undocumented)
+    uiState?: NonNullable<Schemas['Schedule']['uiState']> | null;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
