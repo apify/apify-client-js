@@ -82,7 +82,6 @@ export type ErrorType = Schemas['ErrorType'];
  * TODO: Remove once the spec covers them.
  */
 export interface DatasetResourceSpecGaps {
-    title?: string;
     username?: string;
 }
 
@@ -193,15 +192,6 @@ export interface WebhookDispatchEventData extends GeneratedWebhookDispatchEventD
 type GeneratedKeyValueStoreStats = Schemas['KeyValueStoreStats'];
 type GeneratedKeyValueStoreKey = Schemas['KeyValueStoreKey'];
 
-/**
- * Fields the API returns on a key-value store that the OpenAPI spec does not describe yet.
- *
- * TODO: Remove once the spec covers them.
- */
-export interface KeyValueStoreResourceSpecGaps {
-    title?: string;
-}
-
 export interface KeyValueStoreResourceRePointed {
     stats?: KeyValueStoreStats;
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
@@ -216,8 +206,7 @@ export interface KeyValueStoreResourceRePointed {
 export interface KeyValueStoreResource
     extends
         Omit<Schemas['KeyValueStoreResource'], keyof KeyValueStoreResourceRePointed>,
-        KeyValueStoreResourceRePointed,
-        KeyValueStoreResourceSpecGaps {}
+        KeyValueStoreResourceRePointed {}
 
 /** Statistics about Key-Value Store usage and storage. */
 export interface KeyValueStoreStats extends GeneratedKeyValueStoreStats {}
@@ -625,20 +614,11 @@ export interface RunMetaRePointed {
 export interface RunMeta extends Omit<Schemas['RunMeta'], keyof RunMetaRePointed>, RunMetaRePointed {}
 
 /**
- * Fields the API returns in an Actor run's options that the OpenAPI spec does not describe yet.
- *
- * TODO: Remove once the spec covers it.
- */
-export interface RunOptionsSpecGaps {
-    restartOnError?: boolean;
-}
-
-/**
  * Configuration options used for an Actor run.
  *
  * These are the actual options that were applied to the run (may differ from requested options).
  */
-export interface RunOptions extends GeneratedRunOptions, RunOptionsSpecGaps {}
+export interface RunOptions extends GeneratedRunOptions {}
 
 export interface RunListItemRePointed {
     meta: RunMeta;
@@ -724,21 +704,9 @@ export interface TaskListItemRePointed {
     stats?: TaskStats | null;
 }
 
-/**
- * Fields the API returns on a listed task that the OpenAPI spec does not describe yet.
- *
- * `description` is deliberately not here, although the spec has it on the full `Task` resource: the
- * list endpoint publishes a smaller set of fields, and that is one of the fields it leaves out.
- *
- * TODO: Remove once the spec covers it.
- */
-export interface TaskListItemSpecGaps {
-    title?: string | null;
-}
-
 /** A task as it appears in a listing, which carries fewer fields than the full resource. */
 export interface TaskListItem
-    extends Omit<Schemas['TaskListItem'], keyof TaskListItemRePointed>, TaskListItemRePointed, TaskListItemSpecGaps {}
+    extends Omit<Schemas['TaskListItem'], keyof TaskListItemRePointed>, TaskListItemRePointed {}
 
 export interface StoreActorRePointed {
     stats: ActorStats;
@@ -809,18 +777,6 @@ export interface WebhookLastDispatchRePointed {
 export interface WebhookLastDispatch
     extends Omit<Schemas['WebhookLastDispatch'], keyof WebhookLastDispatchRePointed>, WebhookLastDispatchRePointed {}
 
-/**
- * Fields the API returns on a webhook that the OpenAPI spec does not describe yet.
- *
- * The spec does carry `isApifyIntegration` on `WebhookListItem`, the listing shape, and simply omits it
- * from the full `WebhookResource` schema.
- *
- * TODO: Remove once the spec covers it.
- */
-export interface WebhookResourceSpecGaps {
-    isApifyIntegration?: boolean;
-}
-
 export interface WebhookResourceRePointed {
     condition: WebhookCondition;
     stats?: WebhookStats | null;
@@ -835,10 +791,7 @@ export interface WebhookResourceRePointed {
  * (e.g., Actor run succeeds, fails, or times out).
  */
 export interface WebhookResource
-    extends
-        Omit<Schemas['WebhookResource'], keyof WebhookResourceRePointed>,
-        WebhookResourceRePointed,
-        WebhookResourceSpecGaps {}
+    extends Omit<Schemas['WebhookResource'], keyof WebhookResourceRePointed>, WebhookResourceRePointed {}
 
 type GeneratedScheduleActionRunInput = Schemas['ScheduleActionRunInput'];
 
@@ -1091,12 +1044,11 @@ export interface RequestQueueStats extends GeneratedRequestQueueStats {}
  * Fields the API returns on a request queue that the OpenAPI spec does not describe yet.
  *
  * The spec does carry `username` on `RequestQueueListItem`, the listing shape, and simply omits it from the
- * full `RequestQueueResource` schema. `title` is absent from either.
+ * full `RequestQueueResource` schema.
  *
- * TODO: Remove once the spec covers them.
+ * TODO: Remove once the spec covers it.
  */
 export interface RequestQueueResourceSpecGaps {
-    title?: string;
     username?: string;
 }
 

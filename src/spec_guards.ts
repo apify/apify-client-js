@@ -45,7 +45,6 @@ import type {
     DefaultRunOptionsRePointed,
     EffectivePlatformFeaturesRePointed,
     KeyValueStoreResourceRePointed,
-    KeyValueStoreResourceSpecGaps,
     ListOfKeysRePointed,
     ListOfRequestsRePointed,
     LockedRequestQueueHeadRePointed,
@@ -60,7 +59,6 @@ import type {
     RunClientNarrowings,
     RunListItemRePointed,
     RunMetaRePointed,
-    RunOptionsSpecGaps,
     RunRePointed,
     ScheduleActionRunActorRePointed,
     ScheduleActionRunActorTaskRePointed,
@@ -69,7 +67,6 @@ import type {
     ScheduleRePointed,
     StoreActorRePointed,
     TaskListItemRePointed,
-    TaskListItemSpecGaps,
     TaskRePointed,
     UsageItemRePointed,
     UserPlanRePointed,
@@ -86,7 +83,6 @@ import type {
     WebhookLastDispatchRePointed,
     WebhookResource,
     WebhookResourceRePointed,
-    WebhookResourceSpecGaps,
 } from './models.js';
 import type * as responseSchemas from './schemas.js';
 
@@ -269,13 +265,7 @@ export type AdapterKeyGuards = AssertAll<
         Equals<WebhookConditionKey & keyof Schemas['WebhookCondition'], WebhookConditionKey>,
         GapsStillMissing<DatasetResourceSpecGaps, Schemas['DatasetResource']>,
         GapsStillMissing<DatasetStatsSpecGaps, Schemas['DatasetStats']>,
-        GapsStillMissing<KeyValueStoreResourceSpecGaps, Schemas['KeyValueStoreResource']>,
         GapsStillMissing<ActorResourceSpecGaps, Schemas['ActorResource']>,
-        GapsStillMissing<RunOptionsSpecGaps, Schemas['RunOptions']>,
-        // `TaskListItem` has a gap of its own, because the spec describes a listed task in a separate schema
-        // that omits `title` as well.
-        GapsStillMissing<TaskListItemSpecGaps, Schemas['TaskListItem']>,
-        GapsStillMissing<WebhookResourceSpecGaps, Schemas['WebhookResource']>,
         GapsStillMissing<RequestQueueResourceSpecGaps, Schemas['RequestQueueResource']>,
     ]
 >;
