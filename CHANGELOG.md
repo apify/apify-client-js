@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### 🚀 Features
 
 - Allow passing X-Actor-Request-ID via charge() method (backport of #1162) ([9e497bb](https://github.com/apify/apify-client-js/commit/9e497bbc37f427d10c3dc987517382c8ab1df1cf))
+- Add Server Actor tenancy (backport of #1176) ([27ee92d](https://github.com/apify/apify-client-js/commit/27ee92dcc1051fd4315ca2b7f4dd01bc0ec00ccd))
 
 
 <!-- git-cliff-unreleased-end -->
