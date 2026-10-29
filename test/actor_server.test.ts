@@ -176,6 +176,15 @@ describe('ActorServerClient', () => {
         expect(actorGets()).toHaveLength(1);
     });
 
+    test('request() reuses the server URL fetched by getOpenApiSpec()', async () => {
+        const actorServerClient = client.actor(ACTOR_ID).server();
+
+        await actorServerClient.getOpenApiSpec();
+        await actorServerClient.request();
+
+        expect(actorGets()).toHaveLength(1);
+    });
+
     test.each([
         { name: 'getUrl()', call: (c: ApifyClient) => c.actor(ACTOR_ID).server().getUrl() },
         { name: 'getOpenApiSpec()', call: (c: ApifyClient) => c.actor(ACTOR_ID).server().getOpenApiSpec() },

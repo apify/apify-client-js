@@ -69,8 +69,8 @@ export class ActorServerClient extends ResourceClient {
     /**
      * Returns the URL of the Actor's server.
      *
-     * The URL is the Actor's `standbyUrl`, fetched from the API on the first call and reused by later calls on this
-     * client. Use it to call the server with another HTTP client, for example one generated from the server's OpenAPI
+     * The URL is the Actor's `standbyUrl`, fetched from the API by the first call of this method or
+     * {@link getOpenApiSpec} and reused by later calls on this client. Use it to call the server with another HTTP client, for example one generated from the server's OpenAPI
      * specification.
      *
      * @param options - Request options
@@ -110,6 +110,7 @@ export class ActorServerClient extends ResourceClient {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const actor = await this.#getServerActor(timeoutSecs, signal);
+        this.#url = actor.standbyUrl!;
         const buildRef = actor.actorStandby?.build || 'latest';
 
         let buildId = actor.taggedBuilds?.[buildRef]?.buildId ?? undefined;
