@@ -881,6 +881,21 @@ export interface ActorRun extends ActorRunListItem {
      * @since Added in 2.22.3
      */
     storageIds?: ActorRunStorageIds;
+    /**
+     * Server Actor deployment of this run, `null` for runs not started by a Server Actor request.
+     * @since Added in 2.26.0
+     */
+    standby?: ActorRunStandby | null;
+}
+
+/**
+ * Which pool the Server Actor run serves. `SINGLE_TENANT` is a private instance in the caller's account.
+ * The `MULTI_TENANT_*` pools run in the Actor owner's account and serve many callers;
+ * charges in them require a `requestId`.
+ * @since Added in 2.26.0
+ */
+export interface ActorRunStandby {
+    deployment: 'SINGLE_TENANT' | 'MULTI_TENANT_OWNER_PAID' | 'MULTI_TENANT_FREE_USERS' | 'MULTI_TENANT_PAYING_USERS';
 }
 
 /**

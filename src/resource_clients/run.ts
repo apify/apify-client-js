@@ -561,6 +561,7 @@ export interface RunChargeOptions {
      * ID of the Server Actor request being charged, taken from the `X-Actor-Request-ID` header of the incoming request.
      * Required for multi-tenant Server Actor runs, where it maps the charge to the caller's account instead of the account that started the run.
      * Ignored elsewhere.
+     * @since Added in 2.26.0
      */
     requestId?: string;
 }

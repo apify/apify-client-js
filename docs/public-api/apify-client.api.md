@@ -294,6 +294,7 @@ export interface ActorRun extends ActorRunListItem {
     // (undocumented)
     options: ActorRunOptions;
     pricingInfo?: ActorRunPricingInfo;
+    standby?: ActorRunStandby | null;
     // (undocumented)
     stats: ActorRunStats;
     statusMessage?: string;
@@ -359,6 +360,12 @@ export interface ActorRunOptions {
 
 // @public
 export type ActorRunPricingInfo = PricePerEventActorPricingInfo | PricePerDatasetItemActorPricingInfo | FlatPricePerMonthActorPricingInfo | FreeActorPricingInfo;
+
+// @public
+export interface ActorRunStandby {
+    // (undocumented)
+    deployment: 'SINGLE_TENANT' | 'MULTI_TENANT_OWNER_PAID' | 'MULTI_TENANT_FREE_USERS' | 'MULTI_TENANT_PAYING_USERS';
+}
 
 // @public
 export interface ActorRunStats {
