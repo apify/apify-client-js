@@ -12,7 +12,10 @@ const OPENAPI_SPEC = {
     paths: { '/echo': { post: { responses: { '200': { description: 'The echoed request.' } } } } },
 };
 
-/** A web server that answers every request, including the platform's readiness probe, with the request it received. */
+/**
+ * A web server that answers every request, including the platform's readiness probe, with the request it received,
+ * under the status in the `status` query parameter, or 200.
+ */
 const ECHO_SERVER_SOURCE = `
 const http = require('http');
 
@@ -20,7 +23,8 @@ http.createServer((req, res) => {
     let body = '';
     req.on('data', (chunk) => { body += chunk; });
     req.on('end', () => {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
+        const status = Number(new URL(req.url, 'http://localhost').searchParams.get('status')) || 200;
+        res.writeHead(status, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ method: req.method, url: req.url, headers: req.headers, body }));
     });
 }).listen(process.env.ACTOR_WEB_SERVER_PORT);
@@ -98,4 +102,8 @@ test('the server client returns the URL and OpenAPI specification and sends requ
         headers: { Authorization: 'Bearer actor-token' },
     });
     expect(withOwnAuthorization.data.headers.authorization).toBe('Bearer actor-token');
+
+    const errorResponse = await actorServerClient.request('/echo', { params: { status: 404 } });
+    expect(errorResponse.status).toBe(404);
+    expect(errorResponse.data.url).toBe('/echo?status=404');
 }, 360_000);
