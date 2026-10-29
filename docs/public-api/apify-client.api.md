@@ -1367,7 +1367,7 @@ interface components {
             scheduledActorTaskId?: string;
         };
         RunStandby: {
-            deployment: string;
+            deployment: "SINGLE_TENANT" | "MULTI_TENANT_OWNER_PAID" | "MULTI_TENANT_FREE_USERS" | "MULTI_TENANT_PAYING_USERS";
         };
         RunListItem: {
             id: string;

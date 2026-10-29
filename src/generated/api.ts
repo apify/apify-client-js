@@ -6465,11 +6465,13 @@ export interface components {
          */
         RunStandby: {
             /**
-             * @description How the Standby run is deployed: `SINGLE_TENANT`, `MULTI_TENANT_FREE_USERS`, `MULTI_TENANT_PAYING_USERS` or `MULTI_TENANT_OWNER_PAID`. `SINGLE_TENANT` is a private instance in the user's account.
-             *     The `MULTI_TENANT_*` values are runs in the Actor owner's account that serve requests from many users.
-             * @example SINGLE_TENANT
+             * @description Which pool the Server Actor run serves. `SINGLE_TENANT` is a private instance in the caller's account.
+             *     The `MULTI_TENANT_*` pools run in the Actor owner's account and serve many callers;
+             *     charges in them require a `requestId` (see the charge endpoint).
+             * @example MULTI_TENANT_PAYING_USERS
+             * @enum {string}
              */
-            deployment: string;
+            deployment: "SINGLE_TENANT" | "MULTI_TENANT_OWNER_PAID" | "MULTI_TENANT_FREE_USERS" | "MULTI_TENANT_PAYING_USERS";
         };
         /** RunListItem */
         RunListItem: {
@@ -6850,7 +6852,7 @@ export interface components {
              * @example 0.5
              */
             externalChargedTotalUsd?: number;
-            /** @description Standby configuration of the run. `null` for runs that are not Actor Standby runs. */
+            /** @description Server Actor deployment of this run, `null` for runs not started by a Server Actor request. */
             standby?: components["schemas"]["RunStandby"] | null;
             /** @description Present only when the run was started by a third-party integration. */
             integrationTracking?: components["schemas"]["IntegrationTracking"];
