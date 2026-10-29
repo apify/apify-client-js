@@ -468,6 +468,7 @@ export interface ApifyClientOptions {
 
 // @public
 export interface ApifyRequestConfig {
+    authorizationHeader?: string;
     compression?: HttpCompressor | false;
     data?: unknown;
     doNotRetryTimeouts?: boolean;
@@ -475,8 +476,10 @@ export interface ApifyRequestConfig {
     method: HttpMethod;
     params?: Record<string, unknown>;
     responseType?: ApifyResponseType;
+    retryStatusCodes?: readonly number[];
     signal?: AbortSignal;
     stringifyFunctions?: boolean;
+    throwOnErrorStatus?: boolean;
     timeoutSecs?: Timeout;
     url: string;
 }
