@@ -1275,6 +1275,9 @@ interface components {
             scheduleId?: string | null;
             scheduledAt?: Date | null;
         };
+        RunStandby: {
+            deployment: "SINGLE_TENANT" | "MULTI_TENANT_OWNER_PAID" | "MULTI_TENANT_FREE_USERS" | "MULTI_TENANT_PAYING_USERS";
+        };
         RunListItem: {
             id: string;
             actId: string;
@@ -1419,6 +1422,7 @@ interface components {
             usageUsd?: components["schemas"]["RunUsageUsd"] | null;
             metamorphs?: components["schemas"]["RunMetamorphEvent"][] | null;
             platformUsageBillingModel?: string;
+            standby?: components["schemas"]["RunStandby"] | null;
         };
         RunResponse: {
             data: components["schemas"]["Run"];
