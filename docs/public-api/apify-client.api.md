@@ -1367,9 +1367,6 @@ interface components {
             scheduledActorTaskId?: string;
         };
         RunStandby: {
-            deployment: string;
-        };
-        RunStandby: {
             deployment: "SINGLE_TENANT" | "MULTI_TENANT_OWNER_PAID" | "MULTI_TENANT_FREE_USERS" | "MULTI_TENANT_PAYING_USERS";
         };
         RunListItem: {
@@ -1545,7 +1542,6 @@ interface components {
             usageUsd?: components["schemas"]["RunUsageUsd"] | null;
             metamorphs?: components["schemas"]["RunMetamorphEvent"][] | null;
             platformUsageBillingModel?: string;
-            standby?: components["schemas"]["RunStandby"] | null;
         };
         RunResponse: {
             data: components["schemas"]["Run"];
