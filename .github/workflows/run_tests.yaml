@@ -1,0 +1,111 @@
+# Runs the whole test suite (unit and integration) with every request the tests send checked against the published
+# OpenAPI specification. Mismatches are reported as warnings and never fail the run, see
+# `tools/openapi-request-validator`. Runs on every pull request update, and on demand with the validation optional.
+
+name: Run tests
+
+on:
+    workflow_dispatch:
+        inputs:
+            validate_openapi:
+                description: Check every request against the OpenAPI specification and report mismatches as warnings
+                type: boolean
+                default: true
+    pull_request:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+env:
+    NODE_VERSION: 24
+    # Where the unit-test mock server and the integration-test proxy append their findings.
+    OPENAPI_FINDINGS_FILE: openapi-findings.jsonl
+    # Decided once here: always on for a pull request, as ticked when started by hand.
+    VALIDATE_OPENAPI: ${{ github.event_name == 'pull_request' || inputs.validate_openapi }}
+
+jobs:
+    unit_tests:
+        name: Unit tests
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Use Node.js ${{ env.NODE_VERSION }}
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Install pnpm and dependencies
+              uses: apify/actions/pnpm-install@v1.6.2
+
+            - name: Install Chrome for puppeteer
+              run: pnpm exec puppeteer browsers install chrome
+
+            - name: Fetch the OpenAPI specification
+              if: ${{ env.VALIDATE_OPENAPI == 'true' }}
+              run: pnpm spec:fetch
+
+            # With validation off both variables are empty, and the mock server runs as it does everywhere else.
+            - name: Run unit tests
+              run: pnpm test
+              env:
+                  OPENAPI_SPEC_PATH: ${{ env.VALIDATE_OPENAPI == 'true' && 'tmp/openapi.json' || '' }}
+                  OPENAPI_REPORT_FILE: ${{ env.VALIDATE_OPENAPI == 'true' && env.OPENAPI_FINDINGS_FILE || '' }}
+
+            - name: Report requests that do not match the OpenAPI specification
+              if: ${{ always() && env.VALIDATE_OPENAPI == 'true' }}
+              run: pnpm openapi:report ${{ env.OPENAPI_FINDINGS_FILE }}
+
+    integration_tests:
+        name: Integration tests
+        runs-on: ubuntu-latest
+
+        env:
+            APIFY_TEST_USER_API_TOKEN: ${{ secrets.APIFY_TEST_USER_PYTHON_SDK_API_TOKEN }}
+            OPENAPI_PROXY_PORT: 3999
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Use Node.js ${{ env.NODE_VERSION }}
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Install pnpm and dependencies
+              uses: apify/actions/pnpm-install@v1.6.2
+
+            - name: Fetch the OpenAPI specification
+              if: ${{ env.VALIDATE_OPENAPI == 'true' }}
+              run: pnpm spec:fetch
+
+            # The proxy forwards every request to the live API and records the ones that do not match the
+            # specification. It keeps running in the background through the following steps.
+            - name: Start the OpenAPI validating proxy
+              if: ${{ env.VALIDATE_OPENAPI == 'true' }}
+              run: |
+                  pnpm openapi:proxy --spec tmp/openapi.json --port "$OPENAPI_PROXY_PORT" --report "$OPENAPI_FINDINGS_FILE" > openapi-proxy.log 2>&1 &
+                  for _ in $(seq 1 30); do grep -q listening openapi-proxy.log && break; sleep 1; done
+                  cat openapi-proxy.log
+
+            # With validation off the variable is empty and the tests talk to the API directly.
+            - name: Run integration tests
+              if: ${{ env.APIFY_TEST_USER_API_TOKEN != '' }}
+              run: pnpm test:integration
+              env:
+                  APIFY_INTEGRATION_TESTS_API_URL: ${{ env.VALIDATE_OPENAPI == 'true' && format('http://127.0.0.1:{0}', env.OPENAPI_PROXY_PORT) || '' }}
+
+            - name: Report the skipped integration tests
+              if: ${{ env.APIFY_TEST_USER_API_TOKEN == '' }}
+              run: echo "::warning::APIFY_TEST_USER_API_TOKEN is empty, the integration tests did not run."
+
+            - name: Report requests that do not match the OpenAPI specification
+              if: ${{ always() && env.VALIDATE_OPENAPI == 'true' }}
+              run: pnpm openapi:report "$OPENAPI_FINDINGS_FILE"

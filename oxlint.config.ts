@@ -25,7 +25,7 @@ export default defineConfig({
         },
         {
             // Maintainer-facing CLI scripts, so reporting progress on stdout is the point.
-            files: ['scripts/**'],
+            files: ['scripts/**', 'tools/**'],
             rules: {
                 'no-console': 'off',
             },
