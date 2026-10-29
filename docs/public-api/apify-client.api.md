@@ -87,6 +87,9 @@ export class ActorClient extends ResourceClient {
     get(options?: TimeoutOptions): Promise<ActorResource | undefined>;
     lastRun(options?: ActorLastRunOptions): RunClient;
     runs(): RunCollectionClient;
+    server(): ActorServerClient;
+    // @deprecated
+    standby(): ActorServerClient;
     start(input?: ActorInput, options?: ActorStartOptions): Promise<Run>;
     update(newFields: ActorUpdateOptions, options?: TimeoutOptions): Promise<ActorResource>;
     validateInput(input?: ActorInput, options?: ActorValidateInputOptions): Promise<boolean>;
@@ -225,6 +228,23 @@ export type ActorRunPricingInfo = PayPerEventActorPricingInfo | PricePerDatasetI
 
 // @public
 export interface ActorRunStorageIds extends GeneratedRunStorageIds {
+}
+
+// @public
+export class ActorServerClient extends ResourceClient {
+    constructor(options: ApiClientSubResourceOptions);
+    getOpenApiSpec(options?: TimeoutOptions): Promise<Record<string, unknown> | undefined>;
+    getUrl(options?: TimeoutOptions): Promise<string>;
+    request<T = any>(path?: string, options?: ActorServerRequestOptions): Promise<ApifyResponse<T>>;
+}
+
+// @public
+export interface ActorServerRequestOptions extends TimeoutOptions {
+    compression?: HttpCompressionAlgorithm | HttpCompressor;
+    data?: unknown;
+    headers?: Record<string, string>;
+    method?: HttpMethod;
+    params?: Record<string, unknown>;
 }
 
 // @public
@@ -448,6 +468,7 @@ export interface ApifyClientOptions {
 
 // @public
 export interface ApifyRequestConfig {
+    compression?: HttpCompressor | false;
     data?: unknown;
     doNotRetryTimeouts?: boolean;
     headers?: Record<string, string>;

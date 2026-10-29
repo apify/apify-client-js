@@ -136,6 +136,11 @@ export interface ApifyRequestConfig {
     /** Give up on the first transport timeout instead of retrying it. */
     doNotRetryTimeouts?: boolean;
     /**
+     * How to compress the request body: an {@link HttpCompressor} for this request only, or `false` to send the body
+     * uncompressed. Defaults to the client's {@link HttpClient.httpCompressor}.
+     */
+    compression?: HttpCompressor | false;
+    /**
      * Aborts the call. Once the signal aborts, the attempt in flight is ended, no retry follows, and the call
      * rejects with the signal's `reason`.
      */
@@ -247,8 +252,9 @@ export interface HttpClientOptions {
  *
  * Overriding {@link call} itself is also supported and bypasses the transport hooks entirely. Such a client has
  * to send the default headers from `defaultHeaders` with every request, otherwise the `Authorization` header never
- * reaches the API. The protected helpers `prepareRequest()`, `buildUrl()` and `computeTimeoutMillis()` stay
- * available to it.
+ * reaches the API, and has to honor {@link ApifyRequestConfig.compression}, which
+ * {@link ActorServerClient.request} sets to `false` unless its caller asks for compression. The protected helpers
+ * `prepareRequest()`, `buildUrl()` and `computeTimeoutMillis()` stay available to it.
  *
  * @example
  * ```javascript
@@ -437,9 +443,9 @@ export abstract class HttpClient {
      *
      * Merges the client's default headers with the per-request ones, header names compared case-insensitively and
      * the per-request values winning. Serializes an object body to JSON, setting `Content-Type: application/json`
-     * unless the caller supplied a content type. Runs the body through {@link httpCompressor} unless a
-     * `Content-Encoding` header is already set, the body is too small, or its content type says the payload is
-     * already compressed. A caller-supplied `Content-Encoding` is forwarded as it is, which is how a pre-encoded
+     * unless the caller supplied a content type. Runs the body through {@link httpCompressor}, or the compressor in
+     * `config.compression`, unless `config.compression` is `false`, a `Content-Encoding` header is already set, the
+     * body is too small, or its content type says the payload is already compressed. A caller-supplied `Content-Encoding` is forwarded as it is, which is how a pre-encoded
      * body is uploaded, and `Content-Encoding: identity` opts a single request out of compression.
      */
     protected async prepareRequest(
@@ -448,12 +454,13 @@ export abstract class HttpClient {
         let headers = mergeHeaders(this.defaultHeaders, config.headers);
         let body = serializeBody(config.data, headers, config.stringifyFunctions);
 
-        const bytes = compressibleBytes(body, headers);
+        const compressor = config.compression ?? this.httpCompressor;
+        const bytes = compressor && compressibleBytes(body, headers);
         if (bytes) {
-            body = await this.httpCompressor.compress(Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength));
+            body = await compressor.compress(Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength));
             // Compressing changes the body length, so a `Content-Length` the caller set describes the wrong body
             // and would leave the server waiting for bytes that never arrive.
-            headers = mergeHeaders(headers, { 'Content-Encoding': this.httpCompressor.contentEncoding });
+            headers = mergeHeaders(headers, { 'Content-Encoding': compressor.contentEncoding });
             deleteHeader(headers, 'content-length');
         }
 
