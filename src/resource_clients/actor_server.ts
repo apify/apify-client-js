@@ -15,6 +15,12 @@ import { parseArgument, parseResponse } from '../utils.js';
 import { BuildClient } from './build.js';
 import { BuildCollectionClient } from './build_collection.js';
 
+/**
+ * Statuses a server request is retried on. Other statuses may come from the Actor's code, which a retry would run
+ * again.
+ */
+const SERVER_RETRY_STATUS_CODES = [429, 503];
+
 const requestOptionsSchema = z.strictObject({
     method: z.string().min(1).optional(),
     params: z.record(z.string(), z.unknown()).optional(),
@@ -137,8 +143,9 @@ export class ActorServerClient extends ResourceClient {
      * pass, `Authorization` included, reach the Actor's server as they are. The first request to an idle Actor waits for the platform to
      * start a server run, which is why the timeout defaults to `'long'`.
      *
-     * A server error or a rate-limit response is retried like an API call, so the server may receive the same request
-     * more than once. Request bodies are sent uncompressed unless `compression` is set, since the Actor's server may
+     * The method resolves to any response of the server, error statuses included. A rate-limit (429) or Service
+     * Unavailable (503) response is retried with the client's retry settings, and the last one is returned once the
+     * retries run out. Request bodies are sent uncompressed unless `compression` is set, since the Actor's server may
      * not decode a compressed body.
      *
      * @template T - Type of the parsed response body.
@@ -156,7 +163,7 @@ export class ActorServerClient extends ResourceClient {
      * @param options.timeoutSecs - Timeout for the HTTP request. Default is `'long'`.
      * @returns The response of the Actor's server, with the body parsed by its content type
      * @throws {ApifyClientError} When the Actor is not a Server Actor.
-     * @throws {ApifyApiError} When the Actor does not exist, or the server responds with an error status.
+     * @throws {ApifyApiError} When the Actor does not exist.
      * @see https://docs.apify.com/platform/actors/running/standby
      */
     async request<T = any>(path = '/', options: ActorServerRequestOptions = {}): Promise<ApifyResponse<T>> {
@@ -180,6 +187,8 @@ export class ActorServerClient extends ResourceClient {
             data,
             compression: compression === undefined ? false : resolveCompressor(compression),
             authorizationHeader: 'X-Apify-Authorization',
+            throwOnErrorStatus: false,
+            retryStatusCodes: SERVER_RETRY_STATUS_CODES,
             timeoutSecs,
             signal,
         });

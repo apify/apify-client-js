@@ -42,6 +42,8 @@ describe('ActorServerClient', () => {
     let builds: Record<string, string>;
     /** The `actorDefinition` of every build the API returns. */
     let actorDefinition: Record<string, unknown> | null;
+    /** Statuses the server answers `/flaky` with, one per request, before it answers 200. */
+    let flakyStatuses: number[];
 
     const serverUrl = () => `${baseUrl}${SERVER_PREFIX}`;
     const serverRequests = () => received.filter((request) => request.path.startsWith(`${SERVER_PREFIX}/`));
@@ -93,6 +95,8 @@ describe('ActorServerClient', () => {
                 } else if (url.pathname.startsWith('/v2/actor-builds/')) {
                     const id = url.pathname.split('/').pop();
                     json(200, { data: { ...fixtures.build, id, actorDefinition } });
+                } else if (url.pathname === `${SERVER_PREFIX}/flaky` && flakyStatuses.length > 0) {
+                    json(flakyStatuses.shift()!, { error: 'flaky' });
                 } else if (url.pathname === `${SERVER_PREFIX}/missing`) {
                     res.writeHead(404, { 'content-type': 'text/plain' });
                     res.end('Not here');
@@ -115,6 +119,7 @@ describe('ActorServerClient', () => {
         actor = serverActor();
         builds = {};
         actorDefinition = { webServerSchema: OPENAPI_SPEC };
+        flakyStatuses = [];
         client = new ApifyClient({ baseUrl, token: 'test-token', maxRetries: 0 });
     });
 
@@ -245,11 +250,47 @@ describe('ActorServerClient', () => {
         await expect(client.actor(ACTOR_ID).server().request()).rejects.toThrow(NotFoundError);
     });
 
-    test('request() throws the matching ApifyApiError subclass for an error status from the server', async () => {
-        const request = client.actor(ACTOR_ID).server().request('/missing');
+    test('request() returns an error response of the server as it is', async () => {
+        const response = await client.actor(ACTOR_ID).server().request('/missing');
 
-        await expect(request).rejects.toThrow(NotFoundError);
-        await expect(client.actor(ACTOR_ID).server().request('/missing')).rejects.toThrow('Not here');
+        expect(response.status).toBe(404);
+        expect(response.data).toBe('Not here');
+    });
+
+    test.each([
+        { name: 'a rate limit', status: 429 },
+        { name: 'Service Unavailable', status: 503 },
+    ])('request() retries $name', async ({ status }) => {
+        flakyStatuses = [status, status];
+        client = new ApifyClient({ baseUrl, token: 'test-token', maxRetries: 2, minDelayBetweenRetriesMillis: 1 });
+
+        const response = await client.actor(ACTOR_ID).server().request('/flaky');
+
+        expect(response.status).toBe(200);
+        expect(serverRequests()).toHaveLength(3);
+    });
+
+    test('request() returns the last retried response once the retries run out', async () => {
+        flakyStatuses = [503, 503, 503];
+        client = new ApifyClient({ baseUrl, token: 'test-token', maxRetries: 1, minDelayBetweenRetriesMillis: 1 });
+
+        const response = await client.actor(ACTOR_ID).server().request('/flaky');
+
+        expect(response.status).toBe(503);
+        expect(serverRequests()).toHaveLength(2);
+    });
+
+    test('request() returns a server error other than 503 without retrying it', async () => {
+        flakyStatuses = [500];
+        client = new ApifyClient({ baseUrl, token: 'test-token', maxRetries: 2, minDelayBetweenRetriesMillis: 1 });
+
+        const response = await client
+            .actor(ACTOR_ID)
+            .server()
+            .request('/flaky', { method: 'POST', data: { a: 1 } });
+
+        expect(response.status).toBe(500);
+        expect(serverRequests()).toHaveLength(1);
     });
 
     test.each([
