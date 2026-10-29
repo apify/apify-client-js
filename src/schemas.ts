@@ -33,3 +33,14 @@ export const Build = lazySchema(() => {
 
 /** Response containing Actor build data. */
 export const BuildResponse = lazySchema(() => generated.BuildResponse().extend({ data: Build() }));
+
+/**
+ * The API returns `uiState` as `null` once an API update has changed the schedule's `cronExpression` or `timezone`,
+ * which the specification types as an object.
+ */
+export const Schedule = lazySchema(() =>
+    generated.Schedule().extend({ uiState: generated.ScheduleUiState().nullable().optional() }),
+);
+
+/** Response containing schedule data. */
+export const ScheduleResponse = lazySchema(() => generated.ScheduleResponse().extend({ data: Schedule() }));
