@@ -651,6 +651,7 @@ interface components {
         status: string[];
         startedAfter: string;
         startedBefore: string;
+        deployment: string[];
         timeout: number;
         memory: number;
         maxItems: number;
@@ -659,6 +660,7 @@ interface components {
         build: string;
         waitForFinishRun: number;
         webhooks: string;
+        forcePermissionLevel: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
         outputRecordKey: string;
         format: string;
         clean: boolean;
@@ -796,6 +798,12 @@ interface components {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
+        NoContent: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content?: never;
+        };
         PaymentRequired: {
             headers: {
                 [name: string]: unknown;
@@ -811,12 +819,6 @@ interface components {
             content: {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
-        };
-        NoContent: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content?: never;
         };
         Conflict: {
             headers: {
@@ -875,6 +877,7 @@ interface components {
         ErrorDetail: {
             type?: components["schemas"]["ErrorType"];
             message?: string;
+            data?: Record<string, unknown>;
         };
         ErrorResponse: {
             error: components["schemas"]["ErrorDetail"];
@@ -914,6 +917,8 @@ interface components {
             memoryMbytes?: number;
             restartOnError?: boolean | null;
             maxItems?: number | null;
+            maxTotalChargeUsd?: number | null;
+            isMaxTotalChargeUsdSetByUser?: boolean | null;
             forcePermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
         };
         ActorStandby: {
@@ -925,6 +930,9 @@ interface components {
             memoryMbytes?: number | null;
             disableStandbyFieldsOverride?: boolean | null;
             shouldPassActorInput?: boolean | null;
+            tenancy?: string | null;
+            isConsoleAuthEnabled?: boolean | null;
+            isTokenlessEnabled?: boolean | null;
         };
         ExampleRunInput: {
             body?: string;
@@ -951,6 +959,7 @@ interface components {
             name: string;
             value?: string;
             isSecret?: boolean | null;
+            valueHash?: string;
         };
         Version: {
             versionNumber: string;
@@ -962,6 +971,9 @@ interface components {
             gitRepoUrl?: string | null;
             tarballUrl?: string | null;
             gitHubGistUrl?: string | null;
+            githubWebhookId?: number | null;
+            gitlabWebhookId?: number | null;
+            bitbucketWebhookId?: string | null;
         };
         CommonActorPricingInfo: {
             apifyMarginPercentage: number;
@@ -969,6 +981,7 @@ interface components {
             startedAt: Date;
             notifiedAboutFutureChangeAt?: Date | null;
             notifiedAboutChangeAt?: Date | null;
+            notifiedAboutRentalToPpePriceChangeAt?: Date | null;
             reasonForChange?: string | null;
             isPriceChangeNotificationSuppressed?: boolean;
             forceContainsSignificantPriceChange?: boolean;
@@ -995,6 +1008,7 @@ interface components {
                 };
             };
             minimalMaxTotalChargeUsd?: number | null;
+            isPPEPlatformUsagePaidByUser?: boolean | null;
         } & {
             pricingModel: "PAY_PER_EVENT";
         };
@@ -1115,6 +1129,10 @@ interface components {
             tarballUrl?: string;
             gitHubGistUrl?: string;
         };
+        UpdateBuildOnPushRequest: {
+            providerId: string;
+            enabled: boolean;
+        };
         ListOfEnvVars: {
             total: number;
             items: components["schemas"]["EnvVar"][];
@@ -1131,6 +1149,35 @@ interface components {
             actorTaskId?: string | null;
             actorRunId?: string | null;
         };
+        WebhookSlackMessage: {
+            userIntegrationId?: string;
+            channelId?: string;
+            messageTemplate?: string;
+        };
+        WebhookDatasetTransformation: {
+            fields?: string[];
+            omit?: string[];
+        };
+        WebhookGoogleMail: {
+            userIntegrationId?: string;
+            emailTo?: string[];
+            subject?: string;
+            body?: string;
+            attachmentFormat?: string;
+            attachmentTransformation?: components["schemas"]["WebhookDatasetTransformation"];
+        };
+        WebhookGoogleDrive: {
+            userIntegrationId?: string;
+            filename?: string;
+            format?: string | null;
+            transformation?: components["schemas"]["WebhookDatasetTransformation"];
+        };
+        WebhookGithubIssue: {
+            userIntegrationId?: string;
+            repository?: string;
+            title?: string;
+            body?: string;
+        };
         WebhookDispatchStatus: "ACTIVE" | "SUCCEEDED" | "FAILED";
         WebhookLastDispatch: {
             status: components["schemas"]["WebhookDispatchStatus"];
@@ -1140,29 +1187,57 @@ interface components {
         WebhookStats: {
             totalDispatches?: number;
         };
-        WebhookListItem: {
+        WebhookResource: {
             id: string;
             createdAt: Date;
             modifiedAt: Date;
             userId: string;
             isAdHoc?: boolean | null;
-            isApifyIntegration?: boolean;
             isEnabled?: boolean;
             actionType?: string;
+            isApifyIntegration?: boolean | null;
             shouldInterpolateStrings?: boolean | null;
             eventTypes: components["schemas"]["WebhookEventType"][];
             condition: components["schemas"]["WebhookCondition"];
             ignoreSslErrors: boolean;
-            doNotRetry: boolean;
-            requestUrl: string;
+            doNotRetry?: boolean | null;
+            requestUrl?: string | null;
+            payloadTemplate?: string | null;
+            headersTemplate?: string | null;
+            title?: string | null;
+            description?: string | null;
+            slackMessage?: components["schemas"]["WebhookSlackMessage"];
+            googleMail?: components["schemas"]["WebhookGoogleMail"];
+            googleDrive?: components["schemas"]["WebhookGoogleDrive"];
+            githubIssue?: components["schemas"]["WebhookGithubIssue"];
             lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
             stats?: components["schemas"]["WebhookStats"] | null;
         };
-        ListOfWebhooks: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["WebhookListItem"][];
+        ListOfWebhookResources: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["WebhookResource"][];
         };
-        ListOfWebhooksResponse: {
-            data: components["schemas"]["ListOfWebhooks"];
+        ListOfWebhookResourcesResponse: {
+            data: components["schemas"]["ListOfWebhookResources"];
+        };
+        ActorOAuthConnection: {
+            _id: string;
+            actorId: string;
+            oAuthProviderType: "CUSTOM" | "GOOGLE";
+            createdAt: Date;
+            modifiedAt: Date;
+            credentials?: {
+                clientId?: string;
+                scope?: string;
+                label?: string;
+                imageUrl?: string;
+            };
+        };
+        ListOfActorOAuthConnections: {
+            total: number;
+            items: components["schemas"]["ActorOAuthConnection"][];
+        };
+        ListOfActorOAuthConnectionsResponse: {
+            data: components["schemas"]["ListOfActorOAuthConnections"];
         };
         ActorJobStatus: "READY" | "RUNNING" | "SUCCEEDED" | "FAILED" | "TIMING-OUT" | "TIMED-OUT" | "ABORTING" | "ABORTED";
         RunOrigin: "DEVELOPMENT" | "WEB" | "API" | "SCHEDULER" | "TEST" | "WEBHOOK" | "ACTOR" | "CLI" | "CI" | "STANDBY" | "MCP";
@@ -1170,6 +1245,9 @@ interface components {
             origin: components["schemas"]["RunOrigin"];
             clientIp?: string;
             userAgent?: string;
+            githubActionsRunUrl?: string;
+            actorRunId?: string;
+            webhookDispatchId?: string;
         };
         BuildListItem: {
             id: string;
@@ -1178,7 +1256,7 @@ interface components {
             status: components["schemas"]["ActorJobStatus"];
             startedAt: Date;
             finishedAt?: Date | null;
-            usageTotalUsd: number;
+            usageTotalUsd?: number;
             buildNumber: string;
             buildNumberInt?: number;
             meta?: components["schemas"]["BuildMeta"];
@@ -1200,6 +1278,8 @@ interface components {
             betaPackages?: boolean | null;
             memoryMbytes?: number | null;
             diskMbytes?: number | null;
+            tag?: string | null;
+            debug?: boolean | null;
         };
         BuildUsage: {
             ACTOR_COMPUTE_UNITS?: number | null;
@@ -1254,6 +1334,11 @@ interface components {
             usageUsd?: components["schemas"]["BuildUsage"] | null;
             inputSchema?: string | null;
             readme?: string | null;
+            changelog?: string | null;
+            exitCode?: number | null;
+            gitCommitId?: string;
+            gitBranchName?: string;
+            createdByOrganizationMemberUserId?: string;
             buildNumber: string;
             imageDigest?: string | null;
             actVersion?: {
@@ -1262,6 +1347,8 @@ interface components {
                 versionNumber?: string;
                 gitRepoUrl?: string;
                 sourceFiles?: components["schemas"]["SourceCodeFile"][];
+                gitHubGistUrl?: string;
+                tarballUrl?: string;
             };
             actorDefinition?: components["schemas"]["ActorDefinition"] | null;
         };
@@ -1274,6 +1361,13 @@ interface components {
             userAgent?: string | null;
             scheduleId?: string | null;
             scheduledAt?: Date | null;
+            actorRunId?: string;
+            webhookDispatchId?: string;
+            scheduledAct2Id?: string;
+            scheduledActorTaskId?: string;
+        };
+        RunStandby: {
+            deployment: string;
         };
         RunStandby: {
             deployment: "SINGLE_TENANT" | "MULTI_TENANT_OWNER_PAID" | "MULTI_TENANT_FREE_USERS" | "MULTI_TENANT_PAYING_USERS";
@@ -1294,6 +1388,7 @@ interface components {
             defaultKeyValueStoreId: string;
             defaultDatasetId: string;
             defaultRequestQueueId: string;
+            standby?: components["schemas"]["RunStandby"] | null;
         };
         ListOfRuns: components["schemas"]["PaginationResponse"] & {
             items: components["schemas"]["RunListItem"][];
@@ -1330,13 +1425,24 @@ interface components {
             metamorph?: number;
             computeUnits?: number;
         };
+        RunEventUsage: {
+            eventTotalUsd: number;
+            eventTitle: string;
+        };
+        IntegrationTracking: {
+            platform?: string;
+            appId?: string;
+            isAiTool?: boolean;
+        };
         RunOptions: {
             build: string;
             timeoutSecs: number;
             memoryMbytes: number;
             diskMbytes: number;
+            restartOnError?: boolean | null;
             maxItems?: number | null;
             maxTotalChargeUsd?: number | null;
+            isMaxTotalChargeUsdSetByUser?: boolean;
         };
         GeneralAccess: "ANYONE_WITH_ID_CAN_READ" | "ANYONE_WITH_NAME_CAN_READ" | "FOLLOW_USER_SETTING" | "RESTRICTED";
         RunUsage: {
@@ -1352,6 +1458,7 @@ interface components {
             DATA_TRANSFER_EXTERNAL_GBYTES?: number | null;
             PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number | null;
             PROXY_SERPS?: number | null;
+            PROXY_UNBLOCKER_UNITS?: number | null;
         };
         RunUsageUsd: {
             ACTOR_COMPUTE_UNITS?: number | null;
@@ -1366,12 +1473,14 @@ interface components {
             DATA_TRANSFER_EXTERNAL_GBYTES?: number | null;
             PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number | null;
             PROXY_SERPS?: number | null;
+            PROXY_UNBLOCKER_UNITS?: number | null;
         };
         RunMetamorphEvent: {
             createdAt: Date;
             actorId: string;
             buildId: string;
             inputKey?: string | null;
+            buildTags?: string[];
         };
         Run: {
             id: string;
@@ -1388,6 +1497,20 @@ interface components {
             stats: components["schemas"]["RunStats"];
             chargedEventCounts?: {
                 [key: string]: number;
+            };
+            accountedChargedEventCounts?: {
+                [key: string]: number;
+            } | null;
+            eventUsage?: {
+                [key: string]: components["schemas"]["RunEventUsage"];
+            };
+            externalChargedTotalUsd?: number;
+            standby?: components["schemas"]["RunStandby"] | null;
+            integrationTracking?: components["schemas"]["IntegrationTracking"];
+            createdByOrganizationMemberUserId?: string;
+            consoleUrl?: string;
+            output?: {
+                [key: string]: string;
             };
             options: components["schemas"]["RunOptions"];
             buildId: string;
@@ -1436,6 +1559,7 @@ interface components {
         DatasetResource: {
             id: string;
             name?: string | null;
+            title?: string | null;
             userId: string;
             createdAt: Date;
             modifiedAt: Date;
@@ -1509,6 +1633,7 @@ interface components {
         KeyValueStoreResource: {
             id: string;
             name?: string | null;
+            title?: string | null;
             userId?: string | null;
             username?: string | null;
             createdAt: Date;
@@ -1572,6 +1697,7 @@ interface components {
         RequestQueueResource: {
             id: components["schemas"]["QueueId"];
             name?: string | null;
+            title?: string | null;
             userId: components["schemas"]["QueueUserId"];
             actId?: string | null;
             actRunId?: string | null;
@@ -1615,8 +1741,11 @@ interface components {
             handledAt?: Date | null;
         };
         RequestId: string;
+        LockExpiresAt: Date;
         RequestResource: components["schemas"]["RequestBase"] & {
             id: components["schemas"]["RequestId"];
+            lockExpiresAt?: components["schemas"]["LockExpiresAt"];
+            lockByClient?: string;
         };
         ListOfRequests: {
             items: components["schemas"]["RequestResource"][];
@@ -1695,7 +1824,6 @@ interface components {
         UpdateRequestResponse: {
             data: components["schemas"]["RequestRegistration"];
         };
-        LockExpiresAt: Date;
         RequestLockInfo: {
             lockExpiresAt: components["schemas"]["LockExpiresAt"];
         };
@@ -1741,6 +1869,7 @@ interface components {
         };
         TaskStats: {
             totalRuns?: number;
+            lastRunStartedAt?: Date | null;
         };
         TaskListItem: {
             id: string;
@@ -1748,11 +1877,13 @@ interface components {
             actId: string;
             actName?: string | null;
             name: string;
+            title?: string | null;
             username?: string | null;
             actUsername?: string | null;
             createdAt: Date;
             modifiedAt: Date;
             stats?: components["schemas"]["TaskStats"] | null;
+            isPublic?: boolean;
         };
         ListOfTasks: components["schemas"]["PaginationResponse"] & {
             items: components["schemas"]["TaskListItem"][];
@@ -1767,6 +1898,8 @@ interface components {
             maxItems?: number | null;
             maxTotalChargeUsd?: number | null;
             restartOnError?: boolean | null;
+            isMaxTotalChargeUsdSetByUser?: boolean | null;
+            forcePermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
         };
         TaskInput: {
             [key: string]: unknown;
@@ -1778,6 +1911,12 @@ interface components {
             inputSchemaFields?: string[] | null;
             datasetName?: string | null;
             datasetView?: string | null;
+            categorization?: string | null;
+            highlightedFields?: string[] | null;
+            faq?: {
+                question: string;
+                answer: string;
+            }[] | null;
         };
         CreateTaskRequest: {
             actId: string;
@@ -1794,6 +1933,7 @@ interface components {
             userId: string;
             actId: string;
             name: string;
+            nameLowerCase?: string;
             username?: string | null;
             createdAt: Date;
             modifiedAt: Date;
@@ -1821,24 +1961,6 @@ interface components {
             publicConfig?: components["schemas"]["TaskPublicConfig"];
             isPublic?: boolean;
         };
-        WebhookResource: {
-            id: string;
-            createdAt: Date;
-            modifiedAt: Date;
-            userId: string;
-            isAdHoc?: boolean | null;
-            shouldInterpolateStrings?: boolean | null;
-            eventTypes: components["schemas"]["WebhookEventType"][];
-            condition: components["schemas"]["WebhookCondition"];
-            ignoreSslErrors: boolean;
-            doNotRetry?: boolean | null;
-            requestUrl?: string | null;
-            payloadTemplate?: string | null;
-            headersTemplate?: string | null;
-            description?: string | null;
-            lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
-            stats?: components["schemas"]["WebhookStats"] | null;
-        };
         UpdateRunRequest: {
             runId?: string;
             statusMessage?: string;
@@ -1850,17 +1972,61 @@ interface components {
             count: number;
             requestId?: string;
         };
+        ActorOAuthAccount: {
+            _id: string;
+            userId: string;
+            connectionId: string;
+            createdAt: Date;
+            modifiedAt: Date;
+            authorizedAt?: Date | null;
+            description?: string | null;
+            data: {
+                [key: string]: unknown;
+            };
+        };
+        ListOfActorOAuthAccounts: {
+            total: number;
+            items: components["schemas"]["ActorOAuthAccount"][];
+        };
+        ListOfActorOAuthAccountsResponse: {
+            data: components["schemas"]["ListOfActorOAuthAccounts"];
+        };
+        ActorOAuthAccountResponse: {
+            data: components["schemas"]["ActorOAuthAccount"];
+        };
         StorageOwnership: "ownedByMe" | "sharedWithMe";
+        KeyValueStoreListStats: {
+            readCount?: number;
+            writeCount?: number;
+            deleteCount?: number;
+            listCount?: number;
+            s3StorageBytes?: number;
+        };
+        KeyValueStoreListItem: {
+            id: string;
+            name?: string | null;
+            title?: string | null;
+            userId?: string | null;
+            username?: string | null;
+            createdAt: Date;
+            modifiedAt: Date;
+            accessedAt: Date;
+            actId?: string | null;
+            actRunId?: string | null;
+            schema?: Record<string, unknown> | string | null;
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
+            stats?: components["schemas"]["KeyValueStoreListStats"];
+        };
         ListOfKeyValueStores: components["schemas"]["PaginationResponse"] & {
             unnamed?: boolean;
-            items: components["schemas"]["KeyValueStoreResource"][];
+            items: components["schemas"]["KeyValueStoreListItem"][];
         };
         ListOfKeyValueStoresResponse: {
             data: components["schemas"]["ListOfKeyValueStores"];
         };
         DatasetListItem: {
             id: string;
-            name: string;
+            name?: string | null;
             userId: string;
             createdAt: Date;
             modifiedAt: Date;
@@ -1881,11 +2047,20 @@ interface components {
         ListOfDatasetsResponse: {
             data: components["schemas"]["ListOfDatasets"];
         };
+        RequestQueueListStats: {
+            deleteCount?: number;
+            headItemReadCount?: number;
+            readCount?: number;
+            writeCount?: number;
+            s3StorageBytes?: number;
+            dynamodbStorageBytes?: number;
+        };
         RequestQueueListItem: {
             id: components["schemas"]["QueueId"];
-            name: string;
+            name?: string | null;
+            title?: string | null;
             userId: components["schemas"]["QueueUserId"];
-            username: string;
+            username?: string;
             createdAt: components["schemas"]["QueueCreatedAt"];
             modifiedAt: components["schemas"]["QueueModifiedAt"];
             accessedAt: components["schemas"]["QueueAccessedAt"];
@@ -1897,7 +2072,7 @@ interface components {
             actRunId?: string | null;
             hadMultipleClients: components["schemas"]["HadMultipleClients"];
             generalAccess?: components["schemas"]["GeneralAccess"] | null;
-            stats?: components["schemas"]["RequestQueueStats"];
+            stats?: components["schemas"]["RequestQueueListStats"];
         };
         ListOfRequestQueues: components["schemas"]["PaginationResponse"] & {
             unnamed?: boolean;
@@ -1905,6 +2080,37 @@ interface components {
         };
         ListOfRequestQueuesResponse: {
             data: components["schemas"]["ListOfRequestQueues"];
+        };
+        WebhookListItem: {
+            id: string;
+            createdAt: Date;
+            modifiedAt: Date;
+            userId: string;
+            isAdHoc?: boolean | null;
+            isApifyIntegration?: boolean;
+            isEnabled?: boolean;
+            actionType?: string;
+            shouldInterpolateStrings?: boolean | null;
+            eventTypes: components["schemas"]["WebhookEventType"][];
+            condition: components["schemas"]["WebhookCondition"];
+            ignoreSslErrors: boolean;
+            doNotRetry: boolean;
+            requestUrl?: string | null;
+            headersTemplate?: string | null;
+            title?: string | null;
+            description?: string | null;
+            slackMessage?: components["schemas"]["WebhookSlackMessage"];
+            googleMail?: components["schemas"]["WebhookGoogleMail"];
+            googleDrive?: components["schemas"]["WebhookGoogleDrive"];
+            githubIssue?: components["schemas"]["WebhookGithubIssue"];
+            lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
+            stats?: components["schemas"]["WebhookStats"] | null;
+        };
+        ListOfWebhooks: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["WebhookListItem"][];
+        };
+        ListOfWebhooksResponse: {
+            data: components["schemas"]["ListOfWebhooks"];
         };
         CreateWebhookRequest: {
             isAdHoc?: boolean | null;
@@ -1935,10 +2141,16 @@ interface components {
             shouldInterpolateStrings?: boolean | null;
         };
         WebhookDispatchWebhookSummary: {
+            _id?: string;
             actionType?: string;
             condition?: components["schemas"]["WebhookCondition"];
             requestUrl?: string | null;
             isAdHoc?: boolean;
+            isApifyIntegration?: boolean | null;
+            slackMessage?: components["schemas"]["WebhookSlackMessage"];
+            googleMail?: components["schemas"]["WebhookGoogleMail"];
+            googleDrive?: components["schemas"]["WebhookGoogleDrive"];
+            githubIssue?: components["schemas"]["WebhookGithubIssue"];
         };
         WebhookDispatch: {
             id: string;
@@ -1960,6 +2172,9 @@ interface components {
                 errorMessage?: string | null;
                 responseStatus?: number | null;
                 responseBody?: string | null;
+                debugPostMessage?: {
+                    [key: string]: unknown;
+                };
             }[];
         };
         WebhookDispatchResponse: {
@@ -1984,6 +2199,9 @@ interface components {
             nextRunAt?: Date | null;
             lastRunAt?: Date | null;
         };
+        ScheduleNotifications: {
+            email?: boolean;
+        };
         ScheduleListItemActionRunActor: {
             id: string;
             type: "RUN_ACTOR";
@@ -1996,6 +2214,9 @@ interface components {
         };
         ScheduleListItemAction: components["schemas"]["ScheduleListItemActionRunActor"] | components["schemas"]["ScheduleListItemActionRunActorTask"];
         ScheduleListItem: components["schemas"]["ScheduleBase"] & {
+            title?: string | null;
+            notifications?: components["schemas"]["ScheduleNotifications"];
+            integrationTracking?: components["schemas"]["IntegrationTracking"];
             actions: components["schemas"]["ScheduleListItemAction"][];
         };
         ListOfSchedules: components["schemas"]["PaginationResponse"] & {
@@ -2003,9 +2224,6 @@ interface components {
         };
         ListOfSchedulesResponse: {
             data: components["schemas"]["ListOfSchedules"];
-        };
-        ScheduleNotifications: {
-            email?: boolean;
         };
         ScheduleActionRunInput: {
             body?: string | null;
@@ -2034,6 +2252,15 @@ interface components {
             notifications?: components["schemas"]["ScheduleNotifications"];
             actions?: components["schemas"]["ScheduleCreateAction"][] | null;
         };
+        ScheduleUiState: {
+            version?: number;
+            data?: {
+                cronExpression?: string;
+                timezone?: string;
+            } & {
+                [key: string]: unknown;
+            };
+        };
         ScheduleActionRunActor: {
             id: string;
             type: "RUN_ACTOR";
@@ -2052,6 +2279,8 @@ interface components {
             description?: string | null;
             title?: string | null;
             notifications?: components["schemas"]["ScheduleNotifications"];
+            uiState?: components["schemas"]["ScheduleUiState"];
+            integrationTracking?: components["schemas"]["IntegrationTracking"];
             actions: components["schemas"]["ScheduleAction"][];
         };
         ScheduleResponse: {
@@ -2080,6 +2309,15 @@ interface components {
             pricingPerEvent?: {
                 [key: string]: unknown;
             } | null;
+            pricePerUnitUsd?: number;
+            trialMinutes?: number;
+            unitName?: string;
+            tieredPricing?: {
+                [key: string]: {
+                    tieredPricePerUnitUsd?: number;
+                };
+            };
+            notifiedAboutRentalToPpePriceChangeAt?: Date | null;
         };
         StoreActor: {
             id: string;
@@ -2101,6 +2339,15 @@ interface components {
             bookmarkCount?: number;
             badge?: string | null;
             readmeSummary?: string;
+            inputSchema?: {
+                type: string;
+                properties: {
+                    [key: string]: {
+                        type?: string | string[];
+                    };
+                };
+                required?: string[];
+            };
         };
         ListOfStoreActors: components["schemas"]["PaginationResponse"] & {
             items: components["schemas"]["StoreActor"][];
@@ -2125,12 +2372,13 @@ interface components {
             data: components["schemas"]["UserPublicInfo"];
         };
         ProxyGroup: {
+            id?: string;
             name: string;
             description: string | null;
-            availableCount: number;
+            availableCount?: number;
         };
         ProxyResource: {
-            password: string;
+            password?: string | null;
             groups: components["schemas"]["ProxyGroup"][];
         };
         AvailableProxyGroups: {
@@ -2164,6 +2412,17 @@ interface components {
             planPricing?: {
                 [key: string]: unknown;
             };
+            planVersion?: number;
+            legacyPlanId?: string;
+            planTags?: string[];
+            overageThresholdUsd?: number;
+            maxMonthlyUnblockerUnits?: number;
+            maxPublicActorTaskCount?: number;
+            maxPublicActorTaskCountPerActor?: number;
+            forceBillingInterval?: string;
+            personalizedSupport?: string | null;
+            monitoringLevel?: "STANDARD" | null;
+            isPayingCustomer?: boolean;
         };
         EffectivePlatformFeature: {
             isEnabled: boolean;
@@ -2188,12 +2447,13 @@ interface components {
             id?: string;
             username: string;
             profile?: components["schemas"]["UserProfile"];
-            email?: string;
+            email?: string | null;
             proxy?: components["schemas"]["ProxyResource"];
             plan?: components["schemas"]["UserPlan"];
             effectivePlatformFeatures?: components["schemas"]["EffectivePlatformFeatures"];
             createdAt?: Date;
             isPaying?: boolean;
+            organizationOwnerUserId?: string | null;
         };
         UserPrivateInfoResponse: {
             data: components["schemas"]["UserPrivateInfo"];
@@ -2250,6 +2510,7 @@ interface components {
             maxTeamAccountSeatCount: number;
             dataRetentionDays: number;
             maxScheduleCount?: number;
+            maxMonthlyUnblockerUnits?: number;
         };
         CurrentUsage: {
             monthlyUsageUsd: number;
@@ -2263,6 +2524,7 @@ interface components {
             activeActorJobCount: number;
             teamAccountSeatCount: number;
             scheduleCount?: number;
+            monthlyUnblockerUnits?: number;
         };
         AccountLimits: {
             monthlyUsageCycle: components["schemas"]["UsageCycle"];
@@ -2275,6 +2537,48 @@ interface components {
         UpdateLimitsRequest: {
             maxMonthlyUsageUsd?: number;
             dataRetentionDays?: number;
+        };
+        GitProviderWorkspace: {
+            id: string;
+            label: string;
+        };
+        GitProviderIntegration: {
+            id: string;
+            provider: "github" | "gitlab" | "bitbucket";
+            workspaces: components["schemas"]["GitProviderWorkspace"][];
+            addWorkspaceUrl?: string;
+        };
+        ListOfGitProviderIntegrationsResponse: {
+            data: components["schemas"]["GitProviderIntegration"][];
+        };
+        GitRepoFile: {
+            path: string;
+            content: string;
+            encoding: "utf-8" | "base64";
+        };
+        CreateGitRepoRequest: {
+            workspace: string;
+            repoName: string;
+            isPrivate: boolean;
+            files?: components["schemas"]["GitRepoFile"][];
+            templateArchiveUrl?: string;
+        };
+        GitRepo: {
+            sshUrl: string;
+            httpsUrl: string;
+            htmlUrl: string;
+        };
+        GitRepoResponse: {
+            data: components["schemas"]["GitRepo"];
+        };
+        RegisterDeploymentKeyRequest: {
+            actorId: string;
+            repoName: string;
+        };
+        RegisterDeploymentKeyResponse: {
+            data: {
+                repoName: string;
+            };
         };
         BrowserInfoResponse: {
             method: string;
@@ -2450,8 +2754,6 @@ interface DatasetResourceRePointed {
 // Not exported by the entry point; reachable only as a referenced type.
 // @public
 interface DatasetResourceSpecGaps {
-    // (undocumented)
-    title?: string;
     // (undocumented)
     username?: string;
 }
@@ -3014,7 +3316,7 @@ export interface KeyValueStoreRecordOptions extends TimeoutOptions {
 export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Blob | Readable;
 
 // @public
-export interface KeyValueStoreResource extends Omit<Schemas['KeyValueStoreResource'], keyof KeyValueStoreResourceRePointed>, KeyValueStoreResourceRePointed, KeyValueStoreResourceSpecGaps {
+export interface KeyValueStoreResource extends Omit<Schemas['KeyValueStoreResource'], keyof KeyValueStoreResourceRePointed>, KeyValueStoreResourceRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3024,13 +3326,6 @@ interface KeyValueStoreResourceRePointed {
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
     // (undocumented)
     stats?: KeyValueStoreStats;
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface KeyValueStoreResourceSpecGaps {
-    // (undocumented)
-    title?: string;
 }
 
 // @public
@@ -3480,8 +3775,6 @@ interface RequestQueueResourceRePointed {
 // @public
 interface RequestQueueResourceSpecGaps {
     // (undocumented)
-    title?: string;
-    // (undocumented)
     username?: string;
 }
 
@@ -3665,14 +3958,7 @@ interface RunMetaRePointed {
 }
 
 // @public
-export interface RunOptions extends GeneratedRunOptions, RunOptionsSpecGaps {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface RunOptionsSpecGaps {
-    // (undocumented)
-    restartOnError?: boolean;
+export interface RunOptions extends GeneratedRunOptions {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3732,7 +4018,7 @@ export interface RunWaitForFinishOptions extends TimeoutOptions {
 }
 
 // @public
-export interface Schedule extends Omit<Schemas['Schedule'], keyof ScheduleRePointed | keyof ScheduleClientNarrowings>, ScheduleRePointed, ScheduleClientNarrowings {
+export interface Schedule extends Omit<Schemas['Schedule'], keyof ScheduleRePointed | keyof ScheduleClientNarrowings | keyof ScheduleSpecNarrowings>, ScheduleRePointed, ScheduleClientNarrowings, ScheduleSpecNarrowings {
 }
 
 // @public
@@ -3819,6 +4105,13 @@ export interface ScheduleLogEntry extends GeneratedScheduleLogEntry {
 interface ScheduleRePointed {
     // (undocumented)
     actions: ScheduleAction[];
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ScheduleSpecNarrowings {
+    // (undocumented)
+    uiState?: NonNullable<Schemas['Schedule']['uiState']> | null;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3977,7 +4270,7 @@ export interface TaskLastRunOptions extends ActorLastRunOptions {
 }
 
 // @public
-export interface TaskListItem extends Omit<Schemas['TaskListItem'], keyof TaskListItemRePointed>, TaskListItemRePointed, TaskListItemSpecGaps {
+export interface TaskListItem extends Omit<Schemas['TaskListItem'], keyof TaskListItemRePointed>, TaskListItemRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3985,13 +4278,6 @@ export interface TaskListItem extends Omit<Schemas['TaskListItem'], keyof TaskLi
 interface TaskListItemRePointed {
     // (undocumented)
     stats?: TaskStats | null;
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface TaskListItemSpecGaps {
-    // (undocumented)
-    title?: string | null;
 }
 
 // @public
@@ -4320,7 +4606,7 @@ interface WebhookLastDispatchRePointed {
 }
 
 // @public
-export interface WebhookResource extends Omit<Schemas['WebhookResource'], keyof WebhookResourceRePointed>, WebhookResourceRePointed, WebhookResourceSpecGaps {
+export interface WebhookResource extends Omit<Schemas['WebhookResource'], keyof WebhookResourceRePointed>, WebhookResourceRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -4334,13 +4620,6 @@ interface WebhookResourceRePointed {
     lastDispatch?: WebhookLastDispatch | null;
     // (undocumented)
     stats?: WebhookStats | null;
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface WebhookResourceSpecGaps {
-    // (undocumented)
-    isApifyIntegration?: boolean;
 }
 
 // @public

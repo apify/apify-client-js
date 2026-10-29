@@ -82,7 +82,7 @@ export interface paths {
          *
          *     To provide the authentication token, we recommend using the request's
          *     `Authorization` header, rather than the URL. For details,
-         *     see [Authentication](https://docs.apify.com/api/v2/getting-started#authentication).
+         *     see [Authentication](https://docs.apify.com/api/v2#authentication).
          *
          *     ### Make an Actor public
          *
@@ -219,7 +219,7 @@ export interface paths {
          *
          *     When providing your API authentication token, we recommend using the
          *     request's `Authorization` header, rather than the URL.
-         *     For details, see [Authentication](https://docs.apify.com/api/v2/getting-started#authentication).
+         *     For details, see [Authentication](https://docs.apify.com/api/v2#authentication).
          *
          *     The response is the `Version` object as
          *     returned by the [Get Actor version](https://docs.apify.com/api/v2/actor-version-get) endpoint.
@@ -236,6 +236,33 @@ export interface paths {
          * @description Deletes a specific version of Actor's source code.
          */
         delete: operations["actor_version_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v2/actors/{actorId}/versions/{versionNumber}/build-on-push": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update Actor version build on push
+         * @description Turns automatic builds on push on or off for an Actor version whose source is a git repository.
+         *
+         *     Enabling registers a push webhook on the repository through the connected git account given by `providerId`, so
+         *     that every push to the repository builds the version. Disabling turns the webhook off on GitHub, or removes it
+         *     on GitLab and Bitbucket.
+         *
+         *     You need write access to the Actor. The version must have its source type set to a git repository, and the
+         *     connected account must have permission to manage the repository's webhooks.
+         */
+        put: operations["actor_version_buildOnPush_put"];
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -310,7 +337,7 @@ export interface paths {
          *
          *     When providing your API authentication token, we recommend using the
          *     request's `Authorization` header, rather than the URL.
-         *     For details, see [Authentication](https://docs.apify.com/api/v2/getting-started#authentication).
+         *     For details, see [Authentication](https://docs.apify.com/api/v2#authentication).
          *
          *     The response is the `EnvVar` object as returned by the
          *     [Get environment variable of Actor version](https://docs.apify.com/api/v2/actor-version-env-var-get)
@@ -354,6 +381,31 @@ export interface paths {
          *     order, to sort the records in descending order, use the `desc=1` parameter.
          */
         get: operations["actor_webhooks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v2/actors/{actorId}/oauth-connections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get list of Actor OAuth connections
+         * @description Gets the OAuth connections configured on the Actor. Each connection defines an OAuth provider that users of the
+         *     Actor can connect their accounts through. Only public credential fields are returned, never the client secret.
+         *
+         *     An Actor has at most 5 connections, so the list is not paginated.
+         *
+         *     You need read access to the Actor.
+         */
+        get: operations["actor_oauthConnections_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1570,7 +1622,7 @@ export interface paths {
          *
          *     When providing your API authentication token, we recommend using the
          *     request's `Authorization` header, rather than the URL.
-         *     For details, see [Authentication](https://docs.apify.com/api/v2/getting-started#authentication).
+         *     For details, see [Authentication](https://docs.apify.com/api/v2#authentication).
          */
         put: operations["actorTask_input_put"];
         post?: never;
@@ -3265,6 +3317,53 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v2/actor-oauth-accounts/{connectionId}/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get list of Actor OAuth accounts
+         * @description Gets the accounts you connected through the Actor OAuth connection, including their OAuth tokens. Only accounts
+         *     that finished authorization are returned.
+         *
+         *     There are at most 5 accounts per user and connection, so the list is not paginated.
+         */
+        get: operations["actorOAuthAccounts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v2/actor-oauth-accounts/{accountId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Actor OAuth account
+         * @description Gets an account connected through an Actor OAuth connection, including its OAuth tokens.
+         *
+         *     This endpoint only accepts the API token of an Actor run (the `APIFY_TOKEN` environment variable of the run).
+         *     The run must belong to the Actor that the account's OAuth connection is configured on, and the account must
+         *     belong to the user the run's token acts for. Any other token gets a `403` error.
+         */
+        get: operations["actorOAuthAccount_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v2/key-value-stores": {
         parameters: {
             query?: never;
@@ -4135,7 +4234,7 @@ export interface paths {
          *
          *     When providing your API authentication token, we recommend using the
          *     request's `Authorization` header, rather than the URL.
-         *     For details, see [Authentication](https://docs.apify.com/api/v2/getting-started#authentication).
+         *     For details, see [Authentication](https://docs.apify.com/api/v2#authentication).
          */
         put: operations["webhook_put"];
         post?: never;
@@ -4263,7 +4362,7 @@ export interface paths {
          *
          *     When providing your API authentication token, we recommend using the
          *     request's `Authorization` header, rather than the URL.
-         *     For details, see [Authentication](https://docs.apify.com/api/v2/getting-started#authentication).
+         *     For details, see [Authentication](https://docs.apify.com/api/v2#authentication).
          */
         post: operations["schedules_post"];
         delete?: never;
@@ -4298,7 +4397,7 @@ export interface paths {
          *
          *     When providing your API authentication token, we recommend using the
          *     request's `Authorization` header, rather than the URL.
-         *     For details, see [Authentication](https://docs.apify.com/api/v2/getting-started#authentication).
+         *     For details, see [Authentication](https://docs.apify.com/api/v2#authentication).
          */
         put: operations["schedule_put"];
         post?: never;
@@ -4307,6 +4406,29 @@ export interface paths {
          * @description Deletes a schedule.
          */
         delete: operations["schedule_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v2/schedules/{scheduleId}/invoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Invoke schedule
+         * @description Immediately runs all actions of the schedule, the same way as the **Run now** button in Apify Console.
+         *
+         *     The invocation is recorded in the [schedule log](https://docs.apify.com/api/v2/schedule-log-get). It doesn't change the schedule's
+         *     `lastRunAt` or `nextRunAt`. The response doesn't contain the started runs.
+         */
+        post: operations["schedule_invoke_post"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -4392,6 +4514,10 @@ export interface paths {
          *     can be seen on public profile pages (e.g. https://apify.com/apify).
          *
          *     This operation requires no authentication token.
+         *
+         *     When the request is authenticated with an API token of the requested user account, or with a token
+         *     that impersonates it, the response also contains the private information, the same as in
+         *     [Get private user data](https://docs.apify.com/api/v2/users-me-get). Tokens with limited permissions never receive it.
          */
         get: operations["user_get"];
         put?: never;
@@ -4474,6 +4600,138 @@ export interface paths {
          */
         put: operations["users_me_limits_put"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v2/users/{userId}/usage/monthly": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get user's monthly usage by ID
+         * @description Returns the same summary of monthly usage as [Get user's monthly usage](https://docs.apify.com/api/v2/users-me-usage-monthly-get),
+         *     for an account given by its ID or username.
+         *
+         *     You can only access your own account, or the organization your API token belongs to. API tokens with
+         *     limited permissions can't use this endpoint.
+         *
+         *     Using the `date` parameter will show the usage in the monthly usage cycle that
+         *     includes that date.
+         */
+        get: operations["users_usage_monthly_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v2/users/{userId}/limits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get user's limits by ID
+         * @description Returns the same summary of limits as [Get user's limits](https://docs.apify.com/api/v2/users-me-limits-get), for an account given by
+         *     its ID or username.
+         *
+         *     You can only access your own account, or the organization your API token belongs to. API tokens with
+         *     limited permissions can't use this endpoint.
+         */
+        get: operations["users_limits_get"];
+        /**
+         * Update user's limits by ID
+         * @description Updates the same limits as [Update user's limits](https://docs.apify.com/api/v2/users-me-limits-put), for an account given by its ID
+         *     or username.
+         *
+         *     You can only access your own account, or the organization your API token belongs to. API tokens with
+         *     limited permissions can't use this endpoint.
+         *     For an organization, you also need the permission to manage the organization.
+         */
+        put: operations["users_limits_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v2/integrations/git": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get git provider integrations
+         * @description Gets your connected git provider accounts (GitHub App, GitLab and Bitbucket), each with the workspaces you can
+         *     create a repository in. Only authorized accounts are returned, and accounts whose access was revoked are left
+         *     out.
+         *
+         *     Use the `id` of an integration as the `providerId` in the
+         *     [Create git repository](https://docs.apify.com/api/v2/integrations-git-create-repo-post) and
+         *     [Register deployment key](https://docs.apify.com/api/v2/integrations-git-register-deployment-key-post) endpoints.
+         */
+        get: operations["integrations_git_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v2/integrations/git/{providerId}/create-repo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create git repository
+         * @description Creates a repository through a connected git account and commits the initial files into it, either the given
+         *     `files` or the files of an Actor template archive (`templateArchiveUrl`).
+         */
+        post: operations["integrations_git_createRepo_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v2/integrations/git/{providerId}/register-deployment-key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register deployment key
+         * @description Registers the Actor's deployment key (a read-only SSH key generated for every Actor) on a repository through a
+         *     connected git account, so that Apify can clone the repository when building the Actor.
+         *
+         *     You need write access to the Actor. The repository's host must match the provider of the connected account.
+         *     If the key is already registered on the repository, nothing changes. On GitHub, registering the key on another
+         *     repository removes it from the previously linked one.
+         */
+        post: operations["integrations_git_registerDeploymentKey_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4751,6 +5009,8 @@ export interface components {
             type?: components["schemas"]["ErrorType"];
             /** @description Human-readable error message describing what went wrong. */
             message?: string;
+            /** @description Additional machine-readable details about the error. Present only for some error types. */
+            data?: Record<string, unknown>;
         };
         /** ErrorResponse */
         ErrorResponse: {
@@ -4885,6 +5145,13 @@ export interface components {
             restartOnError?: boolean | null;
             /** @description Maximum number of items the run might produce. */
             maxItems?: number | null;
+            /**
+             * @description Maximum cost in USD that a pay-per-event run can charge to the user.
+             * @example 5
+             */
+            maxTotalChargeUsd?: number | null;
+            /** @description Whether `maxTotalChargeUsd` was set explicitly by the user. */
+            isMaxTotalChargeUsdSetByUser?: boolean | null;
             forcePermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
         };
         /** ActorStandby */
@@ -4905,6 +5172,15 @@ export interface components {
             disableStandbyFieldsOverride?: boolean | null;
             /** @description Whether to pass the Actor's input to the standby run. If `false`, the standby runs start with no input. */
             shouldPassActorInput?: boolean | null;
+            /**
+             * @description Whether each user gets their own standby runs (`SINGLE_TENANT`) or runs are shared across users (`MULTI_TENANT`). Set by Apify.
+             * @example SINGLE_TENANT
+             */
+            tenancy?: string | null;
+            /** @description Whether standby requests can be authenticated with an Apify Console session. Set by Apify. */
+            isConsoleAuthEnabled?: boolean | null;
+            /** @description Whether standby requests can be made without an API token. Set by Apify. */
+            isTokenlessEnabled?: boolean | null;
         };
         /** ExampleRunInput */
         ExampleRunInput: {
@@ -4996,6 +5272,11 @@ export interface components {
              * @example false
              */
             isSecret?: boolean | null;
+            /**
+             * @description A short hash of the secret value, to detect value changes. Returned only for secret environment variables, in place of `value`.
+             * @example a1b2c3
+             */
+            valueHash?: string;
         };
         /** Version */
         Version: {
@@ -5026,6 +5307,12 @@ export interface components {
             tarballUrl?: string | null;
             /** @description URL of the GitHub Gist to clone the source code from. Applies when the `sourceType` is `GITHUB_GIST`. */
             gitHubGistUrl?: string | null;
+            /** @description ID of the GitHub webhook that triggers a build on push. Present when build on push is enabled for a GitHub repository. */
+            githubWebhookId?: number | null;
+            /** @description ID of the GitLab webhook that triggers a build on push. Present when build on push is enabled for a GitLab repository. */
+            gitlabWebhookId?: number | null;
+            /** @description ID of the Bitbucket webhook that triggers a build on push. Present when build on push is enabled for a Bitbucket repository. */
+            bitbucketWebhookId?: string | null;
         };
         /** CommonActorPricingInfo */
         CommonActorPricingInfo: {
@@ -5048,6 +5335,8 @@ export interface components {
             notifiedAboutFutureChangeAt?: Date | null;
             /** Format: date-time */
             notifiedAboutChangeAt?: Date | null;
+            /** Format: date-time */
+            notifiedAboutRentalToPpePriceChangeAt?: Date | null;
             reasonForChange?: string | null;
             isPriceChangeNotificationSuppressed?: boolean;
             forceContainsSignificantPriceChange?: boolean;
@@ -5096,6 +5385,11 @@ export interface components {
                 };
             };
             minimalMaxTotalChargeUsd?: number | null;
+            /**
+             * @description If `true`, the platform usage of the run is charged to the user running the Actor, in addition to the event prices.
+             * @example false
+             */
+            isPPEPlatformUsagePaidByUser?: boolean | null;
         } & {
             /**
              * @description discriminator enum property added by openapi-typescript
@@ -5286,7 +5580,7 @@ export interface components {
              */
             isDeprecated?: boolean | null;
             /**
-             * @description The Actor's public SSH key, used as a deployment key for private Git repositories.
+             * @description The Actor's public SSH key, used as a deployment key for private Git repositories. Returned only by the get Actor endpoint.
              * @example ssh-rsa AAAA ...
              */
             deploymentKey?: string;
@@ -5480,6 +5774,20 @@ export interface components {
             /** @description URL of the GitHub Gist to clone the source code from. Applies when the `sourceType` is `GITHUB_GIST`. */
             gitHubGistUrl?: string;
         };
+        /** UpdateBuildOnPushRequest */
+        UpdateBuildOnPushRequest: {
+            /**
+             * @description The connected git account to register the push webhook through: `github-app` for the GitHub App, or the ID
+             *     of a connected GitLab or Bitbucket integration, as returned by the [Get git provider integrations](https://docs.apify.com/api/v2/integrations-git-get) endpoint.
+             * @example github-app
+             */
+            providerId: string;
+            /**
+             * @description `true` registers the push webhook so that pushes to the repository build the version; `false` turns it off.
+             * @example true
+             */
+            enabled: boolean;
+        };
         /** ListOfEnvVars */
         ListOfEnvVars: {
             /** @example 5 */
@@ -5510,6 +5818,85 @@ export interface components {
             actorRunId?: string | null;
         };
         /**
+         * WebhookSlackMessage
+         * @description Slack message configuration. Present only when `actionType` is `SLACK_MESSAGE`.
+         */
+        WebhookSlackMessage: {
+            /** @example kLcd8Z4dzXN1z3QzS */
+            userIntegrationId?: string;
+            /** @example C01234ABCDE */
+            channelId?: string;
+            /** @example Actor run {{resource.id}} finished. */
+            messageTemplate?: string;
+        };
+        /**
+         * WebhookDatasetTransformation
+         * @description Selects which dataset item fields are included in the output.
+         */
+        WebhookDatasetTransformation: {
+            /**
+             * @example [
+             *       "title",
+             *       "url"
+             *     ]
+             */
+            fields?: string[];
+            /**
+             * @example [
+             *       "html"
+             *     ]
+             */
+            omit?: string[];
+        };
+        /**
+         * WebhookGoogleMail
+         * @description Gmail email configuration. Present only when `actionType` is `GOOGLE_MAIL`.
+         */
+        WebhookGoogleMail: {
+            /** @example kLcd8Z4dzXN1z3QzS */
+            userIntegrationId?: string;
+            /**
+             * @example [
+             *       "bob@example.com"
+             *     ]
+             */
+            emailTo?: string[];
+            /** @example Actor run finished */
+            subject?: string;
+            /** @example Actor run {{resource.id}} finished. */
+            body?: string;
+            /** @example csv */
+            attachmentFormat?: string;
+            attachmentTransformation?: components["schemas"]["WebhookDatasetTransformation"];
+        };
+        /**
+         * WebhookGoogleDrive
+         * @description Google Drive upload configuration. Present only when `actionType` is `GOOGLE_DRIVE`.
+         */
+        WebhookGoogleDrive: {
+            /** @example kLcd8Z4dzXN1z3QzS */
+            userIntegrationId?: string;
+            /** @example results */
+            filename?: string;
+            /** @example json */
+            format?: string | null;
+            transformation?: components["schemas"]["WebhookDatasetTransformation"];
+        };
+        /**
+         * WebhookGithubIssue
+         * @description GitHub issue configuration. Present only when `actionType` is `GITHUB_ISSUE`.
+         */
+        WebhookGithubIssue: {
+            /** @example kLcd8Z4dzXN1z3QzS */
+            userIntegrationId?: string;
+            /** @example apify/apify-docs */
+            repository?: string;
+            /** @example Actor run failed */
+            title?: string;
+            /** @example Actor run {{resource.id}} failed. */
+            body?: string;
+        };
+        /**
          * WebhookDispatchStatus
          * @description Status of the webhook dispatch indicating whether the HTTP request was successful.
          * @enum {string}
@@ -5534,8 +5921,8 @@ export interface components {
             /** @example 1 */
             totalDispatches?: number;
         };
-        /** WebhookListItem */
-        WebhookListItem: {
+        /** WebhookResource */
+        WebhookResource: {
             /** @example YiKoxjkaS9gjGTqhF */
             id: string;
             /**
@@ -5552,12 +5939,15 @@ export interface components {
             userId: string;
             /** @example false */
             isAdHoc?: boolean | null;
-            /** @example false */
-            isApifyIntegration?: boolean;
             /** @example true */
             isEnabled?: boolean;
-            /** @example HTTP_REQUEST */
+            /**
+             * @description Type of action the webhook performs: `HTTP_REQUEST`, `SLACK_MESSAGE`, `GOOGLE_MAIL`, `GOOGLE_DRIVE` or `GITHUB_ISSUE`.
+             * @example HTTP_REQUEST
+             */
             actionType?: string;
+            /** @example false */
+            isApifyIntegration?: boolean | null;
             /** @example false */
             shouldInterpolateStrings?: boolean | null;
             /**
@@ -5570,22 +5960,90 @@ export interface components {
             /** @example false */
             ignoreSslErrors: boolean;
             /** @example false */
-            doNotRetry: boolean;
+            doNotRetry?: boolean | null;
             /**
              * Format: uri
+             * @description URL of the HTTP request sent by the webhook. It is omitted or `null` for hook actions other than the conventional HTTP case (e.g. Slack or email notifications).
              * @example http://example.com/
              */
-            requestUrl: string;
+            requestUrl?: string | null;
+            /** @example {\n "userId": {{userId}}... */
+            payloadTemplate?: string | null;
+            /** @example {\n "Authorization": "Bearer ..."} */
+            headersTemplate?: string | null;
+            /** @example Notify on failure */
+            title?: string | null;
+            /** @example this is webhook description */
+            description?: string | null;
+            slackMessage?: components["schemas"]["WebhookSlackMessage"];
+            googleMail?: components["schemas"]["WebhookGoogleMail"];
+            googleDrive?: components["schemas"]["WebhookGoogleDrive"];
+            githubIssue?: components["schemas"]["WebhookGithubIssue"];
             lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
             stats?: components["schemas"]["WebhookStats"] | null;
         };
-        /** ListOfWebhooks */
-        ListOfWebhooks: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["WebhookListItem"][];
+        /**
+         * ListOfWebhookResources
+         * @description Paginated list of webhooks with all their fields, including `payloadTemplate`.
+         */
+        ListOfWebhookResources: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["WebhookResource"][];
         };
-        /** ListOfWebhooksResponse */
-        ListOfWebhooksResponse: {
-            data: components["schemas"]["ListOfWebhooks"];
+        /** ListOfWebhookResourcesResponse */
+        ListOfWebhookResourcesResponse: {
+            data: components["schemas"]["ListOfWebhookResources"];
+        };
+        /**
+         * ActorOAuthConnection
+         * @description An OAuth connection configured on an Actor. Secret credentials are never returned.
+         */
+        ActorOAuthConnection: {
+            /** @example kD9fm2Xp4cJq7Lw8N */
+            _id: string;
+            /** @example zdc3Pyhyz3m8vjDeM */
+            actorId: string;
+            /**
+             * @example GOOGLE
+             * @enum {string}
+             */
+            oAuthProviderType: "CUSTOM" | "GOOGLE";
+            /**
+             * Format: date-time
+             * @example 2026-01-28T10:00:00.000Z
+             */
+            createdAt: Date;
+            /**
+             * Format: date-time
+             * @example 2026-01-28T10:00:00.000Z
+             */
+            modifiedAt: Date;
+            /** @description The public part of the connection's OAuth client configuration. */
+            credentials?: {
+                /** @example 1234567890-abc.apps.googleusercontent.com */
+                clientId?: string;
+                /** @example https://www.googleapis.com/auth/drive.file */
+                scope?: string;
+                /**
+                 * @description Display name of a `CUSTOM` provider.
+                 * @example My OAuth app
+                 */
+                label?: string;
+                /**
+                 * @description Logo URL of a `CUSTOM` provider.
+                 * @example https://example.com/logo.png
+                 */
+                imageUrl?: string;
+            };
+        };
+        /** ListOfActorOAuthConnections */
+        ListOfActorOAuthConnections: {
+            /** @example 1 */
+            total: number;
+            items: components["schemas"]["ActorOAuthConnection"][];
+        };
+        /** ListOfActorOAuthConnectionsResponse */
+        ListOfActorOAuthConnectionsResponse: {
+            data: components["schemas"]["ListOfActorOAuthConnections"];
         };
         /**
          * ActorJobStatus
@@ -5607,10 +6065,25 @@ export interface components {
              */
             clientIp?: string;
             /**
-             * @description User agent of the client that started the build.
+             * @description User agent of the client that started the build. Returned only to the Actor owner.
              * @example Mozilla/5.0 (iPad)
              */
             userAgent?: string;
+            /**
+             * @description URL of the GitHub Actions run that started the build. Present only for builds started from CI.
+             * @example https://github.com/apify/my-actor/actions/runs/123456789
+             */
+            githubActionsRunUrl?: string;
+            /**
+             * @description ID of the Actor run that started the build. Returned only to the Actor owner.
+             * @example HG7ML7M8z78YcAPEB
+             */
+            actorRunId?: string;
+            /**
+             * @description ID of the webhook dispatch that started the build. Returned only to the Actor owner.
+             * @example Zib4xbZsmvZeK55ua
+             */
+            webhookDispatchId?: string;
         };
         /** BuildListItem */
         BuildListItem: {
@@ -5631,8 +6104,11 @@ export interface components {
              * @example 2019-12-12T09:30:12.202Z
              */
             finishedAt?: Date | null;
-            /** @example 0.02 */
-            usageTotalUsd: number;
+            /**
+             * @description Total cost in USD for this build. Requires authentication token to access.
+             * @example 0.02
+             */
+            usageTotalUsd?: number;
             /** @example 0.1.1 */
             buildNumber: string;
             /** @example 10000 */
@@ -5668,6 +6144,13 @@ export interface components {
             memoryMbytes?: number | null;
             /** @example 2048 */
             diskMbytes?: number | null;
+            /**
+             * @description The tag passed when starting the build. Present only when the `tag` parameter was used.
+             * @example latest
+             */
+            tag?: string | null;
+            /** @description Whether this is a debug build. Present only on debug builds. */
+            debug?: boolean | null;
         };
         /** BuildUsage */
         BuildUsage: {
@@ -5869,6 +6352,31 @@ export interface components {
              * @example # Magic Actor\nThis Actor is magic.
              */
             readme?: string | null;
+            /**
+             * @deprecated
+             * @example # Changelog\n## 0.1.1\n- Initial release
+             */
+            changelog?: string | null;
+            /**
+             * @description Exit code of the build process. Set when the build finishes.
+             * @example 0
+             */
+            exitCode?: number | null;
+            /**
+             * @description ID of the Git commit the build was created from. Present only for builds from a Git repository.
+             * @example 5f1d2b3c4a5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a
+             */
+            gitCommitId?: string;
+            /**
+             * @description Name of the Git branch the build was created from. Present only for builds from a Git repository.
+             * @example main
+             */
+            gitBranchName?: string;
+            /**
+             * @description ID of the organization member who started the build. Present only for builds started in an organization account.
+             * @example klmdEpoiojmdEMlk3
+             */
+            createdByOrganizationMemberUserId?: string;
             /** @example 0.1.1 */
             buildNumber: string;
             /**
@@ -5896,6 +6404,16 @@ export interface components {
                 gitRepoUrl?: string;
                 /** @description Inline source files, present when sourceType is SOURCE_FILES. */
                 sourceFiles?: components["schemas"]["SourceCodeFile"][];
+                /**
+                 * @description URL of the GitHub Gist, present when sourceType is GITHUB_GIST.
+                 * @example https://gist.github.com/jancurn/2dd8fa0dd5bf9ea2b4d5a6e0f6a0e8c5
+                 */
+                gitHubGistUrl?: string;
+                /**
+                 * @description URL of the tarball or ZIP file, present when sourceType is TARBALL. Returned only to the Actor owner.
+                 * @example https://example.com/my-actor.zip
+                 */
+                tarballUrl?: string;
             };
             actorDefinition?: components["schemas"]["ActorDefinition"] | null;
         };
@@ -5920,6 +6438,38 @@ export interface components {
              * @description Time when the run was scheduled.
              */
             scheduledAt?: Date | null;
+            /**
+             * @description ID of the Actor run that started this run. Present only when the run was started from another run.
+             * @example HG7ML7M8z78YcAPEB
+             */
+            actorRunId?: string;
+            /**
+             * @description ID of the webhook dispatch that started the run. Present only when the run was started by a webhook.
+             * @example asdLZtadYvn4mBZmm
+             */
+            webhookDispatchId?: string;
+            /**
+             * @description ID of the schedule action that started the Actor. Present only on runs of Actors started by a schedule.
+             * @example c6KfSgoQzFhMk3etc
+             */
+            scheduledAct2Id?: string;
+            /**
+             * @description ID of the schedule action that started the Actor task. Present only on runs of tasks started by a schedule.
+             * @example c6KfSgoQzFhMk3etc
+             */
+            scheduledActorTaskId?: string;
+        };
+        /**
+         * RunStandby
+         * @description Standby configuration of the run. Present only on Actor Standby runs.
+         */
+        RunStandby: {
+            /**
+             * @description How the Standby run is deployed: `SINGLE_TENANT`, `MULTI_TENANT_FREE_USERS`, `MULTI_TENANT_PAYING_USERS` or `MULTI_TENANT_OWNER_PAID`. `SINGLE_TENANT` is a private instance in the user's account.
+             *     The `MULTI_TENANT_*` values are runs in the Actor owner's account that serve requests from many users.
+             * @example SINGLE_TENANT
+             */
+            deployment: string;
         };
         /**
          * RunStandby
@@ -5971,6 +6521,8 @@ export interface components {
             defaultDatasetId: string;
             /** @example so93g2shcDzK3pA85 */
             defaultRequestQueueId: string;
+            /** @description Standby configuration of the run. `null` for runs that are not Actor Standby runs. */
+            standby?: components["schemas"]["RunStandby"] | null;
         };
         /** ListOfRuns */
         ListOfRuns: components["schemas"]["PaginationResponse"] & {
@@ -6066,6 +6618,40 @@ export interface components {
             /** @example 0.13804 */
             computeUnits?: number;
         };
+        /**
+         * RunEventUsage
+         * @description Cost of a single pay-per-event event type charged during the run.
+         */
+        RunEventUsage: {
+            /**
+             * @description Total cost of all charges of this event in USD.
+             * @example 0.15
+             */
+            eventTotalUsd: number;
+            /**
+             * @description Human-readable title of the event.
+             * @example Page crawled
+             */
+            eventTitle: string;
+        };
+        /**
+         * IntegrationTracking
+         * @description Information about the third-party integration that created the resource.
+         */
+        IntegrationTracking: {
+            /**
+             * @description Name of the integration platform.
+             * @example zapier
+             */
+            platform?: string;
+            /** @description ID of the integration app. */
+            appId?: string;
+            /**
+             * @description Whether the resource was created by an AI tool.
+             * @example false
+             */
+            isAiTool?: boolean;
+        };
         /** RunOptions */
         RunOptions: {
             /** @example latest */
@@ -6076,10 +6662,20 @@ export interface components {
             memoryMbytes: number;
             /** @example 2048 */
             diskMbytes: number;
+            /**
+             * @description Whether to automatically restart the run if it fails.
+             * @example false
+             */
+            restartOnError?: boolean | null;
             /** @example 1000 */
             maxItems?: number | null;
             /** @example 5 */
             maxTotalChargeUsd?: number | null;
+            /**
+             * @description Whether the user explicitly set `maxTotalChargeUsd` when starting the run. Not present for pay-per-result Actors.
+             * @example true
+             */
+            isMaxTotalChargeUsdSetByUser?: boolean;
         };
         /**
          * GeneralAccess
@@ -6114,6 +6710,8 @@ export interface components {
             PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number | null;
             /** @example 3 */
             PROXY_SERPS?: number | null;
+            /** @example 0 */
+            PROXY_UNBLOCKER_UNITS?: number | null;
         };
         /**
          * RunUsageUsd
@@ -6144,6 +6742,8 @@ export interface components {
             PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number | null;
             /** @example 0.003 */
             PROXY_SERPS?: number | null;
+            /** @example 0 */
+            PROXY_UNBLOCKER_UNITS?: number | null;
         };
         /**
          * RunMetamorphEvent
@@ -6171,6 +6771,13 @@ export interface components {
              * @example INPUT-METAMORPH-1
              */
             inputKey?: string | null;
+            /**
+             * @description Build tags of the build used for the metamorphed Actor.
+             * @example [
+             *       "latest"
+             *     ]
+             */
+            buildTags?: string[];
         };
         /**
          * Run
@@ -6237,6 +6844,49 @@ export interface components {
              */
             chargedEventCounts?: {
                 [key: string]: number;
+            };
+            /**
+             * @description A map of charged event types to the number of their charges that have already been accounted for billing. Present only for pay-per-event Actors.
+             * @example {
+             *       "actor-start": 1,
+             *       "page-crawled": 150
+             *     }
+             */
+            accountedChargedEventCounts?: {
+                [key: string]: number;
+            } | null;
+            /** @description Cost breakdown of the pay-per-event charges in USD, keyed by event type. Present only for pay-per-event runs, and not when the run was started by the Actor's owner. */
+            eventUsage?: {
+                [key: string]: components["schemas"]["RunEventUsage"];
+            };
+            /**
+             * @description Total price in USD of the pay-per-event charges made to other users. Present only on multi-tenant Standby runs.
+             * @example 0.5
+             */
+            externalChargedTotalUsd?: number;
+            /** @description Standby configuration of the run. `null` for runs that are not Actor Standby runs. */
+            standby?: components["schemas"]["RunStandby"] | null;
+            /** @description Present only when the run was started by a third-party integration. */
+            integrationTracking?: components["schemas"]["IntegrationTracking"];
+            /**
+             * @description ID of the organization member who started the run. Present only for runs started on behalf of an organization.
+             * @example 7sT5jcggjjA9fNcxF
+             */
+            createdByOrganizationMemberUserId?: string;
+            /**
+             * Format: uri
+             * @description URL of the run in Apify Console. Returned only by the [Get Actor run](https://docs.apify.com/api/v2/actor-run-get) endpoint.
+             * @example https://console.apify.com/view/runs/HG7ML7M8z78YcAPEB
+             */
+            consoleUrl?: string;
+            /**
+             * @description Output links of the run, generated from the output schema of the Actor build. Present only if the build defines an output schema.
+             * @example {
+             *       "results": "https://api.apify.com/v2/datasets/wmKPijuyDnPZAPRMk/items"
+             *     }
+             */
+            output?: {
+                [key: string]: string;
             };
             /** @description Configuration options for the Actor run. */
             options: components["schemas"]["RunOptions"];
@@ -6351,12 +7001,12 @@ export interface components {
             /** @example 3 */
             writeCount?: number;
             /**
-             * @description Total storage size in bytes. Only returned by the single-dataset endpoint.
+             * @description Total storage size in bytes.
              * @example 783
              */
             storageBytes?: number;
             /**
-             * @description Uncompressed size in bytes. Only returned by the dataset list endpoint.
+             * @description Uncompressed size in bytes.
              * @example 0
              */
             inflatedBytes?: number;
@@ -6367,6 +7017,8 @@ export interface components {
             id: string;
             /** @example d7b9MDYsbtX5L7XAj */
             name?: string | null;
+            /** @example My Dataset */
+            title?: string | null;
             /** @example wRsJZtadYvn4mBZmm */
             userId: string;
             /**
@@ -6593,6 +7245,8 @@ export interface components {
             id: string;
             /** @example d7b9MDYsbtX5L7XAj */
             name?: string | null;
+            /** @example My Store */
+            title?: string | null;
             /** @example BPWDBd7Z9c746JAnF */
             userId?: string | null;
             /** @example janedoe */
@@ -6826,6 +7480,11 @@ export interface components {
              * @example some-name
              */
             name?: string | null;
+            /**
+             * @description The title of the request queue.
+             * @example My Queue
+             */
+            title?: string | null;
             userId: components["schemas"]["QueueUserId"];
             /** @description The ID of the Actor that created this request queue. */
             actId?: string | null;
@@ -6945,11 +7604,25 @@ export interface components {
          */
         RequestId: string;
         /**
+         * Format: date-time
+         * @description The timestamp when the lock on this request expires.
+         * @example 2022-06-14T23:00:00.000Z
+         */
+        LockExpiresAt: Date;
+        /**
          * RequestResource
          * @description A request stored in the request queue, including its metadata and processing state.
          */
         RequestResource: components["schemas"]["RequestBase"] & {
             id: components["schemas"]["RequestId"];
+            /** @description The timestamp when the lock on this request expires. Only present while the request is locked. */
+            lockExpiresAt?: components["schemas"]["LockExpiresAt"];
+            /**
+             * @description Key of the client that last locked the request. It is set when the request is locked and removed only by
+             *     an explicit unlock or by an update of the request, so it can still be present after the lock has expired.
+             * @example my-client-key
+             */
+            lockByClient?: string;
         };
         /**
          * ListOfRequests
@@ -7208,12 +7881,6 @@ export interface components {
             data: components["schemas"]["RequestRegistration"];
         };
         /**
-         * Format: date-time
-         * @description The timestamp when the lock on this request expires.
-         * @example 2022-06-14T23:00:00.000Z
-         */
-        LockExpiresAt: Date;
-        /**
          * RequestLockInfo
          * @description Information about a request lock.
          */
@@ -7374,6 +8041,12 @@ export interface components {
         TaskStats: {
             /** @example 15 */
             totalRuns?: number;
+            /**
+             * Format: date-time
+             * @description Time when the last run of the task started. In the task list, it's `null` if the task has no runs. In a single task, it's omitted if the task has no runs.
+             * @example 2019-11-30T07:34:24.202Z
+             */
+            lastRunStartedAt?: Date | null;
         };
         /** TaskListItem */
         TaskListItem: {
@@ -7387,6 +8060,8 @@ export interface components {
             actName?: string | null;
             /** @example my-task */
             name: string;
+            /** @example My task */
+            title?: string | null;
             /** @example janedoe */
             username?: string | null;
             /** @example janedoe */
@@ -7402,6 +8077,11 @@ export interface components {
              */
             modifiedAt: Date;
             stats?: components["schemas"]["TaskStats"] | null;
+            /**
+             * @description Whether the task is published. Based on the `publicConfig.publishedAt` field.
+             * @example false
+             */
+            isPublic?: boolean;
         };
         /** ListOfTasks */
         ListOfTasks: components["schemas"]["PaginationResponse"] & {
@@ -7425,6 +8105,13 @@ export interface components {
             maxTotalChargeUsd?: number | null;
             /** @example false */
             restartOnError?: boolean | null;
+            /**
+             * @description Whether the user explicitly set `maxTotalChargeUsd`. Returned only in schedule action `runOptions`, and only if it was provided.
+             * @example true
+             */
+            isMaxTotalChargeUsdSetByUser?: boolean | null;
+            /** @description Permission level to run the Actor with, overriding the Actor's own setting. Returned only in schedule action `runOptions`, and only if it was provided. */
+            forcePermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
         };
         /**
          * TaskInput
@@ -7481,6 +8168,15 @@ export interface components {
              *     one of the views declared on the resolved dataset. You can't publish a task without it.
              */
             datasetView?: string | null;
+            /** @description ID of the use-case category of the task. */
+            categorization?: string | null;
+            /** @description Names of the dataset fields highlighted on the public task page. */
+            highlightedFields?: string[] | null;
+            /** @description Frequently asked questions displayed on the public task page. */
+            faq?: {
+                question: string;
+                answer: string;
+            }[] | null;
         };
         /** CreateTaskRequest */
         CreateTaskRequest: {
@@ -7509,6 +8205,11 @@ export interface components {
             actId: string;
             /** @example my-task */
             name: string;
+            /**
+             * @description Task name in lowercase.
+             * @example my-task
+             */
+            nameLowerCase?: string;
             /** @example janedoe */
             username?: string | null;
             /**
@@ -7593,52 +8294,6 @@ export interface components {
              */
             isPublic?: boolean;
         };
-        /** WebhookResource */
-        WebhookResource: {
-            /** @example YiKoxjkaS9gjGTqhF */
-            id: string;
-            /**
-             * Format: date-time
-             * @example 2019-12-12T07:34:14.202Z
-             */
-            createdAt: Date;
-            /**
-             * Format: date-time
-             * @example 2019-12-13T08:36:13.202Z
-             */
-            modifiedAt: Date;
-            /** @example wRsJZtadYvn4mBZmm */
-            userId: string;
-            /** @example false */
-            isAdHoc?: boolean | null;
-            /** @example false */
-            shouldInterpolateStrings?: boolean | null;
-            /**
-             * @example [
-             *       "ACTOR.RUN.SUCCEEDED"
-             *     ]
-             */
-            eventTypes: components["schemas"]["WebhookEventType"][];
-            condition: components["schemas"]["WebhookCondition"];
-            /** @example false */
-            ignoreSslErrors: boolean;
-            /** @example false */
-            doNotRetry?: boolean | null;
-            /**
-             * Format: uri
-             * @description URL of the HTTP request sent by the webhook. It is omitted or `null` for hook actions other than the conventional HTTP case (e.g. Slack or email notifications).
-             * @example http://example.com/
-             */
-            requestUrl?: string | null;
-            /** @example {\n "userId": {{userId}}... */
-            payloadTemplate?: string | null;
-            /** @example {\n "Authorization": "Bearer ..."} */
-            headersTemplate?: string | null;
-            /** @example this is webhook description */
-            description?: string | null;
-            lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
-            stats?: components["schemas"]["WebhookStats"] | null;
-        };
         /** UpdateRunRequest */
         UpdateRunRequest: {
             /** @example 3KH8gEpp4d8uQSe8T */
@@ -7662,10 +8317,115 @@ export interface components {
             requestId?: string;
         };
         /**
+         * ActorOAuthAccount
+         * @description An account a user connected through an Actor OAuth connection.
+         */
+        ActorOAuthAccount: {
+            /** @example Rk3mP8xQ2vN5tY7wZ */
+            _id: string;
+            /** @example wRsJZtadYvn4mBZmm */
+            userId: string;
+            /** @example kD9fm2Xp4cJq7Lw8N */
+            connectionId: string;
+            /**
+             * Format: date-time
+             * @example 2026-01-28T10:00:00.000Z
+             */
+            createdAt: Date;
+            /**
+             * Format: date-time
+             * @example 2026-01-28T10:05:00.000Z
+             */
+            modifiedAt: Date;
+            /**
+             * Format: date-time
+             * @example 2026-01-28T10:05:00.000Z
+             */
+            authorizedAt?: Date | null;
+            /**
+             * @description Label of the connected account, usually its email address.
+             * @example jane.doe@example.com
+             */
+            description?: string | null;
+            /**
+             * @description The OAuth tokens of the account, such as `access_token`, `refresh_token`, `scope` and `expiry_date`. The exact
+             *     fields depend on the OAuth provider.
+             */
+            data: {
+                [key: string]: unknown;
+            };
+        };
+        /** ListOfActorOAuthAccounts */
+        ListOfActorOAuthAccounts: {
+            /** @example 1 */
+            total: number;
+            items: components["schemas"]["ActorOAuthAccount"][];
+        };
+        /** ListOfActorOAuthAccountsResponse */
+        ListOfActorOAuthAccountsResponse: {
+            data: components["schemas"]["ListOfActorOAuthAccounts"];
+        };
+        /** ActorOAuthAccountResponse */
+        ActorOAuthAccountResponse: {
+            data: components["schemas"]["ActorOAuthAccount"];
+        };
+        /**
          * @example ownedByMe
          * @enum {string}
          */
         StorageOwnership: "ownedByMe" | "sharedWithMe";
+        /** KeyValueStoreListStats */
+        KeyValueStoreListStats: {
+            /** @example 9 */
+            readCount?: number;
+            /** @example 3 */
+            writeCount?: number;
+            /** @example 6 */
+            deleteCount?: number;
+            /** @example 2 */
+            listCount?: number;
+            /**
+             * @description Storage size in bytes.
+             * @example 18
+             */
+            s3StorageBytes?: number;
+        };
+        /** KeyValueStoreListItem */
+        KeyValueStoreListItem: {
+            /** @example WkzbQMuFYuamGv3YF */
+            id: string;
+            /** @example d7b9MDYsbtX5L7XAj */
+            name?: string | null;
+            /** @example My Store */
+            title?: string | null;
+            /** @example BPWDBd7Z9c746JAnF */
+            userId?: string | null;
+            /** @example janedoe */
+            username?: string | null;
+            /**
+             * Format: date-time
+             * @example 2019-12-12T07:34:14.202Z
+             */
+            createdAt: Date;
+            /**
+             * Format: date-time
+             * @example 2019-12-13T08:36:13.202Z
+             */
+            modifiedAt: Date;
+            /**
+             * Format: date-time
+             * @example 2019-12-14T08:36:13.202Z
+             */
+            accessedAt: Date;
+            /** @example null */
+            actId?: string | null;
+            /** @example null */
+            actRunId?: string | null;
+            /** @description Optional JSON schema describing the keys stored in the key-value store. Older stores return it as a JSON string. */
+            schema?: Record<string, unknown> | string | null;
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
+            stats?: components["schemas"]["KeyValueStoreListStats"];
+        };
         /** ListOfKeyValueStores */
         ListOfKeyValueStores: components["schemas"]["PaginationResponse"] & {
             /**
@@ -7673,7 +8433,7 @@ export interface components {
              * @example false
              */
             unnamed?: boolean;
-            items: components["schemas"]["KeyValueStoreResource"][];
+            items: components["schemas"]["KeyValueStoreListItem"][];
         };
         /** ListOfKeyValueStoresResponse */
         ListOfKeyValueStoresResponse: {
@@ -7684,7 +8444,7 @@ export interface components {
             /** @example WkzbQMuFYuamGv3YF */
             id: string;
             /** @example d7b9MDYsbtX5L7XAj */
-            name: string;
+            name?: string | null;
             /** @example tbXmWu7GCxnyYtSiL */
             userId: string;
             /**
@@ -7731,6 +8491,42 @@ export interface components {
             data: components["schemas"]["ListOfDatasets"];
         };
         /**
+         * RequestQueueListStats
+         * @description Statistics about request queue operations and storage, as returned in request queue lists.
+         */
+        RequestQueueListStats: {
+            /**
+             * @description The number of delete operations performed on the request queue.
+             * @example 0
+             */
+            deleteCount?: number;
+            /**
+             * @description The number of times requests from the head were read.
+             * @example 5
+             */
+            headItemReadCount?: number;
+            /**
+             * @description The total number of read operations performed on the request queue.
+             * @example 100
+             */
+            readCount?: number;
+            /**
+             * @description The total number of write operations performed on the request queue.
+             * @example 10
+             */
+            writeCount?: number;
+            /**
+             * @description The storage size in bytes of requests stored in S3.
+             * @example 0
+             */
+            s3StorageBytes?: number;
+            /**
+             * @description The storage size in bytes of requests stored in DynamoDB.
+             * @example 1024
+             */
+            dynamodbStorageBytes?: number;
+        };
+        /**
          * RequestQueueListItem
          * @description A shortened request queue object for list responses.
          */
@@ -7740,13 +8536,18 @@ export interface components {
              * @description The name of the request queue.
              * @example some-name
              */
-            name: string;
+            name?: string | null;
+            /**
+             * @description The title of the request queue.
+             * @example My Queue
+             */
+            title?: string | null;
             userId: components["schemas"]["QueueUserId"];
             /**
              * @description The username of the user who owns the request queue.
              * @example janedoe
              */
-            username: string;
+            username?: string;
             createdAt: components["schemas"]["QueueCreatedAt"];
             modifiedAt: components["schemas"]["QueueModifiedAt"];
             accessedAt: components["schemas"]["QueueAccessedAt"];
@@ -7765,7 +8566,7 @@ export interface components {
             actRunId?: string | null;
             hadMultipleClients: components["schemas"]["HadMultipleClients"];
             generalAccess?: components["schemas"]["GeneralAccess"] | null;
-            stats?: components["schemas"]["RequestQueueStats"];
+            stats?: components["schemas"]["RequestQueueListStats"];
         };
         /**
          * ListOfRequestQueues
@@ -7786,6 +8587,70 @@ export interface components {
          */
         ListOfRequestQueuesResponse: {
             data: components["schemas"]["ListOfRequestQueues"];
+        };
+        /** WebhookListItem */
+        WebhookListItem: {
+            /** @example YiKoxjkaS9gjGTqhF */
+            id: string;
+            /**
+             * Format: date-time
+             * @example 2019-12-12T07:34:14.202Z
+             */
+            createdAt: Date;
+            /**
+             * Format: date-time
+             * @example 2019-12-13T08:36:13.202Z
+             */
+            modifiedAt: Date;
+            /** @example wRsJZtadYvn4mBZmm */
+            userId: string;
+            /** @example false */
+            isAdHoc?: boolean | null;
+            /** @example false */
+            isApifyIntegration?: boolean;
+            /** @example true */
+            isEnabled?: boolean;
+            /** @example HTTP_REQUEST */
+            actionType?: string;
+            /** @example false */
+            shouldInterpolateStrings?: boolean | null;
+            /**
+             * @example [
+             *       "ACTOR.RUN.SUCCEEDED"
+             *     ]
+             */
+            eventTypes: components["schemas"]["WebhookEventType"][];
+            condition: components["schemas"]["WebhookCondition"];
+            /** @example false */
+            ignoreSslErrors: boolean;
+            /** @example false */
+            doNotRetry: boolean;
+            /**
+             * Format: uri
+             * @description URL of the HTTP request sent by the webhook. It is omitted or `null` for hook actions other than the conventional HTTP case (e.g. Slack or email notifications).
+             * @example http://example.com/
+             */
+            requestUrl?: string | null;
+            /** @example {\n "Authorization": "Bearer ..."} */
+            headersTemplate?: string | null;
+            /** @example Notify on failure */
+            title?: string | null;
+            /** @example this is webhook description */
+            description?: string | null;
+            slackMessage?: components["schemas"]["WebhookSlackMessage"];
+            googleMail?: components["schemas"]["WebhookGoogleMail"];
+            googleDrive?: components["schemas"]["WebhookGoogleDrive"];
+            githubIssue?: components["schemas"]["WebhookGithubIssue"];
+            lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
+            stats?: components["schemas"]["WebhookStats"] | null;
+        };
+        /** ListOfWebhooks */
+        ListOfWebhooks: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["WebhookListItem"][];
+        };
+        /** ListOfWebhooksResponse */
+        ListOfWebhooksResponse: {
+            data: components["schemas"]["ListOfWebhooks"];
         };
         /** CreateWebhookRequest */
         CreateWebhookRequest: {
@@ -7856,6 +8721,11 @@ export interface components {
          * @description A summary of the webhook that triggered this dispatch.
          */
         WebhookDispatchWebhookSummary: {
+            /**
+             * @description ID of the webhook. The API returns it under `_id`, not `id`.
+             * @example YiKoxjkaS9gjGTqhF
+             */
+            _id?: string;
             /** @example HTTP_REQUEST */
             actionType?: string;
             condition?: components["schemas"]["WebhookCondition"];
@@ -7867,6 +8737,12 @@ export interface components {
             requestUrl?: string | null;
             /** @example false */
             isAdHoc?: boolean;
+            /** @example false */
+            isApifyIntegration?: boolean | null;
+            slackMessage?: components["schemas"]["WebhookSlackMessage"];
+            googleMail?: components["schemas"]["WebhookGoogleMail"];
+            googleDrive?: components["schemas"]["WebhookGoogleDrive"];
+            githubIssue?: components["schemas"]["WebhookGithubIssue"];
         };
         /** WebhookDispatch */
         WebhookDispatch: {
@@ -7913,6 +8789,10 @@ export interface components {
                 responseStatus?: number | null;
                 /** @example {"foo": "bar"} */
                 responseBody?: string | null;
+                /** @description Response of the Slack `chat.postMessage` call. Present only for successful calls of `SLACK_MESSAGE` webhooks. */
+                debugPostMessage?: {
+                    [key: string]: unknown;
+                };
             }[];
         };
         /** WebhookDispatchResponse */
@@ -7964,6 +8844,14 @@ export interface components {
              */
             lastRunAt?: Date | null;
         };
+        /**
+         * ScheduleNotifications
+         * @description Notification settings for this schedule.
+         */
+        ScheduleNotifications: {
+            /** @example true */
+            email?: boolean;
+        };
         /** ScheduleListItemActionRunActor */
         ScheduleListItemActionRunActor: {
             /** @example ZReCs7hkdieq8ZUki */
@@ -7992,6 +8880,10 @@ export interface components {
         ScheduleListItemAction: components["schemas"]["ScheduleListItemActionRunActor"] | components["schemas"]["ScheduleListItemActionRunActorTask"];
         /** ScheduleListItem */
         ScheduleListItem: components["schemas"]["ScheduleBase"] & {
+            title?: string | null;
+            notifications?: components["schemas"]["ScheduleNotifications"];
+            /** @description Present only when the schedule was created by a third-party integration. */
+            integrationTracking?: components["schemas"]["IntegrationTracking"];
             actions: components["schemas"]["ScheduleListItemAction"][];
         };
         /** ListOfSchedules */
@@ -8001,14 +8893,6 @@ export interface components {
         /** ListOfSchedulesResponse */
         ListOfSchedulesResponse: {
             data: components["schemas"]["ListOfSchedules"];
-        };
-        /**
-         * ScheduleNotifications
-         * @description Notification settings for this schedule.
-         */
-        ScheduleNotifications: {
-            /** @example true */
-            email?: boolean;
         };
         /** ScheduleActionRunInput */
         ScheduleActionRunInput: {
@@ -8060,6 +8944,26 @@ export interface components {
             notifications?: components["schemas"]["ScheduleNotifications"];
             actions?: components["schemas"]["ScheduleCreateAction"][] | null;
         };
+        /**
+         * ScheduleUiState
+         * @description State of the schedule editor in Apify Console. It's removed when an API update changes `cronExpression` or `timezone`.
+         */
+        ScheduleUiState: {
+            /**
+             * @description Version of the editor state format.
+             * @example 1
+             */
+            version?: number;
+            /** @description Editor form values, such as the frequency settings the cron expression was built from. */
+            data?: {
+                /** @example 0 8 * * * */
+                cronExpression?: string;
+                /** @example UTC */
+                timezone?: string;
+            } & {
+                [key: string]: unknown;
+            };
+        };
         /** ScheduleActionRunActor */
         ScheduleActionRunActor: {
             /** @example c6KfSgoQzFhMk3etc */
@@ -8095,6 +8999,9 @@ export interface components {
             description?: string | null;
             title?: string | null;
             notifications?: components["schemas"]["ScheduleNotifications"];
+            uiState?: components["schemas"]["ScheduleUiState"];
+            /** @description Present only when the schedule was created by a third-party integration. */
+            integrationTracking?: components["schemas"]["IntegrationTracking"];
             actions: components["schemas"]["ScheduleAction"][];
         };
         /** ScheduleResponse */
@@ -8160,6 +9067,39 @@ export interface components {
             pricingPerEvent?: {
                 [key: string]: unknown;
             } | null;
+            /**
+             * @description Price per unit in USD. Present only for `FLAT_PRICE_PER_MONTH` and non-tiered `PRICE_PER_DATASET_ITEM` pricing.
+             * @example 5
+             */
+            pricePerUnitUsd?: number;
+            /**
+             * @description Length of the free trial in minutes. Present only for `FLAT_PRICE_PER_MONTH` pricing.
+             * @example 1440
+             */
+            trialMinutes?: number;
+            /**
+             * @description Name of the charged unit. Present only for `PRICE_PER_DATASET_ITEM` pricing.
+             * @example result
+             */
+            unitName?: string;
+            /**
+             * @description Price per unit for each pricing tier. Present only for tiered `PRICE_PER_DATASET_ITEM` pricing.
+             * @example {
+             *       "FREE": {
+             *         "tieredPricePerUnitUsd": 0.005
+             *       }
+             *     }
+             */
+            tieredPricing?: {
+                [key: string]: {
+                    tieredPricePerUnitUsd?: number;
+                };
+            };
+            /**
+             * Format: date-time
+             * @example null
+             */
+            notifiedAboutRentalToPpePriceChangeAt?: Date | null;
         };
         /** StoreActor */
         StoreActor: {
@@ -8209,6 +9149,32 @@ export interface components {
             badge?: string | null;
             /** @description A brief, LLM-generated readme summary */
             readmeSummary?: string;
+            /** @description Compact input schema of the Actor's default build, with only property types and required properties. Returned only when `includeInputSchema=true` and the default build succeeded and defines input properties. */
+            inputSchema?: {
+                /** @example object */
+                type: string;
+                /**
+                 * @example {
+                 *       "startUrls": {
+                 *         "type": "array"
+                 *       },
+                 *       "maxItems": {
+                 *         "type": "integer"
+                 *       }
+                 *     }
+                 */
+                properties: {
+                    [key: string]: {
+                        type?: string | string[];
+                    };
+                };
+                /**
+                 * @example [
+                 *       "startUrls"
+                 *     ]
+                 */
+                required?: string[];
+            };
         };
         /** ListOfStoreActors */
         ListOfStoreActors: components["schemas"]["PaginationResponse"] & {
@@ -8324,17 +9290,22 @@ export interface components {
         };
         /** ProxyGroup */
         ProxyGroup: {
+            /** @example Hsu2Sk8jPqxd3dNsB */
+            id?: string;
             /** @example Group1 */
             name: string;
             /** @example Group1 description */
             description: string | null;
             /** @example 10 */
-            availableCount: number;
+            availableCount?: number;
         };
-        /** ProxyResource */
+        /**
+         * ProxyResource
+         * @description Proxy access info. Omitted when the user has no access to Apify Proxy.
+         */
         ProxyResource: {
             /** @example ad78knd9Jkjd86 */
-            password: string;
+            password?: string | null;
             groups: components["schemas"]["ProxyGroup"][];
         };
         /**
@@ -8412,6 +9383,52 @@ export interface components {
             planPricing?: {
                 [key: string]: unknown;
             };
+            /**
+             * @description Version of the plan definition.
+             * @example 2
+             */
+            planVersion?: number;
+            /**
+             * @description ID of the legacy plan this plan was migrated from.
+             * @example STARTER
+             */
+            legacyPlanId?: string;
+            /** @example [] */
+            planTags?: string[];
+            /**
+             * @description Mid-cycle overage threshold above which the user is billed for the current-cycle overage.
+             * @example 500
+             */
+            overageThresholdUsd?: number;
+            /** @example 1000000 */
+            maxMonthlyUnblockerUnits?: number;
+            /** @example 100 */
+            maxPublicActorTaskCount?: number;
+            /** @example 10 */
+            maxPublicActorTaskCountPerActor?: number;
+            /**
+             * @description If set, the plan can be subscribed only in this billing interval.
+             * @example ANNUAL
+             */
+            forceBillingInterval?: string;
+            /**
+             * @description Hours of personalized support with Apify engineers included in the plan, as `Nh/P`: `N` hours per period
+             *     `P`, where `P` is `M` (monthly), `Q` (quarterly), `B` (every 6 months) or `A` (annually), for example `1h/M`.
+             *     `null` or missing means the plan includes no personalized support.
+             * @example 4h/M
+             */
+            personalizedSupport?: string | null;
+            /**
+             * @description Level of monitoring services included in the plan. `null` or missing means the plan includes no monitoring service.
+             * @example STANDARD
+             * @enum {string|null}
+             */
+            monitoringLevel?: "STANDARD" | null;
+            /**
+             * @description Marks the user as a paying customer even without a subscription.
+             * @example false
+             */
+            isPayingCustomer?: boolean;
         };
         /** EffectivePlatformFeature */
         EffectivePlatformFeature: {
@@ -8451,9 +9468,10 @@ export interface components {
             profile?: components["schemas"]["UserProfile"];
             /**
              * Format: email
+             * @description Primary email of the user. It is `null` when the email is not verified.
              * @example bob@example.com
              */
-            email?: string;
+            email?: string | null;
             proxy?: components["schemas"]["ProxyResource"];
             plan?: components["schemas"]["UserPlan"];
             effectivePlatformFeatures?: components["schemas"]["EffectivePlatformFeatures"];
@@ -8464,6 +9482,11 @@ export interface components {
             createdAt?: Date;
             /** @example true */
             isPaying?: boolean;
+            /**
+             * @description ID of the user who owns the organization. Present only for organization accounts.
+             * @example wRsJZtadYvn4mBZmm
+             */
+            organizationOwnerUserId?: string | null;
         };
         /** UserPrivateInfoResponse */
         UserPrivateInfoResponse: {
@@ -8581,6 +9604,8 @@ export interface components {
             dataRetentionDays: number;
             /** @example 100 */
             maxScheduleCount?: number;
+            /** @example 1000000 */
+            maxMonthlyUnblockerUnits?: number;
         };
         /** CurrentUsage */
         CurrentUsage: {
@@ -8606,6 +9631,8 @@ export interface components {
             teamAccountSeatCount: number;
             /** @example 77 */
             scheduleCount?: number;
+            /** @example 1520 */
+            monthlyUnblockerUnits?: number;
         };
         /** AccountLimits */
         AccountLimits: {
@@ -8629,6 +9656,123 @@ export interface components {
              * @example 90
              */
             dataRetentionDays?: number;
+        };
+        /**
+         * GitProviderWorkspace
+         * @description A place the user can create a repository in, such as their own account or an organization, group or workspace they can access.
+         */
+        GitProviderWorkspace: {
+            /**
+             * @description The workspace identifier to pass as `workspace` when creating a repository: the account or organization login
+             *     on GitHub, the numeric namespace ID on GitLab, or the workspace slug on Bitbucket.
+             * @example janedoe
+             */
+            id: string;
+            /** @example janedoe */
+            label: string;
+        };
+        /**
+         * GitProviderIntegration
+         * @description A connected git provider account the user can create repositories through.
+         */
+        GitProviderIntegration: {
+            /**
+             * @description The provider ID to use in the `providerId` path parameter: `github-app` for the GitHub App, or the ID of a
+             *     connected GitLab or Bitbucket integration.
+             * @example github-app
+             */
+            id: string;
+            /**
+             * @example github
+             * @enum {string}
+             */
+            provider: "github" | "gitlab" | "bitbucket";
+            /** @description The workspaces the account can create a repository in. Empty if listing them failed. */
+            workspaces: components["schemas"]["GitProviderWorkspace"][];
+            /**
+             * @description URL where the user can install the GitHub App on another account or organization. Only for the GitHub App.
+             * @example https://github.com/apps/apify/installations/new
+             */
+            addWorkspaceUrl?: string;
+        };
+        /** ListOfGitProviderIntegrationsResponse */
+        ListOfGitProviderIntegrationsResponse: {
+            data: components["schemas"]["GitProviderIntegration"][];
+        };
+        /**
+         * GitRepoFile
+         * @description A file to commit into the new repository.
+         */
+        GitRepoFile: {
+            /** @example src/main.js */
+            path: string;
+            /** @example console.log('Hello'); */
+            content: string;
+            /**
+             * @example utf-8
+             * @enum {string}
+             */
+            encoding: "utf-8" | "base64";
+        };
+        /** CreateGitRepoRequest */
+        CreateGitRepoRequest: {
+            /**
+             * @description Where to create the repository, as the `id` of one of the provider's workspaces. On GitLab, this is the
+             *     numeric namespace ID.
+             * @example janedoe
+             */
+            workspace: string;
+            /** @example my-actor */
+            repoName: string;
+            /** @example true */
+            isPrivate: boolean;
+            /** @description Files to commit as the initial commit. Can't be combined with `templateArchiveUrl`. */
+            files?: components["schemas"]["GitRepoFile"][];
+            /**
+             * @description URL of an Actor template archive whose files are committed as the initial commit. Can't be combined with
+             *     `files`.
+             * @example https://github.com/apify/actor-templates/blob/master/dist/templates/js-start.zip?raw=true
+             */
+            templateArchiveUrl?: string;
+        };
+        /**
+         * GitRepo
+         * @description URLs of a newly created repository.
+         */
+        GitRepo: {
+            /** @example git@github.com:janedoe/my-actor.git */
+            sshUrl: string;
+            /** @example https://github.com/janedoe/my-actor.git */
+            httpsUrl: string;
+            /** @example https://github.com/janedoe/my-actor */
+            htmlUrl: string;
+        };
+        /** GitRepoResponse */
+        GitRepoResponse: {
+            data: components["schemas"]["GitRepo"];
+        };
+        /** RegisterDeploymentKeyRequest */
+        RegisterDeploymentKeyRequest: {
+            /**
+             * @description ID or `username~name` of the Actor whose deployment key to register.
+             * @example janedoe~my-actor
+             */
+            actorId: string;
+            /**
+             * @description URL of the repository to register the key on. Its host must match the provider.
+             * @example https://github.com/janedoe/my-actor
+             */
+            repoName: string;
+        };
+        /** RegisterDeploymentKeyResponse */
+        RegisterDeploymentKeyResponse: {
+            data: {
+                /**
+                 * @description The normalized URL of the repository the key is registered on.
+                 * @example https://github.com/janedoe/my-actor
+                 */
+                repoName: string;
+            };
         };
         BrowserInfoResponse: {
             /**
@@ -8826,6 +9970,13 @@ export interface components {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
+        /** @description No content */
+        NoContent: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content?: never;
+        };
         /** @description Payment required - the user has exceeded their usage limit, does not have enough credits, or the request lacks authentication and payment credentials. */
         PaymentRequired: {
             headers: {
@@ -8859,13 +10010,6 @@ export interface components {
                  */
                 "application/json": components["schemas"]["ErrorResponse"];
             };
-        };
-        /** @description No content */
-        NoContent: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content?: never;
         };
         /** @description Conflict - the request could not be completed due to a conflict with the current state of the resource. */
         Conflict: {
@@ -8933,6 +10077,13 @@ export interface components {
          *     The value must be a valid ISO 8601 datetime string (UTC).
          */
         startedBefore: string;
+        /**
+         * @description Single Actor Standby deployment or comma-separated list of deployments (`SINGLE_TENANT`, `MULTI_TENANT_FREE_USERS`,
+         *     `MULTI_TENANT_PAYING_USERS` or `MULTI_TENANT_OWNER_PAID`). Used to filter Actor Standby runs by the pool that
+         *     serves them. Requires the `status` parameter with only non-terminal statuses (`READY`, `RUNNING`, `TIMING-OUT` or
+         *     `ABORTING`).
+         */
+        deployment: string[];
         /** @description Optional timeout for the run, in seconds. By default, the run uses the timeout from its configuration. */
         timeout: number;
         /**
@@ -8977,6 +10128,13 @@ export interface components {
          *     [Webhooks documentation](https://docs.apify.com/platform/integrations/webhooks).
          */
         webhooks: string;
+        /**
+         * @description Overrides the Actor's permission level for this specific run. Use to test restricted permissions
+         *     before deploying changes to your Actor or to temporarily elevate or restrict access. If you don't specify this
+         *     parameter, the Actor uses its configured default permission level. For more information on permissions, see the
+         *     [documentation](https://docs.apify.com/platform/actors/development/permissions).
+         */
+        forcePermissionLevel: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
         /**
          * @description Key of the record from the run's default key-value store to return in the
          *     response. Defaults to `OUTPUT`. Actors aren't required to store a record
@@ -9986,6 +11144,35 @@ export interface operations {
             429: components["responses"]["TooManyRequests"];
         };
     };
+    actor_version_buildOnPush_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Actor ID or the username of the Actor owner and the Actor name, separated by a tilde (`~`). */
+                actorId: components["parameters"]["actorId"];
+                /** @description Actor version. */
+                versionNumber: components["parameters"]["versionNumber"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBuildOnPushRequest"];
+            };
+        };
+        responses: {
+            204: components["responses"]["NoContent"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            405: components["responses"]["MethodNotAllowed"];
+            413: components["responses"]["PayloadTooLarge"];
+            415: components["responses"]["UnsupportedMediaType"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
     actor_version_envVars_get: {
         parameters: {
             query?: never;
@@ -10305,7 +11492,35 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ListOfWebhooksResponse"];
+                    "application/json": components["schemas"]["ListOfWebhookResourcesResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            405: components["responses"]["MethodNotAllowed"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    actor_oauthConnections_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Actor ID or the username of the Actor owner and the Actor name, separated by a tilde (`~`). */
+                actorId: components["parameters"]["actorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListOfActorOAuthConnectionsResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -10638,6 +11853,13 @@ export interface operations {
                  *     The value must be a valid ISO 8601 datetime string (UTC).
                  */
                 startedBefore?: components["parameters"]["startedBefore"];
+                /**
+                 * @description Single Actor Standby deployment or comma-separated list of deployments (`SINGLE_TENANT`, `MULTI_TENANT_FREE_USERS`,
+                 *     `MULTI_TENANT_PAYING_USERS` or `MULTI_TENANT_OWNER_PAID`). Used to filter Actor Standby runs by the pool that
+                 *     serves them. Requires the `status` parameter with only non-terminal statuses (`READY`, `RUNNING`, `TIMING-OUT` or
+                 *     `ABORTING`).
+                 */
+                deployment?: components["parameters"]["deployment"];
             };
             header?: never;
             path: {
@@ -10742,7 +11964,7 @@ export interface operations {
                  *     parameter, the Actor uses its configured default permission level. For more information on permissions, see the
                  *     [documentation](https://docs.apify.com/platform/actors/development/permissions).
                  */
-                forcePermissionLevel?: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
+                forcePermissionLevel?: components["parameters"]["forcePermissionLevel"];
             };
             header?: never;
             path: {
@@ -10833,6 +12055,13 @@ export interface operations {
                  *     [Webhooks documentation](https://docs.apify.com/platform/integrations/webhooks).
                  */
                 webhooks?: components["parameters"]["webhooks"];
+                /**
+                 * @description Overrides the Actor's permission level for this specific run. Use to test restricted permissions
+                 *     before deploying changes to your Actor or to temporarily elevate or restrict access. If you don't specify this
+                 *     parameter, the Actor uses its configured default permission level. For more information on permissions, see the
+                 *     [documentation](https://docs.apify.com/platform/actors/development/permissions).
+                 */
+                forcePermissionLevel?: components["parameters"]["forcePermissionLevel"];
             };
             header?: never;
             path: {
@@ -10911,6 +12140,13 @@ export interface operations {
                  *     [Webhooks documentation](https://docs.apify.com/platform/integrations/webhooks).
                  */
                 webhooks?: components["parameters"]["webhooks"];
+                /**
+                 * @description Overrides the Actor's permission level for this specific run. Use to test restricted permissions
+                 *     before deploying changes to your Actor or to temporarily elevate or restrict access. If you don't specify this
+                 *     parameter, the Actor uses its configured default permission level. For more information on permissions, see the
+                 *     [documentation](https://docs.apify.com/platform/actors/development/permissions).
+                 */
+                forcePermissionLevel?: components["parameters"]["forcePermissionLevel"];
             };
             header?: never;
             path: {
@@ -10994,6 +12230,13 @@ export interface operations {
                  *     [Webhooks documentation](https://docs.apify.com/platform/integrations/webhooks).
                  */
                 webhooks?: components["parameters"]["webhooks"];
+                /**
+                 * @description Overrides the Actor's permission level for this specific run. Use to test restricted permissions
+                 *     before deploying changes to your Actor or to temporarily elevate or restrict access. If you don't specify this
+                 *     parameter, the Actor uses its configured default permission level. For more information on permissions, see the
+                 *     [documentation](https://docs.apify.com/platform/actors/development/permissions).
+                 */
+                forcePermissionLevel?: components["parameters"]["forcePermissionLevel"];
                 /** @description Format of the results, possible values are: `json`, `jsonl`, `csv`, `html`, `xlsx`, `xml` and `rss`. The default value is `json`. */
                 format?: components["parameters"]["format"];
                 /**
@@ -11204,6 +12447,13 @@ export interface operations {
                  *     [Webhooks documentation](https://docs.apify.com/platform/integrations/webhooks).
                  */
                 webhooks?: components["parameters"]["webhooks"];
+                /**
+                 * @description Overrides the Actor's permission level for this specific run. Use to test restricted permissions
+                 *     before deploying changes to your Actor or to temporarily elevate or restrict access. If you don't specify this
+                 *     parameter, the Actor uses its configured default permission level. For more information on permissions, see the
+                 *     [documentation](https://docs.apify.com/platform/actors/development/permissions).
+                 */
+                forcePermissionLevel?: components["parameters"]["forcePermissionLevel"];
                 /** @description Format of the results, possible values are: `json`, `jsonl`, `csv`, `html`, `xlsx`, `xml` and `rss`. The default value is `json`. */
                 format?: components["parameters"]["format"];
                 /**
@@ -14059,6 +15309,8 @@ export interface operations {
                  *     by using the `ACTOR_MAX_TOTAL_CHARGE_USD` environment variable.
                  */
                 maxTotalChargeUsd?: components["parameters"]["maxTotalChargeUsd"];
+                /** @description Determines whether the run will be restarted if it fails. */
+                restartOnError?: components["parameters"]["restartOnError"];
                 /**
                  * @description Specifies the Actor build to run. It can be either a build tag or build number.
                  *     By default, the run uses the build from its configuration (typically `latest`).
@@ -16338,6 +17590,13 @@ export interface operations {
                  *     The value must be a valid ISO 8601 datetime string (UTC).
                  */
                 startedBefore?: components["parameters"]["startedBefore"];
+                /**
+                 * @description Single Actor Standby deployment or comma-separated list of deployments (`SINGLE_TENANT`, `MULTI_TENANT_FREE_USERS`,
+                 *     `MULTI_TENANT_PAYING_USERS` or `MULTI_TENANT_OWNER_PAID`). Used to filter Actor Standby runs by the pool that
+                 *     serves them. Requires the `status` parameter with only non-terminal statuses (`READY`, `RUNNING`, `TIMING-OUT` or
+                 *     `ABORTING`).
+                 */
+                deployment?: components["parameters"]["deployment"];
             };
             header?: never;
             path?: never;
@@ -18307,6 +19566,62 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            405: components["responses"]["MethodNotAllowed"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    actorOAuthAccounts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Actor OAuth connection ID. */
+                connectionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListOfActorOAuthAccountsResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            405: components["responses"]["MethodNotAllowed"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    actorOAuthAccount_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Actor OAuth account ID. */
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActorOAuthAccountResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             405: components["responses"]["MethodNotAllowed"];
             429: components["responses"]["TooManyRequests"];
@@ -20658,6 +21973,35 @@ export interface operations {
             429: components["responses"]["TooManyRequests"];
         };
     };
+    schedule_invoke_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Schedule ID. */
+                scheduleId: components["parameters"]["scheduleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example {} */
+                    "application/json": Record<string, unknown>;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            405: components["responses"]["MethodNotAllowed"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
     schedule_log_get: {
         parameters: {
             query?: never;
@@ -20745,6 +22089,12 @@ export interface operations {
                  *     bypass this safety filtering and include all Actors in the results.
                  */
                 includeUnrunnableActors?: boolean;
+                /**
+                 * @description If `true`, each Actor in the results includes an `inputSchema` field with a compact version of the input
+                 *     schema of its default build (property types and required properties only). With this parameter, `limit`
+                 *     defaults to and can't exceed `10`.
+                 */
+                includeInputSchema?: boolean;
             };
             header?: never;
             path?: never;
@@ -20846,7 +22196,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserPublicInfoResponse"];
+                    "application/json": components["schemas"]["UserPublicInfoResponse"] | components["schemas"]["UserPrivateInfoResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -20955,6 +22305,197 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
+            405: components["responses"]["MethodNotAllowed"];
+            413: components["responses"]["PayloadTooLarge"];
+            415: components["responses"]["UnsupportedMediaType"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    users_usage_monthly_get: {
+        parameters: {
+            query?: {
+                /** @description Date in the YYYY-MM-DD format. */
+                date?: string;
+            };
+            header?: never;
+            path: {
+                /** @description User ID or username of your account, or of the organization your API token belongs to. */
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MonthlyUsageResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            405: components["responses"]["MethodNotAllowed"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    users_limits_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User ID or username of your account, or of the organization your API token belongs to. */
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountLimitsResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            405: components["responses"]["MethodNotAllowed"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    users_limits_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description User ID or username of your account, or of the organization your API token belongs to. */
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateLimitsRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, unknown>;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            405: components["responses"]["MethodNotAllowed"];
+            413: components["responses"]["PayloadTooLarge"];
+            415: components["responses"]["UnsupportedMediaType"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    integrations_git_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListOfGitProviderIntegrationsResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            405: components["responses"]["MethodNotAllowed"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    integrations_git_createRepo_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The connected git account to use: `github-app` for the GitHub App, or the ID of a connected GitLab or
+                 *     Bitbucket integration, as returned by [Get git provider integrations](https://docs.apify.com/api/v2/integrations-git-get).
+                 */
+                providerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGitRepoRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GitRepoResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            405: components["responses"]["MethodNotAllowed"];
+            413: components["responses"]["PayloadTooLarge"];
+            415: components["responses"]["UnsupportedMediaType"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    integrations_git_registerDeploymentKey_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The connected git account to use: `github-app` for the GitHub App, or the ID of a connected GitLab or
+                 *     Bitbucket integration, as returned by [Get git provider integrations](https://docs.apify.com/api/v2/integrations-git-get).
+                 */
+                providerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterDeploymentKeyRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDeploymentKeyResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
             405: components["responses"]["MethodNotAllowed"];
             413: components["responses"]["PayloadTooLarge"];
             415: components["responses"]["UnsupportedMediaType"];

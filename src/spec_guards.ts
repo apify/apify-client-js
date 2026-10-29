@@ -45,7 +45,6 @@ import type {
     DefaultRunOptionsRePointed,
     EffectivePlatformFeaturesRePointed,
     KeyValueStoreResourceRePointed,
-    KeyValueStoreResourceSpecGaps,
     ListOfKeysRePointed,
     ListOfRequestsRePointed,
     LockedRequestQueueHeadRePointed,
@@ -60,16 +59,15 @@ import type {
     RunClientNarrowings,
     RunListItemRePointed,
     RunMetaRePointed,
-    RunOptionsSpecGaps,
     RunRePointed,
     ScheduleActionRunActorRePointed,
     ScheduleActionRunActorTaskRePointed,
     ScheduleActions,
     ScheduleClientNarrowings,
     ScheduleRePointed,
+    ScheduleSpecNarrowings,
     StoreActorRePointed,
     TaskListItemRePointed,
-    TaskListItemSpecGaps,
     TaskRePointed,
     UsageItemRePointed,
     UserPlanRePointed,
@@ -86,7 +84,6 @@ import type {
     WebhookLastDispatchRePointed,
     WebhookResource,
     WebhookResourceRePointed,
-    WebhookResourceSpecGaps,
 } from './models.js';
 import type * as responseSchemas from './schemas.js';
 
@@ -238,6 +235,7 @@ export type AdapterKeyGuards = AssertAll<
         OverridesStillExist<WebhookLastDispatchRePointed, Schemas['WebhookLastDispatch']>,
         OverridesStillExist<ScheduleRePointed, Schemas['Schedule']>,
         OverridesStillExist<ScheduleClientNarrowings, Schemas['Schedule']>,
+        OverridesStillExist<ScheduleSpecNarrowings, Schemas['Schedule']>,
         OverridesStillExist<ScheduleActionRunActorRePointed, Schemas['ScheduleActionRunActor']>,
         OverridesStillExist<ScheduleActionRunActorTaskRePointed, Schemas['ScheduleActionRunActorTask']>,
         OverridesStillExist<UserPrivateInfoRePointed, Schemas['UserPrivateInfo']>,
@@ -269,13 +267,7 @@ export type AdapterKeyGuards = AssertAll<
         Equals<WebhookConditionKey & keyof Schemas['WebhookCondition'], WebhookConditionKey>,
         GapsStillMissing<DatasetResourceSpecGaps, Schemas['DatasetResource']>,
         GapsStillMissing<DatasetStatsSpecGaps, Schemas['DatasetStats']>,
-        GapsStillMissing<KeyValueStoreResourceSpecGaps, Schemas['KeyValueStoreResource']>,
         GapsStillMissing<ActorResourceSpecGaps, Schemas['ActorResource']>,
-        GapsStillMissing<RunOptionsSpecGaps, Schemas['RunOptions']>,
-        // `TaskListItem` has a gap of its own, because the spec describes a listed task in a separate schema
-        // that omits `title` as well.
-        GapsStillMissing<TaskListItemSpecGaps, Schemas['TaskListItem']>,
-        GapsStillMissing<WebhookResourceSpecGaps, Schemas['WebhookResource']>,
         GapsStillMissing<RequestQueueResourceSpecGaps, Schemas['RequestQueueResource']>,
     ]
 >;
@@ -336,6 +328,7 @@ export type AdapterWidthGuards = AssertAll<
         // assignable to a string enum even when the members match -- `EnumGuards` pins those instead.
         OverridesStayWider<Omit<WebhookResourceRePointed, 'condition' | 'lastDispatch'>, Schemas['WebhookResource']>,
         OverridesStayWider<ScheduleRePointed, Schemas['Schedule']>,
+        OverridesStayWider<ScheduleSpecNarrowings, Schemas['Schedule']>,
         OverridesStayWider<ScheduleActionRunActorRePointed, Schemas['ScheduleActionRunActor']>,
         OverridesStayWider<ScheduleActionRunActorTaskRePointed, Schemas['ScheduleActionRunActorTask']>,
         // `timezone` is excluded: it narrows the spec's bare `string` to the curated IANA union on

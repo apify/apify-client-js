@@ -62,6 +62,7 @@ export const ErrorType = lazySchema(() => z.enum(["3d-secure-auth-failed", "acce
 export const ErrorDetail = lazySchema(() => z.looseObject({
     type: ErrorType().optional(),
     message: z.string().optional(),
+    data: z.record(z.string(), z.unknown()).optional(),
 }));
 
 export const ErrorResponse = lazySchema(() => z.looseObject({
@@ -119,6 +120,8 @@ export const DefaultRunOptions = lazySchema(() => z.looseObject({
     memoryMbytes: z.int().optional(),
     restartOnError: z.boolean().nullable().optional(),
     maxItems: z.int().nullable().optional(),
+    maxTotalChargeUsd: z.number().nullable().optional(),
+    isMaxTotalChargeUsdSetByUser: z.boolean().nullable().optional(),
     forcePermissionLevel: ActorPermissionLevel().nullable().optional(),
 }));
 
@@ -131,6 +134,9 @@ export const ActorStandby = lazySchema(() => z.looseObject({
     memoryMbytes: z.int().nullable().optional(),
     disableStandbyFieldsOverride: z.boolean().nullable().optional(),
     shouldPassActorInput: z.boolean().nullable().optional(),
+    tenancy: z.string().nullable().optional(),
+    isConsoleAuthEnabled: z.boolean().nullable().optional(),
+    isTokenlessEnabled: z.boolean().nullable().optional(),
 }));
 
 export const ExampleRunInput = lazySchema(() => z.looseObject({
@@ -161,6 +167,7 @@ export const EnvVar = lazySchema(() => z.looseObject({
     name: z.string(),
     value: z.string().optional(),
     isSecret: z.boolean().nullable().optional(),
+    valueHash: z.string().optional(),
 }));
 
 export const Version = lazySchema(() => z.looseObject({
@@ -173,6 +180,9 @@ export const Version = lazySchema(() => z.looseObject({
     gitRepoUrl: z.string().nullable().optional(),
     tarballUrl: z.string().nullable().optional(),
     gitHubGistUrl: z.string().nullable().optional(),
+    githubWebhookId: z.int().nullable().optional(),
+    gitlabWebhookId: z.int().nullable().optional(),
+    bitbucketWebhookId: z.string().nullable().optional(),
 }));
 
 export const CommonActorPricingInfo = lazySchema(() => z.looseObject({
@@ -181,6 +191,7 @@ export const CommonActorPricingInfo = lazySchema(() => z.looseObject({
     startedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     notifiedAboutFutureChangeAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
     notifiedAboutChangeAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
+    notifiedAboutRentalToPpePriceChangeAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
     reasonForChange: z.string().nullable().optional(),
     isPriceChangeNotificationSuppressed: z.boolean().optional(),
     forceContainsSignificantPriceChange: z.boolean().optional(),
@@ -216,6 +227,7 @@ export const PayPerEventActorPricingInfo = lazySchema(() => CommonActorPricingIn
         actorChargeEvents: z.record(z.string(), ActorChargeEvent()).optional(),
     }),
     minimalMaxTotalChargeUsd: z.number().nullable().optional(),
+    isPPEPlatformUsagePaidByUser: z.boolean().nullable().optional(),
 }));
 
 /** A single tier's price-per-dataset-item entry. */
@@ -351,6 +363,11 @@ export const UpdateVersionRequest = lazySchema(() => z.looseObject({
     gitHubGistUrl: z.string().optional(),
 }));
 
+export const UpdateBuildOnPushRequest = lazySchema(() => z.looseObject({
+    providerId: z.string(),
+    enabled: z.boolean(),
+}));
+
 export const ListOfEnvVars = lazySchema(() => z.looseObject({
     total: z.int(),
     items: z.array(EnvVar()),
@@ -373,6 +390,45 @@ export const WebhookCondition = lazySchema(() => z.looseObject({
     actorRunId: z.string().nullable().optional(),
 }));
 
+/** Slack message configuration. Present only when `actionType` is `SLACK_MESSAGE`. */
+export const WebhookSlackMessage = lazySchema(() => z.looseObject({
+    userIntegrationId: z.string().optional(),
+    channelId: z.string().optional(),
+    messageTemplate: z.string().optional(),
+}));
+
+/** Selects which dataset item fields are included in the output. */
+export const WebhookDatasetTransformation = lazySchema(() => z.looseObject({
+    fields: z.array(z.string()).optional(),
+    omit: z.array(z.string()).optional(),
+}));
+
+/** Gmail email configuration. Present only when `actionType` is `GOOGLE_MAIL`. */
+export const WebhookGoogleMail = lazySchema(() => z.looseObject({
+    userIntegrationId: z.string().optional(),
+    emailTo: z.array(z.string()).optional(),
+    subject: z.string().optional(),
+    body: z.string().optional(),
+    attachmentFormat: z.string().optional(),
+    attachmentTransformation: WebhookDatasetTransformation().optional(),
+}));
+
+/** Google Drive upload configuration. Present only when `actionType` is `GOOGLE_DRIVE`. */
+export const WebhookGoogleDrive = lazySchema(() => z.looseObject({
+    userIntegrationId: z.string().optional(),
+    filename: z.string().optional(),
+    format: z.string().nullable().optional(),
+    transformation: WebhookDatasetTransformation().optional(),
+}));
+
+/** GitHub issue configuration. Present only when `actionType` is `GITHUB_ISSUE`. */
+export const WebhookGithubIssue = lazySchema(() => z.looseObject({
+    userIntegrationId: z.string().optional(),
+    repository: z.string().optional(),
+    title: z.string().optional(),
+    body: z.string().optional(),
+}));
+
 /** Status of the webhook dispatch indicating whether the HTTP request was successful. */
 export const WebhookDispatchStatus = lazySchema(() => z.enum(["ACTIVE", "SUCCEEDED", "FAILED"]).or(z.string()));
 
@@ -386,31 +442,64 @@ export const WebhookStats = lazySchema(() => z.looseObject({
     totalDispatches: z.int().optional(),
 }));
 
-export const WebhookListItem = lazySchema(() => z.looseObject({
+export const WebhookResource = lazySchema(() => z.looseObject({
     id: z.string(),
     createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     userId: z.string(),
     isAdHoc: z.boolean().nullable().optional(),
-    isApifyIntegration: z.boolean().optional(),
     isEnabled: z.boolean().optional(),
     actionType: z.string().optional(),
+    isApifyIntegration: z.boolean().nullable().optional(),
     shouldInterpolateStrings: z.boolean().nullable().optional(),
     eventTypes: z.array(WebhookEventType()),
     condition: WebhookCondition(),
     ignoreSslErrors: z.boolean(),
-    doNotRetry: z.boolean(),
-    requestUrl: z.url({ normalize: true }),
+    doNotRetry: z.boolean().nullable().optional(),
+    requestUrl: z.url({ normalize: true }).nullable().optional(),
+    payloadTemplate: z.string().nullable().optional(),
+    headersTemplate: z.string().nullable().optional(),
+    title: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
+    slackMessage: WebhookSlackMessage().optional(),
+    googleMail: WebhookGoogleMail().optional(),
+    googleDrive: WebhookGoogleDrive().optional(),
+    githubIssue: WebhookGithubIssue().optional(),
     lastDispatch: WebhookLastDispatch().nullable().optional(),
     stats: WebhookStats().nullable().optional(),
 }));
 
-export const ListOfWebhooks = lazySchema(() => PaginationResponse().extend({
-    items: z.array(WebhookListItem()),
+/** Paginated list of webhooks with all their fields, including `payloadTemplate`. */
+export const ListOfWebhookResources = lazySchema(() => PaginationResponse().extend({
+    items: z.array(WebhookResource()),
 }));
 
-export const ListOfWebhooksResponse = lazySchema(() => z.looseObject({
-    data: ListOfWebhooks(),
+export const ListOfWebhookResourcesResponse = lazySchema(() => z.looseObject({
+    data: ListOfWebhookResources(),
+}));
+
+/** An OAuth connection configured on an Actor. Secret credentials are never returned. */
+export const ActorOAuthConnection = lazySchema(() => z.looseObject({
+    _id: z.string(),
+    actorId: z.string(),
+    oAuthProviderType: z.enum(["CUSTOM", "GOOGLE"]).or(z.string()),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    credentials: z.looseObject({
+        clientId: z.string().optional(),
+        scope: z.string().optional(),
+        label: z.string().optional(),
+        imageUrl: z.string().optional(),
+    }).optional(),
+}));
+
+export const ListOfActorOAuthConnections = lazySchema(() => z.looseObject({
+    total: z.int(),
+    items: z.array(ActorOAuthConnection()),
+}));
+
+export const ListOfActorOAuthConnectionsResponse = lazySchema(() => z.looseObject({
+    data: ListOfActorOAuthConnections(),
 }));
 
 /** Status of an Actor job (run or build). */
@@ -422,6 +511,9 @@ export const BuildMeta = lazySchema(() => z.looseObject({
     origin: RunOrigin(),
     clientIp: z.string().optional(),
     userAgent: z.string().optional(),
+    githubActionsRunUrl: z.string().optional(),
+    actorRunId: z.string().optional(),
+    webhookDispatchId: z.string().optional(),
 }));
 
 export const BuildListItem = lazySchema(() => z.looseObject({
@@ -431,7 +523,7 @@ export const BuildListItem = lazySchema(() => z.looseObject({
     status: ActorJobStatus(),
     startedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     finishedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
-    usageTotalUsd: z.number(),
+    usageTotalUsd: z.number().optional(),
     buildNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])(\.[1-9][0-9]{0,4})$/),
     buildNumberInt: z.int().optional(),
     meta: BuildMeta().optional(),
@@ -457,6 +549,8 @@ export const BuildOptions = lazySchema(() => z.looseObject({
     betaPackages: z.boolean().nullable().optional(),
     memoryMbytes: z.int().nullable().optional(),
     diskMbytes: z.int().nullable().optional(),
+    tag: z.string().nullable().optional(),
+    debug: z.boolean().nullable().optional(),
 }));
 
 export const BuildUsage = lazySchema(() => z.looseObject({
@@ -513,6 +607,11 @@ export const Build = lazySchema(() => z.looseObject({
     usageUsd: BuildUsage().nullable().optional(),
     inputSchema: z.string().nullable().optional(),
     readme: z.string().nullable().optional(),
+    changelog: z.string().nullable().optional(),
+    exitCode: z.int().nullable().optional(),
+    gitCommitId: z.string().optional(),
+    gitBranchName: z.string().optional(),
+    createdByOrganizationMemberUserId: z.string().optional(),
     buildNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])(\.[1-9][0-9]{0,4})$/),
     imageDigest: z.string().nullable().optional(),
     actVersion: z.looseObject({
@@ -521,6 +620,8 @@ export const Build = lazySchema(() => z.looseObject({
         versionNumber: z.string().regex(/^([0-9]|[1-9][0-9])\.([0-9]|[1-9][0-9])$/).optional(),
         gitRepoUrl: z.string().optional(),
         sourceFiles: z.array(SourceCodeFile()).optional(),
+        gitHubGistUrl: z.string().optional(),
+        tarballUrl: z.string().optional(),
     }).optional(),
     actorDefinition: ActorDefinition().nullable().optional(),
 }));
@@ -536,6 +637,15 @@ export const RunMeta = lazySchema(() => z.looseObject({
     userAgent: z.string().nullable().optional(),
     scheduleId: z.string().nullable().optional(),
     scheduledAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
+    actorRunId: z.string().optional(),
+    webhookDispatchId: z.string().optional(),
+    scheduledAct2Id: z.string().optional(),
+    scheduledActorTaskId: z.string().optional(),
+}));
+
+/** Standby configuration of the run. Present only on Actor Standby runs. */
+export const RunStandby = lazySchema(() => z.looseObject({
+    deployment: z.string(),
 }));
 
 /** Standby configuration of the run. Present only on Actor Standby runs. */
@@ -559,6 +669,7 @@ export const RunListItem = lazySchema(() => z.looseObject({
     defaultKeyValueStoreId: z.string(),
     defaultDatasetId: z.string(),
     defaultRequestQueueId: z.string(),
+    standby: RunStandby().nullable().optional(),
 }));
 
 export const ListOfRuns = lazySchema(() => PaginationResponse().extend({
@@ -605,13 +716,28 @@ export const RunStats = lazySchema(() => z.looseObject({
     computeUnits: z.number().min(0).optional(),
 }));
 
+/** Cost of a single pay-per-event event type charged during the run. */
+export const RunEventUsage = lazySchema(() => z.looseObject({
+    eventTotalUsd: z.number(),
+    eventTitle: z.string(),
+}));
+
+/** Information about the third-party integration that created the resource. */
+export const IntegrationTracking = lazySchema(() => z.looseObject({
+    platform: z.string().optional(),
+    appId: z.string().optional(),
+    isAiTool: z.boolean().optional(),
+}));
+
 export const RunOptions = lazySchema(() => z.looseObject({
     build: z.string(),
     timeoutSecs: z.int().min(0),
     memoryMbytes: z.int().min(128).max(32768),
     diskMbytes: z.int().min(0),
+    restartOnError: z.boolean().nullable().optional(),
     maxItems: z.int().min(0).nullable().optional(),
     maxTotalChargeUsd: z.number().min(0).nullable().optional(),
+    isMaxTotalChargeUsdSetByUser: z.boolean().optional(),
 }));
 
 /** Defines the general access level for the resource. */
@@ -630,6 +756,7 @@ export const RunUsage = lazySchema(() => z.looseObject({
     DATA_TRANSFER_EXTERNAL_GBYTES: z.number().nullable().optional(),
     PROXY_RESIDENTIAL_TRANSFER_GBYTES: z.number().nullable().optional(),
     PROXY_SERPS: z.int().nullable().optional(),
+    PROXY_UNBLOCKER_UNITS: z.number().nullable().optional(),
 }));
 
 /** Resource usage costs in USD. All values are monetary amounts in US dollars. */
@@ -646,6 +773,7 @@ export const RunUsageUsd = lazySchema(() => z.looseObject({
     DATA_TRANSFER_EXTERNAL_GBYTES: z.number().nullable().optional(),
     PROXY_RESIDENTIAL_TRANSFER_GBYTES: z.number().nullable().optional(),
     PROXY_SERPS: z.number().nullable().optional(),
+    PROXY_UNBLOCKER_UNITS: z.number().nullable().optional(),
 }));
 
 /** Information about a metamorph event that occurred during the run. */
@@ -654,6 +782,7 @@ export const RunMetamorphEvent = lazySchema(() => z.looseObject({
     actorId: z.string(),
     buildId: z.string(),
     inputKey: z.string().nullable().optional(),
+    buildTags: z.array(z.string()).optional(),
 }));
 
 /** Represents an Actor run and its associated data. */
@@ -671,6 +800,14 @@ export const Run = lazySchema(() => z.looseObject({
     pricingInfo: ActorRunPricingInfo().optional(),
     stats: RunStats(),
     chargedEventCounts: z.record(z.string(), z.int()).optional(),
+    accountedChargedEventCounts: z.record(z.string(), z.int()).nullable().optional(),
+    eventUsage: z.record(z.string(), RunEventUsage()).optional(),
+    externalChargedTotalUsd: z.number().optional(),
+    standby: RunStandby().nullable().optional(),
+    integrationTracking: IntegrationTracking().optional(),
+    createdByOrganizationMemberUserId: z.string().optional(),
+    consoleUrl: z.url({ normalize: true }).optional(),
+    output: z.record(z.string(), z.url({ normalize: true })).optional(),
     options: RunOptions(),
     buildId: z.string(),
     exitCode: z.int().nullable().optional(),
@@ -715,6 +852,7 @@ export const DatasetStats = lazySchema(() => z.looseObject({
 export const DatasetResource = lazySchema(() => z.looseObject({
     id: z.string(),
     name: z.string().nullable().optional(),
+    title: z.string().nullable().optional(),
     userId: z.string(),
     createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
@@ -802,6 +940,7 @@ export const KeyValueStoreStats = lazySchema(() => z.looseObject({
 export const KeyValueStoreResource = lazySchema(() => z.looseObject({
     id: z.string(),
     name: z.string().nullable().optional(),
+    title: z.string().nullable().optional(),
     userId: z.string().nullable().optional(),
     username: z.string().nullable().optional(),
     createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
@@ -899,6 +1038,7 @@ export const RequestQueueStats = lazySchema(() => z.looseObject({
 export const RequestQueueResource = lazySchema(() => z.looseObject({
     id: QueueId(),
     name: z.string().nullable().optional(),
+    title: z.string().nullable().optional(),
     userId: QueueUserId(),
     actId: z.string().nullable().optional(),
     actRunId: z.string().nullable().optional(),
@@ -959,9 +1099,14 @@ export const RequestBase = lazySchema(() => z.looseObject({
 /** A unique identifier assigned to the request. */
 export const RequestId = lazySchema(() => z.string());
 
+/** The timestamp when the lock on this request expires. */
+export const LockExpiresAt = lazySchema(() => z.iso.datetime({ offset: true }).pipe(z.coerce.date()));
+
 /** A request stored in the request queue, including its metadata and processing state. */
 export const RequestResource = lazySchema(() => RequestBase().extend({
     id: RequestId().optional(),
+    lockExpiresAt: LockExpiresAt().optional(),
+    lockByClient: z.string().optional(),
 }).required({ id: true }));
 
 /** A paginated list of requests from the request queue. */
@@ -1087,9 +1232,6 @@ export const UpdateRequestResponse = lazySchema(() => z.looseObject({
     data: RequestRegistration(),
 }));
 
-/** The timestamp when the lock on this request expires. */
-export const LockExpiresAt = lazySchema(() => z.iso.datetime({ offset: true }).pipe(z.coerce.date()));
-
 /** Information about a request lock. */
 export const RequestLockInfo = lazySchema(() => z.looseObject({
     lockExpiresAt: LockExpiresAt(),
@@ -1153,6 +1295,7 @@ export const LockedRequestQueueHeadResponse = lazySchema(() => z.looseObject({
 
 export const TaskStats = lazySchema(() => z.looseObject({
     totalRuns: z.int().optional(),
+    lastRunStartedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
 }));
 
 export const TaskListItem = lazySchema(() => z.looseObject({
@@ -1161,11 +1304,13 @@ export const TaskListItem = lazySchema(() => z.looseObject({
     actId: z.string(),
     actName: z.string().nullable().optional(),
     name: z.string(),
+    title: z.string().nullable().optional(),
     username: z.string().nullable().optional(),
     actUsername: z.string().nullable().optional(),
     createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     stats: TaskStats().nullable().optional(),
+    isPublic: z.boolean().optional(),
 }));
 
 export const ListOfTasks = lazySchema(() => PaginationResponse().extend({
@@ -1183,6 +1328,8 @@ export const TaskOptions = lazySchema(() => z.looseObject({
     maxItems: z.int().nullable().optional(),
     maxTotalChargeUsd: z.number().nullable().optional(),
     restartOnError: z.boolean().nullable().optional(),
+    isMaxTotalChargeUsdSetByUser: z.boolean().nullable().optional(),
+    forcePermissionLevel: ActorPermissionLevel().nullable().optional(),
 }));
 
 /**
@@ -1203,6 +1350,12 @@ export const TaskPublicConfig = lazySchema(() => z.looseObject({
     inputSchemaFields: z.array(z.string()).nullable().optional(),
     datasetName: z.string().nullable().optional(),
     datasetView: z.string().nullable().optional(),
+    categorization: z.string().nullable().optional(),
+    highlightedFields: z.array(z.string()).nullable().optional(),
+    faq: z.array(z.looseObject({
+        question: z.string(),
+        answer: z.string(),
+    })).nullable().optional(),
 }));
 
 export const CreateTaskRequest = lazySchema(() => z.looseObject({
@@ -1221,6 +1374,7 @@ export const Task = lazySchema(() => z.looseObject({
     userId: z.string(),
     actId: z.string(),
     name: z.string(),
+    nameLowerCase: z.string().optional(),
     username: z.string().nullable().optional(),
     createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
@@ -1252,25 +1406,6 @@ export const UpdateTaskRequest = lazySchema(() => z.looseObject({
     isPublic: z.boolean().optional(),
 }));
 
-export const WebhookResource = lazySchema(() => z.looseObject({
-    id: z.string(),
-    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
-    modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
-    userId: z.string(),
-    isAdHoc: z.boolean().nullable().optional(),
-    shouldInterpolateStrings: z.boolean().nullable().optional(),
-    eventTypes: z.array(WebhookEventType()),
-    condition: WebhookCondition(),
-    ignoreSslErrors: z.boolean(),
-    doNotRetry: z.boolean().nullable().optional(),
-    requestUrl: z.url({ normalize: true }).nullable().optional(),
-    payloadTemplate: z.string().nullable().optional(),
-    headersTemplate: z.string().nullable().optional(),
-    description: z.string().nullable().optional(),
-    lastDispatch: WebhookLastDispatch().nullable().optional(),
-    stats: WebhookStats().nullable().optional(),
-}));
-
 export const UpdateRunRequest = lazySchema(() => z.looseObject({
     runId: z.string().optional(),
     statusMessage: z.string().optional(),
@@ -1284,11 +1419,60 @@ export const ChargeRunRequest = lazySchema(() => z.looseObject({
     requestId: z.string().optional(),
 }));
 
+/** An account a user connected through an Actor OAuth connection. */
+export const ActorOAuthAccount = lazySchema(() => z.looseObject({
+    _id: z.string(),
+    userId: z.string(),
+    connectionId: z.string(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    authorizedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
+    description: z.string().nullable().optional(),
+    data: z.record(z.string(), z.unknown()),
+}));
+
+export const ListOfActorOAuthAccounts = lazySchema(() => z.looseObject({
+    total: z.int(),
+    items: z.array(ActorOAuthAccount()),
+}));
+
+export const ListOfActorOAuthAccountsResponse = lazySchema(() => z.looseObject({
+    data: ListOfActorOAuthAccounts(),
+}));
+
+export const ActorOAuthAccountResponse = lazySchema(() => z.looseObject({
+    data: ActorOAuthAccount(),
+}));
+
 export const StorageOwnership = lazySchema(() => z.enum(["ownedByMe", "sharedWithMe"]).or(z.string()));
+
+export const KeyValueStoreListStats = lazySchema(() => z.looseObject({
+    readCount: z.int().optional(),
+    writeCount: z.int().optional(),
+    deleteCount: z.int().optional(),
+    listCount: z.int().optional(),
+    s3StorageBytes: z.int().optional(),
+}));
+
+export const KeyValueStoreListItem = lazySchema(() => z.looseObject({
+    id: z.string(),
+    name: z.string().nullable().optional(),
+    title: z.string().nullable().optional(),
+    userId: z.string().nullable().optional(),
+    username: z.string().nullable().optional(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    accessedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    actId: z.string().nullable().optional(),
+    actRunId: z.string().nullable().optional(),
+    schema: z.union([z.record(z.string(), z.unknown()), z.string()]).nullable().optional(),
+    generalAccess: GeneralAccess().nullable().optional(),
+    stats: KeyValueStoreListStats().optional(),
+}));
 
 export const ListOfKeyValueStores = lazySchema(() => PaginationResponse().extend({
     unnamed: z.boolean().optional(),
-    items: z.array(KeyValueStoreResource()),
+    items: z.array(KeyValueStoreListItem()),
 }));
 
 export const ListOfKeyValueStoresResponse = lazySchema(() => z.looseObject({
@@ -1297,7 +1481,7 @@ export const ListOfKeyValueStoresResponse = lazySchema(() => z.looseObject({
 
 export const DatasetListItem = lazySchema(() => z.looseObject({
     id: z.string(),
-    name: z.string(),
+    name: z.string().nullable().optional(),
     userId: z.string(),
     createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
     modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
@@ -1321,12 +1505,23 @@ export const ListOfDatasetsResponse = lazySchema(() => z.looseObject({
     data: ListOfDatasets(),
 }));
 
+/** Statistics about request queue operations and storage, as returned in request queue lists. */
+export const RequestQueueListStats = lazySchema(() => z.looseObject({
+    deleteCount: z.int().optional(),
+    headItemReadCount: z.int().optional(),
+    readCount: z.int().optional(),
+    writeCount: z.int().optional(),
+    s3StorageBytes: z.int().optional(),
+    dynamodbStorageBytes: z.int().optional(),
+}));
+
 /** A shortened request queue object for list responses. */
 export const RequestQueueListItem = lazySchema(() => z.looseObject({
     id: QueueId(),
-    name: z.string(),
+    name: z.string().nullable().optional(),
+    title: z.string().nullable().optional(),
     userId: QueueUserId(),
-    username: z.string(),
+    username: z.string().optional(),
     createdAt: QueueCreatedAt(),
     modifiedAt: QueueModifiedAt(),
     accessedAt: QueueAccessedAt(),
@@ -1338,7 +1533,7 @@ export const RequestQueueListItem = lazySchema(() => z.looseObject({
     actRunId: z.string().nullable().optional(),
     hadMultipleClients: HadMultipleClients(),
     generalAccess: GeneralAccess().nullable().optional(),
-    stats: RequestQueueStats().optional(),
+    stats: RequestQueueListStats().optional(),
 }));
 
 /** A paginated list of request queues. */
@@ -1350,6 +1545,40 @@ export const ListOfRequestQueues = lazySchema(() => PaginationResponse().extend(
 /** Response containing a list of request queues. */
 export const ListOfRequestQueuesResponse = lazySchema(() => z.looseObject({
     data: ListOfRequestQueues(),
+}));
+
+export const WebhookListItem = lazySchema(() => z.looseObject({
+    id: z.string(),
+    createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    modifiedAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
+    userId: z.string(),
+    isAdHoc: z.boolean().nullable().optional(),
+    isApifyIntegration: z.boolean().optional(),
+    isEnabled: z.boolean().optional(),
+    actionType: z.string().optional(),
+    shouldInterpolateStrings: z.boolean().nullable().optional(),
+    eventTypes: z.array(WebhookEventType()),
+    condition: WebhookCondition(),
+    ignoreSslErrors: z.boolean(),
+    doNotRetry: z.boolean(),
+    requestUrl: z.url({ normalize: true }).nullable().optional(),
+    headersTemplate: z.string().nullable().optional(),
+    title: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
+    slackMessage: WebhookSlackMessage().optional(),
+    googleMail: WebhookGoogleMail().optional(),
+    googleDrive: WebhookGoogleDrive().optional(),
+    githubIssue: WebhookGithubIssue().optional(),
+    lastDispatch: WebhookLastDispatch().nullable().optional(),
+    stats: WebhookStats().nullable().optional(),
+}));
+
+export const ListOfWebhooks = lazySchema(() => PaginationResponse().extend({
+    items: z.array(WebhookListItem()),
+}));
+
+export const ListOfWebhooksResponse = lazySchema(() => z.looseObject({
+    data: ListOfWebhooks(),
 }));
 
 export const CreateWebhookRequest = lazySchema(() => z.looseObject({
@@ -1386,10 +1615,16 @@ export const UpdateWebhookRequest = lazySchema(() => z.looseObject({
 
 /** A summary of the webhook that triggered this dispatch. */
 export const WebhookDispatchWebhookSummary = lazySchema(() => z.looseObject({
+    _id: z.string().optional(),
     actionType: z.string().optional(),
     condition: WebhookCondition().optional(),
     requestUrl: z.url({ normalize: true }).nullable().optional(),
     isAdHoc: z.boolean().optional(),
+    isApifyIntegration: z.boolean().nullable().optional(),
+    slackMessage: WebhookSlackMessage().optional(),
+    googleMail: WebhookGoogleMail().optional(),
+    googleDrive: WebhookGoogleDrive().optional(),
+    githubIssue: WebhookGithubIssue().optional(),
 }));
 
 export const WebhookDispatch = lazySchema(() => z.looseObject({
@@ -1412,6 +1647,7 @@ export const WebhookDispatch = lazySchema(() => z.looseObject({
         errorMessage: z.string().nullable().optional(),
         responseStatus: z.int().nullable().optional(),
         responseBody: z.string().nullable().optional(),
+        debugPostMessage: z.record(z.string(), z.unknown()).optional(),
     })).optional(),
 }));
 
@@ -1441,6 +1677,11 @@ export const ScheduleBase = lazySchema(() => z.looseObject({
     lastRunAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
 }));
 
+/** Notification settings for this schedule. */
+export const ScheduleNotifications = lazySchema(() => z.looseObject({
+    email: z.boolean().optional(),
+}));
+
 export const ScheduleListItemActionRunActor = lazySchema(() => z.looseObject({
     id: z.string(),
     type: z.literal("RUN_ACTOR"),
@@ -1456,6 +1697,9 @@ export const ScheduleListItemActionRunActorTask = lazySchema(() => z.looseObject
 export const ScheduleListItemAction = lazySchema(() => z.discriminatedUnion("type", [ScheduleListItemActionRunActor(), ScheduleListItemActionRunActorTask()]));
 
 export const ScheduleListItem = lazySchema(() => ScheduleBase().extend({
+    title: z.string().nullable().optional(),
+    notifications: ScheduleNotifications().optional(),
+    integrationTracking: IntegrationTracking().optional(),
     actions: z.array(ScheduleListItemAction()),
 }));
 
@@ -1465,11 +1709,6 @@ export const ListOfSchedules = lazySchema(() => PaginationResponse().extend({
 
 export const ListOfSchedulesResponse = lazySchema(() => z.looseObject({
     data: ListOfSchedules(),
-}));
-
-/** Notification settings for this schedule. */
-export const ScheduleNotifications = lazySchema(() => z.looseObject({
-    email: z.boolean().optional(),
 }));
 
 export const ScheduleActionRunInput = lazySchema(() => z.looseObject({
@@ -1504,6 +1743,15 @@ export const CreateOrUpdateScheduleRequest = lazySchema(() => z.looseObject({
     actions: z.array(ScheduleCreateAction()).nullable().optional(),
 }));
 
+/** State of the schedule editor in Apify Console. It's removed when an API update changes `cronExpression` or `timezone`. */
+export const ScheduleUiState = lazySchema(() => z.looseObject({
+    version: z.int().optional(),
+    data: z.looseObject({
+        cronExpression: z.string().optional(),
+        timezone: z.string().optional(),
+    }).optional(),
+}));
+
 export const ScheduleActionRunActor = lazySchema(() => z.looseObject({
     id: z.string(),
     type: z.literal("RUN_ACTOR"),
@@ -1525,6 +1773,8 @@ export const Schedule = lazySchema(() => ScheduleBase().extend({
     description: z.string().nullable().optional(),
     title: z.string().nullable().optional(),
     notifications: ScheduleNotifications().optional(),
+    uiState: ScheduleUiState().optional(),
+    integrationTracking: IntegrationTracking().optional(),
     actions: z.array(ScheduleAction()),
 }));
 
@@ -1555,6 +1805,13 @@ export const CurrentPricingInfo = lazySchema(() => z.looseObject({
     reasonForChange: z.string().nullable().optional(),
     minimalMaxTotalChargeUsd: z.number().nullable().optional(),
     pricingPerEvent: z.record(z.string(), z.unknown()).nullable().optional(),
+    pricePerUnitUsd: z.number().optional(),
+    trialMinutes: z.int().optional(),
+    unitName: z.string().optional(),
+    tieredPricing: z.record(z.string(), z.looseObject({
+        tieredPricePerUnitUsd: z.number().optional(),
+    })).optional(),
+    notifiedAboutRentalToPpePriceChangeAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).nullable().optional(),
 }));
 
 export const StoreActor = lazySchema(() => z.looseObject({
@@ -1577,6 +1834,13 @@ export const StoreActor = lazySchema(() => z.looseObject({
     bookmarkCount: z.int().optional(),
     badge: z.string().nullable().optional(),
     readmeSummary: z.string().optional(),
+    inputSchema: z.looseObject({
+        type: z.string(),
+        properties: z.record(z.string(), z.looseObject({
+            type: z.union([z.string(), z.array(z.string())]).optional(),
+        })),
+        required: z.array(z.string()).optional(),
+    }).optional(),
 }));
 
 export const ListOfStoreActors = lazySchema(() => PaginationResponse().extend({
@@ -1607,13 +1871,15 @@ export const UserPublicInfoResponse = lazySchema(() => z.looseObject({
 }));
 
 export const ProxyGroup = lazySchema(() => z.looseObject({
+    id: z.string().optional(),
     name: z.string(),
     description: z.string().nullable(),
-    availableCount: z.int(),
+    availableCount: z.int().optional(),
 }));
 
+/** Proxy access info. Omitted when the user has no access to Apify Proxy. */
 export const ProxyResource = lazySchema(() => z.looseObject({
-    password: z.string(),
+    password: z.string().nullable().optional(),
     groups: z.array(ProxyGroup()),
 }));
 
@@ -1650,6 +1916,17 @@ export const UserPlan = lazySchema(() => z.looseObject({
     maxScheduleCount: z.int().optional(),
     maxConcurrentActorRuns: z.int().optional(),
     planPricing: z.record(z.string(), z.unknown()).optional(),
+    planVersion: z.number().optional(),
+    legacyPlanId: z.string().optional(),
+    planTags: z.array(z.string()).optional(),
+    overageThresholdUsd: z.number().optional(),
+    maxMonthlyUnblockerUnits: z.int().optional(),
+    maxPublicActorTaskCount: z.int().optional(),
+    maxPublicActorTaskCountPerActor: z.int().optional(),
+    forceBillingInterval: z.string().optional(),
+    personalizedSupport: z.string().nullable().optional(),
+    monitoringLevel: z.enum(["STANDARD"]).or(z.string()).nullable().optional(),
+    isPayingCustomer: z.boolean().optional(),
 }));
 
 export const EffectivePlatformFeature = lazySchema(() => z.looseObject({
@@ -1677,12 +1954,13 @@ export const UserPrivateInfo = lazySchema(() => z.looseObject({
     id: z.string().optional(),
     username: z.string(),
     profile: UserProfile().optional(),
-    email: z.string().optional(),
+    email: z.string().nullable().optional(),
     proxy: ProxyResource().optional(),
     plan: UserPlan().optional(),
     effectivePlatformFeatures: EffectivePlatformFeatures().optional(),
     createdAt: z.iso.datetime({ offset: true }).pipe(z.coerce.date()).optional(),
     isPaying: z.boolean().optional(),
+    organizationOwnerUserId: z.string().nullable().optional(),
 }));
 
 export const UserPrivateInfoResponse = lazySchema(() => z.looseObject({
@@ -1747,6 +2025,7 @@ export const Limits = lazySchema(() => z.looseObject({
     maxTeamAccountSeatCount: z.int(),
     dataRetentionDays: z.int(),
     maxScheduleCount: z.int().optional(),
+    maxMonthlyUnblockerUnits: z.number().optional(),
 }));
 
 export const CurrentUsage = lazySchema(() => z.looseObject({
@@ -1761,6 +2040,7 @@ export const CurrentUsage = lazySchema(() => z.looseObject({
     activeActorJobCount: z.int(),
     teamAccountSeatCount: z.int(),
     scheduleCount: z.int().optional(),
+    monthlyUnblockerUnits: z.number().optional(),
 }));
 
 export const AccountLimits = lazySchema(() => z.looseObject({
@@ -1776,6 +2056,61 @@ export const AccountLimitsResponse = lazySchema(() => z.looseObject({
 export const UpdateLimitsRequest = lazySchema(() => z.looseObject({
     maxMonthlyUsageUsd: z.number().optional(),
     dataRetentionDays: z.int().optional(),
+}));
+
+/** A place the user can create a repository in, such as their own account or an organization, group or workspace they can access. */
+export const GitProviderWorkspace = lazySchema(() => z.looseObject({
+    id: z.string(),
+    label: z.string(),
+}));
+
+/** A connected git provider account the user can create repositories through. */
+export const GitProviderIntegration = lazySchema(() => z.looseObject({
+    id: z.string(),
+    provider: z.enum(["github", "gitlab", "bitbucket"]).or(z.string()),
+    workspaces: z.array(GitProviderWorkspace()),
+    addWorkspaceUrl: z.string().optional(),
+}));
+
+export const ListOfGitProviderIntegrationsResponse = lazySchema(() => z.looseObject({
+    data: z.array(GitProviderIntegration()),
+}));
+
+/** A file to commit into the new repository. */
+export const GitRepoFile = lazySchema(() => z.looseObject({
+    path: z.string(),
+    content: z.string(),
+    encoding: z.enum(["utf-8", "base64"]).or(z.string()),
+}));
+
+export const CreateGitRepoRequest = lazySchema(() => z.looseObject({
+    workspace: z.string(),
+    repoName: z.string(),
+    isPrivate: z.boolean(),
+    files: z.array(GitRepoFile()).optional(),
+    templateArchiveUrl: z.string().optional(),
+}));
+
+/** URLs of a newly created repository. */
+export const GitRepo = lazySchema(() => z.looseObject({
+    sshUrl: z.string(),
+    httpsUrl: z.string(),
+    htmlUrl: z.string(),
+}));
+
+export const GitRepoResponse = lazySchema(() => z.looseObject({
+    data: GitRepo(),
+}));
+
+export const RegisterDeploymentKeyRequest = lazySchema(() => z.looseObject({
+    actorId: z.string(),
+    repoName: z.string(),
+}));
+
+export const RegisterDeploymentKeyResponse = lazySchema(() => z.looseObject({
+    data: z.looseObject({
+        repoName: z.string(),
+    }),
 }));
 
 export const BrowserInfoResponse = lazySchema(() => z.looseObject({

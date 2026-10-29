@@ -8,7 +8,7 @@ export const schedules = express.Router();
 const ROUTES: MockServerRoute[] = [
     { id: 'create-schedule', method: 'POST', path: '/', fixture: fixtures.schedule },
     { id: 'list-schedules', method: 'GET', path: '/', fixture: fixtures.scheduleList },
-    { id: 'get-schedule', method: 'GET', path: '/:scheduleId', fixture: fixtures.schedule },
+    { id: 'get-schedule', method: 'GET', path: '/:scheduleId', type: 'responseJsonMock', fixture: fixtures.schedule },
     { id: 'update-schedule', method: 'PUT', path: '/:scheduleId', fixture: fixtures.schedule },
     { id: 'delete-schedule', method: 'DELETE', path: '/:scheduleId' },
     { id: 'get-log', method: 'GET', path: '/:scheduleId/log', fixture: [fixtures.scheduleInvoked] },
