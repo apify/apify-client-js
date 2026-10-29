@@ -1,9 +1,11 @@
+import type { Readable } from 'node:stream';
+
 import { z } from 'zod';
 
 import { ApifyClientError } from '../apify_client_error.js';
 import type { ApiClientSubResourceOptions } from '../base/api_client.js';
 import { ResourceClient } from '../base/resource_client.js';
-import type { ApifyResponse, HttpMethod } from '../http_clients/index.js';
+import type { ApifyResponse, ApifyResponseType, HttpMethod } from '../http_clients/index.js';
 import type { HttpCompressor } from '../http_compressors/base.js';
 import type { HttpCompressionAlgorithm } from '../http_compressors/resolve.js';
 import { compressionSchema, resolveCompressor } from '../http_compressors/resolve.js';
@@ -11,6 +13,7 @@ import type { ActorResource } from '../models.js';
 import type { TimeoutOptions } from '../timeouts.js';
 import * as schemas from '../schemas.js';
 import { timeoutOptionsSchema, timeoutOptionsShape } from '../timeouts.js';
+import { runtime } from '#runtime';
 import { parseArgument, parseResponse } from '../utils.js';
 import { BuildClient } from './build.js';
 import { BuildCollectionClient } from './build_collection.js';
@@ -27,6 +30,7 @@ const requestOptionsSchema = z.strictObject({
     headers: z.record(z.string(), z.string()).optional(),
     data: z.unknown().optional(),
     compression: compressionSchema.optional(),
+    responseType: z.enum(['parsed', 'buffer', 'stream']).optional(),
     ...timeoutOptionsShape,
 });
 
@@ -140,8 +144,8 @@ export class ActorServerClient extends ResourceClient {
      *
      * The request goes to the URL returned by {@link getUrl} and carries the client's token in the
      * `X-Apify-Authorization` header, which the platform consumes, so it never reaches the Actor's code. Headers you
-     * pass, `Authorization` included, reach the Actor's server as they are. The first request to an idle Actor waits for the platform to
-     * start a server run, which is why the timeout defaults to `'long'`.
+     * pass, `Authorization` included, reach the Actor's server as they are. The first request to an idle Actor waits
+     * for the platform to start a server run, which is why the timeout defaults to `'long'`.
      *
      * The method resolves to any response of the server, error statuses included. A rate-limit (429) or Service
      * Unavailable (503) response is retried with the client's retry settings, and the last one is returned once the
@@ -160,13 +164,34 @@ export class ActorServerClient extends ResourceClient {
      * @param options.compression - Compression algorithm for the request body, as a name or an {@link HttpCompressor}.
      * The body is compressed under the same conditions as for API calls. Set it only if the Actor's server decodes
      * the resulting `Content-Encoding`.
-     * @param options.timeoutSecs - Timeout for the HTTP request. Default is `'long'`.
-     * @returns The response of the Actor's server, with the body parsed by its content type
+     * @param options.responseType - How to return the response body: `'parsed'` by its content type, `'buffer'` as
+     * raw bytes, or `'stream'` as a Readable stream with the body unread. A stream holds its connection open until
+     * you consume it to the end or destroy it. Node.js only. Default is `'parsed'`.
+     * @param options.timeoutSecs - Timeout for the HTTP request. Default is `'long'`. With `'stream'`, it bounds the
+     * wait for the server to start responding.
+     * @returns The response of the Actor's server, with the body in the form `responseType` asks for
      * @throws {ApifyClientError} When the Actor is not a Server Actor.
      * @throws {ApifyApiError} When the Actor does not exist.
      * @see https://docs.apify.com/platform/actors/running/standby
      */
-    async request<T = any>(path = '/', options: ActorServerRequestOptions = {}): Promise<ApifyResponse<T>> {
+    async request<T = any>(
+        path?: string,
+        options?: ActorServerRequestOptions & { responseType?: 'parsed' },
+    ): Promise<ApifyResponse<T>>;
+
+    async request(
+        path: string,
+        options: ActorServerRequestOptions & { responseType: 'buffer' },
+    ): Promise<ApifyResponse<Buffer>>;
+
+    async request(
+        path: string,
+        options: ActorServerRequestOptions & { responseType: 'stream' },
+    ): Promise<ApifyResponse<Readable>>;
+
+    async request(path?: string, options?: ActorServerRequestOptions): Promise<ApifyResponse>;
+
+    async request(path = '/', options: ActorServerRequestOptions = {}): Promise<ApifyResponse> {
         parseArgument(path, z.string());
         const {
             method = 'GET',
@@ -174,12 +199,17 @@ export class ActorServerClient extends ResourceClient {
             headers,
             data,
             compression,
+            responseType,
             timeoutSecs = 'long',
             signal,
         } = parseArgument(options, requestOptionsSchema, 'ActorServerRequestOptions');
 
+        if (responseType === 'stream' && !runtime.isNode) {
+            throw new Error("The 'stream' response type can only be used in Node.js environment.");
+        }
+
         const serverUrl = await this.getUrl({ signal });
-        return this.httpClient.call<T>({
+        return this.httpClient.call({
             url: `${serverUrl.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`,
             method,
             params,
@@ -189,6 +219,7 @@ export class ActorServerClient extends ResourceClient {
             authorizationHeader: 'X-Apify-Authorization',
             throwOnErrorStatus: false,
             retryStatusCodes: SERVER_RETRY_STATUS_CODES,
+            responseType,
             timeoutSecs,
             signal,
         });
@@ -236,4 +267,10 @@ export interface ActorServerRequestOptions extends TimeoutOptions {
      * uncompressed when it's not set, since the Actor's server may not decode a compressed body.
      */
     compression?: HttpCompressionAlgorithm | HttpCompressor;
+    /**
+     * How to return the response body: `'parsed'` by its content type, `'buffer'` as raw bytes, or `'stream'` as a
+     * Readable stream with the body unread. Node.js only.
+     * @default 'parsed'
+     */
+    responseType?: ApifyResponseType;
 }

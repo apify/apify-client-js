@@ -1,5 +1,6 @@
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
+import { Readable } from 'node:stream';
 import { gunzipSync, gzipSync } from 'node:zlib';
 
 import {
@@ -242,6 +243,30 @@ describe('ActorServerClient', () => {
         const [request] = serverRequests();
         expect(request.headers['content-encoding']).toBe('gzip');
         expect(request.body).toEqual(body);
+    });
+
+    test('request() returns the body as raw bytes with the buffer response type', async () => {
+        const response = await client.actor(ACTOR_ID).server().request('/', { responseType: 'buffer' });
+
+        expect(Buffer.isBuffer(response.data)).toBe(true);
+        expect(JSON.parse(response.data.toString())).toEqual({ ok: true });
+    });
+
+    test('request() returns the body unread with the stream response type', async () => {
+        const response = await client.actor(ACTOR_ID).server().request('/', { responseType: 'stream' });
+
+        expect(response.data).toBeInstanceOf(Readable);
+        expect(JSON.parse(Buffer.concat(await response.data.toArray()).toString())).toEqual({ ok: true });
+    });
+
+    test('request() rejects an unknown response type without sending a request', async () => {
+        const request = client
+            .actor(ACTOR_ID)
+            .server()
+            .request('/', { responseType: 'text' as 'buffer' });
+
+        await expect(request).rejects.toThrow(ArgumentValidationError);
+        expect(received).toHaveLength(0);
     });
 
     test('request() throws NotFoundError for an Actor that does not exist', async () => {

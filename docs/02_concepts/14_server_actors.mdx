@@ -25,7 +25,7 @@ To work with a Server Actor, get its server client with <ApiLink to="class/Actor
     {ServerExample}
 </CodeBlock>
 
-The method resolves to the server's response, with the body parsed by its content type in `data`. To find out which endpoints an Actor serves, see its page in [Apify Store](https://apify.com/store), its README, or its OpenAPI specification. For details, see [Server URL and OpenAPI specification](#server-url-and-openapi-specification).
+The method resolves to the server's response, with the body parsed by its content type in `data`. To get the body as raw bytes, pass `responseType: 'buffer'`. In Node.js, pass `responseType: 'stream'` to get it as a Readable stream. To find out which endpoints an Actor serves, see its page in [Apify Store](https://apify.com/store), its README, or its OpenAPI specification. For details, see [Server URL and OpenAPI specification](#server-url-and-openapi-specification).
 
 ## How the request is sent
 

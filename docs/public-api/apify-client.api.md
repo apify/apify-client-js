@@ -235,7 +235,19 @@ export class ActorServerClient extends ResourceClient {
     constructor(options: ApiClientSubResourceOptions);
     getOpenApiSpec(options?: TimeoutOptions): Promise<Record<string, unknown> | undefined>;
     getUrl(options?: TimeoutOptions): Promise<string>;
-    request<T = any>(path?: string, options?: ActorServerRequestOptions): Promise<ApifyResponse<T>>;
+    request<T = any>(path?: string, options?: ActorServerRequestOptions & {
+        responseType?: 'parsed';
+    }): Promise<ApifyResponse<T>>;
+    // (undocumented)
+    request(path: string, options: ActorServerRequestOptions & {
+        responseType: 'buffer';
+    }): Promise<ApifyResponse<Buffer>>;
+    // (undocumented)
+    request(path: string, options: ActorServerRequestOptions & {
+        responseType: 'stream';
+    }): Promise<ApifyResponse<Readable>>;
+    // (undocumented)
+    request(path?: string, options?: ActorServerRequestOptions): Promise<ApifyResponse>;
 }
 
 // @public
@@ -245,6 +257,7 @@ export interface ActorServerRequestOptions extends TimeoutOptions {
     headers?: Record<string, string>;
     method?: HttpMethod;
     params?: Record<string, unknown>;
+    responseType?: ApifyResponseType;
 }
 
 // @public
