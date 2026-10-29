@@ -259,6 +259,16 @@ describe('ActorServerClient', () => {
         expect(JSON.parse(Buffer.concat(await response.data.toArray()).toString())).toEqual({ ok: true });
     });
 
+    test('request() rejects an unknown method without sending a request', async () => {
+        const request = client
+            .actor(ACTOR_ID)
+            .server()
+            .request('/', { method: 'get' as 'GET' });
+
+        await expect(request).rejects.toThrow(ArgumentValidationError);
+        expect(received).toHaveLength(0);
+    });
+
     test('request() rejects an unknown response type without sending a request', async () => {
         const request = client
             .actor(ACTOR_ID)

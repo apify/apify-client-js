@@ -25,7 +25,9 @@ import { BuildCollectionClient } from './build_collection.js';
 const SERVER_RETRY_STATUS_CODES = [429, 503];
 
 const requestOptionsSchema = z.strictObject({
-    method: z.string().min(1).optional(),
+    method: z
+        .enum(['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'] satisfies HttpMethod[])
+        .optional(),
     params: z.record(z.string(), z.unknown()).optional(),
     headers: z.record(z.string(), z.string()).optional(),
     data: z.unknown().optional(),
