@@ -136,7 +136,19 @@ describe('ActorServerClient', () => {
         expect(request.path).toBe(`${SERVER_PREFIX}/search`);
         expect(request.query).toEqual({ q: 'apify' });
         expect(JSON.parse(request.body.toString())).toEqual({ limit: 5 });
-        expect(request.headers.authorization).toBe('Bearer test-token');
+        expect(request.headers['x-apify-authorization']).toBe('Bearer test-token');
+        expect(request.headers.authorization).toBeUndefined();
+    });
+
+    test('request() sends an Authorization header passed by the caller as it is', async () => {
+        await client
+            .actor(ACTOR_ID)
+            .server()
+            .request('/', { headers: { Authorization: 'Bearer actor-token' } });
+
+        const [request] = serverRequests();
+        expect(request.headers.authorization).toBe('Bearer actor-token');
+        expect(request.headers['x-apify-authorization']).toBe('Bearer test-token');
     });
 
     test('request() reuses the server URL fetched by the first call on the same Actor client', async () => {

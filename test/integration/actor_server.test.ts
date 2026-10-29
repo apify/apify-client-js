@@ -91,5 +91,11 @@ test('the server client returns the URL and OpenAPI specification and sends requ
     expect(response.data.url).toBe('/echo?q=apify');
     expect(JSON.parse(response.data.body)).toEqual({ limit: 5 });
     // The platform consumes the client's token, so it never reaches the Actor's code.
+    expect(response.data.headers).not.toHaveProperty('x-apify-authorization');
     expect(response.data.headers).not.toHaveProperty('authorization');
+
+    const withOwnAuthorization = await actorServerClient.request('/echo', {
+        headers: { Authorization: 'Bearer actor-token' },
+    });
+    expect(withOwnAuthorization.data.headers.authorization).toBe('Bearer actor-token');
 }, 360_000);

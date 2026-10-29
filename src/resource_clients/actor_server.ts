@@ -132,8 +132,9 @@ export class ActorServerClient extends ResourceClient {
     /**
      * Sends an HTTP request to the Actor's server.
      *
-     * The request goes to the URL returned by {@link getUrl} and carries the client's token, which the platform
-     * consumes, so it never reaches the Actor's code. The first request to an idle Actor waits for the platform to
+     * The request goes to the URL returned by {@link getUrl} and carries the client's token in the
+     * `X-Apify-Authorization` header, which the platform consumes, so it never reaches the Actor's code. Headers you
+     * pass, `Authorization` included, reach the Actor's server as they are. The first request to an idle Actor waits for the platform to
      * start a server run, which is why the timeout defaults to `'long'`.
      *
      * A server error or a rate-limit response is retried like an API call, so the server may receive the same request
@@ -178,6 +179,7 @@ export class ActorServerClient extends ResourceClient {
             headers,
             data,
             compression: compression === undefined ? false : resolveCompressor(compression),
+            authorizationHeader: 'X-Apify-Authorization',
             timeoutSecs,
             signal,
         });
