@@ -412,7 +412,9 @@ export abstract class HttpClient {
      * propagate unwrapped: {@link call} classifies them through {@link isRetryableTransportError} and
      * {@link isTimeoutError}. Return error responses as they are too, the pipeline turns them into
      * {@link ApifyApiError} and decides whether to retry. Reject when the connection drops before the body is
-     * complete: the pipeline takes a returned body as whole and does not retry one that fails to parse.
+     * complete: the pipeline takes a returned body as whole and does not retry one that fails to parse. A transport
+     * that follows redirects has to drop the `X-Apify-Authorization` header, which carries the token of an Actor
+     * server request, on a redirect to another origin.
      *
      * @param request - The request to send, with the headers merged, the body serialized and the query encoded.
      * @returns The response, with the body unread when `request.stream` is set and as raw bytes otherwise.

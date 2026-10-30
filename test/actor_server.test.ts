@@ -157,6 +157,31 @@ describe('ActorServerClient', () => {
         expect(request.headers['x-apify-authorization']).toBe('Bearer test-token');
     });
 
+    test('request() drops the token when the server redirects to another origin', async () => {
+        let redirected: http.IncomingHttpHeaders | undefined;
+        const otherServer = http.createServer((req, res) => {
+            redirected = req.headers;
+            res.end();
+        });
+        await new Promise<void>((done) => otherServer.listen(0, '127.0.0.1', done));
+        const redirectServer = http.createServer((_req, res) => {
+            res.writeHead(302, { location: `http://127.0.0.1:${(otherServer.address() as AddressInfo).port}/` });
+            res.end();
+        });
+        await new Promise<void>((done) => redirectServer.listen(0, '127.0.0.1', done));
+        actor = serverActor({ standbyUrl: `http://127.0.0.1:${(redirectServer.address() as AddressInfo).port}` });
+
+        try {
+            await client.actor(ACTOR_ID).server().request('/');
+        } finally {
+            await new Promise((done) => otherServer.close(done));
+            await new Promise((done) => redirectServer.close(done));
+        }
+
+        expect(redirected).toBeDefined();
+        expect(redirected!['x-apify-authorization']).toBeUndefined();
+    });
+
     test('request() reuses the server URL fetched by the first call on the same Actor client', async () => {
         const actorClient = client.actor(ACTOR_ID);
 
