@@ -113,7 +113,7 @@
         "compression": "^1.8.2",
         "esbuild": "0.28.2",
         "express": "^5.2.1",
-        "oxfmt": "0.73.0",
+        "oxfmt": "0.75.0",
         "oxlint": "1.90.0",
         "oxlint-tsgolint": "7.0.2005",
         "puppeteer": "^25.12.0",
