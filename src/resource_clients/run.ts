@@ -752,6 +752,8 @@ export interface RunWaitForFinishOptions extends TimeoutOptions {
  * Options for iterating over the items of a run's default dataset while the run is still producing them.
  */
 export interface RunIterateDatasetItemsOptions extends PaginationOptions, TimeoutOptions {
+    /** Maximum number of dataset rows requested per API call. Default is 1000. */
+    chunkSize?: number;
     /** If `true`, returns only non-empty items and skips hidden fields. */
     clean?: boolean;
     /** Field names to include in the items. Omits all other fields. */

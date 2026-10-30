@@ -983,7 +983,8 @@ export interface RequestQueueClientListRequestsOptions extends TimeoutOptions {
     /**
      * Maximum number of requests returned in one API response. When the call is iterated with `for await`, the iterator
      * fetches requests in chunks of this size and yields them one by one, until `limit` is reached or the RQ is
-     * exhausted. Awaiting the call returns only the first chunk.
+     * exhausted. Awaiting the call returns only the first chunk. Without it, the API returns up to 10,000 requests per
+     * response.
      */
     chunkSize?: number;
     /**

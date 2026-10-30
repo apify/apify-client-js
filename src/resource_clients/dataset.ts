@@ -198,6 +198,7 @@ export class DatasetClient<
      * @param options - Options for listing items
      * @param options.limit - Maximum number of items to return. Default is all items.
      * @param options.chunkSize - Maximum number of items returned in one API response. Relevant in the context of asyncIterator.
+     *   Without it, iteration loads the whole dataset, or all `limit` items, in one response.
      * @param options.offset - Number of items to skip from the beginning. Default is 0.
      * @param options.desc - If `true`, items are returned in descending order (newest first). Default is `false`.
      * @param options.fields - Array of field names to include in the results. Omits all other fields.
