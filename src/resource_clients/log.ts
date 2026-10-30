@@ -295,8 +295,8 @@ export class StreamedLog {
                 }
                 let logStream: Readable | undefined;
                 try {
-                    // A run can go quiet for longer than any tier, and a stream timeout fires on idle time, so only
-                    // `signal` ends the stream.
+                    // The stream lasts as long as the run, which can outlast any tier even while it logs nothing, so
+                    // the stream runs without a timeout and `signal` stops it.
                     logStream = await this.#logClient.stream({ raw: true, timeoutSecs: 'noTimeout', signal });
                 } catch (err) {
                     // The stop grace period ended while the stream was connecting, so read the log in one request.

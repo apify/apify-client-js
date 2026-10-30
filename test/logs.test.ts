@@ -244,6 +244,7 @@ test('StreamedLog keeps redirecting a log that stays quiet for longer than the l
         baseUrl: `http://localhost:${(server.address() as AddressInfo).port}`,
         maxRetries: 0,
         timeoutLongSecs: 1,
+        timeoutMaxSecs: 1,
         ...DEFAULT_OPTIONS,
     });
     const toLog = new Log();
