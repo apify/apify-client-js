@@ -1,3 +1,4 @@
+import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { Readable } from 'node:stream';
 
@@ -228,5 +229,38 @@ test('StreamedLog reports a failing one-shot log read and still stops', async ()
         expect(warning).toHaveBeenCalledWith('Log redirection stopped due to error', expect.any(Error));
     } finally {
         warning.mockRestore();
+    }
+});
+
+test('StreamedLog keeps redirecting a log that stays quiet for longer than the long timeout tier', async () => {
+    const lines = [0, 1].map((i) => `2025-01-01T00:00:0${i}.000Z line ${i}\n`);
+    const server = createServer((_req, res) => {
+        res.writeHead(200, { 'content-type': 'text/plain' });
+        res.write(lines[0]);
+        setTimeout(() => res.end(lines[1]), 2_000);
+    });
+    await new Promise<void>((resolve) => server.listen(0, resolve));
+    const client = new ApifyClient({
+        baseUrl: `http://localhost:${(server.address() as AddressInfo).port}`,
+        maxRetries: 0,
+        timeoutLongSecs: 1,
+        timeoutMaxSecs: 1,
+        ...DEFAULT_OPTIONS,
+    });
+    const toLog = new Log();
+    const info = vi.spyOn(toLog, 'info').mockImplementation(() => {});
+    const warning = vi.spyOn(log, 'warning').mockImplementation(() => {});
+
+    try {
+        const streamedLog = new StreamedLog({ toLog, logClient: client.run('run-id').log() });
+        streamedLog.start();
+        await vi.waitFor(() => expect(info).toHaveBeenCalledTimes(2), { timeout: 5_000 });
+        await streamedLog.stop();
+
+        expect(info.mock.calls).toEqual(lines.map((line) => [line.trim()]));
+        expect(warning).not.toHaveBeenCalled();
+    } finally {
+        warning.mockRestore();
+        await new Promise<void>((resolve) => server.close(() => resolve()));
     }
 });
