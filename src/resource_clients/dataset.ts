@@ -22,7 +22,6 @@ import {
     paginationOptionsShape,
     parseArgument,
     parseResponse,
-    SCANNED_COUNT,
 } from '../utils.js';
 
 /**
@@ -496,23 +495,18 @@ export class DatasetClient<
 
     #createPaginationList(response: ApifyResponse, userProvidedDesc: boolean): PaginatedList<Data> {
         const descHeader = response.headers['x-apify-pagination-desc'];
-        const page: PaginatedList<Data> = {
+        return {
             items: response.data,
             total: Number(response.headers['x-apify-pagination-total']),
             offset: Number(response.headers['x-apify-pagination-offset']),
             // `x-apify-pagination-count` reports the rows scanned, which filters and `unwind` can leave above or below
-            // the items returned.
-            count: response.data.length,
+            // the items returned. It is derived from the dataset's item count, which lags a fresh push, so it can also
+            // fall below the items returned on an unfiltered page.
+            count: Math.max(Number(response.headers['x-apify-pagination-count'] ?? 0), response.data.length),
             limit: Number(response.headers['x-apify-pagination-limit']), // API returns 999999999999 when no limit is used
             // TODO: Replace this once https://github.com/apify/apify-core/issues/3503 is solved
             desc: typeof descHeader === 'string' ? JSON.parse(descHeader) : userProvidedDesc,
         };
-
-        const scannedCount = response.headers['x-apify-pagination-count'];
-        if (scannedCount === undefined) return page;
-
-        // The offset iterator paginates by the scanned number, so it travels with the page outside its public shape.
-        return Object.defineProperty(page, SCANNED_COUNT, { value: Number(scannedCount) });
     }
 }
 
