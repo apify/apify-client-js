@@ -6,19 +6,25 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi 
 
 import type * as utils from '../src/utils.js';
 
-// The server answers with bodies shaped for the polling mechanics, not for the API's schemas.
+const { sleeps } = vi.hoisted(() => ({ sleeps: [] as number[] }));
+
+// The server answers with bodies shaped for the polling mechanics, not for the API's schemas. The pauses between polls
+// resolve at once and leave the clock alone.
 vi.mock('../src/utils', async (importOriginal) => {
     const actual = await importOriginal<typeof utils>();
     return {
         ...actual,
         parseResponse: (response: { data: { data: unknown } }) => response.data.data,
+        sleep: async (millis: number) => {
+            sleeps.push(millis);
+        },
     };
 });
 
 /** What the server answers each job lookup with: a 404, or a job in the given status. */
 type Answer = 404 | 'RUNNING' | 'SUCCEEDED';
 
-describe('waitForFinish() on a job that returns 404', () => {
+describe('waitForFinish() polling', () => {
     let server: http.Server;
     let client: ApifyClient;
     let received: number;
@@ -57,6 +63,7 @@ describe('waitForFinish() on a job that returns 404', () => {
 
     beforeEach(() => {
         received = 0;
+        sleeps.length = 0;
         clockOffsetMillis = 0;
         const startMillis = Date.now();
         vi.spyOn(Date, 'now').mockImplementation(() => startMillis + clockOffsetMillis);
@@ -75,6 +82,18 @@ describe('waitForFinish() on a job that returns 404', () => {
 
         await expect(waitForFinish(client)).rejects.toThrow(NotFoundError);
         expect(received).toBe(4);
+        expect(sleeps).toEqual([250, 250, 250]);
+    });
+
+    test.each([
+        { name: 'run', waitForFinish: (c: ApifyClient) => c.run('job-id').waitForFinish() },
+        { name: 'build', waitForFinish: (c: ApifyClient) => c.build('job-id').waitForFinish() },
+    ])('of a $name pauses between polls of a job that is still running', async ({ waitForFinish }) => {
+        answers = ['RUNNING', 'RUNNING', 'SUCCEEDED'];
+
+        await expect(waitForFinish(client)).resolves.toMatchObject({ status: 'SUCCEEDED' });
+        expect(received).toBe(3);
+        expect(sleeps).toEqual([250, 250]);
     });
 
     test('a successful lookup resets the grace window for a missing job', async () => {
