@@ -15,9 +15,9 @@ vi.mock('../src/utils', async (importOriginal) => {
     return {
         ...actual,
         parseResponse: (response: { data: { data: unknown } }) => response.data.data,
-        sleep: vi.fn(async (millis: number) => {
+        sleep: async (millis: number) => {
             sleeps.push(millis);
-        }),
+        },
     };
 });
 
