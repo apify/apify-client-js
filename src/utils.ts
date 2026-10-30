@@ -350,6 +350,10 @@ export interface PaginationOptions {
      * limit is reached or once all items from API have been fetched.
      *
      * Chunk size is usually limited by API. Minimum of those two limits will be used.
+     *
+     * Without `chunkSize`, each request carries no page size and the API's default page size applies. For collection
+     * lists that is 1000 items, but dataset items have no default limit, so iterating `DatasetClient.listItems()`
+     * without `chunkSize` loads the whole dataset in one response. Pass `chunkSize` to iterate a large dataset.
      * @since Added in 2.21.0
      * */
     chunkSize?: number;
