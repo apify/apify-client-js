@@ -470,11 +470,13 @@ export abstract class HttpClient {
      * Prepares the headers and the body of a request.
      *
      * Merges the client's default headers with the per-request ones, header names compared case-insensitively and
-     * the per-request values winning. Serializes an object body to JSON, setting `Content-Type: application/json`
+     * the per-request values winning, after moving the default `Authorization` header to the header named in
+     * `config.authorizationHeader`. Serializes an object body to JSON, setting `Content-Type: application/json`
      * unless the caller supplied a content type. Runs the body through {@link httpCompressor}, or the compressor in
      * `config.compression`, unless `config.compression` is `false`, a `Content-Encoding` header is already set, the
-     * body is too small, or its content type says the payload is already compressed. A caller-supplied `Content-Encoding` is forwarded as it is, which is how a pre-encoded
-     * body is uploaded, and `Content-Encoding: identity` opts a single request out of compression.
+     * body is too small, or its content type says the payload is already compressed. A caller-supplied
+     * `Content-Encoding` is forwarded as it is, which is how a pre-encoded body is uploaded, and
+     * `Content-Encoding: identity` opts a single request out of compression.
      */
     protected async prepareRequest(
         config: ApifyRequestConfig,

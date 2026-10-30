@@ -70,8 +70,8 @@ export class ActorServerClient extends ResourceClient {
      * Returns the URL of the Actor's server.
      *
      * The URL is the Actor's `standbyUrl`, fetched from the API by the first call of this method or
-     * {@link getOpenApiSpec} and reused by later calls on this client. Use it to call the server with another HTTP client, for example one generated from the server's OpenAPI
-     * specification.
+     * {@link getOpenApiSpec} and reused by later calls on this client. Use it to call the server with another HTTP
+     * client, for example one generated from the server's OpenAPI specification.
      *
      * @param options - Request options
      * @param options.timeoutSecs - Timeout for the API request. Default is `'short'`.
@@ -174,7 +174,7 @@ export class ActorServerClient extends ResourceClient {
      * wait for the server to start responding.
      * @returns The response of the Actor's server, with the body in the form `responseType` asks for
      * @throws {ApifyClientError} When the Actor is not a Server Actor.
-     * @throws {ApifyApiError} When the Actor does not exist.
+     * @throws {NotFoundError} When the Actor does not exist.
      * @see https://docs.apify.com/platform/actors/running/standby
      */
     async request<T = any>(
