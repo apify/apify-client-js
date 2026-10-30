@@ -98,6 +98,8 @@ describe('ActorServerClient', () => {
                     json(200, { data: { ...fixtures.build, id, actorDefinition } });
                 } else if (url.pathname === `${SERVER_PREFIX}/flaky` && flakyStatuses.length > 0) {
                     json(flakyStatuses.shift()!, { error: 'flaky' });
+                } else if (url.pathname === `${SERVER_PREFIX}/hang-up`) {
+                    req.socket.destroy();
                 } else if (url.pathname === `${SERVER_PREFIX}/missing`) {
                     res.writeHead(404, { 'content-type': 'text/plain' });
                     res.end('Not here');
@@ -359,6 +361,18 @@ describe('ActorServerClient', () => {
             .request('/flaky', { method: 'POST', data: { a: 1 } });
 
         expect(response.status).toBe(500);
+        expect(serverRequests()).toHaveLength(1);
+    });
+
+    test('request() does not retry a transport error, since the Actor may have already handled the request', async () => {
+        client = new ApifyClient({ baseUrl, token: 'test-token', maxRetries: 2, minDelayBetweenRetriesMillis: 1 });
+
+        await expect(
+            client
+                .actor(ACTOR_ID)
+                .server()
+                .request('/hang-up', { method: 'POST', data: { a: 1 } }),
+        ).rejects.toThrow();
         expect(serverRequests()).toHaveLength(1);
     });
 

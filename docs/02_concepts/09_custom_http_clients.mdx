@@ -100,7 +100,7 @@ Use <ApiLink to="class/ApifyClient#withCustomHttpClient">`ApifyClient.withCustom
 After that, all API calls made through the client go through your HTTP client.
 
 :::warning
-If you override `call()` itself, your implementation becomes responsible for request preparation, retries, timeouts, API error conversion and statistics. It also has to send the client's default headers with every request, otherwise the `Authorization` header never reaches the API. Implementing the transport hooks and inheriting `call()` keeps the shared behavior.
+If you override `call()` itself, your implementation becomes responsible for request preparation, retries, timeouts, API error conversion and statistics. It also has to send the client's default headers with every request, otherwise the `Authorization` header never reaches the API, and to honor the per-request `compression`, `authorizationHeader`, `throwOnErrorStatus`, `retryStatusCodes` and `retryTransportErrors` options of <ApiLink to="interface/ApifyRequestConfig">`ApifyRequestConfig`</ApiLink>. <ApiLink to="class/ActorServerClient#request">`ActorServerClient.request()`</ApiLink> relies on them to keep the API token away from the Actor's code, to return the server's error responses and to avoid sending a request to the Actor twice. Implementing the transport hooks and inheriting `call()` keeps the shared behavior.
 :::
 
 ## Use cases

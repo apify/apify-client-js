@@ -222,6 +222,7 @@ export class ActorServerClient extends ResourceClient {
             authorizationHeader: 'X-Apify-Authorization',
             throwOnErrorStatus: false,
             retryStatusCodes: SERVER_RETRY_STATUS_CODES,
+            retryTransportErrors: false,
             responseType,
             timeoutSecs,
             signal,

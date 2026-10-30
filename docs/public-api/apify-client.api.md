@@ -490,6 +490,7 @@ export interface ApifyRequestConfig {
     params?: Record<string, unknown>;
     responseType?: ApifyResponseType;
     retryStatusCodes?: readonly number[];
+    retryTransportErrors?: boolean;
     signal?: AbortSignal;
     stringifyFunctions?: boolean;
     throwOnErrorStatus?: boolean;

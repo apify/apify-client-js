@@ -487,6 +487,18 @@ describe('pluggable HTTP client', () => {
             expect(sendRequest).toHaveBeenCalledTimes(1 + 3);
         });
 
+        test('stops retrying any transport error when the request opts out of it', async () => {
+            const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 1, maxRetries: 2 });
+            const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockRejectedValue(new Error('reset'));
+            const request = { url: `${baseUrl}/echo`, method: 'POST' } as const;
+
+            await expect(httpClient.call({ ...request, retryTransportErrors: false })).rejects.toThrow('reset');
+            expect(sendRequest).toHaveBeenCalledTimes(1);
+
+            await expect(httpClient.call(request)).rejects.toThrow('reset');
+            expect(sendRequest).toHaveBeenCalledTimes(1 + 3);
+        });
+
         test('rejects a call whose signal is already aborted without sending it', async () => {
             const httpClient = new NodeHttpClient();
             const sendRequest = vi.spyOn(httpClient, 'sendRequest');

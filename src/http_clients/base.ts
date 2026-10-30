@@ -155,6 +155,12 @@ export interface ApifyRequestConfig {
     /** Status codes to retry. Defaults to rate limits (429) and server errors (5xx). */
     retryStatusCodes?: readonly number[];
     /**
+     * Whether transport errors, timeouts included, are retried. With `false`, the first one fails the call, since the
+     * request may have reached the server before it failed.
+     * @default true
+     */
+    retryTransportErrors?: boolean;
+    /**
      * Aborts the call. Once the signal aborts, the attempt in flight is ended, no retry follows, and the call
      * rejects with the signal's `reason`.
      */
@@ -267,8 +273,11 @@ export interface HttpClientOptions {
  *
  * Overriding {@link call} itself is also supported and bypasses the transport hooks entirely. Such a client has
  * to send the default headers from `defaultHeaders` with every request, otherwise the `Authorization` header never
- * reaches the API, and has to honor {@link ApifyRequestConfig.compression}, which
- * {@link ActorServerClient.request} sets to `false` unless its caller asks for compression. The protected helpers
+ * reaches the API. It also has to honor the per-request options {@link ApifyRequestConfig.compression},
+ * {@link ApifyRequestConfig.authorizationHeader}, {@link ApifyRequestConfig.throwOnErrorStatus},
+ * {@link ApifyRequestConfig.retryStatusCodes} and {@link ApifyRequestConfig.retryTransportErrors}.
+ * {@link ActorServerClient.request} relies on them to keep the token away from the Actor's code, to return the
+ * server's error responses and to avoid sending a request to the Actor twice. The protected helpers
  * `prepareRequest()`, `buildUrl()` and `computeTimeoutMillis()` stay available to it.
  *
  * @example
@@ -699,8 +708,9 @@ export abstract class HttpClient {
     }
 
     /**
-     * Decides whether a transport error ends the call. Timeouts the request opted out of retrying and errors the
-     * transport does not classify as retryable are final, and so is any error on a request with a stream body.
+     * Decides whether a transport error ends the call. Timeouts the request opted out of retrying, any error on a
+     * request that retries no transport errors, errors the transport does not classify as retryable and any error on
+     * a request with a stream body are final.
      */
     #handleRequestError(err: unknown, config: ApifyRequestConfig, stopRetrying: () => void): void {
         if (config.doNotRetryTimeouts && this.isTimeoutError(err)) {
@@ -708,7 +718,7 @@ export abstract class HttpClient {
             return;
         }
 
-        if (!this.isRetryableTransportError(err)) {
+        if (config.retryTransportErrors === false || !this.isRetryableTransportError(err)) {
             stopRetrying();
             return;
         }
