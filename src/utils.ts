@@ -402,9 +402,9 @@ export interface PaginatedResponse<Data> {
 export interface PaginatedList<Data> extends PaginatedResponse<Data> {
     /**
      * Number of entries on this page. On a page from {@link DatasetClient.listItems}, the number of dataset rows the
-     * API scanned for it, or the number of items returned when that is larger. Filters (`clean`, `skipEmpty`,
-     * `skipHidden`) can leave it above `items.length`. The next page starts at `offset + Math.min(count, limit)`; the
-     * cap matters only with `unwind`, which can return more items than the rows scanned.
+     * API scanned for it, or the number of items returned when that is larger. Filters (`clean`, `skipEmpty`) can
+     * leave it above `items.length`. The next page starts at `offset + Math.min(count, limit)`; the cap matters only
+     * with `unwind`, which can return more items than the rows scanned.
      */
     count: number;
     /** Position of the first returned entry in the dataset. */
