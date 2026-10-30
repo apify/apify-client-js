@@ -486,7 +486,9 @@ for await (const item of client.dataset('dataset-id').listItems({ clean: true, c
 }
 ```
 
-`PaginatedList.count` keeps reporting the items returned on the page. The cursor-based iterators, `listKeys()`, `listRequests()` and `paginateRequests()`, are unchanged.
+`PaginatedList.count` on a page from `listItems()` follows the same header. It is the number of rows the API scanned for the page, or the number of items returned when that is larger. In v2 it was always `items.length`. To page through a filtered dataset by hand, advance `offset` by `count`. With `unwind`, cap the step at `limit`, since an unwound page can return more items than the rows it scanned.
+
+The cursor-based iterators, `listKeys()`, `listRequests()` and `paginateRequests()`, are unchanged.
 
 ## Offset iterators page until they find no rows
 

@@ -400,7 +400,12 @@ export interface PaginatedResponse<Data> {
  * @template Data - The type of items in the list
  */
 export interface PaginatedList<Data> extends PaginatedResponse<Data> {
-    /** Count of dataset entries returned in this set. */
+    /**
+     * Number of entries on this page. On a page from {@link DatasetClient.listItems}, the number of dataset rows the
+     * API scanned for it, or the number of items returned when that is larger. Filters (`clean`, `skipEmpty`,
+     * `skipHidden`) can leave it above `items.length`. The next page starts at `offset + Math.min(count, limit)`; the
+     * cap matters only with `unwind`, which can return more items than the rows scanned.
+     */
     count: number;
     /** Position of the first returned entry in the dataset. */
     offset: number;
@@ -409,17 +414,6 @@ export interface PaginatedList<Data> extends PaginatedResponse<Data> {
     /** Should the results be in descending order. */
     desc: boolean;
 }
-
-/**
- * Key under which a page of dataset items carries the number of rows the API scanned to produce it, as a
- * non-enumerable property that stays out of the page's public shape. The API applies `offset` and `limit` to the
- * dataset's rows first and shapes the result afterwards: filters (`clean`, `skipEmpty`, `skipHidden`) drop items and
- * `unwind` splits or drops them, so `items.length` can land on either side of the rows scanned. The
- * `x-apify-pagination-count` header reports the scanned number, and the offset iterator advances and terminates by it
- * alone. A page without the property falls back to `items.length`.
- * @internal
- */
-export const SCANNED_COUNT = Symbol('scannedCount');
 
 /**
  * Type representing both a Promise of a paginated list and an async iterable.

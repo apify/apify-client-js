@@ -144,7 +144,7 @@ describe('Dataset methods', () => {
             const expected = {
                 total: 0,
                 offset: 0,
-                count: 0,
+                count: 1,
                 limit: 100000,
                 desc: false,
                 items: [],
@@ -158,7 +158,7 @@ describe('Dataset methods', () => {
                 'content-type': 'application/json; chartset=utf-8',
                 'x-apify-pagination-total': '0',
                 'x-apify-pagination-offset': '0',
-                'x-apify-pagination-count': '1', // the scanned rows; `count` reports the items returned, so it stays 0
+                'x-apify-pagination-count': '1',
                 'x-apify-pagination-limit': '100000',
                 // TODO: https://github.com/apify/apify-core/issues/3503
                 'x-apify-pagination-desc': false,
@@ -172,6 +172,28 @@ describe('Dataset methods', () => {
             const browserRes = await page.evaluate((id, opts) => client.dataset(id).listItems(opts), datasetId, query);
             expect(browserRes).toEqual(asBrowserResult(res));
             validateRequest({ query, params: { datasetId } });
+        });
+
+        test.each([
+            { name: 'filtered page', scanned: '3', items: [{ a: 1 }], expected: 3 },
+            { name: 'lagging header', scanned: '0', items: [{ a: 1 }, { a: 2 }], expected: 2 },
+            { name: 'unwound page', scanned: '1', items: [{ a: 1 }, { a: 2 }], expected: 2 },
+            { name: 'missing header', scanned: undefined, items: [{ a: 1 }], expected: 1 },
+        ])('listItems() count is the larger of the scanned rows and the items returned: $name', async (testCase) => {
+            const { scanned, items, expected } = testCase;
+            const headers = {
+                'content-type': 'application/json; charset=utf-8',
+                'x-apify-pagination-total': '10',
+                'x-apify-pagination-offset': '0',
+                ...(scanned === undefined ? {} : { 'x-apify-pagination-count': scanned }),
+                'x-apify-pagination-limit': '3',
+                'x-apify-pagination-desc': 'false',
+            };
+            mockServer.setResponse({ body: items, headers });
+
+            const res = await client.dataset('some-id').listItems({ limit: 3 });
+            expect(res.count).toBe(expected);
+            expect(res.items).toEqual(items);
         });
 
         test('downloadItems() works with bom=false', async () => {
