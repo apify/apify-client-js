@@ -4,7 +4,7 @@ import type { AddressInfo } from 'node:net';
 import os from 'node:os';
 import { gzipSync } from 'node:zlib';
 
-import { ApifyClient, AxiosHttpClient } from 'apify-client';
+import { ApifyClient, AxiosHttpClient, GzipHttpCompressor } from 'apify-client';
 import type { InternalAxiosRequestConfig } from 'axios';
 import { AxiosError } from 'axios';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
@@ -195,6 +195,38 @@ describe('AxiosHttpClient', () => {
         const request = mockServer.getLastRequest();
         expect(request?.headers['content-encoding']).toBeUndefined();
         expect(request?.headers['content-length']).toBe(String(payload.length));
+    });
+
+    test('sends the body uncompressed with compression set to false', async () => {
+        const payload = Buffer.alloc(4096, 'a');
+
+        await client.httpClient.call({
+            url: `${baseUrl}/v2/key-value-stores/some-id/records/some-key`,
+            method: 'PUT',
+            data: payload,
+            compression: false,
+        });
+
+        const request = mockServer.getLastRequest();
+        expect(request?.headers['content-encoding']).toBeUndefined();
+        expect(request?.headers['content-length']).toBe(String(payload.length));
+    });
+
+    test('uses the compressor passed in compression for that request', async () => {
+        const payload = Buffer.alloc(4096, 'a');
+
+        await client.httpClient.call({
+            url: `${baseUrl}/v2/key-value-stores/some-id/records/some-key`,
+            method: 'PUT',
+            data: payload,
+            headers: { 'content-type': 'application/octet-stream' },
+            compression: new GzipHttpCompressor(),
+        });
+
+        const request = mockServer.getLastRequest();
+        expect(client.httpClient.httpCompressor.contentEncoding).toBe('br');
+        expect(request?.headers['content-encoding']).toBe('gzip');
+        expect(request?.body).toEqual(payload);
     });
 
     test('runs the request interceptors passed to the client', async () => {

@@ -64,6 +64,8 @@ export class AxiosHttpClient extends HttpClient {
             // maxContentLength must be -1, because Infinity will cause axios to run super slow
             // thanks to a bug that's now fixed, but not released yet https://github.com/axios/axios/pull/3738
             maxContentLength: -1,
+            // Carries the token of an Actor server request, and a redirect to another origin must not forward it.
+            sensitiveHeaders: ['X-Apify-Authorization'],
         });
 
         // The pipeline merges every header the client sends, so the axios defaults would only get in the way.

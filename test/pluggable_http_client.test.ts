@@ -319,6 +319,88 @@ describe('pluggable HTTP client', () => {
             expect(received).toHaveLength(1);
         });
 
+        test('returns a non-retryable error response after a single attempt with throwOnErrorStatus false', async () => {
+            const httpClient = new NodeHttpClient();
+
+            const response = await httpClient.call({
+                url: `${baseUrl}/missing`,
+                method: 'GET',
+                throwOnErrorStatus: false,
+            });
+
+            expect(response.status).toBe(404);
+            expect(response.data).toEqual({ error: { type: 'record-not-found', message: 'Not there.' } });
+            expect(received).toHaveLength(1);
+        });
+
+        test('returns the last error response once the retries run out with throwOnErrorStatus false', async () => {
+            failuresLeft = 5;
+            const httpClient = new NodeHttpClient({ minDelayBetweenRetriesMillis: 1, maxRetries: 2 });
+
+            const response = await httpClient.call({
+                url: `${baseUrl}/flaky`,
+                method: 'GET',
+                throwOnErrorStatus: false,
+            });
+
+            expect(response.status).toBe(500);
+            expect(received).toHaveLength(3);
+        });
+
+        test('returns an error response to a stream request with the body unread', async () => {
+            const httpClient = new NodeHttpClient();
+            vi.spyOn(httpClient, 'sendRequest').mockResolvedValue({
+                status: 404,
+                headers: { 'content-type': 'text/plain' },
+                body: Readable.from([Buffer.from('Not here')]),
+            });
+
+            const response = await httpClient.call({
+                url: `${baseUrl}/echo`,
+                method: 'GET',
+                responseType: 'stream',
+                throwOnErrorStatus: false,
+            });
+
+            expect(response.data).toBeInstanceOf(Readable);
+            expect(Buffer.concat(await (response.data as Readable).toArray()).toString()).toBe('Not here');
+        });
+
+        test('retries only the statuses listed in retryStatusCodes', async () => {
+            const httpClient = new NodeHttpClient({ minDelayBetweenRetriesMillis: 1 });
+            const unavailable = { status: 503, headers: {}, body: Buffer.alloc(0) };
+            const sendRequest = vi
+                .spyOn(httpClient, 'sendRequest')
+                .mockResolvedValueOnce(unavailable)
+                .mockResolvedValueOnce(unavailable)
+                .mockResolvedValueOnce(okResponse())
+                .mockResolvedValueOnce({ status: 500, headers: {}, body: Buffer.alloc(0) });
+            const request = { url: `${baseUrl}/echo`, method: 'GET', retryStatusCodes: [503] } as const;
+
+            await expect(httpClient.call(request)).resolves.toMatchObject({ status: 200 });
+            expect(sendRequest).toHaveBeenCalledTimes(3);
+
+            await expect(httpClient.call(request)).rejects.toThrow(ServerError);
+            expect(sendRequest).toHaveBeenCalledTimes(4);
+        });
+
+        test('sends the client authorization in the header named by authorizationHeader', async () => {
+            const httpClient = new NodeHttpClient({ token: 'hook_token' });
+            const request = {
+                url: `${baseUrl}/echo`,
+                method: 'GET',
+                authorizationHeader: 'X-Apify-Authorization',
+            } as const;
+
+            await httpClient.call(request);
+            await httpClient.call({ ...request, headers: { Authorization: 'Basic own' } });
+
+            expect(received.map(({ headers }) => [headers['x-apify-authorization'], headers.authorization])).toEqual([
+                ['Bearer hook_token', undefined],
+                ['Bearer hook_token', 'Basic own'],
+            ]);
+        });
+
         test('attributes the error to the resource client, not to the transport', async () => {
             // The class name ends in `Client` without ending in `HttpClient`, so only the `#` of the pipeline's
             // private methods keeps its frames from reading as a resource client's.
@@ -402,6 +484,18 @@ describe('pluggable HTTP client', () => {
             expect(sendRequest).toHaveBeenCalledTimes(1);
 
             await expect(httpClient.call(request)).rejects.toThrow('late');
+            expect(sendRequest).toHaveBeenCalledTimes(1 + 3);
+        });
+
+        test('stops retrying any transport error when the request opts out of it', async () => {
+            const httpClient = new RetryingHttpClient({ minDelayBetweenRetriesMillis: 1, maxRetries: 2 });
+            const sendRequest = vi.spyOn(httpClient, 'sendRequest').mockRejectedValue(new Error('reset'));
+            const request = { url: `${baseUrl}/echo`, method: 'POST' } as const;
+
+            await expect(httpClient.call({ ...request, retryTransportErrors: false })).rejects.toThrow('reset');
+            expect(sendRequest).toHaveBeenCalledTimes(1);
+
+            await expect(httpClient.call(request)).rejects.toThrow('reset');
             expect(sendRequest).toHaveBeenCalledTimes(1 + 3);
         });
 
