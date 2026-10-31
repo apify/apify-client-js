@@ -668,9 +668,9 @@ The `response` property carries the <ApiLink to="interface/HttpResponse">`HttpRe
 
 The method is reported as the client sent it, so `POST` where v2 reported axios's lowercased `post`.
 
-### A `Blob`, `File` or `FormData` body is no longer sent
+### A `FormData` body is no longer sent
 
-Under v2 axios recognized these types and streamed them, taking the `Content-Type` and `Content-Length`, or the multipart boundary, from the value itself. The pipeline serializes bodies on its own now and doesn't handle them, so passing one throws a `TypeError` naming the type. Read a `Blob` or a `File` into a `Buffer` or an `ArrayBuffer` first. A `FormData` body has to be encoded to a `Buffer` or a string with a matching `Content-Type` header. A web `ReadableStream` is refused the same way, where a `Readable` and a `URLSearchParams` both still go through.
+Under v2 axios recognized a `FormData` body and sent it as multipart, taking the boundary from the value itself. The pipeline serializes bodies on its own now and doesn't handle it, so passing one throws a `TypeError` naming the type. Encode it to a `Buffer` or a string with a matching `Content-Type` header. A web `ReadableStream` is refused the same way. A `Readable`, a `URLSearchParams`, a `Blob` and a `File` all still go through.
 
 ### A form-encoded object body is encoded by the client
 
@@ -687,6 +687,12 @@ The instance itself is bare: the pipeline merges the default headers and seriali
 ### The error thrown after the retries are exhausted is the last one
 
 `ApifyClient` reports the failure of the final attempt. In v2 `async-retry` reported the error whose message occurred most often across the attempts, so a call that hit five HTTP 500s and then four connection resets threw an `ApifyApiError` for the 500s rather than the reset. Code that branches on `instanceof ApifyApiError` for a call that fails in more than one way may see a different error type than it did before.
+
+### A response body that doesn't parse is no longer retried
+
+A successful response whose body doesn't parse as its content type claims throws <ApiLink to="class/InvalidResponseBodyError">`InvalidResponseBodyError`</ApiLink> on the first attempt. Under v2 the client retried it, so a key-value store record holding non-JSON text under `application/json` cost every retry before `getRecord()` threw. A connection that drops mid-body still fails as a network error, which is retried.
+
+An error status whose body doesn't parse, such as an HTML page from a proxy with a `502`, throws the <ApiLink to="class/ApifyApiError">`ApifyApiError`</ApiLink> subclass for its status code, with the raw body in `message`, and is retried by that status code. Under v2 it threw `InvalidResponseBodyError`.
 
 ### The per-attempt timeout grows on a fixed schedule
 

@@ -139,13 +139,7 @@ export interface ActorCollectionListOptions extends PaginationOptions, TimeoutOp
 export type ActorCollectionListResult = PaginatedList<ActorListItem>;
 
 // @public
-export interface ActorDefinition extends GeneratedActorDefinition, ActorDefinitionSpecGaps {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface ActorDefinitionSpecGaps {
-    output?: object | null;
+export interface ActorDefinition extends GeneratedActorDefinition {
 }
 
 // @public
@@ -613,6 +607,9 @@ export interface BuildOptions extends GeneratedBuildOptions {
 interface BuildRePointed {
     // (undocumented)
     actorDefinition?: ActorDefinition | null;
+    actVersion?: Omit<GeneratedBuildActVersion, 'buildTag'> & {
+        buildTag?: string | null;
+    };
     // (undocumented)
     meta: BuildMeta;
     // (undocumented)
@@ -654,6 +651,7 @@ interface components {
         status: string[];
         startedAfter: string;
         startedBefore: string;
+        deployment: string[];
         timeout: number;
         memory: number;
         maxItems: number;
@@ -662,6 +660,7 @@ interface components {
         build: string;
         waitForFinishRun: number;
         webhooks: string;
+        forcePermissionLevel: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
         outputRecordKey: string;
         format: string;
         clean: boolean;
@@ -799,6 +798,12 @@ interface components {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
         };
+        NoContent: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content?: never;
+        };
         PaymentRequired: {
             headers: {
                 [name: string]: unknown;
@@ -814,12 +819,6 @@ interface components {
             content: {
                 "application/json": components["schemas"]["ErrorResponse"];
             };
-        };
-        NoContent: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content?: never;
         };
         Conflict: {
             headers: {
@@ -874,18 +873,20 @@ interface components {
         ListOfActorsResponse: {
             data: components["schemas"]["ListOfActors"];
         };
-        ErrorType: "3d-secure-auth-failed" | "access-right-already-exists" | "action-not-found" | "actor-already-rented" | "actor-can-not-be-rented" | "actor-disabled" | "actor-is-not-rented" | "actor-memory-limit-exceeded" | "actor-name-exists-new-owner" | "actor-name-not-unique" | "actor-not-found" | "actor-not-github-actor" | "actor-not-public" | "actor-permission-level-not-supported-for-agentic-payments" | "actor-review-already-exists" | "actor-run-failed" | "actor-standby-not-supported-for-agentic-payments" | "actor-task-name-not-unique" | "agentic-payment-info-retrieval-error" | "agentic-payment-information-missing" | "agentic-payment-insufficient-amount" | "agentic-payment-provider-internal-error" | "agentic-payment-provider-unauthorized" | "airtable-webhook-deprecated" | "already-subscribed-to-paid-actor" | "apify-plan-required-to-use-paid-actor" | "apify-signup-not-allowed" | "auth-method-not-supported" | "authorization-server-not-found" | "auto-issue-date-invalid" | "background-check-required" | "billing-system-error" | "black-friday-plan-expired" | "braintree-error" | "braintree-not-linked" | "braintree-operation-timed-out" | "braintree-unsupported-currency" | "build-not-found" | "build-outdated" | "cannot-add-apify-events-to-ppe-actor" | "cannot-add-multiple-pricing-infos" | "cannot-add-pricing-info-that-alters-past" | "cannot-add-second-future-pricing-info" | "cannot-build-actor-from-webhook" | "cannot-change-billing-interval" | "cannot-change-owner" | "cannot-charge-apify-event" | "cannot-charge-non-pay-per-event-actor" | "cannot-comment-as-other-user" | "cannot-copy-actor-task" | "cannot-create-payout" | "cannot-create-public-actor" | "cannot-create-tax-transaction" | "cannot-delete-critical-actor" | "cannot-delete-invoice" | "cannot-delete-paid-actor" | "cannot-disable-one-time-event-for-apify-start-event" | "cannot-disable-organization-with-enabled-members" | "cannot-disable-user-with-subscription" | "cannot-link-oauth-to-unverified-email" | "cannot-metamorph-to-pay-per-result-actor" | "cannot-modify-actor-pricing-too-frequently" | "cannot-modify-actor-pricing-with-immediate-effect" | "cannot-monetize-without-payout-billing-info" | "cannot-override-paid-actor-trial" | "cannot-permanently-delete-subscription" | "cannot-publish-actor" | "cannot-publish-actor-task" | "cannot-reduce-last-full-token" | "cannot-reimburse-more-than-original-charge" | "cannot-reimburse-non-rental-charge" | "cannot-remove-own-actor-from-recently-used" | "cannot-remove-payment-method" | "cannot-remove-pricing-info" | "cannot-remove-running-run" | "cannot-remove-user-with-public-actors" | "cannot-remove-user-with-subscription" | "cannot-remove-user-with-unpaid-invoice" | "cannot-rename-env-var" | "cannot-rent-paid-actor" | "cannot-review-own-actor" | "cannot-set-access-rights-for-owner" | "cannot-set-is-status-message-terminal" | "cannot-unpublish-critical-actor" | "cannot-unpublish-paid-actor" | "cannot-unpublish-profile" | "cannot-update-invoice-field" | "concurrent-runs-limit-exceeded" | "concurrent-update-detected" | "conference-token-not-found" | "content-encoding-forbidden-for-html" | "coupon-already-redeemed" | "coupon-expired" | "coupon-for-new-customers" | "coupon-for-subscribed-users" | "coupon-limits-are-in-conflict-with-current-limits" | "coupon-max-number-of-redemptions-reached" | "coupon-not-found" | "coupon-not-unique" | "coupons-disabled" | "create-github-issue-not-allowed" | "creator-plan-not-available" | "cron-expression-invalid" | "daily-ai-token-limit-exceeded" | "daily-publication-limit-exceeded" | "dataset-does-not-have-fields-schema" | "dataset-does-not-have-schema" | "dataset-locked" | "dataset-schema-invalid" | "dcr-not-supported" | "default-dataset-not-found" | "deleting-default-build" | "deleting-unfinished-build" | "email-already-taken" | "email-already-taken-removed-user" | "email-domain-not-allowed-for-coupon" | "email-invalid" | "email-not-allowed" | "email-not-valid" | "email-update-too-soon" | "elevated-permissions-needed" | "env-var-already-exists" | "exchange-rate-fetch-failed" | "expired-conference-token" | "failed-to-charge-user" | "final-invoice-negative" | "full-permission-actor-blocked-for-admin" | "full-permission-actor-not-approved" | "github-branch-empty" | "github-issue-already-exists" | "github-public-key-not-found" | "github-repository-not-found" | "github-signature-does-not-match-payload" | "github-user-not-authorized-for-issues" | "gmail-not-allowed" | "id-does-not-match" | "incompatible-billing-interval" | "incomplete-payout-billing-info" | "inconsistent-currencies" | "incorrect-pricing-modifier-prefix" | "input-json-invalid-characters" | "input-json-not-object" | "input-json-too-long" | "input-update-collision" | "insufficient-permissions" | "insufficient-permissions-to-change-field" | "insufficient-security-measures" | "insufficient-tax-country-evidence" | "integration-auth-error" | "internal-server-error" | "invalid-billing-info" | "invalid-billing-period-for-payout" | "invalid-build" | "invalid-client-key" | "invalid-collection" | "invalid-conference-login-password" | "invalid-content-type-header" | "invalid-credentials" | "invalid-git-auth-token" | "invalid-github-issue-url" | "invalid-header" | "invalid-id" | "invalid-idempotency-key" | "invalid-input" | "invalid-input-schema" | "invalid-invoice" | "invalid-invoice-type" | "invalid-issue-date" | "invalid-label-params" | "invalid-main-account-user-id" | "invalid-oauth-app" | "invalid-oauth-scope" | "invalid-one-time-invoice" | "invalid-parameter" | "invalid-payout-status" | "invalid-picture-url" | "invalid-record-key" | "invalid-request" | "invalid-resource-type" | "invalid-signature" | "invalid-subscription-plan" | "invalid-tax-number" | "invalid-tax-number-format" | "invalid-token" | "invalid-token-type" | "invalid-two-factor-code" | "invalid-two-factor-code-or-recovery-code" | "invalid-two-factor-recovery-code" | "invalid-username" | "invalid-value" | "invitation-invalid-resource-type" | "invitation-no-longer-valid" | "invoice-canceled" | "invoice-cannot-be-refunded-due-to-too-high-amount" | "invoice-incomplete" | "invoice-is-draft" | "invoice-locked" | "invoice-must-be-buffer" | "invoice-not-canceled" | "invoice-not-draft" | "invoice-not-found" | "invoice-outdated" | "invoice-paid-already" | "issue-already-connected-to-github" | "issue-not-found" | "issues-bad-request" | "issuer-not-registered" | "job-finished" | "label-already-linked" | "last-api-token" | "limit-reached" | "max-items-must-be-greater-than-zero" | "max-metamorphs-exceeded" | "max-total-charge-usd-below-minimum" | "max-total-charge-usd-must-be-greater-than-zero" | "method-not-allowed" | "migration-disabled" | "missing-actor-rights" | "missing-api-token" | "missing-billing-info" | "missing-line-items" | "missing-payment-date" | "missing-payout-billing-info" | "missing-proxy-password" | "missing-reporting-fields" | "missing-resource-name" | "missing-settings" | "missing-username" | "monthly-usage-limit-too-low" | "more-than-one-update-not-allowed" | "multiple-records-found" | "must-be-admin" | "name-not-unique" | "next-runtime-computation-failed" | "no-columns-in-exported-dataset" | "no-payment-attempt-for-refund-found" | "no-payment-method-available" | "no-team-account-seats-available" | "non-temporary-email" | "not-enough-usage-to-run-paid-actor" | "not-implemented" | "not-supported-currencies" | "o-auth-service-already-connected" | "o-auth-service-not-connected" | "oauth-resource-access-failed" | "one-time-invoice-already-marked-paid" | "only-drafts-can-be-deleted" | "operation-canceled" | "operation-not-allowed" | "operation-timed-out" | "organization-cannot-own-itself" | "organization-role-not-found" | "overlapping-payout-billing-periods" | "own-token-required" | "page-not-found" | "param-not-one-of" | "parameter-required" | "parameters-mismatched" | "password-reset-email-already-sent" | "password-reset-token-expired" | "pay-as-you-go-without-monthly-interval" | "payment-attempt-status-message-required" | "payout-already-paid" | "payout-canceled" | "payout-invalid-state" | "payout-must-be-approved-to-be-marked-paid" | "payout-not-found" | "payout-number-already-exists" | "phone-number-invalid" | "phone-number-landline" | "phone-number-opted-out" | "phone-verification-disabled" | "platform-feature-disabled" | "price-overrides-validation-failed" | "pricing-model-not-supported" | "promotional-plan-not-available" | "proxy-auth-ip-not-unique" | "public-actor-disabled" | "query-timeout" | "quoted-price-outdated" | "rate-limit-exceeded" | "recaptcha-invalid" | "recaptcha-required" | "record-not-found" | "record-not-public" | "record-or-token-not-found" | "record-too-large" | "redirect-uri-mismatch" | "reduced-plan-not-available" | "rental-charge-already-reimbursed" | "rental-not-allowed" | "request-aborted-prematurely" | "request-handled-or-locked" | "request-id-invalid" | "request-queue-duplicate-requests" | "request-too-large" | "requested-dataset-view-does-not-exist" | "resume-token-expired" | "run-failed" | "run-input-body-not-valid-json" | "run-timeout-exceeded" | "russia-is-evil" | "same-user" | "schedule-actor-not-found" | "schedule-actor-task-not-found" | "schedule-name-not-unique" | "schema-validation" | "schema-validation-error" | "schema-validation-failed" | "service-worker-registration-not-allowed" | "sign-up-method-not-allowed" | "slack-integration-not-custom" | "socket-closed" | "socket-destroyed" | "store-schema-invalid" | "store-terms-not-accepted" | "stripe-enabled" | "stripe-generic-decline" | "stripe-not-enabled" | "stripe-not-enabled-for-user" | "tagged-build-required" | "tax-country-invalid" | "tax-number-invalid" | "tax-number-validation-failed" | "taxamo-call-failed" | "taxamo-request-failed" | "testing-error" | "token-not-provided" | "too-few-versions" | "too-many-actor-tasks" | "too-many-actors" | "too-many-labels-on-resource" | "too-many-mcp-connectors" | "too-many-o-auth-apps" | "too-many-organizations" | "too-many-requests" | "too-many-schedules" | "too-many-ui-access-keys" | "too-many-user-labels" | "too-many-values" | "too-many-versions" | "too-many-webhooks" | "unexpected-route" | "unknown-build-tag" | "unknown-payment-provider" | "unsubscribe-token-invalid" | "unsupported-actor-pricing-model-for-agentic-payments" | "unsupported-content-encoding" | "unsupported-file-type-for-issue" | "unsupported-file-type-image-expected" | "unsupported-file-type-text-or-json-expected" | "unsupported-permission" | "upcoming-subscription-bill-not-up-to-date" | "user-already-exists" | "user-already-verified" | "user-creates-organizations-too-fast" | "user-disabled" | "user-email-is-disposable" | "user-email-not-set" | "user-email-not-verified" | "user-has-no-subscription" | "user-integration-not-found" | "user-is-already-invited" | "user-is-already-organization-member" | "user-is-not-member-of-organization" | "user-is-not-organization" | "user-is-organization" | "user-is-organization-owner" | "user-is-removed" | "user-not-found" | "user-not-logged-in" | "user-not-verified" | "user-or-token-not-found" | "user-plan-not-allowed-for-coupon" | "user-problem-with-card" | "user-record-not-found" | "username-already-taken" | "username-missing" | "username-not-allowed" | "username-removal-forbidden" | "username-required" | "verification-email-already-sent" | "verification-token-expired" | "version-already-exists" | "versions-size-exceeded" | "weak-password" | "x402-agentic-payment-already-finalized" | "x402-agentic-payment-insufficient-amount" | "x402-agentic-payment-malformed-token" | "x402-agentic-payment-settlement-failed" | "x402-agentic-payment-settlement-in-progress" | "x402-agentic-payment-settlement-stuck" | "x402-agentic-payment-unauthorized" | "x402-payment-required" | "zero-invoice";
+        ErrorType: "3d-secure-auth-failed" | "access-right-already-exists" | "action-not-found" | "actor-already-rented" | "actor-can-not-be-rented" | "actor-disabled" | "actor-is-not-rented" | "actor-memory-limit-exceeded" | "actor-name-exists-new-owner" | "actor-name-not-unique" | "actor-not-found" | "actor-not-github-actor" | "actor-not-public" | "actor-permission-level-not-supported-for-agentic-payments" | "actor-review-already-exists" | "actor-run-failed" | "actor-standby-not-supported-for-agentic-payments" | "actor-task-name-not-unique" | "agentic-payment-info-retrieval-error" | "agentic-payment-information-missing" | "agentic-payment-insufficient-amount" | "agentic-payment-provider-internal-error" | "agentic-payment-provider-unauthorized" | "airtable-webhook-deprecated" | "already-subscribed-to-paid-actor" | "apify-plan-required-to-use-paid-actor" | "apify-signup-not-allowed" | "auth-method-not-supported" | "authorization-server-not-found" | "auto-issue-date-invalid" | "background-check-required" | "billing-system-error" | "black-friday-plan-expired" | "braintree-error" | "braintree-not-linked" | "braintree-operation-timed-out" | "braintree-unsupported-currency" | "build-not-found" | "build-outdated" | "cannot-add-apify-events-to-ppe-actor" | "cannot-add-multiple-pricing-infos" | "cannot-add-pricing-info-that-alters-past" | "cannot-add-second-future-pricing-info" | "cannot-build-actor-from-webhook" | "cannot-change-billing-interval" | "cannot-change-owner" | "cannot-charge-apify-event" | "cannot-charge-non-pay-per-event-actor" | "cannot-comment-as-other-user" | "cannot-copy-actor-task" | "cannot-create-payout" | "cannot-create-public-actor" | "cannot-create-tax-transaction" | "cannot-delete-critical-actor" | "cannot-delete-invoice" | "cannot-delete-paid-actor" | "cannot-disable-one-time-event-for-apify-start-event" | "cannot-disable-organization-with-enabled-members" | "cannot-disable-user-with-subscription" | "cannot-link-oauth-to-unverified-email" | "cannot-metamorph-to-pay-per-result-actor" | "cannot-modify-actor-pricing-too-frequently" | "cannot-modify-actor-pricing-with-immediate-effect" | "cannot-monetize-without-payout-billing-info" | "cannot-override-paid-actor-trial" | "cannot-permanently-delete-subscription" | "cannot-publish-actor" | "cannot-publish-actor-task" | "cannot-reduce-last-full-token" | "cannot-reimburse-more-than-original-charge" | "cannot-reimburse-non-rental-charge" | "cannot-remove-own-actor-from-recently-used" | "cannot-remove-payment-method" | "cannot-remove-pricing-info" | "cannot-remove-running-run" | "cannot-remove-user-with-public-actors" | "cannot-remove-user-with-subscription" | "cannot-remove-user-with-unpaid-invoice" | "cannot-rename-env-var" | "cannot-rent-paid-actor" | "cannot-review-own-actor" | "cannot-set-access-rights-for-owner" | "cannot-set-is-status-message-terminal" | "cannot-unpublish-critical-actor" | "cannot-unpublish-paid-actor" | "cannot-unpublish-profile" | "cannot-update-invoice-field" | "concurrent-runs-limit-exceeded" | "concurrent-update-detected" | "conference-token-not-found" | "content-encoding-forbidden-for-html" | "coupon-already-redeemed" | "coupon-expired" | "coupon-for-new-customers" | "coupon-for-subscribed-users" | "coupon-limits-are-in-conflict-with-current-limits" | "coupon-max-number-of-redemptions-reached" | "coupon-not-found" | "coupon-not-unique" | "coupons-disabled" | "create-github-issue-not-allowed" | "creator-plan-not-available" | "cron-expression-invalid" | "daily-ai-token-limit-exceeded" | "daily-publication-limit-exceeded" | "dataset-does-not-have-fields-schema" | "dataset-does-not-have-schema" | "dataset-locked" | "dataset-schema-invalid" | "dcr-not-supported" | "default-dataset-not-found" | "deleting-default-build" | "deleting-unfinished-build" | "email-already-taken" | "email-already-taken-removed-user" | "email-domain-not-allowed-for-coupon" | "email-invalid" | "email-not-allowed" | "email-not-valid" | "email-update-too-soon" | "elevated-permissions-needed" | "env-var-already-exists" | "exchange-rate-fetch-failed" | "expired-conference-token" | "failed-to-charge-user" | "final-invoice-negative" | "full-permission-actor-blocked-for-admin" | "full-permission-actor-not-approved" | "full-permissions-require-verified-owner" | "github-branch-empty" | "github-issue-already-exists" | "github-public-key-not-found" | "github-repository-not-found" | "github-signature-does-not-match-payload" | "github-user-not-authorized-for-issues" | "gmail-not-allowed" | "id-does-not-match" | "incompatible-billing-interval" | "incomplete-payout-billing-info" | "inconsistent-currencies" | "incorrect-pricing-modifier-prefix" | "input-json-invalid-characters" | "input-json-not-object" | "input-json-too-long" | "input-update-collision" | "input-validation-timed-out" | "insufficient-permissions" | "insufficient-permissions-to-change-field" | "insufficient-security-measures" | "insufficient-tax-country-evidence" | "integration-auth-error" | "internal-server-error" | "invalid-billing-info" | "invalid-billing-period-for-payout" | "invalid-build" | "invalid-client-key" | "invalid-collection" | "invalid-conference-login-password" | "invalid-content-type-header" | "invalid-credentials" | "invalid-git-auth-token" | "invalid-github-issue-url" | "invalid-header" | "invalid-id" | "invalid-idempotency-key" | "invalid-input" | "invalid-input-schema" | "invalid-invoice" | "invalid-invoice-type" | "invalid-issue-date" | "invalid-label-params" | "invalid-main-account-user-id" | "invalid-oauth-app" | "invalid-oauth-scope" | "invalid-one-time-invoice" | "invalid-parameter" | "invalid-payout-status" | "invalid-picture-url" | "invalid-record-key" | "invalid-request" | "invalid-resource-type" | "invalid-signature" | "invalid-subscription-plan" | "invalid-tax-number" | "invalid-tax-number-format" | "invalid-token" | "invalid-token-type" | "invalid-two-factor-code" | "invalid-two-factor-code-or-recovery-code" | "invalid-two-factor-recovery-code" | "invalid-username" | "invalid-value" | "invitation-invalid-resource-type" | "invitation-no-longer-valid" | "invoice-canceled" | "invoice-cannot-be-refunded-due-to-too-high-amount" | "invoice-incomplete" | "invoice-is-draft" | "invoice-locked" | "invoice-must-be-buffer" | "invoice-not-canceled" | "invoice-not-draft" | "invoice-not-found" | "invoice-outdated" | "invoice-paid-already" | "issue-already-connected-to-github" | "issue-not-found" | "issues-bad-request" | "issuer-not-registered" | "job-finished" | "label-already-linked" | "last-api-token" | "limit-reached" | "max-items-must-be-greater-than-zero" | "max-metamorphs-exceeded" | "max-total-charge-usd-below-minimum" | "max-total-charge-usd-must-be-greater-than-zero" | "mcp-connector-actor-not-allowed" | "method-not-allowed" | "migration-disabled" | "missing-actor-rights" | "missing-api-token" | "missing-billing-info" | "missing-line-items" | "missing-payment-date" | "missing-payout-billing-info" | "missing-proxy-password" | "missing-reporting-fields" | "missing-resource-name" | "missing-settings" | "missing-username" | "monthly-usage-limit-too-low" | "more-public-actors-require-verified-owner" | "more-than-one-update-not-allowed" | "multiple-records-found" | "must-be-admin" | "name-not-unique" | "next-runtime-computation-failed" | "no-columns-in-exported-dataset" | "no-payment-attempt-for-refund-found" | "no-payment-method-available" | "no-team-account-seats-available" | "non-temporary-email" | "not-enough-usage-to-run-paid-actor" | "not-implemented" | "not-supported-currencies" | "o-auth-service-already-connected" | "o-auth-service-not-connected" | "oauth-resource-access-failed" | "one-time-invoice-already-marked-paid" | "only-drafts-can-be-deleted" | "operation-canceled" | "operation-not-allowed" | "operation-timed-out" | "organization-cannot-own-itself" | "organization-role-not-found" | "overlapping-payout-billing-periods" | "own-token-required" | "page-not-found" | "param-not-one-of" | "parameter-required" | "parameters-mismatched" | "password-reset-email-already-sent" | "password-reset-token-expired" | "pay-as-you-go-without-monthly-interval" | "payment-attempt-status-message-required" | "payout-already-paid" | "payout-canceled" | "payout-invalid-state" | "payout-must-be-approved-to-be-marked-paid" | "payout-not-found" | "payout-number-already-exists" | "phone-number-invalid" | "phone-number-landline" | "phone-number-opted-out" | "phone-verification-disabled" | "platform-feature-disabled" | "price-overrides-validation-failed" | "pricing-model-not-supported" | "promotional-plan-not-available" | "proxy-auth-ip-not-unique" | "public-actor-disabled" | "query-timeout" | "quoted-price-outdated" | "rate-limit-exceeded" | "readme-required" | "recaptcha-invalid" | "recaptcha-required" | "record-not-found" | "record-not-public" | "record-or-token-not-found" | "record-too-large" | "redirect-uri-mismatch" | "reduced-plan-not-available" | "rental-charge-already-reimbursed" | "rental-not-allowed" | "request-aborted-prematurely" | "request-handled-or-locked" | "request-id-invalid" | "request-queue-duplicate-requests" | "request-too-large" | "requested-dataset-view-does-not-exist" | "resume-token-expired" | "run-failed" | "run-input-body-not-valid-json" | "run-timeout-exceeded" | "russia-is-evil" | "same-user" | "schedule-actor-not-found" | "schedule-actor-task-not-found" | "schedule-name-not-unique" | "schema-validation" | "schema-validation-error" | "schema-validation-failed" | "schemas-required" | "service-worker-registration-not-allowed" | "sign-up-method-not-allowed" | "slack-integration-not-custom" | "socket-closed" | "socket-destroyed" | "standby-deployment-invalid" | "store-schema-invalid" | "store-terms-not-accepted" | "stripe-enabled" | "stripe-generic-decline" | "stripe-not-enabled" | "stripe-not-enabled-for-user" | "tagged-build-required" | "tax-country-invalid" | "tax-number-invalid" | "tax-number-validation-failed" | "taxamo-call-failed" | "taxamo-request-failed" | "testing-error" | "token-not-provided" | "too-few-versions" | "too-many-actor-tasks" | "too-many-actors" | "too-many-labels-on-resource" | "too-many-mcp-connectors" | "too-many-o-auth-apps" | "too-many-organizations" | "too-many-public-actor-tasks-per-account" | "too-many-public-actor-tasks-per-actor" | "too-many-requests" | "too-many-schedules" | "too-many-ui-access-keys" | "too-many-user-labels" | "too-many-values" | "too-many-versions" | "too-many-webhooks" | "unexpected-route" | "unknown-build-tag" | "unknown-payment-provider" | "unsubscribe-token-invalid" | "unsupported-actor-pricing-model-for-agentic-payments" | "unsupported-content-encoding" | "unsupported-file-type-for-issue" | "unsupported-file-type-image-expected" | "unsupported-file-type-text-or-json-expected" | "unsupported-permission" | "upcoming-subscription-bill-not-up-to-date" | "user-already-exists" | "user-already-verified" | "user-creates-organizations-too-fast" | "user-disabled" | "user-email-is-disposable" | "user-email-not-set" | "user-email-not-verified" | "user-has-no-subscription" | "user-integration-not-found" | "user-is-already-invited" | "user-is-already-organization-member" | "user-is-not-member-of-organization" | "user-is-not-organization" | "user-is-organization" | "user-is-organization-owner" | "user-is-removed" | "user-not-found" | "user-not-logged-in" | "user-not-verified" | "user-or-token-not-found" | "user-plan-not-allowed-for-coupon" | "user-problem-with-card" | "user-record-not-found" | "username-already-taken" | "username-missing" | "username-not-allowed" | "username-removal-forbidden" | "username-required" | "verification-email-already-sent" | "verification-token-expired" | "version-already-exists" | "versions-size-exceeded" | "weak-password" | "x402-agentic-payment-already-finalized" | "x402-agentic-payment-insufficient-amount" | "x402-agentic-payment-malformed-token" | "x402-agentic-payment-settlement-failed" | "x402-agentic-payment-settlement-in-progress" | "x402-agentic-payment-settlement-stuck" | "x402-agentic-payment-unauthorized" | "x402-payment-required" | "zero-invoice";
         ErrorDetail: {
             type?: components["schemas"]["ErrorType"];
             message?: string;
+            data?: Record<string, unknown>;
         };
         ErrorResponse: {
             error: components["schemas"]["ErrorDetail"];
         };
-        VersionSourceType: "SOURCE_FILES" | "GIT_REPO" | "TARBALL" | "GITHUB_GIST" | "SOURCE_CODE";
-        EnvVar: {
+        ActorPermissionLevel: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
+        WritableVersionSourceType: "SOURCE_FILES" | "GIT_REPO" | "TARBALL" | "GITHUB_GIST";
+        EnvVarRequest: {
             name: string;
-            value?: string;
+            value: string;
             isSecret?: boolean | null;
         };
         SourceCodeFileFormat: "BASE64" | "TEXT";
@@ -899,24 +900,25 @@ interface components {
             folder: boolean;
         };
         VersionSourceFiles: (components["schemas"]["SourceCodeFile"] | components["schemas"]["SourceCodeFolder"])[];
-        Version: {
+        CreateVersionRequest: {
             versionNumber: string;
-            sourceType: components["schemas"]["VersionSourceType"] | null;
-            envVars?: components["schemas"]["EnvVar"][] | null;
+            sourceType: components["schemas"]["WritableVersionSourceType"];
+            envVars?: components["schemas"]["EnvVarRequest"][];
             applyEnvVarsToBuild?: boolean | null;
             buildTag?: string | null;
             sourceFiles?: components["schemas"]["VersionSourceFiles"];
-            gitRepoUrl?: string | null;
-            tarballUrl?: string | null;
-            gitHubGistUrl?: string | null;
+            gitRepoUrl?: string;
+            tarballUrl?: string;
+            gitHubGistUrl?: string;
         };
-        ActorPermissionLevel: "LIMITED_PERMISSIONS" | "FULL_PERMISSIONS";
         DefaultRunOptions: {
             build?: string;
             timeoutSecs?: number;
             memoryMbytes?: number;
-            restartOnError?: boolean;
+            restartOnError?: boolean | null;
             maxItems?: number | null;
+            maxTotalChargeUsd?: number | null;
+            isMaxTotalChargeUsdSetByUser?: boolean | null;
             forcePermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
         };
         ActorStandby: {
@@ -928,6 +930,9 @@ interface components {
             memoryMbytes?: number | null;
             disableStandbyFieldsOverride?: boolean | null;
             shouldPassActorInput?: boolean | null;
+            tenancy?: string | null;
+            isConsoleAuthEnabled?: boolean | null;
+            isTokenlessEnabled?: boolean | null;
         };
         ExampleRunInput: {
             body?: string;
@@ -937,16 +942,38 @@ interface components {
             name?: string | null;
             description?: string | null;
             title?: string | null;
-            isPublic?: boolean | null;
+            isPublic?: boolean;
+            actorPermissionLevel?: components["schemas"]["ActorPermissionLevel"];
             seoTitle?: string | null;
             seoDescription?: string | null;
             restartOnError?: boolean;
-            versions?: components["schemas"]["Version"][] | null;
+            versions?: components["schemas"]["CreateVersionRequest"][];
             categories?: string[] | null;
             defaultRunOptions?: components["schemas"]["DefaultRunOptions"];
             actorStandby?: components["schemas"]["ActorStandby"] | null;
             exampleRunInput?: components["schemas"]["ExampleRunInput"] | null;
             isDeprecated?: boolean | null;
+        };
+        VersionSourceType: "SOURCE_FILES" | "GIT_REPO" | "TARBALL" | "GITHUB_GIST" | "SOURCE_CODE";
+        EnvVar: {
+            name: string;
+            value?: string;
+            isSecret?: boolean | null;
+            valueHash?: string;
+        };
+        Version: {
+            versionNumber: string;
+            sourceType: components["schemas"]["VersionSourceType"] | null;
+            envVars?: components["schemas"]["EnvVar"][] | null;
+            applyEnvVarsToBuild?: boolean | null;
+            buildTag?: string | null;
+            sourceFiles?: components["schemas"]["VersionSourceFiles"];
+            gitRepoUrl?: string | null;
+            tarballUrl?: string | null;
+            gitHubGistUrl?: string | null;
+            githubWebhookId?: number | null;
+            gitlabWebhookId?: number | null;
+            bitbucketWebhookId?: string | null;
         };
         CommonActorPricingInfo: {
             apifyMarginPercentage: number;
@@ -954,6 +981,7 @@ interface components {
             startedAt: Date;
             notifiedAboutFutureChangeAt?: Date | null;
             notifiedAboutChangeAt?: Date | null;
+            notifiedAboutRentalToPpePriceChangeAt?: Date | null;
             reasonForChange?: string | null;
             isPriceChangeNotificationSuppressed?: boolean;
             forceContainsSignificantPriceChange?: boolean;
@@ -970,7 +998,7 @@ interface components {
             eventPriceUsd?: number;
             eventTieredPricingUsd?: components["schemas"]["TieredPricingPerEvent"];
             isPrimaryEvent?: boolean;
-            isOneTimeEvent?: boolean;
+            isOneTimeEvent?: boolean | null;
         };
         PayPerEventActorPricingInfo: components["schemas"]["CommonActorPricingInfo"] & {
             pricingModel: "PAY_PER_EVENT";
@@ -980,6 +1008,7 @@ interface components {
                 };
             };
             minimalMaxTotalChargeUsd?: number | null;
+            isPPEPlatformUsagePaidByUser?: boolean | null;
         } & {
             pricingModel: "PAY_PER_EVENT";
         };
@@ -1026,7 +1055,7 @@ interface components {
             name: string;
             username: string;
             description?: string | null;
-            restartOnError?: boolean;
+            restartOnError?: boolean | null;
             isPublic: boolean;
             actorPermissionLevel?: components["schemas"]["ActorPermissionLevel"];
             createdAt: Date;
@@ -1056,17 +1085,6 @@ interface components {
         ActorResponse: {
             data: components["schemas"]["ActorResource"];
         };
-        CreateOrUpdateVersionRequest: {
-            versionNumber?: string | null;
-            sourceType?: components["schemas"]["VersionSourceType"] | null;
-            envVars?: components["schemas"]["EnvVar"][] | null;
-            applyEnvVarsToBuild?: boolean | null;
-            buildTag?: string | null;
-            sourceFiles?: components["schemas"]["VersionSourceFiles"];
-            gitRepoUrl?: string | null;
-            tarballUrl?: string | null;
-            gitHubGistUrl?: string | null;
-        };
         UpdatedBuildProperty: {
             buildId: string;
         } | null;
@@ -1074,12 +1092,12 @@ interface components {
             name?: string;
             description?: string | null;
             isPublic?: boolean;
-            actorPermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
+            actorPermissionLevel?: components["schemas"]["ActorPermissionLevel"];
             seoTitle?: string | null;
             seoDescription?: string | null;
             title?: string | null;
             restartOnError?: boolean;
-            versions?: components["schemas"]["CreateOrUpdateVersionRequest"][];
+            versions?: components["schemas"]["CreateVersionRequest"][];
             pricingInfos?: components["schemas"]["ActorRunPricingInfo"][];
             categories?: string[] | null;
             defaultRunOptions?: components["schemas"]["DefaultRunOptions"] | null;
@@ -1100,6 +1118,21 @@ interface components {
         VersionResponse: {
             data: components["schemas"]["Version"];
         };
+        UpdateVersionRequest: {
+            versionNumber?: string;
+            sourceType?: components["schemas"]["WritableVersionSourceType"];
+            envVars?: components["schemas"]["EnvVarRequest"][];
+            applyEnvVarsToBuild?: boolean | null;
+            buildTag?: string | null;
+            sourceFiles?: components["schemas"]["VersionSourceFiles"];
+            gitRepoUrl?: string;
+            tarballUrl?: string;
+            gitHubGistUrl?: string;
+        };
+        UpdateBuildOnPushRequest: {
+            providerId: string;
+            enabled: boolean;
+        };
         ListOfEnvVars: {
             total: number;
             items: components["schemas"]["EnvVar"][];
@@ -1107,7 +1140,6 @@ interface components {
         ListOfEnvVarsResponse: {
             data: components["schemas"]["ListOfEnvVars"];
         };
-        EnvVarRequest: WithRequired<components["schemas"]["EnvVar"], "value">;
         EnvVarResponse: {
             data: components["schemas"]["EnvVar"];
         };
@@ -1116,6 +1148,35 @@ interface components {
             actorId?: string | null;
             actorTaskId?: string | null;
             actorRunId?: string | null;
+        };
+        WebhookSlackMessage: {
+            userIntegrationId?: string;
+            channelId?: string;
+            messageTemplate?: string;
+        };
+        WebhookDatasetTransformation: {
+            fields?: string[];
+            omit?: string[];
+        };
+        WebhookGoogleMail: {
+            userIntegrationId?: string;
+            emailTo?: string[];
+            subject?: string;
+            body?: string;
+            attachmentFormat?: string;
+            attachmentTransformation?: components["schemas"]["WebhookDatasetTransformation"];
+        };
+        WebhookGoogleDrive: {
+            userIntegrationId?: string;
+            filename?: string;
+            format?: string | null;
+            transformation?: components["schemas"]["WebhookDatasetTransformation"];
+        };
+        WebhookGithubIssue: {
+            userIntegrationId?: string;
+            repository?: string;
+            title?: string;
+            body?: string;
         };
         WebhookDispatchStatus: "ACTIVE" | "SUCCEEDED" | "FAILED";
         WebhookLastDispatch: {
@@ -1126,29 +1187,57 @@ interface components {
         WebhookStats: {
             totalDispatches?: number;
         };
-        WebhookListItem: {
+        WebhookResource: {
             id: string;
             createdAt: Date;
             modifiedAt: Date;
             userId: string;
             isAdHoc?: boolean | null;
-            isApifyIntegration?: boolean;
             isEnabled?: boolean;
             actionType?: string;
+            isApifyIntegration?: boolean | null;
             shouldInterpolateStrings?: boolean | null;
             eventTypes: components["schemas"]["WebhookEventType"][];
             condition: components["schemas"]["WebhookCondition"];
             ignoreSslErrors: boolean;
-            doNotRetry: boolean;
-            requestUrl: string;
+            doNotRetry?: boolean | null;
+            requestUrl?: string | null;
+            payloadTemplate?: string | null;
+            headersTemplate?: string | null;
+            title?: string | null;
+            description?: string | null;
+            slackMessage?: components["schemas"]["WebhookSlackMessage"];
+            googleMail?: components["schemas"]["WebhookGoogleMail"];
+            googleDrive?: components["schemas"]["WebhookGoogleDrive"];
+            githubIssue?: components["schemas"]["WebhookGithubIssue"];
             lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
             stats?: components["schemas"]["WebhookStats"] | null;
         };
-        ListOfWebhooks: components["schemas"]["PaginationResponse"] & {
-            items: components["schemas"]["WebhookListItem"][];
+        ListOfWebhookResources: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["WebhookResource"][];
         };
-        ListOfWebhooksResponse: {
-            data: components["schemas"]["ListOfWebhooks"];
+        ListOfWebhookResourcesResponse: {
+            data: components["schemas"]["ListOfWebhookResources"];
+        };
+        ActorOAuthConnection: {
+            _id: string;
+            actorId: string;
+            oAuthProviderType: "CUSTOM" | "GOOGLE";
+            createdAt: Date;
+            modifiedAt: Date;
+            credentials?: {
+                clientId?: string;
+                scope?: string;
+                label?: string;
+                imageUrl?: string;
+            };
+        };
+        ListOfActorOAuthConnections: {
+            total: number;
+            items: components["schemas"]["ActorOAuthConnection"][];
+        };
+        ListOfActorOAuthConnectionsResponse: {
+            data: components["schemas"]["ListOfActorOAuthConnections"];
         };
         ActorJobStatus: "READY" | "RUNNING" | "SUCCEEDED" | "FAILED" | "TIMING-OUT" | "TIMED-OUT" | "ABORTING" | "ABORTED";
         RunOrigin: "DEVELOPMENT" | "WEB" | "API" | "SCHEDULER" | "TEST" | "WEBHOOK" | "ACTOR" | "CLI" | "CI" | "STANDBY" | "MCP";
@@ -1156,6 +1245,9 @@ interface components {
             origin: components["schemas"]["RunOrigin"];
             clientIp?: string;
             userAgent?: string;
+            githubActionsRunUrl?: string;
+            actorRunId?: string;
+            webhookDispatchId?: string;
         };
         BuildListItem: {
             id: string;
@@ -1164,7 +1256,7 @@ interface components {
             status: components["schemas"]["ActorJobStatus"];
             startedAt: Date;
             finishedAt?: Date | null;
-            usageTotalUsd: number;
+            usageTotalUsd?: number;
             buildNumber: string;
             buildNumberInt?: number;
             meta?: components["schemas"]["BuildMeta"];
@@ -1186,15 +1278,24 @@ interface components {
             betaPackages?: boolean | null;
             memoryMbytes?: number | null;
             diskMbytes?: number | null;
+            tag?: string | null;
+            debug?: boolean | null;
         };
         BuildUsage: {
             ACTOR_COMPUTE_UNITS?: number | null;
         };
+        ActorDefinitionMeta: {
+            templateId?: string;
+            generatedBy?: string;
+        };
         ActorDefinition: {
             actorSpecification?: 1;
             name?: string;
+            title?: string;
+            description?: string;
             version?: string;
             buildTag?: string;
+            meta?: components["schemas"]["ActorDefinitionMeta"];
             environmentVariables?: {
                 [key: string]: string;
             };
@@ -1202,14 +1303,21 @@ interface components {
             dockerContextDir?: string;
             readme?: string | null;
             input?: Record<string, unknown> | null;
+            output?: Record<string, unknown> | null;
             changelog?: string | null;
             storages?: {
                 dataset?: Record<string, unknown>;
+                datasets?: {
+                    [key: string]: Record<string, unknown>;
+                };
+                keyValueStore?: Record<string, unknown>;
             };
             defaultMemoryMbytes?: string | number;
             minMemoryMbytes?: number;
             maxMemoryMbytes?: number;
             usesStandbyMode?: boolean;
+            webServerSchema?: Record<string, unknown>;
+            webServerMcpPath?: string;
         };
         Build: {
             id: string;
@@ -1226,14 +1334,21 @@ interface components {
             usageUsd?: components["schemas"]["BuildUsage"] | null;
             inputSchema?: string | null;
             readme?: string | null;
+            changelog?: string | null;
+            exitCode?: number | null;
+            gitCommitId?: string;
+            gitBranchName?: string;
+            createdByOrganizationMemberUserId?: string;
             buildNumber: string;
             imageDigest?: string | null;
             actVersion?: {
                 sourceType?: components["schemas"]["VersionSourceType"];
-                buildTag?: string;
+                buildTag?: string | null;
                 versionNumber?: string;
                 gitRepoUrl?: string;
                 sourceFiles?: components["schemas"]["SourceCodeFile"][];
+                gitHubGistUrl?: string;
+                tarballUrl?: string;
             };
             actorDefinition?: components["schemas"]["ActorDefinition"] | null;
         };
@@ -1246,6 +1361,13 @@ interface components {
             userAgent?: string | null;
             scheduleId?: string | null;
             scheduledAt?: Date | null;
+            actorRunId?: string;
+            webhookDispatchId?: string;
+            scheduledAct2Id?: string;
+            scheduledActorTaskId?: string;
+        };
+        RunStandby: {
+            deployment: "SINGLE_TENANT" | "MULTI_TENANT_OWNER_PAID" | "MULTI_TENANT_FREE_USERS" | "MULTI_TENANT_PAYING_USERS";
         };
         RunListItem: {
             id: string;
@@ -1263,6 +1385,7 @@ interface components {
             defaultKeyValueStoreId: string;
             defaultDatasetId: string;
             defaultRequestQueueId: string;
+            standby?: components["schemas"]["RunStandby"] | null;
         };
         ListOfRuns: components["schemas"]["PaginationResponse"] & {
             items: components["schemas"]["RunListItem"][];
@@ -1299,13 +1422,24 @@ interface components {
             metamorph?: number;
             computeUnits?: number;
         };
+        RunEventUsage: {
+            eventTotalUsd: number;
+            eventTitle: string;
+        };
+        IntegrationTracking: {
+            platform?: string;
+            appId?: string;
+            isAiTool?: boolean;
+        };
         RunOptions: {
             build: string;
             timeoutSecs: number;
             memoryMbytes: number;
             diskMbytes: number;
+            restartOnError?: boolean | null;
             maxItems?: number | null;
             maxTotalChargeUsd?: number | null;
+            isMaxTotalChargeUsdSetByUser?: boolean;
         };
         GeneralAccess: "ANYONE_WITH_ID_CAN_READ" | "ANYONE_WITH_NAME_CAN_READ" | "FOLLOW_USER_SETTING" | "RESTRICTED";
         RunUsage: {
@@ -1321,6 +1455,7 @@ interface components {
             DATA_TRANSFER_EXTERNAL_GBYTES?: number | null;
             PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number | null;
             PROXY_SERPS?: number | null;
+            PROXY_UNBLOCKER_UNITS?: number | null;
         };
         RunUsageUsd: {
             ACTOR_COMPUTE_UNITS?: number | null;
@@ -1335,12 +1470,14 @@ interface components {
             DATA_TRANSFER_EXTERNAL_GBYTES?: number | null;
             PROXY_RESIDENTIAL_TRANSFER_GBYTES?: number | null;
             PROXY_SERPS?: number | null;
+            PROXY_UNBLOCKER_UNITS?: number | null;
         };
         RunMetamorphEvent: {
             createdAt: Date;
             actorId: string;
             buildId: string;
             inputKey?: string | null;
+            buildTags?: string[];
         };
         Run: {
             id: string;
@@ -1357,6 +1494,20 @@ interface components {
             stats: components["schemas"]["RunStats"];
             chargedEventCounts?: {
                 [key: string]: number;
+            };
+            accountedChargedEventCounts?: {
+                [key: string]: number;
+            } | null;
+            eventUsage?: {
+                [key: string]: components["schemas"]["RunEventUsage"];
+            };
+            externalChargedTotalUsd?: number;
+            standby?: components["schemas"]["RunStandby"] | null;
+            integrationTracking?: components["schemas"]["IntegrationTracking"];
+            createdByOrganizationMemberUserId?: string;
+            consoleUrl?: string;
+            output?: {
+                [key: string]: string;
             };
             options: components["schemas"]["RunOptions"];
             buildId: string;
@@ -1404,6 +1555,7 @@ interface components {
         DatasetResource: {
             id: string;
             name?: string | null;
+            title?: string | null;
             userId: string;
             createdAt: Date;
             modifiedAt: Date;
@@ -1477,6 +1629,7 @@ interface components {
         KeyValueStoreResource: {
             id: string;
             name?: string | null;
+            title?: string | null;
             userId?: string | null;
             username?: string | null;
             createdAt: Date;
@@ -1540,6 +1693,7 @@ interface components {
         RequestQueueResource: {
             id: components["schemas"]["QueueId"];
             name?: string | null;
+            title?: string | null;
             userId: components["schemas"]["QueueUserId"];
             actId?: string | null;
             actRunId?: string | null;
@@ -1583,8 +1737,11 @@ interface components {
             handledAt?: Date | null;
         };
         RequestId: string;
+        LockExpiresAt: Date;
         RequestResource: components["schemas"]["RequestBase"] & {
             id: components["schemas"]["RequestId"];
+            lockExpiresAt?: components["schemas"]["LockExpiresAt"];
+            lockByClient?: string;
         };
         ListOfRequests: {
             items: components["schemas"]["RequestResource"][];
@@ -1663,7 +1820,6 @@ interface components {
         UpdateRequestResponse: {
             data: components["schemas"]["RequestRegistration"];
         };
-        LockExpiresAt: Date;
         RequestLockInfo: {
             lockExpiresAt: components["schemas"]["LockExpiresAt"];
         };
@@ -1709,6 +1865,7 @@ interface components {
         };
         TaskStats: {
             totalRuns?: number;
+            lastRunStartedAt?: Date | null;
         };
         TaskListItem: {
             id: string;
@@ -1716,11 +1873,13 @@ interface components {
             actId: string;
             actName?: string | null;
             name: string;
+            title?: string | null;
             username?: string | null;
             actUsername?: string | null;
             createdAt: Date;
             modifiedAt: Date;
             stats?: components["schemas"]["TaskStats"] | null;
+            isPublic?: boolean;
         };
         ListOfTasks: components["schemas"]["PaginationResponse"] & {
             items: components["schemas"]["TaskListItem"][];
@@ -1735,6 +1894,8 @@ interface components {
             maxItems?: number | null;
             maxTotalChargeUsd?: number | null;
             restartOnError?: boolean | null;
+            isMaxTotalChargeUsdSetByUser?: boolean | null;
+            forcePermissionLevel?: components["schemas"]["ActorPermissionLevel"] | null;
         };
         TaskInput: {
             [key: string]: unknown;
@@ -1746,6 +1907,12 @@ interface components {
             inputSchemaFields?: string[] | null;
             datasetName?: string | null;
             datasetView?: string | null;
+            categorization?: string | null;
+            highlightedFields?: string[] | null;
+            faq?: {
+                question: string;
+                answer: string;
+            }[] | null;
         };
         CreateTaskRequest: {
             actId: string;
@@ -1762,6 +1929,7 @@ interface components {
             userId: string;
             actId: string;
             name: string;
+            nameLowerCase?: string;
             username?: string | null;
             createdAt: Date;
             modifiedAt: Date;
@@ -1789,24 +1957,6 @@ interface components {
             publicConfig?: components["schemas"]["TaskPublicConfig"];
             isPublic?: boolean;
         };
-        WebhookResource: {
-            id: string;
-            createdAt: Date;
-            modifiedAt: Date;
-            userId: string;
-            isAdHoc?: boolean | null;
-            shouldInterpolateStrings?: boolean | null;
-            eventTypes: components["schemas"]["WebhookEventType"][];
-            condition: components["schemas"]["WebhookCondition"];
-            ignoreSslErrors: boolean;
-            doNotRetry?: boolean | null;
-            requestUrl?: string | null;
-            payloadTemplate?: string | null;
-            headersTemplate?: string | null;
-            description?: string | null;
-            lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
-            stats?: components["schemas"]["WebhookStats"] | null;
-        };
         UpdateRunRequest: {
             runId?: string;
             statusMessage?: string;
@@ -1816,18 +1966,63 @@ interface components {
         ChargeRunRequest: {
             eventName: string;
             count: number;
+            requestId?: string;
+        };
+        ActorOAuthAccount: {
+            _id: string;
+            userId: string;
+            connectionId: string;
+            createdAt: Date;
+            modifiedAt: Date;
+            authorizedAt?: Date | null;
+            description?: string | null;
+            data: {
+                [key: string]: unknown;
+            };
+        };
+        ListOfActorOAuthAccounts: {
+            total: number;
+            items: components["schemas"]["ActorOAuthAccount"][];
+        };
+        ListOfActorOAuthAccountsResponse: {
+            data: components["schemas"]["ListOfActorOAuthAccounts"];
+        };
+        ActorOAuthAccountResponse: {
+            data: components["schemas"]["ActorOAuthAccount"];
         };
         StorageOwnership: "ownedByMe" | "sharedWithMe";
+        KeyValueStoreListStats: {
+            readCount?: number;
+            writeCount?: number;
+            deleteCount?: number;
+            listCount?: number;
+            s3StorageBytes?: number;
+        };
+        KeyValueStoreListItem: {
+            id: string;
+            name?: string | null;
+            title?: string | null;
+            userId?: string | null;
+            username?: string | null;
+            createdAt: Date;
+            modifiedAt: Date;
+            accessedAt: Date;
+            actId?: string | null;
+            actRunId?: string | null;
+            schema?: Record<string, unknown> | string | null;
+            generalAccess?: components["schemas"]["GeneralAccess"] | null;
+            stats?: components["schemas"]["KeyValueStoreListStats"];
+        };
         ListOfKeyValueStores: components["schemas"]["PaginationResponse"] & {
             unnamed?: boolean;
-            items: components["schemas"]["KeyValueStoreResource"][];
+            items: components["schemas"]["KeyValueStoreListItem"][];
         };
         ListOfKeyValueStoresResponse: {
             data: components["schemas"]["ListOfKeyValueStores"];
         };
         DatasetListItem: {
             id: string;
-            name: string;
+            name?: string | null;
             userId: string;
             createdAt: Date;
             modifiedAt: Date;
@@ -1848,11 +2043,20 @@ interface components {
         ListOfDatasetsResponse: {
             data: components["schemas"]["ListOfDatasets"];
         };
+        RequestQueueListStats: {
+            deleteCount?: number;
+            headItemReadCount?: number;
+            readCount?: number;
+            writeCount?: number;
+            s3StorageBytes?: number;
+            dynamodbStorageBytes?: number;
+        };
         RequestQueueListItem: {
             id: components["schemas"]["QueueId"];
-            name: string;
+            name?: string | null;
+            title?: string | null;
             userId: components["schemas"]["QueueUserId"];
-            username: string;
+            username?: string;
             createdAt: components["schemas"]["QueueCreatedAt"];
             modifiedAt: components["schemas"]["QueueModifiedAt"];
             accessedAt: components["schemas"]["QueueAccessedAt"];
@@ -1864,7 +2068,7 @@ interface components {
             actRunId?: string | null;
             hadMultipleClients: components["schemas"]["HadMultipleClients"];
             generalAccess?: components["schemas"]["GeneralAccess"] | null;
-            stats?: components["schemas"]["RequestQueueStats"];
+            stats?: components["schemas"]["RequestQueueListStats"];
         };
         ListOfRequestQueues: components["schemas"]["PaginationResponse"] & {
             unnamed?: boolean;
@@ -1872,6 +2076,37 @@ interface components {
         };
         ListOfRequestQueuesResponse: {
             data: components["schemas"]["ListOfRequestQueues"];
+        };
+        WebhookListItem: {
+            id: string;
+            createdAt: Date;
+            modifiedAt: Date;
+            userId: string;
+            isAdHoc?: boolean | null;
+            isApifyIntegration?: boolean;
+            isEnabled?: boolean;
+            actionType?: string;
+            shouldInterpolateStrings?: boolean | null;
+            eventTypes: components["schemas"]["WebhookEventType"][];
+            condition: components["schemas"]["WebhookCondition"];
+            ignoreSslErrors: boolean;
+            doNotRetry: boolean;
+            requestUrl?: string | null;
+            headersTemplate?: string | null;
+            title?: string | null;
+            description?: string | null;
+            slackMessage?: components["schemas"]["WebhookSlackMessage"];
+            googleMail?: components["schemas"]["WebhookGoogleMail"];
+            googleDrive?: components["schemas"]["WebhookGoogleDrive"];
+            githubIssue?: components["schemas"]["WebhookGithubIssue"];
+            lastDispatch?: components["schemas"]["WebhookLastDispatch"] | null;
+            stats?: components["schemas"]["WebhookStats"] | null;
+        };
+        ListOfWebhooks: components["schemas"]["PaginationResponse"] & {
+            items: components["schemas"]["WebhookListItem"][];
+        };
+        ListOfWebhooksResponse: {
+            data: components["schemas"]["ListOfWebhooks"];
         };
         CreateWebhookRequest: {
             isAdHoc?: boolean | null;
@@ -1902,10 +2137,16 @@ interface components {
             shouldInterpolateStrings?: boolean | null;
         };
         WebhookDispatchWebhookSummary: {
+            _id?: string;
             actionType?: string;
             condition?: components["schemas"]["WebhookCondition"];
             requestUrl?: string | null;
             isAdHoc?: boolean;
+            isApifyIntegration?: boolean | null;
+            slackMessage?: components["schemas"]["WebhookSlackMessage"];
+            googleMail?: components["schemas"]["WebhookGoogleMail"];
+            googleDrive?: components["schemas"]["WebhookGoogleDrive"];
+            githubIssue?: components["schemas"]["WebhookGithubIssue"];
         };
         WebhookDispatch: {
             id: string;
@@ -1927,6 +2168,9 @@ interface components {
                 errorMessage?: string | null;
                 responseStatus?: number | null;
                 responseBody?: string | null;
+                debugPostMessage?: {
+                    [key: string]: unknown;
+                };
             }[];
         };
         WebhookDispatchResponse: {
@@ -1951,6 +2195,9 @@ interface components {
             nextRunAt?: Date | null;
             lastRunAt?: Date | null;
         };
+        ScheduleNotifications: {
+            email?: boolean;
+        };
         ScheduleListItemActionRunActor: {
             id: string;
             type: "RUN_ACTOR";
@@ -1963,6 +2210,9 @@ interface components {
         };
         ScheduleListItemAction: components["schemas"]["ScheduleListItemActionRunActor"] | components["schemas"]["ScheduleListItemActionRunActorTask"];
         ScheduleListItem: components["schemas"]["ScheduleBase"] & {
+            title?: string | null;
+            notifications?: components["schemas"]["ScheduleNotifications"];
+            integrationTracking?: components["schemas"]["IntegrationTracking"];
             actions: components["schemas"]["ScheduleListItemAction"][];
         };
         ListOfSchedules: components["schemas"]["PaginationResponse"] & {
@@ -1995,7 +2245,17 @@ interface components {
             timezone?: string | null;
             description?: string | null;
             title?: string | null;
+            notifications?: components["schemas"]["ScheduleNotifications"];
             actions?: components["schemas"]["ScheduleCreateAction"][] | null;
+        };
+        ScheduleUiState: {
+            version?: number;
+            data?: {
+                cronExpression?: string;
+                timezone?: string;
+            } & {
+                [key: string]: unknown;
+            };
         };
         ScheduleActionRunActor: {
             id: string;
@@ -2014,9 +2274,9 @@ interface components {
         Schedule: components["schemas"]["ScheduleBase"] & {
             description?: string | null;
             title?: string | null;
-            notifications?: {
-                email?: boolean;
-            };
+            notifications?: components["schemas"]["ScheduleNotifications"];
+            uiState?: components["schemas"]["ScheduleUiState"];
+            integrationTracking?: components["schemas"]["IntegrationTracking"];
             actions: components["schemas"]["ScheduleAction"][];
         };
         ScheduleResponse: {
@@ -2041,13 +2301,19 @@ interface components {
             forceContainsSignificantPriceChange?: boolean;
             isPPEPlatformUsagePaidByUser?: boolean;
             reasonForChange?: string | null;
-            trialMinutes?: number | null;
-            unitName?: string | null;
-            pricePerUnitUsd?: number | null;
             minimalMaxTotalChargeUsd?: number | null;
             pricingPerEvent?: {
                 [key: string]: unknown;
             } | null;
+            pricePerUnitUsd?: number;
+            trialMinutes?: number;
+            unitName?: string;
+            tieredPricing?: {
+                [key: string]: {
+                    tieredPricePerUnitUsd?: number;
+                };
+            };
+            notifiedAboutRentalToPpePriceChangeAt?: Date | null;
         };
         StoreActor: {
             id: string;
@@ -2069,6 +2335,15 @@ interface components {
             bookmarkCount?: number;
             badge?: string | null;
             readmeSummary?: string;
+            inputSchema?: {
+                type: string;
+                properties: {
+                    [key: string]: {
+                        type?: string | string[];
+                    };
+                };
+                required?: string[];
+            };
         };
         ListOfStoreActors: components["schemas"]["PaginationResponse"] & {
             items: components["schemas"]["StoreActor"][];
@@ -2093,12 +2368,13 @@ interface components {
             data: components["schemas"]["UserPublicInfo"];
         };
         ProxyGroup: {
+            id?: string;
             name: string;
             description: string | null;
-            availableCount: number;
+            availableCount?: number;
         };
         ProxyResource: {
-            password: string;
+            password?: string | null;
             groups: components["schemas"]["ProxyGroup"][];
         };
         AvailableProxyGroups: {
@@ -2132,6 +2408,17 @@ interface components {
             planPricing?: {
                 [key: string]: unknown;
             };
+            planVersion?: number;
+            legacyPlanId?: string;
+            planTags?: string[];
+            overageThresholdUsd?: number;
+            maxMonthlyUnblockerUnits?: number;
+            maxPublicActorTaskCount?: number;
+            maxPublicActorTaskCountPerActor?: number;
+            forceBillingInterval?: string;
+            personalizedSupport?: string | null;
+            monitoringLevel?: "STANDARD" | null;
+            isPayingCustomer?: boolean;
         };
         EffectivePlatformFeature: {
             isEnabled: boolean;
@@ -2156,12 +2443,13 @@ interface components {
             id?: string;
             username: string;
             profile?: components["schemas"]["UserProfile"];
-            email?: string;
+            email?: string | null;
             proxy?: components["schemas"]["ProxyResource"];
             plan?: components["schemas"]["UserPlan"];
             effectivePlatformFeatures?: components["schemas"]["EffectivePlatformFeatures"];
             createdAt?: Date;
             isPaying?: boolean;
+            organizationOwnerUserId?: string | null;
         };
         UserPrivateInfoResponse: {
             data: components["schemas"]["UserPrivateInfo"];
@@ -2218,6 +2506,7 @@ interface components {
             maxTeamAccountSeatCount: number;
             dataRetentionDays: number;
             maxScheduleCount?: number;
+            maxMonthlyUnblockerUnits?: number;
         };
         CurrentUsage: {
             monthlyUsageUsd: number;
@@ -2231,6 +2520,7 @@ interface components {
             activeActorJobCount: number;
             teamAccountSeatCount: number;
             scheduleCount?: number;
+            monthlyUnblockerUnits?: number;
         };
         AccountLimits: {
             monthlyUsageCycle: components["schemas"]["UsageCycle"];
@@ -2243,6 +2533,48 @@ interface components {
         UpdateLimitsRequest: {
             maxMonthlyUsageUsd?: number;
             dataRetentionDays?: number;
+        };
+        GitProviderWorkspace: {
+            id: string;
+            label: string;
+        };
+        GitProviderIntegration: {
+            id: string;
+            provider: "github" | "gitlab" | "bitbucket";
+            workspaces: components["schemas"]["GitProviderWorkspace"][];
+            addWorkspaceUrl?: string;
+        };
+        ListOfGitProviderIntegrationsResponse: {
+            data: components["schemas"]["GitProviderIntegration"][];
+        };
+        GitRepoFile: {
+            path: string;
+            content: string;
+            encoding: "utf-8" | "base64";
+        };
+        CreateGitRepoRequest: {
+            workspace: string;
+            repoName: string;
+            isPrivate: boolean;
+            files?: components["schemas"]["GitRepoFile"][];
+            templateArchiveUrl?: string;
+        };
+        GitRepo: {
+            sshUrl: string;
+            httpsUrl: string;
+            htmlUrl: string;
+        };
+        GitRepoResponse: {
+            data: components["schemas"]["GitRepo"];
+        };
+        RegisterDeploymentKeyRequest: {
+            actorId: string;
+            repoName: string;
+        };
+        RegisterDeploymentKeyResponse: {
+            data: {
+                repoName: string;
+            };
         };
         BrowserInfoResponse: {
             method: string;
@@ -2419,8 +2751,6 @@ interface DatasetResourceRePointed {
 // @public
 interface DatasetResourceSpecGaps {
     // (undocumented)
-    title?: string;
-    // (undocumented)
     username?: string;
 }
 
@@ -2568,6 +2898,10 @@ type GeneratedBatchAddResult = Schemas['BatchAddResult'];
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
 type GeneratedBatchDeleteResult = Schemas['BatchDeleteResult'];
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+type GeneratedBuildActVersion = NonNullable<Schemas['Build']['actVersion']>;
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
@@ -2840,7 +3174,7 @@ export interface HttpRequest {
 }
 
 // @public
-export type HttpRequestBody = string | Buffer | ArrayBuffer | ArrayBufferView | Readable;
+export type HttpRequestBody = string | Buffer | ArrayBuffer | ArrayBufferView | Readable | Blob;
 
 // @public
 export interface HttpResponse {
@@ -2975,10 +3309,10 @@ export interface KeyValueStoreRecordOptions extends TimeoutOptions {
 }
 
 // @public
-export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Readable;
+export type KeyValueStoreRecordValue = JsonValue | ArrayBuffer | TypedArray | Blob | Readable;
 
 // @public
-export interface KeyValueStoreResource extends Omit<Schemas['KeyValueStoreResource'], keyof KeyValueStoreResourceRePointed>, KeyValueStoreResourceRePointed, KeyValueStoreResourceSpecGaps {
+export interface KeyValueStoreResource extends Omit<Schemas['KeyValueStoreResource'], keyof KeyValueStoreResourceRePointed>, KeyValueStoreResourceRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -2988,13 +3322,6 @@ interface KeyValueStoreResourceRePointed {
     generalAccess?: STORAGE_GENERAL_ACCESS | null;
     // (undocumented)
     stats?: KeyValueStoreStats;
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface KeyValueStoreResourceSpecGaps {
-    // (undocumented)
-    title?: string;
 }
 
 // @public
@@ -3444,8 +3771,6 @@ interface RequestQueueResourceRePointed {
 // @public
 interface RequestQueueResourceSpecGaps {
     // (undocumented)
-    title?: string;
-    // (undocumented)
     username?: string;
 }
 
@@ -3530,6 +3855,7 @@ export interface RunChargeOptions extends TimeoutOptions {
     count?: number;
     eventName: string;
     idempotencyKey?: string;
+    requestId?: string;
 }
 
 // @public
@@ -3628,14 +3954,7 @@ interface RunMetaRePointed {
 }
 
 // @public
-export interface RunOptions extends GeneratedRunOptions, RunOptionsSpecGaps {
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface RunOptionsSpecGaps {
-    // (undocumented)
-    restartOnError?: boolean;
+export interface RunOptions extends GeneratedRunOptions {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3695,7 +4014,7 @@ export interface RunWaitForFinishOptions extends TimeoutOptions {
 }
 
 // @public
-export interface Schedule extends Omit<Schemas['Schedule'], keyof ScheduleRePointed | keyof ScheduleClientNarrowings>, ScheduleRePointed, ScheduleClientNarrowings {
+export interface Schedule extends Omit<Schemas['Schedule'], keyof ScheduleRePointed | keyof ScheduleClientNarrowings | keyof ScheduleSpecNarrowings>, ScheduleRePointed, ScheduleClientNarrowings, ScheduleSpecNarrowings {
 }
 
 // @public
@@ -3782,6 +4101,13 @@ export interface ScheduleLogEntry extends GeneratedScheduleLogEntry {
 interface ScheduleRePointed {
     // (undocumented)
     actions: ScheduleAction[];
+}
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public (undocumented)
+interface ScheduleSpecNarrowings {
+    // (undocumented)
+    uiState?: NonNullable<Schemas['Schedule']['uiState']> | null;
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3940,7 +4266,7 @@ export interface TaskLastRunOptions extends ActorLastRunOptions {
 }
 
 // @public
-export interface TaskListItem extends Omit<Schemas['TaskListItem'], keyof TaskListItemRePointed>, TaskListItemRePointed, TaskListItemSpecGaps {
+export interface TaskListItem extends Omit<Schemas['TaskListItem'], keyof TaskListItemRePointed>, TaskListItemRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -3948,13 +4274,6 @@ export interface TaskListItem extends Omit<Schemas['TaskListItem'], keyof TaskLi
 interface TaskListItemRePointed {
     // (undocumented)
     stats?: TaskStats | null;
-}
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface TaskListItemSpecGaps {
-    // (undocumented)
-    title?: string | null;
 }
 
 // @public
@@ -4289,7 +4608,7 @@ interface WebhookLastDispatchRePointed {
 }
 
 // @public
-export interface WebhookResource extends Omit<Schemas['WebhookResource'], keyof WebhookResourceRePointed>, WebhookResourceRePointed, WebhookResourceSpecGaps {
+export interface WebhookResource extends Omit<Schemas['WebhookResource'], keyof WebhookResourceRePointed>, WebhookResourceRePointed {
 }
 
 // Not exported by the entry point; reachable only as a referenced type.
@@ -4305,13 +4624,6 @@ interface WebhookResourceRePointed {
     stats?: WebhookStats | null;
 }
 
-// Not exported by the entry point; reachable only as a referenced type.
-// @public
-interface WebhookResourceSpecGaps {
-    // (undocumented)
-    isApifyIntegration?: boolean;
-}
-
 // @public
 export interface WebhookStats extends GeneratedWebhookStats {
 }
@@ -4320,12 +4632,6 @@ export interface WebhookStats extends GeneratedWebhookStats {
 export type WebhookUpdateData = Partial<Pick<WebhookResource, 'isAdHoc' | 'condition' | 'ignoreSslErrors' | 'doNotRetry' | 'requestUrl' | 'payloadTemplate' | 'shouldInterpolateStrings' | 'isApifyIntegration' | 'headersTemplate' | 'description'> & {
     eventTypes: readonly WebhookEventType[];
 }> & WebhookIdempotencyKey;
-
-// Not exported by the entry point; reachable only as a referenced type.
-// @public (undocumented)
-type WithRequired<T, K extends keyof T> = T & {
-    [P in K]-?: T[P];
-};
 
 // (No @packageDocumentation comment for this package)
 

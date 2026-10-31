@@ -81,7 +81,7 @@
     },
     "apify": {
         "openapiSpec": {
-            "version": "v2-2026-10-08T073338Z"
+            "version": "v2-2026-10-29T100357Z"
         }
     },
     "dependencies": {
@@ -107,15 +107,15 @@
         "@rspack/core": "^2.2.8",
         "@types/compression": "^1.8.1",
         "@types/express": "^5.0.6",
-        "@types/node": "^24.19.0",
+        "@types/node": "^26.0.0",
         "ajv": "^8.20.0",
         "body-parser": "^2.3.0",
         "compression": "^1.8.2",
         "esbuild": "0.28.2",
         "express": "^5.2.1",
-        "oxfmt": "0.73.0",
-        "oxlint": "1.87.0",
-        "oxlint-tsgolint": "7.0.2003",
+        "oxfmt": "0.75.0",
+        "oxlint": "1.90.0",
+        "oxlint-tsgolint": "7.0.2005",
         "puppeteer": "^25.12.0",
         "rimraf": "^6.1.3",
         "rolldown": "^1.2.11",
@@ -125,11 +125,11 @@
         "webpack": "^5.111.1",
         "webpack-cli": "^7.2.3"
     },
-    "packageManager": "pnpm@12.10.1",
+    "packageManager": "pnpm@12.16.1",
     "devEngines": {
         "packageManager": {
             "name": "pnpm",
-            "version": "12.10.1",
+            "version": "12.16.1",
             "onFail": "warn"
         }
     }
