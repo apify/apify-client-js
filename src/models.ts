@@ -278,6 +278,20 @@ export interface VersionClientNarrowings {
 }
 
 /**
+ * Fields the API accepts and returns on a `SOURCE_FILES` or `TARBALL` Actor version that the OpenAPI spec
+ * does not describe yet.
+ *
+ * TODO: Remove once the spec covers it.
+ */
+export interface VersionSpecGaps {
+    /**
+     * The Actor's folder inside the uploaded source, as a POSIX path relative to the upload root, such as
+     * `actors/typescript-actor`. When absent, the upload root is the Actor's folder.
+     */
+    actorPath?: string;
+}
+
+/**
  * Fields every Actor version carries, whatever its source type.
  *
  * The spec models a version as one flat object with all four source locations optional. This client
@@ -295,7 +309,7 @@ export interface BaseVersion<SourceType extends `${ActorSourceType}`>
  * An Actor version whose source code is stored on the Apify platform.
  * @since Added in 2.6.1
  */
-export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.SourceFiles}`> {
+export interface VersionSourceFiles extends BaseVersion<`${ActorSourceType.SourceFiles}`>, VersionSpecGaps {
     sourceFiles: (SourceCodeFile | SourceCodeFolder)[];
 }
 
@@ -305,7 +319,7 @@ export interface VersionGitRepo extends BaseVersion<`${ActorSourceType.GitRepo}`
 }
 
 /** An Actor version built from a downloadable tarball or ZIP archive. */
-export interface VersionTarball extends BaseVersion<`${ActorSourceType.Tarball}`> {
+export interface VersionTarball extends BaseVersion<`${ActorSourceType.Tarball}`>, VersionSpecGaps {
     tarballUrl: NonNullable<GeneratedVersion['tarballUrl']>;
 }
 

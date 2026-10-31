@@ -75,6 +75,7 @@ import type {
     VersionClientNarrowings,
     VersionRePointed,
     VersionSourceLocation,
+    VersionSpecGaps,
     WebhookConditionKey,
     WebhookDispatchRePointed,
     WebhookDispatchStatus,
@@ -267,6 +268,7 @@ export type AdapterKeyGuards = AssertAll<
         Equals<WebhookConditionKey & keyof Schemas['WebhookCondition'], WebhookConditionKey>,
         GapsStillMissing<DatasetResourceSpecGaps, Schemas['DatasetResource']>,
         GapsStillMissing<DatasetStatsSpecGaps, Schemas['DatasetStats']>,
+        GapsStillMissing<VersionSpecGaps, Schemas['Version']>,
         GapsStillMissing<ActorResourceSpecGaps, Schemas['ActorResource']>,
         GapsStillMissing<RequestQueueResourceSpecGaps, Schemas['RequestQueueResource']>,
     ]

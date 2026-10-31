@@ -9,7 +9,13 @@ import type {
     ActorInput,
     ActorRunPricingInfo,
     ActorUpdateOptions,
+    ActorVersionUpdateData,
     Version,
+    VersionGitHubGist,
+    VersionGitRepo,
+    VersionSourceCode,
+    VersionSourceFiles,
+    VersionTarball,
 } from 'apify-client';
 import {
     ActorListSortBy,
@@ -709,6 +715,36 @@ describe('Actor methods', () => {
                 expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({ query: {}, params: { actorId }, body: actorVersion });
             });
+
+            test('create() sends `actorPath` on a multi-file version and reads it back', async () => {
+                const actorId = 'some-id';
+                const actorVersion = {
+                    versionNumber: '0.0',
+                    sourceType: ActorSourceType.SourceFiles,
+                    sourceFiles: [{ name: 'actors/x/src/main.js', format: 'TEXT', content: '' }],
+                    actorPath: 'actors/x',
+                } satisfies Version;
+                mockServer.setResponse({ body: { data: { ...fixtures.version, actorPath: 'actors/x' } } });
+
+                const res = await client.actor(actorId).versions().create(actorVersion);
+                validateRequest({
+                    query: {},
+                    params: { actorId },
+                    body: actorVersion,
+                    endpointId: 'create-actor-version',
+                });
+                expect(res).toMatchObject({ sourceType: 'SOURCE_FILES', actorPath: 'actors/x' });
+
+                mockServer.setResponse(null);
+            });
+
+            test('`actorPath` is typed on the multi-file and tarball variants only', () => {
+                expectTypeOf<VersionSourceFiles['actorPath']>().toEqualTypeOf<string | undefined>();
+                expectTypeOf<VersionTarball['actorPath']>().toEqualTypeOf<string | undefined>();
+                expectTypeOf<VersionGitRepo>().not.toHaveProperty('actorPath');
+                expectTypeOf<VersionGitHubGist>().not.toHaveProperty('actorPath');
+                expectTypeOf<VersionSourceCode>().not.toHaveProperty('actorPath');
+            });
         });
 
         describe('version()', () => {
@@ -809,6 +845,65 @@ describe('Actor methods', () => {
                 );
                 expect(browserRes).toEqual(asBrowserResult(res));
                 validateRequest({ query: {}, params: { actorId, versionNumber }, body: newFields });
+            });
+
+            test('get() passes `actorPath` through', async () => {
+                const actorId = 'some-id';
+                const versionNumber = '0.0';
+                mockServer.setResponse({ body: { data: { ...fixtures.version, actorPath: 'actors/x' } } });
+
+                const res = await client.actor(actorId).version(versionNumber).get();
+                validateRequest({ query: {}, params: { actorId, versionNumber }, endpointId: 'get-actor-version' });
+                expect(res).toMatchObject({ sourceType: 'SOURCE_FILES', actorPath: 'actors/x' });
+
+                mockServer.setResponse(null);
+            });
+
+            test('update() sends `actorPath` on a tarball version', async () => {
+                const actorId = 'some-id';
+                const versionNumber = '0.0';
+                const newFields = {
+                    sourceType: ActorSourceType.Tarball,
+                    tarballUrl: 'https://example.com/source.zip',
+                    actorPath: 'actors/x',
+                } satisfies ActorVersionUpdateData;
+                mockServer.setResponse({
+                    body: { data: { ...fixtures.version, sourceType: 'TARBALL', actorPath: 'actors/x' } },
+                });
+
+                const res = await client.actor(actorId).version(versionNumber).update(newFields);
+                validateRequest({
+                    query: {},
+                    params: { actorId, versionNumber },
+                    body: newFields,
+                    endpointId: 'update-actor-version',
+                });
+                expect(res).toMatchObject({ sourceType: 'TARBALL', actorPath: 'actors/x' });
+
+                mockServer.setResponse(null);
+            });
+
+            test('update() sends `actorPath: null` to remove the path', async () => {
+                const actorId = 'some-id';
+                const versionNumber = '0.0';
+                const newFields = { actorPath: null } satisfies ActorVersionUpdateData;
+
+                await client.actor(actorId).version(versionNumber).update(newFields);
+                validateRequest({
+                    query: {},
+                    params: { actorId, versionNumber },
+                    body: newFields,
+                    endpointId: 'update-actor-version',
+                });
+            });
+
+            test('`actorPath: null` is accepted by an update of a multi-file or tarball version only', () => {
+                type UpdateFor<SourceType> = Extract<ActorVersionUpdateData, { sourceType?: SourceType }>;
+                expectTypeOf<UpdateFor<'SOURCE_FILES'>['actorPath']>().toEqualTypeOf<string | null | undefined>();
+                expectTypeOf<UpdateFor<'TARBALL'>['actorPath']>().toEqualTypeOf<string | null | undefined>();
+                expectTypeOf<UpdateFor<'GIT_REPO'>>().not.toHaveProperty('actorPath');
+                expectTypeOf<UpdateFor<'GITHUB_GIST'>>().not.toHaveProperty('actorPath');
+                expectTypeOf<UpdateFor<'SOURCE_CODE'>>().not.toHaveProperty('actorPath');
             });
 
             test('delete() works', async () => {
