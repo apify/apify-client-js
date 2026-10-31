@@ -132,10 +132,26 @@ export class ActorVersionClient extends ResourceClient {
 }
 
 /**
+ * One version variant with every field optional. Where the variant carries `actorPath`, the update
+ * also accepts `null` for it. A version read back never has that `null`, so the read model keeps
+ * `actorPath?: string`.
+ */
+type ActorVersionUpdateVariant<V> = V extends unknown
+    ? 'actorPath' extends keyof V
+        ? Partial<Omit<V, 'actorPath'>> & {
+              /** The Actor's folder inside the uploaded source. `null` removes the stored path. */
+              actorPath?: string | null;
+          }
+        : Partial<V>
+    : never;
+
+/**
  * Fields that can be changed on an existing Actor version.
  *
  * All of them are optional, because the endpoint leaves untouched whatever the payload does not
  * mention. The version union enforces the pairing: a `sourceType` can only be sent next to the
  * source location it implies, never next to one of the other three.
+ *
+ * On a `SOURCE_FILES` or `TARBALL` version, `actorPath: null` removes the stored path.
  */
-export type ActorVersionUpdateData = Partial<Version>;
+export type ActorVersionUpdateData = ActorVersionUpdateVariant<Version>;

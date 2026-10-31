@@ -883,6 +883,29 @@ describe('Actor methods', () => {
                 mockServer.setResponse(null);
             });
 
+            test('update() sends `actorPath: null` to remove the path', async () => {
+                const actorId = 'some-id';
+                const versionNumber = '0.0';
+                const newFields = { actorPath: null } satisfies ActorVersionUpdateData;
+
+                await client.actor(actorId).version(versionNumber).update(newFields);
+                validateRequest({
+                    query: {},
+                    params: { actorId, versionNumber },
+                    body: newFields,
+                    endpointId: 'update-actor-version',
+                });
+            });
+
+            test('`actorPath: null` is accepted by an update of a multi-file or tarball version only', () => {
+                type UpdateFor<SourceType> = Extract<ActorVersionUpdateData, { sourceType?: SourceType }>;
+                expectTypeOf<UpdateFor<'SOURCE_FILES'>['actorPath']>().toEqualTypeOf<string | null | undefined>();
+                expectTypeOf<UpdateFor<'TARBALL'>['actorPath']>().toEqualTypeOf<string | null | undefined>();
+                expectTypeOf<UpdateFor<'GIT_REPO'>>().not.toHaveProperty('actorPath');
+                expectTypeOf<UpdateFor<'GITHUB_GIST'>>().not.toHaveProperty('actorPath');
+                expectTypeOf<UpdateFor<'SOURCE_CODE'>>().not.toHaveProperty('actorPath');
+            });
+
             test('delete() works', async () => {
                 const actorId = '204';
                 const versionNumber = '0.0';

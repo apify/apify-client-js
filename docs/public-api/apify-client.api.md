@@ -294,7 +294,13 @@ export class ActorVersionCollectionClient extends ResourceCollectionClient {
 export type ActorVersionListResult = Pick<PaginatedList<FinalVersion>, 'total' | 'items'>;
 
 // @public
-export type ActorVersionUpdateData = Partial<Version>;
+export type ActorVersionUpdateData = ActorVersionUpdateVariant<Version>;
+
+// Not exported by the entry point; reachable only as a referenced type.
+// @public
+type ActorVersionUpdateVariant<V> = V extends unknown ? 'actorPath' extends keyof V ? Partial<Omit<V, 'actorPath'>> & {
+    actorPath?: string | null;
+} : Partial<V> : never;
 
 // Not exported by the entry point; reachable only as a referenced type.
 // @public (undocumented)
