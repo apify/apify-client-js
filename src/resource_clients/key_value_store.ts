@@ -233,7 +233,8 @@ export class KeyValueStoreClient extends ResourceClient {
      * the URL will include a cryptographic signature which allows access without authentication.
      *
      * @param options - URL generation options (extends all options from {@link listKeys})
-     * @param options.expiresInSecs - Number of seconds until the signed URL expires. If omitted, the URL never expires.
+     * @param options.expiresInSecs - Number of seconds until the signed URL expires. Must be positive. If omitted, the URL
+     * never expires.
      * @param options.limit - Maximum number of keys to return.
      * @param options.prefix - Filter keys by prefix.
      * @returns A public URL string for accessing the keys list
@@ -257,7 +258,7 @@ export class KeyValueStoreClient extends ResourceClient {
                 exclusiveStartKey: ow.optional.string,
                 collection: ow.optional.string,
                 prefix: ow.optional.string,
-                expiresInSecs: ow.optional.number,
+                expiresInSecs: ow.optional.number.positive,
             }),
         );
 

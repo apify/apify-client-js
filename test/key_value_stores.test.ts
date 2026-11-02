@@ -733,6 +733,12 @@ describe('Key-Value Store methods', () => {
                 expect(keysPublicUrl.searchParams.get('signature')).toBeDefined();
                 expect(keysPublicUrl.pathname).toBe(`/v2/key-value-stores/${storeId}/keys`);
             });
+
+            it.each([0, -1])('rejects a non-positive expiresInSecs (%s)', async (expiresInSecs) => {
+                await expect(
+                    client.keyValueStore('id-with-secret-key').createKeysPublicUrl({ expiresInSecs }),
+                ).rejects.toThrow(/expiresInSecs/);
+            });
         });
     });
 });
