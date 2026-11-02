@@ -143,6 +143,8 @@ export interface ApifyRequestConfig {
     /**
      * Name of the header that carries the client's `Authorization` value for this request, which then goes out
      * without the `Authorization` header. A per-request header of either name still wins.
+     * {@link ActorServerClient.request} sets it to `X-Apify-Authorization`, which the platform consumes, so the
+     * `Authorization` header stays free for the Actor's own authentication.
      * @default 'Authorization'
      */
     authorizationHeader?: string;
