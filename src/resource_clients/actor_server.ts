@@ -203,8 +203,11 @@ export class ActorServerClient extends ResourceClient {
      * you consume it to the end or destroy it. Node.js only. Default is `'parsed'`.
      * @param options.timeoutSecs - Timeout for the HTTP request. Default is `'long'`. With `'stream'`, it bounds the
      * wait for the server to start responding.
-     * @returns The response of the Actor's server, with the body in the form `responseType` asks for
+     * @returns The response of the Actor's server, with the body in the form `responseType` asks for. An error
+     * response whose body doesn't parse as its content type comes with the raw bytes in `data`.
      * @throws {ApifyClientError} When the Actor is not a Server Actor.
+     * @throws {InvalidResponseBodyError} When a success response's body doesn't parse as its content type, with
+     * `responseType: 'parsed'`.
      * @throws {NotFoundError} When the Actor does not exist.
      * @see https://docs.apify.com/platform/actors/running/standby
      */
