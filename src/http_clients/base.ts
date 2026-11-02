@@ -655,7 +655,7 @@ export abstract class HttpClient {
         const isError = response.status >= 300;
         const isRetryable = isError && this.#isStatusCodeRetryable(response.status, config.retryStatusCodes);
         // An error response goes back to the caller as it is once no retry follows, which a stream body rules out.
-        const returnsError =
+        const shouldReturnError =
             isError &&
             config.throwOnErrorStatus === false &&
             (!isRetryable || requestIsStream || attempt > this.maxRetries);
@@ -663,7 +663,7 @@ export abstract class HttpClient {
         // A failed streaming request carries the API error body in the stream, so read it and let
         // `ApifyApiError` parse it like any other error body. A body that cannot be read leaves the error
         // without a message, which beats losing the status code to a stream error.
-        if (isError && !returnsError && isStream(response.body)) {
+        if (isError && !shouldReturnError && isStream(response.body)) {
             response.body = await concatStreamToBuffer(response.body).catch(() => undefined);
         }
 
@@ -693,7 +693,7 @@ export abstract class HttpClient {
         if (response.status === RATE_LIMIT_EXCEEDED_STATUS_CODE && config.throwOnErrorStatus !== false) {
             this.stats.addRateLimitError(attempt);
         }
-        if (returnsError) return apifyResponse;
+        if (shouldReturnError) return apifyResponse;
 
         const apiError = ApifyApiError.fromResponse(apifyResponse, attempt);
         if (!isRetryable) {
