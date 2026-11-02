@@ -157,7 +157,8 @@ export class ActorServerClient extends ResourceClient {
      *
      * @template T - Type of the parsed response body.
      * @param path - The path on the Actor's server, for example `/search`. It is always resolved against the server
-     * URL, so the request, and the token with it, can't be sent to another host. Pass the query in `params`.
+     * URL, so the request, and the token with it, can't be sent to another host. Pass the query in `params`. A
+     * fragment (`#...`) is dropped, since it's never sent to the server.
      * @param options - Request options
      * @param options.method - HTTP method of the request. Default is `'GET'`.
      * @param options.params - Query parameters of the request, converted the same way as for API calls.
@@ -212,8 +213,9 @@ export class ActorServerClient extends ResourceClient {
         }
 
         const serverUrl = await this.getUrl({ signal });
+        const serverPath = path.split('#')[0].replace(/^\/+/, '');
         return this.httpClient.call({
-            url: `${serverUrl.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`,
+            url: `${serverUrl.replace(/\/+$/, '')}/${serverPath}`,
             method,
             params,
             headers,

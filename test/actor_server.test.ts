@@ -235,6 +235,17 @@ describe('ActorServerClient', () => {
         expect(serverRequests()).toHaveLength(1);
     });
 
+    test('request() drops a fragment in the path, so the params still reach the server', async () => {
+        await client
+            .actor(ACTOR_ID)
+            .server()
+            .request('/search#results', { params: { q: 'apify' } });
+
+        const [request] = serverRequests();
+        expect(request.path).toBe(`${SERVER_PREFIX}/search`);
+        expect(request.query).toEqual({ q: 'apify' });
+    });
+
     test('request() sends a body large enough to compress uncompressed', async () => {
         const payload = { items: Array.from({ length: 100 }, () => 'x'.repeat(100)) };
 
