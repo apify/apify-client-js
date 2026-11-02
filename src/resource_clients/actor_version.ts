@@ -152,6 +152,8 @@ type ActorVersionUpdateVariant<V> = V extends unknown
  * mention. The version union enforces the pairing: a `sourceType` can only be sent next to the
  * source location it implies, never next to one of the other three.
  *
- * On a `SOURCE_FILES` or `TARBALL` version, `actorPath: null` removes the stored path.
+ * On a `SOURCE_FILES` or `TARBALL` version, `actorPath: null` removes the stored path. So does an
+ * update that sends `sourceType`, `sourceFiles`, or `tarballUrl` without `actorPath`, so send it
+ * again with every upload.
  */
 export type ActorVersionUpdateData = ActorVersionUpdateVariant<Version>;

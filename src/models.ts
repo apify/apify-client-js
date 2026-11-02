@@ -286,7 +286,8 @@ export interface VersionClientNarrowings {
 export interface VersionSpecGaps {
     /**
      * The Actor's folder inside the uploaded source, as a POSIX path relative to the upload root, such as
-     * `actors/typescript-actor`. When absent, the upload root is the Actor's folder.
+     * `actors/typescript-actor`. When absent, the upload root is the Actor's folder. At most 255 characters,
+     * with no leading, trailing, or repeated `/` and no `.` or `..` segment.
      */
     actorPath?: string;
 }
