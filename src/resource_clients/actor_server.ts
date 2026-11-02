@@ -178,9 +178,10 @@ export class ActorServerClient extends ResourceClient {
      *
      * The method resolves to any response of the server, error statuses included. A rate-limit (429) or Service
      * Unavailable (503) response is retried with the client's retry settings, and the last one is returned once the
-     * retries run out. The Actor's code can return these statuses too, and then it gets the request again. Request
-     * bodies are sent uncompressed unless `compression` is set, since the Actor's server may not decode a compressed
-     * body.
+     * retries run out. The Actor's code can return these statuses too, and then it gets the request again. A redirect
+     * is returned as it is, since following it would send the token to a host the Actor's code picked. A browser
+     * follows redirects itself, though, so there the token goes with a redirect. Request bodies are sent uncompressed
+     * unless `compression` is set, since the Actor's server may not decode a compressed body.
      *
      * @template T - Type of the parsed response body.
      * @param path - The path on the Actor's server, for example `/search`. It is always resolved against the server
@@ -252,6 +253,7 @@ export class ActorServerClient extends ResourceClient {
             throwOnErrorStatus: false,
             retryStatusCodes: SERVER_RETRY_STATUS_CODES,
             retryTransportErrors: false,
+            followRedirects: false,
             responseType,
             timeoutSecs,
             signal,

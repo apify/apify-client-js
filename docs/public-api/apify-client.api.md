@@ -485,6 +485,7 @@ export interface ApifyRequestConfig {
     compression?: HttpCompressor | false;
     data?: unknown;
     doNotRetryTimeouts?: boolean;
+    followRedirects?: boolean;
     headers?: Record<string, string>;
     method: HttpMethod;
     params?: Record<string, unknown>;
@@ -3203,6 +3204,7 @@ export type HttpMethod = Schemas['HttpMethod'];
 // @public
 export interface HttpRequest {
     body?: HttpRequestBody;
+    followRedirects: boolean;
     headers: Record<string, string>;
     method: HttpMethod;
     signal?: AbortSignal;

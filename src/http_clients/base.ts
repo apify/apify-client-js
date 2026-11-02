@@ -162,6 +162,12 @@ export interface ApifyRequestConfig {
      */
     retryTransportErrors?: boolean;
     /**
+     * Whether the transport follows redirects. With `false`, a redirect response is handled like an error status, so
+     * headers that carry the token never go to a host the server picked.
+     * @default true
+     */
+    followRedirects?: boolean;
+    /**
      * Aborts the call. Once the signal aborts, the attempt in flight is ended, no retry follows, and the call
      * rejects with the signal's `reason`.
      */
@@ -204,6 +210,11 @@ export interface HttpRequest {
     timeoutMillis?: number;
     /** Whether to hand the body back unread as a `Readable`, so the caller can stream it. */
     stream: boolean;
+    /**
+     * Whether to follow redirects. With `false`, return a redirect response as it is: the request carries a token
+     * that must not follow a redirect to another host.
+     */
+    followRedirects: boolean;
     /**
      * The caller's abort signal, to hand to the HTTP library alongside the timeout. The pipeline stops retrying
      * once it aborts, so the transport only has to end the request in flight.
@@ -276,7 +287,8 @@ export interface HttpClientOptions {
  * to send the default headers from `defaultHeaders` with every request, otherwise the `Authorization` header never
  * reaches the API. It also has to honor the per-request options {@link ApifyRequestConfig.compression},
  * {@link ApifyRequestConfig.authorizationHeader}, {@link ApifyRequestConfig.throwOnErrorStatus},
- * {@link ApifyRequestConfig.retryStatusCodes} and {@link ApifyRequestConfig.retryTransportErrors}.
+ * {@link ApifyRequestConfig.retryStatusCodes}, {@link ApifyRequestConfig.retryTransportErrors} and
+ * {@link ApifyRequestConfig.followRedirects}.
  * {@link ActorServerClient.request} relies on them to keep the token away from the Actor's code, to return the
  * server's error responses and to avoid sending a request to the Actor twice. The protected helpers
  * `prepareRequest()`, `buildUrl()` and `computeTimeoutMillis()` stay available to it.
@@ -422,9 +434,8 @@ export abstract class HttpClient {
      * propagate unwrapped: {@link call} classifies them through {@link isRetryableTransportError} and
      * {@link isTimeoutError}. Return error responses as they are too, the pipeline turns them into
      * {@link ApifyApiError} and decides whether to retry. Reject when the connection drops before the body is
-     * complete: the pipeline takes a returned body as whole and does not retry one that fails to parse. A transport
-     * that follows redirects has to drop the `X-Apify-Authorization` header, which carries the token of an Actor
-     * server request, on a redirect to another origin.
+     * complete: the pipeline takes a returned body as whole and does not retry one that fails to parse. When
+     * `request.followRedirects` is `false`, return a redirect response as it is, since the request carries a token.
      *
      * @param request - The request to send, with the headers merged, the body serialized and the query encoded.
      * @returns The response, with the body unread when `request.stream` is set and as raw bytes otherwise.
@@ -622,6 +633,7 @@ export abstract class HttpClient {
                 body: attemptBody,
                 timeoutMillis: this.computeTimeoutMillis(attempt, config.timeoutSecs),
                 stream: config.responseType === 'stream',
+                followRedirects: config.followRedirects ?? true,
                 signal: config.signal,
             });
         } catch (err) {

@@ -162,29 +162,31 @@ describe('ActorServerClient', () => {
         expect(request.headers['x-apify-authorization']).toBe('Bearer test-token');
     });
 
-    test('request() drops the token when the server redirects to another origin', async () => {
-        let redirected: http.IncomingHttpHeaders | undefined;
-        const otherServer = http.createServer((req, res) => {
-            redirected = req.headers;
+    test('request() returns a redirect of the server as it is, so the token never reaches its target', async () => {
+        let redirected = false;
+        const otherServer = http.createServer((_req, res) => {
+            redirected = true;
             res.end();
         });
         await new Promise<void>((done) => otherServer.listen(0, '127.0.0.1', done));
+        const location = `http://127.0.0.1:${(otherServer.address() as AddressInfo).port}/`;
         const redirectServer = http.createServer((_req, res) => {
-            res.writeHead(302, { location: `http://127.0.0.1:${(otherServer.address() as AddressInfo).port}/` });
+            res.writeHead(302, { location });
             res.end();
         });
         await new Promise<void>((done) => redirectServer.listen(0, '127.0.0.1', done));
         actor = serverActor({ standbyUrl: `http://127.0.0.1:${(redirectServer.address() as AddressInfo).port}` });
 
         try {
-            await client.actor(ACTOR_ID).server().request('/');
+            const response = await client.actor(ACTOR_ID).server().request('/');
+            expect(response.status).toBe(302);
+            expect(response.headers.location).toBe(location);
         } finally {
             await new Promise((done) => otherServer.close(done));
             await new Promise((done) => redirectServer.close(done));
         }
 
-        expect(redirected).toBeDefined();
-        expect(redirected!['x-apify-authorization']).toBeUndefined();
+        expect(redirected).toBe(false);
     });
 
     test('request() reuses the server URL fetched by the first call on the same Actor client', async () => {
