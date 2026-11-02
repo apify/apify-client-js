@@ -19,8 +19,8 @@ import { BuildClient } from './build.js';
 import { BuildCollectionClient } from './build_collection.js';
 
 /**
- * Statuses a server request is retried on. Other statuses may come from the Actor's code, which a retry would run
- * again.
+ * Statuses a server request is retried on. The platform answers with them when it can't pass a request to a server
+ * run, so a retry usually doesn't run the Actor's code again. An Actor that returns one itself gets the request again.
  */
 const SERVER_RETRY_STATUS_CODES = [429, 503];
 
@@ -156,8 +156,9 @@ export class ActorServerClient extends ResourceClient {
      *
      * The method resolves to any response of the server, error statuses included. A rate-limit (429) or Service
      * Unavailable (503) response is retried with the client's retry settings, and the last one is returned once the
-     * retries run out. Request bodies are sent uncompressed unless `compression` is set, since the Actor's server may
-     * not decode a compressed body.
+     * retries run out. The Actor's code can return these statuses too, and then it gets the request again. Request
+     * bodies are sent uncompressed unless `compression` is set, since the Actor's server may not decode a compressed
+     * body.
      *
      * @template T - Type of the parsed response body.
      * @param path - The path on the Actor's server, for example `/search`. It is always resolved against the server
