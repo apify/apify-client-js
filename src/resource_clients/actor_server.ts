@@ -24,6 +24,26 @@ import { BuildCollectionClient } from './build_collection.js';
  */
 const SERVER_RETRY_STATUS_CODES = [429, 503];
 
+const BUILD_NUMBER_PATTERN = /^(\d+)\.(\d+)\.(\d+)$/;
+
+/**
+ * Splits a build number like `0.1.23` into its version and sequence number, or returns `undefined` for anything else.
+ */
+function parseBuildNumber(buildNumber: string | null | undefined): [number, number, number] | undefined {
+    const match = BUILD_NUMBER_PATTERN.exec(buildNumber ?? '');
+    if (!match) return undefined;
+    return [Number(match[1]), Number(match[2]), Number(match[3])];
+}
+
+/**
+ * Returns whether `buildNumber` belongs to the same version as `target` and comes before it. Builds are listed newest
+ * first and the sequence numbers of a version grow over time, so meeting such a build means the target doesn't exist.
+ */
+function isOlderBuild(buildNumber: string | null | undefined, target: [number, number, number]): boolean {
+    const parsed = parseBuildNumber(buildNumber);
+    return parsed !== undefined && parsed[0] === target[0] && parsed[1] === target[1] && parsed[2] < target[2];
+}
+
 const requestOptionsSchema = z.strictObject({
     method: z
         .enum(['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'] satisfies HttpMethod[])
@@ -118,7 +138,8 @@ export class ActorServerClient extends ResourceClient {
         const buildRef = actor.actorStandby?.build || 'latest';
 
         let buildId = actor.taggedBuilds?.[buildRef]?.buildId ?? undefined;
-        if (buildId === undefined) {
+        const targetBuildNumber = parseBuildNumber(buildRef);
+        if (buildId === undefined && targetBuildNumber !== undefined) {
             // Not a tag, so look `buildRef` up as a build number, which the API can't resolve directly.
             const builds = new BuildCollectionClient(this.subResourceOptions({ resourcePath: 'builds' }));
             for await (const build of builds.list({ desc: true, timeoutSecs, signal })) {
@@ -126,6 +147,7 @@ export class ActorServerClient extends ResourceClient {
                     buildId = build.id;
                     break;
                 }
+                if (isOlderBuild(build.buildNumber, targetBuildNumber)) break;
             }
         }
 

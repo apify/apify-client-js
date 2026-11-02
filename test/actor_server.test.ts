@@ -41,6 +41,8 @@ describe('ActorServerClient', () => {
     let actor: Record<string, unknown> | 404;
     /** Build numbers of the Actor's builds, keyed by build ID, as the builds list returns them. */
     let builds: Record<string, string>;
+    /** How many builds the builds list returns per page, or all of them when undefined. */
+    let buildsPerPage: number | undefined;
     /** The `actorDefinition` of every build the API returns. */
     let actorDefinition: Record<string, unknown> | null;
     /** Statuses the server answers `/flaky` with, one per request, before it answers 200. */
@@ -89,7 +91,7 @@ describe('ActorServerClient', () => {
                         buildNumber,
                     }));
                     const offset = Number(url.searchParams.get('offset') ?? 0);
-                    const page = items.slice(offset);
+                    const page = items.slice(offset, buildsPerPage === undefined ? undefined : offset + buildsPerPage);
                     json(200, {
                         data: { ...fixtures.buildList, total: items.length, offset, count: page.length, items: page },
                     });
@@ -121,6 +123,7 @@ describe('ActorServerClient', () => {
         received = [];
         actor = serverActor();
         builds = {};
+        buildsPerPage = undefined;
         actorDefinition = { webServerSchema: OPENAPI_SPEC };
         flakyStatuses = [];
         client = new ApifyClient({ baseUrl, token: 'test-token', maxRetries: 0 });
@@ -450,6 +453,24 @@ describe('ActorServerClient', () => {
         await expect(client.actor(ACTOR_ID).server().getOpenApiSpec()).rejects.toThrow(
             'Build 9.9.9 of Actor test-actor-id does not exist.',
         );
+    });
+
+    test('getOpenApiSpec() stops the build number lookup at an older build of the same version', async () => {
+        actor = serverActor({ actorStandby: { isEnabled: true, build: '0.0.4' } });
+        builds = { 'build-5': '0.0.5', 'build-3': '0.0.3', 'build-2': '0.0.2', 'build-1': '0.0.1' };
+        buildsPerPage = 1;
+
+        await expect(client.actor(ACTOR_ID).server().getOpenApiSpec()).rejects.toThrow('does not exist');
+        expect(received.filter((request) => request.path === `${ACTOR_PATH}/builds`)).toHaveLength(2);
+    });
+
+    test('getOpenApiSpec() throws for an unknown tag without listing the builds', async () => {
+        actor = serverActor({ actorStandby: { isEnabled: true, build: 'nightly' } });
+
+        await expect(client.actor(ACTOR_ID).server().getOpenApiSpec()).rejects.toThrow(
+            'Build nightly of Actor test-actor-id does not exist.',
+        );
+        expect(received.filter((request) => request.path === `${ACTOR_PATH}/builds`)).toHaveLength(0);
     });
 
     test('standby() logs a deprecation warning and returns the server client', async () => {
