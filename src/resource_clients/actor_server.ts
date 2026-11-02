@@ -74,7 +74,10 @@ const requestOptionsSchema = z.strictObject({
  * @see https://docs.apify.com/platform/actors/running/standby
  */
 export class ActorServerClient extends ResourceClient {
-    /** The server URL, pending while the first lookup runs, so concurrent first calls share one API request. */
+    /**
+     * The server URL. Getting it takes an API call for the Actor, so it's cached for {@link getUrl} and
+     * {@link request}. It's pending while the first lookup runs, so concurrent first calls share one API request.
+     */
     #url?: Promise<string>;
 
     /**
@@ -134,7 +137,6 @@ export class ActorServerClient extends ResourceClient {
         const { timeoutSecs = 'short', signal } = parseArgument(options, timeoutOptionsSchema, 'TimeoutOptions');
 
         const actor = await this.#getServerActor(timeoutSecs, signal);
-        this.#url = Promise.resolve(actor.standbyUrl!);
         const buildRef = actor.actorStandby?.build || 'latest';
 
         let buildId = actor.taggedBuilds?.[buildRef]?.buildId ?? undefined;
@@ -261,7 +263,7 @@ export class ActorServerClient extends ResourceClient {
     }
 
     /**
-     * Fetches the Actor and checks that it is a Server Actor.
+     * Fetches the Actor, checks that it is a Server Actor, and caches its server URL.
      */
     async #getServerActor(
         timeoutSecs: TimeoutOptions['timeoutSecs'],
@@ -278,6 +280,7 @@ export class ActorServerClient extends ResourceClient {
         if (!actor.standbyUrl) {
             throw new ApifyClientError(`Actor ${this.id} is not a Server Actor.`);
         }
+        this.#url = Promise.resolve(actor.standbyUrl);
         return actor;
     }
 }
