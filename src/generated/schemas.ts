@@ -645,7 +645,7 @@ export const RunMeta = lazySchema(() => z.looseObject({
 
 /** Standby configuration of the run. Present only on Actor Standby runs. */
 export const RunStandby = lazySchema(() => z.looseObject({
-    deployment: z.string(),
+    deployment: z.enum(["SINGLE_TENANT", "MULTI_TENANT_OWNER_PAID", "MULTI_TENANT_FREE_USERS", "MULTI_TENANT_PAYING_USERS"]).or(z.string()),
 }));
 
 export const RunListItem = lazySchema(() => z.looseObject({

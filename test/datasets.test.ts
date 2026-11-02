@@ -546,6 +546,13 @@ describe('Dataset methods', () => {
                 expect(itemsPublicUrl.searchParams.get('signature')).toBeDefined();
                 expect(itemsPublicUrl.pathname).toBe(`/v2/datasets/${datasetId}/items`);
             });
+
+            it.each([0, -1])('rejects a non-positive expiresInSecs (%s)', async (expiresInSecs) => {
+                const res = client.dataset('id-with-secret-key').createItemsPublicUrl({ expiresInSecs });
+
+                await expect(res).rejects.toThrow(ArgumentValidationError);
+                await expect(res).rejects.toThrow('at `expiresInSecs`');
+            });
         });
     });
 });

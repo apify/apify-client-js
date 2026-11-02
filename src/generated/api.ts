@@ -5113,7 +5113,7 @@ export interface components {
             sourceFiles?: components["schemas"]["VersionSourceFiles"];
             /** @description URL of the Git repository to clone the source code from. Applies when the `sourceType` is `GIT_REPO`. */
             gitRepoUrl?: string;
-            /** @description URL of the tarball to download the source code from. Applies when the `sourceType` is `TARBALL`. */
+            /** @description URL of the zip archive to download the source code from. Applies when the `sourceType` is `TARBALL`. */
             tarballUrl?: string;
             /** @description URL of the GitHub Gist to clone the source code from. Applies when the `sourceType` is `GITHUB_GIST`. */
             gitHubGistUrl?: string;
@@ -5303,7 +5303,7 @@ export interface components {
             sourceFiles?: components["schemas"]["VersionSourceFiles"];
             /** @description URL of the Git repository to clone the source code from. Applies when the `sourceType` is `GIT_REPO`. */
             gitRepoUrl?: string | null;
-            /** @description URL to download the source code from as a tarball or ZIP file. Applies when the `sourceType` is `TARBALL`. */
+            /** @description URL to download the source code from as a zip archive. Applies when the `sourceType` is `TARBALL`. */
             tarballUrl?: string | null;
             /** @description URL of the GitHub Gist to clone the source code from. Applies when the `sourceType` is `GITHUB_GIST`. */
             gitHubGistUrl?: string | null;
@@ -5769,7 +5769,7 @@ export interface components {
             sourceFiles?: components["schemas"]["VersionSourceFiles"];
             /** @description URL of the Git repository to clone the source code from. Applies when the `sourceType` is `GIT_REPO`. */
             gitRepoUrl?: string;
-            /** @description URL of the tarball to download the source code from. Applies when the `sourceType` is `TARBALL`. */
+            /** @description URL of the zip archive to download the source code from. Applies when the `sourceType` is `TARBALL`. */
             tarballUrl?: string;
             /** @description URL of the GitHub Gist to clone the source code from. Applies when the `sourceType` is `GITHUB_GIST`. */
             gitHubGistUrl?: string;
@@ -6192,17 +6192,17 @@ export interface components {
             environmentVariables?: {
                 [key: string]: string;
             };
-            /** @description The path to the Dockerfile used for building the Actor on the platform. */
+            /** @description The path to the Dockerfile used for building the Actor on the platform, relative to the `.actor/` directory. */
             dockerfile?: string;
-            /** @description The path to the directory used as the Docker context when building the Actor. */
+            /** @description The path to the directory used as the Docker context when building the Actor, relative to the `.actor/` directory. */
             dockerContextDir?: string;
-            /** @description The path to the README file for the Actor. */
+            /** @description The path to the README file for the Actor, relative to the `.actor/` directory. */
             readme?: string | null;
             /** @description The input schema object, the full specification can be found in [Apify docs](https://docs.apify.com/platform/actors/development/actor-definition/input-schema) */
             input?: Record<string, unknown> | null;
             /** @description The output schema object, the full specification can be found in [Apify docs](https://docs.apify.com/platform/actors/development/actor-definition/output-schema) */
             output?: Record<string, unknown> | null;
-            /** @description The path to the CHANGELOG file displayed in the Actor's information tab. */
+            /** @description The path to the CHANGELOG file displayed in the Actor's information tab, relative to the `.actor/` directory. */
             changelog?: string | null;
             storages?: {
                 /** @description Defines the schema of items in your dataset, the full specification can be found in [Apify docs](https://docs.apify.com/platform/actors/development/actor-definition/dataset-schema) */
@@ -6465,11 +6465,13 @@ export interface components {
          */
         RunStandby: {
             /**
-             * @description How the Standby run is deployed: `SINGLE_TENANT`, `MULTI_TENANT_FREE_USERS`, `MULTI_TENANT_PAYING_USERS` or `MULTI_TENANT_OWNER_PAID`. `SINGLE_TENANT` is a private instance in the user's account.
-             *     The `MULTI_TENANT_*` values are runs in the Actor owner's account that serve requests from many users.
-             * @example SINGLE_TENANT
+             * @description Which pool the Server Actor run serves. `SINGLE_TENANT` is a private instance in the caller's account.
+             *     The `MULTI_TENANT_*` pools run in the Actor owner's account and serve many callers;
+             *     charges in them require a `requestId` (see the charge endpoint).
+             * @example MULTI_TENANT_PAYING_USERS
+             * @enum {string}
              */
-            deployment: string;
+            deployment: "SINGLE_TENANT" | "MULTI_TENANT_OWNER_PAID" | "MULTI_TENANT_FREE_USERS" | "MULTI_TENANT_PAYING_USERS";
         };
         /** RunListItem */
         RunListItem: {
@@ -6850,7 +6852,7 @@ export interface components {
              * @example 0.5
              */
             externalChargedTotalUsd?: number;
-            /** @description Standby configuration of the run. `null` for runs that are not Actor Standby runs. */
+            /** @description Server Actor deployment of this run, `null` for runs not started by a Server Actor request. */
             standby?: components["schemas"]["RunStandby"] | null;
             /** @description Present only when the run was started by a third-party integration. */
             integrationTracking?: components["schemas"]["IntegrationTracking"];

@@ -45,7 +45,7 @@ const createKeysPublicUrlOptionsSchema = z.strictObject({
     exclusiveStartKey: z.string().optional(),
     collection: z.string().optional(),
     prefix: z.string().optional(),
-    expiresInSecs: z.number().optional(),
+    expiresInSecs: z.number().positive().optional(),
     ...timeoutOptionsShape,
 });
 const keySchema = z.string();
@@ -300,7 +300,8 @@ export class KeyValueStoreClient extends ResourceClient {
      * the URL will include a cryptographic signature which allows access without authentication.
      *
      * @param options - URL generation options (extends all options from {@link listKeys})
-     * @param options.expiresInSecs - Number of seconds until the signed URL expires. If omitted, the URL never expires.
+     * @param options.expiresInSecs - Number of seconds until the signed URL expires. Must be positive. If omitted, the URL
+     * never expires.
      * @param options.limit - Maximum number of keys to return.
      * @param options.prefix - Filter keys by prefix.
      * @param options.timeoutSecs - Timeout for the API request that fetches the store. Default is `'long'`.

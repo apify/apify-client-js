@@ -97,7 +97,7 @@ const createItemsPublicUrlOptionsSchema = z.strictObject({
     skipHidden: z.boolean().optional(),
     unwind: z.array(z.string()).optional(),
     view: z.string().optional(),
-    expiresInSecs: z.number().optional(),
+    expiresInSecs: z.number().positive().optional(),
     ...timeoutOptionsShape,
 });
 
@@ -442,7 +442,8 @@ export class DatasetClient<
      * This is useful for sharing dataset results with external services or users.
      *
      * @param options - URL generation options (extends all options from {@link listItems})
-     * @param options.expiresInSecs - Number of seconds until the signed URL expires. If omitted, the URL never expires.
+     * @param options.expiresInSecs - Number of seconds until the signed URL expires. Must be positive. If omitted, the URL
+     * never expires.
      * @param options.fields - Array of field names to include in the response.
      * @param options.format - Format of the items served by the URL. Defaults to `json`.
      * @param options.limit - Maximum number of items to return.
